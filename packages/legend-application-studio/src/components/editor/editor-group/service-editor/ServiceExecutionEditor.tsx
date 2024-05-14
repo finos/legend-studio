@@ -565,10 +565,10 @@ export const NewExecutionParameterModal = observer(
       keyValue === ''
         ? `Execution context key can't be empty`
         : executionState.execution.executionParameters?.find(
-            (e) => e.key === keyValue,
-          )
-        ? 'Execution context key already exists'
-        : undefined;
+              (e) => e.key === keyValue,
+            )
+          ? 'Execution context key already exists'
+          : undefined;
 
     const closeModal = (): void =>
       executionState.setNewKeyParameterModal(false);

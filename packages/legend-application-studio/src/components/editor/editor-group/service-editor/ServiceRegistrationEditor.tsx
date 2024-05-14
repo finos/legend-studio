@@ -94,8 +94,8 @@ export const ServiceRegistrationEditor = observer(() => {
           ServiceExecutionMode.SEMI_INTERACTIVE,
         )} and ${prettyCONSTName(ServiceExecutionMode.PROD)} service types`
       : !registrationState.versionOptions.length
-      ? 'Project has no versions'
-      : undefined;
+        ? 'Project has no versions'
+        : undefined;
 
   // activate
   const toggleActivatePostRegistration = (): void => {

@@ -60,14 +60,14 @@ const ProjectReviewerStatusBar = observer(() => {
   const reviewStatus = reviewStore.approveState.isInProgress
     ? 'approving review...'
     : reviewStore.commitState.isInProgress
-    ? 'committing review...'
-    : reviewStore.closeState.isInProgress
-    ? 'closing review...'
-    : reviewStore.reOpenState.isInProgress
-    ? 'reopening review...'
-    : reviewStore.buildReviewReportState.isInProgress
-    ? 'loading changes...'
-    : undefined;
+      ? 'committing review...'
+      : reviewStore.closeState.isInProgress
+        ? 'closing review...'
+        : reviewStore.reOpenState.isInProgress
+          ? 'reopening review...'
+          : reviewStore.buildReviewReportState.isInProgress
+            ? 'loading changes...'
+            : undefined;
   const toggleAssistant = (): void =>
     applicationStore.assistantService.toggleAssistant();
 

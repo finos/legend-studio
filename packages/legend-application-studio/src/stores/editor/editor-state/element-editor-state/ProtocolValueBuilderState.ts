@@ -249,8 +249,8 @@ export class ProtocolValueBuilderState {
                 childNodeValue === undefined
                   ? undefined
                   : isString(childNodeValue)
-                  ? childNodeValue
-                  : '',
+                    ? childNodeValue
+                    : '',
               );
             } else if (multiplicity.upperBound === 1) {
               childNode = new StringFieldNode(

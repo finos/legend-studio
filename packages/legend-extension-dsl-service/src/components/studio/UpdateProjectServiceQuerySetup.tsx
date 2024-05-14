@@ -237,8 +237,7 @@ export const UpdateProjectServiceQuerySetup =
         !setupStore.currentProject ||
         !setupStore.currentGroupWorkspace ||
         !setupStore.currentService ||
-        !setupStore.currentProjectConfigurationStatus ||
-        !setupStore.currentProjectConfigurationStatus.isConfigured;
+        !setupStore.currentProjectConfigurationStatus?.isConfigured;
       const handleProceed = (): void => {
         if (
           setupStore.currentProject &&
@@ -410,12 +409,12 @@ export const UpdateProjectServiceQuerySetup =
                         setupStore.loadWorkspacesState.isInProgress
                           ? 'Loading workspaces...'
                           : !setupStore.currentProject
-                          ? 'In order to choose a workspace, a project must be selected'
-                          : workspaceOptions.length
-                          ? 'Choose an existing workspace'
-                          : setupStore.loadWorkspacesState.hasFailed
-                          ? `Can't fetch project workspaces. Please try again or choose another service`
-                          : 'You have no workspaces. Please create one to proceed...'
+                            ? 'In order to choose a workspace, a project must be selected'
+                            : workspaceOptions.length
+                              ? 'Choose an existing workspace'
+                              : setupStore.loadWorkspacesState.hasFailed
+                                ? `Can't fetch project workspaces. Please try again or choose another service`
+                                : 'You have no workspaces. Please create one to proceed...'
                       }
                       isClearable={true}
                       escapeClearsValue={true}
@@ -454,8 +453,8 @@ export const UpdateProjectServiceQuerySetup =
                         !setupStore.currentGroupWorkspace
                           ? 'In order to choose a service, a workspace must be chosen'
                           : serviceOptions.length
-                          ? 'Choose an existing service'
-                          : 'You have no services to load'
+                            ? 'Choose an existing service'
+                            : 'You have no services to load'
                       }
                       darkMode={
                         !applicationStore.layoutService

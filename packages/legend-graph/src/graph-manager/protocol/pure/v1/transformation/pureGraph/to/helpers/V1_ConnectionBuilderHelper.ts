@@ -105,13 +105,13 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
             ),
           )
         : connection.store
-        ? this.context.resolveStore(connection.store)
-        : ((): PackageableElementReference<Store> => {
-            if (this.embeddedConnectionStore.value instanceof Store) {
-              return this.embeddedConnectionStore;
-            }
-            throw new Error(`Connection store must be a store`);
-          })(),
+          ? this.context.resolveStore(connection.store)
+          : ((): PackageableElementReference<Store> => {
+              if (this.embeddedConnectionStore.value instanceof Store) {
+                return this.embeddedConnectionStore;
+              }
+              throw new Error(`Connection store must be a store`);
+            })(),
     );
     metamodel.content = connection.content;
     return metamodel;
@@ -225,16 +225,16 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
           ),
         )
       : connection.store
-      ? this.context.resolveFlatDataStore(connection.store)
-      : ((): PackageableElementReference<FlatData> => {
-          assertType(
-            this.embeddedConnectionStore.value,
-            FlatData,
-            `Flat-data connection store must be a flat-data store`,
-          );
-          return this
-            .embeddedConnectionStore as PackageableElementReference<FlatData>;
-        })();
+        ? this.context.resolveFlatDataStore(connection.store)
+        : ((): PackageableElementReference<FlatData> => {
+            assertType(
+              this.embeddedConnectionStore.value,
+              FlatData,
+              `Flat-data connection store must be a flat-data store`,
+            );
+            return this
+              .embeddedConnectionStore as PackageableElementReference<FlatData>;
+          })();
     assertNonNullable(
       connection.url,
       `Flat-data connection 'url' field is missing`,
@@ -253,16 +253,16 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
           ),
         )
       : connection.store
-      ? this.context.resolveDatabase(connection.store)
-      : ((): PackageableElementReference<Database> => {
-          assertType(
-            this.embeddedConnectionStore.value,
-            Database,
-            `Relational database connection store must be a database`,
-          );
-          return this
-            .embeddedConnectionStore as PackageableElementReference<Database>;
-        })();
+        ? this.context.resolveDatabase(connection.store)
+        : ((): PackageableElementReference<Database> => {
+            assertType(
+              this.embeddedConnectionStore.value,
+              Database,
+              `Relational database connection store must be a database`,
+            );
+            return this
+              .embeddedConnectionStore as PackageableElementReference<Database>;
+          })();
     assertNonNullable(
       connection.type,
       `Relational database connection 'type' field is missing`,

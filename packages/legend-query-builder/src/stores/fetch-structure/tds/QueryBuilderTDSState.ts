@@ -149,6 +149,7 @@ export class QueryBuilderTDSState
       addColumn: action,
       moveColumn: action,
       removeAllColumns: action,
+      removeColumn: action,
       replaceColumn: action,
       initialize: action,
       initializeWithQuery: action,

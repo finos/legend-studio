@@ -1033,13 +1033,13 @@ export class V1_EngineServerClient extends AbstractServerClient {
             generateLineage: TEMPORARY__useGenerateLineage,
           }
         : serviceExecutionMode === ServiceExecutionMode.SEMI_INTERACTIVE
-        ? {
-            generateLineage: TEMPORARY__useGenerateLineage,
-          }
-        : {
-            generateLineage: TEMPORARY__useGenerateLineage,
-            generateOpenApi: TEMPORARY__useGenerateOpenApi,
-          },
+          ? {
+              generateLineage: TEMPORARY__useGenerateLineage,
+            }
+          : {
+              generateLineage: TEMPORARY__useGenerateLineage,
+              generateOpenApi: TEMPORARY__useGenerateOpenApi,
+            },
       { enableCompression: true },
     );
 }

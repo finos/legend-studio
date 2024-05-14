@@ -75,8 +75,8 @@ export const DatabaseModelPackageInput = observer(
       !databaseModelBuilderState.targetPackage
         ? `Target package path can't be empty`
         : !isValidPath(databaseModelBuilderState.targetPackage)
-        ? 'Invalid target package path'
-        : undefined;
+          ? 'Invalid target package path'
+          : undefined;
 
     return (
       <div className="panel__content__form__section">

@@ -23,7 +23,6 @@ import {
   type ShowcaseTextSearchResult,
 } from '@finos/legend-server-showcase';
 import {
-  ESM__FuzzySearchEngine,
   FuzzySearchEngine,
   promisify,
   type PlainObject,
@@ -85,12 +84,7 @@ export class ShowcaseRegistry {
     // NOTE: due to the way we export the constructor of `FuzzySearchEngine`, when we run this with ESM
     // we can remove this workaround once Fuse supports ESM
     // See https://github.com/krisk/Fuse/pull/727
-    const FuzzySearchEngineConstructor =
-      // eslint-disable-next-line no-process-env
-      process.env.NODE_ENV === 'development'
-        ? ESM__FuzzySearchEngine
-        : FuzzySearchEngine;
-    this.showcaseSearchEngine = new FuzzySearchEngineConstructor([], {
+    this.showcaseSearchEngine = new FuzzySearchEngine([], {
       includeScore: true,
       // NOTE: we must not sort/change the order in the grid since
       // we want to ensure the element row is on top

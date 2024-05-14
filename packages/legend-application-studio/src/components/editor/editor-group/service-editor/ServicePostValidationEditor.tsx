@@ -71,8 +71,8 @@ const ServicePostValidationAssertionEditor = observer(
       assertion.id === ''
         ? `assertion ID can't be empty`
         : assertion.id.includes(' ')
-        ? `assertion ID can't include spaced`
-        : undefined;
+          ? `assertion ID can't include spaced`
+          : undefined;
 
     return (
       <div className="service-post-validation-editor__parameters">
@@ -469,8 +469,8 @@ const ServicePostValidationResultsViewer = observer(
               />
             ))
           : isInProgress
-          ? 'Post validation(s) running...'
-          : 'Run post validation(s) to see results'}
+            ? 'Post validation(s) running...'
+            : 'Run post validation(s) to see results'}
       </div>
     );
   },

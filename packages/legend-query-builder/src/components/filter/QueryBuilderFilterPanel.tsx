@@ -305,8 +305,8 @@ export const buildFilterTreeWithExists = (
             targetDropNode instanceof QueryBuilderFilterTreeConditionNodeData
               ? filterState.newGroupConditionFromNode(targetDropNode)
               : targetDropNode instanceof QueryBuilderFilterTreeGroupNodeData
-              ? targetDropNode
-              : filterState.getParentNode(targetDropNode);
+                ? targetDropNode
+                : filterState.getParentNode(targetDropNode);
           existsLambdaPropertyChains = existsLambdaPropertyChains.slice(
             parentPropertyChainIndex + 1,
           );
@@ -319,8 +319,8 @@ export const buildFilterTreeWithExists = (
           targetDropNode instanceof QueryBuilderFilterTreeConditionNodeData
             ? filterState.newGroupConditionFromNode(targetDropNode)
             : targetDropNode instanceof QueryBuilderFilterTreeGroupNodeData
-            ? targetDropNode
-            : filterState.getParentNode(targetDropNode);
+              ? targetDropNode
+              : filterState.getParentNode(targetDropNode);
       }
     }
   }
@@ -1092,8 +1092,8 @@ const QueryBuilderFilterTreeNodeContainer = observer(
             node instanceof QueryBuilderFilterTreeGroupNodeData
               ? QUERY_BUILDER_FILTER_DND_TYPE.GROUP_CONDITION
               : node instanceof QueryBuilderFilterTreeConditionNodeData
-              ? QUERY_BUILDER_FILTER_DND_TYPE.CONDITION
-              : QUERY_BUILDER_FILTER_DND_TYPE.BLANK_CONDITION,
+                ? QUERY_BUILDER_FILTER_DND_TYPE.CONDITION
+                : QUERY_BUILDER_FILTER_DND_TYPE.BLANK_CONDITION,
           item: () => ({ node }),
           end: (): void => filterState.setRearrangingConditions(false),
           canDrag: () =>

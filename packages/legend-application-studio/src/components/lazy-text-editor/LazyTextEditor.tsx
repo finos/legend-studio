@@ -108,17 +108,17 @@ const LazyStatusBar = observer((props: { actionsDisabled: boolean }) => {
     editorStore.changeDetectionState.initState.hasFailed
       ? 'change detection halted'
       : !editorStore.changeDetectionState.initState.hasSucceeded
-      ? editorStore.changeDetectionState.workspaceLocalLatestRevisionState
-          .isBuildingEntityHashesIndex
-        ? 'building indexes...'
-        : 'starting change detection...'
-      : editorStore.localChangesState.pushChangesState.isInProgress
-      ? 'pushing local changes...'
-      : configurationState.updatingConfigurationState.isInProgress
-      ? 'updating configuration...'
-      : changes
-      ? `${changes} unpushed changes`
-      : 'no changes detected';
+        ? editorStore.changeDetectionState.workspaceLocalLatestRevisionState
+            .isBuildingEntityHashesIndex
+          ? 'building indexes...'
+          : 'starting change detection...'
+        : editorStore.localChangesState.pushChangesState.isInProgress
+          ? 'pushing local changes...'
+          : configurationState.updatingConfigurationState.isInProgress
+            ? 'updating configuration...'
+            : changes
+              ? `${changes} unpushed changes`
+              : 'no changes detected';
   const workspaceOutOfSync =
     !actionsDisabled && editorStore.sdlcState.isWorkspaceOutOfSync;
 

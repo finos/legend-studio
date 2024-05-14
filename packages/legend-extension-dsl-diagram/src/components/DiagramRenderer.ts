@@ -1886,8 +1886,8 @@ export class DiagramRenderer {
             property instanceof DerivedProperty
               ? this.classViewDerivedPropertyTextColor
               : property.genericType.value.rawType instanceof PrimitiveType
-              ? this.classViewPrimitivePropertyTextColor
-              : this.classViewPropertyTextColor;
+                ? this.classViewPrimitivePropertyTextColor
+                : this.classViewPropertyTextColor;
           const propX =
             (startX +
               this.screenOffset.x +

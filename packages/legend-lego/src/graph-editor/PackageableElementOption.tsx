@@ -37,10 +37,10 @@ const getElementColorCode = (element: PackageableElement): string =>
   isSystemElement(element)
     ? 'system'
     : isGeneratedElement(element)
-    ? 'generated'
-    : isDependencyElement(element)
-    ? 'dependency'
-    : '';
+      ? 'generated'
+      : isDependencyElement(element)
+        ? 'dependency'
+        : '';
 
 const generateOptionTooltipText = (
   element: PackageableElement,
@@ -48,10 +48,10 @@ const generateOptionTooltipText = (
   isSystemElement(element)
     ? 'system element'
     : isGeneratedElement(element)
-    ? 'generated element'
-    : isDependencyElement(element)
-    ? 'dependency element'
-    : undefined;
+      ? 'generated element'
+      : isDependencyElement(element)
+        ? 'dependency element'
+        : undefined;
 
 export const getPackageableElementOptionFormatter = (props: {
   darkMode?: boolean | undefined;

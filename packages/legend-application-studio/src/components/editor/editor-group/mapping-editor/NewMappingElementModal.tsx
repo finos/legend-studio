@@ -197,8 +197,8 @@ export const NewMappingElementModal = observer(() => {
           spec.target instanceof Class
             ? 'Class'
             : spec.target instanceof Enumeration
-            ? 'Enumeration'
-            : 'Association'
+              ? 'Enumeration'
+              : 'Association'
         } Mapping ${spec.target ? `for ${spec.target.name}` : ''}`
     : undefined;
 

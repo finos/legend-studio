@@ -311,9 +311,8 @@ export const createRequestHeaders = (
    */
   baseRequestHeaders.Accept = ContentType.APPLICATION_JSON;
   if (method !== HttpMethod.GET) {
-    baseRequestHeaders[
-      HttpHeader.CONTENT_TYPE
-    ] = `${ContentType.APPLICATION_JSON};${CHARSET}`;
+    baseRequestHeaders[HttpHeader.CONTENT_TYPE] =
+      `${ContentType.APPLICATION_JSON};${CHARSET}`;
   }
   return mergeRequestHeaders(baseRequestHeaders, headers);
 };

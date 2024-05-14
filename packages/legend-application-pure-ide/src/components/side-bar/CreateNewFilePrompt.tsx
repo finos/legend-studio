@@ -41,8 +41,8 @@ export const CreateNewFilePrompt = observer(
     const error = !isValidValue
       ? 'Invalid file name'
       : !isUnique
-      ? 'Already existed'
-      : undefined;
+        ? 'Already existed'
+        : undefined;
 
     // actions
     const closeModal = (): void =>

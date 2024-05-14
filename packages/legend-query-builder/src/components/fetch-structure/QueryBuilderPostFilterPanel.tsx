@@ -660,8 +660,8 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
             node instanceof QueryBuilderPostFilterTreeGroupNodeData
               ? QUERY_BUILDER_POST_FILTER_DND_TYPE.GROUP_CONDITION
               : node instanceof QueryBuilderPostFilterTreeConditionNodeData
-              ? QUERY_BUILDER_POST_FILTER_DND_TYPE.CONDITION
-              : QUERY_BUILDER_POST_FILTER_DND_TYPE.BLANK_CONDITION,
+                ? QUERY_BUILDER_POST_FILTER_DND_TYPE.CONDITION
+                : QUERY_BUILDER_POST_FILTER_DND_TYPE.BLANK_CONDITION,
           item: () => ({ node }),
           end: (): void => postFilterState.setRearrangingConditions(false),
         }),

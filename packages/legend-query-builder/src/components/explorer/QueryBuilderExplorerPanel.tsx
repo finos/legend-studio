@@ -426,8 +426,8 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
             ? node.type instanceof Enumeration
               ? QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY
               : node.type instanceof Class
-              ? QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY
-              : QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY
+                ? QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY
+                : QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY
             : QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ROOT,
         item: () =>
           node instanceof QueryBuilderExplorerTreePropertyNodeData
@@ -468,8 +468,8 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
         ? TYPE_CAST_TOKEN + prettyCONSTName(node.label)
         : prettyCONSTName(node.label)
       : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-      ? TYPE_CAST_TOKEN + node.label
-      : node.label;
+        ? TYPE_CAST_TOKEN + node.label
+        : node.label;
     const selectNode = (): void => onNodeSelect?.(node);
     const openNode = (): void => {
       if (!node.isOpen) {

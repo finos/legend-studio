@@ -90,8 +90,9 @@ export const FunctionParametersValidationNodeViewer: React.FC<{
                   <tr>
                     <td className="table__cell--left">{parameter.name}</td>
                     <td className="table__cell--left">
-                      {`${parameter.genericType?.value.rawType
-                        .name} ${showMultiplicity(parameter.multiplicity)}`}
+                      {`${
+                        parameter.genericType?.value.rawType.name
+                      } ${showMultiplicity(parameter.multiplicity)}`}
                     </td>
                   </tr>
                 </React.Fragment>

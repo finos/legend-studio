@@ -63,7 +63,7 @@ export async function validateChangesets(cwd, sinceRef) {
   const config = await read(cwd, packages);
   const sinceBranch = sinceRef ?? DEFAULT_SINCE_REF;
   const changesetPackageNames = (
-    await getReleasePlan.default(cwd, sinceBranch, config)
+    await getReleasePlan(cwd, sinceBranch, config)
   ).releases
     // packages whose versions are bumped because they depend on a package
     // whose version is explicitly bumped is not of our concern
@@ -83,7 +83,7 @@ export async function validateChangesets(cwd, sinceRef) {
   // making some changesets invalid and can potentially break the release
   const knownPackages = packages.packages.map((pkg) => pkg.packageJson.name);
   const unknownPackagesIndex = new Map();
-  const allExistingChangesets = await readChangesets.default(cwd);
+  const allExistingChangesets = await readChangesets(cwd);
   allExistingChangesets.forEach((changeset) => {
     const unknownPackages = new Set();
     changeset.releases.forEach((release) => {
@@ -187,7 +187,7 @@ export async function generateChangeset(cwd, message, sinceRef) {
     })),
     summary: message,
   };
-  const changesetID = await writeChangeset.default(newChangeset, cwd);
+  const changesetID = await writeChangeset(newChangeset, cwd);
   log(
     chalk.green(
       'Successfully generated changeset! If you want to modify or expand on the changeset summary, you can find it here:',
@@ -200,8 +200,8 @@ export async function getNextReleasePlan(cwd) {
   const packages = await getPackages(cwd);
   const config = await read(cwd, packages);
 
-  const releasePlan = assembleReleasePlan.default(
-    await readChangesets.default(cwd),
+  const releasePlan = assembleReleasePlan(
+    await readChangesets(cwd),
     packages,
     config,
     undefined,

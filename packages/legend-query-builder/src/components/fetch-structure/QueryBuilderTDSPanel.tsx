@@ -784,8 +784,8 @@ const QueryBuilderProjectionColumnEditor = observer(
                       isDuplicatedColumnName
                         ? 'Duplicated column'
                         : projectionColumnState.columnName.length === 0
-                        ? 'Empty column name'
-                        : undefined
+                          ? 'Empty column name'
+                          : undefined
                     }
                   />
                 </div>
@@ -811,8 +811,8 @@ const QueryBuilderProjectionColumnEditor = observer(
                       isDuplicatedColumnName
                         ? 'Duplicated column'
                         : projectionColumnState.columnName.length === 0
-                        ? 'Empty column name'
-                        : undefined
+                          ? 'Empty column name'
+                          : undefined
                     }
                     title={projectionColumnState.columnName}
                     defaultColumnName="(derivation)"

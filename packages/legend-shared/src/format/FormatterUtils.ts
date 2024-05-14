@@ -225,8 +225,8 @@ export const quantify = (
   value <= 0
     ? `no ${pluralForm ?? `${label}s`}`
     : value > 1
-    ? `${value} ${pluralForm ?? `${label}s`}`
-    : `1 ${label}`;
+      ? `${value} ${pluralForm ?? `${label}s`}`
+      : `1 ${label}`;
 
 export const quantifyList = (
   val: Array<unknown>,

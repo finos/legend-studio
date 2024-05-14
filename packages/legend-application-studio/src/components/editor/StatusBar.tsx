@@ -90,17 +90,17 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
     editorStore.changeDetectionState.initState.hasFailed
       ? 'change detection halted'
       : !editorStore.changeDetectionState.initState.hasSucceeded
-      ? editorStore.changeDetectionState.workspaceLocalLatestRevisionState
-          .isBuildingEntityHashesIndex
-        ? 'building indexes...'
-        : 'starting change detection...'
-      : editorStore.localChangesState.pushChangesState.isInProgress
-      ? 'pushing local changes...'
-      : configurationState.updatingConfigurationState.isInProgress
-      ? 'updating configuration...'
-      : changes
-      ? `${changes} unpushed changes`
-      : 'no changes detected';
+        ? editorStore.changeDetectionState.workspaceLocalLatestRevisionState
+            .isBuildingEntityHashesIndex
+          ? 'building indexes...'
+          : 'starting change detection...'
+        : editorStore.localChangesState.pushChangesState.isInProgress
+          ? 'pushing local changes...'
+          : configurationState.updatingConfigurationState.isInProgress
+            ? 'updating configuration...'
+            : changes
+              ? `${changes} unpushed changes`
+              : 'no changes detected';
   const workspaceOutOfSync =
     !actionsDisabled && editorStore.sdlcState.isWorkspaceOutOfSync;
 
@@ -120,17 +120,17 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
     editorStore.changeDetectionState.initState.hasFailed
       ? 'change detection halted'
       : !editorStore.changeDetectionState.initState.hasSucceeded
-      ? editorStore.changeDetectionState.workspaceLocalLatestRevisionState
-          .isBuildingEntityHashesIndex
-        ? 'building indexes...'
-        : 'starting change detection...'
-      : editorStore.conflictResolutionState.isAcceptingConflictResolution
-      ? 'submitting conflict resolution...'
-      : conflicts
-      ? `has unresolved merge conflicts`
-      : editorStore.conflictResolutionState.hasResolvedAllConflicts
-      ? 'conflict resolution not accepted'
-      : 'all conflicts resolved';
+        ? editorStore.changeDetectionState.workspaceLocalLatestRevisionState
+            .isBuildingEntityHashesIndex
+          ? 'building indexes...'
+          : 'starting change detection...'
+        : editorStore.conflictResolutionState.isAcceptingConflictResolution
+          ? 'submitting conflict resolution...'
+          : conflicts
+            ? `has unresolved merge conflicts`
+            : editorStore.conflictResolutionState.hasResolvedAllConflicts
+              ? 'conflict resolution not accepted'
+              : 'all conflicts resolved';
 
   // Other actions
   const togglePanel = (): void => editorStore.panelGroupDisplayState.toggle();

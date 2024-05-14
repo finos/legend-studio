@@ -94,8 +94,8 @@ const createWindowColumnState = (
       ? `${operator.getLabel()} of ${columnState.columnName}`
       : columnState.columnName
     : nonColoperator.isColumnAggregator()
-    ? `${nonColoperator.getLabel()} of ${columnState.columnName}`
-    : columnState.columnName;
+      ? `${nonColoperator.getLabel()} of ${columnState.columnName}`
+      : columnState.columnName;
   if (operator) {
     const opState = new QueryBuilderTDS_WindowAggreationOperatorState(
       tdsState.windowState,
@@ -1189,8 +1189,8 @@ const QueryBuilderWindowColumnEditor = observer(
                 isDuplicatedColumnName
                   ? 'Duplicated column'
                   : isInvalidColumnName
-                  ? 'Invalid column order'
-                  : undefined
+                    ? 'Invalid column order'
+                    : undefined
               }
             />
           </div>

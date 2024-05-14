@@ -119,9 +119,9 @@ export const BulkServiceRegistrationEditor = observer(() => {
           ServiceExecutionMode.SEMI_INTERACTIVE,
         )} and ${prettyCONSTName(ServiceExecutionMode.PROD)} service types`
       : !globalBulkServiceRegistrationState.serviceConfigState.versionOptions
-          .length
-      ? 'Project has no versions'
-      : undefined;
+            .length
+        ? 'Project has no versions'
+        : undefined;
 
   // activate
   const toggleActivatePostRegistration = (): void => {

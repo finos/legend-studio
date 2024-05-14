@@ -14,26 +14,6 @@
  * limitations under the License.
  */
 
-/**
- * Previously, these exports rely on ES module interop to expose `default` export
- * properly. But since we use `ESM` for Typescript resolution now, we lose this
- * so we have to workaround by importing these and re-export them from CJS
- *
- * TODO: remove these when the package properly work with Typescript's nodenext
- * module resolution
- *
- * @workaround ESM
- * See https://github.com/microsoft/TypeScript/issues/49298
- */
-
-/**
- * HEADS-UP: use 'react-icons/{..}/index.js' to import icons, which is not good-looking but it helps
- * to reduce bundle size to 22.46MB to 66.46kb significantly.
- * Reference:
- * https://github.com/react-icons/react-icons/blob/master/README.md
- * https://github.com/react-icons/react-icons/issues/154#issuecomment-895976123
- */
-
 /* eslint @typescript-eslint/no-unsafe-assignment: 0 */
 
 //======================================================= TB =======================================================
@@ -47,7 +27,7 @@ import {
   TbClockEdit,
   TbSql,
   TbBrandSnowflake,
-} from 'react-icons/tb/index.js';
+} from 'react-icons/tb';
 
 export const ArrowsJoinIcon = TbArrowsJoin2;
 export const ArrowsSplitIcon = TbArrowsSplit2;
@@ -93,7 +73,7 @@ import {
   MdQuestionAnswer,
   MdUnfoldLess,
   MdUnfoldMore,
-} from 'react-icons/md/index.js';
+} from 'react-icons/md';
 
 export const ManageSearchIcon = MdManageSearch; // to be reviewed
 export const PencilIcon = MdModeEdit;
@@ -149,7 +129,7 @@ import {
   VscExpandAll,
   VscJson,
   VscTable,
-} from 'react-icons/vsc/index.js';
+} from 'react-icons/vsc';
 
 export const ErrorIcon = VscError;
 export const WarningIcon = VscWarning;
@@ -194,7 +174,7 @@ import {
   BsQuestionSquare,
   BsQuestionSquareFill,
   BsTextLeft,
-} from 'react-icons/bs/index.js';
+} from 'react-icons/bs';
 
 export const FilledTriangleIcon = BsFillTriangleFill;
 export const TabulatedDataFileIcon = BsFillFileEarmarkSpreadsheetFill;
@@ -219,7 +199,7 @@ export const QuestionSquareFillIcon = BsQuestionSquareFill;
 export const GenericTextFileIcon = BsTextLeft;
 
 //======================================================= HI =======================================================
-import { HiCode, HiHome } from 'react-icons/hi/index.js';
+import { HiCode, HiHome } from 'react-icons/hi';
 
 export const CodeIcon = HiCode;
 export const HomeIcon = HiHome;
@@ -238,7 +218,7 @@ import {
   IoCloudDownloadOutline,
   IoCloudUploadOutline,
   IoHelp,
-} from 'react-icons/io5/index.js';
+} from 'react-icons/io5';
 
 export const OpenIcon = IoOpenOutline;
 export const ResizeIcon = IoResize;
@@ -386,7 +366,7 @@ import {
   FaReadme,
   FaRedo,
   FaUndo,
-} from 'react-icons/fa/index.js';
+} from 'react-icons/fa';
 
 export const HistoryIcon = FaHistory;
 export const CrosshairsIcon = FaCrosshairs;
@@ -526,7 +506,7 @@ import {
   GiBeard,
   GiSunglasses,
   GiHouseKeys,
-} from 'react-icons/gi/index.js';
+} from 'react-icons/gi';
 
 export const WaterDropIcon = GiWaterDrop;
 export const BeardIcon = GiBeard;
@@ -546,7 +526,7 @@ import {
   GoGitBranch,
   GoX,
   GoPlug,
-} from 'react-icons/go/index.js';
+} from 'react-icons/go';
 
 export const ChevronDownIcon = GoChevronDown;
 export const ChevronUpIcon = GoChevronUp;
@@ -561,20 +541,20 @@ export const XIcon = GoX;
 export const PluginIcon = GoPlug;
 
 //======================================================= SI =======================================================
-import { SiSwagger } from 'react-icons/si/index.js';
+import { SiSwagger } from 'react-icons/si';
 
 export const SwaggerIcon = SiSwagger; // to be reviewed
 
 //======================================================= BI =======================================================
 
-import { BiShapeTriangle, BiAtom, BiCabinet } from 'react-icons/bi/index.js';
+import { BiShapeTriangle, BiAtom, BiCabinet } from 'react-icons/bi';
 
 export const ShapeTriangleIcon = BiShapeTriangle;
 export const AtomIcon = BiAtom;
 export const CabinetIcon = BiCabinet;
 
 //======================================================= CG =======================================================
-import { CgOptions } from 'react-icons/cg/index.js';
+import { CgOptions } from 'react-icons/cg';
 
 export const OptionsIcon = CgOptions;
 
@@ -591,7 +571,7 @@ import {
   FiZoomOut,
   FiGitMerge,
   FiLink,
-} from 'react-icons/fi/index.js';
+} from 'react-icons/fi';
 
 export const PackageIcon = FiPackage;
 export const MinusIcon = FiMinus;
@@ -613,7 +593,7 @@ import {
   RiRobotFill,
   RiGovernmentFill,
   RiMoneyDollarCircleFill,
-} from 'react-icons/ri/index.js';
+} from 'react-icons/ri';
 
 export const ShareBoxIcon = RiShareBoxFill;
 export const ShapeLineIcon = RiShapeLine;
@@ -623,6 +603,6 @@ export const GovernanceIcon = RiGovernmentFill;
 export const CostCircleIcon = RiMoneyDollarCircleFill;
 
 //======================================================= Fc =======================================================
-import { FcWorkflow } from 'react-icons/fc/index.js';
+import { FcWorkflow } from 'react-icons/fc';
 
 export const WorkflowIcon = FcWorkflow;

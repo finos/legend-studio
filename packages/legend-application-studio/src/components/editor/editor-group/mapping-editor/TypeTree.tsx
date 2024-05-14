@@ -266,8 +266,8 @@ export const TypeTree: React.FC<{
           (b.type instanceof Class
             ? 2
             : b.type instanceof Enumeration
-            ? 1
-            : 0) -
+              ? 1
+              : 0) -
           (a.type instanceof Class ? 2 : a.type instanceof Enumeration ? 1 : 0),
       );
     return childrenNodes;

@@ -70,8 +70,8 @@ export const GoToLinePrompt = observer(
     const error = !isValidValue
       ? 'Invalid value (format [line:column] - e.g. 123:45)'
       : !isValidLineNumber
-      ? `Invalid line number`
-      : undefined;
+        ? `Invalid line number`
+        : undefined;
 
     // actions
     const closeModal = (): void => fileEditorState.setShowGoToLinePrompt(false);

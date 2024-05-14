@@ -193,20 +193,20 @@ const generateGroupWorkspaceEditorRoute = (
           groupWorkspaceId,
         })
     : patchReleaseVersionId
-    ? generatePath(
-        LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_GROUP_WORKSPACE_ENTITY,
-        {
+      ? generatePath(
+          LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_GROUP_WORKSPACE_ENTITY,
+          {
+            projectId,
+            patchReleaseVersionId,
+            groupWorkspaceId,
+            entityPath,
+          },
+        )
+      : generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE_ENTITY, {
           projectId,
-          patchReleaseVersionId,
           groupWorkspaceId,
           entityPath,
-        },
-      )
-    : generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE_ENTITY, {
-        projectId,
-        groupWorkspaceId,
-        entityPath,
-      });
+        });
 
 const generateWorkspaceEditorRoute = (
   projectId: string,
@@ -226,17 +226,17 @@ const generateWorkspaceEditorRoute = (
           workspaceId,
         })
     : patchReleaseVersionId
-    ? generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_WORKSPACE_ENTITY, {
-        projectId,
-        patchReleaseVersionId,
-        workspaceId,
-        entityPath,
-      })
-    : generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE_ENTITY, {
-        projectId,
-        workspaceId,
-        entityPath,
-      });
+      ? generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_WORKSPACE_ENTITY, {
+          projectId,
+          patchReleaseVersionId,
+          workspaceId,
+          entityPath,
+        })
+      : generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE_ENTITY, {
+          projectId,
+          workspaceId,
+          entityPath,
+        });
 
 export const generateEditorRoute = (
   projectId: string,

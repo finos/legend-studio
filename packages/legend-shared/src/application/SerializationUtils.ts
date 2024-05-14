@@ -186,10 +186,10 @@ export const serializeArray = <T>(
     return values.length
       ? values.map((value) => itemSerializer(value))
       : forceReturnEmptyInTest
-      ? []
-      : options?.skipIfEmpty
-      ? SKIP
-      : [];
+        ? []
+        : options?.skipIfEmpty
+          ? SKIP
+          : [];
   }
   return forceReturnEmptyInTest ? [] : SKIP;
 };

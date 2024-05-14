@@ -97,8 +97,8 @@ const formatJSONLikeValue = (value: unknown, lossless: boolean): string =>
         ? tryToFormatLosslessJSONString(value)
         : tryToFormatJSONString(value)
       : lossless
-      ? stringifyLosslessJSON(value, undefined, DEFAULT_TAB_SIZE)
-      : JSON.stringify(value, undefined, DEFAULT_TAB_SIZE)
+        ? stringifyLosslessJSON(value, undefined, DEFAULT_TAB_SIZE)
+        : JSON.stringify(value, undefined, DEFAULT_TAB_SIZE)
     : '';
 
 export const JSONDiffView = observer(

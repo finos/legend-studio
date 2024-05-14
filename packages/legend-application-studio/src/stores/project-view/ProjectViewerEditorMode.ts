@@ -57,21 +57,21 @@ export class ProjectViewerEditorMode extends EditorMode {
           elementPath,
         )
       : this.viewerStore.version
-      ? generateViewVersionRoute(
-          this.viewerStore.editorStore.sdlcState.activeProject.projectId,
-          this.viewerStore.version.id.id,
-          elementPath,
-        )
-      : this.viewerStore.revision
-      ? generateViewRevisionRoute(
-          this.viewerStore.editorStore.sdlcState.activeProject.projectId,
-          this.viewerStore.revision.id,
-          elementPath,
-        )
-      : generateViewEntityRoute(
-          this.viewerStore.editorStore.sdlcState.activeProject.projectId,
-          elementPath,
-        );
+        ? generateViewVersionRoute(
+            this.viewerStore.editorStore.sdlcState.activeProject.projectId,
+            this.viewerStore.version.id.id,
+            elementPath,
+          )
+        : this.viewerStore.revision
+          ? generateViewRevisionRoute(
+              this.viewerStore.editorStore.sdlcState.activeProject.projectId,
+              this.viewerStore.revision.id,
+              elementPath,
+            )
+          : generateViewEntityRoute(
+              this.viewerStore.editorStore.sdlcState.activeProject.projectId,
+              elementPath,
+            );
   }
 
   generateDependencyElementLink(

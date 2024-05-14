@@ -567,8 +567,8 @@ export class XTerm extends Terminal {
       abs_cursorY > buffer.viewportY + rows
         ? abs_cursorY - (buffer.viewportY + rows)
         : abs_cursorY < buffer.viewportY
-        ? abs_cursorY - buffer.viewportY
-        : 0;
+          ? abs_cursorY - buffer.viewportY
+          : 0;
 
     return {
       // NOTE: currently, there is a design limitation with programmatically set the cursor using escape sequence

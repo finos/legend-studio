@@ -69,11 +69,11 @@ const getConstantNameValidationMessage = (
   !constantInput
     ? `Constant name can't be empty`
     : isValidIdentifier(constantInput) === false
-    ? 'Constant name must be text with no spaces and not start with an uppercase letter or number'
-    : allVariableNames.filter((e) => e === constantInput).length > 0 &&
-      constantInput !== currentConstantName
-    ? 'Constant name already exists'
-    : undefined;
+      ? 'Constant name must be text with no spaces and not start with an uppercase letter or number'
+      : allVariableNames.filter((e) => e === constantInput).length > 0 &&
+          constantInput !== currentConstantName
+        ? 'Constant name already exists'
+        : undefined;
 
 // NOTE: We currently only allow constant variables for primitive types of multiplicity ONE.
 // This is why we don't show multiplicity in the editor.

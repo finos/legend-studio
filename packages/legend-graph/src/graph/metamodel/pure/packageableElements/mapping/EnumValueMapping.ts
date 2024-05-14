@@ -55,8 +55,8 @@ export class EnumValueMapping implements Hashable {
           return isNumber(value)
             ? value.toString()
             : value instanceof Enum
-            ? `${value._OWNER.path}.${value.name}`
-            : value ?? '';
+              ? `${value._OWNER.path}.${value.name}`
+              : value ?? '';
         }),
       ),
     ]);

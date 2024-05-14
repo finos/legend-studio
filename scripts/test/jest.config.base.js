@@ -40,10 +40,6 @@ export const getBaseJestConfig = (isGlobal) => {
       'decode-uri-component',
       'split-on-first',
 
-      // fuse.js
-      // See https://github.com/krisk/Fuse/pull/692
-      'fuse.js',
-
       // yaml
       'yaml',
 
@@ -77,11 +73,6 @@ export const getBaseJestConfig = (isGlobal) => {
       // See https://github.com/lodash/lodash/issues/5107
       // See https://github.com/finos/legend-studio/issues/502
       '^lodash-es$': 'lodash',
-      // Force to use the ESM distribution of Fuse
-      // as it does not yet have proper support for Typescript ESM
-      // See https://github.com/krisk/Fuse/pull/692
-      // However, if we
-      '^fuse.js$': 'fuse.js/dist/fuse.esm.js',
     },
     modulePathIgnorePatterns: [
       'packages/.*/lib/',

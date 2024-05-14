@@ -891,8 +891,8 @@ const ProjectVersionDependencyEditor = observer(
     const projectSelectorPlaceholder = !projectDependency.projectId.length
       ? 'Choose project'
       : versionDisabled
-      ? 'No project version found. Please create a new one.'
-      : 'Select version';
+        ? 'No project version found. Please create a new one.'
+        : 'Select version';
 
     return (
       <div className="project-dependency-editor">
@@ -1005,8 +1005,8 @@ export const ProjectDependencyEditor = observer(() => {
           {configState.updatingConfigurationState.isInProgress
             ? `Updating configuration...`
             : configState.fetchingProjectVersionsState.isInProgress
-            ? `Fetching dependency versions`
-            : 'Updating project dependency tree and potential conflicts'}
+              ? `Fetching dependency versions`
+              : 'Updating project dependency tree and potential conflicts'}
         </div>
       )}
       <ProjectDependencyActions dependencyEditorState={dependencyEditorState} />
