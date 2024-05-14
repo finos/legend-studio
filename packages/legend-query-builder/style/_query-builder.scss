@@ -160,9 +160,9 @@
     padding: 0.3rem;
 
     &__header {
-      height: 3.4rem;
-      min-height: 3.4rem;
-      padding-left: 0.5rem;
+      height: 4.5rem;
+      min-height: 4.5rem;
+      padding: 0.5rem;
       color: var(--color-light-grey-300);
       font-weight: bold;
       background: var(--color-dark-grey-100);
@@ -1401,21 +1401,21 @@
     @include flexVCenter;
 
     height: 100%;
-    padding: 0.5rem;
+    padding: 0 0.5rem;
 
     &__label {
       @include flexCenter;
 
       background: var(--color-dark-grey-280);
       padding: 0 1rem;
-      height: 2.2rem;
+      height: 100%;
       border-radius: 0.2rem 0 0 0.2rem;
       font-size: 1.2rem;
       user-select: none;
     }
 
     &__input {
-      height: 2.2rem;
+      height: 100%;
 
       &:not(:focus) {
         border: 0.1rem solid var(--color-dark-grey-250);
@@ -1560,13 +1560,35 @@
     }
   }
 
-  &__execute-btn {
+  & &__execute-btn {
     margin: 0 0.3rem;
+    height: 100%;
+
+    &__btn {
+      height: 100%;
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--color-white);
+      gap: 0.5rem;
+
+      & svg {
+        color: var(--color-white);
+      }
+
+      &--green {
+        background: var(--color-green-200) !important;
+      }
+
+      &--green[disabled] {
+        opacity: 0.6;
+      }
+    }
   }
 
   &__export__dropdown[disabled],
   &__export__dropdown[disabled]:hover {
-    background: var(--color-dark-grey-250);
+    background: var(--color-dark-grey-200);
+    border-color: var(--color-dark-grey-200);
     color: var(--color-dark-grey-500);
   }
 
@@ -1577,11 +1599,11 @@
   &__export__dropdown {
     @include flexVCenter;
 
-    margin: 0 0.5rem;
-    height: 2.2rem;
+    margin-left: 0.5rem;
+    height: 100%;
     border: 0.1rem solid var(--color-dark-grey-250);
     background: var(--color-dark-grey-300);
-    color: var(--color-light-grey-180);
+    color: var(--color-white);
 
     &__label {
       @include flexCenter;
@@ -1600,8 +1622,8 @@
       height: 100%;
       width: 2.2rem;
 
-      svg {
-        color: var(--color-dark-grey-500);
+      & svg {
+        color: var(--color-white) !important;
       }
     }
 
