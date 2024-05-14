@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.34
+
+### Patch Changes
+
+- [#3147](https://github.com/finos/legend-studio/pull/3147) [`31e07c3d1`](https://github.com/finos/legend-studio/commit/31e07c3d10e5707f5bbcf6d153e4bb5f495097ed) ([@travisstebbins](https://github.com/travisstebbins)) - Fix styling of filter panel exists node derived property button
+
 ## 4.14.33
 
 ### Patch Changes
