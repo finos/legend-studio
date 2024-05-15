@@ -1084,6 +1084,10 @@
       &__title {
         color: unset;
       }
+
+      &__dropdown-trigger svg {
+        color: var(--color-legacylight-light-blue-100);
+      }
     }
 
     .query-builder__setup__config-group__content {
