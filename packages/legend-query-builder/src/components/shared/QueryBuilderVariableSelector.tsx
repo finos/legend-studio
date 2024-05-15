@@ -48,7 +48,7 @@ import { forwardRef, useState } from 'react';
 
 const CALCULATED = '(calculated)';
 
-const getNameOfValue = (
+export const getNameOfValueSpecification = (
   value: ValueSpecification,
   queryBuilderState: QueryBuilderState,
 ): string | undefined => {
@@ -143,7 +143,7 @@ export const VariableViewer = observer(
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
     const isConstant = Boolean(value);
     const constantValueString = value?.val
-      ? getNameOfValue(value.val, queryBuilderState)
+      ? getNameOfValueSpecification(value.val, queryBuilderState)
       : undefined;
     const name = variable.name;
     const variableTypeName =

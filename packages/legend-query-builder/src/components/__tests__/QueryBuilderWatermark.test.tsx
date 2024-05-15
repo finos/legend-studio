@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { test, expect } from '@jest/globals';
-import { waitFor, fireEvent, act } from '@testing-library/react';
+import { expect, test } from '@jest/globals';
+import { waitFor, fireEvent, act, getAllByText } from '@testing-library/react';
 import { TEST_DATA__simpleProjectionWithConstantsAndParameters } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import { integrationTest } from '@finos/legend-shared/test';
 import { create_RawLambda, stub_RawLambda } from '@finos/legend-graph';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
+import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 
 test(
   integrationTest(
@@ -43,21 +44,16 @@ test(
       );
     });
 
-    const advancedButton = await waitFor(() =>
-      renderResult.getByRole('button', { name: 'Advanced' }),
+    // Open Query Options modal
+    const queryOptionsButton = await waitFor(() =>
+      renderResult.getByRole('button', { name: 'Query Options' }),
     );
-
-    // Open watermark modal
-    fireEvent.click(advancedButton);
+    fireEvent.click(queryOptionsButton);
     fireEvent.click(
       await waitFor(() =>
-        renderResult.getByRole('button', { name: 'Show Watermark' }),
+        renderResult.getByRole('button', { name: 'Enable Watermark' }),
       ),
     );
-    await waitFor(() => renderResult.getByText('Watermark'));
-
-    // Change watermark value and apply
-    fireEvent.click(renderResult.getByText('Enable watermark'));
     const watermarkValueInput =
       renderResult.getByDisplayValue('watermarkValue');
     fireEvent.change(watermarkValueInput, {
@@ -66,13 +62,13 @@ test(
     fireEvent.click(renderResult.getByRole('button', { name: 'Apply' }));
 
     // Verify that value was saved
-    fireEvent.click(
-      await waitFor(() =>
-        renderResult.getByRole('button', { name: 'Used watermark' }),
+    const resultModifierPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT,
       ),
     );
-    await waitFor(() => renderResult.getByText('Watermark'));
-    expect(renderResult.getByDisplayValue('testValue')).not.toBeNull();
+    await waitFor(() => getAllByText(resultModifierPanel, 'Watermark'));
+    await waitFor(() => getAllByText(resultModifierPanel, 'testValue'));
   },
 );
 
@@ -97,32 +93,21 @@ test(
       );
     });
 
-    const advancedButton = await waitFor(() =>
-      renderResult.getByRole('button', { name: 'Advanced' }),
+    // Open Query Options modal, enable and save watermark
+    const queryOptionsButton = await waitFor(() =>
+      renderResult.getByRole('button', { name: 'Query Options' }),
     );
-
-    // Open watermark modal
-    fireEvent.click(advancedButton);
+    fireEvent.click(queryOptionsButton);
     fireEvent.click(
       await waitFor(() =>
-        renderResult.getByRole('button', { name: 'Show Watermark' }),
+        renderResult.getByRole('button', { name: 'Enable Watermark' }),
       ),
     );
     await waitFor(() => renderResult.getByText('Watermark'));
-
-    // Enable and save watermark
-    fireEvent.click(renderResult.getByText('Enable watermark'));
     fireEvent.click(renderResult.getByRole('button', { name: 'Apply' }));
 
-    // Re-open watermark modal
-    fireEvent.click(
-      await waitFor(() =>
-        renderResult.getByRole('button', { name: 'Used watermark' }),
-      ),
-    );
-    await waitFor(() => renderResult.getByText('Watermark'));
-
-    // Change value
+    // Re-open watermark modal and change value
+    fireEvent.click(queryOptionsButton);
     const watermarkValueInput =
       renderResult.getByDisplayValue('watermarkValue');
     fireEvent.change(watermarkValueInput, {
@@ -133,28 +118,25 @@ test(
     fireEvent.click(renderResult.getByRole('button', { name: 'Cancel' }));
 
     // Re-open watermark modal
-    fireEvent.click(
-      await waitFor(() =>
-        renderResult.getByRole('button', { name: 'Used watermark' }),
-      ),
-    );
-    await waitFor(() => renderResult.getByText('Watermark'));
+    fireEvent.click(queryOptionsButton);
 
     // Verify that value was not saved
     expect(renderResult.getByDisplayValue('watermarkValue')).not.toBeNull();
 
     // Disable watermark
-    fireEvent.click(renderResult.getByText('Enable watermark'));
+    fireEvent.click(renderResult.getByText('Enable Watermark'));
 
     // Click cancel
     fireEvent.click(renderResult.getByRole('button', { name: 'Cancel' }));
 
     // Verify that watermark is still enabled
-    expect(
-      await waitFor(() =>
-        renderResult.getByRole('button', { name: 'Used watermark' }),
+    const resultModifierPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT,
       ),
-    ).not.toBeNull();
+    );
+    await waitFor(() => getAllByText(resultModifierPanel, 'Watermark'));
+    await waitFor(() => getAllByText(resultModifierPanel, 'watermarkValue'));
   },
 );
 
@@ -179,21 +161,19 @@ test(
       );
     });
 
-    const advancedButton = await waitFor(() =>
-      renderResult.getByRole('button', { name: 'Advanced' }),
-    );
-
     // Open watermark modal
-    fireEvent.click(advancedButton);
-    fireEvent.click(
-      await waitFor(() =>
-        renderResult.getByRole('button', { name: 'Show Watermark' }),
-      ),
+    const queryOptionsButton = await waitFor(() =>
+      renderResult.getByRole('button', { name: 'Query Options' }),
     );
+    fireEvent.click(queryOptionsButton);
     await waitFor(() => renderResult.getByText('Watermark'));
 
     // Enable watermark and set value
-    fireEvent.click(renderResult.getByText('Enable watermark'));
+    fireEvent.click(
+      await waitFor(() =>
+        renderResult.getByRole('button', { name: 'Enable Watermark' }),
+      ),
+    );
     const watermarkValueInput =
       renderResult.getByDisplayValue('watermarkValue');
     fireEvent.change(watermarkValueInput, {

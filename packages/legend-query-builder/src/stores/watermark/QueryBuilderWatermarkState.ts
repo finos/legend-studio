@@ -32,14 +32,11 @@ import { isValueExpressionReferencedInValue } from '../QueryBuilderValueSpecific
 export class QueryBuilderWatermarkState implements Hashable {
   readonly queryBuilderState: QueryBuilderState;
   value?: ValueSpecification | undefined;
-  isEditingWatermark = false;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
       value: observable,
-      isEditingWatermark: observable,
       setValue: action,
-      setIsEditingWatermark: action,
       hashCode: computed,
     });
 
@@ -55,10 +52,6 @@ export class QueryBuilderWatermarkState implements Hashable {
 
     watermarkConstant.values = ['watermarkValue'];
     return watermarkConstant;
-  }
-
-  setIsEditingWatermark(val: boolean): void {
-    this.isEditingWatermark = val;
   }
 
   setValue(val: ValueSpecification | undefined): void {
