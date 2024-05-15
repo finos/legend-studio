@@ -1079,11 +1079,11 @@
     }
 
     .query-builder__setup__config-group__header {
-      background: var(--color-legacylight-light-blue-350);
-    }
+      border-color: var(--color-legacylight-light-grey-200);
 
-    .query-builder__setup__config-group__header__title {
-      color: var(--color-light-grey-150);
+      &__title {
+        color: unset;
+      }
     }
 
     .query-builder__setup__config-group__content {
