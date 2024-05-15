@@ -55,7 +55,9 @@ const ServiceQueryBuilderSetupPanelContent = observer(
 
     // execution context
     const serviceOptions =
-      queryBuilderState.usableServices?.map(buildElementOption) ?? [];
+      queryBuilderState.usableServices
+        ?.map(buildElementOption)
+        .sort((a, b) => a.label.localeCompare(b.label)) ?? [];
     const selectedServiceOption = buildElementOption(queryBuilderState.service);
     const onServiceOptionChange = (
       option: PackageableElementOption<Service>,
@@ -67,9 +69,9 @@ const ServiceQueryBuilderSetupPanelContent = observer(
     };
 
     // execution context
-    const executionContextOptions = queryBuilderState.executionContexts.map(
-      buildExecutionContextOption,
-    );
+    const executionContextOptions = queryBuilderState.executionContexts
+      .map(buildExecutionContextOption)
+      .sort((a, b) => a.label.localeCompare(b.label));
     const selectedExecutionContextOption =
       queryBuilderState.selectedExecutionContext
         ? buildExecutionContextOption(
