@@ -126,87 +126,87 @@ const ClassQueryBuilderSetupPanelContent = observer(
     });
 
     return (
-      <>
-        <div className="query-builder__setup__config-group">
-          <div className="query-builder__setup__config-group__header">
-            <div className="query-builder__setup__config-group__header__title">
-              Properties
-            </div>
-          </div>
-          <div className="query-builder__setup__config-group__content">
-            <div className="query-builder__setup__config-group__item">
-              <label
-                className="btn--sm query-builder__setup__config-group__item__label"
-                title="mapping"
-                htmlFor="query-builder__setup__mapping-selector"
-              >
-                Mapping
-              </label>
-              <CustomSelectorInput
-                inputId="query-builder__setup__mapping-selector"
-                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                placeholder={
-                  mappingOptions.length
-                    ? 'Choose a mapping...'
-                    : 'No compatible mapping found for class'
-                }
-                noMatchMessage="No compatible mapping found for specified class"
-                disabled={!queryBuilderState.class}
-                options={mappingOptions}
-                onChange={changeMapping}
-                value={selectedMappingOption}
-                darkMode={
-                  !applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-                filterOption={mappingFilterOption}
-                formatOptionLabel={getPackageableElementOptionFormatter({
-                  darkMode:
-                    !applicationStore.layoutService
-                      .TEMPORARY__isLightColorThemeEnabled,
-                })}
-              />
-            </div>
-            <div className="query-builder__setup__config-group__item">
-              <label
-                className="btn--sm query-builder__setup__config-group__item__label"
-                title="runtime"
-                htmlFor="query-builder__setup__runtime-selector"
-              >
-                Runtime
-              </label>
-              <CustomSelectorInput
-                inputId="query-builder__setup__runtime-selector"
-                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                placeholder="Choose a runtime..."
-                noMatchMessage="No compatible runtime found for specified mapping"
-                disabled={
-                  !queryBuilderState.class ||
-                  !queryBuilderState.executionContextState.mapping
-                }
-                options={runtimeOptions}
-                onChange={changeRuntime}
-                value={selectedRuntimeOption}
-                darkMode={
-                  !applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-                filterOption={runtimeFilterOption}
-                formatOptionLabel={getRuntimeOptionFormatter({
-                  darkMode:
-                    !applicationStore.layoutService
-                      .TEMPORARY__isLightColorThemeEnabled,
-                })}
-              />
-            </div>
+      <div className="query-builder__setup__config-group">
+        <div className="query-builder__setup__config-group__header">
+          <div className="query-builder__setup__config-group__header__title">
+            Properties
           </div>
         </div>
-        <QueryBuilderClassSelector
-          queryBuilderState={queryBuilderState}
-          classes={classes}
-          onClassChange={onClassChange}
-        />
-      </>
+        <div className="query-builder__setup__config-group__content">
+          <div className="query-builder__setup__config-group__item">
+            <label
+              className="btn--sm query-builder__setup__config-group__item__label"
+              title="mapping"
+              htmlFor="query-builder__setup__mapping-selector"
+            >
+              Mapping
+            </label>
+            <CustomSelectorInput
+              inputId="query-builder__setup__mapping-selector"
+              className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+              placeholder={
+                mappingOptions.length
+                  ? 'Choose a mapping...'
+                  : 'No compatible mapping found for class'
+              }
+              noMatchMessage="No compatible mapping found for specified class"
+              disabled={!queryBuilderState.class}
+              options={mappingOptions}
+              onChange={changeMapping}
+              value={selectedMappingOption}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+              filterOption={mappingFilterOption}
+              formatOptionLabel={getPackageableElementOptionFormatter({
+                darkMode:
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled,
+              })}
+            />
+          </div>
+          <div className="query-builder__setup__config-group__item">
+            <label
+              className="btn--sm query-builder__setup__config-group__item__label"
+              title="runtime"
+              htmlFor="query-builder__setup__runtime-selector"
+            >
+              Runtime
+            </label>
+            <CustomSelectorInput
+              inputId="query-builder__setup__runtime-selector"
+              className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+              placeholder="Choose a runtime..."
+              noMatchMessage="No compatible runtime found for specified mapping"
+              disabled={
+                !queryBuilderState.class ||
+                !queryBuilderState.executionContextState.mapping
+              }
+              options={runtimeOptions}
+              onChange={changeRuntime}
+              value={selectedRuntimeOption}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+              filterOption={runtimeFilterOption}
+              formatOptionLabel={getRuntimeOptionFormatter({
+                darkMode:
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled,
+              })}
+            />
+          </div>
+          <div className="query-builder__setup__config-group__item">
+            <QueryBuilderClassSelector
+              queryBuilderState={queryBuilderState}
+              classes={classes}
+              onClassChange={onClassChange}
+            />
+          </div>
+        </div>
+      </div>
     );
   },
 );

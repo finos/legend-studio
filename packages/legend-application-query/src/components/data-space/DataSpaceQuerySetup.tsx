@@ -101,61 +101,61 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
     useEffect(() => dataSpaceSearchRef.current?.focus());
 
     return (
-      <>
-        <div className="query-builder__setup__config-group">
-          <div className="query-builder__setup__config-group__header">
-            <div className="query-builder__setup__config-group__header__title">
-              Properties
-            </div>
-          </div>
-          <div className="query-builder__setup__config-group__content">
-            <div className="query-builder__setup__config-group__item">
-              <label
-                className="btn--sm query-builder__setup__config-group__item__label"
-                title="data space"
-                htmlFor="query-builder__setup__data-space-selector"
-              >
-                Data Space
-              </label>
-              <CustomSelectorInput
-                inputId="query-builder__setup__data-space-selector"
-                ref={dataSpaceSearchRef}
-                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                options={dataSpaceOptions}
-                isLoading={queryBuilderState.loadDataSpacesState.isInProgress}
-                onChange={onDataSpaceOptionChange}
-                value={selectedDataSpaceOption}
-                placeholder="Search for data space..."
-                escapeClearsValue={true}
-                darkMode={
-                  !applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-                formatOptionLabel={formatDataSpaceOptionLabel}
-              />
-              <button
-                tabIndex={-1}
-                className="query-builder__setup__data-space-searcher__btn btn--dark"
-                onClick={openDataSpaceAdvancedSearch}
-                title="Open advanced search for data space..."
-              >
-                <SearchIcon />
-              </button>
-              {queryBuilderState.advancedSearchState && (
-                <DataSpaceAdvancedSearchModal
-                  searchState={queryBuilderState.advancedSearchState}
-                  onClose={() => queryBuilderState.hideAdvancedSearchPanel()}
-                />
-              )}
-            </div>
+      <div className="query-builder__setup__config-group">
+        <div className="query-builder__setup__config-group__header">
+          <div className="query-builder__setup__config-group__header__title">
+            Properties
           </div>
         </div>
-        <QueryBuilderClassSelector
-          queryBuilderState={queryBuilderState}
-          classes={[]}
-          noMatchMessage="No compatible class found"
-        />
-      </>
+        <div className="query-builder__setup__config-group__content">
+          <div className="query-builder__setup__config-group__item">
+            <label
+              className="btn--sm query-builder__setup__config-group__item__label"
+              title="data space"
+              htmlFor="query-builder__setup__data-space-selector"
+            >
+              Data Space
+            </label>
+            <CustomSelectorInput
+              inputId="query-builder__setup__data-space-selector"
+              ref={dataSpaceSearchRef}
+              className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+              options={dataSpaceOptions}
+              isLoading={queryBuilderState.loadDataSpacesState.isInProgress}
+              onChange={onDataSpaceOptionChange}
+              value={selectedDataSpaceOption}
+              placeholder="Search for data space..."
+              escapeClearsValue={true}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+              formatOptionLabel={formatDataSpaceOptionLabel}
+            />
+            <button
+              tabIndex={-1}
+              className="query-builder__setup__data-space-searcher__btn btn--dark"
+              onClick={openDataSpaceAdvancedSearch}
+              title="Open advanced search for data space..."
+            >
+              <SearchIcon />
+            </button>
+            {queryBuilderState.advancedSearchState && (
+              <DataSpaceAdvancedSearchModal
+                searchState={queryBuilderState.advancedSearchState}
+                onClose={() => queryBuilderState.hideAdvancedSearchPanel()}
+              />
+            )}
+          </div>
+          <div className="query-builder__setup__config-group__item">
+            <QueryBuilderClassSelector
+              queryBuilderState={queryBuilderState}
+              classes={[]}
+              noMatchMessage="No compatible class found"
+            />
+          </div>
+        </div>
+      </div>
     );
   },
 );

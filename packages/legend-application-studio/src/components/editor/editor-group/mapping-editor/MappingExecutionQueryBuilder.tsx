@@ -46,47 +46,47 @@ const MappingExecutionQueryBuilderSetupPanelContent = observer(
     );
 
     return (
-      <>
-        <div className="query-builder__setup__config-group">
-          <div className="query-builder__setup__config-group__header">
-            <div className="query-builder__setup__config-group__header__title">
-              Properties
-            </div>
-          </div>
-          <div className="query-builder__setup__config-group__content">
-            <div className="query-builder__setup__config-group__item">
-              <label
-                className="btn--sm query-builder__setup__config-group__item__label"
-                title="mapping"
-                htmlFor="query-builder__setup__mapping-selector"
-              >
-                Mapping
-              </label>
-              <CustomSelectorInput
-                inputId="query-builder__setup__mapping-selector"
-                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                disabled={true}
-                options={[]}
-                value={selectedMappingOption}
-                darkMode={
-                  !applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-                formatOptionLabel={getPackageableElementOptionFormatter({
-                  darkMode:
-                    !applicationStore.layoutService
-                      .TEMPORARY__isLightColorThemeEnabled,
-                })}
-              />
-            </div>
+      <div className="query-builder__setup__config-group">
+        <div className="query-builder__setup__config-group__header">
+          <div className="query-builder__setup__config-group__header__title">
+            Properties
           </div>
         </div>
-        <QueryBuilderClassSelector
-          queryBuilderState={queryBuilderState}
-          classes={classes}
-          noMatchMessage="No compatible class found for specified mapping"
-        />
-      </>
+        <div className="query-builder__setup__config-group__content">
+          <div className="query-builder__setup__config-group__item">
+            <label
+              className="btn--sm query-builder__setup__config-group__item__label"
+              title="mapping"
+              htmlFor="query-builder__setup__mapping-selector"
+            >
+              Mapping
+            </label>
+            <CustomSelectorInput
+              inputId="query-builder__setup__mapping-selector"
+              className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+              disabled={true}
+              options={[]}
+              value={selectedMappingOption}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+              formatOptionLabel={getPackageableElementOptionFormatter({
+                darkMode:
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled,
+              })}
+            />
+          </div>
+          <div className="query-builder__setup__config-group__item">
+            <QueryBuilderClassSelector
+              queryBuilderState={queryBuilderState}
+              classes={classes}
+              noMatchMessage="No compatible class found for specified mapping"
+            />
+          </div>
+        </div>
+      </div>
     );
   },
 );
