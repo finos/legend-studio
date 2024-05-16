@@ -2326,6 +2326,114 @@ test(
 
 test(
   integrationTest(
+    `Query builder uses null as default value for datetime filter and shows validation error`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const filterDropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Dob Time'),
+    );
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      dragSource,
+      filterDropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Dob Time'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByText(filterPanel, 'Select value'));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+
+    // Change operation to test operation besides equal
+    fireEvent.click(renderResult.getByTitle('Choose Operator...'));
+    fireEvent.click(renderResult.getByRole('button', { name: '<=' }));
+
+    // Verify validation issue
+    expect(getByText(filterPanel, '1 issue')).not.toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
+
+    // Select value
+    const filterValueButton = getByText(filterPanel, 'Select value');
+    fireEvent.click(filterValueButton);
+    fireEvent.click(renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.NOW));
+    fireEvent.keyDown(
+      renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE),
+      {
+        key: 'Escape',
+        code: 'Escape',
+      },
+    );
+
+    // Verify no validation issues
+    expect(getByText(filterPanel, 'Now')).not.toBeNull();
+    expect(queryByText(filterPanel, '1 issue')).toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', false);
+
+    // Click reset button
+    fireEvent.click(getByTitle(filterPanel, 'Reset'));
+
+    // Verify value is reset
+    await waitFor(() => getByText(filterPanel, 'Select value'));
+
+    // Verify validation issue
+    expect(getByText(filterPanel, '1 issue')).not.toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
+  },
+);
+
+test(
+  integrationTest(
     `Query builder uses null as default value for enum filter and shows validation error`,
   ),
   async () => {
