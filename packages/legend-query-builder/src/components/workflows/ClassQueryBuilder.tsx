@@ -70,7 +70,9 @@ const ClassQueryBuilderSetupPanelContent = observer(
             queryBuilderState.graphManagerState.usableMappings,
           )
         : []
-    ).map(buildElementOption);
+    )
+      .map(buildElementOption)
+      .sort((a, b) => a.label.localeCompare(b.label));
     const selectedMappingOption = queryBuilderState.executionContextState
       .mapping
       ? buildElementOption(queryBuilderState.executionContextState.mapping)
@@ -105,7 +107,8 @@ const ClassQueryBuilderSetupPanelContent = observer(
         (rt) =>
           new RuntimePointer(PackageableElementExplicitReference.create(rt)),
       )
-      .map(buildRuntimeValueOption);
+      .map(buildRuntimeValueOption)
+      .sort((a, b) => a.label.localeCompare(b.label));
     const selectedRuntimeOption = queryBuilderState.executionContextState
       .runtimeValue
       ? buildRuntimeValueOption(

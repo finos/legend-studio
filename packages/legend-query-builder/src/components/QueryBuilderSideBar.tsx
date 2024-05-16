@@ -75,7 +75,7 @@ export const getParameterValue = (
 const generateClassLabel = (
   val: Class,
   queryBuilderState: QueryBuilderState,
-): string | React.ReactNode => {
+): React.ReactNode => {
   const milestoneStereotype = getMilestoneTemporalStereotype(
     val,
     queryBuilderState.graphManagerState.graph,
@@ -132,10 +132,12 @@ export const QueryBuilderClassSelector = observer(
         option.value.path,
     });
 
-    const classOptions = classes.map((_class) => ({
-      value: _class,
-      label: generateClassLabel(_class, queryBuilderState),
-    }));
+    const classOptions = classes
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((_class) => ({
+        value: _class,
+        label: generateClassLabel(_class, queryBuilderState),
+      }));
     const selectedClassOption = queryBuilderState.class
       ? {
           value: queryBuilderState.class,
@@ -454,10 +456,9 @@ const BasicQueryBuilderSetup = observer(
     const classes = queryBuilderState.graphManagerState.usableClasses;
 
     // mapping
-    const mappingOptions =
-      queryBuilderState.graphManagerState.usableMappings.map(
-        buildElementOption,
-      );
+    const mappingOptions = queryBuilderState.graphManagerState.usableMappings
+      .map(buildElementOption)
+      .sort((a, b) => a.label.localeCompare(b.label));
     const selectedMappingOption = queryBuilderState.executionContextState
       .mapping
       ? buildElementOption(queryBuilderState.executionContextState.mapping)
@@ -485,7 +486,8 @@ const BasicQueryBuilderSetup = observer(
         (rt) =>
           new RuntimePointer(PackageableElementExplicitReference.create(rt)),
       )
-      .map(buildRuntimeValueOption);
+      .map(buildRuntimeValueOption)
+      .sort((a, b) => a.label.localeCompare(b.label));
     const selectedRuntimeOption = queryBuilderState.executionContextState
       .runtimeValue
       ? buildRuntimeValueOption(

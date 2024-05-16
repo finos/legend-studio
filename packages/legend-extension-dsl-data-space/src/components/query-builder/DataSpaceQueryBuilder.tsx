@@ -128,8 +128,9 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     const applicationStore = useApplicationStore();
 
     // data space
-    const dataSpaceOptions =
-      queryBuilderState.dataSpaces.map(buildDataSpaceOption);
+    const dataSpaceOptions = queryBuilderState.dataSpaces
+      .map(buildDataSpaceOption)
+      .sort((a, b) => a.label.localeCompare(b.label));
     const selectedDataSpaceOption: DataSpaceOption = {
       label:
         queryBuilderState.dataSpace.title ?? queryBuilderState.dataSpace.name,
@@ -153,9 +154,9 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
 
     // execution context
     const executionContextOptions =
-      queryBuilderState.dataSpace.executionContexts.map(
-        buildExecutionContextOption,
-      );
+      queryBuilderState.dataSpace.executionContexts
+        .map(buildExecutionContextOption)
+        .sort((a, b) => a.label.localeCompare(b.label));
     const selectedExecutionContextOption = buildExecutionContextOption(
       queryBuilderState.executionContext,
     );
@@ -179,7 +180,8 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
         (rt) =>
           new RuntimePointer(PackageableElementExplicitReference.create(rt)),
       )
-      .map(buildRuntimeValueOption);
+      .map(buildRuntimeValueOption)
+      .sort((a, b) => a.label.localeCompare(b.label));
     const selectedRuntimeOption = queryBuilderState.executionContextState
       .runtimeValue
       ? buildRuntimeValueOption(

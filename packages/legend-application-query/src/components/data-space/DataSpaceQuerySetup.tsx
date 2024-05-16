@@ -82,8 +82,9 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
     const applicationStore = useApplicationStore();
     const dataSpaceSearchRef = useRef<SelectComponent>(null);
     // data space
-    const dataSpaceOptions =
-      queryBuilderState.dataSpaces.map(buildDataSpaceOption);
+    const dataSpaceOptions = queryBuilderState.dataSpaces
+      .map(buildDataSpaceOption)
+      .sort((a, b) => a.label.localeCompare(b.label));
     const selectedDataSpaceOption = null;
     const onDataSpaceOptionChange = (option: DataSpaceOption): void => {
       queryBuilderState.onDataSpaceChange(option.value);

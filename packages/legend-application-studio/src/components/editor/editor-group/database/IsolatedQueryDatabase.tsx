@@ -40,9 +40,9 @@ const IsolatedDatabseQueryBuilderSetupPanelContext = observer(
       );
     const database = queryBuilderState.database;
     const compConnections = queryBuilderState.compatibleConnections;
-    const compConnectionsOptions = Array.from(compConnections.keys()).map(
-      (e) => ({ value: e, label: getConnectionValue(e)?.name ?? e }),
-    );
+    const compConnectionsOptions = Array.from(compConnections.keys())
+      .map((e) => ({ value: e, label: getConnectionValue(e)?.name ?? e }))
+      .sort((a, b) => a.label.localeCompare(b.label));
     const changeConnection = (
       val: { value: string; label: string } | null,
     ): void => {
