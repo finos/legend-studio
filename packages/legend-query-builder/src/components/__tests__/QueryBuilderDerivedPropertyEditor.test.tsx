@@ -70,7 +70,7 @@ test(
     );
     fireEvent.click(
       guaranteeNonNullable(
-        getAllByTitle(tdsPanel, 'Set Derived Property Argument(s)...')?.[0],
+        getAllByTitle(tdsPanel, 'Set Derived Property Argument(s)...')[0],
       ),
     );
     const modal = await waitFor(() => renderResult.getByRole('dialog'));
@@ -121,7 +121,7 @@ test(
     );
     fireEvent.click(
       guaranteeNonNullable(
-        getAllByTitle(tdsPanel, 'Set Derived Property Argument(s)...')?.[1],
+        getAllByTitle(tdsPanel, 'Set Derived Property Argument(s)...')[1],
       ),
     );
     const modal = await waitFor(() => renderResult.getByRole('dialog'));
