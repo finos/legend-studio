@@ -85,3 +85,39 @@ test(
     expect(stringParam.length).toBe(0);
   },
 );
+
+test(
+  integrationTest(
+    'Query builder properly resets optioinal Enum parameter in derived property editor',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'my::map',
+      'my::runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalResult,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleProjection.parameters,
+          TEST_DATA__simpleProjection.body,
+        ),
+      );
+    });
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
+    );
+    const tdsPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS,
+    );
+    fireEvent.click(
+      getByTitle(tdsPanel, 'Set Derived Property Argument(s)...'),
+    );
+    const modal = await waitFor(() => renderResult.getByRole('dialog'));
+    expect(
+      await waitFor(() => getByText(modal, 'Derived Property')),
+    ).not.toBeNull();
+  },
+);

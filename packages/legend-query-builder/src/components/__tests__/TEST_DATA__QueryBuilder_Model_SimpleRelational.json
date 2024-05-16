@@ -128,6 +128,23 @@
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
   {
+    "path": "my::IncType",
+    "content": {
+      "_type": "Enumeration",
+      "name": "IncType",
+      "package": "my",
+      "values": [
+        {
+          "value": "Corp"
+        },
+        {
+          "value": "LLC"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Enumeration"
+  },
+  {
     "path": "my::db",
     "content": {
       "_type": "relational",
