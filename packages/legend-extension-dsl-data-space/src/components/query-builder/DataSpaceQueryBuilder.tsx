@@ -18,7 +18,6 @@ import {
   CustomSelectorInput,
   createFilter,
   DropdownMenu,
-  MoreHorizontalIcon,
   MenuContentItem,
   MenuContent,
   MenuContentItemIcon,
@@ -27,6 +26,7 @@ import {
   SearchIcon,
   PanelHeaderActions,
   PanelHeader,
+  MoreVerticalIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
@@ -222,7 +222,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
         <PanelHeader title="properties">
           <PanelHeaderActions>
             <DropdownMenu
-              className="query-builder__setup__config-group__header__dropdown-trigger"
+              className="panel__header__action query-builder__setup__config-group__header__dropdown-trigger"
               title="Show Settings..."
               content={
                 <MenuContent>
@@ -249,7 +249,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                 transformOrigin: { vertical: 'top', horizontal: 'right' },
               }}
             >
-              <MoreHorizontalIcon />
+              <MoreVerticalIcon className="query-builder__icon__more-options" />
             </DropdownMenu>
           </PanelHeaderActions>
         </PanelHeader>
