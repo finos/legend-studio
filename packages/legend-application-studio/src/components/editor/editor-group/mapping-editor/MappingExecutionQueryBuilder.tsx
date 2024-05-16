@@ -20,7 +20,7 @@ import {
   buildElementOption,
   getPackageableElementOptionFormatter,
 } from '@finos/legend-lego/graph-editor';
-import { CustomSelectorInput, PURE_MappingIcon } from '@finos/legend-art';
+import { CustomSelectorInput, PanelHeader } from '@finos/legend-art';
 import { getMappingCompatibleClasses } from '@finos/legend-graph';
 import { QueryBuilderClassSelector } from '@finos/legend-query-builder';
 import type { MappingExecutionQueryBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
@@ -46,45 +46,43 @@ const MappingExecutionQueryBuilderSetupPanelContent = observer(
     );
 
     return (
-      <>
-        <div className="query-builder__setup__config-group">
-          <div className="query-builder__setup__config-group__header">
-            <div className="query-builder__setup__config-group__header__title">
-              execution context
-            </div>
-          </div>
-          <div className="query-builder__setup__config-group__content">
-            <div className="query-builder__setup__config-group__item">
-              <div
-                className="btn--sm query-builder__setup__config-group__item__label"
-                title="mapping"
-              >
-                <PURE_MappingIcon />
-              </div>
-              <CustomSelectorInput
-                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                disabled={true}
-                options={[]}
-                value={selectedMappingOption}
-                darkMode={
+      <div className="query-builder__setup__config-group">
+        <PanelHeader title="properties" />
+        <div className="query-builder__setup__config-group__content">
+          <div className="query-builder__setup__config-group__item">
+            <label
+              className="btn--sm query-builder__setup__config-group__item__label"
+              title="mapping"
+              htmlFor="query-builder__setup__mapping-selector"
+            >
+              Mapping
+            </label>
+            <CustomSelectorInput
+              inputId="query-builder__setup__mapping-selector"
+              className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+              disabled={true}
+              options={[]}
+              value={selectedMappingOption}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+              formatOptionLabel={getPackageableElementOptionFormatter({
+                darkMode:
                   !applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-                formatOptionLabel={getPackageableElementOptionFormatter({
-                  darkMode:
-                    !applicationStore.layoutService
-                      .TEMPORARY__isLightColorThemeEnabled,
-                })}
-              />
-            </div>
+                    .TEMPORARY__isLightColorThemeEnabled,
+              })}
+            />
+          </div>
+          <div className="query-builder__setup__config-group__item">
+            <QueryBuilderClassSelector
+              queryBuilderState={queryBuilderState}
+              classes={classes}
+              noMatchMessage="No compatible entity found for specified mapping"
+            />
           </div>
         </div>
-        <QueryBuilderClassSelector
-          queryBuilderState={queryBuilderState}
-          classes={classes}
-          noMatchMessage="No compatible class found for specified mapping"
-        />
-      </>
+      </div>
     );
   },
 );

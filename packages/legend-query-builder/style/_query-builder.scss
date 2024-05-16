@@ -664,11 +664,11 @@
   height: 100%;
 
   .query-builder__setup.panel {
-    height: 13.1rem;
+    height: fit-content;
   }
 
   &__content {
-    height: calc(100% - 13.1rem);
+    height: 100%;
   }
 }
 

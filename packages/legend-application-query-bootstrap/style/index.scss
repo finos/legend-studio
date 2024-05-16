@@ -1070,8 +1070,7 @@
     }
 
     .query-builder__setup__config-group__item__label {
-      background: var(--color-legacylight-light-grey-100);
-      border-color: var(--color-legacylight-light-grey-300);
+      color: var(--color-dark-grey-300);
     }
 
     .query-builder__setup__runtime-option--custom__label {
@@ -1080,11 +1079,15 @@
     }
 
     .query-builder__setup__config-group__header {
-      background: var(--color-legacylight-light-blue-350);
-    }
+      border-color: var(--color-legacylight-light-grey-200);
 
-    .query-builder__setup__config-group__header__title {
-      color: var(--color-light-grey-150);
+      &__title {
+        color: unset;
+      }
+
+      &__dropdown-trigger svg {
+        color: var(--color-legacylight-light-blue-100);
+      }
     }
 
     .query-builder__setup__config-group__content {

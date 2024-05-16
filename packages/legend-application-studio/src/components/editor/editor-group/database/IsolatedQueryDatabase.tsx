@@ -21,11 +21,7 @@ import {
 import { QueryBuilderClassSelector } from '@finos/legend-query-builder';
 import type { IsolatedDatabaseBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/database/QueryDatabaseState.js';
 import { observer } from 'mobx-react-lite';
-import {
-  CustomSelectorInput,
-  PURE_ConnectionIcon,
-  PURE_DatabaseIcon,
-} from '@finos/legend-art';
+import { CustomSelectorInput, PanelHeader } from '@finos/legend-art';
 import { returnUndefOnError } from '@finos/legend-shared';
 
 const IsolatedDatabseQueryBuilderSetupPanelContext = observer(
@@ -70,61 +66,61 @@ const IsolatedDatabseQueryBuilderSetupPanelContext = observer(
         )
       : [];
     return (
-      <>
-        <QueryBuilderClassSelector
-          queryBuilderState={queryBuilderState}
-          classes={classes}
-          noMatchMessage="No classes selected from"
-        />
-        <div className="query-builder__setup__config-group">
-          <div className="query-builder__setup__config-group__header">
-            <div className="query-builder__setup__config-group__header__title">
-              database/connection
-            </div>
+      <div className="query-builder__setup__config-group">
+        <PanelHeader title="properties" />
+        <div className="query-builder__setup__config-group__content">
+          <div className="query-builder__setup__config-group__item">
+            <label
+              className="btn--sm query-builder__setup__config-group__item__label"
+              title="store"
+              htmlFor="query-builder__setup__store-selector"
+            >
+              Store
+            </label>
+            <CustomSelectorInput
+              inputId="query-builder__setup__store-selector"
+              className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+              noMatchMessage="No compatible mapping found for specified class"
+              disabled={true}
+              options={[]}
+              value={databaseOption}
+              darkMode={
+                !queryBuilderState.applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+            />
           </div>
-          <div className="query-builder__setup__config-group__content">
-            <div className="query-builder__setup__config-group__item">
-              <div
-                className="btn--sm query-builder__setup__config-group__item__label"
-                title="mapping"
-              >
-                <PURE_DatabaseIcon />
-              </div>
-              <CustomSelectorInput
-                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                noMatchMessage="No compatible mapping found for specified class"
-                disabled={true}
-                options={[]}
-                value={databaseOption}
-                darkMode={
-                  !queryBuilderState.applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-              />
-            </div>
-            <div className="query-builder__setup__config-group__item">
-              <div
-                className="btn--sm query-builder__setup__config-group__item__label"
-                title="connection"
-              >
-                <PURE_ConnectionIcon />
-              </div>
-              <CustomSelectorInput
-                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                noMatchMessage="No compatible mapping found for specified class"
-                disabled={compConnectionsOptions.length < 2}
-                options={compConnectionsOptions}
-                onChange={changeConnection}
-                value={selectedConnection}
-                darkMode={
-                  !queryBuilderState.applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-              />
-            </div>
+          <div className="query-builder__setup__config-group__item">
+            <label
+              className="btn--sm query-builder__setup__config-group__item__label"
+              title="connection"
+              htmlFor="query-builder__setup__connection-selector"
+            >
+              Connection
+            </label>
+            <CustomSelectorInput
+              inputId="query-builder__setup__connection-selector"
+              className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+              noMatchMessage="No compatible mapping found for specified class"
+              disabled={compConnectionsOptions.length < 2}
+              options={compConnectionsOptions}
+              onChange={changeConnection}
+              value={selectedConnection}
+              darkMode={
+                !queryBuilderState.applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+            />
+          </div>
+          <div className="query-builder__setup__config-group__item">
+            <QueryBuilderClassSelector
+              queryBuilderState={queryBuilderState}
+              classes={classes}
+              noMatchMessage="No entities selected from"
+            />
           </div>
         </div>
-      </>
+      </div>
     );
   },
 );

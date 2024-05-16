@@ -25,7 +25,13 @@ import {
   V1_buildExecutionResult,
   V1_serializeExecutionResult,
 } from '@finos/legend-graph';
-import { act, fireEvent, getByText, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  getAllByText,
+  getByText,
+  waitFor,
+} from '@testing-library/react';
 import {
   TEST_DATA__modelCoverageAnalysisResult,
   TEST_DATA__result,
@@ -120,7 +126,10 @@ describe(integrationTest('Query builder result state'), () => {
         getByText(queryBuilderSetup, extractElementNameFromPath(mapping)),
       );
       await waitFor(() =>
-        getByText(queryBuilderSetup, extractElementNameFromPath(runtime)),
+        expect(
+          getAllByText(queryBuilderSetup, extractElementNameFromPath(runtime))
+            .length,
+        ).toBe(2),
       );
       await act(async () => {
         queryBuilderState.initializeWithQuery(lambda);
@@ -245,10 +254,12 @@ describe(integrationTest('Query builder export button'), () => {
       ),
     );
     await waitFor(() =>
-      getByText(
-        queryBuilderSetup,
-        extractElementNameFromPath('execution::Runtime'),
-      ),
+      expect(
+        getAllByText(
+          queryBuilderSetup,
+          extractElementNameFromPath('execution::Runtime'),
+        ).length,
+      ).toBe(2),
     );
     await act(async () => {
       queryBuilderState.initializeWithQuery(lambda);

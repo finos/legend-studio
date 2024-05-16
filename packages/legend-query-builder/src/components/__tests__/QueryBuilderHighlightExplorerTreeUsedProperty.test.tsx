@@ -41,6 +41,7 @@ import {
   getByText,
   fireEvent,
   queryByText,
+  getAllByText,
 } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
@@ -208,9 +209,10 @@ describe(integrationTest('Build property mapping data'), () => {
       await waitFor(() =>
         getByText(setupPanel, extractElementNameFromPath(mappingPath)),
       );
-      await waitFor(() =>
-        getByText(setupPanel, extractElementNameFromPath(runtimePath)),
-      );
+      expect(
+        getAllByText(setupPanel, extractElementNameFromPath(runtimePath))
+          .length,
+      ).toBeGreaterThanOrEqual(1);
       await act(async () => {
         queryBuilderState.initializeWithQuery(
           create_RawLambda(rawLambda.parameters, rawLambda.body),

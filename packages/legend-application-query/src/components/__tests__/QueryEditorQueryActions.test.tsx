@@ -26,6 +26,7 @@ import {
 import {
   act,
   fireEvent,
+  getAllByText,
   getByDisplayValue,
   getByRole,
   getByText,
@@ -82,9 +83,10 @@ test(
     await waitFor(() =>
       getByText(queryBuilderSetup, extractElementNameFromPath(mapping)),
     );
-    await waitFor(() =>
-      getByText(queryBuilderSetup, extractElementNameFromPath(runtime)),
-    );
+    expect(
+      getAllByText(queryBuilderSetup, extractElementNameFromPath(runtime))
+        .length,
+    ).toBe(2);
     await act(async () => {
       queryBuilderState.initializeWithQuery(lambda);
     });
@@ -191,9 +193,10 @@ test(
     await waitFor(() =>
       getByText(queryBuilderSetup, extractElementNameFromPath(mapping)),
     );
-    await waitFor(() =>
-      getByText(queryBuilderSetup, extractElementNameFromPath(runtime)),
-    );
+    expect(
+      getAllByText(queryBuilderSetup, extractElementNameFromPath(runtime))
+        .length,
+    ).toBe(2);
     await act(async () => {
       queryBuilderState.initializeWithQuery(lambda);
     });

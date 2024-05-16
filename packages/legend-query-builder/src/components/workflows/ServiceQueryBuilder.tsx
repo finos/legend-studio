@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { CustomSelectorInput, PlayIcon, RobotIcon } from '@finos/legend-art';
+import { CustomSelectorInput, PanelHeader } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { getMappingCompatibleClasses, type Service } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
@@ -98,75 +98,74 @@ const ServiceQueryBuilderSetupPanelContent = observer(
       : [];
 
     return (
-      <>
-        <div className="query-builder__setup__config-group">
-          <div className="query-builder__setup__config-group__header">
-            <div className="query-builder__setup__config-group__header__title">
-              service execution context
-            </div>
+      <div className="query-builder__setup__config-group">
+        <PanelHeader title="properties" />
+        <div className="query-builder__setup__config-group__content">
+          <div className="query-builder__setup__config-group__item">
+            <label
+              className="btn--sm query-builder__setup__config-group__item__label"
+              title="service"
+              htmlFor="query-builder__setup__service-selector"
+            >
+              Service
+            </label>
+            <CustomSelectorInput
+              inputId="query-builder__setup__service-selector"
+              className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+              placeholder="Choose a service..."
+              options={serviceOptions}
+              disabled={
+                serviceOptions.length < 1 ||
+                (serviceOptions.length === 1 && Boolean(selectedServiceOption))
+              }
+              onChange={onServiceOptionChange}
+              value={selectedServiceOption}
+              darkMode={
+                !applicationStore.layoutService
+                  .TEMPORARY__isLightColorThemeEnabled
+              }
+            />
           </div>
-          <div className="query-builder__setup__config-group__content">
-            <div className="query-builder__setup__config-group__item">
-              <div
-                className="btn--sm query-builder__setup__config-group__item__label"
-                title="service"
-              >
-                <RobotIcon className="query-builder__setup__service__icon__service" />
+          {/* We will display mapping and runtime selector for single-execution and execution context for multi-execution */}
+          {Boolean(queryBuilderState.executionContexts.length) && (
+            <>
+              <div className="query-builder__setup__config-group__item">
+                <label
+                  className="btn--sm query-builder__setup__config-group__item__label"
+                  title="execution context"
+                  htmlFor="query-builder__setup__context-selector"
+                >
+                  Context
+                </label>
+                <CustomSelectorInput
+                  inputId="query-builder__setup__context-selector"
+                  className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+                  placeholder="Choose an execution context..."
+                  options={executionContextOptions}
+                  disabled={
+                    executionContextOptions.length < 1 ||
+                    (executionContextOptions.length === 1 &&
+                      Boolean(selectedExecutionContextOption))
+                  }
+                  onChange={onExecutionContextOptionChange}
+                  value={selectedExecutionContextOption}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
+                />
               </div>
-              <CustomSelectorInput
-                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                placeholder="Choose a service..."
-                options={serviceOptions}
-                disabled={
-                  serviceOptions.length < 1 ||
-                  (serviceOptions.length === 1 &&
-                    Boolean(selectedServiceOption))
-                }
-                onChange={onServiceOptionChange}
-                value={selectedServiceOption}
-                darkMode={
-                  !applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-              />
-            </div>
-            {/* We will display mapping and runtime selector for single-execution and execution context for multi-execution */}
-            {Boolean(queryBuilderState.executionContexts.length) && (
-              <>
-                <div className="query-builder__setup__config-group__item">
-                  <div
-                    className="btn--sm query-builder__setup__config-group__item__label"
-                    title="execution context"
-                  >
-                    <PlayIcon className="query-builder__setup__service__icon__execution-context" />
-                  </div>
-                  <CustomSelectorInput
-                    className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                    placeholder="Choose an execution context..."
-                    options={executionContextOptions}
-                    disabled={
-                      executionContextOptions.length < 1 ||
-                      (executionContextOptions.length === 1 &&
-                        Boolean(selectedExecutionContextOption))
-                    }
-                    onChange={onExecutionContextOptionChange}
-                    value={selectedExecutionContextOption}
-                    darkMode={
-                      !applicationStore.layoutService
-                        .TEMPORARY__isLightColorThemeEnabled
-                    }
-                  />
-                </div>
-              </>
-            )}
+            </>
+          )}
+          <div className="query-builder__setup__config-group__item">
+            <QueryBuilderClassSelector
+              queryBuilderState={queryBuilderState}
+              classes={classes}
+              noMatchMessage="No compatible entity found for specified execution context"
+            />
           </div>
         </div>
-        <QueryBuilderClassSelector
-          queryBuilderState={queryBuilderState}
-          classes={classes}
-          noMatchMessage="No compatible class found for specified execution context"
-        />
-      </>
+      </div>
     );
   },
 );
