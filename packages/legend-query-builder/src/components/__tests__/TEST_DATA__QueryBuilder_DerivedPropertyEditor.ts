@@ -86,7 +86,7 @@ export const TEST_DATA__simpleProjection = {
                     {
                       _type: 'enumValue',
                       fullPath: 'my::IncType',
-                      value: 'Mr',
+                      value: 'Corp',
                     },
                   ],
                   property: 'enumDerivedProperty',
