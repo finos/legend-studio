@@ -40,8 +40,12 @@ import {
   type DocumentationRegistryEntry,
 } from '../stores/DocumentationService.js';
 import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.js';
-import { ApplicationStore } from '../stores/ApplicationStore.js';
+import {
+  ApplicationStore,
+  type GenericLegendApplicationStore,
+} from '../stores/ApplicationStore.js';
 import { registerDownloadHelperServiceWorker } from '../util/DownloadHelperServiceWorker.js';
+import type { VersionReleaseNotes } from '../stores/ReleaseNotesService.js';
 
 export abstract class LegendApplicationLogger {
   abstract debug(event: LogEvent, ...data: unknown[]): void;
@@ -113,6 +117,8 @@ export abstract class LegendApplication {
   protected downloadHelperServiceWorkerPath: string | undefined;
   protected downloadHelper = false;
 
+  protected releaseNotes: VersionReleaseNotes[] | undefined;
+
   protected constructor(
     pluginManager: LegendApplicationPluginManager<LegendApplicationPlugin>,
   ) {
@@ -165,6 +171,17 @@ export abstract class LegendApplication {
     this.downloadHelper = true;
     this.downloadHelperServiceWorkerPath = path;
     return this;
+  }
+
+  withReleaseNotes(releaseNotes: VersionReleaseNotes[]): LegendApplication {
+    this.releaseNotes = releaseNotes;
+    return this;
+  }
+
+  setupApplicationStore(store: GenericLegendApplicationStore): void {
+    if (this.releaseNotes) {
+      store.releaseNotesService.configure(this.releaseNotes);
+    }
   }
 
   async fetchApplicationConfiguration(
@@ -328,6 +345,9 @@ export abstract class LegendApplication {
           .flatMap((plugin) => plugin.getExtraApplicationSetups?.() ?? [])
           .map((setup) => setup(applicationStore)),
       );
+
+      // set up application
+      this.setupApplicationStore(applicationStore);
 
       // load application
       await this.loadApplication(applicationStore);

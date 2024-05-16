@@ -1,0 +1,114 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.release-notes {
+  &__root-container {
+    margin-top: 0 !important;
+  }
+
+  &__container {
+    align-items: center !important;
+  }
+
+  &__dialog {
+    height: 50vh;
+    width: 40vw;
+
+    &__body {
+      overflow-y: overlay;
+      padding: 0 0.5rem !important;
+    }
+
+    &__header {
+      @include flexVCenter;
+
+      justify-content: space-between;
+      height: 3.4rem;
+      padding: 2rem 3rem;
+    }
+
+    &__header__close-btn {
+      color: var(--color-light-grey-300);
+    }
+
+    &__content {
+      padding: 1rem 2rem;
+
+      &__title {
+        font-weight: 700;
+        line-height: 2rem;
+        margin-bottom: 0.5rem;
+      }
+    }
+  }
+}
+
+.release-viewer {
+  margin-bottom: 1rem;
+  border: 0.1rem solid var(--color-dark-grey-400);
+
+  &__version {
+    font-weight: bold;
+    padding-left: 0.5rem;
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  &__content {
+    padding: 0.5rem;
+  }
+
+  &__update {
+    padding-left: 1rem;
+
+    &__description {
+      padding-left: 0.5rem;
+    }
+
+    &-type {
+      font-size: 1.6rem;
+      margin: 0.5rem 0;
+      font-weight: normal;
+    }
+
+    &__items {
+      padding-top: 0.5rem;
+    }
+
+    &__item {
+      display: flex;
+      margin: 0 0 1rem;
+    }
+
+    &__item-btn {
+      color: var(--color-blue-150);
+    }
+
+    &__item-btn-bug {
+      color: var(--color-red-200) !important;
+    }
+
+    &__link {
+      padding-left: 0.5rem;
+
+      &-btn {
+        color: var(--color-light-blue-50);
+      }
+    }
+  }
+}

@@ -49,6 +49,7 @@ import { SettingService } from './SettingService.js';
 import { DefaultNavigator } from './navigation/DefaultNavigator.js';
 import type { ApplicationPlatform } from './platform/ApplicationPlatform.js';
 import { UserDataService } from './UserDataService.js';
+import { ReleaseNotesService } from './ReleaseNotesService.js';
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
@@ -105,6 +106,9 @@ export class ApplicationStore<
   readonly documentationService: DocumentationService;
   readonly assistantService: AssistantService;
 
+  // release
+  readonly releaseNotesService: ReleaseNotesService;
+
   // event
   readonly eventService: EventService;
   readonly telemetryService: TelemetryService;
@@ -138,6 +142,7 @@ export class ApplicationStore<
 
     this.documentationService = new DocumentationService(this);
     this.assistantService = new AssistantService(this);
+    this.releaseNotesService = new ReleaseNotesService(this);
 
     this.eventService = new EventService();
     this.eventService.registerEventNotifierPlugins(
