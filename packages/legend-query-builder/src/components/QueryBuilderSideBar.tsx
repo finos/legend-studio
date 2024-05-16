@@ -168,8 +168,8 @@ export const QueryBuilderClassSelector = observer(
             className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector query-builder__setup__config-group__item__selector__milestoned"
             placeholder={
               classOptions.length
-                ? 'Choose a class...'
-                : noMatchMessage ?? 'No class found'
+                ? 'Choose an entity...'
+                : noMatchMessage ?? 'No entity found'
             }
             disabled={
               classOptions.length < 1 ||

@@ -165,7 +165,7 @@ const ServiceQueryBuilderSetupPanelContent = observer(
             <QueryBuilderClassSelector
               queryBuilderState={queryBuilderState}
               classes={classes}
-              noMatchMessage="No compatible class found for specified execution context"
+              noMatchMessage="No compatible entity found for specified execution context"
             />
           </div>
         </div>

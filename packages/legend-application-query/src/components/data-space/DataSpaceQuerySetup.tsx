@@ -151,7 +151,7 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
             <QueryBuilderClassSelector
               queryBuilderState={queryBuilderState}
               classes={[]}
-              noMatchMessage="No compatible class found"
+              noMatchMessage="No compatible entity found"
             />
           </div>
         </div>

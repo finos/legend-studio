@@ -82,7 +82,7 @@ const MappingExecutionQueryBuilderSetupPanelContent = observer(
             <QueryBuilderClassSelector
               queryBuilderState={queryBuilderState}
               classes={classes}
-              noMatchMessage="No compatible class found for specified mapping"
+              noMatchMessage="No compatible entity found for specified mapping"
             />
           </div>
         </div>

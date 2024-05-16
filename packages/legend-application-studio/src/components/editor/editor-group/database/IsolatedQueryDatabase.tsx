@@ -120,7 +120,7 @@ const IsolatedDatabseQueryBuilderSetupPanelContext = observer(
             <QueryBuilderClassSelector
               queryBuilderState={queryBuilderState}
               classes={classes}
-              noMatchMessage="No classes selected from"
+              noMatchMessage="No entities selected from"
             />
           </div>
         </div>
