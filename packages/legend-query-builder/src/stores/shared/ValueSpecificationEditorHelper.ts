@@ -80,9 +80,7 @@ export const buildPrimitiveInstanceValue = (
       new GenericType(graph.getPrimitiveType(type)),
     ),
   );
-  if (value !== undefined) {
-    instanceValue_setValues(instance, [value], observerContext);
-  }
+  instanceValue_setValues(instance, [value], observerContext);
   return instance;
 };
 
