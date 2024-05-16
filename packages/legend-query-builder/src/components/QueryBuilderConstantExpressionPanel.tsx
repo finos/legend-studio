@@ -137,6 +137,8 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
       }
       setShouldFocusOnValue(true);
     };
+    // Disabling binary, strict time, latest date, and byte as we
+    // don't support these constant types
     const supportedPrimitiveTypes: PrimitiveType[] = [
       PrimitiveType.STRING,
       PrimitiveType.BOOLEAN,
