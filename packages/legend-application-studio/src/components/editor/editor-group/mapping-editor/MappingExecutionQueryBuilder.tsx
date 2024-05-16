@@ -20,7 +20,7 @@ import {
   buildElementOption,
   getPackageableElementOptionFormatter,
 } from '@finos/legend-lego/graph-editor';
-import { CustomSelectorInput } from '@finos/legend-art';
+import { CustomSelectorInput, PanelHeader } from '@finos/legend-art';
 import { getMappingCompatibleClasses } from '@finos/legend-graph';
 import { QueryBuilderClassSelector } from '@finos/legend-query-builder';
 import type { MappingExecutionQueryBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
@@ -47,11 +47,7 @@ const MappingExecutionQueryBuilderSetupPanelContent = observer(
 
     return (
       <div className="query-builder__setup__config-group">
-        <div className="query-builder__setup__config-group__header">
-          <div className="query-builder__setup__config-group__header__title">
-            Properties
-          </div>
-        </div>
+        <PanelHeader title="properties" />
         <div className="query-builder__setup__config-group__content">
           <div className="query-builder__setup__config-group__item">
             <label

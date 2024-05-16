@@ -25,6 +25,8 @@ import {
   CheckIcon,
   MenuContentItemLabel,
   SearchIcon,
+  PanelHeaderActions,
+  PanelHeader,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
@@ -217,41 +219,40 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
 
     return (
       <div className="query-builder__setup__config-group">
-        <div className="query-builder__setup__config-group__header">
-          <div className="query-builder__setup__config-group__header__title">
-            Properties
-          </div>
-          <DropdownMenu
-            className="query-builder__setup__config-group__header__dropdown-trigger"
-            title="Show Settings..."
-            content={
-              <MenuContent>
-                <MenuContentItem
-                  onClick={(): void =>
-                    queryBuilderState.setShowRuntimeSelector(
-                      !queryBuilderState.showRuntimeSelector,
-                    )
-                  }
-                >
-                  <MenuContentItemIcon>
-                    {queryBuilderState.showRuntimeSelector ? (
-                      <CheckIcon />
-                    ) : null}
-                  </MenuContentItemIcon>
-                  <MenuContentItemLabel>
-                    Show Runtime Selector
-                  </MenuContentItemLabel>
-                </MenuContentItem>
-              </MenuContent>
-            }
-            menuProps={{
-              anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-              transformOrigin: { vertical: 'top', horizontal: 'right' },
-            }}
-          >
-            <MoreHorizontalIcon />
-          </DropdownMenu>
-        </div>
+        <PanelHeader title="properties">
+          <PanelHeaderActions>
+            <DropdownMenu
+              className="query-builder__setup__config-group__header__dropdown-trigger"
+              title="Show Settings..."
+              content={
+                <MenuContent>
+                  <MenuContentItem
+                    onClick={(): void =>
+                      queryBuilderState.setShowRuntimeSelector(
+                        !queryBuilderState.showRuntimeSelector,
+                      )
+                    }
+                  >
+                    <MenuContentItemIcon>
+                      {queryBuilderState.showRuntimeSelector ? (
+                        <CheckIcon />
+                      ) : null}
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      Show Runtime Selector
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                </MenuContent>
+              }
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
+              }}
+            >
+              <MoreHorizontalIcon />
+            </DropdownMenu>
+          </PanelHeaderActions>
+        </PanelHeader>
         <div className="query-builder__setup__config-group__content">
           <div className="query-builder__setup__config-group__item">
             <label

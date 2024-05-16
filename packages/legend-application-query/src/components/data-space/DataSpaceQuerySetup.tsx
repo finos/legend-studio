@@ -21,6 +21,7 @@ import { flowResult } from 'mobx';
 import { QueryBuilderClassSelector } from '@finos/legend-query-builder';
 import {
   CustomSelectorInput,
+  PanelHeader,
   SearchIcon,
   type SelectComponent,
 } from '@finos/legend-art';
@@ -102,11 +103,7 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
 
     return (
       <div className="query-builder__setup__config-group">
-        <div className="query-builder__setup__config-group__header">
-          <div className="query-builder__setup__config-group__header__title">
-            Properties
-          </div>
-        </div>
+        <PanelHeader title="properties" />
         <div className="query-builder__setup__config-group__content">
           <div className="query-builder__setup__config-group__item">
             <label

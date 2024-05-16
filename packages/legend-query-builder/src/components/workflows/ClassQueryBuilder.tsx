@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { CustomSelectorInput, createFilter } from '@finos/legend-art';
+import {
+  CustomSelectorInput,
+  PanelHeader,
+  createFilter,
+} from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
   type Class,
@@ -127,11 +131,7 @@ const ClassQueryBuilderSetupPanelContent = observer(
 
     return (
       <div className="query-builder__setup__config-group">
-        <div className="query-builder__setup__config-group__header">
-          <div className="query-builder__setup__config-group__header__title">
-            Properties
-          </div>
-        </div>
+        <PanelHeader title="properties" />
         <div className="query-builder__setup__config-group__content">
           <div className="query-builder__setup__config-group__item">
             <label

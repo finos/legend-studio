@@ -21,7 +21,7 @@ import {
 import { QueryBuilderClassSelector } from '@finos/legend-query-builder';
 import type { IsolatedDatabaseBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/database/QueryDatabaseState.js';
 import { observer } from 'mobx-react-lite';
-import { CustomSelectorInput } from '@finos/legend-art';
+import { CustomSelectorInput, PanelHeader } from '@finos/legend-art';
 import { returnUndefOnError } from '@finos/legend-shared';
 
 const IsolatedDatabseQueryBuilderSetupPanelContext = observer(
@@ -67,11 +67,7 @@ const IsolatedDatabseQueryBuilderSetupPanelContext = observer(
       : [];
     return (
       <div className="query-builder__setup__config-group">
-        <div className="query-builder__setup__config-group__header">
-          <div className="query-builder__setup__config-group__header__title">
-            Properties
-          </div>
-        </div>
+        <PanelHeader title="properties" />
         <div className="query-builder__setup__config-group__content">
           <div className="query-builder__setup__config-group__item">
             <label
