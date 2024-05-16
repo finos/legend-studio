@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-service
 
+## 1.0.169
+
+### Patch Changes
+
+- [#3094](https://github.com/finos/legend-studio/pull/3094) [`1289579`](https://github.com/finos/legend-studio/commit/12895798774e0123463a96d94799bc676020ec1f) ([@travisstebbins](https://github.com/travisstebbins)) - Disable productionize query and register dev service buttons if query can't be built
+
 ## 1.0.168
 
 ## 1.0.167

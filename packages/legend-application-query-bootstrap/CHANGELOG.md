@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 11.49.1
+
+### Patch Changes
+
+- [#3146](https://github.com/finos/legend-studio/pull/3146) [`45fd4af`](https://github.com/finos/legend-studio/commit/45fd4afe2484a1ac8eecd9f06668fc7094137b52) ([@travisstebbins](https://github.com/travisstebbins)) - Update query builder setup styles
+
 ## 11.49.0
 
 ## 11.48.0
