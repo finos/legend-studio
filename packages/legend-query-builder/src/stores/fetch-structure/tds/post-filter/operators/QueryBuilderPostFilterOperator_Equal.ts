@@ -17,15 +17,10 @@
 import {
   type Type,
   type ValueSpecification,
-  type Enum,
   type SimpleFunctionExpression,
   type FunctionExpression,
   AbstractPropertyExpression,
   Enumeration,
-  EnumValueExplicitReference,
-  EnumValueInstanceValue,
-  GenericType,
-  GenericTypeExplicitReference,
   PRIMITIVE_TYPE,
   PrimitiveType,
 } from '@finos/legend-graph';
@@ -33,7 +28,6 @@ import {
   guaranteeNonNullable,
   type Hashable,
   hashArray,
-  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterStateBuilder.js';
@@ -43,15 +37,13 @@ import {
 } from '../QueryBuilderPostFilterState.js';
 import {
   buildNotExpression,
-  generateDefaultValueForPrimitiveType,
   isTypeCompatibleForAssignment,
   unwrapNotExpression,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
-import { buildPrimitiveInstanceValue } from '../../../../shared/ValueSpecificationEditorHelper.js';
-import { instanceValue_setValues } from '../../../../shared/ValueSpecificationModifierHelper.js';
+import { buildDefaultInstanceValue } from '../../../../shared/ValueSpecificationEditorHelper.js';
 
 export class QueryBuilderPostFilterOperator_Equal
   extends QueryBuilderPostFilterOperator
@@ -101,66 +93,15 @@ export class QueryBuilderPostFilterOperator_Equal
     const propertyType = guaranteeNonNullable(
       postFilterConditionState.leftConditionValue.getColumnType(),
     );
-    switch (propertyType.path) {
-      case PRIMITIVE_TYPE.STRING:
-      case PRIMITIVE_TYPE.BOOLEAN:
-      case PRIMITIVE_TYPE.STRICTDATE:
-      case PRIMITIVE_TYPE.DATETIME:
-      case PRIMITIVE_TYPE.NUMBER:
-      case PRIMITIVE_TYPE.DECIMAL:
-      case PRIMITIVE_TYPE.FLOAT:
-      case PRIMITIVE_TYPE.INTEGER: {
-        return buildPrimitiveInstanceValue(
-          postFilterConditionState.postFilterState.tdsState.queryBuilderState
-            .graphManagerState.graph,
-          propertyType.path,
-          generateDefaultValueForPrimitiveType(propertyType.path),
-          postFilterConditionState.postFilterState.tdsState.queryBuilderState
-            .observerContext,
-        );
-      }
-      case PRIMITIVE_TYPE.DATE: {
-        return buildPrimitiveInstanceValue(
-          postFilterConditionState.postFilterState.tdsState.queryBuilderState
-            .graphManagerState.graph,
-          PRIMITIVE_TYPE.STRICTDATE,
-          generateDefaultValueForPrimitiveType(propertyType.path),
-          postFilterConditionState.postFilterState.tdsState.queryBuilderState
-            .observerContext,
-        );
-      }
-      default:
-        if (propertyType instanceof Enumeration) {
-          if (propertyType.values.length > 0) {
-            const enumValueInstanceValue = new EnumValueInstanceValue(
-              GenericTypeExplicitReference.create(
-                new GenericType(propertyType),
-              ),
-            );
-            instanceValue_setValues(
-              enumValueInstanceValue,
-              [
-                EnumValueExplicitReference.create(
-                  propertyType.values[0] as Enum,
-                ),
-              ],
-              postFilterConditionState.postFilterState.tdsState
-                .queryBuilderState.observerContext,
-            );
-            return enumValueInstanceValue;
-          }
-          throw new UnsupportedOperationError(
-            `Can't get default value for post-filter operator '${this.getLabel()}' since enumeration '${
-              propertyType.path
-            }' has no value`,
-          );
-        }
-        throw new UnsupportedOperationError(
-          `Can't get default value for post-filter operator '${this.getLabel()}' when the LHS property is of type '${
-            propertyType.path
-          }'`,
-        );
-    }
+    return buildDefaultInstanceValue(
+      postFilterConditionState.postFilterState.tdsState.queryBuilderState
+        .graphManagerState.graph,
+      propertyType,
+      postFilterConditionState.postFilterState.tdsState.queryBuilderState
+        .observerContext,
+      postFilterConditionState.postFilterState.tdsState.queryBuilderState
+        .INTERNAL__enableInitializingDefaultSimpleExpressionValue,
+    );
   }
 
   buildPostFilterConditionExpression(

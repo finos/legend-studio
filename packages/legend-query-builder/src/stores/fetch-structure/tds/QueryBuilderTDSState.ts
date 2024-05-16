@@ -329,6 +329,20 @@ export class QueryBuilderTDSState
     if (hasNoProjectionColumns) {
       validationIssues.push('Query has no projection columns');
     }
+
+    this.projectionColumns.forEach((column) => {
+      if (
+        column instanceof QueryBuilderSimpleProjectionColumnState &&
+        column.propertyExpressionState.derivedPropertyExpressionStates.some(
+          (p) => !p.isValid,
+        )
+      ) {
+        validationIssues.push(
+          `Derived property parameter value for ${column.propertyExpressionState.title} is missing`,
+        );
+      }
+    });
+
     return validationIssues;
   }
 
@@ -336,6 +350,7 @@ export class QueryBuilderTDSState
     const fetchStructureValidationIssues = [
       ...this.fetchStructureValidationIssues,
       ...this.windowState.windowValidationIssues,
+      ...this.postFilterState.allValidationIssues,
     ];
 
     return fetchStructureValidationIssues;
@@ -784,6 +799,23 @@ export class QueryBuilderTDSState
       .find((col) => col.isVariableUsed(variable));
     const usedInPostFilter = this.postFilterState.isVariableUsed(variable);
     return Boolean(usedInProjection ?? usedInPostFilter);
+  }
+
+  get hasInvalidFilterValues(): boolean {
+    return (
+      this.postFilterState.hasInvalidFilterValues ||
+      this.postFilterState.hasInvalidDerivedPropertyParameters
+    );
+  }
+
+  get hasInvalidDerivedPropertyParameters(): boolean {
+    return this.projectionColumns.some(
+      (column) =>
+        column instanceof QueryBuilderSimpleProjectionColumnState &&
+        column.propertyExpressionState.derivedPropertyExpressionStates.some(
+          (p) => !p.isValid,
+        ),
+    );
   }
 
   get hashCode(): string {

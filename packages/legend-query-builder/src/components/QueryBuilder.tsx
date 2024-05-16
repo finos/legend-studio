@@ -126,13 +126,18 @@ const QueryBuilderStatusBar = observer(
                 className={clsx(
                   'query-builder__status-bar__action query-builder__status-bar__view-diff-btn',
                 )}
-                disabled={!queryBuilderState.changeDetectionState.hasChanged}
+                disabled={
+                  !queryBuilderState.changeDetectionState.hasChanged ||
+                  !queryBuilderState.canBuildQuery
+                }
                 onClick={showDiff}
                 tabIndex={-1}
                 title={
-                  queryBuilderState.changeDetectionState.hasChanged
-                    ? 'Show changes'
-                    : 'Query has not been changed'
+                  !queryBuilderState.canBuildQuery
+                    ? 'Please fix query errors to show changes'
+                    : queryBuilderState.changeDetectionState.hasChanged
+                      ? 'Show changes'
+                      : 'Query has not been changed'
                 }
               >
                 <DiffIcon />
@@ -193,7 +198,12 @@ const QueryBuilderStatusBar = observer(
               openLambdaEditor(QueryBuilderTextEditorMode.JSON)
             }
             tabIndex={-1}
-            title="View Query Protocol"
+            disabled={!queryBuilderState.canBuildQuery}
+            title={
+              !queryBuilderState.canBuildQuery
+                ? 'Please fix query errors to show query protocol'
+                : 'Show Query Protocol'
+            }
           >{`{ }`}</button>
           <button
             className={clsx(
@@ -208,7 +218,12 @@ const QueryBuilderStatusBar = observer(
               openLambdaEditor(QueryBuilderTextEditorMode.TEXT)
             }
             tabIndex={-1}
-            title="View Query in Pure"
+            disabled={!queryBuilderState.canBuildQuery}
+            title={
+              !queryBuilderState.canBuildQuery
+                ? 'Please fix query errors to edit in Pure'
+                : 'Edit Query in Pure'
+            }
           >
             <HackerIcon />
           </button>
@@ -431,7 +446,11 @@ export const QueryBuilder = observer(
     useEffect(() => {
       // this condition is for passing all exisitng tests because when we initialize a queryBuilderState for a test,
       // we use an empty RawLambda with an empty class and this useEffect is called earlier than initializeWithQuery()
-      if (queryBuilderState.isQuerySupported && queryBuilderState.class) {
+      if (
+        queryBuilderState.isQuerySupported &&
+        queryBuilderState.class &&
+        queryBuilderState.canBuildQuery
+      ) {
         queryBuilderState.changeHistoryState.cacheNewQuery(
           queryBuilderState.buildQuery(),
         );
@@ -695,11 +714,17 @@ export const QueryBuilder = observer(
                       <MenuContentItem
                         onClick={openCheckEntitlmentsEditor}
                         disabled={
-                          queryBuilderState.isQuerySupported &&
-                          queryBuilderState.fetchStructureState
-                            .implementation instanceof QueryBuilderTDSState &&
-                          queryBuilderState.fetchStructureState.implementation
-                            .projectionColumns.length === 0
+                          (queryBuilderState.isQuerySupported &&
+                            queryBuilderState.fetchStructureState
+                              .implementation instanceof QueryBuilderTDSState &&
+                            queryBuilderState.fetchStructureState.implementation
+                              .projectionColumns.length === 0) ||
+                          !queryBuilderState.canBuildQuery
+                        }
+                        title={
+                          !queryBuilderState.canBuildQuery
+                            ? 'Please fix query errors to check entitlements'
+                            : ''
                         }
                       >
                         <MenuContentItemIcon>
@@ -709,7 +734,15 @@ export const QueryBuilder = observer(
                           Check Entitlements
                         </MenuContentItemLabel>
                       </MenuContentItem>
-                      <MenuContentItem onClick={editQueryInPure}>
+                      <MenuContentItem
+                        onClick={editQueryInPure}
+                        disabled={!queryBuilderState.canBuildQuery}
+                        title={
+                          !queryBuilderState.canBuildQuery
+                            ? 'Please fix query errors to edit in Pure'
+                            : undefined
+                        }
+                      >
                         <MenuContentItemIcon>
                           <HackerIcon />
                         </MenuContentItemIcon>
@@ -717,7 +750,15 @@ export const QueryBuilder = observer(
                           Edit Query in Pure
                         </MenuContentItemLabel>
                       </MenuContentItem>
-                      <MenuContentItem onClick={showQueryProtocol}>
+                      <MenuContentItem
+                        onClick={showQueryProtocol}
+                        disabled={!queryBuilderState.canBuildQuery}
+                        title={
+                          !queryBuilderState.canBuildQuery
+                            ? 'Please fix query errors to show query protocol'
+                            : undefined
+                        }
+                      >
                         <MenuContentItemIcon>
                           <SerializeIcon />
                         </MenuContentItemIcon>

@@ -134,11 +134,11 @@ export const buildDefaultInstanceValue = (
   graph: PureModel,
   type: Type,
   observerContext: ObserverContext,
+  enableInitializingDefaultValue: boolean,
 ): ValueSpecification => {
   const path = type.path;
   switch (path) {
     case PRIMITIVE_TYPE.STRING:
-    case PRIMITIVE_TYPE.BOOLEAN:
     case PRIMITIVE_TYPE.STRICTDATE:
     case PRIMITIVE_TYPE.DATETIME:
     case PRIMITIVE_TYPE.NUMBER:
@@ -150,6 +150,16 @@ export const buildDefaultInstanceValue = (
       return buildPrimitiveInstanceValue(
         graph,
         path,
+        enableInitializingDefaultValue
+          ? generateDefaultValueForPrimitiveType(path)
+          : null,
+        observerContext,
+      );
+    }
+    case PRIMITIVE_TYPE.BOOLEAN: {
+      return buildPrimitiveInstanceValue(
+        graph,
+        path,
         generateDefaultValueForPrimitiveType(path),
         observerContext,
       );
@@ -158,29 +168,34 @@ export const buildDefaultInstanceValue = (
       return buildPrimitiveInstanceValue(
         graph,
         PRIMITIVE_TYPE.STRICTDATE,
-        generateDefaultValueForPrimitiveType(path),
+        enableInitializingDefaultValue
+          ? generateDefaultValueForPrimitiveType(path)
+          : null,
         observerContext,
       );
     }
     default:
       if (type instanceof Enumeration) {
-        if (type.values.length > 0) {
-          const enumValueInstanceValue = new EnumValueInstanceValue(
-            GenericTypeExplicitReference.create(new GenericType(type)),
-          );
-          instanceValue_setValues(
-            enumValueInstanceValue,
-            [EnumValueExplicitReference.create(type.values[0] as Enum)],
-            observerContext,
-          );
-          return enumValueInstanceValue;
-        }
-        throw new UnsupportedOperationError(
-          `Can't get default value for enumeration since enumeration '${path}' has no value`,
+        const enumValueInstanceValue = new EnumValueInstanceValue(
+          GenericTypeExplicitReference.create(new GenericType(type)),
         );
+        if (enableInitializingDefaultValue) {
+          if (type.values.length > 0) {
+            instanceValue_setValues(
+              enumValueInstanceValue,
+              [EnumValueExplicitReference.create(type.values[0] as Enum)],
+              observerContext,
+            );
+          } else {
+            throw new UnsupportedOperationError(
+              `Can't get default value for enumeration since enumeration '${path}' has no value`,
+            );
+          }
+        }
+        return enumValueInstanceValue;
       }
       throw new UnsupportedOperationError(
-        `Can't get default value for type'${path}'`,
+        `Can't get default value for type '${path}'`,
       );
   }
 };
@@ -201,6 +216,7 @@ export const buildDefaultEmptyStringLambda = (
     graph,
     PrimitiveType.STRING,
     observerContext,
+    true,
   );
   return lambdaFunction;
 };

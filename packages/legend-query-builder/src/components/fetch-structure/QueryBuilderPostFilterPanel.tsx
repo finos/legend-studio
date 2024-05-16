@@ -109,6 +109,7 @@ import {
 } from '../../stores/fetch-structure/tds/window/QueryBuilderWindowState.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
+import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
   forwardRef<
@@ -1008,6 +1009,11 @@ const QueryBuilderPostFilterPanelContent = observer(
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">post-filter</div>
+            {postFilterState.allValidationIssues.length !== 0 && (
+              <QueryBuilderPanelIssueCountBadge
+                issues={postFilterState.allValidationIssues}
+              />
+            )}
           </div>
           <div className="panel__header__actions">
             <DropdownMenu
@@ -1141,7 +1147,6 @@ export const QueryBuilderPostFilterPanel = observer(
     const { queryBuilderState } = props;
     const fetchStructureImplementation =
       queryBuilderState.fetchStructureState.implementation;
-
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL}

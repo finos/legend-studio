@@ -19,6 +19,7 @@ import {
   BasePopover,
   BaseRadioGroup,
   CustomSelectorInput,
+  clsx,
 } from '@finos/legend-art';
 import {
   type PureModel,
@@ -733,11 +734,13 @@ export const buildDatePickerOption = (
           CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
         )
       : new DatePickerOption(
-          valueSpecification.values[0] as string,
-          valueSpecification.genericType.value.rawType.path ===
-          PRIMITIVE_TYPE.DATETIME
-            ? CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME
-            : CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
+          (valueSpecification.values[0] ?? '') as string,
+          valueSpecification.values[0] === null
+            ? ''
+            : valueSpecification.genericType.value.rawType.path ===
+                PRIMITIVE_TYPE.DATETIME
+              ? CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME
+              : CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
         );
   }
 };
@@ -760,7 +763,7 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
   const absoluteDateValue =
     valueSpecification instanceof SimpleFunctionExpression
       ? ''
-      : (valueSpecification.values[0] as string);
+      : (valueSpecification.values[0] as string | null);
   const updateAbsoluteDateValue: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ) => {
@@ -812,7 +815,7 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
         className="panel__content__form__section__input value-spec-editor__date-picker__absolute-date__input input--dark"
         type="date"
         spellCheck={false}
-        value={absoluteDateValue}
+        value={absoluteDateValue ?? ''}
         onChange={updateAbsoluteDateValue}
       />
     </div>
@@ -837,7 +840,7 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
   const absoluteTimeValue =
     valueSpecification instanceof SimpleFunctionExpression
       ? ''
-      : (valueSpecification.values[0] as string);
+      : (valueSpecification.values[0] as string | null);
   const updateAbsoluteTimeValue: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ) => {
@@ -893,7 +896,7 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
         // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#step
         step="1"
         spellCheck={false}
-        value={absoluteTimeValue}
+        value={absoluteTimeValue ?? ''}
         onChange={updateAbsoluteTimeValue}
       />
     </div>
@@ -1225,6 +1228,7 @@ export const CustomDatePicker: React.FC<{
   valueSpecification: PrimitiveInstanceValue | SimpleFunctionExpression;
   graph: PureModel;
   observerContext: ObserverContext;
+  hasError?: boolean;
   typeCheckOption: {
     expectedType: Type;
     /**
@@ -1247,6 +1251,7 @@ export const CustomDatePicker: React.FC<{
     setValueSpecification,
     graph,
     observerContext,
+    hasError,
     typeCheckOption,
   } = props;
   const applicationStore = useApplicationStore();
@@ -1404,11 +1409,13 @@ export const CustomDatePicker: React.FC<{
   return (
     <>
       <button
-        className="value-spec-editor__date-picker__trigger"
+        className={clsx('value-spec-editor__date-picker__trigger', {
+          'value-spec-editor__date-picker__trigger--error': hasError,
+        })}
         title="Click to edit and pick from more date options"
         onClick={openCustomDatePickerPopover}
       >
-        {datePickerOption.label}
+        {datePickerOption.label || 'Select value'}
       </button>
       <BasePopover
         open={Boolean(anchorEl)}

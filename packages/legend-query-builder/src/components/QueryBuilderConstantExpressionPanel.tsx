@@ -41,6 +41,7 @@ import {
   VariableExpression,
   Multiplicity,
   isValidIdentifier,
+  InstanceValue,
 } from '@finos/legend-graph';
 import { deepClone } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -60,6 +61,7 @@ import { variableExpression_setName } from '../stores/shared/ValueSpecificationM
 import { LambdaEditor } from './shared/LambdaEditor.js';
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
 import { flowResult } from 'mobx';
+import { isValidInstanceValue } from '../stores/QueryBuilderValueSpecificationHelper.js';
 
 const getConstantNameValidationMessage = (
   constantInput: string,
@@ -93,13 +95,9 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
     const [selectedName, setSelectedName] = useState(stateName);
     const [isNameValid, setIsNameValid] = useState<boolean>(true);
     const [hasEditedName, setHasEditedName] = useState<boolean>(false);
-    const [nameInputRef, setNameInputRef] = useState<HTMLInputElement | null>(
-      null,
-    );
     const handleNameInputRef = useCallback(
       (ref: HTMLInputElement | null): void => {
         ref?.focus();
-        setNameInputRef(ref);
       },
       [],
     );
@@ -107,6 +105,17 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
     // Value
     const stateValue = constantState.value;
     const [selectedValue, setSelectedValue] = useState(deepClone(stateValue));
+    const [shouldFocusOnValue, setShouldFocusOnValue] =
+      useState<boolean>(!isCreating);
+    const handleValueInputRef = useCallback(
+      (ref: HTMLInputElement | null): void => {
+        if (shouldFocusOnValue) {
+          ref?.focus();
+          setShouldFocusOnValue(false);
+        }
+      },
+      [shouldFocusOnValue],
+    );
 
     // Type
     const stateType =
@@ -121,27 +130,34 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
           queryBuilderState.graphManagerState.graph,
           val.value,
           queryBuilderState.observerContext,
+          queryBuilderState.INTERNAL__enableInitializingDefaultSimpleExpressionValue,
         );
         setSelectedValue(newValSpec);
       }
+      setShouldFocusOnValue(true);
     };
+    // Disabling binary, strict time, latest date, and byte as we
+    // don't support these constant types
+    const supportedPrimitiveTypes: PrimitiveType[] = [
+      PrimitiveType.STRING,
+      PrimitiveType.BOOLEAN,
+      PrimitiveType.NUMBER,
+      PrimitiveType.INTEGER,
+      PrimitiveType.FLOAT,
+      PrimitiveType.DECIMAL,
+      PrimitiveType.DATE,
+      PrimitiveType.STRICTDATE,
+      PrimitiveType.DATETIME,
+    ];
     const typeOptions: PackageableElementOption<Type>[] =
       queryBuilderState.graphManagerState.graph.primitiveTypes
+        .filter((type) => supportedPrimitiveTypes.includes(type))
         .map(buildElementOption)
         .concat(
           queryBuilderState.graphManagerState.graph.enumerations.map(
             buildElementOption,
           ),
         );
-
-    const handleValueInputRef = (ref: HTMLInputElement | null): void => {
-      if (
-        (!isCreating || hasEditedName) &&
-        document.activeElement !== nameInputRef
-      ) {
-        ref?.focus();
-      }
-    };
 
     // Modal lifecycle actions
     const handleCancel = (): void => {
@@ -163,6 +179,7 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
         queryBuilderState.graphManagerState.graph,
         selectedType.value,
         queryBuilderState.observerContext,
+        queryBuilderState.INTERNAL__enableInitializingDefaultSimpleExpressionValue,
       );
       setSelectedValue(valSpec);
     };
@@ -259,7 +276,11 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
           <ModalFooter>
             <ModalFooterButton
               text={isCreating ? 'Create' : 'Apply'}
-              disabled={!isNameValid}
+              disabled={
+                !isNameValid ||
+                (selectedValue instanceof InstanceValue &&
+                  !isValidInstanceValue(selectedValue))
+              }
               onClick={handleApply}
             />
             <ModalFooterButton
@@ -415,6 +436,7 @@ export const QueryBuilderConstantExpressionPanel = observer(
           graph,
           PrimitiveType.STRING,
           queryBuilderState.observerContext,
+          queryBuilderState.INTERNAL__enableInitializingDefaultSimpleExpressionValue,
         );
         const variableEx = new VariableExpression('', Multiplicity.ONE);
         variableEx.genericType = defaultVal.genericType;

@@ -529,6 +529,14 @@ export class QueryBuilderGraphFetchTreeState
     );
   }
 
+  get hasInvalidFilterValues(): boolean {
+    return false;
+  }
+
+  get hasInvalidDerivedPropertyParameters(): boolean {
+    return false;
+  }
+
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.GRAPH_FETCH_STATE,

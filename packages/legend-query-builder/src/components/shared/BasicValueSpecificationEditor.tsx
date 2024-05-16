@@ -33,6 +33,7 @@ import {
   BasePopover,
   PanelFormSection,
   CalculateIcon,
+  InputWithInlineValidation,
 } from '@finos/legend-art';
 import {
   type Enum,
@@ -67,6 +68,7 @@ import {
   parseCSVString,
   guaranteeIsNumber,
   csvStringify,
+  guaranteeType,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -83,7 +85,10 @@ import {
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
 import { CustomDatePicker } from './CustomDatePicker.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
-import { simplifyValueExpression } from '../../stores/QueryBuilderValueSpecificationHelper.js';
+import {
+  isValidInstanceValue,
+  simplifyValueExpression,
+} from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { evaluate } from 'mathjs';
 import { isUsedDateFunctionSupportedInFormMode } from '../../stores/QueryBuilderStateBuilder.js';
 
@@ -240,7 +245,7 @@ const StringPrimitiveInstanceValueEditor = observer(
     } = props;
     const useSelector = Boolean(selectorConfig);
     const applicationStore = useApplicationStore();
-    const value = valueSpecification.values[0] as string;
+    const value = valueSpecification.values[0] as string | null;
     const updateValueSpec = (val: string): void => {
       instanceValue_setValue(valueSpecification, val, 0, obseverContext);
       setValueSpecification(valueSpecification);
@@ -295,8 +300,8 @@ const StringPrimitiveInstanceValueEditor = observer(
             className="value-spec-editor__enum-selector"
             options={queryOptions}
             onChange={changeValue}
-            value={selectedValue}
-            inputValue={value}
+            value={selectedValue.label === '' ? '' : selectedValue}
+            inputValue={value ?? ''}
             onInputChange={handleInputChange}
             darkMode={
               !applicationStore.layoutService
@@ -308,15 +313,22 @@ const StringPrimitiveInstanceValueEditor = observer(
             components={{
               DropdownIndicator: null,
             }}
+            hasError={!isValidInstanceValue(valueSpecification)}
+            placeholder={value === '' ? '(empty)' : undefined}
           />
         ) : (
-          <input
+          <InputWithInlineValidation
             className="panel__content__form__section__input value-spec-editor__input"
             spellCheck={false}
-            value={value}
+            value={value ?? ''}
             placeholder={value === '' ? '(empty)' : undefined}
             onChange={changeInputValue}
             ref={ref}
+            error={
+              !isValidInstanceValue(valueSpecification)
+                ? 'Invalid String value'
+                : undefined
+            }
           />
         )}
         <button
@@ -397,26 +409,37 @@ const NumberPrimitiveInstanceValueEditor = observer(
       obseverContext,
     } = props;
     const [value, setValue] = useState(
-      (valueSpecification.values[0] as number).toString(),
+      valueSpecification.values[0] === null
+        ? ''
+        : (valueSpecification.values[0] as number).toString(),
     );
     const inputRef = useRef<HTMLInputElement>(null);
     useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
-    const numericValue = isInteger
-      ? Number.parseInt(Number(value).toString(), 10)
-      : Number(value);
+    const numericValue = value
+      ? isInteger
+        ? Number.parseInt(Number(value).toString(), 10)
+        : Number(value)
+      : null;
 
     const updateValueSpecIfValid = (val: string): void => {
-      const parsedValue = isInteger
-        ? Number.parseInt(Number(val).toString(), 10)
-        : Number(val);
-      if (!isNaN(parsedValue) && parsedValue !== valueSpecification.values[0]) {
-        instanceValue_setValue(
-          valueSpecification,
-          parsedValue,
-          0,
-          obseverContext,
-        );
-        setValueSpecification(valueSpecification);
+      if (val) {
+        const parsedValue = isInteger
+          ? Number.parseInt(Number(val).toString(), 10)
+          : Number(val);
+        if (
+          !isNaN(parsedValue) &&
+          parsedValue !== valueSpecification.values[0]
+        ) {
+          instanceValue_setValue(
+            valueSpecification,
+            parsedValue,
+            0,
+            obseverContext,
+          );
+          setValueSpecification(valueSpecification);
+        }
+      } else {
+        resetValue();
       }
     };
 
@@ -429,20 +452,29 @@ const NumberPrimitiveInstanceValueEditor = observer(
 
     // Support expression evaluation
     const calculateExpression = (): void => {
-      if (isNaN(numericValue)) {
+      if (numericValue !== null && isNaN(numericValue)) {
+        // If the value is not a number, try to evaluate it as an expression
         try {
           const calculatedValue = guaranteeIsNumber(evaluate(value));
           updateValueSpecIfValid(calculatedValue.toString());
           setValue(calculatedValue.toString());
         } catch {
-          updateValueSpecIfValid(
-            (valueSpecification.values[0] as number).toString(),
-          );
-          setValue((valueSpecification.values[0] as number).toString());
+          // If we fail to evaluate the expression, we just keep the previous value
+          const prevValue =
+            valueSpecification.values[0] !== null &&
+            valueSpecification.values[0] !== undefined
+              ? valueSpecification.values[0].toString()
+              : '';
+          updateValueSpecIfValid(prevValue);
+          setValue(prevValue);
         }
-      } else {
+      } else if (numericValue !== null) {
+        // If numericValue is a number, update the value spec
         updateValueSpecIfValid(numericValue.toString());
         setValue(numericValue.toString());
+      } else {
+        // If numericValue is null, reset the value spec
+        resetValue();
       }
     };
 
@@ -457,10 +489,15 @@ const NumberPrimitiveInstanceValueEditor = observer(
 
     useEffect(() => {
       if (
+        numericValue !== null &&
         !isNaN(numericValue) &&
         numericValue !== valueSpecification.values[0]
       ) {
-        setValue((valueSpecification.values[0] as number).toString());
+        const valueFromValueSpec =
+          valueSpecification.values[0] !== null
+            ? (valueSpecification.values[0] as number).toString()
+            : '';
+        setValue(valueFromValueSpec);
       }
     }, [numericValue, valueSpecification]);
 
@@ -469,7 +506,15 @@ const NumberPrimitiveInstanceValueEditor = observer(
         <div className="value-spec-editor__number__input-container">
           <input
             ref={inputRef}
-            className="panel__content__form__section__input value-spec-editor__input value-spec-editor__number__input"
+            className={clsx(
+              'panel__content__form__section__input',
+              'value-spec-editor__input',
+              'value-spec-editor__number__input',
+              {
+                'value-spec-editor__number__input--error':
+                  !isValidInstanceValue(valueSpecification),
+              },
+            )}
             spellCheck={false}
             type="text" // NOTE: we leave this as text so that we can support expression evaluation
             inputMode="numeric"
@@ -517,9 +562,15 @@ const EnumValueInstanceValueEditor = observer(
       obseverContext,
     } = props;
     const applicationStore = useApplicationStore();
-    const enumValueRef = guaranteeNonNullable(valueSpecification.values[0]);
-    const enumValue = enumValueRef.value;
-    const options = enumValue._OWNER.values.map((value) => ({
+    const enumType = guaranteeType(
+      valueSpecification.genericType?.value.rawType,
+      Enumeration,
+    );
+    const enumValue =
+      valueSpecification.values[0] === undefined
+        ? null
+        : valueSpecification.values[0].value;
+    const options = enumType.values.map((value) => ({
       label: value.name,
       value: value,
     }));
@@ -539,10 +590,12 @@ const EnumValueInstanceValueEditor = observer(
           className="value-spec-editor__enum-selector"
           options={options}
           onChange={changeValue}
-          value={{ value: enumValue, label: enumValue.name }}
+          value={enumValue ? { value: enumValue, label: enumValue.name } : null}
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
+          hasError={!isValidInstanceValue(valueSpecification)}
+          placeholder="Select value"
         />
         <button
           className="value-spec-editor__reset-btn"
@@ -899,7 +952,12 @@ const CollectionValueInstanceValueEditor = observer(
         onClick={enableEdit}
         title="Click to edit"
       >
-        <div className="value-spec-editor__list-editor__preview">
+        <div
+          className={clsx('value-spec-editor__list-editor__preview', {
+            'value-spec-editor__list-editor__preview--error':
+              !isValidInstanceValue(valueSpecification),
+          })}
+        >
           {previewText}
         </div>
         <button className="value-spec-editor__list-editor__edit-icon">
@@ -941,6 +999,10 @@ const DateInstanceValueEditor = observer(
           observerContext={obseverContext}
           typeCheckOption={typeCheckOption}
           setValueSpecification={setValueSpecification}
+          hasError={
+            valueSpecification instanceof PrimitiveInstanceValue &&
+            !isValidInstanceValue(valueSpecification)
+          }
         />
         <button
           className="value-spec-editor__reset-btn"

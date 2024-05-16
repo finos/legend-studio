@@ -28,6 +28,14 @@
           },
           "name": "hobbies",
           "type": "model::Hobby"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "isActive",
+          "type": "Boolean"
         }
       ]
     },
@@ -306,6 +314,14 @@
                     "_type": "Varchar",
                     "size": 200
                   }
+                },
+                {
+                  "name": "isActive",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 1
+                  }
                 }
               ],
               "name": "PersonTable",
@@ -459,6 +475,25 @@
                 ]
               },
               "target": "model_Hobby"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Person",
+                "property": "isActive"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "isActive",
+                "table": {
+                  "_type": "Table",
+                  "database": "store::TestDB",
+                  "mainTableDb": "store::TestDB",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
             }
           ],
           "root": true

@@ -37,12 +37,11 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
   buildNotExpression,
-  generateDefaultValueForPrimitiveType,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
-import { buildPrimitiveInstanceValue } from '../../shared/ValueSpecificationEditorHelper.js';
+import { buildDefaultInstanceValue } from '../../shared/ValueSpecificationEditorHelper.js';
 
 export class QueryBuilderFilterOperator_StartWith
   extends QueryBuilderFilterOperator
@@ -79,12 +78,13 @@ export class QueryBuilderFilterOperator_StartWith
         .genericType.value.rawType;
     switch (propertyType.path) {
       case PRIMITIVE_TYPE.STRING: {
-        return buildPrimitiveInstanceValue(
+        return buildDefaultInstanceValue(
           filterConditionState.filterState.queryBuilderState.graphManagerState
             .graph,
-          propertyType.path,
-          generateDefaultValueForPrimitiveType(propertyType.path),
+          propertyType,
           filterConditionState.filterState.queryBuilderState.observerContext,
+          filterConditionState.filterState.queryBuilderState
+            .INTERNAL__enableInitializingDefaultSimpleExpressionValue,
         );
       }
       default:

@@ -71,7 +71,13 @@
       height: 2.8rem;
       color: var(--color-light-grey-400);
       background: var(--color-dark-grey-100);
+      border: 0.1rem solid var(--color-dark-grey-300);
       font-size: 1.2rem;
+
+      &--error {
+        background: var(--color-red-500);
+        border-color: var(--color-red-300);
+      }
     }
 
     &__options {
@@ -205,10 +211,10 @@
     height: 100%;
     max-width: 100%;
     width: 100%;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     padding: 0 0.5rem;
     background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-200);
+    border: 0.1rem solid var(--color-dark-grey-300);
     border-radius: 0;
     margin-bottom: 0;
   }
@@ -228,6 +234,11 @@
 
     &__input {
       padding-right: 2.8rem;
+
+      &--error {
+        background: var(--color-red-500);
+        border-color: var(--color-red-300);
+      }
     }
 
     &__actions {
@@ -299,15 +310,20 @@
   &__list-editor__preview {
     @include ellipsisTextOverflow;
 
-    line-height: 2.2rem;
+    line-height: 2.8rem;
     width: calc(100% - 1.8rem);
-    height: 2.2rem;
+    height: 2.8rem;
     font-size: 1.1rem;
     font-family: 'Roboto Mono', monospace;
     background: var(--color-dark-grey-250);
     padding-left: 0.5rem;
     color: var(--color-light-grey-300);
     cursor: pointer;
+
+    &--error {
+      background: var(--color-red-500);
+      border: 1px solid var(--color-red-300);
+    }
   }
 
   &__list-editor__save-button {
@@ -346,7 +362,7 @@
   &__list-editor__edit-icon {
     @include flexCenter;
 
-    height: 2.2rem;
+    height: 2.8rem;
     width: 2.7rem;
     min-width: 2.7rem;
     background: var(--color-dark-grey-250);
@@ -362,6 +378,10 @@
   &:hover &__list-editor__edit-icon {
     background: var(--color-dark-grey-300);
     color: var(--color-light-grey-100);
+  }
+
+  .input--with-validation {
+    height: 2.8rem;
   }
 
   .selector-input__indicators,

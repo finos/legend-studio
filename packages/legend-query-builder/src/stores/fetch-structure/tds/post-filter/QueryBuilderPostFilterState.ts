@@ -25,6 +25,7 @@ import {
   observe_ValueSpecification,
   PrimitiveType,
   CollectionInstanceValue,
+  InstanceValue,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -59,6 +60,7 @@ import {
   QueryBuilderProjectionColumnState,
   type QueryBuilderProjectionColumnDragSource,
   QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderSimpleProjectionColumnState,
 } from '../projection/QueryBuilderProjectionColumnState.js';
 import {
   buildProjectionColumnTypeaheadQuery,
@@ -72,6 +74,7 @@ import type { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.j
 import {
   getCollectionValueSpecificationType,
   getNonCollectionValueSpecificationType,
+  isValidInstanceValue,
   isValueExpressionReferencedInValue,
 } from '../../../QueryBuilderValueSpecificationHelper.js';
 import { buildtdsPropertyExpressionFromColState } from './operators/QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
@@ -604,6 +607,9 @@ export class QueryBuilderPostFilterState
       replaceBlankNodeWithNode: action,
       setRearrangingConditions: action,
       setDerivedColumnBeingDropped: action,
+      allValidationIssues: computed,
+      hasInvalidFilterValues: computed,
+      hasInvalidDerivedPropertyParameters: computed,
       hashCode: computed,
     });
 
@@ -983,6 +989,59 @@ export class QueryBuilderPostFilterState
         .map((condition) => condition.value)
         .filter(isNonNullable)
         .find((value) => isValueExpressionReferencedInValue(variable, value)),
+    );
+  }
+
+  get allValidationIssues(): string[] {
+    const validationIssues: string[] = [];
+    Array.from(this.nodes.values()).forEach((node) => {
+      if (node instanceof QueryBuilderPostFilterTreeConditionNodeData) {
+        if (
+          node.condition.rightConditionValue instanceof
+            PostFilterValueSpecConditionValueState &&
+          node.condition.rightConditionValue.value instanceof InstanceValue &&
+          !isValidInstanceValue(node.condition.rightConditionValue.value) &&
+          node.condition.leftConditionValue instanceof
+            QueryBuilderSimpleProjectionColumnState
+        ) {
+          validationIssues.push(
+            `Filter value for ${node.condition.leftConditionValue.propertyExpressionState.title} is missing or invalid`,
+          );
+        }
+        if (
+          node.condition.leftConditionValue instanceof
+            QueryBuilderSimpleProjectionColumnState &&
+          !node.condition.leftConditionValue.propertyExpressionState.isValid
+        ) {
+          validationIssues.push(
+            `Derived property parameter value for ${node.condition.leftConditionValue.propertyExpressionState.title} is missing or invalid`,
+          );
+        }
+      }
+    });
+    return validationIssues;
+  }
+
+  get hasInvalidFilterValues(): boolean {
+    return Array.from(this.nodes.values()).some(
+      (node) =>
+        node instanceof QueryBuilderPostFilterTreeConditionNodeData &&
+        node.condition.rightConditionValue instanceof
+          PostFilterValueSpecConditionValueState &&
+        node.condition.rightConditionValue.value instanceof InstanceValue &&
+        !isValidInstanceValue(node.condition.rightConditionValue.value) &&
+        node.condition.leftConditionValue instanceof
+          QueryBuilderSimpleProjectionColumnState,
+    );
+  }
+
+  get hasInvalidDerivedPropertyParameters(): boolean {
+    return Array.from(this.nodes.values()).some(
+      (node) =>
+        node instanceof QueryBuilderPostFilterTreeConditionNodeData &&
+        node.condition.leftConditionValue instanceof
+          QueryBuilderSimpleProjectionColumnState &&
+        !node.condition.leftConditionValue.propertyExpressionState.isValid,
     );
   }
 

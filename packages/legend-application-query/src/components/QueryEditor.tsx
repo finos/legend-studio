@@ -857,19 +857,32 @@ const QueryEditorHeaderContent = observer(
           <Button
             className="query-editor__header__action btn--dark"
             disabled={
-              !isExistingQuery || editorStore.isPerformingBlockingAction
+              !isExistingQuery ||
+              editorStore.isPerformingBlockingAction ||
+              !queryBuilderState.canBuildQuery
             }
             onClick={openSaveQueryModal}
-            title="Save query"
+            title={
+              !queryBuilderState.canBuildQuery
+                ? 'Please fix query errors before saving'
+                : 'Save query'
+            }
           >
             <SaveCurrIcon />
             <div className="query-editor__header__action__label">Save</div>
           </Button>
           <Button
             className="query-editor__header__action btn--dark"
-            disabled={editorStore.isPerformingBlockingAction}
+            disabled={
+              editorStore.isPerformingBlockingAction ||
+              !queryBuilderState.canBuildQuery
+            }
             onClick={handleQuerySaveAs}
-            title="Save as new query"
+            title={
+              !queryBuilderState.canBuildQuery
+                ? 'Please fix query errors before saving'
+                : 'Save as new query'
+            }
           >
             <SaveAsIcon />
             <div className="query-editor__header__action__label">

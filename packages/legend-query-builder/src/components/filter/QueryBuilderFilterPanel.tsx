@@ -111,6 +111,7 @@ import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetry
 import { getPropertyChainName } from '../../stores/QueryBuilderPropertyEditorState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import { buildPropertyExpressionChain } from '../../stores/QueryBuilderValueSpecificationBuilderHelper.js';
+import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
 
 const isCollectionProperty = (
   propertyExpression: AbstractPropertyExpression,
@@ -1479,6 +1480,11 @@ export const QueryBuilderFilterPanel = observer(
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">filter</div>
+            {filterState.allValidationIssues.length !== 0 && (
+              <QueryBuilderPanelIssueCountBadge
+                issues={filterState.allValidationIssues}
+              />
+            )}
           </div>
 
           <div className="panel__header__actions">

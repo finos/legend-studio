@@ -38,8 +38,8 @@ export const TEST_DATA__simpleProjection = {
         {
           _type: 'collection',
           multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
+            lowerBound: 2,
+            upperBound: 2,
           },
           values: [
             {
@@ -73,18 +73,48 @@ export const TEST_DATA__simpleProjection = {
                 },
               ],
             },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                    {
+                      _type: 'enumValue',
+                      fullPath: 'my::IncType',
+                      value: 'Corp',
+                    },
+                  ],
+                  property: 'enumDerivedProperty',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
           ],
         },
         {
           _type: 'collection',
           multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
+            lowerBound: 2,
+            upperBound: 2,
           },
           values: [
             {
               _type: 'string',
               value: 'Derived Prop/Id',
+            },
+            {
+              _type: 'string',
+              value: 'Enum Derived Property',
             },
           ],
         },

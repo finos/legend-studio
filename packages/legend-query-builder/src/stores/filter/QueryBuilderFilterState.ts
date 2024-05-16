@@ -55,7 +55,10 @@ import {
 import type { QueryBuilderFilterOperator } from './QueryBuilderFilterOperator.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../QueryBuilderGroupOperationHelper.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../QueryBuilderStateHashUtils.js';
-import { isValueExpressionReferencedInValue } from '../QueryBuilderValueSpecificationHelper.js';
+import {
+  isValidInstanceValue,
+  isValueExpressionReferencedInValue,
+} from '../QueryBuilderValueSpecificationHelper.js';
 import { instanceValue_setValues } from '../shared/ValueSpecificationModifierHelper.js';
 
 export enum QUERY_BUILDER_FILTER_DND_TYPE {
@@ -201,7 +204,8 @@ export class FilterConditionState implements Hashable {
       let defaultValue = this.operator.getDefaultFilterConditionValue(this);
       if (
         defaultValue instanceof CollectionInstanceValue &&
-        this.value instanceof InstanceValue
+        this.value instanceof InstanceValue &&
+        isValidInstanceValue(this.value)
       ) {
         instanceValue_setValues(
           defaultValue,
@@ -494,6 +498,9 @@ export class QueryBuilderFilterState
       collapseTree: action,
       setShowPanel: action,
       expandTree: action,
+      allValidationIssues: computed,
+      hasInvalidFilterValues: computed,
+      hasInvalidDerivedPropertyParameters: computed,
       hashCode: computed,
     });
 
@@ -950,6 +957,45 @@ export class QueryBuilderFilterState
         .map((node) => node.condition.value)
         .filter(isNonNullable)
         .find((value) => isValueExpressionReferencedInValue(variable, value)),
+    );
+  }
+
+  get allValidationIssues(): string[] {
+    const validationIssues: string[] = [];
+    Array.from(this.nodes.values()).forEach((node) => {
+      if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
+        if (
+          node.condition.value instanceof InstanceValue &&
+          !isValidInstanceValue(node.condition.value)
+        ) {
+          validationIssues.push(
+            `Filter value for ${node.condition.propertyExpressionState.title} is missing or invalid`,
+          );
+        }
+        if (!node.condition.propertyExpressionState.isValid) {
+          validationIssues.push(
+            `Derived property parameter value for ${node.condition.propertyExpressionState.title} is missing or invalid`,
+          );
+        }
+      }
+    });
+    return validationIssues;
+  }
+
+  get hasInvalidFilterValues(): boolean {
+    return Array.from(this.nodes.values()).some(
+      (node) =>
+        node instanceof QueryBuilderFilterTreeConditionNodeData &&
+        node.condition.value instanceof InstanceValue &&
+        !isValidInstanceValue(node.condition.value),
+    );
+  }
+
+  get hasInvalidDerivedPropertyParameters(): boolean {
+    return Array.from(this.nodes.values()).some(
+      (node) =>
+        node instanceof QueryBuilderFilterTreeConditionNodeData &&
+        !node.condition.propertyExpressionState.isValid,
     );
   }
 

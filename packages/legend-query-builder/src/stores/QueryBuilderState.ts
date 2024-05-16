@@ -156,6 +156,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   isCalendarEnabled = false;
   isQueryChatOpened = false;
   isLocalModeEnabled = false;
+  INTERNAL__enableInitializingDefaultSimpleExpressionValue = false;
 
   lambdaWriteMode = QUERY_BUILDER_LAMBDA_WRITER_MODE.STANDARD;
 
@@ -207,10 +208,12 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       isLocalModeEnabled: observable,
       getAllFunction: observable,
       lambdaWriteMode: observable,
+      INTERNAL__enableInitializingDefaultSimpleExpressionValue: observable,
 
       sideBarClassName: computed,
       isQuerySupported: computed,
       allValidationIssues: computed,
+      canBuildQuery: computed,
 
       setShowFunctionsExplorerPanel: action,
       setShowParametersPanel: action,
@@ -222,6 +225,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setIsLocalModeEnabled: action,
       setGetAllFunction: action,
       setLambdaWriteMode: action,
+      setINTERNAL__enableInitializingDefaultSimpleExpressionValue: action,
 
       resetQueryResult: action,
       resetQueryContent: action,
@@ -400,6 +404,12 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setGetAllFunction(val: QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS): void {
     this.getAllFunction = val;
+  }
+
+  setINTERNAL__enableInitializingDefaultSimpleExpressionValue(
+    val: boolean,
+  ): void {
+    this.INTERNAL__enableInitializingDefaultSimpleExpressionValue = val;
   }
 
   get isQuerySupported(): boolean {
@@ -802,7 +812,19 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   }
 
   get allValidationIssues(): string[] {
-    return this.fetchStructureState.implementation.allValidationIssues;
+    return this.fetchStructureState.implementation.allValidationIssues.concat(
+      this.filterState.allValidationIssues,
+    );
+  }
+
+  get canBuildQuery(): boolean {
+    return (
+      !this.filterState.hasInvalidFilterValues &&
+      !this.filterState.hasInvalidDerivedPropertyParameters &&
+      !this.fetchStructureState.implementation.hasInvalidFilterValues &&
+      !this.fetchStructureState.implementation
+        .hasInvalidDerivedPropertyParameters
+    );
   }
 
   /**

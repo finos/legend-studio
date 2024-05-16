@@ -46,6 +46,7 @@ import {
   INTERNAL__PropagatedValue,
   isSubType,
   type ObserverContext,
+  InstanceValue,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -128,6 +129,37 @@ export const getCollectionValueSpecificationType = (
     return valueEnumerationTypes[0];
   }
   return undefined;
+};
+
+export const isValidInstanceValue = (value: InstanceValue): boolean => {
+  const isRequired = value.multiplicity.lowerBound >= 1;
+  // required and no values provided. LatestDate doesn't have any values so we skip that check for it.
+  if (
+    isRequired &&
+    value.genericType?.value.rawType !== PrimitiveType.LATESTDATE &&
+    (!value.values.length ||
+      value.values.some((val) => val === null || val === undefined))
+  ) {
+    return false;
+  }
+  // more values than allowed
+  if (
+    !(value instanceof CollectionInstanceValue) &&
+    value.multiplicity.upperBound &&
+    value.values.length > value.multiplicity.upperBound
+  ) {
+    return false;
+  }
+  // collection instance with invalid values
+  if (
+    value instanceof CollectionInstanceValue &&
+    value.values.some(
+      (val) => val instanceof InstanceValue && !isValidInstanceValue(val),
+    )
+  ) {
+    return false;
+  }
+  return true;
 };
 
 export const unwrapNotExpression = (

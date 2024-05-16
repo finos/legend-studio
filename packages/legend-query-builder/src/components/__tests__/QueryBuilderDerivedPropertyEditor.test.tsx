@@ -20,16 +20,21 @@ import { test, expect } from '@jest/globals';
 import {
   waitFor,
   fireEvent,
-  getByTitle,
   getByText,
   queryAllByAltText,
+  getAllByTitle,
+  getByRole,
 } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import TEST_DATA__QueryBuilder_Model_SimpleRelational from './TEST_DATA__QueryBuilder_Model_SimpleRelational.json' assert { type: 'json' };
 import { TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalResult } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
+import {
+  TEST__setUpQueryBuilder,
+  selectFromCustomSelectorInput,
+} from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { TEST_DATA__simpleProjection } from './TEST_DATA__QueryBuilder_DerivedPropertyEditor.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 test(
   integrationTest(
@@ -64,7 +69,9 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS,
     );
     fireEvent.click(
-      getByTitle(tdsPanel, 'Set Derived Property Argument(s)...'),
+      guaranteeNonNullable(
+        getAllByTitle(tdsPanel, 'Set Derived Property Argument(s)...')[0],
+      ),
     );
     const modal = await waitFor(() => renderResult.getByRole('dialog'));
     expect(
@@ -83,5 +90,54 @@ test(
     ).not.toBeNull();
     const stringParam = await waitFor(() => queryAllByAltText(modal, 'var_1')); // String type parameter
     expect(stringParam.length).toBe(0);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder properly resets optional Enum parameter in derived property editor',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'my::map',
+      'my::runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalResult,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__simpleProjection.parameters,
+          TEST_DATA__simpleProjection.body,
+        ),
+      );
+    });
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
+    );
+    const tdsPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS,
+    );
+    fireEvent.click(
+      guaranteeNonNullable(
+        getAllByTitle(tdsPanel, 'Set Derived Property Argument(s)...')[1],
+      ),
+    );
+    const modal = await waitFor(() => renderResult.getByRole('dialog'));
+    expect(
+      await waitFor(() => getByText(modal, 'Derived Property')),
+    ).not.toBeNull();
+
+    // Check for default value
+    expect(await waitFor(() => getByText(modal, 'Corp'))).not.toBeNull();
+
+    // Select new value
+    selectFromCustomSelectorInput(modal, 'LLC');
+    expect(await waitFor(() => getByText(modal, 'LLC'))).not.toBeNull();
+
+    // Reset value
+    fireEvent.click(getByRole(modal, 'button', { name: 'Reset' }));
+    expect(await waitFor(() => getByText(modal, 'Corp'))).not.toBeNull();
   },
 );
