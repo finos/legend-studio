@@ -29,7 +29,6 @@ import {
   CheckIcon,
   CaretDownIcon,
   DiffIcon,
-  WaterDropIcon,
   MenuContentDivider,
   Dialog,
   Modal,
@@ -74,7 +73,6 @@ import { QueryBuilderDiffViewPanelDiaglog } from './QueryBuilderDiffPanel.js';
 import { guaranteeType } from '@finos/legend-shared';
 import { QueryBuilderGraphFetchTreeState } from '../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { QueryBuilderPostTDSPanel } from './fetch-structure/QueryBuilderPostTDSPanel.js';
-import { QueryBuilderWatermarkEditor } from './watermark/QueryBuilderWatermark.js';
 import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpressionPanel.js';
 import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
@@ -292,10 +290,6 @@ export const QueryBuilder = observer(
       }
     };
 
-    const openWatermark = (): void => {
-      queryBuilderState.watermarkState.setIsEditingWatermark(true);
-    };
-
     const toggleEnableCalendar = (): void => {
       if (queryBuilderState.isCalendarEnabled) {
         queryBuilderState.applicationStore.alertService.setActionAlertInfo({
@@ -478,17 +472,6 @@ export const QueryBuilder = observer(
           <div className="query-builder__content">
             <div className="query-builder__header">
               <div className="query-builder__header__statuses">
-                {queryBuilderState.watermarkState.value && (
-                  <button
-                    className="query-builder__header__status query-builder__header__status--action"
-                    onClick={openWatermark}
-                    tabIndex={-1}
-                    title="Used watermark"
-                    name="Used watermark"
-                  >
-                    <WaterDropIcon />
-                  </button>
-                )}
                 {queryBuilderState.isCalendarEnabled && (
                   <div
                     className="query-builder__header__status"
@@ -496,11 +479,6 @@ export const QueryBuilder = observer(
                   >
                     <CalendarClockIcon className="query-builder__header__status__icon--calendar" />
                   </div>
-                )}
-                {queryBuilderState.watermarkState.isEditingWatermark && (
-                  <QueryBuilderWatermarkEditor
-                    queryBuilderState={queryBuilderState}
-                  />
                 )}
               </div>
               <div className="query-builder__header__actions">
@@ -660,14 +638,6 @@ export const QueryBuilder = observer(
                         </MenuContentItemIcon>
                         <MenuContentItemLabel>
                           Show Post-Filter
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentItem onClick={openWatermark}>
-                        <MenuContentItemIcon>
-                          <WaterDropIcon />
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Show Watermark
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentItem

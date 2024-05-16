@@ -32,10 +32,15 @@ import {
   MenuContentItem,
   ModalFooterButton,
   InputWithInlineValidation,
+  PanelDivider,
+  PanelDropZone,
+  PanelFormSection,
 } from '@finos/legend-art';
 import { SortColumnState } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
 import {
   addUniqueEntry,
+  clone,
+  deepClone,
   deleteEntry,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
@@ -43,9 +48,23 @@ import { useApplicationStore } from '@finos/legend-application';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { QueryBuilderProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
+import { VariableSelector } from '../shared/QueryBuilderVariableSelector.js';
+import {
+  type ValueSpecification,
+  type VariableExpression,
+  PrimitiveType,
+  Multiplicity,
+  areMultiplicitiesEqual,
+} from '@finos/legend-graph';
+import {
+  BasicValueSpecificationEditor,
+  QUERY_BUILDER_VARIABLE_DND_TYPE,
+  type QueryBuilderVariableDragSource,
+} from '../shared/BasicValueSpecificationEditor.js';
+import { useDrop } from 'react-dnd';
 
 const ColumnSortEditor = observer(
   (props: {
@@ -246,6 +265,10 @@ export const QueryResultModifierModal = observer(
     const [slice, setSlice] = useState<
       [number | undefined, number | undefined]
     >(stateSlice ?? [undefined, undefined]);
+    const watermarkState = tdsState.queryBuilderState.watermarkState;
+    const [watermarkValue, setWatermarkValue] = useState(
+      deepClone(watermarkState.value),
+    );
 
     // Sync temp state with tdsState when modal is opened/closed
     useEffect(() => {
@@ -253,8 +276,10 @@ export const QueryResultModifierModal = observer(
       setDistinct(stateDistinct);
       setLimitResults(stateLimitResults);
       setSlice(stateSlice ?? [undefined, undefined]);
+      setWatermarkValue(deepClone(watermarkState.value));
     }, [
       resultSetModifierState.showModal,
+      watermarkState.value,
       stateSortColumns,
       stateDistinct,
       stateLimitResults,
@@ -273,6 +298,7 @@ export const QueryResultModifierModal = observer(
         resultSetModifierState.setSlice(undefined);
       }
       resultSetModifierState.setShowModal(false);
+      watermarkState.setValue(watermarkValue);
     };
 
     const handleLimitResultsChange: React.ChangeEventHandler<
@@ -320,6 +346,50 @@ export const QueryResultModifierModal = observer(
       (slice[0] !== undefined &&
         slice[1] !== undefined &&
         slice[0] >= slice[1]);
+
+    // watermark
+    const isParamaterCompatibleWithWaterMark = (
+      parameter: VariableExpression,
+    ): boolean =>
+      PrimitiveType.STRING === parameter.genericType?.value.rawType &&
+      areMultiplicitiesEqual(parameter.multiplicity, Multiplicity.ONE);
+    const handleDrop = useCallback(
+      (item: QueryBuilderVariableDragSource): void => {
+        setWatermarkValue(item.variable);
+      },
+      [setWatermarkValue],
+    );
+    const toggleWatermark = (): void => {
+      if (watermarkValue) {
+        setWatermarkValue(undefined);
+      } else {
+        setWatermarkValue(watermarkState.getDefaultValue());
+      }
+    };
+    const [{ isParameterValueDragOver }, dropTargetConnector] = useDrop<
+      QueryBuilderVariableDragSource,
+      void,
+      { isParameterValueDragOver: boolean }
+    >(
+      () => ({
+        accept: [QUERY_BUILDER_VARIABLE_DND_TYPE],
+        drop: (item, monitor): void => {
+          if (
+            !monitor.didDrop() &&
+            // Only allows parameters with muliplicity 1 and type string
+            isParamaterCompatibleWithWaterMark(item.variable)
+          ) {
+            handleDrop(item);
+          } // prevent drop event propagation to accomondate for nested DnD
+        },
+        collect: (monitor) => ({
+          isParameterValueDragOver: monitor.isOver({
+            shallow: true,
+          }),
+        }),
+      }),
+      [handleDrop],
+    );
 
     return (
       <Dialog
@@ -428,6 +498,74 @@ export const QueryResultModifierModal = observer(
                   </div>
                 </div>
               </div>
+              <>
+                <PanelFormSection>
+                  <label className="panel__content__form__section__header__label">
+                    Watermark
+                  </label>
+                  <button
+                    className={clsx(
+                      'panel__content__form__section__toggler',
+                      'panel__content__form__section__toggler__btn',
+                      {
+                        'panel__content__form__section__toggler__btn--toggled':
+                          watermarkValue,
+                      },
+                    )}
+                    onClick={toggleWatermark}
+                    tabIndex={-1}
+                  >
+                    {watermarkValue ? <CheckSquareIcon /> : <SquareIcon />}
+                    <div className="panel__content__form__section__toggler__prompt">
+                      Enable Watermark
+                    </div>
+                  </button>
+                </PanelFormSection>
+                {watermarkValue && (
+                  <>
+                    <PanelFormSection>
+                      <div className="query-builder__variable-editor">
+                        <PanelDropZone
+                          isDragOver={isParameterValueDragOver}
+                          dropTargetConnector={dropTargetConnector}
+                        >
+                          <BasicValueSpecificationEditor
+                            valueSpecification={watermarkValue}
+                            setValueSpecification={(
+                              val: ValueSpecification,
+                            ): void => {
+                              setWatermarkValue(clone(val));
+                            }}
+                            graph={
+                              watermarkState.queryBuilderState.graphManagerState
+                                .graph
+                            }
+                            obseverContext={
+                              watermarkState.queryBuilderState.observerContext
+                            }
+                            typeCheckOption={{
+                              expectedType: PrimitiveType.STRING,
+                            }}
+                            resetValue={() =>
+                              setWatermarkValue(
+                                watermarkState.getDefaultValue(),
+                              )
+                            }
+                            isConstant={watermarkState.queryBuilderState.constantState.isValueSpecConstant(
+                              watermarkValue,
+                            )}
+                          />
+                        </PanelDropZone>
+                      </div>
+                    </PanelFormSection>
+                    <PanelDivider />
+                    <VariableSelector
+                      filterBy={isParamaterCompatibleWithWaterMark}
+                      queryBuilderState={tdsState.queryBuilderState}
+                    />
+                  </>
+                )}
+              </>
             </div>
           </ModalBody>
           <ModalFooter>

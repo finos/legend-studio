@@ -116,6 +116,7 @@ import {
   QueryBuilderDerivationInfoTooltip,
   QueryBuilderPropertyInfoTooltip,
 } from '../shared/QueryBuilderPropertyInfoTooltip.js';
+import { getNameOfValueSpecification } from '../shared/QueryBuilderVariableSelector.js';
 
 const QueryBuilderProjectionColumnContextMenu = observer(
   forwardRef<
@@ -1211,6 +1212,22 @@ export const QueryBuilderTDSPanel = observer(
                   onClick={openResultSetModifierEditor}
                 >
                   {`${tdsState.resultSetModifierState.slice[0]},${tdsState.resultSetModifierState.slice[1]}`}
+                </div>
+              </div>
+            )}
+            {tdsState.queryBuilderState.watermarkState.value && (
+              <div className="query-builder__projection__result-modifier-prompt__group">
+                <div className="query-builder__projection__result-modifier-prompt__group__label">
+                  Watermark
+                </div>
+                <div
+                  className="query-builder__projection__result-modifier-prompt__group__content"
+                  onClick={openResultSetModifierEditor}
+                >
+                  {getNameOfValueSpecification(
+                    tdsState.queryBuilderState.watermarkState.value,
+                    tdsState.queryBuilderState,
+                  )}
                 </div>
               </div>
             )}
