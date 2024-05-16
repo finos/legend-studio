@@ -738,9 +738,9 @@ export const buildDatePickerOption = (
           valueSpecification.values[0] === null
             ? ''
             : valueSpecification.genericType.value.rawType.path ===
-              PRIMITIVE_TYPE.DATETIME
-            ? CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME
-            : CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
+                PRIMITIVE_TYPE.DATETIME
+              ? CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME
+              : CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
         );
   }
 };

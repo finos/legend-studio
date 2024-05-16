@@ -136,8 +136,8 @@ const QueryBuilderStatusBar = observer(
                   !queryBuilderState.canBuildQuery
                     ? 'Please fix query errors to show changes'
                     : queryBuilderState.changeDetectionState.hasChanged
-                    ? 'Show changes'
-                    : 'Query has not been changed'
+                      ? 'Show changes'
+                      : 'Query has not been changed'
                 }
               >
                 <DiffIcon />

@@ -93,8 +93,8 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
                 !(editorStore instanceof ExistingQueryEditorStore)
                   ? 'Please save your query first before productionizing'
                   : !editorStore.queryBuilderState?.canBuildQuery
-                  ? 'Please fix query errors before productionizing'
-                  : 'Productionize query...'
+                    ? 'Please fix query errors before productionizing'
+                    : 'Productionize query...'
               }
             >
               <ArrowCircleUpIcon className="query-editor__header__action__icon--productionize" />

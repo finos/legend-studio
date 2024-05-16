@@ -105,9 +105,8 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
     // Value
     const stateValue = constantState.value;
     const [selectedValue, setSelectedValue] = useState(deepClone(stateValue));
-    const [shouldFocusOnValue, setShouldFocusOnValue] = useState<boolean>(
-      !isCreating,
-    );
+    const [shouldFocusOnValue, setShouldFocusOnValue] =
+      useState<boolean>(!isCreating);
     const handleValueInputRef = useCallback(
       (ref: HTMLInputElement | null): void => {
         if (shouldFocusOnValue) {
