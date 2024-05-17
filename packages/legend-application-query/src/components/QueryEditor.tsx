@@ -1056,9 +1056,6 @@ export const QueryEditor = observer(() => {
                 <MenuContentItem onClick={goToQuerySetup}>
                   Back to query setup
                 </MenuContentItem>
-                <MenuContentItem onClick={goToQuerySetup}>
-                  About Legend Query
-                </MenuContentItem>
                 <MenuContentItem onClick={goToReleaseLog}>
                   Legend Query Release Log
                 </MenuContentItem>

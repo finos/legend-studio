@@ -18,7 +18,7 @@ import { TEST__getApplicationVersionData } from '@finos/legend-application/test'
 import { LegendQueryApplicationConfig } from '../../application/LegendQueryApplicationConfig.js';
 
 const TEST_DATA__appConfig = {
-  appName: 'test-query-app',
+  appName: 'query',
   env: 'test-env',
   engine: {
     url: 'https://testEngineUrl',

@@ -143,7 +143,7 @@ export const ReleaseNotesManager = observer(() => {
   };
   const title = `Legend ${prettyCONSTName(
     applicationStore.config.appName,
-  )} has been upgraded ! `;
+  )} has been upgraded !`;
   return (
     <Dialog
       open={isOpen}
