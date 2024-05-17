@@ -788,7 +788,6 @@ const QueryEditorHeaderContent = observer(
         );
       });
     };
-
     return (
       <div
         className="query-editor__header__content"
@@ -1037,6 +1036,8 @@ export const QueryEditor = observer(() => {
         generateQuerySetupRoute(),
       ),
     );
+  const goToReleaseLog = (): void =>
+    applicationStore.releaseNotesService.setReleaseLog(true);
   // settings
   // NOTE: this is temporary until we find a better home for these settings in query builder
   const engineConfig =
@@ -1067,6 +1068,9 @@ export const QueryEditor = observer(() => {
               <MenuContent>
                 <MenuContentItem onClick={goToQuerySetup}>
                   Back to query setup
+                </MenuContentItem>
+                <MenuContentItem onClick={goToReleaseLog}>
+                  Legend Query Release Log
                 </MenuContentItem>
                 <MenuContentItem
                   disabled={!appDocUrl}

@@ -55,6 +55,7 @@ export * from './stores/event/IframeEventNotifierPlugin.js';
 export * from './stores/TelemetryService.js';
 export * from './stores/NotificationService.js';
 export * from './stores/AlertService.js';
+export * from './stores/ReleaseNotesService.js';
 export * from './stores/AssistantService.js';
 export * from './stores/ApplicationNavigationContextService.js';
 export * from './stores/LegendApplicationPlugin.js';
