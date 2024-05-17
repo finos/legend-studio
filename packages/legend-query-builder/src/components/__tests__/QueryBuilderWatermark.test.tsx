@@ -46,7 +46,7 @@ test(
 
     // Open Query Options modal
     const queryOptionsButton = await waitFor(() =>
-      renderResult.getByRole('button', { name: 'Query Options' }),
+      renderResult.getByRole('button', { name: 'Set Query Options' }),
     );
     fireEvent.click(queryOptionsButton);
     fireEvent.click(
@@ -95,7 +95,7 @@ test(
 
     // Open Query Options modal, enable and save watermark
     const queryOptionsButton = await waitFor(() =>
-      renderResult.getByRole('button', { name: 'Query Options' }),
+      renderResult.getByRole('button', { name: 'Set Query Options' }),
     );
     fireEvent.click(queryOptionsButton);
     fireEvent.click(
@@ -163,7 +163,7 @@ test(
 
     // Open watermark modal
     const queryOptionsButton = await waitFor(() =>
-      renderResult.getByRole('button', { name: 'Query Options' }),
+      renderResult.getByRole('button', { name: 'Set Query Options' }),
     );
     fireEvent.click(queryOptionsButton);
     await waitFor(() => renderResult.getByText('Watermark'));
