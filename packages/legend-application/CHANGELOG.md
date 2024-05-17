@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 15.1.0
+
+### Minor Changes
+
+- [#3153](https://github.com/finos/legend-studio/pull/3153) [`3027689`](https://github.com/finos/legend-studio/commit/3027689f37a9ba9afd694072a2559bbbb4d9a15e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add release notes and log viewer for LegendApplication.
+
 ## 15.0.76
 
 ## 15.0.75
