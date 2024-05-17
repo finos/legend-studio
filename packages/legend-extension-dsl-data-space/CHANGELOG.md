@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.3.12
+
+### Patch Changes
+
+- [#3155](https://github.com/finos/legend-studio/pull/3155) [`98dc893`](https://github.com/finos/legend-studio/commit/98dc893935497060ab6a5c26cd20f18c4dbc7d42) ([@travisstebbins](https://github.com/travisstebbins)) - Sort selectors for DataSpaceQueryBuilder component
+
+- [#3146](https://github.com/finos/legend-studio/pull/3146) [`45fd4af`](https://github.com/finos/legend-studio/commit/45fd4afe2484a1ac8eecd9f06668fc7094137b52) ([@travisstebbins](https://github.com/travisstebbins)) - Update query builder setup to use text instead of icons
+
 ## 10.3.11
 
 ## 10.3.10

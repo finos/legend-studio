@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.29
+
+### Patch Changes
+
+- [#3094](https://github.com/finos/legend-studio/pull/3094) [`1289579`](https://github.com/finos/legend-studio/commit/12895798774e0123463a96d94799bc676020ec1f) ([@travisstebbins](https://github.com/travisstebbins)) - Update color of selector input with error
+
 ## 7.1.28
 
 ## 7.1.27
