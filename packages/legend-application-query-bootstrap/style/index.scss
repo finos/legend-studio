@@ -18,7 +18,6 @@
 @import url('@finos/legend-application/lib/index.css');
 @import url('@finos/legend-lego/lib/index.css');
 @import url('@finos/legend-query-builder/lib/index.css');
-@import url('@finos/legend-extension-dsl-diagram/lib/index.css');
 @import url('@finos/legend-application-query/lib/index.css');
 
 @import url('@finos/legend-extension-dsl-data-space/lib/index.css');
@@ -889,30 +888,26 @@
 
     // ------------------------------------ App ---------------------------------------
 
-    .query-editor__header {
+    .query-editor__logo-header {
       background: var(--color-legacylight-light-blue-350);
       border-color: var(--color-legacylight-light-blue-600);
-
-      &__label {
-        background: var(--color-dark-shade-100);
-      }
-
-      &__label__tag {
-        background: var(--color-light-shade-50);
-        color: var(--color-light-grey-150);
-      }
     }
 
     .query-builder__header__statuses {
       background: var(--color-legacylight-light-grey-200);
     }
 
-    .query-editor__header__menu {
+    .query-editor__logo-header__menu {
       border-color: var(--color-legacylight-light-blue-600);
+      background: var(--color-legacylight-light-blue-200);
     }
 
-    .query-editor__header__menu-item {
+    .query-editor__logo-header__menu-item {
       color: var(--color-white);
+    }
+
+    .query-editor__logo-header__name {
+      color: var(--color-light-grey-180);
     }
 
     .query-editor__header__action__view-project .btn--dark,
@@ -938,8 +933,9 @@
       color: var(--color-white);
     }
 
-    .query-builder__status-bar {
-      background: var(--color-legacylight-light-blue-350);
+    .query-editor__header__action__theme-toggler {
+      background: var(--color-legacylight-light-blue-250);
+      border: 0.1rem solid var(--color-legacylight-light-blue-250);
     }
 
     .query-builder__header {

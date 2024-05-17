@@ -42,6 +42,7 @@ import {
 } from '@finos/legend-extension-dsl-data-space/application';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '@finos/legend-extension-dsl-data-space/graph';
 import {
+  QueryBuilderActionConfig_QueryApplication,
   QueryEditorStore,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
@@ -52,6 +53,7 @@ import { renderDataSpaceQuerySetupSetupPanelContent } from '../../components/dat
 import { DataSpaceAdvancedSearchState } from '@finos/legend-extension-dsl-data-space/application-query';
 
 export class DataSpaceQuerySetupState extends QueryBuilderState {
+  editorStore: QueryEditorStore;
   readonly depotServerClient: DepotServerClient;
   readonly loadDataSpacesState = ActionState.create();
   readonly onDataSpaceChange: (val: DataSpaceInfo) => void;
@@ -75,6 +77,7 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
   advancedSearchState?: DataSpaceAdvancedSearchState | undefined;
 
   constructor(
+    editorStore: QueryEditorStore,
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
     depotServerClient: DepotServerClient,
@@ -107,6 +110,10 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
       loadDataSpaces: flow,
     });
 
+    this.editorStore = editorStore;
+    this.workflowState.updateActionConfig(
+      new QueryBuilderActionConfig_QueryApplication(editorStore),
+    );
     this.depotServerClient = depotServerClient;
     this.onDataSpaceChange = onDataSpaceChange;
     this.viewProject = viewProject;
@@ -175,6 +182,7 @@ export class DataSpaceQuerySetupStore extends QueryEditorStore {
 
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
     const queryBuilderState = new DataSpaceQuerySetupState(
+      this,
       this.applicationStore,
       this.graphManagerState,
       this.depotServerClient,

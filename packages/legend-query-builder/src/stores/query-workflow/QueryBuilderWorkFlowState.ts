@@ -21,12 +21,22 @@ export interface FetchStructureLayoutConfig {
   showInFetchPanel: boolean;
 }
 
+export class QueryBuilderActionConfig {
+  static INSTANCE = new QueryBuilderActionConfig();
+}
+
 export abstract class QueryBuilderWorkflowState {
+  actionConfig = QueryBuilderActionConfig.INSTANCE;
+
   abstract get showStatusBar(): boolean;
 
   abstract getFetchStructureLayoutConfig(
     state: QueryBuilderState,
   ): FetchStructureLayoutConfig;
+
+  updateActionConfig(actionConfig: QueryBuilderActionConfig): void {
+    this.actionConfig = actionConfig;
+  }
 }
 
 export class QueryBuilderAdvancedWorkflowState extends QueryBuilderWorkflowState {

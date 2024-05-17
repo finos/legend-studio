@@ -43,6 +43,7 @@ import {
 } from '@finos/legend-query-builder';
 import { LegendQueryFrameworkProvider } from '../LegendQueryFrameworkProvider.js';
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
+import { Core_LegendQueryApplicationPlugin } from '../Core_LegendQueryApplicationPlugin.js';
 
 const TEST_QUERY_ID = 'test-query-id';
 export const TEST_QUERY_NAME = 'MyTestQuery';
@@ -55,6 +56,7 @@ export const TEST__provideMockedQueryEditorStore = (customization?: {
 }): ExistingQueryEditorStore => {
   const pluginManager =
     customization?.pluginManager ?? LegendQueryPluginManager.create();
+  pluginManager.usePlugins([new Core_LegendQueryApplicationPlugin()]).install();
   const applicationStore =
     customization?.applicationStore ??
     new ApplicationStore(

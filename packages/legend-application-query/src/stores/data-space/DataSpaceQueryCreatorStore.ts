@@ -45,6 +45,7 @@ import {
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
+  QueryBuilderActionConfig_QueryApplication,
   QueryEditorStore,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
@@ -148,6 +149,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       this.graphManagerState,
       this.depotServerClient,
       QueryBuilderDataBrowserWorkflow.INSTANCE,
+      new QueryBuilderActionConfig_QueryApplication(this),
       dataSpace,
       executionContext,
       (dataSpaceInfo: DataSpaceInfo) => {

@@ -30,8 +30,8 @@ export { QueryBuilderNavigationBlocker } from './components/QueryBuilderNavigati
 export { QueryBuilder } from './components/QueryBuilder.js';
 export { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './components/QueryBuilderComponentElement.js';
 export {
-  QueryBuilderState,
   type QuerySDLC,
+  QueryBuilderState,
 } from './stores/QueryBuilderState.js';
 export {
   getTDSColumnDerivedProperyFromType,
