@@ -40,6 +40,9 @@ import {
   Panel,
   PanelFullContent,
   CustomSelectorInput,
+  PencilIcon,
+  MoonIcon,
+  SunIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
@@ -53,7 +56,10 @@ import {
   generateExistingQueryEditorRoute,
 } from '../__lib__/LegendQueryNavigation.js';
 import { ExistingQueryEditorStore } from '../stores/QueryEditorStore.js';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  LEGEND_APPLICATION_COLOR_THEME,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { useParams } from '@finos/legend-application/browser';
 import {
   MappingQueryCreatorStoreProvider,
@@ -356,6 +362,12 @@ export const QueryEditorExistingQueryHeader = observer(
             title="Double-click to rename query"
           >
             {existingEditorStore.lightQuery.name}
+            <button
+              className="panel__content__form__section__list__item__edit-btn"
+              onClick={enableRename}
+            >
+              <PencilIcon />
+            </button>
           </div>
         )}
         {existingEditorStore.updateState.saveModal && (
@@ -581,6 +593,15 @@ export const QueryEditor = observer(() => {
       !engineConfig.useClientRequestPayloadCompression,
     );
 
+  const TEMPORARY__toggleLightDarkMode = (): void => {
+    applicationStore.layoutService.setColorTheme(
+      applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        ? LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK
+        : LEGEND_APPLICATION_COLOR_THEME.LEGACY_LIGHT,
+      { persist: true },
+    );
+  };
+
   useEffect(() => {
     flowResult(editorStore.initialize()).catch(
       applicationStore.alertUnhandledError,
@@ -590,73 +611,79 @@ export const QueryEditor = observer(() => {
   return (
     <div className="query-editor">
       <div className="query-editor__logo-header">
-        <div className="query-editor__logo-header__menu">
-          <DropdownMenu
-            className="query-editor__logo-header__menu-item"
-            menuProps={{
-              anchorOrigin: { vertical: 'top', horizontal: 'right' },
-              transformOrigin: { vertical: 'top', horizontal: 'left' },
-              elevation: 7,
-            }}
-            content={
-              <MenuContent>
-                <MenuContentItem onClick={goToQuerySetup}>
-                  Back to query setup
-                </MenuContentItem>
-                <MenuContentItem onClick={goToReleaseLog}>
-                  Legend Query Release Log
-                </MenuContentItem>
-                <MenuContentItem
-                  disabled={!appDocUrl}
-                  onClick={goToDocumentation}
-                >
-                  Documentation
-                </MenuContentItem>
-                {docLinks?.map((entry) => (
-                  <MenuContentItem
-                    key={entry.key}
-                    onClick={(): void => goToDocLink(entry.url)}
-                  >
-                    {entry.label}
+        <div className="query-editor__logo-header__combo">
+          <div className="query-editor__logo-header__combo__menu">
+            <DropdownMenu
+              className="query-editor__logo-header__combo__menu-item"
+              menuProps={{
+                anchorOrigin: { vertical: 'top', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'left' },
+                elevation: 7,
+              }}
+              content={
+                <MenuContent>
+                  <MenuContentItem onClick={goToQuerySetup}>
+                    Back to query setup
                   </MenuContentItem>
-                ))}
-                <MenuContentDivider />
-                <MenuContentItem disabled={true}>Settings</MenuContentItem>
-                <MenuContentItem
-                  onClick={toggleEngineClientRequestPayloadCompression}
-                >
-                  <MenuContentItemIcon>
-                    {engineConfig.useClientRequestPayloadCompression ? (
-                      <CheckIcon />
-                    ) : null}
-                  </MenuContentItemIcon>
-                  <MenuContentItemLabel>
-                    Compress request payload
-                  </MenuContentItemLabel>
-                </MenuContentItem>
-              </MenuContent>
-            }
-          >
-            <MenuIcon />
-          </DropdownMenu>
+                  <MenuContentItem onClick={goToReleaseLog}>
+                    Legend Query Release Log
+                  </MenuContentItem>
+                  <MenuContentItem
+                    disabled={!appDocUrl}
+                    onClick={goToDocumentation}
+                  >
+                    Documentation
+                  </MenuContentItem>
+                  {docLinks?.map((entry) => (
+                    <MenuContentItem
+                      key={entry.key}
+                      onClick={(): void => goToDocLink(entry.url)}
+                    >
+                      {entry.label}
+                    </MenuContentItem>
+                  ))}
+                  <MenuContentDivider />
+                  <MenuContentItem disabled={true}>Settings</MenuContentItem>
+                  <MenuContentItem
+                    onClick={toggleEngineClientRequestPayloadCompression}
+                  >
+                    <MenuContentItemIcon>
+                      {engineConfig.useClientRequestPayloadCompression ? (
+                        <CheckIcon />
+                      ) : null}
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      Compress request payload
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                </MenuContent>
+              }
+            >
+              <MenuIcon />
+            </DropdownMenu>
+          </div>
+          <div className="query-editor__logo-header__combo__name">
+            Legend Query
+          </div>
         </div>
-        <div className="query-editor__logo-header__name">Legend Query</div>
-        {editorStore.queryLoaderState.isQueryLoaderDialogOpen && (
-          <QueryLoaderDialog
-            queryLoaderState={editorStore.queryLoaderState}
-            title="Load query"
-          />
-        )}
-        {editorStore.queryCreatorState.showCreateModal && <CreateQueryDialog />}
-        {isExistingQuery &&
-          editorStore.updateState.showQueryInfo &&
-          editorStore.query && (
-            <QueryEditorExistingQueryInfoModal
-              existingEditorStore={editorStore}
-              query={editorStore.query}
-            />
+        <button
+          title="Toggle light/dark mode"
+          onClick={TEMPORARY__toggleLightDarkMode}
+          className="query-editor__header__action query-editor__header__action__theme-toggler"
+        >
+          {applicationStore.layoutService
+            .TEMPORARY__isLightColorThemeEnabled ? (
+            <>
+              <SunIcon className="query-editor__header__action__icon--bulb--light" />
+            </>
+          ) : (
+            <>
+              <MoonIcon className="query-editor__header__action__icon--bulb--dark" />
+            </>
           )}
+        </button>
       </div>
+
       <div className="query-editor__content">
         <PanelLoadingIndicator isLoading={isLoadingEditor} />
         {!isLoadingEditor && editorStore.queryBuilderState && (
@@ -684,6 +711,21 @@ export const QueryEditor = observer(() => {
             />
           )}
       </div>
+      {editorStore.queryLoaderState.isQueryLoaderDialogOpen && (
+        <QueryLoaderDialog
+          queryLoaderState={editorStore.queryLoaderState}
+          title="Load query"
+        />
+      )}
+      {editorStore.queryCreatorState.showCreateModal && <CreateQueryDialog />}
+      {isExistingQuery &&
+        editorStore.updateState.showQueryInfo &&
+        editorStore.query && (
+          <QueryEditorExistingQueryInfoModal
+            existingEditorStore={editorStore}
+            query={editorStore.query}
+          />
+        )}
     </div>
   );
 });

@@ -37,6 +37,12 @@ import {
   PanelDivider,
   SquareIcon,
   CheckSquareIcon,
+  MenuContentItemIcon,
+  MenuContentItemLabel,
+  ChartIcon,
+  CsvIcon,
+  DebugIcon,
+  ReportIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -306,6 +312,28 @@ export const QueryBuilderResultPanel = observer(
         !queryBuilderState.isLocalModeEnabled,
       );
     };
+
+    const extraExportMenuContentItems = applicationStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as QueryBuilder_LegendApplicationPlugin_Extension
+          ).getExtraQueryBuilderExportMenuActionConfigurations?.() ?? [],
+      )
+      .map((item) => (
+        <MenuContentItem
+          key={item.key}
+          title={item.title ?? ''}
+          onClick={() => {
+            item.onClick(queryBuilderState);
+          }}
+        >
+          {item.icon && <MenuContentItemIcon>{item.icon}</MenuContentItemIcon>}
+          <MenuContentItemLabel>{item.label}</MenuContentItemLabel>
+        </MenuContentItem>
+      ));
+
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL}
@@ -490,14 +518,22 @@ export const QueryBuilderResultPanel = observer(
                           onClick={generatePlan}
                           disabled={isRunQueryDisabled}
                         >
-                          Generate Plan
+                          <MenuContentItemIcon>
+                            <ReportIcon />
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel>
+                            Generate Plan
+                          </MenuContentItemLabel>
                         </MenuContentItem>
                         <MenuContentItem
                           className="btn__dropdown-combo__option"
                           onClick={debugPlanGeneration}
                           disabled={isRunQueryDisabled}
                         >
-                          Debug
+                          <MenuContentItemIcon>
+                            <DebugIcon />
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel>Debug</MenuContentItemLabel>
                         </MenuContentItem>
                       </MenuContent>
                     }
@@ -522,14 +558,15 @@ export const QueryBuilderResultPanel = observer(
                   ).map((format) => (
                     <MenuContentItem
                       key={format}
-                      className="query-builder__result__export__dropdown__menu__item"
                       onClick={(): void => confirmExport(format)}
                     >
-                      {format}
+                      <MenuContentItemIcon>
+                        <CsvIcon />
+                      </MenuContentItemIcon>
+                      <MenuContentItemLabel>{format}</MenuContentItemLabel>
                     </MenuContentItem>
                   ))}
                   <MenuContentItem
-                    className="query-builder__result__export__dropdown__menu__item"
                     onClick={(): void =>
                       resultState.setIsQueryUsageViewerOpened(true)
                     }
@@ -538,8 +575,12 @@ export const QueryBuilderResultPanel = observer(
                       !isExtraQueryUsageOptionsConfigured
                     }
                   >
-                    Query Code Snippets...
+                    <MenuContentItemIcon>
+                      <ChartIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>Others...</MenuContentItemLabel>
                   </MenuContentItem>
+                  {extraExportMenuContentItems}
                 </MenuContent>
               }
               menuProps={{
@@ -558,6 +599,22 @@ export const QueryBuilderResultPanel = observer(
             {resultState.isQueryUsageViewerOpened && (
               <QueryUsageViewer resultState={resultState} />
             )}
+            {applicationStore.pluginManager
+              .getApplicationPlugins()
+              .flatMap(
+                (plugin) =>
+                  (
+                    plugin as QueryBuilder_LegendApplicationPlugin_Extension
+                  ).getExtraQueryBuilderExportMenuActionConfigurations?.() ??
+                  [],
+              )
+              .map((item) => (
+                <div key={item.key}>
+                  {item.renderExtraComponent
+                    ? item.renderExtraComponent(queryBuilderState)
+                    : undefined}
+                </div>
+              ))}
           </div>
         </div>
         <PanelContent>

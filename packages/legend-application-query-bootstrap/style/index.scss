@@ -897,16 +897,16 @@
       background: var(--color-legacylight-light-grey-200);
     }
 
-    .query-editor__logo-header__menu {
+    .query-editor__logo-header__combo__menu {
       border-color: var(--color-legacylight-light-blue-600);
       background: var(--color-legacylight-light-blue-200);
     }
 
-    .query-editor__logo-header__menu-item {
+    .query-editor__logo-header__combo__menu-item {
       color: var(--color-white);
     }
 
-    .query-editor__logo-header__name {
+    .query-editor__logo-header__combo__name {
       color: var(--color-light-grey-180);
     }
 
@@ -936,6 +936,16 @@
     .query-editor__header__action__theme-toggler {
       background: var(--color-legacylight-light-blue-250);
       border: 0.1rem solid var(--color-legacylight-light-blue-250);
+    }
+
+    .query-editor__header__action-combo,
+    .query-editor__header__action-combo__main-btn {
+      background: var(--color-legacylight-light-blue-250) !important;
+    }
+
+    .query-editor__header__action-combo svg,
+    .query-editor__header__action-combo__main-btn svg {
+      color: var(--color-white);
     }
 
     .query-builder__header {

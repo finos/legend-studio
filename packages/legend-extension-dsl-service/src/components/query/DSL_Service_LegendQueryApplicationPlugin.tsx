@@ -20,25 +20,26 @@ import {
   ExistingQueryEditorStore,
   QueryBuilderActionConfig_QueryApplication,
 } from '@finos/legend-application-query';
-import { ArrowCircleUpIcon } from '@finos/legend-art';
+import { ArrowCircleUpIcon, RocketIcon } from '@finos/legend-art';
 import { generateQueryProductionizerRoute } from '../../__lib__/studio/DSL_Service_LegendStudioNavigation.js';
 import { StoreProjectData } from '@finos/legend-server-depot';
 import { parseProjectIdentifier } from '@finos/legend-storage';
 import { buildUrl } from '@finos/legend-shared';
-import { ServiceRegisterAction } from './ServiceRegisterModal.js';
-import type { QueryBuilderHeaderActionConfiguration } from '@finos/legend-query-builder';
+import { ServiceRegisterModal } from './ServiceRegisterModal.js';
+import type { QueryBuilderMenuActionConfiguration } from '@finos/legend-query-builder';
 
 export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {
     super(packageJson.extensions.applicationQueryPlugin, packageJson.version);
   }
 
-  getExtraQueryBuilderHeaderActionConfigurations(): QueryBuilderHeaderActionConfiguration[] {
+  getExtraQueryBuilderExportMenuActionConfigurations?(): QueryBuilderMenuActionConfiguration[] {
     return [
       {
-        key: 'productionize-query',
-        category: 1,
-        renderer: (queryBuilderState): React.ReactNode => {
+        key: 'export-as-productionized-query',
+        title: 'Productionize query...',
+        label: 'Productionized Query',
+        onClick: (queryBuilderState): void => {
           if (
             queryBuilderState.workflowState.actionConfig instanceof
             QueryBuilderActionConfig_QueryApplication
@@ -80,45 +81,33 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
               }
             };
 
-            const proceed = (): void => {
-              queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
-                openQueryProductionizer().catch(
-                  editorStore.applicationStore.alertUnhandledError,
-                );
-              });
-            };
-
-            return (
-              <button
-                className="query-editor__header__action btn--dark"
-                tabIndex={-1}
-                onClick={proceed}
-                disabled={
-                  !(editorStore instanceof ExistingQueryEditorStore) ||
-                  !editorStore.queryBuilderState?.canBuildQuery
-                }
-                title={
-                  !(editorStore instanceof ExistingQueryEditorStore)
-                    ? 'Please save your query first before productionizing'
-                    : !editorStore.queryBuilderState?.canBuildQuery
-                      ? 'Please fix query errors before productionizing'
-                      : 'Productionize query...'
-                }
-              >
-                <ArrowCircleUpIcon className="query-editor__header__action__icon--productionize" />
-                <div className="query-editor__header__action__label">
-                  Productionize Query
-                </div>
-              </button>
-            );
+            queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
+              openQueryProductionizer().catch(
+                editorStore.applicationStore.alertUnhandledError,
+              );
+            });
           }
-          return undefined;
         },
+        icon: <ArrowCircleUpIcon />,
       },
       {
-        key: 'register-service',
-        category: 1,
-        renderer: (queryBuilderState): React.ReactNode => {
+        key: 'export-as-dev-service',
+        title: 'Register query as service',
+        label: 'DEV Service',
+        onClick: (queryBuilderState): void => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            editorStore.setShowRegisterServiceModal(true);
+          }
+        },
+        icon: <RocketIcon />,
+        renderExtraComponent: (
+          queryBuilderState,
+        ): React.ReactNode | undefined => {
           if (
             queryBuilderState.workflowState.actionConfig instanceof
             QueryBuilderActionConfig_QueryApplication
@@ -126,10 +115,17 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
             const editorStore =
               queryBuilderState.workflowState.actionConfig.editorStore;
             return (
-              <ServiceRegisterAction
-                editorStore={editorStore}
-                queryBuilderState={queryBuilderState}
-              />
+              <>
+                {editorStore.showRegisterServiceModal && (
+                  <ServiceRegisterModal
+                    editorStore={editorStore}
+                    onClose={(): void =>
+                      editorStore.setShowRegisterServiceModal(false)
+                    }
+                    queryBuilderState={queryBuilderState}
+                  />
+                )}
+              </>
             );
           }
           return undefined;
