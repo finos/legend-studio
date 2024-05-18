@@ -40,7 +40,6 @@ import {
   PanelDivider,
   PanelFullContent,
   PanelLoadingIndicator,
-  RocketIcon,
   SquareIcon,
 } from '@finos/legend-art';
 import {
@@ -72,7 +71,7 @@ export const generateServiceURL = (
   return `${urlPrefix ?? `/${uuid()}`}${paramSuffix}`;
 };
 
-const ServiceRegisterModal = observer(
+export const ServiceRegisterModal = observer(
   (props: {
     editorStore: QueryEditorStore;
     onClose: () => void;
@@ -354,49 +353,6 @@ const ServiceRegisterModal = observer(
           </div>
         </Modal>
       </Dialog>
-    );
-  },
-);
-
-export const ServiceRegisterAction = observer(
-  (props: {
-    editorStore: QueryEditorStore;
-    queryBuilderState: QueryBuilderState;
-  }) => {
-    const { editorStore, queryBuilderState } = props;
-
-    const [showRegisterServiceModal, setShowRegisterServiceModal] =
-      useState(false);
-    const registerCurrentQuery = (): void => {
-      setShowRegisterServiceModal(true);
-    };
-    const onClose = (): void => setShowRegisterServiceModal(false);
-    return (
-      <>
-        <button
-          className="query-editor__header__action btn--dark"
-          tabIndex={-1}
-          onClick={registerCurrentQuery}
-          disabled={!queryBuilderState.canBuildQuery}
-          title={
-            !queryBuilderState.canBuildQuery
-              ? 'Please fix query errors before registering query as service'
-              : 'Register query as service'
-          }
-        >
-          <RocketIcon className="query-editor__header__action__icon--service" />
-          <div className="query-editor__header__action__label">
-            Register DEV Service
-          </div>
-        </button>
-        {showRegisterServiceModal && (
-          <ServiceRegisterModal
-            editorStore={editorStore}
-            onClose={onClose}
-            queryBuilderState={queryBuilderState}
-          />
-        )}
-      </>
     );
   },
 );

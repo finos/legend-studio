@@ -44,6 +44,8 @@ import {
   DataAccessIcon,
   AssistantIcon,
   clsx,
+  DocumentationIcon,
+  CodeIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -83,6 +85,7 @@ import { RedoButton, UndoButton } from '@finos/legend-lego/application';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
 import { onChangeFetchStructureImplementation } from '../stores/fetch-structure/QueryBuilderFetchStructureState.js';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
+import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
 
 const QueryBuilderPostGraphFetchPanel = observer(
   (props: { graphFetchState: QueryBuilderGraphFetchTreeState }) => {
@@ -373,6 +376,9 @@ export const QueryBuilder = observer(
     const editQueryInPure = (): void => {
       openLambdaEditor(QueryBuilderTextEditorMode.TEXT);
     };
+    const showQueryInPure = (): void => {
+      openLambdaEditor(QueryBuilderTextEditorMode.TEXT);
+    };
     const showQueryProtocol = (): void => {
       openLambdaEditor(QueryBuilderTextEditorMode.JSON);
     };
@@ -428,8 +434,38 @@ export const QueryBuilder = observer(
       queryBuilderState.changeHistoryState.redo();
     };
 
+    const queryDocEntry = applicationStore.documentationService.getDocEntry(
+      QUERY_BUILDER_DOCUMENTATION_KEY.TUTORIAL_QUERY_BUILDER,
+    );
+    const openQueryTutorial = (): void => {
+      if (queryDocEntry?.url) {
+        applicationStore.navigationService.navigator.visitAddress(
+          queryDocEntry.url,
+        );
+      }
+    };
     const toggleAssistant = (): void =>
       applicationStore.assistantService.toggleAssistant();
+
+    const extraHelpMenuContentItems = applicationStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as QueryBuilder_LegendApplicationPlugin_Extension
+          ).getExtraQueryBuilderHelpMenuActionConfigurations?.() ?? [],
+      )
+      .map((item) => (
+        <MenuContentItem
+          key={item.key}
+          title={item.title ?? ''}
+          onClick={() => item.onClick(queryBuilderState)}
+        >
+          {item.icon && <MenuContentItemIcon>{item.icon}</MenuContentItemIcon>}
+          <MenuContentItemLabel>{item.label}</MenuContentItemLabel>
+        </MenuContentItem>
+      ));
+
     const compileQuery = applicationStore.guardUnhandledError(() =>
       flowResult(queryBuilderState.compileQuery()),
     );
@@ -753,6 +789,22 @@ export const QueryBuilder = observer(
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentItem
+                        onClick={showQueryInPure}
+                        disabled={!queryBuilderState.canBuildQuery}
+                        title={
+                          !queryBuilderState.canBuildQuery
+                            ? 'Please fix query errors to edit in Pure'
+                            : undefined
+                        }
+                      >
+                        <MenuContentItemIcon>
+                          <CodeIcon />
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel>
+                          Show Query in Pure
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                      <MenuContentItem
                         onClick={showQueryProtocol}
                         disabled={!queryBuilderState.canBuildQuery}
                         title={
@@ -808,14 +860,6 @@ export const QueryBuilder = observer(
                           </MenuContentItemLabel>
                         </MenuContentItem>
                       )}
-                      <MenuContentItem onClick={toggleAssistant}>
-                        <MenuContentItemIcon>
-                          <AssistantIcon />
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Open Assistant
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
                     </MenuContent>
                   }
                   menuProps={{
@@ -826,6 +870,44 @@ export const QueryBuilder = observer(
                 >
                   <div className="query-builder__header__advanced-dropdown__label">
                     Advanced
+                  </div>
+                  <CaretDownIcon className="query-builder__header__advanced-dropdown__icon" />
+                </DropdownMenu>
+                <DropdownMenu
+                  className="query-builder__header__advanced-dropdown"
+                  content={
+                    <MenuContent>
+                      {extraHelpMenuContentItems}
+                      {queryDocEntry && (
+                        <MenuContentItem onClick={openQueryTutorial}>
+                          <MenuContentItemIcon>
+                            <DocumentationIcon />
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel>
+                            Open Documentation
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                      )}
+                      <MenuContentItem onClick={toggleAssistant}>
+                        <MenuContentItemIcon>
+                          {!applicationStore.assistantService.isHidden ? (
+                            <CheckIcon />
+                          ) : (
+                            <AssistantIcon />
+                          )}
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel>
+                          Show Virtual Assistant
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                    </MenuContent>
+                  }
+                >
+                  <div
+                    className="query-builder__header__advanced-dropdown__label"
+                    title="See more options"
+                  >
+                    Help...
                   </div>
                   <CaretDownIcon className="query-builder__header__advanced-dropdown__icon" />
                 </DropdownMenu>

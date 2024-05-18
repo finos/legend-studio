@@ -110,6 +110,7 @@ export const UnfoldIcon = MdUnfoldMore;
 
 //======================================================= VSC =======================================================
 import {
+  VscDebug,
   VscError,
   VscWarning,
   VscWordWrap,
@@ -131,6 +132,7 @@ import {
   VscTable,
 } from 'react-icons/vsc';
 
+export const DebugIcon = VscDebug;
 export const ErrorIcon = VscError;
 export const WarningIcon = VscWarning;
 export const WordWrapIcon = VscWordWrap;
@@ -199,8 +201,9 @@ export const QuestionSquareFillIcon = BsQuestionSquareFill;
 export const GenericTextFileIcon = BsTextLeft;
 
 //======================================================= HI =======================================================
-import { HiCode, HiHome } from 'react-icons/hi';
+import { HiCode, HiHome, HiOutlineDocumentReport } from 'react-icons/hi';
 
+export const ReportIcon = HiOutlineDocumentReport;
 export const CodeIcon = HiCode;
 export const HomeIcon = HiHome;
 
@@ -218,6 +221,8 @@ import {
   IoCloudDownloadOutline,
   IoCloudUploadOutline,
   IoHelp,
+  IoSunnyOutline,
+  IoMoon,
 } from 'react-icons/io5';
 
 export const OpenIcon = IoOpenOutline;
@@ -232,6 +237,8 @@ export const SupportIcon = IoHelpBuoy;
 export const CloudDownloadIcon = IoCloudDownloadOutline;
 export const CloudUploadIcon = IoCloudUploadOutline;
 export const QuestionThinIcon = IoHelp;
+export const SunIcon = IoSunnyOutline;
+export const MoonIcon = IoMoon;
 
 //======================================================= FA =======================================================
 import {
@@ -318,6 +325,7 @@ import {
   FaArrowUp,
   FaTerminal,
   FaTruckLoading,
+  FaFileCsv,
   FaFolderOpen,
   FaFolder,
   FaFileCode,
@@ -353,6 +361,7 @@ import {
   FaMapMarkerAlt,
   FaHatWizard,
   FaRegLaughWink,
+  FaRegChartBar,
   FaRegSadTear,
   FaBusinessTime,
   FaDatabase,
@@ -486,6 +495,8 @@ export const ToggleOffIcon = FaToggleOff;
 export const MapMarkerIcon = FaMapMarkerAlt;
 export const WizardHatIcon = FaHatWizard;
 export const FaceLaughWinkIcon = FaRegLaughWink;
+export const ChartIcon = FaRegChartBar;
+export const CsvIcon = FaFileCsv;
 export const FaceSadTearIcon = FaRegSadTear;
 export const BusinessTimeIcon = FaBusinessTime; // to be reviewed/combined
 export const DatabaseIcon = FaDatabase;

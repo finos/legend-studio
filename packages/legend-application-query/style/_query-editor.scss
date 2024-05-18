@@ -25,34 +25,40 @@
   &__logo-header {
     @include flexVCenter;
 
-    height: 3.4rem;
-    padding: 0.2rem;
+    justify-content: space-between;
     background: var(--color-dark-grey-80);
 
-    &__menu {
-      height: 3.4rem;
-      width: 5rem;
-      border-right: 0.1rem solid var(--color-dark-grey-200);
-      background: var(--color-dark-grey-100);
-    }
-
-    &__menu-item {
-      @include flexCenter;
+    &__combo {
+      @include flexVCenter;
 
       height: 3.4rem;
-      width: 100%;
-      color: var(--color-dark-grey-500);
+      padding: 0.2rem;
 
-      svg {
-        font-size: 2.3rem;
+      &__menu {
+        height: 3.4rem;
+        width: 5rem;
+        border-right: 0.1rem solid var(--color-dark-grey-200);
+        background: var(--color-dark-grey-100);
       }
-    }
 
-    &__name {
-      color: var(--color-dark-grey-500);
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-left: 1rem;
+      &__menu-item {
+        @include flexCenter;
+
+        height: 3.4rem;
+        width: 100%;
+        color: var(--color-dark-grey-500);
+
+        svg {
+          font-size: 2.3rem;
+        }
+      }
+
+      &__name {
+        color: var(--color-dark-grey-500);
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-left: 1rem;
+      }
     }
   }
 
@@ -98,6 +104,37 @@
       height: 100%;
     }
 
+    &__action-combo {
+      @include flexCenter;
+
+      background: var(--color-blue-200);
+      height: 2.8rem;
+      min-width: 2rem;
+      border-radius: 0.2rem;
+      margin-right: 0.3rem;
+
+      &__main-btn {
+        background: var(--color-blue-200) !important;
+        color: var(--color-light-grey-50) !important;
+
+        svg {
+          color: var(--color-light-grey-180);
+        }
+      }
+
+      &__dropdown-btn {
+        @include flexCenter;
+
+        height: 2.8rem;
+        width: 2rem;
+        border-left: 0.1rem solid var(--color-dark-shade-280);
+
+        svg {
+          color: var(--color-light-grey-180);
+        }
+      }
+    }
+
     &__action {
       @include flexCenter;
 
@@ -105,7 +142,7 @@
       min-width: 2rem;
       padding: 0 1rem;
       border-radius: 0.2rem;
-      margin: 0 0.3rem;
+      margin-right: 0.3rem;
 
       svg {
         color: var(--color-light-grey-100);
@@ -118,6 +155,7 @@
 
       &__theme-toggler {
         border: 0.1rem solid var(--color-dark-grey-280);
+        margin-right: 0.8rem;
       }
 
       &__icon {

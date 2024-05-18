@@ -83,6 +83,17 @@ export type QueryBuilderHeaderActionConfiguration = {
   ) => React.ReactNode | undefined;
 };
 
+export type QueryBuilderMenuActionConfiguration = {
+  key: string;
+  title?: string;
+  label: string;
+  onClick: (queryBuilderState: QueryBuilderState) => void;
+  icon?: React.ReactNode;
+  renderExtraComponent?: (
+    queryBuilderState: QueryBuilderState,
+  ) => React.ReactNode;
+};
+
 export interface QueryBuilder_LegendApplicationPlugin_Extension
   extends LegendApplicationPlugin {
   /**
@@ -136,4 +147,14 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
    * Get the list of action configurations
    */
   getExtraQueryBuilderHeaderTitleConfigurations?(): QueryBuilderHeaderActionConfiguration[];
+
+  /**
+   * Get the list of help menu action configurations
+   */
+  getExtraQueryBuilderHelpMenuActionConfigurations?(): QueryBuilderMenuActionConfiguration[];
+
+  /**
+   * Get the list of export menu action configurations
+   */
+  getExtraQueryBuilderExportMenuActionConfigurations?(): QueryBuilderMenuActionConfiguration[];
 }

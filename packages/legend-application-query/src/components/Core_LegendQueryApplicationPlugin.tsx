@@ -25,11 +25,9 @@ import {
   ArrowCircleUpIcon,
   Button,
   CaretDownIcon,
-  CheckIcon,
   DroidIcon,
   DropdownMenu,
-  EmptyLightBulbIcon,
-  LightBulbIcon,
+  InfoCircleIcon,
   ManageSearchIcon,
   MenuContent,
   MenuContentItem,
@@ -52,7 +50,6 @@ import {
   LEGEND_QUERY_ROUTE_PATTERN,
 } from '../__lib__/LegendQueryNavigation.js';
 import {
-  LEGEND_APPLICATION_COLOR_THEME,
   type ApplicationPageEntry,
   type LegendApplicationSetup,
 } from '@finos/legend-application';
@@ -68,7 +65,10 @@ import {
   generateDataSpaceQueryCreatorRoute,
   generateDataSpaceQuerySetupRoute,
 } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
-import type { QueryBuilderHeaderActionConfiguration } from '@finos/legend-query-builder';
+import type {
+  QueryBuilderHeaderActionConfiguration,
+  QueryBuilderMenuActionConfiguration,
+} from '@finos/legend-query-builder';
 import {
   ExistingQueryEditorStore,
   QueryBuilderActionConfig_QueryApplication,
@@ -80,12 +80,10 @@ import {
   generateDataSpaceTemplateQueryPromotionRoute,
 } from '@finos/legend-extension-dsl-data-space/application';
 import { RuntimePointer } from '@finos/legend-graph';
-import { QUERY_DOCUMENTATION_KEY } from '../application/LegendQueryDocumentation.js';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 import { StoreProjectData } from '@finos/legend-server-depot';
 import { buildUrl } from '@finos/legend-shared';
 import { parseProjectIdentifier } from '@finos/legend-storage';
-import { QUERY_EDITOR_TEST_ID } from '../__lib__/LegendQueryTesting.js';
 import { QueryEditorExistingQueryHeader } from './QueryEditor.js';
 import { DataSpaceTemplateQueryCreatorStore } from '../stores/data-space/DataSpaceTemplateQueryCreatorStore.js';
 
@@ -240,13 +238,13 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
       },
     ];
   }
-
-  getExtraQueryBuilderHeaderActionConfigurations?(): QueryBuilderHeaderActionConfiguration[] {
+  getExtraQueryBuilderExportMenuActionConfigurations?(): QueryBuilderMenuActionConfiguration[] {
     return [
       {
         key: 'promote-as-template-query',
-        category: 0,
-        renderer: (queryBuilderState): React.ReactNode => {
+        title: 'Promote Curated Template query...',
+        label: 'Curated Template Query',
+        onClick: (queryBuilderState): void => {
           if (
             queryBuilderState.workflowState.actionConfig instanceof
             QueryBuilderActionConfig_QueryApplication
@@ -298,39 +296,95 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                   );
                 }
               };
-            const proceedTemplate = (): void => {
-              queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
-                proceedCuratedTemplateQueryPromotion().catch(
-                  editorStore.applicationStore.alertUnhandledError,
-                );
-              });
-            };
-            return (
-              <>
-                {editorStore instanceof ExistingQueryEditorStore &&
-                  queryBuilderState instanceof DataSpaceQueryBuilderState && (
-                    <button
-                      className="query-editor__header__action btn--dark"
-                      tabIndex={-1}
-                      onClick={proceedTemplate}
-                      title={
-                        !(editorStore instanceof ExistingQueryEditorStore)
-                          ? 'Please save your query first before promoting'
-                          : 'Promote Curated Template query...'
-                      }
-                    >
-                      <ArrowCircleUpIcon className="query-editor__header__action__icon--productionize" />
-                      <div className="query-editor__header__action__label">
-                        Promote as Template Query
-                      </div>
-                    </button>
-                  )}
-              </>
+
+            queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
+              proceedCuratedTemplateQueryPromotion().catch(
+                editorStore.applicationStore.alertUnhandledError,
+              );
+            });
+          }
+        },
+        icon: <ArrowCircleUpIcon />,
+      },
+    ];
+  }
+
+  getExtraQueryBuilderHelpMenuActionConfigurations?(): QueryBuilderMenuActionConfiguration[] {
+    return [
+      {
+        key: 'about-query-info',
+        title: 'Get Query Info',
+        label: 'About Query Info',
+        onClick: (queryBuilderState): void => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            if (editorStore instanceof ExistingQueryEditorStore) {
+              editorStore.updateState.setShowQueryInfo(true);
+            }
+          }
+        },
+        icon: <InfoCircleIcon />,
+      },
+      {
+        key: 'about-query-project',
+        title: 'Go to Project',
+        label: 'Go to Project',
+        onClick: (queryBuilderState): void => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            LegendQueryTelemetryHelper.logEvent_QueryViewProjectLaunched(
+              editorStore.applicationStore.telemetryService,
+            );
+            const { groupId, artifactId, versionId } =
+              editorStore.getProjectInfo();
+            createViewProjectHandler(editorStore.applicationStore)(
+              groupId,
+              artifactId,
+              versionId,
+              undefined,
             );
           }
-          return undefined;
         },
+        icon: <InfoCircleIcon />,
       },
+      {
+        key: 'about-query-sdlc-project',
+        title: 'Go to SDLC Project',
+        label: 'Go to SDLC Project',
+        onClick: (queryBuilderState): void => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            LegendQueryTelemetryHelper.logEvent_QueryViewSdlcProjectLaunched(
+              editorStore.applicationStore.telemetryService,
+            );
+            const { groupId, artifactId } = editorStore.getProjectInfo();
+            createViewSDLCProjectHandler(
+              editorStore.applicationStore,
+              editorStore.depotServerClient,
+            )(groupId, artifactId, undefined).catch(
+              editorStore.applicationStore.alertUnhandledError,
+            );
+          }
+        },
+        icon: <InfoCircleIcon />,
+      },
+    ];
+  }
+
+  getExtraQueryBuilderHeaderActionConfigurations?(): QueryBuilderHeaderActionConfiguration[] {
+    return [
       {
         key: 'load-query',
         category: 0,
@@ -433,7 +487,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         },
       },
       {
-        key: 'save-query',
+        key: 'save-combo',
         category: 0,
         renderer: (queryBuilderState): React.ReactNode => {
           if (
@@ -449,40 +503,6 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                 editorStore.updateState.showSaveModal();
               }
             };
-
-            return (
-              <Button
-                className="query-editor__header__action btn--dark"
-                disabled={
-                  !isExistingQuery ||
-                  editorStore.isPerformingBlockingAction ||
-                  !queryBuilderState.canBuildQuery
-                }
-                onClick={openSaveQueryModal}
-                title={
-                  !queryBuilderState.canBuildQuery
-                    ? 'Please fix query errors before saving'
-                    : 'Save query'
-                }
-              >
-                <SaveCurrIcon />
-                <div className="query-editor__header__action__label">Save</div>
-              </Button>
-            );
-          }
-          return undefined;
-        },
-      },
-      {
-        key: 'save-as',
-        category: 0,
-        renderer: (queryBuilderState): React.ReactNode => {
-          if (
-            queryBuilderState.workflowState.actionConfig instanceof
-            QueryBuilderActionConfig_QueryApplication
-          ) {
-            const editorStore =
-              queryBuilderState.workflowState.actionConfig.editorStore;
             const handleQuerySaveAs = (): void => {
               editorStore.queryCreatorState.open(
                 editorStore instanceof ExistingQueryEditorStore
@@ -491,254 +511,50 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
               );
             };
             return (
-              <Button
-                className="query-editor__header__action btn--dark"
-                disabled={
-                  editorStore.isPerformingBlockingAction ||
-                  !queryBuilderState.canBuildQuery
-                }
-                onClick={handleQuerySaveAs}
-                title={
-                  !queryBuilderState.canBuildQuery
-                    ? 'Please fix query errors before saving'
-                    : 'Save as new query'
-                }
-              >
-                <SaveAsIcon />
-                <div className="query-editor__header__action__label">
-                  Save As...
-                </div>
-              </Button>
-            );
-          }
-          return undefined;
-        },
-      },
-      {
-        key: 'help',
-        category: 0,
-        renderer: (queryBuilderState): React.ReactNode => {
-          if (
-            queryBuilderState.workflowState.actionConfig instanceof
-            QueryBuilderActionConfig_QueryApplication
-          ) {
-            const editorStore =
-              queryBuilderState.workflowState.actionConfig.editorStore;
-            const queryDocEntry =
-              editorStore.applicationStore.documentationService.getDocEntry(
-                QUERY_DOCUMENTATION_KEY.TUTORIAL_QUERY_BUILDER,
-              );
-            const toggleAssistant = (): void =>
-              editorStore.applicationStore.assistantService.toggleAssistant();
-
-            const openQueryTutorial = (): void => {
-              if (queryDocEntry?.url) {
-                editorStore.applicationStore.navigationService.navigator.visitAddress(
-                  queryDocEntry.url,
-                );
-              }
-            };
-            const extraHelpMenuContentItems =
-              editorStore.applicationStore.pluginManager
-                .getApplicationPlugins()
-                .flatMap(
-                  (plugin) =>
-                    plugin.getExtraQueryEditorHelpMenuActionConfigurations?.() ??
-                    [],
-                )
-                .map((item) => (
-                  <MenuContentItem
-                    key={item.key}
-                    title={item.title ?? ''}
-                    onClick={() => item.onClick(editorStore)}
-                  >
-                    {item.icon && (
-                      <MenuContentItemIcon>{item.icon}</MenuContentItemIcon>
-                    )}
-                    <MenuContentItemLabel>{item.label}</MenuContentItemLabel>
-                  </MenuContentItem>
-                ));
-            return (
-              <DropdownMenu
-                className="query-editor__header__action btn--dark"
-                disabled={editorStore.isViewProjectActionDisabled}
-                content={
-                  <MenuContent>
-                    {extraHelpMenuContentItems}
-                    {queryDocEntry && (
-                      <MenuContentItem onClick={openQueryTutorial}>
-                        <MenuContentItemIcon>{null}</MenuContentItemIcon>
+              <div className="query-editor__header__action-combo btn__dropdown-combo">
+                <Button
+                  className="query-editor__header__action query-editor__header__action-combo__main-btn btn--dak"
+                  disabled={
+                    !isExistingQuery ||
+                    editorStore.isPerformingBlockingAction ||
+                    !queryBuilderState.canBuildQuery
+                  }
+                  onClick={openSaveQueryModal}
+                  title="Save query"
+                >
+                  <SaveCurrIcon />
+                  <div className="query-editor__header__action__label">
+                    Save
+                  </div>
+                </Button>
+                <DropdownMenu
+                  className="query-editor__header__action-combo__dropdown-btn"
+                  disabled={editorStore.isViewProjectActionDisabled}
+                  title="query__editor__save-dropdown"
+                  content={
+                    <MenuContent>
+                      <MenuContentItem
+                        className="btn__dropdown-combo__option"
+                        onClick={handleQuerySaveAs}
+                        title="query__editor__save-dropdown__save-as"
+                        disabled={
+                          editorStore.isPerformingBlockingAction ||
+                          !queryBuilderState.canBuildQuery
+                        }
+                      >
+                        <MenuContentItemIcon>
+                          <SaveAsIcon />
+                        </MenuContentItemIcon>
                         <MenuContentItemLabel>
-                          Open Documentation
+                          Save As New Query
                         </MenuContentItemLabel>
                       </MenuContentItem>
-                    )}
-
-                    <MenuContentItem onClick={toggleAssistant}>
-                      <MenuContentItemIcon>
-                        {!editorStore.applicationStore.assistantService
-                          .isHidden ? (
-                          <CheckIcon />
-                        ) : null}
-                      </MenuContentItemIcon>
-                      <MenuContentItemLabel>
-                        Show Virtual Assistant
-                      </MenuContentItemLabel>
-                    </MenuContentItem>
-                  </MenuContent>
-                }
-              >
-                <div
-                  className="query-editor__header__action__label"
-                  title="See more options"
+                    </MenuContent>
+                  }
                 >
-                  Help...
-                </div>
-                <CaretDownIcon className="query-editor__header__action__dropdown-trigger" />
-              </DropdownMenu>
-            );
-          }
-          return undefined;
-        },
-      },
-      {
-        key: 'toggle-theme',
-        category: 0,
-        renderer: (queryBuilderState): React.ReactNode => {
-          if (
-            queryBuilderState.workflowState.actionConfig instanceof
-            QueryBuilderActionConfig_QueryApplication
-          ) {
-            const editorStore =
-              queryBuilderState.workflowState.actionConfig.editorStore;
-            const applicationStore = editorStore.applicationStore;
-            const TEMPORARY__toggleLightDarkMode = (): void => {
-              applicationStore.layoutService.setColorTheme(
-                applicationStore.layoutService
-                  .TEMPORARY__isLightColorThemeEnabled
-                  ? LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK
-                  : LEGEND_APPLICATION_COLOR_THEME.LEGACY_LIGHT,
-                { persist: true },
-              );
-            };
-            return (
-              <button
-                title="Toggle light/dark mode"
-                onClick={TEMPORARY__toggleLightDarkMode}
-                className="query-editor__header__action query-editor__header__action__theme-toggler"
-              >
-                {applicationStore.layoutService
-                  .TEMPORARY__isLightColorThemeEnabled ? (
-                  <>
-                    <LightBulbIcon className="query-editor__header__action__icon--bulb--light" />
-                  </>
-                ) : (
-                  <>
-                    <EmptyLightBulbIcon className="query-editor__header__action__icon--bulb--dark" />
-                  </>
-                )}
-              </button>
-            );
-          }
-          return undefined;
-        },
-      },
-      {
-        key: 'more-actions',
-        category: 0,
-        renderer: (queryBuilderState): React.ReactNode => {
-          if (
-            queryBuilderState.workflowState.actionConfig instanceof
-            QueryBuilderActionConfig_QueryApplication
-          ) {
-            const editorStore =
-              queryBuilderState.workflowState.actionConfig.editorStore;
-            const isExistingQuery =
-              editorStore instanceof ExistingQueryEditorStore;
-            const renameQuery = (): void => {
-              if (editorStore instanceof ExistingQueryEditorStore) {
-                editorStore.updateState.setQueryRenamer(true);
-              }
-            };
-            const showQueryInfo = (): void => {
-              if (editorStore instanceof ExistingQueryEditorStore) {
-                editorStore.updateState.setShowQueryInfo(true);
-              }
-            };
-            const viewProject = (): void => {
-              LegendQueryTelemetryHelper.logEvent_QueryViewProjectLaunched(
-                editorStore.applicationStore.telemetryService,
-              );
-              const { groupId, artifactId, versionId } =
-                editorStore.getProjectInfo();
-              createViewProjectHandler(editorStore.applicationStore)(
-                groupId,
-                artifactId,
-                versionId,
-                undefined,
-              );
-            };
-            const viewSDLCProject = (): void => {
-              LegendQueryTelemetryHelper.logEvent_QueryViewSdlcProjectLaunched(
-                editorStore.applicationStore.telemetryService,
-              );
-              const { groupId, artifactId } = editorStore.getProjectInfo();
-              createViewSDLCProjectHandler(
-                editorStore.applicationStore,
-                editorStore.depotServerClient,
-              )(groupId, artifactId, undefined).catch(
-                editorStore.applicationStore.alertUnhandledError,
-              );
-            };
-            return (
-              <DropdownMenu
-                className="query-editor__header__action btn--medium"
-                disabled={editorStore.isViewProjectActionDisabled}
-                content={
-                  <MenuContent>
-                    {isExistingQuery && (
-                      <MenuContentItem
-                        className="query-editor__header__action__options"
-                        onClick={renameQuery}
-                        disabled={!isExistingQuery}
-                      >
-                        Rename Query
-                      </MenuContentItem>
-                    )}
-                    {isExistingQuery && (
-                      <MenuContentItem
-                        className="query-editor__header__action__options"
-                        onClick={showQueryInfo}
-                        disabled={!isExistingQuery}
-                      >
-                        Get Query Info
-                      </MenuContentItem>
-                    )}
-                    <MenuContentItem
-                      className="query-editor__header__action__options"
-                      disabled={editorStore.isViewProjectActionDisabled}
-                      onClick={viewProject}
-                    >
-                      Go to Project
-                    </MenuContentItem>
-                    <MenuContentItem
-                      className="query-editor__header__action__options"
-                      disabled={editorStore.isViewProjectActionDisabled}
-                      onClick={viewSDLCProject}
-                    >
-                      Go to SDLC project
-                    </MenuContentItem>
-                  </MenuContent>
-                }
-              >
-                <div
-                  className="query-editor__header__action__label"
-                  title="See more options"
-                >
-                  More Actions...
-                </div>
-                <CaretDownIcon className="query-editor__header__action__dropdown-trigger" />
-              </DropdownMenu>
+                  <CaretDownIcon />
+                </DropdownMenu>
+              </div>
             );
           }
           return undefined;
@@ -783,10 +599,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             return undefined;
           };
           return (
-            <div
-              className="query-editor__header__content"
-              data-testid={QUERY_EDITOR_TEST_ID.QUERY_EDITOR_ACTIONS}
-            >
+            <div className="query-editor__header__content">
               {renderQueryTitle()}
             </div>
           );

@@ -108,13 +108,15 @@ test(
       getByTitle(queryActionsPanel, 'Save query').hasAttribute('disabled'),
     ).toBe(false);
 
-    expect(
-      getByTitle(queryActionsPanel, 'Save as new query').hasAttribute(
-        'disabled',
-      ),
-    ).toBe(false);
-
-    fireEvent.click(getByTitle(queryActionsPanel, 'Save as new query'));
+    const saveDropdown = await waitFor(() =>
+      renderResult.getByTitle('query__editor__save-dropdown'),
+    );
+    fireEvent.click(saveDropdown);
+    const saveAsNewQueryButton = renderResult.getByTitle(
+      'query__editor__save-dropdown__save-as',
+    );
+    expect(saveAsNewQueryButton.hasAttribute('disabled')).toBe(false);
+    fireEvent.click(saveAsNewQueryButton);
 
     const createNewQueryModal = await waitFor(() =>
       renderResult.getByRole('dialog'),
@@ -210,17 +212,16 @@ test(
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_ACTIONS),
     );
-    const queryActionsPanel = renderResult.getByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_ACTIONS,
+
+    const saveDropdown = await waitFor(() =>
+      renderResult.getByTitle('query__editor__save-dropdown'),
     );
-
-    expect(
-      getByTitle(queryActionsPanel, 'Save as new query').hasAttribute(
-        'disabled',
-      ),
-    ).toBe(false);
-
-    fireEvent.click(getByTitle(queryActionsPanel, 'Save as new query'));
+    fireEvent.click(saveDropdown);
+    const saveAsNewQueryButton = renderResult.getByTitle(
+      'query__editor__save-dropdown__save-as',
+    );
+    expect(saveAsNewQueryButton.hasAttribute('disabled')).toBe(false);
+    fireEvent.click(saveAsNewQueryButton);
 
     const createNewQueryModal = await waitFor(() =>
       renderResult.getByRole('dialog'),
@@ -311,11 +312,14 @@ test(
         'disabled',
       ),
     ).toBe(true);
-    expect(
-      getByRole(queryActionsPanel, 'button', {
-        name: 'Save As...',
-      }).hasAttribute('disabled'),
-    ).toBe(true);
+    const saveDropdown = await waitFor(() =>
+      renderResult.getByTitle('query__editor__save-dropdown'),
+    );
+    fireEvent.click(saveDropdown);
+    const saveAsNewQueryButton = renderResult.getByTitle(
+      'query__editor__save-dropdown__save-as',
+    );
+    expect(saveAsNewQueryButton.hasAttribute('disabled')).toBe(true);
     expect(renderResult.getByText('1 issue')).not.toBeNull();
   },
 );
@@ -405,11 +409,14 @@ test(
         'disabled',
       ),
     ).toBe(false);
-    expect(
-      getByRole(queryActionsPanel, 'button', {
-        name: 'Save As...',
-      }).hasAttribute('disabled'),
-    ).toBe(false);
+    const saveDropdown = await waitFor(() =>
+      renderResult.getByTitle('query__editor__save-dropdown'),
+    );
+    fireEvent.click(saveDropdown);
+    const saveAsNewQueryButton = renderResult.getByTitle(
+      'query__editor__save-dropdown__save-as',
+    );
+    expect(saveAsNewQueryButton.hasAttribute('disabled')).toBe(false);
     expect(renderResult.queryByText('1 issue')).toBeNull();
   },
 );

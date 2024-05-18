@@ -97,16 +97,4 @@ export class LegendQueryApplicationPlugin
    * Get the list of actions (configurations) for query setup.
    */
   getExtraQuerySetupActionConfigurations?(): QuerySetupActionConfiguration[];
-
-  /**
-   * Get the list of query editor help menu action configurations.
-   */
-  getExtraQueryEditorHelpMenuActionConfigurations?(): QueryEditorHelpMenuActionConfiguration[];
-
-  /**
-   * Get the list of query editor action renderer configurations.
-   */
-  getExtraQueryEditorActionConfigurations?(
-    editorStore: QueryEditorStore,
-  ): QueryEditorActionConfiguration[];
 }
