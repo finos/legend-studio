@@ -702,7 +702,7 @@ test(
       fireEvent.click(renderResult.getByTitle('Show Advanced Menu...'));
     });
     await act(async () => {
-      fireEvent.click(renderResult.getByText('Edit Query in Pure'));
+      fireEvent.click(renderResult.getByText('Edit Pure'));
     });
     const lambdaEditor = await waitFor(() => renderResult.getByRole('dialog'));
     fireEvent.click(getByText(lambdaEditor, 'Close'));
@@ -846,7 +846,7 @@ test(
       fireEvent.click(renderResult.getByTitle('Show Advanced Menu...'));
     });
     await act(async () => {
-      fireEvent.click(renderResult.getByText('Edit Query in Pure'));
+      fireEvent.click(renderResult.getByText('Edit Pure'));
     });
     const lambdaEditor = await waitFor(() => renderResult.getByRole('dialog'));
     fireEvent.click(getByText(lambdaEditor, 'Close'));

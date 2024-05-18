@@ -27,6 +27,7 @@ import {
   PanelHeaderActions,
   PanelHeader,
   MoreVerticalIcon,
+  compareLabelFn,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
@@ -129,7 +130,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     // data space
     const dataSpaceOptions = queryBuilderState.dataSpaces
       .map(buildDataSpaceOption)
-      .sort((a, b) => a.label.localeCompare(b.label));
+      .sort(compareLabelFn);
     const selectedDataSpaceOption: DataSpaceOption = {
       label:
         queryBuilderState.dataSpace.title ?? queryBuilderState.dataSpace.name,
@@ -155,7 +156,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     const executionContextOptions =
       queryBuilderState.dataSpace.executionContexts
         .map(buildExecutionContextOption)
-        .sort((a, b) => a.label.localeCompare(b.label));
+        .sort(compareLabelFn);
     const showExecutionContextOptions = executionContextOptions.length > 1;
     const selectedExecutionContextOption = buildExecutionContextOption(
       queryBuilderState.executionContext,
@@ -181,7 +182,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
           new RuntimePointer(PackageableElementExplicitReference.create(rt)),
       )
       .map(buildRuntimeValueOption)
-      .sort((a, b) => a.label.localeCompare(b.label));
+      .sort(compareLabelFn);
     const selectedRuntimeOption = queryBuilderState.executionContextState
       .runtimeValue
       ? buildRuntimeValueOption(

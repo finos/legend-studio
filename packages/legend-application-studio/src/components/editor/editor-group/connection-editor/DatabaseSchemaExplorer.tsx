@@ -27,6 +27,7 @@ import {
   EmptyCircleIcon,
   KeyIcon,
   EyeIcon,
+  compareLabelFn,
 } from '@finos/legend-art';
 import {
   type DatabaseExplorerTreeData,
@@ -207,9 +208,8 @@ export const DatabaseSchemaExplorer = observer(
     const getChildNodes = (
       node: DatabaseSchemaExplorerTreeNodeData,
     ): DatabaseSchemaExplorerTreeNodeData[] =>
-      schemaExplorerState
-        .getChildNodes(node, treeData)
-        ?.sort((a, b) => a.label.localeCompare(b.label)) ?? [];
+      schemaExplorerState.getChildNodes(node, treeData)?.sort(compareLabelFn) ??
+      [];
     const isPartiallySelected = (
       node: DatabaseSchemaExplorerTreeNodeData,
     ): boolean => {

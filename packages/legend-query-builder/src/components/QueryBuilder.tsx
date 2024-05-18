@@ -224,7 +224,7 @@ const QueryBuilderStatusBar = observer(
             title={
               !queryBuilderState.canBuildQuery
                 ? 'Please fix query errors to edit in Pure'
-                : 'Edit Query in Pure'
+                : 'Edit Pure'
             }
           >
             <HackerIcon />
