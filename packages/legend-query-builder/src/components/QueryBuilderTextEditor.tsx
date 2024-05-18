@@ -43,6 +43,7 @@ export const QueryBuilderTextEditor = observer(
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
     const queryTextEditorState = queryBuilderState.textEditorState;
+    const isReadOnly = queryTextEditorState.isReadOnly;
     const close = applicationStore.guardUnhandledError(() =>
       flowResult(queryBuilderState.textEditorState.closeModal()),
     );
@@ -52,6 +53,27 @@ export const QueryBuilderTextEditor = observer(
       applicationStore.layoutService.setShowBackdrop(false);
     };
     const mode = queryTextEditorState.mode;
+    const isEditingPure =
+      mode === QueryBuilderTextEditorMode.TEXT && !isReadOnly;
+    const title =
+      mode === QueryBuilderTextEditorMode.TEXT
+        ? isReadOnly
+          ? 'Pure Query'
+          : 'Edit Pure Query'
+        : 'Pure Query Protocol';
+
+    const copyExpression = (): void => {
+      applicationStore.clipboardService
+        .copyTextToClipboard(queryTextEditorState.text ?? '')
+        .then(() =>
+          applicationStore.notificationService.notifySuccess(
+            'Query Copied',
+            undefined,
+            2500,
+          ),
+        )
+        .catch(applicationStore.alertUnhandledError);
+    };
     useEffect(() => {
       flowResult(
         queryTextEditorState.convertLambdaObjectToGrammarString({
@@ -81,7 +103,7 @@ export const QueryBuilderTextEditor = observer(
           })}
         >
           <ModalHeader>
-            <div className="modal__title">Query</div>
+            <div className="modal__title">{title}</div>
             {queryTextEditorState.parserError && (
               <div className="modal__title__error-badge">
                 Failed to parse query
@@ -99,15 +121,22 @@ export const QueryBuilderTextEditor = observer(
                 backdrop__element: Boolean(queryTextEditorState.parserError),
               })}
             >
-              {mode === QueryBuilderTextEditorMode.TEXT && (
-                <LambdaEditor
-                  className="query-builder-text-mode__lambda-editor"
-                  disabled={queryTextEditorState.isConvertingLambdaToString}
-                  lambdaEditorState={queryTextEditorState}
-                  forceBackdrop={false}
-                  autoFocus={true}
-                />
-              )}
+              {mode === QueryBuilderTextEditorMode.TEXT &&
+                (isReadOnly ? (
+                  <CodeEditor
+                    language={CODE_EDITOR_LANGUAGE.PURE}
+                    inputValue={queryTextEditorState.fullLambdaString}
+                    isReadOnly={true}
+                  />
+                ) : (
+                  <LambdaEditor
+                    className="query-builder-text-mode__lambda-editor"
+                    disabled={queryTextEditorState.isConvertingLambdaToString}
+                    lambdaEditorState={queryTextEditorState}
+                    forceBackdrop={false}
+                    autoFocus={true}
+                  />
+                ))}
               {mode === QueryBuilderTextEditorMode.JSON && (
                 <CodeEditor
                   language={CODE_EDITOR_LANGUAGE.JSON}
@@ -130,11 +159,17 @@ export const QueryBuilderTextEditor = observer(
                 Compiling Query...
               </ModalFooterStatus>
             )}
-            {mode === QueryBuilderTextEditorMode.TEXT && (
+            {isEditingPure ? (
               <ModalFooterButton
                 className="btn--caution"
                 onClick={discardChanges}
                 text="Discard Changes"
+              />
+            ) : (
+              <ModalFooterButton
+                formatText={false}
+                onClick={copyExpression}
+                text="Copy to Clipboard"
               />
             )}
             <ModalFooterButton
