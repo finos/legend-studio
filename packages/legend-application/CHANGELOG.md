@@ -1,5 +1,7 @@
 # @finos/legend-application
 
+## 15.1.1
+
 ## 15.1.0
 
 ### Minor Changes
