@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.4.14
+
+### Patch Changes
+
+- [#3161](https://github.com/finos/legend-studio/pull/3161) [`843496b`](https://github.com/finos/legend-studio/commit/843496b63ec7d1e621bc7677991cc2177e1f3e20) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Group Legend Query Application header buttons with Query Builder buttons
+
 ## 13.4.13
 
 ### Patch Changes

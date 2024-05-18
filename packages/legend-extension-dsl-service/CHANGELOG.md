@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-service
 
+## 1.0.170
+
 ## 1.0.169
 
 ### Patch Changes
