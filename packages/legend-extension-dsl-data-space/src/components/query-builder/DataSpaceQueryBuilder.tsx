@@ -156,6 +156,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       queryBuilderState.dataSpace.executionContexts
         .map(buildExecutionContextOption)
         .sort((a, b) => a.label.localeCompare(b.label));
+    const showExecutionContextOptions = executionContextOptions.length > 1;
     const selectedExecutionContextOption = buildExecutionContextOption(
       queryBuilderState.executionContext,
     );
@@ -296,32 +297,34 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
               </>
             )}
           </div>
-          <div className="query-builder__setup__config-group__item">
-            <label
-              className="btn--sm query-builder__setup__config-group__item__label"
-              title="execution context"
-              htmlFor="query-builder__setup__context-selector"
-            >
-              Context
-            </label>
-            <CustomSelectorInput
-              inputId="query-builder__setup__context-selector"
-              className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-              placeholder="Choose an execution context..."
-              options={executionContextOptions}
-              disabled={
-                executionContextOptions.length < 1 ||
-                (executionContextOptions.length === 1 &&
-                  Boolean(selectedExecutionContextOption))
-              }
-              onChange={onExecutionContextOptionChange}
-              value={selectedExecutionContextOption}
-              darkMode={
-                !applicationStore.layoutService
-                  .TEMPORARY__isLightColorThemeEnabled
-              }
-            />
-          </div>
+          {Boolean(showExecutionContextOptions) && (
+            <div className="query-builder__setup__config-group__item">
+              <label
+                className="btn--sm query-builder__setup__config-group__item__label"
+                title="execution context"
+                htmlFor="query-builder__setup__context-selector"
+              >
+                Context
+              </label>
+              <CustomSelectorInput
+                inputId="query-builder__setup__context-selector"
+                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+                placeholder="Choose an execution context..."
+                options={executionContextOptions}
+                disabled={
+                  executionContextOptions.length < 1 ||
+                  (executionContextOptions.length === 1 &&
+                    Boolean(selectedExecutionContextOption))
+                }
+                onChange={onExecutionContextOptionChange}
+                value={selectedExecutionContextOption}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
+              />
+            </div>
+          )}
           {queryBuilderState.showRuntimeSelector && (
             <div className="query-builder__setup__config-group__item">
               <label
