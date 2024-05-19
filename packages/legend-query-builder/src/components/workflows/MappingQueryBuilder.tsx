@@ -17,6 +17,7 @@
 import {
   CustomSelectorInput,
   PanelHeader,
+  compareLabelFn,
   createFilter,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
@@ -59,7 +60,7 @@ const MappingQueryBuilderSetupPanelContent = observer(
     // mapping
     const mappingOptions = queryBuilderState.graphManagerState.usableMappings
       .map(buildElementOption)
-      .sort((a, b) => a.label.localeCompare(b.label));
+      .sort(compareLabelFn);
     const selectedMappingOption = queryBuilderState.executionContextState
       .mapping
       ? buildElementOption(queryBuilderState.executionContextState.mapping)
@@ -93,7 +94,7 @@ const MappingQueryBuilderSetupPanelContent = observer(
           new RuntimePointer(PackageableElementExplicitReference.create(rt)),
       )
       .map(buildRuntimeValueOption)
-      .sort((a, b) => a.label.localeCompare(b.label));
+      .sort(compareLabelFn);
     const selectedRuntimeOption = queryBuilderState.executionContextState
       .runtimeValue
       ? buildRuntimeValueOption(

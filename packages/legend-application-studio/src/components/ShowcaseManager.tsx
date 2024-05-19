@@ -33,6 +33,7 @@ import {
   CodeIcon,
   clsx,
   CopyIcon,
+  compareLabelFn,
 } from '@finos/legend-art';
 import {
   SHOWCASE_MANAGER_SEARCH_CATEGORY,
@@ -138,7 +139,7 @@ const ShowcaseManagerExplorer = observer(
         return node.childrenIds
           .map((id) => treeData.nodes.get(id))
           .filter(isNonNullable)
-          .sort((a, b) => a.label.localeCompare(b.label));
+          .sort(compareLabelFn);
       }
       return [];
     };

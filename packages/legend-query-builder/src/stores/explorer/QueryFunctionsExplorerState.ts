@@ -30,7 +30,11 @@ import {
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
-import type { TreeNodeData, TreeData } from '@finos/legend-art';
+import {
+  type TreeNodeData,
+  type TreeData,
+  compareLabelFn,
+} from '@finos/legend-art';
 
 export const QUERY_BUILDER_FUNCTION_DND_TYPE = 'QUERY_BUILDER_FUNCTION';
 
@@ -206,7 +210,7 @@ export const getFunctionsExplorerTreeNodeChildren = (
   return node.childrenIds
     .map((id) => data.nodes.get(id))
     .filter(isNonNullable)
-    .sort((a, b) => a.label.localeCompare(b.label))
+    .sort(compareLabelFn)
     .sort(
       (a, b) =>
         (b.packageableElement instanceof Package ? 1 : 0) -

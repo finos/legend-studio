@@ -64,16 +64,22 @@ test(
       await renderResult.findByRole('button', { name: 'Check Entitlements' }),
     ).toHaveProperty('disabled', true);
     expect(
-      await renderResult.findByRole('button', { name: 'Edit Query in Pure' }),
+      await renderResult.findByRole('button', { name: 'Edit Pure' }),
     ).not.toBeNull();
     expect(
-      await renderResult.findByRole('button', { name: 'Edit Query in Pure' }),
+      await renderResult.findByRole('button', { name: 'Edit Pure' }),
     ).toHaveProperty('disabled', true);
     expect(
-      await renderResult.findByRole('button', { name: 'Show Query Protocol' }),
+      await renderResult.findByRole('button', { name: 'Show Protocol' }),
     ).not.toBeNull();
     expect(
-      await renderResult.findByRole('button', { name: 'Show Query Protocol' }),
+      await renderResult.findByRole('button', { name: 'Show Protocol' }),
+    ).toHaveProperty('disabled', true);
+    expect(
+      await renderResult.findByRole('button', { name: 'Show Pure' }),
+    ).not.toBeNull();
+    expect(
+      await renderResult.findByRole('button', { name: 'Show Pure' }),
     ).toHaveProperty('disabled', true);
   },
 );

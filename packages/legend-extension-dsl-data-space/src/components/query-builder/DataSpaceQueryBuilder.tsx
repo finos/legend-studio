@@ -27,6 +27,7 @@ import {
   PanelHeaderActions,
   PanelHeader,
   MoreVerticalIcon,
+  compareLabelFn,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
@@ -129,7 +130,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     // data space
     const dataSpaceOptions = queryBuilderState.dataSpaces
       .map(buildDataSpaceOption)
-      .sort((a, b) => a.label.localeCompare(b.label));
+      .sort(compareLabelFn);
     const selectedDataSpaceOption: DataSpaceOption = {
       label:
         queryBuilderState.dataSpace.title ?? queryBuilderState.dataSpace.name,
@@ -155,7 +156,8 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     const executionContextOptions =
       queryBuilderState.dataSpace.executionContexts
         .map(buildExecutionContextOption)
-        .sort((a, b) => a.label.localeCompare(b.label));
+        .sort(compareLabelFn);
+    const showExecutionContextOptions = executionContextOptions.length > 1;
     const selectedExecutionContextOption = buildExecutionContextOption(
       queryBuilderState.executionContext,
     );
@@ -180,7 +182,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
           new RuntimePointer(PackageableElementExplicitReference.create(rt)),
       )
       .map(buildRuntimeValueOption)
-      .sort((a, b) => a.label.localeCompare(b.label));
+      .sort(compareLabelFn);
     const selectedRuntimeOption = queryBuilderState.executionContextState
       .runtimeValue
       ? buildRuntimeValueOption(
@@ -296,32 +298,34 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
               </>
             )}
           </div>
-          <div className="query-builder__setup__config-group__item">
-            <label
-              className="btn--sm query-builder__setup__config-group__item__label"
-              title="execution context"
-              htmlFor="query-builder__setup__context-selector"
-            >
-              Context
-            </label>
-            <CustomSelectorInput
-              inputId="query-builder__setup__context-selector"
-              className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-              placeholder="Choose an execution context..."
-              options={executionContextOptions}
-              disabled={
-                executionContextOptions.length < 1 ||
-                (executionContextOptions.length === 1 &&
-                  Boolean(selectedExecutionContextOption))
-              }
-              onChange={onExecutionContextOptionChange}
-              value={selectedExecutionContextOption}
-              darkMode={
-                !applicationStore.layoutService
-                  .TEMPORARY__isLightColorThemeEnabled
-              }
-            />
-          </div>
+          {Boolean(showExecutionContextOptions) && (
+            <div className="query-builder__setup__config-group__item">
+              <label
+                className="btn--sm query-builder__setup__config-group__item__label"
+                title="execution context"
+                htmlFor="query-builder__setup__context-selector"
+              >
+                Context
+              </label>
+              <CustomSelectorInput
+                inputId="query-builder__setup__context-selector"
+                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+                placeholder="Choose an execution context..."
+                options={executionContextOptions}
+                disabled={
+                  executionContextOptions.length < 1 ||
+                  (executionContextOptions.length === 1 &&
+                    Boolean(selectedExecutionContextOption))
+                }
+                onChange={onExecutionContextOptionChange}
+                value={selectedExecutionContextOption}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
+              />
+            </div>
+          )}
           {queryBuilderState.showRuntimeSelector && (
             <div className="query-builder__setup__config-group__item">
               <label

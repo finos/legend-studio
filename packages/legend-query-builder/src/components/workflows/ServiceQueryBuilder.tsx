@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { CustomSelectorInput, PanelHeader } from '@finos/legend-art';
+import {
+  CustomSelectorInput,
+  PanelHeader,
+  compareLabelFn,
+} from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { getMappingCompatibleClasses, type Service } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
@@ -57,7 +61,7 @@ const ServiceQueryBuilderSetupPanelContent = observer(
     const serviceOptions =
       queryBuilderState.usableServices
         ?.map(buildElementOption)
-        .sort((a, b) => a.label.localeCompare(b.label)) ?? [];
+        .sort(compareLabelFn) ?? [];
     const selectedServiceOption = buildElementOption(queryBuilderState.service);
     const onServiceOptionChange = (
       option: PackageableElementOption<Service>,
@@ -71,7 +75,7 @@ const ServiceQueryBuilderSetupPanelContent = observer(
     // execution context
     const executionContextOptions = queryBuilderState.executionContexts
       .map(buildExecutionContextOption)
-      .sort((a, b) => a.label.localeCompare(b.label));
+      .sort(compareLabelFn);
     const selectedExecutionContextOption =
       queryBuilderState.selectedExecutionContext
         ? buildExecutionContextOption(

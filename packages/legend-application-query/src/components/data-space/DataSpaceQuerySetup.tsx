@@ -23,6 +23,7 @@ import {
   CustomSelectorInput,
   PanelHeader,
   SearchIcon,
+  compareLabelFn,
   type SelectComponent,
 } from '@finos/legend-art';
 import {
@@ -84,7 +85,7 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
     // data space
     const dataSpaceOptions = queryBuilderState.dataSpaces
       .map(buildDataSpaceOption)
-      .sort((a, b) => a.label.localeCompare(b.label));
+      .sort(compareLabelFn);
     const selectedDataSpaceOption = null;
     const onDataSpaceOptionChange = (option: DataSpaceOption): void => {
       queryBuilderState.onDataSpaceChange(option.value);

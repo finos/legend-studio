@@ -21,7 +21,11 @@ import {
 import { QueryBuilderClassSelector } from '@finos/legend-query-builder';
 import type { IsolatedDatabaseBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/database/QueryDatabaseState.js';
 import { observer } from 'mobx-react-lite';
-import { CustomSelectorInput, PanelHeader } from '@finos/legend-art';
+import {
+  CustomSelectorInput,
+  PanelHeader,
+  compareLabelFn,
+} from '@finos/legend-art';
 import { returnUndefOnError } from '@finos/legend-shared';
 
 const IsolatedDatabseQueryBuilderSetupPanelContext = observer(
@@ -38,7 +42,7 @@ const IsolatedDatabseQueryBuilderSetupPanelContext = observer(
     const compConnections = queryBuilderState.compatibleConnections;
     const compConnectionsOptions = Array.from(compConnections.keys())
       .map((e) => ({ value: e, label: getConnectionValue(e)?.name ?? e }))
-      .sort((a, b) => a.label.localeCompare(b.label));
+      .sort(compareLabelFn);
     const changeConnection = (
       val: { value: string; label: string } | null,
     ): void => {

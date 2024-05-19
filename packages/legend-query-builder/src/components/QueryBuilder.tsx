@@ -224,7 +224,7 @@ const QueryBuilderStatusBar = observer(
             title={
               !queryBuilderState.canBuildQuery
                 ? 'Please fix query errors to edit in Pure'
-                : 'Edit Query in Pure'
+                : 'Edit Pure'
             }
           >
             <HackerIcon />
@@ -260,6 +260,11 @@ export const QueryBuilder = observer(
       fetchStructureState.implementation instanceof QueryBuilderTDSState;
     const openLambdaEditor = (mode: QueryBuilderTextEditorMode): void =>
       queryBuilderState.textEditorState.openModal(mode);
+    const openPure = (): void =>
+      queryBuilderState.textEditorState.openModal(
+        QueryBuilderTextEditorMode.TEXT,
+        true,
+      );
     const toggleShowFunctionPanel = (): void => {
       queryBuilderState.setShowFunctionsExplorerPanel(
         !queryBuilderState.showFunctionsExplorerPanel,
@@ -373,13 +378,13 @@ export const QueryBuilder = observer(
       }
     };
 
-    const editQueryInPure = (): void => {
+    const editPure = (): void => {
       openLambdaEditor(QueryBuilderTextEditorMode.TEXT);
     };
-    const showQueryInPure = (): void => {
-      openLambdaEditor(QueryBuilderTextEditorMode.TEXT);
+    const showPure = (): void => {
+      openPure();
     };
-    const showQueryProtocol = (): void => {
+    const showProtocol = (): void => {
       openLambdaEditor(QueryBuilderTextEditorMode.JSON);
     };
 
@@ -773,7 +778,7 @@ export const QueryBuilder = observer(
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentItem
-                        onClick={editQueryInPure}
+                        onClick={editPure}
                         disabled={!queryBuilderState.canBuildQuery}
                         title={
                           !queryBuilderState.canBuildQuery
@@ -784,12 +789,10 @@ export const QueryBuilder = observer(
                         <MenuContentItemIcon>
                           <HackerIcon />
                         </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Edit Query in Pure
-                        </MenuContentItemLabel>
+                        <MenuContentItemLabel>Edit Pure</MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentItem
-                        onClick={showQueryInPure}
+                        onClick={showPure}
                         disabled={!queryBuilderState.canBuildQuery}
                         title={
                           !queryBuilderState.canBuildQuery
@@ -800,12 +803,10 @@ export const QueryBuilder = observer(
                         <MenuContentItemIcon>
                           <CodeIcon />
                         </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Show Query in Pure
-                        </MenuContentItemLabel>
+                        <MenuContentItemLabel>Show Pure</MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentItem
-                        onClick={showQueryProtocol}
+                        onClick={showProtocol}
                         disabled={!queryBuilderState.canBuildQuery}
                         title={
                           !queryBuilderState.canBuildQuery
@@ -817,7 +818,7 @@ export const QueryBuilder = observer(
                           <SerializeIcon />
                         </MenuContentItemIcon>
                         <MenuContentItemLabel>
-                          Show Query Protocol
+                          Show Protocol
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentItem onClick={compileQuery}>
