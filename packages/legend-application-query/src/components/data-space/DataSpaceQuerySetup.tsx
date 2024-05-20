@@ -42,6 +42,7 @@ import {
   formatDataSpaceOptionLabel,
   type DataSpaceOption,
 } from '@finos/legend-extension-dsl-data-space/application-query';
+import { LAST_QUERY_DATASPACE_KEY } from './DataSpaceQueryCreator.js';
 
 const DataSpaceQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -62,11 +63,26 @@ const DataSpaceQuerySetupStoreProvider: React.FC<{
   );
 };
 
-export const DataSpaceQuerySetup = observer(() => (
-  <DataSpaceQuerySetupStoreProvider>
-    <QueryEditor />
-  </DataSpaceQuerySetupStoreProvider>
-));
+export const DataSpaceQuerySetup = observer(() => {
+  const applicationStore = useLegendQueryApplicationStore();
+
+  const lastSavedQueryDataspace =
+    applicationStore.userDataService.getStringValue(LAST_QUERY_DATASPACE_KEY);
+
+  if (lastSavedQueryDataspace) {
+    applicationStore.navigationService.navigator.goToLocation(
+      lastSavedQueryDataspace,
+    );
+
+    return null;
+  }
+
+  return (
+    <DataSpaceQuerySetupStoreProvider>
+      <QueryEditor />
+    </DataSpaceQuerySetupStoreProvider>
+  );
+});
 
 /**
  * This setup panel supports cascading in order: Data-space -> Execution context (-> Runtime) -> Class

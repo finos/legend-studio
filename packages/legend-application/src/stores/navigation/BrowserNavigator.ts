@@ -43,7 +43,15 @@ import {
 } from 'react-router';
 
 export { BrowserRouter } from 'react-router-dom';
-export { Route, Switch, Redirect, useParams, matchPath, generatePath };
+export {
+  Route,
+  Switch,
+  Redirect,
+  useParams,
+  matchPath,
+  generatePath,
+  useLocation,
+};
 export const useNavigationZone = (): NavigationZone => {
   const location = useLocation() as { hash: string }; // TODO: this is a temporary hack until we upgrade react-router
   return location.hash.substring(NAVIGATION_ZONE_PREFIX.length);

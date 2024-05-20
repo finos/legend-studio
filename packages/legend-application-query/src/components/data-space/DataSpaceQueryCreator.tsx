@@ -16,8 +16,9 @@
 
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
-import { useParams } from '@finos/legend-application/browser';
+import { useParams, useLocation } from '@finos/legend-application/browser';
 import { parseGAVCoordinates } from '@finos/legend-storage';
+import { useEffect } from 'react';
 import {
   useLegendQueryApplicationStore,
   useLegendQueryBaseStore,
@@ -70,6 +71,8 @@ const DataSpaceQueryCreatorStoreProvider: React.FC<{
   );
 };
 
+export const LAST_QUERY_DATASPACE_KEY = 'last_query_dataspace';
+
 export const DataSpaceQueryCreator = observer(() => {
   const applicationStore = useApplicationStore();
   const parameters = useParams<DataSpaceQueryCreatorPathParams>();
@@ -84,6 +87,17 @@ export const DataSpaceQueryCreator = observer(() => {
     applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
       DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH,
     );
+  const { pathname, search } = useLocation<{
+    pathname: string;
+    search: string;
+  }>();
+
+  useEffect(() => {
+    applicationStore.userDataService.persistValue(
+      LAST_QUERY_DATASPACE_KEY,
+      `${pathname}${search}`,
+    );
+  }, [pathname, search, applicationStore.userDataService]);
 
   return (
     <DataSpaceQueryCreatorStoreProvider
