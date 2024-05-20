@@ -106,14 +106,14 @@ const TemplateQueryPromotionReviewerContent = observer(() => {
       {isLoadingEditor && (
         <BlankPanelContent>
           {queryPromotionReviewerStore.initState.message ??
-            queryPromotionReviewerStore.graphManagerState.systemBuildState
-              .message ??
-            queryPromotionReviewerStore.graphManagerState.dependenciesBuildState
-              .message ??
-            queryPromotionReviewerStore.graphManagerState.generationsBuildState
-              .message ??
-            queryPromotionReviewerStore.graphManagerState.graphBuildState
-              .message}
+            queryPromotionReviewerStore.editorStore.graphManagerState
+              .systemBuildState.message ??
+            queryPromotionReviewerStore.editorStore.graphManagerState
+              .dependenciesBuildState.message ??
+            queryPromotionReviewerStore.editorStore.graphManagerState
+              .generationsBuildState.message ??
+            queryPromotionReviewerStore.editorStore.graphManagerState
+              .graphBuildState.message}
         </BlankPanelContent>
       )}
       <div className="template-query-promotor">

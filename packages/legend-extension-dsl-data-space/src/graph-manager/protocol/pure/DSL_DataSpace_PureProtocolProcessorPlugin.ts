@@ -34,6 +34,7 @@ import {
   isNonNullable,
   assertType,
   guaranteeType,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import { deserialize } from 'serializr';
 import {
@@ -78,6 +79,9 @@ import {
   type V1_MappingIncludeProtocolSerializer,
   type V1_MappingIncludeProtocolDeserializer,
   type V1_MappingIncludeIdentifierBuilder,
+  type QueryExecutionContextInfo,
+  type V1_SavedQueryExecutionBuilder,
+  type V1_ElementPointerType,
   type V1_RawLambda,
   V1_taggedValueModelSchema,
   PackageableElementExplicitReference,
@@ -96,15 +100,16 @@ import {
   Package,
   V1_RawValueSpecificationTransformer,
   V1_buildRawLambdaWithResolvedPaths,
-  type V1_ElementPointerType,
   V1_buildEmbeddedData,
   V1_transformEmbeddedData,
   DataElementReference,
   V1_DataElementReference,
+  QueryDataSpaceExecutionContextInfo,
 } from '@finos/legend-graph';
 import { V1_resolveDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { V1_MappingIncludeDataSpace } from './v1/model/packageableElements/mapping/V1_DSL_DataSpace_MappingIncludeDataSpace.js';
 import { MappingIncludeDataSpace } from '../../../graph/metamodel/pure/model/packageableElements/mapping/DSL_DataSpace_MappingIncludeDataSpace.js';
+import type { Entity } from '@finos/legend-storage';
 
 export const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::metamodel::dataSpace::DataSpace';
@@ -562,6 +567,51 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
       (protocol: V1_MappingInclude): string | undefined => {
         if (protocol instanceof V1_MappingIncludeDataSpace) {
           return protocol.includedDataSpace;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override V1_getExtraSavedQueryExecutionBuilder(): V1_SavedQueryExecutionBuilder[] {
+    return [
+      (
+        queryExec: QueryExecutionContextInfo,
+        entites: Entity[],
+      ): { mapping: string; runtime: string } | undefined => {
+        if (queryExec instanceof QueryDataSpaceExecutionContextInfo) {
+          const dataSpace = queryExec.dataSpacePath;
+          const dataSpaceEntity = entites.find((e) => e.path === dataSpace);
+          if (dataSpaceEntity) {
+            const content = dataSpaceEntity.content;
+            if (content._type === V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE) {
+              const v1DataSpace = returnUndefOnError(() =>
+                V1_deserializeDataSpace(content),
+              );
+              if (v1DataSpace) {
+                if (v1DataSpace.executionContexts.length === 1) {
+                  const exec = guaranteeNonNullable(
+                    v1DataSpace.executionContexts[0],
+                  );
+                  return {
+                    mapping: exec.mapping.path,
+                    runtime: exec.defaultRuntime.path,
+                  };
+                }
+                const resvoled =
+                  queryExec.executionKey ?? v1DataSpace.defaultExecutionContext;
+                const resolvedExec = guaranteeNonNullable(
+                  v1DataSpace.executionContexts.find(
+                    (e) => e.name === resvoled,
+                  ),
+                );
+                return {
+                  mapping: resolvedExec.mapping.path,
+                  runtime: resolvedExec.defaultRuntime.path,
+                };
+              }
+            }
+          }
         }
         return undefined;
       },
