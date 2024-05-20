@@ -75,7 +75,7 @@ export class QueryBuilderMilestoningState implements Hashable {
       startDate: observable,
       endDate: observable,
       showMilestoningEditor: observable,
-      isMilestonedQuery: computed,
+
       setProcessingDate: action,
       setBusinessDate: action,
       setStartDate: action,
@@ -87,6 +87,10 @@ export class QueryBuilderMilestoningState implements Hashable {
       initializeAllVersionsInRangeParameters: action,
       clearAllVersionsInRangeParameters: action,
       clearGetAllParameters: action,
+
+      isAllVersionsEnabled: computed,
+      isAllVersionsInRangeEnabled: computed,
+      isMilestonedQuery: computed,
       hashCode: computed,
     });
 
@@ -380,9 +384,9 @@ export class QueryBuilderMilestoningState implements Hashable {
         this.queryBuilderState.parametersState.parameterStates.find(
           (p) => p.parameter === this.startDate,
         );
-      this.queryBuilderState.parametersState.removeParameter(
-        guaranteeNonNullable(paramState),
-      );
+      if (paramState) {
+        this.queryBuilderState.parametersState.removeParameter(paramState);
+      }
     }
     if (
       this.endDate instanceof VariableExpression &&
@@ -394,9 +398,9 @@ export class QueryBuilderMilestoningState implements Hashable {
         this.queryBuilderState.parametersState.parameterStates.find(
           (p) => p.parameter === this.endDate,
         );
-      this.queryBuilderState.parametersState.removeParameter(
-        guaranteeNonNullable(paramState),
-      );
+      if (paramState) {
+        this.queryBuilderState.parametersState.removeParameter(paramState);
+      }
     }
     this.setStartDate(undefined);
     this.setEndDate(undefined);

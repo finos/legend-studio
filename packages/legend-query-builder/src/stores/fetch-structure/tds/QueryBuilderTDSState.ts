@@ -146,6 +146,7 @@ export class QueryBuilderTDSState
       TEMPORARY__showPostFetchStructurePanel: computed,
       derivations: computed,
       hasParserError: computed,
+      isQueryOptionsSet: computed,
       addColumn: action,
       moveColumn: action,
       removeAllColumns: action,
@@ -354,6 +355,16 @@ export class QueryBuilderTDSState
     ];
 
     return fetchStructureValidationIssues;
+  }
+
+  get isQueryOptionsSet(): boolean {
+    return (
+      this.resultSetModifierState.limit !== undefined ||
+      this.queryBuilderState.milestoningState.isMilestonedQuery ||
+      this.resultSetModifierState.slice !== undefined ||
+      this.resultSetModifierState.sortColumns.length > 0 ||
+      this.resultSetModifierState.distinct
+    );
   }
 
   get tdsColumns(): QueryBuilderTDSColumnState[] {

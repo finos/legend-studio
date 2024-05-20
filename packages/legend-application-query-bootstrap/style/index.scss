@@ -1223,6 +1223,10 @@
       color: var(--color-legacylight-light-dark-grey-200);
     }
 
+    .query-builder__projection__result-modifier-prompt__divider {
+      color: var(--color-legacylight-light-dark-grey-200);
+    }
+
     .query-builder-property-expression-badge__content {
       color: var(--color-legacylight-dark-grey-200);
     }
@@ -1720,6 +1724,17 @@
       svg {
         color: var(--color-light-grey-50);
       }
+    }
+  }
+
+  .query-builder__projection__modal {
+    ::-webkit-scrollbar-thumb {
+      height: 5rem;
+      background: var(--color-legacylight-light-grey-300);
+      outline-offset: -0.2rem;
+      border-radius: 0.4rem;
+      outline-color: var(--color-legacylight-light-grey-100);
+      border-color: var(--color-legacylight-light-grey-100);
     }
   }
 }
