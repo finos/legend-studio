@@ -383,7 +383,7 @@ export const QueryBuilderResultPanel = observer(
 
         <div className="panel__header">
           <div className="panel__header__title">
-            <div className="panel__header__title__label">result</div>
+            <div className="panel__header__title__label">results</div>
             {executedSql && (
               <Button
                 onClick={() => setShowSqlModal(true)}
@@ -457,7 +457,7 @@ export const QueryBuilderResultPanel = observer(
             {allowSettingPreviewLimit && (
               <div className="query-builder__result__limit">
                 <div className="query-builder__result__limit__label">
-                  preview limit
+                  preview row limit
                 </div>
                 <input
                   ref={inputRef}
@@ -476,22 +476,20 @@ export const QueryBuilderResultPanel = observer(
             <div className="query-builder__result__execute-btn btn__dropdown-combo btn__dropdown-combo--primary">
               {resultState.isRunningQuery ? (
                 <button
-                  className="btn__dropdown-combo__canceler"
+                  className="btn__dropdown-combo__canceler query-builder__result__execute-btn__btn"
                   onClick={cancelQuery}
                   tabIndex={-1}
                   disabled={!isQueryValid}
                 >
-                  <div className="btn--dark btn--caution btn__dropdown-combo__canceler__label">
-                    <PauseCircleIcon className="btn__dropdown-combo__canceler__label__icon" />
-                    <div className="btn__dropdown-combo__canceler__label__title">
-                      Stop
-                    </div>
+                  <div className="btn--dark btn--caution btn__dropdown-combo__canceler__label query-builder__result__execute-btn__btn">
+                    <PauseCircleIcon />
+                    Stop
                   </div>
                 </button>
               ) : (
                 <>
                   <button
-                    className="btn__dropdown-combo__label"
+                    className="btn__dropdown-combo__label query-builder__result__execute-btn__btn query-builder__result__execute-btn__btn--green"
                     onClick={runQuery}
                     tabIndex={-1}
                     title={
@@ -503,13 +501,11 @@ export const QueryBuilderResultPanel = observer(
                     }
                     disabled={isRunQueryDisabled}
                   >
-                    <PlayIcon className="btn__dropdown-combo__label__icon" />
-                    <div className="btn__dropdown-combo__label__title">
-                      Run Query
-                    </div>
+                    <PlayIcon />
+                    Run Query
                   </button>
                   <DropdownMenu
-                    className="btn__dropdown-combo__dropdown-btn"
+                    className="btn__dropdown-combo__dropdown-btn query-builder__result__execute-btn__btn query-builder__result__execute-btn__btn--green"
                     disabled={isRunQueryDisabled}
                     content={
                       <MenuContent>
