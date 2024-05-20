@@ -101,6 +101,7 @@ const CreateQueryDialog = observer(() => {
     );
   };
   const isExistingQueryName = createQueryState.editorStore.existingQueryName;
+  const isEmptyName = !createQueryState.queryName;
   // name
   const nameInputRef = useRef<HTMLInputElement>(null);
   const debouncedLoadQueries = useMemo(
@@ -161,6 +162,7 @@ const CreateQueryDialog = observer(() => {
                 spellCheck={false}
                 value={createQueryState.queryName}
                 onChange={changeName}
+                title="New Query Name"
               />
               {isExistingQueryName && (
                 <div
@@ -177,10 +179,11 @@ const CreateQueryDialog = observer(() => {
           <ModalFooterButton
             text="Create Query"
             title="Create new query"
-            disabled={Boolean(
+            disabled={
               createQueryState.editorStore.isPerformingBlockingAction ||
-                isExistingQueryName,
-            )}
+              Boolean(isExistingQueryName) ||
+              isEmptyName
+            }
             onClick={create}
           />
         </ModalFooter>

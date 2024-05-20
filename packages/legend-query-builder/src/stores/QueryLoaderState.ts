@@ -65,7 +65,7 @@ export class QueryLoaderState {
 
   readonly isReadOnly?: boolean | undefined;
   readonly onQueryRenamed?: ((query: LightQuery) => void) | undefined;
-  readonly onQueryDeleted?: ((query: LightQuery) => void) | undefined;
+  readonly onQueryDeleted?: ((query: string) => void) | undefined;
   readonly handleFetchDefaultQueriesFailure?: (() => void) | undefined;
 
   queryBuilderState?: QueryBuilderState | undefined;
@@ -100,7 +100,7 @@ export class QueryLoaderState {
 
       isReadOnly?: boolean | undefined;
       onQueryRenamed?: ((query: LightQuery) => void) | undefined;
-      onQueryDeleted?: ((query: LightQuery) => void) | undefined;
+      onQueryDeleted?: ((query: string) => void) | undefined;
       handleFetchDefaultQueriesFailure?: (() => void) | undefined;
     },
   ) {
@@ -304,11 +304,9 @@ export class QueryLoaderState {
   *deleteQuery(queryId: string): GeneratorFn<void> {
     this.deleteQueryState.inProgress();
     try {
-      const query = (yield this.graphManagerState.graphManager.deleteQuery(
-        queryId,
-      )) as Query;
-      this.onQueryDeleted?.(query);
-      this.applicationStore.notificationService.notify(
+      yield this.graphManagerState.graphManager.deleteQuery(queryId);
+      this.onQueryDeleted?.(queryId);
+      this.applicationStore.notificationService.notifySuccess(
         'Deleted query successfully',
       );
       this.deleteQueryState.pass();

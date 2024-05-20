@@ -58,10 +58,10 @@ export class EditExistingQuerySetupStore extends BaseQuerySetupStore {
                 'recently viewed queries',
               )}`
             : `No recently viewed queries`,
-        onQueryDeleted: (query): void =>
+        onQueryDeleted: (queryId): void =>
           LegendQueryUserDataHelper.removeRecentlyViewedQuery(
             this.applicationStore.userDataService,
-            query.id,
+            queryId,
           ),
         onQueryRenamed: (query): void => {
           LegendQueryTelemetryHelper.logEvent_RenameQuerySucceeded(

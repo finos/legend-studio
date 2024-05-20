@@ -44,7 +44,6 @@ import {
   Service,
   Mapping,
   RawLambda,
-  QueryExplicitExecutionContextInfo,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
@@ -140,30 +139,6 @@ export const createServiceElement = async (
     new RuntimePointer(PackageableElementExplicitReference.create(runtime)),
   );
   return service;
-};
-
-const createServiceEntity = async (
-  servicePath: string,
-  servicePattern: string,
-  serviceOwners: string[],
-  queryContent: string,
-  mappingPath: string,
-  runtimePath: string,
-  graphManagerState: GraphManagerState,
-): Promise<Entity> => {
-  const service = await createServiceElement(
-    servicePath,
-    servicePattern,
-    serviceOwners,
-    queryContent,
-    mappingPath,
-    runtimePath,
-    graphManagerState,
-  );
-  const entity = graphManagerState.graphManager.elementToEntity(service, {
-    pruneSourceInformation: true,
-  });
-  return entity;
 };
 
 const DEFAULT_WORKSPACE_NAME_PREFIX = 'productionize-query';
@@ -531,23 +506,7 @@ export class QueryProductionizerStore {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      let mapping = this.currentQueryInfo.mapping;
-      let runtime = this.currentQueryInfo.runtime;
-      const execContext = this.currentQueryInfo.executionContext;
-      if (execContext instanceof QueryExplicitExecutionContextInfo) {
-        mapping = execContext.mapping;
-        runtime = execContext.runtime;
-      }
-      // TODO handle dataspace
-      const serviceEntity = await createServiceEntity(
-        this.servicePath,
-        this.servicePattern,
-        this.serviceOwners,
-        this.currentQueryInfo.content,
-        guaranteeNonNullable(mapping, 'Unable to resolve mapping for service'),
-        guaranteeNonNullable(runtime, 'Unable to resolve runtime for service'),
-        this.graphManagerState,
-      );
+
       const projectData = await Promise.all([
         this.sdlcServerClient.getEntities(project.projectId, undefined),
         this.sdlcServerClient.getConfiguration(project.projectId, undefined),
@@ -605,13 +564,27 @@ export class QueryProductionizerStore {
       )
         .map((p) => ProjectVersionEntities.serialization.fromJson(p))
         .flatMap((info) => info.entities);
+      // build service entity
+      const [servicePackagePath, serviceName] =
+        resolvePackagePathAndElementName(this.servicePath);
+      const entity =
+        (await this.graphManagerState.graphManager.productionizeQueryToServiceEntity(
+          this.currentQueryInfo,
+          {
+            name: serviceName,
+            packageName: servicePackagePath,
+            pattern: this.servicePattern,
+            serviceOwners: this.serviceOwners,
+          },
+          [...currentProjectEntities, ...dependencyEntities],
+        )) as unknown as Entity;
 
       let compilationFailed = false;
       try {
         await this.graphManagerState.graphManager.compileEntities([
           ...dependencyEntities,
           ...currentProjectEntities,
-          serviceEntity,
+          entity,
         ]);
       } catch {
         compilationFailed = true;
@@ -675,9 +648,9 @@ export class QueryProductionizerStore {
               message: 'productionize-query: add service element',
               entityChanges: [
                 {
-                  classifierPath: serviceEntity.classifierPath,
-                  entityPath: serviceEntity.path,
-                  content: serviceEntity.content,
+                  classifierPath: entity.classifierPath,
+                  entityPath: entity.path,
+                  content: entity.content,
                   type: EntityChangeType.CREATE,
                 },
               ],

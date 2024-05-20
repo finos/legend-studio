@@ -64,7 +64,7 @@ export class LegendQueryUserDataHelper {
   ): void {
     const queries = LegendQueryUserDataHelper.getRecentlyViewedQueries(service);
     const idx = queries.findIndex((query) => query === queryId);
-    if (idx !== -1) {
+    if (idx === -1) {
       return;
     }
     queries.splice(idx, 1);

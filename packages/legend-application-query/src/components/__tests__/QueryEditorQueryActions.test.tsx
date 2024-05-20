@@ -121,10 +121,10 @@ test(
     const createNewQueryModal = await waitFor(() =>
       renderResult.getByRole('dialog'),
     );
-    const renamedQueryInput = getByDisplayValue(
-      createNewQueryModal,
-      'New Query',
-    );
+    const renamedQueryInput = getByTitle(createNewQueryModal, 'New Query Name');
+    fireEvent.change(renamedQueryInput, {
+      target: { value: 'New Query' },
+    });
     expect(
       await waitFor(() =>
         getByTitle(
@@ -229,7 +229,7 @@ test(
 
     expect(
       getByText(createNewQueryModal, 'Create Query').hasAttribute('disabled'),
-    ).toBe(false);
+    ).toBe(true);
   },
 );
 

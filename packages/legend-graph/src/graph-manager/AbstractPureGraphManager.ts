@@ -587,7 +587,18 @@ export abstract class AbstractPureGraphManager {
   abstract updateQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract patchQuery(query: Partial<Query>, graph: PureModel): Promise<Query>;
   abstract renameQuery(queryId: string, queryName: string): Promise<LightQuery>;
-  abstract deleteQuery(queryId: string): Promise<LightQuery>;
+  abstract deleteQuery(queryId: string): Promise<void>;
+
+  abstract productionizeQueryToServiceEntity(
+    query: QueryInfo,
+    serviceConfig: {
+      name: string;
+      packageName: string;
+      pattern: string;
+      serviceOwners: string[];
+    },
+    graph: Entity[],
+  ): Promise<Entity>;
 
   // -------------------------------------- Analysis --------------------------------------
 
