@@ -1,5 +1,11 @@
 # @finos/legend-application-repl
 
+## 0.0.19
+
+### Patch Changes
+
+- [#3169](https://github.com/finos/legend-studio/pull/3169) [`61d0311`](https://github.com/finos/legend-studio/commit/61d0311be6994fb5baf8b65a1283566cc7a19b8a) ([@rafaelbey](https://github.com/rafaelbey)) - BugFix REPL base url
+
 ## 0.0.18
 
 ## 0.0.17

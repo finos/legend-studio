@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 11.52.0
+
+### Patch Changes
+
+- [#3170](https://github.com/finos/legend-studio/pull/3170) [`03bedff`](https://github.com/finos/legend-studio/commit/03bedff88acb177fe3512ad091431386400354c7) ([@travisstebbins](https://github.com/travisstebbins)) - Fix BasicValueSpecificationEditor error styling in light mode
+
 ## 11.51.0
 
 ## 11.50.0

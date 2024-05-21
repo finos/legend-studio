@@ -1,5 +1,7 @@
 # @finos/legend-extension-store-relational
 
+## 0.0.242
+
 ## 0.0.241
 
 ## 0.0.240

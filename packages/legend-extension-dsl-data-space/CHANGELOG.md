@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.3.14
+
+### Patch Changes
+
+- [#3162](https://github.com/finos/legend-studio/pull/3162) [`ef8410a`](https://github.com/finos/legend-studio/commit/ef8410a625c3e1184ba6fa600f40490d1d2dfdf0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Hide execution context in Properties panel if only one defined.
+
 ## 10.3.13
 
 ## 10.3.12

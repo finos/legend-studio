@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.31
+
+### Patch Changes
+
+- [#3173](https://github.com/finos/legend-studio/pull/3173) [`052f22e`](https://github.com/finos/legend-studio/commit/052f22e4c6b91a1f57ea48cad4b5a15111a3f453) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add CubesLoadingIndicator and CubesLoadingIndicatorIcon components.
+
 ## 7.1.30
 
 ## 7.1.29
