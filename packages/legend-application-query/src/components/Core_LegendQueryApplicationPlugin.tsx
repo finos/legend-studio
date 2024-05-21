@@ -496,11 +496,11 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
           ) {
             const editorStore =
               queryBuilderState.workflowState.actionConfig.editorStore;
-            const isExistingQuery =
-              editorStore instanceof ExistingQueryEditorStore;
             const openSaveQueryModal = (): void => {
               if (editorStore instanceof ExistingQueryEditorStore) {
                 editorStore.updateState.showSaveModal();
+              } else {
+                editorStore.queryCreatorState.open(undefined);
               }
             };
             const handleQuerySaveAs = (): void => {
@@ -515,7 +515,6 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                 <Button
                   className="query-editor__header__action query-editor__header__action-combo__main-btn btn--dak"
                   disabled={
-                    !isExistingQuery ||
                     editorStore.isPerformingBlockingAction ||
                     !queryBuilderState.canBuildQuery
                   }

@@ -113,13 +113,16 @@ const CreateQueryDialog = observer(() => {
       }, 500),
     [applicationStore, createQueryState.editorStore],
   );
+  const setFocus = (): void => {
+    nameInputRef.current?.focus();
+  };
 
   const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     createQueryState.setQueryName(event.target.value);
   };
 
   useEffect(() => {
-    nameInputRef.current?.focus();
+    setTimeout(() => setFocus(), 1);
   }, []);
 
   useEffect(() => {
