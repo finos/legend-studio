@@ -16,7 +16,6 @@
 
 import {
   BlankPanelContent,
-  PanelLoadingIndicator,
   PlayIcon,
   DropdownMenu,
   MenuContent,
