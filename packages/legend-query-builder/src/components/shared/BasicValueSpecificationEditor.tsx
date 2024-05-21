@@ -34,6 +34,7 @@ import {
   PanelFormSection,
   CalculateIcon,
   InputWithInlineValidation,
+  type SelectComponent,
 } from '@finos/legend-art';
 import {
   type Enum,
@@ -778,75 +779,110 @@ const setCollectionValue = (
 
 const EnumCollectionInstanceValueEditor = observer(
   (props: {
+    editable: boolean;
     valueSpecification: CollectionInstanceValue;
-    setText: (text: string) => void;
-    handleOnBlur: React.FocusEventHandler<HTMLTextAreaElement>;
-    saveEdit: () => void;
     observerContext: ObserverContext;
+    setEditable: (val: boolean) => void;
+    setShowAdvancedEditorPopover: (val: boolean) => void;
+    setValueSpecification: (val: ValueSpecification) => void;
   }) => {
-    const { valueSpecification, setText, handleOnBlur, saveEdit } = props;
+    const {
+      editable,
+      valueSpecification,
+      observerContext,
+      setEditable,
+      setShowAdvancedEditorPopover,
+      setValueSpecification,
+    } = props;
+    const inputRef = useRef<SelectComponent>(null);
     const applicationStore = useApplicationStore();
     const enumType = guaranteeType(
       valueSpecification.genericType?.value.rawType,
       Enumeration,
     );
 
-    const [selectedValues, setSelectedValues] = useState<Enum[]>(
+    const [selectedOptions, setSelectedOptions] = useState<
+      { label: string; value: Enum }[]
+    >(
       (valueSpecification.values as EnumValueInstanceValue[])
         .filter((valueSpec) => valueSpec.values[0]?.value !== undefined)
-        .map((valueSpec) => valueSpec.values[0]!.value),
+        .map((valueSpec) => ({
+          label: valueSpec.values[0]!.value.name,
+          value: valueSpec.values[0]!.value,
+        })),
     );
-    const options = enumType.values
+
+    useEffect(() => {
+      inputRef.current?.focus();
+    }, []);
+
+    const availableOptions = enumType.values
       .filter(
         (value) =>
-          !selectedValues.some((selectedValue) => selectedValue === value),
+          !selectedOptions.some(
+            (selectedValue) => selectedValue.value.name === value.name,
+          ),
       )
       .map((value) => ({
         label: value.name,
         value: value,
       }));
-    const changeValue = (
-      selectedOptions: { value: Enum; label: string }[],
-    ): void => {
-      setSelectedValues([...selectedOptions.map((option) => option.value)]);
 
-      // const newValueSpecs = selectedOptions.map((option) => {
-      //   const newValueSpec = new EnumValueInstanceValue(
-      //     GenericTypeExplicitReference.create(new GenericType(enumType)),
-      //   );
-      //   console.log('option:', option);
-      //   instanceValue_setValues(
-      //     newValueSpec,
-      //     [EnumValueExplicitReference.create(option.value)],
-      //     observerContext,
-      //   );
-      //   return newValueSpec;
-      // });
-      // setSelectedValues(newValueSpecs);
+    const changeValue = (
+      newSelectedOptions: { value: Enum; label: string }[],
+    ): void => {
+      setSelectedOptions(newSelectedOptions);
     };
 
-    useEffect(() => {
-      setText(selectedValues.map((value) => value.name).join(','));
-    }, [selectedValues, setText]);
+    const saveEdit = (): void => {
+      if (editable) {
+        setEditable(false);
+        setShowAdvancedEditorPopover(false);
+        const result = selectedOptions
+          .map((value) => {
+            const enumValueInstanceValue = new EnumValueInstanceValue(
+              GenericTypeExplicitReference.create(new GenericType(enumType)),
+            );
+            instanceValue_setValues(
+              enumValueInstanceValue,
+              [EnumValueExplicitReference.create(value.value)],
+              observerContext,
+            );
+            return enumValueInstanceValue;
+          })
+          .filter(isNonNullable);
+        instanceValue_setValues(valueSpecification, result, observerContext);
+        setValueSpecification(valueSpecification);
+      }
+    };
 
     return (
-      <CustomSelectorInput
-        className="value-spec-editor__enum-collection-selector"
-        options={options}
-        isMulti={true}
-        onChange={changeValue}
-        onBlur={handleOnBlur}
-        onKeyDown={(event: KeyboardEvent): void => {
-          if (event.key === 'Enter' && !event.shiftKey) {
-            saveEdit();
+      <>
+        <CustomSelectorInput
+          ref={inputRef}
+          className="value-spec-editor__enum-collection-selector"
+          options={availableOptions}
+          isMulti={true}
+          onChange={changeValue}
+          onBlur={saveEdit}
+          onKeyDown={(event: KeyboardEvent): void => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+              saveEdit();
+            }
+          }}
+          value={selectedOptions}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
-        }}
-        value={selectedValues}
-        darkMode={
-          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-        }
-        placeholder="Select value"
-      />
+          placeholder="Select value"
+        />
+        <button
+          className="value-spec-editor__list-editor__save-button btn--dark"
+          onClick={saveEdit}
+        >
+          <SaveIcon />
+        </button>
+      </>
     );
   },
 );
@@ -980,11 +1016,12 @@ const CollectionValueInstanceValueEditor = observer(
           <div className={clsx('value-spec-editor', className)}>
             {expectedType instanceof Enumeration ? (
               <EnumCollectionInstanceValueEditor
+                editable={editable}
                 valueSpecification={valueSpecification}
-                setText={setText}
-                handleOnBlur={handleOnBlur}
-                saveEdit={saveEdit}
                 observerContext={obseverContext}
+                setEditable={setEditable}
+                setShowAdvancedEditorPopover={setShowAdvancedEditorPopover}
+                setValueSpecification={setValueSpecification}
               />
             ) : (
               <>
@@ -1013,15 +1050,14 @@ const CollectionValueInstanceValueEditor = observer(
                 >
                   <FilledWindowMaximizeIcon />
                 </button>
+                <button
+                  className="value-spec-editor__list-editor__save-button btn--dark"
+                  onClick={saveEdit}
+                >
+                  <SaveIcon />
+                </button>
               </>
             )}
-
-            <button
-              className="value-spec-editor__list-editor__save-button btn--dark"
-              onClick={saveEdit}
-            >
-              <SaveIcon />
-            </button>
             <button
               className="value-spec-editor__reset-btn"
               name="Reset"
