@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 4.14.38
+
+### Patch Changes
+
+- [#3148](https://github.com/finos/legend-studio/pull/3148) [`8e2efa7`](https://github.com/finos/legend-studio/commit/8e2efa74d73d57f321308e3b795ad938d868b3ff) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add milestoning setup in `query options`
+
+- [#3170](https://github.com/finos/legend-studio/pull/3170) [`03bedff`](https://github.com/finos/legend-studio/commit/03bedff88acb177fe3512ad091431386400354c7) ([@travisstebbins](https://github.com/travisstebbins)) - Fix light mode selector input height
+
+- [#3173](https://github.com/finos/legend-studio/pull/3173) [`052f22e`](https://github.com/finos/legend-studio/commit/052f22e4c6b91a1f57ea48cad4b5a15111a3f453) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Change the query builder results panel loading indicator.
+
 ## 4.14.37
 
 ## 4.14.36
