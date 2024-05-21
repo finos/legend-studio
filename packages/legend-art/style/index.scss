@@ -33,6 +33,7 @@
 @forward 'components/selector-input';
 @forward 'components/tree-view';
 @forward 'components/markdown-viewer';
+@forward 'components/cubes-loading-indicator';
 
 // Reset (override library styles)
 @forward 'reset/mui';
