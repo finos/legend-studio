@@ -779,21 +779,11 @@ const setCollectionValue = (
 
 const EnumCollectionInstanceValueEditor = observer(
   (props: {
-    editable: boolean;
     valueSpecification: CollectionInstanceValue;
     observerContext: ObserverContext;
-    setEditable: (val: boolean) => void;
-    setShowAdvancedEditorPopover: (val: boolean) => void;
-    setValueSpecification: (val: ValueSpecification) => void;
+    saveEdit: () => void;
   }) => {
-    const {
-      editable,
-      valueSpecification,
-      observerContext,
-      setEditable,
-      setShowAdvancedEditorPopover,
-      setValueSpecification,
-    } = props;
+    const { valueSpecification, observerContext, saveEdit } = props;
     const inputRef = useRef<SelectComponent>(null);
     const applicationStore = useApplicationStore();
     const enumType = guaranteeType(
@@ -834,26 +824,22 @@ const EnumCollectionInstanceValueEditor = observer(
       setSelectedOptions(newSelectedOptions);
     };
 
-    const saveEdit = (): void => {
-      if (editable) {
-        setEditable(false);
-        setShowAdvancedEditorPopover(false);
-        const result = selectedOptions
-          .map((value) => {
-            const enumValueInstanceValue = new EnumValueInstanceValue(
-              GenericTypeExplicitReference.create(new GenericType(enumType)),
-            );
-            instanceValue_setValues(
-              enumValueInstanceValue,
-              [EnumValueExplicitReference.create(value.value)],
-              observerContext,
-            );
-            return enumValueInstanceValue;
-          })
-          .filter(isNonNullable);
-        instanceValue_setValues(valueSpecification, result, observerContext);
-        setValueSpecification(valueSpecification);
-      }
+    const updateValueSpecAndSaveEdit = (): void => {
+      const result = selectedOptions
+        .map((value) => {
+          const enumValueInstanceValue = new EnumValueInstanceValue(
+            GenericTypeExplicitReference.create(new GenericType(enumType)),
+          );
+          instanceValue_setValues(
+            enumValueInstanceValue,
+            [EnumValueExplicitReference.create(value.value)],
+            observerContext,
+          );
+          return enumValueInstanceValue;
+        })
+        .filter(isNonNullable);
+      instanceValue_setValues(valueSpecification, result, observerContext);
+      saveEdit();
     };
 
     return (
@@ -864,10 +850,10 @@ const EnumCollectionInstanceValueEditor = observer(
           options={availableOptions}
           isMulti={true}
           onChange={changeValue}
-          onBlur={saveEdit}
+          onBlur={updateValueSpecAndSaveEdit}
           onKeyDown={(event: KeyboardEvent): void => {
             if (event.key === 'Enter' && !event.shiftKey) {
-              saveEdit();
+              updateValueSpecAndSaveEdit();
             }
           }}
           value={selectedOptions}
@@ -878,7 +864,7 @@ const EnumCollectionInstanceValueEditor = observer(
         />
         <button
           className="value-spec-editor__list-editor__save-button btn--dark"
-          onClick={saveEdit}
+          onClick={updateValueSpecAndSaveEdit}
         >
           <SaveIcon />
         </button>
@@ -947,6 +933,11 @@ const CollectionValueInstanceValueEditor = observer(
       if (editable) {
         setEditable(false);
         setShowAdvancedEditorPopover(false);
+        setValueSpecification(valueSpecification);
+      }
+    };
+    const updateValueSpecAndSaveEdit = (): void => {
+      if (editable) {
         setCollectionValue(
           valueSpecification,
           expectedType,
@@ -954,7 +945,7 @@ const CollectionValueInstanceValueEditor = observer(
           obseverContext,
         );
         setText(stringifyValue(valueSpecification.values));
-        setValueSpecification(valueSpecification);
+        saveEdit();
       }
     };
 
@@ -972,7 +963,7 @@ const CollectionValueInstanceValueEditor = observer(
         (event.relatedTarget as HTMLButtonElement | undefined)?.name !==
         expandButtonName
       ) {
-        saveEdit();
+        updateValueSpecAndSaveEdit();
       }
     };
 
@@ -1002,7 +993,7 @@ const CollectionValueInstanceValueEditor = observer(
                 onChange={changeValueTextArea}
                 onKeyDown={(event): void => {
                   if (event.key === 'Enter' && !event.shiftKey) {
-                    saveEdit();
+                    updateValueSpecAndSaveEdit();
                   }
                 }}
               />
@@ -1016,12 +1007,9 @@ const CollectionValueInstanceValueEditor = observer(
           <div className={clsx('value-spec-editor', className)}>
             {expectedType instanceof Enumeration ? (
               <EnumCollectionInstanceValueEditor
-                editable={editable}
                 valueSpecification={valueSpecification}
                 observerContext={obseverContext}
-                setEditable={setEditable}
-                setShowAdvancedEditorPopover={setShowAdvancedEditorPopover}
-                setValueSpecification={setValueSpecification}
+                saveEdit={saveEdit}
               />
             ) : (
               <>
@@ -1036,7 +1024,7 @@ const CollectionValueInstanceValueEditor = observer(
                   onChange={changeValueTextArea}
                   onKeyDown={(event): void => {
                     if (event.key === 'Enter' && !event.shiftKey) {
-                      saveEdit();
+                      updateValueSpecAndSaveEdit();
                     }
                   }}
                   onBlur={handleOnBlur}
