@@ -69,6 +69,28 @@
     background: var(--color-yellow-0);
   }
 
+  .selector-input--has-error .selector-input {
+    &__control,
+    &__control:hover {
+      border-color: var(--color-red-180);
+    }
+
+    &__control--is-focused,
+    &__control--is-focused:hover {
+      border-color: var(--color-legacylight-light-blue-100);
+    }
+
+    &__indicators {
+      svg {
+        color: var(--color-red-180);
+      }
+    }
+
+    &__indicator-separator {
+      background: var(--color-red-180);
+    }
+  }
+
   // ---------------------------- Menu -------------------------------
 
   .menu {
@@ -356,6 +378,10 @@
     background: var(--color-white);
     border: 1px solid var(--color-light-grey-300);
     color: var(--color-legacylight-dark-grey-200);
+
+    &--error {
+      border-color: var(--color-red-180);
+    }
   }
 
   .lambda-parameter-values__value__label,
@@ -369,6 +395,10 @@
 
   .value-spec-editor__toggler__btn--toggled svg {
     color: var(--color-blue-50);
+  }
+
+  .value-spec-editor__number__input--error {
+    border-color: var(--color-red-180);
   }
 
   // ---------------------------- Derived Property Editor -------------------------------
