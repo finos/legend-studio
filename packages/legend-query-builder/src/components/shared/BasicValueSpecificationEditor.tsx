@@ -776,6 +776,81 @@ const setCollectionValue = (
   instanceValue_setValues(valueSpecification, result, obseverContext);
 };
 
+const EnumCollectionInstanceValueEditor = observer(
+  (props: {
+    valueSpecification: CollectionInstanceValue;
+    setText: (text: string) => void;
+    handleOnBlur: React.FocusEventHandler<HTMLTextAreaElement>;
+    saveEdit: () => void;
+    observerContext: ObserverContext;
+  }) => {
+    const { valueSpecification, setText, handleOnBlur, saveEdit } = props;
+    const applicationStore = useApplicationStore();
+    const enumType = guaranteeType(
+      valueSpecification.genericType?.value.rawType,
+      Enumeration,
+    );
+
+    const [selectedValues, setSelectedValues] = useState<Enum[]>(
+      (valueSpecification.values as EnumValueInstanceValue[])
+        .filter((valueSpec) => valueSpec.values[0]?.value !== undefined)
+        .map((valueSpec) => valueSpec.values[0]!.value),
+    );
+    const options = enumType.values
+      .filter(
+        (value) =>
+          !selectedValues.some((selectedValue) => selectedValue === value),
+      )
+      .map((value) => ({
+        label: value.name,
+        value: value,
+      }));
+    const changeValue = (
+      selectedOptions: { value: Enum; label: string }[],
+    ): void => {
+      setSelectedValues([...selectedOptions.map((option) => option.value)]);
+
+      // const newValueSpecs = selectedOptions.map((option) => {
+      //   const newValueSpec = new EnumValueInstanceValue(
+      //     GenericTypeExplicitReference.create(new GenericType(enumType)),
+      //   );
+      //   console.log('option:', option);
+      //   instanceValue_setValues(
+      //     newValueSpec,
+      //     [EnumValueExplicitReference.create(option.value)],
+      //     observerContext,
+      //   );
+      //   return newValueSpec;
+      // });
+      // setSelectedValues(newValueSpecs);
+    };
+
+    useEffect(() => {
+      setText(selectedValues.map((value) => value.name).join(','));
+    }, [selectedValues, setText]);
+
+    return (
+      <CustomSelectorInput
+        className="value-spec-editor__enum-collection-selector"
+        options={options}
+        isMulti={true}
+        onChange={changeValue}
+        onBlur={handleOnBlur}
+        onKeyDown={(event: KeyboardEvent): void => {
+          if (event.key === 'Enter' && !event.shiftKey) {
+            saveEdit();
+          }
+        }}
+        value={selectedValues}
+        darkMode={
+          !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+        }
+        placeholder="Select value"
+      />
+    );
+  },
+);
+
 const COLLECTION_PREVIEW_CHAR_LIMIT = 50;
 
 const getPlaceHolder = (expectedType: Type): string => {
@@ -903,31 +978,44 @@ const CollectionValueInstanceValueEditor = observer(
             </BasePopover>
           )}
           <div className={clsx('value-spec-editor', className)}>
-            <textarea
-              ref={inputRef}
-              className={clsx(
-                'panel__content__form__section__input value-spec-editor__input value-spec-editor__textarea ',
-              )}
-              spellCheck={false}
-              value={text}
-              placeholder={placeholder}
-              onChange={changeValueTextArea}
-              onKeyDown={(event): void => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  saveEdit();
-                }
-              }}
-              onBlur={handleOnBlur}
-            />
-            <button
-              className="value-spec-editor__list-editor__expand-button btn--dark"
-              onClick={() => setShowAdvancedEditorPopover(true)}
-              tabIndex={-1}
-              name={expandButtonName}
-              title="Expand window..."
-            >
-              <FilledWindowMaximizeIcon />
-            </button>
+            {expectedType instanceof Enumeration ? (
+              <EnumCollectionInstanceValueEditor
+                valueSpecification={valueSpecification}
+                setText={setText}
+                handleOnBlur={handleOnBlur}
+                saveEdit={saveEdit}
+                observerContext={obseverContext}
+              />
+            ) : (
+              <>
+                <textarea
+                  ref={inputRef}
+                  className={clsx(
+                    'panel__content__form__section__input value-spec-editor__input value-spec-editor__textarea ',
+                  )}
+                  spellCheck={false}
+                  value={text}
+                  placeholder={placeholder}
+                  onChange={changeValueTextArea}
+                  onKeyDown={(event): void => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      saveEdit();
+                    }
+                  }}
+                  onBlur={handleOnBlur}
+                />
+                <button
+                  className="value-spec-editor__list-editor__expand-button btn--dark"
+                  onClick={() => setShowAdvancedEditorPopover(true)}
+                  tabIndex={-1}
+                  name={expandButtonName}
+                  title="Expand window..."
+                >
+                  <FilledWindowMaximizeIcon />
+                </button>
+              </>
+            )}
+
             <button
               className="value-spec-editor__list-editor__save-button btn--dark"
               onClick={saveEdit}

@@ -49,6 +49,10 @@
     width: 100%;
   }
 
+  &__enum-collection-selector {
+    width: 100%;
+  }
+
   ::-webkit-calendar-picker-indicator {
     filter: invert(0.8);
   }
