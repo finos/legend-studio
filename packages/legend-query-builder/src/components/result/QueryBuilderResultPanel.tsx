@@ -16,7 +16,6 @@
 
 import {
   BlankPanelContent,
-  PanelLoadingIndicator,
   PlayIcon,
   DropdownMenu,
   MenuContent,
@@ -43,6 +42,8 @@ import {
   CsvIcon,
   DebugIcon,
   ReportIcon,
+  CubesLoadingIndicatorIcon,
+  CubesLoadingIndicator,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -334,6 +335,9 @@ export const QueryBuilderResultPanel = observer(
         </MenuContentItem>
       ));
 
+    const isLoading =
+      resultState.isRunningQuery || resultState.isGeneratingPlan;
+
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL}
@@ -613,18 +617,16 @@ export const QueryBuilderResultPanel = observer(
               ))}
           </div>
         </div>
-        <PanelContent>
-          <PanelLoadingIndicator
-            isLoading={
-              resultState.isRunningQuery || resultState.isGeneratingPlan
-            }
-          />
-          {!executionResult && (
+        <PanelContent className="query-builder__result__content">
+          <CubesLoadingIndicator isLoading={isLoading}>
+            <CubesLoadingIndicatorIcon />
+          </CubesLoadingIndicator>
+          {!executionResult && !isLoading && (
             <BlankPanelContent>
               Build or load a valid query first
             </BlankPanelContent>
           )}
-          {executionResult && (
+          {executionResult && !isLoading && (
             <div className="query-builder__result__values">
               <QueryBuilderResultValues
                 executionResult={executionResult}

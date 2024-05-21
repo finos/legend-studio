@@ -1,0 +1,138 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'sass:math';
+
+$loading-icon-frame-rate: math.div(100, 8);
+$loading-icon-full-duration: 1.6s;
+$loading-icon-frame-duration: math.div($loading-icon-full-duration, 8);
+
+$loading-icon-square-state-off: rotateX(90deg);
+$loading-icon-square-state-on: rotateX(0deg);
+
+$flip-step-1: $loading-icon-frame-rate * 0;
+$flip-step-2: $loading-icon-frame-rate * 1;
+$flip-step-3: $loading-icon-frame-rate * 4;
+$flip-step-4: $loading-icon-frame-rate * 5;
+
+$loading-icon-size-md: 32px;
+$loading-icon-size-sm: 16px;
+$loading-icon-size-lg: 64px;
+
+.cubes-loading-indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  z-index: 1;
+  display: none;
+  justify-content: center;
+  align-items: center;
+
+  &--loading {
+    display: flex;
+  }
+}
+
+.cubes-icon {
+  position: relative;
+
+  &--md {
+    height: $loading-icon-size-md;
+    width: $loading-icon-size-md;
+  }
+
+  &--sm {
+    width: $loading-icon-size-sm;
+    height: $loading-icon-size-sm;
+  }
+
+  &--lg {
+    width: $loading-icon-size-lg;
+    height: $loading-icon-size-lg;
+
+    &__icon {
+      width: calc(50% - 2px);
+      height: calc(50% - 2px);
+    }
+  }
+
+  &__icon {
+    width: calc(50% - 1px);
+    height: calc(50% - 1px);
+    position: absolute;
+    background: var(--color-legacylight-light-blue-100);
+    animation: flip-animation $loading-icon-full-duration infinite;
+    transform: $loading-icon-square-state-off;
+
+    // Top-left
+    &:nth-child(1) {
+      top: 0;
+      left: 0;
+      animation-delay: $loading-icon-frame-duration * 0;
+    }
+    // Top-Right
+    &:nth-child(2) {
+      top: 0;
+      left: 50%;
+      animation-delay: $loading-icon-frame-duration * 1;
+    }
+    // Bottom-Right
+    &:nth-child(3) {
+      top: 50%;
+      left: 50%;
+      animation-delay: $loading-icon-frame-duration * 2;
+    }
+    // Bottom-Left
+    &:nth-child(4) {
+      top: 50%;
+      left: 0;
+      animation-delay: $loading-icon-frame-duration * 3;
+    }
+  }
+}
+
+// The animation loop is split into 8 frames
+// The On/Off state is controlled through the variables
+
+// Frame 0: 90deg rotation along X axis (not visible)
+// Frame 1: 0deg rotation along X axis (fully visible)
+// Frame 2:
+// Frame 3:
+// Frame 4: Continue from 0dev
+// Frame 5: rotate to 90deg again (hidden)
+// Frame 6:
+// Frame 7:
+
+@keyframes flip-animation {
+  #{$flip-step-1}% {
+    transform: $loading-icon-square-state-off;
+    opacity: 0.5;
+  }
+  #{$flip-step-2}% {
+    transform: $loading-icon-square-state-on;
+    opacity: 1;
+  }
+  #{$flip-step-3}% {
+    transform: $loading-icon-square-state-on;
+    opacity: 1;
+  }
+  #{$flip-step-4}% {
+    transform: $loading-icon-square-state-off;
+    opacity: 0.5;
+  }
+}

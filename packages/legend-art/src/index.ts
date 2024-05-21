@@ -20,6 +20,7 @@ export * from './icon/LegendLogo.js';
 export * from './icon/SVGIcon.js';
 
 export * from './loader/LoadingIcon.js';
+export * from './loader/CubesLoadingIndicator.js';
 
 export * from './input/Input.js';
 
