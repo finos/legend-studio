@@ -1371,7 +1371,6 @@
     &__toggler__btn {
       @include flexVCenter;
 
-      align-self: flex-start;
       background: var(--color-dark-grey-280);
       padding: 0 0.5rem 0 0;
       height: 2.2rem;
