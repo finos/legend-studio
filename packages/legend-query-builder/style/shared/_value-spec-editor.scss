@@ -51,6 +51,33 @@
 
   &__enum-collection-selector {
     width: 100%;
+    display: flex;
+
+    .selector-input--dark__control {
+      height: fit-content;
+      width: 100%;
+    }
+
+    .selector-input--dark__value-container--is-multi {
+      overflow: auto;
+      height: fit-content;
+      max-height: 6.6rem;
+    }
+
+    .selector-input--dark__placeholder {
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    .value-spec-editor__list-editor__save-button {
+      align-self: normal;
+      height: unset;
+    }
+
+    .value-spec-editor__reset-btn {
+      align-self: normal;
+      height: unset;
+    }
   }
 
   ::-webkit-calendar-picker-indicator {
