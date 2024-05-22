@@ -42,7 +42,7 @@ import {
   formatDataSpaceOptionLabel,
   type DataSpaceOption,
 } from '@finos/legend-extension-dsl-data-space/application-query';
-import { LAST_QUERY_DATASPACE_KEY } from './DataSpaceQueryCreator.js';
+import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
 
 const DataSpaceQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -67,7 +67,9 @@ export const DataSpaceQuerySetup = observer(() => {
   const applicationStore = useLegendQueryApplicationStore();
 
   const lastSavedQueryDataspace =
-    applicationStore.userDataService.getStringValue(LAST_QUERY_DATASPACE_KEY);
+    LegendQueryUserDataHelper.getRecentlyQueriedDataspace(
+      applicationStore.userDataService,
+    );
 
   if (lastSavedQueryDataspace) {
     applicationStore.navigationService.navigator.goToLocation(

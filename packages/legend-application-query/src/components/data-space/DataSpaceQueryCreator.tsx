@@ -30,6 +30,8 @@ import {
   DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN,
   type DataSpaceQueryCreatorPathParams,
 } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
+import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
+
 import { QueryEditor } from '../QueryEditor.js';
 
 const DataSpaceQueryCreatorStoreProvider: React.FC<{
@@ -71,8 +73,6 @@ const DataSpaceQueryCreatorStoreProvider: React.FC<{
   );
 };
 
-export const LAST_QUERY_DATASPACE_KEY = 'last_query_dataspace';
-
 export const DataSpaceQueryCreator = observer(() => {
   const applicationStore = useApplicationStore();
   const parameters = useParams<DataSpaceQueryCreatorPathParams>();
@@ -93,8 +93,8 @@ export const DataSpaceQueryCreator = observer(() => {
   }>();
 
   useEffect(() => {
-    applicationStore.userDataService.persistValue(
-      LAST_QUERY_DATASPACE_KEY,
+    LegendQueryUserDataHelper.saveRecentlyQueriedDataspace(
+      applicationStore.userDataService,
       `${pathname}${search}`,
     );
   }, [pathname, search, applicationStore.userDataService]);
