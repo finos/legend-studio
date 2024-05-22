@@ -34,7 +34,6 @@ import {
   PanelFormSection,
   CalculateIcon,
   InputWithInlineValidation,
-  type SelectComponent,
 } from '@finos/legend-art';
 import {
   type Enum,
@@ -784,7 +783,6 @@ const EnumCollectionInstanceValueEditor = observer(
     saveEdit: () => void;
   }) => {
     const { valueSpecification, observerContext, saveEdit } = props;
-    const inputRef = useRef<SelectComponent>(null);
     const applicationStore = useApplicationStore();
     const enumType = guaranteeType(
       valueSpecification.genericType?.value.rawType,
@@ -801,10 +799,6 @@ const EnumCollectionInstanceValueEditor = observer(
           value: valueSpec.values[0]!.value,
         })),
     );
-
-    useEffect(() => {
-      inputRef.current?.focus();
-    }, []);
 
     const availableOptions = enumType.values
       .filter(
@@ -845,7 +839,6 @@ const EnumCollectionInstanceValueEditor = observer(
     return (
       <>
         <CustomSelectorInput
-          ref={inputRef}
           className="value-spec-editor__enum-collection-selector"
           options={availableOptions}
           isMulti={true}
@@ -861,6 +854,7 @@ const EnumCollectionInstanceValueEditor = observer(
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
           placeholder="Select value"
+          autoFocus={true}
         />
         <button
           className="value-spec-editor__list-editor__save-button btn--dark"
