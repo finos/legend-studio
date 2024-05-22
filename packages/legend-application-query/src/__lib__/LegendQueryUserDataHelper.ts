@@ -20,18 +20,20 @@ import { createSimpleSchema, deserialize, list, primitive } from 'serializr';
 
 export enum LEGEND_QUERY_USER_DATA_KEY {
   RECENTLY_VIEWED_QUERIES = 'query-editor.recent-queries',
+  LAST_QUERY_DATASPACE_KEY = 'last_query_dataspace',
 }
 
 const USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT = 10;
-type RecentlyViewedQueriesData = string[];
+const USER_DATA_QUERY_DATASPACE_LIMIT = 10;
+
+type SavedData = string[];
 
 export class LegendQueryUserDataHelper {
-  static getRecentlyViewedQueries(
+  static getPersistedData(
     service: UserDataService,
-  ): RecentlyViewedQueriesData {
-    const data = service.getObjectValue(
-      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
-    );
+    key: LEGEND_QUERY_USER_DATA_KEY,
+  ): SavedData {
+    const data = service.getObjectValue(key);
     return (
       // TODO: think of a better way to deserialize this data, maybe like settings, use JSON schema
       // See https://github.com/finos/legend-studio/issues/407
@@ -45,9 +47,40 @@ export class LegendQueryUserDataHelper {
               {
                 data,
               },
-            ) as { data: RecentlyViewedQueriesData }
+            ) as { data: SavedData }
           ).data,
       ) ?? []
+    );
+  }
+
+  static persistValue(
+    service: UserDataService,
+    value: string,
+    persistedData: SavedData,
+    opts: {
+      key: LEGEND_QUERY_USER_DATA_KEY;
+      limit: number;
+    },
+  ): void {
+    const idx = persistedData.findIndex((data) => data === value);
+    if (idx === -1) {
+      if (persistedData.length < opts.limit) {
+        persistedData.unshift(value);
+      } else {
+        persistedData.pop();
+        persistedData.unshift(value);
+      }
+    } else {
+      persistedData.splice(idx, 1);
+      persistedData.unshift(value);
+    }
+    service.persistValue(opts.key, persistedData);
+  }
+
+  static getRecentlyViewedQueries(service: UserDataService): SavedData {
+    return LegendQueryUserDataHelper.getPersistedData(
+      service,
+      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
     );
   }
 
@@ -79,21 +112,34 @@ export class LegendQueryUserDataHelper {
     queryId: string,
   ): void {
     const queries = LegendQueryUserDataHelper.getRecentlyViewedQueries(service);
-    const idx = queries.findIndex((query) => query === queryId);
-    if (idx === -1) {
-      if (queries.length < USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT) {
-        queries.unshift(queryId);
-      } else {
-        queries.pop();
-        queries.unshift(queryId);
-      }
-    } else {
-      queries.splice(idx, 1);
-      queries.unshift(queryId);
-    }
-    service.persistValue(
-      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
-      queries,
+    LegendQueryUserDataHelper.persistValue(service, queryId, queries, {
+      limit: USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT,
+      key: LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
+    });
+  }
+
+  static getRecentlyQueriedDataspaceList(service: UserDataService): SavedData {
+    return LegendQueryUserDataHelper.getPersistedData(
+      service,
+      LEGEND_QUERY_USER_DATA_KEY.LAST_QUERY_DATASPACE_KEY,
     );
+  }
+
+  static getRecentlyQueriedDataspace(service: UserDataService): string {
+    const dataspaceList =
+      LegendQueryUserDataHelper.getRecentlyQueriedDataspaceList(service);
+    return dataspaceList?.[0] || '';
+  }
+
+  static saveRecentlyQueriedDataspace(
+    service: UserDataService,
+    dataspace: string,
+  ): void {
+    const dataspaceList =
+      LegendQueryUserDataHelper.getRecentlyQueriedDataspaceList(service);
+    LegendQueryUserDataHelper.persistValue(service, dataspace, dataspaceList, {
+      limit: USER_DATA_QUERY_DATASPACE_LIMIT,
+      key: LEGEND_QUERY_USER_DATA_KEY.LAST_QUERY_DATASPACE_KEY,
+    });
   }
 }
