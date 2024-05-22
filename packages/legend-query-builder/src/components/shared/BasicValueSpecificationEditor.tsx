@@ -855,6 +855,7 @@ const EnumCollectionInstanceValueEditor = observer(
           }
           placeholder="Select value"
           autoFocus={true}
+          menuIsOpen={true}
         />
         <button
           className="value-spec-editor__list-editor__save-button btn--dark"
