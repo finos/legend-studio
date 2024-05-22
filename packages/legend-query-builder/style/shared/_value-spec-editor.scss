@@ -30,7 +30,7 @@
     @include flexCenter;
     @include flexConstantDimension;
 
-    height: 2.8rem;
+    align-self: normal;
     width: 2.8rem;
     background: var(--color-dark-grey-200);
     border-radius: 0 50% 50% 0;
@@ -56,6 +56,15 @@
     .selector-input--dark__control {
       height: fit-content;
       width: 100%;
+
+      .selector-input--dark__input {
+        height: 2.2rem;
+
+        input {
+          height: 2.2rem;
+          line-height: 2.2rem;
+        }
+      }
     }
 
     .selector-input--dark__value-container--is-multi {
@@ -67,16 +76,6 @@
     .selector-input--dark__placeholder {
       width: fit-content;
       max-width: 100%;
-    }
-
-    .value-spec-editor__list-editor__save-button {
-      align-self: normal;
-      height: unset;
-    }
-
-    .value-spec-editor__reset-btn {
-      align-self: normal;
-      height: unset;
     }
   }
 
@@ -239,7 +238,7 @@
   }
 
   &__input {
-    height: 100%;
+    height: 2.8rem;
     max-width: 100%;
     width: 100%;
     font-size: 1.4rem;
@@ -360,7 +359,7 @@
   &__list-editor__save-button {
     @include flexCenter;
 
-    height: 2.8rem;
+    align-self: normal;
     width: 2.8rem;
     min-width: 2.8rem;
 
@@ -372,7 +371,7 @@
   &__list-editor__expand-button {
     @include flexCenter;
 
-    height: 2.8rem;
+    align-self: normal;
     min-width: 2.8rem;
 
     svg {
