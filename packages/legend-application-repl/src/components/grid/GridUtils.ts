@@ -15,6 +15,7 @@
  */
 
 import {
+  type TDSRequest,
   TDS_AGGREGATION_FUNCTION,
   TDS_FILTER_OPERATION,
   TDS_SORT_ORDER,
@@ -45,6 +46,17 @@ export const getTDSSortOrder = (sortOrder: string): TDS_SORT_ORDER => {
       return TDS_SORT_ORDER.DESCENDING;
     default:
       throw new Error(`Unsupported tds sort order ${sortOrder}`);
+  }
+};
+
+const getTDSSortModel = (sort: TDS_SORT_ORDER): string => {
+  switch (sort) {
+    case TDS_SORT_ORDER.ASCENDING:
+      return 'asc';
+    case TDS_SORT_ORDER.DESCENDING:
+      return 'desc';
+    default:
+      throw new Error(`Unsupported`);
   }
 };
 
@@ -113,14 +125,49 @@ export const getFilterColumnType = (type: string): PRIMITIVE_TYPE => {
   }
 };
 
+export const getFilterModeltype = (type: PRIMITIVE_TYPE): string => {
+  switch (type) {
+    case PRIMITIVE_TYPE.STRING:
+      return 'text';
+    case PRIMITIVE_TYPE.NUMBER:
+      return 'number';
+    case PRIMITIVE_TYPE.BOOLEAN:
+      return 'boolean';
+    case PRIMITIVE_TYPE.DATE:
+      return 'date';
+    default:
+      throw new Error(`Unsupported filter type ${type}`);
+  }
+};
+
+export const getTDSColumnCustomizations = (
+  result: TDSExecutionResult,
+  columnName: string,
+  tdsRequest?: TDSRequest | undefined,
+): object => {
+  if (!tdsRequest) {
+    return {};
+  }
+  // const columnType = result.builder.columns.find(
+  //   (col) => col.name === columnName,
+  // )?.type;
+  const sort = tdsRequest?.sort.find((c) => c.column === columnName)?.order;
+  const rowGroup = tdsRequest.groupBy.columns.find((c) => c === columnName);
+  const aggFunc = tdsRequest.groupBy.aggregations.find(
+    (c) => c.column === columnName,
+  );
+  return {
+    sort: sort ? getTDSSortModel(sort) : undefined,
+    rowGroup: Boolean(rowGroup),
+    hide: Boolean(rowGroup),
+    aggFunc: aggFunc?.function,
+  };
+};
+
 export const getAggregationTDSColumnCustomizations = (
-  isAgGridLicenseEnabled: boolean,
   result: TDSExecutionResult,
   columnName: string,
 ): object => {
-  if (!isAgGridLicenseEnabled) {
-    return {};
-  }
   const columnType = result.builder.columns.find(
     (col) => col.name === columnName,
   )?.type;

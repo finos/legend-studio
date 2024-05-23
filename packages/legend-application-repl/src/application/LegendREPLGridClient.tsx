@@ -61,6 +61,8 @@ export class LegendREPLGridClient extends LegendApplication {
     baseUrl: string,
   ): Promise<[LegendApplicationConfig, ExtensionsConfigurationData]> {
     const client = new NetworkClient();
+    // Resolve baseUrl relatively for application to work in vscode code-server
+    const relativeBaseUrl = `${window.location.href.split('/repl/')[0]}/repl/`; // Fix this for developer workspace
     // app config
     let configData: LegendREPLGridClientApplicationConfigData | undefined;
     try {
@@ -83,7 +85,7 @@ export class LegendREPLGridClient extends LegendApplication {
     let versionData;
     try {
       versionData = await client.get<LegendApplicationVersionData>(
-        `${window.location.origin}${baseUrl}version.json`,
+        `${window.location.origin}${baseUrl}version.json`, // Fix this for developer workspace
       );
     } catch (error) {
       assertErrorThrown(error);
