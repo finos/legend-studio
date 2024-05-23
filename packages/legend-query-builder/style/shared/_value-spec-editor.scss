@@ -53,11 +53,13 @@
     width: 100%;
     display: flex;
 
-    .selector-input--dark__control {
+    .selector-input--dark__control,
+    .selector-input__control {
       height: fit-content;
       width: 100%;
 
-      .selector-input--dark__input {
+      .selector-input--dark__input,
+      .selector-input__input {
         height: 2.2rem;
 
         input {
@@ -65,17 +67,19 @@
           line-height: 2.2rem;
         }
       }
-    }
 
-    .selector-input--dark__value-container--is-multi {
-      overflow: auto;
-      height: fit-content;
-      max-height: 6.6rem;
-    }
+      .selector-input--dark__value-container--is-multi,
+      .selector-input__value-container--is-multi {
+        overflow: auto;
+        height: fit-content;
+        max-height: 6.6rem;
+      }
 
-    .selector-input--dark__placeholder {
-      width: fit-content;
-      max-width: 100%;
+      .selector-input--dark__placeholder,
+      .selector-input__placeholder {
+        width: fit-content;
+        max-width: 100%;
+      }
     }
   }
 
@@ -414,12 +418,6 @@
     height: 2.8rem;
   }
 
-  .selector-input__indicators,
-  .selector-input__value-container {
-    height: 2.6rem;
-  }
-
-  .selector-input__indicator-separator,
   .selector-input--dark__loading-indicator,
   .selector-menu--dark .selector-input--dark__loading-indicator,
   .selector-input--dark .selector-input--dark__loading-indicator {
