@@ -26,7 +26,6 @@ import {
   Dialog,
   PanelDropZone,
   InfoCircleIcon,
-  PanelEntryDropZonePlaceholder,
   Modal,
   ModalHeader,
   ModalBody,
@@ -42,11 +41,6 @@ import {
   type QueryBuilderPropertyExpressionState,
 } from '../stores/QueryBuilderPropertyEditorState.js';
 import { useDrop } from 'react-dnd';
-import {
-  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
-  type QueryBuilderExplorerTreeDragSource,
-  type QueryBuilderExplorerTreePropertyNodeData,
-} from '../stores/explorer/QueryBuilderExplorerState.js';
 import {
   type ValueSpecification,
   type VariableExpression,
