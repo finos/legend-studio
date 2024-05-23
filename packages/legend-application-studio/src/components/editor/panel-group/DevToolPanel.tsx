@@ -32,7 +32,11 @@ import {
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../../__lib__/LegendStudioSetting.js';
 import { flowResult } from 'mobx';
-import type { PureModel } from '@finos/legend-graph';
+import {
+  PARSER_SECTION_MARKER,
+  PURE_PARSER,
+  type PureModel,
+} from '@finos/legend-graph';
 
 export const DevToolPanel = observer(() => {
   const editorStore = useEditorStore();
@@ -71,8 +75,8 @@ export const DevToolPanel = observer(() => {
     );
   };
 
-  const downloadDependencyProjectGrammars = async (): Promise<string> => {
-    const dependencyGrammars = await Promise.all(
+  const downloadDependencyProjectGrammars = async (): Promise<string[]> => {
+    const grammars = await Promise.all(
       Array.from(
         editorStore.graphManagerState.graph.dependencyManager
           .projectDependencyModelsIndex,
@@ -88,7 +92,7 @@ export const DevToolPanel = observer(() => {
           ) as string,
       ),
     );
-    return dependencyGrammars.join('\n');
+    return grammars;
   };
 
   const downloadProjectGrammar = async (
@@ -105,14 +109,17 @@ export const DevToolPanel = observer(() => {
     const dependencyGrammars = withDependency
       ? ((await Promise.all([
           flowResult(downloadDependencyProjectGrammars()),
-        ])) as unknown as string)
-      : '';
+        ])) as unknown as string[])
+      : [];
+    const fullGrammar = [graphGrammar, ...dependencyGrammars].join(
+      `\n${PARSER_SECTION_MARKER}${PURE_PARSER.PURE}\n`,
+    );
     const fileName = `grammar.${getContentTypeFileExtension(
       ContentType.TEXT_PLAIN,
     )}`;
     downloadFileUsingDataURI(
       fileName,
-      `${graphGrammar}\n${dependencyGrammars}`,
+      `${fullGrammar}`,
       ContentType.TEXT_PLAIN,
     );
   };
