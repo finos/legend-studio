@@ -464,19 +464,10 @@ export const QueryBuilderPropertyExpressionBadge = observer(
   (props: {
     columnName?: string;
     propertyExpressionState: QueryBuilderPropertyExpressionState;
-    onPropertyExpressionChange: (
-      node: QueryBuilderExplorerTreePropertyNodeData,
-    ) => void;
     setColumnName?: (columnName: string) => void;
     error?: string | undefined;
   }) => {
-    const {
-      columnName,
-      propertyExpressionState,
-      onPropertyExpressionChange,
-      setColumnName,
-      error,
-    } = props;
+    const { columnName, propertyExpressionState, setColumnName, error } = props;
     const type =
       propertyExpressionState.propertyExpression.func.value.genericType.value
         .rawType;
@@ -489,87 +480,50 @@ export const QueryBuilderPropertyExpressionBadge = observer(
         propertyExpressionState.setIsEditingDerivedProperty(true);
       }
     };
-    const handleDrop = useCallback(
-      (item: QueryBuilderExplorerTreeDragSource): void =>
-        onPropertyExpressionChange(item.node),
-      [onPropertyExpressionChange],
-    );
-    const [{ isDragOver }, dropConnector] = useDrop<
-      QueryBuilderExplorerTreeDragSource,
-      void,
-      { isDragOver: boolean }
-    >(
-      () => ({
-        accept: [
-          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-        ],
-        drop: (item, monitor): void => {
-          if (!monitor.didDrop()) {
-            handleDrop(item);
-          } // prevent drop event propagation to accomondate for nested DnD
-        },
-        collect: (monitor) => ({
-          isDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [handleDrop],
-    );
 
     return (
-      <div
-        className="query-builder-property-expression-badge"
-        ref={dropConnector}
-      >
-        <PanelEntryDropZonePlaceholder
-          isDragOver={isDragOver}
-          label="Change Property"
+      <div className="query-builder-property-expression-badge">
+        <div
+          className={clsx('query-builder-property-expression-badge__content', {
+            'query-builder-property-expression-badge__content--class':
+              type instanceof Class,
+            'query-builder-property-expression-badge__content--enumeration':
+              type instanceof Enumeration,
+            'query-builder-property-expression-badge__content--primitive':
+              type instanceof PrimitiveType,
+          })}
         >
-          <div
-            className={clsx(
-              'query-builder-property-expression-badge__content',
-              {
-                'query-builder-property-expression-badge__content--class':
-                  type instanceof Class,
-                'query-builder-property-expression-badge__content--enumeration':
-                  type instanceof Enumeration,
-                'query-builder-property-expression-badge__content--primitive':
-                  type instanceof PrimitiveType,
-              },
+          <QueryBuilderEditablePropertyName
+            columnName={columnName ?? propertyExpressionState.title}
+            setColumnName={setColumnName}
+            error={error}
+            title={`${propertyExpressionState.title} - ${propertyExpressionState.path}`}
+            defaultColumnName={getPropertyChainName(
+              propertyExpressionState.propertyExpression,
+              propertyExpressionState.queryBuilderState.explorerState
+                .humanizePropertyName,
             )}
-          >
-            <QueryBuilderEditablePropertyName
-              columnName={columnName ?? propertyExpressionState.title}
-              setColumnName={setColumnName}
-              error={error}
-              title={`${propertyExpressionState.title} - ${propertyExpressionState.path}`}
-              defaultColumnName={getPropertyChainName(
-                propertyExpressionState.propertyExpression,
-                propertyExpressionState.queryBuilderState.explorerState
-                  .humanizePropertyName,
+          />
+          {hasDerivedPropertyInExpression && (
+            <button
+              className={clsx(
+                'query-builder-property-expression-badge__action',
+                {
+                  'query-builder-property-expression-badge__action--error':
+                    !isValid,
+                },
               )}
-            />
-            {hasDerivedPropertyInExpression && (
-              <button
-                className={clsx(
-                  'query-builder-property-expression-badge__action',
-                  {
-                    'query-builder-property-expression-badge__action--error':
-                      !isValid,
-                  },
-                )}
-                tabIndex={-1}
-                onClick={setDerivedPropertyArguments}
-                title="Set Derived Property Argument(s)..."
-              >
-                {!isValid && <InfoCircleIcon />} (...)
-              </button>
-            )}
-            <QueryBuilderPropertyExpressionEditor
-              propertyExpressionState={propertyExpressionState}
-            />
-          </div>
-        </PanelEntryDropZonePlaceholder>
+              tabIndex={-1}
+              onClick={setDerivedPropertyArguments}
+              title="Set Derived Property Argument(s)..."
+            >
+              {!isValid && <InfoCircleIcon />} (...)
+            </button>
+          )}
+          <QueryBuilderPropertyExpressionEditor
+            propertyExpressionState={propertyExpressionState}
+          />
+        </div>
       </div>
     );
   },

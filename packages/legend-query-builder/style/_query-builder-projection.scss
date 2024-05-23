@@ -322,6 +322,18 @@
     display: flex;
   }
 
+  &__free-drop-zone {
+    height: 100%;
+
+    &__container {
+      min-height: 3.8rem;
+      height: 100%;
+      width: 100%;
+      padding: 0.5rem;
+      position: absolute;
+    }
+  }
+
   &__modal {
     height: 80vh;
     width: 50vw;

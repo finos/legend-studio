@@ -60,7 +60,6 @@ import {
 import { useDrag, useDragLayer, useDrop } from 'react-dnd';
 import {
   type QueryBuilderExplorerTreeDragSource,
-  type QueryBuilderExplorerTreePropertyNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
@@ -729,15 +728,6 @@ const QueryBuilderFilterConditionEditor = observer(
     const applicationStore = useApplicationStore();
     const changeOperator = (val: QueryBuilderFilterOperator) => (): void =>
       node.condition.changeOperator(val);
-    const changeProperty = (
-      propertyNode: QueryBuilderExplorerTreePropertyNodeData,
-    ): void =>
-      node.condition.changeProperty(
-        buildPropertyExpressionFromExplorerTreeNodeData(
-          propertyNode,
-          queryBuilderState.explorerState,
-        ),
-      );
     // Drag and Drop on filter condition value
     const handleDrop = useCallback(
       (item: QueryBuilderVariableDragSource): void => {
@@ -815,7 +805,6 @@ const QueryBuilderFilterConditionEditor = observer(
             <div className="query-builder-filter-tree__condition-node__property">
               <QueryBuilderPropertyExpressionBadge
                 propertyExpressionState={node.condition.propertyExpressionState}
-                onPropertyExpressionChange={changeProperty}
               />
             </div>
             <DropdownMenu
