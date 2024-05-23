@@ -364,6 +364,14 @@
 
   // ---------------------------- Basic Value Specification Editor  -------------------------------
 
+  .value-spec-editor:hover {
+    .value-spec-editor__list-editor__preview,
+    .value-spec-editor__list-editor__edit-icon {
+      color: var(--color-legacylight-dark-grey-200);
+      background: var(--color-light-grey-400);
+    }
+  }
+
   .value-spec-editor__reset-btn {
     background: var(--color-legacylight-light-grey-100);
     border-color: var(--color-light-grey-300);
@@ -399,6 +407,26 @@
 
   .value-spec-editor__number__input--error {
     border-color: var(--color-red-180);
+  }
+
+  .value-spec-editor__list-editor {
+    &__preview {
+      background: var(--color-light-grey-200);
+      color: var(--color-legacylight-dark-grey-200);
+
+      &--error {
+        background: var(--color-light-grey-200);
+        border-color: var(--color-red-180);
+      }
+    }
+
+    &__edit-icon {
+      background: var(--color-light-grey-200);
+
+      svg {
+        color: var(--color-legacylight-dark-grey-200);
+      }
+    }
   }
 
   // ---------------------------- Derived Property Editor -------------------------------
