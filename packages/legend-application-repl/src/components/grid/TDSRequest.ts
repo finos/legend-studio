@@ -15,6 +15,8 @@
  */
 
 import type { PRIMITIVE_TYPE } from '@finos/legend-graph';
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import { createModelSchema, list, optional, primitive } from 'serializr';
 
 export enum TDS_FILTER_OPERATION {
   EQUALS = 'equal',
@@ -64,6 +66,13 @@ export class TDSFilterCondition {
     this.operation = operation;
     this.value = value;
   }
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(TDSFilterCondition, {
+      operation: primitive(),
+      value: primitive(),
+    }),
+  );
 }
 
 export class TDSFilter {
@@ -83,6 +92,17 @@ export class TDSFilter {
     this.conditions = conditions;
     this.groupOperation = groupOperation;
   }
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(TDSFilter, {
+      column: primitive(),
+      columnType: primitive(),
+      conditions: list(
+        usingModelSchema(TDSFilterCondition.serialization.schema),
+      ),
+      groupOperation: primitive(),
+    }),
+  );
 }
 
 export class TDSSort {
@@ -93,6 +113,13 @@ export class TDSSort {
     this.column = column;
     this.order = order;
   }
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(TDSSort, {
+      column: primitive(),
+      order: primitive(),
+    }),
+  );
 }
 
 export class TDSAggregation {
@@ -109,6 +136,14 @@ export class TDSAggregation {
     this.columnType = columnType;
     this.function = _function;
   }
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(TDSAggregation, {
+      column: primitive(),
+      columnType: primitive(),
+      function: primitive(),
+    }),
+  );
 }
 
 export class TDSGroupby {
@@ -125,18 +160,40 @@ export class TDSGroupby {
     this.groupKeys = groupKeys;
     this.aggregations = aggregations;
   }
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(TDSGroupby, {
+      columns: list(primitive()),
+      groupKeys: list(primitive()),
+      aggregations: list(usingModelSchema(TDSAggregation.serialization.schema)),
+    }),
+  );
+}
+
+export class TDSColumn {
+  name!: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(TDSColumn, {
+      name: primitive(),
+    }),
+  );
 }
 
 export class TDSRequest {
   startRow?: number | undefined;
   endRow?: number | undefined;
-  columns!: string[];
+  columns!: TDSColumn[];
   filter!: TDSFilter[];
   sort!: TDSSort[];
   groupBy!: TDSGroupby;
 
   constructor(
-    columns: string[],
+    columns: TDSColumn[],
     filter: TDSFilter[],
     sort: TDSSort[],
     groupBy: TDSGroupby,
@@ -150,4 +207,15 @@ export class TDSRequest {
     this.sort = sort;
     this.groupBy = groupBy;
   }
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(TDSRequest, {
+      startRow: optional(primitive()),
+      endRow: optional(primitive()),
+      columns: list(usingModelSchema(TDSColumn.serialization.schema)),
+      filter: list(usingModelSchema(TDSFilter.serialization.schema)),
+      sort: list(usingModelSchema(TDSSort.serialization.schema)),
+      groupBy: usingModelSchema(TDSGroupby.serialization.schema),
+    }),
+  );
 }

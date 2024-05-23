@@ -354,6 +354,7 @@ export {
   V1_deserializeValueSpecification,
   V1_serializeValueSpecification,
   V1_ClassInstanceType,
+  V1_lambdaModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 export { V1_transformRootValueSpecification } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_ValueSpecificationTransformer.js';
 export {

@@ -22,6 +22,7 @@ import {
 import type { REPLGridServerResult } from '../components/grid/REPLGridServerResult.js';
 import type { V1_Lambda } from '@finos/legend-graph';
 import type { CompletionItem } from '../stores/CompletionResult.js';
+import { TDSQuery } from '../components/grid/TDSQuery.js';
 
 export class REPLServerClient {
   private readonly networkClient: NetworkClient;
@@ -98,6 +99,22 @@ export class REPLServerClient {
     this.networkClient.get(
       `${this.baseUrl}/licenseKey`,
       undefined,
+      undefined,
+      undefined,
+    );
+
+  getREPLQuery = (queryId: string): Promise<PlainObject<TDSQuery>> =>
+    this.networkClient.get(
+      `${this.baseUrl}/query/${queryId}`,
+      undefined,
+      undefined,
+      undefined,
+    );
+
+  saveQuery = (tdsQuery: PlainObject<TDSQuery>): Promise<string> =>
+    this.networkClient.post(
+      `${this.baseUrl}/saveQuery`,
+      tdsQuery,
       undefined,
       undefined,
     );

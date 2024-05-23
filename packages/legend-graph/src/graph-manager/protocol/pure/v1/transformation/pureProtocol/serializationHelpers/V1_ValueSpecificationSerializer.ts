@@ -171,7 +171,7 @@ export const V1_variableModelSchema = createModelSchema(V1_Variable, {
   name: primitive(),
 });
 
-const lambdaModelSchema = (
+export const V1_lambdaModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_Lambda> =>
   createModelSchema(V1_Lambda, {
@@ -560,7 +560,7 @@ const analyticsExecutionContextModelSchema = (
     ),
     enableConstraints: optional(primitive()),
     queryTimeOutInSeconds: optional(primitive()),
-    toFlowSetFunction: usingModelSchema(lambdaModelSchema(plugins)),
+    toFlowSetFunction: usingModelSchema(V1_lambdaModelSchema(plugins)),
     useAnalytics: primitive(),
   });
 
@@ -620,8 +620,8 @@ const aggregationValueModelSchema = (
 ): ModelSchema<V1_AggregateValue> =>
   createModelSchema(V1_AggregateValue, {
     _type: usingConstantValueSchema(V1_ClassInstanceType.AGGREGATE_VALUE),
-    mapFn: usingModelSchema(lambdaModelSchema(plugins)),
-    aggregateFn: usingModelSchema(lambdaModelSchema(plugins)),
+    mapFn: usingModelSchema(V1_lambdaModelSchema(plugins)),
+    aggregateFn: usingModelSchema(V1_lambdaModelSchema(plugins)),
   });
 
 const pairModelSchema = (
@@ -682,8 +682,8 @@ const tdsAggregrateValueModelSchema = (
   createModelSchema(V1_TDSAggregateValue, {
     _type: usingConstantValueSchema(V1_ClassInstanceType.TDS_AGGREGATE_VALUE),
     name: primitive(),
-    pmapFn: usingModelSchema(lambdaModelSchema(plugins)),
-    aggregateFn: usingModelSchema(lambdaModelSchema(plugins)),
+    pmapFn: usingModelSchema(V1_lambdaModelSchema(plugins)),
+    aggregateFn: usingModelSchema(V1_lambdaModelSchema(plugins)),
   });
 
 const tdsColumnInformationModelSchema = (
@@ -694,7 +694,7 @@ const tdsColumnInformationModelSchema = (
       V1_ClassInstanceType.TDS_COLUMN_INFORMATION,
     ),
     name: primitive(),
-    columnFn: usingModelSchema(lambdaModelSchema(plugins)),
+    columnFn: usingModelSchema(V1_lambdaModelSchema(plugins)),
   });
 
 const tdsSortInformationModelSchema = createModelSchema(V1_TDSSortInformation, {
@@ -714,8 +714,8 @@ const colSpecModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_ColSpec> =>
   createModelSchema(V1_ColSpec, {
-    function1: optional(usingModelSchema(lambdaModelSchema(plugins))),
-    function2: optional(usingModelSchema(lambdaModelSchema(plugins))),
+    function1: optional(usingModelSchema(V1_lambdaModelSchema(plugins))),
+    function2: optional(usingModelSchema(V1_lambdaModelSchema(plugins))),
     name: primitive(),
     type: optional(primitive()),
   });
@@ -732,7 +732,7 @@ const tdsOlapRankModelSchema = (
 ): ModelSchema<V1_TDSOlapRank> =>
   createModelSchema(V1_TDSOlapRank, {
     _type: usingConstantValueSchema(V1_ClassInstanceType.TDS_OLAP_RANK),
-    function: usingModelSchema(lambdaModelSchema(plugins)),
+    function: usingModelSchema(V1_lambdaModelSchema(plugins)),
   });
 
 const tdsOlapAggregationModelSchema = (
@@ -740,7 +740,7 @@ const tdsOlapAggregationModelSchema = (
 ): ModelSchema<V1_TDSOlapAggregation> =>
   createModelSchema(V1_TDSOlapAggregation, {
     _type: usingConstantValueSchema(V1_ClassInstanceType.TDS_OLAP_AGGREGATION),
-    function: usingModelSchema(lambdaModelSchema(plugins)),
+    function: usingModelSchema(V1_lambdaModelSchema(plugins)),
     columnName: primitive(),
   });
 
@@ -879,7 +879,7 @@ class V1_ValueSpecificationSerializer
   visit_Lambda(
     valueSpecification: V1_Lambda,
   ): PlainObject<V1_ValueSpecification> {
-    return serialize(lambdaModelSchema(this.plugins), valueSpecification);
+    return serialize(V1_lambdaModelSchema(this.plugins), valueSpecification);
   }
 
   visit_KeyExpression(
@@ -1015,7 +1015,7 @@ export function V1_deserializeValueSpecification(
     case V1_ValueSpecificationType.VARIABLE:
       return deserialize(V1_variableModelSchema, json);
     case V1_ValueSpecificationType.LAMBDA:
-      return deserialize(lambdaModelSchema(plugins), json);
+      return deserialize(V1_lambdaModelSchema(plugins), json);
     case V1_ValueSpecificationType.KEY_EXPRESSION:
       return deserialize(keyExpressionModelSchema(plugins), json);
     case V1_ValueSpecificationType.COLLECTION:

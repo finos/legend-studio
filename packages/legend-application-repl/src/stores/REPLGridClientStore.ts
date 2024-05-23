@@ -28,7 +28,7 @@ import {
   HttpStatus,
   NetworkClientError,
 } from '@finos/legend-shared';
-import type { TDSRequest } from '../components/grid/TDSRequest.js';
+import { TDSGroupby, TDSRequest } from '../components/grid/TDSRequest.js';
 import { flow, flowResult, makeObservable, observable } from 'mobx';
 import { REPLGridServerResult } from '../components/grid/REPLGridServerResult.js';
 import {
@@ -55,6 +55,12 @@ import {
   type IPosition,
   type editor as monacoEditorAPI,
 } from 'monaco-editor';
+import { TDSQuery } from '../components/grid/TDSQuery.js';
+import { generatePath } from '@finos/legend-application/browser';
+import {
+  LEGEND_REPL_GRID_CLIENT_PATTERN_TOKEN,
+  LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN,
+} from '../components/LegendREPLGridClientApplication.js';
 
 export class REPLGridClientStore {
   readonly applicationStore: LegendREPLGridClientApplicationStore;
@@ -72,6 +78,7 @@ export class REPLGridClientStore {
       getLicenseKey: flow,
       executeLambda: flow,
       parseQuery: flow,
+      saveQuery: flow,
     });
     this.applicationStore = applicationStore;
     this.client = new REPLServerClient(
@@ -230,23 +237,60 @@ export class REPLGridClientStore {
     }
   }
 
-  *getInitialQueryLambda(): GeneratorFn<void> {
-    const lambdaObj =
-      (yield this.client.getIntialQueryLambda()) as PlainObject<V1_Lambda>;
-    const lambda = V1_deserializeValueSpecification(lambdaObj, []);
-    if (lambda instanceof V1_Lambda) {
-      this.replGridState.setInitialQueryLambda(lambda);
+  *saveQuery(): GeneratorFn<void> {
+    try {
+      const query = TDSQuery.serialization.toJson(
+        new TDSQuery(
+          guaranteeNonNullable(this.replGridState.initialQueryLambda),
+          this.replGridState.lastQueryTDSRequest ??
+            new TDSRequest([], [], [], new TDSGroupby([], [], []), 0, 100),
+        ),
+      );
+      const queryId = (yield flowResult(
+        this.client.saveQuery(query),
+      )) as string;
+      this.applicationStore.navigationService.navigator.goToLocation(
+        generatePath(LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN.SAVED_QUERY, {
+          [LEGEND_REPL_GRID_CLIENT_PATTERN_TOKEN.QUERY_ID]: queryId,
+        }),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(LEGEND_REPL_EVENT.FETCH_TDS_FAILURE),
+        error,
+      );
     }
   }
 
-  *getInitialREPLGridServerResult(): GeneratorFn<void> {
+  *getInitialQueryLambda(queryId?: string): GeneratorFn<void> {
+    if (!queryId) {
+      const lambdaObj =
+        (yield this.client.getIntialQueryLambda()) as PlainObject<V1_Lambda>;
+      const lambda = V1_deserializeValueSpecification(lambdaObj, []);
+      if (lambda instanceof V1_Lambda) {
+        this.replGridState.setInitialQueryLambda(lambda);
+      }
+      // this.replGridState.setCurrentQueryTDSRequest(undefined);
+    } else {
+      const queryObj = (yield this.client.getREPLQuery(
+        queryId,
+      )) as PlainObject<TDSQuery>;
+      const query = TDSQuery.serialization.fromJson(queryObj);
+      this.replGridState.setCurrentQueryTDSRequest(query.currentQueryInfo);
+      this.replGridState.setInitialQueryLambda(query.initialQuery);
+    }
+  }
+
+  *getInitialREPLGridServerResult(queryId?: string): GeneratorFn<void> {
     try {
       this.executeAction.inProgress();
       if (!this.replGridState.licenseKey) {
         yield flowResult(this.getLicenseKey());
       }
 
-      yield flowResult(this.getInitialQueryLambda());
+      yield flowResult(this.getInitialQueryLambda(queryId));
 
       const resultObj = (yield this.client.getInitialREPLGridServerResult(
         this.replGridState.isPaginationEnabled,
