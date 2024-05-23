@@ -23,8 +23,8 @@ export enum LEGEND_QUERY_USER_DATA_KEY {
   LAST_QUERY_DATASPACE_KEY = 'last_query_dataspace',
 }
 
-const USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT = 10;
-const USER_DATA_QUERY_DATASPACE_LIMIT = 10;
+export const USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT = 10;
+export const USER_DATA_QUERY_DATASPACE_LIMIT = 10;
 
 type SavedData = string[];
 
@@ -97,9 +97,12 @@ export class LegendQueryUserDataHelper {
   ): void {
     const queries = LegendQueryUserDataHelper.getRecentlyViewedQueries(service);
     const idx = queries.findIndex((query) => query === queryId);
-    if (idx === -1) {
+    const notFound = idx === -1;
+
+    if (notFound) {
       return;
     }
+
     queries.splice(idx, 1);
     service.persistValue(
       LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
