@@ -356,8 +356,9 @@ $group-node-width: 3.5rem;
     &__value {
       @include flexCenter;
 
-      flex-grow: 1;
-      height: 2.8rem;
+      width: 100%;
+      height: fit-content;
+      min-height: 2.8rem;
       border-radius: 0.2rem;
       font-size: 1.2rem;
       font-weight: 500;

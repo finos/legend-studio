@@ -30,7 +30,7 @@
     @include flexCenter;
     @include flexConstantDimension;
 
-    height: 2.8rem;
+    align-self: normal;
     width: 2.8rem;
     background: var(--color-dark-grey-200);
     border-radius: 0 50% 50% 0;
@@ -47,6 +47,40 @@
 
   &__enum-selector {
     width: 100%;
+  }
+
+  &__enum-collection-selector {
+    width: 100%;
+    display: flex;
+
+    .selector-input--dark__control,
+    .selector-input__control {
+      height: fit-content;
+      width: 100%;
+
+      .selector-input--dark__input,
+      .selector-input__input {
+        height: 2.2rem;
+
+        input {
+          height: 2.2rem;
+          line-height: 2.2rem;
+        }
+      }
+
+      .selector-input--dark__value-container--is-multi,
+      .selector-input__value-container--is-multi {
+        overflow: auto;
+        height: fit-content;
+        max-height: 6.6rem;
+      }
+
+      .selector-input--dark__placeholder,
+      .selector-input__placeholder {
+        width: fit-content;
+        max-width: 100%;
+      }
+    }
   }
 
   ::-webkit-calendar-picker-indicator {
@@ -208,7 +242,7 @@
   }
 
   &__input {
-    height: 100%;
+    height: 2.8rem;
     max-width: 100%;
     width: 100%;
     font-size: 1.4rem;
@@ -329,7 +363,7 @@
   &__list-editor__save-button {
     @include flexCenter;
 
-    height: 2.8rem;
+    align-self: normal;
     width: 2.8rem;
     min-width: 2.8rem;
 
@@ -341,7 +375,7 @@
   &__list-editor__expand-button {
     @include flexCenter;
 
-    height: 2.8rem;
+    align-self: normal;
     min-width: 2.8rem;
 
     svg {
@@ -384,12 +418,6 @@
     height: 2.8rem;
   }
 
-  .selector-input__indicators,
-  .selector-input__value-container {
-    height: 2.6rem;
-  }
-
-  .selector-input__indicator-separator,
   .selector-input--dark__loading-indicator,
   .selector-menu--dark .selector-input--dark__loading-indicator,
   .selector-input--dark .selector-input--dark__loading-indicator {

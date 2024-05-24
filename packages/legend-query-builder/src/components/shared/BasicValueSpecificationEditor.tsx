@@ -776,6 +776,98 @@ const setCollectionValue = (
   instanceValue_setValues(valueSpecification, result, obseverContext);
 };
 
+const EnumCollectionInstanceValueEditor = observer(
+  (props: {
+    valueSpecification: CollectionInstanceValue;
+    observerContext: ObserverContext;
+    saveEdit: () => void;
+  }) => {
+    const { valueSpecification, observerContext, saveEdit } = props;
+    const applicationStore = useApplicationStore();
+    const enumType = guaranteeType(
+      valueSpecification.genericType?.value.rawType,
+      Enumeration,
+    );
+
+    const [selectedOptions, setSelectedOptions] = useState<
+      { label: string; value: Enum }[]
+    >(
+      (valueSpecification.values as EnumValueInstanceValue[])
+        .filter((valueSpec) => valueSpec.values[0]?.value !== undefined)
+        .map((valueSpec) => ({
+          label: valueSpec.values[0]!.value.name,
+          value: valueSpec.values[0]!.value,
+        })),
+    );
+
+    const availableOptions = enumType.values
+      .filter(
+        (value) =>
+          !selectedOptions.some(
+            (selectedValue) => selectedValue.value.name === value.name,
+          ),
+      )
+      .map((value) => ({
+        label: value.name,
+        value: value,
+      }));
+
+    const changeValue = (
+      newSelectedOptions: { value: Enum; label: string }[],
+    ): void => {
+      setSelectedOptions(newSelectedOptions);
+    };
+
+    const updateValueSpecAndSaveEdit = (): void => {
+      const result = selectedOptions
+        .map((value) => {
+          const enumValueInstanceValue = new EnumValueInstanceValue(
+            GenericTypeExplicitReference.create(new GenericType(enumType)),
+          );
+          instanceValue_setValues(
+            enumValueInstanceValue,
+            [EnumValueExplicitReference.create(value.value)],
+            observerContext,
+          );
+          return enumValueInstanceValue;
+        })
+        .filter(isNonNullable);
+      instanceValue_setValues(valueSpecification, result, observerContext);
+      saveEdit();
+    };
+
+    return (
+      <>
+        <CustomSelectorInput
+          className="value-spec-editor__enum-collection-selector"
+          options={availableOptions}
+          isMulti={true}
+          onChange={changeValue}
+          onBlur={updateValueSpecAndSaveEdit}
+          onKeyDown={(event: KeyboardEvent): void => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+              updateValueSpecAndSaveEdit();
+            }
+          }}
+          value={selectedOptions}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          placeholder="Select value"
+          autoFocus={true}
+          menuIsOpen={true}
+        />
+        <button
+          className="value-spec-editor__list-editor__save-button btn--dark"
+          onClick={updateValueSpecAndSaveEdit}
+        >
+          <SaveIcon />
+        </button>
+      </>
+    );
+  },
+);
+
 const COLLECTION_PREVIEW_CHAR_LIMIT = 50;
 
 const getPlaceHolder = (expectedType: Type): string => {
@@ -836,6 +928,11 @@ const CollectionValueInstanceValueEditor = observer(
       if (editable) {
         setEditable(false);
         setShowAdvancedEditorPopover(false);
+        setValueSpecification(valueSpecification);
+      }
+    };
+    const updateValueSpecAndSaveEdit = (): void => {
+      if (editable) {
         setCollectionValue(
           valueSpecification,
           expectedType,
@@ -843,7 +940,7 @@ const CollectionValueInstanceValueEditor = observer(
           obseverContext,
         );
         setText(stringifyValue(valueSpecification.values));
-        setValueSpecification(valueSpecification);
+        saveEdit();
       }
     };
 
@@ -861,7 +958,7 @@ const CollectionValueInstanceValueEditor = observer(
         (event.relatedTarget as HTMLButtonElement | undefined)?.name !==
         expandButtonName
       ) {
-        saveEdit();
+        updateValueSpecAndSaveEdit();
       }
     };
 
@@ -891,7 +988,7 @@ const CollectionValueInstanceValueEditor = observer(
                 onChange={changeValueTextArea}
                 onKeyDown={(event): void => {
                   if (event.key === 'Enter' && !event.shiftKey) {
-                    saveEdit();
+                    updateValueSpecAndSaveEdit();
                   }
                 }}
               />
@@ -903,37 +1000,47 @@ const CollectionValueInstanceValueEditor = observer(
             </BasePopover>
           )}
           <div className={clsx('value-spec-editor', className)}>
-            <textarea
-              ref={inputRef}
-              className={clsx(
-                'panel__content__form__section__input value-spec-editor__input value-spec-editor__textarea ',
-              )}
-              spellCheck={false}
-              value={text}
-              placeholder={placeholder}
-              onChange={changeValueTextArea}
-              onKeyDown={(event): void => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  saveEdit();
-                }
-              }}
-              onBlur={handleOnBlur}
-            />
-            <button
-              className="value-spec-editor__list-editor__expand-button btn--dark"
-              onClick={() => setShowAdvancedEditorPopover(true)}
-              tabIndex={-1}
-              name={expandButtonName}
-              title="Expand window..."
-            >
-              <FilledWindowMaximizeIcon />
-            </button>
-            <button
-              className="value-spec-editor__list-editor__save-button btn--dark"
-              onClick={saveEdit}
-            >
-              <SaveIcon />
-            </button>
+            {expectedType instanceof Enumeration ? (
+              <EnumCollectionInstanceValueEditor
+                valueSpecification={valueSpecification}
+                observerContext={obseverContext}
+                saveEdit={saveEdit}
+              />
+            ) : (
+              <>
+                <textarea
+                  ref={inputRef}
+                  className={clsx(
+                    'panel__content__form__section__input value-spec-editor__input value-spec-editor__textarea ',
+                  )}
+                  spellCheck={false}
+                  value={text}
+                  placeholder={placeholder}
+                  onChange={changeValueTextArea}
+                  onKeyDown={(event): void => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      updateValueSpecAndSaveEdit();
+                    }
+                  }}
+                  onBlur={handleOnBlur}
+                />
+                <button
+                  className="value-spec-editor__list-editor__expand-button btn--dark"
+                  onClick={() => setShowAdvancedEditorPopover(true)}
+                  tabIndex={-1}
+                  name={expandButtonName}
+                  title="Expand window..."
+                >
+                  <FilledWindowMaximizeIcon />
+                </button>
+                <button
+                  className="value-spec-editor__list-editor__save-button btn--dark"
+                  onClick={saveEdit}
+                >
+                  <SaveIcon />
+                </button>
+              </>
+            )}
             <button
               className="value-spec-editor__reset-btn"
               name="Reset"
