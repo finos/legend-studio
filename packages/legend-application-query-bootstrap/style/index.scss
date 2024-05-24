@@ -767,6 +767,20 @@
     }
   }
 
+  // ---------------------------- Notification ------------------------
+  .notification__content {
+    background: var(--color-white);
+    color: var(--color-dark-grey-300);
+  }
+
+  .notification__message__content:active {
+    background: var(--color-light-grey-100);
+  }
+
+  .notification__message__content__icon--info {
+    color: var(--color-light-grey-400);
+  }
+
   // ---------------------------- Virtual Assistant -------------------
   .virtual-assistant__station {
     .virtual-assistant__station__trigger {
