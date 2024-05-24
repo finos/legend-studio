@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-import { test, expect, beforeAll } from '@jest/globals';
+import { test, expect, beforeAll, describe, jest } from '@jest/globals';
 import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json' assert { type: 'json' };
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  AbstractServerClient,
+  guaranteeNonNullable,
+  isType,
+} from '@finos/legend-shared';
 import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -29,6 +33,8 @@ import type { PureInstanceSetImplementation } from '../../../graph/metamodel/pur
 import { fromElementPathToMappingElementId } from '../../../graph/MetaModelUtils.js';
 import { Enum } from '../../../graph/metamodel/pure/packageableElements/domain/Enum.js';
 import { PrimitiveType } from '../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+import { INTERNAL__UnknownElement } from '../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
+import { TEST_DATA__SimpleGraph } from './TEST_DATA__Core.js';
 
 const graphManagerState = TEST__getTestGraphManagerState();
 
@@ -145,4 +151,61 @@ test(unitTest('Milestoning properties are generated for association'), () => {
   const graph = graphManagerState.graph;
   const testClass = graph.getAssociation('ui::testC');
   expect(testClass._generatedMilestonedProperties).toHaveLength(3);
+});
+
+describe('UnknownElement', () => {
+  beforeAll(async () => {
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__SimpleGraph as Entity[],
+    );
+  });
+
+  test(unitTest('Loaded properly'), () => {
+    const graph = graphManagerState.graph;
+    const unknownElements = graph.allOwnElements.filter((element) =>
+      isType(element, INTERNAL__UnknownElement),
+    );
+    expect(unknownElements.length).toBe(2);
+  });
+
+  test(
+    unitTest('Excluded in grammar and continues to exist when converted back'),
+    async () => {
+      const graph = graphManagerState.graph;
+
+      // Check if we are only sending known elements when converting to grammar
+
+      const knownElementsOnly = graph.allOwnElements.filter(
+        (element) => !isType(element, INTERNAL__UnknownElement),
+      );
+
+      jest
+        .spyOn(AbstractServerClient.prototype, 'request')
+        .mockImplementationOnce((method, url, data) => Promise.resolve(data));
+
+      const elementsPayload =
+        await graphManagerState.graphManager.graphToPureCode(graph, {
+          excludeUnknown: true,
+        });
+
+      expect(
+        (elementsPayload as unknown as { elements: [] }).elements.length,
+      ).toBe(knownElementsOnly.length);
+
+      // Check if UnknownElements exist in graph after converting back from grammar
+
+      jest
+        .spyOn(AbstractServerClient.prototype, 'request')
+        .mockImplementationOnce(() => Promise.resolve(elementsPayload));
+
+      await graphManagerState.graphManager.pureCodeToEntities('');
+
+      const unknownElements = graph.allOwnElements.filter((element) =>
+        isType(element, INTERNAL__UnknownElement),
+      );
+
+      expect(unknownElements.length).toBe(2);
+    },
+  );
 });

@@ -28,7 +28,7 @@ import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { ELEMENT_NATIVE_VIEW_MODE } from '../../../stores/editor/EditorConfig.js';
-import { INTERNAL__UnknownPackageableElement } from '@finos/legend-graph';
+import { INTERNAL__UnknownElement } from '@finos/legend-graph';
 import { isType } from '@finos/legend-shared';
 
 export const UnsupportedEditorPanel = observer(
@@ -42,10 +42,7 @@ export const UnsupportedEditorPanel = observer(
     const applicationStore = useApplicationStore();
 
     const isUnknownEntity = unsupportedElementEditorState
-      ? isType(
-          unsupportedElementEditorState.element,
-          INTERNAL__UnknownPackageableElement,
-        )
+      ? isType(unsupportedElementEditorState.element, INTERNAL__UnknownElement)
       : false;
 
     const handleTextModeClick = applicationStore.guardUnhandledError(() =>
@@ -66,6 +63,7 @@ export const UnsupportedEditorPanel = observer(
                 className="unsupported-element-editor__to-text-mode__btn"
                 onClick={handleTextModeClick}
                 text="Edit in text mode"
+                disabled={isUnknownEntity}
               />
             )}
             {isUnknownEntity && (

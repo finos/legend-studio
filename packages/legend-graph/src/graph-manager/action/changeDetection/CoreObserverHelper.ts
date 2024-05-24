@@ -26,6 +26,7 @@ import type { PackageableElementReference } from '../../../graph/metamodel/pure/
 import type { InferableValue } from '../../../graph/metamodel/pure/InferableValue.js';
 import type { PureGraphManagerPlugin } from '../../PureGraphManagerPlugin.js';
 import type { INTERNAL__UnknownPackageableElement } from '../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownPackageableElement.js';
+import type { INTERNAL__UnknownElement } from '../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
 
 export class ObserverContext {
   plugins: PureGraphManagerPlugin[] = [];
@@ -66,6 +67,18 @@ export const observe_Abstract_PackageableElement = (
     dispose: action,
   });
 };
+
+export const observe_INTERNAL__UnknownElement = skipObserved(
+  (metamodel: INTERNAL__UnknownElement): INTERNAL__UnknownElement => {
+    observe_Abstract_PackageableElement(metamodel);
+
+    makeObservable(metamodel, {
+      content: observable.ref,
+    });
+
+    return metamodel;
+  },
+);
 
 export const observe_INTERNAL__UnknownPackageableElement = skipObserved(
   (

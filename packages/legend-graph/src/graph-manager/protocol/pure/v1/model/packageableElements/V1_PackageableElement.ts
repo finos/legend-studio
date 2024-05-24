@@ -38,10 +38,12 @@ import type { V1_INTERNAL__UnknownPackageableElement } from './V1_INTERNAL__Unkn
 import type { V1_INTERNAL__UnknownFunctionActivator } from './function/V1_INTERNAL__UnknownFunctionActivator.js';
 import type { V1_INTERNAL__UnknownStore } from './store/V1_INTERNAL__UnknownStore.js';
 import type { V1_SnowflakeApp } from './function/V1_SnowflakeApp.js';
+import type { V1_INTERNAL__UnknownElement } from './V1_INTERNAL__UnknownElement.js';
 import type { V1_HostedService } from './function/V1_HostedService.js';
 
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;
+  visit_INTERNAL__UnknownElement(element: V1_INTERNAL__UnknownElement): T;
   visit_INTERNAL__UnknownPackageableElement(
     element: V1_INTERNAL__UnknownPackageableElement,
   ): T;

@@ -76,6 +76,8 @@ import type { V1_INTERNAL__UnknownStore } from '../../../model/packageableElemen
 import { INTERNAL__UnknownStore } from '../../../../../../../graph/metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
 import type { V1_SnowflakeApp } from '../../../model/packageableElements/function/V1_SnowflakeApp.js';
 import { SnowflakeApp } from '../../../../../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
+import type { V1_INTERNAL__UnknownElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownElement.js';
+import { INTERNAL__UnknownElement } from '../../../../../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
 import type { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 import { HostedService } from '../../../../../../../graph/metamodel/pure/packageableElements/function/HostedService.js';
 
@@ -105,6 +107,34 @@ export class V1_ElementFirstPassBuilder
         this.packageCache,
         this.elementPathCache,
       );
+  }
+
+  visit_INTERNAL__UnknownElement(
+    element: V1_INTERNAL__UnknownElement,
+  ): PackageableElement {
+    assertNonEmptyString(
+      element.package,
+      `Element 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Element 'name' field is missing or empty`,
+    );
+    const metamodel = new INTERNAL__UnknownElement(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    this.context.currentSubGraph.INTERNAL__setOwnUnknown(path, metamodel);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
+      metamodel,
+    );
+    metamodel.content = element.content;
+    metamodel.classifierPath = element.classifierPath;
+    return metamodel;
   }
 
   visit_INTERNAL__UnknownPackageableElement(

@@ -294,7 +294,10 @@ export abstract class AbstractPureGraphManager {
 
   abstract graphToPureCode(
     graph: PureModel,
-    options?: { pretty?: boolean | undefined },
+    options?: {
+      pretty?: boolean | undefined;
+      excludeUnknown?: boolean | undefined;
+    },
   ): Promise<string>;
   abstract pureCodeToEntities(
     code: string,

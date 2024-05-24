@@ -30,6 +30,7 @@ import {
   TEST_DATA__DuplicateAssociationProperties,
   TEST_DATA__DuplicatedElement,
   TEST_DATA__InvalidAssociationProperty,
+  TEST_DATA__UnknownElement,
 } from './TEST_DATA__GraphBuildFailure.js';
 import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
@@ -218,3 +219,24 @@ test(unitTest('STRICT-MODE: Invalid association property'), async () => {
     `Found system class property 'meta::pure::tds::TabularDataSet' in association 'test::association'`,
   );
 });
+
+test(
+  unitTest('UnknownElement has no classifier path mapping available'),
+  async () => {
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
+      TEST_DATA__UnknownElement as Entity[],
+      {
+        strict: true,
+      },
+    );
+
+    await expect(async () =>
+      graphManagerState.graph.allOwnElements.map((element) =>
+        graphManagerState.graphManager.elementToEntity(element),
+      ),
+    ).rejects.toThrowError(
+      `Can't get classifier path for element 'unknownElement::3bbdf0a0_b0d5_11ee_84b2_efcc77532342': no classifier path mapping available`,
+    );
+  },
+);

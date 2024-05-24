@@ -29,7 +29,7 @@ import {
 } from './V1_PropertyMapping.js';
 
 /**
- * NOTE: compared to other `INTERNAL__Unknown...` structure, unknown property mapping is not as
+ * NOTE: compared to other `INTERNAL__UnknownElement...` structure, unknown property mapping is not as
  * well utilized, this is due to our special handling of the serialization process of property
  * mappings, we decided to only serialize property mappings relevant to its parent class mapping
  * e.g. for PureInstanceSetImplementation, we would only serialize PurePropertyMapping and the rest

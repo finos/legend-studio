@@ -52,6 +52,7 @@ import {
   type ObserverContext,
   skipObservedWithContext,
   observe_INTERNAL__UnknownPackageableElement,
+  observe_INTERNAL__UnknownElement,
 } from './CoreObserverHelper.js';
 import {
   observe_FileGenerationSpecification,
@@ -74,6 +75,7 @@ import type { INTERNAL__UnknownPackageableElement } from '../../../graph/metamod
 import type { INTERNAL__UnknownFunctionActivator } from '../../../graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 import type { INTERNAL__UnknownStore } from '../../../graph/metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
 import type { SnowflakeApp } from '../../../graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
+import type { INTERNAL__UnknownElement } from '../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
 import type { HostedService } from '../../../graph/metamodel/pure/packageableElements/function/HostedService.js';
 
 class PackageableElementObserver implements PackageableElementVisitor<void> {
@@ -93,6 +95,10 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
         return;
       }
     }
+  }
+
+  visit_INTERNAL__UnknownElement(element: INTERNAL__UnknownElement): void {
+    observe_INTERNAL__UnknownElement(element);
   }
 
   visit_INTERNAL__UnknownPackageableElement(

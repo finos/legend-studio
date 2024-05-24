@@ -110,6 +110,7 @@ import {
   V1_buildDeploymentOwnership,
   V1_builHostedServiceOwnership,
 } from './helpers/V1_FunctionActivatorBuilderHelper.js';
+import type { V1_INTERNAL__UnknownElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownElement.js';
 import type { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 
 export class V1_ElementSecondPassBuilder
@@ -125,6 +126,10 @@ export class V1_ElementSecondPassBuilder
     this.context.extensions
       .getExtraBuilderOrThrow(element)
       .runSecondPass(element, this.context);
+  }
+
+  visit_INTERNAL__UnknownElement(element: V1_INTERNAL__UnknownElement): void {
+    throw new UnsupportedOperationError();
   }
 
   visit_INTERNAL__UnknownPackageableElement(
