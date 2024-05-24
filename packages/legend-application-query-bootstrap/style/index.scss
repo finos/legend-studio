@@ -1164,12 +1164,6 @@
       background: var(--color-legacylight-light-grey-100);
     }
 
-    .query-builder__setup__milestoning {
-      &[disabled] {
-        background: var(--color-light-grey-180);
-      }
-    }
-
     .query-builder__setup__config-group__item__label {
       color: var(--color-dark-grey-300);
     }
@@ -1280,6 +1274,12 @@
       background: var(--color-light-grey-50);
       color: var(--color-dark-grey-500);
       border: 0.1rem solid var(--color-light-grey-180);
+    }
+
+    .query-builder__variables__variable__type__label--milestoning {
+      background: var(--color-orange-50);
+      color: var(--color-white);
+      border: 0.1rem solid var(--color-orange-50);
     }
 
     .query-builder__variables__variable:hover
