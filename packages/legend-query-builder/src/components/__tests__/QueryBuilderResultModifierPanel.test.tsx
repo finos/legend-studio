@@ -231,10 +231,10 @@ describe('QueryBuilderResultModifierPanel', () => {
         (await findByText(resultModifierPanel, 'asc')).nextElementSibling,
       );
       fireEvent.click(orderDropdownButton);
-      const descOption = await renderResult.findByRole('button', {
-        name: 'desc',
+      const sortByOperator = await renderResult.findByRole('button', {
+        name: 'Choose SortBy Operator...',
       });
-      fireEvent.click(descOption);
+      fireEvent.click(sortByOperator);
       expect(findByText(resultModifierPanel, 'desc')).not.toBeNull();
 
       // Don't apply the changes

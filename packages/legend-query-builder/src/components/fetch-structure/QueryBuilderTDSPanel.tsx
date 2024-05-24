@@ -1317,15 +1317,15 @@ export const QueryBuilderTDSPanel = observer(
                 <div className="query-builder__projection__result-modifier-prompt__group__label">
                   Watermark
                 </div>
-                <div
-                  className="query-builder__projection__result-modifier-prompt__group__content"
+                <button
+                  className="query-builder__projection__result-modifier-prompt__header__label editable-value"
                   onClick={openResultSetModifierEditor}
                 >
                   {getNameOfValueSpecification(
                     tdsState.queryBuilderState.watermarkState.value,
                     tdsState.queryBuilderState,
                   )}
-                </div>
+                </button>
               </div>
             )}
           </div>

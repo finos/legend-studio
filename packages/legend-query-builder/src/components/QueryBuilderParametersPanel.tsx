@@ -26,9 +26,9 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
-  InfoCircleIcon,
   ModalFooterButton,
   PanelFormValidatedTextField,
+  QuestionCircleIcon,
 } from '@finos/legend-art';
 import {
   type Type,
@@ -289,7 +289,7 @@ export const QueryBuilderParametersPanel = observer(
               className="query-builder__variables__info"
               title={`Parameters are variables assigned to your query. They are dynamic in nature and can change for each execution.`}
             >
-              <InfoCircleIcon />
+              <QuestionCircleIcon />
             </div>
           </div>
           {!isReadOnly && !queryBuilderState.isParameterSupportDisabled && (

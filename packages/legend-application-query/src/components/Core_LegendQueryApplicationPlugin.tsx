@@ -238,6 +238,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
       },
     ];
   }
+
   getExtraQueryBuilderExportMenuActionConfigurations?(): QueryBuilderMenuActionConfiguration[] {
     return [
       {
@@ -595,7 +596,13 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                 </div>
               );
             }
-            return undefined;
+            return (
+              <div className="query-editor__dataspace__header">
+                <div className="query-editor__header__content__main query-editor__header__content__title__text query-editor__header__content__title__text--unsaved">
+                  Unsaved Query
+                </div>
+              </div>
+            );
           };
           return (
             <div className="query-editor__header__content">

@@ -26,15 +26,13 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
-  SortIcon,
-  DropdownMenu,
-  MenuContent,
-  MenuContentItem,
   ModalFooterButton,
   InputWithInlineValidation,
   PanelDivider,
   PanelDropZone,
   PanelFormSection,
+  ArrowUpIcon,
+  ArrowDownIcon,
 } from '@finos/legend-art';
 import { SortColumnState } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
 import {
@@ -106,8 +104,12 @@ const ColumnSortEditor = observer(
       setSortColumns(newSortColumns);
     };
 
-    const changeSortBy = (sortOp: COLUMN_SORT_TYPE) => (): void => {
-      sortState.setSortType(sortOp);
+    const changeSortBy = (): void => {
+      if (sortState.sortType === COLUMN_SORT_TYPE.ASC) {
+        sortState.setSortType(COLUMN_SORT_TYPE.DESC);
+      } else {
+        sortState.setSortType(COLUMN_SORT_TYPE.ASC);
+      }
     };
 
     return (
@@ -128,31 +130,18 @@ const ColumnSortEditor = observer(
         <div className="query-builder__projection__options__sort__sortby">
           {sortType.toLowerCase()}
         </div>
-        <DropdownMenu
-          content={
-            <MenuContent>
-              {Object.values(COLUMN_SORT_TYPE).map((op) => (
-                <MenuContentItem key={op} onClick={changeSortBy(op)}>
-                  {op.toLowerCase()}
-                </MenuContentItem>
-              ))}
-            </MenuContent>
-          }
-          menuProps={{
-            anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-            transformOrigin: { vertical: 'top', horizontal: 'left' },
-            elevation: 7,
-          }}
+        <button
+          className="query-builder__projection__options__sort__sortby--btn btn--dark"
+          tabIndex={-1}
+          onClick={changeSortBy}
+          title="Choose SortBy Operator..."
         >
-          <div
-            className="query-builder__projection__options__sort__sortby--btn"
-            tabIndex={-1}
-            title="Choose SortBy Operator..."
-          >
-            <SortIcon />
-          </div>
-        </DropdownMenu>
-
+          {sortState.sortType === COLUMN_SORT_TYPE.ASC ? (
+            <ArrowUpIcon />
+          ) : (
+            <ArrowDownIcon />
+          )}
+        </button>
         <button
           className="query-builder__projection__options__sort__remove-btn btn--dark btn--caution"
           onClick={deleteColumnSort}
@@ -574,7 +563,12 @@ export const QueryResultModifierModal = observer(
                 {watermarkValue && (
                   <>
                     <PanelFormSection>
-                      <div className="query-builder__variable-editor">
+                      <div
+                        className="query-builder__variable-editor"
+                        data-testid={
+                          QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL__WATERMAKR
+                        }
+                      >
                         <PanelDropZone
                           isDragOver={isParameterValueDragOver}
                           dropTargetConnector={dropTargetConnector}
