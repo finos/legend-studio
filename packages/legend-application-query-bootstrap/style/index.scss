@@ -890,13 +890,32 @@
     }
   }
 
+  .panel__dnd__dropzone__overlay {
+    background: var(--color-dnd__overlay-light);
+  }
+
+  .dnd__entry-dropzone__placeholder--active
+    .dnd__entry-dropzone__placeholder__content {
+    background: var(--color-dnd__overlay-light);
+    border-color: var(--color-light-grey-400);
+  }
+
+  .dnd__entry-dropzone__placeholder--droppable
+    .dnd__entry-dropzone__placeholder__content {
+    border-color: var(--color-light-grey-400);
+  }
+
+  .dnd__entry-dropzone__placeholder__label {
+    color: var(--color-light-grey-400);
+  }
+
   .dnd__entry--droppable__indicator {
     border-color: var(--color-light-grey-250);
     color: var(--color-light-grey-400);
   }
 
   .dnd__dropzone--droppable {
-    border-color: var(--color-light-grey-250);
+    border-color: var(--color-light-grey-400);
   }
 
   .dnd__entry--droppable__indicator--dragover {
