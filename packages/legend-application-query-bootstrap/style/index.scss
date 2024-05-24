@@ -918,6 +918,10 @@
 
     // ------------------------------------ App ---------------------------------------
 
+    .query-editor__header__content__title__text {
+      color: var(--color-dark-grey-300);
+    }
+
     .query-editor__logo-header {
       background: var(--color-legacylight-light-blue-350);
       border-color: var(--color-legacylight-light-blue-600);

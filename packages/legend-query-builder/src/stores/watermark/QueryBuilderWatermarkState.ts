@@ -50,7 +50,6 @@ export class QueryBuilderWatermarkState implements Hashable {
       ),
     );
 
-    watermarkConstant.values = ['watermarkValue'];
     return watermarkConstant;
   }
 

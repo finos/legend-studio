@@ -120,6 +120,10 @@
 
     color: var(--color-light-grey-200);
     cursor: pointer;
+
+    svg {
+      font-size: 1.3rem;
+    }
   }
 
   &__variable {

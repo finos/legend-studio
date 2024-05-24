@@ -22,6 +22,7 @@ import { integrationTest } from '@finos/legend-shared/test';
 import { create_RawLambda, stub_RawLambda } from '@finos/legend-graph';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 test(
   integrationTest(
@@ -54,11 +55,18 @@ test(
         renderResult.getByRole('button', { name: 'Enable Watermark' }),
       ),
     );
-    const watermarkValueInput =
-      renderResult.getByDisplayValue('watermarkValue');
-    fireEvent.change(watermarkValueInput, {
-      target: { value: 'testValue' },
-    });
+    const watermarkEditor = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL__WATERMAKR,
+    );
+    const waterMarkInput = watermarkEditor.getElementsByClassName(
+      'value-spec-editor__input',
+    )[0];
+    expect(waterMarkInput).toBeDefined();
+    await waitFor(() =>
+      fireEvent.change(guaranteeNonNullable(waterMarkInput), {
+        target: { value: 'testValue' },
+      }),
+    );
     fireEvent.click(renderResult.getByRole('button', { name: 'Apply' }));
 
     // Verify that value was saved
@@ -104,6 +112,18 @@ test(
       ),
     );
     await waitFor(() => renderResult.getByText('Watermark'));
+    const watermarkEditor = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL__WATERMAKR,
+    );
+    const waterMarkInput = watermarkEditor.getElementsByClassName(
+      'value-spec-editor__input',
+    )[0];
+    expect(waterMarkInput).toBeDefined();
+    await waitFor(() =>
+      fireEvent.change(guaranteeNonNullable(waterMarkInput), {
+        target: { value: 'watermarkValue' },
+      }),
+    );
     fireEvent.click(renderResult.getByRole('button', { name: 'Apply' }));
 
     // Re-open watermark modal and change value
@@ -174,17 +194,25 @@ test(
         renderResult.getByRole('button', { name: 'Enable Watermark' }),
       ),
     );
-    const watermarkValueInput =
-      renderResult.getByDisplayValue('watermarkValue');
-    fireEvent.change(watermarkValueInput, {
-      target: { value: 'testValue' },
-    });
+    const watermarkEditor = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL__WATERMAKR,
+    );
+    const waterMarkInput = watermarkEditor.getElementsByClassName(
+      'value-spec-editor__input',
+    )[0];
+    expect(waterMarkInput).toBeDefined();
+    await waitFor(() =>
+      fireEvent.change(guaranteeNonNullable(waterMarkInput), {
+        target: { value: 'testValue' },
+      }),
+    );
     expect(renderResult.getByDisplayValue('testValue')).not.toBeNull();
 
     // Click reset button
     fireEvent.click(renderResult.getByRole('button', { name: 'Reset' }));
 
     // Verify that value was reset
-    expect(renderResult.getByDisplayValue('watermarkValue')).not.toBeNull();
+    expect(renderResult.queryByText('testValue')).toBeNull();
+    expect(renderResult.getByTitle('Invalid String value')).not.toBeNull();
   },
 );

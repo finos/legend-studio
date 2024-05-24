@@ -70,6 +70,10 @@
     &__item__selector {
       flex: 1;
       max-width: unset;
+
+      .selector-input__value-container {
+        cursor: pointer;
+      }
     }
 
     &__item + &__item {
