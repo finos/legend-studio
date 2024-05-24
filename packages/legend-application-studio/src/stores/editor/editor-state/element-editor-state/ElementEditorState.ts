@@ -31,7 +31,7 @@ import {
   type PackageableElement,
   GRAPH_MANAGER_EVENT,
   isElementReadOnly,
-  INTERNAL__UnknownPackageableElement,
+  INTERNAL__UnknownElement,
 } from '@finos/legend-graph';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import type { ElementFileGenerationState } from './ElementFileGenerationState.js';
@@ -201,14 +201,11 @@ export abstract class ElementEditorState extends EditorState {
       );
     } catch (error) {
       assertErrorThrown(error);
-      const isUnknownEntity = isType(
-        this.element,
-        INTERNAL__UnknownPackageableElement,
-      );
+      const isUnknownEntity = isType(this.element, INTERNAL__UnknownElement);
       if (isUnknownEntity) {
         const unknownEntity = guaranteeType(
           this.element,
-          INTERNAL__UnknownPackageableElement,
+          INTERNAL__UnknownElement,
         );
         this.setTextContent(
           JSON.stringify(unknownEntity.content, undefined, DEFAULT_TAB_SIZE),

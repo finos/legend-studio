@@ -88,6 +88,8 @@ import {
   V1_transformSnowflakeAppDeploymentConfiguration,
 } from './V1_FunctionActivatorTransformer.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
+import type { INTERNAL__UnknownElement } from '../../../../../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
+import { V1_INTERNAL__UnknownElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownElement.js';
 import type { HostedService } from '../../../../../../../graph/metamodel/pure/packageableElements/function/HostedService.js';
 import { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 
@@ -118,6 +120,16 @@ class V1_PackageableElementTransformer
       `Can't transform element '${element.path}': no compatible transformer available from plugins`,
       element,
     );
+  }
+
+  visit_INTERNAL__UnknownElement(
+    element: INTERNAL__UnknownElement,
+  ): V1_PackageableElement {
+    const protocol = new V1_INTERNAL__UnknownElement();
+    V1_initPackageableElement(protocol, element);
+    protocol.content = element.content;
+    protocol.classifierPath = element.classifierPath;
+    return protocol;
   }
 
   visit_INTERNAL__UnknownPackageableElement(

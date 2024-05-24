@@ -170,7 +170,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
       case MODEL_IMPORT_NATIVE_INPUT_TYPE.PURE_PROTOCOL: {
         const graphEntities = this.editorStore.graphManagerState.graphBuildState
           .hasSucceeded
-          ? this.editorStore.graphManagerState.graph.allOwnElements.map(
+          ? this.editorStore.graphManagerState.graph.knownAllOwnElements.map(
               (element) =>
                 this.editorStore.graphManagerState.graphManager.elementToEntity(
                   element,
@@ -187,7 +187,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
       case MODEL_IMPORT_NATIVE_INPUT_TYPE.ENTITIES: {
         const graphEntities = this.editorStore.graphManagerState.graphBuildState
           .hasSucceeded
-          ? this.editorStore.graphManagerState.graph.allOwnElements.map(
+          ? this.editorStore.graphManagerState.graph.knownAllOwnElements.map(
               (element) =>
                 this.editorStore.graphManagerState.graphManager.elementToEntity(
                   element,
@@ -206,6 +206,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
         this.modelText =
           (yield this.editorStore.graphManagerState.graphManager.graphToPureCode(
             this.editorStore.graphManagerState.graph,
+            { excludeUnknown: true },
           )) as string;
         break;
       }

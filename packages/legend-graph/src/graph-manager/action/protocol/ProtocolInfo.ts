@@ -15,6 +15,7 @@
  */
 
 export type ClassifierPathMapping = { type: string; classifierPath: string };
+export type ClassifierPathMappingMap = Map<string, string>;
 
 export type SubtypeInfo = {
   storeSubtypes: string[];

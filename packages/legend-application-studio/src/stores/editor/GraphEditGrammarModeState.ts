@@ -27,6 +27,7 @@ import {
   EngineError,
   GraphBuilderError,
   reportGraphAnalytics,
+  INTERNAL__UnknownElement,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -35,6 +36,7 @@ import {
   ActionState,
   StopWatch,
   assertNonNullable,
+  filterByType,
 } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
 import { makeObservable, flow, flowResult, observable } from 'mobx';
@@ -95,6 +97,11 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
       this.grammarTextEditorState.setSourceInformationIndex(
         sourceInformationIndex,
       );
+
+      //Include the UnknownPackageableElements when sending to compute local changes
+      //Otherwise, they get deleted because they dont exist in the graphGrammarText
+      const unknownEntities = this.getUnknownPackageableElementsAsEntities();
+      entities.push(...unknownEntities);
 
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChangesInTextMode(
@@ -193,6 +200,12 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
 
   getCurrentGraphHash(): string {
     return this.grammarTextEditorState.currentTextGraphHash;
+  }
+
+  getUnknownPackageableElementsAsEntities(): Entity[] {
+    return this.editorStore.graphManagerState.graph.allOwnElements.filter(
+      filterByType(INTERNAL__UnknownElement),
+    );
   }
 
   *addElement(
@@ -354,6 +367,12 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
       )) as TextCompilationResult;
 
       const entities = compilationResult.entities;
+
+      //Include the UnknownPackageableElements when updating graph and sending to compute local changes
+      //Otherwise, they get deleted because they dont exist in the CompilationResult
+      const unknownEntities = this.getUnknownPackageableElementsAsEntities();
+      entities.push(...unknownEntities);
+
       this.editorStore.graphState.setMostRecentCompilationGraphHash(
         currentGraphHash,
       );
@@ -477,8 +496,15 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
             compilationResult.warnings,
           )
         : [];
-      this.editorStore.graphState.compilationResultEntities =
-        compilationResult.entities;
+
+      const entities = compilationResult.entities;
+
+      //Include the UnknownPackageableElements when updating graph
+      //Otherwise, they get deleted because they dont exist in the CompilationResult
+      const unknownEntities = this.getUnknownPackageableElementsAsEntities();
+      entities.push(...unknownEntities);
+
+      this.editorStore.graphState.compilationResultEntities = entities;
       this.editorStore.applicationStore.alertService.setBlockingAlert({
         message: 'Leaving text mode and rebuilding graph...',
         showLoading: true,
@@ -557,10 +583,11 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
         this.grammarTextEditorState.setGraphGrammarText(editorGrammar),
       );
     } else {
+      //Exclude UnknownPackageableElements from GrammarText editor mode since they cant be tranformed to PureCode
       const graphGrammar =
         (yield this.editorStore.graphManagerState.graphManager.graphToPureCode(
           this.editorStore.graphManagerState.graph,
-          { pretty: true },
+          { pretty: true, excludeUnknown: true },
         )) as string;
       yield flowResult(
         this.grammarTextEditorState.setGraphGrammarText(graphGrammar),

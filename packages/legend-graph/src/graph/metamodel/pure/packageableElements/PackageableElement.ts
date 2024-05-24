@@ -46,10 +46,12 @@ import type { INTERNAL__UnknownPackageableElement } from './INTERNAL__UnknownPac
 import type { INTERNAL__UnknownFunctionActivator } from './function/INTERNAL__UnknownFunctionActivator.js';
 import type { INTERNAL__UnknownStore } from './store/INTERNAL__UnknownStore.js';
 import type { SnowflakeApp } from './function/SnowflakeApp.js';
+import type { INTERNAL__UnknownElement } from './INTERNAL__UnknownElement.js';
 import type { HostedService } from './function/HostedService.js';
 
 export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;
+  visit_INTERNAL__UnknownElement(element: INTERNAL__UnknownElement): T;
   visit_INTERNAL__UnknownPackageableElement(
     element: INTERNAL__UnknownPackageableElement,
   ): T;

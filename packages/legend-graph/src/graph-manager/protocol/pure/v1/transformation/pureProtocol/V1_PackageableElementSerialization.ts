@@ -113,9 +113,13 @@ import {
 import type { V1_ExecutionEnvironmentInstance } from '../../model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
 import { V1_INTERNAL__UnknownPackageableElement } from '../../model/packageableElements/V1_INTERNAL__UnknownPackageableElement.js';
 import type { V1_INTERNAL__UnknownFunctionActivator } from '../../model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
-import type { SubtypeInfo } from '../../../../../action/protocol/ProtocolInfo.js';
+import type {
+  ClassifierPathMappingMap,
+  SubtypeInfo,
+} from '../../../../../action/protocol/ProtocolInfo.js';
 import { V1_INTERNAL__UnknownStore } from '../../model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 import type { V1_SnowflakeApp } from '../../model/packageableElements/function/V1_SnowflakeApp.js';
+import { V1_INTERNAL__UnknownElement } from '../../model/packageableElements/V1_INTERNAL__UnknownElement.js';
 import type { V1_HostedService } from '../../model/packageableElements/function/V1_HostedService.js';
 
 class V1_PackageableElementSerializer
@@ -143,6 +147,12 @@ class V1_PackageableElementSerializer
     throw new UnsupportedOperationError(
       `Can't serialize protocol for element '${elementProtocol.path}': no compatible serializer available from plugins`,
     );
+  }
+
+  visit_INTERNAL__UnknownElement(
+    element: V1_INTERNAL__UnknownElement,
+  ): PlainObject<V1_PackageableElement> {
+    return element.content;
   }
 
   visit_INTERNAL__UnknownPackageableElement(
@@ -286,6 +296,8 @@ export const V1_deserializePackageableElement = (
   json: PlainObject<V1_PackageableElement>,
   plugins: PureProtocolProcessorPlugin[],
   subtypeInfo?: SubtypeInfo | undefined,
+  classifierPathMappingMap?: ClassifierPathMappingMap | undefined,
+  classifierPath?: string | undefined,
 ): V1_PackageableElement => {
   const packagePath = guaranteeIsString(
     json.package,
@@ -366,11 +378,23 @@ export const V1_deserializePackageableElement = (
           }
         }
 
-        // Fall back to create unknown stub if not supported
-        const protocol = new V1_INTERNAL__UnknownPackageableElement();
+        if (classifierPathMappingMap && isString(json._type)) {
+          if (classifierPathMappingMap.has(json._type)) {
+            // Fall back to create unknown stub if supported in engine but not studio
+            const protocol = new V1_INTERNAL__UnknownPackageableElement();
+            protocol.name = name;
+            protocol.package = packagePath;
+            protocol.content = json;
+            return protocol;
+          }
+        }
+
+        // Fall back to create unknown stub if not supported in engine
+        const protocol = new V1_INTERNAL__UnknownElement();
         protocol.name = name;
         protocol.package = packagePath;
         protocol.content = json;
+        protocol.classifierPath = classifierPath ?? '';
         return protocol;
       }
     }

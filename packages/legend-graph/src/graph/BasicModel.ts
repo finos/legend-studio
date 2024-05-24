@@ -25,6 +25,7 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   isNonNullable,
+  isType,
 } from '@finos/legend-shared';
 import { Package } from '../graph/metamodel/pure/packageableElements/domain/Package.js';
 import { Type } from '../graph/metamodel/pure/packageableElements/domain/Type.js';
@@ -73,6 +74,7 @@ import { FunctionActivator } from './metamodel/pure/packageableElements/function
 import { INTERNAL__UnknownFunctionActivator } from './metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
 import { INTERNAL__UnknownStore } from './metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
 import type { PureGraphPlugin } from './PureGraphPlugin.js';
+import { INTERNAL__UnknownElement } from './metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -156,6 +158,10 @@ export abstract class BasicModel {
   private readonly INTERNAL__unknownElementsIndex = new Map<
     string,
     INTERNAL__UnknownPackageableElement
+  >();
+  private readonly INTERNAL__unknownIndex = new Map<
+    string,
+    INTERNAL__UnknownElement
   >();
 
   constructor(
@@ -522,6 +528,10 @@ export abstract class BasicModel {
   ): void {
     this.executionEnvironmentsIndex.set(path, val);
   }
+  INTERNAL__setOwnUnknown(path: string, val: INTERNAL__UnknownElement): void {
+    this.INTERNAL__unknownIndex.set(path, val);
+  }
+
   INTERNAL__setOwnUnknownElement(
     path: string,
     val: INTERNAL__UnknownPackageableElement,
@@ -557,8 +567,15 @@ export abstract class BasicModel {
       ...this.ownDataElements,
       ...this.ownExecutionEnvironments,
       ...Array.from(this.INTERNAL__unknownElementsIndex.values()),
+      ...Array.from(this.INTERNAL__unknownIndex.values()),
       ...this.extensions.flatMap((extension) => extension.elements),
     ];
+  }
+
+  get knownAllOwnElements(): PackageableElement[] {
+    return this.allOwnElements.filter(
+      (element) => !isType(element, INTERNAL__UnknownElement),
+    );
   }
 
   /**
@@ -591,6 +608,7 @@ export abstract class BasicModel {
   ): PackageableElement | undefined {
     let element: PackageableElement | undefined =
       this.sectionIndicesIndex.get(path) ??
+      this.INTERNAL__unknownIndex.get(path) ??
       this.INTERNAL__unknownElementsIndex.get(path) ??
       this.typesIndex.get(path) ??
       this.profilesIndex.get(path) ??
@@ -673,7 +691,9 @@ export abstract class BasicModel {
     if (element.package) {
       deleteElementFromPackage(element.package, element);
     }
-    if (element instanceof INTERNAL__UnknownPackageableElement) {
+    if (element instanceof INTERNAL__UnknownElement) {
+      this.INTERNAL__unknownIndex.delete(element.path);
+    } else if (element instanceof INTERNAL__UnknownPackageableElement) {
       this.INTERNAL__unknownElementsIndex.delete(element.path);
     } else if (element instanceof Mapping) {
       this.mappingsIndex.delete(element.path);
@@ -784,7 +804,15 @@ export abstract class BasicModel {
     }
 
     // update index in the graph
-    if (element instanceof INTERNAL__UnknownPackageableElement) {
+    if (element instanceof INTERNAL__UnknownElement) {
+      this.INTERNAL__unknownIndex.delete(oldPath);
+      this.INTERNAL__unknownIndex.set(newPath, element);
+      element.content = {
+        ...element.content,
+        name: element.name,
+        package: element.package?.path,
+      };
+    } else if (element instanceof INTERNAL__UnknownPackageableElement) {
       this.INTERNAL__unknownElementsIndex.delete(oldPath);
       this.INTERNAL__unknownElementsIndex.set(newPath, element);
       element.content = {

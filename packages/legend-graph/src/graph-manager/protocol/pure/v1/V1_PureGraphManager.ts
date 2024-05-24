@@ -322,6 +322,7 @@ import { V1_transformTablePointer } from './transformation/pureGraph/from/V1_Dat
 import { EngineError } from '../../../action/EngineError.js';
 import { V1_SnowflakeApp } from './model/packageableElements/function/V1_SnowflakeApp.js';
 import type { ExecutionResult } from '../../../action/execution/ExecutionResult.js';
+import { V1_INTERNAL__UnknownElement } from './model/packageableElements/V1_INTERNAL__UnknownElement.js';
 import { V1_HostedService } from './model/packageableElements/function/V1_HostedService.js';
 import type { PostValidationAssertionResult } from '../../../../DSL_Service_Exports.js';
 import { V1_UserListOwnership } from './model/packageableElements/service/V1_ServiceOwnership.js';
@@ -355,6 +356,7 @@ class V1_PureModelContextDataIndex {
   services: V1_Service[] = [];
   executionEnvironments: V1_ExecutionEnvironmentInstance[] = [];
 
+  INTERNAL__UnknownElement: V1_INTERNAL__UnknownElement[] = [];
   INTERNAL__unknownElements: V1_INTERNAL__UnknownPackageableElement[] = [];
 
   otherElementsByBuilder: Map<
@@ -397,7 +399,9 @@ export const V1_indexPureModelContextData = (
   >();
   data.elements.forEach((el) => {
     let isIndexedAsOtherElement = false;
-    if (el instanceof V1_INTERNAL__UnknownPackageableElement) {
+    if (el instanceof V1_INTERNAL__UnknownElement) {
+      index.INTERNAL__UnknownElement.push(el);
+    } else if (el instanceof V1_INTERNAL__UnknownPackageableElement) {
       index.INTERNAL__unknownElements.push(el);
     } else if (el instanceof V1_Association) {
       index.associations.push(el);
@@ -584,6 +588,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       V1_setupPureModelContextDataSerialization(
         this.pluginManager.getPureProtocolProcessorPlugins(),
         this.subtypeInfo,
+        this.elementClassifierPathMap,
       );
       V1_setupDatabaseSerialization(
         this.pluginManager.getPureProtocolProcessorPlugins(),
@@ -749,6 +754,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               projectModelData,
               this.pluginManager.getPureProtocolProcessorPlugins(),
               this.subtypeInfo,
+              this.elementClassifierPathMap,
             );
           },
         ),
@@ -828,6 +834,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         data,
         this.pluginManager.getPureProtocolProcessorPlugins(),
         this.subtypeInfo,
+        this.elementClassifierPathMap,
       );
       stopWatch.record(
         GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DESERIALIZE_ELEMENTS__SUCCESS,
@@ -915,6 +922,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         data,
         this.pluginManager.getPureProtocolProcessorPlugins(),
         this.subtypeInfo,
+        this.elementClassifierPathMap,
       );
       stopWatch.record(
         GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DESERIALIZE_ELEMENTS__SUCCESS,
@@ -1007,6 +1015,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               generatedData,
               this.pluginManager.getPureProtocolProcessorPlugins(),
               this.subtypeInfo,
+              this.elementClassifierPathMap,
             );
           },
         ),
@@ -1729,10 +1738,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   async graphToPureCode(
     graph: PureModel,
-    options?: { pretty?: boolean | undefined },
+    options?: {
+      pretty?: boolean | undefined;
+      excludeUnknown?: boolean | undefined;
+    },
   ): Promise<string> {
     const startTime = Date.now();
-    const graphData = this.graphToPureModelContextData(graph);
+    const graphData = this.graphToPureModelContextData(graph, {
+      excludeUnknown: options?.excludeUnknown,
+    });
     const grammarToJson = await this.engine.pureModelContextDataToPureCode(
       graphData,
       Boolean(options?.pretty),
@@ -3699,6 +3713,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       pureModelContextData,
       this.pluginManager.getPureProtocolProcessorPlugins(),
       this.subtypeInfo,
+      this.elementClassifierPathMap,
       TEMPORARY__entityPathIndex,
     );
     await Promise.all(
@@ -3809,6 +3824,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       data,
       this.pluginManager.getPureProtocolProcessorPlugins(),
       this.subtypeInfo,
+      this.elementClassifierPathMap,
     );
     const mainGraphBuilderInput: V1_PureGraphBuilderInput[] = [
       {
@@ -3847,6 +3863,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             projectModelData,
             this.pluginManager.getPureProtocolProcessorPlugins(),
             this.subtypeInfo,
+            this.elementClassifierPathMap,
           );
         },
       ),
@@ -3890,6 +3907,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): V1_PureModelContextData {
     const contextData1 = this.graphToPureModelContextData(graph, {
       keepSourceInformation: options?.keepSourceInformation,
+      excludeUnknown: true,
     });
     const contextData2 = this.getGraphCompileContext(graph);
     contextData1.elements = [
@@ -3933,6 +3951,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       graphData,
       this.pluginManager.getPureProtocolProcessorPlugins(),
       this.subtypeInfo,
+      this.elementClassifierPathMap,
     );
     return graphData;
   }
@@ -3958,6 +3977,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     protocol: V1_PackageableElement,
   ): string => {
     if (
+      protocol instanceof V1_INTERNAL__UnknownElement ||
       protocol instanceof V1_INTERNAL__UnknownPackageableElement ||
       protocol instanceof V1_INTERNAL__UnknownFunctionActivator ||
       protocol instanceof V1_INTERNAL__UnknownStore
@@ -4029,11 +4049,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private graphToPureModelContextData = (
     graph: PureModel,
-    options?: { keepSourceInformation?: boolean | undefined } | undefined,
+    options?:
+      | {
+          keepSourceInformation?: boolean | undefined;
+          excludeUnknown?: boolean | undefined;
+        }
+      | undefined,
   ): V1_PureModelContextData => {
     const startTime = Date.now();
     const graphData = new V1_PureModelContextData();
-    graphData.elements = graph.allOwnElements.map((element) =>
+    graphData.elements = (
+      options?.excludeUnknown ? graph.knownAllOwnElements : graph.allOwnElements
+    ).map((element) =>
       this.elementToProtocol(element, {
         keepSourceInformation: options?.keepSourceInformation,
       }),
