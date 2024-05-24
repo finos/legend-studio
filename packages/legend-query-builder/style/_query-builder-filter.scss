@@ -312,11 +312,6 @@ $group-node-width: 3.5rem;
 
       width: calc(50% - 3rem);
       height: 2.8rem;
-
-      .query-builder-property-expression-badge {
-        width: fit-content;
-        min-width: 50%;
-      }
     }
 
     &__operator {

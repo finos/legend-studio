@@ -44,7 +44,6 @@ import {
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
-  type QueryBuilderExplorerTreePropertyNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
@@ -159,20 +158,11 @@ const QueryBuilderSimpleProjectionColumnEditor = observer(
     error?: string | undefined;
   }) => {
     const { projectionColumnState, setColumnName, error } = props;
-    const onPropertyExpressionChange = (
-      node: QueryBuilderExplorerTreePropertyNodeData,
-    ): void =>
-      projectionColumnState.changeProperty(
-        node,
-        projectionColumnState.tdsState.queryBuilderState.explorerState
-          .humanizePropertyName,
-      );
 
     return (
       <QueryBuilderPropertyExpressionBadge
         columnName={projectionColumnState.columnName}
         propertyExpressionState={projectionColumnState.propertyExpressionState}
-        onPropertyExpressionChange={onPropertyExpressionChange}
         setColumnName={setColumnName}
         error={error}
       />
@@ -1410,12 +1400,12 @@ export const QueryBuilderTDSPanel = observer(
             {isDroppable && !isEmpty && (
               <div
                 ref={addProjectionRef}
-                className="query-builder-filter-tree__free-drop-zone__container"
+                className="query-builder__projection__free-drop-zone__container"
               >
                 <PanelEntryDropZonePlaceholder
                   isDragOver={isDragOver}
                   isDroppable={isDroppable}
-                  className="query-builder-filter-tree__free-drop-zone"
+                  className="query-builder__projection__free-drop-zone"
                   label="Add a projection column"
                 >
                   <></>

@@ -1093,38 +1093,6 @@ test(
     );
     await waitFor(() => getByText(projectionPanel, LAST_NAME_ALIAS));
     expect(tdsState.projectionColumns.length).toBe(2);
-
-    // Drag and Drop to an exisitng projection column
-    const projectionCols = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
-    );
-    const lastNameColumnName = guaranteeNonNullable(
-      await waitFor(() => queryByText(projectionCols, LAST_NAME_ALIAS)),
-    );
-    fireEvent.click(lastNameColumnName);
-    const lastNameColumnNameInput = guaranteeNonNullable(
-      await waitFor(() =>
-        projectionCols.querySelector(`input[value="${LAST_NAME_ALIAS}"]`),
-      ),
-    );
-    fireEvent.change(lastNameColumnNameInput, {
-      target: { value: 'edited last name' },
-    });
-    fireEvent.blur(lastNameColumnNameInput);
-    const propertyExpressionBadgeDropZone = await waitFor(() =>
-      getByText(projectionPanel, 'edited last name'),
-    );
-    const firstNameNode = await waitFor(() =>
-      getByText(explorerPanel, 'First Name'),
-    );
-    await dragAndDrop(
-      firstNameNode,
-      propertyExpressionBadgeDropZone,
-      projectionPanel,
-      'Change Property',
-    );
-    await waitFor(() => getByText(projectionPanel, 'First Name'));
-    expect(tdsState.projectionColumns.length).toBe(2);
   },
 );
 
