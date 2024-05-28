@@ -72,6 +72,12 @@ export const guaranteeType = <T>(
   return value;
 };
 
+export function isNonEmptyString(
+  str: string | null | undefined,
+): str is string {
+  return isNonNullable(str) && str !== '';
+}
+
 export function assertNonEmptyString(
   str: string | null | undefined,
   message = '',

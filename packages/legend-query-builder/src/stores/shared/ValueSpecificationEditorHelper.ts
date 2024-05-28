@@ -321,3 +321,66 @@ export const valueSpecReturnTDS = (
     retunType && tdsType && (retunType === tdsType || retunType === tdsRowType),
   );
 };
+
+export const convertTextToPrimitiveInstanceValue = (
+  expectedType: Type,
+  value: string,
+  obseverContext: ObserverContext,
+): PrimitiveInstanceValue | null => {
+  let result = null;
+  if (expectedType instanceof PrimitiveType) {
+    switch (expectedType.path) {
+      case PRIMITIVE_TYPE.STRING: {
+        result = new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(new GenericType(expectedType)),
+        );
+        instanceValue_setValues(result, [value.toString()], obseverContext);
+        break;
+      }
+      case PRIMITIVE_TYPE.NUMBER:
+      case PRIMITIVE_TYPE.FLOAT:
+      case PRIMITIVE_TYPE.DECIMAL:
+      case PRIMITIVE_TYPE.INTEGER: {
+        if (isNaN(Number(value))) {
+          return null;
+        }
+        result = new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(new GenericType(expectedType)),
+        );
+        instanceValue_setValues(result, [Number(value)], obseverContext);
+        break;
+      }
+      case PRIMITIVE_TYPE.DATE:
+      case PRIMITIVE_TYPE.STRICTDATE: {
+        if (isNaN(Date.parse(value))) {
+          return null;
+        }
+        result = new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(new GenericType(expectedType)),
+        );
+        instanceValue_setValues(result, [value], obseverContext);
+        break;
+      }
+      case PRIMITIVE_TYPE.DATETIME: {
+        if (
+          isNaN(Date.parse(value)) ||
+          !new Date(value).getTime() ||
+          (value.includes('%') &&
+            (isNaN(Date.parse(value.slice(1))) ||
+              !new Date(value.slice(1)).getTime()))
+        ) {
+          return null;
+        }
+        result = new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(new GenericType(expectedType)),
+        );
+        instanceValue_setValues(result, [value], obseverContext);
+        break;
+      }
+      default:
+        // unsupported expected type, just escape
+        return null;
+    }
+  }
+  return result;
+};
