@@ -16,8 +16,12 @@
 
 import { stub_RawLambda, create_RawLambda } from '@finos/legend-graph';
 import { integrationTest } from '@finos/legend-shared/test';
-import { waitFor, getByText, getByLabelText } from '@testing-library/react';
-import { act } from 'react-dom/test-utils';
+import {
+  waitFor,
+  getByText,
+  getByLabelText,
+  act,
+} from '@testing-library/react';
 import { expect, test } from '@jest/globals';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
