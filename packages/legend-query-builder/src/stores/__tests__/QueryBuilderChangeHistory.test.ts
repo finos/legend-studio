@@ -23,8 +23,7 @@ import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import { expect, test } from '@jest/globals';
-import { waitFor, getByText, fireEvent } from '@testing-library/react';
-import { act } from 'react-dom/test-utils';
+import { waitFor, getByText, fireEvent, act } from '@testing-library/react';
 import {
   TEST__setUpQueryBuilder,
   dragAndDrop,

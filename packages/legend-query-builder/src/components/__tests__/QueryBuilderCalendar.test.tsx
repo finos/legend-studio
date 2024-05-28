@@ -19,8 +19,7 @@ import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import TEST_DATA_SimpleCalendarModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Calendar.json' assert { type: 'json' };
 import { stub_RawLambda, create_RawLambda } from '@finos/legend-graph';
 import { createMock, integrationTest } from '@finos/legend-shared/test';
-import { waitFor, getAllByText } from '@testing-library/react';
-import { act } from 'react-dom/test-utils';
+import { waitFor, getAllByText, act } from '@testing-library/react';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_Calendar,
   TEST_DATA__simpleDerivationWithCalendarAggregation,
