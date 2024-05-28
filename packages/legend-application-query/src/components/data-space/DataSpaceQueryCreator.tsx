@@ -34,6 +34,11 @@ import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelp
 
 import { QueryEditor } from '../QueryEditor.js';
 
+type LocationData = {
+  pathname: string;
+  search: string;
+}
+
 const DataSpaceQueryCreatorStoreProvider: React.FC<{
   children: React.ReactNode;
   gav: string;
@@ -87,10 +92,7 @@ export const DataSpaceQueryCreator = observer(() => {
     applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
       DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH,
     );
-  const { pathname, search } = useLocation<{
-    pathname: string;
-    search: string;
-  }>();
+  const { pathname, search } = useLocation() as LocationData;
 
   useEffect(() => {
     LegendQueryUserDataHelper.saveRecentlyQueriedDataspace(

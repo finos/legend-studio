@@ -20,7 +20,7 @@ import { createSimpleSchema, deserialize, list, primitive } from 'serializr';
 
 export enum LEGEND_QUERY_USER_DATA_KEY {
   RECENTLY_VIEWED_QUERIES = 'query-editor.recent-queries',
-  LAST_QUERY_DATASPACE_KEY = 'last_query_dataspace',
+  LAST_QUERY_DATASPACE = 'last_query_dataspace',
 }
 
 export const USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT = 10;
@@ -64,12 +64,10 @@ export class LegendQueryUserDataHelper {
   ): void {
     const idx = persistedData.findIndex((data) => data === value);
     if (idx === -1) {
-      if (persistedData.length < opts.limit) {
-        persistedData.unshift(value);
-      } else {
+      if (persistedData.length >= opts.limit) {
         persistedData.pop();
-        persistedData.unshift(value);
       }
+      persistedData.unshift(value);
     } else {
       persistedData.splice(idx, 1);
       persistedData.unshift(value);
@@ -124,14 +122,14 @@ export class LegendQueryUserDataHelper {
   static getRecentlyQueriedDataspaceList(service: UserDataService): SavedData {
     return LegendQueryUserDataHelper.getPersistedData(
       service,
-      LEGEND_QUERY_USER_DATA_KEY.LAST_QUERY_DATASPACE_KEY,
+      LEGEND_QUERY_USER_DATA_KEY.LAST_QUERY_DATASPACE,
     );
   }
 
   static getRecentlyQueriedDataspace(service: UserDataService): string {
     const dataspaceList =
       LegendQueryUserDataHelper.getRecentlyQueriedDataspaceList(service);
-    return dataspaceList?.[0] || '';
+    return dataspaceList?.[0] ?? '';
   }
 
   static saveRecentlyQueriedDataspace(
@@ -142,7 +140,7 @@ export class LegendQueryUserDataHelper {
       LegendQueryUserDataHelper.getRecentlyQueriedDataspaceList(service);
     LegendQueryUserDataHelper.persistValue(service, dataspace, dataspaceList, {
       limit: USER_DATA_QUERY_DATASPACE_LIMIT,
-      key: LEGEND_QUERY_USER_DATA_KEY.LAST_QUERY_DATASPACE_KEY,
+      key: LEGEND_QUERY_USER_DATA_KEY.LAST_QUERY_DATASPACE,
     });
   }
 }
