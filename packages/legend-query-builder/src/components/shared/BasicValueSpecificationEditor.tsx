@@ -733,7 +733,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
     };
 
     const handleKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Enter' && !event.shiftKey) {
+      if ((event.key === 'Enter' || event.key === ',') && !event.shiftKey) {
         addCurrentInputValue();
         event.preventDefault();
       }
