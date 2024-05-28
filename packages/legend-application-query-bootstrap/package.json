@@ -57,7 +57,7 @@
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-lego": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@types/react": "18.3.2",
+    "@types/react": "18.3.3",
     "react": "18.3.1"
   },
   "devDependencies": {
