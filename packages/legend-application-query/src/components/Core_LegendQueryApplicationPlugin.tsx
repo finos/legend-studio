@@ -50,6 +50,8 @@ import {
   LEGEND_QUERY_ROUTE_PATTERN,
 } from '../__lib__/LegendQueryNavigation.js';
 import {
+  ActionAlertActionType,
+  ActionAlertType,
   type ApplicationPageEntry,
   type LegendApplicationSetup,
 } from '@finos/legend-application';
@@ -65,9 +67,9 @@ import {
   generateDataSpaceQueryCreatorRoute,
   generateDataSpaceQuerySetupRoute,
 } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
-import type {
-  QueryBuilderHeaderActionConfiguration,
-  QueryBuilderMenuActionConfiguration,
+import {
+  type QueryBuilderHeaderActionConfiguration,
+  type QueryBuilderMenuActionConfiguration,
 } from '@finos/legend-query-builder';
 import {
   ExistingQueryEditorStore,
@@ -426,8 +428,6 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
           ) {
             const editorStore =
               queryBuilderState.workflowState.actionConfig.editorStore;
-            const isExistingQuery =
-              editorStore instanceof ExistingQueryEditorStore;
             const handleNewQuery = (): void => {
               if (editorStore instanceof ExistingQueryEditorStore) {
                 const query = editorStore.query;
@@ -464,24 +464,47 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                     }
                   }
                 }
+              } else {
+                if (queryBuilderState.changeDetectionState.hasChanged) {
+                  queryBuilderState.applicationStore.alertService.setActionAlertInfo(
+                    {
+                      message:
+                        'Current query will be lost when creating a new query. Do you still want to proceed?',
+                      type: ActionAlertType.CAUTION,
+                      actions: [
+                        {
+                          label: 'Proceed',
+                          type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+                          handler:
+                            queryBuilderState.applicationStore.guardUnhandledError(
+                              async () => queryBuilderState.resetQueryContent(),
+                            ),
+                        },
+                        {
+                          label: 'Cancel',
+                          type: ActionAlertActionType.PROCEED,
+                          default: true,
+                        },
+                      ],
+                    },
+                  );
+                } else {
+                  queryBuilderState.resetQueryContent();
+                }
               }
             };
             return (
-              <>
-                {isExistingQuery && (
-                  <Button
-                    className="query-editor__header__action btn--dark"
-                    disabled={editorStore.isPerformingBlockingAction}
-                    onClick={handleNewQuery}
-                    title="New query"
-                  >
-                    <SaveCurrIcon />
-                    <div className="query-editor__header__action__label">
-                      New Query
-                    </div>
-                  </Button>
-                )}
-              </>
+              <Button
+                className="query-editor__header__action btn--dark"
+                disabled={editorStore.isPerformingBlockingAction}
+                onClick={handleNewQuery}
+                title="New query"
+              >
+                <SaveCurrIcon />
+                <div className="query-editor__header__action__label">
+                  New Query
+                </div>
+              </Button>
             );
           }
           return undefined;
