@@ -37,7 +37,7 @@ import { QueryEditor } from '../QueryEditor.js';
 type LocationData = {
   pathname: string;
   search: string;
-}
+};
 
 const DataSpaceQueryCreatorStoreProvider: React.FC<{
   children: React.ReactNode;

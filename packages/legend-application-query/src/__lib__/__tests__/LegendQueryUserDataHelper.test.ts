@@ -52,9 +52,9 @@ describe('LegendQueryUserDataHelper', () => {
 
       const expected = [queryId];
 
-      expect(expected).toEqual(
+      expect(
         LegendQueryUserDataHelper.getRecentlyViewedQueries(userDataService),
-      );
+      ).toEqual(expected);
     });
 
     it('should delete a saved query', () => {
@@ -71,9 +71,9 @@ describe('LegendQueryUserDataHelper', () => {
         queryId2,
       );
 
-      expect([queryId2, queryId]).toEqual(
+      expect(
         LegendQueryUserDataHelper.getRecentlyViewedQueries(userDataService),
-      );
+      ).toEqual([queryId2, queryId]);
 
       LegendQueryUserDataHelper.removeRecentlyViewedQuery(
         userDataService,
@@ -82,9 +82,9 @@ describe('LegendQueryUserDataHelper', () => {
 
       const expected = [queryId2];
 
-      expect(expected).toEqual(
+      expect(
         LegendQueryUserDataHelper.getRecentlyViewedQueries(userDataService),
-      );
+      ).toEqual(expected);
     });
 
     it('should delete all saved queries', () => {
@@ -103,9 +103,9 @@ describe('LegendQueryUserDataHelper', () => {
 
       LegendQueryUserDataHelper.removeRecentlyViewedQueries(userDataService);
 
-      expect([]).toEqual(
+      expect(
         LegendQueryUserDataHelper.getRecentlyViewedQueries(userDataService),
-      );
+      ).toEqual([]);
     });
 
     it(`should maintain a list of ${USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT} saved queries`, () => {
@@ -151,11 +151,11 @@ describe('LegendQueryUserDataHelper', () => {
 
       const expected = [dataspace3, dataspace2, dataspace];
 
-      expect(expected).toEqual(
+      expect(
         LegendQueryUserDataHelper.getRecentlyQueriedDataspaceList(
           userDataService,
         ),
-      );
+      ).toEqual(expected);
     });
 
     it('should retrieve the most recent queried dataspace', () => {
@@ -181,9 +181,9 @@ describe('LegendQueryUserDataHelper', () => {
 
       const expected = dataspace3;
 
-      expect(expected).toEqual(
+      expect(
         LegendQueryUserDataHelper.getRecentlyQueriedDataspace(userDataService),
-      );
+      ).toEqual(expected);
     });
 
     it(`should maintain a list of ${USER_DATA_QUERY_DATASPACE_LIMIT} saved dataspace`, () => {

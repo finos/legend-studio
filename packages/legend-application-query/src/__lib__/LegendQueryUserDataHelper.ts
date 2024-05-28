@@ -20,7 +20,7 @@ import { createSimpleSchema, deserialize, list, primitive } from 'serializr';
 
 export enum LEGEND_QUERY_USER_DATA_KEY {
   RECENTLY_VIEWED_QUERIES = 'query-editor.recent-queries',
-  LAST_QUERY_DATASPACE = 'last_query_dataspace',
+  LAST_QUERY_DATASPACE = 'query-editor.last_query_dataspace',
 }
 
 export const USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT = 10;
