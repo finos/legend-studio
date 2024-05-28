@@ -657,6 +657,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
     const applicationStore = useApplicationStore();
     const inputRef = useRef(null);
     const [inputValue, setInputValue] = useState('');
+    const [inputValueIsError, setInputValueIsError] = useState(false);
     const [showAdvancedEditorPopover, setShowAdvancedEditorPopover] =
       useState(false);
     const [selectedOptions, setSelectedOptions] = useState<
@@ -687,12 +688,17 @@ const PrimitiveCollectionInstanceValueEditor = observer(
      */
     const addCurrentInputValue = (): void => {
       const trimmedInputValue = inputValue.trim();
+
       if (
-        trimmedInputValue.length &&
-        !selectedOptions
+        selectedOptions
           .map((option) => option.value)
           .includes(trimmedInputValue)
       ) {
+        setInputValueIsError(true);
+        return;
+      }
+
+      if (trimmedInputValue.length) {
         const newValueSpec = convertTextToPrimitiveInstanceValue(
           expectedType,
           trimmedInputValue,
@@ -709,6 +715,8 @@ const PrimitiveCollectionInstanceValueEditor = observer(
             },
           ]);
           setInputValue('');
+        } else {
+          setInputValueIsError(true);
         }
       }
     };
@@ -772,16 +780,20 @@ const PrimitiveCollectionInstanceValueEditor = observer(
           </BasePopover>
         )}
         <CustomSelectorInput
-          className="value-spec-editor__primitive-collection-selector"
+          className={clsx('value-spec-editor__primitive-collection-selector', {
+            'value-spec-editor__primitive-collection-selector--error':
+              inputValueIsError,
+          })}
           inputValue={inputValue}
           isMulti={true}
           menuIsOpen={false}
           autoFocus={true}
           inputRef={inputRef}
           onChange={changeValue}
-          onInputChange={(newInputValue: string): void =>
-            setInputValue(newInputValue)
-          }
+          onInputChange={(newInputValue: string): void => {
+            setInputValue(newInputValue);
+            setInputValueIsError(false);
+          }}
           onBlur={handleOnBlur}
           onKeyDown={handleKeyDown}
           value={selectedOptions}
