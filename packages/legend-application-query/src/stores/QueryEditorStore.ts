@@ -314,6 +314,7 @@ export abstract class QueryEditorStore {
   queryCreatorState: QueryCreatorState;
   existingQueryName: string | undefined;
   showRegisterServiceModal = false;
+  showAppInfo = false;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -324,10 +325,12 @@ export abstract class QueryEditorStore {
       queryLoaderState: observable,
       existingQueryName: observable,
       showRegisterServiceModal: observable,
+      showAppInfo: observable,
       queryBuilderState: observable,
       isPerformingBlockingAction: computed,
       setExistingQueryName: action,
       setShowRegisterServiceModal: action,
+      setShowAppInfo: action,
       initialize: flow,
       buildGraph: flow,
       searchExistingQueryName: flow,
@@ -403,6 +406,10 @@ export abstract class QueryEditorStore {
 
   setExistingQueryName(val: string | undefined): void {
     this.existingQueryName = val;
+  }
+
+  setShowAppInfo(val: boolean): void {
+    this.showAppInfo = val;
   }
 
   setShowRegisterServiceModal(val: boolean): void {

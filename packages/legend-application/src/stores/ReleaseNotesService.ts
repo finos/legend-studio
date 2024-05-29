@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { guaranteeNonEmptyString } from '@finos/legend-shared';
+import {
+  compareSemVerVersions,
+  guaranteeNonEmptyString,
+  isSemVer,
+} from '@finos/legend-shared';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 import { action, makeObservable, observable } from 'mobx';
 
@@ -55,8 +59,9 @@ export const collectReleaseNotes = (
     return release;
   });
 
+export const APPLICATION_LAST_OPENED_VERSION = 'application.lastOpenedVersion';
+
 export class ReleaseNotesService {
-  static STORAGE_NAME = 'application.release-notes.lastOpenedVersion';
   applicationStore: GenericLegendApplicationStore;
   releaseNotes: VersionReleaseNotes[] | undefined;
   showCurrentReleaseModal = true;
@@ -70,7 +75,6 @@ export class ReleaseNotesService {
       isConfigured: observable,
       setShowCurrentRelease: action,
       configure: action,
-      updateViewedVersion: action,
       setReleaseLog: action,
     });
     this.applicationStore = applicationStore;
@@ -89,16 +93,41 @@ export class ReleaseNotesService {
     this.showReleaseLog = val;
   }
 
-  getViewedVersions(): string | undefined {
-    return this.applicationStore.settingService.getStringValue(
-      ReleaseNotesService.STORAGE_NAME,
+  getViewedVersion(): string | undefined {
+    return this.applicationStore.userDataService.getStringValue(
+      APPLICATION_LAST_OPENED_VERSION,
     );
   }
 
-  updateViewedVersion(version: string): void {
-    return this.applicationStore.settingService.persistValue(
-      ReleaseNotesService.STORAGE_NAME,
-      version,
+  updateViewedVersion(): void {
+    this.applicationStore.userDataService.persistValue(
+      APPLICATION_LAST_OPENED_VERSION,
+      this.applicationStore.config.appVersion,
+    );
+  }
+
+  showVersion(
+    versionNotes: VersionReleaseNotes,
+    lastOpenedVersion: string,
+  ): boolean {
+    const version = versionNotes.version;
+    if (isSemVer(version) && isSemVer(lastOpenedVersion)) {
+      if (compareSemVerVersions(version, lastOpenedVersion) === 1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  showableVersions(): VersionReleaseNotes[] | undefined {
+    const lastOpenedVersion = this.getViewedVersion();
+    if (!lastOpenedVersion) {
+      // TODO: change after release
+      // return undefined;
+      return this.releaseNotes;
+    }
+    return this.releaseNotes?.filter((val) =>
+      this.showVersion(val, lastOpenedVersion),
     );
   }
 }

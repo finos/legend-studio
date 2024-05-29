@@ -58,6 +58,8 @@ import {
 import { ExistingQueryEditorStore } from '../stores/QueryEditorStore.js';
 import {
   LEGEND_APPLICATION_COLOR_THEME,
+  ReleaseLogManager,
+  ReleaseNotesManager,
   useApplicationStore,
 } from '@finos/legend-application';
 import { useParams } from '@finos/legend-application/browser';
@@ -86,6 +88,7 @@ import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
 import { buildVersionOption, type VersionOption } from './QuerySetup.js';
 import { QueryEditorExistingQueryVersionRevertModal } from './QueryEdtiorExistingQueryVersionRevertModal.js';
 import { debounce, compareSemVerVersions } from '@finos/legend-shared';
+import { LegendQueryInfo } from './LegendQueryAppInfo.js';
 
 const CreateQueryDialog = observer(() => {
   const editorStore = useQueryEditorStore();
@@ -585,8 +588,6 @@ export const QueryEditor = observer(() => {
         generateQuerySetupRoute(),
       ),
     );
-  const goToReleaseLog = (): void =>
-    applicationStore.releaseNotesService.setReleaseLog(true);
   // settings
   // NOTE: this is temporary until we find a better home for these settings in query builder
   const engineConfig =
@@ -609,6 +610,7 @@ export const QueryEditor = observer(() => {
     flowResult(editorStore.initialize()).catch(
       applicationStore.alertUnhandledError,
     );
+    applicationStore.releaseNotesService.updateViewedVersion();
   }, [editorStore, applicationStore]);
 
   return (
@@ -627,9 +629,6 @@ export const QueryEditor = observer(() => {
                 <MenuContent>
                   <MenuContentItem onClick={goToQuerySetup}>
                     Back to query setup
-                  </MenuContentItem>
-                  <MenuContentItem onClick={goToReleaseLog}>
-                    Legend Query Release Log
                   </MenuContentItem>
                   <MenuContentItem
                     disabled={!appDocUrl}
@@ -721,6 +720,12 @@ export const QueryEditor = observer(() => {
         />
       )}
       {editorStore.queryCreatorState.showCreateModal && <CreateQueryDialog />}
+      {editorStore.showAppInfo && (
+        <LegendQueryInfo
+          open={editorStore.showAppInfo}
+          closeModal={() => editorStore.setShowAppInfo(false)}
+        />
+      )}
       {isExistingQuery &&
         editorStore.updateState.showQueryInfo &&
         editorStore.query && (
@@ -729,6 +734,8 @@ export const QueryEditor = observer(() => {
             query={editorStore.query}
           />
         )}
+      <ReleaseLogManager />
+      <ReleaseNotesManager />
     </div>
   );
 });

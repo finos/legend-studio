@@ -74,7 +74,6 @@ import {
 import {
   ExistingQueryEditorStore,
   QueryBuilderActionConfig_QueryApplication,
-  createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from '../stores/QueryEditorStore.js';
 import {
@@ -318,6 +317,19 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         key: 'about-query-info',
         title: 'Get Query Info',
         label: 'About Query Info',
+        disableFunc: (queryBuilderState): boolean => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            if (editorStore instanceof ExistingQueryEditorStore) {
+              return false;
+            }
+          }
+          return true;
+        },
         onClick: (queryBuilderState): void => {
           if (
             queryBuilderState.workflowState.actionConfig instanceof
@@ -333,35 +345,22 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         icon: <InfoCircleIcon />,
       },
       {
-        key: 'about-query-project',
+        key: 'about-query-sdlc-project',
         title: 'Go to Project',
         label: 'Go to Project',
-        onClick: (queryBuilderState): void => {
+        disableFunc: (queryBuilderState): boolean => {
           if (
             queryBuilderState.workflowState.actionConfig instanceof
             QueryBuilderActionConfig_QueryApplication
           ) {
             const editorStore =
               queryBuilderState.workflowState.actionConfig.editorStore;
-            LegendQueryTelemetryHelper.logEvent_QueryViewProjectLaunched(
-              editorStore.applicationStore.telemetryService,
-            );
-            const { groupId, artifactId, versionId } =
-              editorStore.getProjectInfo();
-            createViewProjectHandler(editorStore.applicationStore)(
-              groupId,
-              artifactId,
-              versionId,
-              undefined,
-            );
+            if (editorStore instanceof ExistingQueryEditorStore) {
+              return false;
+            }
           }
+          return true;
         },
-        icon: <InfoCircleIcon />,
-      },
-      {
-        key: 'about-query-sdlc-project',
-        title: 'Go to SDLC Project',
-        label: 'Go to SDLC Project',
         onClick: (queryBuilderState): void => {
           if (
             queryBuilderState.workflowState.actionConfig instanceof
@@ -379,6 +378,22 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             )(groupId, artifactId, undefined).catch(
               editorStore.applicationStore.alertUnhandledError,
             );
+          }
+        },
+        icon: <InfoCircleIcon />,
+      },
+      {
+        key: 'about-legend-query',
+        title: 'About Legend Query',
+        label: 'About Legend Query',
+        onClick: (queryBuilderState): void => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            editorStore.setShowAppInfo(true);
           }
         },
         icon: <InfoCircleIcon />,

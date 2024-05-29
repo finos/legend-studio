@@ -60,6 +60,13 @@
       color: var(--color-blue-50);
     }
 
+    &__entry__value__action {
+      text-decoration: none;
+      font-weight: 700;
+      color: var(--color-blue-50);
+      cursor: pointer;
+    }
+
     &__extensions {
       height: 15rem;
       margin-top: 1rem;
