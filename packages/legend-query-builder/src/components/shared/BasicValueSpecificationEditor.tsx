@@ -869,8 +869,6 @@ const PrimitiveCollectionInstanceValueEditor = observer(
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
           isLoading={isLoading}
-          allowCreating={true}
-          allowCreateWhileLoading={true}
           noOptionsMessage={noOptionsMessage}
           placeholder={getPlaceHolder(expectedType)}
           components={{
