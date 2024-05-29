@@ -29,9 +29,6 @@ import {
   SaveIcon,
   PencilIcon,
   DragPreviewLayer,
-  FilledWindowMaximizeIcon,
-  BasePopover,
-  PanelFormSection,
   CalculateIcon,
   InputWithInlineValidation,
 } from '@finos/legend-art';
@@ -658,8 +655,6 @@ const PrimitiveCollectionInstanceValueEditor = observer(
     const inputRef = useRef(null);
     const [inputValue, setInputValue] = useState('');
     const [inputValueIsError, setInputValueIsError] = useState(false);
-    const [showAdvancedEditorPopover, setShowAdvancedEditorPopover] =
-      useState(false);
     const [selectedOptions, setSelectedOptions] = useState<
       { label: string; value: string }[]
     >(
@@ -745,7 +740,6 @@ const PrimitiveCollectionInstanceValueEditor = observer(
               },
             ]
           : selectedOptions;
-      setShowAdvancedEditorPopover(false);
       instanceValue_setValues(
         valueSpecification,
         finalSelectedOptions
@@ -784,24 +778,6 @@ const PrimitiveCollectionInstanceValueEditor = observer(
 
     return (
       <>
-        {showAdvancedEditorPopover && (
-          <BasePopover
-            onClose={() => setShowAdvancedEditorPopover(false)}
-            open={showAdvancedEditorPopover}
-            anchorEl={inputRef.current}
-          >
-            <textarea
-              className="panel__content__form__section__input value-spec-editor__list-editor__textarea"
-              spellCheck={false}
-              value={inputValue}
-            />
-            <PanelFormSection>
-              <div className="value-spec-editor__list-editor__textarea__description">
-                Hit Enter to Apply Change
-              </div>
-            </PanelFormSection>
-          </BasePopover>
-        )}
         <CustomSelectorInput
           className={clsx('value-spec-editor__primitive-collection-selector', {
             'value-spec-editor__primitive-collection-selector--error':
@@ -832,15 +808,6 @@ const PrimitiveCollectionInstanceValueEditor = observer(
             DropdownIndicator: null,
           }}
         />
-        <button
-          className="value-spec-editor__list-editor__expand-button btn--dark"
-          onClick={() => setShowAdvancedEditorPopover(true)}
-          tabIndex={-1}
-          name={expandButtonName}
-          title="Expand window..."
-        >
-          <FilledWindowMaximizeIcon />
-        </button>
         <button
           className="value-spec-editor__list-editor__save-button btn--dark"
           onClick={updateValueSpecAndSaveEdit}
