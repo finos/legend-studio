@@ -53,7 +53,7 @@ export class QueryBuilderPostFilterOperator_In
   implements Hashable
 {
   getLabel(): string {
-    return 'is in';
+    return 'is in list of';
   }
 
   isCompatibleWithType(type: Type): boolean {
@@ -168,7 +168,7 @@ export class QueryBuilderPostFilterOperator_In
 
 export class QueryBuilderPostFilterOperator_NotIn extends QueryBuilderPostFilterOperator_In {
   override getLabel(): string {
-    return `is not in`;
+    return `is not in list of`;
   }
 
   override buildPostFilterConditionExpression(
