@@ -92,6 +92,7 @@ import {
   SimpleFunctionExpression,
   type ValueSpecification,
   VariableExpression,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnDragSource,
@@ -111,6 +112,7 @@ import { getPropertyChainName } from '../../stores/QueryBuilderPropertyEditorSta
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import { buildPropertyExpressionChain } from '../../stores/QueryBuilderValueSpecificationBuilderHelper.js';
 import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
+import { convertTextToPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 
 const isCollectionProperty = (
   propertyExpression: AbstractPropertyExpression,
@@ -771,11 +773,17 @@ const QueryBuilderFilterConditionEditor = observer(
     };
     const debouncedTypeaheadSearch = useMemo(
       () =>
-        debounce(
-          (inputVal: string) => node.condition.handleTypeaheadSearch(),
-          1000,
-        ),
-      [node],
+        debounce((inputValue: string) => {
+          const inputValueSpec = convertTextToPrimitiveInstanceValue(
+            PrimitiveType.STRING,
+            inputValue,
+            queryBuilderState.observerContext,
+          );
+          return node.condition.handleTypeaheadSearch(
+            inputValueSpec ?? undefined,
+          );
+        }, 1000),
+      [node, queryBuilderState.observerContext],
     );
     const cleanUpReloadValues = (): void => {
       node.condition.typeaheadSearchState.complete();

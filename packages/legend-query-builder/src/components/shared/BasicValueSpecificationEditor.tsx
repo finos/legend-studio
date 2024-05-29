@@ -222,16 +222,7 @@ const StringPrimitiveInstanceValueEditor = observer(
       className?: string | undefined;
       setValueSpecification: (val: ValueSpecification) => void;
       resetValue: () => void;
-      selectorConfig?:
-        | {
-            values: string[] | undefined;
-            isLoading: boolean;
-            reloadValues:
-              | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
-              | undefined;
-            cleanUpReloadValues?: () => void;
-          }
-        | undefined;
+      selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
       obseverContext: ObserverContext;
     }
   >(function StringPrimitiveInstanceValueEditor(props, ref) {
@@ -643,15 +634,30 @@ const getPlaceHolder = (expectedType: Type): string => {
   return 'Add';
 };
 
+interface BasicValueSpecificationEditorSelectorConfig {
+  values: string[] | undefined;
+  isLoading: boolean;
+  reloadValues:
+    | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
+    | undefined;
+  cleanUpReloadValues?: () => void;
+}
+
 const PrimitiveCollectionInstanceValueEditor = observer(
   (props: {
     valueSpecification: CollectionInstanceValue;
     expectedType: Type;
-    observerContext: ObserverContext;
     saveEdit: () => void;
+    selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+    observerContext: ObserverContext;
   }) => {
-    const { valueSpecification, expectedType, observerContext, saveEdit } =
-      props;
+    const {
+      valueSpecification,
+      expectedType,
+      saveEdit,
+      selectorConfig,
+      observerContext,
+    } = props;
 
     const applicationStore = useApplicationStore();
     const inputRef = useRef(null);
@@ -670,6 +676,10 @@ const PrimitiveCollectionInstanceValueEditor = observer(
     );
 
     const expandButtonName = `${valueSpecification.hashCode}ExpandButton`;
+    const reloadValuesFunc = selectorConfig?.reloadValues;
+
+    const isValueAlreadySelected = (value: string): boolean =>
+      selectedOptions.map((option) => option.value).includes(value);
 
     const changeValue = (
       newSelectedOptions: { value: string; label: string }[],
@@ -677,8 +687,27 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       setSelectedOptions(newSelectedOptions);
     };
 
-    const isValueAlreadySelected = (value: string): boolean =>
-      selectedOptions.map((option) => option.value).includes(value);
+    const handleInputChange = (
+      newInputValue: string,
+      actionChange: InputActionData,
+    ): void => {
+      if (actionChange.action === 'input-change') {
+        setInputValue(newInputValue);
+        setInputValueIsError(false);
+        reloadValuesFunc?.cancel();
+        const reloadValuesFuncTransformation =
+          reloadValuesFunc?.(newInputValue);
+        if (reloadValuesFuncTransformation) {
+          flowResult(reloadValuesFuncTransformation).catch(
+            applicationStore.alertUnhandledError,
+          );
+        }
+      }
+      if (actionChange.action === 'input-blur') {
+        reloadValuesFunc?.cancel();
+        selectorConfig?.cleanUpReloadValues?.();
+      }
+    };
 
     /**
      * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
@@ -803,6 +832,16 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       event.preventDefault();
     };
 
+    const isLoading = selectorConfig?.isLoading;
+    const queryOptions = selectorConfig?.values?.length
+      ? selectorConfig.values.map((e) => ({
+          value: e,
+          label: e.toString(),
+        }))
+      : undefined;
+    const noOptionsMessage =
+      selectorConfig?.values === undefined ? (): null => null : undefined;
+
     return (
       <>
         <CustomSelectorInput
@@ -810,16 +849,13 @@ const PrimitiveCollectionInstanceValueEditor = observer(
             'value-spec-editor__primitive-collection-selector--error':
               inputValueIsError,
           })}
+          options={queryOptions}
           inputValue={inputValue}
           isMulti={true}
-          menuIsOpen={false}
           autoFocus={true}
           inputRef={inputRef}
           onChange={changeValue}
-          onInputChange={(newInputValue: string): void => {
-            setInputValue(newInputValue);
-            setInputValueIsError(false);
-          }}
+          onInputChange={handleInputChange}
           onBlur={handleOnBlur}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
@@ -827,6 +863,10 @@ const PrimitiveCollectionInstanceValueEditor = observer(
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
+          isLoading={isLoading}
+          allowCreating={true}
+          allowCreateWhileLoading={true}
+          noOptionsMessage={noOptionsMessage}
           placeholder={getPlaceHolder(expectedType)}
           components={{
             DropdownIndicator: null,
@@ -945,6 +985,7 @@ const CollectionValueInstanceValueEditor = observer(
     className?: string | undefined;
     resetValue: () => void;
     setValueSpecification: (val: ValueSpecification) => void;
+    selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
     obseverContext: ObserverContext;
   }) => {
     const {
@@ -953,6 +994,7 @@ const CollectionValueInstanceValueEditor = observer(
       className,
       resetValue,
       setValueSpecification,
+      selectorConfig,
       obseverContext,
     } = props;
 
@@ -993,8 +1035,9 @@ const CollectionValueInstanceValueEditor = observer(
               <PrimitiveCollectionInstanceValueEditor
                 valueSpecification={valueSpecification}
                 expectedType={expectedType}
-                observerContext={obseverContext}
                 saveEdit={saveEdit}
+                selectorConfig={selectorConfig}
+                observerContext={obseverContext}
               />
             )}
             <button
@@ -1097,16 +1140,7 @@ export const BasicValueSpecificationEditor = forwardRef<
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
     isConstant?: boolean;
-    selectorConfig?:
-      | {
-          values: string[] | undefined;
-          isLoading: boolean;
-          reloadValues:
-            | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
-            | undefined;
-          cleanUpReloadValues?: () => void;
-        }
-      | undefined;
+    selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
   }
 >(function BasicValueSpecificationEditor(props, ref) {
   const {
@@ -1205,6 +1239,7 @@ export const BasicValueSpecificationEditor = forwardRef<
         className={className}
         resetValue={resetValue}
         setValueSpecification={setValueSpecification}
+        selectorConfig={selectorConfig}
         obseverContext={obseverContext}
       />
     );
