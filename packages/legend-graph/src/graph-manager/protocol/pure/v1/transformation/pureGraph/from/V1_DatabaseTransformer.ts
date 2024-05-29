@@ -106,6 +106,7 @@ import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js
 import { V1_FilterMapping } from '../../../model/packageableElements/store/relational/mapping/V1_FilterMapping.js';
 import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer.js';
 import type { TablePtr } from '../../../../../../../graph/metamodel/pure/packageableElements/service/TablePtr.js';
+import { V1_transformStereotype } from './V1_DomainTransformer.js';
 
 const transformRelationalDataType = (
   type: RelationalDataType,
@@ -423,6 +424,9 @@ export const V1_transformDatabase = (
   database.joins = element.joins.map((join) => transformJoin(join, context));
   database.schemas = element.schemas.map((schema) =>
     transformSchema(schema, context),
+  );
+  database.stereotypes = element.stereotypes.map((stereotype) =>
+    V1_transformStereotype(stereotype),
   );
   database.includedStores = element.includes.map(
     (store) => store.valueForSerialization ?? '',

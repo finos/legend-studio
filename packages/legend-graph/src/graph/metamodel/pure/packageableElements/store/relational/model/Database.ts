@@ -37,6 +37,7 @@ export class Database extends Store implements Hashable {
       hashArray(this.schemas),
       hashArray(this.joins),
       hashArray(this.filters),
+      hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
     ]);
   }
 

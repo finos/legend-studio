@@ -3,7 +3,7 @@ version: '3.8'
 services:
   engine:
     container_name: engine
-    image: finos/legend-engine-server:snapshot
+    image: finos/legend-engine-server-http-server:snapshot
     ports:
       - 6300:6300
     networks:
