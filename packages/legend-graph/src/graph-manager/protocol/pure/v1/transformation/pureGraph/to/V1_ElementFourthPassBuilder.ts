@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { UnsupportedOperationError, guaranteeType } from '@finos/legend-shared';
+import {
+  UnsupportedOperationError,
+  guaranteeType,
+  isNonNullable,
+} from '@finos/legend-shared';
 import {
   V1_buildFullPath,
   type V1_GraphBuilderContext,
@@ -157,6 +161,9 @@ export class V1_ElementFourthPassBuilder
     database.filters = element.filters.map((filter) =>
       V1_buildDatabaseFilter(filter, this.context, database),
     );
+    database.stereotypes = element.stereotypes
+      .map((stereotype) => this.context.resolveStereotype(stereotype))
+      .filter(isNonNullable);
   }
 
   visit_ExecutionEnvironmentInstance(

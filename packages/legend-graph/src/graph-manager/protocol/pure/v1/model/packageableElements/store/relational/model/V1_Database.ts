@@ -21,11 +21,13 @@ import { V1_Store } from '../../../../../model/packageableElements/store/V1_Stor
 import type { V1_Schema } from './V1_Schema.js';
 import type { V1_Join } from './V1_Join.js';
 import type { V1_Filter } from './V1_Filter.js';
+import type { V1_StereotypePtr } from '../../../domain/V1_StereotypePtr.js';
 
 export class V1_Database extends V1_Store implements Hashable {
   schemas: V1_Schema[] = [];
   joins: V1_Join[] = [];
   filters: V1_Filter[] = [];
+  stereotypes: V1_StereotypePtr[] = [];
 
   override get hashCode(): string {
     return hashArray([
@@ -35,6 +37,7 @@ export class V1_Database extends V1_Store implements Hashable {
       hashArray(this.schemas),
       hashArray(this.joins),
       hashArray(this.filters),
+      hashArray(this.stereotypes),
     ]);
   }
 

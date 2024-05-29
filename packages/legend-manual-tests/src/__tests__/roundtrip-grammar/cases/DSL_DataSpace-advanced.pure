@@ -103,6 +103,7 @@ DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} mod
       executable: model::MyService;
     },
     {
+      id: template_id;
       title: 'this is template';
       query: |'';
       executionContextKey: 'Context 1';

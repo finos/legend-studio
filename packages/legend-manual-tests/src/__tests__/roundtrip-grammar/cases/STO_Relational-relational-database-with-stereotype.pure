@@ -1,0 +1,66 @@
+###Relational
+Database <<temporal.processingtemporal, typemodifiers.abstract>> store::relational::tests::dbIncWithStereotypes
+(
+  Schema Mytest
+  (
+    Table person2Table
+    (
+      ID INTEGER PRIMARY KEY
+    )
+  )
+
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER,
+    MANAGERID INTEGER
+  )
+
+  View PersonViewInside
+  (
+    ~filter PersonFilter
+    ID: personTable.ID PRIMARY KEY,
+    FIRSTNAME: personTable.FIRSTNAME,
+    LASTNAME: personTable.LASTNAME,
+    AGE: personTable.AGE
+  )
+
+  Filter PersonFilter(personTable.AGE > 110)
+)
+
+Database <<temporal.processingtemporal>> store::relational::tests::dbIncWithOneStereotype
+(
+  Schema Mytest
+  (
+    Table person2Table
+    (
+      ID INTEGER PRIMARY KEY
+    )
+  )
+
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER,
+    MANAGERID INTEGER
+  )
+
+  View PersonViewInside
+  (
+    ~filter PersonFilter
+    ID: personTable.ID PRIMARY KEY,
+    FIRSTNAME: personTable.FIRSTNAME,
+    LASTNAME: personTable.LASTNAME,
+    AGE: personTable.AGE
+  )
+
+  Filter PersonFilter(personTable.AGE > 110)
+)

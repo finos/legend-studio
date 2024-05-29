@@ -33,6 +33,7 @@ import {
   usingModelSchema,
   customList,
   customEquivalentList,
+  customListWithSchema,
 } from '@finos/legend-shared';
 import { V1_Column } from '../../../model/packageableElements/store/relational/model/V1_Column.js';
 import { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database.js';
@@ -95,6 +96,7 @@ import {
   V1_serializeAuthenticationStrategy,
   V1_serializeDatasourceSpecification,
 } from './V1_ConnectionSerializationHelper.js';
+import { V1_stereotypePtrModelSchema } from './V1_DomainSerializationHelper.js';
 
 export const V1_DATABASE_ELEMENT_PROTOCOL_TYPE = 'relational';
 
@@ -568,4 +570,7 @@ export const V1_databaseModelSchema = createModelSchema(V1_Database, {
   name: primitive(),
   package: primitive(),
   schemas: list(usingModelSchema(V1_schemaModelSchema)),
+  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
 });
