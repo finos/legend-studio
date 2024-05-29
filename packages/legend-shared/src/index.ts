@@ -31,6 +31,8 @@ export * from './format/FormatterUtils.js';
 export * from './format/MatcherUtils.js';
 export * from './format/ValidatorUtils.js';
 
+export * from './compare/StringCompareUtil.js';
+
 export * from './markdown/MarkdownUtils.js';
 
 export * from './application/HashUtils.js';

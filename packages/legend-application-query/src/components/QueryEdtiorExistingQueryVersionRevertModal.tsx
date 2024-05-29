@@ -23,7 +23,7 @@ import {
   ModalFooterButton,
 } from '@finos/legend-art';
 import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
-import { compareSemVerVersions } from '@finos/legend-storage';
+import { compareSemVerVersions } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useState, useEffect } from 'react';

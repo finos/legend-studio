@@ -28,6 +28,7 @@ import {
   getNullableFirstEntry,
   guaranteeNonNullable,
   guaranteeType,
+  compareSemVerVersions,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
@@ -51,7 +52,6 @@ import {
   type ProjectOption,
   type VersionOption,
 } from './QuerySetup.js';
-import { compareSemVerVersions } from '@finos/legend-storage';
 import type { Mapping, PackageableRuntime } from '@finos/legend-graph';
 import {
   buildElementOption,
