@@ -465,7 +465,10 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                   }
                 }
               } else {
-                if (queryBuilderState.changeDetectionState.hasChanged) {
+                if (
+                  queryBuilderState.changeHistoryState.canUndo ||
+                  queryBuilderState.changeHistoryState.canRedo
+                ) {
                   queryBuilderState.applicationStore.alertService.setActionAlertInfo(
                     {
                       message:
