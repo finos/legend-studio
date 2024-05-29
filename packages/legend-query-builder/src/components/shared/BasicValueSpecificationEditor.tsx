@@ -676,7 +676,28 @@ const PrimitiveCollectionInstanceValueEditor = observer(
         })),
     );
 
-    const reloadValuesFunc = selectorConfig?.reloadValues;
+    const isTypeaheadSearchEnabled =
+      expectedType === PrimitiveType.STRING && Boolean(selectorConfig);
+    const reloadValuesFunc = isTypeaheadSearchEnabled
+      ? selectorConfig?.reloadValues
+      : undefined;
+    const cleanUpReloadValuesFunc = isTypeaheadSearchEnabled
+      ? selectorConfig?.cleanUpReloadValues
+      : undefined;
+    const isLoading = isTypeaheadSearchEnabled
+      ? selectorConfig?.isLoading
+      : undefined;
+    const queryOptions =
+      isTypeaheadSearchEnabled && selectorConfig?.values?.length
+        ? selectorConfig.values.map((e) => ({
+            value: e,
+            label: e.toString(),
+          }))
+        : undefined;
+    const noOptionsMessage =
+      isTypeaheadSearchEnabled && selectorConfig?.values === undefined
+        ? (): null => null
+        : undefined;
 
     const isValueAlreadySelected = (value: string): boolean =>
       selectedOptions.map((option) => option.value).includes(value);
@@ -709,7 +730,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       }
       if (actionChange.action === 'input-blur') {
         reloadValuesFunc?.cancel();
-        selectorConfig?.cleanUpReloadValues?.();
+        cleanUpReloadValuesFunc?.();
       }
     };
 
@@ -824,16 +845,6 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       event.preventDefault();
     };
 
-    const isLoading = selectorConfig?.isLoading;
-    const queryOptions = selectorConfig?.values?.length
-      ? selectorConfig.values.map((e) => ({
-          value: e,
-          label: e.toString(),
-        }))
-      : undefined;
-    const noOptionsMessage =
-      selectorConfig?.values === undefined ? (): null => null : undefined;
-
     return (
       <>
         <CustomSelectorInput
@@ -844,6 +855,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
           options={queryOptions}
           inputValue={inputValue}
           isMulti={true}
+          menuIsOpen={isTypeaheadSearchEnabled}
           autoFocus={true}
           inputRef={inputRef}
           onChange={changeValue}
