@@ -682,42 +682,50 @@ const PrimitiveCollectionInstanceValueEditor = observer(
 
     /**
      * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
-     * we don't add values which are not valid or parsable and just leave the inputValue untouched.
-     * But perhaps, we can consider passing in logger or notifier to show/give the users some idea
-     * of what went wrong instead of ignoring their input.
+     * we simply return null for values which are not valid or parsable. But perhaps, we can consider
+     * passing in logger or notifier to give the users some idea of what went wrong instead of ignoring
+     * their input.
      */
-    const addCurrentInputValue = (): void => {
-      const trimmedInputValue = inputValue.trim();
+    const convertCurrentInputValueToValueSpec =
+      (): ValueSpecification | null => {
+        const trimmedInputValue = inputValue.trim();
 
-      if (
-        selectedOptions
-          .map((option) => option.value)
-          .includes(trimmedInputValue)
-      ) {
-        setInputValueIsError(true);
-        return;
-      }
-
-      if (trimmedInputValue.length) {
-        const newValueSpec = convertTextToPrimitiveInstanceValue(
-          expectedType,
-          trimmedInputValue,
-          observerContext,
-        );
-        if (newValueSpec !== null) {
-          setSelectedOptions([
-            ...selectedOptions,
-            {
-              label: trimmedInputValue,
-              value: guaranteeNonNullable(
-                getValueSpecificationStringValue(newValueSpec),
-              ),
-            },
-          ]);
-          setInputValue('');
-        } else {
-          setInputValueIsError(true);
+        if (
+          selectedOptions
+            .map((option) => option.value)
+            .includes(trimmedInputValue)
+        ) {
+          return null;
         }
+
+        if (trimmedInputValue.length) {
+          return convertTextToPrimitiveInstanceValue(
+            expectedType,
+            trimmedInputValue,
+            observerContext,
+          );
+        }
+        return null;
+      };
+
+    const addCurrentInputValue = (): void => {
+      const newValueSpec = convertCurrentInputValueToValueSpec();
+
+      if (newValueSpec !== null) {
+        setSelectedOptions([
+          ...selectedOptions,
+          {
+            label: guaranteeNonNullable(
+              getValueSpecificationStringValue(newValueSpec),
+            ),
+            value: guaranteeNonNullable(
+              getValueSpecificationStringValue(newValueSpec),
+            ),
+          },
+        ]);
+        setInputValue('');
+      } else {
+        setInputValueIsError(true);
       }
     };
 
