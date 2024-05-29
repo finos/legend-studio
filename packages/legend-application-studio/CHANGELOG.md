@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.17.0
+
+### Minor Changes
+
+- [#3189](https://github.com/finos/legend-studio/pull/3189) [`85fd2ed`](https://github.com/finos/legend-studio/commit/85fd2ed3f03acb1734b770e2924f5e8f82040438) ([@PaulWorkStuff](https://github.com/PaulWorkStuff)) - Handle unknown entity type
+
 ## 28.16.26
 
 ## 28.16.25

@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.14.39
+
+### Patch Changes
+
+- [#3180](https://github.com/finos/legend-studio/pull/3180) [`cee0732`](https://github.com/finos/legend-studio/commit/cee073263cb9775856170f23bf76471df41c6979) ([@travisstebbins](https://github.com/travisstebbins)) - Enhance is in/is not in filter for enums
+
+- [#3185](https://github.com/finos/legend-studio/pull/3185) [`ff7e957`](https://github.com/finos/legend-studio/commit/ff7e957cf23e58d5e3ea8d00188122479729bfdb) ([@travisstebbins](https://github.com/travisstebbins)) - Allow DND into entire fetch structure panel
+
 ## 4.14.38
 
 ### Patch Changes
