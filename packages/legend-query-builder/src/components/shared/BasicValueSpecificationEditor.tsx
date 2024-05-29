@@ -63,10 +63,12 @@ import {
   csvStringify,
   guaranteeType,
   isNonEmptyString,
+  parseCSVString,
+  uniq,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import {
+import React, {
   forwardRef,
   useEffect,
   useImperativeHandle,
@@ -675,6 +677,9 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       setSelectedOptions(newSelectedOptions);
     };
 
+    const isValueAlreadySelected = (value: string): boolean =>
+      selectedOptions.map((option) => option.value).includes(value);
+
     /**
      * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
      * we simply return null for values which are not valid or parsable. But perhaps, we can consider
@@ -685,11 +690,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       (): ValueSpecification | null => {
         const trimmedInputValue = inputValue.trim();
 
-        if (
-          selectedOptions
-            .map((option) => option.value)
-            .includes(trimmedInputValue)
-        ) {
+        if (isValueAlreadySelected(trimmedInputValue)) {
           return null;
         }
 
@@ -776,6 +777,32 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       }
     };
 
+    const handlePaste = (event: React.ClipboardEvent<string>): void => {
+      const pastedText = event.clipboardData.getData('text');
+      const parsedData = parseCSVString(pastedText);
+      if (!parsedData) {
+        return;
+      }
+      const newValues = uniq(parsedData)
+        .map((value) => {
+          const newValueSpec = convertTextToPrimitiveInstanceValue(
+            expectedType,
+            value,
+            observerContext,
+          );
+          return newValueSpec
+            ? getValueSpecificationStringValue(newValueSpec)
+            : null;
+        })
+        .filter(isNonNullable)
+        .filter((value) => !isValueAlreadySelected(value));
+      setSelectedOptions([
+        ...selectedOptions,
+        ...newValues.map((value) => ({ label: value, value })),
+      ]);
+      event.preventDefault();
+    };
+
     return (
       <>
         <CustomSelectorInput
@@ -795,6 +822,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
           }}
           onBlur={handleOnBlur}
           onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
           value={selectedOptions}
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
