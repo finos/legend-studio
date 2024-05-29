@@ -772,6 +772,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
           },
         ]);
         setInputValue('');
+        reloadValuesFunc?.cancel();
       } else if (inputValue.trim().length) {
         setInputValueIsError(true);
       }
