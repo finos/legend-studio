@@ -76,10 +76,7 @@ import {
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
 
-import {
-  compareSemVerVersions,
-  generateGAVCoordinates,
-} from '@finos/legend-storage';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 import {
   type Query,
   QueryDataSpaceExecutionContext,
@@ -88,7 +85,7 @@ import {
 import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
 import { buildVersionOption, type VersionOption } from './QuerySetup.js';
 import { QueryEditorExistingQueryVersionRevertModal } from './QueryEdtiorExistingQueryVersionRevertModal.js';
-import { debounce } from '@finos/legend-shared';
+import { debounce, compareSemVerVersions } from '@finos/legend-shared';
 
 const CreateQueryDialog = observer(() => {
   const editorStore = useQueryEditorStore();

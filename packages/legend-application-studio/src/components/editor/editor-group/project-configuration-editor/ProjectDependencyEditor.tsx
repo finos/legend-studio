@@ -69,11 +69,9 @@ import {
   isNonNullable,
   LogEvent,
   prettyCONSTName,
-} from '@finos/legend-shared';
-import {
   compareSemVerVersions,
-  generateGAVCoordinates,
-} from '@finos/legend-storage';
+} from '@finos/legend-shared';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect, useRef, useState } from 'react';

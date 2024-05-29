@@ -83,21 +83,6 @@ export const parseGAVCoordinates = (gav: string): ProjectGAVCoordinates => {
   };
 };
 
-/**
- * Compare SemVer versions.
- *
- * NOTE: SemVer could have been the perfect library to use here but we can't use it since it's meant for `Node` only
- * `compare-versions` works for browser but seems way overkill, especially when the version format is very
- * standard, i.e. `x.y.z`, no prerelease, etc.
- * As such, we can use the lean comparison algo using `localeCompare` with numeric settings
- *
- * See https://stackoverflow.com/questions/55466274/simplify-semver-version-compare-logic/55466325#55466325
- * See omichelsen/compare-versions#45
- */
-export const compareSemVerVersions = (val1: string, val2: string): number =>
-  // TODO: verify if the version match certain patterns
-  val1.localeCompare(val2, undefined, { numeric: true });
-
 export interface ProjectIdentifier {
   prefix?: string | undefined;
   id: number;

@@ -17,23 +17,10 @@
 import { test, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
 import {
-  compareSemVerVersions,
   parseGACoordinates,
   parseGAVCoordinates,
   parseProjectIdentifier,
 } from '../DependencyUtils.js';
-
-test(unitTest('Compare Semver versions'), () => {
-  expect(compareSemVerVersions('0.0.0', '0.0.0')).toEqual(0);
-  expect(compareSemVerVersions('1.0.0', '0.0.0')).toEqual(1);
-  expect(compareSemVerVersions('0.0.0', '1.0.0')).toEqual(-1);
-  expect(compareSemVerVersions('1.1.0', '1.2.0')).toEqual(-1);
-  expect(compareSemVerVersions('2.1.0', '2.2.0')).toEqual(-1);
-  expect(compareSemVerVersions('2.1.1', '2.2.1')).toEqual(-1);
-  expect(compareSemVerVersions('2.4.1', '2.2.1')).toEqual(1);
-  expect(compareSemVerVersions('1232.34.31', '2.2.1')).toEqual(1);
-  expect(compareSemVerVersions('1234.34.31', '1234.34.31')).toEqual(0);
-});
 
 test(unitTest('Parse GA(V) coordinates'), () => {
   expect(parseGACoordinates('test.group:test-artifactId')).toEqual({

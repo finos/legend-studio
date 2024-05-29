@@ -30,6 +30,7 @@ import {
   assertTrue,
   URL_SEPARATOR,
   filterByType,
+  compareSemVerVersions,
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 import {
@@ -48,7 +49,6 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
-import { compareSemVerVersions } from '@finos/legend-storage';
 import { MASTER_SNAPSHOT_ALIAS } from '@finos/legend-server-depot';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';

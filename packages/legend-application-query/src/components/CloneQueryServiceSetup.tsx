@@ -27,6 +27,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
+  compareSemVerVersions,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
@@ -53,7 +54,6 @@ import {
   type ProjectOption,
   type VersionOption,
 } from './QuerySetup.js';
-import { compareSemVerVersions } from '@finos/legend-storage';
 
 const CloneServiceQuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
