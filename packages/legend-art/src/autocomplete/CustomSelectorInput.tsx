@@ -43,6 +43,7 @@ import type {
   InputProps,
   Props,
   InputActionMeta,
+  CommonProps,
 } from 'react-select';
 import { clsx } from '../utils/ComponentUtils.js';
 
@@ -213,8 +214,15 @@ const ClearIndicator: React.FC<{
 
 // Enable edit of the selected tag
 // See https://github.com/JedWatson/react-select/issues/1558
-const CustomInput: React.FC<InputProps> = (props) => (
-  <ReactSelect.Select.components.Input {...props} isHidden={false} />
+const CustomInput: React.FC<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  InputProps & CommonProps<any, false>
+> = (props) => (
+  <ReactSelect.Select.components.Input
+    {...props.selectProps}
+    {...props}
+    isHidden={false}
+  />
 );
 
 export interface SelectOption {
