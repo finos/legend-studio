@@ -19,6 +19,6 @@ import type { LegendApplicationVersionData } from '../../application/LegendAppli
 export const TEST__getApplicationVersionData =
   (): LegendApplicationVersionData => ({
     buildTime: '2000-01-01T00:00:00-0000',
-    version: 'test-version',
+    version: '4.0.0',
     commitSHA: 'test-commit-id',
   });
