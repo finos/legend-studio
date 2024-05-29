@@ -694,10 +694,8 @@ const PrimitiveCollectionInstanceValueEditor = observer(
             label: e.toString(),
           }))
         : undefined;
-    const noOptionsMessage =
-      isTypeaheadSearchEnabled && selectorConfig?.values === undefined
-        ? (): null => null
-        : undefined;
+    const noMatchMessage =
+      isTypeaheadSearchEnabled && isLoading ? 'Loading...' : undefined;
 
     const isValueAlreadySelected = (value: string): boolean =>
       selectedOptions.map((option) => option.value).includes(value);
@@ -855,7 +853,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
           options={queryOptions}
           inputValue={inputValue}
           isMulti={true}
-          menuIsOpen={isTypeaheadSearchEnabled}
+          menuIsOpen={isTypeaheadSearchEnabled && inputValue.length > 0}
           autoFocus={true}
           inputRef={inputRef}
           onChange={changeValue}
@@ -868,7 +866,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
           isLoading={isLoading}
-          noOptionsMessage={noOptionsMessage}
+          noMatchMessage={noMatchMessage}
           placeholder={getPlaceHolder(expectedType)}
           components={{
             DropdownIndicator: null,
