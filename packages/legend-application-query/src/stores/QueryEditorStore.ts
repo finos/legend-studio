@@ -525,9 +525,6 @@ export abstract class QueryEditorStore {
       this.queryBuilderState = (yield this.initializeQueryBuilderState(
         stopWatch,
       )) as QueryBuilderState;
-      this.queryBuilderState.changeDetectionState.initialize(
-        this.queryBuilderState.buildQuery(),
-      );
       this.queryLoaderState.initialize(this.queryBuilderState);
       this.initState.pass();
     } catch (error) {
