@@ -44,10 +44,13 @@ import type {
   Props,
   InputActionMeta,
   CommonProps,
+  ActionMeta,
+  OptionTypeBase,
 } from 'react-select';
 import { clsx } from '../utils/ComponentUtils.js';
 
 export type InputActionData = InputActionMeta;
+export type SelectActionData<T extends OptionTypeBase> = ActionMeta<T>;
 
 export const createFilter = ReactSelect.Select.createFilter;
 interface ListChildComponentProps {

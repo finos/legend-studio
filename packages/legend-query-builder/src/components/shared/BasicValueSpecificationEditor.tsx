@@ -18,6 +18,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   type TooltipPlacement,
   type InputActionData,
+  type SelectActionData,
   Tooltip,
   DollarIcon,
   clsx,
@@ -683,8 +684,12 @@ const PrimitiveCollectionInstanceValueEditor = observer(
 
     const changeValue = (
       newSelectedOptions: { value: string; label: string }[],
+      actionChange: SelectActionData<{ value: string; label: string }>,
     ): void => {
       setSelectedOptions(newSelectedOptions);
+      if (actionChange.action === 'select-option') {
+        setInputValue('');
+      }
     };
 
     const handleInputChange = (
