@@ -730,10 +730,25 @@ const PrimitiveCollectionInstanceValueEditor = observer(
     };
 
     const updateValueSpecAndSaveEdit = (): void => {
+      const newValueSpec = convertCurrentInputValueToValueSpec();
+      const finalSelectedOptions =
+        newValueSpec !== null
+          ? [
+              ...selectedOptions,
+              {
+                label: guaranteeNonNullable(
+                  getValueSpecificationStringValue(newValueSpec),
+                ),
+                value: guaranteeNonNullable(
+                  getValueSpecificationStringValue(newValueSpec),
+                ),
+              },
+            ]
+          : selectedOptions;
       setShowAdvancedEditorPopover(false);
       instanceValue_setValues(
         valueSpecification,
-        selectedOptions
+        finalSelectedOptions
           .map((option) => option.value)
           .map((value) =>
             convertTextToPrimitiveInstanceValue(
