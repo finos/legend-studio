@@ -663,6 +663,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       observerContext,
     } = props;
 
+    // local state and variables
     const applicationStore = useApplicationStore();
     const inputRef = useRef(null);
     const [inputValue, setInputValue] = useState('');
@@ -679,6 +680,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
         })),
     );
 
+    // typehead search setup
     const isTypeaheadSearchEnabled =
       expectedType === PrimitiveType.STRING && Boolean(selectorConfig);
     const reloadValuesFunc = isTypeaheadSearchEnabled
@@ -700,9 +702,56 @@ const PrimitiveCollectionInstanceValueEditor = observer(
     const noMatchMessage =
       isTypeaheadSearchEnabled && isLoading ? 'Loading...' : undefined;
 
+    // helper functions
+    const buildOptionForValueSpec = (
+      value: ValueSpecification,
+    ): { label: string; value: string } => ({
+      label: guaranteeNonNullable(getValueSpecificationStringValue(value)),
+      value: guaranteeNonNullable(getValueSpecificationStringValue(value)),
+    });
+
     const isValueAlreadySelected = (value: string): boolean =>
       selectedOptions.map((option) => option.value).includes(value);
 
+    /**
+     * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
+     * we simply return null for values which are not valid or parsable. But perhaps, we can consider
+     * passing in logger or notifier to give the users some idea of what went wrong instead of ignoring
+     * their input.
+     */
+    const convertInputValueToValueSpec = (): ValueSpecification | null => {
+      const trimmedInputValue = inputValue.trim();
+
+      if (isValueAlreadySelected(trimmedInputValue)) {
+        return null;
+      }
+
+      if (trimmedInputValue.length) {
+        return convertTextToPrimitiveInstanceValue(
+          expectedType,
+          trimmedInputValue,
+          observerContext,
+        );
+      }
+      return null;
+    };
+
+    const addInputValueToSelectedOptions = (): void => {
+      const newValueSpec = convertInputValueToValueSpec();
+
+      if (newValueSpec !== null) {
+        setSelectedOptions([
+          ...selectedOptions,
+          buildOptionForValueSpec(newValueSpec),
+        ]);
+        setInputValue('');
+        reloadValuesFunc?.cancel();
+      } else if (inputValue.trim().length) {
+        setInputValueIsError(true);
+      }
+    };
+
+    // event handlers
     const changeValue = (
       newSelectedOptions: { value: string; label: string }[],
       actionChange: SelectActionData<{ value: string; label: string }>,
@@ -735,67 +784,11 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       }
     };
 
-    /**
-     * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
-     * we simply return null for values which are not valid or parsable. But perhaps, we can consider
-     * passing in logger or notifier to give the users some idea of what went wrong instead of ignoring
-     * their input.
-     */
-    const convertCurrentInputValueToValueSpec =
-      (): ValueSpecification | null => {
-        const trimmedInputValue = inputValue.trim();
-
-        if (isValueAlreadySelected(trimmedInputValue)) {
-          return null;
-        }
-
-        if (trimmedInputValue.length) {
-          return convertTextToPrimitiveInstanceValue(
-            expectedType,
-            trimmedInputValue,
-            observerContext,
-          );
-        }
-        return null;
-      };
-
-    const addCurrentInputValue = (): void => {
-      const newValueSpec = convertCurrentInputValueToValueSpec();
-
-      if (newValueSpec !== null) {
-        setSelectedOptions([
-          ...selectedOptions,
-          {
-            label: guaranteeNonNullable(
-              getValueSpecificationStringValue(newValueSpec),
-            ),
-            value: guaranteeNonNullable(
-              getValueSpecificationStringValue(newValueSpec),
-            ),
-          },
-        ]);
-        setInputValue('');
-        reloadValuesFunc?.cancel();
-      } else if (inputValue.trim().length) {
-        setInputValueIsError(true);
-      }
-    };
-
     const updateValueSpecAndSaveEdit = (): void => {
-      const newValueSpec = convertCurrentInputValueToValueSpec();
+      const newValueSpec = convertInputValueToValueSpec();
       const finalSelectedOptions =
         newValueSpec !== null
-          ? [
-              ...selectedOptions,
-              {
-                label: guaranteeNonNullable(
-                  getValueSpecificationStringValue(newValueSpec),
-                ),
-                value: guaranteeNonNullable(
-                  getValueSpecificationStringValue(newValueSpec),
-                ),
-              },
-            ]
+          ? [...selectedOptions, buildOptionForValueSpec(newValueSpec)]
           : selectedOptions;
       instanceValue_setValues(
         valueSpecification,
@@ -816,7 +809,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
 
     const handleKeyDown = (event: KeyboardEvent): void => {
       if ((event.key === 'Enter' || event.key === ',') && !event.shiftKey) {
-        addCurrentInputValue();
+        addInputValueToSelectedOptions();
         event.preventDefault();
       }
     };
