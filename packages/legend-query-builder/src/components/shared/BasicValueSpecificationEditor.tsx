@@ -676,7 +676,6 @@ const PrimitiveCollectionInstanceValueEditor = observer(
         })),
     );
 
-    const expandButtonName = `${valueSpecification.hashCode}ExpandButton`;
     const reloadValuesFunc = selectorConfig?.reloadValues;
 
     const isValueAlreadySelected = (value: string): boolean =>
@@ -799,18 +798,6 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       }
     };
 
-    const handleOnBlur: React.FocusEventHandler<HTMLTextAreaElement> = (
-      event,
-    ) => {
-      // disable save if target is expand button
-      if (
-        (event.relatedTarget as HTMLButtonElement | undefined)?.name !==
-        expandButtonName
-      ) {
-        updateValueSpecAndSaveEdit();
-      }
-    };
-
     const handlePaste = (event: React.ClipboardEvent<string>): void => {
       const pastedText = event.clipboardData.getData('text');
       const parsedData = parseCSVString(pastedText);
@@ -861,7 +848,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
           inputRef={inputRef}
           onChange={changeValue}
           onInputChange={handleInputChange}
-          onBlur={handleOnBlur}
+          onBlur={() => updateValueSpecAndSaveEdit()}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           value={selectedOptions}
