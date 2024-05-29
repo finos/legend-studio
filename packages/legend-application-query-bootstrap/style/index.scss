@@ -944,6 +944,23 @@
 
   // ---------------------------- Query Builder -------------------------------
 
+  .app__info__entry__title {
+    color: var(--color-legacylight-dark-grey-400);
+  }
+
+  .app__info__entry__value {
+    color: var(--color-legacylight-dark-grey-200);
+  }
+
+  .app__info__entry__value__action {
+    color: var(--color-blue-50);
+  }
+
+  .app__info__group {
+    color: var(--color-legacylight-dark-grey-200);
+    background: var(--color-legacylight-light-grey-300);
+  }
+
   .query-editor {
     color: var(--color-legacylight-dark-grey-200);
     background: var(--color-white);

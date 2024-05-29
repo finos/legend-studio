@@ -41,11 +41,12 @@ import {
 
 const releaseLog = [
   {
-    version: 'test-version',
+    version: '3.0.0',
     notes: [
       {
         type: 'ENHANCEMENT',
-        description: 'This is a test description for enhancement 1',
+        description:
+          'This is a test description for enhancement 1 version 3.0.0',
         docLink: 'https://github.com/finos/legend-engine',
       },
 
@@ -66,7 +67,7 @@ const releaseLog = [
     ],
   },
   {
-    version: 'past-version',
+    version: '2.0.0',
     notes: [
       {
         type: 'ENHANCEMENT',
@@ -80,11 +81,13 @@ const releaseLog = [
       },
       {
         type: 'BUG_FIX',
-        description: 'This is a bug description for bug fix 1',
+        description:
+          'This is a bug description for bug fix for version 2.0.0 bug 1',
       },
       {
         type: 'BUG_FIX',
-        description: 'This is a bug description for bug fix 2',
+        description:
+          'This is a bug description for bug fix for version 2.0.0 bug 2',
         docLink: 'https://github.com/finos/legend-engine',
       },
     ],
@@ -103,6 +106,7 @@ test(integrationTest('Legend Query Shows Current Updates'), async () => {
     applicationStore: appStore,
   });
   mockedQueryEditorStore.setExistingQueryName(TEST_QUERY_NAME);
+
   const { renderResult } = await TEST__setUpQueryEditor(
     mockedQueryEditorStore,
     TEST_DATA__ResultState_entities,
@@ -111,6 +115,9 @@ test(integrationTest('Legend Query Shows Current Updates'), async () => {
     'execution::Runtime',
     TEST_DATA__modelCoverageAnalysisResult,
   );
+  expect(
+    renderResult.queryByText('Class is required to build query'),
+  ).toBeNull();
   const releaseDialog = await waitFor(() => renderResult.getByRole('dialog'));
   expect(
     getByText(releaseDialog, 'Legend Query Has Been Upgraded !'),
@@ -118,19 +125,23 @@ test(integrationTest('Legend Query Shows Current Updates'), async () => {
   expect(
     getByText(
       releaseDialog,
-      'New features, enhancements and bug fixess that were released',
+      'New features, enhancements and bug fixes that were released',
     ),
   ).not.toBeNull();
   expect(
     getByText(releaseDialog, 'This is a bug description for bug fix 1'),
   ).not.toBeNull();
   expect(
-    getByText(releaseDialog, 'This is a test description for enhancement 1'),
+    getByText(
+      releaseDialog,
+      'This is a test description for enhancement 1 version 3.0.0',
+    ),
   ).not.toBeNull();
 
-  expect(getByText(releaseDialog, 'Version test-version')).not.toBeNull();
+  expect(getByText(releaseDialog, 'Version 2.0.0')).not.toBeNull();
+  expect(getByText(releaseDialog, 'Version 3.0.0')).not.toBeNull();
 
-  expect(getAllByTitle(releaseDialog, 'Visit...')).toHaveLength(3);
+  expect(getAllByTitle(releaseDialog, 'Visit...')).toHaveLength(6);
 
   fireEvent.click(getByText(releaseDialog, 'Close'));
   expect(renderResult.queryByText('dialog')).toBeNull();

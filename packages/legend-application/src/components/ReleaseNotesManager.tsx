@@ -33,11 +33,7 @@ import {
   type ReleaseNote,
   type VersionReleaseNotes,
 } from '../stores/ReleaseNotesService.js';
-import {
-  isValidUrl,
-  prettyCONSTName,
-  returnUndefOnError,
-} from '@finos/legend-shared';
+import { isValidUrl, prettyCONSTName } from '@finos/legend-shared';
 
 const ReleaseNoteViewer = observer((props: { note: ReleaseNote }) => {
   const { note } = props;
@@ -123,23 +119,15 @@ export const ReleaseViewer = observer(
 export const ReleaseNotesManager = observer(() => {
   const applicationStore = useApplicationStore();
   const releaseService = applicationStore.releaseNotesService;
-  const releaseNotes = releaseService.releaseNotes;
-  const version = applicationStore.config.appVersion;
-  const currentVersion = releaseNotes?.find((r) => r.version === version);
-  const storage = returnUndefOnError(() => releaseService.getViewedVersions());
+  const releaseNotes = releaseService.showableVersions();
   const isOpen = releaseService.showCurrentReleaseModal;
-  if (
-    !releaseService.isConfigured ||
-    !isOpen ||
-    !currentVersion ||
-    storage === version
-  ) {
+  if (!releaseService.isConfigured || !isOpen || !releaseNotes?.length) {
     return null;
   }
 
   const closeModal = (): void => {
-    releaseService.updateViewedVersion(currentVersion.version);
     releaseService.setShowCurrentRelease(false);
+    releaseService.updateViewedVersion();
   };
   const title = `Legend ${prettyCONSTName(
     applicationStore.config.appName,
@@ -167,9 +155,11 @@ export const ReleaseNotesManager = observer(() => {
         <ModalBody className="release-notes__dialog__body">
           <div className="release-notes__dialog__content">
             <div className="release-notes__dialog__content__title">
-              New features, enhancements and bug fixess that were released
+              New features, enhancements and bug fixes that were released
             </div>
-            <ReleaseViewer releaseNotes={currentVersion} />
+            {releaseNotes.map((e) => (
+              <ReleaseViewer key={e.version} releaseNotes={e} />
+            ))}
           </div>
         </ModalBody>
         <ModalFooter>
@@ -194,14 +184,12 @@ export const ReleaseLogManager = observer(() => {
     return null;
   }
   const releaseNotes = releaseService.releaseNotes ?? [];
-
   const isOpen = releaseService.showCurrentReleaseModal;
   const closeModal = (): void => {
     releaseService.setReleaseLog(false);
+    releaseService.updateViewedVersion();
   };
-  const title = `Legend ${prettyCONSTName(
-    applicationStore.config.appName,
-  )} Release Log`;
+  const title = `Release Notes`;
   return (
     <Dialog
       open={isOpen}
@@ -225,7 +213,7 @@ export const ReleaseLogManager = observer(() => {
         <ModalBody className="release-notes__dialog__body">
           <div className="release-notes__dialog__content">
             <div className="release-notes__dialog__content__title">
-              New features, enhancements and bug fixess that were released
+              New features, enhancements and bug fixes that were released
             </div>
             {releaseNotes.map((e) => (
               <ReleaseViewer key={e.version} releaseNotes={e} />
