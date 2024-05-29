@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.4.16
+
+### Patch Changes
+
+- [#3179](https://github.com/finos/legend-studio/pull/3179) [`43b16a3`](https://github.com/finos/legend-studio/commit/43b16a3ba3ef66d4dd1583f2b79741460d3946c1) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - enable new query button in query create flow
+
 ## 13.4.15
 
 ## 13.4.14

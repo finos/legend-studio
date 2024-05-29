@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 31.10.0
+
+### Minor Changes
+
+- [#3189](https://github.com/finos/legend-studio/pull/3189) [`85fd2ed`](https://github.com/finos/legend-studio/commit/85fd2ed3f03acb1734b770e2924f5e8f82040438) ([@PaulWorkStuff](https://github.com/PaulWorkStuff)) - UnknownElement entity
+
+### Patch Changes
+
+- [#3199](https://github.com/finos/legend-studio/pull/3199) [`803df18`](https://github.com/finos/legend-studio/commit/803df18dd593be772043e34bf7aed5bab4236d12) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - add stereotype in database
+
 ## 31.9.16
 
 ## 31.9.15

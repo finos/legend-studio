@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 10.0.36
+
+### Patch Changes
+
+- [#3197](https://github.com/finos/legend-studio/pull/3197) [`aa65b0f`](https://github.com/finos/legend-studio/commit/aa65b0f4f58569484b215926974f916a712e1f56) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Move semver util to legend-shared
+
 ## 10.0.35
 
 ## 10.0.34

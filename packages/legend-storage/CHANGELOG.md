@@ -1,5 +1,11 @@
 # @finos/legend-storage
 
+## 3.0.86
+
+### Patch Changes
+
+- [#3197](https://github.com/finos/legend-studio/pull/3197) [`aa65b0f`](https://github.com/finos/legend-studio/commit/aa65b0f4f58569484b215926974f916a712e1f56) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Move semver util to legend-shared
+
 ## 3.0.85
 
 ## 3.0.84
