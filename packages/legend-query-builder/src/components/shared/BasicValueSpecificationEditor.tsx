@@ -759,6 +759,8 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       setSelectedOptions(newSelectedOptions);
       if (actionChange.action === 'select-option') {
         setInputValue('');
+      } else if (actionChange.action === 'remove-value') {
+        setInputValueIsError(false);
       }
     };
 
