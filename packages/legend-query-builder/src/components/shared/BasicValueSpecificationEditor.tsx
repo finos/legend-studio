@@ -637,10 +637,10 @@ const getPlaceHolder = (expectedType: Type): string => {
       case PRIMITIVE_TYPE.DATETIME:
         return 'yyyy-mm-ddThh:mm:ss';
       default:
-        return '(empty)';
+        return 'Add';
     }
   }
-  return '(empty)';
+  return 'Add';
 };
 
 const PrimitiveCollectionInstanceValueEditor = observer(
@@ -827,11 +827,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
-          placeholder={
-            selectedOptions.length === 0
-              ? getPlaceHolder(expectedType)
-              : undefined
-          }
+          placeholder={getPlaceHolder(expectedType)}
           components={{
             DropdownIndicator: null,
           }}
