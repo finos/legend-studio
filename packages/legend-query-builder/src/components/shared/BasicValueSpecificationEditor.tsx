@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
+  useApplicationStore,
+} from '@finos/legend-application';
 import {
   type TooltipPlacement,
   type InputActionData,
@@ -854,7 +857,10 @@ const PrimitiveCollectionInstanceValueEditor = observer(
           options={queryOptions}
           inputValue={inputValue}
           isMulti={true}
-          menuIsOpen={isTypeaheadSearchEnabled && inputValue.length > 0}
+          menuIsOpen={
+            isTypeaheadSearchEnabled &&
+            inputValue.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH
+          }
           autoFocus={true}
           inputRef={inputRef}
           onChange={changeValue}
