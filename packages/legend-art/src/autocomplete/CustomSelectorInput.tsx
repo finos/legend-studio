@@ -226,7 +226,9 @@ const CustomInput: React.FC<
   // many expected props that can be passed to the Input component.
   const additionalProps = {
     onPaste: props.selectProps.onPaste,
-    placeholder: props.selectProps.placeholder,
+    placeholder: props.selectProps.isMulti
+      ? props.selectProps.placeholder
+      : undefined,
   };
 
   return (
