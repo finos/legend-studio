@@ -69,7 +69,6 @@ import React, {
   useState,
 } from 'react';
 import { useDrop, useDrag, useDragLayer } from 'react-dnd';
-import { QueryBuilderAggregateColumnState } from '../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import type { QueryBuilderPostFilterOperator } from '../../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterOperator.js';
 import {
   type QueryBuilderPostFilterTreeNodeData,
@@ -213,18 +212,20 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
 export const QueryBuilderColumnBadge = observer(
   (props: {
     colState: QueryBuilderTDSColumnState;
-    onColumnChange: (
+    onColumnChange?: (
       columnState: QueryBuilderProjectionColumnState,
     ) => Promise<void>;
   }) => {
     const { colState, onColumnChange } = props;
     const applicationStore = useApplicationStore();
     const type = colState.getColumnType();
-    const handleDrop = useCallback(
-      (item: QueryBuilderProjectionColumnDragSource): Promise<void> =>
-        onColumnChange(item.columnState),
-      [onColumnChange],
-    );
+    const handleDrop = onColumnChange
+      ? useCallback(
+          (item: QueryBuilderProjectionColumnDragSource): Promise<void> =>
+            onColumnChange(item.columnState),
+          [onColumnChange],
+        )
+      : undefined;
     const [{ isDragOver }, dropConnector] = useDrop<
       QueryBuilderProjectionColumnDragSource,
       void,
@@ -237,7 +238,7 @@ export const QueryBuilderColumnBadge = observer(
         ],
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
-            handleDrop(item).catch(applicationStore.alertUnhandledError);
+            handleDrop?.(item).catch(applicationStore.alertUnhandledError);
           } // prevent drop event propagation to accomondate for nested DnD
         },
         collect: (monitor) => ({
@@ -247,43 +248,50 @@ export const QueryBuilderColumnBadge = observer(
       [applicationStore, handleDrop],
     );
 
-    return (
+    const renderColumnBadgeContent = (): React.ReactNode => (
+      <div className="query-builder-column-badge__content">
+        {type && (
+          <div
+            className={clsx('query-builder-column-badge__type', {
+              'query-builder-column-badge__type--class': type instanceof Class,
+              'query-builder-column-badge__type--enumeration':
+                type instanceof Enumeration,
+              'query-builder-column-badge__type--primitive':
+                type instanceof PrimitiveType,
+            })}
+          >
+            {renderPropertyTypeIcon(type)}
+          </div>
+        )}
+        <div
+          className="query-builder-column-badge__property"
+          title={`${colState.columnName}`}
+        >
+          {colState.columnName}
+        </div>
+        <QueryBuilderColumnInfoTooltip
+          columnState={colState}
+          placement="bottom-end"
+        >
+          <div className="query-builder-column-badge__property__info">
+            <InfoCircleIcon />
+          </div>
+        </QueryBuilderColumnInfoTooltip>
+      </div>
+    );
+
+    return onColumnChange ? (
       <div ref={dropConnector} className="query-builder-column-badge">
         <PanelEntryDropZonePlaceholder
           isDragOver={isDragOver}
           label="Change Property"
         >
-          <div className="query-builder-column-badge__content">
-            {type && (
-              <div
-                className={clsx('query-builder-column-badge__type', {
-                  'query-builder-column-badge__type--class':
-                    type instanceof Class,
-                  'query-builder-column-badge__type--enumeration':
-                    type instanceof Enumeration,
-                  'query-builder-column-badge__type--primitive':
-                    type instanceof PrimitiveType,
-                })}
-              >
-                {renderPropertyTypeIcon(type)}
-              </div>
-            )}
-            <div
-              className="query-builder-column-badge__property"
-              title={`${colState.columnName}`}
-            >
-              {colState.columnName}
-            </div>
-            <QueryBuilderColumnInfoTooltip
-              columnState={colState}
-              placement="bottom-end"
-            >
-              <div className="query-builder-column-badge__property__info">
-                <InfoCircleIcon />
-              </div>
-            </QueryBuilderColumnInfoTooltip>
-          </div>
+          {renderColumnBadgeContent()}
         </PanelEntryDropZonePlaceholder>
+      </div>
+    ) : (
+      <div className="query-builder-column-badge">
+        {renderColumnBadgeContent()}
       </div>
     );
   },
@@ -301,18 +309,6 @@ const QueryBuilderPostFilterConditionEditor = observer(
     const changeOperator = (val: QueryBuilderPostFilterOperator) => (): void =>
       node.condition.changeOperator(val);
     const rightConditionValue = node.condition.rightConditionValue;
-    const changeColumn = async (
-      columnState: QueryBuilderProjectionColumnState,
-    ): Promise<void> => {
-      const currentColState =
-        node.condition.leftConditionValue instanceof
-        QueryBuilderAggregateColumnState
-          ? node.condition.leftConditionValue.projectionColumnState
-          : node.condition.leftConditionValue;
-      if (currentColState !== columnState) {
-        await flowResult(node.condition.changeColumn(columnState));
-      }
-    };
     // Drag and Drop on filter condition value
     const handleDrop = useCallback(
       (item: QueryBuilderVariableDragSource): void => {
@@ -375,13 +371,6 @@ const QueryBuilderPostFilterConditionEditor = observer(
       reloadValues: debouncedTypeaheadSearch,
       cleanUpReloadValues,
     };
-
-    const { isDroppable } = useDragLayer((monitor) => ({
-      isDroppable:
-        monitor.isDragging() &&
-        (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
-          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
-    }));
 
     const renderRightVal = (): React.ReactNode => {
       if (
@@ -451,14 +440,12 @@ const QueryBuilderPostFilterConditionEditor = observer(
       <div className="query-builder-post-filter-tree__node__label__content dnd__entry__container">
         <PanelEntryDropZonePlaceholder
           isDragOver={isDragOver}
-          isDroppable={isDroppable}
           label="Add New Logical Group"
         >
           <div className="query-builder-post-filter-tree__condition-node">
             <div className="query-builder-post-filter-tree__condition-node__property">
               <QueryBuilderColumnBadge
                 colState={node.condition.leftConditionValue}
-                onColumnChange={changeColumn}
               />
             </div>
             <DropdownMenu
