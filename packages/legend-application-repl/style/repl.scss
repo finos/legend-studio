@@ -246,8 +246,7 @@
     height: calc(100% - 2.7rem);
     width: 100%;
     padding: 1rem;
-    background: white
-
+    background: white;
   }
 
   &__modal__footer {
@@ -278,7 +277,7 @@
     }
 
     &__available__columns {
-      width: 45%;
+      width: 50%;
       height: 40%;
       // align-items: start;
 
@@ -296,31 +295,75 @@
           border: 0.1rem solid var(--color-dark-grey-100);
         }
         // }
-
       }
 
       &__children {
-        padding: 0.5rem 1.3rem;
+        padding: 0.5rem 0rem;
         margin-left: 0.8rem;
         border-left: 1px solid black;
+        display: flex;
 
-        &::before,
-        &::after {
-          position: relative;
-          left: calc(-50% - 0.5rem);
-          width: 1rem;
-          content: '';
-          border-top: 1px solid black;
+        &__name {
+          @include flexVCenter;
+
+          // padding-right: 0.5rem;
+          margin-left: 0;
+          width: 50%;
+
+          &::before {
+            content: ' ';
+            display: block;
+            height: 0.1rem;
+            width: 1.4rem;
+            position: relative;
+            // top: 1rem;
+            // left: 0.4rem;
+            background: black;
+          }
         }
+
+        &__order {
+          width: 50%;
+        }
+
+        // &::before,
+        // &::after {
+        //   position: relative;
+        //   left: calc(50% - 0.5rem);
+        //   width: 1rem;
+        //   content: ' ';
+        //   border-top: 1rem solid black;
+        // }
       }
     }
 
     &__actions {
-      width: 15%;
+      width: 10%;
+      display: block;
+      position: relative;
+      top: 15%;
+      left: 1.5%;
+    }
+
+    &__action {
+      @include flexCenter;
+
+      padding: 0.5rem;
+      // display: flex;
+      background-color: var(--color-light-grey-100);
+      width: 8rem;
+      margin: 1rem;
+      border: 0.1rem solid var(--color-dark-grey-100);
+
+      svg {
+        // @include flexVCenter;
+        position: relative;
+        top: 0.2rem;
+      }
     }
 
     &__selected__columns {
-      width: 45%;
+      width: 50%;
       height: 40%;
       // align-items: end;
     }

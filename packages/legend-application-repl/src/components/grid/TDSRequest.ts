@@ -16,6 +16,7 @@
 
 import type { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import { observable, makeObservable, action } from 'mobx';
 import { createModelSchema, list, optional, primitive } from 'serializr';
 
 export enum TDS_FILTER_OPERATION {
@@ -110,8 +111,17 @@ export class TDSSort {
   order!: TDS_SORT_ORDER;
 
   constructor(column: string, order: TDS_SORT_ORDER) {
+    makeObservable(this, {
+      column: observable,
+      order: observable,
+      setOrder: action,
+    });
     this.column = column;
     this.order = order;
+  }
+
+  setOrder(val: TDS_SORT_ORDER): void {
+    this.order = val;
   }
 
   static readonly serialization = new SerializationFactory(

@@ -21,91 +21,49 @@ import {
   getTDSColumnCustomizations,
   getTDSRowData,
   type TDSRowDataType,
-} from '../components/grid/GridUtils.js';
+} from '../../components/grid/GridUtils.js';
 import { action, computed, makeObservable, observable } from 'mobx';
-import type { ColDef, GridApi } from '@ag-grid-community/core';
+import type { ColDef } from '@ag-grid-community/core';
 import type { V1_Lambda, TDSExecutionResult } from '@finos/legend-graph';
-import { QueryEditorState } from '../components/REPLQueryEditor.js';
 import {
   TDS_FILTER_GROUP,
   type TDSRequest,
-} from '../components/grid/TDSRequest.js';
+} from '../../components/grid/TDSRequest.js';
+import type { DataCubeState } from './DataCubeState.js';
 
 interface FilterModel {
   [key: string]: object;
 }
 
-export enum PIVOT_PANEL_TABS {
-  COLUMNS_AND_PIVOTS = 'Colums/Pivots',
-  HPIVOTS_AND_SORTS = 'HPivots/Sorts',
-  GENERAL_PROPERTIES = 'General Properties',
-  COLUMN_PROPERTIES = 'Column Properties',
-  DEVELOPER_OPTIONS = 'Developer',
-  PIVOT_LAYOUT = 'Pivot Layout',
-}
+export class DataCubeGridState {
+  readonly dataCubeState!: DataCubeState;
 
-export class REPLGridState {
   initialResult?: TDSExecutionResult | undefined;
   currentResult?: TDSExecutionResult | undefined;
   columns?: string[] | undefined;
-  queryEditorState: QueryEditorState;
-  currentSubQuery?: string | undefined;
-  licenseKey?: string | undefined;
   initialQueryLambda?: V1_Lambda | undefined;
-  isPaginationEnabled!: boolean;
   currentQueryTDSRequest?: TDSRequest | undefined;
   lastQueryTDSRequest?: TDSRequest | undefined;
 
-  gridApi?: GridApi | undefined;
-
-  isPivotPanelOpened = false;
-  selectedPivotPanelTab = PIVOT_PANEL_TABS.COLUMNS_AND_PIVOTS;
-
-  constructor(isPaginationEnabled: boolean) {
+  constructor(dataCubeState: DataCubeState) {
     makeObservable(this, {
       initialResult: observable,
       initialQueryLambda: observable,
       currentResult: observable,
-      currentSubQuery: observable,
-      licenseKey: observable,
       columns: observable,
-      isPaginationEnabled: observable,
-      queryEditorState: observable,
       currentQueryTDSRequest: observable,
       lastQueryTDSRequest: observable,
-      gridApi: observable,
-      isPivotPanelOpened: observable,
-      selectedPivotPanelTab: observable,
-      setSelectedPivotPanelTab: action,
-      setIsPivotPanelOpened: action,
-      setGridApi: action,
       setInitialResult: action,
-      setCurrentSubQuery: action,
       setColumns: action,
       setInitialQueryLambda: action,
       setCurrentResult: action,
-      setLicenseKey: action,
-      setIsPaginationEnabled: action,
       setCurrentQueryTDSRequest: action,
       setLastQueryTDSRequest: action,
       rowData: computed,
       columnDefs: computed,
     });
 
-    this.queryEditorState = new QueryEditorState('');
-    this.isPaginationEnabled = isPaginationEnabled;
-  }
-
-  setSelectedPivotPanelTab(val: PIVOT_PANEL_TABS): void {
-    this.selectedPivotPanelTab = val;
-  }
-
-  setIsPivotPanelOpened(val: boolean): void {
-    this.isPivotPanelOpened = val;
-  }
-
-  setGridApi(val: GridApi | undefined): void {
-    this.gridApi = val;
+    this.dataCubeState = dataCubeState;
   }
 
   setLastQueryTDSRequest(val: TDSRequest | undefined): void {
@@ -120,10 +78,6 @@ export class REPLGridState {
     this.initialQueryLambda = val;
   }
 
-  setCurrentSubQuery(val: string | undefined): void {
-    this.currentSubQuery = val;
-  }
-
   setInitialResult(val: TDSExecutionResult | undefined): void {
     this.initialResult = val;
   }
@@ -134,14 +88,6 @@ export class REPLGridState {
 
   setColumns(val: string[]): void {
     this.columns = val;
-  }
-
-  setLicenseKey(val: string | undefined): void {
-    this.licenseKey = val;
-  }
-
-  setIsPaginationEnabled(val: boolean): void {
-    this.isPaginationEnabled = val;
   }
 
   get rowData(): TDSRowDataType[] {
@@ -176,7 +122,7 @@ export class REPLGridState {
       }
     });
     if (this.currentQueryTDSRequest) {
-      this.gridApi?.setFilterModel(filterModel);
+      this.dataCubeState.configState.gridApi?.setFilterModel(filterModel);
     }
     return this.columns
       ? this.columns.map((c) => ({
