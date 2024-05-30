@@ -27,6 +27,7 @@ import {
   TDSSort,
   TDSFilterCondition,
   TDS_FILTER_GROUP,
+  TDSColumn,
 } from './TDSRequest.js';
 import {
   guaranteeNonNullable,
@@ -70,18 +71,30 @@ export class ServerSideDataSource implements IServerSideDatasource {
     params: IServerSideGetRowsParams<unknown, unknown>,
   ): GeneratorFn<void> {
     try {
-      if (this.executions > 0) {
+      if (
+        this.executions > 0 ||
+        this.editorStore?.dataCubeState.gridState.currentQueryTDSRequest
+      ) {
         if (this.editorStore) {
           const request = this.extractRequest(params);
+          this.editorStore.dataCubeState.gridState.setLastQueryTDSRequest(
+            request,
+          );
           if (request) {
-            yield flowResult(this.editorStore.getREPLGridServerResult(request));
-            const result = this.editorStore.replGridState.currentResult;
+            yield flowResult(
+              this.editorStore.dataCubeState.getREPLGridServerResult(request),
+            );
+            const result =
+              this.editorStore.dataCubeState.gridState.currentResult;
             const rowData = getTDSRowData(guaranteeNonNullable(result).result);
             params.success({ rowData: rowData });
           } else {
             params.fail();
           }
         }
+        this.editorStore?.dataCubeState.gridState.setCurrentQueryTDSRequest(
+          undefined,
+        );
       } else {
         params.success({ rowData: this.rowData });
       }
@@ -163,7 +176,7 @@ export class ServerSideDataSource implements IServerSideDatasource {
         });
       }
       const tdsRequest = new TDSRequest(
-        columns ?? [],
+        columns?.map((col) => new TDSColumn(col)) ?? [],
         filter,
         sort,
         groupBy,

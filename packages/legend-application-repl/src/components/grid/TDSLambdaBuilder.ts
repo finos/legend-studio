@@ -444,7 +444,11 @@ export const buildLambdaExpressions = (
     request.filter.push(groupFilter);
   }
   processFilterOperations(expressions, request.filter);
-  processGroupByOperations(expressions, request.groupBy, request.columns);
+  processGroupByOperations(
+    expressions,
+    request.groupBy,
+    request.columns.map((col) => col.name),
+  );
   processSortOperations(expressions, request.sort, request.groupBy);
   const lambda = new V1_Lambda();
   lambda.body = expressions;
