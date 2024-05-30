@@ -22,7 +22,7 @@ import {
 } from '@finos/legend-server-depot';
 import type { GraphManagerState, RawLambda } from '@finos/legend-graph';
 import { type GenericLegendApplicationStore } from '@finos/legend-application';
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import {
   type QueryBuilderConfig,
   QueryBuilderState,
@@ -51,7 +51,13 @@ import {
 import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import { renderDataSpaceQuerySetupSetupPanelContent } from '../../components/data-space/DataSpaceQuerySetup.js';
 import { DataSpaceAdvancedSearchState } from '@finos/legend-extension-dsl-data-space/application-query';
+import type { VisitedDataspace } from '../../__lib__/LegendQueryUserDataSpaceHelper.js';
+import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
 
+type DataSpaceVisitedEntity = {
+  visited: VisitedDataspace;
+  entity: StoredEntity;
+};
 export class DataSpaceQuerySetupState extends QueryBuilderState {
   editorStore: QueryEditorStore;
   readonly depotServerClient: DepotServerClient;
@@ -107,7 +113,7 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
       advancedSearchState: observable,
       showAdvancedSearchPanel: action,
       hideAdvancedSearchPanel: action,
-      loadDataSpaces: flow,
+      initializeDataSpaceSetup: flow,
     });
 
     this.editorStore = editorStore;
@@ -144,9 +150,31 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
     this.advancedSearchState = undefined;
   }
 
-  *loadDataSpaces(): GeneratorFn<void> {
+  *initializeDataSpaceSetup(): GeneratorFn<void> {
     this.loadDataSpacesState.inProgress();
     try {
+      const hydrated = (yield flowResult(this.redirectIfPossible())) as
+        | DataSpaceVisitedEntity
+        | undefined;
+      if (hydrated) {
+        this.applicationStore.navigationService.navigator.goToLocation(
+          generateDataSpaceQueryCreatorRoute(
+            guaranteeNonNullable(hydrated.visited.groupId),
+            guaranteeNonNullable(hydrated.visited.artifactId),
+            hydrated.visited.versionId ?? LATEST_VERSION_ALIAS,
+            hydrated.visited.path,
+            hydrated.visited.execContext ??
+              extractDataSpaceInfo(hydrated.entity, false)
+                .defaultExecutionContext ??
+              '',
+            undefined,
+            undefined,
+          ),
+        );
+        this.loadDataSpacesState.complete();
+        return;
+      }
+
       this.dataSpaces = (
         (yield this.depotServerClient.getEntitiesByClassifier(
           DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
@@ -161,6 +189,66 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
       this.loadDataSpacesState.fail();
       this.applicationStore.notificationService.notifyError(error);
     }
+  }
+
+  *redirectIfPossible(): GeneratorFn<DataSpaceVisitedEntity | undefined> {
+    const visitedQueries =
+      LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
+        this.applicationStore.userDataService,
+      );
+    let redirect: DataSpaceVisitedEntity | undefined = undefined;
+    for (let i = 0; i < visitedQueries.length; i++) {
+      const visited = visitedQueries[i];
+      if (visited) {
+        const hydrated = (yield flowResult(
+          this.hyrdateVisitedDataSpace(visited),
+        )) as DataSpaceVisitedEntity | undefined;
+        if (hydrated) {
+          redirect = hydrated;
+          break;
+        }
+      }
+    }
+    return redirect;
+  }
+
+  *hyrdateVisitedDataSpace(
+    visited: VisitedDataspace,
+  ): GeneratorFn<DataSpaceVisitedEntity | undefined> {
+    try {
+      const entity = (yield this.depotServerClient.getVersionEntity(
+        visited.groupId,
+        visited.artifactId,
+        visited.versionId ?? LATEST_VERSION_ALIAS,
+        visited.path,
+      )) as StoredEntity;
+      const content = entity.entity.content as {
+        executionContexts: { name: string }[];
+      };
+      if (visited.execContext) {
+        const found = content.executionContexts.find(
+          (e) => e.name === visited.execContext,
+        );
+        if (!found) {
+          visited.execContext = undefined;
+          return {
+            visited,
+            entity,
+          };
+        }
+      }
+      return {
+        visited,
+        entity,
+      };
+    } catch (error) {
+      assertErrorThrown(error);
+      LegendQueryUserDataHelper.removeRecentlyViewedDataSpace(
+        this.applicationStore.userDataService,
+        visited.id,
+      );
+    }
+    return undefined;
   }
 }
 

@@ -128,9 +128,22 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     const applicationStore = useApplicationStore();
 
     // data space
-    const dataSpaceOptions = queryBuilderState.dataSpaces
+    const prioritizeDataSpaceFunc = queryBuilderState.prioritizeDataSpaceFunc;
+    const sortedAllOptions = queryBuilderState.dataSpaces
       .map(buildDataSpaceOption)
       .sort(compareLabelFn);
+
+    const dataSpaceOptions = prioritizeDataSpaceFunc
+      ? [
+          ...sortedAllOptions.filter((val) =>
+            prioritizeDataSpaceFunc(val.value),
+          ),
+          ...sortedAllOptions.filter(
+            (val) => !prioritizeDataSpaceFunc(val.value),
+          ),
+        ]
+      : sortedAllOptions;
+
     const selectedDataSpaceOption: DataSpaceOption = {
       label:
         queryBuilderState.dataSpace.title ?? queryBuilderState.dataSpace.name,

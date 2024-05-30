@@ -16,11 +16,24 @@
 
 import type { UserDataService } from '@finos/legend-application';
 import { returnUndefOnError } from '@finos/legend-shared';
-import { createSimpleSchema, deserialize, list, primitive } from 'serializr';
+import {
+  createSimpleSchema,
+  deserialize,
+  list,
+  primitive,
+  raw,
+} from 'serializr';
+import {
+  createVisitedDataspace,
+  getIdFromDataSpaceInfo,
+  type SavedVisitedDataSpaces,
+  type VisitedDataspace,
+} from './LegendQueryUserDataSpaceHelper.js';
+import type { DataSpaceInfo } from '@finos/legend-extension-dsl-data-space/application';
 
 export enum LEGEND_QUERY_USER_DATA_KEY {
   RECENTLY_VIEWED_QUERIES = 'query-editor.recent-queries',
-  LAST_QUERY_DATASPACE = 'query-editor.last_query_dataspace',
+  RECENTLY_VIEWED_DATASPACES = 'query-editor.recent-dataSpaces',
 }
 
 export const USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT = 10;
@@ -115,31 +128,117 @@ export class LegendQueryUserDataHelper {
       key: LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
     });
   }
-
-  static getRecentlyQueriedDataspaceList(service: UserDataService): SavedData {
-    return LegendQueryUserDataHelper.getPersistedData(
-      service,
-      LEGEND_QUERY_USER_DATA_KEY.LAST_QUERY_DATASPACE,
+  // DataSpaces
+  static getRecentlyVisitedDataSpaces(
+    service: UserDataService,
+  ): SavedVisitedDataSpaces {
+    const data = service.getObjectValue(
+      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_DATASPACES,
+    );
+    return (
+      // TODO: think of a better way to deserialize this data, maybe like settings, use JSON schema
+      // See https://github.com/finos/legend-studio/issues/407
+      returnUndefOnError(
+        () =>
+          (
+            deserialize(
+              createSimpleSchema({
+                data: raw(),
+              }),
+              {
+                data,
+              },
+            ) as { data: SavedVisitedDataSpaces }
+          ).data,
+      ) ?? []
     );
   }
 
-  static getRecentlyQueriedDataspace(
+  static getRecentlyVisitedDataSpace(
     service: UserDataService,
-  ): string | undefined {
-    const dataspaceList =
-      LegendQueryUserDataHelper.getRecentlyQueriedDataspaceList(service);
-    return dataspaceList[0];
+  ): VisitedDataspace | undefined {
+    return LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(service)[0];
   }
 
-  static saveRecentlyQueriedDataspace(
+  static persistVisitedDataspace(
     service: UserDataService,
-    dataspace: string,
+    value: VisitedDataspace,
+    persistedData: SavedVisitedDataSpaces,
+    limit = USER_DATA_QUERY_DATASPACE_LIMIT,
   ): void {
-    const dataspaceList =
-      LegendQueryUserDataHelper.getRecentlyQueriedDataspaceList(service);
-    LegendQueryUserDataHelper.persistValue(service, dataspace, dataspaceList, {
-      limit: USER_DATA_QUERY_DATASPACE_LIMIT,
-      key: LEGEND_QUERY_USER_DATA_KEY.LAST_QUERY_DATASPACE,
-    });
+    const key = LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_DATASPACES;
+    const idx = persistedData.findIndex((data) => data.id === value.id);
+    if (idx === -1) {
+      if (persistedData.length >= limit) {
+        persistedData.pop();
+      }
+      persistedData.unshift(value);
+    } else {
+      persistedData.splice(idx, 1);
+      persistedData.unshift(value);
+    }
+    service.persistValue(key, persistedData);
+  }
+
+  static removeRecentlyViewedDataSpaces(service: UserDataService): void {
+    service.persistValue(
+      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_DATASPACES,
+      [],
+    );
+  }
+
+  static removeRecentlyViewedDataSpace(
+    service: UserDataService,
+    id: string,
+  ): void {
+    const dataSpaces =
+      LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(service);
+    const idx = dataSpaces.findIndex(
+      (visitedDataspace) => visitedDataspace.id === id,
+    );
+    if (idx === -1) {
+      return;
+    }
+    dataSpaces.splice(idx, 1);
+    service.persistValue(
+      LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
+      dataSpaces,
+    );
+  }
+
+  static removeDataSpace(service: UserDataService, info: DataSpaceInfo): void {
+    const id = getIdFromDataSpaceInfo(info);
+    if (id) {
+      LegendQueryUserDataHelper.removeRecentlyViewedDataSpace(service, id);
+    }
+  }
+
+  static addRecentlyVistedDatspace(
+    service: UserDataService,
+    info: DataSpaceInfo,
+    execContext: string | undefined,
+  ): void {
+    const visited = createVisitedDataspace(info, execContext);
+    if (visited) {
+      const dataspaces =
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(service);
+      LegendQueryUserDataHelper.persistVisitedDataspace(
+        service,
+        visited,
+        dataspaces,
+      );
+    }
+  }
+  static addVistedDatspace(
+    service: UserDataService,
+    visited: VisitedDataspace,
+  ): void {
+    const dataspaces =
+      LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(service);
+    LegendQueryUserDataHelper.persistVisitedDataspace(
+      service,
+      visited,
+      dataspaces,
+    );
   }
 }

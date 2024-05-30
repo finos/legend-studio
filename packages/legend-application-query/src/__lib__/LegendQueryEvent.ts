@@ -26,4 +26,6 @@ export enum LEGEND_QUERY_APP_EVENT {
 
   VIEW_PROJECT__LAUNCH = 'query-editor.view-project.launch',
   VIEW_SDLC_PROJECT__LAUNCH = 'query-editor.view-sdlc-project.launch',
+
+  LOCAL_STORAGE_PERSIST_ERROR = 'LOCAL_STORAGE_PERSIST_ERROR',
 }

@@ -123,6 +123,7 @@ import {
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { generateDataSpaceQueryCreatorRoute } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
+import { isDataSpaceInfoVisited } from '../__lib__/LegendQueryUserDataSpaceHelper.js';
 
 export const createViewProjectHandler =
   (applicationStore: LegendQueryApplicationStore) =>
@@ -541,8 +542,13 @@ export abstract class QueryEditorStore {
         error,
       );
       this.applicationStore.notificationService.notifyError(error);
+      this.onInitializeFailure();
       this.initState.fail();
     }
+  }
+
+  onInitializeFailure(): void {
+    // Do Nothing
   }
 
   *searchExistingQueryName(searchText: string): GeneratorFn<void> {
@@ -1241,6 +1247,10 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
           versionId: projectInfo.versionId,
           dataSpace: dataSpace.path,
         };
+        const visitedDataSpaces =
+          LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
+            this.applicationStore.userDataService,
+          );
         const dataSpaceQueryBuilderState = new DataSpaceQueryBuilderState(
           this.applicationStore,
           this.graphManagerState,
@@ -1320,6 +1330,8 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
           projectInfo,
           this.applicationStore.config.options.queryBuilderConfig,
           sourceInfo,
+          (dataSpaceInfo: DataSpaceInfo) =>
+            isDataSpaceInfoVisited(dataSpaceInfo, visitedDataSpaces),
         );
         const mappingModelCoverageAnalysisResult =
           dataSpaceAnalysisResult?.executionContextsIndex.get(
