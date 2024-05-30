@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  AgGridReact,
-  type AgGridReactProps,
-  type AgReactUiProps,
-} from '@ag-grid-community/react';
+import { AgGridReact, type AgGridReactProps } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { ModuleRegistry } from '@ag-grid-community/core';
 import { ServerSideRowModelModule } from '@ag-grid-enterprise/server-side-row-model';
@@ -36,7 +32,7 @@ const enterpriseModules = [
 const allModules = communityModules.concat(enterpriseModules);
 
 export function AgGridComponent<TData = unknown>(
-  props: (AgGridReactProps<TData> | AgReactUiProps<TData>) & {
+  props: AgGridReactProps<TData> & {
     licenseKey: string;
   },
 ): JSX.Element {

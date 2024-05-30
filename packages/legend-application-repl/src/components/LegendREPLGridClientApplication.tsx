@@ -20,14 +20,23 @@ import {
   Switch,
   type TEMPORARY__ReactRouterComponentType,
 } from '@finos/legend-application/browser';
-import { Editor } from './REPLGridClient.js';
+import { Editor, REPLQueryEditor } from './REPLGridClient.js';
 import { LegendREPLGridClientFrameworkProvider } from './LegendREPLGridClientFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
 import { withEditorStore } from './REPLGridClientStoreProvider.js';
 
+export enum LEGEND_REPL_GRID_CLIENT_PATTERN_TOKEN {
+  QUERY_ID = 'queryId',
+}
+
 export const LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN = Object.freeze({
   GRID: `/grid`,
+  SAVED_QUERY: `/query/:${LEGEND_REPL_GRID_CLIENT_PATTERN_TOKEN.QUERY_ID}`,
 });
+
+export type REPLQueryEditorPathParams = {
+  [LEGEND_REPL_GRID_CLIENT_PATTERN_TOKEN.QUERY_ID]: string;
+};
 
 export const LegendREPLGridClientRouter = withEditorStore(
   observer(() => (
@@ -39,6 +48,14 @@ export const LegendREPLGridClientRouter = withEditorStore(
           component={
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             Editor as TEMPORARY__ReactRouterComponentType
+          }
+        />
+        <Route
+          exact={true}
+          path={[LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN.SAVED_QUERY]}
+          component={
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            REPLQueryEditor as TEMPORARY__ReactRouterComponentType
           }
         />
       </Switch>

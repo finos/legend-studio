@@ -36,7 +36,6 @@ import {
 import { QueryBuilder_GraphManagerPreset } from '../../graph-manager/QueryBuilder_GraphManagerPreset.js';
 import { ApplicationStore } from '@finos/legend-application';
 import { INTERNAL__BasicQueryBuilderState } from '../QueryBuilderState.js';
-import { act } from 'react-dom/test-utils';
 import {
   TEST__LegendApplicationPluginManager,
   TEST__getGenericApplicationConfig,
@@ -48,6 +47,7 @@ import {
   TEST_DATA__simpleGetAllVersionsWithNonTemporalClass,
 } from './TEST_DATA__QueryBuilder_Milestoning.js';
 import { QueryBuilderAdvancedWorkflowState } from '../query-workflow/QueryBuilderWorkFlowState.js';
+import { act } from '@testing-library/react';
 
 type TestCase = [
   string,
