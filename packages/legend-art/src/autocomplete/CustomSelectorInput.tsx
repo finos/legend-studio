@@ -226,9 +226,7 @@ const CustomInput: React.FC<
   // many expected props that can be passed to the Input component.
   const additionalProps = {
     onPaste: props.selectProps.onPaste,
-    placeholder: props.selectProps.isMulti
-      ? props.selectProps.placeholder
-      : undefined,
+    placeholder: props.selectProps.inputPlaceholder,
   };
 
   return (
@@ -255,6 +253,7 @@ interface CustomSelectorInputProps extends Props<SelectOption, true> {
   optionCustomization?: { rowHeight: number };
   onPaste?: (event: React.ClipboardEvent<string>) => void;
   placeholder?: string;
+  inputPlaceholder?: string;
 }
 
 export type SelectComponent =

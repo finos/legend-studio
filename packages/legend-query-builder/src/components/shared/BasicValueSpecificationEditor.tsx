@@ -872,7 +872,8 @@ const PrimitiveCollectionInstanceValueEditor = observer(
           }
           isLoading={isLoading}
           noMatchMessage={noMatchMessage}
-          placeholder={getPlaceHolder(expectedType)}
+          placeholder={null}
+          inputPlaceholder={getPlaceHolder(expectedType)}
           components={{
             DropdownIndicator: null,
           }}
@@ -965,7 +966,8 @@ const EnumCollectionInstanceValueEditor = observer(
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
-          placeholder="Select value"
+          placeholder={null}
+          inputPlaceholder="Select value"
           autoFocus={true}
           menuIsOpen={true}
         />
