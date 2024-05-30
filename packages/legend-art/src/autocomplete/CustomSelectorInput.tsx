@@ -221,11 +221,12 @@ const CustomInput: React.FC<
     selectProps: CustomSelectorInputProps;
   }
 > = (props) => {
-  // We need to pass the prop this way because we're using an old
-  // version of react-select where the Input type doesn't include
-  // an onPaste prop.
+  // We need to pass the additional props this way because we're using an old
+  // version of react-select where the InputProps interface doesn't include
+  // many expected props that can be passed to the Input component.
   const additionalProps = {
     onPaste: props.selectProps.onPaste,
+    placeholder: props.selectProps.placeholder,
   };
 
   return (
@@ -251,6 +252,7 @@ interface CustomSelectorInputProps extends Props<SelectOption, true> {
   hasError?: boolean;
   optionCustomization?: { rowHeight: number };
   onPaste?: (event: React.ClipboardEvent<string>) => void;
+  placeholder?: string;
 }
 
 export type SelectComponent =
