@@ -43,7 +43,6 @@ import type {
   InputProps,
   Props,
   InputActionMeta,
-  CommonProps,
   ActionMeta,
   OptionTypeBase,
 } from 'react-select';
@@ -218,15 +217,25 @@ const ClearIndicator: React.FC<{
 // Enable edit of the selected tag
 // See https://github.com/JedWatson/react-select/issues/1558
 const CustomInput: React.FC<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  InputProps & CommonProps<any, false>
-> = (props) => (
-  <ReactSelect.Select.components.Input
-    {...props.selectProps}
-    {...props}
-    isHidden={false}
-  />
-);
+  InputProps & {
+    selectProps: CustomSelectorInputProps;
+  }
+> = (props) => {
+  // We need to pass the prop this way because we're using an old
+  // version of react-select where the Input type doesn't include
+  // an onPaste prop.
+  const additionalProps = {
+    onPaste: props.selectProps.onPaste,
+  };
+
+  return (
+    <ReactSelect.Select.components.Input
+      {...props}
+      {...additionalProps}
+      isHidden={false}
+    />
+  );
+};
 
 export interface SelectOption {
   label: string;
@@ -241,6 +250,7 @@ interface CustomSelectorInputProps extends Props<SelectOption, true> {
   darkMode?: boolean;
   hasError?: boolean;
   optionCustomization?: { rowHeight: number };
+  onPaste?: (event: React.ClipboardEvent<string>) => void;
 }
 
 export type SelectComponent =
