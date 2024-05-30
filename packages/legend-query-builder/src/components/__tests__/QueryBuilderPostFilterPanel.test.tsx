@@ -30,7 +30,6 @@ import {
   getByTestId,
   getAllByTestId,
   getByRole,
-  getByPlaceholderText,
 } from '@testing-library/react';
 import {
   TEST_DATA__lambda_WithDerivedProjectColumnsUsingConstAndParams,
