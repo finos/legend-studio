@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import { useRef, useEffect, useState, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { clsx } from '@finos/legend-art';
+import { flowResult } from 'mobx';
+import { PlayIcon, clsx } from '@finos/legend-art';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import {
   getBaseCodeEditorOptions,
   getCodeEditorValue,
@@ -26,69 +27,23 @@ import {
   CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
   disposeCodeEditor,
+  CodeEditor,
 } from '@finos/legend-lego/code-editor';
-import { SourceInformation, type ParserError } from '@finos/legend-graph';
-import { debounce, uuid } from '@finos/legend-shared';
-import { action, flowResult, makeObservable, observable } from 'mobx';
+import { debounce } from '@finos/legend-shared';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
-import { useREPLGridClientStore } from './REPLGridClientStoreProvider.js';
+import { useREPLGridClientStore } from '../REPLGridClientStoreProvider.js';
 import {
   editor as monacoEditorAPI,
   type IDisposable,
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
+import type { REPLGridClientStore } from '../../stores/REPLGridClientStore.js';
 
-export class QueryEditorState {
-  uuid = uuid();
-  query: string;
-  parserError?: ParserError | undefined;
-
-  constructor(query: string) {
-    makeObservable(this, {
-      query: observable,
-      parserError: observable,
-      setQuery: action,
-      setParserError: action,
-    });
-
-    this.query = query;
-  }
-
-  setQuery(val: string): void {
-    this.query = val;
-  }
-
-  setParserError(parserError: ParserError | undefined): void {
-    // account for the lambda prefix offset in source information
-    if (parserError?.sourceInformation) {
-      parserError.sourceInformation = this.processSourceInformation(
-        parserError.sourceInformation,
-      );
-    }
-    this.parserError = parserError;
-  }
-
-  processSourceInformation(
-    sourceInformation: SourceInformation,
-  ): SourceInformation {
-    const { sourceId, startLine, startColumn, endLine, endColumn } =
-      sourceInformation;
-    const lineOffset = 0;
-    const columnOffset = 0;
-    return new SourceInformation(
-      sourceId,
-      startLine + lineOffset,
-      startColumn - (startLine === 1 ? columnOffset : 0),
-      endLine + lineOffset,
-      endColumn - (endLine === 1 ? columnOffset : 0),
-    );
-  }
-}
-
-export const QueryEditor = observer(() => {
+const QueryEditor = observer(() => {
   const editorStore = useREPLGridClientStore();
   const applicationStore = editorStore.applicationStore;
-  const queryEditorState = editorStore.replGridState.queryEditorState;
+  const dataCubeState = editorStore.dataCubeState;
+  const queryEditorState = dataCubeState.queryTextEditorState.queryEditorState;
   const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
     undefined,
   );
@@ -105,11 +60,11 @@ export const QueryEditor = observer(() => {
   const debouncedParseQuery = useMemo(
     () =>
       debounce((): void => {
-        flowResult(editorStore.parseQuery()).catch(
+        flowResult(dataCubeState.parseQuery()).catch(
           editorStore.applicationStore.alertUnhandledError,
         );
       }, 1000),
-    [editorStore],
+    [dataCubeState, editorStore.applicationStore.alertUnhandledError],
   );
 
   if (editor) {
@@ -141,7 +96,7 @@ export const QueryEditor = observer(() => {
           triggerCharacters: ['>', '.', '$', '~'],
           provideCompletionItems: async (model, position, context) => {
             const suggestions: monacoLanguagesAPI.CompletionItem[] =
-              await editorStore.getTypeaheadResults(position, model);
+              await dataCubeState.getTypeaheadResults(position, model);
             return { suggestions };
           },
         },
@@ -203,3 +158,77 @@ export const QueryEditor = observer(() => {
     </div>
   );
 });
+
+export const DataCubeQueryTextEditor = observer(
+  (props: { editorStore: REPLGridClientStore }) => {
+    const { editorStore } = props;
+    const dataCubeState = editorStore.dataCubeState;
+
+    const executeLambda = (): void => {
+      flowResult(dataCubeState.executeLambda()).catch(
+        editorStore.applicationStore.alertUnhandledError,
+      );
+    };
+
+    const isLightTheme =
+      editorStore.applicationStore.layoutService
+        .TEMPORARY__isLightColorThemeEnabled;
+
+    return (
+      <div className="repl__content__query">
+        <div className="repl__query">
+          <div className="repl__query__editor">
+            <div className="repl__query__header">
+              <div className="repl__query__label">Curent Query</div>
+              <div className="repl__query__execute-btn btn__dropdown-combo btn__dropdown-combo--primary">
+                <button
+                  className="btn__dropdown-combo__label"
+                  onClick={executeLambda}
+                  tabIndex={-1}
+                >
+                  <PlayIcon className="btn__dropdown-combo__label__icon" />
+                  <div className="btn__dropdown-combo__label__title">
+                    Run Query
+                  </div>
+                </button>
+              </div>
+            </div>
+            <div className="repl__query__content">
+              <QueryEditor />
+            </div>
+          </div>
+        </div>
+        {dataCubeState.queryTextEditorState.currentSubQuery !== undefined && (
+          <div className="repl__query">
+            <div className="repl__query__editor">
+              <div className="repl__query__header">
+                <div className="repl__query__label__sub__query">
+                  Current Row Group Sub Query
+                </div>
+                <div className="repl__query__label__sub__query__read--only">
+                  Read Only
+                </div>
+              </div>
+              <div className="repl__query__content">
+                <CodeEditor
+                  lightTheme={
+                    isLightTheme
+                      ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_HC_LIGHT
+                      : CODE_EDITOR_THEME.BUILT_IN__VSCODE_HC_BLACK
+                  }
+                  language={CODE_EDITOR_LANGUAGE.PURE}
+                  isReadOnly={true}
+                  inputValue={
+                    dataCubeState.queryTextEditorState.currentSubQuery
+                  }
+                  hideActionBar={true}
+                  hidePadding={true}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  },
+);

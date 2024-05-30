@@ -73,21 +73,28 @@ export class ServerSideDataSource implements IServerSideDatasource {
     try {
       if (
         this.executions > 0 ||
-        this.editorStore?.replGridState.currentQueryTDSRequest
+        this.editorStore?.dataCubeState.gridState.currentQueryTDSRequest
       ) {
         if (this.editorStore) {
           const request = this.extractRequest(params);
-          this.editorStore.replGridState.setLastQueryTDSRequest(request);
+          this.editorStore.dataCubeState.gridState.setLastQueryTDSRequest(
+            request,
+          );
           if (request) {
-            yield flowResult(this.editorStore.getREPLGridServerResult(request));
-            const result = this.editorStore.replGridState.currentResult;
+            yield flowResult(
+              this.editorStore.dataCubeState.getREPLGridServerResult(request),
+            );
+            const result =
+              this.editorStore.dataCubeState.gridState.currentResult;
             const rowData = getTDSRowData(guaranteeNonNullable(result).result);
             params.success({ rowData: rowData });
           } else {
             params.fail();
           }
         }
-        this.editorStore?.replGridState.setCurrentQueryTDSRequest(undefined);
+        this.editorStore?.dataCubeState.gridState.setCurrentQueryTDSRequest(
+          undefined,
+        );
       } else {
         params.success({ rowData: this.rowData });
       }
