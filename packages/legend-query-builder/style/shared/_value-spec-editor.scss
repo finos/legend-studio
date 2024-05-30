@@ -88,6 +88,10 @@
     .selector-input--dark__input {
       color: var(--color-red-200);
     }
+
+    .selector-input__input {
+      color: var(--color-red-180);
+    }
   }
 
   ::-webkit-calendar-picker-indicator {
