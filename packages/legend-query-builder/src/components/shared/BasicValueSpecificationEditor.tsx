@@ -967,7 +967,7 @@ const EnumCollectionInstanceValueEditor = observer(
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
           placeholder={null}
-          inputPlaceholder="Select value"
+          inputPlaceholder="Add"
           autoFocus={true}
           menuIsOpen={true}
         />
