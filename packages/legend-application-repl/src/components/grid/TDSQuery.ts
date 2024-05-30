@@ -17,7 +17,7 @@
 import { type V1_Lambda, V1_lambdaModelSchema } from '@finos/legend-graph';
 import { TDSRequest } from './TDSRequest.js';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import { createModelSchema, primitive } from 'serializr';
+import { createModelSchema } from 'serializr';
 
 export class TDSQuery {
   initialQuery!: V1_Lambda;

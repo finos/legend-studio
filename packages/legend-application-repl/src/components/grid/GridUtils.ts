@@ -148,10 +148,7 @@ export const getTDSColumnCustomizations = (
   if (!tdsRequest) {
     return {};
   }
-  // const columnType = result.builder.columns.find(
-  //   (col) => col.name === columnName,
-  // )?.type;
-  const sort = tdsRequest?.sort.find((c) => c.column === columnName)?.order;
+  const sort = tdsRequest.sort.find((c) => c.column === columnName)?.order;
   const rowGroup = tdsRequest.groupBy.columns.find((c) => c === columnName);
   const aggFunc = tdsRequest.groupBy.aggregations.find(
     (c) => c.column === columnName,

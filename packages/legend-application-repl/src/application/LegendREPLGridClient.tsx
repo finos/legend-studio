@@ -22,8 +22,6 @@ import {
   ApplicationStoreProvider,
   Core_LegendApplicationPlugin,
   getApplicationRootElement,
-  APPLICATION_EVENT,
-  type LegendApplicationVersionData,
 } from '@finos/legend-application';
 import {
   LegendREPLGridClientApplicationConfig,
@@ -33,13 +31,6 @@ import { LegendREPLGridClientPluginManager } from './LegendREPLGridClientPluginM
 import { LegendREPLGridClientWebApplication } from '../components/LegendREPLGridClientApplication.js';
 import { Core_LegendREPLGridClientApplicationPlugin } from '../components/Core_LegendREPLGridClientApplicationPlugin.js';
 import type { LegendREPLGridClientApplicationStore } from '../stores/LegendREPLGridClientBaseStore.js';
-import {
-  type ExtensionsConfigurationData,
-  NetworkClient,
-  assertErrorThrown,
-  LogEvent,
-  assertNonNullable,
-} from '@finos/legend-shared';
 
 export class LegendREPLGridClient extends LegendApplication {
   declare config: LegendREPLGridClientApplicationConfig;
@@ -57,54 +48,11 @@ export class LegendREPLGridClient extends LegendApplication {
     return application;
   }
 
-  override async fetchApplicationConfiguration(
-    baseUrl: string,
-  ): Promise<[LegendApplicationConfig, ExtensionsConfigurationData]> {
-    const client = new NetworkClient();
-    // Resolve baseUrl relatively for application to work in vscode code-server
-    const relativeBaseUrl = `${window.location.href.split('/repl/')[0]}/repl/`; // Fix this for developer workspace
-    // app config
-    let configData: LegendREPLGridClientApplicationConfigData | undefined;
-    try {
-      configData = await client.get<LegendREPLGridClientApplicationConfigData>(
-        `${window.location.origin}${baseUrl}config.json`,
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      this.logger.error(
-        LogEvent.create(APPLICATION_EVENT.APPLICATION_CONFIGURATION__FAILURE),
-        error,
-      );
-    }
-    assertNonNullable(
-      configData,
-      `Can't fetch Legend application configuration`,
-    );
-
-    // app version
-    let versionData;
-    try {
-      versionData = await client.get<LegendApplicationVersionData>(
-        `${window.location.origin}${baseUrl}version.json`, // Fix this for developer workspace
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      this.logger.error(
-        LogEvent.create(APPLICATION_EVENT.APPLICATION_CONFIGURATION__FAILURE),
-        error,
-      );
-    }
-    assertNonNullable(versionData, `Can't fetch Legend application version`);
-
-    return [
-      await this.configureApplication({
-        configData,
-        versionData,
-        baseAddress: baseUrl,
-      }),
-      configData.extensions ?? {},
-    ];
-  }
+  // TODO: we need a btter strategy to make this work with vscode code-server
+  // especially when handling static content such as config.json and version.json
+  // we need to balance out what we output in the HTML file, what we call in the app
+  // to fetch these files, as well as how we develop locally
+  // e.g. use something like `${window.location.href.split('/repl/')[0]}/repl/`
 
   async configureApplication(
     input: LegendApplicationConfigurationInput<LegendREPLGridClientApplicationConfigData>,

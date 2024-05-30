@@ -45,7 +45,7 @@ import {
   SunIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   type MappingQueryCreatorPathParams,
   type ExistingQueryEditorPathParams,

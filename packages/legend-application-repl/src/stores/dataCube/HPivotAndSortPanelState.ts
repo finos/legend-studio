@@ -128,7 +128,7 @@ export class HPivotAndSortPanelState extends DataCubePanelState {
           colDef.sort = col.order === TDS_SORT_ORDER.ASCENDING ? 'asc' : 'desc';
         }
       });
-      this.dataCubeState.configState.gridApi?.setGridOption(
+      this.dataCubeState.configState.gridApi.setGridOption(
         'columnDefs',
         columnDefs,
       );

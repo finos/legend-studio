@@ -22,7 +22,7 @@ import {
 import type { REPLGridServerResult } from '../components/grid/REPLGridServerResult.js';
 import type { V1_Lambda } from '@finos/legend-graph';
 import type { CompletionItem } from '../stores/CompletionResult.js';
-import { TDSQuery } from '../components/grid/TDSQuery.js';
+import type { TDSQuery } from '../components/grid/TDSQuery.js';
 
 export class REPLServerClient {
   private readonly networkClient: NetworkClient;
