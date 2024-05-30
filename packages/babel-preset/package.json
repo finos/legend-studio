@@ -30,12 +30,12 @@
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
-    "@babel/helper-plugin-utils": "7.24.5",
-    "@babel/plugin-syntax-import-attributes": "7.24.1",
-    "@babel/preset-env": "7.24.5",
-    "@babel/preset-react": "7.24.1",
-    "@babel/preset-typescript": "7.24.1",
-    "@babel/runtime": "7.24.5",
+    "@babel/helper-plugin-utils": "7.24.6",
+    "@babel/plugin-syntax-import-attributes": "7.24.6",
+    "@babel/preset-env": "7.24.6",
+    "@babel/preset-react": "7.24.6",
+    "@babel/preset-typescript": "7.24.6",
+    "@babel/runtime": "7.24.6",
     "react-refresh": "0.14.2"
   },
   "devDependencies": {
