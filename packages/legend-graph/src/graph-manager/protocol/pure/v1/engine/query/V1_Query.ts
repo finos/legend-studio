@@ -158,6 +158,8 @@ export class V1_Query {
   stereotypes?: V1_StereotypePtr[] | undefined;
   defaultParameterValues?: V1_QueryParameterValue[] | undefined;
   lastUpdatedAt?: number | undefined;
+  createdAt?: number | undefined;
+  lastOpenAt?: number | undefined;
   gridConfig?: V1_QueryGridConfig | undefined;
 
   executionContext: V1_QueryExecutionContext | undefined;
@@ -181,6 +183,8 @@ export class V1_Query {
       ),
       groupId: primitive(),
       lastUpdatedAt: optional(primitive()),
+      createdAt: optional(primitive()),
+      lastOpenAt: optional(primitive()),
       mapping: optional(primitive()),
       name: primitive(),
       owner: optional(primitive()),
@@ -212,6 +216,8 @@ export class V1_LightQuery {
   versionId!: string;
   originalVersionId?: string | undefined;
   lastUpdatedAt?: number | undefined;
+  createdAt?: number | undefined;
+  lastOpenAt?: number | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_Query, {
@@ -219,6 +225,8 @@ export class V1_LightQuery {
       id: primitive(),
       groupId: primitive(),
       lastUpdatedAt: optional(primitive()),
+      createdAt: optional(primitive()),
+      lastOpenAt: optional(primitive()),
       name: primitive(),
       owner: optional(primitive()),
       versionId: primitive(),

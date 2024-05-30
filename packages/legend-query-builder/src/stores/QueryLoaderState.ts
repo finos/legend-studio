@@ -44,6 +44,14 @@ import type {
 
 export const QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT = 50;
 
+export enum SORT_BY_OPTIONS {
+  SORT_BY_CREATE = 'Last Created',
+  SORT_BY_VIEW = 'Last Viewed',
+  SORT_BY_UPDATE = 'Last Updated',
+}
+
+export type SortByOption = { label: string; value: string };
+
 export class QueryLoaderState {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly graphManagerState: BasicGraphManagerState;
@@ -83,6 +91,7 @@ export class QueryLoaderState {
   showingDefaultQueries = true;
   showPreviewViewer = false;
   queryPreviewContent?: QueryInfo | { name: string; content: string };
+  sortBy = '';
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -114,6 +123,8 @@ export class QueryLoaderState {
       searchText: observable,
       isCuratedTemplateToggled: observable,
       curatedTemplateQuerySepcifications: observable,
+      sortBy: observable,
+      setSortBy: action,
       setSearchText: action,
       setQueryLoaderDialogOpen: action,
       setQueries: action,
@@ -146,6 +157,10 @@ export class QueryLoaderState {
     this.isCuratedTemplateToggled = val;
   }
 
+  setSortBy(val: string): void {
+    this.sortBy = val;
+  }
+
   setSearchText(val: string): void {
     this.searchText = val;
   }
@@ -155,7 +170,7 @@ export class QueryLoaderState {
   }
 
   setQueries(val: LightQuery[]): void {
-    this.queries = val;
+    this.queries = val.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   setShowPreviewViewer(val: boolean): void {
@@ -224,7 +239,9 @@ export class QueryLoaderState {
           if (!this.fetchDefaultQueries) {
             return;
           }
-          this.queries = (yield this.fetchDefaultQueries()) as LightQuery[];
+          this.queries = (
+            (yield this.fetchDefaultQueries()) as LightQuery[]
+          ).sort((a, b) => a.name.localeCompare(b.name));
           this.searchQueriesState.pass();
         } catch (error) {
           this.searchQueriesState.fail();
@@ -270,9 +287,11 @@ export class QueryLoaderState {
       searchSpecification =
         this.decorateSearchSpecification?.(searchSpecification) ??
         searchSpecification;
-      this.queries = (yield this.graphManagerState.graphManager.searchQueries(
-        searchSpecification,
-      )) as LightQuery[];
+      this.queries = (
+        (yield this.graphManagerState.graphManager.searchQueries(
+          searchSpecification,
+        )) as LightQuery[]
+      ).sort((a, b) => a.name.localeCompare(b.name));
       this.searchQueriesState.pass();
     } catch (error) {
       assertErrorThrown(error);

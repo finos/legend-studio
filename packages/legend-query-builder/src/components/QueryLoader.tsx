@@ -40,6 +40,7 @@ import {
   MoreVerticalIcon,
   ThinChevronRightIcon,
   InfoCircleIcon,
+  CustomSelectorInput,
 } from '@finos/legend-art';
 import type { LightQuery, RawLambda } from '@finos/legend-graph';
 import {
@@ -54,7 +55,9 @@ import { observer } from 'mobx-react-lite';
 import { useRef, useState, useMemo, useEffect } from 'react';
 import {
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
+  SORT_BY_OPTIONS,
   type QueryLoaderState,
+  type SortByOption,
 } from '../stores/QueryLoaderState.js';
 
 const QueryPreviewViewer = observer(
@@ -110,15 +113,49 @@ export const QueryLoader = observer(
     const applicationStore = useApplicationStore();
     const searchInputRef = useRef<HTMLInputElement>(null);
     const queryRenameInputRef = useRef<HTMLInputElement>(null);
+    const sortByOptions = Object.values(SORT_BY_OPTIONS).map((op) => ({
+      label: op,
+      value: op,
+    }));
     const results = queryLoaderState.queries;
-    const curatedTemplateQueries =
-      queryLoaderState.curatedTemplateQuerySepcifications
+    const curatedTemplateQueries = [
+      ...queryLoaderState.curatedTemplateQuerySepcifications
         .map((s) =>
           queryLoaderState.queryBuilderState
             ? s.getCuratedTemplateQueries(queryLoaderState.queryBuilderState)
             : [],
         )
-        .flat();
+        .flat(),
+    ].sort((a, b) => a.title.localeCompare(b.title));
+
+    const applySortBy = (queries: LightQuery[], sortBy: string): void => {
+      switch (sortBy) {
+        case SORT_BY_OPTIONS.SORT_BY_CREATE:
+          queries.sort((a, b): number => {
+            const aCreateAt = a.createdAt ?? 0;
+            const bCreateAt = b.createdAt ?? 0;
+            return aCreateAt > bCreateAt ? -1 : 1;
+          });
+          return;
+        case SORT_BY_OPTIONS.SORT_BY_UPDATE:
+          queries.sort((a, b): number => {
+            const aUpdateAt = a.lastUpdatedAt ?? 0;
+            const bUpdateAt = b.lastUpdatedAt ?? 0;
+            return aUpdateAt > bUpdateAt ? -1 : 1;
+          });
+          return;
+        case SORT_BY_OPTIONS.SORT_BY_VIEW:
+          queries.sort((a, b): number => {
+            const aOpenAt = a.lastOpenAt ?? 0;
+            const bOpenAt = b.lastOpenAt ?? 0;
+            return aOpenAt > bOpenAt ? -1 : 1;
+          });
+          return;
+        default:
+          return;
+      }
+    };
+
     const loadCuratedTemplateQuery =
       queryLoaderState.curatedTemplateQuerySepcifications
         // already using an arrow function suggested by @typescript-eslint/unbound-method
@@ -254,6 +291,10 @@ export const QueryLoader = observer(
       queryLoaderState.setShowPreviewViewer(true);
     };
 
+    useEffect(() => {
+      applySortBy(results, queryLoaderState.sortBy);
+    }, [queryLoaderState.sortBy, results]);
+
     return (
       <div className="query-loader">
         <div className="query-loader__header">
@@ -355,7 +396,6 @@ export const QueryLoader = observer(
               queryLoaderState.previewQueryState.isInProgress
             }
           />
-
           <div className="query-loader__results">
             {queryLoaderState.searchQueriesState.hasCompleted && (
               <>
@@ -392,6 +432,26 @@ export const QueryLoader = observer(
                       'matches',
                     )}`
                   )}
+                  <div className="query-loader__results__sort-by">
+                    <div className="query-loader__results__sort-by__name">
+                      Sort By
+                    </div>
+                    <CustomSelectorInput
+                      className="query-loader__results__sort-by__selector"
+                      options={sortByOptions}
+                      onChange={(option: SortByOption) =>
+                        queryLoaderState.setSortBy(option.value)
+                      }
+                      value={{
+                        label: queryLoaderState.sortBy,
+                        value: queryLoaderState.sortBy,
+                      }}
+                      darkMode={
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled
+                      }
+                    />
+                  </div>
                 </div>
                 {!queryLoaderState.isCuratedTemplateToggled &&
                   results

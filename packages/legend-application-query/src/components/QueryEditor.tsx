@@ -718,7 +718,7 @@ export const QueryEditor = observer(() => {
       {editorStore.queryLoaderState.isQueryLoaderDialogOpen && (
         <QueryLoaderDialog
           queryLoaderState={editorStore.queryLoaderState}
-          title="Load query"
+          title="Select a Query to Load"
         />
       )}
       {editorStore.canPersistToSavedQuery &&

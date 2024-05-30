@@ -139,8 +139,9 @@
     &__summary {
       @include flexVCenter;
 
+      justify-content: space-between;
       font-size: 1.2rem;
-      height: 2rem;
+      height: 2.5rem;
       margin-bottom: 0.5rem;
       color: var(--color-dark-grey-400);
       padding: 0 0.5rem;
@@ -150,6 +151,23 @@
     &__summary__info {
       font-size: 1.2rem;
       margin-left: 0.5rem;
+    }
+
+    &__sort-by {
+      @include flexVCenter;
+
+      height: 2rem;
+
+      &__name {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: var(--color-dark-grey-400);
+      }
+
+      &__selector {
+        width: 11rem;
+        margin-left: 0.5rem;
+      }
     }
   }
 
