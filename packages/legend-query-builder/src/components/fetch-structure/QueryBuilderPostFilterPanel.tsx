@@ -109,6 +109,10 @@ import {
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
+import {
+  QueryBuilderPostFilterOperator_In,
+  QueryBuilderPostFilterOperator_NotIn,
+} from '../../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
   forwardRef<
@@ -305,16 +309,19 @@ const isProjectionColumnDragSource = (
   (itemToTest as QueryBuilderProjectionColumnDragSource).columnState !==
   undefined;
 
-const areTypesCompatible = (
+const canDropItemOntoNodeValue = (
   item: QueryBuilderVariableDragSource | QueryBuilderProjectionColumnDragSource,
   condition: PostFilterConditionState,
 ): boolean => {
   const itemParameterType = isProjectionColumnDragSource(item)
     ? item.columnState.getColumnType()
     : item.variable.genericType?.value.rawType;
+  const conditionOperator = condition.operator;
   const conditionValueType = condition.leftConditionValue.getColumnType();
   return (
     conditionValueType !== undefined &&
+    !(conditionOperator instanceof QueryBuilderPostFilterOperator_In) &&
+    !(conditionOperator instanceof QueryBuilderPostFilterOperator_NotIn) &&
     isTypeCompatibleForAssignment(itemParameterType, conditionValueType)
   );
 };
@@ -344,7 +351,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
           : item.variable.genericType?.value.rawType;
         const conditionValueType =
           node.condition.leftConditionValue.getColumnType();
-        if (areTypesCompatible(item, node.condition)) {
+        if (canDropItemOntoNodeValue(item, node.condition)) {
           if (isProjectionColumnDragSource(item)) {
             node.condition.setRightConditionVal(
               new PostFilterTDSColumnValueConditionValueState(
@@ -373,13 +380,16 @@ const QueryBuilderPostFilterConditionEditor = observer(
           QUERY_BUILDER_VARIABLE_DND_TYPE,
           QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
         ],
+        canDrop: (item): boolean =>
+          canDropItemOntoNodeValue(item, node.condition),
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item);
           } // prevent drop event propagation to accomondate for nested DnD
         },
         collect: (monitor) => ({
-          isFilterValueDragOver: monitor.isOver({ shallow: true }),
+          isFilterValueDragOver:
+            monitor.isOver({ shallow: true }) && monitor.canDrop(),
         }),
       }),
       [handleDrop],
@@ -389,7 +399,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
         monitor.isDragging() &&
         (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
           monitor.getItemType() === QUERY_BUILDER_VARIABLE_DND_TYPE) &&
-        areTypesCompatible(monitor.getItem(), node.condition),
+        canDropItemOntoNodeValue(monitor.getItem(), node.condition),
     }));
     const resetNode = (): void => {
       node.condition.buildFromValueSpec(
