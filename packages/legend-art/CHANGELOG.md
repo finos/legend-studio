@@ -1,5 +1,7 @@
 # @finos/legend-art
 
+## 7.1.33
+
 ## 7.1.32
 
 ### Patch Changes
