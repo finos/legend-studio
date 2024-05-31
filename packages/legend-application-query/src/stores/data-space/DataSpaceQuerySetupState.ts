@@ -28,7 +28,7 @@ import {
   QueryBuilderState,
   QueryBuilderDataBrowserWorkflow,
 } from '@finos/legend-query-builder';
-import type { ProjectGAVCoordinates } from '@finos/legend-storage';
+import type { Entity, ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
   ActionState,
   assertErrorThrown,
@@ -56,7 +56,7 @@ import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelp
 
 type DataSpaceVisitedEntity = {
   visited: VisitedDataspace;
-  entity: StoredEntity;
+  entity: Entity;
 };
 export class DataSpaceQuerySetupState extends QueryBuilderState {
   editorStore: QueryEditorStore;
@@ -114,6 +114,8 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
       showAdvancedSearchPanel: action,
       hideAdvancedSearchPanel: action,
       initializeDataSpaceSetup: flow,
+      redirectIfPossible: flow,
+      hyrdateVisitedDataSpace: flow,
     });
 
     this.editorStore = editorStore;
@@ -164,9 +166,7 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
             hydrated.visited.versionId ?? LATEST_VERSION_ALIAS,
             hydrated.visited.path,
             hydrated.visited.execContext ??
-              extractDataSpaceInfo(hydrated.entity, false)
-                .defaultExecutionContext ??
-              '',
+              (hydrated.entity.content.defaultExecutionContext as string),
             undefined,
             undefined,
           ),
@@ -221,8 +221,8 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
         visited.artifactId,
         visited.versionId ?? LATEST_VERSION_ALIAS,
         visited.path,
-      )) as StoredEntity;
-      const content = entity.entity.content as {
+      )) as Entity;
+      const content = entity.content as {
         executionContexts: { name: string }[];
       };
       if (visited.execContext) {

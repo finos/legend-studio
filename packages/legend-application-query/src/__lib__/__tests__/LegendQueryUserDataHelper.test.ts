@@ -22,6 +22,11 @@ import {
   USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT,
 } from '../LegendQueryUserDataHelper.js';
 import type { DataSpaceInfo } from '@finos/legend-extension-dsl-data-space/application';
+import {
+  createIdFromDataSpaceInfo,
+  hasDataSpaceInfoBeenVisited,
+} from '../LegendQueryUserDataSpaceHelper.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 type MockUserDataStoreValue = object | undefined;
 
@@ -155,9 +160,9 @@ describe('LegendQueryUserDataHelper', () => {
       };
 
       const userDataService = getService();
-      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace);
-      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace2);
-      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace3);
+      LegendQueryUserDataHelper.addVisitedDatspace(userDataService, dataspace);
+      LegendQueryUserDataHelper.addVisitedDatspace(userDataService, dataspace2);
+      LegendQueryUserDataHelper.addVisitedDatspace(userDataService, dataspace3);
 
       const expected = [dataspace3.id, dataspace2.id, dataspace.id];
 
@@ -194,9 +199,9 @@ describe('LegendQueryUserDataHelper', () => {
       };
 
       const userDataService = getService();
-      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace);
-      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace2);
-      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace3);
+      LegendQueryUserDataHelper.addVisitedDatspace(userDataService, dataspace);
+      LegendQueryUserDataHelper.addVisitedDatspace(userDataService, dataspace2);
+      LegendQueryUserDataHelper.addVisitedDatspace(userDataService, dataspace3);
 
       const expected = dataspace3.id;
 
@@ -213,7 +218,7 @@ describe('LegendQueryUserDataHelper', () => {
         execContext: 'key',
         versionId: '4.0.0',
       };
-      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace4);
+      LegendQueryUserDataHelper.addVisitedDatspace(userDataService, dataspace4);
       expect(
         LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
       ).toHaveLength(3);
@@ -234,7 +239,10 @@ describe('LegendQueryUserDataHelper', () => {
           versionId: 'latest',
         };
 
-        LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace);
+        LegendQueryUserDataHelper.addVisitedDatspace(
+          userDataService,
+          dataspace,
+        );
       }
       expect(
         LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
@@ -282,7 +290,7 @@ describe('LegendQueryUserDataHelper', () => {
         defaultExecutionContext: undefined,
       };
 
-      const dataSpaceInfo5 = {
+      const dataSpaceInfo5: DataSpaceInfo = {
         groupId: 'my-group',
         artifactId: 'artifactMore',
         versionId: '3.0.0',
@@ -319,6 +327,22 @@ describe('LegendQueryUserDataHelper', () => {
       expect(
         LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
       ).toHaveLength(1);
+      expect(
+        hasDataSpaceInfoBeenVisited(
+          dataSpaceInfo3,
+          LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
+            userDataService,
+          ),
+        ),
+      ).toBe(true);
+      expect(
+        hasDataSpaceInfoBeenVisited(
+          dataSpaceInfo1,
+          LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
+            userDataService,
+          ),
+        ),
+      ).toBe(true);
       const mostRecent =
         LegendQueryUserDataHelper.getRecentlyVisitedDataSpace(userDataService);
       expect(mostRecent?.versionId).toBe('3.0.0');
@@ -361,6 +385,27 @@ describe('LegendQueryUserDataHelper', () => {
         'my-group:artifactMore:model::MyDataSpace2',
         'my-group:artifact:model::MyDataSpace',
       ]);
+      expect(
+        hasDataSpaceInfoBeenVisited(
+          dataSpaceInfo4,
+          LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
+            userDataService,
+          ),
+        ),
+      ).toBe(true);
+      LegendQueryUserDataHelper.updateVisitedDataSpaceExecContext(
+        userDataService,
+        'my-group',
+        'artifactMore',
+        'model::MyDataSpace2',
+        'new context',
+      );
+      const visitedExec =
+        LegendQueryUserDataHelper.findRecentlyVisitedDataSpace(
+          userDataService,
+          guaranteeNonNullable(createIdFromDataSpaceInfo(dataSpaceInfo5)),
+        );
+      expect(visitedExec?.execContext).toBe('new context');
     });
   });
 });
