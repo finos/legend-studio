@@ -486,7 +486,7 @@ test(
     fireEvent.click(await waitFor(() => getByText(ParameterDialog, 'Now')));
     fireEvent.click(await waitFor(() => renderResult.getByText('Today')));
     fireEvent.click(await waitFor(() => getByText(ParameterDialog, 'Update')));
-    fireEvent.click(await waitFor(() => getByText(parameterPanel, 'Today')));
+    await waitFor(() => getByText(parameterPanel, 'Today'));
     await waitFor(() =>
       renderResult.getByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
