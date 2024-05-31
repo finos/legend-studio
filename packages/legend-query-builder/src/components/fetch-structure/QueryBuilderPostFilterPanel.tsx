@@ -465,7 +465,8 @@ const QueryBuilderPostFilterConditionEditor = observer(
       <div className="query-builder-post-filter-tree__node__label__content dnd__entry__container">
         <PanelEntryDropZonePlaceholder
           isDragOver={isDragOver}
-          label="Add New Logical Group"
+          alwaysShowChildren={true}
+          className="query-builder-post-filter-tree__node__drop-zone-placeholder"
         >
           <div className="query-builder-post-filter-tree__condition-node">
             <div className="query-builder-post-filter-tree__condition-node__property">
