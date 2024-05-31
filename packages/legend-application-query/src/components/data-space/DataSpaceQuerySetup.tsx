@@ -95,7 +95,7 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
       queryBuilderState.showAdvancedSearchPanel();
 
     useEffect(() => {
-      flowResult(queryBuilderState.loadDataSpaces()).catch(
+      flowResult(queryBuilderState.initializeDataSpaceSetup()).catch(
         applicationStore.alertUnhandledError,
       );
     }, [queryBuilderState, applicationStore]);

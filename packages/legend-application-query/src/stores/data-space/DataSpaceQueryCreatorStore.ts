@@ -29,6 +29,8 @@ import {
   LATEST_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
 import {
+  LogEvent,
+  assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
   uuid,
@@ -59,6 +61,12 @@ import {
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
 import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
+import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
+import {
+  idFromGavAndPath,
+  isDataSpaceInfoVisited,
+} from '../../__lib__/LegendQueryUserDataSpaceHelper.js';
+import { LEGEND_QUERY_APP_EVENT } from '../../__lib__/LegendQueryEvent.js';
 
 export class DataSpaceQueryCreatorStore extends QueryEditorStore {
   readonly groupId: string;
@@ -144,6 +152,10 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       versionId: projectInfo.versionId,
       dataSpace: dataSpace.path,
     };
+    const visitedDataSpaces =
+      LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
+        this.applicationStore.userDataService,
+      );
     const queryBuilderState = new DataSpaceQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
@@ -235,6 +247,8 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       projectInfo,
       this.applicationStore.config.options.queryBuilderConfig,
       sourceInfo,
+      (dataSpaceInfo: DataSpaceInfo) =>
+        isDataSpaceInfoVisited(dataSpaceInfo, visitedDataSpaces),
     );
     queryBuilderState.setExecutionContext(executionContext);
     queryBuilderState.propagateExecutionContextChange(executionContext);
@@ -257,7 +271,33 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       );
     }
 
+    // add to visited dataspaces
+    this.addVisitedDataSpace(executionContext.name);
     return queryBuilderState;
+  }
+
+  addVisitedDataSpace(execName: string | undefined): void {
+    try {
+      LegendQueryUserDataHelper.addRecentlyVistedDatspace(
+        this.applicationStore.userDataService,
+        {
+          groupId: this.groupId,
+          artifactId: this.artifactId,
+          versionId: this.versionId,
+          path: this.dataSpacePath,
+          name: extractElementNameFromPath(this.dataSpacePath),
+          title: undefined,
+          defaultExecutionContext: undefined,
+        },
+        execName,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.warn(
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.LOCAL_STORAGE_PERSIST_ERROR),
+        error.message,
+      );
+    }
   }
 
   getPersistConfiguration(
@@ -282,5 +322,12 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
         }
       },
     };
+  }
+
+  override onInitializeFailure(): void {
+    LegendQueryUserDataHelper.removeRecentlyViewedDataSpace(
+      this.applicationStore.userDataService,
+      idFromGavAndPath(this.groupId, this.artifactId, this.dataSpacePath),
+    );
   }
 }

@@ -147,6 +147,9 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   dataSpace: DataSpace;
   executionContext!: DataSpaceExecutionContext;
   dataSpaces: DataSpaceInfo[] = [];
+  readonly prioritizeDataSpaceFunc?:
+    | ((val: DataSpaceInfo) => boolean)
+    | undefined;
   showRuntimeSelector = false;
   advancedSearchState?: DataSpaceAdvancedSearchState | undefined;
   isTemplateQueryDialogOpen = false;
@@ -170,6 +173,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     projectInfo?: DataSpaceProjectInfo | undefined,
     config?: QueryBuilderConfig | undefined,
     sourceInfo?: QuerySDLC | undefined,
+    prioritizeDataSpaceFunc?: ((val: DataSpaceInfo) => boolean) | undefined,
   ) {
     super(applicationStore, graphManagerState, workflow, config, sourceInfo);
 
@@ -195,6 +199,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     this.onExecutionContextChange = onExecutionContextChange;
     this.onRuntimeChange = onRuntimeChange;
     this.onClassChange = onClassChange;
+    this.prioritizeDataSpaceFunc = prioritizeDataSpaceFunc;
     this.isAdvancedDataSpaceSearchEnabled = isAdvancedDataSpaceSearchEnabled;
     this.dataSpaceAnalysisResult = dataSpaceAnalysisResult;
     this.workflowState.updateActionConfig(actionConfig);

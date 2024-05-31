@@ -21,6 +21,7 @@ import {
   USER_DATA_QUERY_DATASPACE_LIMIT,
   USER_DATA_RECENTLY_VIEWED_QUERIES_LIMIT,
 } from '../LegendQueryUserDataHelper.js';
+import type { DataSpaceInfo } from '@finos/legend-extension-dsl-data-space/application';
 
 type MockUserDataStoreValue = object | undefined;
 
@@ -129,80 +130,237 @@ describe('LegendQueryUserDataHelper', () => {
 
   describe('Recently queried dataspaces', () => {
     it('should save and retrieve a recently queried dataspace', () => {
-      const dataspace = 'extensions/dataspace/some-dataspace:test-demo:latest';
-      const dataspace2 =
-        'extensions/dataspace/some-dataspace:test-demo-2:latest';
-      const dataspace3 =
-        'extensions/dataspace/some-dataspace:test-demo-3:latest';
+      const dataspace = {
+        id: 'my-group:myartifact:model::MyDataSpace',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataSpace',
+        versionId: 'latest',
+      };
+      const dataspace2 = {
+        id: 'my-group:myartifact:model::MyDataSpace2',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataSpace2',
+        execContext: 'key',
+        versionId: 'latest',
+      };
+      const dataspace3 = {
+        id: 'my-group:different:model::MyDataSpace',
+        groupId: 'my-group',
+        artifactId: 'different',
+        path: 'model::MyDataSpace2',
+        execContext: 'key',
+        versionId: 'latest',
+      };
 
       const userDataService = getService();
-      LegendQueryUserDataHelper.saveRecentlyQueriedDataspace(
-        userDataService,
-        dataspace,
-      );
-      LegendQueryUserDataHelper.saveRecentlyQueriedDataspace(
-        userDataService,
-        dataspace2,
-      );
-      LegendQueryUserDataHelper.saveRecentlyQueriedDataspace(
-        userDataService,
-        dataspace3,
-      );
+      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace);
+      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace2);
+      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace3);
 
-      const expected = [dataspace3, dataspace2, dataspace];
+      const expected = [dataspace3.id, dataspace2.id, dataspace.id];
 
       expect(
-        LegendQueryUserDataHelper.getRecentlyQueriedDataspaceList(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
           userDataService,
-        ),
+        ).map((e) => e.id),
       ).toEqual(expected);
     });
 
-    it('should retrieve the most recent queried dataspace', () => {
-      const dataspace = 'extensions/dataspace/some-dataspace:test-demo:latest';
-      const dataspace2 =
-        'extensions/dataspace/some-dataspace:test-demo-2:latest';
-      const dataspace3 =
-        'extensions/dataspace/some-dataspace:test-demo-3:latest';
+    it('should retrieve the most recent queried dataspace and disregard version when replacing', () => {
+      const dataspace = {
+        id: 'my-group:myartifact:model::MyDataSpace',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataSpace',
+        versionId: 'latest',
+      };
+      const dataspace2 = {
+        id: 'my-group:myartifact:model::MyDataSpace2',
+        groupId: 'my-group',
+        artifactId: 'myartifact',
+        path: 'model::MyDataSpace2',
+        execContext: 'key',
+        versionId: 'latest',
+      };
+      const dataspace3 = {
+        id: 'my-group:different:model::MyDataSpace2',
+        groupId: 'my-group',
+        artifactId: 'different',
+        path: 'model::MyDataSpace2',
+        execContext: 'key',
+        versionId: 'latest',
+      };
 
       const userDataService = getService();
-      LegendQueryUserDataHelper.saveRecentlyQueriedDataspace(
-        userDataService,
-        dataspace,
-      );
-      LegendQueryUserDataHelper.saveRecentlyQueriedDataspace(
-        userDataService,
-        dataspace2,
-      );
-      LegendQueryUserDataHelper.saveRecentlyQueriedDataspace(
-        userDataService,
-        dataspace3,
-      );
+      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace);
+      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace2);
+      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace3);
 
-      const expected = dataspace3;
+      const expected = dataspace3.id;
 
       expect(
-        LegendQueryUserDataHelper.getRecentlyQueriedDataspace(userDataService),
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpace(userDataService)
+          ?.id,
       ).toEqual(expected);
+
+      const dataspace4 = {
+        id: 'my-group:different:model::MyDataSpace2',
+        groupId: 'my-group',
+        artifactId: 'different',
+        path: 'model::MyDataSpace2',
+        execContext: 'key',
+        versionId: '4.0.0',
+      };
+      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace4);
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
+      ).toHaveLength(3);
+      const visited =
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpace(userDataService);
+      expect(visited?.versionId).toEqual(dataspace4.versionId);
     });
 
     it(`should maintain a list of ${USER_DATA_QUERY_DATASPACE_LIMIT} saved dataspace`, () => {
       const userDataService = getService();
 
       for (let i = 0; i < USER_DATA_QUERY_DATASPACE_LIMIT + 2; i++) {
-        const dataspace = `extensions/dataspace/some-dataspace-${i}:test-demo:latest`;
+        const dataspace = {
+          id: `my-group:myartifact:model::MyDataSpace${i}`,
+          groupId: 'my-group',
+          artifactId: 'myartifact',
+          path: `model::MyDataSpace${i}`,
+          versionId: 'latest',
+        };
 
-        LegendQueryUserDataHelper.saveRecentlyQueriedDataspace(
-          userDataService,
-          dataspace,
-        );
+        LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace);
       }
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
+      ).toHaveLength(USER_DATA_QUERY_DATASPACE_LIMIT);
+    });
+
+    it('should retrieve the most recent queried dataspace and disregard version when replacing', () => {
+      const dataSpaceInfo1: DataSpaceInfo = {
+        groupId: 'my-group',
+        artifactId: 'artifact',
+        versionId: 'latest',
+        title: undefined,
+        name: 'MyDataSpace',
+        path: 'model::MyDataSpace',
+        defaultExecutionContext: undefined,
+      };
+
+      const dataSpaceInfo2 = {
+        groupId: undefined,
+        artifactId: undefined,
+        versionId: undefined,
+        title: undefined,
+        name: 'MyDataSpace',
+        path: 'model::MyDataSpace',
+        defaultExecutionContext: undefined,
+      };
+
+      const dataSpaceInfo3 = {
+        groupId: 'my-group',
+        artifactId: 'artifact',
+        versionId: '3.0.0',
+        title: undefined,
+        name: 'MyDataSpace',
+        path: 'model::MyDataSpace',
+        defaultExecutionContext: undefined,
+      };
+
+      const dataSpaceInfo4 = {
+        groupId: 'my-group',
+        artifactId: 'artifact',
+        versionId: '3.0.0',
+        title: undefined,
+        name: 'MyDataSpace',
+        path: 'model::MyDataSpace2',
+        defaultExecutionContext: undefined,
+      };
+
+      const dataSpaceInfo5 = {
+        groupId: 'my-group',
+        artifactId: 'artifactMore',
+        versionId: '3.0.0',
+        title: undefined,
+        name: 'MyDataSpace',
+        path: 'model::MyDataSpace2',
+        defaultExecutionContext: undefined,
+      };
+
+      const userDataService = getService();
+      LegendQueryUserDataHelper.addRecentlyVistedDatspace(
+        userDataService,
+        dataSpaceInfo1,
+        undefined,
+      );
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
+      ).toHaveLength(1);
+      LegendQueryUserDataHelper.addRecentlyVistedDatspace(
+        userDataService,
+        dataSpaceInfo2,
+        undefined,
+      );
+      // we do not add an unconfigured dataSpaceInfo
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
+      ).toHaveLength(1);
+
+      LegendQueryUserDataHelper.addRecentlyVistedDatspace(
+        userDataService,
+        dataSpaceInfo3,
+        undefined,
+      );
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
+      ).toHaveLength(1);
+      const mostRecent =
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpace(userDataService);
+      expect(mostRecent?.versionId).toBe('3.0.0');
+      LegendQueryUserDataHelper.addRecentlyVistedDatspace(
+        userDataService,
+        dataSpaceInfo4,
+        undefined,
+      );
 
       expect(
-        LegendQueryUserDataHelper.getRecentlyQueriedDataspaceList(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
+      ).toHaveLength(2);
+
+      LegendQueryUserDataHelper.addRecentlyVistedDatspace(
+        userDataService,
+        dataSpaceInfo5,
+        undefined,
+      );
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
+      ).toHaveLength(3);
+      LegendQueryUserDataHelper.addRecentlyVistedDatspace(
+        userDataService,
+        dataSpaceInfo4,
+        'prod-exec',
+      );
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
+      ).toHaveLength(3);
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpace(userDataService)
+          ?.execContext,
+      ).toBe('prod-exec');
+      expect(
+        LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
           userDataService,
-        ).length,
-      ).toBe(USER_DATA_QUERY_DATASPACE_LIMIT);
+        ).map((e) => e.id),
+      ).toStrictEqual([
+        'my-group:artifact:model::MyDataSpace2',
+        'my-group:artifactMore:model::MyDataSpace2',
+        'my-group:artifact:model::MyDataSpace',
+      ]);
     });
   });
 });
