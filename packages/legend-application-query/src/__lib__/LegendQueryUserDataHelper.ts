@@ -24,8 +24,9 @@ import {
   raw,
 } from 'serializr';
 import {
-  createVisitedDataspace,
-  getIdFromDataSpaceInfo,
+  createVisitedDataspaceFromInfo,
+  createIdFromDataSpaceInfo,
+  createVisitedDataSpaceId,
   type SavedVisitedDataSpaces,
   type VisitedDataspace,
 } from './LegendQueryUserDataSpaceHelper.js';
@@ -154,6 +155,15 @@ export class LegendQueryUserDataHelper {
     );
   }
 
+  static findRecentlyVisitedDataSpace(
+    service: UserDataService,
+    id: string,
+  ): VisitedDataspace | undefined {
+    return LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(service).find(
+      (v) => v.id === id,
+    );
+  }
+
   static getRecentlyVisitedDataSpace(
     service: UserDataService,
   ): VisitedDataspace | undefined {
@@ -207,7 +217,7 @@ export class LegendQueryUserDataHelper {
   }
 
   static removeDataSpace(service: UserDataService, info: DataSpaceInfo): void {
-    const id = getIdFromDataSpaceInfo(info);
+    const id = createIdFromDataSpaceInfo(info);
     if (id) {
       LegendQueryUserDataHelper.removeRecentlyViewedDataSpace(service, id);
     }
@@ -218,7 +228,7 @@ export class LegendQueryUserDataHelper {
     info: DataSpaceInfo,
     execContext: string | undefined,
   ): void {
-    const visited = createVisitedDataspace(info, execContext);
+    const visited = createVisitedDataspaceFromInfo(info, execContext);
     if (visited) {
       const dataspaces =
         LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(service);
@@ -229,7 +239,7 @@ export class LegendQueryUserDataHelper {
       );
     }
   }
-  static addVistedDatspace(
+  static addVisitedDatspace(
     service: UserDataService,
     visited: VisitedDataspace,
   ): void {
@@ -240,5 +250,24 @@ export class LegendQueryUserDataHelper {
       visited,
       dataspaces,
     );
+  }
+
+  static updateVisitedDataSpaceExecContext(
+    service: UserDataService,
+    groupId: string,
+    artifactId: string,
+    dataspace: string,
+    exec: string,
+  ): boolean {
+    const visited = LegendQueryUserDataHelper.findRecentlyVisitedDataSpace(
+      service,
+      createVisitedDataSpaceId(groupId, artifactId, dataspace),
+    );
+    if (visited) {
+      visited.execContext = exec;
+      LegendQueryUserDataHelper.addVisitedDatspace(service, visited);
+      return true;
+    }
+    return false;
   }
 }
