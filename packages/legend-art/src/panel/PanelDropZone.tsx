@@ -137,10 +137,19 @@ export const PanelEntryDropZonePlaceholder: React.FC<{
           },
         ])}
       >
-        <div className="dnd__entry-dropzone__placeholder__content">
-          <div className="dnd__entry-dropzone__placeholder__label">
-            {alwaysShowChildren ? <>{children}</> : label ?? ''}
-          </div>
+        <div
+          className={clsx('dnd__entry-dropzone__placeholder__content', {
+            'dnd__entry-dropzone__placeholder__content--children':
+              alwaysShowChildren,
+          })}
+        >
+          {alwaysShowChildren ? (
+            <>{children}</>
+          ) : (
+            <div className="dnd__entry-dropzone__placeholder__label">
+              {label ?? ''}
+            </div>
+          )}
         </div>
       </div>
     );

@@ -296,6 +296,29 @@ export const QueryBuilderColumnBadge = observer(
     );
   },
 );
+
+const isProjectionColumnDragSource = (
+  itemToTest:
+    | QueryBuilderVariableDragSource
+    | QueryBuilderProjectionColumnDragSource,
+): itemToTest is QueryBuilderProjectionColumnDragSource =>
+  (itemToTest as QueryBuilderProjectionColumnDragSource).columnState !==
+  undefined;
+
+const areTypesCompatible = (
+  item: QueryBuilderVariableDragSource | QueryBuilderProjectionColumnDragSource,
+  condition: PostFilterConditionState,
+): boolean => {
+  const itemParameterType = isProjectionColumnDragSource(item)
+    ? item.columnState.getColumnType()
+    : item.variable.genericType?.value.rawType;
+  const conditionValueType = condition.leftConditionValue.getColumnType();
+  return (
+    conditionValueType !== undefined &&
+    isTypeCompatibleForAssignment(itemParameterType, conditionValueType)
+  );
+};
+
 const QueryBuilderPostFilterConditionEditor = observer(
   (props: {
     node: QueryBuilderPostFilterTreeConditionNodeData;
@@ -316,23 +339,13 @@ const QueryBuilderPostFilterConditionEditor = observer(
           | QueryBuilderVariableDragSource
           | QueryBuilderProjectionColumnDragSource,
       ): void => {
-        const isProjectionColumn = (
-          itemToTest:
-            | QueryBuilderVariableDragSource
-            | QueryBuilderProjectionColumnDragSource,
-        ): itemToTest is QueryBuilderProjectionColumnDragSource =>
-          (itemToTest as QueryBuilderProjectionColumnDragSource).columnState !==
-          undefined;
-        const parameterType = isProjectionColumn(item)
+        const parameterType = isProjectionColumnDragSource(item)
           ? item.columnState.getColumnType()
           : item.variable.genericType?.value.rawType;
         const conditionValueType =
           node.condition.leftConditionValue.getColumnType();
-        if (
-          conditionValueType &&
-          isTypeCompatibleForAssignment(parameterType, conditionValueType)
-        ) {
-          if (isProjectionColumn(item)) {
+        if (areTypesCompatible(item, node.condition)) {
+          if (isProjectionColumnDragSource(item)) {
             node.condition.setRightConditionVal(
               new PostFilterTDSColumnValueConditionValueState(
                 node.condition,
@@ -371,6 +384,13 @@ const QueryBuilderPostFilterConditionEditor = observer(
       }),
       [handleDrop],
     );
+    const { isFilterValueDroppable } = useDragLayer((monitor) => ({
+      isFilterValueDroppable:
+        monitor.isDragging() &&
+        (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
+          monitor.getItemType() === QUERY_BUILDER_VARIABLE_DND_TYPE) &&
+        areTypesCompatible(monitor.getItem(), node.condition),
+    }));
     const resetNode = (): void => {
       node.condition.buildFromValueSpec(
         node.condition.operator.getDefaultFilterConditionValue(node.condition),
@@ -409,6 +429,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
           >
             <PanelEntryDropZonePlaceholder
               isDragOver={isFilterValueDragOver}
+              isDroppable={isFilterValueDroppable}
               label="Change Filter Value"
             >
               <BasicValueSpecificationEditor
@@ -446,6 +467,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
           >
             <PanelEntryDropZonePlaceholder
               isDragOver={isFilterValueDragOver}
+              isDroppable={isFilterValueDroppable}
               label="Change Filter Value"
             >
               <div className="query-builder-post-filter-tree__condition-node__property">

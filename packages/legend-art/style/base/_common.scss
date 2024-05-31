@@ -110,6 +110,10 @@
     width: 100%;
     margin: 0;
     font-weight: 700;
+
+    &--children {
+      display: inherit;
+    }
   }
 
   &--active &__content {
