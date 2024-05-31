@@ -1,5 +1,15 @@
 # @finos/legend-application-query
 
+## 13.4.17
+
+### Patch Changes
+
+- [#3208](https://github.com/finos/legend-studio/pull/3208) [`603ee53`](https://github.com/finos/legend-studio/commit/603ee53a5c0e28e30dbefc7863675b92183d8068) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add recently visited dataspaces. Redirect dataspace to most recent dataspace. Show recently visited datasapces on top of selector.
+
+- [#3202](https://github.com/finos/legend-studio/pull/3202) [`45f97a9`](https://github.com/finos/legend-studio/commit/45f97a94ce0187445bc388c7446f8c59581052e1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add saved dataspaces to LegendQueryUserDataHelper
+
+- [#3200](https://github.com/finos/legend-studio/pull/3200) [`5459b23`](https://github.com/finos/legend-studio/commit/5459b2327a87b098812daae8e7fa094bd73fde5e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show release notes up until the last opened version
+
 ## 13.4.16
 
 ### Patch Changes

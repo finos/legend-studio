@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 15.1.4
+
+### Patch Changes
+
+- [#3200](https://github.com/finos/legend-studio/pull/3200) [`5459b23`](https://github.com/finos/legend-studio/commit/5459b2327a87b098812daae8e7fa094bd73fde5e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show release notes up until the last opened version
+
 ## 15.1.3
 
 ## 15.1.2

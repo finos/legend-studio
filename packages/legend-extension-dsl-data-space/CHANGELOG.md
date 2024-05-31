@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.3.16
+
+### Patch Changes
+
+- [#3208](https://github.com/finos/legend-studio/pull/3208) [`603ee53`](https://github.com/finos/legend-studio/commit/603ee53a5c0e28e30dbefc7863675b92183d8068) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add recently visited dataspaces. Redirect dataspace to most recent dataspace. Show recently visited datasapces on top of selector.
+
 ## 10.3.15
 
 ## 10.3.14

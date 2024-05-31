@@ -1,5 +1,7 @@
 # @finos/legend-application-studio
 
+## 28.17.1
+
 ## 28.17.0
 
 ### Minor Changes
