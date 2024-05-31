@@ -311,15 +311,37 @@ const QueryBuilderPostFilterConditionEditor = observer(
     const rightConditionValue = node.condition.rightConditionValue;
     // Drag and Drop on filter condition value
     const handleDrop = useCallback(
-      (item: QueryBuilderVariableDragSource): void => {
-        const parameterType = item.variable.genericType?.value.rawType;
+      (
+        item:
+          | QueryBuilderVariableDragSource
+          | QueryBuilderProjectionColumnDragSource,
+      ): void => {
+        const isProjectionColumn = (
+          itemToTest:
+            | QueryBuilderVariableDragSource
+            | QueryBuilderProjectionColumnDragSource,
+        ): itemToTest is QueryBuilderProjectionColumnDragSource =>
+          (itemToTest as QueryBuilderProjectionColumnDragSource).columnState !==
+          undefined;
+        const parameterType = isProjectionColumn(item)
+          ? item.columnState.getColumnType()
+          : item.variable.genericType?.value.rawType;
         const conditionValueType =
           node.condition.leftConditionValue.getColumnType();
         if (
           conditionValueType &&
           isTypeCompatibleForAssignment(parameterType, conditionValueType)
         ) {
-          node.condition.buildFromValueSpec(item.variable);
+          if (isProjectionColumn(item)) {
+            node.condition.setRightConditionVal(
+              new PostFilterTDSColumnValueConditionValueState(
+                node.condition,
+                item.columnState,
+              ),
+            );
+          } else {
+            node.condition.buildFromValueSpec(item.variable);
+          }
         } else {
           applicationStore.notificationService.notifyWarning(
             `Incompatible parameter type ${parameterType?.name}. ${parameterType?.name} is not compatible with type ${conditionValueType?.name}.`,
@@ -334,7 +356,10 @@ const QueryBuilderPostFilterConditionEditor = observer(
       { isFilterValueDragOver: boolean }
     >(
       () => ({
-        accept: [QUERY_BUILDER_VARIABLE_DND_TYPE],
+        accept: [
+          QUERY_BUILDER_VARIABLE_DND_TYPE,
+          QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+        ],
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item);
