@@ -47,6 +47,7 @@ import {
   MenuContentItemIcon,
   MenuContentItemLabel,
   PanelLoadingIndicator,
+  TimesCircleIcon,
 } from '@finos/legend-art';
 import {
   type ValueSpecification,
@@ -219,8 +220,9 @@ export const QueryBuilderColumnBadge = observer(
     onColumnChange?: (
       columnState: QueryBuilderProjectionColumnState,
     ) => Promise<void>;
+    removeColumn?: () => void;
   }) => {
-    const { colState, onColumnChange } = props;
+    const { colState, onColumnChange, removeColumn } = props;
     const applicationStore = useApplicationStore();
     const type = colState.getColumnType();
     const handleDrop = onColumnChange
@@ -281,6 +283,14 @@ export const QueryBuilderColumnBadge = observer(
             <InfoCircleIcon />
           </div>
         </QueryBuilderColumnInfoTooltip>
+        {removeColumn && (
+          <button
+            className="query-builder-column-badge__action"
+            onClick={removeColumn}
+          >
+            <TimesCircleIcon />
+          </button>
+        )}
       </div>
     );
 
@@ -426,6 +436,11 @@ const QueryBuilderPostFilterConditionEditor = observer(
       reloadValues: debouncedTypeaheadSearch,
       cleanUpReloadValues,
     };
+    const removeTDSColumnValue = (): void => {
+      node.condition.buildFromValueSpec(
+        node.condition.operator.getDefaultFilterConditionValue(node.condition),
+      );
+    };
 
     const renderRightVal = (): React.ReactNode => {
       if (
@@ -484,6 +499,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
                 <QueryBuilderColumnBadge
                   colState={rightConditionValue.tdsColumn}
                   onColumnChange={changeRightCol}
+                  removeColumn={removeTDSColumnValue}
                 />
               </div>
             </PanelEntryDropZonePlaceholder>
