@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.34
+
+### Patch Changes
+
+- [#3198](https://github.com/finos/legend-studio/pull/3198) [`b60c5cf`](https://github.com/finos/legend-studio/commit/b60c5cf844d34d26e9d5f5421020907afaf061bc) ([@travisstebbins](https://github.com/travisstebbins)) - Pass additional props to CustomInput component
+
 ## 7.1.33
 
 ## 7.1.32

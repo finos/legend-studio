@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.14.41
+
+### Patch Changes
+
+- [#3181](https://github.com/finos/legend-studio/pull/3181) [`e2863b7`](https://github.com/finos/legend-studio/commit/e2863b77923fc5e9770722bbc7131f2f3d5e5bf9) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Enable default value flow for milestoning parameters
+
+- [#3198](https://github.com/finos/legend-studio/pull/3198) [`b60c5cf`](https://github.com/finos/legend-studio/commit/b60c5cf844d34d26e9d5f5421020907afaf061bc) ([@travisstebbins](https://github.com/travisstebbins)) - Optimize is in/is not in filter editor
+
 ## 4.14.40
 
 ## 4.14.39
