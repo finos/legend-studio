@@ -29,9 +29,11 @@ import {
   ModalFooterButton,
   PanelFormValidatedTextField,
   QuestionCircleIcon,
+  PanelFormSection,
 } from '@finos/legend-art';
 import {
   type Type,
+  type ValueSpecification,
   VariableExpression,
   GenericTypeExplicitReference,
   GenericType,
@@ -53,6 +55,10 @@ import {
   getPackageableElementOptionFormatter,
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
+import { deepClone } from '@finos/legend-shared';
+import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graph/QueryBuilderMetaModelConst.js';
+import { createSupportedFunctionExpression } from '../stores/shared/ValueSpecificationEditorHelper.js';
 
 type MultiplicityOption = { label: string; value: Multiplicity };
 
@@ -118,6 +124,13 @@ const VariableExpressionEditor = observer(
     const nameInputRef = useCallback((ref: HTMLInputElement | null): void => {
       ref?.focus();
     }, []);
+    const [defaultMilestoningValue, setDefaultMilestoningValue] = useState(
+      deepClone(lambdaParameterState.value),
+    );
+    const isMilestoningParameter =
+      queryBuilderState.milestoningState.isMilestoningParameter(
+        lambdaParameterState.parameter,
+      );
 
     const getValidationMessage = (input: string): string | undefined =>
       !hasEditedName
@@ -146,6 +159,13 @@ const VariableExpressionEditor = observer(
       if (isCreating) {
         queryParametersState.addParameter(lambdaParameterState);
       }
+      if (isMilestoningParameter) {
+        queryBuilderState.milestoningState.updateMilestoningParameterValue(
+          lambdaParameterState.parameter,
+          defaultMilestoningValue,
+        );
+      }
+
       handleCancel();
     };
 
@@ -231,6 +251,41 @@ const VariableExpressionEditor = observer(
                 }
               />
             </div>
+            {isMilestoningParameter && defaultMilestoningValue && (
+              <PanelFormSection>
+                <div className="panel__content__form__section__header__label">
+                  Value
+                </div>
+                <div className="panel__content__form__section__header__prompt">
+                  Choose a default value for this milestoning parameter
+                </div>
+                <div className="query-builder__variable-editor">
+                  <BasicValueSpecificationEditor
+                    valueSpecification={defaultMilestoningValue}
+                    setValueSpecification={(val: ValueSpecification): void => {
+                      setDefaultMilestoningValue(deepClone(val));
+                    }}
+                    graph={queryBuilderState.graphManagerState.graph}
+                    obseverContext={queryBuilderState.observerContext}
+                    typeCheckOption={{
+                      expectedType: selectedType.value,
+                      match: selectedType.value === PrimitiveType.DATETIME,
+                    }}
+                    resetValue={() => {
+                      const now = createSupportedFunctionExpression(
+                        QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW,
+                        PrimitiveType.DATETIME,
+                      );
+                      setDefaultMilestoningValue(now);
+                      queryBuilderState.milestoningState.updateMilestoningParameterValue(
+                        lambdaParameterState.parameter,
+                        now,
+                      );
+                    }}
+                  />
+                </div>
+              </PanelFormSection>
+            )}
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton

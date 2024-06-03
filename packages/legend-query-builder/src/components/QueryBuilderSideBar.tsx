@@ -18,7 +18,6 @@ import {
   CustomSelectorInput,
   createFilter,
   CogIcon,
-  ClockIcon,
   clsx,
   PanelHeader,
   compareLabelFn,
@@ -34,7 +33,6 @@ import {
   LATEST_DATE,
   PrimitiveInstanceValue,
   VariableExpression,
-  getMilestoneTemporalStereotype,
   PackageableElementExplicitReference,
   RuntimePointer,
   VARIABLE_REFERENCE_TOKEN,
@@ -75,22 +73,10 @@ const generateClassLabel = (
   val: Class,
   queryBuilderState: QueryBuilderState,
 ): React.ReactNode => {
-  const milestoneStereotype = getMilestoneTemporalStereotype(
-    val,
-    queryBuilderState.graphManagerState.graph,
-  );
-
   const isDeprecatedClass = isElementDeprecated(
     val,
     queryBuilderState.graphManagerState.graph,
   );
-
-  let milestoningTooltipText: string | undefined;
-  if (milestoneStereotype) {
-    milestoningTooltipText = queryBuilderState.milestoningState
-      .getMilestoningImplementation(milestoneStereotype)
-      .getMilestoningToolTipText();
-  }
 
   return (
     <div
@@ -102,12 +88,6 @@ const generateClassLabel = (
       <div className="query-builder__setup__class-option-label__name">
         {val.name}
       </div>
-      {milestoningTooltipText && (
-        <ClockIcon
-          className="query-builder__setup__class-option-label__milestoning"
-          title={`This class is milestoned:\n${milestoningTooltipText}`}
-        />
-      )}
     </div>
   );
 };
@@ -151,10 +131,6 @@ export const QueryBuilderClassSelector = observer(
       onClassChange?.(val.value);
     };
 
-    // milestoning
-    const showMilestoningEditor = (): void =>
-      milestoningState.setShowMilestoningEditor(true);
-
     return (
       <div className="query-builder__setup__config-group query-builder__setup__config-group--class">
         <div className="query-builder__setup__config-group__item ">
@@ -192,17 +168,6 @@ export const QueryBuilderClassSelector = observer(
                   .TEMPORARY__isLightColorThemeEnabled,
             })}
           />
-          {queryBuilderState.isQuerySupported && (
-            <button
-              className="btn--dark btn__icon--dark query-builder__setup__milestoning"
-              tabIndex={-1}
-              onClick={showMilestoningEditor}
-              disabled={!milestoningState.isMilestonedQuery}
-              title="Edit Milestoning Parameters"
-            >
-              <ClockIcon />
-            </button>
-          )}
           {milestoningState.isMilestonedQuery && (
             <MilestoningParametersEditor
               queryBuilderState={queryBuilderState}

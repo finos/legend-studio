@@ -91,19 +91,6 @@
     &--deprecated &__name {
       text-decoration: line-through 0.1rem;
     }
-
-    &__milestoning {
-      @include flexCenter;
-
-      cursor: default;
-      width: 2rem;
-      font-size: 1.2rem;
-      color: var(--color-light-grey-400);
-    }
-  }
-
-  &__milestoning {
-    margin-left: 0.5rem;
   }
 
   &__config-group + &__config-group {
