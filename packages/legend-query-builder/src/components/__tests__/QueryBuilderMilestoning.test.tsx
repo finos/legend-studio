@@ -147,6 +147,7 @@ type QueryPropertyParameterTestCase = [
     expectedNumberOfDerivedPropertyStates: number;
     expectedNumberOfParameterValues: number;
     expectedNumberOfPropertyParameterValues: number;
+    hasNonMilestoningParams: boolean;
   },
 ];
 
@@ -163,6 +164,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -177,6 +179,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 1,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -191,6 +194,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 3,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -205,6 +209,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 3,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -219,6 +224,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -233,6 +239,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -247,6 +254,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 3,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -261,6 +269,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -275,6 +284,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 1,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -289,6 +299,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 1,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -303,6 +314,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 1,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -317,6 +329,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 3,
+      hasNonMilestoningParams: false,
     },
   ],
 ];
@@ -341,6 +354,7 @@ describe(
           expectedNumberOfDerivedPropertyStates,
           expectedNumberOfParameterValues,
           expectedNumberOfPropertyParameterValues,
+          hasNonMilestoningParams,
         } = testCase;
         const { renderResult, queryBuilderState } =
           await TEST__setUpQueryBuilder(
@@ -401,17 +415,10 @@ describe(
               QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
             ),
           );
-          const hasNonMilestoningParams =
-            queryBuilderState.parametersState.parameterStates.find(
-              (param) =>
-                !queryBuilderState.milestoningState.isMilestoningParameter(
-                  param.parameter,
-                ),
-            );
           await act(async () => {
             fireEvent.click(renderResult.getByText('Run Query'));
           });
-          if (hasNonMilestoningParams === undefined) {
+          if (!hasNonMilestoningParams) {
             expect(renderResult.queryByText('Set Parameter Values')).toBeNull();
           } else {
             expect(
