@@ -705,10 +705,15 @@ const PrimitiveCollectionInstanceValueEditor = observer(
     // helper functions
     const buildOptionForValueSpec = (
       value: ValueSpecification,
-    ): { label: string; value: string } => ({
-      label: guaranteeNonNullable(getValueSpecificationStringValue(value)),
-      value: guaranteeNonNullable(getValueSpecificationStringValue(value)),
-    });
+    ): { label: string; value: string } => {
+      const stringValue = guaranteeNonNullable(
+        getValueSpecificationStringValue(value),
+      );
+      return {
+        label: stringValue,
+        value: stringValue,
+      };
+    };
 
     const isValueAlreadySelected = (value: string): boolean =>
       selectedOptions.map((option) => option.value).includes(value);
