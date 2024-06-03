@@ -364,12 +364,14 @@ export const QueryEditorExistingQueryHeader = observer(
         ) : (
           <div
             onDoubleClick={enableRename}
-            className="query-editor__header__content__main query-editor__header__content__title query-editor__header__content__title__text"
+            className="query-editor__header__content__main query-editor__header__content__title"
             title="Double-click to rename query"
           >
-            {existingEditorStore.lightQuery.name}
+            <div className="query-editor__header__content__title__text">
+              {existingEditorStore.lightQuery.name}
+            </div>
             <button
-              className="panel__content__form__section__list__item__edit-btn"
+              className="query-editor__header__conten__title__btn panel__content__form__section__list__item__edit-btn"
               onClick={enableRename}
             >
               <PencilIcon />

@@ -74,11 +74,14 @@
 
       height: 100%;
       width: 100%;
+      overflow: hidden;
 
       &__title {
+        @include flexVCenter;
+
         color: var(--color-light-grey-180);
-        flex: 1;
         margin: 0 1rem;
+        width: 100%;
 
         input {
           padding: 0 0.4rem;
@@ -89,13 +92,18 @@
         @include flexVCenter;
 
         padding: 0.6rem 0.5rem 0.5rem;
-        margin: 0 1rem;
-        margin-right: 10%;
         cursor: pointer;
         color: var(--color-light-grey-400);
         font-size: 1.5rem;
         font-weight: 500;
+        width: 95%;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      &__title__btn {
+        width: 5%;
       }
 
       &__title__text--unsaved {
