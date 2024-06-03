@@ -155,6 +155,7 @@ export class QueryBuilderAggregationState implements Hashable {
   changeColumnAggregateOperator(
     val: QueryBuilderAggregateOperator | undefined,
     projectionColumnState: QueryBuilderProjectionColumnState,
+    hideOperatorInColumnName?: boolean,
   ): void {
     const aggregateColumnState = this.columns.find(
       (column) => column.projectionColumnState === projectionColumnState,
@@ -167,8 +168,24 @@ export class QueryBuilderAggregationState implements Hashable {
         return;
       }
       if (aggregateColumnState) {
+        if (!hideOperatorInColumnName) {
+          const colName =
+            aggregateColumnState.projectionColumnState.columnName.split(
+              `(${aggregateColumnState.operator.getLabel(
+                aggregateColumnState.projectionColumnState,
+              )})`,
+            )[0] ?? '';
+          aggregateColumnState.projectionColumnState.setColumnName(
+            `${colName} (${val.getLabel(projectionColumnState)})`,
+          );
+        }
         aggregateColumnState.setOperator(val);
       } else {
+        if (!hideOperatorInColumnName) {
+          projectionColumnState.setColumnName(
+            `${projectionColumnState.columnName} (${val.getLabel(projectionColumnState)})`,
+          );
+        }
         const newAggregateColumnState = new QueryBuilderAggregateColumnState(
           this,
           projectionColumnState,
@@ -190,11 +207,19 @@ export class QueryBuilderAggregationState implements Hashable {
       if (aggregateColumnState) {
         // automatically move the column to the last position before the aggregate columns
         // NOTE: `moveColumn` will take care of this placement calculation
+        if (!hideOperatorInColumnName) {
+          const colName =
+            aggregateColumnState.projectionColumnState.columnName.split(
+              `(${aggregateColumnState.operator.getLabel(
+                aggregateColumnState.projectionColumnState,
+              )})`,
+            )[0] ?? '';
+          aggregateColumnState.projectionColumnState.setColumnName(colName);
+        }
         this.tdsState.moveColumn(
           this.tdsState.projectionColumns.indexOf(projectionColumnState),
           0,
         );
-
         this.removeColumn(aggregateColumnState);
       }
     }

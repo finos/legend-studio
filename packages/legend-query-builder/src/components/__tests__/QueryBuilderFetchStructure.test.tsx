@@ -535,6 +535,84 @@ test(
 
 test(
   integrationTest(
+    'Query builder column names automatically change to be unique when an aggregation is added',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop column
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'First Name'),
+    );
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+
+    // check fetch-structure
+    const FIRST_NAME_ALIAS = 'First Name';
+    expect(
+      await waitFor(() => queryByText(tdsProjectionPanel, FIRST_NAME_ALIAS)),
+    ).not.toBeNull();
+    fireEvent.click(
+      getByTitle(tdsProjectionPanel, 'Choose Aggregate Operator...'),
+    );
+    fireEvent.click(renderResult.getByText('count'));
+
+    expect(
+      await waitFor(() => queryByText(tdsProjectionPanel, FIRST_NAME_ALIAS)),
+    ).toBeNull();
+    expect(
+      await waitFor(() =>
+        queryByText(tdsProjectionPanel, `${FIRST_NAME_ALIAS} (count)`),
+      ),
+    ).not.toBeNull();
+
+    fireEvent.click(
+      getByTitle(tdsProjectionPanel, 'Choose Aggregate Operator...'),
+    );
+    fireEvent.click(renderResult.getByText('(none)'));
+    expect(
+      await waitFor(() =>
+        queryByText(tdsProjectionPanel, `${FIRST_NAME_ALIAS} (count)`),
+      ),
+    ).toBeNull();
+    expect(
+      await waitFor(() => queryByText(tdsProjectionPanel, FIRST_NAME_ALIAS)),
+    ).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
     'Query builder resets simple column name if user edits it and clears the name',
   ),
   async () => {
