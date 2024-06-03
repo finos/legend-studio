@@ -129,7 +129,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
 
     // data space
     const prioritizeDataSpaceFunc = queryBuilderState.prioritizeDataSpaceFunc;
-    const sortedAllOptions = queryBuilderState.dataSpaces
+    const sortedAllOptions = (queryBuilderState.dataSpaces ?? [])
       .map(buildDataSpaceOption)
       .sort(compareLabelFn);
 

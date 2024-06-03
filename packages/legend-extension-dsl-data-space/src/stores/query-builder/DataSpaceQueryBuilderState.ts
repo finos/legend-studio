@@ -146,7 +146,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
 
   dataSpace: DataSpace;
   executionContext!: DataSpaceExecutionContext;
-  dataSpaces: DataSpaceInfo[] = [];
+  dataSpaces: DataSpaceInfo[] | undefined;
   readonly prioritizeDataSpaceFunc?:
     | ((val: DataSpaceInfo) => boolean)
     | undefined;
@@ -183,6 +183,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       showRuntimeSelector: observable,
       advancedSearchState: observable,
       isTemplateQueryDialogOpen: observable,
+      configureDataSpaceOptions: action,
       showAdvancedSearchPanel: action,
       hideAdvancedSearchPanel: action,
       setExecutionContext: action,
@@ -258,27 +259,35 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     this.showRuntimeSelector = val;
   }
 
-  *loadDataSpaces(): GeneratorFn<void> {
+  configureDataSpaceOptions(val: DataSpaceInfo[]): void {
+    this.dataSpaces = val;
+  }
+
+  *loadDataSpaces(force?: boolean): GeneratorFn<void> {
     if (this.projectInfo) {
-      this.loadDataSpacesState.inProgress();
-      const toGetSnapShot =
-        this.projectInfo.versionId === SNAPSHOT_VERSION_ALIAS;
-      try {
-        this.dataSpaces = (
-          (yield this.depotServerClient.getEntitiesByClassifier(
-            DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
-            {
-              scope: toGetSnapShot ? DepotScope.SNAPSHOT : DepotScope.RELEASES,
-            },
-          )) as StoredEntity[]
-        ).map((storedEntity) =>
-          extractDataSpaceInfo(storedEntity, toGetSnapShot),
-        );
-        this.loadDataSpacesState.pass();
-      } catch (error) {
-        assertErrorThrown(error);
-        this.loadDataSpacesState.fail();
-        this.applicationStore.notificationService.notifyError(error);
+      if (this.dataSpaces === undefined || force) {
+        this.loadDataSpacesState.inProgress();
+        const toGetSnapShot =
+          this.projectInfo.versionId === SNAPSHOT_VERSION_ALIAS;
+        try {
+          this.dataSpaces = (
+            (yield this.depotServerClient.getEntitiesByClassifier(
+              DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+              {
+                scope: toGetSnapShot
+                  ? DepotScope.SNAPSHOT
+                  : DepotScope.RELEASES,
+              },
+            )) as StoredEntity[]
+          ).map((storedEntity) =>
+            extractDataSpaceInfo(storedEntity, toGetSnapShot),
+          );
+          this.loadDataSpacesState.pass();
+        } catch (error) {
+          assertErrorThrown(error);
+          this.loadDataSpacesState.fail();
+          this.applicationStore.notificationService.notifyError(error);
+        }
       }
     } else {
       this.dataSpaces = this.graphManagerState.graph.allOwnElements
