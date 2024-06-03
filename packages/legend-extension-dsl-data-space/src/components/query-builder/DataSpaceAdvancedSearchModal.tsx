@@ -32,14 +32,13 @@ import {
   ModalTitle,
   ModalHeaderActions,
 } from '@finos/legend-art';
-import { generateGAVCoordinates } from '@finos/legend-storage';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
 import { DataSpaceViewer } from '../DataSpaceViewer.js';
 import type { DataSpaceInfo } from '../../stores/shared/DataSpaceInfo.js';
 import type { DataSpaceAdvancedSearchState } from '../../stores/query/DataSpaceAdvancedSearchState.js';
+import { formatDataSpaceOptionLabel } from './DataSpaceQueryBuilder.js';
 
 type DataSpaceOption = { label: string; value: DataSpaceInfo };
 const buildDataSpaceOption = (value: DataSpaceInfo): DataSpaceOption => ({
@@ -76,31 +75,6 @@ export const DataSpaceAdvancedSearchModal = observer(
     const onDataSpaceOptionChange = (option: DataSpaceOption | null): void => {
       searchState.setCurrentDataSpace(option?.value);
       searchState.setDataSpaceViewerState(undefined);
-    };
-    const formatDataSpaceOptionLabel = (
-      option: DataSpaceOption,
-    ): React.ReactNode => {
-      const groupId = guaranteeNonNullable(option.value.groupId);
-      const artifactId = guaranteeNonNullable(option.value.artifactId);
-      const versionId = guaranteeNonNullable(option.value.versionId);
-      return (
-        <div
-          className="data-space-advanced-search__dialog__option"
-          title={`${option.label} - ${
-            option.value.path
-          } - ${generateGAVCoordinates(groupId, artifactId, versionId)}`}
-        >
-          <div className="data-space-advanced-search__dialog__option__label">
-            {option.label}
-          </div>
-          <div className="data-space-advanced-search__dialog__option__path">
-            {option.value.path}
-          </div>
-          <div className="data-space-advanced-search__dialog__option__gav">
-            {generateGAVCoordinates(groupId, artifactId, versionId)}
-          </div>
-        </div>
-      );
     };
 
     // search text

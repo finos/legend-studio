@@ -82,22 +82,6 @@ export const formatDataSpaceOptionLabel = (
     <div className="query-builder__setup__data-space__option__label">
       {option.label}
     </div>
-    <div className="query-builder__setup__data-space__option__path">
-      {option.value.path}
-    </div>
-    <div className="query-builder__setup__data-space__option__gav">
-      {option.value.groupId &&
-        option.value.artifactId &&
-        option.value.versionId && (
-          <>
-            {generateGAVCoordinates(
-              option.value.groupId,
-              option.value.artifactId,
-              option.value.versionId,
-            )}
-          </>
-        )}
-    </div>
   </div>
 );
 
