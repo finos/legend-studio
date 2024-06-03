@@ -49,7 +49,8 @@
     width: 100%;
   }
 
-  &__enum-collection-selector {
+  &__enum-collection-selector,
+  &__primitive-collection-selector {
     width: 100%;
     display: flex;
 
@@ -80,6 +81,16 @@
         width: fit-content;
         max-width: 100%;
       }
+    }
+  }
+
+  &__primitive-collection-selector--error {
+    .selector-input--dark__input {
+      color: var(--color-red-200);
+    }
+
+    .selector-input__input {
+      color: var(--color-red-180);
     }
   }
 

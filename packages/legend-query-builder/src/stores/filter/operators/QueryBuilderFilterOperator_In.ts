@@ -48,7 +48,7 @@ export class QueryBuilderFilterOperator_In
   implements Hashable
 {
   getLabel(filterConditionState: FilterConditionState): string {
-    return 'is in';
+    return 'is in list of';
   }
 
   isCompatibleWithFilterConditionProperty(
@@ -172,7 +172,7 @@ export class QueryBuilderFilterOperator_In
 
 export class QueryBuilderFilterOperator_NotIn extends QueryBuilderFilterOperator_In {
   override getLabel(filterConditionState: FilterConditionState): string {
-    return `is not in`;
+    return `is not in list of`;
   }
 
   override buildFilterConditionExpression(

@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
+  useApplicationStore,
+} from '@finos/legend-application';
 import {
   type TooltipPlacement,
   type InputActionData,
+  type SelectActionData,
   Tooltip,
   DollarIcon,
   clsx,
@@ -29,9 +33,6 @@ import {
   SaveIcon,
   PencilIcon,
   DragPreviewLayer,
-  FilledWindowMaximizeIcon,
-  BasePopover,
-  PanelFormSection,
   CalculateIcon,
   InputWithInlineValidation,
 } from '@finos/legend-art';
@@ -52,7 +53,6 @@ import {
   GenericTypeExplicitReference,
   GenericType,
   Enumeration,
-  getEnumValue,
   getMultiplicityDescription,
   type ObserverContext,
   matchFunctionName,
@@ -63,16 +63,16 @@ import {
   type GeneratorFn,
   guaranteeNonNullable,
   isNonNullable,
-  returnUndefOnError,
-  uniq,
-  parseCSVString,
   guaranteeIsNumber,
   csvStringify,
   guaranteeType,
+  isNonEmptyString,
+  parseCSVString,
+  uniq,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import {
+import React, {
   forwardRef,
   useEffect,
   useImperativeHandle,
@@ -91,6 +91,10 @@ import {
 } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { evaluate } from 'mathjs';
 import { isUsedDateFunctionSupportedInFormMode } from '../../stores/QueryBuilderStateBuilder.js';
+import {
+  convertTextToPrimitiveInstanceValue,
+  getValueSpecificationStringValue,
+} from '../../stores/shared/ValueSpecificationEditorHelper.js';
 
 type TypeCheckOption = {
   expectedType: Type;
@@ -222,16 +226,7 @@ const StringPrimitiveInstanceValueEditor = observer(
       className?: string | undefined;
       setValueSpecification: (val: ValueSpecification) => void;
       resetValue: () => void;
-      selectorConfig?:
-        | {
-            values: string[] | undefined;
-            isLoading: boolean;
-            reloadValues:
-              | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
-              | undefined;
-            cleanUpReloadValues?: () => void;
-          }
-        | undefined;
+      selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
       obseverContext: ObserverContext;
     }
   >(function StringPrimitiveInstanceValueEditor(props, ref) {
@@ -628,153 +623,276 @@ const stringifyValue = (values: ValueSpecification[]): string => {
   ]).trim();
 };
 
-/**
- * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
- * we silently remove values which are not valid or parsable. But perhaps, we can consider
- * passing in logger or notifier to show give the users some idea of what went wrong instead
- * of silently swallow parts of their inputs like this.
- */
-const setCollectionValue = (
-  valueSpecification: CollectionInstanceValue,
-  expectedType: Type,
-  value: string,
-  obseverContext: ObserverContext,
-): void => {
-  if (value.trim().length === 0) {
-    instanceValue_setValues(valueSpecification, [], obseverContext);
-    return;
-  }
-  let result: unknown[] = [];
-
-  const parseData = parseCSVString(value);
-
-  if (!parseData) {
-    return;
-  }
-
+const getPlaceHolder = (expectedType: Type): string => {
   if (expectedType instanceof PrimitiveType) {
     switch (expectedType.path) {
-      case PRIMITIVE_TYPE.STRING: {
-        result = uniq(parseData)
-          .map((item): PrimitiveInstanceValue | undefined => {
-            const primitiveInstanceValue = new PrimitiveInstanceValue(
-              GenericTypeExplicitReference.create(
-                new GenericType(expectedType),
-              ),
-            );
-            instanceValue_setValues(
-              primitiveInstanceValue,
-              [item.toString()],
-              obseverContext,
-            );
-            return primitiveInstanceValue;
-          })
-          .filter(isNonNullable);
-        break;
-      }
-      case PRIMITIVE_TYPE.NUMBER:
-      case PRIMITIVE_TYPE.FLOAT:
-      case PRIMITIVE_TYPE.DECIMAL:
-      case PRIMITIVE_TYPE.INTEGER: {
-        result = uniq(
-          parseData
-            .filter((val) => !isNaN(Number(val)))
-            .map((val) => Number(val)),
-        )
-          .map((item): PrimitiveInstanceValue | undefined => {
-            const primitiveInstanceValue = new PrimitiveInstanceValue(
-              GenericTypeExplicitReference.create(
-                new GenericType(expectedType),
-              ),
-            );
-            instanceValue_setValues(
-              primitiveInstanceValue,
-              [item],
-              obseverContext,
-            );
-            return primitiveInstanceValue;
-          })
-          .filter(isNonNullable);
-        break;
-      }
       case PRIMITIVE_TYPE.DATE:
-      case PRIMITIVE_TYPE.STRICTDATE: {
-        result = uniq(
-          parseData
-            .filter((val) => !isNaN(Date.parse(val)))
-            .map((val) => val.trim()),
-        )
-          .map((item): PrimitiveInstanceValue | undefined => {
-            const primitiveInstanceValue = new PrimitiveInstanceValue(
-              GenericTypeExplicitReference.create(
-                new GenericType(expectedType),
-              ),
-            );
-            instanceValue_setValues(
-              primitiveInstanceValue,
-              [item],
-              obseverContext,
-            );
-            return primitiveInstanceValue;
-          })
-          .filter(isNonNullable);
-        break;
-      }
-      case PRIMITIVE_TYPE.DATETIME: {
-        result = uniq(
-          parseData
-            .filter(
-              (val) =>
-                (!isNaN(Date.parse(val)) && new Date(val).getTime()) ||
-                (val.includes('%') &&
-                  !isNaN(Date.parse(val.slice(1))) &&
-                  new Date(val.slice(1)).getTime()),
-            )
-            .map((val) => val.trim()),
-        )
-          .map((item): PrimitiveInstanceValue | undefined => {
-            const primitiveInstanceValue = new PrimitiveInstanceValue(
-              GenericTypeExplicitReference.create(
-                new GenericType(expectedType),
-              ),
-            );
-            instanceValue_setValues(
-              primitiveInstanceValue,
-              [item],
-              obseverContext,
-            );
-            return primitiveInstanceValue;
-          })
-          .filter(isNonNullable);
-        break;
-      }
+      case PRIMITIVE_TYPE.STRICTDATE:
+        return 'yyyy-mm-dd';
+      case PRIMITIVE_TYPE.DATETIME:
+        return 'yyyy-mm-ddThh:mm:ss';
       default:
-        // unsupported expected type, just escape
-        return;
+        return 'Add';
     }
-  } else if (expectedType instanceof Enumeration) {
-    result = uniq(parseData.map((item) => item.trim()))
-      .map((item): EnumValueInstanceValue | undefined => {
-        const _enum = returnUndefOnError(() =>
-          getEnumValue(expectedType, item),
-        );
-        if (!_enum) {
-          return undefined;
-        }
-        const enumValueInstanceValue = new EnumValueInstanceValue(
-          GenericTypeExplicitReference.create(new GenericType(expectedType)),
-        );
-        instanceValue_setValues(
-          enumValueInstanceValue,
-          [EnumValueExplicitReference.create(_enum)],
-          obseverContext,
-        );
-        return enumValueInstanceValue;
-      })
-      .filter(isNonNullable);
   }
-  instanceValue_setValues(valueSpecification, result, obseverContext);
+  return 'Add';
 };
+
+interface BasicValueSpecificationEditorSelectorConfig {
+  values: string[] | undefined;
+  isLoading: boolean;
+  reloadValues:
+    | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
+    | undefined;
+  cleanUpReloadValues?: () => void;
+}
+
+const PrimitiveCollectionInstanceValueEditor = observer(
+  (props: {
+    valueSpecification: CollectionInstanceValue;
+    expectedType: Type;
+    saveEdit: () => void;
+    selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+    observerContext: ObserverContext;
+  }) => {
+    const {
+      valueSpecification,
+      expectedType,
+      saveEdit,
+      selectorConfig,
+      observerContext,
+    } = props;
+
+    // local state and variables
+    const applicationStore = useApplicationStore();
+    const inputRef = useRef(null);
+    const [inputValue, setInputValue] = useState('');
+    const [inputValueIsError, setInputValueIsError] = useState(false);
+    const [selectedOptions, setSelectedOptions] = useState<
+      { label: string; value: string }[]
+    >(
+      valueSpecification.values
+        .map((valueSpec) => getValueSpecificationStringValue(valueSpec))
+        .filter(isNonEmptyString)
+        .map((value) => ({
+          label: value,
+          value,
+        })),
+    );
+
+    // typehead search setup
+    const isTypeaheadSearchEnabled =
+      expectedType === PrimitiveType.STRING && Boolean(selectorConfig);
+    const reloadValuesFunc = isTypeaheadSearchEnabled
+      ? selectorConfig?.reloadValues
+      : undefined;
+    const cleanUpReloadValuesFunc = isTypeaheadSearchEnabled
+      ? selectorConfig?.cleanUpReloadValues
+      : undefined;
+    const isLoading = isTypeaheadSearchEnabled
+      ? selectorConfig?.isLoading
+      : undefined;
+    const queryOptions =
+      isTypeaheadSearchEnabled && selectorConfig?.values?.length
+        ? selectorConfig.values.map((e) => ({
+            value: e,
+            label: e.toString(),
+          }))
+        : undefined;
+    const noMatchMessage =
+      isTypeaheadSearchEnabled && isLoading ? 'Loading...' : undefined;
+
+    // helper functions
+    const buildOptionForValueSpec = (
+      value: ValueSpecification,
+    ): { label: string; value: string } => {
+      const stringValue = guaranteeNonNullable(
+        getValueSpecificationStringValue(value),
+      );
+      return {
+        label: stringValue,
+        value: stringValue,
+      };
+    };
+
+    const isValueAlreadySelected = (value: string): boolean =>
+      selectedOptions.map((option) => option.value).includes(value);
+
+    /**
+     * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
+     * we simply return null for values which are not valid or parsable. But perhaps, we can consider
+     * passing in logger or notifier to give the users some idea of what went wrong instead of ignoring
+     * their input.
+     */
+    const convertInputValueToValueSpec = (): ValueSpecification | null => {
+      const trimmedInputValue = inputValue.trim();
+
+      if (isValueAlreadySelected(trimmedInputValue)) {
+        return null;
+      }
+
+      if (trimmedInputValue.length) {
+        return convertTextToPrimitiveInstanceValue(
+          expectedType,
+          trimmedInputValue,
+          observerContext,
+        );
+      }
+      return null;
+    };
+
+    const addInputValueToSelectedOptions = (): void => {
+      const newValueSpec = convertInputValueToValueSpec();
+
+      if (newValueSpec !== null) {
+        setSelectedOptions([
+          ...selectedOptions,
+          buildOptionForValueSpec(newValueSpec),
+        ]);
+        setInputValue('');
+        reloadValuesFunc?.cancel();
+      } else if (inputValue.trim().length) {
+        setInputValueIsError(true);
+      }
+    };
+
+    // event handlers
+    const changeValue = (
+      newSelectedOptions: { value: string; label: string }[],
+      actionChange: SelectActionData<{ value: string; label: string }>,
+    ): void => {
+      setSelectedOptions(newSelectedOptions);
+      if (actionChange.action === 'select-option') {
+        setInputValue('');
+      } else if (
+        actionChange.action === 'remove-value' &&
+        actionChange.removedValue.value === inputValue
+      ) {
+        setInputValueIsError(false);
+      }
+    };
+
+    const handleInputChange = (
+      newInputValue: string,
+      actionChange: InputActionData,
+    ): void => {
+      if (actionChange.action === 'input-change') {
+        setInputValue(newInputValue);
+        setInputValueIsError(false);
+        reloadValuesFunc?.cancel();
+        const reloadValuesFuncTransformation =
+          reloadValuesFunc?.(newInputValue);
+        if (reloadValuesFuncTransformation) {
+          flowResult(reloadValuesFuncTransformation).catch(
+            applicationStore.alertUnhandledError,
+          );
+        }
+      }
+      if (actionChange.action === 'input-blur') {
+        reloadValuesFunc?.cancel();
+        cleanUpReloadValuesFunc?.();
+      }
+    };
+
+    const updateValueSpecAndSaveEdit = (): void => {
+      const newValueSpec = convertInputValueToValueSpec();
+      const finalSelectedOptions =
+        newValueSpec !== null
+          ? [...selectedOptions, buildOptionForValueSpec(newValueSpec)]
+          : selectedOptions;
+      instanceValue_setValues(
+        valueSpecification,
+        finalSelectedOptions
+          .map((option) => option.value)
+          .map((value) =>
+            convertTextToPrimitiveInstanceValue(
+              expectedType,
+              value,
+              observerContext,
+            ),
+          )
+          .filter(isNonNullable),
+        observerContext,
+      );
+      saveEdit();
+    };
+
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if ((event.key === 'Enter' || event.key === ',') && !event.shiftKey) {
+        addInputValueToSelectedOptions();
+        event.preventDefault();
+      }
+    };
+
+    const handlePaste = (event: React.ClipboardEvent<string>): void => {
+      const pastedText = event.clipboardData.getData('text');
+      const parsedData = parseCSVString(pastedText);
+      if (!parsedData) {
+        return;
+      }
+      const newValues = uniq(parsedData)
+        .map((value) => {
+          const newValueSpec = convertTextToPrimitiveInstanceValue(
+            expectedType,
+            value,
+            observerContext,
+          );
+          return newValueSpec
+            ? getValueSpecificationStringValue(newValueSpec)
+            : null;
+        })
+        .filter(isNonNullable)
+        .filter((value) => !isValueAlreadySelected(value));
+      setSelectedOptions([
+        ...selectedOptions,
+        ...newValues.map((value) => ({ label: value, value })),
+      ]);
+      event.preventDefault();
+    };
+
+    return (
+      <>
+        <CustomSelectorInput
+          className={clsx('value-spec-editor__primitive-collection-selector', {
+            'value-spec-editor__primitive-collection-selector--error':
+              inputValueIsError,
+          })}
+          options={queryOptions}
+          inputValue={inputValue}
+          isMulti={true}
+          menuIsOpen={
+            isTypeaheadSearchEnabled &&
+            inputValue.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH
+          }
+          autoFocus={true}
+          inputRef={inputRef}
+          onChange={changeValue}
+          onInputChange={handleInputChange}
+          onBlur={() => updateValueSpecAndSaveEdit()}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
+          value={selectedOptions}
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+          isLoading={isLoading}
+          noMatchMessage={noMatchMessage}
+          placeholder={null}
+          inputPlaceholder={getPlaceHolder(expectedType)}
+          components={{
+            DropdownIndicator: null,
+          }}
+        />
+        <button
+          className="value-spec-editor__list-editor__save-button btn--dark"
+          onClick={updateValueSpecAndSaveEdit}
+        >
+          <SaveIcon />
+        </button>
+      </>
+    );
+  },
+);
 
 const EnumCollectionInstanceValueEditor = observer(
   (props: {
@@ -853,7 +971,8 @@ const EnumCollectionInstanceValueEditor = observer(
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
-          placeholder="Select value"
+          placeholder={null}
+          inputPlaceholder="Add"
           autoFocus={true}
           menuIsOpen={true}
         />
@@ -870,21 +989,6 @@ const EnumCollectionInstanceValueEditor = observer(
 
 const COLLECTION_PREVIEW_CHAR_LIMIT = 50;
 
-const getPlaceHolder = (expectedType: Type): string => {
-  if (expectedType instanceof PrimitiveType) {
-    switch (expectedType.path) {
-      case PRIMITIVE_TYPE.DATE:
-      case PRIMITIVE_TYPE.STRICTDATE:
-        return 'yyyy-mm-dd';
-      case PRIMITIVE_TYPE.DATETIME:
-        return 'yyyy-mm-ddThh:mm:ss';
-      default:
-        return '(empty)';
-    }
-  }
-  return '(empty)';
-};
-
 const CollectionValueInstanceValueEditor = observer(
   (props: {
     valueSpecification: CollectionInstanceValue;
@@ -893,6 +997,7 @@ const CollectionValueInstanceValueEditor = observer(
     className?: string | undefined;
     resetValue: () => void;
     setValueSpecification: (val: ValueSpecification) => void;
+    selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
     obseverContext: ObserverContext;
   }) => {
     const {
@@ -901,14 +1006,11 @@ const CollectionValueInstanceValueEditor = observer(
       className,
       resetValue,
       setValueSpecification,
+      selectorConfig,
       obseverContext,
     } = props;
-    const inputRef = useRef<HTMLTextAreaElement>(null);
 
-    const [text, setText] = useState(stringifyValue(valueSpecification.values));
     const [editable, setEditable] = useState(false);
-    const [showAdvancedEditorPopover, setShowAdvancedEditorPopover] =
-      useState(false);
     const valueText = stringifyValue(valueSpecification.values);
     const previewText = `List(${
       valueSpecification.values.length === 0
@@ -927,78 +1029,13 @@ const CollectionValueInstanceValueEditor = observer(
     const saveEdit = (): void => {
       if (editable) {
         setEditable(false);
-        setShowAdvancedEditorPopover(false);
         setValueSpecification(valueSpecification);
       }
     };
-    const updateValueSpecAndSaveEdit = (): void => {
-      if (editable) {
-        setCollectionValue(
-          valueSpecification,
-          expectedType,
-          text,
-          obseverContext,
-        );
-        setText(stringifyValue(valueSpecification.values));
-        saveEdit();
-      }
-    };
-
-    const changeValueTextArea: React.ChangeEventHandler<HTMLTextAreaElement> = (
-      event,
-    ) => {
-      setText(event.target.value);
-    };
-    const expandButtonName = `${valueSpecification.hashCode}ExpandButton`;
-    const handleOnBlur: React.FocusEventHandler<HTMLTextAreaElement> = (
-      event,
-    ) => {
-      // disable save if target is expand button
-      if (
-        (event.relatedTarget as HTMLButtonElement | undefined)?.name !==
-        expandButtonName
-      ) {
-        updateValueSpecAndSaveEdit();
-      }
-    };
-
-    const placeholder = text === '' ? getPlaceHolder(expectedType) : undefined;
-
-    // focus the input box when edit is enabled
-    useEffect(() => {
-      if (editable) {
-        inputRef.current?.focus();
-      }
-    }, [editable]);
 
     if (editable) {
       return (
         <>
-          {showAdvancedEditorPopover && (
-            <BasePopover
-              onClose={() => setShowAdvancedEditorPopover(false)}
-              open={showAdvancedEditorPopover}
-              anchorEl={inputRef.current}
-            >
-              <textarea
-                className="panel__content__form__section__input value-spec-editor__list-editor__textarea"
-                spellCheck={false}
-                value={text}
-                placeholder={placeholder}
-                onChange={changeValueTextArea}
-                onKeyDown={(event): void => {
-                  if (event.key === 'Enter' && !event.shiftKey) {
-                    updateValueSpecAndSaveEdit();
-                  }
-                }}
-              />
-              <PanelFormSection>
-                <div className="value-spec-editor__list-editor__textarea__description">
-                  Hit Enter to Apply Change
-                </div>
-              </PanelFormSection>
-            </BasePopover>
-          )}
           <div className={clsx('value-spec-editor', className)}>
             {expectedType instanceof Enumeration ? (
               <EnumCollectionInstanceValueEditor
@@ -1007,39 +1044,13 @@ const CollectionValueInstanceValueEditor = observer(
                 saveEdit={saveEdit}
               />
             ) : (
-              <>
-                <textarea
-                  ref={inputRef}
-                  className={clsx(
-                    'panel__content__form__section__input value-spec-editor__input value-spec-editor__textarea ',
-                  )}
-                  spellCheck={false}
-                  value={text}
-                  placeholder={placeholder}
-                  onChange={changeValueTextArea}
-                  onKeyDown={(event): void => {
-                    if (event.key === 'Enter' && !event.shiftKey) {
-                      updateValueSpecAndSaveEdit();
-                    }
-                  }}
-                  onBlur={handleOnBlur}
-                />
-                <button
-                  className="value-spec-editor__list-editor__expand-button btn--dark"
-                  onClick={() => setShowAdvancedEditorPopover(true)}
-                  tabIndex={-1}
-                  name={expandButtonName}
-                  title="Expand window..."
-                >
-                  <FilledWindowMaximizeIcon />
-                </button>
-                <button
-                  className="value-spec-editor__list-editor__save-button btn--dark"
-                  onClick={saveEdit}
-                >
-                  <SaveIcon />
-                </button>
-              </>
+              <PrimitiveCollectionInstanceValueEditor
+                valueSpecification={valueSpecification}
+                expectedType={expectedType}
+                saveEdit={saveEdit}
+                selectorConfig={selectorConfig}
+                observerContext={obseverContext}
+              />
             )}
             <button
               className="value-spec-editor__reset-btn"
@@ -1141,16 +1152,7 @@ export const BasicValueSpecificationEditor = forwardRef<
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
     isConstant?: boolean;
-    selectorConfig?:
-      | {
-          values: string[] | undefined;
-          isLoading: boolean;
-          reloadValues:
-            | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
-            | undefined;
-          cleanUpReloadValues?: () => void;
-        }
-      | undefined;
+    selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
   }
 >(function BasicValueSpecificationEditor(props, ref) {
   const {
@@ -1249,6 +1251,7 @@ export const BasicValueSpecificationEditor = forwardRef<
         className={className}
         resetValue={resetValue}
         setValueSpecification={setValueSpecification}
+        selectorConfig={selectorConfig}
         obseverContext={obseverContext}
       />
     );

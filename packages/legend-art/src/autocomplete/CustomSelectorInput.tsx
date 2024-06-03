@@ -43,10 +43,13 @@ import type {
   InputProps,
   Props,
   InputActionMeta,
+  ActionMeta,
+  OptionTypeBase,
 } from 'react-select';
 import { clsx } from '../utils/ComponentUtils.js';
 
 export type InputActionData = InputActionMeta;
+export type SelectActionData<T extends OptionTypeBase> = ActionMeta<T>;
 
 export const createFilter = ReactSelect.Select.createFilter;
 interface ListChildComponentProps {
@@ -213,9 +216,27 @@ const ClearIndicator: React.FC<{
 
 // Enable edit of the selected tag
 // See https://github.com/JedWatson/react-select/issues/1558
-const CustomInput: React.FC<InputProps> = (props) => (
-  <ReactSelect.Select.components.Input {...props} isHidden={false} />
-);
+const CustomInput: React.FC<
+  InputProps & {
+    selectProps: CustomSelectorInputProps;
+  }
+> = (props) => {
+  // We need to pass the additional props this way because we're using an old
+  // version of react-select where the InputProps interface doesn't include
+  // many expected props that can be passed to the Input component.
+  const additionalProps = {
+    onPaste: props.selectProps.onPaste,
+    placeholder: props.selectProps.inputPlaceholder,
+  };
+
+  return (
+    <ReactSelect.Select.components.Input
+      {...props}
+      {...additionalProps}
+      isHidden={false}
+    />
+  );
+};
 
 export interface SelectOption {
   label: string;
@@ -230,6 +251,9 @@ interface CustomSelectorInputProps extends Props<SelectOption, true> {
   darkMode?: boolean;
   hasError?: boolean;
   optionCustomization?: { rowHeight: number };
+  onPaste?: (event: React.ClipboardEvent<string>) => void;
+  placeholder?: string;
+  inputPlaceholder?: string;
 }
 
 export type SelectComponent =

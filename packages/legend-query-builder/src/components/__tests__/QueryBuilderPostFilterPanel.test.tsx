@@ -30,7 +30,6 @@ import {
   getByTestId,
   getAllByTestId,
   getByRole,
-  getByPlaceholderText,
 } from '@testing-library/react';
 import {
   TEST_DATA__lambda_WithDerivedProjectColumnsUsingConstAndParams,
@@ -426,8 +425,8 @@ const EXPECTED_STRING_TYPES: Record<string, string[]> = {
     `doesn't contain`,
     'ends with',
     `doesn't end with`,
-    'is in',
-    'is not in',
+    'is in list of',
+    'is not in list of',
   ],
   [PRIMITIVE_TYPE.INTEGER]: [
     'is',
@@ -436,8 +435,8 @@ const EXPECTED_STRING_TYPES: Record<string, string[]> = {
     '<=',
     '>',
     '>=',
-    'is in',
-    'is not in',
+    'is in list of',
+    'is not in list of',
   ],
 };
 
@@ -548,7 +547,7 @@ test(
     guaranteeNonNullable(EXPECTED_STRING_TYPES[PRIMITIVE_TYPE.STRING]).forEach(
       (expectedOp) => getByText(switchMenu, expectedOp),
     );
-    fireEvent.click(getByText(switchMenu, 'is in'));
+    fireEvent.click(getByText(switchMenu, 'is in list of'));
     expect(queryByText(postFilterPanel, 'List(empty)'));
     fireEvent.click(getByTitle(postFilterPanel, 'Choose Operator...'));
     fireEvent.click(
@@ -1326,7 +1325,7 @@ test(
     // Select "is in " operator
     fireEvent.click(getByTitle(postFilterPanel, 'Choose Operator...'));
     const operatorsMenu = renderResult.getByRole('menu');
-    fireEvent.click(getByText(operatorsMenu, 'is in'));
+    fireEvent.click(getByText(operatorsMenu, 'is in list of'));
     expect(getByText(postFilterPanel, 'List(empty)'));
 
     // Verify validation issue
@@ -1337,17 +1336,28 @@ test(
 
     // Enter values
     fireEvent.click(getByText(postFilterPanel, 'List(empty)'));
-    const valueInput = getByPlaceholderText(postFilterPanel, '(empty)');
+    const valueInput = getByRole(
+      guaranteeNonNullable(getByText(postFilterPanel, 'Add').parentElement),
+      'textbox',
+    );
     fireEvent.change(valueInput, {
-      target: { value: 'test1,test2' },
+      target: { value: 'test1' },
     });
-    fireEvent.keyDown(valueInput, {
-      key: 'Enter',
-      code: 'Enter',
-    });
+    try {
+      fireEvent.blur(valueInput);
+    } catch (e: unknown) {
+      if (
+        !(e instanceof Error) ||
+        !e.message.includes(
+          'MultiValue: Support for defaultProps will be removed from function components in a future major release',
+        )
+      ) {
+        throw e;
+      }
+    }
 
     // Verify no validation issues
-    expect(getByText(postFilterPanel, 'List(2): test1,test2')).not.toBeNull();
+    expect(getByText(postFilterPanel, 'List(1): test1')).not.toBeNull();
     expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
     expect(
       renderResult.getByRole('button', { name: 'Run Query' }),

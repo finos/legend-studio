@@ -128,17 +128,20 @@ export class FilterConditionState implements Hashable {
     );
   }
 
-  *handleTypeaheadSearch(): GeneratorFn<void> {
+  *handleTypeaheadSearch(
+    searchValue?: ValueSpecification | undefined,
+  ): GeneratorFn<void> {
+    const value = searchValue ?? this.value;
     try {
       this.typeaheadSearchState.inProgress();
       this.typeaheadSearchResults = undefined;
-      if (performTypeahead(this.value)) {
+      if (performTypeahead(value)) {
         const result =
           (yield this.filterState.queryBuilderState.graphManagerState.graphManager.runQuery(
             buildPropertyTypeaheadQuery(
               this.filterState.queryBuilderState,
               this.propertyExpressionState.propertyExpression,
-              this.value,
+              value,
             ),
             guaranteeNonNullable(
               this.filterState.queryBuilderState.executionContextState.mapping,

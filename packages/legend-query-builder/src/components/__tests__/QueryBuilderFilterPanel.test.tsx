@@ -31,7 +31,6 @@ import {
   getAllByTestId,
   findByText,
   getByRole,
-  getByPlaceholderText,
 } from '@testing-library/react';
 import {
   TEST_DATA__getAllWithOneIntegerIsInConditionFilter,
@@ -1905,11 +1904,11 @@ test(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
       ),
     );
-    await waitFor(() => getByText(filterPanel, 'is in'));
+    await waitFor(() => getByText(filterPanel, 'is in list of'));
     expect(getByText(filterPanel, 'List(3): 1,2,3'));
     fireEvent.click(getByTitle(filterPanel, 'Choose Operator...'));
     let switchMenu = renderResult.getByRole('menu');
-    fireEvent.click(getByText(switchMenu, 'is not in'));
+    fireEvent.click(getByText(switchMenu, 'is not in list of'));
     expect(getByText(filterPanel, 'List(3): 1,2,3'));
     fireEvent.click(getByTitle(filterPanel, 'Choose Operator...'));
     switchMenu = renderResult.getByRole('menu');
@@ -2595,10 +2594,10 @@ test(
     );
     expect(contentNodes.length).toBe(1);
 
-    // Select "is in " operator
+    // Select "is in list of" operator
     fireEvent.click(getByTitle(filterPanel, 'Choose Operator...'));
     const operatorsMenu = renderResult.getByRole('menu');
-    fireEvent.click(getByText(operatorsMenu, 'is in'));
+    fireEvent.click(getByText(operatorsMenu, 'is in list of'));
     expect(getByText(filterPanel, 'List(empty)'));
 
     // Verify validation issue
@@ -2607,19 +2606,30 @@ test(
       renderResult.getByRole('button', { name: 'Run Query' }),
     ).toHaveProperty('disabled', true);
 
-    // Enter values
+    // Enter value
     fireEvent.click(getByText(filterPanel, 'List(empty)'));
-    const valueInput = getByPlaceholderText(filterPanel, '(empty)');
+    const valueInput = getByRole(
+      guaranteeNonNullable(getByText(filterPanel, 'Add').parentElement),
+      'textbox',
+    );
     fireEvent.change(valueInput, {
-      target: { value: 'test1,test2' },
+      target: { value: 'test1' },
     });
-    fireEvent.keyDown(valueInput, {
-      key: 'Enter',
-      code: 'Enter',
-    });
+    try {
+      fireEvent.blur(valueInput);
+    } catch (e: unknown) {
+      if (
+        !(e instanceof Error) ||
+        !e.message.includes(
+          'MultiValue: Support for defaultProps will be removed from function components in a future major release',
+        )
+      ) {
+        throw e;
+      }
+    }
 
     // Verify no validation issues
-    expect(getByText(filterPanel, 'List(2): test1,test2')).not.toBeNull();
+    expect(await findByText(filterPanel, 'List(1): test1')).not.toBeNull();
     expect(queryByText(filterPanel, '1 issue')).toBeNull();
     expect(
       renderResult.getByRole('button', { name: 'Run Query' }),
