@@ -727,16 +727,26 @@ const PrimitiveCollectionInstanceValueEditor = observer(
     const convertInputValueToValueSpec = (): ValueSpecification | null => {
       const trimmedInputValue = inputValue.trim();
 
-      if (isValueAlreadySelected(trimmedInputValue)) {
-        return null;
-      }
-
       if (trimmedInputValue.length) {
-        return convertTextToPrimitiveInstanceValue(
+        const newValueSpec = convertTextToPrimitiveInstanceValue(
           expectedType,
           trimmedInputValue,
           observerContext,
         );
+
+        if (
+          newValueSpec === null ||
+          getValueSpecificationStringValue(newValueSpec) === undefined ||
+          isValueAlreadySelected(
+            guaranteeNonNullable(
+              getValueSpecificationStringValue(newValueSpec),
+            ),
+          )
+        ) {
+          return null;
+        }
+
+        return newValueSpec;
       }
       return null;
     };
