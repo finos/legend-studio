@@ -840,19 +840,20 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       if (!parsedData) {
         return;
       }
-      const newValues = uniq(parsedData)
-        .map((value) => {
-          const newValueSpec = convertTextToPrimitiveInstanceValue(
-            expectedType,
-            value,
-            observerContext,
-          );
-          return newValueSpec
-            ? getValueSpecificationStringValue(newValueSpec)
-            : null;
-        })
-        .filter(isNonNullable)
-        .filter((value) => !isValueAlreadySelected(value));
+      const newValues = uniq(
+        uniq(parsedData)
+          .map((value) => {
+            const newValueSpec = convertTextToPrimitiveInstanceValue(
+              expectedType,
+              value,
+              observerContext,
+            );
+            return newValueSpec
+              ? getValueSpecificationStringValue(newValueSpec)
+              : null;
+          })
+          .filter(isNonNullable),
+      ).filter((value) => !isValueAlreadySelected(value));
       setSelectedOptions([
         ...selectedOptions,
         ...newValues.map((value) => ({ label: value, value })),
