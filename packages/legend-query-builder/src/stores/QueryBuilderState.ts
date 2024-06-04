@@ -110,8 +110,6 @@ import type { QueryBuilderConfig } from '../graph-manager/QueryBuilderConfig.js'
 import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { QueryBuilderChangeHistoryState } from './QueryBuilderChangeHistoryState.js';
 import { type QueryBuilderWorkflowState } from './query-workflow/QueryBuilderWorkFlowState.js';
-import { initializeMilestoningStateFromDerivedProperty } from './milestoning/QueryBuilderMilestoningHelper.js';
-import { QueryBuilderSimpleProjectionColumnState } from './fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 
 export interface QuerySDLC {}
 
@@ -699,18 +697,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
         );
       }
       if (this.parametersState.parameterStates.length > 0) {
-        const fetchStructureStateImp = this.fetchStructureState.implementation;
-        if (fetchStructureStateImp instanceof QueryBuilderTDSState) {
-          fetchStructureStateImp.projectionColumns.forEach((colState) => {
-            if (colState instanceof QueryBuilderSimpleProjectionColumnState) {
-              colState.propertyExpressionState.derivedPropertyExpressionStates.forEach(
-                (state) => {
-                  initializeMilestoningStateFromDerivedProperty(state);
-                },
-              );
-            }
-          });
-        }
         this.setShowParametersPanel(true);
       }
       this.fetchStructureState.initializeWithQuery();

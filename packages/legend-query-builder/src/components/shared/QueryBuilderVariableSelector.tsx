@@ -149,18 +149,6 @@ export const VariableViewer = observer(
     const variableTypeName =
       variable.genericType?.value.rawType.name ??
       (isConstant ? CALCULATED : undefined);
-    const isMilestoningParameter =
-      queryBuilderState.milestoningState.isMilestoningParameter(variable);
-    const milestoningParameterValue =
-      queryBuilderState.milestoningState.getMilestoningParameterValue(variable);
-    const milestoningParameterValueString = isMilestoningParameter
-      ? milestoningParameterValue
-        ? getNameOfValueSpecification(
-            milestoningParameterValue,
-            queryBuilderState,
-          )
-        : undefined
-      : undefined;
     const deleteDisabled = isReadOnly || isVariableUsed;
     const deleteTitle = isVariableUsed ? 'Used in query' : 'Remove';
     const editVariable = (): void => {
@@ -239,16 +227,6 @@ export const VariableViewer = observer(
                   <div className="query-builder__variables__variable__type__label">
                     {variableTypeName ?? 'unknown'}
                   </div>
-                  {isMilestoningParameter && (
-                    <>
-                      <div className="query-builder__variables__variable__type__label query-builder__variables__variable__type__label--milestoning">
-                        milestoning
-                      </div>
-                      <div className="query-builder__constants__value">
-                        {milestoningParameterValueString}
-                      </div>
-                    </>
-                  )}
                 </div>
               )}
             </div>

@@ -290,30 +290,6 @@ export const generateMilestonedPropertyParameterValue = (
     );
 };
 
-export const initializeMilestoningStateFromDerivedProperty = (
-  derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
-): void => {
-  const milestoningState =
-    derivedPropertyExpressionState.queryBuilderState.milestoningState;
-  const temporalTarget =
-    derivedPropertyExpressionState.propertyExpression.func.value.genericType
-      .value.rawType instanceof Class &&
-    derivedPropertyExpressionState.propertyExpression.func.value._OWNER
-      ._generatedMilestonedProperties.length !== 0
-      ? getMilestoneTemporalStereotype(
-          derivedPropertyExpressionState.propertyExpression.func.value
-            .genericType.value.rawType,
-          derivedPropertyExpressionState.queryBuilderState.graphManagerState
-            .graph,
-        )
-      : undefined;
-  if (temporalTarget) {
-    milestoningState
-      .getMilestoningImplementation(temporalTarget)
-      .initializeMilestoningParameters();
-  }
-};
-
 export const validateMilestoningPropertyExpressionChain = (
   sourceStereotype: MILESTONING_STEREOTYPE | undefined,
   targetStereotype: MILESTONING_STEREOTYPE,
