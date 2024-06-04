@@ -20,7 +20,7 @@ import {
   type DepotServerClient,
   type StoredEntity,
 } from '@finos/legend-server-depot';
-import type { GraphManagerState, RawLambda } from '@finos/legend-graph';
+import type { GraphManagerState } from '@finos/legend-graph';
 import { type GenericLegendApplicationStore } from '@finos/legend-application';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import {
@@ -28,12 +28,11 @@ import {
   QueryBuilderState,
   QueryBuilderDataBrowserWorkflow,
 } from '@finos/legend-query-builder';
-import type { Entity, ProjectGAVCoordinates } from '@finos/legend-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
-  UnsupportedOperationError,
   type GeneratorFn,
 } from '@finos/legend-shared';
 import {
@@ -43,12 +42,8 @@ import {
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   QueryBuilderActionConfig_QueryApplication,
-  QueryEditorStore,
-  createViewProjectHandler,
-  createViewSDLCProjectHandler,
-  type QueryPersistConfiguration,
+  type QueryEditorStore,
 } from '../QueryEditorStore.js';
-import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import { renderDataSpaceQuerySetupSetupPanelContent } from '../../components/data-space/DataSpaceQuerySetup.js';
 import { DataSpaceAdvancedSearchState } from '@finos/legend-extension-dsl-data-space/application-query';
 import type { VisitedDataspace } from '../../__lib__/LegendQueryUserDataSpaceHelper.js';
@@ -111,6 +106,7 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
     makeObservable(this, {
       dataSpaces: observable,
       advancedSearchState: observable,
+      configureDataSpaceOptions: action,
       showAdvancedSearchPanel: action,
       hideAdvancedSearchPanel: action,
       initializeDataSpaceSetup: flow,
@@ -136,6 +132,10 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
     return 'query-builder__setup__data-space-setup';
   }
 
+  configureDataSpaceOptions(val: DataSpaceInfo[]): void {
+    this.dataSpaces = val;
+  }
+
   showAdvancedSearchPanel(): void {
     this.advancedSearchState = new DataSpaceAdvancedSearchState(
       this.applicationStore,
@@ -159,18 +159,16 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
         | DataSpaceVisitedEntity
         | undefined;
       if (hydrated) {
-        this.applicationStore.navigationService.navigator.goToLocation(
-          generateDataSpaceQueryCreatorRoute(
-            guaranteeNonNullable(hydrated.visited.groupId),
-            guaranteeNonNullable(hydrated.visited.artifactId),
-            hydrated.visited.versionId ?? LATEST_VERSION_ALIAS,
-            hydrated.visited.path,
-            hydrated.visited.execContext ??
-              (hydrated.entity.content.defaultExecutionContext as string),
-            undefined,
-            undefined,
-          ),
-        );
+        this.onDataSpaceChange({
+          groupId: guaranteeNonNullable(hydrated.visited.groupId),
+          artifactId: guaranteeNonNullable(hydrated.visited.artifactId),
+          versionId: hydrated.visited.versionId ?? LATEST_VERSION_ALIAS,
+          title: undefined,
+          name: hydrated.visited.path,
+          path: hydrated.visited.path,
+          defaultExecutionContext: hydrated.entity.content
+            .defaultExecutionContext as string,
+        });
         this.loadDataSpacesState.complete();
         return;
       }
@@ -249,62 +247,5 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
       );
     }
     return undefined;
-  }
-}
-
-export class DataSpaceQuerySetupStore extends QueryEditorStore {
-  override get isViewProjectActionDisabled(): boolean {
-    return true;
-  }
-
-  getProjectInfo(): ProjectGAVCoordinates {
-    throw new UnsupportedOperationError();
-  }
-
-  getPersistConfiguration(
-    lambda: RawLambda,
-    options?: { update?: boolean | undefined },
-  ): QueryPersistConfiguration {
-    throw new UnsupportedOperationError();
-  }
-
-  async initializeQueryBuilderState(): Promise<QueryBuilderState> {
-    const queryBuilderState = new DataSpaceQuerySetupState(
-      this,
-      this.applicationStore,
-      this.graphManagerState,
-      this.depotServerClient,
-      (dataSpaceInfo: DataSpaceInfo) => {
-        if (dataSpaceInfo.defaultExecutionContext) {
-          this.applicationStore.navigationService.navigator.goToLocation(
-            generateDataSpaceQueryCreatorRoute(
-              guaranteeNonNullable(dataSpaceInfo.groupId),
-              guaranteeNonNullable(dataSpaceInfo.artifactId),
-              LATEST_VERSION_ALIAS, //always default to latest
-              dataSpaceInfo.path,
-              dataSpaceInfo.defaultExecutionContext,
-              undefined,
-              undefined,
-            ),
-          );
-        } else {
-          this.applicationStore.notificationService.notifyWarning(
-            `Can't switch data space: default execution context not specified`,
-          );
-        }
-      },
-      createViewProjectHandler(this.applicationStore),
-      createViewSDLCProjectHandler(
-        this.applicationStore,
-        this.depotServerClient,
-      ),
-      this.applicationStore.config.options.queryBuilderConfig,
-    );
-
-    return queryBuilderState;
-  }
-
-  override *buildGraph(): GeneratorFn<void> {
-    // do nothing
   }
 }

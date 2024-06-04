@@ -32,8 +32,6 @@ import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
   QueryBuilderActionConfig_QueryApplication,
   QueryEditorStore,
-  createViewProjectHandler,
-  createViewSDLCProjectHandler,
   type QueryPersistConfiguration,
 } from '../QueryEditorStore.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
@@ -44,11 +42,11 @@ import {
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
-  DataSpaceProjectInfo,
   DataSpaceQueryBuilderState,
   createQueryClassTaggedValue,
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
+import { createDataSpaceDepoRepo } from './DataSpaceQueryBuilderHelper.js';
 
 export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
   readonly groupId: string;
@@ -122,41 +120,35 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     } catch {
       // do nothing
     }
-    const projectInfo = new DataSpaceProjectInfo(
-      this.groupId,
-      this.artifactId,
-      this.versionId,
-      createViewProjectHandler(this.applicationStore),
-      createViewSDLCProjectHandler(
-        this.applicationStore,
-        this.depotServerClient,
-      ),
-    );
     const sourceInfo = {
-      groupId: projectInfo.groupId,
-      artifactId: projectInfo.artifactId,
-      versionId: projectInfo.versionId,
+      groupId: this.groupId,
+      artifactId: this.artifactId,
+      versionId: this.versionId,
       dataSpace: dataSpace.path,
     };
     const queryBuilderState = new DataSpaceQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
-      this.depotServerClient,
       QueryBuilderDataBrowserWorkflow.INSTANCE,
       new QueryBuilderActionConfig_QueryApplication(this),
       dataSpace,
       executionContext,
+      createDataSpaceDepoRepo(
+        this,
+        this.groupId,
+        this.artifactId,
+        this.versionId,
+        undefined,
+      ),
       (dataSpaceInfo: DataSpaceInfo) => {
         this.applicationStore.notificationService.notifyWarning(
           `Can't switch data space to visit current template query`,
         );
       },
-      true,
       dataSpaceAnalysisResult,
       undefined,
       undefined,
       undefined,
-      projectInfo,
       this.applicationStore.config.options.queryBuilderConfig,
       sourceInfo,
     );

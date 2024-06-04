@@ -111,9 +111,9 @@ import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { QueryBuilderChangeHistoryState } from './QueryBuilderChangeHistoryState.js';
 import { type QueryBuilderWorkflowState } from './query-workflow/QueryBuilderWorkFlowState.js';
 
-export interface QuerySDLC {}
+export interface QueryableSourceInfo {}
 
-export type QueryStateInfo = QuerySDLC & {
+export type QueryableClassMappingRuntimeInfo = QueryableSourceInfo & {
   class: string;
   mapping: string;
   runtime: string;
@@ -169,7 +169,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   // NOTE: This property contains information about workflow used
   // to create this state. This should only be used to add additional
   // information to query builder analytics.
-  sourceInfo?: QuerySDLC | undefined;
+  sourceInfo?: QueryableSourceInfo | undefined;
 
   // NOTE: this makes it so that we need to import components in stores code,
   // we probably want to refactor to an extension mechanism
@@ -180,7 +180,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     graphManagerState: GraphManagerState,
     workflowState: QueryBuilderWorkflowState,
     config: QueryBuilderConfig | undefined,
-    sourceInfo?: QuerySDLC | undefined,
+    sourceInfo?: QueryableSourceInfo | undefined,
   ) {
     makeObservable(this, {
       explorerState: observable,
@@ -341,7 +341,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
    * Gets information about the current queryBuilderState.
    * This information can be used as a part of analytics
    */
-  getStateInfo(): QueryStateInfo | undefined {
+  getStateInfo(): QueryableClassMappingRuntimeInfo | undefined {
     if (this.sourceInfo) {
       const classPath = this.class?.path;
       const mappingPath = this.executionContextState.mapping?.path;

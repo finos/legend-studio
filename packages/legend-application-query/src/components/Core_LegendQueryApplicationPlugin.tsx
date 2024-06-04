@@ -74,7 +74,6 @@ import {
 import {
   ExistingQueryEditorStore,
   QueryBuilderActionConfig_QueryApplication,
-  createViewSDLCProjectHandler,
 } from '../stores/QueryEditorStore.js';
 import {
   DataSpaceQueryBuilderState,
@@ -87,6 +86,7 @@ import { buildUrl } from '@finos/legend-shared';
 import { parseProjectIdentifier } from '@finos/legend-storage';
 import { QueryEditorExistingQueryHeader } from './QueryEditor.js';
 import { DataSpaceTemplateQueryCreatorStore } from '../stores/data-space/DataSpaceTemplateQueryCreatorStore.js';
+import { createViewSDLCProjectHandler } from '../stores/data-space/DataSpaceQueryBuilderHelper.js';
 
 export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   static NAME = packageJson.extensions.applicationQueryPlugin;
@@ -371,13 +371,16 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             LegendQueryTelemetryHelper.logEvent_QueryViewSdlcProjectLaunched(
               editorStore.applicationStore.telemetryService,
             );
-            const { groupId, artifactId } = editorStore.getProjectInfo();
-            createViewSDLCProjectHandler(
-              editorStore.applicationStore,
-              editorStore.depotServerClient,
-            )(groupId, artifactId, undefined).catch(
-              editorStore.applicationStore.alertUnhandledError,
-            );
+            const projectInfo = editorStore.getProjectInfo();
+            if (projectInfo) {
+              const { groupId, artifactId } = projectInfo;
+              createViewSDLCProjectHandler(
+                editorStore.applicationStore,
+                editorStore.depotServerClient,
+              )(groupId, artifactId, undefined).catch(
+                editorStore.applicationStore.alertUnhandledError,
+              );
+            }
           }
         },
         icon: <InfoCircleIcon />,
@@ -539,18 +542,22 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             const editorStore =
               queryBuilderState.workflowState.actionConfig.editorStore;
             const openSaveQueryModal = (): void => {
-              if (editorStore instanceof ExistingQueryEditorStore) {
-                editorStore.updateState.showSaveModal();
-              } else {
-                editorStore.queryCreatorState.open(undefined);
+              if (editorStore.canPersistToSavedQuery) {
+                if (editorStore instanceof ExistingQueryEditorStore) {
+                  editorStore.updateState.showSaveModal();
+                } else {
+                  editorStore.queryCreatorState.open(undefined);
+                }
               }
             };
             const handleQuerySaveAs = (): void => {
-              editorStore.queryCreatorState.open(
-                editorStore instanceof ExistingQueryEditorStore
-                  ? editorStore.query
-                  : undefined,
-              );
+              if (editorStore.canPersistToSavedQuery) {
+                editorStore.queryCreatorState.open(
+                  editorStore instanceof ExistingQueryEditorStore
+                    ? editorStore.query
+                    : undefined,
+                );
+              }
             };
             return (
               <div className="query-editor__header__action-combo btn__dropdown-combo">
@@ -558,6 +565,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                   className="query-editor__header__action query-editor__header__action-combo__main-btn btn--dak"
                   disabled={
                     editorStore.isPerformingBlockingAction ||
+                    !editorStore.canPersistToSavedQuery ||
                     !queryBuilderState.canBuildQuery
                   }
                   onClick={openSaveQueryModal}

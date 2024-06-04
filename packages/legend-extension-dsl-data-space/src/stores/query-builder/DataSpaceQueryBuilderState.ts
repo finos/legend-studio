@@ -53,6 +53,7 @@ import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/q
 import {
   DataSpace,
   type DataSpaceExecutionContext,
+  type DataSpaceExecutableTemplate,
 } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceAdvancedSearchState } from '../query/DataSpaceAdvancedSearchState.js';
@@ -61,6 +62,8 @@ import {
   extractDataSpaceInfo,
   type DataSpaceInfo,
 } from '../shared/DataSpaceInfo.js';
+import type { ProjectGAVCoordinates } from '@finos/legend-storage';
+import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/to-delete/DSL_DataSpace_LegendQueryNavigation_to_delete.js';
 
 export const resolveUsableDataSpaceClasses = (
   dataSpace: DataSpace,
@@ -80,11 +83,91 @@ export const resolveUsableDataSpaceClasses = (
   }
   return getMappingCompatibleClasses(mapping, graphManagerState.usableClasses);
 };
+export interface DataSpaceQuerySDLC extends QuerySDLC {
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+  dataSpace: string;
+}
 
-export class DataSpaceProjectInfo {
-  readonly groupId: string;
-  readonly artifactId: string;
-  readonly versionId: string;
+// could be abstracted for element
+export abstract class DataSpacesBuilderRepoistory {
+  readonly applicationStore: GenericLegendApplicationStore;
+  readonly graphManagerState: GraphManagerState;
+  readonly loadDataSpacesState = ActionState.create();
+  dataSpaces: DataSpaceInfo[] | undefined;
+  prioritizeDataSpaceFunc?: ((val: DataSpaceInfo) => boolean) | undefined;
+
+  constructor(
+    applicatonstore: GenericLegendApplicationStore,
+    graphManagerState: GraphManagerState,
+    prioritizeDataSpaceFunc?: ((val: DataSpaceInfo) => boolean) | undefined,
+  ) {
+    this.applicationStore = applicatonstore;
+    this.graphManagerState = graphManagerState;
+    this.prioritizeDataSpaceFunc = prioritizeDataSpaceFunc;
+  }
+
+  get isAdvancedDataSpaceSearchEnabled(): boolean {
+    return false;
+  }
+
+  get canVisitTemplateQuery(): boolean {
+    return false;
+  }
+
+  abstract loadDataSpaces(): GeneratorFn<void>;
+  abstract visitTemplateQuery(
+    dataSpace: DataSpace,
+    template: DataSpaceExecutableTemplate,
+  ): void;
+
+  configureDataSpaceOptions(val: DataSpaceInfo[]): void {
+    this.dataSpaces = val;
+  }
+}
+export class DataSpacesGraphRepoistory extends DataSpacesBuilderRepoistory {
+  constructor(
+    applicatonstore: GenericLegendApplicationStore,
+    graphManagerState: GraphManagerState,
+    prioritizeDataSpaceFunc?: ((val: DataSpaceInfo) => boolean) | undefined,
+  ) {
+    super(applicatonstore, graphManagerState, prioritizeDataSpaceFunc);
+    makeObservable(this, {
+      dataSpaces: observable,
+      loadDataSpaces: flow,
+      configureDataSpaceOptions: action,
+    });
+  }
+
+  *loadDataSpaces(): GeneratorFn<void> {
+    this.dataSpaces = this.graphManagerState.graph.allOwnElements
+      .filter(filterByType(DataSpace))
+      .map(
+        (e) =>
+          ({
+            groupId: undefined,
+            artifactId: undefined,
+            versionId: undefined,
+            path: e.path,
+            name: e.name,
+            title: e.title,
+            defaultExecutionContext: e.defaultExecutionContext.title,
+          }) as DataSpaceInfo,
+      );
+  }
+
+  override visitTemplateQuery(
+    dataSpace: DataSpace,
+    template: DataSpaceExecutableTemplate,
+  ): void {
+    throw new Error('Method not implemented.');
+  }
+}
+
+export class DataSpacesDepotRepository extends DataSpacesBuilderRepoistory {
+  readonly depotServerClient: DepotServerClient;
+  readonly project: ProjectGAVCoordinates;
   readonly viewProject: (
     groupId: string,
     artifactId: string,
@@ -96,11 +179,13 @@ export class DataSpaceProjectInfo {
     artifactId: string,
     entityPath: string | undefined,
   ) => Promise<void>;
+  advancedSearchState?: DataSpaceAdvancedSearchState | undefined;
 
   constructor(
-    groupId: string,
-    artifactId: string,
-    versionId: string,
+    depotServerClient: DepotServerClient,
+    applicatonstore: GenericLegendApplicationStore,
+    graphManagerState: GraphManagerState,
+    project: ProjectGAVCoordinates,
     viewProject: (
       groupId: string,
       artifactId: string,
@@ -112,26 +197,101 @@ export class DataSpaceProjectInfo {
       artifactId: string,
       entityPath: string | undefined,
     ) => Promise<void>,
+    prioritizeDataSpaceFunc?: ((val: DataSpaceInfo) => boolean) | undefined,
   ) {
-    this.groupId = groupId;
-    this.artifactId = artifactId;
-    this.versionId = versionId;
+    super(applicatonstore, graphManagerState, prioritizeDataSpaceFunc);
+    makeObservable(this, {
+      advancedSearchState: observable,
+      dataSpaces: observable,
+      showAdvancedSearchPanel: action,
+      hideAdvancedSearchPanel: action,
+      visitTemplateQuery: action,
+      configureDataSpaceOptions: action,
+      loadDataSpaces: flow,
+    });
+    this.depotServerClient = depotServerClient;
+    this.project = project;
     this.viewProject = viewProject;
     this.viewSDLCProject = viewSDLCProject;
   }
-}
 
-export interface DataSpaceQuerySDLC extends QuerySDLC {
-  groupId: string;
-  artifactId: string;
-  versionId: string;
-  dataSpace: string;
+  override get isAdvancedDataSpaceSearchEnabled(): boolean {
+    return true;
+  }
+
+  override get canVisitTemplateQuery(): boolean {
+    return true;
+  }
+
+  override visitTemplateQuery(
+    dataSpace: DataSpace,
+    template: DataSpaceExecutableTemplate,
+  ): void {
+    this.applicationStore.navigationService.navigator.visitAddress(
+      this.applicationStore.navigationService.navigator.generateAddress(
+        generateDataSpaceTemplateQueryCreatorRoute(
+          this.project.groupId,
+          this.project.artifactId,
+          this.project.versionId,
+          dataSpace.path,
+          template.id,
+        ),
+      ),
+    );
+  }
+
+  showAdvancedSearchPanel(dataSpace: DataSpace): void {
+    this.advancedSearchState = new DataSpaceAdvancedSearchState(
+      this.applicationStore,
+      this.graphManagerState,
+      this.depotServerClient,
+      {
+        viewProject: this.viewProject,
+        viewSDLCProject: this.viewSDLCProject,
+      },
+      {
+        groupId: this.project.groupId,
+        artifactId: this.project.artifactId,
+        versionId: this.project.versionId,
+        title: dataSpace.title,
+        name: dataSpace.name,
+        path: dataSpace.path,
+        defaultExecutionContext: dataSpace.defaultExecutionContext.name,
+      },
+      this.project.versionId === SNAPSHOT_VERSION_ALIAS,
+    );
+  }
+
+  hideAdvancedSearchPanel(): void {
+    this.advancedSearchState = undefined;
+  }
+
+  *loadDataSpaces(): GeneratorFn<void> {
+    if (this.dataSpaces === undefined) {
+      this.loadDataSpacesState.inProgress();
+      const toGetSnapShot = this.project.versionId === SNAPSHOT_VERSION_ALIAS;
+      try {
+        this.dataSpaces = (
+          (yield this.depotServerClient.getEntitiesByClassifier(
+            DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+            {
+              scope: toGetSnapShot ? DepotScope.SNAPSHOT : DepotScope.RELEASES,
+            },
+          )) as StoredEntity[]
+        ).map((storedEntity) =>
+          extractDataSpaceInfo(storedEntity, toGetSnapShot),
+        );
+        this.loadDataSpacesState.pass();
+      } catch (error) {
+        assertErrorThrown(error);
+        this.loadDataSpacesState.fail();
+        this.applicationStore.notificationService.notifyError(error);
+      }
+    }
+  }
 }
 
 export class DataSpaceQueryBuilderState extends QueryBuilderState {
-  readonly depotServerClient: DepotServerClient;
-  readonly isAdvancedDataSpaceSearchEnabled: boolean;
-  readonly loadDataSpacesState = ActionState.create();
   readonly onDataSpaceChange: (val: DataSpaceInfo) => void;
   readonly onExecutionContextChange?:
     | ((val: DataSpaceExecutionContext) => void)
@@ -139,69 +299,60 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   readonly onRuntimeChange?: ((val: Runtime) => void) | undefined;
   readonly onClassChange?: ((val: Class) => void) | undefined;
   readonly dataSpaceAnalysisResult?: DataSpaceAnalysisResult | undefined;
-  readonly projectInfo?: DataSpaceProjectInfo | undefined;
+  readonly dataSpaceRepo: DataSpacesBuilderRepoistory;
 
   override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
     renderDataSpaceQueryBuilderSetupPanelContent(this);
 
   dataSpace: DataSpace;
   executionContext!: DataSpaceExecutionContext;
-  dataSpaces: DataSpaceInfo[] | undefined;
   readonly prioritizeDataSpaceFunc?:
     | ((val: DataSpaceInfo) => boolean)
     | undefined;
   showRuntimeSelector = false;
-  advancedSearchState?: DataSpaceAdvancedSearchState | undefined;
   isTemplateQueryDialogOpen = false;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
-    depotServerClient: DepotServerClient,
     workflow: QueryBuilderWorkflowState,
     actionConfig: QueryBuilderActionConfig,
     dataSpace: DataSpace,
     executionContext: DataSpaceExecutionContext,
+    dataSpaceRepo: DataSpacesBuilderRepoistory | undefined,
     onDataSpaceChange: (val: DataSpaceInfo) => void,
-    isAdvancedDataSpaceSearchEnabled: boolean,
     dataSpaceAnalysisResult?: DataSpaceAnalysisResult | undefined,
     onExecutionContextChange?:
       | ((val: DataSpaceExecutionContext) => void)
       | undefined,
     onRuntimeChange?: ((val: Runtime) => void) | undefined,
     onClassChange?: ((val: Class) => void) | undefined,
-    projectInfo?: DataSpaceProjectInfo | undefined,
     config?: QueryBuilderConfig | undefined,
     sourceInfo?: QuerySDLC | undefined,
-    prioritizeDataSpaceFunc?: ((val: DataSpaceInfo) => boolean) | undefined,
   ) {
     super(applicationStore, graphManagerState, workflow, config, sourceInfo);
 
     makeObservable(this, {
-      dataSpaces: observable,
       executionContext: observable,
       showRuntimeSelector: observable,
-      advancedSearchState: observable,
       isTemplateQueryDialogOpen: observable,
-      configureDataSpaceOptions: action,
-      showAdvancedSearchPanel: action,
-      hideAdvancedSearchPanel: action,
       setExecutionContext: action,
       setShowRuntimeSelector: action,
       setTemplateQueryDialogOpen: action,
-      loadDataSpaces: flow,
     });
 
-    this.depotServerClient = depotServerClient;
     this.dataSpace = dataSpace;
     this.executionContext = executionContext;
-    this.projectInfo = projectInfo;
     this.onDataSpaceChange = onDataSpaceChange;
     this.onExecutionContextChange = onExecutionContextChange;
     this.onRuntimeChange = onRuntimeChange;
     this.onClassChange = onClassChange;
-    this.prioritizeDataSpaceFunc = prioritizeDataSpaceFunc;
-    this.isAdvancedDataSpaceSearchEnabled = isAdvancedDataSpaceSearchEnabled;
+    this.dataSpaceRepo =
+      dataSpaceRepo ??
+      new DataSpacesGraphRepoistory(
+        this.applicationStore,
+        this.graphManagerState,
+      );
     this.dataSpaceAnalysisResult = dataSpaceAnalysisResult;
     this.workflowState.updateActionConfig(actionConfig);
   }
@@ -223,88 +374,12 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     this.isTemplateQueryDialogOpen = val;
   }
 
-  showAdvancedSearchPanel(): void {
-    if (this.projectInfo && this.isAdvancedDataSpaceSearchEnabled) {
-      this.advancedSearchState = new DataSpaceAdvancedSearchState(
-        this.applicationStore,
-        this.graphManagerState,
-        this.depotServerClient,
-        {
-          viewProject: this.projectInfo.viewProject,
-          viewSDLCProject: this.projectInfo.viewSDLCProject,
-        },
-        {
-          groupId: this.projectInfo.groupId,
-          artifactId: this.projectInfo.artifactId,
-          versionId: this.projectInfo.versionId,
-          title: this.dataSpace.title,
-          name: this.dataSpace.name,
-          path: this.dataSpace.path,
-          defaultExecutionContext: this.dataSpace.defaultExecutionContext.name,
-        },
-        this.projectInfo.versionId === SNAPSHOT_VERSION_ALIAS,
-      );
-    }
-  }
-
-  hideAdvancedSearchPanel(): void {
-    this.advancedSearchState = undefined;
-  }
-
   setExecutionContext(val: DataSpaceExecutionContext): void {
     this.executionContext = val;
   }
 
   setShowRuntimeSelector(val: boolean): void {
     this.showRuntimeSelector = val;
-  }
-
-  configureDataSpaceOptions(val: DataSpaceInfo[]): void {
-    this.dataSpaces = val;
-  }
-
-  *loadDataSpaces(force?: boolean): GeneratorFn<void> {
-    if (this.projectInfo) {
-      if (this.dataSpaces === undefined || force) {
-        this.loadDataSpacesState.inProgress();
-        const toGetSnapShot =
-          this.projectInfo.versionId === SNAPSHOT_VERSION_ALIAS;
-        try {
-          this.dataSpaces = (
-            (yield this.depotServerClient.getEntitiesByClassifier(
-              DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
-              {
-                scope: toGetSnapShot
-                  ? DepotScope.SNAPSHOT
-                  : DepotScope.RELEASES,
-              },
-            )) as StoredEntity[]
-          ).map((storedEntity) =>
-            extractDataSpaceInfo(storedEntity, toGetSnapShot),
-          );
-          this.loadDataSpacesState.pass();
-        } catch (error) {
-          assertErrorThrown(error);
-          this.loadDataSpacesState.fail();
-          this.applicationStore.notificationService.notifyError(error);
-        }
-      }
-    } else {
-      this.dataSpaces = this.graphManagerState.graph.allOwnElements
-        .filter(filterByType(DataSpace))
-        .map(
-          (e) =>
-            ({
-              groupId: undefined,
-              artifactId: undefined,
-              versionId: undefined,
-              path: e.path,
-              name: e.name,
-              title: e.title,
-              defaultExecutionContext: e.defaultExecutionContext.title,
-            }) as DataSpaceInfo,
-        );
-    }
   }
 
   /**

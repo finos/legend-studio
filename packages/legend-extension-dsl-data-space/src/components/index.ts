@@ -24,7 +24,9 @@ export * from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
 export { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 export {
   DataSpaceQueryBuilderState,
-  DataSpaceProjectInfo,
+  DataSpacesDepotRepository,
+  DataSpacesBuilderRepoistory,
+  DataSpacesGraphRepoistory,
 } from '../stores/query-builder/DataSpaceQueryBuilderState.js';
 export {
   type DataSpaceInfo,

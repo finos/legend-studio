@@ -68,8 +68,6 @@ import {
   QueryExplicitExecutionContext,
 } from '@finos/legend-graph';
 import {
-  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
-  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   generateExistingQueryEditorRoute,
   generateMappingQueryCreatorRoute,
   generateServiceQueryCreatorRoute,
@@ -79,7 +77,6 @@ import {
   type Entity,
   type ProjectGAVCoordinates,
   type EntitiesWithOrigin,
-  parseProjectIdentifier,
 } from '@finos/legend-storage';
 import {
   type DepotServerClient,
@@ -111,7 +108,6 @@ import {
 import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 import {
-  DataSpaceProjectInfo,
   DataSpaceQueryBuilderState,
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
@@ -124,58 +120,7 @@ import {
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { generateDataSpaceQueryCreatorRoute } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import { hasDataSpaceInfoBeenVisited } from '../__lib__/LegendQueryUserDataSpaceHelper.js';
-
-export const createViewProjectHandler =
-  (applicationStore: LegendQueryApplicationStore) =>
-  (
-    groupId: string,
-    artifactId: string,
-    versionId: string,
-    entityPath: string | undefined,
-  ): void =>
-    applicationStore.navigationService.navigator.visitAddress(
-      EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
-        applicationStore.config.studioApplicationUrl,
-        groupId,
-        artifactId,
-        versionId,
-        entityPath,
-      ),
-    );
-
-export const createViewSDLCProjectHandler =
-  (
-    applicationStore: LegendQueryApplicationStore,
-    depotServerClient: DepotServerClient,
-  ) =>
-  async (
-    groupId: string,
-    artifactId: string,
-    entityPath: string | undefined,
-  ): Promise<void> => {
-    // fetch project data
-    const project = StoreProjectData.serialization.fromJson(
-      await depotServerClient.getProject(groupId, artifactId),
-    );
-    // find the matching SDLC instance
-    const projectIDPrefix = parseProjectIdentifier(project.projectId).prefix;
-    const matchingSDLCEntry = applicationStore.config.studioInstances.find(
-      (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
-    );
-    if (matchingSDLCEntry) {
-      applicationStore.navigationService.navigator.visitAddress(
-        EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
-          matchingSDLCEntry.url,
-          project.projectId,
-          entityPath,
-        ),
-      );
-    } else {
-      applicationStore.notificationService.notifyWarning(
-        `Can't find the corresponding SDLC instance to view the SDLC project`,
-      );
-    }
-  };
+import { createDataSpaceDepoRepo } from './data-space/DataSpaceQueryBuilderHelper.js';
 
 export interface QueryPersistConfiguration {
   defaultName?: string | undefined;
@@ -405,6 +350,10 @@ export abstract class QueryEditorStore {
     return false;
   }
 
+  get canPersistToSavedQuery(): boolean {
+    return true;
+  }
+
   setExistingQueryName(val: string | undefined): void {
     this.existingQueryName = val;
   }
@@ -421,7 +370,7 @@ export abstract class QueryEditorStore {
     return this.queryCreatorState.createQueryState.isInProgress;
   }
 
-  abstract getProjectInfo(): ProjectGAVCoordinates;
+  abstract getProjectInfo(): ProjectGAVCoordinates | undefined;
   /**
    * Set up the editor state before building the graph
    */
@@ -498,7 +447,7 @@ export abstract class QueryEditorStore {
   abstract getPersistConfiguration(
     lambda: RawLambda,
     options?: { update?: boolean | undefined },
-  ): QueryPersistConfiguration;
+  ): QueryPersistConfiguration | undefined;
 
   *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
@@ -587,91 +536,101 @@ export abstract class QueryEditorStore {
   *buildGraph(): GeneratorFn<void> {
     const stopWatch = new StopWatch();
 
-    const { groupId, artifactId, versionId } = this.getProjectInfo();
+    const projectInfo = this.getProjectInfo();
 
-    // fetch project data
-    const project = StoreProjectData.serialization.fromJson(
-      (yield this.depotServerClient.getProject(
-        groupId,
-        artifactId,
-      )) as PlainObject<StoreProjectData>,
-    );
+    if (projectInfo) {
+      const { groupId, artifactId, versionId } = projectInfo;
 
-    // initialize system
-    stopWatch.record();
-    yield this.graphManagerState.initializeSystem();
-    stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH_SYSTEM__SUCCESS);
+      // fetch project data
+      const project = StoreProjectData.serialization.fromJson(
+        (yield this.depotServerClient.getProject(
+          groupId,
+          artifactId,
+        )) as PlainObject<StoreProjectData>,
+      );
 
-    // fetch entities
-    stopWatch.record();
-    this.initState.setMessage(`Fetching entities...`);
-    const entities = (yield this.depotServerClient.getEntities(
-      project,
-      versionId,
-    )) as Entity[];
-    this.initState.setMessage(undefined);
-    stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS);
+      // initialize system
+      stopWatch.record();
+      yield this.graphManagerState.initializeSystem();
+      stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH_SYSTEM__SUCCESS);
 
-    // fetch and build dependencies
-    stopWatch.record();
-    const dependencyManager =
-      this.graphManagerState.graphManager.createDependencyManager();
-    this.graphManagerState.graph.dependencyManager = dependencyManager;
-    this.graphManagerState.dependenciesBuildState.setMessage(
-      `Fetching dependencies...`,
-    );
-    const dependencyEntitiesIndex = (yield flowResult(
-      this.depotServerClient.getIndexedDependencyEntities(project, versionId),
-    )) as Map<string, EntitiesWithOrigin>;
-    stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
+      // fetch entities
+      stopWatch.record();
+      this.initState.setMessage(`Fetching entities...`);
+      const entities = (yield this.depotServerClient.getEntities(
+        project,
+        versionId,
+      )) as Entity[];
+      this.initState.setMessage(undefined);
+      stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS);
 
-    const dependency_buildReport = createGraphBuilderReport();
-    yield this.graphManagerState.graphManager.buildDependencies(
-      this.graphManagerState.coreModel,
-      this.graphManagerState.systemModel,
-      dependencyManager,
-      dependencyEntitiesIndex,
-      this.graphManagerState.dependenciesBuildState,
-      {},
-      dependency_buildReport,
-    );
-    dependency_buildReport.timings[
-      GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS
-    ] = stopWatch.getRecord(
-      GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS,
-    );
+      // fetch and build dependencies
+      stopWatch.record();
+      const dependencyManager =
+        this.graphManagerState.graphManager.createDependencyManager();
+      this.graphManagerState.graph.dependencyManager = dependencyManager;
+      this.graphManagerState.dependenciesBuildState.setMessage(
+        `Fetching dependencies...`,
+      );
+      const dependencyEntitiesIndex = (yield flowResult(
+        this.depotServerClient.getIndexedDependencyEntities(project, versionId),
+      )) as Map<string, EntitiesWithOrigin>;
+      stopWatch.record(GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS);
 
-    // build graph
-    const graph_buildReport = createGraphBuilderReport();
-    yield this.graphManagerState.graphManager.buildGraph(
-      this.graphManagerState.graph,
-      entities,
-      this.graphManagerState.graphBuildState,
-      {
-        origin: new LegendSDLC(groupId, artifactId, resolveVersion(versionId)),
-      },
-      graph_buildReport,
-    );
-    graph_buildReport.timings[
-      GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS
-    ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS);
+      const dependency_buildReport = createGraphBuilderReport();
+      yield this.graphManagerState.graphManager.buildDependencies(
+        this.graphManagerState.coreModel,
+        this.graphManagerState.systemModel,
+        dependencyManager,
+        dependencyEntitiesIndex,
+        this.graphManagerState.dependenciesBuildState,
+        {},
+        dependency_buildReport,
+      );
+      dependency_buildReport.timings[
+        GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS
+      ] = stopWatch.getRecord(
+        GRAPH_MANAGER_EVENT.FETCH_GRAPH_DEPENDENCIES__SUCCESS,
+      );
 
-    // report
-    stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS);
-    const graphBuilderReportData = {
-      timings:
-        this.applicationStore.timeService.finalizeTimingsRecord(stopWatch),
-      dependencies: dependency_buildReport,
-      dependenciesCount:
-        this.graphManagerState.graph.dependencyManager.numberOfDependencies,
-      graph: graph_buildReport,
-    };
-    this.logBuildGraphMetrics(graphBuilderReportData);
+      // build graph
+      const graph_buildReport = createGraphBuilderReport();
+      yield this.graphManagerState.graphManager.buildGraph(
+        this.graphManagerState.graph,
+        entities,
+        this.graphManagerState.graphBuildState,
+        {
+          origin: new LegendSDLC(
+            groupId,
+            artifactId,
+            resolveVersion(versionId),
+          ),
+        },
+        graph_buildReport,
+      );
+      graph_buildReport.timings[
+        GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS
+      ] = stopWatch.getRecord(
+        GRAPH_MANAGER_EVENT.FETCH_GRAPH_ENTITIES__SUCCESS,
+      );
 
-    this.applicationStore.logService.info(
-      LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
-      graphBuilderReportData,
-    );
+      // report
+      stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS);
+      const graphBuilderReportData = {
+        timings:
+          this.applicationStore.timeService.finalizeTimingsRecord(stopWatch),
+        dependencies: dependency_buildReport,
+        dependenciesCount:
+          this.graphManagerState.graph.dependencyManager.numberOfDependencies,
+        graph: graph_buildReport,
+      };
+      this.logBuildGraphMetrics(graphBuilderReportData);
+
+      this.applicationStore.logService.info(
+        LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
+        graphBuilderReportData,
+      );
+    }
   }
 }
 
@@ -1231,20 +1190,10 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         } catch {
           // do nothing
         }
-        const projectInfo = new DataSpaceProjectInfo(
-          query.groupId,
-          query.artifactId,
-          query.versionId,
-          createViewProjectHandler(this.applicationStore),
-          createViewSDLCProjectHandler(
-            this.applicationStore,
-            this.depotServerClient,
-          ),
-        );
         const sourceInfo = {
-          groupId: projectInfo.groupId,
-          artifactId: projectInfo.artifactId,
-          versionId: projectInfo.versionId,
+          groupId: query.groupId,
+          artifactId: query.artifactId,
+          versionId: query.versionId,
           dataSpace: dataSpace.path,
         };
         const visitedDataSpaces =
@@ -1254,11 +1203,18 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         const dataSpaceQueryBuilderState = new DataSpaceQueryBuilderState(
           this.applicationStore,
           this.graphManagerState,
-          this.depotServerClient,
           QueryBuilderDataBrowserWorkflow.INSTANCE,
           new QueryBuilderActionConfig_QueryApplication(this),
           dataSpace,
           matchingExecutionContext,
+          createDataSpaceDepoRepo(
+            this,
+            query.groupId,
+            query.artifactId,
+            query.versionId,
+            (dataSpaceInfo: DataSpaceInfo) =>
+              hasDataSpaceInfoBeenVisited(dataSpaceInfo, visitedDataSpaces),
+          ),
           (dataSpaceInfo: DataSpaceInfo) => {
             if (dataSpaceInfo.defaultExecutionContext) {
               const proceed = (): void =>
@@ -1322,16 +1278,12 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
               );
             }
           },
-          true,
           dataSpaceAnalysisResult,
           undefined,
           undefined,
           undefined,
-          projectInfo,
           this.applicationStore.config.options.queryBuilderConfig,
           sourceInfo,
-          (dataSpaceInfo: DataSpaceInfo) =>
-            hasDataSpaceInfoBeenVisited(dataSpaceInfo, visitedDataSpaces),
         );
         const mappingModelCoverageAnalysisResult =
           dataSpaceAnalysisResult?.executionContextsIndex.get(
