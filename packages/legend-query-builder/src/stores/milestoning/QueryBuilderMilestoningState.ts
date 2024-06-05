@@ -451,33 +451,6 @@ export class QueryBuilderMilestoningState implements Hashable {
     return milestoningParameter;
   }
 
-  updateMilestoningParameterValue(
-    parameter: VariableExpression,
-    value: ValueSpecification | undefined,
-  ): void {
-    const variableState =
-      this.queryBuilderState.parametersState.parameterStates.find(
-        (param) => param.parameter.name === parameter.name,
-      );
-    if (variableState) {
-      variableState.setValue(value);
-    }
-  }
-
-  getMilestoningParameterValue(
-    milestoningParameter: ValueSpecification,
-  ): ValueSpecification | undefined {
-    let value: ValueSpecification | undefined = milestoningParameter;
-    if (milestoningParameter instanceof VariableExpression) {
-      const paramState =
-        this.queryBuilderState.parametersState.parameterStates.find(
-          (param) => param.parameter.name === milestoningParameter.name,
-        );
-      value = paramState?.value;
-    }
-    return value;
-  }
-
   isVariableUsed(variable: VariableExpression): boolean {
     const usedInBusiness = this.businessDate
       ? isValueExpressionReferencedInValue(variable, this.businessDate)
@@ -486,33 +459,6 @@ export class QueryBuilderMilestoningState implements Hashable {
       ? isValueExpressionReferencedInValue(variable, this.processingDate)
       : false;
     return usedInBusiness || usedInProcessingDate;
-  }
-
-  isMilestoningParameter(parameter: VariableExpression): boolean {
-    let isMilestoningParameter = false;
-    if (this.businessDate instanceof VariableExpression) {
-      isMilestoningParameter =
-        parameter.name ===
-        guaranteeType(this.businessDate, VariableExpression).name;
-    }
-    if (this.processingDate instanceof VariableExpression) {
-      isMilestoningParameter =
-        isMilestoningParameter ||
-        parameter.name ===
-          guaranteeType(this.processingDate, VariableExpression).name;
-    }
-    if (this.startDate instanceof VariableExpression) {
-      isMilestoningParameter =
-        isMilestoningParameter ||
-        parameter.name ===
-          guaranteeType(this.startDate, VariableExpression).name;
-    }
-    if (this.endDate instanceof VariableExpression) {
-      isMilestoningParameter =
-        isMilestoningParameter ||
-        parameter.name === guaranteeType(this.endDate, VariableExpression).name;
-    }
-    return isMilestoningParameter;
   }
 
   get hashCode(): string {

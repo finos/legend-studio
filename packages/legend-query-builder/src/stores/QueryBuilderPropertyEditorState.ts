@@ -161,8 +161,7 @@ export const generateValueSpecificationForParameter = (
   return createNullishValue(graph);
 };
 
-//here
-export const fillDerivedPropertyParameterValues = (
+const fillDerivedPropertyParameterValues = (
   derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
 ): void => {
   const parameterValues: ValueSpecification[] =
