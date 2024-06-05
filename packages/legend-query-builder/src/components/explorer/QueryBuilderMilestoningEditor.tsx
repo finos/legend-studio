@@ -278,10 +278,12 @@ const AllVersionsInRangelMilestoningParametersEditor = observer(
   },
 );
 
-export const MilestoningParametersEditorContent = observer(
+export const MilestoningParametersEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const applicationStore = queryBuilderState.applicationStore;
     const milestoningState = queryBuilderState.milestoningState;
+    const close = (): void => milestoningState.setShowMilestoningEditor(false);
     const isCompatibleMilestoningParameter = (
       variable: VariableExpression,
     ): boolean =>
@@ -290,62 +292,6 @@ export const MilestoningParametersEditorContent = observer(
       variable.genericType?.value.rawType.name === PRIMITIVE_TYPE.DATE ||
       variable.genericType?.value.rawType.name === PRIMITIVE_TYPE.DATETIME;
 
-    return (
-      <>
-        {milestoningState.isCurrentClassMilestoned && (
-          <PanelFormBooleanField
-            isReadOnly={false}
-            value={milestoningState.isAllVersionsEnabled}
-            name="all Versions"
-            prompt="Query All Milestoned Versions of the Root Class"
-            update={(value: boolean | undefined): void =>
-              milestoningState.setAllVersions(value)
-            }
-          />
-        )}
-        {milestoningState.isAllVersionsEnabled &&
-          milestoningState.isCurrentClassSupportsVersionsInRange && (
-            <>
-              <PanelFormBooleanField
-                isReadOnly={false}
-                value={milestoningState.isAllVersionsInRangeEnabled}
-                name=" All Versions In Range"
-                prompt="Optionally apply a date range to get All Versions for"
-                update={(value: boolean | undefined): void =>
-                  milestoningState.setAllVersionsInRange(value)
-                }
-              />
-
-              {milestoningState.isAllVersionsInRangeEnabled && (
-                <AllVersionsInRangelMilestoningParametersEditor
-                  queryBuilderState={queryBuilderState}
-                />
-              )}
-            </>
-          )}
-        <TemporalMilestoningEditor queryBuilderState={queryBuilderState} />
-        <PanelFormSection>
-          <div className="panel__content__form__section__header__label">
-            List of compatible milestoning parameters
-          </div>
-        </PanelFormSection>
-        <div className="panel__content__form__section__list__items">
-          <VariableSelector
-            queryBuilderState={queryBuilderState}
-            filterBy={isCompatibleMilestoningParameter}
-          />
-        </div>
-      </>
-    );
-  },
-);
-
-export const MilestoningParametersEditor = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
-    const applicationStore = queryBuilderState.applicationStore;
-    const milestoningState = queryBuilderState.milestoningState;
-    const close = (): void => milestoningState.setShowMilestoningEditor(false);
     return (
       <Dialog
         open={milestoningState.showMilestoningEditor}
@@ -364,9 +310,49 @@ export const MilestoningParametersEditor = observer(
         >
           <ModalHeader title="Milestoning Parameters" />
           <ModalBody className="query-builder__variables__modal__body">
-            <MilestoningParametersEditorContent
-              queryBuilderState={queryBuilderState}
-            />
+            {milestoningState.isCurrentClassMilestoned && (
+              <PanelFormBooleanField
+                isReadOnly={false}
+                value={milestoningState.isAllVersionsEnabled}
+                name="all Versions"
+                prompt="Query All Milestoned Versions of the Root Class"
+                update={(value: boolean | undefined): void =>
+                  milestoningState.setAllVersions(value)
+                }
+              />
+            )}
+            {milestoningState.isAllVersionsEnabled &&
+              milestoningState.isCurrentClassSupportsVersionsInRange && (
+                <>
+                  <PanelFormBooleanField
+                    isReadOnly={false}
+                    value={milestoningState.isAllVersionsInRangeEnabled}
+                    name=" All Versions In Range"
+                    prompt="Optionally apply a date range to get All Versions for"
+                    update={(value: boolean | undefined): void =>
+                      milestoningState.setAllVersionsInRange(value)
+                    }
+                  />
+
+                  {milestoningState.isAllVersionsInRangeEnabled && (
+                    <AllVersionsInRangelMilestoningParametersEditor
+                      queryBuilderState={queryBuilderState}
+                    />
+                  )}
+                </>
+              )}
+            <TemporalMilestoningEditor queryBuilderState={queryBuilderState} />
+            <PanelFormSection>
+              <div className="panel__content__form__section__header__label">
+                List of compatible milestoning parameters
+              </div>
+            </PanelFormSection>
+            <div className="panel__content__form__section__list__items">
+              <VariableSelector
+                queryBuilderState={queryBuilderState}
+                filterBy={isCompatibleMilestoningParameter}
+              />
+            </div>
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton text="Close" onClick={close} type="secondary" />

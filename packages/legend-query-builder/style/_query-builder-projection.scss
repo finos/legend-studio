@@ -48,25 +48,23 @@
         @include flexVCenter;
 
         height: 2.2rem;
+        background: var(--color-blue-200);
         padding: 1rem;
-        text-underline-position: under;
+        border-radius: 0.2rem 0 0 0.2rem;
       }
 
       &__label__icon {
-        font-size: 1.3rem;
-        margin-right: 0.7rem;
+        font-size: 1.2rem;
+        color: var(--color-light-grey-180);
       }
 
       &__label__title {
+        margin-left: 0.7rem;
         white-space: nowrap;
-        font-size: 1.3rem;
+        color: var(--color-light-grey-180);
+        font-size: 1.2rem;
         font-weight: 500;
       }
-    }
-
-    &__divider {
-      color: var(--color-light-grey-200);
-      margin-right: 1rem;
     }
 
     &__group {
@@ -84,6 +82,20 @@
         line-height: 1.8rem;
         border-radius: 0.1rem;
         font-size: 1.1rem;
+        margin-left: 0.5rem;
+      }
+
+      &__content {
+        color: var(--color-light-blue-50);
+        font-weight: 500;
+        font-size: 1.2rem;
+        padding-left: 0.5rem;
+        cursor: pointer;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-decoration: underline;
+        text-decoration-style: dotted;
+        white-space: nowrap;
       }
     }
   }
@@ -335,7 +347,7 @@
   }
 
   &__modal {
-    height: 80vh;
+    height: 60vh;
     width: 50vw;
 
     &__body {
@@ -349,12 +361,6 @@
 
     .panel__content__form__section__list__item:hover {
       background: unset;
-    }
-
-    &__section-name {
-      font-size: 1.8rem;
-      font-weight: 700;
-      padding: 1rem;
     }
 
     &__sort {
