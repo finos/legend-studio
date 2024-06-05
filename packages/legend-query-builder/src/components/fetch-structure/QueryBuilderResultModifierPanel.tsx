@@ -46,7 +46,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { QueryBuilderProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { VariableSelector } from '../shared/QueryBuilderVariableSelector.js';
@@ -63,7 +63,6 @@ import {
   type QueryBuilderVariableDragSource,
 } from '../shared/BasicValueSpecificationEditor.js';
 import { useDrop } from 'react-dnd';
-import { MilestoningParametersEditorContent } from '../explorer/QueryBuilderMilestoningEditor.js';
 
 const ColumnSortEditor = observer(
   (props: {
@@ -260,31 +259,6 @@ export const QueryResultModifierModal = observer(
       deepClone(watermarkState.value),
     );
 
-    //milestoning config
-    const milestoningState = tdsState.queryBuilderState.milestoningState;
-    const businessDate = useRef(milestoningState.businessDate);
-    const processingDate = useRef(milestoningState.processingDate);
-    const isAllVersionsEnabled = useRef(milestoningState.isAllVersionsEnabled);
-    const isAllVersionsInRangeEnabled = useRef(
-      milestoningState.isAllVersionsInRangeEnabled,
-    );
-    const startDate = useRef(milestoningState.startDate);
-    const endDate = useRef(milestoningState.endDate);
-
-    const resetMilestoningToInitial = (): void => {
-      if (isAllVersionsInRangeEnabled.current) {
-        milestoningState.setAllVersionsInRange(
-          isAllVersionsInRangeEnabled.current,
-        );
-        milestoningState.setStartDate(startDate.current);
-        milestoningState.setEndDate(endDate.current);
-      } else {
-        milestoningState.setAllVersions(isAllVersionsEnabled.current);
-      }
-      milestoningState.setBusinessDate(businessDate.current);
-      milestoningState.setProcessingDate(processingDate.current);
-    };
-
     // Sync temp state with tdsState when modal is opened/closed
     useEffect(() => {
       setSortColumns(cloneSortColumnStateArray(stateSortColumns));
@@ -302,10 +276,7 @@ export const QueryResultModifierModal = observer(
     ]);
 
     // Handle user actions
-    const closeModal = (): void => {
-      resetMilestoningToInitial();
-      resultSetModifierState.setShowModal(false);
-    };
+    const closeModal = (): void => resultSetModifierState.setShowModal(false);
     const applyChanges = (): void => {
       resultSetModifierState.setSortColumns(sortColumns);
       resultSetModifierState.setDistinct(distinct);
@@ -317,13 +288,6 @@ export const QueryResultModifierModal = observer(
       }
       resultSetModifierState.setShowModal(false);
       watermarkState.setValue(watermarkValue);
-      businessDate.current = milestoningState.businessDate;
-      processingDate.current = milestoningState.processingDate;
-      isAllVersionsEnabled.current = milestoningState.isAllVersionsEnabled;
-      isAllVersionsInRangeEnabled.current =
-        milestoningState.isAllVersionsInRangeEnabled;
-      startDate.current = milestoningState.startDate;
-      endDate.current = milestoningState.endDate;
     };
 
     const handleLimitResultsChange: React.ChangeEventHandler<
@@ -433,23 +397,9 @@ export const QueryResultModifierModal = observer(
           }
           className="editor-modal query-builder__projection__modal"
         >
-          <ModalHeader title="Query Options" />
+          <ModalHeader title="Result Set Modifier" />
           <ModalBody className="query-builder__projection__modal__body">
             <div className="query-builder__projection__options">
-              {tdsState.queryBuilderState.milestoningState
-                .isMilestonedQuery && (
-                <>
-                  <div className="query-builder__projection__options__section-name">
-                    Milestoning
-                  </div>
-                  <MilestoningParametersEditorContent
-                    queryBuilderState={tdsState.queryBuilderState}
-                  />
-                  <div className="query-builder__projection__options__section-name">
-                    Other
-                  </div>
-                </>
-              )}
               <ColumnsSortEditor
                 projectionColumns={tdsState.projectionColumns}
                 sortColumns={sortColumns}

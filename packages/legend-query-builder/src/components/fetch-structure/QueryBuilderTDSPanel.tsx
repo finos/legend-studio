@@ -1138,118 +1138,27 @@ export const QueryBuilderTDSPanel = observer(
           >
             <div className="query-builder__projection__result-modifier-prompt__header">
               <button
-                className="query-builder__projection__result-modifier-prompt__header__label editable-value"
+                className="query-builder__projection__result-modifier-prompt__header__label"
                 onClick={openResultSetModifierEditor}
-                title="Configure Query Options..."
+                title="Configure result set modifiers..."
               >
                 <CogIcon className="query-builder__projection__result-modifier-prompt__header__label__icon" />
                 <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                  {tdsState.isQueryOptionsSet
-                    ? 'Query Options'
-                    : 'Set Query Options'}
+                  Query Options
                 </div>
               </button>
-              <div className="query-builder__projection__result-modifier-prompt__divider">
-                {tdsState.isQueryOptionsSet && ' - '}
-              </div>
-              {tdsState.queryBuilderState.milestoningState.businessDate && (
-                <div className="query-builder__projection__result-modifier-prompt__group">
-                  <div className="query-builder__projection__result-modifier-prompt__group__label">
-                    Business Date
-                  </div>
-                  <button
-                    className="query-builder__projection__result-modifier-prompt__header__label editable-value"
-                    onClick={openResultSetModifierEditor}
-                  >
-                    <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                      {getNameOfValueSpecification(
-                        tdsState.queryBuilderState.milestoningState
-                          .businessDate,
-                        tdsState.queryBuilderState,
-                      )}
-                    </div>
-                  </button>
-                </div>
-              )}
-              {tdsState.queryBuilderState.milestoningState.processingDate && (
-                <div className="query-builder__projection__result-modifier-prompt__group">
-                  <div className="query-builder__projection__result-modifier-prompt__group__label">
-                    Processing Date
-                  </div>
-                  <button
-                    className="query-builder__projection__result-modifier-prompt__header__label editable-value"
-                    onClick={openResultSetModifierEditor}
-                  >
-                    <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                      {getNameOfValueSpecification(
-                        tdsState.queryBuilderState.milestoningState
-                          .processingDate,
-                        tdsState.queryBuilderState,
-                      )}
-                    </div>
-                  </button>
-                </div>
-              )}
-              {tdsState.queryBuilderState.milestoningState
-                .isAllVersionsEnabled &&
-                !tdsState.queryBuilderState.milestoningState
-                  .isAllVersionsInRangeEnabled && (
-                  <div className="query-builder__projection__result-modifier-prompt__group">
-                    <div className="query-builder__projection__result-modifier-prompt__group__label">
-                      All Versions
-                    </div>
-                    <button
-                      className="query-builder__projection__result-modifier-prompt__header__label editable-value"
-                      onClick={openResultSetModifierEditor}
-                    >
-                      <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                        Yes
-                      </div>
-                    </button>
-                  </div>
-                )}
-              {tdsState.queryBuilderState.milestoningState
-                .isAllVersionsInRangeEnabled &&
-                tdsState.queryBuilderState.milestoningState.startDate &&
-                tdsState.queryBuilderState.milestoningState.endDate && (
-                  <div className="query-builder__projection__result-modifier-prompt__group">
-                    <div className="query-builder__projection__result-modifier-prompt__group__label">
-                      All Versions
-                    </div>
-                    <button
-                      className="query-builder__projection__result-modifier-prompt__header__label editable-value"
-                      onClick={openResultSetModifierEditor}
-                    >
-                      <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                        (
-                        {getNameOfValueSpecification(
-                          tdsState.queryBuilderState.milestoningState.startDate,
-                          tdsState.queryBuilderState,
-                        )}{' '}
-                        -{' '}
-                        {getNameOfValueSpecification(
-                          tdsState.queryBuilderState.milestoningState.endDate,
-                          tdsState.queryBuilderState,
-                        )}
-                        )
-                      </div>
-                    </button>
-                  </div>
-                )}
             </div>
             {tdsState.resultSetModifierState.limit && (
               <div className="query-builder__projection__result-modifier-prompt__group">
                 <div className="query-builder__projection__result-modifier-prompt__group__label">
                   Max Rows
                 </div>
-                <button
-                  className="query-builder__projection__result-modifier-prompt__header__label editable-value"
+                <div
+                  className="query-builder__projection__result-modifier-prompt__group__content"
                   onClick={openResultSetModifierEditor}
                 >
-                  <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                    {tdsState.resultSetModifierState.limit}
-                  </div>
-                </button>
+                  {tdsState.resultSetModifierState.limit}
+                </div>
               </div>
             )}
             {tdsState.resultSetModifierState.distinct && (
@@ -1257,14 +1166,12 @@ export const QueryBuilderTDSPanel = observer(
                 <div className="query-builder__projection__result-modifier-prompt__group__label">
                   Eliminate Duplicate Rows
                 </div>
-                <button
-                  className="query-builder__projection__result-modifier-prompt__header__label editable-value"
+                <div
+                  className="query-builder__projection__result-modifier-prompt__group__content"
                   onClick={openResultSetModifierEditor}
                 >
-                  <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                    Yes
-                  </div>
-                </button>
+                  Yes
+                </div>
               </div>
             )}
             {tdsState.resultSetModifierState.sortColumns.length > 0 && (
@@ -1274,15 +1181,13 @@ export const QueryBuilderTDSPanel = observer(
                 </div>
                 {tdsState.resultSetModifierState.sortColumns.map(
                   (columnState) => (
-                    <button
+                    <div
+                      className="query-builder__projection__result-modifier-prompt__group__content"
                       key={columnState.columnState.uuid}
-                      className="query-builder__projection__result-modifier-prompt__header__label editable-value"
                       onClick={openResultSetModifierEditor}
                     >
-                      <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                        {`${columnState.columnState.columnName} ${columnState.sortType}`}
-                      </div>
-                    </button>
+                      {`${columnState.columnState.columnName} ${columnState.sortType}`}
+                    </div>
                   ),
                 )}
               </div>
@@ -1292,14 +1197,12 @@ export const QueryBuilderTDSPanel = observer(
                 <div className="query-builder__projection__result-modifier-prompt__group__label">
                   Slice
                 </div>
-                <button
-                  className="query-builder__projection__result-modifier-prompt__header__label editable-value"
+                <div
+                  className="query-builder__projection__result-modifier-prompt__group__content"
                   onClick={openResultSetModifierEditor}
                 >
-                  <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                    {`${tdsState.resultSetModifierState.slice[0]},${tdsState.resultSetModifierState.slice[1]}`}
-                  </div>
-                </button>
+                  {`${tdsState.resultSetModifierState.slice[0]},${tdsState.resultSetModifierState.slice[1]}`}
+                </div>
               </div>
             )}
             {tdsState.queryBuilderState.watermarkState.value && (
