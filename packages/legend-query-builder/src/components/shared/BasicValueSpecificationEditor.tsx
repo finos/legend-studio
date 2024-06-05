@@ -727,16 +727,26 @@ const PrimitiveCollectionInstanceValueEditor = observer(
     const convertInputValueToValueSpec = (): ValueSpecification | null => {
       const trimmedInputValue = inputValue.trim();
 
-      if (isValueAlreadySelected(trimmedInputValue)) {
-        return null;
-      }
-
       if (trimmedInputValue.length) {
-        return convertTextToPrimitiveInstanceValue(
+        const newValueSpec = convertTextToPrimitiveInstanceValue(
           expectedType,
           trimmedInputValue,
           observerContext,
         );
+
+        if (
+          newValueSpec === null ||
+          getValueSpecificationStringValue(newValueSpec) === undefined ||
+          isValueAlreadySelected(
+            guaranteeNonNullable(
+              getValueSpecificationStringValue(newValueSpec),
+            ),
+          )
+        ) {
+          return null;
+        }
+
+        return newValueSpec;
       }
       return null;
     };
@@ -830,19 +840,20 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       if (!parsedData) {
         return;
       }
-      const newValues = uniq(parsedData)
-        .map((value) => {
-          const newValueSpec = convertTextToPrimitiveInstanceValue(
-            expectedType,
-            value,
-            observerContext,
-          );
-          return newValueSpec
-            ? getValueSpecificationStringValue(newValueSpec)
-            : null;
-        })
-        .filter(isNonNullable)
-        .filter((value) => !isValueAlreadySelected(value));
+      const newValues = uniq(
+        uniq(parsedData)
+          .map((value) => {
+            const newValueSpec = convertTextToPrimitiveInstanceValue(
+              expectedType,
+              value,
+              observerContext,
+            );
+            return newValueSpec
+              ? getValueSpecificationStringValue(newValueSpec)
+              : null;
+          })
+          .filter(isNonNullable),
+      ).filter((value) => !isValueAlreadySelected(value));
       setSelectedOptions([
         ...selectedOptions,
         ...newValues.map((value) => ({ label: value, value })),
