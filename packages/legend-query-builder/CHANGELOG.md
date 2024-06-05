@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.42
+
+### Patch Changes
+
+- [#3221](https://github.com/finos/legend-studio/pull/3221) [`964a8d9`](https://github.com/finos/legend-studio/commit/964a8d90628d3995c05281c2e57854e9b00d9386) ([@travisstebbins](https://github.com/travisstebbins)) - Don't allow duplicate numbers by entering '.0' at the end of an existing integer in list
+
 ## 4.14.41
 
 ### Patch Changes
