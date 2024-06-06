@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.3.20
+
+### Patch Changes
+
+- [#3214](https://github.com/finos/legend-studio/pull/3214) [`06fa9fc`](https://github.com/finos/legend-studio/commit/06fa9fc9c51c2e1ae1e773178a40d6b0d620c073) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Only show element path when hovering over dataspace name
+
+- [#3228](https://github.com/finos/legend-studio/pull/3228) [`02b9c59`](https://github.com/finos/legend-studio/commit/02b9c590c4b140ca5a297b94211921421770e8ba) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix explorer tree is not showing all properties while scrolling
+
 ## 10.3.19
 
 ## 10.3.18
