@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.14.44
+
+### Patch Changes
+
+- [#3215](https://github.com/finos/legend-studio/pull/3215) [`2adf0f4`](https://github.com/finos/legend-studio/commit/2adf0f4a8900c3a954d42f6872140d8f48b5e612) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Column names automatically change to be unique when an aggregation is added
+
+- [#3228](https://github.com/finos/legend-studio/pull/3228) [`02b9c59`](https://github.com/finos/legend-studio/commit/02b9c590c4b140ca5a297b94211921421770e8ba) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix explorer tree is not showing all properties while scrolling
+
 ## 4.14.43
 
 ## 4.14.42
