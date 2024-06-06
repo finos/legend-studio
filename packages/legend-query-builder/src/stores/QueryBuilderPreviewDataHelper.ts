@@ -136,7 +136,7 @@ export const buildNumericPreviewDataQuery = (
     const valAggOp = guaranteeNonNullable(
       aggregationState.operators.find((t) => t instanceof val[1]),
     );
-    aggregationState.changeColumnAggregateOperator(valAggOp, colState);
+    aggregationState.changeColumnAggregateOperator(valAggOp, colState, true);
   });
 
   return builderState.resultState.buildExecutionRawLambda({
@@ -189,6 +189,7 @@ export const buildNonNumericPreviewDataQuery = (
   tdsState.aggregationState.changeColumnAggregateOperator(
     distinctCountOp,
     valueCountProjectionState,
+    true,
   );
   // result set
   tdsState.resultSetModifierState.limit = PREVIEW_DATA_TAKE_LIMIT;
