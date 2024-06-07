@@ -205,8 +205,8 @@ export const getDefaultColumnDefintions = (): object => ({
   resizable: true,
   enableRowGroup: true,
   allowedAggFuncs: ['count', 'sum', 'max', 'min', 'avg'],
-  enableValue: true,
-  menuTabs: ['filterMenuTab', 'generalMenuTab', 'columnsMenuTab'],
+  filter: true,
+  menuTabs: ['generalMenuTab', 'columnsMenuTab'],
 });
 
 export const getTDSRowData = (tds: TabularDataSet): TDSRowDataType[] =>

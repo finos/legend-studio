@@ -20,11 +20,23 @@ import { getTDSRowData } from '../../components/grid/GridUtils.js';
 import { ServerSideDataSource } from '../../components/grid/ServerSideDataSource.js';
 import { PanelLoadingIndicator } from '@finos/legend-art';
 import type { REPLGridClientStore } from '../../stores/REPLGridClientStore.js';
+import { type IAdvancedFilterBuilderParams } from '@ag-grid-community/core';
+import { useMemo } from 'react';
 
 export const DataCubeGridEditor = observer(
   (props: { editorStore: REPLGridClientStore }) => {
     const { editorStore } = props;
     const dataCubeState = editorStore.dataCubeState;
+    const advancedFilterBuilderParams = useMemo<IAdvancedFilterBuilderParams>(
+      () => ({
+        showMoveButtons: true,
+      }),
+      [],
+    );
+    const popupParent = useMemo<HTMLElement | null>(
+      () => document.getElementById('wrapper'),
+      [],
+    );
 
     return (
       <>
@@ -36,13 +48,12 @@ export const DataCubeGridEditor = observer(
           <AgGridComponent
             onGridReady={(params): void => {
               dataCubeState.configState.setGridApi(params.api);
+              params.api.setGridOption(
+                'advancedFilterParent',
+                document.getElementById('advancedFilterParent'),
+              );
             }}
-            className={
-              editorStore.applicationStore.layoutService
-                .TEMPORARY__isLightColorThemeEnabled
-                ? 'ag-theme-balham'
-                : 'ag-theme-balham-dark'
-            }
+            className={'ag-theme-balham'}
             gridOptions={
               dataCubeState.gridState.initialResult
                 ? {
@@ -61,6 +72,9 @@ export const DataCubeGridEditor = observer(
             licenseKey={dataCubeState.configState.licenseKey ?? ''}
             rowData={dataCubeState.gridState.rowData}
             columnDefs={dataCubeState.gridState.columnDefs}
+            advancedFilterBuilderParams={advancedFilterBuilderParams}
+            enableAdvancedFilter={true}
+            popupParent={popupParent}
           />
         )}
       </>

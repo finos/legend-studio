@@ -96,31 +96,6 @@ export class DataCubeGridState {
 
   get columnDefs(): ColDef[] {
     const filterModel: FilterModel = {};
-    this.currentQueryTDSRequest?.filter.forEach((filter) => {
-      if (filter.conditions.length === 1) {
-        filterModel[filter.column] = {
-          filter: filter.conditions[0]?.value,
-          filterType: getFilterModeltype(filter.columnType),
-          type: filter.conditions[0]?.operation,
-        };
-      } else {
-        filterModel[filter.column] = {
-          filterType: getFilterModeltype(filter.columnType),
-          operator:
-            filter.groupOperation === TDS_FILTER_GROUP.AND ? 'AND' : 'OR',
-          condition1: {
-            filter: filter.conditions[0]?.value,
-            filterType: getFilterModeltype(filter.columnType),
-            type: filter.conditions[0]?.operation,
-          },
-          condition2: {
-            filter: filter.conditions[1]?.value,
-            filterType: getFilterModeltype(filter.columnType),
-            type: filter.conditions[1]?.operation,
-          },
-        };
-      }
-    });
     if (this.currentQueryTDSRequest) {
       this.dataCubeState.configState.gridApi?.setFilterModel(filterModel);
     }

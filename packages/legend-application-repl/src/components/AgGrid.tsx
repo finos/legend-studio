@@ -21,6 +21,7 @@ import {
 } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { ModuleRegistry } from '@ag-grid-community/core';
+import { AdvancedFilterModule } from '@ag-grid-enterprise/advanced-filter';
 import { ServerSideRowModelModule } from '@ag-grid-enterprise/server-side-row-model';
 import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
 import { MenuModule } from '@ag-grid-enterprise/menu';
@@ -59,5 +60,9 @@ export function AgGridComponent<TData = unknown>(
 }
 
 export const configureAgGridComponent = (): void => {
-  ModuleRegistry.registerModules([ClientSideRowModelModule, RowGroupingModule]);
+  ModuleRegistry.registerModules([
+    ClientSideRowModelModule,
+    RowGroupingModule,
+    AdvancedFilterModule,
+  ]);
 };

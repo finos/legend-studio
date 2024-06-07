@@ -245,7 +245,14 @@ export class DataCubeState {
         new TDSQuery(
           guaranteeNonNullable(this.gridState.initialQueryLambda),
           this.gridState.lastQueryTDSRequest ??
-            new TDSRequest([], [], [], new TDSGroupby([], [], []), 0, 100),
+            new TDSRequest(
+              [],
+              [],
+              new TDSGroupby([], [], []),
+              undefined,
+              0,
+              100,
+            ),
         ),
       );
       const queryId = (yield flowResult(

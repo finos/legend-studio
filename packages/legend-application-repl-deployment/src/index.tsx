@@ -16,7 +16,9 @@
 
 import { LegendREPLGridClientWebApplication } from '@finos/legend-application-repl';
 import './index.scss';
+import config from '../repl.config.js';
 
 // Resolve baseUrl relatively for application to work in vscode code-server
 const relativeBaseUrl = new URL('./', window.location.href).pathname;
-LegendREPLGridClientWebApplication.run(relativeBaseUrl);
+// TODO: Fix this to show DataCube in developer workspaces
+LegendREPLGridClientWebApplication.run(config.baseUrl);

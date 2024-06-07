@@ -86,6 +86,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ag-grid-enterprise/advanced-filter@npm:31.3.2":
+  version: 31.3.2
+  resolution: "@ag-grid-enterprise/advanced-filter@npm:31.3.2"
+  dependencies:
+    "@ag-grid-community/core": "npm:31.3.2"
+    "@ag-grid-enterprise/core": "npm:31.3.2"
+  checksum: 10/85b67710bc81377771393005804bb417dbddc530ef5a35f5de8f3a44deb26e05bc9a0192878f976664d112cc9056d9ae2c6aaa997952aa80d0ef67c95012ec16
+  languageName: node
+  linkType: hard
+
 "@ag-grid-enterprise/clipboard@npm:31.3.2":
   version: 31.3.2
   resolution: "@ag-grid-enterprise/clipboard@npm:31.3.2"
@@ -2448,6 +2458,7 @@ __metadata:
     "@ag-grid-community/core": "npm:31.3.2"
     "@ag-grid-community/react": "npm:31.3.2"
     "@ag-grid-community/styles": "npm:31.3.2"
+    "@ag-grid-enterprise/advanced-filter": "npm:31.3.2"
     "@ag-grid-enterprise/core": "npm:31.3.2"
     "@ag-grid-enterprise/menu": "npm:31.3.2"
     "@ag-grid-enterprise/row-grouping": "npm:31.3.2"

@@ -21,8 +21,9 @@ import type {
 } from '@ag-grid-community/core';
 import {
   TDSGroupby,
+  type TDSFilter,
   TDSAggregation,
-  TDSFilter,
+  TDSFilterGroup,
   TDSRequest,
   TDSSort,
   TDSFilterCondition,
@@ -47,6 +48,28 @@ import {
 import type { REPLGridClientStore } from '../../stores/REPLGridClientStore.js';
 import { flow, flowResult, makeObservable } from 'mobx';
 import type { INTERNAL__TDSColumn, PRIMITIVE_TYPE } from '@finos/legend-graph';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createFilterRequest = (model: any): TDSFilter | undefined => {
+  if (model.filterType === 'join') {
+    const conditions = model.conditions.map((condition: unknown) =>
+      createFilterRequest(condition),
+    );
+    return new TDSFilterGroup(
+      conditions,
+      model.type === 'OR' ? TDS_FILTER_GROUP.OR : TDS_FILTER_GROUP.AND,
+    );
+  } else if (model.colId) {
+    return new TDSFilterCondition(
+      model.colId,
+      getFilterColumnType(model.filterType),
+      getTDSFilterOperation(model.type),
+      model.filter,
+    );
+  } else {
+    return undefined;
+  }
+};
 
 export class ServerSideDataSource implements IServerSideDatasource {
   executions = 0;
@@ -137,49 +160,27 @@ export class ServerSideDataSource implements IServerSideDatasource {
         request.groupKeys,
         aggregations,
       );
-      const filter: TDSFilter[] = [];
+      let filter: TDSFilterGroup | undefined = undefined;
       const filterModel = request.filterModel as FilterModel | null;
       if (filterModel) {
-        Object.keys(filterModel).forEach((key) => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          const item = filterModel[key];
-          const conditions: TDSFilterCondition[] = [];
-          const colType = getFilterColumnType(item.filterType);
-          if (item.filter === undefined && item.conditions) {
-            item.conditions.forEach(
-              (condition: { type: string; filter: unknown }) =>
-                conditions.push(
-                  new TDSFilterCondition(
-                    getTDSFilterOperation(condition.type),
-                    condition.filter,
-                  ),
-                ),
-            );
-          } else {
-            conditions.push(
-              new TDSFilterCondition(
-                getTDSFilterOperation(item.type),
-                item.filter,
-              ),
-            );
-          }
-          filter.push(
-            new TDSFilter(
-              key,
-              colType,
-              conditions,
-              item.operator === 'OR'
-                ? TDS_FILTER_GROUP.OR
-                : TDS_FILTER_GROUP.AND,
-            ),
-          );
-        });
+        const condition = createFilterRequest(filterModel);
+        filter =
+          condition instanceof TDSFilterCondition
+            ? new TDSFilterGroup(
+                [condition],
+                filterModel.type === 'OR'
+                  ? TDS_FILTER_GROUP.OR
+                  : TDS_FILTER_GROUP.AND,
+              )
+            : condition instanceof TDSFilterGroup
+              ? condition
+              : undefined;
       }
       const tdsRequest = new TDSRequest(
         columns?.map((col) => new TDSColumn(col)) ?? [],
-        filter,
         sort,
         groupBy,
+        filter,
         startRow,
         endRow,
       );

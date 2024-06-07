@@ -37,7 +37,7 @@ import {
   V1_ClassInstanceType,
 } from '@finos/legend-graph';
 import {
-  TDSFilter,
+  type TDSFilter,
   TDSFilterCondition,
   type TDSGroupby,
   type TDSRequest,
@@ -45,6 +45,7 @@ import {
   TDS_FILTER_GROUP,
   TDS_FILTER_OPERATION,
   TDS_AGGREGATION_FUNCTION,
+  TDSFilterGroup,
 } from './TDSRequest.js';
 import {
   UnsupportedOperationError,
@@ -124,123 +125,113 @@ const updateParentFunction = (
   expressions[0] = childFunc;
 };
 
+const processFilterRequest = (filter: TDSFilter): V1_ValueSpecification => {
+  const defaultVariable = new V1_Variable();
+  defaultVariable.name = DEFAULT_VARIABLE_NAME;
+  if (filter instanceof TDSFilterGroup) {
+    let conditionExpressions: V1_ValueSpecification[] = [];
+    filter.conditions.forEach((condition) => {
+      const conditionExpression = processFilterRequest(condition);
+      conditionExpressions.push(conditionExpression);
+      if (conditionExpressions.length === 2) {
+        const groupCondition = filter.groupOperation;
+        const groupFunc = new V1_AppliedFunction();
+        groupFunc.function = groupCondition;
+        groupFunc.parameters = conditionExpressions;
+        conditionExpressions = [groupFunc];
+      }
+    });
+    if (conditionExpressions.length === 1) {
+      return guaranteeNonNullable(conditionExpressions[0]);
+    }
+  } else if (filter instanceof TDSFilterCondition) {
+    const filterCondition = new V1_AppliedFunction();
+    const property = new V1_AppliedProperty();
+    property.property = filter.column;
+    property.class = filter.columnType;
+    property.parameters = [defaultVariable];
+
+    switch (filter.operation) {
+      case TDS_FILTER_OPERATION.EQUALS:
+      case TDS_FILTER_OPERATION.GREATER_THAN:
+      case TDS_FILTER_OPERATION.GREATER_THAN_OR_EQUAL:
+      case TDS_FILTER_OPERATION.LESS_THAN:
+      case TDS_FILTER_OPERATION.LESS_THAN_OR_EQUAL:
+      case TDS_FILTER_OPERATION.CONTAINS:
+      case TDS_FILTER_OPERATION.ENDS_WITH:
+      case TDS_FILTER_OPERATION.STARTS_WITH: {
+        filterCondition.function = filter.operation;
+        filterCondition.parameters.push(property);
+        filterCondition.parameters.push(
+          getPrimitiveValueSpecification(filter.columnType, filter.value),
+        );
+        break;
+      }
+      case TDS_FILTER_OPERATION.BLANK: {
+        filterCondition.function = filter.operation;
+        filterCondition.parameters.push(property);
+        break;
+      }
+      case TDS_FILTER_OPERATION.NOT_EQUAL: {
+        filterCondition.function = QUERY_FUNCTION.NOT;
+
+        const filterConditionFunc = new V1_AppliedFunction();
+        filterConditionFunc.function = TDS_FILTER_OPERATION.EQUALS;
+        filterConditionFunc.parameters.push(property);
+        filterConditionFunc.parameters.push(
+          getPrimitiveValueSpecification(filter.columnType, filter.value),
+        );
+
+        filterCondition.parameters.push(filterConditionFunc);
+        break;
+      }
+      case TDS_FILTER_OPERATION.NOT_BLANK: {
+        filterCondition.function = QUERY_FUNCTION.NOT;
+
+        const filterConditionFunc = new V1_AppliedFunction();
+        filterConditionFunc.function = TDS_FILTER_OPERATION.BLANK;
+        filterConditionFunc.parameters.push(property);
+        filterConditionFunc.parameters.push(
+          getPrimitiveValueSpecification(filter.columnType, filter.value),
+        );
+
+        filterCondition.parameters.push(filterConditionFunc);
+        break;
+      }
+      case TDS_FILTER_OPERATION.NOT_CONTAINS: {
+        filterCondition.function = QUERY_FUNCTION.NOT;
+
+        const filterConditionFunc = new V1_AppliedFunction();
+        filterConditionFunc.function = TDS_FILTER_OPERATION.CONTAINS;
+        filterConditionFunc.parameters.push(property);
+        filterConditionFunc.parameters.push(
+          getPrimitiveValueSpecification(filter.columnType, filter.value),
+        );
+
+        filterCondition.parameters.push(filterConditionFunc);
+        break;
+      }
+      default:
+        throw new UnsupportedOperationError(
+          `Unsupported filter operation ${filter.operation}`,
+        );
+    }
+    return filterCondition;
+  }
+  throw new UnsupportedOperationError(`Unsupported TDS filter`, filter);
+};
+
 const processFilterOperations = (
   expressions: V1_ValueSpecification[],
-  filters: TDSFilter[],
+  filter: TDSFilterGroup,
 ): void => {
-  if (filters.length === 0) {
-    return;
-  }
+  const filterValueSpec = processFilterRequest(filter);
   const filterLambda = new V1_Lambda();
-  filters.forEach((filterValue) => {
-    const conditions = filterValue.conditions;
-    const groupCondition = filterValue.groupOperation;
-    const defaultVariable = new V1_Variable();
-    defaultVariable.name = DEFAULT_VARIABLE_NAME;
-    const conditionExpressions: V1_ValueSpecification[] = [];
-    conditions.forEach((condition) => {
-      const filterCondition = new V1_AppliedFunction();
-      const property = new V1_AppliedProperty();
-      property.property = filterValue.column;
-      property.class = filterValue.columnType;
-      property.parameters = [defaultVariable];
+  const defaultVariable = new V1_Variable();
+  defaultVariable.name = DEFAULT_VARIABLE_NAME;
+  filterLambda.body = [filterValueSpec];
 
-      switch (condition.operation) {
-        case TDS_FILTER_OPERATION.EQUALS:
-        case TDS_FILTER_OPERATION.GREATER_THAN:
-        case TDS_FILTER_OPERATION.GREATER_THAN_OR_EQUAL:
-        case TDS_FILTER_OPERATION.LESS_THAN:
-        case TDS_FILTER_OPERATION.LESS_THAN_OR_EQUAL:
-        case TDS_FILTER_OPERATION.CONTAINS:
-        case TDS_FILTER_OPERATION.ENDS_WITH:
-        case TDS_FILTER_OPERATION.STARTS_WITH: {
-          filterCondition.function = condition.operation;
-          filterCondition.parameters.push(property);
-          filterCondition.parameters.push(
-            getPrimitiveValueSpecification(
-              filterValue.columnType,
-              condition.value,
-            ),
-          );
-          break;
-        }
-        case TDS_FILTER_OPERATION.BLANK: {
-          filterCondition.function = condition.operation;
-          filterCondition.parameters.push(property);
-          break;
-        }
-        case TDS_FILTER_OPERATION.NOT_EQUAL: {
-          filterCondition.function = QUERY_FUNCTION.NOT;
-
-          const filterConditionFunc = new V1_AppliedFunction();
-          filterConditionFunc.function = TDS_FILTER_OPERATION.EQUALS;
-          filterConditionFunc.parameters.push(property);
-          filterConditionFunc.parameters.push(
-            getPrimitiveValueSpecification(
-              filterValue.columnType,
-              condition.value,
-            ),
-          );
-
-          filterCondition.parameters.push(filterConditionFunc);
-          break;
-        }
-        case TDS_FILTER_OPERATION.NOT_BLANK: {
-          filterCondition.function = QUERY_FUNCTION.NOT;
-
-          const filterConditionFunc = new V1_AppliedFunction();
-          filterConditionFunc.function = TDS_FILTER_OPERATION.BLANK;
-          filterConditionFunc.parameters.push(property);
-          filterConditionFunc.parameters.push(
-            getPrimitiveValueSpecification(
-              filterValue.columnType,
-              condition.value,
-            ),
-          );
-
-          filterCondition.parameters.push(filterConditionFunc);
-          break;
-        }
-        case TDS_FILTER_OPERATION.NOT_CONTAINS: {
-          filterCondition.function = QUERY_FUNCTION.NOT;
-
-          const filterConditionFunc = new V1_AppliedFunction();
-          filterConditionFunc.function = TDS_FILTER_OPERATION.CONTAINS;
-          filterConditionFunc.parameters.push(property);
-          filterConditionFunc.parameters.push(
-            getPrimitiveValueSpecification(
-              filterValue.columnType,
-              condition.value,
-            ),
-          );
-
-          filterCondition.parameters.push(filterConditionFunc);
-          break;
-        }
-        default:
-          throw new UnsupportedOperationError(
-            `Unsupported filter operation ${condition.operation}`,
-          );
-      }
-      conditionExpressions.push(filterCondition);
-    });
-    if (conditionExpressions.length > 1) {
-      const groupFunc = new V1_AppliedFunction();
-      groupFunc.function = groupCondition;
-      groupFunc.parameters = conditionExpressions;
-      filterLambda.body.push(groupFunc);
-    } else {
-      filterLambda.body = filterLambda.body.concat(conditionExpressions);
-    }
-
-    if (filterLambda.body.length > 1) {
-      const andFunc = new V1_AppliedFunction();
-      andFunc.function = TDS_FILTER_GROUP.AND;
-      andFunc.parameters = filterLambda.body;
-      filterLambda.body = [andFunc];
-    }
-    filterLambda.parameters = [defaultVariable];
-  });
+  filterLambda.parameters = [defaultVariable];
   updateParentFunction(expressions, QUERY_FUNCTION.FILTER, [filterLambda]);
 };
 
@@ -430,20 +421,26 @@ export const buildLambdaExpressions = (
   }
   const groupBy = request.groupBy;
   for (let index = 0; index < groupBy.groupKeys.length; index++) {
-    const groupFilter = new TDSFilter(
-      guaranteeNonNullable(groupBy.columns.at(index)),
-      PRIMITIVE_TYPE.STRING,
+    const groupFilter = new TDSFilterGroup(
       [
         new TDSFilterCondition(
+          guaranteeNonNullable(groupBy.columns.at(index)),
+          PRIMITIVE_TYPE.STRING,
           TDS_FILTER_OPERATION.EQUALS,
           groupBy.groupKeys.at(index),
         ),
       ],
       TDS_FILTER_GROUP.AND,
     );
-    request.filter.push(groupFilter);
+    if (request.filter) {
+      request.filter.conditions.push(groupFilter);
+    } else {
+      request.filter = groupFilter;
+    }
   }
-  processFilterOperations(expressions, request.filter);
+  if (request.filter) {
+    processFilterOperations(expressions, request.filter);
+  }
   processGroupByOperations(
     expressions,
     request.groupBy,
