@@ -311,6 +311,10 @@
     background: var(--color-blue-200);
   }
 
+  .query-builder__projection__column__aggregate__operator__percentile__argument-combo__label {
+    color: var(--color-dark-grey-300);
+  }
+
   .lambda-editor__popup__content {
     background: unset;
     border-color: var(--color-dark-grey-500);

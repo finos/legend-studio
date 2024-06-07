@@ -163,6 +163,7 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   FROM = 'meta::pure::mapping::from',
   CHECKED = 'meta::pure::dataQuality::checked',
   MERGERUNTIMES = 'meta::pure::runtime::mergeRuntimes',
+  PERCENTILE = 'meta::pure::functions::math::percentile',
 
   // TOTDS
   TABLE_TO_TDS = 'meta::pure::tds::tableToTDS',

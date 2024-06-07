@@ -41,6 +41,8 @@ import {
   FunctionIcon,
   CogIcon,
   InfoCircleIcon,
+  BasePopover,
+  InputWithInlineValidation,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -116,6 +118,7 @@ import {
   QueryBuilderPropertyInfoTooltip,
 } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import { getNameOfValueSpecification } from '../shared/QueryBuilderVariableSelector.js';
+import { QueryBuilderAggregateOperator_Percentile } from '../../stores/fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_Percentile.js';
 
 const QueryBuilderProjectionColumnContextMenu = observer(
   forwardRef<
@@ -690,6 +693,52 @@ const QueryBuilderProjectionColumnEditor = observer(
       [handleDrop],
     );
 
+    const percentileButtonRef = useRef<HTMLButtonElement>(null);
+    const percentileInputRef = useRef<HTMLInputElement>(null);
+    const [isPercentileOpen, setIsPercentileOpen] = useState(false);
+    const [percentileValue, setPercentileValue] = useState(
+      aggregateColumnState &&
+        aggregateColumnState.operator instanceof
+          QueryBuilderAggregateOperator_Percentile
+        ? (aggregateColumnState.operator.percentile * 100).toString()
+        : '',
+    );
+    const [acending, setAcending] = useState(
+      aggregateColumnState &&
+        aggregateColumnState.operator instanceof
+          QueryBuilderAggregateOperator_Percentile
+        ? aggregateColumnState.operator.acending
+        : undefined,
+    );
+    const [continuous, setContinuous] = useState(
+      aggregateColumnState &&
+        aggregateColumnState.operator instanceof
+          QueryBuilderAggregateOperator_Percentile
+        ? aggregateColumnState.operator.continuous
+        : undefined,
+    );
+    const percentileOptions = ['true', 'false'].map((op) => ({
+      label: op,
+      value: op,
+    }));
+    const getPercentileDisplayValue = (): string => {
+      if (percentileValue === '') {
+        return '...';
+      }
+      if (acending === undefined || continuous === undefined) {
+        return `${Number(percentileValue)}`;
+      }
+      return `${Number(percentileValue)}, ${acending}, ${continuous}`;
+    };
+    const setPercentileArguments = (): void => {
+      setIsPercentileOpen(!isPercentileOpen);
+    };
+    const onPercentileValueChange: React.ChangeEventHandler<
+      HTMLInputElement
+    > = (event) => {
+      setPercentileValue(event.target.value);
+    };
+
     return (
       <PanelDnDEntry
         ref={ref}
@@ -817,11 +866,161 @@ const QueryBuilderProjectionColumnEditor = observer(
             <div className="query-builder__projection__column__aggregate">
               <div className="query-builder__projection__column__aggregate__operator">
                 {aggregateColumnState && (
-                  <div className="query-builder__projection__column__aggregate__operator__label">
-                    {aggregateColumnState.operator.getLabel(
-                      projectionColumnState,
-                    )}
+                  <div className="query-builder__projection__column__aggregate__operator">
+                    <div className="query-builder__projection__column__aggregate__operator__label">
+                      {aggregateColumnState.operator.getLabel(
+                        projectionColumnState,
+                      )}
+                      {aggregateColumnState.operator instanceof
+                        QueryBuilderAggregateOperator_Percentile && (
+                        <button
+                          className="query-builder__projection__column__aggregate__operator__percentile__badge"
+                          ref={percentileButtonRef}
+                          onClick={setPercentileArguments}
+                          title="Set Percentile Argument(s)..."
+                        >
+                          {getPercentileDisplayValue()}
+                        </button>
+                      )}
+                    </div>
                   </div>
+                )}
+                {aggregateColumnState && isPercentileOpen && (
+                  <BasePopover
+                    open={isPercentileOpen}
+                    PaperProps={{
+                      classes: {
+                        root: 'query-builder__projection__column__aggregate__operator__percentile__container__root',
+                      },
+                    }}
+                    className={clsx(
+                      'query-builder__projection__column__aggregate__operator__percentile__container',
+                    )}
+                    anchorEl={percentileButtonRef.current}
+                    onClose={() => {
+                      const percentileOperator =
+                        aggregateColumnState.operator as QueryBuilderAggregateOperator_Percentile;
+                      percentileOperator.percentile =
+                        Number(percentileValue) / 100;
+                      if (acending !== undefined && continuous !== undefined) {
+                        percentileOperator.acending = acending;
+                        percentileOperator.continuous = continuous;
+                      }
+                      setIsPercentileOpen(false);
+                    }}
+                    anchorOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'left',
+                    }}
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'center',
+                    }}
+                  >
+                    <div
+                      data-testid={
+                        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PERCENTILE_PANEL
+                      }
+                      className=""
+                    >
+                      <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo">
+                        <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo__label">
+                          Percentile
+                          <br />
+                          (0-100)
+                        </div>
+                        <div
+                          className={clsx(
+                            'query-builder__projection__column__aggregate__operator__percentile__argument-combo__value',
+                          )}
+                        >
+                          <InputWithInlineValidation
+                            ref={percentileInputRef}
+                            className={clsx(
+                              'query-builder__projection__column__aggregate__operator__percentile__input input--dark',
+                            )}
+                            type="text"
+                            inputMode="numeric"
+                            onChange={onPercentileValueChange}
+                            value={percentileValue}
+                            error={
+                              percentileValue && Number(percentileValue) > 100
+                                ? `Invalid aggregation agruement for ${aggregateColumnState.columnName}`
+                                : undefined
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo">
+                        <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo__label">
+                          Acending
+                        </div>
+                        <CustomSelectorInput
+                          className="query-loader__results__sort-by__selector query-builder__projection__column__aggregate__operator__percentile__argument-combo__value"
+                          options={percentileOptions}
+                          onChange={(option: {
+                            label: string;
+                            value: string;
+                          }) => {
+                            setAcending(option.value === 'true' ? true : false);
+                          }}
+                          value={{
+                            label:
+                              acending === undefined
+                                ? ''
+                                : acending
+                                  ? 'true'
+                                  : 'false',
+                            value:
+                              acending === undefined
+                                ? ''
+                                : acending
+                                  ? 'true'
+                                  : 'false',
+                          }}
+                          darkMode={
+                            !applicationStore.layoutService
+                              .TEMPORARY__isLightColorThemeEnabled
+                          }
+                        />
+                      </div>
+                      <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo">
+                        <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo__label">
+                          Continous
+                        </div>
+                        <CustomSelectorInput
+                          className="query-loader__results__sort-by__selector query-builder__projection__column__aggregate__operator__percentile__argument-combo__value"
+                          options={percentileOptions}
+                          onChange={(option: {
+                            label: string;
+                            value: string;
+                          }) =>
+                            setContinuous(
+                              option.value === 'true' ? true : false,
+                            )
+                          }
+                          value={{
+                            label:
+                              continuous === undefined
+                                ? ''
+                                : continuous
+                                  ? 'true'
+                                  : 'false',
+                            value:
+                              continuous === undefined
+                                ? ''
+                                : continuous
+                                  ? 'true'
+                                  : 'false',
+                          }}
+                          darkMode={
+                            !applicationStore.layoutService
+                              .TEMPORARY__isLightColorThemeEnabled
+                          }
+                        />
+                      </div>
+                    </div>
+                  </BasePopover>
                 )}
                 {isCalendarEnabled &&
                   aggregateColumnState &&
