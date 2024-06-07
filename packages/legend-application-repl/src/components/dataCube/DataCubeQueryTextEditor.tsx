@@ -128,10 +128,7 @@ const QueryEditor = observer(() => {
       const _editor = monacoEditorAPI.create(element, {
         ...getBaseCodeEditorOptions(),
         language: CODE_EDITOR_LANGUAGE.PURE,
-        theme: applicationStore.layoutService
-          .TEMPORARY__isLightColorThemeEnabled
-          ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
-          : CODE_EDITOR_THEME.DEFAULT_DARK,
+        theme: CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT,
       });
       setEditor(_editor);
     }
@@ -170,10 +167,6 @@ export const DataCubeQueryTextEditor = observer(
       );
     };
 
-    const isLightTheme =
-      editorStore.applicationStore.layoutService
-        .TEMPORARY__isLightColorThemeEnabled;
-
     return (
       <div className="repl__content__query">
         <div className="repl__query">
@@ -211,11 +204,7 @@ export const DataCubeQueryTextEditor = observer(
               </div>
               <div className="repl__query__content">
                 <CodeEditor
-                  lightTheme={
-                    isLightTheme
-                      ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_HC_LIGHT
-                      : CODE_EDITOR_THEME.BUILT_IN__VSCODE_HC_BLACK
-                  }
+                  lightTheme={CODE_EDITOR_THEME.BUILT_IN__VSCODE_HC_LIGHT}
                   language={CODE_EDITOR_LANGUAGE.PURE}
                   isReadOnly={true}
                   inputValue={

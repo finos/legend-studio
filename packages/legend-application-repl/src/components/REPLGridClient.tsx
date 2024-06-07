@@ -16,9 +16,8 @@
 
 import { observer } from 'mobx-react-lite';
 import { useREPLGridClientStore } from './REPLGridClientStoreProvider.js';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { flowResult } from 'mobx';
-import { LEGEND_APPLICATION_COLOR_THEME } from '@finos/legend-application';
 import {
   BasePopover,
   CheckSquareIcon,
@@ -27,16 +26,9 @@ import {
   ModalFooter,
   ModalFooterButton,
   ModalHeader,
-  ModalHeaderActions,
   ModalTitle,
-  PlusIcon,
-  SearchIcon,
   SquareIcon,
-  TimesIcon,
   clsx,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  CustomSelectorInput,
 } from '@finos/legend-art';
 import { LEGEND_APPLICATION_REPL_SETTING_KEY } from '../Const.js';
 import { useParams } from '@finos/legend-application/browser';
@@ -48,277 +40,7 @@ import type { REPLGridClientStore } from '../stores/REPLGridClientStore.js';
 import { DataCubeQueryTextEditor } from './dataCube/DataCubeQueryTextEditor.js';
 import { DataCubeGridEditor } from './dataCube/DataCubeGridEditor.js';
 import { PIVOT_PANEL_TABS } from '../stores/dataCube/DataCubePropertiesPanelState.js';
-import { TDS_SORT_ORDER } from './grid/TDSRequest.js';
-
-type SortOption = {
-  label: string;
-  value: TDS_SORT_ORDER;
-};
-
-const HPivotAndSortEditor = observer(
-  (props: { editorStore: REPLGridClientStore }) => {
-    const { editorStore } = props;
-    const hPivotAndSortColumnState =
-      editorStore.dataCubeState.propertiesPanelState.hpivotAndSortPanelState;
-    const onAvailabeSortColumnsSearchTextChange: React.ChangeEventHandler<
-      HTMLInputElement
-    > = (event) => {
-      hPivotAndSortColumnState.setAvailableSortColumnsSearchText(
-        event.target.value,
-      );
-    };
-    const onSelectedSortColumnsSearchTextChange: React.ChangeEventHandler<
-      HTMLInputElement
-    > = (event) => {
-      hPivotAndSortColumnState.setSelectedSortColumnsSearchText(
-        event.target.value,
-      );
-    };
-    const clearAvailableSortColumnsSearchText = (): void => {
-      hPivotAndSortColumnState.setAvailableSortColumnsSearchText('');
-    };
-    const clearSelectedSortColumnsSearchText = (): void => {
-      hPivotAndSortColumnState.setSelectedSortColumnsSearchText('');
-    };
-    const sortOptions = Array.from(Object.values(TDS_SORT_ORDER)).map(
-      (val) => ({
-        label: val,
-        value: val,
-      }),
-    );
-    const onAvailableColumnsSortOptionsChanged = (
-      columnName: string,
-    ): ((option: SortOption) => void) =>
-      function AvailableColumnSortOption(option: SortOption): void {
-        const column = hPivotAndSortColumnState.availableSortColumns.find(
-          (col) => col.column === columnName,
-        );
-        if (column) {
-          column.setOrder(option.value);
-        }
-      };
-
-    const onSelectedColumnsSortOptionsChanged = (
-      columnName: string,
-    ): ((option: SortOption) => void) =>
-      function SelectedColumnSortOption(option: SortOption): void {
-        const column = hPivotAndSortColumnState.selectedSortColumns.find(
-          (col) => col.column === columnName,
-        );
-        if (column) {
-          column.setOrder(option.value);
-        }
-      };
-
-    return (
-      <div className="repl__hpivot__sort__editor">
-        <div className="repl__hpivot__sort__column__editor">
-          <div className="repl__hpivot__sort__column__editor__header">
-            Sorts
-          </div>
-          <div className="repl__hpivot__sort__column__editor__content">
-            <div className="repl__hpivot__sort__column__editor__available__columns">
-              <div className="repl__hpivot__sort__column__editor__description">
-                Available sort columns:
-              </div>
-              <div className="repl__hpivot__sort__column__editor__container">
-                <div className="query-builder-property-search-panel__header">
-                  <div className="query-builder-property-search-panel__input__container">
-                    <input
-                      className={clsx(
-                        'query-builder-property-search-panel__input',
-                        {
-                          'query-builder-property-search-panel__input--searching':
-                            hPivotAndSortColumnState.availableSortColumnsSearchText,
-                        },
-                      )}
-                      spellCheck={false}
-                      onChange={onAvailabeSortColumnsSearchTextChange}
-                      value={
-                        hPivotAndSortColumnState.availableSortColumnsSearchText
-                      }
-                      placeholder="Search"
-                    />
-                    {!hPivotAndSortColumnState.availableSortColumnsSearchText ? (
-                      <>
-                        <div className="query-builder-property-search-panel__input__search__icon">
-                          <SearchIcon />
-                        </div>
-                      </>
-                    ) : (
-                      <button
-                        className="query-builder-property-search-panel__input__clear-btn"
-                        tabIndex={-1}
-                        onClick={clearAvailableSortColumnsSearchText}
-                        title="Clear"
-                      >
-                        <TimesIcon />
-                      </button>
-                    )}
-                  </div>
-                </div>
-                <div className="repl__hpivot__sort__column__editor__available__columns__content">
-                  <div
-                    className="repl__hpivot__sort__column__editor__available__columns__root"
-                    onDoubleClick={(): void =>
-                      hPivotAndSortColumnState.addAllAvailableSortColumns()
-                    }
-                  >
-                    <PlusIcon />
-                    <div className="repl__hpivot__sort__column__editor__available__columns__root__label">
-                      All
-                    </div>
-                  </div>
-                  {hPivotAndSortColumnState.availableSortColumnsSearchResults.map(
-                    (col) => (
-                      <div
-                        className="repl__hpivot__sort__column__editor__available__columns__children"
-                        key={col.column}
-                      >
-                        <div
-                          className="repl__hpivot__sort__column__editor__available__columns__children__name"
-                          onDoubleClick={(): void =>
-                            hPivotAndSortColumnState.addAvailableSortColumn(
-                              col.column,
-                            )
-                          }
-                        >
-                          {col.column}
-                        </div>
-                        <CustomSelectorInput
-                          className="repl__hpivot__sort__column__editor__available__columns__children__order"
-                          options={sortOptions}
-                          onChange={onAvailableColumnsSortOptionsChanged(
-                            col.column,
-                          )}
-                          value={{ label: col.order, value: col.order }}
-                          isClearable={false}
-                          darkMode={
-                            !editorStore.applicationStore.layoutService
-                              .TEMPORARY__isLightColorThemeEnabled
-                          }
-                        />
-                      </div>
-                    ),
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="repl__hpivot__sort__column__editor__actions">
-              <div className="repl__hpivot__sort__column__editor__action">
-                <button
-                  tabIndex={-1}
-                  // onClick={clearSearch}
-                  title="Add"
-                >
-                  Add
-                  <ChevronRightIcon />
-                </button>
-              </div>
-              <div className="repl__hpivot__sort__column__editor__action">
-                <button
-                  tabIndex={-1}
-                  // onClick={clearSearch}
-                  title="Remove"
-                >
-                  <ChevronLeftIcon />
-                  Remove
-                </button>
-              </div>
-            </div>
-            <div className="repl__hpivot__sort__column__editor__selected__columns">
-              <div className="repl__hpivot__sort__column__editor__description">
-                Selected sort columns:
-              </div>
-              <div className="repl__hpivot__sort__column__editor__container">
-                <div className="query-builder-property-search-panel__header">
-                  <div className="query-builder-property-search-panel__input__container">
-                    <input
-                      className={clsx(
-                        'query-builder-property-search-panel__input',
-                        {
-                          'query-builder-property-search-panel__input--searching':
-                            hPivotAndSortColumnState.selectedSortColumnsSearchText,
-                        },
-                      )}
-                      spellCheck={false}
-                      onChange={onSelectedSortColumnsSearchTextChange}
-                      value={
-                        hPivotAndSortColumnState.selectedSortColumnsSearchText
-                      }
-                      placeholder="Search"
-                    />
-                    {!hPivotAndSortColumnState.selectedSortColumnsSearchText ? (
-                      <>
-                        <div className="query-builder-property-search-panel__input__search__icon">
-                          <SearchIcon />
-                        </div>
-                      </>
-                    ) : (
-                      <button
-                        className="query-builder-property-search-panel__input__clear-btn"
-                        tabIndex={-1}
-                        onClick={clearSelectedSortColumnsSearchText}
-                        title="Clear"
-                      >
-                        <TimesIcon />
-                      </button>
-                    )}
-                  </div>
-                </div>
-                <div className="repl__hpivot__sort__column__editor__available__columns__content">
-                  <div
-                    className="repl__hpivot__sort__column__editor__available__columns__root"
-                    onDoubleClick={(): void =>
-                      hPivotAndSortColumnState.addAllSelectedSortColumns()
-                    }
-                  >
-                    <PlusIcon />
-                    <div className="repl__hpivot__sort__column__editor__available__columns__root__label">
-                      All
-                    </div>
-                  </div>
-                  {hPivotAndSortColumnState.selectedSortColumnsSearchResults.map(
-                    (col) => (
-                      <div
-                        className="repl__hpivot__sort__column__editor__available__columns__children"
-                        key={col.column}
-                      >
-                        <div
-                          className="repl__hpivot__sort__column__editor__available__columns__children__name"
-                          onDoubleClick={(): void =>
-                            hPivotAndSortColumnState.addSelectedSortColumn(
-                              col.column,
-                            )
-                          }
-                        >
-                          {col.column}
-                        </div>
-                        <CustomSelectorInput
-                          className="repl__hpivot__sort__column__editor__available__columns__children__order"
-                          options={sortOptions}
-                          onChange={onSelectedColumnsSortOptionsChanged(
-                            col.column,
-                          )}
-                          value={{ label: col.order, value: col.order }}
-                          isClearable={false}
-                          darkMode={
-                            !editorStore.applicationStore.layoutService
-                              .TEMPORARY__isLightColorThemeEnabled
-                          }
-                        />
-                      </div>
-                    ),
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  },
-);
+import { HPivotAndSortEditor } from './dataCube/DataCubeHPivotAndSortEditor.js';
 
 const PivotPanelEditor = observer(
   (props: {
@@ -327,7 +49,6 @@ const PivotPanelEditor = observer(
   }) => {
     const { triggerElement, editorStore } = props;
     const dataCubeState = editorStore.dataCubeState;
-    const applicationStore = editorStore.applicationStore;
     const closeEditor = (): void => {
       dataCubeState.configState.closePanel();
     };
@@ -363,59 +84,51 @@ const PivotPanelEditor = observer(
           horizontal: 'center',
         }}
       >
-        <Modal
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-          className="editor-modal embedded-runtime-editor"
-        >
-          <ModalHeader>
-            <ModalTitle title="cube properties" />
-            <ModalHeaderActions>
-              <button
-                className="modal__header__action"
-                tabIndex={-1}
-                onClick={closeEditor}
-              >
-                <TimesIcon />
-              </button>
-            </ModalHeaderActions>
-          </ModalHeader>
-          <ModalBody>
-            <div style={{ height: '100%', width: '100%' }}>
-              <div className="panel__header uml-element-editor__tabs__header ">
-                <div className="uml-element-editor__tabs">
-                  {tabOptions.map((tab) => (
-                    <div
-                      key={tab}
-                      onClick={(): void => setSelectedTab(tab)}
-                      className={clsx('uml-element-editor__tab', {
-                        'uml-element-editor__tab--active': tab === selectedTab,
-                      })}
-                    >
-                      {tab}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {selectedTab === PIVOT_PANEL_TABS.HPIVOTS_AND_SORTS && (
-                <HPivotAndSortEditor editorStore={editorStore} />
-              )}
-            </div>
-          </ModalBody>
-          <ModalFooter className="repl__modal__footer">
-            <div className="search-modal__actions">
-              <ModalFooterButton text="Ok" onClick={onClickOk} />
-              <ModalFooterButton text="Close" onClick={closeEditor} />
-              <ModalFooterButton
-                text="Apply"
-                onClick={(): void =>
-                  dataCubeState.propertiesPanelState.applyChanges()
-                }
+        <div>
+          <Modal darkMode={false} className="editor-modal">
+            <ModalHeader>
+              <ModalTitle
+                title="cube properties"
+                className="datacube-properties-editor__title"
               />
-            </div>
-          </ModalFooter>
-        </Modal>
+            </ModalHeader>
+            <ModalBody>
+              <div style={{ height: '100%', width: '100%' }}>
+                <div className="panel__header datacube-properties-editor__tabs__header ">
+                  <div className="datacube-properties-editor__tabs">
+                    {tabOptions.map((tab) => (
+                      <div
+                        key={tab}
+                        onClick={(): void => setSelectedTab(tab)}
+                        className={clsx('datacube-properties-editor__tab', {
+                          'datacube-properties-editor__tab--active':
+                            tab === selectedTab,
+                        })}
+                      >
+                        {tab}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {selectedTab === PIVOT_PANEL_TABS.HPIVOTS_AND_SORTS && (
+                  <HPivotAndSortEditor editorStore={editorStore} />
+                )}
+              </div>
+            </ModalBody>
+            <ModalFooter className="repl__modal__footer">
+              <div className="search-modal__actions">
+                <ModalFooterButton text="Ok" onClick={onClickOk} />
+                <ModalFooterButton text="Close" onClick={closeEditor} />
+                <ModalFooterButton
+                  text="Apply"
+                  onClick={(): void =>
+                    dataCubeState.propertiesPanelState.applyChanges()
+                  }
+                />
+              </div>
+            </ModalFooter>
+          </Modal>
+        </div>
       </BasePopover>
     );
   },
@@ -427,22 +140,6 @@ export const GenericEditor = observer(
     const editorStore = useREPLGridClientStore();
     const dataCubeState = editorStore.dataCubeState;
     const pivotPanelButtonRef = useRef<HTMLDivElement>(null);
-
-    const selectDarkTheme = (): void => {
-      editorStore.applicationStore.layoutService.setColorTheme(
-        LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK,
-        { persist: true },
-      );
-    };
-    const selectLightTheme = (): void => {
-      editorStore.applicationStore.layoutService.setColorTheme(
-        LEGEND_APPLICATION_COLOR_THEME.LEGACY_LIGHT,
-        { persist: true },
-      );
-    };
-    const isLightTheme =
-      editorStore.applicationStore.layoutService
-        .TEMPORARY__isLightColorThemeEnabled;
 
     const saveQuery = (): void => {
       flowResult(dataCubeState.saveQuery()).catch(
@@ -458,6 +155,16 @@ export const GenericEditor = observer(
         LEGEND_APPLICATION_REPL_SETTING_KEY.PAGINATION,
         dataCubeState.configState.isPaginationEnabled,
       );
+    };
+
+    // const showBuilder = useCallback(() => {
+    //   console.log('show');
+    //   console.log(dataCubeState.configState.gridApi);
+    //   dataCubeState.configState.gridApi?.showAdvancedFilterBuilder();
+    // }, [dataCubeState.configState.gridApi]);
+
+    const showBuilder = (): void => {
+      dataCubeState.configState.gridApi?.showAdvancedFilterBuilder();
     };
 
     useEffect(() => {
@@ -502,26 +209,6 @@ export const GenericEditor = observer(
                   Pagination
                 </div>
               </div>
-              <button
-                className={
-                  isLightTheme
-                    ? 'repl__header__action'
-                    : 'repl__header__action repl__header__action--toggled'
-                }
-                onClick={selectDarkTheme}
-              >
-                Dark
-              </button>
-              <button
-                className={
-                  isLightTheme
-                    ? 'repl__header__action repl__header__action--toggled'
-                    : 'repl__header__action'
-                }
-                onClick={selectLightTheme}
-              >
-                Light
-              </button>
             </div>
           </div>
         </div>
@@ -537,7 +224,20 @@ export const GenericEditor = observer(
           >
             Pivot
           </div>
-          <div className="repl__footer__filter">Filter</div>
+          <div id="wrapper" className="repl__footer__filter__parent">
+            <div
+              id="advancedFilterParent"
+              className="parent"
+              style={{ display: 'none' }}
+            ></div>
+            <button
+              id="advancedFilterBuilderButton"
+              className="repl__footer__filter"
+              onClick={showBuilder}
+            >
+              Filter
+            </button>
+          </div>
           <div className="repl__footer__mode">Modes</div>
           {dataCubeState.configState.isPivotPanelOpened && (
             <PivotPanelEditor

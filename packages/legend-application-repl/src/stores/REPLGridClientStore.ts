@@ -19,6 +19,7 @@ import { REPLServerClient } from '../server/REPLServerClient.js';
 import { NetworkClient } from '@finos/legend-shared';
 import { makeObservable, observable } from 'mobx';
 import { DataCubeState } from './dataCube/DataCubeState.js';
+import { LEGEND_APPLICATION_COLOR_THEME } from '@finos/legend-application';
 
 export class REPLGridClientStore {
   readonly applicationStore: LegendREPLGridClientApplicationStore;
@@ -30,6 +31,9 @@ export class REPLGridClientStore {
       dataCubeState: observable,
     });
     this.applicationStore = applicationStore;
+    this.applicationStore.layoutService.setColorTheme(
+      LEGEND_APPLICATION_COLOR_THEME.LEGACY_LIGHT,
+    );
     this.client = new REPLServerClient(
       new NetworkClient({
         baseUrl: this.applicationStore.config.useDynamicREPLServer

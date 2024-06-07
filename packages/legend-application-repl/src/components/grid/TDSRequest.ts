@@ -59,45 +59,49 @@ export enum FILTER_TYPE {
   NUMBER = 'number',
 }
 
-export class TDSFilterCondition {
+export abstract class TDSFilter {}
+
+export class TDSFilterCondition extends TDSFilter {
   operation!: TDS_FILTER_OPERATION;
   value!: unknown;
+  column!: string;
+  columnType!: PRIMITIVE_TYPE;
 
-  constructor(operation: TDS_FILTER_OPERATION, value: unknown) {
+  constructor(
+    column: string,
+    columnType: PRIMITIVE_TYPE,
+    operation: TDS_FILTER_OPERATION,
+    value: unknown,
+  ) {
+    super();
+    this.column = column;
+    this.columnType = columnType;
     this.operation = operation;
     this.value = value;
   }
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(TDSFilterCondition, {
+      column: primitive(),
+      columnType: primitive(),
       operation: primitive(),
       value: primitive(),
     }),
   );
 }
 
-export class TDSFilter {
-  column!: string;
-  columnType!: PRIMITIVE_TYPE;
-  conditions!: TDSFilterCondition[];
+export class TDSFilterGroup extends TDSFilter {
+  conditions!: TDSFilter[];
   groupOperation!: TDS_FILTER_GROUP;
 
-  constructor(
-    column: string,
-    columnType: PRIMITIVE_TYPE,
-    conditions: TDSFilterCondition[],
-    groupOperation: TDS_FILTER_GROUP,
-  ) {
-    this.column = column;
-    this.columnType = columnType;
+  constructor(conditions: TDSFilter[], groupOperation: TDS_FILTER_GROUP) {
+    super();
     this.conditions = conditions;
     this.groupOperation = groupOperation;
   }
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(TDSFilter, {
-      column: primitive(),
-      columnType: primitive(),
+    createModelSchema(TDSFilterGroup, {
       conditions: list(
         usingModelSchema(TDSFilterCondition.serialization.schema),
       ),
@@ -198,15 +202,15 @@ export class TDSRequest {
   startRow?: number | undefined;
   endRow?: number | undefined;
   columns!: TDSColumn[];
-  filter!: TDSFilter[];
+  filter: TDSFilterGroup | undefined;
   sort!: TDSSort[];
   groupBy!: TDSGroupby;
 
   constructor(
     columns: TDSColumn[],
-    filter: TDSFilter[],
     sort: TDSSort[],
     groupBy: TDSGroupby,
+    filter?: TDSFilterGroup | undefined,
     startRow?: number | undefined,
     endRow?: number | undefined,
   ) {
@@ -223,7 +227,7 @@ export class TDSRequest {
       startRow: optional(primitive()),
       endRow: optional(primitive()),
       columns: list(usingModelSchema(TDSColumn.serialization.schema)),
-      filter: list(usingModelSchema(TDSFilter.serialization.schema)),
+      // filter: list(usingModelSchema(TDSFilter.serialization.schema)),
       sort: list(usingModelSchema(TDSSort.serialization.schema)),
       groupBy: usingModelSchema(TDSGroupby.serialization.schema),
     }),
