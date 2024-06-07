@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * If we want to support theming, and want to implement it using CSS variable, the following is a good guide
+ * See https://dev.to/ultroneoustech/creating-multiple-themes-in-tailwind-css-and-nextjs-2e98
+ */

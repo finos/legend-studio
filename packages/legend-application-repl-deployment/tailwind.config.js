@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-import { LegendREPLGridClientWebApplication } from '@finos/legend-application-repl';
-import '../lib/tailwind.css'; // eslint-disable-line @finos/legend-studio/no-cross-workspace-non-export-usage
-import './index.scss';
-
-// Resolve baseUrl relatively for application to work in vscode code-server
-const relativeBaseUrl = new URL('./', window.location.href).pathname;
-LegendREPLGridClientWebApplication.run(relativeBaseUrl);
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./src/**/*.{ts,tsx}', '../legend-*/src/**/*.{ts,tsx}'],
+  theme: {
+    extend: {},
+  },
+  // NOTE: do not reset base styles
+  // See https://tailwindcss.com/docs/preflight
+  corePlugins: {
+    preflight: false,
+  },
+  plugins: [],
+};
