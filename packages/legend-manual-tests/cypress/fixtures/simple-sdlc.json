@@ -1,7 +1,0 @@
-{
-  "PROJECT_NAME": "Studio End to End Test Project",
-  "DESCRIPTION": "Test used for studio end to end testing. \nDO NOT DELETE",
-  "PROJECT_ID": "UAT-5520",
-  "WORKSPACE": "test-workspace",
-  "PACKAGE_NAME": "model"
-}
