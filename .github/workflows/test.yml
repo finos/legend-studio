@@ -22,14 +22,13 @@ jobs:
   run-tests:
     name: Run Test Group
     runs-on: ubuntu-latest
-    matrix:
-      include:
-        - name: Core
-          group: core
-        - name: Engine Roundtrip
-          group: engine-roundtrip
-        # - name: REPL
-        #   group: repl
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - group: core
+          - group: engine-roundtrip
+          # - group: repl
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.1.6
