@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-/// <reference types="cypress" />
-
-export function getConfigUrls() {
-  return cy.request('config.json').then((response) => {
-    const sdlcServer = response.body.sdlc.url;
-    const execServer = response.body.engine.url;
-    return [sdlcServer, execServer];
-  });
-}
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./src/**/*.{ts,tsx}', '../legend-*/src/**/*.{ts,tsx}'],
+  theme: {
+    extend: {},
+  },
+  // NOTE: do not reset base styles
+  // See https://tailwindcss.com/docs/preflight
+  corePlugins: {
+    preflight: false,
+  },
+  plugins: [],
+};

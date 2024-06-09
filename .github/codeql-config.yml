@@ -13,4 +13,3 @@ paths-ignore:
   - '**/node_modules/**'
   # skip tests as CodeQL supposed to
   - '**/__tests__/**'
-  - '**/cypress/**'

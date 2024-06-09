@@ -40,6 +40,7 @@ export default (env, arg) => {
     devServer: {
       ...baseConfig.devServer,
       ...appConfig.devServerOptions,
+      open: ['/repl/dataCube'],
     },
     plugins: [
       ...baseConfig.plugins,

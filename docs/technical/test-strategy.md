@@ -35,7 +35,7 @@ For the details, please see the full article. But the gist is instead of focusin
 
 `integration`: We should have integration tests to cover all use cases. We don't make real network call here, so we should mock out our network client (or not (?), see [TODO](#TODO)). We also use `Jest`.
 
-`e2e`: Almost the same as `integration` test, except we do make real network call and interact with the backend. We use [Cypress](https://www.cypress.io/). In a way, `e2e` tests are valuable here because it can be used to test the whole application stack as well as a `demo` for usage and features of the app.
+`e2e`: Almost the same as `integration` test, except we do make real network call and interact with the backend. We would like to use [Playwright](hhttps://playwright.dev/). In a way, `e2e` tests are valuable here because it can be used to test the whole application stack as well as a `demo` for usage and features of the app.
 
 ## TODO
 

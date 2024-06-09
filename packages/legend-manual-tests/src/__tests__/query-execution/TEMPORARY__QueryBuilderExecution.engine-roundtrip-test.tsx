@@ -15,21 +15,6 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { resolve } from 'path';
-import fs from 'fs';
-/**
- * Previously, these exports rely on ES module interop to expose `default` export
- * properly. But since we use `ESM` for Typescript resolution now, we lose this
- * so we have to workaround by importing these and re-export them from CJS
- *
- * TODO: remove these when the package properly work with Typescript's nodenext
- * module resolution
- *
- * @workaround ESM
- * See https://github.com/microsoft/TypeScript/issues/49298
- * See https://github.com/axios/axios/pull/5104
- */
-import { default as axios, type AxiosResponse } from 'axios';
 import {
   fireEvent,
   getByText,
@@ -50,31 +35,18 @@ import {
   GenericType,
   GenericTypeExplicitReference,
   Multiplicity,
-  V1_ExecuteInput,
   V1_PureGraphManager,
   V1_buildExecutionResult,
   V1_serializeExecutionResult,
 } from '@finos/legend-graph';
-import {
-  ContentType,
-  HttpHeader,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { integrationTest, createSpy } from '@finos/legend-shared/test';
 import {
   buildExecutionParameterValues,
   QUERY_BUILDER_TEST_ID,
 } from '@finos/legend-query-builder';
 import { TEST__setUpQueryBuilder } from '@finos/legend-query-builder/test';
-
-const engineConfig = JSON.parse(
-  fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
-    encoding: 'utf-8',
-  }),
-) as object;
-const ENGINE_SERVER_PORT = (engineConfig as any).server.connector // eslint-disable-line @typescript-eslint/no-explicit-any
-  .port as number;
-const ENGINE_SERVER_URL = `http://localhost:${ENGINE_SERVER_PORT}/api`;
+import { ENGINE_TEST_SUPPORT__execute } from '@finos/legend-graph/test';
 
 // NOTE: this should be converted into an end-to-end test
 test(integrationTest('test query execution with parameters'), async () => {
@@ -134,23 +106,12 @@ test(integrationTest('test query execution with parameters'), async () => {
     V1_PureGraphManager.DEV_PROTOCOL_VERSION,
     parameterValues,
   );
-  const executionResult = await axios.post<
-    unknown,
-    AxiosResponse<{ elements: object[] }>
-  >(
-    `${ENGINE_SERVER_URL}/pure/v1/execution/execute`,
-    V1_ExecuteInput.serialization.toJson(executionInput),
-    {
-      headers: {
-        [HttpHeader.CONTENT_TYPE]: ContentType.APPLICATION_JSON,
-      },
-    },
-  );
+  const executionResult = await ENGINE_TEST_SUPPORT__execute(executionInput);
   createSpy(
     queryBuilderState.graphManagerState.graphManager,
     'runQuery',
   ).mockResolvedValue(
-    V1_buildExecutionResult(V1_serializeExecutionResult(executionResult.data)),
+    V1_buildExecutionResult(V1_serializeExecutionResult(executionResult)),
   );
   const queryBuilderResultPanel = await waitFor(() =>
     renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL),
@@ -207,23 +168,12 @@ test(integrationTest('test query execution with parameters'), async () => {
     V1_PureGraphManager.DEV_PROTOCOL_VERSION,
     parameterValues,
   );
-  const executionResult1 = await axios.post<
-    unknown,
-    AxiosResponse<{ elements: object[] }>
-  >(
-    `${ENGINE_SERVER_URL}/pure/v1/execution/execute`,
-    V1_ExecuteInput.serialization.toJson(executionInput1),
-    {
-      headers: {
-        [HttpHeader.CONTENT_TYPE]: ContentType.APPLICATION_JSON,
-      },
-    },
-  );
+  const executionResult1 = await ENGINE_TEST_SUPPORT__execute(executionInput1);
   createSpy(
     queryBuilderState.graphManagerState.graphManager,
     'runQuery',
   ).mockResolvedValue(
-    V1_buildExecutionResult(V1_serializeExecutionResult(executionResult1.data)),
+    V1_buildExecutionResult(V1_serializeExecutionResult(executionResult1)),
   );
   await act(async () => {
     fireEvent.click(getByText(queryBuilderResultPanel1, 'Run Query'));

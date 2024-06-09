@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-import { getBaseJestDOMProjectConfig } from '../../scripts/test/jest.config.base.js';
-import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const packageJson = loadJSON(resolve(__dirname, './package.json'));
-
-export default getBaseJestDOMProjectConfig(
-  packageJson.name,
-  'packages/legend-manual-tests',
-);
+/**
+ * If we want to support theming, and want to implement it using CSS variable, the following is a good guide
+ * See https://dev.to/ultroneoustech/creating-multiple-themes-in-tailwind-css-and-nextjs-2e98
+ */

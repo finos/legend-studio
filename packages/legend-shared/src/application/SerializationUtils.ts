@@ -180,7 +180,7 @@ export const serializeArray = <T>(
     forceReturnEmptyInTest =
       Boolean(options?.INTERNAL__forceReturnEmptyInTest) &&
       // eslint-disable-next-line no-process-env
-      process.env.TEST_MODE === 'grammar';
+      process.env.TEST_GROUP === 'engine-roundtrip';
   }
   if (Array.isArray(values)) {
     return values.length

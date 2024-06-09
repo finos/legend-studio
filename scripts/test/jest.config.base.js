@@ -101,7 +101,6 @@ export const getBaseJestConfig = (isGlobal) => {
           '!**/scripts/**',
           '!**/fixtures/**',
           '!<rootDir>/packages/legend-dev-utils/WebpackConfigUtils.js', // TODO: remove this when Jest supports `import.meta.url`
-          '!<rootDir>/packages/legend-manual-tests/cypress/**', // TODO: update this when restructure `e2e` test suite
         ],
         // Do not use `babel` when generating coverage report to avoid various errors
         // See https://jestjs.io/docs/configuration#coverageprovider-string
@@ -123,12 +122,31 @@ export const getBaseJestConfig = (isGlobal) => {
     : config;
 };
 
-export const getBaseJestProjectConfig = (projectName, packageDir) => ({
-  ...getBaseJestConfig(false),
-  displayName: projectName,
-  rootDir: '../..',
-  testMatch: [`<rootDir>/${packageDir}/**/__tests__/**/*(*.)test.[jt]s?(x)`],
-});
+export const getBaseJestProjectConfig = (projectName, packageDir) => {
+  const testMatch = [
+    (!process.env.TEST_GROUP || process.env.TEST_GROUP === 'core') &&
+      `<rootDir>/${packageDir}/**/__tests__/**/*(*.)test.[jt]s?(x)`,
+    process.env.TEST_GROUP === 'repl' &&
+      `<rootDir>/${packageDir}/**/__tests__/**/*(*.)repl-test.[jt]s?(x)`,
+    process.env.TEST_GROUP === 'engine-roundtrip' &&
+      `<rootDir>/${packageDir}/**/__tests__/**/*(*.)engine-roundtrip-test.[jt]s?(x)`,
+    process.env.TEST_GROUP === 'profiling' &&
+      `<rootDir>/${packageDir}/**/__tests__/**/*(*.)profiling-test.[jt]s?(x)`,
+  ].filter(Boolean);
+
+  if (testMatch.length === 0) {
+    throw new Error(
+      `Can't configure to run tests for group '${process.env.TEST_GROUP}'`,
+    );
+  }
+
+  return {
+    ...getBaseJestConfig(false),
+    displayName: projectName,
+    rootDir: '../..',
+    testMatch,
+  };
+};
 
 export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
   const config = getBaseJestProjectConfig(projectName, packageDir);

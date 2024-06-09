@@ -4,7 +4,8 @@
   "description": "Legend manual tests",
   "keywords": [
     "legend",
-    "manual-tests"
+    "manual-tests",
+    "roundtrip-tests"
   ],
   "repository": {
     "type": "git",
@@ -17,9 +18,8 @@
     "clean": "yarn clean:cache",
     "clean:cache": "rimraf \"build\"",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./src/**/*.{js,ts,tsx}\"",
-    "test:manual": "cross-env TEST_MODE=grammar jest --config jest.config.manual.js",
-    "test:manual:ci": "cross-env TEST_MODE=grammar jest --config jest.config.manual.js --maxWorkers=100%",
-    "test:watch": "cross-env TEST_MODE=grammar jest --config jest.config.manual.js --watch"
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@finos/legend-art": "workspace:*",
@@ -31,14 +31,14 @@
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-query-builder": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@testing-library/react": "15.0.7",
+    "@testing-library/dom": "10.1.0",
+    "@testing-library/react": "16.0.0",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "@jest/globals": "29.7.0",
-    "axios": "1.7.2",
     "cross-env": "7.0.3",
     "eslint": "8.57.0",
     "jest": "29.7.0",

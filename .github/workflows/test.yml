@@ -19,12 +19,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  integration-and-unit-test:
-    name: Run Unit & Integration Tests
-    # Disable usage of large runner on default branch of forks
-    # NOTE: temporarily disable large runners
-    # runs-on: ${{ (github.repository != 'finos/legend-studio' && github.ref == 'refs/heads/master') && 'ubuntu-latest' || 'ubuntu-latest-4-cores' }}
+  run-tests:
+    name: Run Test Group
     runs-on: ubuntu-latest
+    matrix:
+      include:
+        - name: Core
+          group: core
+        - name: Engine Roundtrip
+          group: engine-roundtrip
+        # - name: REPL
+        #   group: repl
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.1.6
@@ -44,56 +49,21 @@ jobs:
         uses: actions/setup-node@v4.0.2
         with:
           node-version: 21
-      - name: Install dependencies
-        run: yarn
-      - name: Build
-        run: yarn build
-      # NOTE: when we start to have more and more test, it might be a good idea to start sharding them
-      # See https://jestjs.io/docs/cli#--shard
-      # See https://github.com/microsoft/accessibility-insights-web/pull/5343
-      # The idea is to split the test suite into multiple shards then recombine them and upload the coverage
-      # to codecov (codecov should take care of merging the result)
-      # See https://about.codecov.io/product/feature/report-merging/
-      - name: Test
-        run: yarn test:ci
-      - name: Upload test coverage report
-        uses: codecov/codecov-action@v4.4.1
-        with:
-          directory: ./build/coverage
-
-  # This job will run the grammar roundtrip test suite in Studio, which requires engine
-  # backend for the grammar parser/composer.
-  run-manual-tests:
-    name: Run Engine Roundtrip Tests
-    # Disable usage of large runner on default branch of forks
-    # NOTE: temporarily disable large runners
-    # runs-on: ${{ (github.repository != 'finos/legend-studio' && github.ref == 'refs/heads/master') && 'ubuntu-latest' || 'ubuntu-latest-4-cores' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4.1.6
-      - name: Get Yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
-      - name: Setup Yarn cache
-        uses: actions/cache@v4.0.2
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: ${{ runner.os }}-yarn-
-      - name: Setup Node
-        uses: actions/setup-node@v4.0.2
-        with:
-          node-version: 21
       - name: Run engine server
         working-directory: ./fixtures/legend-docker-setup/grammar-test-setup
         run: docker compose --file=grammar-test-setup-docker-compose.yml up --detach
       - name: Install dependencies
         run: yarn
+      - name: Build
+        run: yarn build
       - name: Test
-        # TODO: we should consider building only relevant workspaces to reduce build time
-        run: yarn build && yarn workspace @finos/legend-manual-tests test:manual:ci
+        run: yarn test:ci ${{ matrix.group }}
       - name: Shut down engine server
         working-directory: ./fixtures/legend-docker-setup/grammar-test-setup
         run: docker compose --file=grammar-test-setup-docker-compose.yml down
+      # Codecov will take care of merging the result from different test groups
+      # See https://about.codecov.io/product/feature/report-merging/
+      - name: Upload test coverage report
+        uses: codecov/codecov-action@v4.4.1
+        with:
+          directory: ./build/coverage

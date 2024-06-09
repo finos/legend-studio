@@ -17,30 +17,16 @@
 import { test, describe, expect } from '@jest/globals';
 import { resolve, basename } from 'path';
 import fs from 'fs';
+import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import {
-  Core_GraphManagerPreset,
-  type V1_PureModelContextData,
-} from '@finos/legend-graph';
-import {
+  ENGINE_TEST_SUPPORT__compile,
+  ENGINE_TEST_SUPPORT__grammarToJSON_model,
+  ENGINE_TEST_SUPPORT__JSONToGrammar_model,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
   TEST__GraphManagerPluginManager,
 } from '@finos/legend-graph/test';
-import {
-  ContentType,
-  HttpHeader,
-  type PlainObject,
-} from '@finos/legend-shared';
-import axios, { type AxiosResponse } from 'axios';
 
-const engineConfig = JSON.parse(
-  fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
-    encoding: 'utf-8',
-  }),
-) as object;
-const ENGINE_SERVER_PORT = (engineConfig as any).server.connector // eslint-disable-line @typescript-eslint/no-explicit-any
-  .port as number;
-const ENGINE_SERVER_URL = `http://localhost:${ENGINE_SERVER_PORT}/api`;
 const TEST_CASE_DIR = resolve(__dirname, 'cases');
 
 enum ROUNTRIP_TEST_PHASES {
@@ -131,19 +117,10 @@ const checkGrammarRoundtripMismatch = async (
   let phase = ROUNTRIP_TEST_PHASES.GRAMMAR_ROUNDTRIP;
   logPhase(phase, excludes, options?.debug);
 
-  const transformGrammarToJsonResult = await axios.post<
-    unknown,
-    AxiosResponse<PlainObject<V1_PureModelContextData>>
-  >(`${ENGINE_SERVER_URL}/pure/v1/grammar/grammarToJson/model`, grammarBefore, {
-    headers: {
-      [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
-    },
-    params: {
-      returnSourceInformation: false,
-    },
-  });
+  const transformGrammarToJsonResult =
+    await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarBefore);
   const entities = graphManagerState.graphManager.pureProtocolTextToEntities(
-    JSON.stringify(transformGrammarToJsonResult.data),
+    JSON.stringify(transformGrammarToJsonResult),
   );
   await TEST__buildGraphWithEntities(graphManagerState, entities, {
     TEMPORARY__preserveSectionIndex: false,
@@ -166,23 +143,10 @@ const checkGrammarRoundtripMismatch = async (
       .concat(sectionIndices)
       .map((entity) => entity.content),
   };
-  const transformJsonToGrammarResult = await axios.post<
-    unknown,
-    AxiosResponse<string>
-  >(
-    `${ENGINE_SERVER_URL}/pure/v1/grammar/jsonToGrammar/model`,
-    modelDataContext,
-    {
-      headers: {
-        [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN,
-      },
-      params: {
-        renderStyle: 'STANDARD',
-      },
-    },
-  );
+  const transformJsonToGrammarResult =
+    await ENGINE_TEST_SUPPORT__JSONToGrammar_model(modelDataContext);
   if (!excludes.includes(phase)) {
-    expect(transformJsonToGrammarResult.data).toEqual(grammarAfter);
+    expect(transformJsonToGrammarResult).toEqual(grammarAfter);
     logSuccess(phase, options?.debug);
   }
 
@@ -191,10 +155,7 @@ const checkGrammarRoundtripMismatch = async (
   logPhase(phase, excludes, options?.debug);
   if (!excludes.includes(phase)) {
     // Test successful compilation with graph from serialization
-    const compileResult = await axios.post<
-      unknown,
-      AxiosResponse<{ message: string }>
-    >(`${ENGINE_SERVER_URL}/pure/v1/compilation/compile`, modelDataContext);
+    const compileResult = await ENGINE_TEST_SUPPORT__compile(modelDataContext);
     expect(compileResult.status).toBe(200);
     expect(compileResult.data.message).toEqual('OK');
     logSuccess(phase, options?.debug);

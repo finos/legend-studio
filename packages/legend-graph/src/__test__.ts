@@ -15,3 +15,4 @@
  */
 
 export * from './graph-manager/__test-utils__/GraphManagerTestUtils.js';
+export * from './graph-manager/__test-utils__/EngineTestSupport.js';
