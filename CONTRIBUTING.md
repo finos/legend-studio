@@ -146,11 +146,13 @@ Read our [guide on testing](./docs/technical/test-strategy.md) to understand our
 ```sh
 # Use this on root directory or workspace directory to run unit
 # and integration test suites.
-yarn test
+yarn test # NOTE: this will run only the core test group
+yarn test core
 
 # Rerun tests on changes.
 # NOTE: you can also install `watchman` if the startup time seems slow.
-yarn test:watch
+yarn test:watch # NOTE: this will run only the core test group
+yarn test:watch core
 
 # TODO: add e2e test suite run command
 

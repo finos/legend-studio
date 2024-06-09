@@ -22,7 +22,7 @@
   "scripts": {
     "build:tailwindcss": "tailwindcss -i ./style/tailwind.css -o ./lib/tailwind.css --minify",
     "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
-    "bundle": "yarn clean && yarn build:tailwindcss &&  build:webpack && node ./scripts/setup.js --dir ./dist/repl",
+    "bundle": "yarn clean && yarn build:tailwindcss && yarn build:webpack && node ./scripts/setup.js --dir ./dist/repl",
     "bundle:analyze": "cross-env NODE_ENV=production webpack --mode production --analyze",
     "bundle:fast": "cross-env NODE_ENV=production PRODUCTION_MODE=fast webpack --mode production && node ./scripts/setup.js --dir ./dist/repl",
     "clean": "yarn clean:cache && rimraf \"dist\" \"lib\"",

@@ -17,14 +17,11 @@
 import { test, describe, expect } from '@jest/globals';
 import { resolve, basename } from 'path';
 import fs from 'fs';
-import axios, { type AxiosResponse } from 'axios';
 import {
   type PlainObject,
   WebConsole,
   LogService,
   LogEvent,
-  ContentType,
-  HttpHeader,
   LOG_LEVEL,
 } from '@finos/legend-shared';
 import { type TEMPORARY__JestMatcher } from '@finos/legend-shared/test';
@@ -32,14 +29,17 @@ import {
   type V1_PackageableElement,
   GRAPH_MANAGER_EVENT,
   Core_GraphManagerPreset,
-  type ClassifierPathMapping,
-  type SubtypeInfo,
 } from '@finos/legend-graph';
 import {
   TEST__checkGraphHashUnchanged,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
   TEST__GraphManagerPluginManager,
+  ENGINE_TEST_SUPPORT__getClassifierPathMapping,
+  ENGINE_TEST_SUPPORT__getSubtypeInfo,
+  ENGINE_TEST_SUPPORT__grammarToJSON_model,
+  ENGINE_TEST_SUPPORT__JSONToGrammar_model,
+  ENGINE_TEST_SUPPORT__compile,
 } from '@finos/legend-graph/test';
 import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text/graph';
 import { DSL_Diagram_GraphManagerPreset as DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram/graph';
@@ -47,14 +47,6 @@ import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-da
 import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence/graph';
 import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store/graph';
 
-const engineConfig = JSON.parse(
-  fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
-    encoding: 'utf-8',
-  }),
-) as object;
-const ENGINE_SERVER_PORT = (engineConfig as any).server.connector // eslint-disable-line @typescript-eslint/no-explicit-any
-  .port as number;
-const ENGINE_SERVER_URL = `http://localhost:${ENGINE_SERVER_PORT}/api`;
 const TEST_CASE_DIR = resolve(__dirname, 'cases');
 
 enum ROUNTRIP_TEST_PHASES {
@@ -152,19 +144,10 @@ const checkGrammarRoundtrip = async (
   await graphManagerState.graphManager.initialize({
     env: 'test',
     tabSize: 2,
-    clientConfig: {
-      baseUrl: ENGINE_SERVER_URL,
-    },
-    TEMPORARY__classifierPathMapping: (
-      await axios.get<unknown, AxiosResponse<ClassifierPathMapping[]>>(
-        `${ENGINE_SERVER_URL}/pure/v1/protocol/pure/getClassifierPathMap`,
-      )
-    ).data,
-    TEMPORARY__subtypeInfo: (
-      await axios.get<unknown, AxiosResponse<SubtypeInfo>>(
-        `${ENGINE_SERVER_URL}/pure/v1/protocol/pure/getSubtypeInfo`,
-      )
-    ).data,
+    clientConfig: {},
+    TEMPORARY__classifierPathMapping:
+      await ENGINE_TEST_SUPPORT__getClassifierPathMapping(),
+    TEMPORARY__subtypeInfo: await ENGINE_TEST_SUPPORT__getSubtypeInfo(),
   });
 
   if (options?.debug) {
@@ -181,17 +164,8 @@ const checkGrammarRoundtrip = async (
   logPhase(phase, excludes, log, options?.debug);
   const grammarText = fs.readFileSync(filePath, { encoding: 'utf-8' });
   let startTime = Date.now();
-  const transformGrammarToJsonResult = await axios.post<
-    unknown,
-    AxiosResponse<{ elements: object[] }>
-  >(`${ENGINE_SERVER_URL}/pure/v1/grammar/grammarToJson/model`, grammarText, {
-    headers: {
-      [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
-    },
-    params: {
-      returnSourceInformation: false,
-    },
-  });
+  const transformGrammarToJsonResult =
+    await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarText);
   if (options?.debug) {
     log.info(
       LogEvent.create('engine.grammar.grammar-to-json'),
@@ -200,7 +174,7 @@ const checkGrammarRoundtrip = async (
     );
   }
   const entities = graphManagerState.graphManager.pureProtocolTextToEntities(
-    JSON.stringify(transformGrammarToJsonResult.data),
+    JSON.stringify(transformGrammarToJsonResult),
   );
   if (options?.debug) {
     log.info(
@@ -241,8 +215,7 @@ const checkGrammarRoundtrip = async (
     ).toIncludeSameMembers(
       // expected: protocol JSON parsed from grammar text
       (
-        (transformGrammarToJsonResult.data as { elements: object[] })
-          .elements as PlainObject<V1_PackageableElement>[]
+        transformGrammarToJsonResult.elements as PlainObject<V1_PackageableElement>[]
       ).filter(
         (elementProtocol: PlainObject<V1_PackageableElement>) =>
           elementProtocol._type !== 'sectionIndex',
@@ -279,21 +252,8 @@ const checkGrammarRoundtrip = async (
       .map((entity) => entity.content),
   };
   startTime = Date.now();
-  const transformJsonToGrammarResult = await axios.post<
-    unknown,
-    AxiosResponse<string>
-  >(
-    `${ENGINE_SERVER_URL}/pure/v1/grammar/jsonToGrammar/model`,
-    modelDataContext,
-    {
-      headers: {
-        [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN,
-      },
-      params: {
-        renderStyle: 'STANDARD',
-      },
-    },
-  );
+  const transformJsonToGrammarResult =
+    await ENGINE_TEST_SUPPORT__JSONToGrammar_model(modelDataContext);
   if (options?.debug) {
     log.info(
       LogEvent.create('engine.grammar.json-to-grammar'),
@@ -302,7 +262,7 @@ const checkGrammarRoundtrip = async (
     );
   }
   if (!excludes.includes(phase)) {
-    expect(transformJsonToGrammarResult.data).toEqual(grammarText);
+    expect(transformJsonToGrammarResult).toEqual(grammarText);
     logSuccess(phase, log, options?.debug);
   }
 
@@ -312,10 +272,7 @@ const checkGrammarRoundtrip = async (
   if (!excludes.includes(phase)) {
     // Test successful compilation with graph from serialization
     startTime = Date.now();
-    const compileResult = await axios.post<
-      unknown,
-      AxiosResponse<{ message: string }>
-    >(`${ENGINE_SERVER_URL}/pure/v1/compilation/compile`, modelDataContext);
+    const compileResult = await ENGINE_TEST_SUPPORT__compile(modelDataContext);
     if (options?.debug) {
       log.info(
         LogEvent.create('engine.compilation'),

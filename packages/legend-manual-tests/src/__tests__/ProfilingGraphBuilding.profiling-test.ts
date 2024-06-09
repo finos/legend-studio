@@ -15,22 +15,11 @@
  */
 
 import { test, describe, expect } from '@jest/globals';
-import { resolve } from 'path';
-import fs from 'fs';
-import axios, { type AxiosResponse } from 'axios';
+import { WebConsole, LogService, LogEvent } from '@finos/legend-shared';
+import { GRAPH_MANAGER_EVENT } from '@finos/legend-graph';
 import {
-  WebConsole,
-  LogService,
-  LogEvent,
-  ContentType,
-  type PlainObject,
-  HttpHeader,
-} from '@finos/legend-shared';
-import {
-  GRAPH_MANAGER_EVENT,
-  type V1_PureModelContextData,
-} from '@finos/legend-graph';
-import {
+  ENGINE_TEST_SUPPORT__compile,
+  ENGINE_TEST_SUPPORT__grammarToJSON_model,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
   TEST__GraphManagerPluginManager,
@@ -40,15 +29,6 @@ import {
 // we should consider moving this performance test to another module, maybe
 // the one where we put the end-to-end tests
 // See https://github.com/finos/legend-studio/issues/820
-
-const engineConfig = JSON.parse(
-  fs.readFileSync(resolve(__dirname, '../../engine-config.json'), {
-    encoding: 'utf-8',
-  }),
-) as object;
-const ENGINE_SERVER_PORT = (engineConfig as any).server.connector // eslint-disable-line @typescript-eslint/no-explicit-any
-  .port as number;
-const ENGINE_SERVER_URL = `http://localhost:${ENGINE_SERVER_PORT}/api`;
 
 enum Profile_TEST_PHASE {
   ENGINE_GRAMMAR_TO_JSON = 'ENGINE_GRAMMAR_TO_JSON',
@@ -175,17 +155,8 @@ const runProfiling = async (config: ProfilingConfiguration): Promise<void> => {
 
   // TODO: refactor to use `StopWatch` instead
   let startTime = Date.now();
-  const transformGrammarToJsonResult = await axios.post<
-    unknown,
-    AxiosResponse<PlainObject<V1_PureModelContextData>>
-  >(`${ENGINE_SERVER_URL}/pure/v1/grammar/grammarToJson/model`, grammarText, {
-    headers: {
-      [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
-    },
-    params: {
-      returnSourceInformation: false,
-    },
-  });
+  const transformGrammarToJsonResult =
+    await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarText);
   if (config.debug) {
     log.info(
       LogEvent.create('engine.grammar.grammar-to-json'),
@@ -194,7 +165,7 @@ const runProfiling = async (config: ProfilingConfiguration): Promise<void> => {
     );
   }
   const entities = graphManagerState.graphManager.pureProtocolTextToEntities(
-    JSON.stringify(transformGrammarToJsonResult.data),
+    JSON.stringify(transformGrammarToJsonResult),
   );
   if (config.debug) {
     log.info(
@@ -250,18 +221,6 @@ const runProfiling = async (config: ProfilingConfiguration): Promise<void> => {
       .map((entity) => entity.content),
   };
   startTime = Date.now();
-  await axios.post<unknown, AxiosResponse<string>>(
-    `${ENGINE_SERVER_URL}/pure/v1/grammar/jsonToGrammar/model`,
-    modelDataContext,
-    {
-      headers: {
-        [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN,
-      },
-      params: {
-        renderStyle: 'STANDARD',
-      },
-    },
-  );
   if (config.debug) {
     log.info(
       LogEvent.create('engine.grammar.json-to-grammar'),
@@ -275,10 +234,7 @@ const runProfiling = async (config: ProfilingConfiguration): Promise<void> => {
 
   // Test successful compilation with graph from serialization
   startTime = Date.now();
-  const compileResult = await axios.post<
-    unknown,
-    AxiosResponse<{ message: string }>
-  >(`${ENGINE_SERVER_URL}/pure/v1/compilation/compile`, modelDataContext);
+  const compileResult = await ENGINE_TEST_SUPPORT__compile(modelDataContext);
   if (config.debug) {
     log.info(
       LogEvent.create('engine.compilation'),
