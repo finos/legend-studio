@@ -21,6 +21,7 @@ import {
   type AbstractPropertyExpression,
   INTERNAL__PropagatedValue,
   PrimitiveType,
+  VariableExpression,
 } from '@finos/legend-graph';
 import {
   UnsupportedOperationError,
@@ -31,6 +32,7 @@ import { getParameterValue } from '../../components/QueryBuilderSideBar.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import { createSupportedFunctionExpression } from '../shared/ValueSpecificationEditorHelper.js';
 import { QueryBuilderMilestoningImplementation } from './QueryBuilderMilestoningImplementation.js';
+import type { LambdaParameterState } from '../shared/LambdaParameterState.js';
 
 export class QueryBuilderProcessingTemporalMilestoningImplementation extends QueryBuilderMilestoningImplementation {
   getMilestoningDate(): ValueSpecification | undefined {
@@ -51,6 +53,17 @@ export class QueryBuilderProcessingTemporalMilestoningImplementation extends Que
     }
     // Show the parameter panel because we populate paramaters state with milestoning parameters
     this.milestoningState.queryBuilderState.setShowParametersPanel(true);
+  }
+
+  buildParameterStatesFromMilestoningParameters(): LambdaParameterState[] {
+    const state =
+      this.milestoningState.buildParameterStateFromMilestoningParameter(
+        this.milestoningState.processingDate &&
+          this.milestoningState.processingDate instanceof VariableExpression
+          ? this.milestoningState.processingDate.name
+          : PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
+      );
+    return state ? [state] : [];
   }
 
   processGetAllParamaters(parameterValues: ValueSpecification[]): void {

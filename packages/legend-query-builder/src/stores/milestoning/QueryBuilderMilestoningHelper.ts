@@ -294,6 +294,7 @@ export const validateMilestoningPropertyExpressionChain = (
   sourceStereotype: MILESTONING_STEREOTYPE | undefined,
   targetStereotype: MILESTONING_STEREOTYPE,
   propertyExpression: AbstractPropertyExpression,
+  queryBuilderState: QueryBuilderState,
 ): void => {
   if (
     sourceStereotype !== MILESTONING_STEREOTYPE.BITEMPORAL &&
@@ -316,10 +317,54 @@ export const validateMilestoningPropertyExpressionChain = (
           `Property of milestoning sterotype '${MILESTONING_STEREOTYPE.BITEMPORAL}' should not have more than two parameters`,
         );
       }
+      queryBuilderState.milestoningState.setProcessingDate(
+        propertyExpression.parametersValues[1],
+      );
+      queryBuilderState.milestoningState.setBusinessDate(
+        propertyExpression.parametersValues[2],
+      );
     } else if (propertyExpression.parametersValues.length !== 2) {
       throw new UnsupportedOperationError(
         `Property of milestoning sterotype '${targetStereotype}' should have exactly one parameter`,
       );
+    }
+    if (targetStereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
+      queryBuilderState.milestoningState.setBusinessDate(
+        propertyExpression.parametersValues[1],
+      );
+    } else if (
+      targetStereotype === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL
+    ) {
+      queryBuilderState.milestoningState.setProcessingDate(
+        propertyExpression.parametersValues[1],
+      );
+    }
+  }
+  // we still need to do a loose milestoningState initialization for other cases e.g. the getAllVersion is used
+  else {
+    if (
+      propertyExpression.parametersValues.length === 3 &&
+      targetStereotype === MILESTONING_STEREOTYPE.BITEMPORAL
+    ) {
+      queryBuilderState.milestoningState.setProcessingDate(
+        propertyExpression.parametersValues[1],
+      );
+      queryBuilderState.milestoningState.setBusinessDate(
+        propertyExpression.parametersValues[2],
+      );
+    }
+    if (propertyExpression.parametersValues.length === 2) {
+      if (targetStereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
+        queryBuilderState.milestoningState.setBusinessDate(
+          propertyExpression.parametersValues[1],
+        );
+      } else if (
+        targetStereotype === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL
+      ) {
+        queryBuilderState.milestoningState.setProcessingDate(
+          propertyExpression.parametersValues[1],
+        );
+      }
     }
   }
 };

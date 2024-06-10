@@ -56,6 +56,7 @@ import type { Entity } from '@finos/legend-storage';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_Milestoning } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
+import { getParameterNameInput } from './QueryBuilderParametersPanel.test.js';
 
 type QueryComparisonTestCase = [
   string,
@@ -465,6 +466,140 @@ test(
   },
 );
 
+test(
+  integrationTest(
+    'Query builder result modifier panel displays milestoning dates',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_MilestoningModel,
+      stub_RawLambda(),
+      'my::map',
+      'my::runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+    );
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('my::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getAllByText(queryBuilderSetup, 'Person'));
+
+    const resultModifierPromptPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT,
+      ),
+    );
+    await waitFor(() =>
+      getAllByText(resultModifierPromptPanel, 'Business Date'),
+    );
+    await waitFor(() =>
+      getAllByText(resultModifierPromptPanel, 'businessDate'),
+    );
+
+    const queryOptionsButton = await waitFor(() =>
+      renderResult.getByRole('button', { name: 'Query Options' }),
+    );
+    fireEvent.click(queryOptionsButton);
+    const allVersionsToggle = await renderResult.findByText(
+      'Query All Milestoned Versions of the Root Class',
+    );
+    fireEvent.click(allVersionsToggle);
+    const applyButton = (await renderResult.findByRole('button', {
+      name: 'Apply',
+    })) as HTMLButtonElement;
+    await waitFor(() => fireEvent.click(applyButton));
+    await waitFor(() =>
+      getAllByText(resultModifierPromptPanel, 'All Versions'),
+    );
+    await waitFor(() => getAllByText(resultModifierPromptPanel, 'Yes'));
+    fireEvent.click(queryOptionsButton);
+    const allVersionInRangeToggle = await renderResult.findByText(
+      'Optionally apply a date range to get All Versions for',
+    );
+    fireEvent.click(allVersionInRangeToggle);
+    fireEvent.click(renderResult.getByRole('button', { name: 'Apply' }));
+    await waitFor(() =>
+      getAllByText(resultModifierPromptPanel, '(startDate - endDate)'),
+    );
+    fireEvent.click(queryOptionsButton);
+    fireEvent.click(allVersionInRangeToggle);
+    const cancelButton = (await renderResult.findByRole('button', {
+      name: 'Cancel',
+    })) as HTMLButtonElement;
+    fireEvent.click(cancelButton);
+    await waitFor(() =>
+      getAllByText(resultModifierPromptPanel, '(startDate - endDate)'),
+    );
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder result modifier panel displays correct milestoning names after renaming milestoning parameters',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_MilestoningModel,
+      stub_RawLambda(),
+      'my::map',
+      'my::runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_Milestoning,
+    );
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('my::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getAllByText(queryBuilderSetup, 'Person'));
+
+    const parameterPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+
+    const resultModifierPromptPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT,
+      ),
+    );
+    await waitFor(() =>
+      getAllByText(resultModifierPromptPanel, 'Business Date'),
+    );
+    await waitFor(() =>
+      getAllByText(resultModifierPromptPanel, 'businessDate'),
+    );
+    fireEvent.click(getByText(parameterPanel, 'businessDate'));
+    const parameterNameInput = getParameterNameInput(renderResult);
+    fireEvent.change(parameterNameInput, {
+      target: { value: 'businessDateRenamed' },
+    });
+    const updateButton = (await renderResult.findByRole('button', {
+      name: 'Update',
+    })) as HTMLButtonElement;
+    fireEvent.click(updateButton);
+    await waitFor(() =>
+      getAllByText(resultModifierPromptPanel, 'businessDateRenamed'),
+    );
+    const queryOptionsButton = await waitFor(() =>
+      renderResult.getByRole('button', { name: 'Query Options' }),
+    );
+    fireEvent.click(queryOptionsButton);
+    const cancelButton = (await renderResult.findByRole('button', {
+      name: 'Cancel',
+    })) as HTMLButtonElement;
+    fireEvent.click(cancelButton);
+    await waitFor(() =>
+      getAllByText(resultModifierPromptPanel, 'businessDateRenamed'),
+    );
+  },
+);
+
 type QueryGetAllVersionsTestCase = [
   string,
   {
@@ -571,14 +706,23 @@ describe(
           );
         });
 
-        renderResult.getByTitle('Edit Milestoning Parameters');
-        fireEvent.click(renderResult.getByTitle('Edit Milestoning Parameters'));
+        const queryOptionsButton = await waitFor(() =>
+          renderResult.getByRole('button', { name: 'Query Options' }),
+        );
+        fireEvent.click(queryOptionsButton);
 
         const dialog = await waitFor(() => renderResult.getByRole('dialog'));
 
         fireEvent.click(
           getByText(dialog, 'Query All Milestoned Versions of the Root Class'),
         );
+
+        const applyButton = (await renderResult.findByRole('button', {
+          name: 'Apply',
+        })) as HTMLButtonElement;
+
+        await waitFor(() => fireEvent.click(applyButton));
+
         const receivedOutput = queryBuilderState.buildQuery();
 
         // Compare input JSON and output JSON for building a query
@@ -666,11 +810,11 @@ describe(
           );
         });
 
-        renderResult.getByTitle('Edit Milestoning Parameters');
-        fireEvent.click(renderResult.getByTitle('Edit Milestoning Parameters'));
-
+        const queryOptionsButton = await waitFor(() =>
+          renderResult.getByRole('button', { name: 'Query Options' }),
+        );
+        fireEvent.click(queryOptionsButton);
         const dialog = await waitFor(() => renderResult.getByRole('dialog'));
-
         // Check if we are setting start date and end date when allVersionsInRange() is selected
         fireEvent.click(
           getByText(
@@ -678,6 +822,7 @@ describe(
             'Optionally apply a date range to get All Versions for',
           ),
         );
+
         expect(getAllByText(dialog, 'startDate').length).toBe(2);
         expect(getAllByText(dialog, 'endDate').length).toBe(2);
 
