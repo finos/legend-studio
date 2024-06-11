@@ -14,16 +14,7 @@
  * limitations under the License.
  */
 
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./src/**/*.{tsx}', '../legend-*/src/**/*.{tsx}'],
-  theme: {
-    extend: {},
-  },
-  // NOTE: do not reset base styles
-  // See https://tailwindcss.com/docs/preflight
-  corePlugins: {
-    preflight: false,
-  },
-  plugins: [],
-};
+export enum LEGEND_REPL_APP_EVENT {
+  FETCH_TDS_FAILURE = 'repl.fetch-tds.failure',
+  BUILD_TDS_EQUEST_FAILURE = 'repl.build-tds-request.failure',
+}

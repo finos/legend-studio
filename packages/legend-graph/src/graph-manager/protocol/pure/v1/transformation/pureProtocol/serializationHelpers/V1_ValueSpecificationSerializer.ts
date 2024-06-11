@@ -64,6 +64,9 @@ import { V1_TDSColumnInformation } from '../../../model/valueSpecification/raw/c
 import { V1_TDSSortInformation } from '../../../model/valueSpecification/raw/classInstance/V1_TDSSortInformation.js';
 import { V1_TDSOlapRank } from '../../../model/valueSpecification/raw/classInstance/V1_TDSOlapRank.js';
 import { V1_TDSOlapAggregation } from '../../../model/valueSpecification/raw/classInstance/V1_TDSOlapAggregation.js';
+import { V1_ColSpecArray } from '../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpecArray.js';
+import { V1_ColSpec } from '../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
+import { V1_RelationStoreAccessor } from '../../../model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
 import { V1_multiplicityModelSchema } from './V1_CoreSerializationHelper.js';
 import type {
   V1_ValueSpecification,
@@ -86,9 +89,6 @@ import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Mu
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import { V1_ClassInstance } from '../../../model/valueSpecification/raw/V1_ClassInstance.js';
 import { V1_CByteArray } from '../../../model/valueSpecification/raw/V1_CByteArray.js';
-import { V1_ColSpecArray } from '../../../model/valueSpecification/raw/V1_ColSpecArray.js';
-import { V1_ColSpec } from '../../../model/valueSpecification/raw/V1_ColSpec.js';
-import { V1_RelationStoreAccessor } from '../../../model/valueSpecification/raw/V1_RelationStoreAccessor.js';
 
 enum V1_ExecutionContextType {
   BASE_EXECUTION_CONTEXT = 'BaseExecutionContext',

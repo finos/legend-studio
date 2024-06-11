@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./src/**/*.{tsx}', '../legend-*/src/**/*.{tsx}'],
-  theme: {
-    extend: {},
-  },
-  // NOTE: do not reset base styles
-  // See https://tailwindcss.com/docs/preflight
-  corePlugins: {
-    preflight: false,
-  },
-  plugins: [],
-};
+export enum LEGEND_APPLICATION_REPL_SETTING_KEY {
+  PAGINATION = 'application.pagination.enabled',
+}

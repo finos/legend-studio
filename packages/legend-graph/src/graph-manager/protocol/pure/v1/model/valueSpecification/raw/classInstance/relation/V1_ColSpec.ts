@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./src/**/*.{tsx}', '../legend-*/src/**/*.{tsx}'],
-  theme: {
-    extend: {},
-  },
-  // NOTE: do not reset base styles
-  // See https://tailwindcss.com/docs/preflight
-  corePlugins: {
-    preflight: false,
-  },
-  plugins: [],
-};
+import type { V1_Lambda } from '../../V1_Lambda.js';
+
+export class V1_ColSpec {
+  name!: string;
+  type?: string | undefined;
+  function1?: V1_Lambda | undefined;
+  function2?: V1_Lambda | undefined;
+}

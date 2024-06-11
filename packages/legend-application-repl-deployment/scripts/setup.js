@@ -49,7 +49,7 @@ const setup = (outputDir) => {
         appName: 'REPL',
         env: 'local',
         repl: {
-          url: 'http://localhost:8080',
+          url: 'http://localhost:9006',
           dynamic: argv['use-dynamic-repl-server'] ? true : undefined,
         },
         documentation: {

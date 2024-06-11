@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { LegendREPLGridClientWebApplication } from '@finos/legend-application-repl';
+import { LegendREPLWebApplication } from '@finos/legend-application-repl';
 import '../lib/tailwind.css'; // eslint-disable-line @finos/legend-studio/no-cross-workspace-non-export-usage
 import './index.scss';
 
 // Resolve baseUrl relatively for application to work in vscode code-server
 const relativeBaseUrl = new URL('./', window.location.href).pathname;
-LegendREPLGridClientWebApplication.run(relativeBaseUrl);
+LegendREPLWebApplication.run(relativeBaseUrl);

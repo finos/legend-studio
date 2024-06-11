@@ -83,7 +83,7 @@ export class PureServerClient {
   get baseUrl(): string {
     return guaranteeNonNullable(
       this.networkClient.baseUrl,
-      `Pure client has not been configured properly`,
+      `Pure server client has not been configured properly`,
     );
   }
 

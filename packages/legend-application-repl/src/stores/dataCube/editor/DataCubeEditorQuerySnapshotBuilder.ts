@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./src/**/*.{tsx}', '../legend-*/src/**/*.{tsx}'],
-  theme: {
-    extend: {},
-  },
-  // NOTE: do not reset base styles
-  // See https://tailwindcss.com/docs/preflight
-  corePlugins: {
-    preflight: false,
-  },
-  plugins: [],
-};
+import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
+
+export interface DataCubeQueryEditorSubState {
+  /**
+   * Update the editor state based on the snapshot
+   */
+  applySnaphot(snapshot: DataCubeQuerySnapshot): void;
+
+  /**
+   * Build and enrich the snapshot with data from the editor state
+   * @returns whether the snapshot should be updated or not
+   */
+  buildSnapshot(
+    newSnapshot: DataCubeQuerySnapshot,
+    baseSnapshot: DataCubeQuerySnapshot,
+  ): boolean;
+}

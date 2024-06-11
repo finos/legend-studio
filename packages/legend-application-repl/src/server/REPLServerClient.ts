@@ -19,10 +19,18 @@ import {
   type NetworkClient,
   type PlainObject,
 } from '@finos/legend-shared';
-import type { REPLGridServerResult } from '../components/grid/REPLGridServerResult.js';
-import type { V1_Lambda } from '@finos/legend-graph';
-import type { CompletionItem } from '../stores/CompletionResult.js';
-import type { TDSQuery } from '../components/grid/TDSQuery.js';
+import type {
+  CompletionItem,
+  DataCubeGetQueryCodeInput,
+  DataCubeGetQueryRelationReturnTypeInput,
+  DataCubeParseQueryInput,
+  DataCubeQueryTypeaheadInput,
+  RelationType,
+  DataCubeExecutionInput,
+  DataCubeExecutionResult,
+} from './models/DataCubeEngineModels.js';
+import type { V1_ValueSpecification } from '@finos/legend-graph';
+import type { DataCubeQuery } from './models/DataCubeQuery.js';
 
 export class REPLServerClient {
   private readonly networkClient: NetworkClient;
@@ -34,88 +42,52 @@ export class REPLServerClient {
   get baseUrl(): string {
     return guaranteeNonNullable(
       this.networkClient.baseUrl,
-      `REPL client has not been configured properly`,
+      `REPL server client has not been configured properly`,
     );
   }
 
-  getREPLGridServerResult = (
-    request: PlainObject<V1_Lambda>,
-  ): Promise<PlainObject<REPLGridServerResult>> =>
-    this.networkClient.post(
-      `${this.baseUrl}/gridResult`,
-      request,
-      undefined,
-      undefined,
-    );
+  private get dataCube(): string {
+    return `${this.baseUrl}/api/dataCube`;
+  }
 
-  getIntialQueryLambda = (): Promise<PlainObject<V1_Lambda>> =>
-    this.networkClient.get(
-      `${this.baseUrl}/initialLambda`,
-      undefined,
-      undefined,
-      undefined,
-    );
+  async getGridClientLicenseKey(): Promise<string> {
+    return this.networkClient.get(`${this.dataCube}/gridLicenseKey`);
+  }
 
-  executeLambda = (
-    lambda: string,
-    isPaginationEnabled: boolean,
-  ): Promise<PlainObject<REPLGridServerResult>> =>
-    this.networkClient.post(
-      `${this.baseUrl}/executeLambda`,
-      lambda,
-      undefined,
-      undefined,
-      {
-        isPaginationEnabled,
-      },
-    );
+  async getQueryTypeahead(
+    input: DataCubeQueryTypeaheadInput,
+  ): Promise<PlainObject<CompletionItem>[]> {
+    return this.networkClient.post(`${this.dataCube}/typeahead`, input);
+  }
 
-  getTypeaheadResults = (
-    lambda: string,
-  ): Promise<PlainObject<CompletionItem>[]> =>
-    this.networkClient.post(
-      `${this.baseUrl}/typeahead`,
-      lambda,
-      undefined,
-      undefined,
-    );
+  // TODO: @akphi - we might need to support batch, source information offset, etc.
+  async parseQuery(
+    input: DataCubeParseQueryInput,
+  ): Promise<PlainObject<V1_ValueSpecification>> {
+    return this.networkClient.post(`${this.dataCube}/parseQuery`, input);
+  }
+  async getQueryCode(
+    input: DataCubeGetQueryCodeInput,
+  ): Promise<PlainObject<string>> {
+    return this.networkClient.post(`${this.dataCube}/getQueryCode`, input);
+  }
 
-  parseQuery = (lambda: string): Promise<void> =>
-    this.networkClient.post(
-      `${this.baseUrl}/parseQuery`,
-      lambda,
-      undefined,
-      undefined,
-    );
+  async getBaseQuery(): Promise<PlainObject<DataCubeQuery>> {
+    return this.networkClient.get(`${this.dataCube}/getBaseQuery`);
+  }
 
-  getInitialREPLGridServerResult = (
-    isPaginationEnabled: boolean,
-  ): Promise<PlainObject<REPLGridServerResult>> =>
-    this.networkClient.get(`${this.baseUrl}/gridResult`, undefined, undefined, {
-      isPaginationEnabled,
-    });
-
-  getLicenseKey = (): Promise<string> =>
-    this.networkClient.get(
-      `${this.baseUrl}/licenseKey`,
-      undefined,
-      undefined,
-      undefined,
+  async getRelationReturnType(
+    input: DataCubeGetQueryRelationReturnTypeInput,
+  ): Promise<RelationType> {
+    return this.networkClient.post(
+      `${this.dataCube}/getRelationReturnType`,
+      input,
     );
+  }
 
-  getREPLQuery = (queryId: string): Promise<PlainObject<TDSQuery>> =>
-    this.networkClient.get(
-      `${this.baseUrl}/query/${queryId}`,
-      undefined,
-      undefined,
-      undefined,
-    );
-
-  saveQuery = (tdsQuery: PlainObject<TDSQuery>): Promise<string> =>
-    this.networkClient.post(
-      `${this.baseUrl}/saveQuery`,
-      tdsQuery,
-      undefined,
-      undefined,
-    );
+  async executeQuery(
+    input: PlainObject<DataCubeExecutionInput>,
+  ): Promise<DataCubeExecutionResult> {
+    return this.networkClient.post(`${this.dataCube}/executeQuery`, input);
+  }
 }

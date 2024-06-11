@@ -28,6 +28,7 @@ import {
 import type { V1_ExecutionResult } from '../protocol/pure/v1/engine/execution/V1_ExecutionResult.js';
 import { V1_ExecuteInput } from '../protocol/pure/v1/engine/execution/V1_ExecuteInput.js';
 import type { V1_PureModelContext } from '../protocol/pure/v1/model/context/V1_PureModelContext.js';
+import type { V1_ValueSpecification } from '../protocol/pure/v1/model/valueSpecification/V1_ValueSpecification.js';
 
 export const ENGINE_TEST_SUPPORT_API_URL = 'http://localhost:6300/api';
 
@@ -71,6 +72,25 @@ export async function ENGINE_TEST_SUPPORT__grammarToJSON_model(
   return (
     await axios.post<unknown, AxiosResponse<{ elements: object[] }>>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/grammarToJson/model`,
+      code,
+      {
+        headers: {
+          [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
+        },
+        params: {
+          returnSourceInformation: false,
+        },
+      },
+    )
+  ).data;
+}
+
+export async function ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(
+  code: string,
+): Promise<PlainObject<V1_ValueSpecification>> {
+  return (
+    await axios.post<unknown, AxiosResponse<{ elements: object[] }>>(
+      `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/grammarToJson/valueSpecification`,
       code,
       {
         headers: {
