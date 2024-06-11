@@ -25,6 +25,7 @@
     width: 100%;
     display: flex;
     flex-direction: column;
+    overflow-y: scroll;
     padding: 0.5rem;
 
     &__node__container {
