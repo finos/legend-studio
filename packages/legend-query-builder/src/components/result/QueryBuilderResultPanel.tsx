@@ -204,7 +204,15 @@ export const QueryBuilderResultPanel = observer(
     const runQuery = (): void => {
       resultState.setSelectedCells([]);
       resultState.pressedRunQuery.inProgress();
-      if (queryParametersState.parameterStates.length) {
+      if (
+        queryParametersState.parameterStates.length &&
+        queryParametersState.parameterStates.find(
+          (param) =>
+            !queryBuilderState.milestoningState.isMilestoningParameter(
+              param.parameter,
+            ),
+        )
+      ) {
         queryParametersState.parameterValuesEditorState.open(
           (): Promise<void> =>
             flowResult(resultState.runQuery()).catch(

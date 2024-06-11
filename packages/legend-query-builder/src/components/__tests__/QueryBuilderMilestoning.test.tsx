@@ -148,6 +148,7 @@ type QueryPropertyParameterTestCase = [
     expectedNumberOfDerivedPropertyStates: number;
     expectedNumberOfParameterValues: number;
     expectedNumberOfPropertyParameterValues: number;
+    hasNonMilestoningParams: boolean;
   },
 ];
 
@@ -164,6 +165,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -178,6 +180,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 1,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -192,6 +195,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 3,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -206,6 +210,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 3,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -220,6 +225,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -234,6 +240,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -248,6 +255,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 3,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -262,6 +270,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -276,6 +285,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 1,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -290,6 +300,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 1,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -304,6 +315,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 1,
       expectedNumberOfPropertyParameterValues: 2,
+      hasNonMilestoningParams: false,
     },
   ],
   [
@@ -318,6 +330,7 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
       expectedNumberOfPropertyParameterValues: 3,
+      hasNonMilestoningParams: false,
     },
   ],
 ];
@@ -342,6 +355,7 @@ describe(
           expectedNumberOfDerivedPropertyStates,
           expectedNumberOfParameterValues,
           expectedNumberOfPropertyParameterValues,
+          hasNonMilestoningParams,
         } = testCase;
         const { renderResult, queryBuilderState } =
           await TEST__setUpQueryBuilder(
@@ -394,7 +408,7 @@ describe(
           expectedNumberOfPropertyParameterValues,
         );
 
-        // Check if we have paramter panel opened and able to run query
+        // Check if we have parameter panel opened and able to run query
         if (expectedNumberOfParameterValues > 0) {
           expect(queryBuilderState.showParametersPanel).toBe(true);
           await waitFor(() =>
@@ -402,11 +416,16 @@ describe(
               QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
             ),
           );
-          fireEvent.click(renderResult.getByText('Run Query'));
-          const executeDialog = await waitFor(() =>
-            renderResult.getByRole('dialog'),
-          );
-          expect(getByText(executeDialog, 'Set Parameter Values'));
+          await act(async () => {
+            fireEvent.click(renderResult.getByText('Run Query'));
+          });
+          if (!hasNonMilestoningParams) {
+            expect(renderResult.queryByText('Set Parameter Values')).toBeNull();
+          } else {
+            expect(
+              renderResult.queryByText('Set Parameter Values'),
+            ).not.toBeNull();
+          }
         }
       },
     );
@@ -455,14 +474,37 @@ test(
 
     // Check if we have paramter panel opened and able to run query
     expect(queryBuilderState.showParametersPanel).toBe(true);
+
+    const parameterPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    await waitFor(() => getByText(parameterPanel, 'businessDate'));
+    await waitFor(() => getByText(parameterPanel, 'milestoning'));
+    fireEvent.click(await waitFor(() => getByText(parameterPanel, 'Now')));
+    const ParameterDialog = await waitFor(() =>
+      renderResult.getByRole('dialog'),
+    );
+    expect(getByText(ParameterDialog, 'Update Parameter'));
+    expect(
+      getByText(
+        ParameterDialog,
+        'Choose a default value for this milestoning parameter',
+      ),
+    );
+    fireEvent.click(await waitFor(() => getByText(ParameterDialog, 'Now')));
+    fireEvent.click(await waitFor(() => renderResult.getByText('Today')));
+    fireEvent.click(await waitFor(() => getByText(ParameterDialog, 'Update')));
+    await waitFor(() => getByText(parameterPanel, 'Today'));
     await waitFor(() =>
       renderResult.getByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
       ),
     );
-    fireEvent.click(renderResult.getByText('Run Query'));
-    const executeDialog = await waitFor(() => renderResult.getByRole('dialog'));
-    expect(getByText(executeDialog, 'Set Parameter Values'));
+    await act(async () => {
+      fireEvent.click(renderResult.getByText('Run Query'));
+    });
+
+    expect(renderResult.queryByText('Set Parameter Values')).toBeNull();
   },
 );
 
@@ -488,6 +530,13 @@ test(
     );
     await waitFor(() => getAllByText(queryBuilderSetup, 'Person'));
 
+    const parameterPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    await waitFor(() => getByText(parameterPanel, 'businessDate'));
+    await waitFor(() => getByText(parameterPanel, 'milestoning'));
+    await waitFor(() => getByText(parameterPanel, 'Now'));
+
     const resultModifierPromptPanel = await waitFor(() =>
       renderResult.getByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT,
@@ -496,9 +545,7 @@ test(
     await waitFor(() =>
       getAllByText(resultModifierPromptPanel, 'Business Date'),
     );
-    await waitFor(() =>
-      getAllByText(resultModifierPromptPanel, 'businessDate'),
-    );
+    await waitFor(() => getAllByText(resultModifierPromptPanel, 'Now'));
 
     const queryOptionsButton = await waitFor(() =>
       renderResult.getByRole('button', { name: 'Query Options' }),
@@ -522,18 +569,19 @@ test(
     );
     fireEvent.click(allVersionInRangeToggle);
     fireEvent.click(renderResult.getByRole('button', { name: 'Apply' }));
-    await waitFor(() =>
-      getAllByText(resultModifierPromptPanel, '(startDate - endDate)'),
-    );
+    await waitFor(() => getAllByText(resultModifierPromptPanel, '(Now - Now)'));
+    await waitFor(() => getByText(parameterPanel, 'startDate'));
+    await waitFor(() => getByText(parameterPanel, 'endDate'));
+    expect(
+      await waitFor(() => getAllByText(parameterPanel, 'Now')),
+    ).toHaveLength(2);
     fireEvent.click(queryOptionsButton);
     fireEvent.click(allVersionInRangeToggle);
     const cancelButton = (await renderResult.findByRole('button', {
       name: 'Cancel',
     })) as HTMLButtonElement;
     fireEvent.click(cancelButton);
-    await waitFor(() =>
-      getAllByText(resultModifierPromptPanel, '(startDate - endDate)'),
-    );
+    await waitFor(() => getAllByText(resultModifierPromptPanel, '(Now - Now)'));
   },
 );
 
@@ -571,9 +619,7 @@ test(
     await waitFor(() =>
       getAllByText(resultModifierPromptPanel, 'Business Date'),
     );
-    await waitFor(() =>
-      getAllByText(resultModifierPromptPanel, 'businessDate'),
-    );
+    await waitFor(() => getAllByText(resultModifierPromptPanel, 'Now'));
     fireEvent.click(getByText(parameterPanel, 'businessDate'));
     const parameterNameInput = getParameterNameInput(renderResult);
     fireEvent.change(parameterNameInput, {
@@ -583,9 +629,7 @@ test(
       name: 'Update',
     })) as HTMLButtonElement;
     fireEvent.click(updateButton);
-    await waitFor(() =>
-      getAllByText(resultModifierPromptPanel, 'businessDateRenamed'),
-    );
+    await waitFor(() => getAllByText(resultModifierPromptPanel, 'Now'));
     const queryOptionsButton = await waitFor(() =>
       renderResult.getByRole('button', { name: 'Query Options' }),
     );
@@ -594,9 +638,8 @@ test(
       name: 'Cancel',
     })) as HTMLButtonElement;
     fireEvent.click(cancelButton);
-    await waitFor(() =>
-      getAllByText(resultModifierPromptPanel, 'businessDateRenamed'),
-    );
+    await waitFor(() => getAllByText(resultModifierPromptPanel, 'Now'));
+    expect(queryBuilderState.parametersState.parameterStates.length).toBe(1);
   },
 );
 

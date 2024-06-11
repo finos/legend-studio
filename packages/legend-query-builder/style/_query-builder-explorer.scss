@@ -208,6 +208,11 @@
         height: 1.6rem;
         font-weight: 500;
       }
+
+      &__label--milestoning {
+        background: var(--color-orange-250);
+        color: var(--color-light-grey-200);
+      }
     }
 
     &__name {
