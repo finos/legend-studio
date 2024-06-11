@@ -37,12 +37,14 @@ export * from './stores/LegendQueryApplicationPlugin.js';
 export { BaseQuerySetupStore } from './stores/QuerySetupStore.js';
 export {
   type QueryPersistConfiguration,
-  createViewProjectHandler,
-  createViewSDLCProjectHandler,
   QueryEditorStore,
   ExistingQueryEditorStore,
   QueryBuilderActionConfig_QueryApplication,
 } from './stores/QueryEditorStore.js';
+export {
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
+} from './stores/data-space/DataSpaceQueryBuilderHelper.js';
 // components
 export {
   QueryEditorStoreContext,

@@ -721,7 +721,8 @@ export const QueryEditor = observer(() => {
           title="Load query"
         />
       )}
-      {editorStore.queryCreatorState.showCreateModal && <CreateQueryDialog />}
+      {editorStore.canPersistToSavedQuery &&
+        editorStore.queryCreatorState.showCreateModal && <CreateQueryDialog />}
       {editorStore.showAppInfo && (
         <LegendQueryInfo
           open={editorStore.showAppInfo}

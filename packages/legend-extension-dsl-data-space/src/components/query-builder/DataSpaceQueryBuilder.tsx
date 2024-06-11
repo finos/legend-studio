@@ -34,6 +34,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   type DataSpaceQueryBuilderState,
   resolveUsableDataSpaceClasses,
+  DataSpacesDepotRepository,
 } from '../../stores/query-builder/DataSpaceQueryBuilderState.js';
 import {
   buildRuntimeValueOption,
@@ -110,10 +111,14 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
   (props: { queryBuilderState: DataSpaceQueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
+    const repo = queryBuilderState.dataSpaceRepo;
+    const depotRepo =
+      repo instanceof DataSpacesDepotRepository ? repo : undefined;
+    const project = depotRepo?.project;
 
     // data space
     const prioritizeDataSpaceFunc = queryBuilderState.prioritizeDataSpaceFunc;
-    const sortedAllOptions = queryBuilderState.dataSpaces
+    const sortedAllOptions = (queryBuilderState.dataSpaceRepo.dataSpaces ?? [])
       .map(buildDataSpaceOption)
       .sort(compareLabelFn);
 
@@ -132,9 +137,9 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       label:
         queryBuilderState.dataSpace.title ?? queryBuilderState.dataSpace.name,
       value: {
-        groupId: queryBuilderState.projectInfo?.groupId,
-        artifactId: queryBuilderState.projectInfo?.artifactId,
-        versionId: queryBuilderState.projectInfo?.versionId,
+        groupId: project?.groupId,
+        artifactId: project?.artifactId,
+        versionId: project?.versionId,
         title: queryBuilderState.dataSpace.title,
         name: queryBuilderState.dataSpace.name,
         path: queryBuilderState.dataSpace.path,
@@ -146,8 +151,11 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       queryBuilderState.onDataSpaceChange(option.value);
     };
 
-    const openDataSpaceAdvancedSearch = (): void =>
-      queryBuilderState.showAdvancedSearchPanel();
+    const openDataSpaceAdvancedSearch = (): void => {
+      if (repo.isAdvancedDataSpaceSearchEnabled && depotRepo) {
+        depotRepo.showAdvancedSearchPanel(queryBuilderState.dataSpace);
+      }
+    };
 
     // execution context
     const executionContextOptions =
@@ -211,7 +219,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     );
 
     useEffect(() => {
-      flowResult(queryBuilderState.loadDataSpaces()).catch(
+      flowResult(queryBuilderState.dataSpaceRepo.loadDataSpaces()).catch(
         applicationStore.alertUnhandledError,
       );
     }, [queryBuilderState, applicationStore]);
@@ -265,7 +273,9 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
               inputId="query-builder__setup__data-space-selector"
               className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
               options={dataSpaceOptions}
-              isLoading={queryBuilderState.loadDataSpacesState.isInProgress}
+              isLoading={
+                queryBuilderState.dataSpaceRepo.loadDataSpacesState.isInProgress
+              }
               onChange={onDataSpaceOptionChange}
               value={selectedDataSpaceOption}
               placeholder="Search for data space..."
@@ -276,7 +286,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
               }
               formatOptionLabel={formatDataSpaceOptionLabel}
             />
-            {queryBuilderState.isAdvancedDataSpaceSearchEnabled && (
+            {depotRepo && (
               <>
                 <button
                   tabIndex={-1}
@@ -286,10 +296,10 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                 >
                   <SearchIcon />
                 </button>
-                {queryBuilderState.advancedSearchState && (
+                {depotRepo.advancedSearchState && (
                   <DataSpaceAdvancedSearchModal
-                    searchState={queryBuilderState.advancedSearchState}
-                    onClose={() => queryBuilderState.hideAdvancedSearchPanel()}
+                    searchState={depotRepo.advancedSearchState}
+                    onClose={() => depotRepo.hideAdvancedSearchPanel()}
                   />
                 )}
               </>
