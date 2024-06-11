@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observer, useLocalObservable } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
 import { useEffect, useRef } from 'react';
 import { flowResult } from 'mobx';
@@ -26,47 +26,13 @@ import {
   compareLabelFn,
   type SelectComponent,
 } from '@finos/legend-art';
-import {
-  useLegendQueryApplicationStore,
-  useLegendQueryBaseStore,
-} from '../LegendQueryFrameworkProvider.js';
-import {
-  type DataSpaceQuerySetupState,
-  DataSpaceQuerySetupStore,
-} from '../../stores/data-space/DataSpaceQuerySetupState.js';
-import { QueryEditorStoreContext } from '../QueryEditorStoreProvider.js';
-import { QueryEditor } from '../QueryEditor.js';
+import { type DataSpaceQuerySetupState } from '../../stores/data-space/DataSpaceQuerySetupState.js';
 import {
   DataSpaceAdvancedSearchModal,
   buildDataSpaceOption,
   formatDataSpaceOptionLabel,
   type DataSpaceOption,
 } from '@finos/legend-extension-dsl-data-space/application-query';
-
-const DataSpaceQuerySetupStoreProvider: React.FC<{
-  children: React.ReactNode;
-}> = ({ children }) => {
-  const applicationStore = useLegendQueryApplicationStore();
-  const baseStore = useLegendQueryBaseStore();
-  const store = useLocalObservable(
-    () =>
-      new DataSpaceQuerySetupStore(
-        applicationStore,
-        baseStore.depotServerClient,
-      ),
-  );
-  return (
-    <QueryEditorStoreContext.Provider value={store}>
-      {children}
-    </QueryEditorStoreContext.Provider>
-  );
-};
-
-export const DataSpaceQuerySetup = observer(() => (
-  <DataSpaceQuerySetupStoreProvider>
-    <QueryEditor />
-  </DataSpaceQuerySetupStoreProvider>
-));
 
 /**
  * This setup panel supports cascading in order: Data-space -> Execution context (-> Runtime) -> Class

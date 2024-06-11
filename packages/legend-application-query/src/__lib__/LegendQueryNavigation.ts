@@ -33,6 +33,7 @@ export enum LEGEND_QUERY_ROUTE_PATTERN_TOKEN {
 }
 
 export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
+  DEFAULT: '/',
   SETUP: '/setup',
   EDIT_EXISTING_QUERY_SETUP: '/setup/existing-query',
   CREATE_MAPPING_QUERY_SETUP: '/setup/manual',

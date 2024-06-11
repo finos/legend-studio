@@ -21,16 +21,16 @@ import {
   QUERY_BUILDER_FILTER_EVENT,
   QUERY_BUILDER_POST_FILTER_EVENT,
 } from './QueryBuilderEvent.js';
-import type { QueryStateInfo } from '../stores/QueryBuilderState.js';
+import type { QueryableClassMappingRuntimeInfo } from '../stores/QueryBuilderState.js';
 
 type QueryExecution_TelemetryData = GraphManagerOperationReport & {
   dependenciesCount: number;
-  state?: QueryStateInfo | undefined;
+  state?: QueryableClassMappingRuntimeInfo | undefined;
 };
 type QueryMappingModelCoverageAnalysis_TelemetryData =
   GraphManagerOperationReport & {
     dependenciesCount: number;
-    state?: QueryStateInfo | undefined;
+    state?: QueryableClassMappingRuntimeInfo | undefined;
   };
 
 export class QueryBuilderTelemetryHelper {

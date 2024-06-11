@@ -142,11 +142,13 @@ export const ServiceRegisterModal = observer(
 
     const registerService = editorStore.applicationStore.guardUnhandledError(
       async (): Promise<void> => {
+        const projectInfo = editorStore.getProjectInfo();
         if (
           registrationState.isInProgress ||
           !servicePattern ||
           !isServiceUrlPatternValid ||
           !selectedEnvOption ||
+          !projectInfo ||
           !queryBuilderState.executionContextState.mapping ||
           !(
             queryBuilderState.executionContextState.runtimeValue instanceof
@@ -172,8 +174,7 @@ export const ServiceRegisterModal = observer(
             editorStore.graphManagerState,
           );
 
-          const { groupId, artifactId, versionId } =
-            editorStore.getProjectInfo();
+          const { groupId, artifactId, versionId } = projectInfo;
 
           const serviceRegistrationResult =
             await editorStore.graphManagerState.graphManager.registerService(

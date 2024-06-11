@@ -59,7 +59,7 @@ export type DataSpaceQueryEditorQueryParams = {
   [DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH]?: string | undefined;
 };
 
-export const DATA_SPACE_QUERY_ROUTE_PATTERN = Object.freeze({
+export const LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN = Object.freeze({
   SETUP: `/dataspace`,
   CREATE: `/dataspace/:${DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV}/:${DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH}/:${DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.EXECUTION_CONTEXT}/:${DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.RUNTIME_PATH}?`,
   TEMPLATE_QUERY: `/dataspace/:${DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV}/:${DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH}/:${DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.TEMPLATE}/:${DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.TEMPLATE_QUERY_ID}`,
@@ -67,7 +67,7 @@ export const DATA_SPACE_QUERY_ROUTE_PATTERN = Object.freeze({
 
 export const generateDataSpaceQuerySetupRoute = (): string =>
   generatePath(
-    generateExtensionUrlPattern(DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP),
+    generateExtensionUrlPattern(LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP),
     {},
   );
 
@@ -82,7 +82,7 @@ export const generateDataSpaceQueryCreatorRoute = (
 ): string =>
   addQueryParametersToUrl(
     generatePath(
-      generateExtensionUrlPattern(DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE),
+      generateExtensionUrlPattern(LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE),
       {
         [DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV]:
           generateGAVCoordinates(groupId, artifactId, versionId),
@@ -109,7 +109,9 @@ export const generateDataSpaceTemplateQueryCreatorRoute = (
   templateQueryId: string,
 ): string =>
   generatePath(
-    generateExtensionUrlPattern(DATA_SPACE_QUERY_ROUTE_PATTERN.TEMPLATE_QUERY),
+    generateExtensionUrlPattern(
+      LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN.TEMPLATE_QUERY,
+    ),
     {
       [DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV]:
         generateGAVCoordinates(groupId, artifactId, versionId),

@@ -30,7 +30,6 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { DocumentationLink } from '@finos/legend-lego/application';
-import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/to-delete/DSL_DataSpace_LegendQueryNavigation_to_delete.js';
 import { DataSpaceExecutableTemplate } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import type { DataSpaceQueryBuilderState } from '../../stores/query-builder/DataSpaceQueryBuilderState.js';
 import { DSL_DATA_SPACE_LEGEND_QUERY_DOCUMENTATION_KEY } from '../../__lib__/query/DSL_DataSpace_LegendQueryDocumentation.js';
@@ -94,17 +93,10 @@ const DataSpaceTemplateQueryDialog = observer(
     const visitTemplateQuery = (
       template: DataSpaceExecutableTemplate,
     ): void => {
-      if (queryBuilderState.projectInfo?.groupId) {
-        applicationStore.navigationService.navigator.visitAddress(
-          applicationStore.navigationService.navigator.generateAddress(
-            generateDataSpaceTemplateQueryCreatorRoute(
-              queryBuilderState.projectInfo.groupId,
-              queryBuilderState.projectInfo.artifactId,
-              queryBuilderState.projectInfo.versionId,
-              queryBuilderState.dataSpace.path,
-              template.id,
-            ),
-          ),
+      if (queryBuilderState.dataSpaceRepo.canVisitTemplateQuery) {
+        queryBuilderState.dataSpaceRepo.visitTemplateQuery(
+          queryBuilderState.dataSpace,
+          template,
         );
       }
     };
@@ -165,6 +157,9 @@ const DataSpaceTemplateQueryDialog = observer(
                   <button
                     className="query-builder__data-space__template-query-panel__query__share"
                     title="Visit..."
+                    disabled={
+                      !queryBuilderState.dataSpaceRepo.canVisitTemplateQuery
+                    }
                     onClick={() => visitTemplateQuery(query)}
                   >
                     <ShareIcon />

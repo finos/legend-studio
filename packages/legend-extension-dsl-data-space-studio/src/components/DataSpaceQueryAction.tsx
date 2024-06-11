@@ -50,11 +50,11 @@ export const queryDataSpace = async (
         const queryBuilderState = new DataSpaceQueryBuilderState(
           editorStore.applicationStore,
           editorStore.graphManagerState,
-          editorStore.depotServerClient,
           QueryBuilderAdvancedWorkflowState.INSTANCE,
           QueryBuilderActionConfig.INSTANCE,
           dataSpace,
           dataSpace.defaultExecutionContext,
+          undefined,
           (dataSpaceInfo: DataSpaceInfo) => {
             queryBuilderState.dataSpace = guaranteeType(
               queryBuilderState.graphManagerState.graph.getElement(
@@ -69,8 +69,6 @@ export const queryDataSpace = async (
               queryBuilderState.dataSpace.defaultExecutionContext,
             );
           },
-          false,
-          undefined,
           undefined,
           undefined,
           undefined,

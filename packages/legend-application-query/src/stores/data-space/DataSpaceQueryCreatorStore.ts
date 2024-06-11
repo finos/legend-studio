@@ -19,8 +19,6 @@ import {
   extractElementNameFromPath,
   RuntimePointer,
   PackageableElementExplicitReference,
-  type Runtime,
-  type Class,
   type RawLambda,
 } from '@finos/legend-graph';
 import {
@@ -31,16 +29,17 @@ import {
 import {
   LogEvent,
   assertErrorThrown,
+  assertTrue,
   guaranteeNonNullable,
-  guaranteeType,
   returnUndefOnError,
   uuid,
+  type GeneratorFn,
 } from '@finos/legend-shared';
 import {
-  type QueryBuilderState,
   QueryBuilderDataBrowserWorkflow,
+  type QueryBuilderState,
 } from '@finos/legend-query-builder';
-import type { ProjectGAVCoordinates } from '@finos/legend-storage';
+import type { Entity, ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
   type DataSpaceExecutionContext,
   DSL_DataSpace_getGraphManagerExtension,
@@ -50,87 +49,251 @@ import {
 import {
   QueryBuilderActionConfig_QueryApplication,
   QueryEditorStore,
-  createViewProjectHandler,
-  createViewSDLCProjectHandler,
   type QueryPersistConfiguration,
 } from '../QueryEditorStore.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 import {
-  DataSpaceProjectInfo,
   DataSpaceQueryBuilderState,
   createQueryClassTaggedValue,
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
-import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
 import {
   createVisitedDataSpaceId,
   hasDataSpaceInfoBeenVisited,
   createSimpleVisitedDataspace,
+  type VisitedDataspace,
 } from '../../__lib__/LegendQueryUserDataSpaceHelper.js';
 import { LEGEND_QUERY_APP_EVENT } from '../../__lib__/LegendQueryEvent.js';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
+import { DataSpaceQuerySetupState } from './DataSpaceQuerySetupState.js';
+import {
+  createDataSpaceDepoRepo,
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
+} from './DataSpaceQueryBuilderHelper.js';
+
+export type QueryableDataSpace = {
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+  dataSpacePath: string;
+  executionContext: string;
+  runtimePath?: string | undefined;
+  classPath?: string | undefined;
+};
+
+type DataSpaceVisitedEntity = {
+  visited: VisitedDataspace;
+  entity: Entity;
+};
 
 export class DataSpaceQueryCreatorStore extends QueryEditorStore {
-  readonly groupId: string;
-  readonly artifactId: string;
-  readonly versionId: string;
-  readonly dataSpacePath: string;
-  readonly executionContext: string;
-  readonly runtimePath: string | undefined;
-  readonly classPath: string | undefined;
+  queryableDataSpace: QueryableDataSpace | undefined;
+  dataSpaceCache: DataSpaceInfo[] | undefined;
+  declare queryBuilderState?: DataSpaceQueryBuilderState | undefined;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
-    groupId: string,
-    artifactId: string,
-    versionId: string,
-    dataSpacePath: string,
-    executionContext: string,
-    runtimePath: string | undefined,
-    executionKey: string | undefined,
+    queryableDataSpace: QueryableDataSpace | undefined,
   ) {
     super(applicationStore, depotServerClient);
-
-    this.groupId = groupId;
-    this.artifactId = artifactId;
-    this.versionId = versionId;
-    this.dataSpacePath = dataSpacePath;
-    this.executionContext = executionContext;
-    this.runtimePath = runtimePath;
-    this.classPath = executionKey;
+    makeObservable(this, {
+      changeDataSpace: flow,
+      dataSpaceCache: observable,
+      queryableDataSpace: observable,
+      setDataSpaceCache: action,
+      setQueryableDataSpace: action,
+      canPersistToSavedQuery: computed,
+    });
+    this.queryableDataSpace = queryableDataSpace;
   }
 
-  getProjectInfo(): ProjectGAVCoordinates {
-    return {
-      groupId: this.groupId,
-      artifactId: this.artifactId,
-      versionId: this.versionId,
-    };
+  override get canPersistToSavedQuery(): boolean {
+    return Boolean(this.queryableDataSpace);
+  }
+
+  override get isViewProjectActionDisabled(): boolean {
+    return !this.queryableDataSpace;
+  }
+
+  getProjectInfo(): ProjectGAVCoordinates | undefined {
+    return this.queryableDataSpace;
+  }
+
+  setDataSpaceCache(val: DataSpaceInfo[]): void {
+    this.dataSpaceCache = val;
+  }
+
+  setQueryableDataSpace(val: QueryableDataSpace | undefined): void {
+    this.queryableDataSpace = val;
+  }
+
+  reConfigureWithDataSpaceInfo(info: DataSpaceInfo): boolean {
+    if (
+      info.groupId &&
+      info.artifactId &&
+      info.versionId &&
+      info.defaultExecutionContext
+    ) {
+      this.queryableDataSpace = {
+        groupId: info.groupId,
+        artifactId: info.artifactId,
+        versionId: LATEST_VERSION_ALIAS,
+        dataSpacePath: info.path,
+        executionContext: info.defaultExecutionContext,
+      };
+      return true;
+    }
+    return false;
+  }
+
+  override *initialize(): GeneratorFn<void> {
+    if (!this.queryableDataSpace) {
+      const hydrated = (yield flowResult(this.redirectIfPossible())) as
+        | DataSpaceVisitedEntity
+        | undefined;
+      if (hydrated) {
+        this.setQueryableDataSpace({
+          groupId: hydrated.visited.groupId,
+          artifactId: hydrated.visited.artifactId,
+          versionId: hydrated.visited.versionId ?? LATEST_VERSION_ALIAS,
+          dataSpacePath: hydrated.visited.path,
+          executionContext: hydrated.entity.content
+            .defaultExecutionContext as string,
+        });
+      }
+    }
+    super.initialize();
   }
 
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
+    if (this.queryableDataSpace) {
+      return this.initializeQueryBuilderStateWithQueryableDataSpace(
+        this.queryableDataSpace,
+      );
+    } else {
+      const queryBuilderState = new DataSpaceQuerySetupState(
+        this,
+        this.applicationStore,
+        this.graphManagerState,
+        this.depotServerClient,
+        (dataSpaceInfo: DataSpaceInfo) => {
+          if (dataSpaceInfo.defaultExecutionContext) {
+            this.changeDataSpace(dataSpaceInfo);
+          } else {
+            this.applicationStore.notificationService.notifyWarning(
+              `Can't switch data space: default execution context not specified`,
+            );
+          }
+        },
+        createViewProjectHandler(this.applicationStore),
+        createViewSDLCProjectHandler(
+          this.applicationStore,
+          this.depotServerClient,
+        ),
+        this.applicationStore.config.options.queryBuilderConfig,
+      );
+      if (this.dataSpaceCache?.length) {
+        queryBuilderState.configureDataSpaceOptions(this.dataSpaceCache);
+      }
+      return queryBuilderState;
+    }
+  }
+
+  async redirectIfPossible(): Promise<DataSpaceVisitedEntity | undefined> {
+    const visitedQueries =
+      LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
+        this.applicationStore.userDataService,
+      );
+    let redirect: DataSpaceVisitedEntity | undefined = undefined;
+    for (let i = 0; i < visitedQueries.length; i++) {
+      const visited = visitedQueries[i];
+      if (visited) {
+        const hydrated = await this.hyrdateVisitedDataSpace(visited);
+        if (hydrated) {
+          redirect = hydrated;
+          break;
+        }
+      }
+    }
+    return redirect;
+  }
+
+  async hyrdateVisitedDataSpace(
+    visited: VisitedDataspace,
+  ): Promise<DataSpaceVisitedEntity | undefined> {
+    try {
+      const entity = (await this.depotServerClient.getVersionEntity(
+        visited.groupId,
+        visited.artifactId,
+        visited.versionId ?? LATEST_VERSION_ALIAS,
+        visited.path,
+      )) as unknown as Entity;
+      const content = entity.content as {
+        executionContexts: { name: string }[];
+      };
+      if (visited.execContext) {
+        const found = content.executionContexts.find(
+          (e) => e.name === visited.execContext,
+        );
+        if (!found) {
+          visited.execContext = undefined;
+          return {
+            visited,
+            entity,
+          };
+        }
+      }
+      return {
+        visited,
+        entity,
+      };
+    } catch (error) {
+      assertErrorThrown(error);
+      LegendQueryUserDataHelper.removeRecentlyViewedDataSpace(
+        this.applicationStore.userDataService,
+        visited.id,
+      );
+    }
+    return undefined;
+  }
+
+  async initializeQueryBuilderStateWithQueryableDataSpace(
+    queryableDataSpace: QueryableDataSpace,
+  ): Promise<QueryBuilderState> {
     const dataSpace = getDataSpace(
-      this.dataSpacePath,
+      queryableDataSpace.dataSpacePath,
       this.graphManagerState.graph,
     );
     const executionContext = guaranteeNonNullable(
       dataSpace.executionContexts.find(
-        (context) => context.name === this.executionContext,
+        (context) => context.name === queryableDataSpace.executionContext,
       ),
-      `Can't find execution context '${this.executionContext}'`,
+      `Can't find execution context '${queryableDataSpace.executionContext}'`,
     );
     let dataSpaceAnalysisResult;
     try {
       const project = StoreProjectData.serialization.fromJson(
-        await this.depotServerClient.getProject(this.groupId, this.artifactId),
+        await this.depotServerClient.getProject(
+          queryableDataSpace.groupId,
+          queryableDataSpace.artifactId,
+        ),
       );
       dataSpaceAnalysisResult = await DSL_DataSpace_getGraphManagerExtension(
         this.graphManagerState.graphManager,
       ).retrieveDataSpaceAnalysisFromCache(() =>
         retrieveAnalyticsResultCache(
           project,
-          this.versionId,
+          queryableDataSpace.versionId,
           dataSpace.path,
           this.depotServerClient,
         ),
@@ -138,20 +301,10 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     } catch {
       // do nothing
     }
-    const projectInfo = new DataSpaceProjectInfo(
-      this.groupId,
-      this.artifactId,
-      this.versionId,
-      createViewProjectHandler(this.applicationStore),
-      createViewSDLCProjectHandler(
-        this.applicationStore,
-        this.depotServerClient,
-      ),
-    );
     const sourceInfo = {
-      groupId: projectInfo.groupId,
-      artifactId: projectInfo.artifactId,
-      versionId: projectInfo.versionId,
+      groupId: queryableDataSpace.groupId,
+      artifactId: queryableDataSpace.artifactId,
+      versionId: queryableDataSpace.versionId,
       dataSpace: dataSpace.path,
     };
     const visitedDataSpaces =
@@ -161,142 +314,112 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     const queryBuilderState = new DataSpaceQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
-      this.depotServerClient,
       QueryBuilderDataBrowserWorkflow.INSTANCE,
       new QueryBuilderActionConfig_QueryApplication(this),
       dataSpace,
       executionContext,
+      createDataSpaceDepoRepo(
+        this,
+        queryableDataSpace.groupId,
+        queryableDataSpace.artifactId,
+        queryableDataSpace.versionId,
+        (dataSpaceInfo: DataSpaceInfo) =>
+          hasDataSpaceInfoBeenVisited(dataSpaceInfo, visitedDataSpaces),
+      ),
       (dataSpaceInfo: DataSpaceInfo) => {
-        if (dataSpaceInfo.defaultExecutionContext) {
-          this.applicationStore.navigationService.navigator.goToLocation(
-            generateDataSpaceQueryCreatorRoute(
-              guaranteeNonNullable(dataSpaceInfo.groupId),
-              guaranteeNonNullable(dataSpaceInfo.artifactId),
-              LATEST_VERSION_ALIAS, //always default to latest
-              dataSpaceInfo.path,
-              dataSpaceInfo.defaultExecutionContext,
-              undefined,
-              undefined,
-            ),
-          );
-        } else {
-          this.applicationStore.notificationService.notifyWarning(
-            `Can't switch data space: default execution context not specified`,
-          );
-        }
+        flowResult(this.changeDataSpace(dataSpaceInfo)).catch(
+          this.applicationStore.alertUnhandledError,
+        );
       },
-      true,
       dataSpaceAnalysisResult,
       (ec: DataSpaceExecutionContext) => {
-        // runtime should already be set
-        const runtimePointer = guaranteeType(
-          queryBuilderState.executionContextState.runtimeValue,
-          RuntimePointer,
-        );
-        this.applicationStore.navigationService.navigator.updateCurrentLocation(
-          generateDataSpaceQueryCreatorRoute(
-            this.groupId,
-            this.artifactId,
-            this.versionId,
-            dataSpace.path,
-            ec.name,
-            runtimePointer.packageableRuntime.value ===
-              queryBuilderState.executionContext.defaultRuntime.value
-              ? undefined
-              : runtimePointer.packageableRuntime.value.path,
-            queryBuilderState.class?.path,
-          ),
-        );
         returnUndefOnError(() =>
           LegendQueryUserDataHelper.updateVisitedDataSpaceExecContext(
             this.applicationStore.userDataService,
-            this.groupId,
-            this.artifactId,
+            queryableDataSpace.groupId,
+            queryableDataSpace.artifactId,
             dataSpace.path,
             ec.name,
           ),
         );
       },
-      (runtimeValue: Runtime) => {
-        const runtimePointer = guaranteeType(runtimeValue, RuntimePointer);
-        queryBuilderState.applicationStore.navigationService.navigator.updateCurrentLocation(
-          generateDataSpaceQueryCreatorRoute(
-            guaranteeNonNullable(queryBuilderState.projectInfo).groupId,
-            guaranteeNonNullable(queryBuilderState.projectInfo).artifactId,
-            guaranteeNonNullable(queryBuilderState.projectInfo).versionId,
-            queryBuilderState.dataSpace.path,
-            queryBuilderState.executionContext.name,
-            runtimePointer.packageableRuntime.value ===
-              queryBuilderState.executionContext.defaultRuntime.value
-              ? undefined
-              : runtimePointer.packageableRuntime.value.path,
-            queryBuilderState.class?.path,
-          ),
-        );
-      },
-      (_class: Class) => {
-        // runtime should already be set
-        const runtimePointer = guaranteeType(
-          queryBuilderState.executionContextState.runtimeValue,
-          RuntimePointer,
-        );
-        queryBuilderState.applicationStore.navigationService.navigator.updateCurrentLocation(
-          generateDataSpaceQueryCreatorRoute(
-            guaranteeNonNullable(queryBuilderState.projectInfo).groupId,
-            guaranteeNonNullable(queryBuilderState.projectInfo).artifactId,
-            guaranteeNonNullable(queryBuilderState.projectInfo).versionId,
-            queryBuilderState.dataSpace.path,
-            queryBuilderState.executionContext.name,
-            runtimePointer.packageableRuntime.value ===
-              queryBuilderState.executionContext.defaultRuntime.value
-              ? undefined
-              : runtimePointer.packageableRuntime.value.path,
-            _class.path,
-          ),
-        );
-      },
-      projectInfo,
+      undefined,
+      undefined,
       this.applicationStore.config.options.queryBuilderConfig,
       sourceInfo,
-      (dataSpaceInfo: DataSpaceInfo) =>
-        hasDataSpaceInfoBeenVisited(dataSpaceInfo, visitedDataSpaces),
     );
+    if (this.dataSpaceCache?.length) {
+      queryBuilderState.dataSpaceRepo.configureDataSpaceOptions(
+        this.dataSpaceCache,
+      );
+    }
     queryBuilderState.setExecutionContext(executionContext);
     queryBuilderState.propagateExecutionContextChange(executionContext);
 
     // set runtime if already chosen
-    if (this.runtimePath) {
+    if (queryableDataSpace.runtimePath) {
       queryBuilderState.changeRuntime(
         new RuntimePointer(
           PackageableElementExplicitReference.create(
-            this.graphManagerState.graph.getRuntime(this.runtimePath),
+            this.graphManagerState.graph.getRuntime(
+              queryableDataSpace.runtimePath,
+            ),
           ),
         ),
       );
     }
 
     // set class if already chosen
-    if (this.classPath) {
+    if (queryableDataSpace.classPath) {
       queryBuilderState.changeClass(
-        this.graphManagerState.graph.getClass(this.classPath),
+        this.graphManagerState.graph.getClass(queryableDataSpace.classPath),
       );
     }
 
     // add to visited dataspaces
-    this.addVisitedDataSpace(executionContext.name);
+    this.addVisitedDataSpace(queryableDataSpace);
     return queryBuilderState;
   }
 
-  addVisitedDataSpace(execName: string | undefined): void {
+  *changeDataSpace(val: DataSpaceInfo): GeneratorFn<void> {
+    try {
+      assertTrue(
+        this.reConfigureWithDataSpaceInfo(val),
+        'Dataspace selected does not contain valid inputs, groupId, artifactId, and version',
+      );
+      this.initState.inProgress();
+      if (
+        this.queryBuilderState instanceof DataSpaceQueryBuilderState &&
+        this.queryBuilderState.dataSpaceRepo.dataSpaces?.length
+      ) {
+        this.setDataSpaceCache(this.queryBuilderState.dataSpaceRepo.dataSpaces);
+      }
+      this.graphManagerState.resetGraph();
+      yield flowResult(this.buildGraph());
+      this.queryBuilderState =
+        (yield this.initializeQueryBuilderState()) as DataSpaceQueryBuilderState;
+      this.queryLoaderState.initialize(this.queryBuilderState);
+      this.initState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notify(
+        `Unable to change dataspace: ${error.message}`,
+      );
+      this.onInitializeFailure();
+      this.initState.fail();
+    }
+  }
+
+  addVisitedDataSpace(queryableDataSpace: QueryableDataSpace): void {
     try {
       LegendQueryUserDataHelper.addVisitedDatspace(
         this.applicationStore.userDataService,
         createSimpleVisitedDataspace(
-          this.groupId,
-          this.artifactId,
-          this.versionId,
-          this.dataSpacePath,
-          execName,
+          queryableDataSpace.groupId,
+          queryableDataSpace.artifactId,
+          queryableDataSpace.versionId,
+          queryableDataSpace.dataSpacePath,
+          queryableDataSpace.executionContext,
         ),
       );
     } catch (error) {
@@ -311,35 +434,41 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
   getPersistConfiguration(
     lambda: RawLambda,
     options?: { update?: boolean | undefined },
-  ): QueryPersistConfiguration {
-    return {
-      defaultName: options?.update
-        ? `${extractElementNameFromPath(this.dataSpacePath)}`
-        : `New Query for ${extractElementNameFromPath(this.dataSpacePath)}[${
-            this.executionContext
-          }]`,
-      decorator: (query: Query): void => {
-        query.id = uuid();
-        query.groupId = this.groupId;
-        query.artifactId = this.artifactId;
-        query.versionId = this.versionId;
-        if (this.queryBuilderState?.class) {
-          query.taggedValues = [
-            createQueryClassTaggedValue(this.queryBuilderState.class.path),
-          ];
-        }
-      },
-    };
+  ): QueryPersistConfiguration | undefined {
+    const queryableDataSpace = this.queryableDataSpace;
+    if (queryableDataSpace) {
+      return {
+        defaultName: options?.update
+          ? `${extractElementNameFromPath(queryableDataSpace.dataSpacePath)}`
+          : `New Query for ${extractElementNameFromPath(queryableDataSpace.dataSpacePath)}[${
+              queryableDataSpace.executionContext
+            }]`,
+        decorator: (query: Query): void => {
+          query.id = uuid();
+          query.groupId = queryableDataSpace.groupId;
+          query.artifactId = queryableDataSpace.artifactId;
+          query.versionId = queryableDataSpace.versionId;
+          if (this.queryBuilderState?.class) {
+            query.taggedValues = [
+              createQueryClassTaggedValue(this.queryBuilderState.class.path),
+            ];
+          }
+        },
+      };
+    }
+    return undefined;
   }
 
   override onInitializeFailure(): void {
-    LegendQueryUserDataHelper.removeRecentlyViewedDataSpace(
-      this.applicationStore.userDataService,
-      createVisitedDataSpaceId(
-        this.groupId,
-        this.artifactId,
-        this.dataSpacePath,
-      ),
-    );
+    if (this.queryableDataSpace) {
+      LegendQueryUserDataHelper.removeRecentlyViewedDataSpace(
+        this.applicationStore.userDataService,
+        createVisitedDataSpaceId(
+          this.queryableDataSpace.groupId,
+          this.queryableDataSpace.artifactId,
+          this.queryableDataSpace.dataSpacePath,
+        ),
+      );
+    }
   }
 }
