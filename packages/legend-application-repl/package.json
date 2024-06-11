@@ -84,6 +84,6 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "applicationREPLGridClientPlugin": "@finos/legend-application-repl-plugin-core"
+    "applicationREPLPlugin": "@finos/legend-application-repl-plugin-core"
   }
 }

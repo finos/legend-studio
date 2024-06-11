@@ -14,320 +14,56 @@
  * limitations under the License.
  */
 
-import { flow, flowResult, makeObservable, observable } from 'mobx';
-import type { REPLGridClientStore } from '../REPLGridClientStore.js';
-import { DataCubeGridState } from './DataCubeGridState.js';
-import { DataCubeQueryTextEditorState } from './DataCubeQueryTextEditorState.js';
-import { DataCubeConfigState } from './DataCubeConfigState.js';
-import { DataCubePropertiesPanelState } from './DataCubePropertiesPanelState.js';
-import {
-  ActionState,
-  HttpStatus,
-  LogEvent,
-  NetworkClientError,
-  assertErrorThrown,
-  guaranteeNonNullable,
-  guaranteeType,
-  type GeneratorFn,
-  type PlainObject,
-} from '@finos/legend-shared';
-import { generatePath } from '@finos/legend-application/browser';
-import {
-  V1_serializeValueSpecification,
-  type V1_TDSExecutionResult,
-  V1_buildExecutionResult,
-  V1_serializeExecutionResult,
-  TDSExecutionResult,
-  V1_ParserError,
-  ParserError,
-  SourceInformation,
-  V1_Lambda,
-  V1_deserializeValueSpecification,
-} from '@finos/legend-graph';
-import {
-  languages as monacoLanguagesAPI,
-  type IPosition,
-  type editor as monacoEditorAPI,
-} from 'monaco-editor';
-import { LEGEND_REPL_EVENT } from '../../Const.js';
-import {
-  LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN,
-  LEGEND_REPL_GRID_CLIENT_PATTERN_TOKEN,
-} from '../../components/LegendREPLGridClientApplication.js';
-import { REPLGridServerResult } from '../../components/grid/REPLGridServerResult.js';
-import { buildLambdaExpressions } from '../../components/grid/TDSLambdaBuilder.js';
-import { TDSQuery } from '../../components/grid/TDSQuery.js';
-import { TDSRequest, TDSGroupby } from '../../components/grid/TDSRequest.js';
-import { CompletionItem } from '../CompletionResult.js';
+import { flowResult } from 'mobx';
+import type { REPLStore } from './DataCubeStore.js';
+import { DataCubeGridState } from './grid/DataCubeGridState.js';
+import { DataCubeEditorState } from './editor/DataCubeEditorState.js';
+import type { DataCubeQuery } from '../../server/models/DataCubeQuery.js';
+import { ActionState, assertErrorThrown } from '@finos/legend-shared';
+import { DataCubeEngine } from './core/DataCubeEngine.js';
+import { DataCubeQuerySnapshotManager } from './core/DataCubeQuerySnapshotManager.js';
+import { buildSnapshotFromQuery } from './core/DataCubeQueryAnalyzer.js';
+import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
 
 export class DataCubeState {
-  readonly editorStore!: REPLGridClientStore;
+  readonly editorStore: REPLStore;
+  readonly applicationStore: LegendREPLApplicationStore;
+  readonly engine: DataCubeEngine;
+  readonly snapshotManager: DataCubeQuerySnapshotManager;
+  readonly grid: DataCubeGridState;
+  readonly editor: DataCubeEditorState;
+  readonly initState = ActionState.create();
 
-  gridState!: DataCubeGridState;
-  queryTextEditorState!: DataCubeQueryTextEditorState;
-  configState!: DataCubeConfigState;
-  propertiesPanelState!: DataCubePropertiesPanelState;
+  baseQuery!: DataCubeQuery;
 
-  executeAction = ActionState.create();
-
-  constructor(editorStore: REPLGridClientStore) {
-    makeObservable(this, {
-      gridState: observable,
-      queryTextEditorState: observable,
-      configState: observable,
-      propertiesPanelState: observable,
-      executeAction: observable,
-      getREPLGridServerResult: flow,
-      getInitialQueryLambda: flow,
-      getInitialREPLGridServerResult: flow,
-      getLicenseKey: flow,
-      executeLambda: flow,
-      parseQuery: flow,
-      saveQuery: flow,
-    });
-
+  constructor(editorStore: REPLStore) {
     this.editorStore = editorStore;
+    this.applicationStore = editorStore.applicationStore;
+    this.engine = new DataCubeEngine(this.editorStore.client);
 
-    this.gridState = new DataCubeGridState(this);
-    this.queryTextEditorState = new DataCubeQueryTextEditorState(this);
-    this.configState = new DataCubeConfigState(this);
-    this.propertiesPanelState = new DataCubePropertiesPanelState(this);
+    // NOTE: snapshot manager must be instantiated before subscribers
+    this.snapshotManager = new DataCubeQuerySnapshotManager(this);
+    this.grid = new DataCubeGridState(this);
+    this.editor = new DataCubeEditorState(this);
   }
 
-  *getREPLGridServerResult(tdsRequest: TDSRequest): GeneratorFn<void> {
+  async initialize(): Promise<void> {
+    this.initState.inProgress();
     try {
-      const isSubQuery = tdsRequest.groupBy.groupKeys.length !== 0;
-      const lambda = buildLambdaExpressions(
-        guaranteeNonNullable(this.gridState.initialQueryLambda?.body[0]),
-        tdsRequest,
-        this.configState.isPaginationEnabled,
+      await flowResult(this.grid.initialize());
+      this.snapshotManager.registerSubscriber(this.grid);
+      this.snapshotManager.registerSubscriber(this.editor);
+
+      this.baseQuery = await this.engine.getBaseQuery();
+      const initialSnapshot = await buildSnapshotFromQuery(
+        this.baseQuery,
+        this.engine,
       );
-      const resultObj = (yield flowResult(
-        this.editorStore.client.getREPLGridServerResult(
-          V1_serializeValueSpecification(lambda, []),
-        ),
-      )) as PlainObject<REPLGridServerResult>;
-      const replGridResult =
-        REPLGridServerResult.serialization.fromJson(resultObj);
-      const tdsResult = JSON.parse(
-        replGridResult.result,
-      ) as PlainObject<V1_TDSExecutionResult>;
-      this.gridState.setCurrentResult(
-        guaranteeType(
-          V1_buildExecutionResult(V1_serializeExecutionResult(tdsResult)),
-          TDSExecutionResult,
-        ),
-      );
-      if (isSubQuery) {
-        this.queryTextEditorState.setCurrentSubQuery(
-          replGridResult.currentQuery,
-        );
-      } else {
-        this.queryTextEditorState.queryEditorState.setQuery(
-          replGridResult.currentQuery.substring(1),
-        );
-        this.queryTextEditorState.setCurrentSubQuery(undefined);
-      }
-    } catch (error) {
+      this.snapshotManager.broadcastSnapshot(initialSnapshot);
+      this.initState.complete();
+    } catch (error: unknown) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(LEGEND_REPL_EVENT.FETCH_TDS_FAILURE),
-        error,
-      );
+      this.initState.fail();
     }
-  }
-
-  async getTypeaheadResults(
-    position: IPosition,
-    model: monacoEditorAPI.ITextModel,
-  ): Promise<monacoLanguagesAPI.CompletionItem[]> {
-    try {
-      const textUntilPosition = model.getValueInRange({
-        startLineNumber: 1,
-        startColumn: 1,
-        endLineNumber: position.lineNumber,
-        endColumn: position.column,
-      });
-      const resultObj =
-        await this.editorStore.client.getTypeaheadResults(textUntilPosition);
-      const result = resultObj.map((res) =>
-        CompletionItem.serialization.fromJson(res),
-      );
-      const currentWord = model.getWordUntilPosition(position);
-      return result.map((res) => ({
-        label: res.display,
-        kind: monacoLanguagesAPI.CompletionItemKind.Text,
-        range: {
-          startLineNumber: position.lineNumber,
-          startColumn: currentWord.startColumn + 1,
-          endLineNumber: position.lineNumber,
-          endColumn: currentWord.endColumn + 1,
-        },
-        insertText: res.completion,
-      })) as monacoLanguagesAPI.CompletionItem[];
-    } catch (e) {
-      return [];
-    }
-  }
-
-  *executeLambda(): GeneratorFn<void> {
-    try {
-      this.executeAction.inProgress();
-      const resultObj = (yield this.editorStore.client.executeLambda(
-        this.queryTextEditorState.queryEditorState.query,
-        this.configState.isPaginationEnabled,
-      )) as PlainObject<REPLGridServerResult>;
-      const replGridResult =
-        REPLGridServerResult.serialization.fromJson(resultObj);
-      const tdsResultObj = JSON.parse(
-        replGridResult.result,
-      ) as PlainObject<V1_TDSExecutionResult>;
-      const tdsResult = guaranteeType(
-        V1_buildExecutionResult(V1_serializeExecutionResult(tdsResultObj)),
-        TDSExecutionResult,
-      );
-      this.gridState.setInitialResult(tdsResult);
-      this.queryTextEditorState.queryEditorState.setQuery(
-        replGridResult.currentQuery.substring(1),
-      );
-      this.queryTextEditorState.setCurrentSubQuery(undefined);
-      this.gridState.setColumns(tdsResult.result.columns);
-
-      yield flowResult(this.getInitialQueryLambda());
-      this.executeAction.complete();
-    } catch (error) {
-      this.executeAction.fail();
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(LEGEND_REPL_EVENT.FETCH_TDS_FAILURE),
-        error,
-      );
-    }
-  }
-
-  *parseQuery(): GeneratorFn<void> {
-    try {
-      this.queryTextEditorState.queryEditorState.setParserError(undefined);
-      yield flowResult(
-        this.editorStore.client.parseQuery(
-          `|${this.queryTextEditorState.queryEditorState.query}`,
-        ),
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      if (
-        error instanceof NetworkClientError &&
-        error.response.status === HttpStatus.BAD_REQUEST
-      ) {
-        const protocol = V1_ParserError.serialization.fromJson(
-          error.payload as PlainObject<V1_ParserError>,
-        );
-        const parserError = new ParserError(protocol.message);
-        if (protocol.sourceInformation) {
-          parserError.sourceInformation = new SourceInformation(
-            protocol.sourceInformation.sourceId,
-            protocol.sourceInformation.startLine,
-            protocol.sourceInformation.startColumn,
-            protocol.sourceInformation.endLine,
-            protocol.sourceInformation.endColumn,
-          );
-        }
-        this.queryTextEditorState.queryEditorState.setParserError(parserError);
-      }
-    }
-  }
-
-  *saveQuery(): GeneratorFn<void> {
-    try {
-      const query = TDSQuery.serialization.toJson(
-        new TDSQuery(
-          guaranteeNonNullable(this.gridState.initialQueryLambda),
-          this.gridState.lastQueryTDSRequest ??
-            new TDSRequest([], [], [], new TDSGroupby([], [], []), 0, 100),
-        ),
-      );
-      const queryId = (yield flowResult(
-        this.editorStore.client.saveQuery(query),
-      )) as string;
-      this.editorStore.applicationStore.navigationService.navigator.goToLocation(
-        generatePath(LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN.SAVED_QUERY, {
-          [LEGEND_REPL_GRID_CLIENT_PATTERN_TOKEN.QUERY_ID]: queryId,
-        }),
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(LEGEND_REPL_EVENT.FETCH_TDS_FAILURE),
-        error,
-      );
-    }
-  }
-
-  *getInitialQueryLambda(queryId?: string): GeneratorFn<void> {
-    if (!queryId) {
-      const lambdaObj =
-        (yield this.editorStore.client.getIntialQueryLambda()) as PlainObject<V1_Lambda>;
-      const lambda = V1_deserializeValueSpecification(lambdaObj, []);
-      if (lambda instanceof V1_Lambda) {
-        this.gridState.setInitialQueryLambda(lambda);
-      }
-      // this.replGridState.setCurrentQueryTDSRequest(undefined);
-    } else {
-      const queryObj = (yield this.editorStore.client.getREPLQuery(
-        queryId,
-      )) as PlainObject<TDSQuery>;
-      const query = TDSQuery.serialization.fromJson(queryObj);
-      this.gridState.setCurrentQueryTDSRequest(query.currentQueryInfo);
-      this.gridState.setInitialQueryLambda(query.initialQuery);
-    }
-  }
-
-  *getInitialREPLGridServerResult(queryId?: string): GeneratorFn<void> {
-    try {
-      this.executeAction.inProgress();
-      if (!this.configState.licenseKey) {
-        yield flowResult(this.getLicenseKey());
-      }
-
-      yield flowResult(this.getInitialQueryLambda(queryId));
-
-      const resultObj =
-        (yield this.editorStore.client.getInitialREPLGridServerResult(
-          this.configState.isPaginationEnabled,
-        )) as PlainObject<REPLGridServerResult>;
-      const replGridResult =
-        REPLGridServerResult.serialization.fromJson(resultObj);
-      const tdsResultObj = JSON.parse(
-        replGridResult.result,
-      ) as PlainObject<V1_TDSExecutionResult>;
-      const tdsResult = guaranteeType(
-        V1_buildExecutionResult(V1_serializeExecutionResult(tdsResultObj)),
-        TDSExecutionResult,
-      );
-      this.gridState.setInitialResult(tdsResult);
-      this.queryTextEditorState.queryEditorState.setQuery(
-        replGridResult.currentQuery.substring(1),
-      );
-      this.queryTextEditorState.setCurrentSubQuery(undefined);
-      this.gridState.setColumns(tdsResult.result.columns);
-      this.executeAction.complete();
-    } catch (error) {
-      this.executeAction.fail();
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(LEGEND_REPL_EVENT.FETCH_TDS_FAILURE),
-        error,
-      );
-    }
-  }
-
-  *getLicenseKey(): GeneratorFn<void> {
-    const licenseKey =
-      (yield this.editorStore.client.getLicenseKey()) as string;
-    this.configState.setLicenseKey(licenseKey);
   }
 }

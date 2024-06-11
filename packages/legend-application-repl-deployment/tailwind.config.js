@@ -16,7 +16,7 @@
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./src/**/*.{ts,tsx}', '../legend-*/src/**/*.{ts,tsx}'],
+  content: ['./src/**/*.{tsx}', '../legend-*/src/**/*.{tsx}'],
   theme: {
     extend: {},
   },

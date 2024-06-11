@@ -140,10 +140,6 @@ const IMPORT_RULES = {
 const TYPESCRIPT_RULES = {
   '@typescript-eslint/ban-types': WARN,
   '@typescript-eslint/consistent-type-imports': WARN,
-  '@typescript-eslint/explicit-function-return-type': [
-    WARN,
-    { allowExpressions: true, allowTypedFunctionExpressions: true },
-  ],
   '@typescript-eslint/no-inferrable-types': [WARN, { ignoreParameters: true }],
   '@typescript-eslint/no-redeclare': [ERROR, { ignoreDeclarationMerge: true }],
   '@typescript-eslint/no-var-requires': OFF,

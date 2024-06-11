@@ -87,8 +87,8 @@ import { V1_ClassInstanceType } from '../../pureProtocol/serializationHelpers/V1
 import type { KeyExpressionInstanceValue } from '../../../../../../../graph/metamodel/pure/valueSpecification/KeyExpressionInstanceValue.js';
 import { V1_CByteArray } from '../../../model/valueSpecification/raw/V1_CByteArray.js';
 import type { ColSpecArrayInstance } from '../../../../../../../graph/metamodel/pure/valueSpecification/RelationValueSpecification.js';
-import { V1_ColSpecArray } from '../../../model/valueSpecification/raw/V1_ColSpecArray.js';
-import { V1_ColSpec } from '../../../model/valueSpecification/raw/V1_ColSpec.js';
+import { V1_ColSpecArray } from '../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpecArray.js';
+import { V1_ColSpec } from '../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
 
 class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>

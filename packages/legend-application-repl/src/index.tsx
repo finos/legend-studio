@@ -14,24 +14,28 @@
  * limitations under the License.
  */
 
-import { type AbstractPlugin, type AbstractPreset } from '@finos/legend-shared';
-import { LegendREPLGridClient } from './application/LegendREPLGridClient.js';
-import { Core_LegendREPLGridClientApplicationPlugin } from './components/Core_LegendREPLGridClientApplicationPlugin.js';
+import {
+  WebConsole,
+  type AbstractPlugin,
+  type AbstractPreset,
+} from '@finos/legend-shared';
+import { LegendREPL } from './application/LegendREPL.js';
+import { Core_LegendREPLApplicationPlugin } from './components/Core_LegendREPLApplicationPlugin.js';
 
-export class LegendREPLGridClientWebApplication {
+export class LegendREPLWebApplication {
   static getPresetCollection(): AbstractPreset[] {
     return [];
   }
 
   static getPluginCollection(): AbstractPlugin[] {
-    return [new Core_LegendREPLGridClientApplicationPlugin()];
+    return [new Core_LegendREPLApplicationPlugin(), new WebConsole()];
   }
 
   static run(baseUrl: string): void {
-    LegendREPLGridClient.create()
+    LegendREPL.create()
       .setup({ baseAddress: baseUrl })
-      .withPresets(LegendREPLGridClientWebApplication.getPresetCollection())
-      .withPlugins(LegendREPLGridClientWebApplication.getPluginCollection())
+      .withPresets(LegendREPLWebApplication.getPresetCollection())
+      .withPlugins(LegendREPLWebApplication.getPluginCollection())
       .start()
       .catch((e: unknown) => {
         throw e;

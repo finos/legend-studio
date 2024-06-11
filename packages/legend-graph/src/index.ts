@@ -162,8 +162,8 @@ export { V1_CDateTime } from './graph-manager/protocol/pure/v1/model/valueSpecif
 export { V1_CStrictTime } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CStrictTime.js';
 export { V1_ClassInstance } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_ClassInstance.js';
 export { V1_PackageableElementPtr } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_PackageableElementPtr.js';
-export { V1_ColSpec } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_ColSpec.js';
-export { V1_ColSpecArray } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_ColSpecArray.js';
+export { V1_ColSpec } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
+export { V1_ColSpecArray } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_ColSpecArray.js';
 export { V1_PrimitiveValueSpecification } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_PrimitiveValueSpecification.js';
 export { V1_INTERNAL__UnknownFunctionActivator } from './graph-manager/protocol/pure/v1/model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------

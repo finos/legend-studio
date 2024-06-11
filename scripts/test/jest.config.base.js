@@ -126,12 +126,12 @@ export const getBaseJestProjectConfig = (projectName, packageDir) => {
   const testMatch = [
     (!process.env.TEST_GROUP || process.env.TEST_GROUP === 'core') &&
       `<rootDir>/${packageDir}/**/__tests__/**/*(*.)test.[jt]s?(x)`,
-    process.env.TEST_GROUP === 'repl' &&
-      `<rootDir>/${packageDir}/**/__tests__/**/*(*.)repl-test.[jt]s?(x)`,
     process.env.TEST_GROUP === 'engine-roundtrip' &&
       `<rootDir>/${packageDir}/**/__tests__/**/*(*.)engine-roundtrip-test.[jt]s?(x)`,
     process.env.TEST_GROUP === 'profiling' &&
       `<rootDir>/${packageDir}/**/__tests__/**/*(*.)profiling-test.[jt]s?(x)`,
+    process.env.TEST_GROUP === 'repl' &&
+      `<rootDir>/${packageDir}/**/__tests__/**/*(*.)repl-test.[jt]s?(x)`,
   ].filter(Boolean);
 
   if (testMatch.length === 0) {
