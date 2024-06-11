@@ -207,7 +207,10 @@ function buildColumnSortSpecification(
 ) {
   const sortCol = snapshot.sortColumns.find((c) => c.name === colName);
   if (!sortCol) {
-    return {};
+    return {
+      sort: null,
+      sortIndex: null,
+    };
   }
   return {
     sort:
