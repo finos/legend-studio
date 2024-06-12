@@ -42,7 +42,6 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   filterByType,
-  isBoolean,
 } from '@finos/legend-shared';
 import { forwardRef } from 'react';
 import {
