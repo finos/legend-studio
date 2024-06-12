@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.45
+
+### Patch Changes
+
+- [#3240](https://github.com/finos/legend-studio/pull/3240) [`4297b70`](https://github.com/finos/legend-studio/commit/4297b70c87a26c417df52bdb27b3716a35f9ba85) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix default value condition for adding post filter on aggregation column.
+
 ## 4.14.44
 
 ### Patch Changes

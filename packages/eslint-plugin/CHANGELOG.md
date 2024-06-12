@@ -1,5 +1,11 @@
 # @finos/eslint-plugin-legend-studio
 
+## 2.0.72
+
+### Patch Changes
+
+- [#3236](https://github.com/finos/legend-studio/pull/3236) [`b1bb8f7`](https://github.com/finos/legend-studio/commit/b1bb8f79cc605916dc9014bf436acdbefa85eeaa) ([@akphi](https://github.com/akphi)) - Disable `@typescript-eslint/explicit-function-return-type` for simpler code.
+
 ## 2.0.71
 
 ## 2.0.70

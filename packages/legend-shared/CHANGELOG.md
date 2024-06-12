@@ -1,5 +1,7 @@
 # @finos/legend-shared
 
+## 10.0.39
+
 ## 10.0.38
 
 ### Patch Changes
