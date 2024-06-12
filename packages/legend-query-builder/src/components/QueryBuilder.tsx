@@ -72,7 +72,7 @@ import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
 import { QueryBuilderTDSState } from '../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderDiffViewPanelDiaglog } from './QueryBuilderDiffPanel.js';
-import { guaranteeType } from '@finos/legend-shared';
+import { guaranteeType, returnUndefOnError } from '@finos/legend-shared';
 import { QueryBuilderGraphFetchTreeState } from '../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { QueryBuilderPostTDSPanel } from './fetch-structure/QueryBuilderPostTDSPanel.js';
 import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpressionPanel.js';
@@ -488,9 +488,12 @@ export const QueryBuilder = observer(
         queryBuilderState.class &&
         queryBuilderState.canBuildQuery
       ) {
-        queryBuilderState.changeHistoryState.cacheNewQuery(
+        const calculatedQuery = returnUndefOnError(() =>
           queryBuilderState.buildQuery(),
         );
+        if (calculatedQuery) {
+          queryBuilderState.changeHistoryState.cacheNewQuery(calculatedQuery);
+        }
       }
     }, [queryBuilderState, queryBuilderState.hashCode]);
 
