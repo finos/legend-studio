@@ -33,7 +33,7 @@
     "dev:webpack": "cross-env NODE_ENV=development webpack serve --mode development",
     "dev:webpack:debug": "cross-env NODE_ENV=development DEVELOPMENT_MODE=debug webpack serve --mode development",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./scripts/**/*.{mjs,cjs,js}\" \"./src/**/*.{js,ts,tsx}\"",
-    "publish:pre-prepare": "yarn clean && yarn build:webpack && node ./scripts/setup.js --dir ./dist/repl --use-dynamic-repl-server",
+    "publish:pre-prepare": "yarn clean && yarn build:tailwindcss && yarn build:webpack && node ./scripts/setup.js --dir ./dist/repl --use-dynamic-repl-server",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
     "serve": "npx http-server ./dist -p 3000 -a localhost -g --cors -o /repl",
