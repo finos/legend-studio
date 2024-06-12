@@ -43,14 +43,39 @@ import {
   guaranteeType,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
+import { action, makeObservable, observable } from 'mobx';
 
 export class QueryBuilderAggregateOperator_Percentile
   extends QueryBuilderAggregateOperator
   implements Hashable
 {
-  percentile = 0;
-  acending: boolean | undefined = undefined;
-  continuous: boolean | undefined = undefined;
+  percentile: number | undefined;
+  acending: boolean | undefined;
+  continuous: boolean | undefined;
+
+  constructor() {
+    super();
+    makeObservable(this, {
+      percentile: observable,
+      acending: observable,
+      continuous: observable,
+      setPercentile: action,
+      setAcending: action,
+      setContinuous: action,
+    });
+  }
+
+  setPercentile(val: number | undefined) {
+    this.percentile = val;
+  }
+
+  setAcending(val: boolean | undefined) {
+    this.acending = val;
+  }
+
+  setContinuous(val: boolean | undefined) {
+    this.continuous = val;
+  }
 
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
     return 'percentile';
@@ -82,6 +107,7 @@ export class QueryBuilderAggregateOperator_Percentile
     variableName: string,
     graph: PureModel,
   ): ValueSpecification {
+    const percentileValue = this.percentile ?? 0;
     const expression = new SimpleFunctionExpression(
       extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.PERCENTILE),
     );
@@ -90,7 +116,7 @@ export class QueryBuilderAggregateOperator_Percentile
         new GenericType(PrimitiveType.NUMBER),
       ),
     );
-    percentile.values = [this.percentile];
+    percentile.values = [percentileValue];
     if (
       this.acending === undefined ||
       this.continuous === undefined ||
@@ -137,8 +163,14 @@ export class QueryBuilderAggregateOperator_Percentile
       const aggregateColumnState = new QueryBuilderAggregateColumnState(
         projectionColumnState.tdsState.aggregationState,
         projectionColumnState,
-        this,
+        new QueryBuilderAggregateOperator_Percentile(),
       );
+
+      const currentOperator = guaranteeType(
+        aggregateColumnState.operator,
+        QueryBuilderAggregateOperator_Percentile,
+      );
+
       aggregateColumnState.setLambdaParameterName(lambdaParam.name);
 
       assertTrue(
@@ -161,7 +193,7 @@ export class QueryBuilderAggregateOperator_Percentile
         PrimitiveInstanceValue,
         `Can't process percentile() expression: percentile() expects arugment #2 to be a primitive instance value`,
       );
-      this.percentile = percentile.values[0] as number;
+      currentOperator.percentile = percentile.values[0] as number;
 
       if (expression.parametersValues.length === 4) {
         const acending = guaranteeType(
@@ -169,24 +201,36 @@ export class QueryBuilderAggregateOperator_Percentile
           PrimitiveInstanceValue,
           `Can't process percentile() expression: percentile() expects arugment #3 to be a primitive instance value`,
         );
-        this.acending = acending.values[0] as boolean;
+        currentOperator.acending = acending.values[0] as boolean;
         const continuous = guaranteeType(
           expression.parametersValues[3],
           PrimitiveInstanceValue,
           `Can't process percentile() expression: percentile() expects arugment #4 to be a primitive instance value`,
         );
-        this.continuous = continuous.values[0] as boolean;
+        currentOperator.continuous = continuous.values[0] as boolean;
       }
       // operator
       assertTrue(
         this.isCompatibleWithColumn(aggregateColumnState.projectionColumnState),
         `Can't process percentile() expression: property is not compatible with operator`,
       );
-      aggregateColumnState.setOperator(this);
+      aggregateColumnState.setOperator(currentOperator);
       return aggregateColumnState;
     }
 
     return undefined;
+  }
+
+  override get getOperator(): QueryBuilderAggregateOperator {
+    return new QueryBuilderAggregateOperator_Percentile();
+  }
+
+  override get allValidationIssues(): string[] {
+    const validationIssues: string[] = [];
+    if (this.percentile === undefined || this.percentile > 100) {
+      validationIssues.push('Invalid Aggregation Argument for Percentile');
+    }
+    return validationIssues;
   }
 
   get hashCode(): string {

@@ -692,14 +692,14 @@ const QueryBuilderProjectionColumnEditor = observer(
       }),
       [handleDrop],
     );
-
     const percentileButtonRef = useRef<HTMLButtonElement>(null);
     const percentileInputRef = useRef<HTMLInputElement>(null);
     const [isPercentileOpen, setIsPercentileOpen] = useState(false);
     const [percentileValue, setPercentileValue] = useState(
       aggregateColumnState &&
         aggregateColumnState.operator instanceof
-          QueryBuilderAggregateOperator_Percentile
+          QueryBuilderAggregateOperator_Percentile &&
+        aggregateColumnState.operator.percentile !== undefined
         ? (aggregateColumnState.operator.percentile * 100).toString()
         : '',
     );
@@ -900,11 +900,16 @@ const QueryBuilderProjectionColumnEditor = observer(
                     onClose={() => {
                       const percentileOperator =
                         aggregateColumnState.operator as QueryBuilderAggregateOperator_Percentile;
-                      percentileOperator.percentile =
-                        Number(percentileValue) / 100;
+                      if (percentileValue === '') {
+                        percentileOperator.setPercentile(undefined);
+                      } else {
+                        percentileOperator.setPercentile(
+                          Number(percentileValue) / 100,
+                        );
+                      }
                       if (acending !== undefined && continuous !== undefined) {
-                        percentileOperator.acending = acending;
-                        percentileOperator.continuous = continuous;
+                        percentileOperator.setAcending(acending);
+                        percentileOperator.setContinuous(continuous);
                       }
                       setIsPercentileOpen(false);
                     }}

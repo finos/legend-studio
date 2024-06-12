@@ -38,6 +38,7 @@ import {
   TEST_DATA__lambda_postFilterQueryWithRightValAsCol,
   TEST_DATA__simpleProjectionWithSlice,
   TEST_DATA_simpleTypedRelationProjection,
+  TEST_DATA__projectionWithPercentileAggregation,
 } from './TEST_DATA__QueryBuilder_Generic.js';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json' assert { type: 'json' };
@@ -273,6 +274,13 @@ const cases: RoundtripTestCase[] = [
     projectionCtx,
     TEST_DATA__lambda_output_projectionWithFullPathFunctions,
     TEST_DATA__lambda_input_projectionWithFullPathFunctions,
+  ],
+  // aggregation
+  [
+    'Projection column with precentile aggregation',
+    projectionCtx,
+    TEST_DATA__projectionWithPercentileAggregation,
+    undefined,
   ],
   // graph fetch
   ['Simple graph fetch', graphFetchCtx, TEST_DATA__simpleGraphFetch, undefined],
