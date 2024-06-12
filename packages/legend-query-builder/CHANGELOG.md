@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.47
+
+### Patch Changes
+
+- [#3250](https://github.com/finos/legend-studio/pull/3250) [`875fb85`](https://github.com/finos/legend-studio/commit/875fb8575cd2f47886229741d21789efb44b771b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix filter by on grid on boolean values by moving format logic to formater.
+
 ## 4.14.46
 
 ### Patch Changes
