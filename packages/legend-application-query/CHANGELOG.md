@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.5.0
+
+### Minor Changes
+
+- [#3239](https://github.com/finos/legend-studio/pull/3239) [`4b8c6d0`](https://github.com/finos/legend-studio/commit/4b8c6d0b306ed95983b82df4273ed1afd8b6b17c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Clean up creator application query routes. Will not change routes on change of dataspace and will hold all dataspace navigations to `/query`. Continue to read legacy routes and open corresponding datasapaces but remove route.
+
 ## 13.4.21
 
 ## 13.4.20

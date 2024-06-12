@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.17.6
+
+### Patch Changes
+
+- [#3238](https://github.com/finos/legend-studio/pull/3238) [`54862a7`](https://github.com/finos/legend-studio/commit/54862a73a432f35577c542b429f66854d3894d7f) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix showcase explorer panel scroll bar
+
 ## 28.17.5
 
 ## 28.17.4
