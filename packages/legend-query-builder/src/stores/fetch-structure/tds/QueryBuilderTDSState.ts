@@ -139,6 +139,7 @@ export class QueryBuilderTDSState
     super(queryBuilderState, fetchStructureState);
 
     makeObservable(this, {
+      aggregationState: observable,
       projectionColumns: observable,
       isConvertDerivationProjectionObjects: observable,
       showPostFilterPanel: observable,
@@ -342,6 +343,10 @@ export class QueryBuilderTDSState
         );
       }
     });
+
+    this.aggregationState.allValidationIssues.forEach((issue) =>
+      validationIssues.push(issue),
+    );
 
     return validationIssues;
   }

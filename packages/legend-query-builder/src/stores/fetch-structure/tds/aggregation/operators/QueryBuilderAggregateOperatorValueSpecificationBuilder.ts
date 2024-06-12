@@ -97,7 +97,6 @@ export const buildAggregateColumnState = (
       )}() expression: property is not compatible with operator`,
     );
     aggregateColumnState.setOperator(operator);
-
     return aggregateColumnState;
   }
 

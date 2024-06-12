@@ -136,6 +136,8 @@ export class QueryBuilderAggregationState implements Hashable {
       addColumn: action,
       changeColumnAggregateOperator: action,
       disableCalendar: action,
+
+      allValidationIssues: computed,
       hashCode: computed,
     });
 
@@ -179,7 +181,7 @@ export class QueryBuilderAggregationState implements Hashable {
             `${colName} (${val.getLabel(projectionColumnState)})`,
           );
         }
-        aggregateColumnState.setOperator(val);
+        aggregateColumnState.setOperator(val.getOperator);
       } else {
         if (!hideOperatorInColumnName) {
           projectionColumnState.setColumnName(
@@ -189,9 +191,9 @@ export class QueryBuilderAggregationState implements Hashable {
         const newAggregateColumnState = new QueryBuilderAggregateColumnState(
           this,
           projectionColumnState,
-          val,
+          val.getOperator,
         );
-        newAggregateColumnState.setOperator(val);
+        newAggregateColumnState.setOperator(val.getOperator);
         this.addColumn(newAggregateColumnState);
 
         // automatically move the column to the end
@@ -231,6 +233,10 @@ export class QueryBuilderAggregationState implements Hashable {
       column.setCalendarFunction(undefined);
       column.setHideCalendarColumnState(true);
     });
+  }
+
+  get allValidationIssues(): string[] {
+    return this.columns.map((col) => col.operator.allValidationIssues).flat();
   }
 
   get hashCode(): string {

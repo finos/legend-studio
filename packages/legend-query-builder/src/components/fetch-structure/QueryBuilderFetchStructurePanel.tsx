@@ -73,7 +73,6 @@ export const QueryBuilderFetchStructurePanel = observer(
       queryBuilderState.workflowState.getFetchStructureLayoutConfig(
         queryBuilderState,
       );
-
     return (
       <Panel data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE}>
         <PanelHeader>

@@ -1958,3 +1958,76 @@ test(
     ).toHaveLength(2);
   },
 );
+
+test(
+  integrationTest('Query builder percentile operator is correctly loaded'),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    await waitFor(() =>
+      getByText(queryBuilderSetup, 'simpleRelationalMapping'),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    const projectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+
+    // Drag and drop to the projection panel
+    const dropZone = await waitFor(() =>
+      getByText(projectionPanel, 'Add a projection column'),
+    );
+    const dragSource = await waitFor(() => getByText(explorerPanel, 'Age'));
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      projectionPanel,
+      'Add a projection column',
+    );
+    await waitFor(() => getByText(projectionPanel, 'Age'));
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    expect(tdsState.projectionColumns.length).toBe(1);
+    fireEvent.click(renderResult.getByTitle('Choose Aggregate Operator...'));
+    fireEvent.click(renderResult.getByText('percentile'));
+    expect(getByText(projectionPanel, 'percentile')).not.toBeNull();
+    expect(getByText(projectionPanel, '...')).not.toBeNull();
+    fireEvent.click(renderResult.getByText('...'));
+
+    const percentilePanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PERCENTILE_PANEL,
+    );
+    const percentileInput = percentilePanel.getElementsByClassName(
+      'query-builder__projection__column__aggregate__operator__percentile__input',
+    )[0];
+    expect(percentileInput).toBeDefined();
+    await waitFor(() =>
+      fireEvent.change(guaranteeNonNullable(percentileInput), {
+        target: { value: '50' },
+      }),
+    );
+    await waitFor(() => getByText(projectionPanel, '50'));
+  },
+);

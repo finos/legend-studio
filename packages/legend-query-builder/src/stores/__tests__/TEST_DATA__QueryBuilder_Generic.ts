@@ -1903,6 +1903,175 @@ export const TEST_DATA__projectionWithResultSetModifiers = {
   parameters: [],
 };
 
+export const TEST_DATA__projectionWithPercentileAggregation = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'groupBy',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::pure::tests::model::simple::Firm',
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 0,
+            upperBound: 0,
+          },
+          values: [],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 2,
+            upperBound: 2,
+          },
+          values: [
+            {
+              _type: 'func',
+              function: 'agg',
+              parameters: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'averageEmployeesAge',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'percentile',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                        {
+                          _type: 'decimal',
+                          value: 0.45,
+                        },
+                        {
+                          _type: 'boolean',
+                          value: true,
+                        },
+                        {
+                          _type: 'boolean',
+                          value: false,
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'func',
+              function: 'agg',
+              parameters: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'averageEmployeesAge',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'percentile',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                        {
+                          _type: 'decimal',
+                          value: 0.36,
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 2,
+            upperBound: 2,
+          },
+          values: [
+            {
+              _type: 'string',
+              value: 'percentileWithThreeParams',
+            },
+            {
+              _type: 'string',
+              value: 'percentileWithOneParam',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__getAllWithOneConditionFilter = {
   _type: 'lambda',
   body: [

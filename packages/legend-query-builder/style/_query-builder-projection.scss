@@ -213,6 +213,57 @@
       white-space: nowrap;
     }
 
+    &__operator__percentile {
+      &__container {
+        &__root {
+          background: var(--color-dark-grey-100);
+          width: 40rem;
+        }
+      }
+
+      &__badge {
+        font-weight: 700;
+        font-size: 1rem;
+        font-family: 'Roboto Mono', monospace;
+        color: var(--color-light-grey-200);
+        background: var(--color-dark-blue-shade-100);
+        border-radius: 1.4rem;
+        height: 2.8rem;
+        line-height: 2.2rem;
+        margin-left: 1rem;
+        padding: 0 1rem;
+      }
+
+      &__argument-combo {
+        @include flexVCenter;
+
+        width: 100%;
+        padding: 0 1rem;
+        margin: 1rem 0;
+        justify-content: space-between;
+
+        &__label {
+          width: 30%;
+          color: var(--color-light-grey-400);
+          font-weight: bold;
+        }
+
+        &__value {
+          width: 60%;
+        }
+      }
+
+      &__input {
+        height: 3.4rem;
+        padding-right: 2.8rem;
+        padding-left: 1rem;
+        width: 100%;
+        background: var(--color-dark-grey-85);
+        border-radius: 0.2rem;
+        border: 0.1rem solid var(--color-dark-grey-200);
+      }
+    }
+
     &__calendar__toggler {
       @include flexCenter;
 
