@@ -45,6 +45,7 @@ import { QueryBuilderTDSState } from '../../../stores/fetch-structure/tds/QueryB
 import { DEFAULT_LOCALE } from '../../../graph-manager/QueryBuilderConst.js';
 import {
   assertErrorThrown,
+  isBoolean,
   isNumber,
   isString,
   isValidURL,
@@ -147,6 +148,8 @@ const QueryResultCellRenderer = observer(
         return Intl.NumberFormat(DEFAULT_LOCALE, {
           maximumFractionDigits: 4,
         }).format(Number(cellValue));
+      } else if (isBoolean(cellValue)) {
+        return String(cellValue);
       }
       return cellValue;
     };

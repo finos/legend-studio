@@ -32,7 +32,12 @@ import {
 } from './QueryBuilderTDSResultShared.js';
 import { QueryBuilderTDSState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { DEFAULT_LOCALE } from '../../../graph-manager/QueryBuilderConst.js';
-import { isNumber, isString, isValidURL } from '@finos/legend-shared';
+import {
+  isBoolean,
+  isNumber,
+  isString,
+  isValidURL,
+} from '@finos/legend-shared';
 import type {
   QueryBuilderTDSResultCellCoordinate,
   QueryBuilderTDSResultCellData,
@@ -57,6 +62,8 @@ const QueryResultCellRenderer = observer(
         return Intl.NumberFormat(DEFAULT_LOCALE, {
           maximumFractionDigits: 4,
         }).format(Number(cellValue));
+      } else if (isBoolean(cellValue)) {
+        return String(cellValue);
       }
       return cellValue;
     };
