@@ -117,7 +117,8 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     const project = depotRepo?.project;
 
     // data space
-    const prioritizeDataSpaceFunc = queryBuilderState.prioritizeDataSpaceFunc;
+    const prioritizeDataSpaceFunc =
+      queryBuilderState.dataSpaceRepo.prioritizeDataSpaceFunc;
     const sortedAllOptions = (queryBuilderState.dataSpaceRepo.dataSpaces ?? [])
       .map(buildDataSpaceOption)
       .sort(compareLabelFn);

@@ -307,9 +307,6 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
 
   dataSpace: DataSpace;
   executionContext!: DataSpaceExecutionContext;
-  readonly prioritizeDataSpaceFunc?:
-    | ((val: DataSpaceInfo) => boolean)
-    | undefined;
   showRuntimeSelector = false;
   isTemplateQueryDialogOpen = false;
 

@@ -127,12 +127,8 @@ export const getRowDataFromExecutionResult = (
     const row: QueryBuilderTDSRowDataType = {};
     const cols = executionResult.result.columns;
     _row.values.forEach((value, colIdx) => {
-      // `ag-grid` shows `false` value as empty string so we have
-      // call `.toString()` to avoid this behavior.
-      // See https://github.com/finos/legend-studio/issues/1008
-      row[cols[colIdx] as string] = isBoolean(value) ? String(value) : value;
+      row[cols[colIdx] as string] = value;
     });
-
     row.rowNumber = rowIdx;
     return row;
   });
