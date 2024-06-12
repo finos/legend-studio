@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.46
+
+### Patch Changes
+
+- [#3226](https://github.com/finos/legend-studio/pull/3226) [`0a3b770`](https://github.com/finos/legend-studio/commit/0a3b77029ef8a78bcfb8f8d46b53b037aa3798b8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Enable UI support for percentile aggregation
+
 ## 4.14.45
 
 ### Patch Changes
