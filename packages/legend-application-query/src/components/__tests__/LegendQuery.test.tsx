@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { integrationTest } from '@finos/legend-shared/test';
+import { createMock, integrationTest } from '@finos/legend-shared/test';
 import {
   TEST_QUERY_NAME,
   TEST__provideMockedQueryEditorStore,
@@ -36,6 +36,7 @@ import {
   fireEvent,
   getAllByTitle,
   getByText,
+  queryByText,
   waitFor,
 } from '@testing-library/react';
 
@@ -94,55 +95,149 @@ const releaseLog = [
   },
 ];
 
-test(integrationTest('Legend Query Shows Current Updates'), async () => {
-  const pluginManager = LegendQueryPluginManager.create();
+test(
+  integrationTest(
+    'Legend Query shows Release Updates from last Viewed Version',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
 
-  const appStore = new ApplicationStore(
-    TEST__getTestLegendQueryApplicationConfig(),
-    pluginManager,
-  );
-  appStore.releaseNotesService.configure(releaseLog as VersionReleaseNotes[]);
-  const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore({
-    applicationStore: appStore,
-  });
-  mockedQueryEditorStore.setExistingQueryName(TEST_QUERY_NAME);
+    const appStore = new ApplicationStore(
+      TEST__getTestLegendQueryApplicationConfig(),
+      pluginManager,
+    );
+    const MOCk_lastOpenedVersion = createMock();
+    appStore.releaseNotesService.getViewedVersion = MOCk_lastOpenedVersion;
+    MOCk_lastOpenedVersion.mockReturnValue('1.0.0');
+    appStore.releaseNotesService.configure(releaseLog as VersionReleaseNotes[]);
+    const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore({
+      applicationStore: appStore,
+    });
+    mockedQueryEditorStore.setExistingQueryName(TEST_QUERY_NAME);
 
-  const { renderResult } = await TEST__setUpQueryEditor(
-    mockedQueryEditorStore,
-    TEST_DATA__ResultState_entities,
-    stub_RawLambda(),
-    'execution::RelationalMapping',
-    'execution::Runtime',
-    TEST_DATA__modelCoverageAnalysisResult,
-  );
-  expect(
-    renderResult.queryByText('Class is required to build query'),
-  ).toBeNull();
-  const releaseDialog = await waitFor(() => renderResult.getByRole('dialog'));
-  expect(
-    getByText(releaseDialog, 'Legend Query Has Been Upgraded !'),
-  ).not.toBeNull();
-  expect(
-    getByText(
-      releaseDialog,
-      'New features, enhancements and bug fixes that were released',
-    ),
-  ).not.toBeNull();
-  expect(
-    getByText(releaseDialog, 'This is a bug description for bug fix 1'),
-  ).not.toBeNull();
-  expect(
-    getByText(
-      releaseDialog,
-      'This is a test description for enhancement 1 version 3.0.0',
-    ),
-  ).not.toBeNull();
+    const { renderResult } = await TEST__setUpQueryEditor(
+      mockedQueryEditorStore,
+      TEST_DATA__ResultState_entities,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__modelCoverageAnalysisResult,
+    );
+    expect(
+      renderResult.queryByText('Class is required to build query'),
+    ).toBeNull();
+    const releaseDialog = await waitFor(() => renderResult.getByRole('dialog'));
+    expect(
+      getByText(releaseDialog, 'Legend Query Has Been Upgraded !'),
+    ).not.toBeNull();
+    expect(
+      getByText(
+        releaseDialog,
+        'New features, enhancements and bug fixes that were released',
+      ),
+    ).not.toBeNull();
+    expect(
+      getByText(releaseDialog, 'This is a bug description for bug fix 1'),
+    ).not.toBeNull();
+    expect(
+      getByText(
+        releaseDialog,
+        'This is a test description for enhancement 1 version 3.0.0',
+      ),
+    ).not.toBeNull();
 
-  expect(getByText(releaseDialog, 'Version 2.0.0')).not.toBeNull();
-  expect(getByText(releaseDialog, 'Version 3.0.0')).not.toBeNull();
+    expect(getByText(releaseDialog, 'Version 2.0.0')).not.toBeNull();
+    expect(getByText(releaseDialog, 'Version 3.0.0')).not.toBeNull();
 
-  expect(getAllByTitle(releaseDialog, 'Visit...')).toHaveLength(6);
+    expect(getAllByTitle(releaseDialog, 'Visit...')).toHaveLength(6);
 
-  fireEvent.click(getByText(releaseDialog, 'Close'));
-  expect(renderResult.queryByText('dialog')).toBeNull();
-});
+    fireEvent.click(getByText(releaseDialog, 'Close'));
+    expect(renderResult.queryByText('dialog')).toBeNull();
+  },
+);
+
+test(
+  integrationTest('Legend Query does not show viewed release notes'),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+
+    const appStore = new ApplicationStore(
+      TEST__getTestLegendQueryApplicationConfig(),
+      pluginManager,
+    );
+    const MOCk_lastOpenedVersion = createMock();
+    appStore.releaseNotesService.getViewedVersion = MOCk_lastOpenedVersion;
+    MOCk_lastOpenedVersion.mockReturnValue('2.0.0');
+    appStore.releaseNotesService.configure(releaseLog as VersionReleaseNotes[]);
+    const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore({
+      applicationStore: appStore,
+    });
+    mockedQueryEditorStore.setExistingQueryName(TEST_QUERY_NAME);
+
+    const { renderResult } = await TEST__setUpQueryEditor(
+      mockedQueryEditorStore,
+      TEST_DATA__ResultState_entities,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__modelCoverageAnalysisResult,
+    );
+    expect(
+      renderResult.queryByText('Class is required to build query'),
+    ).toBeNull();
+    const releaseDialog = await waitFor(() => renderResult.getByRole('dialog'));
+    expect(
+      getByText(releaseDialog, 'Legend Query Has Been Upgraded !'),
+    ).not.toBeNull();
+    expect(
+      getByText(
+        releaseDialog,
+        'New features, enhancements and bug fixes that were released',
+      ),
+    ).not.toBeNull();
+    expect(
+      getByText(releaseDialog, 'This is a bug description for bug fix 1'),
+    ).not.toBeNull();
+    expect(
+      getByText(
+        releaseDialog,
+        'This is a test description for enhancement 1 version 3.0.0',
+      ),
+    ).not.toBeNull();
+
+    expect(queryByText(releaseDialog, 'Version 2.0.0')).toBeNull();
+    expect(queryByText(releaseDialog, 'Version 3.0.0')).not.toBeNull();
+
+    expect(getAllByTitle(releaseDialog, 'Visit...')).toHaveLength(3);
+
+    fireEvent.click(getByText(releaseDialog, 'Close'));
+    expect(renderResult.queryByText('dialog')).toBeNull();
+  },
+);
+
+test(
+  integrationTest('Legend Query does not render release updates for new users'),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+
+    const appStore = new ApplicationStore(
+      TEST__getTestLegendQueryApplicationConfig(),
+      pluginManager,
+    );
+    appStore.releaseNotesService.configure(releaseLog as VersionReleaseNotes[]);
+    const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore({
+      applicationStore: appStore,
+    });
+    mockedQueryEditorStore.setExistingQueryName(TEST_QUERY_NAME);
+
+    const { renderResult } = await TEST__setUpQueryEditor(
+      mockedQueryEditorStore,
+      TEST_DATA__ResultState_entities,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__modelCoverageAnalysisResult,
+    );
+    expect(renderResult.queryByRole('dialog')).toBeNull();
+  },
+);
