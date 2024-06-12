@@ -1000,12 +1000,10 @@ export class QueryBuilderPostFilterState
           node.condition.rightConditionValue instanceof
             PostFilterValueSpecConditionValueState &&
           node.condition.rightConditionValue.value instanceof InstanceValue &&
-          !isValidInstanceValue(node.condition.rightConditionValue.value) &&
-          node.condition.leftConditionValue instanceof
-            QueryBuilderSimpleProjectionColumnState
+          !isValidInstanceValue(node.condition.rightConditionValue.value)
         ) {
           validationIssues.push(
-            `Filter value for ${node.condition.leftConditionValue.propertyExpressionState.title} is missing or invalid`,
+            `Filter value for ${node.condition.leftConditionValue.columnName} is missing or invalid`,
           );
         }
         if (
@@ -1029,9 +1027,7 @@ export class QueryBuilderPostFilterState
         node.condition.rightConditionValue instanceof
           PostFilterValueSpecConditionValueState &&
         node.condition.rightConditionValue.value instanceof InstanceValue &&
-        !isValidInstanceValue(node.condition.rightConditionValue.value) &&
-        node.condition.leftConditionValue instanceof
-          QueryBuilderSimpleProjectionColumnState,
+        !isValidInstanceValue(node.condition.rightConditionValue.value),
     );
   }
 

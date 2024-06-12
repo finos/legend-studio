@@ -1030,6 +1030,118 @@ test(
 
 test(
   integrationTest(
+    `Query builder uses null as default value for numerical post-filter on aggregate projection column and shows validation error`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+      const tdsState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      tdsState.setShowPostFilterPanel(true);
+    });
+
+    const postFilterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
+      ),
+    );
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const postFilterDropZone = await waitFor(() =>
+      getByText(postFilterPanel, 'Add a post-filter condition'),
+    );
+    const explorerDragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Id'),
+    );
+    await dragAndDrop(
+      explorerDragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+
+    fireEvent.click(
+      getByTitle(tdsProjectionPanel, 'Choose Aggregate Operator...'),
+    );
+    fireEvent.click(renderResult.getByText('count'));
+    const tdsDragSource = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Id (count)'),
+    );
+    await dragAndDrop(
+      tdsDragSource,
+      postFilterDropZone,
+      postFilterPanel,
+      'Add a post-filter condition',
+    );
+    expect(queryBuilderState.canBuildQuery).toBe(false);
+
+    await waitFor(() => getByText(postFilterPanel, 'Id (count)'));
+    await waitFor(() => getByText(postFilterPanel, 'is'));
+    await waitFor(() => getByDisplayValue(postFilterPanel, ''));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        postFilterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+
+    // Verify validation issue
+    expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
+
+    // Enter value
+    const filterValueInput = getByRole(postFilterPanel, 'textbox');
+    fireEvent.change(filterValueInput, { target: { value: '123' } });
+
+    // Verify no validation issues
+    expect(queryBuilderState.canBuildQuery).toBe(true);
+    expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', false);
+
+    // Click reset button
+    fireEvent.click(getByTitle(postFilterPanel, 'Reset'));
+
+    // Verify value is reset
+    await waitFor(() => getByDisplayValue(postFilterPanel, ''));
+
+    // Verify validation issue
+    expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
+  },
+);
+
+test(
+  integrationTest(
     `Query builder uses null as default value for date post-filter and shows validation error`,
   ),
   async () => {
