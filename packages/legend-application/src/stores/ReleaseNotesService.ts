@@ -122,9 +122,7 @@ export class ReleaseNotesService {
   showableVersions(): VersionReleaseNotes[] | undefined {
     const lastOpenedVersion = this.getViewedVersion();
     if (!lastOpenedVersion) {
-      // TODO: change after release
-      // return undefined;
-      return this.releaseNotes;
+      return undefined;
     }
     return this.releaseNotes?.filter((val) =>
       this.showVersion(val, lastOpenedVersion),
