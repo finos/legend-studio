@@ -22,7 +22,11 @@ import type {
 import type { DataCubeGridState } from './DataCubeGridState.js';
 import {
   cloneSnapshot,
+  type DataCubeQueryFilter,
+  type DataCubeQueryFilterCondition,
   type DataCubeQuerySnapshot,
+  type DataCubeQuerySnapshotAggregateColumn,
+  type DataCubeQuerySnapshotColumn,
   type DataCubeQuerySnapshotSortColumn,
 } from '../core/DataCubeQuerySnapshot.js';
 import {
@@ -33,8 +37,17 @@ import {
   isBoolean,
 } from '@finos/legend-shared';
 import { buildExecutableQueryFromSnapshot } from '../core/DataCubeQueryBuilder.js';
-import { type TabularDataSet, V1_Lambda } from '@finos/legend-graph';
-import { DATA_CUBE_COLUMN_SORT_DIRECTION } from '../DataCubeMetaModelConst.js';
+import {
+  type TabularDataSet,
+  V1_Lambda,
+  PRIMITIVE_TYPE,
+  extractElementNameFromPath,
+} from '@finos/legend-graph';
+import {
+  DATA_CUBE_COLUMN_SORT_DIRECTION,
+  DATA_CUBE_FILTER_OPERATION,
+  DATA_CUBE_FUNCTIONS,
+} from '../DataCubeMetaModelConst.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 
 export type GridClientResultCellDataType =
@@ -117,7 +130,41 @@ export class DataCubeGridClientServerSideDataSource
     let createNew = false;
 
     // --------------------------------- GROUP BY ---------------------------------
-    // TODO: @akphi - Implement this
+    const groupByExpandedKeys = request.groupKeys;
+    const groupByColumns = request.rowGroupCols.map((r) => {
+      const column = baseSnapshot.columns.find((col) => col.name === r.id);
+      return {
+        name: r.id,
+        type: guaranteeNonNullable(column).type,
+      } as DataCubeQuerySnapshotColumn;
+    });
+    const groupByAggColumns = request.valueCols.map((v) => {
+      const type = baseSnapshot.columns.find(
+        (col) => col.name === v.field,
+      )?.type;
+      return {
+        name: v.field,
+        type: type,
+        function: v.aggFunc,
+      } as DataCubeQuerySnapshotAggregateColumn;
+    });
+    let groupByFilter: DataCubeQueryFilter | undefined;
+
+    for (let index = 0; index < groupByExpandedKeys.length; index++) {
+      const groupFilter = {
+        conditions: [
+          {
+            name: guaranteeNonNullable(groupByColumns.at(index)).name,
+            type: PRIMITIVE_TYPE.STRING,
+            operation: DATA_CUBE_FILTER_OPERATION.EQUALS,
+            value: groupByExpandedKeys.at(index),
+          } as DataCubeQueryFilterCondition,
+        ],
+        groupOperation: extractElementNameFromPath(DATA_CUBE_FUNCTIONS.AND),
+      } as DataCubeQueryFilter;
+
+      groupByFilter = groupFilter;
+    }
 
     // --------------------------------- SORT ---------------------------------
 
@@ -136,7 +183,13 @@ export class DataCubeGridClientServerSideDataSource
         };
       });
 
-    if (!deepEqual(newSortColumns, baseSnapshot.sortColumns)) {
+    if (
+      !deepEqual(newSortColumns, baseSnapshot.sortColumns) ||
+      !deepEqual(groupByExpandedKeys, baseSnapshot.groupByExpandedKeys) ||
+      !deepEqual(groupByColumns, baseSnapshot.groupByColumns) ||
+      !deepEqual(groupByAggColumns, baseSnapshot.groupByAggColumns) ||
+      !deepEqual(groupByFilter, baseSnapshot.groupByFilter)
+    ) {
       createNew = true;
     }
 
@@ -145,6 +198,10 @@ export class DataCubeGridClientServerSideDataSource
     if (createNew) {
       const newSnapshot = cloneSnapshot(baseSnapshot);
       newSnapshot.sortColumns = newSortColumns;
+      newSnapshot.groupByExpandedKeys = groupByExpandedKeys;
+      newSnapshot.groupByColumns = groupByColumns;
+      newSnapshot.groupByAggColumns = groupByAggColumns;
+      newSnapshot.groupByFilter = groupByFilter;
       return newSnapshot;
     }
     return baseSnapshot;

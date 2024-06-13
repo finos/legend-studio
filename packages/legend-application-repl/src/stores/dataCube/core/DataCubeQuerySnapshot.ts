@@ -20,6 +20,7 @@ import { uuid, type PlainObject, type Writable } from '@finos/legend-shared';
 import type {
   DATA_CUBE_AGGREGATE_FUNCTION,
   DATA_CUBE_COLUMN_SORT_DIRECTION,
+  DATA_CUBE_FILTER_OPERATION,
 } from '../DataCubeMetaModelConst.js';
 
 // export enum FILTER_OPERATION {
@@ -94,8 +95,14 @@ import type {
 //   );
 // }
 
+export type DataCubeQueryFilterCondition = DataCubeQuerySnapshotColumn & {
+  value: unknown;
+  operation: DATA_CUBE_FILTER_OPERATION;
+};
+
 export type DataCubeQueryFilter = {
-  // TODO: @akphi
+  groupOperation: string;
+  conditions: (DataCubeQueryFilterCondition | DataCubeQueryFilter)[];
 };
 
 export enum DataCubeQuerySnapshotColumnOrigin {
@@ -149,7 +156,9 @@ export type DataCubeQuerySnapshot = {
   filter?: DataCubeQueryFilter | undefined;
   renamedColumns: DataCubeQuerySnapshotRenamedColumn[];
   groupByColumns: DataCubeQuerySnapshotColumn[];
+  groupByExpandedKeys: string[];
   groupByAggColumns: DataCubeQuerySnapshotAggregateColumn[];
+  groupByFilter?: DataCubeQueryFilter | undefined;
   selectedColumns: DataCubeQuerySnapshotColumn[];
   pivotColumns: DataCubeQuerySnapshotColumn[];
   pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[];
@@ -180,12 +189,14 @@ export function createSnapshot(
     filter: undefined,
     renamedColumns: [],
     groupByColumns: [],
+    groupByExpandedKeys: [],
     groupByAggColumns: [],
     selectedColumns: [],
     pivotColumns: [],
     pivotAggColumns: [],
     castColumns: [],
     groupExtendedColumns: [],
+    groupByFilter: undefined,
     sortColumns: [],
     limit: undefined,
     columns: [],

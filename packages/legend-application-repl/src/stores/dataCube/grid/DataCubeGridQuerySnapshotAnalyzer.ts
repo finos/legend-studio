@@ -18,6 +18,7 @@ import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { GridOptions } from '@ag-grid-community/core';
 import { DATA_CUBE_COLUMN_SORT_DIRECTION } from '../DataCubeMetaModelConst.js';
 import { GridClientSortDirection } from './DataCubeGridClientEngine.js';
+import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 
 // export const getTDSSortOrder = (sortOrder: string): TDS_SORT_ORDER => {
 //   switch (sortOrder) {
@@ -221,6 +222,41 @@ function buildColumnSortSpecification(
   };
 }
 
+function getAggregationColumnCustomizations(
+  colName: string,
+  snapshot: DataCubeQuerySnapshot,
+): string[] {
+  const columnType = snapshot.columns.find((col) => col.name === colName)?.type;
+  switch (columnType) {
+    case PRIMITIVE_TYPE.STRING:
+      return [];
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.DATETIME:
+    case PRIMITIVE_TYPE.STRICTDATE:
+      return [];
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.INTEGER:
+    case PRIMITIVE_TYPE.FLOAT:
+      return ['count', 'sum', 'max', 'min', 'avg'];
+    default:
+      return [];
+  }
+}
+
+function buildColumnGroupBySpecification(
+  colName: string,
+  snapshot: DataCubeQuerySnapshot,
+) {
+  const rowGroup = snapshot.groupByColumns.find((c) => c.name === colName);
+  const aggColumn = snapshot.groupByAggColumns.find((c) => c.name === colName);
+  return {
+    rowGroup: Boolean(rowGroup),
+    hide: Boolean(rowGroup),
+    aggFunc: aggColumn ? aggColumn.function : null,
+    allowedAggFuncs: getAggregationColumnCustomizations(colName, snapshot),
+  };
+}
+
 export function generateGridOptionsFromSnapshot(
   snapshot: DataCubeQuerySnapshot,
 ): GridOptions {
@@ -235,10 +271,10 @@ export function generateGridOptionsFromSnapshot(
       sortable: true,
       flex: 1,
       resizable: true,
-      // enableRowGroup: true,
-      // allowedAggFuncs: ['count', 'sum', 'max', 'min', 'avg'],
-      // enableValue: true,
-      // menuTabs: ['filterMenuTab', 'generalMenuTab', 'columnsMenuTab'],
+      enableRowGroup: true,
+      enableValue: true,
+      menuTabs: ['generalMenuTab', 'columnsMenuTab'],
+      ...buildColumnGroupBySpecification(col.name, snapshot),
     })),
   };
   return gridOptions;
