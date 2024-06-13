@@ -107,7 +107,9 @@ export class QueryBuilderAggregateOperator_Percentile
     variableName: string,
     graph: PureModel,
   ): ValueSpecification {
-    const percentileValue = this.percentile ?? 0;
+    const percentileValue = this.percentile
+      ? Number((this.percentile / 100).toFixed(10))
+      : 0;
     const expression = new SimpleFunctionExpression(
       extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.PERCENTILE),
     );
@@ -193,7 +195,9 @@ export class QueryBuilderAggregateOperator_Percentile
         PrimitiveInstanceValue,
         `Can't process percentile() expression: percentile() expects arugment #2 to be a primitive instance value`,
       );
-      currentOperator.percentile = percentile.values[0] as number;
+      currentOperator.percentile = parseFloat(
+        ((percentile.values[0] as number) * 100).toFixed(10),
+      );
 
       if (expression.parametersValues.length === 4) {
         const acending = guaranteeType(
