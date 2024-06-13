@@ -16,14 +16,15 @@
 
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
-import { DataCubeEditorSortState } from './DataCubeEditorSortState.js';
-import { DataCubeQueryCodeEditorState } from './DataCubeEditorCodeState.js';
+import { DataCubeEditorSortsPanelState } from './DataCubeEditorSortsPanelState.js';
+import { DataCubeEditorCodePanelState } from './DataCubeEditorCodePanelState.js';
 import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
 import {
   cloneSnapshot,
   type DataCubeQuerySnapshot,
 } from '../core/DataCubeQuerySnapshot.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGeneralPropertiesPanelState.js';
 
 export enum DATA_CUBE_EDITOR_TAB {
   COLUMNS = 'Columns',
@@ -33,21 +34,21 @@ export enum DATA_CUBE_EDITOR_TAB {
   EXTENDED_COLUMNS = 'Extended Columns',
   GENERAL_PROPERTIES = 'General Properties',
   COLUMN_PROPERTIES = 'Column Properties',
-  Code = 'Code',
+  CODE = 'Code',
   // DEVELOPER_OPTIONS = 'Developer',
   // PIVOT_LAYOUT = 'Pivot Layout',
 }
 
 export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
-  readonly dataCubeState!: DataCubeState;
-  readonly sort!: DataCubeEditorSortState;
-  readonly codeEditorState!: DataCubeQueryCodeEditorState; // TODO: move to editor state
+  readonly sortsPanel: DataCubeEditorSortsPanelState;
+  readonly generalPropertiesPanel: DataCubeEditorGeneralPropertiesPanelState;
+  readonly codePanel: DataCubeEditorCodePanelState;
 
   isPanelOpen = false;
-  currentTab = DATA_CUBE_EDITOR_TAB.SORTS;
+  currentTab = DATA_CUBE_EDITOR_TAB.GENERAL_PROPERTIES;
 
   constructor(dataCubeState: DataCubeState) {
-    super(dataCubeState.snapshotManager);
+    super(dataCubeState);
 
     makeObservable(this, {
       applyChanges: action,
@@ -60,9 +61,11 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
       closePanel: action,
     });
 
-    this.codeEditorState = new DataCubeQueryCodeEditorState(this.dataCubeState);
-    this.dataCubeState = dataCubeState;
-    this.sort = new DataCubeEditorSortState(this.dataCubeState);
+    this.sortsPanel = new DataCubeEditorSortsPanelState(this.dataCube);
+    this.generalPropertiesPanel = new DataCubeEditorGeneralPropertiesPanelState(
+      this.dataCube,
+    );
+    this.codePanel = new DataCubeEditorCodePanelState(this.dataCube);
   }
 
   openPanel(): void {
@@ -78,10 +81,13 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
   }
 
   applyChanges(): void {
-    // let createNew = false;
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const snapshot = cloneSnapshot(baseSnapshot);
-    const createNew = this.sort.buildSnapshot(snapshot, baseSnapshot);
+
+    const createNew = [
+      this.sortsPanel.buildSnapshot(snapshot, baseSnapshot),
+      this.generalPropertiesPanel.buildSnapshot(snapshot, baseSnapshot),
+    ].some(Boolean);
 
     if (createNew) {
       this.publishSnapshot(snapshot);
@@ -89,6 +95,11 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
   }
 
   override async applySnapshot(snapshot: DataCubeQuerySnapshot): Promise<void> {
-    this.sort.applySnaphot(snapshot);
+    this.sortsPanel.applySnaphot(snapshot);
+    this.generalPropertiesPanel.applySnaphot(snapshot);
+  }
+
+  override async initialize(): Promise<void> {
+    // do nothing
   }
 }

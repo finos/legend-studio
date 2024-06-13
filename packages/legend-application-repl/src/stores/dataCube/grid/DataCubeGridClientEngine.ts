@@ -100,14 +100,12 @@ export class DataCubeGridClientServerSideDataSource
       const executableQuery = buildExecutableQueryFromSnapshot(syncedSnapshot);
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
-      const result = await this.grid.dataCubeState.engine.executeQuery(lambda);
+      const result = await this.grid.dataCube.engine.executeQuery(lambda);
       const rowData = toRowData(result.result);
       params.success({ rowData });
     } catch (error) {
       assertErrorThrown(error);
-      this.grid.dataCubeState.applicationStore.notificationService.notifyError(
-        error,
-      );
+      this.grid.dataCube.application.notificationService.notifyError(error);
       params.fail();
     }
   }
@@ -115,7 +113,7 @@ export class DataCubeGridClientServerSideDataSource
   getRows(params: IServerSideGetRowsParams<unknown, unknown>): void {
     this.fetchRows(params).catch((error: unknown) => {
       assertErrorThrown(error);
-      this.grid.dataCubeState.applicationStore.logService.error(
+      this.grid.dataCube.application.logService.error(
         LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
         `Error ocurred while fetching data for grid should have been handled gracefully`,
         error,
@@ -132,14 +130,18 @@ export class DataCubeGridClientServerSideDataSource
     // --------------------------------- GROUP BY ---------------------------------
     const groupByExpandedKeys = request.groupKeys;
     const groupByColumns = request.rowGroupCols.map((r) => {
-      const column = baseSnapshot.columns.find((col) => col.name === r.id);
+      // TODO: @akphi - revist this, we should not use `selectColumns` here, or maybe a combination?
+      const column = baseSnapshot.selectColumns.find(
+        (col) => col.name === r.id,
+      );
       return {
         name: r.id,
         type: guaranteeNonNullable(column).type,
       } as DataCubeQuerySnapshotColumn;
     });
     const groupByAggColumns = request.valueCols.map((v) => {
-      const type = baseSnapshot.columns.find(
+      // TODO: @akphi - revist this, we should not use `selectColumns` here, or maybe a combination?
+      const type = baseSnapshot.selectColumns.find(
         (col) => col.name === v.field,
       )?.type;
       return {
@@ -171,7 +173,7 @@ export class DataCubeGridClientServerSideDataSource
     const newSortColumns: DataCubeQuerySnapshotSortColumn[] =
       request.sortModel.map((sortInfo) => {
         const column = guaranteeNonNullable(
-          baseSnapshot.columns.find((col) => col.name === sortInfo.colId),
+          baseSnapshot.selectColumns.find((col) => col.name === sortInfo.colId),
         );
         return {
           name: sortInfo.colId,
@@ -192,6 +194,9 @@ export class DataCubeGridClientServerSideDataSource
     ) {
       createNew = true;
     }
+
+    // --------------------------------- SELECT ---------------------------------
+    // TODO: @akphi - Implement this
 
     // --------------------------------- FINALIZE ---------------------------------
 

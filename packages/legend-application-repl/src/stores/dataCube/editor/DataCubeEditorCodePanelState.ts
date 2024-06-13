@@ -77,7 +77,7 @@ export class DataCubeQueryEditorState {
   }
 }
 
-export class DataCubeQueryCodeEditorState {
+export class DataCubeEditorCodePanelState {
   readonly dataCubeState!: DataCubeState;
 
   queryEditorState!: DataCubeQueryEditorState;
@@ -103,7 +103,7 @@ export class DataCubeQueryCodeEditorState {
     try {
       this.queryEditorState.setParserError(undefined);
       yield flowResult(
-        this.dataCubeState.editorStore.client.parseQuery({
+        this.dataCubeState.replStore.client.parseQuery({
           code: `|${this.queryEditorState.query}`,
         }),
       );

@@ -24,8 +24,10 @@ import {
   V1_buildExecutionResult,
 } from '@finos/legend-graph';
 import type { REPLServerClient } from '../../../server/REPLServerClient.js';
-import { type CompletionItem } from '../../../server/models/DataCubeEngineModels.js';
-import { DataCubeQuery } from '../../../server/models/DataCubeQuery.js';
+import {
+  DataCubeGetBaseQueryResult,
+  type CompletionItem,
+} from '../../../server/models/DataCubeEngineModels.js';
 import { guaranteeType } from '@finos/legend-shared';
 
 export class DataCubeEngine {
@@ -59,8 +61,8 @@ export class DataCubeEngine {
     );
   }
 
-  async getBaseQuery(): Promise<DataCubeQuery> {
-    return DataCubeQuery.serialization.fromJson(
+  async getBaseQuery(): Promise<DataCubeGetBaseQueryResult> {
+    return DataCubeGetBaseQueryResult.serialization.fromJson(
       await this.client.getBaseQuery(),
     );
   }

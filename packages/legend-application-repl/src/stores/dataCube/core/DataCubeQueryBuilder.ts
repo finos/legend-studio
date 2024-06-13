@@ -364,9 +364,6 @@ export function buildExecutableQueryFromSnapshot(
     }
   }
 
-  // --------------------------------- SELECT ---------------------------------
-  // TODO: @akphi - implement this
-
   // --------------------------------- PIVOT ---------------------------------
   // TODO: @akphi - implement this
 
@@ -383,7 +380,8 @@ export function buildExecutableQueryFromSnapshot(
     classInstance.type = V1_ClassInstanceType.COL_SPEC_ARRAY;
     const colSpecArray = new V1_ColSpecArray();
     classInstance.value = colSpecArray;
-    snapshot.columns.forEach((col) => {
+    // TODO: @akphi - revist this, we should not use `selectColumns` here, or maybe a combination?
+    snapshot.selectColumns.forEach((col) => {
       if (!snapshot.groupByColumns.find((c) => c.name === col.name)) {
         const colSpec = new V1_ColSpec();
         const lambda = new V1_Lambda();
@@ -435,6 +433,9 @@ export function buildExecutableQueryFromSnapshot(
       sequence.push(sort);
     }
   }
+
+  // --------------------------------- SELECT ---------------------------------
+  // TODO: @akphi - implement this
 
   // --------------------------------- LIMIT ---------------------------------
   // TODO: @akphi - implement this

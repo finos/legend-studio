@@ -41,8 +41,7 @@ const DataCubeCodeEditor = observer(() => {
   const replStore = useREPLStore();
   const applicationStore = replStore.applicationStore;
   const dataCubeState = replStore.dataCubeState;
-  const queryEditorState =
-    dataCubeState.editor.codeEditorState.queryEditorState;
+  const queryEditorState = dataCubeState.editor.codePanel.queryEditorState;
   const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
     undefined,
   );
@@ -59,7 +58,7 @@ const DataCubeCodeEditor = observer(() => {
   const debouncedParseQuery = useMemo(
     () =>
       debounce((): void => {
-        flowResult(dataCubeState.editor.codeEditorState.parseQuery()).catch(
+        flowResult(dataCubeState.editor.codePanel.parseQuery()).catch(
           replStore.applicationStore.alertUnhandledError,
         );
       }, 1000),

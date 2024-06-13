@@ -13,21 +13,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
-
-export interface DataCubeQueryEditorSubState {
-  /**
-   * Update the editor state based on the snapshot
-   */
-  applySnaphot(snapshot: DataCubeQuerySnapshot): void;
-
-  /**
-   * Build and enrich the snapshot with data from the editor state
-   * @returns whether the snapshot should be updated or not
-   */
-  buildSnapshot(
-    newSnapshot: DataCubeQuerySnapshot,
-    baseSnapshot: DataCubeQuerySnapshot,
-  ): boolean;
-}

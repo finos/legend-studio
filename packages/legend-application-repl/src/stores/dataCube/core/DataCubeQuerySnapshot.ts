@@ -105,25 +105,10 @@ export type DataCubeQueryFilter = {
   conditions: (DataCubeQueryFilterCondition | DataCubeQueryFilter)[];
 };
 
-export enum DataCubeQuerySnapshotColumnOrigin {
-  SOURCE,
-  LEAF_EXTENDED,
-  RENAME,
-  GROUP_BY,
-  SELECT,
-  PIVOT,
-  GROUP_EXTENDED,
-}
-
 export type DataCubeQuerySnapshotColumn = {
   name: string;
   type: string;
 };
-
-export type DataCubeQuerySnapshotColumnWithOrigin =
-  DataCubeQuerySnapshotColumn & {
-    origin: DataCubeQuerySnapshotColumnOrigin;
-  };
 
 export type DataCubeQuerySnapshotExtendedColumn =
   DataCubeQuerySnapshotColumn & {
@@ -146,6 +131,7 @@ export type DataCubeQuerySnapshotAggregateColumn =
 
 export type DataCubeQuerySnapshot = {
   readonly uuid: string;
+  timestamp: number;
   name: string;
   runtime: string;
   sourceQuery: PlainObject<V1_ValueSpecification>;
@@ -154,19 +140,19 @@ export type DataCubeQuerySnapshot = {
   originalColumns: DataCubeQuerySnapshotColumn[];
   leafExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
   filter?: DataCubeQueryFilter | undefined;
-  renamedColumns: DataCubeQuerySnapshotRenamedColumn[];
+
   groupByColumns: DataCubeQuerySnapshotColumn[];
   groupByExpandedKeys: string[];
   groupByAggColumns: DataCubeQuerySnapshotAggregateColumn[];
   groupByFilter?: DataCubeQueryFilter | undefined;
-  selectedColumns: DataCubeQuerySnapshotColumn[];
+
   pivotColumns: DataCubeQuerySnapshotColumn[];
   pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[];
   castColumns: DataCubeQuerySnapshotColumn[];
   groupExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
+  selectColumns: DataCubeQuerySnapshotColumn[];
   sortColumns: DataCubeQuerySnapshotSortColumn[];
   limit: number | undefined;
-  columns: DataCubeQuerySnapshotColumnWithOrigin[];
 };
 
 // ------------------------------------- UTILITIES -------------------------------------
@@ -179,6 +165,7 @@ export function createSnapshot(
 ): DataCubeQuerySnapshot {
   return {
     uuid: uuid(),
+    timestamp: Date.now(),
     name,
     runtime,
     sourceQuery,
@@ -187,19 +174,17 @@ export function createSnapshot(
     originalColumns: [],
     leafExtendedColumns: [],
     filter: undefined,
-    renamedColumns: [],
     groupByColumns: [],
     groupByExpandedKeys: [],
     groupByAggColumns: [],
-    selectedColumns: [],
     pivotColumns: [],
     pivotAggColumns: [],
     castColumns: [],
     groupExtendedColumns: [],
     groupByFilter: undefined,
     sortColumns: [],
+    selectColumns: [],
     limit: undefined,
-    columns: [],
   };
 }
 
@@ -208,5 +193,6 @@ export function cloneSnapshot(
 ): DataCubeQuerySnapshot {
   const clone = JSON.parse(JSON.stringify(snapshot)) as DataCubeQuerySnapshot;
   (clone as Writable<DataCubeQuerySnapshot>).uuid = uuid();
+  clone.timestamp = Date.now();
   return clone;
 }

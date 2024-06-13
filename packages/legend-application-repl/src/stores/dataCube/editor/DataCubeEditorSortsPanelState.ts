@@ -21,7 +21,7 @@ import type {
   DataCubeQuerySnapshotColumn,
   DataCubeQuerySnapshotSortColumn,
 } from '../core/DataCubeQuerySnapshot.js';
-import type { DataCubeQueryEditorSubState } from './DataCubeEditorQuerySnapshotBuilder.js';
+import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import { deepEqual } from '@finos/legend-shared';
 import { DATA_CUBE_COLUMN_SORT_DIRECTION } from '../DataCubeMetaModelConst.js';
 
@@ -47,7 +47,9 @@ export class DataCubeEditorSortColumnState {
   }
 }
 
-export class DataCubeEditorSortState implements DataCubeQueryEditorSubState {
+export class DataCubeEditorSortsPanelState
+  implements DataCubeQueryEditorPanelState
+{
   readonly dataCubeState!: DataCubeState;
 
   availableColumns: DataCubeEditorSortColumnState[] = [];
@@ -155,7 +157,7 @@ export class DataCubeEditorSortState implements DataCubeQueryEditorSubState {
   applySnaphot(snapshot: DataCubeQuerySnapshot): void {
     const sortColumns = snapshot.sortColumns;
     this.setAvailableColumns(
-      snapshot.columns
+      snapshot.selectColumns
         .filter(
           (col) => !sortColumns.find((sortCol) => sortCol.name === col.name),
         )
@@ -171,7 +173,7 @@ export class DataCubeEditorSortState implements DataCubeQueryEditorSubState {
       sortColumns.map(
         (sortCol) =>
           new DataCubeEditorSortColumnState(
-            snapshot.columns.find((col) => col.name === sortCol.name)!,
+            snapshot.selectColumns.find((col) => col.name === sortCol.name)!,
             sortCol.direction,
           ),
       ),

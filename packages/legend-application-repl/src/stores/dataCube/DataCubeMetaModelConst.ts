@@ -74,3 +74,5 @@ export enum DATA_CUBE_COLUMN_SORT_DIRECTION {
   ASCENDING = 'ascending',
   DESCENDING = 'descending',
 }
+
+export const DATA_CUBE_DEFAULT_REPORT_NAME = 'New Report';

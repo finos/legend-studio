@@ -28,9 +28,9 @@ import type {
   RelationType,
   DataCubeExecutionInput,
   DataCubeExecutionResult,
+  DataCubeGetBaseQueryResult,
 } from './models/DataCubeEngineModels.js';
 import type { V1_ValueSpecification } from '@finos/legend-graph';
-import type { DataCubeQuery } from './models/DataCubeQuery.js';
 
 export class REPLServerClient {
   private readonly networkClient: NetworkClient;
@@ -72,7 +72,7 @@ export class REPLServerClient {
     return this.networkClient.post(`${this.dataCube}/getQueryCode`, input);
   }
 
-  async getBaseQuery(): Promise<PlainObject<DataCubeQuery>> {
+  async getBaseQuery(): Promise<PlainObject<DataCubeGetBaseQueryResult>> {
     return this.networkClient.get(`${this.dataCube}/getBaseQuery`);
   }
 

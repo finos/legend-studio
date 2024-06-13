@@ -226,7 +226,10 @@ function getAggregationColumnCustomizations(
   colName: string,
   snapshot: DataCubeQuerySnapshot,
 ): string[] {
-  const columnType = snapshot.columns.find((col) => col.name === colName)?.type;
+  // TODO: @akphi - revist this, we should not use `selectColumns` here, or maybe a combination?
+  const columnType = snapshot.selectColumns.find(
+    (col) => col.name === colName,
+  )?.type;
   switch (columnType) {
     case PRIMITIVE_TYPE.STRING:
       return [];
@@ -261,7 +264,7 @@ export function generateGridOptionsFromSnapshot(
   snapshot: DataCubeQuerySnapshot,
 ): GridOptions {
   const gridOptions: GridOptions = {
-    columnDefs: snapshot.columns.map((col) => ({
+    columnDefs: snapshot.selectColumns.map((col) => ({
       headerName: col.name,
       field: col.name,
       ...buildColumnSortSpecification(col.name, snapshot),

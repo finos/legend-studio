@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-@import url('@finos/legend-art/lib/index.css');
-@import url('@finos/legend-application/lib/index.css');
-@import url('@finos/legend-lego/lib/index.css');
+import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 
-@import url('@finos/legend-application-repl/lib/index.css');
+export interface DataCubeQueryEditorPanelState {
+  /**
+   * Update the editor state based on the snapshot
+   */
+  applySnaphot(snapshot: DataCubeQuerySnapshot): void;
 
-html {
-  box-sizing: border-box;
-  font-family: Roboto, sans-serif;
-  overflow-y: hidden;
+  /**
+   * Build and enrich the snapshot with data from the editor state
+   * @returns whether the snapshot should be updated or not
+   */
+  buildSnapshot(
+    newSnapshot: DataCubeQuerySnapshot,
+    baseSnapshot: DataCubeQuerySnapshot,
+  ): boolean;
 }

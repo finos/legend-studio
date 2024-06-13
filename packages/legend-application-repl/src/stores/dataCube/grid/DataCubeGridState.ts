@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable, type GeneratorFn } from '@finos/legend-shared';
-import { flow, makeObservable, observable } from 'mobx';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { action, makeObservable, observable } from 'mobx';
 import type { GridApi } from '@ag-grid-community/core';
 import type { DataCubeState } from '../DataCubeState.js';
 import { DataCubeGridClientServerSideDataSource } from './DataCubeGridClientEngine.js';
@@ -24,22 +24,23 @@ import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import { generateGridOptionsFromSnapshot } from './DataCubeGridQuerySnapshotAnalyzer.js';
 
 export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
-  readonly dataCubeState!: DataCubeState;
-
   private _client?: GridApi | undefined;
   readonly clientDataSource: DataCubeGridClientServerSideDataSource;
   clientLicenseKey?: string | undefined;
 
   constructor(dataCubeState: DataCubeState) {
-    super(dataCubeState.snapshotManager);
+    super(dataCubeState);
 
     makeObservable(this, {
       clientLicenseKey: observable,
-      initialize: flow,
+      setClientLicenseKey: action,
     });
 
-    this.dataCubeState = dataCubeState;
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
+  }
+
+  setClientLicenseKey(val: string): void {
+    this.clientLicenseKey = val;
   }
 
   configureClient(val: GridApi | undefined): void {
@@ -50,13 +51,14 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     return guaranteeNonNullable(this._client, 'Grid client is not configured');
   }
 
-  *initialize(): GeneratorFn<void> {
-    this.clientLicenseKey =
-      (yield this.dataCubeState.editorStore.client.getGridClientLicenseKey()) as string;
-  }
-
   override async applySnapshot(snapshot: DataCubeQuerySnapshot): Promise<void> {
     const gridOptions = generateGridOptionsFromSnapshot(snapshot);
     this.client.updateGridOptions(gridOptions);
+  }
+
+  override async initialize(): Promise<void> {
+    this.setClientLicenseKey(
+      await this.dataCube.replStore.client.getGridClientLicenseKey(),
+    );
   }
 }

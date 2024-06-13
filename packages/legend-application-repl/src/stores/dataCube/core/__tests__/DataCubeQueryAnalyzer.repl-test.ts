@@ -21,7 +21,7 @@ import {
 import { ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification } from '@finos/legend-graph/test';
 import { unitTest } from '@finos/legend-shared/test';
 import { describe, expect, test } from '@jest/globals';
-import { validateAndBuildBaseSnapshot } from '../DataCubeQueryAnalyzer.js';
+import { validateAndBuildQuerySnapshot } from '../DataCubeQuerySnapshotBuilder.js';
 import { assertErrorThrown } from '@finos/legend-shared';
 import {
   DataCubeQuery,
@@ -41,7 +41,7 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
   ['Valid: rename()->rename()', 'rename(~a,~newA)->rename(~b,~newB)', [], ''],
   ['Valid: filter()', 'filter(x|$x.a==1)', [], ''],
   ['Valid: groupBy()', 'groupBy(~a, ~b:x|$x.a:x|$x->sum())', [], ''],
-  ['Valid: select()', 'select(~a)', [], ''],
+  ['Valid: select()', 'select(~[a])', ['a:Integer'], ''],
   // TODO: @akphi - enable when engine supports relation casting syntax
   // See https://github.com/finos/legend-engine/pull/2873
   // [
@@ -60,7 +60,7 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
   ],
   [
     'Valid: Usage - Column Selection: extend()->rename()->filter()->select()->sort()->limit()',
-    'extend(~[a:x|1])->rename(~a,~newA)->filter(x|$x.a==1)->select(~a)->sort([ascending(~a)])->limit(10)',
+    'extend(~[a:x|1])->rename(~a,~newA)->filter(x|$x.a==1)->select(~[a])->sort([ascending(~a)])->limit(10)',
     ['a:Integer'],
     '',
   ],
@@ -108,7 +108,7 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
     'Invalid: Unsupported function composition: extend()->filter()->rename()',
     'extend(~[a:x|1])->filter(x|$x.a==1)->rename(~a,~newA)',
     [],
-    'Unsupported function composition extend()->filter()->rename() (supported composition: extend()->rename()->filter()->groupBy()->select()->pivot()->cast()->extend()->sort()->limit())',
+    'Unsupported function composition extend()->filter()->rename() (supported composition: extend()->rename()->filter()->groupBy()->pivot()->cast()->extend()->select()->sort()->limit())',
   ],
   [
     'Invalid: Group-level extend() used when no aggregation/grouping presents',
@@ -160,10 +160,7 @@ describe(unitTest('Analyze and build base snapshot'), () => {
         };
       });
       try {
-        validateAndBuildBaseSnapshot(baseQuery, {
-          partialQuery,
-          sourceQuery: new V1_Lambda(), // dummy value
-        });
+        validateAndBuildQuerySnapshot(baseQuery, new V1_Lambda(), partialQuery);
         expect('').toEqual(problem);
       } catch (error: unknown) {
         assertErrorThrown(error);

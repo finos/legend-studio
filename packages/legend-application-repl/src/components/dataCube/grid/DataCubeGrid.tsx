@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { REPLStore } from '../../../stores/dataCube/DataCubeStore.js';
 import { LicenseManager } from '@ag-grid-enterprise/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { ServerSideRowModelModule } from '@ag-grid-enterprise/server-side-row-model';
@@ -23,6 +22,7 @@ import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
 import { MenuModule } from '@ag-grid-enterprise/menu';
 import { AgGridReact } from '@ag-grid-community/react';
 import { useEffect } from 'react';
+import { useREPLStore } from '../../REPLStoreProvider.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
@@ -36,9 +36,9 @@ if (process.env.NODE_ENV === 'development') {
   };
 }
 
-export const DataCubeGrid = observer((props: { editorStore: REPLStore }) => {
-  const { editorStore } = props;
-  const dataCubeState = editorStore.dataCubeState;
+export const DataCubeGrid = observer(() => {
+  const replStore = useREPLStore();
+  const dataCubeState = replStore.dataCubeState;
 
   useEffect(() => {
     if (dataCubeState.grid.clientLicenseKey) {
@@ -57,6 +57,8 @@ export const DataCubeGrid = observer((props: { editorStore: REPLStore }) => {
         serverSideDatasource={dataCubeState.grid.clientDataSource}
         suppressAggFuncInHeader={true}
         suppressServerSideInfiniteScroll={true}
+        rowHeight={20}
+        headerHeight={24}
         modules={[
           // community
           ClientSideRowModelModule,
@@ -72,7 +74,7 @@ export const DataCubeGrid = observer((props: { editorStore: REPLStore }) => {
             console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
           }
         }}
-        className="ag-theme-balham"
+        className="ag-theme-balham data-cube-grid"
       />
     </>
   );
