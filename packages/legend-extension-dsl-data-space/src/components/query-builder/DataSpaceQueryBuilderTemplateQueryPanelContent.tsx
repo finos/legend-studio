@@ -191,7 +191,7 @@ const DataSpaceQueryBuilderTemplateQueryPanel = observer(
 
     return (
       <>
-        {templateQueries && templateQueries.length > 0 && (
+        {templateQueries && (
           <PanelHeader className="query-builder__data-space__template-query">
             <div className="query-builder__data-space__template-query__title">
               <FilterIcon />

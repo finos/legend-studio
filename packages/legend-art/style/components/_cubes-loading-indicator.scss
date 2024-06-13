@@ -75,7 +75,7 @@ $loading-icon-size-lg: 64px;
     width: calc(50% - 1px);
     height: calc(50% - 1px);
     position: absolute;
-    background: var(--color-legacylight-light-blue-100);
+    background: var(--color-light-blue-50);
     animation: flip-animation $loading-icon-full-duration infinite;
     transform: $loading-icon-square-state-off;
 

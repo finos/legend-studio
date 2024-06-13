@@ -700,7 +700,7 @@ const QueryBuilderProjectionColumnEditor = observer(
         aggregateColumnState.operator instanceof
           QueryBuilderAggregateOperator_Percentile &&
         aggregateColumnState.operator.percentile !== undefined
-        ? (aggregateColumnState.operator.percentile * 100).toString()
+        ? aggregateColumnState.operator.percentile.toString()
         : '',
     );
     const [acending, setAcending] = useState(
@@ -904,7 +904,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                         percentileOperator.setPercentile(undefined);
                       } else {
                         percentileOperator.setPercentile(
-                          Number(percentileValue) / 100,
+                          Number(percentileValue),
                         );
                       }
                       if (acending !== undefined && continuous !== undefined) {
