@@ -43,6 +43,7 @@ import type {
 } from './QueryBuilder_LegendApplicationPlugin_Extension.js';
 
 export const QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT = 50;
+export const QUERY_LOADER_DEFAULT_QUERY_SEARCH_LIMIT = 10;
 
 export class QueryLoaderState {
   readonly applicationStore: GenericLegendApplicationStore;
