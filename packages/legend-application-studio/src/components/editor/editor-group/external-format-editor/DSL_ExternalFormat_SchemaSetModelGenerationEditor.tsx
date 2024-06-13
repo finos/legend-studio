@@ -174,7 +174,7 @@ export const SchemaSetModelGenerationEditor = observer(
               <PanelHeader title="result">
                 <PanelHeaderActions>
                   <PanelHeaderActionItem
-                    className=" generation-result-viewer__generate-btn"
+                    className="generation-result-viewer__generate-btn"
                     onClick={regenerate}
                     disabled={
                       modelGenerationState.generatingModelsState.isInProgress ||

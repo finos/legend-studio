@@ -77,7 +77,7 @@ export const FunctionParametersValidationNodeViewer: React.FC<{
             Variables Details
           </PanelListItem>
           <PanelDivider />
-          <table className="table query-builder__function-parameters-validation__container__table">
+          <table className="query-builder__function-parameters-validation__container__table table">
             <thead>
               <tr>
                 <th className="table__cell--left">Name</th>

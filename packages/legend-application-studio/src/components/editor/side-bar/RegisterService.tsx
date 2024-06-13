@@ -291,9 +291,9 @@ export const RegisterService = observer(
                 <button
                   type="button"
                   className={clsx(
-                    'bulk-service-registration__section__toggler__btn ',
+                    'bulk-service-registration__section__toggler__btn',
                     {
-                      'bulk-service-registration__section__toggler__btn--toggled ':
+                      'bulk-service-registration__section__toggler__btn--toggled':
                         serviceState.isSelected,
                     },
                   )}
@@ -383,9 +383,9 @@ export const RegisterService = observer(
           <button
             type="button"
             className={clsx(
-              'panel__header__action bulk-service-registration__section__toggler__btn ',
+              'panel__header__action bulk-service-registration__section__toggler__btn',
               {
-                'panel__header__action bulk-service-registration__section__toggler__btn--toggled ':
+                'panel__header__action bulk-service-registration__section__toggler__btn--toggled':
                   editorStore.globalBulkServiceRegistrationState
                     .selectAllServices,
               },

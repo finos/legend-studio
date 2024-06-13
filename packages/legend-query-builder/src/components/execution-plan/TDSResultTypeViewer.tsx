@@ -33,7 +33,7 @@ export const TDSResultTypeViewer: React.FC<{
       </PanelListItem>
       <PanelDivider />
       {
-        <table className="table query-builder__result__container__table">
+        <table className="query-builder__result__container__table table">
           <thead>
             <tr>
               <th className="table__cell--left">Label</th>

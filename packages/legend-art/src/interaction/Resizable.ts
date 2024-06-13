@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-@import url('@finos/legend-art/lib/normalize.css');
-@import url('@finos/legend-art/lib/index.css');
-@import url('@finos/legend-application/lib/index.css');
-@import url('@finos/legend-lego/lib/index.css');
+import { Resizable, ResizableBox } from 'react-resizable';
 
-@import url('@finos/legend-application-pure-ide/lib/index.css');
+export { Resizable, ResizableBox };

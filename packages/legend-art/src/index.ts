@@ -18,6 +18,7 @@ export * from './icon/Icon.js';
 export * from './icon/TypeIcon.js';
 export * from './icon/LegendLogo.js';
 export * from './icon/SVGIcon.js';
+export * from './icon/DataCubeIcon.js';
 
 export * from './loader/LoadingIcon.js';
 export * from './loader/CubesLoadingIndicator.js';
@@ -75,4 +76,5 @@ export * from './utils/ComponentUtils.js';
 
 export * from './markdown/MarkdownTextViewer.js';
 
-export * from './drag-and-drop/Draggable.js';
+export * from './interaction/Draggable.js';
+export * from './interaction/Resizable.js';

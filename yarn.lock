@@ -1635,7 +1635,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:7.24.7, @babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.12.0, @babel/runtime@npm:^7.12.13, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.2.0, @babel/runtime@npm:^7.20.1, @babel/runtime@npm:^7.23.9, @babel/runtime@npm:^7.24.6, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.7.6, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.8.7, @babel/runtime@npm:^7.9.2":
+"@babel/runtime@npm:7.24.7, @babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.12.0, @babel/runtime@npm:^7.12.13, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.2.0, @babel/runtime@npm:^7.20.1, @babel/runtime@npm:^7.23.9, @babel/runtime@npm:^7.24.1, @babel/runtime@npm:^7.24.6, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.7.6, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.8.7, @babel/runtime@npm:^7.9.2":
   version: 7.24.7
   resolution: "@babel/runtime@npm:7.24.7"
   dependencies:
@@ -2323,7 +2323,7 @@ __metadata:
     npm-run-all: "npm:4.1.5"
     rimraf: "npm:5.0.7"
     typescript: "npm:5.4.5"
-    webpack: "npm:5.91.0"
+    webpack: "npm:5.92.0"
     webpack-bundle-analyzer: "npm:4.10.2"
     webpack-cli: "npm:5.1.4"
     webpack-dev-server: "npm:5.0.4"
@@ -2355,7 +2355,7 @@ __metadata:
     react-dnd: "npm:16.0.1"
     react-dom: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     serializr: "npm:3.0.2"
     typescript: "npm:5.4.5"
   peerDependencies:
@@ -2387,7 +2387,7 @@ __metadata:
     npm-run-all: "npm:4.1.5"
     react: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     typescript: "npm:5.4.5"
   languageName: unknown
   linkType: soft
@@ -2404,7 +2404,7 @@ __metadata:
     npm-run-all: "npm:4.1.5"
     rimraf: "npm:5.0.7"
     typescript: "npm:5.4.5"
-    webpack: "npm:5.91.0"
+    webpack: "npm:5.92.0"
     webpack-bundle-analyzer: "npm:4.10.2"
     webpack-cli: "npm:5.1.4"
     webpack-dev-server: "npm:5.0.4"
@@ -2439,7 +2439,7 @@ __metadata:
     react: "npm:18.3.1"
     react-dom: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     serializr: "npm:3.0.2"
     typescript: "npm:5.4.5"
   peerDependencies:
@@ -2463,7 +2463,7 @@ __metadata:
     rimraf: "npm:5.0.7"
     tailwindcss: "npm:3.4.4"
     typescript: "npm:5.4.5"
-    webpack: "npm:5.91.0"
+    webpack: "npm:5.92.0"
     webpack-bundle-analyzer: "npm:4.10.2"
     webpack-cli: "npm:5.1.4"
     webpack-dev-server: "npm:5.0.4"
@@ -2502,7 +2502,7 @@ __metadata:
     react-dnd: "npm:16.0.1"
     react-dom: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     serializr: "npm:3.0.2"
     typescript: "npm:5.4.5"
   peerDependencies:
@@ -2535,7 +2535,7 @@ __metadata:
     npm-run-all: "npm:4.1.5"
     react: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     typescript: "npm:5.4.5"
   languageName: unknown
   linkType: soft
@@ -2552,7 +2552,7 @@ __metadata:
     npm-run-all: "npm:4.1.5"
     rimraf: "npm:5.0.7"
     typescript: "npm:5.4.5"
-    webpack: "npm:5.91.0"
+    webpack: "npm:5.92.0"
     webpack-bundle-analyzer: "npm:4.10.2"
     webpack-cli: "npm:5.1.4"
     webpack-dev-server: "npm:5.0.4"
@@ -2593,7 +2593,7 @@ __metadata:
     react-dnd: "npm:16.0.1"
     react-dom: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     serializr: "npm:3.0.2"
     typescript: "npm:5.4.5"
     yaml: "npm:2.4.5"
@@ -2627,7 +2627,7 @@ __metadata:
     react-router: "npm:5.3.4"
     react-router-dom: "npm:5.3.4"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     serializr: "npm:3.0.2"
     typescript: "npm:5.4.5"
     xterm: "npm:5.3.0"
@@ -2654,8 +2654,9 @@ __metadata:
     "@fontsource/roboto-condensed": "npm:5.0.16"
     "@fontsource/roboto-mono": "npm:5.0.18"
     "@jest/globals": "npm:29.7.0"
-    "@mui/material": "npm:5.15.19"
+    "@mui/material": "npm:5.15.20"
     "@types/react": "npm:18.3.3"
+    "@types/react-resizable": "npm:3.0.7"
     "@types/react-select": "npm:4.0.18"
     "@types/react-window": "npm:1.8.8"
     clsx: "npm:2.1.1"
@@ -2674,12 +2675,14 @@ __metadata:
     react-icons: "npm:5.2.1"
     react-markdown: "npm:9.0.1"
     react-reflex: "npm:4.2.6"
-    react-resize-detector: "npm:10.0.1"
+    react-resizable: "npm:3.0.5"
+    react-resize-detector: "npm:11.0.1"
     react-select: "npm:4.3.1"
     react-window: "npm:1.8.10"
     remark-gfm: "npm:4.0.0"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
+    tailwind-merge: "npm:2.3.0"
     typescript: "npm:5.4.5"
   peerDependencies:
     react: ^18.0.0
@@ -2730,10 +2733,10 @@ __metadata:
     react-refresh: "npm:0.14.2"
     resolve: "npm:1.22.8"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     sass-loader: "npm:14.2.1"
     typescript: "npm:5.4.5"
-    webpack: "npm:5.91.0"
+    webpack: "npm:5.92.0"
   languageName: unknown
   linkType: soft
 
@@ -2758,7 +2761,7 @@ __metadata:
     npm-run-all: "npm:4.1.5"
     react: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     serializr: "npm:3.0.2"
     typescript: "npm:5.4.5"
   peerDependencies:
@@ -2787,7 +2790,7 @@ __metadata:
     mobx-react-lite: "npm:4.0.7"
     npm-run-all: "npm:4.1.5"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     typescript: "npm:5.4.5"
   peerDependencies:
     react: ^18.0.0
@@ -2820,7 +2823,7 @@ __metadata:
     react: "npm:18.3.1"
     react-dom: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     serializr: "npm:3.0.2"
     typescript: "npm:5.4.5"
   peerDependencies:
@@ -2854,7 +2857,7 @@ __metadata:
     react-dnd: "npm:16.0.1"
     react-dom: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     serializr: "npm:3.0.2"
     typescript: "npm:5.4.5"
   peerDependencies:
@@ -2883,7 +2886,7 @@ __metadata:
     npm-run-all: "npm:4.1.5"
     react: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     serializr: "npm:3.0.2"
     typescript: "npm:5.4.5"
   peerDependencies:
@@ -2918,7 +2921,7 @@ __metadata:
     react: "npm:18.3.1"
     react-dom: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     serializr: "npm:3.0.2"
     typescript: "npm:5.4.5"
   peerDependencies:
@@ -2948,7 +2951,7 @@ __metadata:
     npm-run-all: "npm:4.1.5"
     react: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     serializr: "npm:3.0.2"
     typescript: "npm:5.4.5"
   peerDependencies:
@@ -2977,7 +2980,7 @@ __metadata:
     npm-run-all: "npm:4.1.5"
     react: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     serializr: "npm:3.0.2"
     typescript: "npm:5.4.5"
   peerDependencies:
@@ -3006,7 +3009,7 @@ __metadata:
     npm-run-all: "npm:4.1.5"
     react: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     serializr: "npm:3.0.2"
     typescript: "npm:5.4.5"
   peerDependencies:
@@ -3036,7 +3039,7 @@ __metadata:
     npm-run-all: "npm:4.1.5"
     react: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     serializr: "npm:3.0.2"
     typescript: "npm:5.4.5"
   peerDependencies:
@@ -3152,7 +3155,7 @@ __metadata:
     react-dnd: "npm:16.0.1"
     react-dom: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     typescript: "npm:5.4.5"
   peerDependencies:
     react: ^18.0.0
@@ -3218,7 +3221,7 @@ __metadata:
     react-dnd: "npm:16.0.1"
     react-dom: "npm:18.3.1"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     serializr: "npm:3.0.2"
     sql-formatter: "npm:15.3.1"
     typescript: "npm:5.4.5"
@@ -3281,7 +3284,7 @@ __metadata:
     npm-run-all: "npm:4.1.5"
     rimraf: "npm:5.0.7"
     typescript: "npm:5.4.5"
-    webpack: "npm:5.91.0"
+    webpack: "npm:5.92.0"
     webpack-bundle-analyzer: "npm:4.10.2"
     webpack-cli: "npm:5.1.4"
   languageName: unknown
@@ -3902,23 +3905,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/core-downloads-tracker@npm:^5.15.19":
+"@mui/core-downloads-tracker@npm:^5.15.20":
   version: 5.15.20
   resolution: "@mui/core-downloads-tracker@npm:5.15.20"
   checksum: 10/8cc71169ce1201c5a37fad6c5c58739850694e90c7bda636c692d47a79fd4c7884eab2c24b0084d6732a3d28c9a4a6d222dd5747f9d91f5075614700a3a3282a
   languageName: node
   linkType: hard
 
-"@mui/material@npm:5.15.19":
-  version: 5.15.19
-  resolution: "@mui/material@npm:5.15.19"
+"@mui/material@npm:5.15.20":
+  version: 5.15.20
+  resolution: "@mui/material@npm:5.15.20"
   dependencies:
     "@babel/runtime": "npm:^7.23.9"
     "@mui/base": "npm:5.0.0-beta.40"
-    "@mui/core-downloads-tracker": "npm:^5.15.19"
-    "@mui/system": "npm:^5.15.15"
+    "@mui/core-downloads-tracker": "npm:^5.15.20"
+    "@mui/system": "npm:^5.15.20"
     "@mui/types": "npm:^7.2.14"
-    "@mui/utils": "npm:^5.15.14"
+    "@mui/utils": "npm:^5.15.20"
     "@types/react-transition-group": "npm:^4.4.10"
     clsx: "npm:^2.1.0"
     csstype: "npm:^3.1.3"
@@ -3938,15 +3941,19 @@ __metadata:
       optional: true
     "@types/react":
       optional: true
-  checksum: 10/92618aaefc85b4d4a6012dba48fe4b4936db45c1afd3436b148c81d8b8d0a001c57fd654bd101f94077979f1cf4e3ad5a7e5dd24a6f1b666f3d2e23d75a63f84
+  checksum: 10/1e568f82334b3a556bd248130238746bcd59951aad654e43c0df292076fae6799172113c3e2eb93fffaf49bd81023fbee0494b073e8808400ad00bea9f030e9b
   languageName: node
   linkType: hard
 
 "@mui/private-theming@npm:^5.15.20":
   version: 5.15.20
   resolution: "@mui/private-theming@npm:5.15.20"
+"@mui/private-theming@npm:^5.15.20":
+  version: 5.15.20
+  resolution: "@mui/private-theming@npm:5.15.20"
   dependencies:
     "@babel/runtime": "npm:^7.23.9"
+    "@mui/utils": "npm:^5.15.20"
     "@mui/utils": "npm:^5.15.20"
     prop-types: "npm:^15.8.1"
   peerDependencies:
@@ -3955,6 +3962,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
+  checksum: 10/b50792ffae70682b608eb5d62c1f2697e2d06e41e20f1b0f9e6b648939f1e154f884d8b03b08de22b18fd3c59904a17e7fc4e57b410e5897e47802de15aa2507
   checksum: 10/b50792ffae70682b608eb5d62c1f2697e2d06e41e20f1b0f9e6b648939f1e154f884d8b03b08de22b18fd3c59904a17e7fc4e57b410e5897e47802de15aa2507
   languageName: node
   linkType: hard
@@ -3980,14 +3988,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/system@npm:^5.15.15":
+"@mui/system@npm:^5.15.20":
   version: 5.15.20
   resolution: "@mui/system@npm:5.15.20"
   dependencies:
     "@babel/runtime": "npm:^7.23.9"
     "@mui/private-theming": "npm:^5.15.20"
+    "@mui/private-theming": "npm:^5.15.20"
     "@mui/styled-engine": "npm:^5.15.14"
     "@mui/types": "npm:^7.2.14"
+    "@mui/utils": "npm:^5.15.20"
     "@mui/utils": "npm:^5.15.20"
     clsx: "npm:^2.1.0"
     csstype: "npm:^3.1.3"
@@ -4005,6 +4015,7 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 10/2bc5d8537b9a01aff406f6b4b113242be7cc88b768b3be0f89668c918492405e5d538131ecf06e0bb1c76aaa99b73231b1a6b64ee218c63cb9f791665c7e9a1a
+  checksum: 10/2bc5d8537b9a01aff406f6b4b113242be7cc88b768b3be0f89668c918492405e5d538131ecf06e0bb1c76aaa99b73231b1a6b64ee218c63cb9f791665c7e9a1a
   languageName: node
   linkType: hard
 
@@ -4021,6 +4032,24 @@ __metadata:
   linkType: hard
 
 "@mui/utils@npm:^5.15.14, @mui/utils@npm:^5.15.20":
+  version: 5.15.20
+  resolution: "@mui/utils@npm:5.15.20"
+  dependencies:
+    "@babel/runtime": "npm:^7.23.9"
+    "@types/prop-types": "npm:^15.7.11"
+    prop-types: "npm:^15.8.1"
+    react-is: "npm:^18.2.0"
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10/b3cbe2d0aa7ec65969752dababc39fc6e0b8bb1a9cf8b9bac42ca40e3dd3eaa59b79765bd259019318acc7421d64b9f421bc67e776a581d7c9da6a1c0c50bfbc
+  languageName: node
+  linkType: hard
+
+"@mui/utils@npm:^5.15.20":
   version: 5.15.20
   resolution: "@mui/utils@npm:5.15.20"
   dependencies:
@@ -4840,6 +4869,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-resizable@npm:3.0.7":
+  version: 3.0.7
+  resolution: "@types/react-resizable@npm:3.0.7"
+  dependencies:
+    "@types/react": "npm:*"
+  checksum: 10/e66dfabcb614f1da1f561d0ecaf1dc384fc0e361d97fa7b219f04f8b85ad9dd2576437117af52ae6bf33644061db2d9452e0a4aadfe457588d93a36d2db8de0b
+  languageName: node
+  linkType: hard
+
 "@types/react-router-dom@npm:5.3.3":
   version: 5.3.3
   resolution: "@types/react-router-dom@npm:5.3.3"
@@ -5401,12 +5439,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn-import-assertions@npm:^1.9.0":
-  version: 1.9.0
-  resolution: "acorn-import-assertions@npm:1.9.0"
+"acorn-import-attributes@npm:^1.9.5":
+  version: 1.9.5
+  resolution: "acorn-import-attributes@npm:1.9.5"
   peerDependencies:
     acorn: ^8
-  checksum: 10/af8dd58f6b0c6a43e85849744534b99f2133835c6fcdabda9eea27d0a0da625a0d323c4793ba7cb25cf4507609d0f747c210ccc2fc9b5866de04b0e59c9c5617
+  checksum: 10/8bfbfbb6e2467b9b47abb4d095df717ab64fce2525da65eabee073e85e7975fb3a176b6c8bba17c99a7d8ede283a10a590272304eb54a93c4aa1af9790d47a8b
   languageName: node
   linkType: hard
 
@@ -8252,7 +8290,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"enhanced-resolve@npm:^5.16.0":
+"enhanced-resolve@npm:^5.17.0":
   version: 5.17.0
   resolution: "enhanced-resolve@npm:5.17.0"
   dependencies:
@@ -11806,12 +11844,13 @@ __metadata:
     husky: "npm:9.0.11"
     inquirer: "npm:9.2.23"
     jest: "npm:29.7.0"
-    lint-staged: "npm:15.2.5"
+    lint-staged: "npm:15.2.7"
     micromatch: "npm:4.0.7"
     npm-run-all: "npm:4.1.5"
     prettier: "npm:3.3.2"
+    prettier-plugin-tailwindcss: "npm:0.6.4"
     rimraf: "npm:5.0.7"
-    sass: "npm:1.77.4"
+    sass: "npm:1.77.5"
     semver: "npm:7.6.2"
     sort-package-json: "npm:2.10.0"
     stylelint: "npm:16.6.1"
@@ -11870,9 +11909,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:15.2.5":
-  version: 15.2.5
-  resolution: "lint-staged@npm:15.2.5"
+"lint-staged@npm:15.2.7":
+  version: 15.2.7
+  resolution: "lint-staged@npm:15.2.7"
   dependencies:
     chalk: "npm:~5.3.0"
     commander: "npm:~12.1.0"
@@ -11886,7 +11925,7 @@ __metadata:
     yaml: "npm:~2.4.2"
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: 10/2cb8e14e532a4de0a338da44dc5e22f94581390b988ba3d345d1132d592d9ce50be50846c9a9d25eaffaf3f1f634e0a056598f6abb705269ac21d0fd3bad3a45
+  checksum: 10/7557bcf4e8dc0555f2c7e6a8ab6f5dfd7faaaed632a5d9e598768c86f786267ca216f8005068796a8118884d322a1c7f8f93e57c01b3e556475b77297ddad34f
   languageName: node
   linkType: hard
 
@@ -14950,6 +14989,61 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prettier-plugin-tailwindcss@npm:0.6.4":
+  version: 0.6.4
+  resolution: "prettier-plugin-tailwindcss@npm:0.6.4"
+  peerDependencies:
+    "@ianvs/prettier-plugin-sort-imports": "*"
+    "@prettier/plugin-pug": "*"
+    "@shopify/prettier-plugin-liquid": "*"
+    "@trivago/prettier-plugin-sort-imports": "*"
+    "@zackad/prettier-plugin-twig-melody": "*"
+    prettier: ^3.0
+    prettier-plugin-astro: "*"
+    prettier-plugin-css-order: "*"
+    prettier-plugin-import-sort: "*"
+    prettier-plugin-jsdoc: "*"
+    prettier-plugin-marko: "*"
+    prettier-plugin-organize-attributes: "*"
+    prettier-plugin-organize-imports: "*"
+    prettier-plugin-sort-imports: "*"
+    prettier-plugin-style-order: "*"
+    prettier-plugin-svelte: "*"
+  peerDependenciesMeta:
+    "@ianvs/prettier-plugin-sort-imports":
+      optional: true
+    "@prettier/plugin-pug":
+      optional: true
+    "@shopify/prettier-plugin-liquid":
+      optional: true
+    "@trivago/prettier-plugin-sort-imports":
+      optional: true
+    "@zackad/prettier-plugin-twig-melody":
+      optional: true
+    prettier-plugin-astro:
+      optional: true
+    prettier-plugin-css-order:
+      optional: true
+    prettier-plugin-import-sort:
+      optional: true
+    prettier-plugin-jsdoc:
+      optional: true
+    prettier-plugin-marko:
+      optional: true
+    prettier-plugin-organize-attributes:
+      optional: true
+    prettier-plugin-organize-imports:
+      optional: true
+    prettier-plugin-sort-imports:
+      optional: true
+    prettier-plugin-style-order:
+      optional: true
+    prettier-plugin-svelte:
+      optional: true
+  checksum: 10/b1fc0f6848c23dadb3fae6ac55d06da0b0adcbfe57977766b26a79f38e85f52e5d8e8f6a48449417d7b2acc283aeac27908c01c2692bb8c2a886097119e10521
+  languageName: node
+  linkType: hard
+
 "prettier@npm:3.3.2":
   version: 3.3.2
   resolution: "prettier@npm:3.3.2"
@@ -15055,7 +15149,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:^15.5.8, prop-types@npm:^15.6.0, prop-types@npm:^15.6.2, prop-types@npm:^15.8.1":
+"prop-types@npm:15.x, prop-types@npm:^15.5.8, prop-types@npm:^15.6.0, prop-types@npm:^15.6.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -15274,7 +15368,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-draggable@npm:4.4.6":
+"react-draggable@npm:4.4.6, react-draggable@npm:^4.0.3":
   version: 4.4.6
   resolution: "react-draggable@npm:4.4.6"
   dependencies:
@@ -15385,15 +15479,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-resize-detector@npm:10.0.1":
-  version: 10.0.1
-  resolution: "react-resize-detector@npm:10.0.1"
+"react-resizable@npm:3.0.5":
+  version: 3.0.5
+  resolution: "react-resizable@npm:3.0.5"
+  dependencies:
+    prop-types: "npm:15.x"
+    react-draggable: "npm:^4.0.3"
+  peerDependencies:
+    react: ">= 16.3"
+  checksum: 10/745fad6ac827857b3a80d1d648b8d6723aa72fc17d5410a01707073f3d37b4adf6e0354dfe3cc33dee34d6e546a3fbd5603ef73e385dfc5218a425a39bf96275
+  languageName: node
+  linkType: hard
+
+"react-resize-detector@npm:11.0.1":
+  version: 11.0.1
+  resolution: "react-resize-detector@npm:11.0.1"
   dependencies:
     lodash: "npm:^4.17.21"
   peerDependencies:
     react: ^18.0.0
     react-dom: ^18.0.0
-  checksum: 10/e713a632313cd479c966fa36db7cdafdd9ee7709fb622ae24fd9b9075453a4b13b421397b0793249d63153dbd6e7d45a7bcc6292dac9428f8e0a70153cc845c4
+  checksum: 10/42bb34cb8f54d9128ffd8ea31ca251b6b21318705113412fb241f5a932eedef7b60e4adbdccdf9e073dae6c9e7f1c06bc1925eda6c0abb2fb982af8b2898361e
   languageName: node
   linkType: hard
 
@@ -16140,16 +16246,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:1.77.4":
-  version: 1.77.4
-  resolution: "sass@npm:1.77.4"
+"sass@npm:1.77.5":
+  version: 1.77.5
+  resolution: "sass@npm:1.77.5"
   dependencies:
     chokidar: "npm:>=3.0.0 <4.0.0"
     immutable: "npm:^4.0.0"
     source-map-js: "npm:>=0.6.2 <2.0.0"
   bin:
     sass: sass.js
-  checksum: 10/04e31ce4961a7b90238c274a268945cd67177d992273073e6fa5df09fe7a03ff378f1608fe646ec512c8691038ac9487e06ef5abb2185f56eb36204952538eea
+  checksum: 10/40e4eb70665f10494ede0fd3b17bf7f33352f02d1536b08c84eadd0a4e397ef2b475a70290f02b3c5421b3c77f312fd0e139920814daa49dc2c32b8e618f93ba
   languageName: node
   linkType: hard
 
@@ -17297,6 +17403,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tailwind-merge@npm:2.3.0":
+  version: 2.3.0
+  resolution: "tailwind-merge@npm:2.3.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.24.1"
+  checksum: 10/cf3b126bee82bc9ff3f60f9601b66925418db6906544198b637487b25fba1c9c307734ca37ccb8fa2355f69ad0c5aff34c5dce460809addb459a93205d9a0abe
+  languageName: node
+  linkType: hard
+
 "tailwindcss@npm:3.4.4":
   version: 3.4.4
   resolution: "tailwindcss@npm:3.4.4"
@@ -18405,9 +18520,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.91.0":
-  version: 5.91.0
-  resolution: "webpack@npm:5.91.0"
+"webpack@npm:5.92.0":
+  version: 5.92.0
+  resolution: "webpack@npm:5.92.0"
   dependencies:
     "@types/eslint-scope": "npm:^3.7.3"
     "@types/estree": "npm:^1.0.5"
@@ -18415,10 +18530,10 @@ __metadata:
     "@webassemblyjs/wasm-edit": "npm:^1.12.1"
     "@webassemblyjs/wasm-parser": "npm:^1.12.1"
     acorn: "npm:^8.7.1"
-    acorn-import-assertions: "npm:^1.9.0"
+    acorn-import-attributes: "npm:^1.9.5"
     browserslist: "npm:^4.21.10"
     chrome-trace-event: "npm:^1.0.2"
-    enhanced-resolve: "npm:^5.16.0"
+    enhanced-resolve: "npm:^5.17.0"
     es-module-lexer: "npm:^1.2.1"
     eslint-scope: "npm:5.1.1"
     events: "npm:^3.2.0"
@@ -18438,7 +18553,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 10/647ca53c15fe0fa1af4396a7257d7a93cbea648d2685e565a11cc822a9e3ea9316345250987d75f02c0b45dae118814f094ec81908d1032e77a33cd6470b289e
+  checksum: 10/1d5e7e881615df05af7e58bd7ce872495cf6361f345f2b2a7dcbd8febd8761b68b7567e14f9ebbf1d666b6c78cc90c3f304fb10b8a457ab71aa7015116a7d6d9
   languageName: node
   linkType: hard
 

@@ -15,9 +15,14 @@
  */
 
 import { useState, useEffect } from 'react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-export { clsx, type ClassValue } from 'clsx';
+export { clsx, type ClassValue };
 export { Portal } from '@mui/material';
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export { useResizeDetector } from 'react-resize-detector';
 

@@ -14,5 +14,15 @@
  * limitations under the License.
  */
 
-@import url('@ag-grid-community/styles/ag-grid.css');
-@import url('@ag-grid-community/styles/ag-theme-balham.css');
+// NOTE: the icons in this file is pertained to only Data Cube, before
+// merging them in the main icon registry, we should review them
+
+import { GoBrowser, GoPin, GoX } from 'react-icons/go';
+import { GrBottomCorner } from 'react-icons/gr';
+
+export const DataCubeIcon = {
+  Window: GoBrowser,
+  Pin: GoPin,
+  X: GoX,
+  ResizeCornerSE: GrBottomCorner,
+};

@@ -92,7 +92,7 @@ export const StoreMappingGlobalGraphFetchExecutionNodeViewer: React.FC<{
           Store Mapping Global Graph Fetch Execution Node Details
         </PanelListItem>
         <PanelDivider />
-        <table className="table query-builder__store-mapping-global-graph-fetch__container__table">
+        <table className="query-builder__store-mapping-global-graph-fetch__container__table table">
           <thead>
             <tr>
               <th className="table__cell--left">Property</th>
@@ -178,7 +178,7 @@ export const StoreMappingGlobalGraphFetchExecutionNodeViewer: React.FC<{
               xStorePropertyFetchDetails
             </PanelListItem>
             <PanelDivider />
-            <table className="table query-builder__store-mapping-global-graph-fetch__container__table">
+            <table className="query-builder__store-mapping-global-graph-fetch__container__table table">
               <thead>
                 <tr>
                   <th className="table__cell--left">Property</th>

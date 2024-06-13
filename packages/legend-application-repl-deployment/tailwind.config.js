@@ -16,14 +16,17 @@
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./src/**/*.{tsx}', '../legend-*/src/**/*.{tsx}'],
+  content: ['./src/**/*.tsx', '../legend-*/src/**/*.tsx'],
   theme: {
-    extend: {},
-  },
-  // NOTE: do not reset base styles
-  // See https://tailwindcss.com/docs/preflight
-  corePlugins: {
-    preflight: false,
+    fontSize: {
+      xs: ['8px', '8px'],
+      sm: ['10px', '12px'],
+      base: ['12px', '16px'],
+      lg: ['14px', '20px'],
+      xl: ['16px', '24px'],
+      '2xl': ['20px', '28px'],
+      '3xl': ['24px', '32px'],
+    },
   },
   plugins: [],
 };
