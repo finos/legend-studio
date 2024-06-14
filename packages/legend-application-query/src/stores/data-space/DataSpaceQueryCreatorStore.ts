@@ -16,12 +16,12 @@
 
 import {
   type Query,
+  type QuerySearchSpecification,
+  type RawLambda,
   extractElementNameFromPath,
   RuntimePointer,
   PackageableElementExplicitReference,
-  type RawLambda,
   QueryProjectCoordinates,
-  QuerySearchSpecification,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,

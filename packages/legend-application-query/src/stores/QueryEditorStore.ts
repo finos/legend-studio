@@ -78,7 +78,6 @@ import {
   type Entity,
   type ProjectGAVCoordinates,
   type EntitiesWithOrigin,
-  parseProjectIdentifier,
   parseGACoordinates,
 } from '@finos/legend-storage';
 import {
