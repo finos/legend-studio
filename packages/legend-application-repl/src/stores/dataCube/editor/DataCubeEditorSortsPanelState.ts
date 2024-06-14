@@ -16,22 +16,22 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
-import type {
-  DataCubeQuerySnapshot,
-  DataCubeQuerySnapshotColumn,
-  DataCubeQuerySnapshotSortColumn,
+import {
+  DataCubeQuerySnapshotSortDirection,
+  type DataCubeQuerySnapshot,
+  type DataCubeQuerySnapshotColumn,
+  type DataCubeQuerySnapshotSortColumn,
 } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import { deepEqual } from '@finos/legend-shared';
-import { DATA_CUBE_COLUMN_SORT_DIRECTION } from '../DataCubeMetaModelConst.js';
 
 export class DataCubeEditorSortColumnState {
   readonly column: DataCubeQuerySnapshotColumn;
-  direction: DATA_CUBE_COLUMN_SORT_DIRECTION;
+  direction: DataCubeQuerySnapshotSortDirection;
 
   constructor(
     column: DataCubeQuerySnapshotColumn,
-    direction: DATA_CUBE_COLUMN_SORT_DIRECTION,
+    direction: DataCubeQuerySnapshotSortDirection,
   ) {
     makeObservable(this, {
       direction: observable,
@@ -42,7 +42,7 @@ export class DataCubeEditorSortColumnState {
     this.direction = direction;
   }
 
-  setDirection(val: DATA_CUBE_COLUMN_SORT_DIRECTION): void {
+  setDirection(val: DataCubeQuerySnapshotSortDirection): void {
     this.direction = val;
   }
 }
@@ -165,7 +165,7 @@ export class DataCubeEditorSortsPanelState
           (col) =>
             new DataCubeEditorSortColumnState(
               col,
-              DATA_CUBE_COLUMN_SORT_DIRECTION.ASCENDING,
+              DataCubeQuerySnapshotSortDirection.ASCENDING,
             ),
         ),
     );

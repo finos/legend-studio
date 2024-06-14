@@ -17,47 +17,27 @@
 import type {
   IServerSideDatasource,
   IServerSideGetRowsParams,
-  IServerSideGetRowsRequest,
 } from '@ag-grid-community/core';
 import type { DataCubeGridState } from './DataCubeGridState.js';
 import {
-  cloneSnapshot,
-  type DataCubeQueryFilter,
-  type DataCubeQueryFilterCondition,
-  type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotAggregateColumn,
-  type DataCubeQuerySnapshotColumn,
-  type DataCubeQuerySnapshotSortColumn,
-} from '../core/DataCubeQuerySnapshot.js';
-import {
   LogEvent,
   assertErrorThrown,
-  deepEqual,
   guaranteeNonNullable,
   isBoolean,
 } from '@finos/legend-shared';
 import { buildExecutableQueryFromSnapshot } from '../core/DataCubeQueryBuilder.js';
-import {
-  type TabularDataSet,
-  V1_Lambda,
-  PRIMITIVE_TYPE,
-  extractElementNameFromPath,
-} from '@finos/legend-graph';
-import {
-  DATA_CUBE_COLUMN_SORT_DIRECTION,
-  DATA_CUBE_FILTER_OPERATION,
-  DATA_CUBE_FUNCTIONS,
-} from '../DataCubeMetaModelConst.js';
+import { type TabularDataSet, V1_Lambda } from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
+import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 
-export type GridClientResultCellDataType =
+type GridClientResultCellDataType =
   | string
   | number
   | boolean
   | null
   | undefined;
 
-export type GridClientRowDataType = {
+type GridClientRowDataType = {
   [key: string]: GridClientResultCellDataType;
 };
 
@@ -92,10 +72,14 @@ export class DataCubeGridClientServerSideDataSource
     params: IServerSideGetRowsParams<unknown, unknown>,
   ): Promise<void> {
     const currentSnapshot = guaranteeNonNullable(this.grid.getLatestSnapshot());
-    const syncedSnapshot = this.syncSnapshot(params.request, currentSnapshot);
+    const syncedSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
     if (syncedSnapshot.uuid !== currentSnapshot.uuid) {
       this.grid.publishSnapshot(syncedSnapshot);
     }
+    // TODO: @akphi - what we do here is wrong fundamentally, when we detect presence of groupKeys
+    // i.e. drilldown in the request, we don't need to update the snapshot, but fire a modified query,
+    // here we update the snapshot just so we can build the query to execute to get the result, which is
+    // wrong. We must not uncessarily update the snapshot.
     try {
       const executableQuery = buildExecutableQueryFromSnapshot(syncedSnapshot);
       const lambda = new V1_Lambda();
@@ -119,96 +103,5 @@ export class DataCubeGridClientServerSideDataSource
         error,
       );
     });
-  }
-
-  private syncSnapshot(
-    request: IServerSideGetRowsRequest,
-    baseSnapshot: DataCubeQuerySnapshot,
-  ): DataCubeQuerySnapshot {
-    let createNew = false;
-
-    // --------------------------------- GROUP BY ---------------------------------
-    const groupByExpandedKeys = request.groupKeys;
-    const groupByColumns = request.rowGroupCols.map((r) => {
-      // TODO: @akphi - revist this, we should not use `selectColumns` here, or maybe a combination?
-      const column = baseSnapshot.selectColumns.find(
-        (col) => col.name === r.id,
-      );
-      return {
-        name: r.id,
-        type: guaranteeNonNullable(column).type,
-      } as DataCubeQuerySnapshotColumn;
-    });
-    const groupByAggColumns = request.valueCols.map((v) => {
-      // TODO: @akphi - revist this, we should not use `selectColumns` here, or maybe a combination?
-      const type = baseSnapshot.selectColumns.find(
-        (col) => col.name === v.field,
-      )?.type;
-      return {
-        name: v.field,
-        type: type,
-        function: v.aggFunc,
-      } as DataCubeQuerySnapshotAggregateColumn;
-    });
-    let groupByFilter: DataCubeQueryFilter | undefined;
-
-    for (let index = 0; index < groupByExpandedKeys.length; index++) {
-      const groupFilter = {
-        conditions: [
-          {
-            name: guaranteeNonNullable(groupByColumns.at(index)).name,
-            type: PRIMITIVE_TYPE.STRING,
-            operation: DATA_CUBE_FILTER_OPERATION.EQUALS,
-            value: groupByExpandedKeys.at(index),
-          } as DataCubeQueryFilterCondition,
-        ],
-        groupOperation: extractElementNameFromPath(DATA_CUBE_FUNCTIONS.AND),
-      } as DataCubeQueryFilter;
-
-      groupByFilter = groupFilter;
-    }
-
-    // --------------------------------- SORT ---------------------------------
-
-    const newSortColumns: DataCubeQuerySnapshotSortColumn[] =
-      request.sortModel.map((sortInfo) => {
-        const column = guaranteeNonNullable(
-          baseSnapshot.selectColumns.find((col) => col.name === sortInfo.colId),
-        );
-        return {
-          name: sortInfo.colId,
-          type: column.type,
-          direction:
-            sortInfo.sort === GridClientSortDirection.ASCENDING
-              ? DATA_CUBE_COLUMN_SORT_DIRECTION.ASCENDING
-              : DATA_CUBE_COLUMN_SORT_DIRECTION.DESCENDING,
-        };
-      });
-
-    if (
-      !deepEqual(newSortColumns, baseSnapshot.sortColumns) ||
-      !deepEqual(groupByExpandedKeys, baseSnapshot.groupByExpandedKeys) ||
-      !deepEqual(groupByColumns, baseSnapshot.groupByColumns) ||
-      !deepEqual(groupByAggColumns, baseSnapshot.groupByAggColumns) ||
-      !deepEqual(groupByFilter, baseSnapshot.groupByFilter)
-    ) {
-      createNew = true;
-    }
-
-    // --------------------------------- SELECT ---------------------------------
-    // TODO: @akphi - Implement this
-
-    // --------------------------------- FINALIZE ---------------------------------
-
-    if (createNew) {
-      const newSnapshot = cloneSnapshot(baseSnapshot);
-      newSnapshot.sortColumns = newSortColumns;
-      newSnapshot.groupByExpandedKeys = groupByExpandedKeys;
-      newSnapshot.groupByColumns = groupByColumns;
-      newSnapshot.groupByAggColumns = groupByAggColumns;
-      newSnapshot.groupByFilter = groupByFilter;
-      return newSnapshot;
-    }
-    return baseSnapshot;
   }
 }

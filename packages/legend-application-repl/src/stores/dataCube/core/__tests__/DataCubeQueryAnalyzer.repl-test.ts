@@ -96,7 +96,7 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
     'Invalid: Not a chain of function call',
     '2',
     [],
-    'Query sequence must be a sequence of function calls (e.g. x()->y()->z())',
+    'Query must be a sequence of function calls (e.g. x()->y()->z())',
   ],
   [
     'Invalid: Unsupported function',
@@ -160,7 +160,7 @@ describe(unitTest('Analyze and build base snapshot'), () => {
         };
       });
       try {
-        validateAndBuildQuerySnapshot(baseQuery, new V1_Lambda(), partialQuery);
+        validateAndBuildQuerySnapshot(partialQuery, new V1_Lambda(), baseQuery);
         expect('').toEqual(problem);
       } catch (error: unknown) {
         assertErrorThrown(error);

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export enum DATA_CUBE_FUNCTIONS {
+export enum DATA_CUBE_FUNCTION {
   // relation
   EXTEND = 'meta::pure::functions::relation::extend',
   FILTER = 'meta::pure::functions::relation::filter',
@@ -26,7 +26,7 @@ export enum DATA_CUBE_FUNCTIONS {
   SLICE = 'meta::pure::functions::relation::slice',
   SORT = 'meta::pure::functions::relation::sort',
 
-  // core
+  // generic
   CAST = 'meta::pure::functions::lang::cast',
   FROM = 'meta::pure::mapping::from',
 
@@ -39,40 +39,31 @@ export enum DATA_CUBE_FUNCTIONS {
   NOT = 'meta::pure::functions::boolean::not',
   OR = 'meta::pure::functions::boolean::or',
 
+  CONTAINS = 'meta::pure::functions::string::contains',
+  ENDS_WITH = 'meta::pure::functions::string::endsWith',
+  EQUAL = 'meta::pure::functions::boolean::equal',
+  GREATER_THAN = 'meta::pure::functions::boolean::greaterThan',
+  GREATER_THAN_EQUAL = 'meta::pure::functions::boolean::greaterThanEqual',
+  IN = 'meta::pure::functions::collection::in',
+  IS_EMPTY = 'meta::pure::functions::collection::isEmpty',
+  LESS_THAN = 'meta::pure::functions::boolean::lessThan',
+  LESS_THAN_EQUAL = 'meta::pure::functions::boolean::lessThanEqual',
+  STARTS_WITH = 'meta::pure::functions::string::startsWith',
+
   // aggregate
+  AVERAGE = 'meta::pure::functions::math::average',
+  COUNT = 'meta::pure::functions::collection::count',
+  DISTINCT = 'meta::pure::functions::collection::distinct',
+  FIRST = 'meta::pure::functions::collection::first',
+  JOIN_STRINGS = 'meta::pure::functions::string::joinStrings',
+  LAST = 'meta::pure::functions::collection::last',
+  MAX = 'meta::pure::functions::collection::max',
+  MIN = 'meta::pure::functions::collection::min',
+  SUM = 'meta::pure::functions::math::sum',
+  STD_DEV_POPULATION = 'meta::pure::functions::math::stdDevPopulation',
+  STD_DEV_SAMPLE = 'meta::pure::functions::math::stdDevSample',
+  UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
 }
 
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
 export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
-
-export enum DATA_CUBE_AGGREGATE_FUNCTION {
-  SUM = 'sum',
-  MIN = 'min',
-  MAX = 'max',
-  COUNT = 'count',
-  AVG = 'avg',
-  FIRST = 'first',
-  LAST = 'last',
-}
-
-export enum DATA_CUBE_FILTER_OPERATION {
-  EQUALS = 'equal',
-  NOT_EQUAL = 'notEqual',
-  GREATER_THAN = 'greaterThan',
-  GREATER_THAN_OR_EQUAL = 'greaterThanOrEqual',
-  LESS_THAN = 'lessThan',
-  LESS_THAN_OR_EQUAL = 'lessThanOrEqual',
-  BLANK = 'isEmpty',
-  NOT_BLANK = 'isNotEmpty',
-  CONTAINS = 'contains',
-  NOT_CONTAINS = 'notContains',
-  STARTS_WITH = 'startsWith',
-  ENDS_WITH = 'endsWith',
-}
-
-export enum DATA_CUBE_COLUMN_SORT_DIRECTION {
-  ASCENDING = 'ascending',
-  DESCENDING = 'descending',
-}
-
-export const DATA_CUBE_DEFAULT_REPORT_NAME = 'New Report';

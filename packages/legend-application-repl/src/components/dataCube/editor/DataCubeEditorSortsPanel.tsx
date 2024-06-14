@@ -24,8 +24,8 @@ import {
   ChevronRightIcon,
   CustomSelectorInput,
 } from '@finos/legend-art';
-import { DATA_CUBE_COLUMN_SORT_DIRECTION } from '../../../stores/dataCube/DataCubeMetaModelConst.js';
 import { useREPLStore } from '../../REPLStoreProvider.js';
+import { DataCubeQuerySnapshotSortDirection } from '../../../stores/dataCube/core/DataCubeQuerySnapshot.js';
 
 export const DataCubeEditorSortsPanel = observer(() => {
   const replStore = useREPLStore();
@@ -47,7 +47,7 @@ export const DataCubeEditorSortsPanel = observer(() => {
     panel.setSelectedColumnsSearchText('');
   };
   const sortOptions = Array.from(
-    Object.values(DATA_CUBE_COLUMN_SORT_DIRECTION),
+    Object.values(DataCubeQuerySnapshotSortDirection),
   ).map((val) => ({
     label: val,
     value: val,
@@ -56,7 +56,7 @@ export const DataCubeEditorSortsPanel = observer(() => {
     (columnName: string) =>
     (option: {
       label: string;
-      value: DATA_CUBE_COLUMN_SORT_DIRECTION;
+      value: DataCubeQuerySnapshotSortDirection;
     }): void => {
       const column = panel.availableColumns.find(
         (col) => col.column.name === columnName,
@@ -70,7 +70,7 @@ export const DataCubeEditorSortsPanel = observer(() => {
     (columnName: string) =>
     (option: {
       label: string;
-      value: DATA_CUBE_COLUMN_SORT_DIRECTION;
+      value: DataCubeQuerySnapshotSortDirection;
     }): void => {
       const column = panel.selectedColumns.find(
         (col) => col.column.name === columnName,

@@ -66,6 +66,16 @@ body * {
   --ag-odd-row-background-color: #dbeafe; // tailwind blue 100
   --ag-row-hover-color: #d4d4d415; // tailwind neutral 300
 
+  .ag-column-drop-cell {
+    height: 16px;
+    display: flex;
+    align-items: center;
+
+    .ag-column-drop-cell-text {
+      height: 16px;
+    }
+  }
+
   // TODO: cell/range selection color
 }
 

@@ -50,12 +50,17 @@ export const DataCubeGrid = observer(() => {
     <>
       <AgGridReact
         rowGroupPanelShow="always"
+        alwaysMultiSort={true}
         suppressBrowserResizeObserver={true}
         suppressScrollOnNewData={true}
-        alwaysMultiSort={true}
         rowModelType="serverSide"
         serverSideDatasource={dataCubeState.grid.clientDataSource}
         suppressAggFuncInHeader={true}
+        // TODO: @akphi - once we do pagination, we can remove reliance on this flag
+        // Otherwise if we remove this flag now, when data is more than one page or 100 rows
+        // it keeps making call to backend to fetch more data as ag-grid updates it’s request
+        // for start row and end row. This would show incorrect data as you scroll since the
+        // to the backend does not account for pagination.
         suppressServerSideInfiniteScroll={true}
         rowHeight={20}
         headerHeight={24}

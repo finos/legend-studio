@@ -59,15 +59,16 @@ export class DataCubeState {
       );
       const result = await this.engine.getBaseQuery();
       const initialSnapshot = validateAndBuildQuerySnapshot(
-        result.query,
-        result.sourceQuery,
         result.partialQuery,
+        result.sourceQuery,
+        result.query,
       );
       initialSnapshot.timestamp = result.timestamp;
       this.snapshotManager.broadcastSnapshot(initialSnapshot);
       this.initState.complete();
     } catch (error: unknown) {
       assertErrorThrown(error);
+      this.application.notificationService.notifyError(error);
       this.initState.fail();
     }
   }

@@ -13,3 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/*****************************************************************************
+ * [GRID]
+ *
+ * This is a collection of utilities used to directly build adhoc
+ * executable queries for fetching data for the grid. The grid comes with
+ * features that requires building slight modifications of the query that
+ * would be generated from the snapshot, such as in the case of pagination,
+ * drilldown (group by).
+ *****************************************************************************/

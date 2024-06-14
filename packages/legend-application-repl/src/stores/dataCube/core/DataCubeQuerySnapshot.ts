@@ -17,92 +17,46 @@
 import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
 import type { DataCubeConfiguration } from '../../../server/models/DataCubeQuery.js';
 import { uuid, type PlainObject, type Writable } from '@finos/legend-shared';
-import type {
-  DATA_CUBE_AGGREGATE_FUNCTION,
-  DATA_CUBE_COLUMN_SORT_DIRECTION,
-  DATA_CUBE_FILTER_OPERATION,
-} from '../DataCubeMetaModelConst.js';
 
-// export enum FILTER_OPERATION {
-//   EQUALS = 'equal',
-//   NOT_EQUAL = 'notEqual',
-//   GREATER_THAN = 'greaterThan',
-//   GREATER_THAN_OR_EQUAL = 'greaterThanOrEqual',
-//   LESS_THAN = 'lessThan',
-//   LESS_THAN_OR_EQUAL = 'lessThanOrEqual',
-//   BLANK = 'isEmpty',
-//   NOT_BLANK = 'isNotEmpty',
-//   CONTAINS = 'contains',
-//   NOT_CONTAINS = 'notContains',
-//   STARTS_WITH = 'startsWith',
-//   ENDS_WITH = 'endsWith',
-// }
+export enum DataCubeQuerySnapshotAggregateFunction {
+  SUM = 'sum',
+  MIN = 'min',
+  MAX = 'max',
+  COUNT = 'count',
+  AVG = 'avg',
+  FIRST = 'first',
+  LAST = 'last',
+}
 
-// export enum FILTER_GROUP {
-//   AND = 'and',
-//   OR = 'or',
-// }
+export enum DataCubeQuerySnapshotFilterOperation {
+  EQUAL = 'equal',
+  NOT_EQUAL = 'notEqual',
+  GREATER_THAN = 'greaterThan',
+  GREATER_THAN_OR_EQUAL = 'greaterThanOrEqual',
+  LESS_THAN = 'lessThan',
+  LESS_THAN_OR_EQUAL = 'lessThanOrEqual',
+  BLANK = 'isEmpty',
+  NOT_BLANK = 'isNotEmpty',
+  CONTAINS = 'contains',
+  NOT_CONTAINS = 'notContains',
+  STARTS_WITH = 'startsWith',
+  ENDS_WITH = 'endsWith',
+}
 
-// export enum FILTER_TYPE {
-//   TEXT = 'text',
-//   NUMBER = 'number',
-// }
+export enum DataCubeQuerySnapshotSortDirection {
+  ASCENDING = 'ascending',
+  DESCENDING = 'descending',
+}
 
-// export class TDSFilterCondition {
-//   operation!: TDS_FILTER_OPERATION;
-//   value!: unknown;
-
-//   constructor(operation: TDS_FILTER_OPERATION, value: unknown) {
-//     this.operation = operation;
-//     this.value = value;
-//   }
-
-//   static readonly serialization = new SerializationFactory(
-//     createModelSchema(TDSFilterCondition, {
-//       operation: primitive(),
-//       value: primitive(),
-//     }),
-//   );
-// }
-
-// export class TDSFilter {
-//   column!: string;
-//   columnType!: PRIMITIVE_TYPE;
-//   conditions!: TDSFilterCondition[];
-//   groupOperation!: TDS_FILTER_GROUP;
-
-//   constructor(
-//     column: string,
-//     columnType: PRIMITIVE_TYPE,
-//     conditions: TDSFilterCondition[],
-//     groupOperation: TDS_FILTER_GROUP,
-//   ) {
-//     this.column = column;
-//     this.columnType = columnType;
-//     this.conditions = conditions;
-//     this.groupOperation = groupOperation;
-//   }
-
-//   static readonly serialization = new SerializationFactory(
-//     createModelSchema(TDSFilter, {
-//       column: primitive(),
-//       columnType: primitive(),
-//       conditions: list(
-//         usingModelSchema(TDSFilterCondition.serialization.schema),
-//       ),
-//       groupOperation: primitive(),
-//     }),
-//   );
-// }
-
-export type DataCubeQueryFilterCondition = DataCubeQuerySnapshotColumn & {
-  value: unknown;
-  operation: DATA_CUBE_FILTER_OPERATION;
-};
+export type DataCubeQuerySnapshotFilterCondition =
+  DataCubeQuerySnapshotColumn & {
+    value: unknown;
+    operation: DataCubeQuerySnapshotFilterOperation;
+  };
 
 export type DataCubeQueryFilter = {
   groupOperation: string;
-  conditions: (DataCubeQueryFilterCondition | DataCubeQueryFilter)[];
+  conditions: (DataCubeQuerySnapshotFilterCondition | DataCubeQueryFilter)[];
 };
 
 export type DataCubeQuerySnapshotColumn = {
@@ -121,12 +75,12 @@ export type DataCubeQuerySnapshotRenamedColumn = DataCubeQuerySnapshotColumn & {
 };
 
 export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {
-  direction: DATA_CUBE_COLUMN_SORT_DIRECTION;
+  direction: DataCubeQuerySnapshotSortDirection;
 };
 
 export type DataCubeQuerySnapshotAggregateColumn =
   DataCubeQuerySnapshotColumn & {
-    function: DATA_CUBE_AGGREGATE_FUNCTION;
+    function: DataCubeQuerySnapshotAggregateFunction;
   };
 
 export type DataCubeQuerySnapshot = {

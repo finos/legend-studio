@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
+/***************************************************************************************
+ * [CORE]
+ *
+ * These are utilities used to build the executable query from the query snapshot.
+ * The executable query is then used to fetch data.
+ ***************************************************************************************/
+
 import {
   PRIMITIVE_TYPE,
   V1_AppliedFunction,
@@ -40,10 +47,13 @@ import {
   extractElementNameFromPath,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import type {
-  DataCubeQueryFilterCondition,
-  DataCubeQueryFilter,
-  DataCubeQuerySnapshot,
+import {
+  type DataCubeQuerySnapshotFilterCondition,
+  type DataCubeQueryFilter,
+  type DataCubeQuerySnapshot,
+  DataCubeQuerySnapshotSortDirection,
+  DataCubeQuerySnapshotFilterOperation,
+  DataCubeQuerySnapshotAggregateFunction,
 } from './DataCubeQuerySnapshot.js';
 import {
   guaranteeNonNullable,
@@ -53,10 +63,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
-  DATA_CUBE_AGGREGATE_FUNCTION,
-  DATA_CUBE_COLUMN_SORT_DIRECTION,
-  DATA_CUBE_FILTER_OPERATION,
-  DATA_CUBE_FUNCTIONS,
+  DATA_CUBE_FUNCTION,
   DEFAULT_LAMBDA_VARIABLE_NAME,
 } from '../DataCubeMetaModelConst.js';
 
@@ -185,7 +192,7 @@ function processFilterQuery(filter: object): V1_ValueSpecification {
       return guaranteeNonNullable(conditionExpressions[0]);
     }
   } else {
-    const condition = filter as DataCubeQueryFilterCondition;
+    const condition = filter as DataCubeQuerySnapshotFilterCondition;
     const filterCondition = new V1_AppliedFunction();
     const property = new V1_AppliedProperty();
     property.property = condition.name;
@@ -193,14 +200,14 @@ function processFilterQuery(filter: object): V1_ValueSpecification {
     property.parameters = [defaultVariable];
 
     switch (condition.operation) {
-      case DATA_CUBE_FILTER_OPERATION.EQUALS:
-      case DATA_CUBE_FILTER_OPERATION.GREATER_THAN:
-      case DATA_CUBE_FILTER_OPERATION.GREATER_THAN_OR_EQUAL:
-      case DATA_CUBE_FILTER_OPERATION.LESS_THAN:
-      case DATA_CUBE_FILTER_OPERATION.LESS_THAN_OR_EQUAL:
-      case DATA_CUBE_FILTER_OPERATION.CONTAINS:
-      case DATA_CUBE_FILTER_OPERATION.ENDS_WITH:
-      case DATA_CUBE_FILTER_OPERATION.STARTS_WITH: {
+      case DataCubeQuerySnapshotFilterOperation.EQUAL:
+      case DataCubeQuerySnapshotFilterOperation.GREATER_THAN:
+      case DataCubeQuerySnapshotFilterOperation.GREATER_THAN_OR_EQUAL:
+      case DataCubeQuerySnapshotFilterOperation.LESS_THAN:
+      case DataCubeQuerySnapshotFilterOperation.LESS_THAN_OR_EQUAL:
+      case DataCubeQuerySnapshotFilterOperation.CONTAINS:
+      case DataCubeQuerySnapshotFilterOperation.ENDS_WITH:
+      case DataCubeQuerySnapshotFilterOperation.STARTS_WITH: {
         filterCondition.function = condition.operation;
         filterCondition.parameters.push(property);
         filterCondition.parameters.push(
@@ -208,18 +215,19 @@ function processFilterQuery(filter: object): V1_ValueSpecification {
         );
         break;
       }
-      case DATA_CUBE_FILTER_OPERATION.BLANK: {
+      case DataCubeQuerySnapshotFilterOperation.BLANK: {
         filterCondition.function = condition.operation;
         filterCondition.parameters.push(property);
         break;
       }
-      case DATA_CUBE_FILTER_OPERATION.NOT_EQUAL: {
+      case DataCubeQuerySnapshotFilterOperation.NOT_EQUAL: {
         filterCondition.function = extractElementNameFromPath(
-          DATA_CUBE_FUNCTIONS.NOT,
+          DATA_CUBE_FUNCTION.NOT,
         );
 
         const filterConditionFunc = new V1_AppliedFunction();
-        filterConditionFunc.function = DATA_CUBE_FILTER_OPERATION.EQUALS;
+        filterConditionFunc.function =
+          DataCubeQuerySnapshotFilterOperation.EQUAL;
         filterConditionFunc.parameters.push(property);
         filterConditionFunc.parameters.push(
           getPrimitiveValueSpecification(condition.type, condition.value),
@@ -228,13 +236,14 @@ function processFilterQuery(filter: object): V1_ValueSpecification {
         filterCondition.parameters.push(filterConditionFunc);
         break;
       }
-      case DATA_CUBE_FILTER_OPERATION.NOT_BLANK: {
+      case DataCubeQuerySnapshotFilterOperation.NOT_BLANK: {
         filterCondition.function = extractElementNameFromPath(
-          DATA_CUBE_FUNCTIONS.NOT,
+          DATA_CUBE_FUNCTION.NOT,
         );
 
         const filterConditionFunc = new V1_AppliedFunction();
-        filterConditionFunc.function = DATA_CUBE_FILTER_OPERATION.BLANK;
+        filterConditionFunc.function =
+          DataCubeQuerySnapshotFilterOperation.BLANK;
         filterConditionFunc.parameters.push(property);
         filterConditionFunc.parameters.push(
           getPrimitiveValueSpecification(condition.type, condition.value),
@@ -243,13 +252,14 @@ function processFilterQuery(filter: object): V1_ValueSpecification {
         filterCondition.parameters.push(filterConditionFunc);
         break;
       }
-      case DATA_CUBE_FILTER_OPERATION.NOT_CONTAINS: {
+      case DataCubeQuerySnapshotFilterOperation.NOT_CONTAINS: {
         filterCondition.function = extractElementNameFromPath(
-          DATA_CUBE_FUNCTIONS.NOT,
+          DATA_CUBE_FUNCTION.NOT,
         );
 
         const filterConditionFunc = new V1_AppliedFunction();
-        filterConditionFunc.function = DATA_CUBE_FILTER_OPERATION.CONTAINS;
+        filterConditionFunc.function =
+          DataCubeQuerySnapshotFilterOperation.CONTAINS;
         filterConditionFunc.parameters.push(property);
         filterConditionFunc.parameters.push(
           getPrimitiveValueSpecification(condition.type, condition.value),
@@ -294,9 +304,7 @@ export function buildExecutableQueryFromSnapshot(
 
     filterLambda.parameters = [defaultVariable];
     const filterFunc = new V1_AppliedFunction();
-    filterFunc.function = extractElementNameFromPath(
-      DATA_CUBE_FUNCTIONS.FILTER,
-    );
+    filterFunc.function = extractElementNameFromPath(DATA_CUBE_FUNCTION.FILTER);
     filterFunc.parameters.push(filterLambda);
     sequence.push(filterFunc);
   }
@@ -330,9 +338,9 @@ export function buildExecutableQueryFromSnapshot(
         const column = guaranteeNonNullable(snapshot.groupByColumns[0]);
         const colSpec = getAggregationColSpec(
           column.name,
-          DATA_CUBE_AGGREGATE_FUNCTION.COUNT,
+          DataCubeQuerySnapshotAggregateFunction.COUNT,
           PRIMITIVE_TYPE.STRING,
-          DATA_CUBE_AGGREGATE_FUNCTION.COUNT,
+          DataCubeQuerySnapshotAggregateFunction.COUNT,
         );
         aggregationColSpecArray.colSpecs.push(colSpec);
       }
@@ -357,7 +365,7 @@ export function buildExecutableQueryFromSnapshot(
     ) {
       const groupBy = new V1_AppliedFunction();
       groupBy.function = extractElementNameFromPath(
-        DATA_CUBE_FUNCTIONS.GROUP_BY,
+        DATA_CUBE_FUNCTION.GROUP_BY,
       );
       groupBy.parameters = [groupByInstance, aggregationInstance];
       sequence.push(groupBy);
@@ -373,9 +381,7 @@ export function buildExecutableQueryFromSnapshot(
   // --------------------------------- GROUP EXTEND ---------------------------------
   if (snapshot.groupByExpandedKeys.length !== snapshot.groupByColumns.length) {
     const extendFunc = new V1_AppliedFunction();
-    extendFunc.function = extractElementNameFromPath(
-      DATA_CUBE_FUNCTIONS.EXTEND,
-    );
+    extendFunc.function = extractElementNameFromPath(DATA_CUBE_FUNCTION.EXTEND);
     const classInstance = new V1_ClassInstance();
     classInstance.type = V1_ClassInstanceType.COL_SPEC_ARRAY;
     const colSpecArray = new V1_ColSpecArray();
@@ -405,7 +411,7 @@ export function buildExecutableQueryFromSnapshot(
 
   if (snapshot.sortColumns.length) {
     const sort = new V1_AppliedFunction();
-    sort.function = extractElementNameFromPath(DATA_CUBE_FUNCTIONS.SORT);
+    sort.function = extractElementNameFromPath(DATA_CUBE_FUNCTION.SORT);
     const sortInfos = new V1_Collection();
     sortInfos.multiplicity = new V1_Multiplicity(
       snapshot.sortColumns.length,
@@ -420,9 +426,9 @@ export function buildExecutableQueryFromSnapshot(
       ) {
         const sortInfo = new V1_AppliedFunction();
         sortInfo.function = extractElementNameFromPath(
-          sortCol.direction === DATA_CUBE_COLUMN_SORT_DIRECTION.ASCENDING
-            ? DATA_CUBE_FUNCTIONS.ASC
-            : DATA_CUBE_FUNCTIONS.DESC,
+          sortCol.direction === DataCubeQuerySnapshotSortDirection.ASCENDING
+            ? DATA_CUBE_FUNCTION.ASC
+            : DATA_CUBE_FUNCTION.DESC,
         );
         sortInfo.parameters.push(createColSpec(sortCol.name));
         sortInfos.values.push(sortInfo);
@@ -443,7 +449,7 @@ export function buildExecutableQueryFromSnapshot(
   // --------------------------------- FROM ---------------------------------
 
   const fromFunc = new V1_AppliedFunction();
-  fromFunc.function = extractElementNameFromPath(DATA_CUBE_FUNCTIONS.FROM);
+  fromFunc.function = extractElementNameFromPath(DATA_CUBE_FUNCTION.FROM);
   const runtimePtr = new V1_PackageableElementPtr();
   runtimePtr.fullPath = snapshot.runtime;
   fromFunc.parameters.push(runtimePtr);
