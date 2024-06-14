@@ -16,10 +16,12 @@
 
 import {
   type Query,
+  type QuerySearchSpecification,
+  type RawLambda,
   extractElementNameFromPath,
   RuntimePointer,
   PackageableElementExplicitReference,
-  type RawLambda,
+  QueryProjectCoordinates,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
@@ -39,7 +41,11 @@ import {
   QueryBuilderDataBrowserWorkflow,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
-import type { Entity, ProjectGAVCoordinates } from '@finos/legend-storage';
+import {
+  parseGACoordinates,
+  type Entity,
+  type ProjectGAVCoordinates,
+} from '@finos/legend-storage';
 import {
   type DataSpaceExecutionContext,
   DSL_DataSpace_getGraphManagerExtension,
@@ -55,6 +61,7 @@ import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 import {
   DataSpaceQueryBuilderState,
   createQueryClassTaggedValue,
+  createQueryDataSpaceTaggedValue,
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
 import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
@@ -470,5 +477,35 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
         ),
       );
     }
+  }
+
+  override decorateSearchSpecification(
+    val: QuerySearchSpecification,
+  ): QuerySearchSpecification {
+    if (this.queryableDataSpace) {
+      const currentProjectCoordinates = new QueryProjectCoordinates();
+      currentProjectCoordinates.groupId = this.queryableDataSpace.groupId;
+      currentProjectCoordinates.artifactId = this.queryableDataSpace.artifactId;
+      val.projectCoordinates = [
+        // either get queries for the current project
+        currentProjectCoordinates,
+        // or any of its dependencies
+        ...Array.from(
+          this.graphManagerState.graph.dependencyManager.projectDependencyModelsIndex.keys(),
+        ).map((dependencyKey) => {
+          const { groupId, artifactId } = parseGACoordinates(dependencyKey);
+          const coordinates = new QueryProjectCoordinates();
+          coordinates.groupId = groupId;
+          coordinates.artifactId = artifactId;
+          return coordinates;
+        }),
+      ];
+      val.taggedValues = [
+        createQueryDataSpaceTaggedValue(this.queryableDataSpace.dataSpacePath),
+      ];
+      val.combineTaggedValuesCondition = true;
+    }
+
+    return val;
   }
 }

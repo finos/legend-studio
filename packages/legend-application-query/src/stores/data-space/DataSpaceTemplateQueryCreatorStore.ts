@@ -15,9 +15,11 @@
  */
 
 import {
+  QueryProjectCoordinates,
   extractElementNameFromPath,
   type Query,
   type RawLambda,
+  type QuerySearchSpecification,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
@@ -28,7 +30,10 @@ import {
   type QueryBuilderState,
   QueryBuilderDataBrowserWorkflow,
 } from '@finos/legend-query-builder';
-import type { ProjectGAVCoordinates } from '@finos/legend-storage';
+import {
+  parseGACoordinates,
+  type ProjectGAVCoordinates,
+} from '@finos/legend-storage';
 import {
   QueryBuilderActionConfig_QueryApplication,
   QueryEditorStore,
@@ -44,6 +49,7 @@ import {
 import {
   DataSpaceQueryBuilderState,
   createQueryClassTaggedValue,
+  createQueryDataSpaceTaggedValue,
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
 import { createDataSpaceDepoRepo } from './DataSpaceQueryBuilderHelper.js';
@@ -180,5 +186,30 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
         }
       },
     };
+  }
+
+  override decorateSearchSpecification(
+    val: QuerySearchSpecification,
+  ): QuerySearchSpecification {
+    const currentProjectCoordinates = new QueryProjectCoordinates();
+    currentProjectCoordinates.groupId = this.groupId;
+    currentProjectCoordinates.artifactId = this.artifactId;
+    val.projectCoordinates = [
+      // either get queries for the current project
+      currentProjectCoordinates,
+      // or any of its dependencies
+      ...Array.from(
+        this.graphManagerState.graph.dependencyManager.projectDependencyModelsIndex.keys(),
+      ).map((dependencyKey) => {
+        const { groupId, artifactId } = parseGACoordinates(dependencyKey);
+        const coordinates = new QueryProjectCoordinates();
+        coordinates.groupId = groupId;
+        coordinates.artifactId = artifactId;
+        return coordinates;
+      }),
+    ];
+    val.taggedValues = [createQueryDataSpaceTaggedValue(this.dataSpacePath)];
+    val.combineTaggedValuesCondition = true;
+    return val;
   }
 }

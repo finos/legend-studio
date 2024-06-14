@@ -520,6 +520,15 @@
     &__dialog__header__close-btn {
       color: var(--color-legacylight-dark-grey-200);
     }
+
+    ::-webkit-scrollbar-thumb {
+      height: 5rem;
+      background: var(--color-legacylight-light-grey-300);
+      outline-offset: -0.2rem;
+      border-radius: 0.4rem;
+      outline-color: var(--color-legacylight-light-grey-100);
+      border-color: var(--color-legacylight-light-grey-100);
+    }
   }
 
   .query-preview__field__label {
