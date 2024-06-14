@@ -209,7 +209,6 @@ export const ReleaseLogManager = observer(() => {
           className="release-notes__dialog__header__title"
           title={title}
         />
-
         <ModalBody className="release-notes__dialog__body">
           <div className="release-notes__dialog__content">
             <div className="release-notes__dialog__content__title">

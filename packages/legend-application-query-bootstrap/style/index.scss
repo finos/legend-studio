@@ -540,6 +540,20 @@
     color: var(--color-legacylight-orange-100);
   }
 
+  .dataspace-info-modal__field__label {
+    color: var(--color-white);
+  }
+
+  .dataspace-info-modal__field__value {
+    background: var(--color-white);
+    color: var(--color-legacylight-dark-grey-200);
+    border: 0.1rem solid var(--color-legacylight-dark-grey-400);
+  }
+
+  .dataspace-info-modal__field__value--linkable {
+    color: var(--color-purple-100);
+  }
+
   // ---------------------------- Property Search -------------------------------
 
   .query-builder-property-search-panel {
@@ -1128,6 +1142,18 @@
 
     .query-builder .editable-value {
       color: var(--color-light-blue-200);
+    }
+
+    .query-builder__projection__result-modifier-prompt__header__label {
+      background: var(--color-legacylight-light-blue-200);
+
+      &__title {
+        color: var(--color-white);
+      }
+
+      &__icon {
+        color: var(--color-white);
+      }
     }
 
     .query-builder__projection__column:hover {
