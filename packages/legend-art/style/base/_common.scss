@@ -116,7 +116,7 @@
     }
   }
 
-  &--active &__content {
+  &--active > &__content {
     background: var(--color-dnd__overlay);
   }
 
