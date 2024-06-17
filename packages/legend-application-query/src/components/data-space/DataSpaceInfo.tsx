@@ -44,9 +44,8 @@ export const QueryEditorDataspaceInfoModal = observer(
   }) => {
     const { editorStore, dataspace, executionContext, open, closeModal } =
       props;
-
+    const projectInfo = editorStore.getProjectInfo();
     const visitElement = (path: string): void => {
-      const projectInfo = editorStore.getProjectInfo();
       if (projectInfo) {
         editorStore.applicationStore.navigationService.navigator.visitAddress(
           EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
@@ -81,6 +80,16 @@ export const QueryEditorDataspaceInfoModal = observer(
           <ModalTitle title="About Dataspace" />
           <Panel>
             <PanelFullContent>
+              {projectInfo && (
+                <div className="dataspace-info-modal__field">
+                  <div className="dataspace-info-modal__field__label">
+                    Project
+                  </div>
+                  <div className="dataspace-info-modal__field__value">
+                    {`${projectInfo.groupId}:${projectInfo.artifactId}:${projectInfo.versionId}`}
+                  </div>
+                </div>
+              )}
               <div className="dataspace-info-modal__field">
                 <div className="dataspace-info-modal__field__label">Name</div>
                 <div className="dataspace-info-modal__field__value">
