@@ -692,10 +692,10 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       },
       [applicationStore, postFilterState, node],
     );
-    const [{ isDragOver }, dropConnector] = useDrop<
+    const [{ isDragOver, deepIsDragOver }, dropConnector] = useDrop<
       QueryBuilderPostFilterConditionDragSource,
       void,
-      { isDragOver: boolean }
+      { isDragOver: boolean; deepIsDragOver: boolean }
     >(
       () => ({
         accept: [
@@ -710,6 +710,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
         },
         collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
+          deepIsDragOver: monitor.isOver({ shallow: false }),
         }),
       }),
       [handleDrop],
@@ -807,7 +808,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
               {node instanceof QueryBuilderPostFilterTreeConditionNodeData && (
                 <QueryBuilderPostFilterConditionEditor
                   node={node}
-                  isDragOver={isDragOver}
+                  isDragOver={deepIsDragOver}
                 />
               )}
               {node instanceof
