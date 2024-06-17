@@ -217,9 +217,9 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
 export const QueryBuilderColumnBadge = observer(
   (props: {
     colState: QueryBuilderTDSColumnState;
-    onColumnChange?: (
-      columnState: QueryBuilderProjectionColumnState,
-    ) => Promise<void>;
+    onColumnChange?:
+      | ((columnState: QueryBuilderProjectionColumnState) => Promise<void>)
+      | undefined;
     removeColumn?: () => void;
   }) => {
     const { colState, onColumnChange, removeColumn } = props;
@@ -498,7 +498,9 @@ const QueryBuilderPostFilterConditionEditor = observer(
               <div className="query-builder-post-filter-tree__condition-node__property">
                 <QueryBuilderColumnBadge
                   colState={rightConditionValue.tdsColumn}
-                  onColumnChange={changeRightCol}
+                  onColumnChange={
+                    isFilterValueDroppable ? changeRightCol : undefined
+                  }
                   removeColumn={removeTDSColumnValue}
                 />
               </div>
