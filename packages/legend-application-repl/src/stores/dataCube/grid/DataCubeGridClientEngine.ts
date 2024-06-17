@@ -46,8 +46,16 @@ export enum GridClientSortDirection {
   DESCENDING = 'desc',
 }
 
-export const toRowData = (tds: TabularDataSet): GridClientRowDataType[] =>
-  tds.rows.map((_row, rowIdx) => {
+export enum GridClientAggregateOperation {
+  COUNT = 'count',
+  SUM = 'sum',
+  MAX = 'max',
+  MIN = 'min',
+  AVERAGE = 'avg',
+}
+
+function toRowData(tds: TabularDataSet): GridClientRowDataType[] {
+  return tds.rows.map((_row, rowIdx) => {
     const row: GridClientRowDataType = {};
     const cols = tds.columns;
     _row.values.forEach((value, colIdx) => {
@@ -58,6 +66,7 @@ export const toRowData = (tds: TabularDataSet): GridClientRowDataType[] =>
     row.rowNumber = rowIdx;
     return row;
   });
+}
 
 export class DataCubeGridClientServerSideDataSource
   implements IServerSideDatasource

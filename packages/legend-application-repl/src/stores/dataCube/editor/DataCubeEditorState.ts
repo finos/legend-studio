@@ -19,10 +19,7 @@ import type { DataCubeState } from '../DataCubeState.js';
 import { DataCubeEditorSortsPanelState } from './DataCubeEditorSortsPanelState.js';
 import { DataCubeEditorCodePanelState } from './DataCubeEditorCodePanelState.js';
 import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
-import {
-  cloneSnapshot,
-  type DataCubeQuerySnapshot,
-} from '../core/DataCubeQuerySnapshot.js';
+import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGeneralPropertiesPanelState.js';
 
@@ -82,7 +79,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
 
   applyChanges(): void {
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
-    const snapshot = cloneSnapshot(baseSnapshot);
+    const snapshot = baseSnapshot.clone();
 
     const createNew = [
       this.sortsPanel.buildSnapshot(snapshot, baseSnapshot),

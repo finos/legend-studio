@@ -54,6 +54,7 @@ export const DataCubeGrid = observer(() => {
         suppressBrowserResizeObserver={true}
         suppressScrollOnNewData={true}
         rowModelType="serverSide"
+        animateRows={false}
         serverSideDatasource={dataCubeState.grid.clientDataSource}
         suppressAggFuncInHeader={true}
         // TODO: @akphi - once we do pagination, we can remove reliance on this flag

@@ -18,6 +18,7 @@ import { action, computed, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import {
   DataCubeQuerySnapshotSortDirection,
+  _getCol,
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
   type DataCubeQuerySnapshotSortColumn,
@@ -155,26 +156,27 @@ export class DataCubeEditorSortsPanelState
   }
 
   applySnaphot(snapshot: DataCubeQuerySnapshot): void {
-    const sortColumns = snapshot.sortColumns;
+    const columns = snapshot.stageCols('sort');
+    const sortColumns = snapshot.data.sortColumns;
     this.setAvailableColumns(
-      snapshot.selectColumns
+      columns
         .filter(
           (col) => !sortColumns.find((sortCol) => sortCol.name === col.name),
         )
         .map(
           (col) =>
             new DataCubeEditorSortColumnState(
-              col,
+              _getCol(columns, col.name),
               DataCubeQuerySnapshotSortDirection.ASCENDING,
             ),
         ),
     );
     this.setSelectedColumns(
       sortColumns.map(
-        (sortCol) =>
+        (col) =>
           new DataCubeEditorSortColumnState(
-            snapshot.selectColumns.find((col) => col.name === sortCol.name)!,
-            sortCol.direction,
+            _getCol(columns, col.name)!,
+            col.direction,
           ),
       ),
     );
@@ -191,8 +193,8 @@ export class DataCubeEditorSortsPanelState
         direction: sortInfo.direction,
       }));
 
-    if (!deepEqual(newSortColumns, baseSnapshot.sortColumns)) {
-      newSnapshot.sortColumns = newSortColumns;
+    if (!deepEqual(newSortColumns, baseSnapshot.data.sortColumns)) {
+      newSnapshot.data.sortColumns = newSortColumns;
       return true;
     }
     return false;

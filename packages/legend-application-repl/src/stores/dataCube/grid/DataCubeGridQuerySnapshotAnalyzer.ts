@@ -22,18 +22,70 @@
  ***************************************************************************************/
 
 import {
+  DataCubeQuerySnapshotAggregateFunction,
   DataCubeQuerySnapshotSortDirection,
+  _findCol,
   type DataCubeQuerySnapshot,
+  type DataCubeQuerySnapshotColumn,
 } from '../core/DataCubeQuerySnapshot.js';
 import type { GridOptions } from '@ag-grid-community/core';
-import { GridClientSortDirection } from './DataCubeGridClientEngine.js';
+import {
+  GridClientAggregateOperation,
+  GridClientSortDirection,
+} from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
+import { IllegalStateError } from '@finos/legend-shared';
 
-function buildColumnSortSpecification(
-  colName: string,
-  snapshot: DataCubeQuerySnapshot,
-) {
-  const sortCol = snapshot.sortColumns.find((c) => c.name === colName);
+// --------------------------------- UTILITIES ---------------------------------
+
+function _allowedAggFuncs(column: DataCubeQuerySnapshotColumn): string[] {
+  switch (column.type) {
+    case PRIMITIVE_TYPE.STRING:
+      return [];
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.DATETIME:
+    case PRIMITIVE_TYPE.STRICTDATE:
+      return [];
+    case PRIMITIVE_TYPE.NUMBER:
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.INTEGER:
+    case PRIMITIVE_TYPE.FLOAT:
+      return [
+        GridClientAggregateOperation.AVERAGE,
+        GridClientAggregateOperation.COUNT,
+        GridClientAggregateOperation.SUM,
+        GridClientAggregateOperation.MAX,
+        GridClientAggregateOperation.MIN,
+      ];
+    default:
+      return [];
+  }
+}
+
+function _aggFunc(
+  func: DataCubeQuerySnapshotAggregateFunction,
+): GridClientAggregateOperation {
+  switch (func) {
+    case DataCubeQuerySnapshotAggregateFunction.AVERAGE:
+      return GridClientAggregateOperation.AVERAGE;
+    case DataCubeQuerySnapshotAggregateFunction.COUNT:
+      return GridClientAggregateOperation.COUNT;
+    case DataCubeQuerySnapshotAggregateFunction.MAX:
+      return GridClientAggregateOperation.MAX;
+    case DataCubeQuerySnapshotAggregateFunction.MIN:
+      return GridClientAggregateOperation.MIN;
+    case DataCubeQuerySnapshotAggregateFunction.SUM:
+      return GridClientAggregateOperation.SUM;
+    default:
+      throw new IllegalStateError(`Unsupported aggregate function '${func}'`);
+  }
+}
+
+// --------------------------------- BUILDING BLOCKS ---------------------------------
+
+function _sortSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
+  const sortColumns = snapshot.data.sortColumns;
+  const sortCol = _findCol(sortColumns, colName);
   if (!sortCol) {
     return {
       sort: null,
@@ -45,56 +97,47 @@ function buildColumnSortSpecification(
       sortCol.direction === DataCubeQuerySnapshotSortDirection.ASCENDING
         ? GridClientSortDirection.ASCENDING
         : GridClientSortDirection.DESCENDING,
-    sortIndex: snapshot.sortColumns.indexOf(sortCol),
+    sortIndex: sortColumns.indexOf(sortCol),
   };
 }
 
-function getAggregationColumnCustomizations(
-  colName: string,
-  snapshot: DataCubeQuerySnapshot,
-): string[] {
-  // TODO: @akphi - revist this, we should not use `selectColumns` here, or maybe a combination?
-  const columnType = snapshot.selectColumns.find(
-    (col) => col.name === colName,
-  )?.type;
-  switch (columnType) {
-    case PRIMITIVE_TYPE.STRING:
-      return [];
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME:
-    case PRIMITIVE_TYPE.STRICTDATE:
-      return [];
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.FLOAT:
-      return ['count', 'sum', 'max', 'min', 'avg'];
-    default:
-      return [];
-  }
-}
-
-function buildColumnGroupBySpecification(
-  colName: string,
-  snapshot: DataCubeQuerySnapshot,
-) {
-  const rowGroup = snapshot.groupByColumns.find((c) => c.name === colName);
-  const aggColumn = snapshot.groupByAggColumns.find((c) => c.name === colName);
+function _rowGroupSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
+  const data = snapshot.data;
+  const columns = snapshot.stageCols('aggregation');
+  const column = _findCol(columns, colName);
+  const groupByCol = _findCol(data.groupBy?.columns, colName);
+  const aggCol = _findCol(data.groupBy?.aggColumns, colName);
   return {
-    rowGroup: Boolean(rowGroup),
-    hide: Boolean(rowGroup),
-    aggFunc: aggColumn ? aggColumn.function : null,
-    allowedAggFuncs: getAggregationColumnCustomizations(colName, snapshot),
+    rowGroup: Boolean(groupByCol),
+    hide: Boolean(groupByCol), // automatically hide group-by columns
+    // TODO: @akphi - add this from configuration object
+    aggFunc: aggCol
+      ? _aggFunc(aggCol.function)
+      : column
+        ? (
+            [
+              PRIMITIVE_TYPE.NUMBER,
+              PRIMITIVE_TYPE.DECIMAL,
+              PRIMITIVE_TYPE.FLOAT,
+              PRIMITIVE_TYPE.INTEGER,
+            ] as string[]
+          ).includes(column.type)
+          ? GridClientAggregateOperation.SUM
+          : null
+        : null,
+    allowedAggFuncs: column ? _allowedAggFuncs(column) : [],
   };
 }
 
 export function generateGridOptionsFromSnapshot(
   snapshot: DataCubeQuerySnapshot,
 ): GridOptions {
+  const data = snapshot.data;
   const gridOptions: GridOptions = {
-    columnDefs: snapshot.selectColumns.map((col) => ({
+    columnDefs: data.selectColumns.map((col) => ({
       headerName: col.name,
       field: col.name,
-      ...buildColumnSortSpecification(col.name, snapshot),
+      ..._sortSpec(snapshot, col.name),
 
       // configurable
       minWidth: 50,
@@ -104,8 +147,9 @@ export function generateGridOptionsFromSnapshot(
       enableRowGroup: true,
       enableValue: true,
       menuTabs: ['generalMenuTab', 'columnsMenuTab'],
-      ...buildColumnGroupBySpecification(col.name, snapshot),
+      ..._rowGroupSpec(snapshot, col.name),
     })),
   };
+
   return gridOptions;
 }

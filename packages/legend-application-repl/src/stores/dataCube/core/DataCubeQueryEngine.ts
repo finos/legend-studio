@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-export enum DATA_CUBE_FUNCTION {
+import type { V1_AppliedFunction } from '@finos/legend-graph';
+
+export enum DataCubeFunction {
   // relation
   EXTEND = 'meta::pure::functions::relation::extend',
   FILTER = 'meta::pure::functions::relation::filter',
   GROUP_BY = 'meta::pure::functions::relation::groupBy',
   LIMIT = 'meta::pure::functions::relation::limit',
   PIVOT = 'meta::pure::functions::relation::pivot',
-  RENAME = 'meta::pure::functions::relation::rename',
+  // RENAME = 'meta::pure::functions::relation::rename',
   SELECT = 'meta::pure::functions::relation::select',
   SLICE = 'meta::pure::functions::relation::slice',
   SORT = 'meta::pure::functions::relation::sort',
@@ -67,3 +69,17 @@ export enum DATA_CUBE_FUNCTION {
 
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
 export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
+
+export type DataCubeQueryFunctionMap = {
+  leafExtend?: V1_AppliedFunction | undefined;
+  filter?: V1_AppliedFunction | undefined;
+  groupBy?: V1_AppliedFunction | undefined;
+  groupByExtend?: V1_AppliedFunction | undefined; // used to populate empty columns erased by groupBy()
+  pivotExtend?: V1_AppliedFunction | undefined; // used to populate columns erased by pivot()
+  pivot?: V1_AppliedFunction | undefined;
+  pivotCast?: V1_AppliedFunction | undefined; // used to set the relation type post pivot() to make compilation works properly
+  groupExtend?: V1_AppliedFunction | undefined;
+  select?: V1_AppliedFunction | undefined;
+  sort?: V1_AppliedFunction | undefined;
+  limit?: V1_AppliedFunction | undefined;
+};

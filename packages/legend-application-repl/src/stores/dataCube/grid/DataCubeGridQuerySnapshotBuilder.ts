@@ -23,8 +23,7 @@
 
 import type { IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import {
-  cloneSnapshot,
-  type DataCubeQueryFilter,
+  type DataCubeQuerySnapshotFilter,
   type DataCubeQuerySnapshotFilterCondition,
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotAggregateColumn,
@@ -32,14 +31,44 @@ import {
   type DataCubeQuerySnapshotSortColumn,
   DataCubeQuerySnapshotSortDirection,
   DataCubeQuerySnapshotFilterOperation,
+  DataCubeQueryFilterGroupOperation,
+  _getCol,
+  DataCubeQuerySnapshotAggregateFunction,
 } from '../core/DataCubeQuerySnapshot.js';
-import { deepEqual, guaranteeNonNullable } from '@finos/legend-shared';
-import { DATA_CUBE_FUNCTION } from '../DataCubeMetaModelConst.js';
-import { GridClientSortDirection } from './DataCubeGridClientEngine.js';
 import {
-  PRIMITIVE_TYPE,
-  extractElementNameFromPath,
-} from '@finos/legend-graph';
+  IllegalStateError,
+  deepEqual,
+  guaranteeNonNullable,
+  isNonNullable,
+} from '@finos/legend-shared';
+import {
+  GridClientAggregateOperation,
+  GridClientSortDirection,
+} from './DataCubeGridClientEngine.js';
+import { PRIMITIVE_TYPE } from '@finos/legend-graph';
+
+// --------------------------------- UTILITIES ---------------------------------
+
+function _aggFunc(
+  func: GridClientAggregateOperation,
+): DataCubeQuerySnapshotAggregateFunction {
+  switch (func) {
+    case GridClientAggregateOperation.AVERAGE:
+      return DataCubeQuerySnapshotAggregateFunction.AVERAGE;
+    case GridClientAggregateOperation.COUNT:
+      return DataCubeQuerySnapshotAggregateFunction.COUNT;
+    case GridClientAggregateOperation.MAX:
+      return DataCubeQuerySnapshotAggregateFunction.MAX;
+    case GridClientAggregateOperation.MIN:
+      return DataCubeQuerySnapshotAggregateFunction.MIN;
+    case GridClientAggregateOperation.SUM:
+      return DataCubeQuerySnapshotAggregateFunction.SUM;
+    default:
+      throw new IllegalStateError(`Unsupported aggregate function '${func}'`);
+  }
+}
+
+// --------------------------------- MAIN ---------------------------------
 
 export function buildQuerySnapshot(
   request: IServerSideGetRowsRequest,
@@ -50,39 +79,35 @@ export function buildQuerySnapshot(
   // --------------------------------- GROUP BY ---------------------------------
 
   const groupByExpandedKeys = request.groupKeys;
-  const groupByColumns = request.rowGroupCols.map((r) => {
-    // TODO: @akphi - revist this, we should not use `selectColumns` here, or maybe a combination?
-    const column = baseSnapshot.selectColumns.find((col) => col.name === r.id);
-    return {
-      name: r.id,
-      type: guaranteeNonNullable(column).type,
-    } as DataCubeQuerySnapshotColumn;
-  });
-  const groupByAggColumns = request.valueCols.map((v) => {
-    // TODO: @akphi - revist this, we should not use `selectColumns` here, or maybe a combination?
-    const type = baseSnapshot.selectColumns.find(
-      (col) => col.name === v.field,
-    )?.type;
-    return {
-      name: v.field,
-      type: type,
-      function: v.aggFunc,
-    } as DataCubeQuerySnapshotAggregateColumn;
-  });
-  let groupByFilter: DataCubeQueryFilter | undefined;
+  const groupByAvailableColumns = baseSnapshot.stageCols('aggregation');
+  const groupByColumns: DataCubeQuerySnapshotColumn[] =
+    request.rowGroupCols.map((col) => ({
+      name: col.id,
+      type: _getCol(groupByAvailableColumns, col.id).type,
+    }));
+  const groupByAggColumns: DataCubeQuerySnapshotAggregateColumn[] =
+    request.valueCols
+      .filter((col) => isNonNullable(col.field) && isNonNullable(col.aggFunc))
+      .map((col) => ({
+        name: guaranteeNonNullable(col.field),
+        type: _getCol(groupByAvailableColumns, guaranteeNonNullable(col.field))
+          .type,
+        function: _aggFunc(col.aggFunc as GridClientAggregateOperation),
+      }));
 
-  for (let index = 0; index < groupByExpandedKeys.length; index++) {
+  let groupByFilter: DataCubeQuerySnapshotFilter | undefined;
+  for (let i = 0; i < groupByExpandedKeys.length; i++) {
     const groupFilter = {
       conditions: [
         {
-          name: guaranteeNonNullable(groupByColumns.at(index)).name,
+          name: guaranteeNonNullable(groupByColumns[i]).name,
           type: PRIMITIVE_TYPE.STRING,
           operation: DataCubeQuerySnapshotFilterOperation.EQUAL,
-          value: groupByExpandedKeys.at(index),
+          value: groupByExpandedKeys[i],
         } as DataCubeQuerySnapshotFilterCondition,
       ],
-      groupOperation: extractElementNameFromPath(DATA_CUBE_FUNCTION.AND),
-    } as DataCubeQueryFilter;
+      groupOperation: DataCubeQueryFilterGroupOperation.AND,
+    };
 
     groupByFilter = groupFilter;
   }
@@ -92,7 +117,9 @@ export function buildQuerySnapshot(
   const newSortColumns: DataCubeQuerySnapshotSortColumn[] =
     request.sortModel.map((sortInfo) => {
       const column = guaranteeNonNullable(
-        baseSnapshot.selectColumns.find((col) => col.name === sortInfo.colId),
+        baseSnapshot.data.selectColumns.find(
+          (col) => col.name === sortInfo.colId,
+        ),
       );
       return {
         name: sortInfo.colId,
@@ -105,11 +132,11 @@ export function buildQuerySnapshot(
     });
 
   if (
-    !deepEqual(newSortColumns, baseSnapshot.sortColumns) ||
-    !deepEqual(groupByExpandedKeys, baseSnapshot.groupByExpandedKeys) ||
-    !deepEqual(groupByColumns, baseSnapshot.groupByColumns) ||
-    !deepEqual(groupByAggColumns, baseSnapshot.groupByAggColumns) ||
-    !deepEqual(groupByFilter, baseSnapshot.groupByFilter)
+    !deepEqual(newSortColumns, baseSnapshot.data.sortColumns) ||
+    !deepEqual(groupByExpandedKeys, baseSnapshot.data.groupBy?.expandedKeys) ||
+    !deepEqual(groupByColumns, baseSnapshot.data.groupBy?.columns) ||
+    !deepEqual(groupByAggColumns, baseSnapshot.data.groupBy?.aggColumns) ||
+    !deepEqual(groupByFilter, baseSnapshot.data.groupBy?.filter)
   ) {
     createNew = true;
   }
@@ -120,12 +147,15 @@ export function buildQuerySnapshot(
   // --------------------------------- FINALIZE ---------------------------------
 
   if (createNew) {
-    const newSnapshot = cloneSnapshot(baseSnapshot);
-    newSnapshot.sortColumns = newSortColumns;
-    newSnapshot.groupByExpandedKeys = groupByExpandedKeys;
-    newSnapshot.groupByColumns = groupByColumns;
-    newSnapshot.groupByAggColumns = groupByAggColumns;
-    newSnapshot.groupByFilter = groupByFilter;
+    const newSnapshot = baseSnapshot.clone();
+    const data = newSnapshot.data;
+    data.sortColumns = newSortColumns;
+    data.groupBy = {
+      columns: groupByColumns,
+      aggColumns: groupByAggColumns,
+      expandedKeys: groupByExpandedKeys,
+      filter: groupByFilter,
+    };
     return newSnapshot;
   }
   return baseSnapshot;

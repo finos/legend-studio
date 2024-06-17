@@ -47,29 +47,30 @@ export class DataCubeEditorGeneralPropertiesPanelState
   }
 
   applySnaphot(snapshot: DataCubeQuerySnapshot): void {
-    this.setName(snapshot.name);
-    this.setLimit(snapshot.limit);
+    this.setName(snapshot.data.name);
+    this.setLimit(snapshot.data.limit);
   }
 
   buildSnapshot(
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
   ): boolean {
+    const data = baseSnapshot.data;
     // name
-    if (this.name !== baseSnapshot.name) {
-      newSnapshot.name = this.name;
+    if (this.name !== data.name) {
+      data.name = this.name;
       return true;
     }
 
     // limit
-    if (baseSnapshot.limit === undefined) {
+    if (data.limit === undefined) {
       if (this.limit !== -1) {
-        newSnapshot.limit = this.limit;
+        data.limit = this.limit;
         return true;
       }
     } else {
-      if (this.limit !== baseSnapshot.limit) {
-        newSnapshot.limit = this.limit;
+      if (this.limit !== data.limit) {
+        data.limit = this.limit;
         return true;
       }
     }

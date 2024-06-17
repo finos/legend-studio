@@ -23,6 +23,7 @@
 
 import {
   V1_AppliedFunction,
+  V1_CInteger,
   V1_ClassInstance,
   V1_ColSpec,
   V1_ColSpecArray,
@@ -32,11 +33,10 @@ import {
   matchFunctionName,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import { DATA_CUBE_FUNCTION } from '../DataCubeMetaModelConst.js';
 import type { DataCubeQuery } from '../../../server/models/DataCubeQuery.js';
 import {
+  DataCubeQuerySnapshot,
   DataCubeQuerySnapshotSortDirection,
-  createSnapshot,
   type DataCubeQuerySnapshotColumn,
 } from './DataCubeQuerySnapshot.js';
 import {
@@ -44,21 +44,24 @@ import {
   assertType,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
+import {
+  DataCubeFunction,
+  type DataCubeQueryFunctionMap,
+} from './DataCubeQueryEngine.js';
 
 const _SUPPORTED_TOP_LEVEL_FUNCTIONS: {
   func: string;
   parameters: number;
 }[] = [
-  { func: DATA_CUBE_FUNCTION.EXTEND, parameters: 1 },
-  { func: DATA_CUBE_FUNCTION.FILTER, parameters: 1 },
-  { func: DATA_CUBE_FUNCTION.GROUP_BY, parameters: 3 },
-  { func: DATA_CUBE_FUNCTION.LIMIT, parameters: 1 },
-  { func: DATA_CUBE_FUNCTION.PIVOT, parameters: 3 },
-  { func: DATA_CUBE_FUNCTION.RENAME, parameters: 2 },
-  { func: DATA_CUBE_FUNCTION.SELECT, parameters: 1 },
-  { func: DATA_CUBE_FUNCTION.SORT, parameters: 1 },
+  { func: DataCubeFunction.EXTEND, parameters: 1 },
+  { func: DataCubeFunction.FILTER, parameters: 1 },
+  { func: DataCubeFunction.GROUP_BY, parameters: 3 },
+  { func: DataCubeFunction.LIMIT, parameters: 1 },
+  { func: DataCubeFunction.PIVOT, parameters: 3 },
+  { func: DataCubeFunction.SELECT, parameters: 1 },
+  { func: DataCubeFunction.SORT, parameters: 1 },
 
-  { func: DATA_CUBE_FUNCTION.CAST, parameters: 1 },
+  { func: DataCubeFunction.CAST, parameters: 1 },
 ];
 
 // NOTE: this corresponds to the sequence:
@@ -69,16 +72,15 @@ const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN: {
   repeat?: boolean | undefined;
   required?: boolean | undefined;
 }[] = [
-  { func: DATA_CUBE_FUNCTION.EXTEND },
-  { func: DATA_CUBE_FUNCTION.RENAME, repeat: true }, // rename() can be repeated since each call only allow renaming one column
-  { func: DATA_CUBE_FUNCTION.FILTER },
-  { func: DATA_CUBE_FUNCTION.GROUP_BY },
-  { func: DATA_CUBE_FUNCTION.PIVOT },
-  { func: DATA_CUBE_FUNCTION.CAST },
-  { func: DATA_CUBE_FUNCTION.EXTEND },
-  { func: DATA_CUBE_FUNCTION.SELECT },
-  { func: DATA_CUBE_FUNCTION.SORT },
-  { func: DATA_CUBE_FUNCTION.LIMIT },
+  { func: DataCubeFunction.EXTEND },
+  { func: DataCubeFunction.FILTER },
+  { func: DataCubeFunction.GROUP_BY },
+  { func: DataCubeFunction.PIVOT },
+  { func: DataCubeFunction.CAST },
+  { func: DataCubeFunction.EXTEND },
+  { func: DataCubeFunction.SELECT },
+  { func: DataCubeFunction.SORT },
+  { func: DataCubeFunction.LIMIT },
 ];
 const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN_REGEXP = new RegExp(
   `^${_FUNCTION_SEQUENCE_COMPOSITION_PATTERN
@@ -141,18 +143,18 @@ function extractQueryFunctionSequence(query: V1_ValueSpecification) {
   // Special checks
   // Check that the first and second extend() must be separated by either groupBy() or pivot() (i.e. aggregation)
   const firstExtendIndex = sequence.findIndex((func) =>
-    matchFunctionName(func.function, DATA_CUBE_FUNCTION.EXTEND),
+    matchFunctionName(func.function, DataCubeFunction.EXTEND),
   );
   const secondExtendIndex = sequence.findLastIndex((func) =>
-    matchFunctionName(func.function, DATA_CUBE_FUNCTION.EXTEND),
+    matchFunctionName(func.function, DataCubeFunction.EXTEND),
   );
   if (firstExtendIndex !== -1 && firstExtendIndex !== secondExtendIndex) {
     const seq = sequence.slice(firstExtendIndex + 1, secondExtendIndex);
     if (
       !seq.some(
         (func) =>
-          matchFunctionName(func.function, DATA_CUBE_FUNCTION.GROUP_BY) ||
-          matchFunctionName(func.function, DATA_CUBE_FUNCTION.PIVOT),
+          matchFunctionName(func.function, DataCubeFunction.GROUP_BY) ||
+          matchFunctionName(func.function, DataCubeFunction.PIVOT),
       )
     ) {
       throw new Error(
@@ -163,10 +165,10 @@ function extractQueryFunctionSequence(query: V1_ValueSpecification) {
 
   // Check that pivot() and cast() must co-present and stand consecutively in the sequence
   const pivotFunc = sequence.find((func) =>
-    matchFunctionName(func.function, DATA_CUBE_FUNCTION.PIVOT),
+    matchFunctionName(func.function, DataCubeFunction.PIVOT),
   );
   const castFunc = sequence.find((func) =>
-    matchFunctionName(func.function, DATA_CUBE_FUNCTION.CAST),
+    matchFunctionName(func.function, DataCubeFunction.CAST),
   );
   if (Boolean(pivotFunc) !== Boolean(castFunc)) {
     throw new Error(`Found usage of dynamic function pivot() without casting`);
@@ -175,37 +177,26 @@ function extractQueryFunctionSequence(query: V1_ValueSpecification) {
   return sequence;
 }
 
-type FunctionMap = {
-  leafExtend: V1_AppliedFunction | undefined;
-  rename: V1_AppliedFunction[] | undefined;
-  filter: V1_AppliedFunction | undefined;
-  groupBy: V1_AppliedFunction | undefined;
-  pivot: V1_AppliedFunction | undefined;
-  cast: V1_AppliedFunction | undefined;
-  groupExtend: V1_AppliedFunction | undefined;
-  select: V1_AppliedFunction | undefined;
-  sort: V1_AppliedFunction | undefined;
-  limit: V1_AppliedFunction | undefined;
-};
-
 /**
  * Turn the function sequence into a map of available functions
  * for easier construction of the snapshot
  */
-function extractFunctionMap(sequence: V1_AppliedFunction[]): FunctionMap {
+function extractFunctionMap(
+  sequence: V1_AppliedFunction[],
+): DataCubeQueryFunctionMap {
   let leafExtend: V1_AppliedFunction | undefined = undefined;
   let groupExtend: V1_AppliedFunction | undefined = undefined;
   const aggregationFuncIndex = sequence.findLastIndex((func) =>
     matchFunctionName(func.function, [
-      DATA_CUBE_FUNCTION.PIVOT,
-      DATA_CUBE_FUNCTION.GROUP_BY,
+      DataCubeFunction.PIVOT,
+      DataCubeFunction.GROUP_BY,
     ]),
   );
   const firstExtendIndex = sequence.findIndex((func) =>
-    matchFunctionName(func.function, DATA_CUBE_FUNCTION.EXTEND),
+    matchFunctionName(func.function, DataCubeFunction.EXTEND),
   );
   const secondExtendIndex = sequence.findLastIndex((func) =>
-    matchFunctionName(func.function, DATA_CUBE_FUNCTION.EXTEND),
+    matchFunctionName(func.function, DataCubeFunction.EXTEND),
   );
   if (aggregationFuncIndex !== -1) {
     if (firstExtendIndex !== secondExtendIndex) {
@@ -218,37 +209,33 @@ function extractFunctionMap(sequence: V1_AppliedFunction[]): FunctionMap {
     }
   }
 
-  const rename = sequence.filter((func) =>
-    matchFunctionName(func.function, DATA_CUBE_FUNCTION.RENAME),
-  );
   const filter = sequence.find((func) =>
-    matchFunctionName(func.function, DATA_CUBE_FUNCTION.FILTER),
+    matchFunctionName(func.function, DataCubeFunction.FILTER),
   );
   const groupBy = sequence.find((func) =>
-    matchFunctionName(func.function, DATA_CUBE_FUNCTION.GROUP_BY),
+    matchFunctionName(func.function, DataCubeFunction.GROUP_BY),
   );
   const select = sequence.find((func) =>
-    matchFunctionName(func.function, DATA_CUBE_FUNCTION.SELECT),
+    matchFunctionName(func.function, DataCubeFunction.SELECT),
   );
   const pivot = sequence.find((func) =>
-    matchFunctionName(func.function, DATA_CUBE_FUNCTION.PIVOT),
+    matchFunctionName(func.function, DataCubeFunction.PIVOT),
   );
   const cast = sequence.find((func) =>
-    matchFunctionName(func.function, DATA_CUBE_FUNCTION.CAST),
+    matchFunctionName(func.function, DataCubeFunction.CAST),
   );
   const sort = sequence.find((func) =>
-    matchFunctionName(func.function, DATA_CUBE_FUNCTION.SORT),
+    matchFunctionName(func.function, DataCubeFunction.SORT),
   );
   const limit = sequence.find((func) =>
-    matchFunctionName(func.function, DATA_CUBE_FUNCTION.LIMIT),
+    matchFunctionName(func.function, DataCubeFunction.LIMIT),
   );
   return {
     leafExtend,
-    rename,
     filter,
     groupBy,
     pivot,
-    cast,
+    pivotCast: cast,
     groupExtend,
     select,
     sort,
@@ -273,18 +260,19 @@ export function validateAndBuildQuerySnapshot(
 
   const sequence = extractQueryFunctionSequence(partialQuery);
   const funcMap = extractFunctionMap(sequence);
-  const snapshot = createSnapshot(
+  const snapshot = DataCubeQuerySnapshot.create(
     baseQuery.name,
     baseQuery.source.runtime,
     V1_serializeValueSpecification(sourceQuery, []),
     baseQuery.configuration,
   );
+  const data = snapshot.data;
 
   // --------------------------------- SOURCE ---------------------------------
 
-  snapshot.originalColumns = baseQuery.source.columns;
+  data.originalColumns = baseQuery.source.columns;
   const columnsMap = new Map<string, DataCubeQuerySnapshotColumn>();
-  snapshot.originalColumns.map((col) => columnsMap.set(col.name, col));
+  data.originalColumns.map((col) => columnsMap.set(col.name, col));
 
   // leafExtendedColumns: DataCubeQueryExtendedColumnSnapshot[] = [];
   // filter: ValueSpecification[0..1]; // TODO
@@ -303,9 +291,6 @@ export function validateAndBuildQuerySnapshot(
   // TODO: @akphi - implement this
 
   // --------------------------------- FILTER ---------------------------------
-  // TODO: @akphi - implement this
-
-  // --------------------------------- RENAME ---------------------------------
   // TODO: @akphi - implement this
 
   // --------------------------------- GROUP BY ---------------------------------
@@ -328,20 +313,20 @@ export function validateAndBuildQuerySnapshot(
       sortColumns,
       V1_Collection,
       `Can't process ${extractElementNameFromPath(
-        DATA_CUBE_FUNCTION.SORT,
+        DataCubeFunction.SORT,
       )}(): columns cannot be extracted`,
     );
-    snapshot.sortColumns = sortColumns.values.map((column) => {
+    data.sortColumns = sortColumns.values.map((column) => {
       try {
         assertType(column, V1_AppliedFunction);
         assertTrue(
           matchFunctionName(column.function, [
-            DATA_CUBE_FUNCTION.ASC,
-            DATA_CUBE_FUNCTION.DESC,
+            DataCubeFunction.ASC,
+            DataCubeFunction.DESC,
           ]),
         );
         const direction =
-          extractElementNameFromPath(column.function) === DATA_CUBE_FUNCTION.ASC
+          extractElementNameFromPath(column.function) === DataCubeFunction.ASC
             ? DataCubeQuerySnapshotSortDirection.ASCENDING
             : DataCubeQuerySnapshotSortDirection.DESCENDING;
         assertTrue(column.parameters.length === 1);
@@ -354,7 +339,7 @@ export function validateAndBuildQuerySnapshot(
       } catch {
         throw new Error(
           `Can't process ${extractElementNameFromPath(
-            DATA_CUBE_FUNCTION.SORT,
+            DataCubeFunction.SORT,
           )}(): column sort information cannot be extracted`,
         );
       }
@@ -369,12 +354,12 @@ export function validateAndBuildQuerySnapshot(
       selectColumns instanceof V1_ClassInstance &&
         selectColumns.value instanceof V1_ColSpecArray,
       `Can't process ${extractElementNameFromPath(
-        DATA_CUBE_FUNCTION.SELECT,
+        DataCubeFunction.SELECT,
       )}(): columns cannot be extracted`,
     );
     const colSpecArray = (selectColumns as V1_ClassInstance)
       .value as V1_ColSpecArray;
-    snapshot.selectColumns = colSpecArray.colSpecs.map((column) => {
+    data.selectColumns = colSpecArray.colSpecs.map((column) => {
       try {
         const matchingColumn = guaranteeNonNullable(
           columnsMap.get(column.name),
@@ -387,7 +372,7 @@ export function validateAndBuildQuerySnapshot(
       } catch {
         throw new Error(
           `Can't process ${extractElementNameFromPath(
-            DATA_CUBE_FUNCTION.SELECT,
+            DataCubeFunction.SELECT,
           )}(): column information cannot be extracted`,
         );
       }
@@ -395,7 +380,12 @@ export function validateAndBuildQuerySnapshot(
   }
 
   // --------------------------------- LIMIT ---------------------------------
-  // TODO: @akphi - implement this
+
+  if (funcMap.limit) {
+    const value = funcMap.limit.parameters[0];
+    assertType(value, V1_CInteger);
+    data.limit = value.value;
+  }
 
   return snapshot;
 }

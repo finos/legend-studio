@@ -41,12 +41,13 @@ export class DataCubeCoreState extends DataCubeQuerySnapshotSubscriber {
   }
 
   override async applySnapshot(snapshot: DataCubeQuerySnapshot): Promise<void> {
-    this.setName(snapshot.name);
+    const data = snapshot.data;
+    this.setName(data.name);
     if (!this.startTime) {
       this.startTime = snapshot.timestamp;
     }
     this.application.layoutService.setWindowTitle(
-      `\u25A6 ${snapshot.name}${this.startTime ? ` - ${formatDate(new Date(this.startTime), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
+      `\u25A6 ${data.name}${this.startTime ? ` - ${formatDate(new Date(this.startTime), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
     );
   }
 

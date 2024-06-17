@@ -16,16 +16,27 @@
 
 import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
 import type { DataCubeConfiguration } from '../../../server/models/DataCubeQuery.js';
-import { uuid, type PlainObject, type Writable } from '@finos/legend-shared';
+import {
+  IllegalStateError,
+  guaranteeNonNullable,
+  uuid,
+  type PlainObject,
+  type Writable,
+} from '@finos/legend-shared';
 
 export enum DataCubeQuerySnapshotAggregateFunction {
-  SUM = 'sum',
-  MIN = 'min',
-  MAX = 'max',
+  AVERAGE = 'average',
   COUNT = 'count',
-  AVG = 'avg',
+  DISTINCT = 'distinct',
   FIRST = 'first',
+  JOIN_STRINGS = 'joinStrings',
   LAST = 'last',
+  MAX = 'max',
+  MIN = 'min',
+  SUM = 'sum',
+  STD_DEV_POPULATION = 'stdDevPopulation',
+  STD_DEV_SAMPLE = 'stdDevSample',
+  UNIQUE_VALUE_ONLY = 'uniqueValueOnly',
 }
 
 export enum DataCubeQuerySnapshotFilterOperation {
@@ -48,15 +59,23 @@ export enum DataCubeQuerySnapshotSortDirection {
   DESCENDING = 'descending',
 }
 
+export enum DataCubeQueryFilterGroupOperation {
+  AND = 'AND',
+  OR = 'OR',
+}
+
 export type DataCubeQuerySnapshotFilterCondition =
   DataCubeQuerySnapshotColumn & {
     value: unknown;
     operation: DataCubeQuerySnapshotFilterOperation;
   };
 
-export type DataCubeQueryFilter = {
-  groupOperation: string;
-  conditions: (DataCubeQuerySnapshotFilterCondition | DataCubeQueryFilter)[];
+export type DataCubeQuerySnapshotFilter = {
+  groupOperation: DataCubeQueryFilterGroupOperation;
+  conditions: (
+    | DataCubeQuerySnapshotFilterCondition
+    | DataCubeQuerySnapshotFilter
+  )[];
 };
 
 export type DataCubeQuerySnapshotColumn = {
@@ -70,10 +89,6 @@ export type DataCubeQuerySnapshotExtendedColumn =
     code: string;
   };
 
-export type DataCubeQuerySnapshotRenamedColumn = DataCubeQuerySnapshotColumn & {
-  oldName: string;
-};
-
 export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {
   direction: DataCubeQuerySnapshotSortDirection;
 };
@@ -83,70 +98,128 @@ export type DataCubeQuerySnapshotAggregateColumn =
     function: DataCubeQuerySnapshotAggregateFunction;
   };
 
-export type DataCubeQuerySnapshot = {
-  readonly uuid: string;
-  timestamp: number;
+export type DataCubeQuerySnapshotGroupBy = {
+  columns: DataCubeQuerySnapshotColumn[];
+  aggColumns: DataCubeQuerySnapshotAggregateColumn[];
+
+  expandedKeys: string[]; // TODO: @akphi - remove
+  filter?: DataCubeQuerySnapshotFilter | undefined; // TODO: @akphi - remove
+};
+
+export type DataCubeQuerySnapshotPivot = {
+  columns: DataCubeQuerySnapshotColumn[];
+  aggColumns: DataCubeQuerySnapshotAggregateColumn[];
+  castColumns: DataCubeQuerySnapshotColumn[];
+};
+
+export type DataCubeQuerySnapshotData = {
   name: string;
   runtime: string;
   sourceQuery: PlainObject<V1_ValueSpecification>;
   configuration: DataCubeConfiguration;
-
   originalColumns: DataCubeQuerySnapshotColumn[];
   leafExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
-  filter?: DataCubeQueryFilter | undefined;
-
-  groupByColumns: DataCubeQuerySnapshotColumn[];
-  groupByExpandedKeys: string[];
-  groupByAggColumns: DataCubeQuerySnapshotAggregateColumn[];
-  groupByFilter?: DataCubeQueryFilter | undefined;
-
-  pivotColumns: DataCubeQuerySnapshotColumn[];
-  pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[];
-  castColumns: DataCubeQuerySnapshotColumn[];
+  filter?: DataCubeQuerySnapshotFilter | undefined;
+  groupBy?: DataCubeQuerySnapshotGroupBy | undefined;
+  pivot?: DataCubeQuerySnapshotPivot | undefined;
   groupExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
   selectColumns: DataCubeQuerySnapshotColumn[];
   sortColumns: DataCubeQuerySnapshotSortColumn[];
   limit: number | undefined;
 };
 
-// ------------------------------------- UTILITIES -------------------------------------
+type DataCubeQuerySnapshotStage =
+  | 'leaf-extend'
+  | 'aggregation'
+  | 'group-extend'
+  | 'select'
+  | 'sort';
 
-export function createSnapshot(
-  name: string,
-  runtime: string,
-  sourceQuery: PlainObject<V1_ValueSpecification>,
-  configuration: DataCubeConfiguration,
-): DataCubeQuerySnapshot {
-  return {
-    uuid: uuid(),
-    timestamp: Date.now(),
-    name,
-    runtime,
-    sourceQuery,
-    configuration,
+export class DataCubeQuerySnapshot {
+  readonly uuid = uuid();
+  timestamp = Date.now();
+  readonly data: DataCubeQuerySnapshotData;
 
-    originalColumns: [],
-    leafExtendedColumns: [],
-    filter: undefined,
-    groupByColumns: [],
-    groupByExpandedKeys: [],
-    groupByAggColumns: [],
-    pivotColumns: [],
-    pivotAggColumns: [],
-    castColumns: [],
-    groupExtendedColumns: [],
-    groupByFilter: undefined,
-    sortColumns: [],
-    selectColumns: [],
-    limit: undefined,
-  };
+  private constructor(
+    name: string,
+    runtime: string,
+    sourceQuery: PlainObject<V1_ValueSpecification>,
+    configuration: DataCubeConfiguration,
+  ) {
+    this.data = {
+      name,
+      runtime,
+      sourceQuery,
+      configuration,
+      originalColumns: [],
+      leafExtendedColumns: [],
+      filter: undefined,
+      groupBy: undefined,
+      pivot: undefined,
+      groupExtendedColumns: [],
+      selectColumns: [],
+      sortColumns: [],
+      limit: undefined,
+    };
+  }
+
+  static create(
+    name: string,
+    runtime: string,
+    sourceQuery: PlainObject<V1_ValueSpecification>,
+    configuration: DataCubeConfiguration,
+  ) {
+    return new DataCubeQuerySnapshot(name, runtime, sourceQuery, configuration);
+  }
+
+  clone(): DataCubeQuerySnapshot {
+    const clone = new DataCubeQuerySnapshot('', '', {}, {});
+    (clone.data as Writable<DataCubeQuerySnapshotData>) = JSON.parse(
+      JSON.stringify(this.data),
+    );
+    return clone;
+  }
+
+  /**
+   * Get available columns at a certain stage of the query
+   */
+  stageCols(stage: DataCubeQuerySnapshotStage): DataCubeQuerySnapshotColumn[] {
+    switch (stage) {
+      case 'leaf-extend':
+        return [...this.data.originalColumns];
+      case 'aggregation':
+        return [...this.data.originalColumns, ...this.data.leafExtendedColumns];
+      case 'group-extend':
+        // TODO: @akphi - add pivot columns
+        return [...this.data.originalColumns, ...this.data.leafExtendedColumns];
+      case 'select':
+        // TODO: @akphi - add pivot columns
+        return [
+          ...this.data.originalColumns,
+          ...this.data.leafExtendedColumns,
+          ...this.data.groupExtendedColumns,
+        ];
+      case 'sort':
+        return [...this.data.selectColumns];
+      default:
+        throw new IllegalStateError(`Unknown stage '${stage}'`);
+    }
+  }
 }
 
-export function cloneSnapshot(
-  snapshot: DataCubeQuerySnapshot,
-): DataCubeQuerySnapshot {
-  const clone = JSON.parse(JSON.stringify(snapshot)) as DataCubeQuerySnapshot;
-  (clone as Writable<DataCubeQuerySnapshot>).uuid = uuid();
-  clone.timestamp = Date.now();
-  return clone;
+export function _findCol<T extends DataCubeQuerySnapshotColumn>(
+  cols: T[] | undefined,
+  name: string,
+): T | undefined {
+  return cols?.find((c) => c.name === name);
+}
+
+export function _getCol<T extends DataCubeQuerySnapshotColumn>(
+  cols: T[] | undefined,
+  name: string,
+): T {
+  return guaranteeNonNullable(
+    cols?.find((c) => c.name === name),
+    `Can't find column '${name}'`,
+  );
 }
