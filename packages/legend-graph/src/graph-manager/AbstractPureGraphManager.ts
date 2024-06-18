@@ -108,6 +108,7 @@ import type { ArtifactGenerationExtensionResult } from './action/generation/Arti
 import type { TestDataGenerationResult } from '../graph/metamodel/pure/packageableElements/service/TestGenerationResult.js';
 import type { TableRowIdentifiers } from '../graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
 import type { EngineError } from './action/EngineError.js';
+import type { TestDebug } from '../graph/metamodel/pure/test/result/DebugTestsResult.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -403,6 +404,11 @@ export abstract class AbstractPureGraphManager {
     inputs: RunTestsTestableInput[],
     graph: PureModel,
   ): Promise<TestResult[]>;
+
+  abstract debugTests(
+    inputs: RunTestsTestableInput[],
+    graph: PureModel,
+  ): Promise<TestDebug[]>;
 
   // ------------------------------------------- Value Specification -------------------------------------------
 

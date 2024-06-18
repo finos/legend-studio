@@ -83,6 +83,7 @@ import type { V1_TestDataGenerationResult } from './service/V1_TestDataGeneratio
 import type { V1_RelationalConnectionBuilder } from './relational/V1_RelationalConnectionBuilder.js';
 import type { V1_LambdaPrefix } from './lambda/V1_LambdaPrefix.js';
 import type { V1_DeploymentResult } from './functionActivator/V1_DeploymentResult.js';
+import type { V1_DebugTestsResult } from './test/V1_DebugTestsResult.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -496,6 +497,19 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.RUN_TESTS),
       `${this._pure()}/testable/runTests`,
+      this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.RUN_TESTS),
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+
+  debugTests = (
+    input: PlainObject<V1_RunTestsInput>,
+  ): Promise<PlainObject<V1_DebugTestsResult>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.RUN_TESTS),
+      `${this._pure()}/testable/debugTests`,
       this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.RUN_TESTS),
       {},
       undefined,

@@ -328,6 +328,8 @@ import type { PostValidationAssertionResult } from '../../../../DSL_Service_Expo
 import { V1_UserListOwnership } from './model/packageableElements/service/V1_ServiceOwnership.js';
 import { V1_PureSingleExecution } from './model/packageableElements/service/V1_ServiceExecution.js';
 import { V1_RuntimePointer } from './model/packageableElements/runtime/V1_Runtime.js';
+import type { TestDebug } from '../../../../graph/metamodel/pure/test/result/DebugTestsResult.js';
+import { V1_buildDebugTestsResult } from './engine/test/V1_DebugTestsResult.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2261,6 +2263,52 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           this.pluginManager.getPureGraphManagerPlugins(),
         ),
       this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+    return result;
+  }
+
+  async debugTests(
+    inputs: RunTestsTestableInput[],
+    graph: PureModel,
+  ): Promise<TestDebug[]> {
+    const runTestsInput = new V1_RunTestsInput();
+    runTestsInput.model = this.getFullGraphModelContext(
+      graph,
+      V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+    );
+    runTestsInput.testables = inputs
+      .map((input) => {
+        const testable = guaranteeNonNullable(
+          getNullableIDFromTestable(
+            input.testable,
+            graph,
+            this.pluginManager.getPureGraphManagerPlugins(),
+          ),
+          `Unable to find testable from id`,
+        );
+        if (!testable) {
+          return undefined;
+        }
+        const runTestableInput = new V1_RunTestsTestableInput();
+        runTestableInput.testable = testable;
+        runTestableInput.unitTestIds = input.unitTestIds.map((unit) => {
+          const unitAtomicTest = new V1_UniqueTestId();
+          unitAtomicTest.testSuiteId = unit.parentSuite?.id;
+          unitAtomicTest.atomicTestId = unit.atomicTest.id;
+          return unitAtomicTest;
+        });
+        return runTestableInput;
+      })
+      .filter(isNonNullable);
+    const runTestsResult = await this.engine.debugTests(runTestsInput);
+    const result = V1_buildDebugTestsResult(
+      runTestsResult,
+      (id: string): Testable | undefined =>
+        getNullableTestable(
+          id,
+          graph,
+          this.pluginManager.getPureGraphManagerPlugins(),
+        ),
     );
     return result;
   }
