@@ -332,7 +332,6 @@ export class ExecutionPlanState {
 
   setExecutionPlanDisplayDataJson(val: object): void {
     this.displayDataJson = val;
-
     this.setExecutionPlanDisplayData(
       JSON.stringify(this.displayDataJson, undefined, 2),
     );

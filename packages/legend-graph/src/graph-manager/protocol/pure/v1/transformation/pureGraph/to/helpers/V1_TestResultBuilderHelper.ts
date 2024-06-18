@@ -47,6 +47,16 @@ import {
 } from '../../../../model/test/result/V1_TestResult.js';
 import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
 import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../../extensions/Testable_PureProtocolProcessorPlugin_Extension.js';
+import {
+  TestExecutionPlanDebug,
+  UnknownTestDebug,
+  type TestDebug,
+} from '../../../../../../../../graph/metamodel/pure/test/result/DebugTestsResult.js';
+import {
+  V1_TestExecutionPlanDebug,
+  V1_UnknownTestDebug,
+  type V1_TestDebug,
+} from '../../../../engine/test/V1_DebugTestsResult.js';
 
 const buildTestSuite = (
   testable: Testable,
@@ -239,6 +249,45 @@ export function V1_buildTestResult(
     return V1_buildTestError(element, testable);
   } else if (element instanceof V1_MultiExecutionServiceTestResult) {
     return V1_buildMultiExecutionServiceTestResult(element, testable, plugins);
+  }
+  throw new UnsupportedOperationError(`Can't build test result`, element);
+}
+
+export const V1_buildTestExecutionPlanDebug = (
+  element: V1_TestExecutionPlanDebug,
+  testable: Testable,
+): TestExecutionPlanDebug => {
+  const testSuite = buildTestSuite(testable, element.testSuiteId);
+  const atomicTest = buildAtomicTest(testable, element.atomicTestId, testSuite);
+  const compiledDebug = new TestExecutionPlanDebug(testSuite, atomicTest);
+  compiledDebug.testable = testable;
+  compiledDebug.error = element.error;
+  compiledDebug.executionPlan = element.executionPlan;
+  compiledDebug.debug = element.debug;
+  return compiledDebug;
+};
+
+export const V1_buildUnknownTestDebug = (
+  element: V1_UnknownTestDebug,
+  testable: Testable,
+): UnknownTestDebug => {
+  const testSuite = buildTestSuite(testable, element.testSuiteId);
+  const atomicTest = buildAtomicTest(testable, element.atomicTestId, testSuite);
+  const compiledDebug = new UnknownTestDebug(testSuite, atomicTest);
+  compiledDebug.testable = testable;
+  compiledDebug.error = element.error;
+  compiledDebug.value = element.value;
+  return compiledDebug;
+};
+
+export function V1_buildDebugTestResult(
+  element: V1_TestDebug,
+  testable: Testable,
+): TestDebug {
+  if (element instanceof V1_TestExecutionPlanDebug) {
+    return V1_buildTestExecutionPlanDebug(element, testable);
+  } else if (element instanceof V1_UnknownTestDebug) {
+    return V1_buildUnknownTestDebug(element, testable);
   }
   throw new UnsupportedOperationError(`Can't build test result`, element);
 }

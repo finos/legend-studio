@@ -55,6 +55,7 @@ import {
   LogEvent,
   uuid,
   filterByType,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { LambdaEditorState } from '@finos/legend-query-builder';
 import { type MappingEditorState } from '../MappingEditorState.js';
@@ -236,11 +237,15 @@ export class MappingTestState extends TestableTestEditorState {
       testResultState: observable,
       runningTestAction: observable,
       dataState: observable,
+      debugTestResultState: observable,
       addAssertion: action,
       setAssertionToRename: action,
       handleTestResult: action,
+      buildTestDebugState: action,
+      setDebugState: action,
       setSelectedTab: action,
       runTest: flow,
+      debugTest: flow,
     });
     this.parentState = parentSuiteState;
     this.mappingTestableState = parentSuiteState.mappingTestableState;
@@ -368,6 +373,7 @@ export class MappingTestSuiteState extends TestableTestSuiteEditorState {
       createStoreTestData: action,
       runSuite: flow,
       runFailingTests: flow,
+      debug: flow,
     });
     this.mappingTestableState = mappingTestableState;
     this.suite = suite;
@@ -449,6 +455,20 @@ export class MappingTestSuiteState extends TestableTestSuiteEditorState {
 
   setShowModal(val: boolean): void {
     this.showCreateModal = val;
+  }
+
+  *debug(): GeneratorFn<void> {
+    try {
+      const testState = guaranteeNonNullable(
+        this.selectTestState,
+        'Test Required to be selected to run debug',
+      );
+      flowResult(testState.debugTest()).catch(
+        this.editorStore.applicationStore.alertUnhandledError,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+    }
   }
 }
 
