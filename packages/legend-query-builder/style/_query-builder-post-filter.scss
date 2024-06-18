@@ -260,6 +260,11 @@
 
       .query-builder-post-filter-tree__condition-node__property {
         width: 100%;
+
+        .query-builder-column-badge__property__info {
+          width: 2rem;
+          margin: 0;
+        }
       }
     }
   }
@@ -323,7 +328,7 @@
     margin: 0.3rem;
 
     svg {
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       color: var(--color-light-grey-400);
     }
   }
@@ -333,10 +338,10 @@
 
     height: 2.2rem;
     width: 2.2rem;
-    margin: 0.3rem;
+    margin-right: 0.5rem;
 
     svg {
-      font-size: 1.2rem;
+      font-size: 1.8rem;
       color: var(--color-light-grey-400);
     }
 

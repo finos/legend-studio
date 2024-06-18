@@ -47,7 +47,7 @@ import {
   MenuContentItemIcon,
   MenuContentItemLabel,
   PanelLoadingIndicator,
-  TimesCircleIcon,
+  RefreshIcon,
 } from '@finos/legend-art';
 import {
   type ValueSpecification,
@@ -286,9 +286,11 @@ export const QueryBuilderColumnBadge = observer(
         {removeColumn && (
           <button
             className="query-builder-column-badge__action"
+            name="Reset"
+            title="Reset"
             onClick={removeColumn}
           >
-            <TimesCircleIcon />
+            <RefreshIcon />
           </button>
         )}
       </div>
