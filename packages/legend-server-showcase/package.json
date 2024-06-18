@@ -39,8 +39,8 @@
   },
   "dependencies": {
     "@finos/legend-shared": "workspace:*",
-    "fastify": "4.27.0",
-    "mobx": "6.12.3",
+    "fastify": "4.28.0",
+    "mobx": "6.12.4",
     "serializr": "3.0.2",
     "yaml": "2.4.5"
   },

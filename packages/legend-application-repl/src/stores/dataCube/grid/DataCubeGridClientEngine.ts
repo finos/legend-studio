@@ -82,12 +82,19 @@ export class DataCubeGridClientServerSideDataSource
   async fetchRows(
     params: IServerSideGetRowsParams<unknown, unknown>,
   ): Promise<void> {
+    // ------------------------------ GRID OPTIONS ------------------------------
+    // Here, we make adjustments to the grid display in response to the new
+    // request, in case the grid action has not impacted the layout in an
+    // adequate way.
+
+    // Toggle the visibility of the tree column based on the presence of row-group columns
     if (params.request.rowGroupCols.length) {
       params.api.setColumnsVisible([GRID_CLIENT_TREE_COLUMN_ID], true);
     } else {
       params.api.setColumnsVisible([GRID_CLIENT_TREE_COLUMN_ID], false);
     }
 
+    // ------------------------------ SNAPSHOT ------------------------------
     const currentSnapshot = guaranteeNonNullable(this.grid.getLatestSnapshot());
     const syncedSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
     if (syncedSnapshot.uuid !== currentSnapshot.uuid) {
@@ -97,6 +104,8 @@ export class DataCubeGridClientServerSideDataSource
     // i.e. drilldown in the request, we don't need to update the snapshot, but fire a modified query,
     // here we update the snapshot just so we can build the query to execute to get the result, which is
     // wrong. We must not uncessarily update the snapshot.
+
+    // ------------------------------ DATA ------------------------------
     try {
       const executableQuery = buildExecutableQueryFromSnapshot(syncedSnapshot);
       const lambda = new V1_Lambda();

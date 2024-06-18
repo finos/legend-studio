@@ -65,7 +65,7 @@ const _SUPPORTED_TOP_LEVEL_FUNCTIONS: {
 ];
 
 // NOTE: this corresponds to the sequence:
-// extend()->rename()->filter()->groupBy()->select()->pivot()->cast()->extend()->sort()->limit()
+// extend()->filter()->groupBy()->select()->pivot()->cast()->extend()->sort()->limit()
 // which represents the ONLY query shape that we currently support
 const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN: {
   func: string;

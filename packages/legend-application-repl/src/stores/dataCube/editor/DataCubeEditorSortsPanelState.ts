@@ -175,7 +175,7 @@ export class DataCubeEditorSortsPanelState
       sortColumns.map(
         (col) =>
           new DataCubeEditorSortColumnState(
-            _getCol(columns, col.name)!,
+            _getCol(columns, col.name),
             col.direction,
           ),
       ),

@@ -205,7 +205,7 @@ function _filter(
   filter: DataCubeQuerySnapshotFilter | DataCubeQuerySnapshotFilterCondition,
 ): V1_ValueSpecification {
   if ('groupOperation' in filter) {
-    const group = filter as DataCubeQuerySnapshotFilter;
+    const group = filter;
     const groupOperation =
       group.groupOperation === DataCubeQueryFilterGroupOperation.AND
         ? DataCubeFunction.AND
@@ -221,10 +221,10 @@ function _filter(
     });
     return guaranteeNonNullable(conditions[0]);
   } else {
-    const condition = filter as DataCubeQuerySnapshotFilterCondition;
+    const condition = filter;
     const property = _property(condition.name);
     const _cond = (fn: string, ...p: V1_ValueSpecification[]) =>
-      _function(_name(fn), [property, ...(p ?? [])]);
+      _function(_name(fn), [property, ...p]);
     const _val = () => _value(condition.type, condition.value);
     const _not = (fn: V1_AppliedFunction) =>
       _function(_name(DataCubeFunction.NOT), [fn]);

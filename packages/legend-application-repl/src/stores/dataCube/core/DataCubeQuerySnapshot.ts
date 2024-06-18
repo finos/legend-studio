@@ -176,7 +176,7 @@ export class DataCubeQuerySnapshot {
     const clone = new DataCubeQuerySnapshot('', '', {}, {});
     (clone.data as Writable<DataCubeQuerySnapshotData>) = JSON.parse(
       JSON.stringify(this.data),
-    );
+    ) as DataCubeQuerySnapshotData;
     return clone;
   }
 
