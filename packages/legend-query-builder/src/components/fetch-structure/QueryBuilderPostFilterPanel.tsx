@@ -316,8 +316,7 @@ const isProjectionColumnDragSource = (
     | QueryBuilderVariableDragSource
     | QueryBuilderProjectionColumnDragSource,
 ): itemToTest is QueryBuilderProjectionColumnDragSource =>
-  (itemToTest as QueryBuilderProjectionColumnDragSource).columnState !==
-  undefined;
+  Object.hasOwn(itemToTest, 'columnState');
 
 const canDropItemOntoNodeValue = (
   item: QueryBuilderVariableDragSource | QueryBuilderProjectionColumnDragSource,
