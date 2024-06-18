@@ -21,18 +21,16 @@ import {
   Panel,
   PanelFullContent,
 } from '@finos/legend-art';
-import {
-  MASTER_SNAPSHOT_ALIAS,
-  SNAPSHOT_VERSION_ALIAS,
-} from '@finos/legend-server-depot';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { StoreProjectData } from '@finos/legend-server-depot';
 import { observer } from 'mobx-react-lite';
 import { type QueryEditorStore } from '../../stores/QueryEditorStore.js';
 import type {
   DataSpace,
   DataSpaceExecutionContext,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl } from '../../__lib__/LegendQueryNavigation.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } from '../../__lib__/LegendQueryNavigation.js';
+import { flowResult } from 'mobx';
+import { assertErrorThrown } from '@finos/legend-shared';
 
 export const QueryEditorDataspaceInfoModal = observer(
   (props: {
@@ -45,18 +43,27 @@ export const QueryEditorDataspaceInfoModal = observer(
     const { editorStore, dataspace, executionContext, open, closeModal } =
       props;
     const projectInfo = editorStore.getProjectInfo();
-    const visitElement = (path: string): void => {
-      if (projectInfo) {
-        editorStore.applicationStore.navigationService.navigator.visitAddress(
-          EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
-            editorStore.applicationStore.config.studioApplicationUrl,
-            guaranteeNonNullable(projectInfo.groupId),
-            guaranteeNonNullable(projectInfo.artifactId),
-            projectInfo.versionId === MASTER_SNAPSHOT_ALIAS
-              ? SNAPSHOT_VERSION_ALIAS
-              : projectInfo.versionId,
-            path,
-          ),
+    const visitElement = async (path: string): Promise<void> => {
+      try {
+        if (projectInfo) {
+          const project = StoreProjectData.serialization.fromJson(
+            await editorStore.depotServerClient.getProject(
+              projectInfo.groupId,
+              projectInfo.artifactId,
+            ),
+          );
+          editorStore.applicationStore.navigationService.navigator.visitAddress(
+            EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
+              editorStore.applicationStore.config.studioApplicationUrl,
+              project.projectId,
+              path,
+            ),
+          );
+        }
+      } catch (error) {
+        assertErrorThrown(error);
+        editorStore.applicationStore.notificationService.notifyError(
+          `Can't visit element of path: '${path}'`,
         );
       }
     };
@@ -111,7 +118,9 @@ export const QueryEditorDataspaceInfoModal = observer(
                 <div
                   className="dataspace-info-modal__field__value dataspace-info-modal__field__value--linkable"
                   onClick={() =>
-                    visitElement(executionContext.mapping.value.path)
+                    flowResult(
+                      visitElement(executionContext.mapping.value.path),
+                    )
                   }
                 >
                   {executionContext.mapping.value.name}
@@ -124,7 +133,9 @@ export const QueryEditorDataspaceInfoModal = observer(
                 <div
                   className="dataspace-info-modal__field__value  dataspace-info-modal__field__value--linkable"
                   onClick={() =>
-                    visitElement(executionContext.defaultRuntime.value.path)
+                    flowResult(
+                      visitElement(executionContext.defaultRuntime.value.path),
+                    )
                   }
                 >
                   {executionContext.defaultRuntime.value.name}
@@ -136,7 +147,7 @@ export const QueryEditorDataspaceInfoModal = observer(
                 </div>
                 <div
                   className="dataspace-info-modal__field__value dataspace-info-modal__field__value--linkable"
-                  onClick={() => visitElement(dataspace.path)}
+                  onClick={() => flowResult(visitElement(dataspace.path))}
                 >
                   Show Dataspace Configuration
                 </div>
