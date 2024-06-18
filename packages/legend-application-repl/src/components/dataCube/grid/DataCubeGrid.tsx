@@ -49,22 +49,7 @@ export const DataCubeGrid = observer(() => {
   return (
     <>
       <AgGridReact
-        rowGroupPanelShow="always"
-        alwaysMultiSort={true}
-        suppressBrowserResizeObserver={true}
-        suppressScrollOnNewData={true}
-        rowModelType="serverSide"
-        animateRows={false}
-        serverSideDatasource={dataCubeState.grid.clientDataSource}
-        suppressAggFuncInHeader={true}
-        // TODO: @akphi - once we do pagination, we can remove reliance on this flag
-        // Otherwise if we remove this flag now, when data is more than one page or 100 rows
-        // it keeps making call to backend to fetch more data as ag-grid updates it’s request
-        // for start row and end row. This would show incorrect data as you scroll since the
-        // to the backend does not account for pagination.
-        suppressServerSideInfiniteScroll={true}
-        rowHeight={20}
-        headerHeight={24}
+        className="ag-theme-balham data-cube-grid"
         modules={[
           // community
           ClientSideRowModelModule,
@@ -80,7 +65,27 @@ export const DataCubeGrid = observer(() => {
             console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
           }
         }}
-        className="ag-theme-balham data-cube-grid"
+        // -------------------------------------- GENERIC --------------------------------------
+        suppressBrowserResizeObserver={true}
+        animateRows={false} // improve performance
+        rowHeight={20}
+        headerHeight={24}
+        alwaysMultiSort={true} // forces multi-sorting since this is what the query supports anyway
+        suppressAggFuncInHeader={true} // keeps the column set stable even when aggregation is used
+        // -------------------------------------- ROW GROUPING --------------------------------------
+        rowGroupPanelShow="always"
+        suppressScrollOnNewData={true}
+        groupDisplayType="custom" // keeps the column set stable even when row grouping is used
+        suppressRowGroupHidesColumns={true} // keeps the column set stable even when row grouping is used
+        // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
+        rowModelType="serverSide"
+        serverSideDatasource={dataCubeState.grid.clientDataSource}
+        // TODO: @akphi - once we do pagination, we can remove reliance on this flag
+        // Otherwise if we remove this flag now, when data is more than one page or 100 rows
+        // it keeps making call to backend to fetch more data as ag-grid updates it’s request
+        // for start row and end row. This would show incorrect data as you scroll since the
+        // to the backend does not account for pagination.
+        suppressServerSideInfiniteScroll={true}
       />
     </>
   );

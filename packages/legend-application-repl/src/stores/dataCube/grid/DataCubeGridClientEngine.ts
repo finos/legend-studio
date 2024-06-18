@@ -41,6 +41,8 @@ type GridClientRowDataType = {
   [key: string]: GridClientResultCellDataType;
 };
 
+export const GRID_CLIENT_TREE_COLUMN_ID = 'tree';
+
 export enum GridClientSortDirection {
   ASCENDING = 'asc',
   DESCENDING = 'desc',
@@ -80,6 +82,12 @@ export class DataCubeGridClientServerSideDataSource
   async fetchRows(
     params: IServerSideGetRowsParams<unknown, unknown>,
   ): Promise<void> {
+    if (params.request.rowGroupCols.length) {
+      params.api.setColumnsVisible([GRID_CLIENT_TREE_COLUMN_ID], true);
+    } else {
+      params.api.setColumnsVisible([GRID_CLIENT_TREE_COLUMN_ID], false);
+    }
+
     const currentSnapshot = guaranteeNonNullable(this.grid.getLatestSnapshot());
     const syncedSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
     if (syncedSnapshot.uuid !== currentSnapshot.uuid) {

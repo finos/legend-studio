@@ -28,8 +28,9 @@ import {
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
 } from '../core/DataCubeQuerySnapshot.js';
-import type { GridOptions } from '@ag-grid-community/core';
+import type { ColumnMenuTab, GridOptions } from '@ag-grid-community/core';
 import {
+  GRID_CLIENT_TREE_COLUMN_ID,
   GridClientAggregateOperation,
   GridClientSortDirection,
 } from './DataCubeGridClientEngine.js';
@@ -109,7 +110,6 @@ function _rowGroupSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
   const aggCol = _findCol(data.groupBy?.aggColumns, colName);
   return {
     rowGroup: Boolean(groupByCol),
-    hide: Boolean(groupByCol), // automatically hide group-by columns
     // TODO: @akphi - add this from configuration object
     aggFunc: aggCol
       ? _aggFunc(aggCol.function)
@@ -134,21 +134,35 @@ export function generateGridOptionsFromSnapshot(
 ): GridOptions {
   const data = snapshot.data;
   const gridOptions: GridOptions = {
-    columnDefs: data.selectColumns.map((col) => ({
-      headerName: col.name,
-      field: col.name,
-      ..._sortSpec(snapshot, col.name),
+    columnDefs: [
+      {
+        headerName: '',
+        colId: GRID_CLIENT_TREE_COLUMN_ID,
+        cellRenderer: 'agGroupCellRenderer',
+        showRowGroup: true,
+        hide: !snapshot.data.groupBy,
+        lockPinned: true,
+        lockPosition: true,
+      },
+      ...data.selectColumns.map((col) => ({
+        headerName: col.name,
+        field: col.name,
+        ..._sortSpec(snapshot, col.name),
 
-      // configurable
-      minWidth: 50,
-      sortable: true,
-      flex: 1,
-      resizable: true,
-      enableRowGroup: true,
-      enableValue: true,
-      menuTabs: ['generalMenuTab', 'columnsMenuTab'],
-      ..._rowGroupSpec(snapshot, col.name),
-    })),
+        // configurable
+        minWidth: 50,
+        sortable: true,
+        flex: 1,
+        resizable: true,
+        enableRowGroup: true,
+        enableValue: true,
+        menuTabs: [
+          'generalMenuTab',
+          'columnsMenuTab',
+        ] satisfies ColumnMenuTab[],
+        ..._rowGroupSpec(snapshot, col.name),
+      })),
+    ],
   };
 
   return gridOptions;
