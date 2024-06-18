@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.48
+
+### Patch Changes
+
+- [#3230](https://github.com/finos/legend-studio/pull/3230) [`da4fc7b`](https://github.com/finos/legend-studio/commit/da4fc7bd8033bb85b7151fcd8131d319e723c368) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add milestoning setup in Query Option
+
 ## 4.14.47
 
 ### Patch Changes

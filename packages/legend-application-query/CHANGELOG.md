@@ -1,5 +1,13 @@
 # @finos/legend-application-query
 
+## 13.5.3
+
+### Patch Changes
+
+- [#3212](https://github.com/finos/legend-studio/pull/3212) [`2373444`](https://github.com/finos/legend-studio/commit/237344409fa6c17f26fac529e73a1355ca3bf85d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Display 10 default queries when there is no recently reivewed query
+
+- [#3257](https://github.com/finos/legend-studio/pull/3257) [`04afcbe`](https://github.com/finos/legend-studio/commit/04afcbe555d63351dd3158931bba76b80b770b6e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Improve Help button in Query Builder
+
 ## 13.5.2
 
 ## 13.5.1

@@ -1,5 +1,11 @@
 # @finos/legend-application-repl
 
+## 0.0.25
+
+### Patch Changes
+
+- [#3254](https://github.com/finos/legend-studio/pull/3254) [`dbba035`](https://github.com/finos/legend-studio/commit/dbba0358db7a82e626625d659ff0d66dc40d7fb3) ([@gayathrir11](https://github.com/gayathrir11)) - Add back groupBy feature to DataCube after refactoring
+
 ## 0.0.24
 
 ## 0.0.23
