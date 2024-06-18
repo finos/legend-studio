@@ -30,6 +30,7 @@ import {
   getByTestId,
   getAllByTestId,
   getByRole,
+  getAllByText,
 } from '@testing-library/react';
 import {
   TEST_DATA__lambda_WithDerivedProjectColumnsUsingConstAndParams,
@@ -681,7 +682,7 @@ test(
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
     );
 
-    // Drag and drop from explorer to projection panel
+    // DND from explorer to projection panel
     const firstNameExplorerDragSource = await waitFor(() =>
       getByText(explorerPanel, 'First Name'),
     );
@@ -704,7 +705,7 @@ test(
       'Add a projection column',
     );
 
-    // Drag and drop First Name from projection panel to post-filter panel
+    // DND First Name from projection panel to post-filter panel
     const firstNameTDSDragSource = await waitFor(() =>
       getByText(tdsProjectionPanel, 'First Name'),
     );
@@ -727,7 +728,7 @@ test(
     );
     expect(contentNodes.length).toBe(1);
 
-    // Drag and drop Last Name from projection panel to First Name right-side value
+    // DND Last Name from projection panel to First Name right-side value
     const lastNameTDSDragSource = await waitFor(() =>
       getByText(tdsProjectionPanel, 'Last Name'),
     );
@@ -745,6 +746,133 @@ test(
       ),
     );
     expect(contentNodes.length).toBe(1);
+
+    // DND First Name from projection panel to First Name right-side value to replace Last Name value
+    await dragAndDrop(
+      firstNameTDSDragSource,
+      postFilterPanel,
+      postFilterPanel,
+      'Change Filter Value',
+    );
+    await waitFor(() =>
+      expect(getAllByText(postFilterPanel, 'First Name')).toHaveLength(2),
+    );
+    contentNodes = await waitFor(() =>
+      getAllByTestId(
+        postFilterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+  },
+);
+
+test(
+  integrationTest(
+    "Query builder doesn't allow DND projection column to right side value when types are incompatible",
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+      const tdsState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      tdsState.setShowPostFilterPanel(true);
+    });
+
+    const postFilterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
+      ),
+    );
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // DND from explorer to projection panel
+    const firstNameExplorerDragSource = await waitFor(() =>
+      getByText(explorerPanel, 'First Name'),
+    );
+    const ageExplorerDragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Age'),
+    );
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    await dragAndDrop(
+      firstNameExplorerDragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      ageExplorerDragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+
+    // DND First Name from projection panel to post-filter panel
+    const firstNameTDSDragSource = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'First Name'),
+    );
+    const postFilterDropZone = await waitFor(() =>
+      getByText(postFilterPanel, 'Add a post-filter condition'),
+    );
+    await dragAndDrop(
+      firstNameTDSDragSource,
+      postFilterDropZone,
+      postFilterPanel,
+      'Add a post-filter condition',
+    );
+    await waitFor(() => getByText(postFilterPanel, 'First Name'));
+    await waitFor(() => getByText(postFilterPanel, 'is'));
+    const contentNodes = await waitFor(() =>
+      getAllByTestId(
+        postFilterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
+      ),
+    );
+    expect(contentNodes.length).toBe(1);
+
+    // Check that DND Age from projection panel doesn't allow dropping on First Name right-side value
+    const ageTDSDragSource = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Age'),
+    );
+    fireEvent.dragStart(ageTDSDragSource);
+    expect(queryByText(postFilterPanel, 'Change Filter Value')).toBeNull();
+
+    // Check that DND First Name from projection panel does show correct placeholder text
+    fireEvent.dragStart(firstNameTDSDragSource);
+    expect(getByText(postFilterPanel, 'Change Filter Value')).not.toBeNull();
+
+    // DND First Name to right side value
+    await dragAndDrop(
+      firstNameTDSDragSource,
+      postFilterPanel,
+      postFilterPanel,
+      'Change Filter Value',
+    );
+
+    // Check that DND Age from projection panel still doesn't allow dropping on First Name right-side value
+    fireEvent.dragStart(ageTDSDragSource);
+    expect(queryByText(postFilterPanel, 'Change Filter Value')).toBeNull();
   },
 );
 
