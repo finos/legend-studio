@@ -273,3 +273,79 @@
     width: 100%;
   }
 }
+
+.dataspace-info-modal {
+  width: 80rem;
+  padding: 1rem;
+
+  .modal__title {
+    margin-bottom: 1rem;
+  }
+
+  &__container {
+    overflow-y: hidden !important;
+  }
+
+  &__inner-container {
+    overflow-y: initial !important;
+  }
+
+  .selector-input__menu {
+    z-index: 1;
+  }
+
+  &__actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  &__field {
+    @include flexVCenter;
+
+    width: 100%;
+    height: 2.8rem;
+  }
+
+  &__field__label {
+    @include ellipsisTextOverflow;
+
+    height: 100%;
+    width: 15rem;
+    cursor: default;
+    border-radius: 0.2rem 0 0 0.2rem;
+    padding: 0 1rem;
+    line-height: 2.8rem;
+    background: var(--color-blue-100);
+    color: var(--color-light-grey-50);
+    font-weight: 500;
+  }
+
+  &__field__value {
+    @include ellipsisTextOverflow;
+
+    height: 100%;
+    width: calc(100% - 15rem);
+    cursor: default;
+    padding: 0 1rem;
+    line-height: 2.8rem;
+    background: var(--color-dark-grey-100);
+    font-weight: 500;
+    color: var(--color-blue-50);
+    font-family: 'Roboto Mono', monospace;
+
+    &--linkable {
+      color: var(--color-purple-50);
+      text-decoration: none;
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &__field + &__field {
+    margin-top: 0.5rem;
+  }
+}

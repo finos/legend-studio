@@ -87,6 +87,7 @@ import { parseProjectIdentifier } from '@finos/legend-storage';
 import { QueryEditorExistingQueryHeader } from './QueryEditor.js';
 import { DataSpaceTemplateQueryCreatorStore } from '../stores/data-space/DataSpaceTemplateQueryCreatorStore.js';
 import { createViewSDLCProjectHandler } from '../stores/data-space/DataSpaceQueryBuilderHelper.js';
+import { DataSpaceQueryCreatorStore } from '../stores/data-space/DataSpaceQueryCreatorStore.js';
 
 export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   static NAME = packageJson.extensions.applicationQueryPlugin;
@@ -397,6 +398,42 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             const editorStore =
               queryBuilderState.workflowState.actionConfig.editorStore;
             editorStore.setShowAppInfo(true);
+          }
+        },
+        icon: <InfoCircleIcon />,
+      },
+      {
+        key: 'about-dataspace',
+        title: 'About Dataspace',
+        label: 'About Dataspace',
+        disableFunc: (queryBuilderState): boolean => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            if (
+              (editorStore instanceof ExistingQueryEditorStore &&
+                queryBuilderState instanceof DataSpaceQueryBuilderState) ||
+              editorStore instanceof DataSpaceTemplateQueryCreatorStore ||
+              editorStore instanceof DataSpaceQueryCreatorStore
+            ) {
+              return false;
+            }
+          }
+          return true;
+        },
+        onClick: (queryBuilderState): void => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
+              editorStore.setShowDataspaceInfo(true);
+            }
           }
         },
         icon: <InfoCircleIcon />,
