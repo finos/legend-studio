@@ -47,7 +47,6 @@ import {
   getPackageableElementOptionFormatter,
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
-import { MilestoningParametersEditor } from './explorer/QueryBuilderMilestoningEditor.js';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
 
 export const getParameterValue = (
@@ -120,7 +119,6 @@ export const QueryBuilderClassSelector = observer(
     noMatchMessage?: string | undefined;
   }) => {
     const { queryBuilderState, classes, onClassChange, noMatchMessage } = props;
-    const milestoningState = queryBuilderState.milestoningState;
     const applicationStore = useApplicationStore();
 
     // class
@@ -150,10 +148,6 @@ export const QueryBuilderClassSelector = observer(
       queryBuilderState.changeClass(val.value);
       onClassChange?.(val.value);
     };
-
-    // milestoning
-    const showMilestoningEditor = (): void =>
-      milestoningState.setShowMilestoningEditor(true);
 
     return (
       <div className="query-builder__setup__config-group query-builder__setup__config-group--class">
@@ -192,22 +186,6 @@ export const QueryBuilderClassSelector = observer(
                   .TEMPORARY__isLightColorThemeEnabled,
             })}
           />
-          {queryBuilderState.isQuerySupported && (
-            <button
-              className="btn--dark btn__icon--dark query-builder__setup__milestoning"
-              tabIndex={-1}
-              onClick={showMilestoningEditor}
-              disabled={!milestoningState.isMilestonedQuery}
-              title="Edit Milestoning Parameters"
-            >
-              <ClockIcon />
-            </button>
-          )}
-          {milestoningState.isMilestonedQuery && (
-            <MilestoningParametersEditor
-              queryBuilderState={queryBuilderState}
-            />
-          )}
         </div>
       </div>
     );

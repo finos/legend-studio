@@ -23,18 +23,21 @@ import {
   MILESTONING_STEREOTYPE,
   INTERNAL__PropagatedValue,
   PrimitiveType,
+  VariableExpression,
 } from '@finos/legend-graph';
 import {
   UnsupportedOperationError,
   assertTrue,
   guaranteeNonNullable,
   guaranteeType,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { getParameterValue } from '../../components/QueryBuilderSideBar.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import type { QueryBuilderDerivedPropertyExpressionState } from '../QueryBuilderPropertyEditorState.js';
 import { createSupportedFunctionExpression } from '../shared/ValueSpecificationEditorHelper.js';
 import { QueryBuilderMilestoningImplementation } from './QueryBuilderMilestoningImplementation.js';
+import type { LambdaParameterState } from '../shared/LambdaParameterState.js';
 
 export class QueryBuilderBitemporalMilestoningImplementation extends QueryBuilderMilestoningImplementation {
   getMilestoningDate(index?: number): ValueSpecification | undefined {
@@ -68,6 +71,26 @@ export class QueryBuilderBitemporalMilestoningImplementation extends QueryBuilde
     }
     // Show the parameter panel because we populate paramaters state with milestoning parameters
     this.milestoningState.queryBuilderState.setShowParametersPanel(true);
+  }
+
+  buildParameterStatesFromMilestoningParameters(): LambdaParameterState[] {
+    const businessState =
+      this.milestoningState.buildParameterStateFromMilestoningParameter(
+        this.milestoningState.businessDate &&
+          this.milestoningState.businessDate instanceof VariableExpression
+          ? this.milestoningState.businessDate.name
+          : BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
+      );
+
+    const processingState =
+      this.milestoningState.buildParameterStateFromMilestoningParameter(
+        this.milestoningState.processingDate &&
+          this.milestoningState.processingDate instanceof VariableExpression
+          ? this.milestoningState.processingDate.name
+          : PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
+      );
+
+    return [businessState, processingState].filter(isNonNullable);
   }
 
   processGetAllParamaters(parameterValues: ValueSpecification[]): void {

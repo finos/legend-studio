@@ -22,6 +22,7 @@ import type {
 } from '@finos/legend-graph';
 import type { QueryBuilderDerivedPropertyExpressionState } from '../QueryBuilderPropertyEditorState.js';
 import type { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
+import type { LambdaParameterState } from '../shared/LambdaParameterState.js';
 
 export abstract class QueryBuilderMilestoningImplementation {
   milestoningState: QueryBuilderMilestoningState;
@@ -88,4 +89,6 @@ export abstract class QueryBuilderMilestoningImplementation {
     idx?: number,
     derivedPropertyExpressionState?: QueryBuilderDerivedPropertyExpressionState,
   ): ValueSpecification;
+
+  abstract buildParameterStatesFromMilestoningParameters(): LambdaParameterState[];
 }

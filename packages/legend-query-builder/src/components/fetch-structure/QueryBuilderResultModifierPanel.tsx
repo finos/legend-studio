@@ -33,6 +33,8 @@ import {
   PanelFormSection,
   ArrowUpIcon,
   ArrowDownIcon,
+  PanelFormBooleanField,
+  PanelFormListItems,
 } from '@finos/legend-art';
 import { SortColumnState } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
 import {
@@ -41,21 +43,36 @@ import {
   deepClone,
   deleteEntry,
   guaranteeNonNullable,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
-import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
+import {
+  COLUMN_SORT_TYPE,
+  QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
+} from '../../graph/QueryBuilderMetaModelConst.js';
 import { useCallback, useEffect, useState } from 'react';
 import type { QueryBuilderProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import { VariableSelector } from '../shared/QueryBuilderVariableSelector.js';
+import {
+  VariableSelector,
+  VariableViewer,
+} from '../shared/QueryBuilderVariableSelector.js';
 import {
   type ValueSpecification,
-  type VariableExpression,
+  VariableExpression,
   PrimitiveType,
   Multiplicity,
   areMultiplicitiesEqual,
+  PRIMITIVE_TYPE,
+  MILESTONING_START_DATE_PARAMETER_NAME,
+  GenericType,
+  GenericTypeExplicitReference,
+  MILESTONING_END_DATE_PARAMETER_NAME,
+  getMilestoneTemporalStereotype,
+  BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
+  PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
 } from '@finos/legend-graph';
 import {
   BasicValueSpecificationEditor,
@@ -63,6 +80,9 @@ import {
   type QueryBuilderVariableDragSource,
 } from '../shared/BasicValueSpecificationEditor.js';
 import { useDrop } from 'react-dnd';
+import { MilestoningParameterEditor } from '../explorer/QueryBuilderMilestoningParameterEditor.js';
+import { QueryBuilderSimpleConstantExpressionState } from '../../stores/QueryBuilderConstantsState.js';
+import { LambdaParameterState } from '../../stores/shared/LambdaParameterState.js';
 
 const ColumnSortEditor = observer(
   (props: {
@@ -275,21 +295,6 @@ export const QueryResultModifierModal = observer(
       stateSlice,
     ]);
 
-    // Handle user actions
-    const closeModal = (): void => resultSetModifierState.setShowModal(false);
-    const applyChanges = (): void => {
-      resultSetModifierState.setSortColumns(sortColumns);
-      resultSetModifierState.setDistinct(distinct);
-      resultSetModifierState.setLimit(limitResults);
-      if (slice[0] !== undefined && slice[1] !== undefined) {
-        resultSetModifierState.setSlice([slice[0], slice[1]]);
-      } else {
-        resultSetModifierState.setSlice(undefined);
-      }
-      resultSetModifierState.setShowModal(false);
-      watermarkState.setValue(watermarkValue);
-    };
-
     const handleLimitResultsChange: React.ChangeEventHandler<
       HTMLInputElement
     > = (event) => {
@@ -380,6 +385,292 @@ export const QueryResultModifierModal = observer(
       [handleDrop],
     );
 
+    //milestoning config
+    const isCompatibleMilestoningParameter = (
+      variable: VariableExpression,
+    ): boolean =>
+      variable.genericType?.value.rawType.name === PRIMITIVE_TYPE.STRICTDATE ||
+      variable.genericType?.value.rawType.name === PRIMITIVE_TYPE.LATESTDATE ||
+      variable.genericType?.value.rawType.name === PRIMITIVE_TYPE.DATE ||
+      variable.genericType?.value.rawType.name === PRIMITIVE_TYPE.DATETIME;
+
+    const milestoningState = tdsState.queryBuilderState.milestoningState;
+    const [parameterStates, setParameterStates] = useState(
+      milestoningState.queryBuilderState.parametersState.parameterStates,
+    );
+    const filteredParameterStates = parameterStates.filter((p) =>
+      isCompatibleMilestoningParameter(p.parameter),
+    );
+    const filteredConstantState =
+      milestoningState.queryBuilderState.constantState.constants.filter((c) =>
+        isCompatibleMilestoningParameter(c.variable),
+      );
+
+    const [isAllVersionsEnabled, setIsAllVersionsEnabled] = useState(
+      milestoningState.isAllVersionsEnabled,
+    );
+    const [isAllVersionsInRangeEnabled, setIsAllVersionsInRangeEnabled] =
+      useState(milestoningState.isAllVersionsInRangeEnabled);
+    const [businessDate, setBusinessDate] = useState(
+      milestoningState.businessDate,
+    );
+    const [processingDate, setProcessingDate] = useState(
+      milestoningState.processingDate,
+    );
+    const [startDate, setStartDate] = useState(milestoningState.startDate);
+    const [endDate, setEndDate] = useState(milestoningState.endDate);
+
+    const shouldFilterMilestoningParamIfNotUsed = (
+      param: ValueSpecification | undefined,
+      resetParameter: (val: ValueSpecification | undefined) => void,
+    ): ((lambdaParamState: LambdaParameterState) => boolean) => {
+      if (param && param instanceof VariableExpression) {
+        if (
+          !milestoningState.queryBuilderState.isVariableUsed(param, {
+            exculdeMilestoningState: true,
+          })
+        ) {
+          resetParameter(undefined);
+          return (lambdaParamState: LambdaParameterState) =>
+            lambdaParamState.parameter.name !== param.name;
+        }
+      }
+      return (lambdaParamState: LambdaParameterState) => true;
+    };
+
+    const setAllVersions = (value: boolean | undefined): void => {
+      if (value) {
+        //clean all unused milestoning parameters e.g. businessDate, ..., endDate.
+        setParameterStates([
+          ...parameterStates.filter(
+            (ps) =>
+              shouldFilterMilestoningParamIfNotUsed(
+                businessDate,
+                setBusinessDate,
+              )(ps) &&
+              shouldFilterMilestoningParamIfNotUsed(
+                processingDate,
+                setProcessingDate,
+              )(ps) &&
+              shouldFilterMilestoningParamIfNotUsed(
+                startDate,
+                setStartDate,
+              )(ps) &&
+              shouldFilterMilestoningParamIfNotUsed(endDate, setEndDate)(ps),
+          ),
+        ]);
+      } else {
+        //get or initialize getAll() parameters
+        setIsAllVersionsInRangeEnabled(false);
+        let newParamStates: LambdaParameterState[] = [];
+        if (
+          (!businessDate || !processingDate) &&
+          milestoningState.queryBuilderState.class
+        ) {
+          const stereotype = getMilestoneTemporalStereotype(
+            milestoningState.queryBuilderState.class,
+            milestoningState.queryBuilderState.graphManagerState.graph,
+          );
+          if (stereotype) {
+            const existingParamStates = parameterStates.map(
+              (ps) => ps.variableName,
+            );
+            newParamStates = milestoningState
+              .getMilestoningImplementation(stereotype)
+              .buildParameterStatesFromMilestoningParameters()
+              .filter((ps) => !existingParamStates.includes(ps.parameter.name));
+          }
+        }
+        const allParamStates = [...newParamStates, ...parameterStates].filter(
+          (ps) =>
+            shouldFilterMilestoningParamIfNotUsed(
+              startDate,
+              setStartDate,
+            )(ps) &&
+            shouldFilterMilestoningParamIfNotUsed(endDate, setEndDate)(ps),
+        );
+        setParameterStates(allParamStates);
+        if (!businessDate) {
+          setBusinessDate(
+            allParamStates.find(
+              (ps) =>
+                ps.variableName ===
+                (milestoningState.businessDate &&
+                milestoningState.businessDate instanceof VariableExpression
+                  ? milestoningState.businessDate.name
+                  : BUSINESS_DATE_MILESTONING_PROPERTY_NAME),
+            )?.parameter,
+          );
+        }
+        if (!processingDate) {
+          setProcessingDate(
+            allParamStates.find(
+              (ps) =>
+                ps.variableName ===
+                (milestoningState.businessDate &&
+                milestoningState.processingDate instanceof VariableExpression
+                  ? milestoningState.processingDate.name
+                  : PROCESSING_DATE_MILESTONING_PROPERTY_NAME),
+            )?.parameter,
+          );
+        }
+      }
+      setIsAllVersionsEnabled(Boolean(value));
+    };
+
+    const getOrCreateNewLambdaParameterState = (
+      lamdaStates: LambdaParameterState[],
+      varName: string,
+    ): LambdaParameterState => {
+      const lamdaState = lamdaStates.find((ls) => ls.variableName === varName);
+      if (lamdaState) {
+        return lamdaState;
+      } else {
+        const varExp = new VariableExpression(
+          varName,
+          Multiplicity.ONE,
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.DATE),
+          ),
+        );
+        const newParamState = new LambdaParameterState(
+          varExp,
+          milestoningState.queryBuilderState.observerContext,
+          milestoningState.queryBuilderState.graphManagerState.graph,
+        );
+        newParamState.mockParameterValue();
+        return newParamState;
+      }
+    };
+
+    const buildAllVersionsInRangeParameters = (): void => {
+      let startDateParameterState;
+      let endDateParameterState;
+      if (!(startDate && startDate instanceof VariableExpression)) {
+        startDateParameterState = getOrCreateNewLambdaParameterState(
+          parameterStates,
+          MILESTONING_START_DATE_PARAMETER_NAME,
+        );
+        setStartDate(startDateParameterState.parameter);
+      }
+      if (!(endDate && endDate instanceof VariableExpression)) {
+        endDateParameterState = getOrCreateNewLambdaParameterState(
+          parameterStates,
+          MILESTONING_END_DATE_PARAMETER_NAME,
+        );
+        setEndDate(endDateParameterState.parameter);
+      }
+      setParameterStates([
+        ...new Set([
+          ...parameterStates.filter(
+            (ps) =>
+              shouldFilterMilestoningParamIfNotUsed(
+                businessDate,
+                setBusinessDate,
+              )(ps) &&
+              shouldFilterMilestoningParamIfNotUsed(
+                processingDate,
+                setProcessingDate,
+              )(ps),
+          ),
+          ...[startDateParameterState, endDateParameterState].filter(
+            isNonNullable,
+          ),
+        ]),
+      ]);
+    };
+
+    const setAllVersionsInRange = (value: boolean | undefined): void => {
+      if (value) {
+        buildAllVersionsInRangeParameters();
+      } else {
+        setAllVersions(true);
+      }
+      setIsAllVersionsInRangeEnabled(Boolean(value));
+    };
+
+    const resetMilestoningConfig = (): void => {
+      setIsAllVersionsEnabled(milestoningState.isAllVersionsEnabled);
+      setIsAllVersionsInRangeEnabled(
+        milestoningState.isAllVersionsInRangeEnabled,
+      );
+      setStartDate(milestoningState.startDate);
+      setEndDate(milestoningState.endDate);
+      setBusinessDate(milestoningState.businessDate);
+      setProcessingDate(milestoningState.processingDate);
+      setParameterStates(
+        milestoningState.queryBuilderState.parametersState.parameterStates,
+      );
+    };
+
+    // Handle user actions
+    const closeModal = (): void => {
+      resetMilestoningConfig();
+      resultSetModifierState.setShowModal(false);
+    };
+
+    const applyChanges = (): void => {
+      resultSetModifierState.setSortColumns(sortColumns);
+      resultSetModifierState.setDistinct(distinct);
+      resultSetModifierState.setLimit(limitResults);
+      if (slice[0] !== undefined && slice[1] !== undefined) {
+        resultSetModifierState.setSlice([slice[0], slice[1]]);
+      } else {
+        resultSetModifierState.setSlice(undefined);
+      }
+      resultSetModifierState.setShowModal(false);
+      watermarkState.setValue(watermarkValue);
+      milestoningState.queryBuilderState.parametersState.setParameters(
+        parameterStates,
+      );
+      if (isAllVersionsInRangeEnabled) {
+        milestoningState.setStartDate(startDate);
+        milestoningState.setEndDate(endDate);
+        milestoningState.clearGetAllParameters();
+        milestoningState.queryBuilderState.setGetAllFunction(
+          QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
+        );
+      } else if (isAllVersionsEnabled) {
+        milestoningState.clearGetAllParameters();
+        milestoningState.queryBuilderState.setGetAllFunction(
+          QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
+        );
+      } else if (
+        tdsState.queryBuilderState.milestoningState.isMilestonedQuery
+      ) {
+        milestoningState.clearAllVersionsInRangeParameters();
+        milestoningState.setBusinessDate(businessDate);
+        milestoningState.setProcessingDate(processingDate);
+        milestoningState.queryBuilderState.setGetAllFunction(
+          QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
+        );
+      }
+      milestoningState.updateQueryBuilderState();
+    };
+
+    useEffect(() => {
+      setIsAllVersionsEnabled(milestoningState.isAllVersionsEnabled);
+      setIsAllVersionsInRangeEnabled(
+        milestoningState.isAllVersionsInRangeEnabled,
+      );
+      setStartDate(milestoningState.startDate);
+      setEndDate(milestoningState.endDate);
+      setBusinessDate(milestoningState.businessDate);
+      setProcessingDate(milestoningState.processingDate);
+      setParameterStates(
+        milestoningState.queryBuilderState.parametersState.parameterStates,
+      );
+    }, [
+      milestoningState.isAllVersionsEnabled,
+      milestoningState.isAllVersionsInRangeEnabled,
+      milestoningState.queryBuilderState.parametersState.parameterStates,
+      milestoningState.businessDate,
+      milestoningState.processingDate,
+      milestoningState.startDate,
+      milestoningState.endDate,
+      milestoningState.queryBuilderState.class,
+    ]);
+
     return (
       <Dialog
         open={Boolean(resultSetModifierState.showModal)}
@@ -397,9 +688,144 @@ export const QueryResultModifierModal = observer(
           }
           className="editor-modal query-builder__projection__modal"
         >
-          <ModalHeader title="Result Set Modifier" />
+          <ModalHeader title="Query Options" />
           <ModalBody className="query-builder__projection__modal__body">
             <div className="query-builder__projection__options">
+              {tdsState.queryBuilderState.milestoningState
+                .isMilestonedQuery && (
+                <>
+                  <div className="query-builder__projection__options__section-name">
+                    Milestoning
+                  </div>
+                  {milestoningState.isCurrentClassMilestoned && (
+                    <PanelFormBooleanField
+                      isReadOnly={false}
+                      value={isAllVersionsEnabled}
+                      name="all Versions"
+                      prompt="Query All Milestoned Versions of the Root Class"
+                      update={setAllVersions}
+                    />
+                  )}
+                  {isAllVersionsEnabled &&
+                    milestoningState.isCurrentClassSupportsVersionsInRange && (
+                      <>
+                        <PanelFormBooleanField
+                          isReadOnly={false}
+                          value={isAllVersionsInRangeEnabled}
+                          name=" All Versions In Range"
+                          prompt="Optionally apply a date range to get All Versions for"
+                          update={setAllVersionsInRange}
+                        />
+                        {isAllVersionsInRangeEnabled &&
+                          startDate &&
+                          endDate && (
+                            <div className="query-builder__milestoning-panel__all-versions-in-range-editor">
+                              <PanelFormSection>
+                                <div className="panel__content__form__section__header__label">
+                                  Start Date
+                                </div>
+                                <MilestoningParameterEditor
+                                  queryBuilderState={
+                                    milestoningState.queryBuilderState
+                                  }
+                                  parameter={startDate}
+                                  setParameter={setStartDate}
+                                />
+                              </PanelFormSection>
+                              <PanelFormSection>
+                                <div className="panel__content__form__section__header__label">
+                                  End Date
+                                </div>
+                                <MilestoningParameterEditor
+                                  queryBuilderState={
+                                    milestoningState.queryBuilderState
+                                  }
+                                  parameter={endDate}
+                                  setParameter={setEndDate}
+                                />
+                              </PanelFormSection>
+                            </div>
+                          )}
+                      </>
+                    )}
+                  {!isAllVersionsEnabled && (
+                    <>
+                      {processingDate && (
+                        <PanelFormSection>
+                          <div className="panel__content__form__section__header__label">
+                            Processing Date
+                          </div>
+                          <MilestoningParameterEditor
+                            queryBuilderState={
+                              milestoningState.queryBuilderState
+                            }
+                            parameter={processingDate}
+                            setParameter={setProcessingDate}
+                          />
+                        </PanelFormSection>
+                      )}
+                      {businessDate && (
+                        <PanelFormSection>
+                          <div className="panel__content__form__section__header__label">
+                            Business Date
+                          </div>
+                          <MilestoningParameterEditor
+                            queryBuilderState={
+                              milestoningState.queryBuilderState
+                            }
+                            parameter={businessDate}
+                            setParameter={setBusinessDate}
+                          />
+                        </PanelFormSection>
+                      )}
+                    </>
+                  )}
+                  <PanelFormSection>
+                    <div className="panel__content__form__section__header__label">
+                      List of compatible milestoning parameters
+                    </div>
+                  </PanelFormSection>
+                  <div className="panel__content__form__section__list__items">
+                    <PanelFormListItems title="Available parameters">
+                      {filteredParameterStates.length === 0 && (
+                        <> No available parameters </>
+                      )}
+                      {filteredParameterStates.map((pState) => (
+                        <VariableViewer
+                          key={pState.uuid}
+                          variable={pState.parameter}
+                          isReadOnly={true}
+                          queryBuilderState={milestoningState.queryBuilderState}
+                        />
+                      ))}
+                    </PanelFormListItems>
+                    {Boolean(filteredConstantState.length) && (
+                      <PanelFormListItems title="Available constants">
+                        {filteredConstantState.map((constantState) => (
+                          <VariableViewer
+                            key={constantState.uuid}
+                            variable={constantState.variable}
+                            value={{
+                              val:
+                                constantState instanceof
+                                QueryBuilderSimpleConstantExpressionState
+                                  ? constantState.value
+                                  : undefined,
+                            }}
+                            queryBuilderState={
+                              milestoningState.queryBuilderState
+                            }
+                            isReadOnly={true}
+                          />
+                        ))}
+                      </PanelFormListItems>
+                    )}
+                  </div>
+                  <div className="query-builder__projection__options__section-name">
+                    Other
+                  </div>
+                </>
+              )}
               <ColumnsSortEditor
                 projectionColumns={tdsState.projectionColumns}
                 sortColumns={sortColumns}

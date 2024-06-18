@@ -91,7 +91,8 @@ describe('QueryBuilderResultModifierPanel', () => {
     ),
     async () => {
       // Open Query Options panel
-      const queryOptionsButton = await renderResult.findByText('Query Options');
+      const queryOptionsButton =
+        await renderResult.findByText('Set Query Options');
       fireEvent.click(queryOptionsButton);
       const resultModifierPanel = await renderResult.findByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
@@ -144,7 +145,8 @@ describe('QueryBuilderResultModifierPanel', () => {
     ),
     async () => {
       // Open Query Options panel
-      const queryOptionsButton = await renderResult.findByText('Query Options');
+      const queryOptionsButton =
+        await renderResult.findByText('Set Query Options');
       fireEvent.click(queryOptionsButton);
       const resultModifierPanel = await renderResult.findByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
@@ -193,7 +195,8 @@ describe('QueryBuilderResultModifierPanel', () => {
     ),
     async () => {
       // Open Query Options panel
-      const queryOptionsButton = await renderResult.findByText('Query Options');
+      const queryOptionsButton =
+        await renderResult.findByText('Set Query Options');
       fireEvent.click(queryOptionsButton);
       const resultModifierPanel = await renderResult.findByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
@@ -255,7 +258,8 @@ describe('QueryBuilderResultModifierPanel', () => {
     ),
     async () => {
       // Open Query Options panel
-      const queryOptionsButton = await renderResult.findByText('Query Options');
+      const queryOptionsButton =
+        await renderResult.findByText('Set Query Options');
       fireEvent.click(queryOptionsButton);
       const resultModifierPanel = await renderResult.findByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
@@ -292,7 +296,8 @@ describe('QueryBuilderResultModifierPanel', () => {
     ),
     async () => {
       // Open Query Options panel
-      const queryOptionsButton = await renderResult.findByText('Query Options');
+      const queryOptionsButton =
+        await renderResult.findByText('Set Query Options');
       fireEvent.click(queryOptionsButton);
       const resultModifierPanel = await renderResult.findByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
@@ -347,7 +352,8 @@ describe('QueryBuilderResultModifierPanel', () => {
     ),
     async () => {
       // Open Query Options panel
-      const queryOptionsButton = await renderResult.findByText('Query Options');
+      const queryOptionsButton =
+        await renderResult.findByText('Set Query Options');
       fireEvent.click(queryOptionsButton);
       const resultModifierPanel = await renderResult.findByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
@@ -383,7 +389,8 @@ describe('QueryBuilderResultModifierPanel', () => {
     ),
     async () => {
       // Open Query Options panel
-      const queryOptionsButton = await renderResult.findByText('Query Options');
+      const queryOptionsButton =
+        await renderResult.findByText('Set Query Options');
       fireEvent.click(queryOptionsButton);
       const resultModifierPanel = await renderResult.findByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
@@ -425,7 +432,8 @@ describe('QueryBuilderResultModifierPanel', () => {
     ),
     async () => {
       // Open Query Options panel
-      const queryOptionsButton = await renderResult.findByText('Query Options');
+      const queryOptionsButton =
+        await renderResult.findByText('Set Query Options');
       fireEvent.click(queryOptionsButton);
       const resultModifierPanel = await renderResult.findByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
@@ -469,7 +477,8 @@ describe('QueryBuilderResultModifierPanel', () => {
     ),
     async () => {
       // Open Query Options panel
-      const queryOptionsButton = await renderResult.findByText('Query Options');
+      const queryOptionsButton =
+        await renderResult.findByText('Set Query Options');
       fireEvent.click(queryOptionsButton);
       const resultModifierPanel = await renderResult.findByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,
@@ -524,7 +533,8 @@ describe('QueryBuilderResultModifierPanel', () => {
     ),
     async () => {
       // Open Query Options panel
-      const queryOptionsButton = await renderResult.findByText('Query Options');
+      const queryOptionsButton =
+        await renderResult.findByText('Set Query Options');
       fireEvent.click(queryOptionsButton);
       const resultModifierPanel = await renderResult.findByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL,

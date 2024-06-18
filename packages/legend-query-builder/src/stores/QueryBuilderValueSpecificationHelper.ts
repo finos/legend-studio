@@ -63,6 +63,7 @@ import {
   validateMilestoningPropertyExpressionChain,
 } from './milestoning/QueryBuilderMilestoningHelper.js';
 import { instanceValue_setValues } from './shared/ValueSpecificationModifierHelper.js';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 
 export const getNonCollectionValueSpecificationType = (
   valueSpecification: ValueSpecification,
@@ -329,6 +330,7 @@ export const buildGenericLambdaFunctionInstanceValue = (
 export const validatePropertyExpressionChain = (
   propertyExpression: AbstractPropertyExpression,
   graph: PureModel,
+  queryBuilderState: QueryBuilderState,
 ): void => {
   if (
     propertyExpression.func.value.genericType.value.rawType instanceof Class &&
@@ -355,6 +357,7 @@ export const validatePropertyExpressionChain = (
           sourceStereotype,
           targetStereotype,
           propertyExpression,
+          queryBuilderState,
         );
       }
     }

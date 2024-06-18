@@ -159,6 +159,7 @@ export const processTDSProjectionColumnPropertyExpression = (
       validatePropertyExpressionChain(
         currentPropertyExpression,
         queryBuilderState.graphManagerState.graph,
+        queryBuilderState,
       );
       currentPropertyExpression = guaranteeNonNullable(
         currentPropertyExpression.parametersValues[0],

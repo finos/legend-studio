@@ -309,6 +309,7 @@ const processFilterTree = (
         validatePropertyExpressionChain(
           currentPropertyExpression,
           filterState.queryBuilderState.graphManagerState.graph,
+          filterState.queryBuilderState,
         );
       }
     }

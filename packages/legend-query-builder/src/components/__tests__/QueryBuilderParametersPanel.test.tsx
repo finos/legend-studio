@@ -51,7 +51,9 @@ import {
 } from '@finos/legend-lego/code-editor/test';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
-const getParameterNameInput = (renderResult: RenderResult): HTMLInputElement =>
+export const getParameterNameInput = (
+  renderResult: RenderResult,
+): HTMLInputElement =>
   getByRole(
     guaranteeNonNullable(
       renderResult.getByText('Parameter Name').parentElement,
