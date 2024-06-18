@@ -764,6 +764,10 @@ test(
       ),
     );
     expect(contentNodes.length).toBe(1);
+
+    // Click remote button to reset the right-side value
+    fireEvent.click(getByTitle(postFilterPanel, 'Reset'));
+    await waitFor(() => getByText(postFilterPanel, 'First Name'));
   },
 );
 
