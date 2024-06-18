@@ -239,7 +239,7 @@ export const isTypeCompatibleForAssignment = (
       // Pure function used for the operation
       // e.g. LHS(DateTime) = RHS(Date) -> we use isOnDay() instead of is()
       DATE_PRIMITIVE_TYPES.includes(type.path) ||
-      type === assignmentType ||
+      type.path === assignmentType.path ||
       isSuperType(assignmentType, type))
   );
 };
