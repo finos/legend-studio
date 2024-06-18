@@ -42,13 +42,11 @@ import {
   CORE_PURE_PATH,
   buildRawLambdaFromLambdaFunction,
   getValueSpecificationReturnType,
-  InstanceValue,
 } from '@finos/legend-graph';
 import {
   Randomizer,
   UnsupportedOperationError,
   deepClone,
-  guaranteeNonNullable,
   returnUndefOnError,
 } from '@finos/legend-shared';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationHelper.js';
@@ -91,37 +89,10 @@ export const cloneValueSpecification = (
   valueSpecification: ValueSpecification,
   observerContext: ObserverContext,
 ): ValueSpecification => {
-  if (valueSpecification instanceof InstanceValue) {
-    let instance: InstanceValue | null = null;
-    if (valueSpecification instanceof PrimitiveInstanceValue) {
-      instance = new PrimitiveInstanceValue(valueSpecification.genericType);
-    } else if (valueSpecification instanceof EnumValueInstanceValue) {
-      instance = new EnumValueInstanceValue(
-        guaranteeNonNullable(valueSpecification.genericType),
-      );
-    } else if (valueSpecification instanceof CollectionInstanceValue) {
-      instance = new CollectionInstanceValue(
-        valueSpecification.multiplicity,
-        valueSpecification.genericType,
-      );
-    }
-    if (instance) {
-      instanceValue_setValues(
-        instance,
-        deepClone(valueSpecification.values),
-        observerContext,
-      );
-      return instance;
-    }
-  } else {
-    const instance = deepClone(valueSpecification);
-    instance.genericType = valueSpecification.genericType;
-    return instance;
-  }
-  throw new UnsupportedOperationError(
-    "Can't clone instance value:",
-    valueSpecification,
-  );
+  const copy = deepClone(valueSpecification);
+  copy.genericType = valueSpecification.genericType;
+  copy.multiplicity = valueSpecification.multiplicity;
+  return copy;
 };
 
 export const createMockPrimitiveValueSpecification = (
