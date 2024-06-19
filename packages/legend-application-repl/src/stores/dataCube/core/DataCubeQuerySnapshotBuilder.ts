@@ -29,7 +29,7 @@ import {
   V1_ColSpecArray,
   V1_Collection,
   V1_serializeValueSpecification,
-  extractElementNameFromPath,
+  extractElementNameFromPath as _name,
   matchFunctionName,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
@@ -43,11 +43,71 @@ import {
   assertTrue,
   assertType,
   guaranteeNonNullable,
+  guaranteeType,
+  type Clazz,
 } from '@finos/legend-shared';
 import {
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
+
+// --------------------------------- UTILITIES ---------------------------------
+
+function _param<T extends V1_ValueSpecification>(
+  func: V1_AppliedFunction,
+  paramIdx: number,
+  clazz: Clazz<T>,
+): T {
+  assertTrue(
+    func.parameters.length >= paramIdx + 1,
+    `Can't process ${_name(func.function)}: Expected at least ${paramIdx + 1} parameter(s)`,
+  );
+  return guaranteeType(
+    func.parameters[paramIdx],
+    clazz,
+    `Can't process ${_name(func.function)}: Found unexpected type for parameter at index ${paramIdx}`,
+  );
+}
+
+function _colSpecParam(func: V1_AppliedFunction, paramIdx: number): V1_ColSpec {
+  return guaranteeType(
+    _param(func, paramIdx, V1_ClassInstance).value,
+    V1_ColSpec,
+    `Can't process ${_name(func.function)}: Expected parameter at index ${paramIdx} to be a column specification`,
+  );
+}
+
+function _colSpecArrayParam(
+  func: V1_AppliedFunction,
+  paramIdx: number,
+): V1_ColSpecArray {
+  return guaranteeType(
+    _param(func, paramIdx, V1_ClassInstance).value,
+    V1_ColSpecArray,
+    `Can't process ${_name(func.function)}: Expected parameter at index ${paramIdx} to be a column specification list`,
+  );
+}
+
+function _funcMatch(
+  value: V1_ValueSpecification,
+  functionNames: string | string[],
+): V1_AppliedFunction {
+  assertType(
+    value,
+    V1_AppliedFunction,
+    `Can't process function: Found unexpected value specification type`,
+  );
+  assertTrue(
+    matchFunctionName(
+      value.function,
+      Array.isArray(functionNames) ? functionNames : [functionNames],
+    ),
+    `Can't process function: Expected function name to be one of [${Array.isArray(functionNames) ? functionNames.join(', ') : functionNames}]`,
+  );
+  return value;
+}
+
+// --------------------------------- BUILDING BLOCKS ---------------------------------
 
 const _SUPPORTED_TOP_LEVEL_FUNCTIONS: {
   func: string;
@@ -86,7 +146,7 @@ const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN_REGEXP = new RegExp(
   `^${_FUNCTION_SEQUENCE_COMPOSITION_PATTERN
     .map(
       (entry) =>
-        `(?:<${extractElementNameFromPath(entry.func)}>)${entry.repeat ? '*' : !entry.required ? '?' : ''}`,
+        `(?:<${_name(entry.func)}>)${entry.repeat ? '*' : !entry.required ? '?' : ''}`,
     )
     .join('')}$`,
 );
@@ -132,11 +192,11 @@ function extractQueryFunctionSequence(query: V1_ValueSpecification) {
 
   // Check that sequence follows the supported pattern
   const sequenceFormText = sequence
-    .map((func) => `<${extractElementNameFromPath(func.function)}>`)
+    .map((func) => `<${_name(func.function)}>`)
     .join('');
   if (!sequenceFormText.match(_FUNCTION_SEQUENCE_COMPOSITION_PATTERN_REGEXP)) {
     throw new Error(
-      `Unsupported function composition ${sequence.map((fn) => `${extractElementNameFromPath(fn.function)}()`).join('->')} (supported composition: ${_FUNCTION_SEQUENCE_COMPOSITION_PATTERN.map((entry) => `${extractElementNameFromPath(entry.func)}()`).join('->')})`,
+      `Unsupported function composition ${sequence.map((fn) => `${_name(fn.function)}()`).join('->')} (supported composition: ${_FUNCTION_SEQUENCE_COMPOSITION_PATTERN.map((entry) => `${_name(entry.func)}()`).join('->')})`,
     );
   }
 
@@ -243,6 +303,8 @@ function extractFunctionMap(
   };
 }
 
+// --------------------------------- MAIN ---------------------------------
+
 /**
  * Analyze the partial query to build a query snapshot.
  *
@@ -267,25 +329,14 @@ export function validateAndBuildQuerySnapshot(
     baseQuery.configuration,
   );
   const data = snapshot.data;
+  const colsMap = new Map<string, DataCubeQuerySnapshotColumn>();
+  const _col = (colSpec: V1_ColSpec) =>
+    guaranteeNonNullable(colsMap.get(colSpec.name));
 
   // --------------------------------- SOURCE ---------------------------------
 
   data.originalColumns = baseQuery.source.columns;
-  const columnsMap = new Map<string, DataCubeQuerySnapshotColumn>();
-  data.originalColumns.map((col) => columnsMap.set(col.name, col));
-
-  // leafExtendedColumns: DataCubeQueryExtendedColumnSnapshot[] = [];
-  // filter: ValueSpecification[0..1]; // TODO
-  // renamedColumns: DataCubeQuerySnapshotRenamedColumn[] = [];
-  // groupByColumns: DataCubeQuerySnapshotColumn[] = [];
-  // groupByAggColumns: DataCubeQuerySnapshotAggregateColumn[] = [];
-  // selectedColumns: DataCubeQuerySnapshotColumn[] = [];
-  // pivotColumns: DataCubeQuerySnapshotColumn[] = [];
-  // pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[] = [];
-  // castColumns: DataCubeQuerySnapshotColumn[] = [];
-  // groupExtendedColumns: DataCubeQueryExtendedColumnSnapshot[] = [];
-  // limit: number | undefined = undefined;
-  // configuration: DataCubeConfiguration;
+  data.originalColumns.map((col) => colsMap.set(col.name, col));
 
   // --------------------------------- LEAF EXTEND ---------------------------------
   // TODO: @akphi - implement this
@@ -308,75 +359,31 @@ export function validateAndBuildQuerySnapshot(
   // --------------------------------- SORT ---------------------------------
 
   if (funcMap.sort) {
-    const sortColumns = funcMap.sort.parameters[0];
-    assertType(
-      sortColumns,
-      V1_Collection,
-      `Can't process ${extractElementNameFromPath(
-        DataCubeFunction.SORT,
-      )}(): columns cannot be extracted`,
+    data.sortColumns = _param(funcMap.sort, 0, V1_Collection).values.map(
+      (value) => {
+        const sortColFunc = _funcMatch(value, [
+          DataCubeFunction.ASC,
+          DataCubeFunction.DESC,
+        ]);
+        return {
+          ..._col(_colSpecParam(sortColFunc, 0)),
+          direction:
+            _name(sortColFunc.function) === DataCubeFunction.ASC
+              ? DataCubeQuerySnapshotSortDirection.ASCENDING
+              : DataCubeQuerySnapshotSortDirection.DESCENDING,
+        };
+      },
     );
-    data.sortColumns = sortColumns.values.map((column) => {
-      try {
-        assertType(column, V1_AppliedFunction);
-        assertTrue(
-          matchFunctionName(column.function, [
-            DataCubeFunction.ASC,
-            DataCubeFunction.DESC,
-          ]),
-        );
-        const direction =
-          extractElementNameFromPath(column.function) === DataCubeFunction.ASC
-            ? DataCubeQuerySnapshotSortDirection.ASCENDING
-            : DataCubeQuerySnapshotSortDirection.DESCENDING;
-        assertTrue(column.parameters.length === 1);
-        assertType(column.parameters[0], V1_ClassInstance);
-        assertType(column.parameters[0].value, V1_ColSpec);
-        const name = column.parameters[0].value.name;
-        const matchingColumn = guaranteeNonNullable(columnsMap.get(name));
-        const type = matchingColumn.type;
-        return { name, type, direction };
-      } catch {
-        throw new Error(
-          `Can't process ${extractElementNameFromPath(
-            DataCubeFunction.SORT,
-          )}(): column sort information cannot be extracted`,
-        );
-      }
-    });
   }
 
   // --------------------------------- SELECT ---------------------------------
 
   if (funcMap.select) {
-    const selectColumns = funcMap.select.parameters[0];
-    assertTrue(
-      selectColumns instanceof V1_ClassInstance &&
-        selectColumns.value instanceof V1_ColSpecArray,
-      `Can't process ${extractElementNameFromPath(
-        DataCubeFunction.SELECT,
-      )}(): columns cannot be extracted`,
+    data.selectColumns = _colSpecArrayParam(funcMap.select, 0).colSpecs.map(
+      (colSpec) => ({
+        ..._col(colSpec),
+      }),
     );
-    const colSpecArray = (selectColumns as V1_ClassInstance)
-      .value as V1_ColSpecArray;
-    data.selectColumns = colSpecArray.colSpecs.map((column) => {
-      try {
-        const matchingColumn = guaranteeNonNullable(
-          columnsMap.get(column.name),
-        );
-        assertType(column, V1_ColSpec);
-        return {
-          name: column.name,
-          type: matchingColumn.type,
-        };
-      } catch {
-        throw new Error(
-          `Can't process ${extractElementNameFromPath(
-            DataCubeFunction.SELECT,
-          )}(): column information cannot be extracted`,
-        );
-      }
-    });
   }
 
   // --------------------------------- LIMIT ---------------------------------

@@ -101,9 +101,6 @@ export type DataCubeQuerySnapshotAggregateColumn =
 export type DataCubeQuerySnapshotGroupBy = {
   columns: DataCubeQuerySnapshotColumn[];
   aggColumns: DataCubeQuerySnapshotAggregateColumn[];
-
-  expandedKeys: string[]; // TODO: @akphi - remove
-  filter?: DataCubeQuerySnapshotFilter | undefined; // TODO: @akphi - remove
 };
 
 export type DataCubeQuerySnapshotPivot = {
@@ -130,6 +127,7 @@ export type DataCubeQuerySnapshotData = {
 
 type DataCubeQuerySnapshotStage =
   | 'leaf-extend'
+  | 'filter'
   | 'aggregation'
   | 'group-extend'
   | 'select'
@@ -187,6 +185,7 @@ export class DataCubeQuerySnapshot {
     switch (stage) {
       case 'leaf-extend':
         return [...this.data.originalColumns];
+      case 'filter':
       case 'aggregation':
         return [...this.data.originalColumns, ...this.data.leafExtendedColumns];
       case 'group-extend':

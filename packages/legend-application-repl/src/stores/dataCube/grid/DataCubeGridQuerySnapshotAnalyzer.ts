@@ -28,9 +28,15 @@ import {
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
 } from '../core/DataCubeQuerySnapshot.js';
-import type { ColumnMenuTab, GridOptions } from '@ag-grid-community/core';
+import type {
+  ColDef,
+  ColGroupDef,
+  GridOptions,
+  ICellRendererParams,
+  IGroupCellRendererParams,
+} from '@ag-grid-community/core';
 import {
-  GRID_CLIENT_TREE_COLUMN_ID,
+  INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
   GridClientAggregateOperation,
   GridClientSortDirection,
 } from './DataCubeGridClientEngine.js';
@@ -99,7 +105,7 @@ function _sortSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
         ? GridClientSortDirection.ASCENDING
         : GridClientSortDirection.DESCENDING,
     sortIndex: sortColumns.indexOf(sortCol),
-  };
+  } satisfies ColDef;
 }
 
 function _rowGroupSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
@@ -125,8 +131,9 @@ function _rowGroupSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
           ? GridClientAggregateOperation.SUM
           : null
         : null,
+    // TODO: @akphi - add this from configuration object
     allowedAggFuncs: column ? _allowedAggFuncs(column) : [],
-  };
+  } satisfies ColDef;
 }
 
 export function generateGridOptionsFromSnapshot(
@@ -137,31 +144,40 @@ export function generateGridOptionsFromSnapshot(
     columnDefs: [
       {
         headerName: '',
-        colId: GRID_CLIENT_TREE_COLUMN_ID,
+        colId: INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
         cellRenderer: 'agGroupCellRenderer',
+        cellRendererParams: {
+          innerRenderer: (params: ICellRendererParams) => {
+            // console.log(params);
+            // TODO: @akphi - add count
+            return params.value;
+          },
+          suppressCount: true,
+        } satisfies IGroupCellRendererParams,
         showRowGroup: true,
         hide: !snapshot.data.groupBy,
         lockPinned: true,
         lockPosition: true,
-      },
-      ...data.selectColumns.map((col) => ({
-        headerName: col.name,
-        field: col.name,
-        ..._sortSpec(snapshot, col.name),
+      } satisfies ColDef,
+      ...data.selectColumns.map(
+        (col) =>
+          ({
+            headerName: col.name,
+            field: col.name,
 
-        // configurable
-        minWidth: 50,
-        sortable: true,
-        flex: 1,
-        resizable: true,
-        enableRowGroup: true,
-        enableValue: true,
-        menuTabs: [
-          'generalMenuTab',
-          'columnsMenuTab',
-        ] satisfies ColumnMenuTab[],
-        ..._rowGroupSpec(snapshot, col.name),
-      })),
+            // TODO: configure
+            flex: 1, // when the column supposed to fill the remainig space of the grid
+            resizable: true,
+            minWidth: 50,
+
+            sortable: true, // if this is pivot column, not sorting is allowed
+            enableRowGroup: true,
+            enableValue: true,
+            menuTabs: ['generalMenuTab', 'columnsMenuTab'], //
+            ..._sortSpec(snapshot, col.name),
+            ..._rowGroupSpec(snapshot, col.name),
+          }) satisfies ColDef | ColGroupDef,
+      ),
     ],
   };
 

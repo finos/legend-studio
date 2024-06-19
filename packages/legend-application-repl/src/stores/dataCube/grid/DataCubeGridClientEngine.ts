@@ -29,6 +29,7 @@ import { buildExecutableQueryFromSnapshot } from '../core/DataCubeQueryBuilder.j
 import { type TabularDataSet, V1_Lambda } from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
+import { generateRowGroupingDrilldownExecutableQueryPostProcessor } from './DataCubeGridQueryBuilder.js';
 
 type GridClientResultCellDataType =
   | string
@@ -41,7 +42,9 @@ type GridClientRowDataType = {
   [key: string]: GridClientResultCellDataType;
 };
 
-export const GRID_CLIENT_TREE_COLUMN_ID = 'tree';
+export const INTERNAL__GRID_CLIENT_TREE_COLUMN_ID = 'INTERNAL__tree';
+export const INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID =
+  'INTERNAL__count';
 
 export enum GridClientSortDirection {
   ASCENDING = 'asc',
@@ -89,12 +92,19 @@ export class DataCubeGridClientServerSideDataSource
 
     // Toggle the visibility of the tree column based on the presence of row-group columns
     if (params.request.rowGroupCols.length) {
-      params.api.setColumnsVisible([GRID_CLIENT_TREE_COLUMN_ID], true);
+      params.api.setColumnsVisible(
+        [INTERNAL__GRID_CLIENT_TREE_COLUMN_ID],
+        true,
+      );
     } else {
-      params.api.setColumnsVisible([GRID_CLIENT_TREE_COLUMN_ID], false);
+      params.api.setColumnsVisible(
+        [INTERNAL__GRID_CLIENT_TREE_COLUMN_ID],
+        false,
+      );
     }
 
     // ------------------------------ SNAPSHOT ------------------------------
+
     const currentSnapshot = guaranteeNonNullable(this.grid.getLatestSnapshot());
     const syncedSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
     if (syncedSnapshot.uuid !== currentSnapshot.uuid) {
@@ -106,8 +116,14 @@ export class DataCubeGridClientServerSideDataSource
     // wrong. We must not uncessarily update the snapshot.
 
     // ------------------------------ DATA ------------------------------
+
     try {
-      const executableQuery = buildExecutableQueryFromSnapshot(syncedSnapshot);
+      const executableQuery = buildExecutableQueryFromSnapshot(
+        syncedSnapshot,
+        generateRowGroupingDrilldownExecutableQueryPostProcessor(
+          params.request.groupKeys,
+        ),
+      );
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
       const result = await this.grid.dataCube.engine.executeQuery(lambda);

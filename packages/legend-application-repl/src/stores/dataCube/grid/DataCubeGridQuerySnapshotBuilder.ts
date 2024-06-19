@@ -17,23 +17,18 @@
 /***************************************************************************************
  * [GRID]
  *
- * These are utilities used to build the query snapshot from server-side row
- * model requests are fired when the grid client, AG Grid, is modified.
+ * These are utilities used to build the query snapshot from the internal state
+ * of the grid client, AG Grid.
  ***************************************************************************************/
 
 import type { IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import {
-  type DataCubeQuerySnapshotFilter,
-  type DataCubeQuerySnapshotFilterCondition,
   type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotAggregateColumn,
-  type DataCubeQuerySnapshotColumn,
   type DataCubeQuerySnapshotSortColumn,
   DataCubeQuerySnapshotSortDirection,
-  DataCubeQuerySnapshotFilterOperation,
-  DataCubeQueryFilterGroupOperation,
   _getCol,
   DataCubeQuerySnapshotAggregateFunction,
+  type DataCubeQuerySnapshotGroupBy,
 } from '../core/DataCubeQuerySnapshot.js';
 import {
   IllegalStateError,
@@ -45,7 +40,6 @@ import {
   GridClientAggregateOperation,
   GridClientSortDirection,
 } from './DataCubeGridClientEngine.js';
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -78,67 +72,37 @@ export function buildQuerySnapshot(
 
   // --------------------------------- GROUP BY ---------------------------------
 
-  const groupByExpandedKeys = request.groupKeys;
-  const groupByAvailableColumns = baseSnapshot.stageCols('aggregation');
-  const groupByColumns: DataCubeQuerySnapshotColumn[] =
-    request.rowGroupCols.map((col) => ({
-      name: col.id,
-      type: _getCol(groupByAvailableColumns, col.id).type,
-    }));
-  const groupByAggColumns: DataCubeQuerySnapshotAggregateColumn[] =
-    request.valueCols
-      .filter((col) => isNonNullable(col.field) && isNonNullable(col.aggFunc))
-      .map((col) => ({
-        name: guaranteeNonNullable(col.field),
-        type: _getCol(groupByAvailableColumns, guaranteeNonNullable(col.field))
-          .type,
-        function: _aggFunc(col.aggFunc as GridClientAggregateOperation),
-      }));
+  let groupBy: undefined | DataCubeQuerySnapshotGroupBy = undefined;
 
-  let groupByFilter: DataCubeQuerySnapshotFilter | undefined;
-  for (let i = 0; i < groupByExpandedKeys.length; i++) {
-    const groupFilter = {
-      conditions: [
-        {
-          name: guaranteeNonNullable(groupByColumns[i]).name,
-          type: PRIMITIVE_TYPE.STRING,
-          operation: DataCubeQuerySnapshotFilterOperation.EQUAL,
-          value: groupByExpandedKeys[i],
-        } as DataCubeQuerySnapshotFilterCondition,
-      ],
-      groupOperation: DataCubeQueryFilterGroupOperation.AND,
+  if (request.rowGroupCols.length) {
+    const availableCols = baseSnapshot.stageCols('aggregation');
+    groupBy = {
+      columns: request.rowGroupCols.map((col) => ({
+        name: col.id,
+        type: _getCol(availableCols, col.id).type,
+      })),
+      aggColumns: request.valueCols
+        .filter((col) => isNonNullable(col.field) && isNonNullable(col.aggFunc))
+        .map((col) => ({
+          name: guaranteeNonNullable(col.field),
+          type: _getCol(availableCols, guaranteeNonNullable(col.field)).type,
+          function: _aggFunc(col.aggFunc as GridClientAggregateOperation),
+        })),
     };
-
-    groupByFilter = groupFilter;
   }
 
   // --------------------------------- SORT ---------------------------------
 
-  const newSortColumns: DataCubeQuerySnapshotSortColumn[] =
-    request.sortModel.map((sortInfo) => {
-      const column = guaranteeNonNullable(
-        baseSnapshot.data.selectColumns.find(
-          (col) => col.name === sortInfo.colId,
-        ),
-      );
-      return {
-        name: sortInfo.colId,
-        type: column.type,
-        direction:
-          sortInfo.sort === GridClientSortDirection.ASCENDING
-            ? DataCubeQuerySnapshotSortDirection.ASCENDING
-            : DataCubeQuerySnapshotSortDirection.DESCENDING,
-      };
-    });
-
-  if (
-    !deepEqual(newSortColumns, baseSnapshot.data.sortColumns) ||
-    !deepEqual(groupByExpandedKeys, baseSnapshot.data.groupBy?.expandedKeys) ||
-    !deepEqual(groupByColumns, baseSnapshot.data.groupBy?.columns) ||
-    !deepEqual(groupByAggColumns, baseSnapshot.data.groupBy?.aggColumns) ||
-    !deepEqual(groupByFilter, baseSnapshot.data.groupBy?.filter)
-  ) {
-    createNew = true;
+  let sortColumns: DataCubeQuerySnapshotSortColumn[] = [];
+  if (request.sortModel.length) {
+    const availableCols = baseSnapshot.stageCols('sort');
+    sortColumns = request.sortModel.map((item) => ({
+      ..._getCol(availableCols, item.colId),
+      direction:
+        item.sort === GridClientSortDirection.ASCENDING
+          ? DataCubeQuerySnapshotSortDirection.ASCENDING
+          : DataCubeQuerySnapshotSortDirection.DESCENDING,
+    }));
   }
 
   // --------------------------------- SELECT ---------------------------------
@@ -146,16 +110,17 @@ export function buildQuerySnapshot(
 
   // --------------------------------- FINALIZE ---------------------------------
 
+  if (
+    !deepEqual(sortColumns, baseSnapshot.data.sortColumns) ||
+    !deepEqual(groupBy, baseSnapshot.data.groupBy)
+  ) {
+    createNew = true;
+  }
+
   if (createNew) {
     const newSnapshot = baseSnapshot.clone();
-    const data = newSnapshot.data;
-    data.sortColumns = newSortColumns;
-    data.groupBy = {
-      columns: groupByColumns,
-      aggColumns: groupByAggColumns,
-      expandedKeys: groupByExpandedKeys,
-      filter: groupByFilter,
-    };
+    newSnapshot.data.sortColumns = sortColumns;
+    newSnapshot.data.groupBy = groupBy;
     return newSnapshot;
   }
   return baseSnapshot;

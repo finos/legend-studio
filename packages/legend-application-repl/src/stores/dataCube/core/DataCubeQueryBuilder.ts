@@ -53,9 +53,10 @@ import {
   type DataCubeQuerySnapshot,
   DataCubeQuerySnapshotSortDirection,
   DataCubeQuerySnapshotFilterOperation,
-  DataCubeQuerySnapshotAggregateFunction,
   DataCubeQueryFilterGroupOperation,
   _findCol,
+  type DataCubeQuerySnapshotColumn,
+  type DataCubeQuerySnapshotAggregateColumn,
 } from './DataCubeQuerySnapshot.js';
 import {
   guaranteeNonNullable,
@@ -69,32 +70,43 @@ import {
 import {
   DataCubeFunction,
   DEFAULT_LAMBDA_VARIABLE_NAME,
+  INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
-function _var(name?: string | undefined) {
+function _deserializeToLambda(json: PlainObject<V1_Lambda>) {
+  return guaranteeType(V1_deserializeValueSpecification(json, []), V1_Lambda);
+}
+
+export function _var(name?: string | undefined) {
   const variable = new V1_Variable();
   variable.name = name ?? DEFAULT_LAMBDA_VARIABLE_NAME;
   return variable;
 }
 
-function _property(name: string, variable?: V1_Variable | undefined) {
+export function _property(name: string, variable?: V1_Variable | undefined) {
   const property = new V1_AppliedProperty();
   property.property = name;
   property.parameters.push(variable ?? _var());
   return property;
 }
 
-function _lambda(parameters: V1_Variable[], body: V1_ValueSpecification[]) {
+export function _lambda(
+  parameters: V1_Variable[],
+  body: V1_ValueSpecification[],
+) {
   const lambda = new V1_Lambda();
   lambda.parameters = parameters;
   lambda.body = body;
   return lambda;
 }
 
-function _function(functionName: string, parameters: V1_ValueSpecification[]) {
+export function _function(
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+) {
   const func = new V1_AppliedFunction();
   func.function = functionName;
   func.parameters = parameters;
@@ -108,7 +120,10 @@ function _collection(values: V1_ValueSpecification[]) {
   return collection;
 }
 
-function _value(type: string, value: unknown): V1_PrimitiveValueSpecification {
+export function _value(
+  type: string,
+  value: unknown,
+): V1_PrimitiveValueSpecification {
   const _val = <T extends V1_PrimitiveValueSpecification & { value: unknown }>(
     primitiveValue: T,
     val: unknown,
@@ -153,7 +168,7 @@ function _classInstance(type: string, value: unknown) {
   return instance;
 }
 
-function _colSpec(
+export function _colSpec(
   name: string,
   function1?: V1_Lambda | undefined,
   function2?: V1_Lambda | undefined,
@@ -167,7 +182,7 @@ function _colSpec(
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
-function _col(
+export function _col(
   name: string,
   function1?: V1_Lambda | undefined,
   function2?: V1_Lambda | undefined,
@@ -178,30 +193,35 @@ function _col(
   );
 }
 
-function _cols(colSpecs: V1_ColSpec[]) {
+export function _cols(colSpecs: V1_ColSpec[]) {
   const colSpecArray = new V1_ColSpecArray();
   colSpecArray.colSpecs = colSpecs;
   return _classInstance(V1_ClassInstanceType.COL_SPEC_ARRAY, colSpecArray);
 }
 
-function _aggCol(
-  columnName: string,
-  aggFunction: DataCubeQuerySnapshotAggregateFunction,
-  /**
-   * Typically, we will name the aggregate column the same name as the column
-   * it aggregates on. If we need to name it differently, we can set this.
-   */
-  aggColumnName?: string | undefined,
-): V1_ColSpec {
+export function _aggCols(
+  columns: DataCubeQuerySnapshotAggregateColumn[],
+): V1_ColSpec[] {
   const variable = _var();
-  return _colSpec(
-    aggColumnName ?? columnName,
-    _lambda([variable], [_property(columnName, variable)]),
-    _lambda([variable], [_function(aggFunction, [variable])]),
-  );
+  return columns.length
+    ? columns.map((agg) =>
+        _colSpec(
+          agg.name,
+          _lambda([variable], [_property(agg.name, variable)]),
+          _lambda([variable], [_function(agg.function, [variable])]),
+        ),
+      )
+    : // if no aggregates are specified, add a dummy count() aggregate to satisfy compiler
+      [
+        _colSpec(
+          INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME,
+          _lambda([variable], [variable]),
+          _lambda([variable], [_function(DataCubeFunction.COUNT, [variable])]),
+        ),
+      ];
 }
 
-function _filter(
+export function _filter(
   filter: DataCubeQuerySnapshotFilter | DataCubeQuerySnapshotFilterCondition,
 ): V1_ValueSpecification {
   if ('groupOperation' in filter) {
@@ -261,8 +281,25 @@ function _filter(
   }
 }
 
-function _deserializeToLambda(json: PlainObject<V1_Lambda>) {
-  return guaranteeType(V1_deserializeValueSpecification(json, []), V1_Lambda);
+export function _groupByExtend(
+  columns: DataCubeQuerySnapshotColumn[],
+  columnsUsedInGroupBy: DataCubeQuerySnapshotColumn[],
+) {
+  const missingCols = columns.filter(
+    (col) => !_findCol(columnsUsedInGroupBy, col.name),
+  );
+  return missingCols.length
+    ? _function(_name(DataCubeFunction.EXTEND), [
+        _cols(
+          missingCols.map((col) =>
+            _colSpec(
+              col.name,
+              _lambda([_var()], [_value(PRIMITIVE_TYPE.STRING, '')]),
+            ),
+          ),
+        ),
+      ])
+    : undefined;
 }
 
 // --------------------------------- MAIN ---------------------------------
@@ -317,86 +354,21 @@ export function buildExecutableQueryFromSnapshot(
 
   if (data.groupBy) {
     const groupBy = data.groupBy;
-    // process filter for drilldown
-    if (groupBy.filter) {
-      sequence.push(
-        _function(_name(DataCubeFunction.FILTER), [
-          _lambda([_var()], [_filter(groupBy.filter)]),
-        ]),
-      );
-    }
+    _process(
+      'groupBy',
+      _function(_name(DataCubeFunction.GROUP_BY), [
+        _cols(groupBy.columns.map((col) => _colSpec(col.name))),
+        _cols(_aggCols(groupBy.aggColumns)),
+      ]),
+    );
 
-    // process group by columns and aggregates
-    if (groupBy.columns.length) {
-      const colSpecs: V1_ColSpec[] = [];
-      const aggregates: V1_ColSpec[] = [];
-
-      if (groupBy.expandedKeys.length !== groupBy.columns.length) {
-        for (let i = 0; i <= groupBy.expandedKeys.length; i++) {
-          colSpecs.push(
-            _colSpec(guaranteeNonNullable(groupBy.columns[i]).name),
-          );
-        }
-        // NOTE: if no aggregates are specified, add a dummy count() aggregate
-        if (groupBy.columns.length === 0) {
-          aggregates.push(
-            _aggCol(
-              guaranteeNonNullable(groupBy.columns[0]).name,
-              DataCubeQuerySnapshotAggregateFunction.COUNT,
-              'dummy_agg_col',
-            ),
-          );
-        }
-      }
-
-      if (
-        groupBy.expandedKeys.length === 0 ||
-        groupBy.expandedKeys.length !== groupBy.columns.length
-      ) {
-        groupBy.aggColumns.forEach((agg) => {
-          aggregates.push(_aggCol(agg.name, agg.function));
-        });
-      }
-
-      if (colSpecs.length !== 0 || aggregates.length !== 0) {
-        _process(
-          'groupBy',
-          _function(_name(DataCubeFunction.GROUP_BY), [
-            _cols(colSpecs),
-            _cols(aggregates),
-          ]),
-        );
-      }
-    }
-
-    // extend columns to maintain the same set of input columns
-    if (groupBy.expandedKeys.length !== groupBy.columns.length) {
-      const missingCols = snapshot
-        .stageCols('aggregation')
-        .filter(
-          (col) =>
-            !_findCol(
-              [
-                ...groupBy.columns.slice(0, groupBy.expandedKeys.length + 1),
-                ...groupBy.aggColumns,
-              ],
-              col.name,
-            ),
-        );
-      if (missingCols.length) {
-        sequence.push(
-          _function(_name(DataCubeFunction.EXTEND), [
-            _cols(
-              missingCols.map((col) =>
-                _colSpec(
-                  col.name,
-                  _lambda([_var()], [_value(PRIMITIVE_TYPE.STRING, '')]),
-                ),
-              ),
-            ),
-          ]),
-        );
-      }
+    // extend columns to maintain the same set of columns prior to groupBy()
+    const groupByExtend = _groupByExtend(snapshot.stageCols('aggregation'), [
+      ...groupBy.columns,
+      ...groupBy.aggColumns,
+    ]);
+    if (groupByExtend) {
+      _process('groupByExtend', groupByExtend);
     }
   }
 

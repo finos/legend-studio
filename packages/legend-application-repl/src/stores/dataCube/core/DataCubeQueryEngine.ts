@@ -70,6 +70,11 @@ export enum DataCubeFunction {
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
 export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
 
+// NOTE: this is the column name used for the dummy count() aggregate
+// when no aggregate is specified in groupBy() or pivot()
+export const INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME =
+  'INTERNAL__filler_count_agg_column';
+
 export type DataCubeQueryFunctionMap = {
   leafExtend?: V1_AppliedFunction | undefined;
   filter?: V1_AppliedFunction | undefined;

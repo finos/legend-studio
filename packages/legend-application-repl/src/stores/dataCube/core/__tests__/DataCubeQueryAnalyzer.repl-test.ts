@@ -103,10 +103,10 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
     'Found unsupported function something()',
   ],
   [
-    'Invalid: Unsupported function composition: extend()->filter()',
-    'filter(x|$x.a==1)->extend(~[a:x|1])',
+    'Invalid: Unsupported function composition: filter()->extend()->filter()',
+    'filter(x|$x.a==1)->extend(~[a:x|1])->filter(x|$x.a==1)',
     [],
-    'Unsupported function composition filter()->extend() (supported composition: extend()->filter()->groupBy()->pivot()->cast()->extend()->select()->sort()->limit())',
+    'Unsupported function composition filter()->extend()->filter() (supported composition: extend()->filter()->groupBy()->pivot()->cast()->extend()->select()->sort()->limit())',
   ],
   [
     'Invalid: Group-level extend() used when no aggregation/grouping presents',
