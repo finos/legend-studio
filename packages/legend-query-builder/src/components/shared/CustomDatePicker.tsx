@@ -1245,6 +1245,7 @@ export const CustomDatePicker: React.FC<{
     match?: boolean;
   };
   setValueSpecification: (val: ValueSpecification) => void;
+  handleBlur?: (() => void) | undefined;
 }> = (props) => {
   const {
     valueSpecification,
@@ -1253,6 +1254,7 @@ export const CustomDatePicker: React.FC<{
     observerContext,
     hasError,
     typeCheckOption,
+    handleBlur,
   } = props;
   const applicationStore = useApplicationStore();
   // For some cases where types need to be matched strictly.
@@ -1283,6 +1285,7 @@ export const CustomDatePicker: React.FC<{
       buildDatePickerOption(valueSpecification, applicationStore),
     );
     setAnchorEl(null);
+    handleBlur?.();
   };
   const handleDatePickerOptionChange = (
     event: React.ChangeEvent<HTMLInputElement>,

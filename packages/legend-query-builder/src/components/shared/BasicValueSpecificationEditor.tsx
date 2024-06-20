@@ -1137,6 +1137,7 @@ const DateInstanceValueEditor = observer(
     className?: string | undefined;
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
+    handleBlur?: (() => void) | undefined;
   }) => {
     const {
       valueSpecification,
@@ -1145,6 +1146,7 @@ const DateInstanceValueEditor = observer(
       obseverContext,
       typeCheckOption,
       resetValue,
+      handleBlur,
     } = props;
 
     return (
@@ -1159,6 +1161,7 @@ const DateInstanceValueEditor = observer(
             valueSpecification instanceof PrimitiveInstanceValue &&
             !isValidInstanceValue(valueSpecification)
           }
+          handleBlur={handleBlur}
         />
         <button
           className="value-spec-editor__reset-btn"
@@ -1191,8 +1194,10 @@ export const BasicValueSpecificationEditor = forwardRef<
     resetValue: () => void;
     isConstant?: boolean | undefined;
     selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
-    handleBlur?: () => void;
-    handleKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+    handleBlur?: (() => void) | undefined;
+    handleKeyDown?:
+      | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
+      | undefined;
   }
 >(function BasicValueSpecificationEditor(props, ref) {
   const {
@@ -1267,6 +1272,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             className={className}
             setValueSpecification={setValueSpecification}
             resetValue={resetValue}
+            handleBlur={handleBlur}
           />
         );
       default:
@@ -1322,6 +1328,8 @@ export const BasicValueSpecificationEditor = forwardRef<
         typeCheckOption={typeCheckOption}
         setValueSpecification={setValueSpecification}
         resetValue={resetValue}
+        handleBlur={handleBlur}
+        handleKeyDown={handleKeyDown}
       />
     );
   } else if (valueSpecification instanceof SimpleFunctionExpression) {
@@ -1336,6 +1344,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             className={className}
             setValueSpecification={setValueSpecification}
             resetValue={resetValue}
+            handleBlur={handleBlur}
           />
         );
       } else {
