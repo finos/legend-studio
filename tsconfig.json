@@ -55,7 +55,8 @@
     { "path": "packages/legend-extension-store-service-store" },
     { "path": "packages/legend-extension-store-flat-data" },
     { "path": "packages/legend-extension-store-relational" },
+    { "path": "packages/legend-vscode-extension-dependencies" },
     // fixtures
-    { "path": "fixtures/legend-mock-server" }
+    { "path": "fixtures/legend-mock-server" },
   ]
 }
