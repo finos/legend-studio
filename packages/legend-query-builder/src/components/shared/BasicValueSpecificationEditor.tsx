@@ -35,6 +35,7 @@ import {
   DragPreviewLayer,
   CalculateIcon,
   InputWithInlineValidation,
+  type SelectComponent,
 } from '@finos/legend-art';
 import {
   type Enum,
@@ -220,7 +221,7 @@ const VariableExpressionParameterEditor = observer(
 
 const StringPrimitiveInstanceValueEditor = observer(
   forwardRef<
-    HTMLInputElement,
+    HTMLInputElement | SelectComponent,
     {
       valueSpecification: PrimitiveInstanceValue;
       className?: string | undefined;
@@ -310,6 +311,7 @@ const StringPrimitiveInstanceValueEditor = observer(
             }}
             hasError={!isValidInstanceValue(valueSpecification)}
             placeholder={value === '' ? '(empty)' : undefined}
+            ref={ref as React.Ref<SelectComponent>}
           />
         ) : (
           <InputWithInlineValidation
@@ -318,7 +320,7 @@ const StringPrimitiveInstanceValueEditor = observer(
             value={value ?? ''}
             placeholder={value === '' ? '(empty)' : undefined}
             onChange={changeInputValue}
-            ref={ref}
+            ref={ref as React.Ref<HTMLInputElement>}
             error={
               !isValidInstanceValue(valueSpecification)
                 ? 'Invalid String value'
@@ -1162,7 +1164,7 @@ export const BasicValueSpecificationEditor = forwardRef<
     className?: string | undefined;
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
-    isConstant?: boolean;
+    isConstant?: boolean | undefined;
     selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
   }
 >(function BasicValueSpecificationEditor(props, ref) {
@@ -1345,3 +1347,75 @@ export const BasicValueSpecificationEditor = forwardRef<
 
   return <UnsupportedValueSpecificationEditor />;
 });
+
+export const EditableBasicValueSpecificationEditor = observer(
+  (props: {
+    valueSpecification: ValueSpecification;
+    setValueSpecification: (valueSpec: ValueSpecification) => void;
+    graph: PureModel;
+    observerContext: ObserverContext;
+    typeCheckOption: TypeCheckOption;
+    resetValue: () => void;
+    selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+    isConstant?: boolean;
+    initializeAsEditable?: boolean;
+  }) => {
+    const {
+      valueSpecification,
+      setValueSpecification,
+      graph,
+      observerContext,
+      typeCheckOption,
+      resetValue,
+      selectorConfig,
+      isConstant,
+      initializeAsEditable,
+    } = props;
+
+    const [isEditingValue, setIsEditingValue] = useState(
+      initializeAsEditable ?? false,
+    );
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+      if (isEditingValue) {
+        inputRef.current?.focus();
+      }
+    }, [isEditingValue, inputRef]);
+
+    return isEditingValue ? (
+      <div
+        className="query-builder__property__name__editor"
+        onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+          if (event.key === 'Enter') {
+            setIsEditingValue(false);
+          }
+        }}
+        onBlur={() => setIsEditingValue(false)}
+      >
+        <BasicValueSpecificationEditor
+          valueSpecification={valueSpecification}
+          setValueSpecification={setValueSpecification}
+          graph={graph}
+          obseverContext={observerContext}
+          typeCheckOption={typeCheckOption}
+          resetValue={resetValue}
+          selectorConfig={selectorConfig}
+          isConstant={isConstant}
+          ref={inputRef}
+        />
+      </div>
+    ) : (
+      <div className="value-spec-editor__editable__display">
+        <span
+          className="value-spec-editor__editable__display editable-value"
+          onClick={() => {
+            setIsEditingValue(true);
+          }}
+        >
+          &quot;{getValueSpecificationStringValue(valueSpecification)}&quot;
+        </span>
+      </div>
+    );
+  },
+);

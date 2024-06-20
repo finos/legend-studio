@@ -103,9 +103,9 @@ import type { QueryBuilderFilterOperator } from '../../stores/filter/QueryBuilde
 import { isTypeCompatibleForAssignment } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOperationHelper.js';
 import {
-  BasicValueSpecificationEditor,
   type QueryBuilderVariableDragSource,
   QUERY_BUILDER_VARIABLE_DND_TYPE,
+  EditableBasicValueSpecificationEditor,
 } from '../shared/BasicValueSpecificationEditor.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 import { getPropertyChainName } from '../../stores/QueryBuilderPropertyEditorState.js';
@@ -856,11 +856,11 @@ const QueryBuilderFilterConditionEditor = observer(
                   isDragOver={isFilterValueDragOver}
                   label="Change Filter Value"
                 >
-                  <BasicValueSpecificationEditor
+                  <EditableBasicValueSpecificationEditor
                     valueSpecification={node.condition.value}
                     setValueSpecification={changeValueSpecification}
                     graph={graph}
-                    obseverContext={queryBuilderState.observerContext}
+                    observerContext={queryBuilderState.observerContext}
                     typeCheckOption={{
                       expectedType:
                         node.condition.propertyExpressionState
@@ -872,6 +872,7 @@ const QueryBuilderFilterConditionEditor = observer(
                     isConstant={queryBuilderState.constantState.isValueSpecConstant(
                       node.condition.value,
                     )}
+                    initializeAsEditable={true}
                   />
                 </PanelEntryDropZonePlaceholder>
               </div>
