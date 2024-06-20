@@ -229,6 +229,10 @@ const StringPrimitiveInstanceValueEditor = observer(
       resetValue: () => void;
       selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
       obseverContext: ObserverContext;
+      handleBlur?: (() => void) | undefined;
+      handleKeyDown?:
+        | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
+        | undefined;
     }
   >(function StringPrimitiveInstanceValueEditor(props, ref) {
     const {
@@ -238,6 +242,8 @@ const StringPrimitiveInstanceValueEditor = observer(
       setValueSpecification,
       selectorConfig,
       obseverContext,
+      handleBlur,
+      handleKeyDown,
     } = props;
     const useSelector = Boolean(selectorConfig);
     const applicationStore = useApplicationStore();
@@ -312,6 +318,8 @@ const StringPrimitiveInstanceValueEditor = observer(
             hasError={!isValidInstanceValue(valueSpecification)}
             placeholder={value === '' ? '(empty)' : undefined}
             ref={ref as React.Ref<SelectComponent>}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
           />
         ) : (
           <InputWithInlineValidation
@@ -326,6 +334,8 @@ const StringPrimitiveInstanceValueEditor = observer(
                 ? 'Invalid String value'
                 : undefined
             }
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
           />
         )}
         <button
@@ -395,6 +405,10 @@ const NumberPrimitiveInstanceValueEditor = observer(
       resetValue: () => void;
       setValueSpecification: (val: ValueSpecification) => void;
       obseverContext: ObserverContext;
+      handleBlur?: (() => void) | undefined;
+      handleKeyDown?:
+        | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
+        | undefined;
     }
   >(function NumberPrimitiveInstanceValueEditor(props, ref) {
     const {
@@ -404,6 +418,8 @@ const NumberPrimitiveInstanceValueEditor = observer(
       resetValue,
       setValueSpecification,
       obseverContext,
+      handleBlur,
+      handleKeyDown,
     } = props;
     const [value, setValue] = useState(
       valueSpecification.values[0] === null
@@ -517,8 +533,14 @@ const NumberPrimitiveInstanceValueEditor = observer(
             inputMode="numeric"
             value={value}
             onChange={handleInputChange}
-            onBlur={calculateExpression}
-            onKeyDown={onKeyDown}
+            onBlur={() => {
+              calculateExpression();
+              handleBlur?.();
+            }}
+            onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+              onKeyDown(event);
+              handleKeyDown?.(event);
+            }}
           />
           <div className="value-spec-editor__number__actions">
             <button
@@ -550,6 +572,7 @@ const EnumValueInstanceValueEditor = observer(
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
     obseverContext: ObserverContext;
+    handleBlur?: (() => void) | undefined;
   }) => {
     const {
       valueSpecification,
@@ -557,6 +580,7 @@ const EnumValueInstanceValueEditor = observer(
       resetValue,
       setValueSpecification,
       obseverContext,
+      handleBlur,
     } = props;
     const applicationStore = useApplicationStore();
     const enumType = guaranteeType(
@@ -593,6 +617,7 @@ const EnumValueInstanceValueEditor = observer(
           }
           hasError={!isValidInstanceValue(valueSpecification)}
           placeholder="Select value"
+          onBlur={handleBlur}
         />
         <button
           className="value-spec-editor__reset-btn"
@@ -1166,6 +1191,8 @@ export const BasicValueSpecificationEditor = forwardRef<
     resetValue: () => void;
     isConstant?: boolean | undefined;
     selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+    handleBlur?: () => void;
+    handleKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   }
 >(function BasicValueSpecificationEditor(props, ref) {
   const {
@@ -1178,6 +1205,8 @@ export const BasicValueSpecificationEditor = forwardRef<
     resetValue,
     selectorConfig,
     isConstant,
+    handleBlur,
+    handleKeyDown,
   } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
@@ -1192,6 +1221,8 @@ export const BasicValueSpecificationEditor = forwardRef<
             selectorConfig={selectorConfig}
             obseverContext={obseverContext}
             ref={ref}
+            handleBlur={handleBlur}
+            handleKeyDown={handleKeyDown}
           />
         );
       case PRIMITIVE_TYPE.BOOLEAN:
@@ -1219,6 +1250,8 @@ export const BasicValueSpecificationEditor = forwardRef<
             resetValue={resetValue}
             obseverContext={obseverContext}
             ref={ref}
+            handleBlur={handleBlur}
+            handleKeyDown={handleKeyDown}
           />
         );
       case PRIMITIVE_TYPE.DATE:
@@ -1247,6 +1280,7 @@ export const BasicValueSpecificationEditor = forwardRef<
         resetValue={resetValue}
         setValueSpecification={setValueSpecification}
         obseverContext={obseverContext}
+        handleBlur={handleBlur}
       />
     );
   } else if (
@@ -1339,6 +1373,8 @@ export const BasicValueSpecificationEditor = forwardRef<
             resetValue={resetValue}
             obseverContext={obseverContext}
             ref={ref}
+            handleBlur={handleBlur}
+            handleKeyDown={handleKeyDown}
           />
         );
       }
@@ -1384,27 +1420,23 @@ export const EditableBasicValueSpecificationEditor = observer(
     }, [isEditingValue, inputRef]);
 
     return isEditingValue ? (
-      <div
-        className="query-builder__property__name__editor"
-        onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+      <BasicValueSpecificationEditor
+        valueSpecification={valueSpecification}
+        setValueSpecification={setValueSpecification}
+        graph={graph}
+        observerContext={observerContext}
+        typeCheckOption={typeCheckOption}
+        resetValue={resetValue}
+        selectorConfig={selectorConfig}
+        isConstant={isConstant}
+        ref={inputRef}
+        handleBlur={() => setIsEditingValue(false)}
+        handleKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
           if (event.key === 'Enter') {
             setIsEditingValue(false);
           }
         }}
-        onBlur={() => setIsEditingValue(false)}
-      >
-        <BasicValueSpecificationEditor
-          valueSpecification={valueSpecification}
-          setValueSpecification={setValueSpecification}
-          graph={graph}
-          observerContext={observerContext}
-          typeCheckOption={typeCheckOption}
-          resetValue={resetValue}
-          selectorConfig={selectorConfig}
-          isConstant={isConstant}
-          ref={inputRef}
-        />
-      </div>
+      />
     ) : (
       <div className="value-spec-editor__editable__display">
         <span
