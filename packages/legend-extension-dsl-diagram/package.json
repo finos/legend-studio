@@ -21,6 +21,7 @@
   "sideEffects": false,
   "type": "module",
   "exports": {
+    ".": "./lib/index.js",
     "./graph": "./lib/graph-manager/index.js",
     "./application": "./lib/components/index.js",
     "./application-studio": "./lib/components/studio/index.js",
