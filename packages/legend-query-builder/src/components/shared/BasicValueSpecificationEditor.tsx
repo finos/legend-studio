@@ -1159,7 +1159,7 @@ export const BasicValueSpecificationEditor = forwardRef<
   {
     valueSpecification: ValueSpecification;
     graph: PureModel;
-    obseverContext: ObserverContext;
+    observerContext: ObserverContext;
     typeCheckOption: TypeCheckOption;
     className?: string | undefined;
     setValueSpecification: (val: ValueSpecification) => void;
@@ -1172,7 +1172,7 @@ export const BasicValueSpecificationEditor = forwardRef<
     className,
     valueSpecification,
     graph,
-    obseverContext,
+    observerContext: obseverContext,
     typeCheckOption,
     setValueSpecification,
     resetValue,
@@ -1284,7 +1284,7 @@ export const BasicValueSpecificationEditor = forwardRef<
       <BasicValueSpecificationEditor
         valueSpecification={valueSpecification.getValue()}
         graph={graph}
-        obseverContext={obseverContext}
+        observerContext={obseverContext}
         typeCheckOption={typeCheckOption}
         setValueSpecification={setValueSpecification}
         resetValue={resetValue}
@@ -1397,7 +1397,7 @@ export const EditableBasicValueSpecificationEditor = observer(
           valueSpecification={valueSpecification}
           setValueSpecification={setValueSpecification}
           graph={graph}
-          obseverContext={observerContext}
+          observerContext={observerContext}
           typeCheckOption={typeCheckOption}
           resetValue={resetValue}
           selectorConfig={selectorConfig}

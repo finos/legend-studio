@@ -103,7 +103,7 @@ export const LambdaParameterValuesEditor = observer(
                         paramState.setValue(val);
                       }}
                       graph={graph}
-                      obseverContext={observerContext}
+                      observerContext={observerContext}
                       typeCheckOption={{
                         expectedType: variableType,
                         match: variableType === PrimitiveType.DATETIME,

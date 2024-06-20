@@ -1146,7 +1146,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                       aggregateColumnState.calendarFunction?.setEndDate(val);
                     }}
                     graph={tdsState.queryBuilderState.graphManagerState.graph}
-                    obseverContext={tdsState.queryBuilderState.observerContext}
+                    observerContext={tdsState.queryBuilderState.observerContext}
                     typeCheckOption={{
                       expectedType: PrimitiveType.STRICTDATE,
                     }}
