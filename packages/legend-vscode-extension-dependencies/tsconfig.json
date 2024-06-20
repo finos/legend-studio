@@ -13,6 +13,6 @@
     { "path": "../legend-application-studio" },
     { "path": "../legend-shared" },
     { "path": "../legend-storage" },
-    { "path": "../legend-graph" },
+    { "path": "../legend-graph" }
   ]
 }
