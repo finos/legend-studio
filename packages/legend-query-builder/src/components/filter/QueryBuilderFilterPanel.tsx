@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { useRef, useState, useCallback, forwardRef, useMemo } from 'react';
+import {
+  useRef,
+  useState,
+  useCallback,
+  forwardRef,
+  useMemo,
+  useEffect,
+} from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
@@ -728,6 +735,7 @@ const QueryBuilderFilterConditionEditor = observer(
       node.condition.filterState.queryBuilderState.graphManagerState.graph;
     const queryBuilderState = node.condition.filterState.queryBuilderState;
     const applicationStore = useApplicationStore();
+    const [isInitialRender, setIsInitialRender] = useState(true);
     const changeOperator = (val: QueryBuilderFilterOperator) => (): void =>
       node.condition.changeOperator(val);
     // Drag and Drop on filter condition value
@@ -797,6 +805,10 @@ const QueryBuilderFilterConditionEditor = observer(
       reloadValues: debouncedTypeaheadSearch,
       cleanUpReloadValues,
     };
+
+    useEffect(() => {
+      setIsInitialRender(false);
+    }, []);
 
     return (
       <div
@@ -872,7 +884,7 @@ const QueryBuilderFilterConditionEditor = observer(
                     isConstant={queryBuilderState.constantState.isValueSpecConstant(
                       node.condition.value,
                     )}
-                    initializeAsEditable={true}
+                    initializeAsEditable={isInitialRender}
                   />
                 </PanelEntryDropZonePlaceholder>
               </div>
