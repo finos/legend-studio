@@ -89,6 +89,8 @@ import { buildVersionOption, type VersionOption } from './QuerySetup.js';
 import { QueryEditorExistingQueryVersionRevertModal } from './QueryEdtiorExistingQueryVersionRevertModal.js';
 import { debounce, compareSemVerVersions } from '@finos/legend-shared';
 import { LegendQueryInfo } from './LegendQueryAppInfo.js';
+import { QueryEditorDataspaceInfoModal } from './data-space/DataSpaceInfo.js';
+import { DataSpaceQueryBuilderState } from '@finos/legend-extension-dsl-data-space/application';
 
 const CreateQueryDialog = observer(() => {
   const editorStore = useQueryEditorStore();
@@ -729,6 +731,16 @@ export const QueryEditor = observer(() => {
           closeModal={() => editorStore.setShowAppInfo(false)}
         />
       )}
+      {editorStore.showDataspaceInfo &&
+        editorStore.queryBuilderState instanceof DataSpaceQueryBuilderState && (
+          <QueryEditorDataspaceInfoModal
+            editorStore={editorStore}
+            dataspace={editorStore.queryBuilderState.dataSpace}
+            executionContext={editorStore.queryBuilderState.executionContext}
+            open={editorStore.showDataspaceInfo}
+            closeModal={() => editorStore.setShowDataspaceInfo(false)}
+          />
+        )}
       {isExistingQuery &&
         editorStore.updateState.showQueryInfo &&
         editorStore.query && (

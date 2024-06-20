@@ -55,6 +55,8 @@ export const DataCubeGrid = observer((props: { editorStore: REPLStore }) => {
         alwaysMultiSort={true}
         rowModelType="serverSide"
         serverSideDatasource={dataCubeState.grid.clientDataSource}
+        suppressAggFuncInHeader={true}
+        suppressServerSideInfiniteScroll={true}
         modules={[
           // community
           ClientSideRowModelModule,

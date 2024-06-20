@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-import { QueryLoaderState } from '@finos/legend-query-builder';
+import {
+  QUERY_LOADER_DEFAULT_QUERY_SEARCH_LIMIT,
+  QueryLoaderState,
+} from '@finos/legend-query-builder';
 import { BaseQuerySetupStore } from './QuerySetupStore.js';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import { quantifyList } from '@finos/legend-shared';
 import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
-import type { LightQuery } from '@finos/legend-graph';
+import { QuerySearchSpecification, type LightQuery } from '@finos/legend-graph';
 import { generateExistingQueryEditorRoute } from '../__lib__/LegendQueryNavigation.js';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 
@@ -44,12 +47,22 @@ export class EditExistingQuerySetupStore extends BaseQuerySetupStore {
             { ignoreBlocking: true },
           );
         },
-        fetchDefaultQueries: () =>
-          this.graphManagerState.graphManager.getQueries(
-            LegendQueryUserDataHelper.getRecentlyViewedQueries(
-              this.applicationStore.userDataService,
-            ),
-          ),
+        fetchDefaultQueries: async (): Promise<LightQuery[]> => {
+          const recentReviewedQueries =
+            await this.graphManagerState.graphManager.getQueries(
+              LegendQueryUserDataHelper.getRecentlyViewedQueries(
+                this.applicationStore.userDataService,
+              ),
+            );
+          if (recentReviewedQueries.length <= 0) {
+            const searchSpecification = new QuerySearchSpecification();
+            searchSpecification.limit = QUERY_LOADER_DEFAULT_QUERY_SEARCH_LIMIT;
+            return this.graphManagerState.graphManager.searchQueries(
+              searchSpecification,
+            );
+          }
+          return recentReviewedQueries;
+        },
         generateDefaultQueriesSummaryText: (queries) =>
           queries.length
             ? `Showing ${quantifyList(

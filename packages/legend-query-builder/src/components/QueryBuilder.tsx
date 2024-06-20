@@ -46,6 +46,7 @@ import {
   clsx,
   DocumentationIcon,
   CodeIcon,
+  QuestionIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -442,6 +443,14 @@ export const QueryBuilder = observer(
     const queryDocEntry = applicationStore.documentationService.getDocEntry(
       QUERY_BUILDER_DOCUMENTATION_KEY.TUTORIAL_QUERY_BUILDER,
     );
+    const frequentlyAskedQuestionEntry =
+      applicationStore.documentationService.getDocEntry(
+        QUERY_BUILDER_DOCUMENTATION_KEY.FREQUENTLY_ASKED_QUESTIONS,
+      );
+    const supportTicketsEntry =
+      applicationStore.documentationService.getDocEntry(
+        QUERY_BUILDER_DOCUMENTATION_KEY.SUPPORT_TICKETS_LINK,
+      );
     const openQueryTutorial = (): void => {
       if (queryDocEntry?.url) {
         applicationStore.navigationService.navigator.visitAddress(
@@ -449,6 +458,21 @@ export const QueryBuilder = observer(
         );
       }
     };
+    const openFrequentlyAskedQuestions = (): void => {
+      if (frequentlyAskedQuestionEntry?.url) {
+        applicationStore.navigationService.navigator.visitAddress(
+          frequentlyAskedQuestionEntry.url,
+        );
+      }
+    };
+    const openSupportTickets = (): void => {
+      if (supportTicketsEntry?.url) {
+        applicationStore.navigationService.navigator.visitAddress(
+          supportTicketsEntry.url,
+        );
+      }
+    };
+
     const toggleAssistant = (): void =>
       applicationStore.assistantService.toggleAssistant();
 
@@ -890,6 +914,26 @@ export const QueryBuilder = observer(
                           </MenuContentItemIcon>
                           <MenuContentItemLabel>
                             Open Documentation
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                      )}
+                      {frequentlyAskedQuestionEntry && (
+                        <MenuContentItem onClick={openFrequentlyAskedQuestions}>
+                          <MenuContentItemIcon>
+                            <QuestionIcon />
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel>
+                            Frequently Asked Questions
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                      )}
+                      {supportTicketsEntry && (
+                        <MenuContentItem onClick={openSupportTickets}>
+                          <MenuContentItemIcon>
+                            <QuestionIcon />
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel>
+                            Open Support Tickets
                           </MenuContentItemLabel>
                         </MenuContentItem>
                       )}

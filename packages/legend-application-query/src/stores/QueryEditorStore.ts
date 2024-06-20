@@ -66,6 +66,7 @@ import {
   cloneQueryTaggedValue,
   QueryDataSpaceExecutionContext,
   QueryExplicitExecutionContext,
+  QueryProjectCoordinates,
 } from '@finos/legend-graph';
 import {
   generateExistingQueryEditorRoute,
@@ -77,6 +78,7 @@ import {
   type Entity,
   type ProjectGAVCoordinates,
   type EntitiesWithOrigin,
+  parseGACoordinates,
 } from '@finos/legend-storage';
 import {
   type DepotServerClient,
@@ -104,6 +106,7 @@ import {
   QueryLoaderState,
   QueryBuilderDataBrowserWorkflow,
   QueryBuilderActionConfig,
+  QUERY_LOADER_DEFAULT_QUERY_SEARCH_LIMIT,
 } from '@finos/legend-query-builder';
 import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
@@ -261,6 +264,7 @@ export abstract class QueryEditorStore {
   existingQueryName: string | undefined;
   showRegisterServiceModal = false;
   showAppInfo = false;
+  showDataspaceInfo = false;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -272,11 +276,13 @@ export abstract class QueryEditorStore {
       existingQueryName: observable,
       showRegisterServiceModal: observable,
       showAppInfo: observable,
+      showDataspaceInfo: observable,
       queryBuilderState: observable,
       isPerformingBlockingAction: computed,
       setExistingQueryName: action,
       setShowRegisterServiceModal: action,
       setShowAppInfo: action,
+      setShowDataspaceInfo: action,
       initialize: flow,
       buildGraph: flow,
       searchExistingQueryName: flow,
@@ -304,12 +310,22 @@ export abstract class QueryEditorStore {
             },
           );
         },
-        fetchDefaultQueries: () =>
-          this.graphManagerState.graphManager.getQueries(
-            LegendQueryUserDataHelper.getRecentlyViewedQueries(
-              this.applicationStore.userDataService,
-            ),
-          ),
+        fetchDefaultQueries: async (): Promise<LightQuery[]> => {
+          const recentReviewedQueries =
+            await this.graphManagerState.graphManager.getQueries(
+              LegendQueryUserDataHelper.getRecentlyViewedQueries(
+                this.applicationStore.userDataService,
+              ),
+            );
+          if (recentReviewedQueries.length <= 0) {
+            const searchSpecification = new QuerySearchSpecification();
+            searchSpecification.limit = QUERY_LOADER_DEFAULT_QUERY_SEARCH_LIMIT;
+            return this.graphManagerState.graphManager.searchQueries(
+              this.decorateSearchSpecification(searchSpecification),
+            );
+          }
+          return recentReviewedQueries;
+        },
         generateDefaultQueriesSummaryText: (queries) =>
           queries.length
             ? `Showing ${quantifyList(
@@ -362,12 +378,22 @@ export abstract class QueryEditorStore {
     this.showAppInfo = val;
   }
 
+  setShowDataspaceInfo(val: boolean): void {
+    this.showDataspaceInfo = val;
+  }
+
   setShowRegisterServiceModal(val: boolean): void {
     this.showRegisterServiceModal = val;
   }
 
   get isPerformingBlockingAction(): boolean {
     return this.queryCreatorState.createQueryState.isInProgress;
+  }
+
+  decorateSearchSpecification(
+    val: QuerySearchSpecification,
+  ): QuerySearchSpecification {
+    return val;
   }
 
   abstract getProjectInfo(): ProjectGAVCoordinates | undefined;
@@ -743,6 +769,29 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
       },
     };
   }
+
+  override decorateSearchSpecification(
+    val: QuerySearchSpecification,
+  ): QuerySearchSpecification {
+    const currentProjectCoordinates = new QueryProjectCoordinates();
+    currentProjectCoordinates.groupId = this.groupId;
+    currentProjectCoordinates.artifactId = this.artifactId;
+    val.projectCoordinates = [
+      // either get queries for the current project
+      currentProjectCoordinates,
+      // or any of its dependencies
+      ...Array.from(
+        this.graphManagerState.graph.dependencyManager.projectDependencyModelsIndex.keys(),
+      ).map((dependencyKey) => {
+        const { groupId, artifactId } = parseGACoordinates(dependencyKey);
+        const coordinates = new QueryProjectCoordinates();
+        coordinates.groupId = groupId;
+        coordinates.artifactId = artifactId;
+        return coordinates;
+      }),
+    ];
+    return val;
+  }
 }
 
 export class ServiceQueryCreatorStore extends QueryEditorStore {
@@ -849,6 +898,29 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
         query.versionId = this.versionId;
       },
     };
+  }
+
+  override decorateSearchSpecification(
+    val: QuerySearchSpecification,
+  ): QuerySearchSpecification {
+    const currentProjectCoordinates = new QueryProjectCoordinates();
+    currentProjectCoordinates.groupId = this.groupId;
+    currentProjectCoordinates.artifactId = this.artifactId;
+    val.projectCoordinates = [
+      // either get queries for the current project
+      currentProjectCoordinates,
+      // or any of its dependencies
+      ...Array.from(
+        this.graphManagerState.graph.dependencyManager.projectDependencyModelsIndex.keys(),
+      ).map((dependencyKey) => {
+        const { groupId, artifactId } = parseGACoordinates(dependencyKey);
+        const coordinates = new QueryProjectCoordinates();
+        coordinates.groupId = groupId;
+        coordinates.artifactId = artifactId;
+        return coordinates;
+      }),
+    ];
+    return val;
   }
 }
 
@@ -1440,5 +1512,30 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         this.setQuery(query);
       },
     };
+  }
+
+  override decorateSearchSpecification(
+    val: QuerySearchSpecification,
+  ): QuerySearchSpecification {
+    const currentProjectCoordinates = new QueryProjectCoordinates();
+    if (this.query) {
+      currentProjectCoordinates.groupId = this.query.groupId;
+      currentProjectCoordinates.artifactId = this.query.artifactId;
+    }
+    val.projectCoordinates = [
+      // either get queries for the current project
+      currentProjectCoordinates,
+      // or any of its dependencies
+      ...Array.from(
+        this.graphManagerState.graph.dependencyManager.projectDependencyModelsIndex.keys(),
+      ).map((dependencyKey) => {
+        const { groupId, artifactId } = parseGACoordinates(dependencyKey);
+        const coordinates = new QueryProjectCoordinates();
+        coordinates.groupId = groupId;
+        coordinates.artifactId = artifactId;
+        return coordinates;
+      }),
+    ];
+    return val;
   }
 }

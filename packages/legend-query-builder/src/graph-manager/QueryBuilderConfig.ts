@@ -28,10 +28,16 @@ export class QueryBuilderConfig {
    */
   TEMPORARY__enableGridEnterpriseMode = false;
 
+  /**
+   * This is the URL of the LegendAI service
+   */
+  legendAIServiceURL = '';
+
   static readonly serialization = new SerializationFactory(
     createModelSchema(QueryBuilderConfig, {
       TEMPORARY__disableQueryBuilderChat: optional(primitive()),
       TEMPORARY__enableGridEnterpriseMode: optional(primitive()),
+      legendAIServiceURL: optional(primitive()),
     }),
   );
 }

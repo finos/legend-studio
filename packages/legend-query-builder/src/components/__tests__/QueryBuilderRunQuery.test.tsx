@@ -15,7 +15,14 @@
  */
 
 import { expect, test } from '@jest/globals';
-import { fireEvent, getByText, act, getByRole } from '@testing-library/react';
+import {
+  fireEvent,
+  getByText,
+  act,
+  getByRole,
+  queryAllByText,
+  queryByText,
+} from '@testing-library/react';
 import { TEST_DATA__simpleProjection } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
@@ -28,14 +35,14 @@ import {
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
+import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+import { filterByOrOutValues } from '../result/tds/QueryBuilderTDSResultShared.js';
 
 const mocked =
-  '{"builder": {"_type":"tdsBuilder","columns":[{"name":"Age","type":"Integer","relationalType":"INTEGER"},{"name":"First Name","type":"String","relationalType":"VARCHAR(200)"}]}, "activities": [{"_type":"relational","comment":"","sql":"select"}], "result" : {"columns" : ["Age","First Name"], "rows" : [{"values": [22,"John"]},{"values": [129305879132475986,"Olivia"]},{"values": [1450,"Henry"]},{"values": [55,"https://www.google.com/"]}]}}';
+  '{"builder":{"_type":"tdsBuilder","columns":[{"name":"Age","type":"Integer","relationalType":"INTEGER"},{"name":"Edited First Name","type":"String","relationalType":"VARCHAR(200)"},{"name":"Last Reported Flag","type":"Boolean","relationalType":"BIT"}]},"activities":[{"_type":"relational","comment":"","sql":"select"}],"result":{"columns":["Age","Edited First Name","Last Reported Flag"],"rows":[{"values":[22,"John",true]},{"values":[129305879132475986,"Olivia",false]},{"values":[1450,"Henry",true]},{"values":[55,"https://www.google.com/",null]}]}}';
 // TODO make more generic. maybe pass string execution result and what we expect to render for each test case
 test(
-  integrationTest(
-    'Query Builder run query and render execution result with integers above javascript max',
-  ),
+  integrationTest('Query Builder run query and render execution result'),
   async () => {
     const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
       TEST_DATA__ComplexRelationalModel,
@@ -79,7 +86,7 @@ test(
     );
     const GOOGLE_LINK = 'https://www.google.com/';
     const knownValues = [
-      'First Name',
+      'Edited First Name',
       'John',
       'Henry',
       'Olivia',
@@ -90,15 +97,41 @@ test(
       // edge cases: show big int, ints should be separated by commas
       '129305879132475986',
       '1,450',
+      'false',
     ];
     knownValues.forEach((val) =>
       expect(getByText(tdsResult, val)).toBeDefined(),
     );
+
+    expect(queryAllByText(tdsResult, 'true')).toHaveLength(2);
 
     // test
     const link = getByRole(tdsResult, 'link', {
       name: GOOGLE_LINK,
     });
     expect((link as HTMLAnchorElement).href).toEqual(GOOGLE_LINK);
+
+    const henryFilter = getByText(tdsResult, 'Henry');
+    fireEvent.mouseDown(henryFilter);
+    const state = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+
+    await act(async () => {
+      filterByOrOutValues(
+        queryBuilderState.applicationStore,
+        queryBuilderState.resultState.mousedOverCell,
+        true,
+        state,
+      );
+    });
+    const postFilterPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
+    );
+
+    expect(queryByText(postFilterPanel, 'Edited First Name')).not.toBeNull();
+    expect(queryByText(postFilterPanel, 'is')).not.toBeNull();
+    expect(queryByText(postFilterPanel, 'Henry')).not.toBeNull();
   },
 );
