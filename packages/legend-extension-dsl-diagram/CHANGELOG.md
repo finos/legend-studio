@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-diagram
 
+## 8.0.181
+
+### Patch Changes
+
+- [#3269](https://github.com/finos/legend-studio/pull/3269) [`d0ec1a3`](https://github.com/finos/legend-studio/commit/d0ec1a3eeb4cb648d55f1475d1c24a98fd482110) ([@sameersaini](https://github.com/sameersaini)) - add new packages/legend-vscode-extension-dependencies
+
 ## 8.0.180
 
 ## 8.0.179
