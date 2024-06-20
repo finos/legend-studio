@@ -304,13 +304,21 @@ export function _groupByExtend(
 
 // --------------------------------- MAIN ---------------------------------
 
-export function buildExecutableQueryFromSnapshot(
+export function buildExecutableQuery(
   snapshot: DataCubeQuerySnapshot,
-  postProcessor?: (
-    snapshot: DataCubeQuerySnapshot,
-    sequence: V1_AppliedFunction[],
-    funcMap: DataCubeQueryFunctionMap,
-  ) => void,
+  options?: {
+    postProcessor?: (
+      snapshot: DataCubeQuerySnapshot,
+      sequence: V1_AppliedFunction[],
+      funcMap: DataCubeQueryFunctionMap,
+    ) => void;
+    pagination?:
+      | {
+          start: number;
+          end: number;
+        }
+      | undefined;
+  },
 ): V1_ValueSpecification {
   const data = snapshot.data;
   const sourceQuery = V1_deserializeValueSpecification(data.sourceQuery, []);
@@ -434,6 +442,17 @@ export function buildExecutableQueryFromSnapshot(
     );
   }
 
+  // --------------------------------- SLICE ---------------------------------
+
+  if (options?.pagination) {
+    sequence.push(
+      _function(_name(DataCubeFunction.SLICE), [
+        _value(PRIMITIVE_TYPE.INTEGER, options.pagination.start),
+        _value(PRIMITIVE_TYPE.INTEGER, options.pagination.end),
+      ]),
+    );
+  }
+
   // --------------------------------- FROM ---------------------------------
 
   sequence.push(
@@ -442,7 +461,7 @@ export function buildExecutableQueryFromSnapshot(
 
   // --------------------------------- FINALIZE ---------------------------------
 
-  postProcessor?.(snapshot, sequence, funcMap);
+  options?.postProcessor?.(snapshot, sequence, funcMap);
 
   if (!sequence.length) {
     return sourceQuery;

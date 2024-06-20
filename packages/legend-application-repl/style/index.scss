@@ -22,7 +22,8 @@
   --color-light-shade-100: #ffffff2e;
 }
 
-body * {
+body {
+  // default font size is 12px everywhere to make the app more compact
   font-size: 12px;
 }
 

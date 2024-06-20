@@ -19,10 +19,18 @@
 
 import { GoBrowser, GoPin, GoX } from 'react-icons/go';
 import { GrBottomCorner } from 'react-icons/gr';
+import { MdOutlineInsertPageBreak } from 'react-icons/md';
+import { HiOutlineCube } from 'react-icons/hi';
+import { VscBook } from 'react-icons/vsc';
+import { PiMouseScroll } from 'react-icons/pi';
 
 export const DataCubeIcon = {
-  Window: GoBrowser,
+  Cube: HiOutlineCube,
+  Documentation: VscBook,
+  Pagination: MdOutlineInsertPageBreak,
   Pin: GoPin,
-  X: GoX,
   ResizeCornerSE: GrBottomCorner,
+  Scroll: PiMouseScroll,
+  Window: GoBrowser,
+  X: GoX,
 };

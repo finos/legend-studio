@@ -20,13 +20,17 @@ import { useEffect, useRef } from 'react';
 import { DataCubeGrid } from './grid/DataCubeGrid.js';
 import { DataCubeEditor } from './editor/DataCubeEditor.js';
 import { useApplicationStore } from '@finos/legend-application';
+import { DataCubeIcon } from '@finos/legend-art';
 
-export const DataCubeStatusBar = observer(() => {
+const DataCubeStatusBar = observer(() => {
   const dataCubeStore = useREPLStore();
   const dataCubeState = dataCubeStore.dataCubeState;
 
   return (
-    <div className="flex w-full">
+    <div className="flex h-5 w-full bg-neutral-100">
+      <button>
+        <DataCubeIcon.Documentation className="pl-1 text-2xl text-sky-600" />
+      </button>
       <button
         className="flex w-1/2 items-center px-2 text-sky-600 underline"
         onClick={(): void => dataCubeState.editor.openPanel()}
@@ -36,6 +40,21 @@ export const DataCubeStatusBar = observer(() => {
       <button className="flex w-1/2 items-center px-2 text-sky-600 underline">
         Filter
       </button>
+    </div>
+  );
+});
+
+const DataCubeTitleBar = observer(() => {
+  const dataCubeStore = useREPLStore();
+  const dataCubeState = dataCubeStore.dataCubeState;
+
+  return (
+    <div className="flex h-6 justify-between bg-neutral-100">
+      <div className="flex select-none items-center pl-1 pr-2 text-lg font-medium">
+        <DataCubeIcon.Cube className="mr-1 h-4 w-4" />
+        <div>{dataCubeState.editor.generalPropertiesPanel.name}</div>
+        {/* TODO: @akphi - add save icon */}
+      </div>
     </div>
   );
 });
@@ -55,18 +74,9 @@ export const DataCube = observer(() => {
       ref={ref}
       className="data-cube relative flex h-full w-full flex-col bg-white"
     >
-      <div className="flex h-6 justify-between bg-neutral-100">
-        <div className="flex select-none items-center px-2">
-          <div>{dataCubeState.editor.generalPropertiesPanel.name}</div>
-          {/* TODO: @akphi - add save icon */}
-        </div>
-      </div>
-      <div className="flex-1">
-        <DataCubeGrid />
-      </div>
-      <div className="flex h-5 bg-neutral-100">
-        <DataCubeStatusBar />
-      </div>
+      <DataCubeTitleBar />
+      <DataCubeGrid />
+      <DataCubeStatusBar />
       {dataCubeState.editor.isPanelOpen && (
         <DataCubeEditor containerRef={ref} />
       )}

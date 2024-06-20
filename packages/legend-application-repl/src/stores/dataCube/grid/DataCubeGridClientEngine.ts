@@ -25,11 +25,12 @@ import {
   guaranteeNonNullable,
   isBoolean,
 } from '@finos/legend-shared';
-import { buildExecutableQueryFromSnapshot } from '../core/DataCubeQueryBuilder.js';
+import { buildExecutableQuery } from '../core/DataCubeQueryBuilder.js';
 import { type TabularDataSet, V1_Lambda } from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { generateRowGroupingDrilldownExecutableQueryPostProcessor } from './DataCubeGridQueryBuilder.js';
+import { makeObservable, observable, runInAction } from 'mobx';
 
 type GridClientResultCellDataType =
   | string
@@ -42,6 +43,9 @@ type GridClientRowDataType = {
   [key: string]: GridClientResultCellDataType;
 };
 
+export const INTERNAL__GRID_CLIENT_HEADER_HEIGHT = 24;
+export const INTERNAL__GRID_CLIENT_ROW_HEIGHT = 20;
+export const INTERNAL__GRID_CLIENT_ROW_BUFFER = 50;
 export const INTERNAL__GRID_CLIENT_TREE_COLUMN_ID = 'INTERNAL__tree';
 export const INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID =
   'INTERNAL__count';
@@ -77,8 +81,13 @@ export class DataCubeGridClientServerSideDataSource
   implements IServerSideDatasource
 {
   readonly grid: DataCubeGridState;
+  rowCount: number | undefined = undefined;
 
   constructor(grid: DataCubeGridState) {
+    makeObservable(this, {
+      rowCount: observable,
+    });
+
     this.grid = grid;
   }
 
@@ -110,25 +119,50 @@ export class DataCubeGridClientServerSideDataSource
     if (syncedSnapshot.uuid !== currentSnapshot.uuid) {
       this.grid.publishSnapshot(syncedSnapshot);
     }
-    // TODO: @akphi - what we do here is wrong fundamentally, when we detect presence of groupKeys
-    // i.e. drilldown in the request, we don't need to update the snapshot, but fire a modified query,
-    // here we update the snapshot just so we can build the query to execute to get the result, which is
-    // wrong. We must not uncessarily update the snapshot.
 
     // ------------------------------ DATA ------------------------------
 
     try {
-      const executableQuery = buildExecutableQueryFromSnapshot(
-        syncedSnapshot,
-        generateRowGroupingDrilldownExecutableQueryPostProcessor(
+      const executableQuery = buildExecutableQuery(syncedSnapshot, {
+        postProcessor: generateRowGroupingDrilldownExecutableQueryPostProcessor(
           params.request.groupKeys,
         ),
-      );
+        pagination:
+          this.grid.isPaginationEnabled &&
+          params.request.startRow !== undefined &&
+          params.request.endRow !== undefined
+            ? {
+                start: params.request.startRow,
+                end: params.request.endRow,
+              }
+            : undefined,
+      });
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
       const result = await this.grid.dataCube.engine.executeQuery(lambda);
       const rowData = toRowData(result.result);
-      params.success({ rowData });
+      if (this.grid.isPaginationEnabled) {
+        params.success({ rowData });
+        // Only update row count when loading the top-level drilldown data
+        if (params.request.groupKeys.length === 0) {
+          runInAction(() => {
+            this.rowCount = (params.request.startRow ?? 0) + rowData.length;
+          });
+        }
+      } else {
+        params.success({
+          rowData,
+          // Setting row count to disable inifite-scrolling when pagination is disabled
+          // See https://www.ag-grid.com/javascript-data-grid/infinite-scrolling/#setting-last-row-index
+          rowCount: rowData.length,
+        });
+        // Only update row count when loading the top-level drilldown data
+        if (params.request.groupKeys.length === 0) {
+          runInAction(() => {
+            this.rowCount = rowData.length;
+          });
+        }
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.grid.dataCube.application.notificationService.notifyError(error);

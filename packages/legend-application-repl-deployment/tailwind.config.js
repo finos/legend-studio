@@ -27,6 +27,19 @@ export default {
       '2xl': ['20px', '28px'],
       '3xl': ['24px', '32px'],
     },
+    fontFamily: {
+      mono: [
+        'ui-monospace',
+        'Roboto Mono',
+        'SFMono-Regular',
+        'Menlo',
+        'Monaco',
+        'Consolas',
+        'Liberation Mono',
+        'Courier New',
+        'monospace',
+      ],
+    },
   },
   plugins: [],
 };

@@ -25,15 +25,21 @@ import { generateGridOptionsFromSnapshot } from './DataCubeGridQuerySnapshotAnal
 
 export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   private _client?: GridApi | undefined;
-  readonly clientDataSource: DataCubeGridClientServerSideDataSource;
+  clientDataSource: DataCubeGridClientServerSideDataSource;
   clientLicenseKey?: string | undefined;
+  isPaginationEnabled = false;
 
   constructor(dataCubeState: DataCubeState) {
     super(dataCubeState);
 
     makeObservable(this, {
+      clientDataSource: observable,
+
       clientLicenseKey: observable,
       setClientLicenseKey: action,
+
+      isPaginationEnabled: observable,
+      setPaginationEnabled: action,
     });
 
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
@@ -41,6 +47,25 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
 
   setClientLicenseKey(val: string): void {
     this.clientLicenseKey = val;
+  }
+
+  setPaginationEnabled(val: boolean): void {
+    this.isPaginationEnabled = val;
+
+    // When pagination is toggled off, we don't need to reset the grid since data is
+    // already loaded data will still be there, but we need to collapse all expanded
+    // row groupings since the data there are now stale.
+    // Maybe, we can handle this transition more elegantly by refreshing data for all
+    // expanded row groupings as well, but for now, we opt for the simple mechanics.
+    if (!this.isPaginationEnabled) {
+      this.client.collapseAll();
+      this.client.refreshServerSide();
+    } else {
+      // When pagination is toggled on, we simply reset the grid to clear all data and reset scroll;
+      // otherwise each page that we already loaded when pagination is off will get refetched by
+      // server-side data source, which is expensive.
+      this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
+    }
   }
 
   configureClient(val: GridApi | undefined): void {

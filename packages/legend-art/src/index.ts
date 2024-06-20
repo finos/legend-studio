@@ -32,6 +32,7 @@ export * from './autocomplete/CustomSelectorInput.js';
 export * from './badge/Badge.js';
 
 export * from './button/Button.js';
+export * from './button/Switch.js';
 
 export * from './card/BaseCard.js';
 

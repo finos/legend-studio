@@ -21,72 +21,145 @@ import { ServerSideRowModelModule } from '@ag-grid-enterprise/server-side-row-mo
 import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
 import { MenuModule } from '@ag-grid-enterprise/menu';
 import { AgGridReact } from '@ag-grid-community/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useREPLStore } from '../../REPLStoreProvider.js';
+import { DataCubeIcon, Switch, cn } from '@finos/legend-art';
+import {
+  INTERNAL__GRID_CLIENT_HEADER_HEIGHT,
+  INTERNAL__GRID_CLIENT_ROW_BUFFER,
+  INTERNAL__GRID_CLIENT_ROW_HEIGHT,
+} from '../../../stores/dataCube/grid/DataCubeGridClientEngine.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
 // We MUST NEVER completely surpress this warning, else it's a violation of the ag-grid license
 const __INTERNAL__original_console_error = console.error; // eslint-disable-line no-console
-// eslint-disable-next-line no-process-env
-if (process.env.NODE_ENV === 'development') {
-  // eslint-disable-next-line no-console
-  console.error = (message?: unknown, ...optionalParams: unknown[]): void => {
-    console.log(message); // eslint-disable-line no-console
-  };
-}
+// eslint-disable-next-line no-console
+console.error = (message?: unknown): void => {
+  console.log(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
+};
 
 export const DataCubeGrid = observer(() => {
   const replStore = useREPLStore();
   const dataCubeState = replStore.dataCubeState;
+  const grid = dataCubeState.grid;
+
+  const [scrollHintText, setScrollHintText] = useState('');
 
   useEffect(() => {
-    if (dataCubeState.grid.clientLicenseKey) {
-      LicenseManager.setLicenseKey(dataCubeState.grid.clientLicenseKey);
+    if (grid.clientLicenseKey) {
+      LicenseManager.setLicenseKey(grid.clientLicenseKey);
     }
-  }, [dataCubeState.grid.clientLicenseKey]);
+  }, [grid.clientLicenseKey]);
 
   return (
-    <>
-      <AgGridReact
-        className="ag-theme-balham data-cube-grid"
-        modules={[
-          // community
-          ClientSideRowModelModule,
-          // enterprise
-          ServerSideRowModelModule,
-          RowGroupingModule,
-          MenuModule,
-        ]}
-        onGridReady={(params): void => {
-          dataCubeState.grid.configureClient(params.api);
-          // eslint-disable-next-line no-process-env
-          if (process.env.NODE_ENV === 'development') {
+    <div className="flex-1">
+      <div className="h-[calc(100%_-_20px)] w-full">
+        <AgGridReact
+          className="ag-theme-balham"
+          modules={[
+            // community
+            ClientSideRowModelModule,
+            // enterprise
+            ServerSideRowModelModule,
+            RowGroupingModule,
+            MenuModule,
+          ]}
+          onGridReady={(params): void => {
+            grid.configureClient(params.api);
             console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
-          }
-        }}
-        // -------------------------------------- GENERIC --------------------------------------
-        suppressBrowserResizeObserver={true}
-        animateRows={false} // improve performance
-        rowHeight={20}
-        headerHeight={24}
-        alwaysMultiSort={true} // forces multi-sorting since this is what the query supports anyway
-        suppressAggFuncInHeader={true} // keeps the column set stable even when aggregation is used
-        // -------------------------------------- ROW GROUPING --------------------------------------
-        rowGroupPanelShow="always"
-        suppressScrollOnNewData={true}
-        groupDisplayType="custom" // keeps the column set stable even when row grouping is used
-        suppressRowGroupHidesColumns={true} // keeps the column set stable even when row grouping is used
-        // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
-        rowModelType="serverSide"
-        serverSideDatasource={dataCubeState.grid.clientDataSource}
-        // TODO: @akphi - once we do pagination, we can remove reliance on this flag
-        // Otherwise if we remove this flag now, when data is more than one page or 100 rows
-        // it keeps making call to backend to fetch more data as ag-grid updates it’s request
-        // for start row and end row. This would show incorrect data as you scroll since the
-        // to the backend does not account for pagination.
-        suppressServerSideInfiniteScroll={true}
-      />
-    </>
+          }}
+          // -------------------------------------- ROW GROUPING --------------------------------------
+          rowGroupPanelShow="always"
+          suppressScrollOnNewData={true}
+          groupDisplayType="custom" // keeps the column set stable even when row grouping is used
+          suppressRowGroupHidesColumns={true} // keeps the column set stable even when row grouping is used
+          // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
+          rowModelType="serverSide"
+          serverSideDatasource={grid.clientDataSource}
+          // -------------------------------------- GENERIC --------------------------------------
+          suppressBrowserResizeObserver={true}
+          animateRows={false} // improve performance
+          // NOTE: since we shrink the spacing, more rows can be shown, as such, setting higher row
+          // buffer will improve scrolling performance, but compromise initial load and various
+          // actions performance
+          rowBuffer={INTERNAL__GRID_CLIENT_ROW_BUFFER}
+          rowHeight={INTERNAL__GRID_CLIENT_ROW_HEIGHT}
+          headerHeight={INTERNAL__GRID_CLIENT_HEADER_HEIGHT}
+          // Force multi-sorting since this is what the query supports anyway
+          alwaysMultiSort={true}
+          // Keeps the columns stable even when aggregation is used
+          suppressAggFuncInHeader={true}
+          // Show cursor position when scrolling
+          onBodyScroll={(event) => {
+            const rowCount = event.api.getDisplayedRowCount();
+            const range = event.api.getVerticalPixelRange();
+            const start = Math.max(
+              1,
+              Math.ceil(range.top / INTERNAL__GRID_CLIENT_ROW_HEIGHT) + 1,
+            );
+            const end = Math.min(
+              rowCount,
+              Math.floor(range.bottom / INTERNAL__GRID_CLIENT_ROW_HEIGHT),
+            );
+            setScrollHintText(`${start}-${end}/${rowCount}`);
+          }}
+          onBodyScrollEnd={() => setScrollHintText('')}
+        />
+      </div>
+      <div className="relative flex h-5 w-full justify-between border-b border-b-neutral-200 bg-neutral-100">
+        {Boolean(scrollHintText) && (
+          <div className="absolute -top-8 right-4 flex items-center rounded-sm border border-neutral-300 bg-neutral-100 p-1 pr-2 text-neutral-500 shadow-sm">
+            <DataCubeIcon.Scroll className="text-lg" />
+            <div className="ml-1 font-mono text-sm">{scrollHintText}</div>
+          </div>
+        )}
+        <div />
+        <div className="flex items-center">
+          <div className="select-none p-2 font-mono text-sm text-neutral-500">
+            {grid.clientDataSource.rowCount
+              ? `(${grid.clientDataSource.rowCount} rows)`
+              : ''}
+          </div>
+          <div className="h-3 w-[1px] bg-neutral-200" />
+          <button
+            className="flex h-full items-center p-2"
+            onClick={(): void =>
+              grid.setPaginationEnabled(!grid.isPaginationEnabled)
+            }
+          >
+            <Switch
+              checked={grid.isPaginationEnabled}
+              classes={{
+                root: 'p-0 w-6 h-5 flex items-center',
+                input: 'w-2',
+                checked: '!translate-x-2 ease-in-out duration-100 transition',
+                thumb: cn('w-2 h-2', {
+                  'bg-sky-600': grid.isPaginationEnabled,
+                  'bg-neutral-500': !grid.isPaginationEnabled,
+                }),
+                switchBase:
+                  'p-0.5 mt-1 translate-x-0 ease-in-out duration-100 transition',
+                track: cn('h-3 w-5 border', {
+                  '!bg-sky-100 border-sky-600': grid.isPaginationEnabled,
+                  '!bg-neutral-100 border-neutral-500':
+                    !grid.isPaginationEnabled,
+                }),
+              }}
+              disableRipple={true}
+              disableFocusRipple={true}
+            />
+            <div
+              className={cn('text-sm', {
+                'text-sky-600': grid.isPaginationEnabled,
+                'text-neutral-500': !grid.isPaginationEnabled,
+              })}
+            >
+              Pagination
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 });
