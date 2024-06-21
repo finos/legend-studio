@@ -49,7 +49,6 @@
     {
       "path": "packages/legend-extension-store-relational/tsconfig.build.json"
     },
-    { "path": "packages/legend-vscode-extension-dependencies" },
     // fixtures
     { "path": "fixtures/legend-mock-server/tsconfig.build.json" }
   ]
