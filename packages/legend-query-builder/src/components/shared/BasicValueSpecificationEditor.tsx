@@ -58,6 +58,7 @@ import {
   type ObserverContext,
   matchFunctionName,
   isSubType,
+  InstanceValue,
 } from '@finos/legend-graph';
 import {
   type DebouncedFunc,
@@ -1454,7 +1455,14 @@ export const EditableBasicValueSpecificationEditor = observer(
     ) : (
       <div className="value-spec-editor__editable__display">
         <span
-          className="value-spec-editor__editable__display editable-value"
+          className={clsx(
+            'value-spec-editor__editable__display--content editable-value',
+            {
+              'value-spec-editor__editable__display--content--error':
+                valueSpecification instanceof InstanceValue &&
+                !isValidInstanceValue(valueSpecification),
+            },
+          )}
           onClick={() => {
             setIsEditingValue(true);
           }}

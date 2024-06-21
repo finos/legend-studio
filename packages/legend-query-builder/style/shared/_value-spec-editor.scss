@@ -419,6 +419,10 @@
     }
   }
 
+  &__editable__display--content--error {
+    color: var(--color-red-200) !important;
+  }
+
   &:hover &__list-editor__preview,
   &:hover &__list-editor__edit-icon {
     background: var(--color-dark-grey-300);
