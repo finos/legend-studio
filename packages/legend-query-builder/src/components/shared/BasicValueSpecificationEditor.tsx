@@ -529,8 +529,24 @@ const NumberPrimitiveInstanceValueEditor = observer(
       }
     }, [numericValue, valueSpecification]);
 
+    const resetButtonName = `reset-${valueSpecification.hashCode}`;
+    const inputName = `input-${valueSpecification.hashCode}`;
+    const calculateButtonName = `calculate-${valueSpecification.hashCode}`;
+
+    const onBlur = (
+      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+    ): void => {
+      if (
+        event.relatedTarget?.name !== resetButtonName &&
+        event.relatedTarget?.name !== inputName &&
+        event.relatedTarget?.name !== calculateButtonName
+      ) {
+        handleBlur?.();
+      }
+    };
+
     return (
-      <div className={clsx('value-spec-editor', className)}>
+      <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
         <div className="value-spec-editor__number__input-container">
           <input
             ref={inputRef}
@@ -548,19 +564,18 @@ const NumberPrimitiveInstanceValueEditor = observer(
             inputMode="numeric"
             value={value}
             onChange={handleInputChange}
-            onBlur={() => {
-              calculateExpression();
-              handleBlur?.();
-            }}
+            onBlur={calculateExpression}
             onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
               onKeyDown(event);
               handleKeyDown?.(event);
             }}
+            name={inputName}
           />
           <div className="value-spec-editor__number__actions">
             <button
               className="value-spec-editor__number__action"
               title="Evaluate Expression (Enter)"
+              name={calculateButtonName}
               onClick={calculateExpression}
             >
               <CalculateIcon />
@@ -569,7 +584,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
         </div>
         <button
           className="value-spec-editor__reset-btn"
-          name="Reset"
+          name={resetButtonName}
           title="Reset"
           onClick={resetValue}
         >
