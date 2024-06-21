@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.14.49
+
+### Patch Changes
+
+- [#3264](https://github.com/finos/legend-studio/pull/3264) [`c6cb21e`](https://github.com/finos/legend-studio/commit/c6cb21ef2f04250dcafb915ca521ea46923f35f8) ([@travisstebbins](https://github.com/travisstebbins)) - Allow DND of projection column to post-filter panel right-side value
+
+- [#3237](https://github.com/finos/legend-studio/pull/3237) [`37a55f0`](https://github.com/finos/legend-studio/commit/37a55f0e74ca066aacf38c1800444df092f05f5f) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Enable default value flow for milestoning parameters
+
 ## 4.14.48
 
 ### Patch Changes
