@@ -1432,7 +1432,8 @@ export const EditableBasicValueSpecificationEditor = observer(
       }
     }, [isEditingValue, inputRef]);
 
-    return isEditingValue ? (
+    return isEditingValue ||
+      valueSpecification instanceof CollectionInstanceValue ? (
       <BasicValueSpecificationEditor
         valueSpecification={valueSpecification}
         setValueSpecification={setValueSpecification}
