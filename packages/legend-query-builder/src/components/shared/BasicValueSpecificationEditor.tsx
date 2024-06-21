@@ -295,9 +295,23 @@ const StringPrimitiveInstanceValueEditor = observer(
       : undefined;
     const noOptionsMessage =
       selectorConfig?.values === undefined ? (): null => null : undefined;
+    const resetButtonName = `reset-${valueSpecification.hashCode}`;
+    const inputName = `input-${valueSpecification.hashCode}`;
+
+    const onBlur = (
+      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+    ): void => {
+      if (
+        event.relatedTarget?.name !== resetButtonName &&
+        event.relatedTarget?.name !== inputName
+      ) {
+        handleBlur?.();
+      }
+      event.preventDefault();
+    };
 
     return (
-      <div className={clsx('value-spec-editor', className)}>
+      <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
         {useSelector ? (
           <CustomSelectorInput
             className="value-spec-editor__enum-selector"
@@ -319,8 +333,8 @@ const StringPrimitiveInstanceValueEditor = observer(
             hasError={!isValidInstanceValue(valueSpecification)}
             placeholder={value === '' ? '(empty)' : undefined}
             ref={ref as React.Ref<SelectComponent>}
-            onBlur={handleBlur}
             onKeyDown={handleKeyDown}
+            inputName={inputName}
           />
         ) : (
           <InputWithInlineValidation
@@ -335,13 +349,13 @@ const StringPrimitiveInstanceValueEditor = observer(
                 ? 'Invalid String value'
                 : undefined
             }
-            onBlur={handleBlur}
             onKeyDown={handleKeyDown}
+            name={inputName}
           />
         )}
         <button
           className="value-spec-editor__reset-btn"
-          name="Reset"
+          name={resetButtonName}
           title="Reset"
           onClick={resetValue}
         >
