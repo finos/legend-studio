@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.37
+
+### Patch Changes
+
+- [#3264](https://github.com/finos/legend-studio/pull/3264) [`c6cb21e`](https://github.com/finos/legend-studio/commit/c6cb21ef2f04250dcafb915ca521ea46923f35f8) ([@travisstebbins](https://github.com/travisstebbins)) - Allow PanelEntryDropZonePlaceholder to show children instead of label when dragged/dropped over
+
 ## 7.1.36
 
 ## 7.1.35
