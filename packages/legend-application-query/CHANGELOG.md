@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.5.6
+
+### Patch Changes
+
+- [#3273](https://github.com/finos/legend-studio/pull/3273) [`c1430ff`](https://github.com/finos/legend-studio/commit/c1430ff3deb14d3aa63f3897c1d48ff860c27334) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Display connection and runtime info in `About Dataspace`
+
 ## 13.5.5
 
 ## 13.5.4

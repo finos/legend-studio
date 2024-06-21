@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.17.11
+
+### Patch Changes
+
+- [#3279](https://github.com/finos/legend-studio/pull/3279) [`f314481`](https://github.com/finos/legend-studio/commit/f314481604d7e63c1570294c84a61549eb905c3d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Make store in connection metamodel optional.
+
 ## 28.17.10
 
 ## 28.17.9

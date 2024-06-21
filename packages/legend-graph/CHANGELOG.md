@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.10.4
+
+### Patch Changes
+
+- [#3279](https://github.com/finos/legend-studio/pull/3279) [`f314481`](https://github.com/finos/legend-studio/commit/f314481604d7e63c1570294c84a61549eb905c3d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Make store in connection metamodel optional.
+
 ## 31.10.3
 
 ## 31.10.2
