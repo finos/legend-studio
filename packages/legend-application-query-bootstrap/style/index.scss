@@ -1342,6 +1342,12 @@
       border: 0.1rem solid var(--color-light-grey-180);
     }
 
+    .query-builder__variables__variable__type__label--milestoning {
+      background: var(--color-orange-50);
+      color: var(--color-white);
+      border: 0.1rem solid var(--color-orange-50);
+    }
+
     .query-builder__variables__variable:hover
       .query-builder__variables__variable__action
       svg {
