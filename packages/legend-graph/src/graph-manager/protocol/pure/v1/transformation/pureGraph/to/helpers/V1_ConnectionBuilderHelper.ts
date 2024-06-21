@@ -98,12 +98,9 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
   ): Connection {
     const metamodel = new INTERNAL__UnknownConnection(
       !this.embeddedConnectionStore
-        ? this.context.resolveStore(
-            guaranteeNonNullable(
-              connection.store,
-              `Connection 'store' field is missing`,
-            ),
-          )
+        ? connection.store
+          ? this.context.resolveStore(connection.store)
+          : undefined
         : connection.store
           ? this.context.resolveStore(connection.store)
           : ((): PackageableElementReference<Store> => {

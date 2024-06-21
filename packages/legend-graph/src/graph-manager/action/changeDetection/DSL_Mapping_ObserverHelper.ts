@@ -871,8 +871,9 @@ export const observe_Abstract_Connection = (metamodel: Connection): void => {
   makeObservable(metamodel, {
     store: observable,
   });
-
-  observe_PackageableElementReference(metamodel.store);
+  if (metamodel.store) {
+    observe_PackageableElementReference(metamodel.store);
+  }
 };
 
 export const observe_ConnectionPointer = skipObserved(

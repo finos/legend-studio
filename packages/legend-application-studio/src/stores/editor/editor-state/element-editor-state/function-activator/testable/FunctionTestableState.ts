@@ -776,13 +776,13 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
         const stores = [
           ...engineRuntime.connections
             .map((e) =>
-              e.storeConnections.map((s) => s.connection.store.value).flat(),
+              e.storeConnections.map((s) => s.connection.store?.value).flat(),
             )
             .flat(),
           ...engineRuntime.connectionStores
             .map((e) => e.storePointers.map((sPt) => sPt.value))
             .flat(),
-        ];
+        ].filter(isNonNullable);
         assertTrue(Boolean(stores.length), 'No runtime store found');
         assertTrue(
           stores.length === 1,
