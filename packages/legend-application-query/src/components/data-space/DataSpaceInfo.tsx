@@ -179,19 +179,25 @@ export const QueryEditorDataspaceInfoModal = observer(
               </div>
               {connection && (
                 <>
-                  <div className="dataspace-info-modal__field">
-                    <div className="dataspace-info-modal__field__label">
-                      Store
+                  {connection.store && (
+                    <div className="dataspace-info-modal__field">
+                      <div className="dataspace-info-modal__field__label">
+                        Store
+                      </div>
+                      <div
+                        className="dataspace-info-modal__field__value  dataspace-info-modal__field__value--linkable"
+                        onClick={() => {
+                          if (connection.store) {
+                            flowResult(
+                              visitElement(connection.store.value.path),
+                            );
+                          }
+                        }}
+                      >
+                        {connection.store.value.name}
+                      </div>
                     </div>
-                    <div
-                      className="dataspace-info-modal__field__value  dataspace-info-modal__field__value--linkable"
-                      onClick={() =>
-                        flowResult(visitElement(connection.store.value.path))
-                      }
-                    >
-                      {connection.store.value.name}
-                    </div>
-                  </div>
+                  )}
                   <div className="dataspace-info-modal__field">
                     <div className="dataspace-info-modal__field__label">
                       Connection
