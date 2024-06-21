@@ -625,6 +625,9 @@ const EnumValueInstanceValueEditor = observer(
       label: value.name,
       value: value,
     }));
+    const resetButtonName = `reset-${valueSpecification.hashCode}`;
+    const inputName = `input-${valueSpecification.hashCode}`;
+
     const changeValue = (val: { value: Enum; label: string }): void => {
       instanceValue_setValue(
         valueSpecification,
@@ -633,10 +636,23 @@ const EnumValueInstanceValueEditor = observer(
         obseverContext,
       );
       setValueSpecification(valueSpecification);
+      handleBlur?.();
+    };
+
+    const onBlur = (
+      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+    ): void => {
+      if (
+        event.relatedTarget?.name !== resetButtonName &&
+        event.relatedTarget?.name !== inputName
+      ) {
+        handleBlur?.();
+      }
+      event.preventDefault();
     };
 
     return (
-      <div className={clsx('value-spec-editor', className)}>
+      <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
         <CustomSelectorInput
           className="value-spec-editor__enum-selector"
           options={options}
@@ -647,11 +663,12 @@ const EnumValueInstanceValueEditor = observer(
           }
           hasError={!isValidInstanceValue(valueSpecification)}
           placeholder="Select value"
-          onBlur={handleBlur}
+          autoFocus={true}
+          inputName={inputName}
         />
         <button
           className="value-spec-editor__reset-btn"
-          name="Reset"
+          name={resetButtonName}
           title="Reset"
           onClick={resetValue}
         >
