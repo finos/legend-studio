@@ -46,9 +46,9 @@ export abstract class Connection implements Hashable {
   /**
    * NOTE: in Pure right now, this is of type Any[1], but technically it should be a store
    */
-  store: PackageableElementReference<Store>;
+  store: PackageableElementReference<Store> | undefined;
 
-  constructor(store: PackageableElementReference<Store>) {
+  constructor(store: PackageableElementReference<Store> | undefined) {
     this.store = store;
   }
 

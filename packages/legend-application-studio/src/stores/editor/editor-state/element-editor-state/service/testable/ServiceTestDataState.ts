@@ -67,6 +67,7 @@ import {
   assertTrue,
   uuid,
   uniq,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
@@ -354,7 +355,7 @@ export class ConnectionTestDataState {
   }
 
   buildEmbeddedEditorState(): void {
-    const val = this.identifiedConnection?.connection.store.value;
+    const val = this.identifiedConnection?.connection.store?.value;
     if (
       this.embeddedEditorState.embeddedDataState instanceof
         RelationalCSVDataState &&
@@ -368,7 +369,8 @@ export class ConnectionTestDataState {
     const databases = uniq(
       this.getAllIdentifiedConnections()
         .map((idCon) => idCon.connection)
-        .flatMap((_c) => _c.store.value)
+        .flatMap((_c) => _c.store?.value)
+        .filter(isNonNullable)
         .filter(filterByType(Database))
         .map((db) => Array.from(getAllIncludedDatabases(db)))
         .flat(),

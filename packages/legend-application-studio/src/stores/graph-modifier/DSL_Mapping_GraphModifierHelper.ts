@@ -562,23 +562,25 @@ export const runtime_addIdentifiedConnection = action(
   ): void => {
     observe_IdentifiedConnection(value, observerContext);
     const store = value.connection.store;
-    const storeConnections =
-      eR.connections.find((sc) => sc.store.value === store.value) ??
-      observe_StoreConnections(new StoreConnections(store), observerContext);
-    addUniqueEntry(eR.connections, storeConnections);
-    assertTrue(
-      !storeConnections.storeConnections
-        .map((connection) => connection.id)
-        .includes(value.id),
-      `Can't add identified connection as a connection with the same ID '${value.id} already existed'`,
-    );
-    addUniqueEntry(storeConnections.storeConnections, value);
+    if (store) {
+      const storeConnections =
+        eR.connections.find((sc) => sc.store.value === store.value) ??
+        observe_StoreConnections(new StoreConnections(store), observerContext);
+      addUniqueEntry(eR.connections, storeConnections);
+      assertTrue(
+        !storeConnections.storeConnections
+          .map((connection) => connection.id)
+          .includes(value.id),
+        `Can't add identified connection as a connection with the same ID '${value.id} already existed'`,
+      );
+      addUniqueEntry(storeConnections.storeConnections, value);
+    }
   },
 );
 export const runtime_deleteIdentifiedConnection = action(
   (eR: EngineRuntime, value: IdentifiedConnection): void => {
     const storeConnections = eR.connections.find(
-      (sc) => sc.store.value === value.connection.store.value,
+      (sc) => sc.store.value === value.connection.store?.value,
     );
     if (storeConnections) {
       deleteEntry(storeConnections.storeConnections, value);
