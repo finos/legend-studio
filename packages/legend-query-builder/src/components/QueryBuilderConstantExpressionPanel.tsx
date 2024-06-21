@@ -43,7 +43,6 @@ import {
   isValidIdentifier,
   InstanceValue,
 } from '@finos/legend-graph';
-import { deepClone } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
@@ -52,7 +51,10 @@ import {
   QueryBuilderCalculatedConstantExpressionState,
   cloneQueryBuilderConstantLambdaEditorState,
 } from '../stores/QueryBuilderConstantsState.js';
-import { buildDefaultInstanceValue } from '../stores/shared/ValueSpecificationEditorHelper.js';
+import {
+  buildDefaultInstanceValue,
+  cloneValueSpecification,
+} from '../stores/shared/ValueSpecificationEditorHelper.js';
 import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
@@ -104,7 +106,9 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
 
     // Value
     const stateValue = constantState.value;
-    const [selectedValue, setSelectedValue] = useState(deepClone(stateValue));
+    const [selectedValue, setSelectedValue] = useState(
+      cloneValueSpecification(stateValue, queryBuilderState.observerContext),
+    );
     const [shouldFocusOnValue, setShouldFocusOnValue] =
       useState<boolean>(!isCreating);
     const handleValueInputRef = useCallback(
@@ -259,7 +263,12 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
                 <BasicValueSpecificationEditor
                   valueSpecification={selectedValue}
                   setValueSpecification={(val: ValueSpecification): void => {
-                    setSelectedValue(deepClone(val));
+                    setSelectedValue(
+                      cloneValueSpecification(
+                        val,
+                        queryBuilderState.observerContext,
+                      ),
+                    );
                   }}
                   graph={queryBuilderState.graphManagerState.graph}
                   obseverContext={queryBuilderState.observerContext}

@@ -116,6 +116,15 @@
 
     width: 100%;
     height: 100%;
+
+    .dnd__entry-dropzone__placeholder--active
+      .query-builder-post-filter-tree__condition-node {
+      padding: 0;
+    }
+  }
+
+  &__node__drop-zone-placeholder {
+    height: fit-content;
   }
 
   &__group-node {
@@ -192,6 +201,7 @@
 
     width: 100%;
     height: 100%;
+    padding: 0 0.2rem;
 
     &__property {
       @include flexVCenter;
@@ -247,6 +257,15 @@
       border-radius: 0.2rem;
       font-size: 1.2rem;
       font-weight: 500;
+
+      .query-builder-post-filter-tree__condition-node__property {
+        width: 100%;
+
+        .query-builder-column-badge__property__info {
+          width: 2rem;
+          margin: 0;
+        }
+      }
     }
   }
 }
@@ -309,24 +328,25 @@
     margin: 0.3rem;
 
     svg {
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       color: var(--color-light-grey-400);
     }
   }
 
   &__action {
-    width: 4.6rem;
-    min-width: 4.6rem;
-    height: 2.2rem;
-    line-height: 2.2rem;
-    font-weight: 700;
-    font-size: 1rem;
-    font-family: 'Roboto Mono', monospace;
-    color: var(--color-light-grey-200);
-    background: var(--color-dark-shade-230);
+    @include flexCenter;
 
-    &:hover {
-      color: var(--color-light-grey-50);
+    height: 2.2rem;
+    width: 2.2rem;
+    margin-right: 0.5rem;
+
+    svg {
+      font-size: 1.8rem;
+      color: var(--color-light-grey-400);
+    }
+
+    &:hover svg {
+      color: var(--color-light-grey-200);
     }
   }
 

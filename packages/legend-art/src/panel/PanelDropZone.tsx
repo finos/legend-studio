@@ -115,8 +115,16 @@ export const PanelEntryDropZonePlaceholder: React.FC<{
   label?: string;
   isDragOver: boolean;
   isDroppable?: boolean | undefined;
+  alwaysShowChildren?: boolean;
 }> = (props) => {
-  const { children, label, isDragOver, isDroppable, className } = props;
+  const {
+    children,
+    label,
+    isDragOver,
+    isDroppable,
+    className,
+    alwaysShowChildren,
+  } = props;
   if (isDragOver || isDroppable) {
     return (
       <div
@@ -129,10 +137,19 @@ export const PanelEntryDropZonePlaceholder: React.FC<{
           },
         ])}
       >
-        <div className="dnd__entry-dropzone__placeholder__content">
-          <div className="dnd__entry-dropzone__placeholder__label">
-            {label ?? ''}
-          </div>
+        <div
+          className={clsx('dnd__entry-dropzone__placeholder__content', {
+            'dnd__entry-dropzone__placeholder__content--children':
+              alwaysShowChildren,
+          })}
+        >
+          {alwaysShowChildren ? (
+            <>{children}</>
+          ) : (
+            <div className="dnd__entry-dropzone__placeholder__label">
+              {label ?? ''}
+            </div>
+          )}
         </div>
       </div>
     );

@@ -46,6 +46,7 @@ import {
 import {
   Randomizer,
   UnsupportedOperationError,
+  deepClone,
   returnUndefOnError,
 } from '@finos/legend-shared';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationHelper.js';
@@ -82,6 +83,16 @@ export const buildPrimitiveInstanceValue = (
   );
   instanceValue_setValues(instance, [value], observerContext);
   return instance;
+};
+
+export const cloneValueSpecification = (
+  valueSpecification: ValueSpecification,
+  observerContext: ObserverContext,
+): ValueSpecification => {
+  const copy = deepClone(valueSpecification);
+  copy.genericType = valueSpecification.genericType;
+  copy.multiplicity = valueSpecification.multiplicity;
+  return copy;
 };
 
 export const createMockPrimitiveValueSpecification = (
