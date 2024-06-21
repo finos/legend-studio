@@ -306,6 +306,7 @@ export const getValueSpecificationStringValue = (
     LegendApplicationConfig,
     LegendApplicationPluginManager<LegendApplicationPlugin>
   >,
+  omitEnumOwnerName?: boolean,
 ): string | undefined => {
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     if (
@@ -319,6 +320,9 @@ export const getValueSpecificationStringValue = (
     return valueSpecification.values[0]?.toString();
   } else if (valueSpecification instanceof EnumValueInstanceValue) {
     const _enum = valueSpecification.values[0];
+    if (omitEnumOwnerName) {
+      return _enum?.value.name;
+    }
     return `${_enum?.ownerReference.value.name}.${_enum?.value.name}`;
   } else if (valueSpecification instanceof VariableExpression) {
     return valueSpecification.name;

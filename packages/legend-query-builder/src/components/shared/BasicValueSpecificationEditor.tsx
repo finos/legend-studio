@@ -1462,6 +1462,7 @@ export const EditableBasicValueSpecificationEditor = observer(
           {getValueSpecificationStringValue(
             valueSpecification,
             applicationStore,
+            true,
           )}
           &quot;
         </span>
