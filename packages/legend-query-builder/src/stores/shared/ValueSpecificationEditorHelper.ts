@@ -42,6 +42,7 @@ import {
   CORE_PURE_PATH,
   buildRawLambdaFromLambdaFunction,
   getValueSpecificationReturnType,
+  isSubType,
 } from '@finos/legend-graph';
 import {
   Randomizer,
@@ -58,6 +59,14 @@ import {
   QUERY_BUILDER_PURE_PATH,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
 } from '../../graph/QueryBuilderMetaModelConst.js';
+import { buildDatePickerOption } from '../../components/shared/CustomDatePicker.js';
+import type {
+  ApplicationStore,
+  LegendApplicationConfig,
+  LegendApplicationPlugin,
+  LegendApplicationPluginManager,
+} from '@finos/legend-application';
+import { isUsedDateFunctionSupportedInFormMode } from '../QueryBuilderStateBuilder.js';
 
 export const createSupportedFunctionExpression = (
   supportedFuncName: string,
@@ -293,8 +302,20 @@ export const generateVariableExpressionMockValue = (
 
 export const getValueSpecificationStringValue = (
   valueSpecification: ValueSpecification,
+  applicationStore: ApplicationStore<
+    LegendApplicationConfig,
+    LegendApplicationPluginManager<LegendApplicationPlugin>
+  >,
 ): string | undefined => {
   if (valueSpecification instanceof PrimitiveInstanceValue) {
+    if (
+      isSubType(
+        valueSpecification.genericType.value.rawType,
+        PrimitiveType.DATE,
+      )
+    ) {
+      return buildDatePickerOption(valueSpecification, applicationStore).label;
+    }
     return valueSpecification.values[0]?.toString();
   } else if (valueSpecification instanceof EnumValueInstanceValue) {
     const _enum = valueSpecification.values[0];
@@ -302,12 +323,27 @@ export const getValueSpecificationStringValue = (
   } else if (valueSpecification instanceof VariableExpression) {
     return valueSpecification.name;
   } else if (valueSpecification instanceof INTERNAL__PropagatedValue) {
-    return getValueSpecificationStringValue(valueSpecification.getValue());
+    return getValueSpecificationStringValue(
+      valueSpecification.getValue(),
+      applicationStore,
+    );
   } else if (valueSpecification instanceof SimpleFunctionExpression) {
+    if (
+      valueSpecification.genericType?.value.rawType !== undefined &&
+      isSubType(
+        valueSpecification.genericType.value.rawType,
+        PrimitiveType.DATE,
+      ) &&
+      isUsedDateFunctionSupportedInFormMode(valueSpecification)
+    ) {
+      return buildDatePickerOption(valueSpecification, applicationStore).label;
+    }
     return valueSpecification.functionName;
   } else if (valueSpecification instanceof CollectionInstanceValue) {
     return valueSpecification.values
-      .map(getValueSpecificationStringValue)
+      .map((valueSpec) =>
+        getValueSpecificationStringValue(valueSpec, applicationStore),
+      )
       .join(',');
   }
   return undefined;

@@ -699,7 +699,9 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       { label: string; value: string }[]
     >(
       valueSpecification.values
-        .map((valueSpec) => getValueSpecificationStringValue(valueSpec))
+        .map((valueSpec) =>
+          getValueSpecificationStringValue(valueSpec, applicationStore),
+        )
         .filter(isNonEmptyString)
         .map((value) => ({
           label: value,
@@ -734,7 +736,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       value: ValueSpecification,
     ): { label: string; value: string } => {
       const stringValue = guaranteeNonNullable(
-        getValueSpecificationStringValue(value),
+        getValueSpecificationStringValue(value, applicationStore),
       );
       return {
         label: stringValue,
@@ -763,10 +765,11 @@ const PrimitiveCollectionInstanceValueEditor = observer(
 
         if (
           newValueSpec === null ||
-          getValueSpecificationStringValue(newValueSpec) === undefined ||
+          getValueSpecificationStringValue(newValueSpec, applicationStore) ===
+            undefined ||
           isValueAlreadySelected(
             guaranteeNonNullable(
-              getValueSpecificationStringValue(newValueSpec),
+              getValueSpecificationStringValue(newValueSpec, applicationStore),
             ),
           )
         ) {
@@ -876,7 +879,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
               observerContext,
             );
             return newValueSpec
-              ? getValueSpecificationStringValue(newValueSpec)
+              ? getValueSpecificationStringValue(newValueSpec, applicationStore)
               : null;
           })
           .filter(isNonNullable),
@@ -1416,6 +1419,7 @@ export const EditableBasicValueSpecificationEditor = observer(
       isConstant,
       initializeAsEditable,
     } = props;
+    const applicationStore = useApplicationStore();
 
     const [isEditingValue, setIsEditingValue] = useState(
       initializeAsEditable ?? false,
@@ -1454,7 +1458,12 @@ export const EditableBasicValueSpecificationEditor = observer(
             setIsEditingValue(true);
           }}
         >
-          &quot;{getValueSpecificationStringValue(valueSpecification)}&quot;
+          &quot;
+          {getValueSpecificationStringValue(
+            valueSpecification,
+            applicationStore,
+          )}
+          &quot;
         </span>
       </div>
     );
