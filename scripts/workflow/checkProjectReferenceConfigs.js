@@ -26,7 +26,10 @@ console.log(
 
 checkProjectReferenceConfig({
   rootDir: resolve(__dirname, '../../'),
-  excludeReferencePatterns: ['**/tsconfig.package.json'],
+  excludeReferencePatterns: [
+    '**/tsconfig.package.json',
+    '**/tsconfig.grammar.json',
+  ],
 });
 
 console.log(
@@ -40,5 +43,8 @@ checkProjectReferenceConfig({
     '@finos/legend-manual-tests',
     '@finos/legend-application-*-deployment',
   ],
-  excludeReferencePatterns: ['**/tsconfig.package.json'],
+  excludeReferencePatterns: [
+    '**/tsconfig.package.json',
+    '**/tsconfig.grammar.json',
+  ],
 });
