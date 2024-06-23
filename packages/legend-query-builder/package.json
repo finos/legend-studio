@@ -57,13 +57,13 @@
     "mathjs": "13.0.0",
     "mobx": "6.12.4",
     "mobx-react-lite": "4.0.7",
-    "monaco-editor": "0.49.0",
+    "monaco-editor": "0.50.0",
     "react": "18.3.1",
     "react-chartjs-2": "5.2.0",
     "react-dnd": "16.0.1",
     "react-dom": "18.3.1",
     "serializr": "3.0.2",
-    "sql-formatter": "15.3.1"
+    "sql-formatter": "15.3.2"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
@@ -74,7 +74,7 @@
     "npm-run-all": "4.1.5",
     "rimraf": "5.0.7",
     "sass": "1.77.6",
-    "typescript": "5.4.5"
+    "typescript": "5.5.2"
   },
   "peerDependencies": {
     "react": "^18.0.0"
