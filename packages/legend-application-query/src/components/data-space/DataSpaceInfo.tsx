@@ -167,7 +167,7 @@ export const QueryEditorDataspaceInfoModal = observer(
                   Runtime
                 </div>
                 <div
-                  className="dataspace-info-modal__field__value  dataspace-info-modal__field__value--linkable"
+                  className="dataspace-info-modal__field__value dataspace-info-modal__field__value--linkable"
                   onClick={() =>
                     flowResult(
                       visitElement(executionContext.defaultRuntime.value.path),

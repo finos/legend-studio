@@ -74,6 +74,9 @@ export const DataCubeGrid = observer(() => {
           suppressScrollOnNewData={true}
           groupDisplayType="custom" // keeps the column set stable even when row grouping is used
           suppressRowGroupHidesColumns={true} // keeps the column set stable even when row grouping is used
+          // -------------------------------------- PIVOT --------------------------------------
+          // pivotPanelShow="always"
+          // pivotMode={true}
           // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
           rowModelType="serverSide"
           serverSideDatasource={grid.clientDataSource}

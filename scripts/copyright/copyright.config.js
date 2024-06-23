@@ -22,7 +22,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default {
   extensions: ['js', 'ts', 'tsx', 'css', 'scss'],
-  excludePatterns: [],
+  excludePatterns: [
+    'packages/legend-application-repl/grammar/parser/generated/*',
+  ],
   copyrightText: readFileSync(resolve(__dirname, './COPYRIGHT_HEADER.txt'), {
     encoding: 'utf-8',
   }),

@@ -18,6 +18,7 @@ Thumbs.db
 npm-debug.log
 npm-debug.log*
 yarn-error.log*
+**/.antlr
 /build/
 /packages/*/build/
 /packages/*/dist/

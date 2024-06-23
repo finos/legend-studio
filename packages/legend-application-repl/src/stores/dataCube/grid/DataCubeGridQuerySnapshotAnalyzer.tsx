@@ -28,13 +28,7 @@ import {
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
 } from '../core/DataCubeQuerySnapshot.js';
-import type {
-  ColDef,
-  ColGroupDef,
-  GridOptions,
-  ICellRendererParams,
-  IGroupCellRendererParams,
-} from '@ag-grid-community/core';
+import type { ColDef, ColGroupDef, GridOptions } from '@ag-grid-community/core';
 import {
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
   GridClientAggregateOperation,
@@ -146,18 +140,30 @@ export function generateGridOptionsFromSnapshot(
         headerName: '',
         colId: INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
         cellRenderer: 'agGroupCellRenderer',
-        cellRendererParams: {
-          innerRenderer: (params: ICellRendererParams) => {
-            // console.log(params);
-            // TODO: @akphi - add count
-            return params.value;
-          },
-          suppressCount: true,
-        } satisfies IGroupCellRendererParams,
+        // cellRendererParams: {
+        //   innerRenderer: (params: ICellRendererParams) => (
+        //     <>
+        //       <span>{params.value}</span>
+        //       {Boolean(
+        //         params.data[
+        //           INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID
+        //         ],
+        //       ) && (
+        //         <span>{`(${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID]})`}</span>
+        //       )}
+        //     </>
+        //   ),
+        //   suppressCount: true,
+        // } satisfies IGroupCellRendererParams,
         showRowGroup: true,
         hide: !snapshot.data.groupBy,
         lockPinned: true,
         lockPosition: true,
+        cellStyle: {
+          flex: 1,
+          'justify-content': 'space-between',
+          display: 'flex',
+        },
       } satisfies ColDef,
       ...data.selectColumns.map(
         (col) =>
@@ -170,10 +176,10 @@ export function generateGridOptionsFromSnapshot(
             resizable: true,
             minWidth: 50,
 
-            sortable: true, // if this is pivot column, not sorting is allowed
+            sortable: true, // if this is pivot column, no sorting is allowed
             enableRowGroup: true,
             enableValue: true,
-            menuTabs: ['generalMenuTab', 'columnsMenuTab'], //
+            menuTabs: ['generalMenuTab', 'columnsMenuTab'],
             ..._sortSpec(snapshot, col.name),
             ..._rowGroupSpec(snapshot, col.name),
           }) satisfies ColDef | ColGroupDef,
