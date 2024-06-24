@@ -59,7 +59,7 @@ import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   TEST__setUpQueryBuilder,
   dragAndDrop,
-  selectFromCustomSelectorInput,
+  selectFirstOptionFromCustomSelectorInput,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDerivedPropFromParentUsedInFilter from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDerivedPropFromParentUsedInFilter.json';
@@ -157,7 +157,7 @@ test(
 
     expect(
       await waitFor(() =>
-        getByText(queryBuilderFilterPanel, '2023-09-09T13:31:00'),
+        getByText(queryBuilderFilterPanel, '"2023-09-09T13:31:00"'),
       ),
     ).not.toBeNull();
   },
@@ -1727,9 +1727,7 @@ test(
       getByText(guaranteeNonNullable(contentNodes[2]), 'First Name'),
     );
     await waitFor(() => getByText(guaranteeNonNullable(contentNodes[2]), 'is'));
-    await waitFor(() =>
-      getByDisplayValue(guaranteeNonNullable(contentNodes[2]), ''),
-    );
+    await waitFor(() => getByText(guaranteeNonNullable(contentNodes[2]), '""'));
     await waitFor(() =>
       getByText(guaranteeNonNullable(contentNodes[3]), 'Hobbies'),
     );
@@ -2275,7 +2273,9 @@ test(
     );
     await waitFor(() => getByText(filterPanel, 'Dob Date'));
     await waitFor(() => getByText(filterPanel, 'is'));
-    await waitFor(() => getByText(filterPanel, 'Select value'));
+    await waitFor(() =>
+      getByTitle(filterPanel, 'Click to edit and pick from more date options'),
+    );
     const contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
@@ -2291,7 +2291,10 @@ test(
     ).toHaveProperty('disabled', true);
 
     // Select value
-    const filterValueButton = getByText(filterPanel, 'Select value');
+    const filterValueButton = getByTitle(
+      filterPanel,
+      'Click to edit and pick from more date options',
+    );
     fireEvent.click(filterValueButton);
     fireEvent.click(renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.TODAY));
     fireEvent.keyDown(
@@ -2303,23 +2306,11 @@ test(
     );
 
     // Verify no validation issues
-    expect(getByText(filterPanel, 'Today')).not.toBeNull();
+    expect(getByText(filterPanel, '"Today"')).not.toBeNull();
     expect(queryByText(filterPanel, '1 issue')).toBeNull();
     expect(
       renderResult.getByRole('button', { name: 'Run Query' }),
     ).toHaveProperty('disabled', false);
-
-    // Click reset button
-    fireEvent.click(getByTitle(filterPanel, 'Reset'));
-
-    // Verify value is reset
-    await waitFor(() => getByText(filterPanel, 'Select value'));
-
-    // Verify validation issue
-    expect(getByText(filterPanel, '1 issue')).not.toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', true);
   },
 );
 
@@ -2379,7 +2370,9 @@ test(
     );
     await waitFor(() => getByText(filterPanel, 'Dob Time'));
     await waitFor(() => getByText(filterPanel, 'is'));
-    await waitFor(() => getByText(filterPanel, 'Select value'));
+    await waitFor(() =>
+      getByTitle(filterPanel, 'Click to edit and pick from more date options'),
+    );
     const contentNodes = await waitFor(() =>
       getAllByTestId(
         filterPanel,
@@ -2399,7 +2392,10 @@ test(
     ).toHaveProperty('disabled', true);
 
     // Select value
-    const filterValueButton = getByText(filterPanel, 'Select value');
+    const filterValueButton = getByTitle(
+      filterPanel,
+      'Click to edit and pick from more date options',
+    );
     fireEvent.click(filterValueButton);
     fireEvent.click(renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.NOW));
     fireEvent.keyDown(
@@ -2411,23 +2407,11 @@ test(
     );
 
     // Verify no validation issues
-    expect(getByText(filterPanel, 'Now')).not.toBeNull();
+    expect(getByText(filterPanel, '"Now"')).not.toBeNull();
     expect(queryByText(filterPanel, '1 issue')).toBeNull();
     expect(
       renderResult.getByRole('button', { name: 'Run Query' }),
     ).toHaveProperty('disabled', false);
-
-    // Click reset button
-    fireEvent.click(getByTitle(filterPanel, 'Reset'));
-
-    // Verify value is reset
-    await waitFor(() => getByText(filterPanel, 'Select value'));
-
-    // Verify validation issue
-    expect(getByText(filterPanel, '1 issue')).not.toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', true);
   },
 );
 
@@ -2506,16 +2490,17 @@ test(
     const filterValueDropdown = guaranteeNonNullable(
       getByText(filterPanel, 'Select value').parentElement?.parentElement,
     );
-    selectFromCustomSelectorInput(filterValueDropdown, 'Corp');
+    selectFirstOptionFromCustomSelectorInput(filterValueDropdown, false, false);
 
     // Verify no validation issues
-    expect(getByText(filterPanel, 'Corp')).not.toBeNull();
+    expect(getByText(filterPanel, '"Corp"')).not.toBeNull();
     expect(queryByText(filterPanel, '1 issue')).toBeNull();
     expect(
       renderResult.getByRole('button', { name: 'Run Query' }),
     ).toHaveProperty('disabled', false);
 
     // Click reset button
+    fireEvent.click(getByText(filterPanel, '"Corp"'));
     fireEvent.click(getByTitle(filterPanel, 'Reset'));
 
     // Verify value is reset

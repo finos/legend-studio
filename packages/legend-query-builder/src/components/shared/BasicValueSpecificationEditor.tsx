@@ -1489,14 +1489,21 @@ export const EditableBasicValueSpecificationEditor = observer(
       }
     }, [isEditingValue, inputRef]);
 
-    const shouldRenderEditor =
-      isEditingValue ||
-      valueSpecification instanceof CollectionInstanceValue ||
-      (valueSpecification.genericType?.value.rawType !== undefined &&
-        isSubType(
+    const editableDisplayValueSupported =
+      (valueSpecification instanceof PrimitiveInstanceValue &&
+        !isSubType(
           valueSpecification.genericType.value.rawType,
           PrimitiveType.DATE,
-        ));
+        )) ||
+      valueSpecification instanceof EnumValueInstanceValue;
+
+    const shouldRenderEditor = isEditingValue || !editableDisplayValueSupported;
+
+    const valueSpecStringValue = getValueSpecificationStringValue(
+      valueSpecification,
+      applicationStore,
+      true,
+    );
 
     return shouldRenderEditor ? (
       <BasicValueSpecificationEditor
@@ -1532,13 +1539,7 @@ export const EditableBasicValueSpecificationEditor = observer(
             setIsEditingValue(true);
           }}
         >
-          &quot;
-          {getValueSpecificationStringValue(
-            valueSpecification,
-            applicationStore,
-            true,
-          )}
-          &quot;
+          {`"${valueSpecStringValue !== undefined ? valueSpecStringValue : ''}"`}
         </span>
       </div>
     );
