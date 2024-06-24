@@ -16,6 +16,7 @@
     "changeset": "node ./scripts/workflow/generateChangeset.js",
     "changeset:branch": "node ./scripts/workflow/generateChangeset.js --branch",
     "changeset:cli": "changeset",
+    "changeset:uptick": "node ./scripts/workflow/generateUptickVersionChangeset.js",
     "check:changeset": "node ./scripts/workflow/checkChangesets.js",
     "check:ci": "yarn check:pkg && yarn check:ts && yarn check:format && yarn check:copyright && yarn check:changeset",
     "check:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js",

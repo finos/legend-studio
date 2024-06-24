@@ -17,6 +17,12 @@
 import { generateChangeset } from '@finos/legend-dev-utils/ChangesetUtils';
 import { execSync } from 'child_process';
 import chalk from 'chalk';
+import * as yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+import semver from 'semver';
+import inquirer from 'inquirer';
+
+const argv = yargs.default(hideBin(process.argv)).argv;
 
 /**
  * NOTE: when we generate changeset, we want to use `master` branch as the reference point
@@ -35,14 +41,6 @@ import chalk from 'chalk';
  *
  * Of course, we can allow a workaround for people who work directly `master` branch.
  */
-
-import * as yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
-import semver from 'semver';
-import inquirer from 'inquirer';
-
-const argv = yargs.default(hideBin(process.argv)).argv;
-
 const DEFAULT_BRANCH_NAME = 'master';
 const useOrigin = argv.useOrigin;
 const generateForBranch = argv.branch;

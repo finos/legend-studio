@@ -196,6 +196,28 @@ export async function generateChangeset(cwd, message, sinceRef) {
   info(chalk.blue(resolve(resolve(cwd, '.changeset'), `${changesetID}.md`)));
 }
 
+export async function generateUptickChangeset(cwd) {
+  const packages = await getPackages(cwd);
+  const config = await read(cwd, packages);
+  const allPublishablePackages = packages.packages
+    .filter((pkg) => isListablePackage(config, pkg))
+    .map((pkg) => pkg.packageJson.name);
+  const newChangeset = {
+    releases: allPublishablePackages.map((pkgName) => ({
+      name: pkgName,
+      type: 'patch',
+    })),
+    summary: '',
+  };
+  const changesetID = await writeChangeset(newChangeset, cwd);
+  log(
+    chalk.green(
+      'Successfully generated version uptick changeset! If you want to modify or expand on the changeset summary, you can find it here:',
+    ),
+  );
+  info(chalk.blue(resolve(resolve(cwd, '.changeset'), `${changesetID}.md`)));
+}
+
 export async function getNextReleasePlan(cwd) {
   const packages = await getPackages(cwd);
   const config = await read(cwd, packages);
