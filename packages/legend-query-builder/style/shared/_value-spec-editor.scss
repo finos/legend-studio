@@ -125,6 +125,10 @@
       }
     }
 
+    &__editable__display--content--error {
+      color: var(--color-red-200) !important;
+    }
+
     &__options {
       min-width: 29rem;
 
