@@ -229,7 +229,7 @@ const StringPrimitiveInstanceValueEditor = observer(
       setValueSpecification: (val: ValueSpecification) => void;
       resetValue: () => void;
       selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
-      obseverContext: ObserverContext;
+      observerContext: ObserverContext;
       handleBlur?: (() => void) | undefined;
       handleKeyDown?:
         | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
@@ -242,7 +242,7 @@ const StringPrimitiveInstanceValueEditor = observer(
       resetValue,
       setValueSpecification,
       selectorConfig,
-      obseverContext,
+      observerContext,
       handleBlur,
       handleKeyDown,
     } = props;
@@ -250,7 +250,7 @@ const StringPrimitiveInstanceValueEditor = observer(
     const applicationStore = useApplicationStore();
     const value = valueSpecification.values[0] as string | null;
     const updateValueSpec = (val: string): void => {
-      instanceValue_setValue(valueSpecification, val, 0, obseverContext);
+      instanceValue_setValue(valueSpecification, val, 0, observerContext);
       setValueSpecification(valueSpecification);
     };
     const changeInputValue: React.ChangeEventHandler<HTMLInputElement> = (
@@ -372,18 +372,18 @@ const BooleanPrimitiveInstanceValueEditor = observer(
     className?: string | undefined;
     resetValue: () => void;
     setValueSpecification: (val: ValueSpecification) => void;
-    obseverContext: ObserverContext;
+    observerContext: ObserverContext;
   }) => {
     const {
       valueSpecification,
       className,
       resetValue,
       setValueSpecification,
-      obseverContext,
+      observerContext,
     } = props;
     const value = valueSpecification.values[0] as boolean;
     const toggleValue = (): void => {
-      instanceValue_setValue(valueSpecification, !value, 0, obseverContext);
+      instanceValue_setValue(valueSpecification, !value, 0, observerContext);
       setValueSpecification(valueSpecification);
     };
 
@@ -419,7 +419,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
       className?: string | undefined;
       resetValue: () => void;
       setValueSpecification: (val: ValueSpecification) => void;
-      obseverContext: ObserverContext;
+      observerContext: ObserverContext;
       handleBlur?: (() => void) | undefined;
       handleKeyDown?:
         | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
@@ -432,7 +432,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
       className,
       resetValue,
       setValueSpecification,
-      obseverContext,
+      observerContext,
       handleBlur,
       handleKeyDown,
     } = props;
@@ -462,7 +462,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
             valueSpecification,
             parsedValue,
             0,
-            obseverContext,
+            observerContext,
           );
           setValueSpecification(valueSpecification);
         }
@@ -601,7 +601,7 @@ const EnumValueInstanceValueEditor = observer(
     className?: string | undefined;
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
-    obseverContext: ObserverContext;
+    observerContext: ObserverContext;
     handleBlur?: (() => void) | undefined;
   }) => {
     const {
@@ -609,7 +609,7 @@ const EnumValueInstanceValueEditor = observer(
       className,
       resetValue,
       setValueSpecification,
-      obseverContext,
+      observerContext,
       handleBlur,
     } = props;
     const applicationStore = useApplicationStore();
@@ -633,7 +633,7 @@ const EnumValueInstanceValueEditor = observer(
         valueSpecification,
         EnumValueExplicitReference.create(val.value),
         0,
-        obseverContext,
+        observerContext,
       );
       setValueSpecification(valueSpecification);
       handleBlur?.();
@@ -1086,7 +1086,7 @@ const CollectionValueInstanceValueEditor = observer(
     resetValue: () => void;
     setValueSpecification: (val: ValueSpecification) => void;
     selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
-    obseverContext: ObserverContext;
+    observerContext: ObserverContext;
   }) => {
     const {
       valueSpecification,
@@ -1095,7 +1095,7 @@ const CollectionValueInstanceValueEditor = observer(
       resetValue,
       setValueSpecification,
       selectorConfig,
-      obseverContext,
+      observerContext,
     } = props;
 
     const [editable, setEditable] = useState(false);
@@ -1128,7 +1128,7 @@ const CollectionValueInstanceValueEditor = observer(
             {expectedType instanceof Enumeration ? (
               <EnumCollectionInstanceValueEditor
                 valueSpecification={valueSpecification}
-                observerContext={obseverContext}
+                observerContext={observerContext}
                 saveEdit={saveEdit}
               />
             ) : (
@@ -1137,7 +1137,7 @@ const CollectionValueInstanceValueEditor = observer(
                 expectedType={expectedType}
                 saveEdit={saveEdit}
                 selectorConfig={selectorConfig}
-                observerContext={obseverContext}
+                observerContext={observerContext}
               />
             )}
             <button
@@ -1182,7 +1182,7 @@ const DateInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue | SimpleFunctionExpression;
     graph: PureModel;
-    obseverContext: ObserverContext;
+    observerContext: ObserverContext;
     typeCheckOption: TypeCheckOption;
     className?: string | undefined;
     setValueSpecification: (val: ValueSpecification) => void;
@@ -1194,7 +1194,7 @@ const DateInstanceValueEditor = observer(
       valueSpecification,
       setValueSpecification,
       graph,
-      obseverContext,
+      observerContext,
       typeCheckOption,
       resetValue,
       handleBlur,
@@ -1206,7 +1206,7 @@ const DateInstanceValueEditor = observer(
         <CustomDatePicker
           valueSpecification={valueSpecification}
           graph={graph}
-          observerContext={obseverContext}
+          observerContext={observerContext}
           typeCheckOption={typeCheckOption}
           setValueSpecification={setValueSpecification}
           hasError={
@@ -1260,7 +1260,7 @@ export const BasicValueSpecificationEditor = forwardRef<
     className,
     valueSpecification,
     graph,
-    observerContext: obseverContext,
+    observerContext,
     typeCheckOption,
     setValueSpecification,
     resetValue,
@@ -1281,7 +1281,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             className={className}
             resetValue={resetValue}
             selectorConfig={selectorConfig}
-            obseverContext={obseverContext}
+            observerContext={observerContext}
             ref={ref}
             handleBlur={handleBlur}
             handleKeyDown={handleKeyDown}
@@ -1294,7 +1294,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             setValueSpecification={setValueSpecification}
             className={className}
             resetValue={resetValue}
-            obseverContext={obseverContext}
+            observerContext={observerContext}
           />
         );
       case PRIMITIVE_TYPE.NUMBER:
@@ -1310,7 +1310,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             setValueSpecification={setValueSpecification}
             className={className}
             resetValue={resetValue}
-            obseverContext={obseverContext}
+            observerContext={observerContext}
             ref={ref}
             handleBlur={handleBlur}
             handleKeyDown={handleKeyDown}
@@ -1324,7 +1324,7 @@ export const BasicValueSpecificationEditor = forwardRef<
           <DateInstanceValueEditor
             valueSpecification={valueSpecification}
             graph={graph}
-            obseverContext={obseverContext}
+            observerContext={observerContext}
             typeCheckOption={typeCheckOption}
             className={className}
             setValueSpecification={setValueSpecification}
@@ -1343,7 +1343,7 @@ export const BasicValueSpecificationEditor = forwardRef<
         className={className}
         resetValue={resetValue}
         setValueSpecification={setValueSpecification}
-        obseverContext={obseverContext}
+        observerContext={observerContext}
         handleBlur={handleBlur}
       />
     );
@@ -1363,7 +1363,7 @@ export const BasicValueSpecificationEditor = forwardRef<
         resetValue={resetValue}
         setValueSpecification={setValueSpecification}
         selectorConfig={selectorConfig}
-        obseverContext={obseverContext}
+        observerContext={observerContext}
       />
     );
   }
@@ -1382,7 +1382,7 @@ export const BasicValueSpecificationEditor = forwardRef<
       <BasicValueSpecificationEditor
         valueSpecification={valueSpecification.getValue()}
         graph={graph}
-        observerContext={obseverContext}
+        observerContext={observerContext}
         typeCheckOption={typeCheckOption}
         setValueSpecification={setValueSpecification}
         resetValue={resetValue}
@@ -1398,7 +1398,7 @@ export const BasicValueSpecificationEditor = forwardRef<
           <DateInstanceValueEditor
             valueSpecification={valueSpecification}
             graph={graph}
-            obseverContext={obseverContext}
+            observerContext={observerContext}
             typeCheckOption={typeCheckOption}
             className={className}
             setValueSpecification={setValueSpecification}
@@ -1421,7 +1421,7 @@ export const BasicValueSpecificationEditor = forwardRef<
     ) {
       const simplifiedValue = simplifyValueExpression(
         valueSpecification,
-        obseverContext,
+        observerContext,
       );
       if (
         simplifiedValue instanceof PrimitiveInstanceValue &&
@@ -1440,7 +1440,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             setValueSpecification={setValueSpecification}
             className={className}
             resetValue={resetValue}
-            obseverContext={obseverContext}
+            observerContext={observerContext}
             ref={ref}
             handleBlur={handleBlur}
             handleKeyDown={handleKeyDown}

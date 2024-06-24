@@ -376,7 +376,7 @@ export const valueSpecReturnTDS = (
 export const convertTextToPrimitiveInstanceValue = (
   expectedType: Type,
   value: string,
-  obseverContext: ObserverContext,
+  observerContext: ObserverContext,
 ): PrimitiveInstanceValue | null => {
   let result = null;
   if (expectedType instanceof PrimitiveType) {
@@ -385,7 +385,7 @@ export const convertTextToPrimitiveInstanceValue = (
         result = new PrimitiveInstanceValue(
           GenericTypeExplicitReference.create(new GenericType(expectedType)),
         );
-        instanceValue_setValues(result, [value.toString()], obseverContext);
+        instanceValue_setValues(result, [value.toString()], observerContext);
         break;
       }
       case PRIMITIVE_TYPE.NUMBER:
@@ -398,7 +398,7 @@ export const convertTextToPrimitiveInstanceValue = (
         result = new PrimitiveInstanceValue(
           GenericTypeExplicitReference.create(new GenericType(expectedType)),
         );
-        instanceValue_setValues(result, [Number(value)], obseverContext);
+        instanceValue_setValues(result, [Number(value)], observerContext);
         break;
       }
       case PRIMITIVE_TYPE.DATE:
@@ -409,7 +409,7 @@ export const convertTextToPrimitiveInstanceValue = (
         result = new PrimitiveInstanceValue(
           GenericTypeExplicitReference.create(new GenericType(expectedType)),
         );
-        instanceValue_setValues(result, [value], obseverContext);
+        instanceValue_setValues(result, [value], observerContext);
         break;
       }
       case PRIMITIVE_TYPE.DATETIME: {
@@ -425,7 +425,7 @@ export const convertTextToPrimitiveInstanceValue = (
         result = new PrimitiveInstanceValue(
           GenericTypeExplicitReference.create(new GenericType(expectedType)),
         );
-        instanceValue_setValues(result, [value], obseverContext);
+        instanceValue_setValues(result, [value], observerContext);
         break;
       }
       default:
