@@ -1,5 +1,7 @@
 # @finos/eslint-plugin-legend-studio
 
+## 2.0.73
+
 ## 2.0.72
 
 ### Patch Changes
