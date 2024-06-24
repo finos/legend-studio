@@ -1188,6 +1188,7 @@ const DateInstanceValueEditor = observer(
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
     handleBlur?: (() => void) | undefined;
+    displayAsEditableValue?: boolean | undefined;
   }) => {
     const {
       valueSpecification,
@@ -1197,6 +1198,7 @@ const DateInstanceValueEditor = observer(
       typeCheckOption,
       resetValue,
       handleBlur,
+      displayAsEditableValue,
     } = props;
 
     return (
@@ -1212,15 +1214,18 @@ const DateInstanceValueEditor = observer(
             !isValidInstanceValue(valueSpecification)
           }
           handleBlur={handleBlur}
+          displayAsEditableValue={displayAsEditableValue}
         />
-        <button
-          className="value-spec-editor__reset-btn"
-          name="Reset"
-          title="Reset"
-          onClick={resetValue}
-        >
-          <RefreshIcon />
-        </button>
+        {!displayAsEditableValue && (
+          <button
+            className="value-spec-editor__reset-btn"
+            name="Reset"
+            title="Reset"
+            onClick={resetValue}
+          >
+            <RefreshIcon />
+          </button>
+        )}
       </div>
     );
   },
@@ -1248,6 +1253,7 @@ export const BasicValueSpecificationEditor = forwardRef<
     handleKeyDown?:
       | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
       | undefined;
+    displayDateEditorAsEditableValue?: boolean | undefined;
   }
 >(function BasicValueSpecificationEditor(props, ref) {
   const {
@@ -1262,6 +1268,7 @@ export const BasicValueSpecificationEditor = forwardRef<
     isConstant,
     handleBlur,
     handleKeyDown,
+    displayDateEditorAsEditableValue,
   } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
@@ -1323,6 +1330,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             setValueSpecification={setValueSpecification}
             resetValue={resetValue}
             handleBlur={handleBlur}
+            displayAsEditableValue={displayDateEditorAsEditableValue}
           />
         );
       default:
@@ -1380,6 +1388,7 @@ export const BasicValueSpecificationEditor = forwardRef<
         resetValue={resetValue}
         handleBlur={handleBlur}
         handleKeyDown={handleKeyDown}
+        displayDateEditorAsEditableValue={displayDateEditorAsEditableValue}
       />
     );
   } else if (valueSpecification instanceof SimpleFunctionExpression) {
@@ -1395,6 +1404,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             setValueSpecification={setValueSpecification}
             resetValue={resetValue}
             handleBlur={handleBlur}
+            displayAsEditableValue={displayDateEditorAsEditableValue}
           />
         );
       } else {
@@ -1479,8 +1489,16 @@ export const EditableBasicValueSpecificationEditor = observer(
       }
     }, [isEditingValue, inputRef]);
 
-    return isEditingValue ||
-      valueSpecification instanceof CollectionInstanceValue ? (
+    const shouldRenderEditor =
+      isEditingValue ||
+      valueSpecification instanceof CollectionInstanceValue ||
+      (valueSpecification.genericType?.value.rawType !== undefined &&
+        isSubType(
+          valueSpecification.genericType.value.rawType,
+          PrimitiveType.DATE,
+        ));
+
+    return shouldRenderEditor ? (
       <BasicValueSpecificationEditor
         valueSpecification={valueSpecification}
         setValueSpecification={setValueSpecification}
@@ -1497,6 +1515,7 @@ export const EditableBasicValueSpecificationEditor = observer(
             setIsEditingValue(false);
           }
         }}
+        displayDateEditorAsEditableValue={true}
       />
     ) : (
       <div className="value-spec-editor__editable__display">

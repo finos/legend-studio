@@ -1244,6 +1244,7 @@ export const CustomDatePicker: React.FC<{
      */
     match?: boolean;
   };
+  displayAsEditableValue?: boolean | undefined;
   setValueSpecification: (val: ValueSpecification) => void;
   handleBlur?: (() => void) | undefined;
 }> = (props) => {
@@ -1254,6 +1255,7 @@ export const CustomDatePicker: React.FC<{
     observerContext,
     hasError,
     typeCheckOption,
+    displayAsEditableValue,
     handleBlur,
   } = props;
   const applicationStore = useApplicationStore();
@@ -1411,15 +1413,23 @@ export const CustomDatePicker: React.FC<{
 
   return (
     <>
-      <button
-        className={clsx('value-spec-editor__date-picker__trigger', {
-          'value-spec-editor__date-picker__trigger--error': hasError,
-        })}
-        title="Click to edit and pick from more date options"
-        onClick={openCustomDatePickerPopover}
-      >
-        {datePickerOption.label || 'Select value'}
-      </button>
+      {displayAsEditableValue ? (
+        <span
+          className="editable-value"
+          title="Click to edit and pick from more date options"
+          onClick={openCustomDatePickerPopover}
+        >{`"${datePickerOption.label || '    '}"`}</span>
+      ) : (
+        <button
+          className={clsx('value-spec-editor__date-picker__trigger', {
+            'value-spec-editor__date-picker__trigger--error': hasError,
+          })}
+          title="Click to edit and pick from more date options"
+          onClick={openCustomDatePickerPopover}
+        >
+          {datePickerOption.label || 'Select value'}
+        </button>
+      )}
       <BasePopover
         open={Boolean(anchorEl)}
         TransitionProps={{
@@ -1428,8 +1438,8 @@ export const CustomDatePicker: React.FC<{
         anchorEl={anchorEl}
         onClose={closeCustomDatePickerPopover}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
+          vertical: displayAsEditableValue ? 20 : 'bottom',
+          horizontal: displayAsEditableValue ? 50 : 'center',
         }}
         transformOrigin={{
           vertical: 'top',
