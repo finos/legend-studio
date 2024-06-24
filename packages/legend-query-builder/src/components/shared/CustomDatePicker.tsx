@@ -1418,7 +1418,13 @@ export const CustomDatePicker: React.FC<{
           className="editable-value"
           title="Click to edit and pick from more date options"
           onClick={openCustomDatePickerPopover}
-        >{`"${datePickerOption.label || '    '}"`}</span>
+        >
+          {datePickerOption.label ? (
+            `"${datePickerOption.label}"`
+          ) : (
+            <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</>
+          )}
+        </span>
       ) : (
         <button
           className={clsx('value-spec-editor__date-picker__trigger', {
