@@ -357,6 +357,7 @@ export const buildFilterTreeWithExists = (
     undefined,
     filterConditionState,
   );
+  treeNode.setIsNewlyAdded(true);
   filterState.addNodeFromNode(treeNode, parentNode);
   if (targetDropNode instanceof QueryBuilderFilterTreeBlankConditionNodeData) {
     filterState.removeNodeAndPruneBranch(targetDropNode);
@@ -518,6 +519,7 @@ const buildFilterTree = (
       undefined,
       filterConditionState,
     );
+    treeNode.setIsNewlyAdded(true);
     // Check if there are any exists node present in the parent nodes of the target.
     // This would change the way we build the filter tree
     let cn: QueryBuilderFilterTreeNodeData | undefined = targetDropNode;
@@ -735,7 +737,6 @@ const QueryBuilderFilterConditionEditor = observer(
       node.condition.filterState.queryBuilderState.graphManagerState.graph;
     const queryBuilderState = node.condition.filterState.queryBuilderState;
     const applicationStore = useApplicationStore();
-    const [isInitialRender, setIsInitialRender] = useState(true);
     const changeOperator = (val: QueryBuilderFilterOperator) => (): void =>
       node.condition.changeOperator(val);
     // Drag and Drop on filter condition value
@@ -807,8 +808,8 @@ const QueryBuilderFilterConditionEditor = observer(
     };
 
     useEffect(() => {
-      setIsInitialRender(false);
-    }, []);
+      node.setIsNewlyAdded(false);
+    }, [node]);
 
     return (
       <div
@@ -884,7 +885,7 @@ const QueryBuilderFilterConditionEditor = observer(
                     isConstant={queryBuilderState.constantState.isValueSpecConstant(
                       node.condition.value,
                     )}
-                    initializeAsEditable={isInitialRender}
+                    initializeAsEditable={node.isNewlyAdded}
                   />
                 </PanelEntryDropZonePlaceholder>
               </div>
