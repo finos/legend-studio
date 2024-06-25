@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, computed, makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import {
   DataCubeQuerySnapshotSortDirection,
@@ -25,8 +25,12 @@ import {
 } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import { deepEqual } from '@finos/legend-shared';
+import {
+  DataCubeEditorColumnsSelectorColumnState,
+  DataCubeEditorColumnsSelectorState,
+} from './DataCubeEditorColumnsSelectorState.js';
 
-export class DataCubeEditorSortColumnState {
+export class DataCubeEditorSortColumnState extends DataCubeEditorColumnsSelectorColumnState {
   readonly column: DataCubeQuerySnapshotColumn;
   direction: DataCubeQuerySnapshotSortDirection;
 
@@ -34,6 +38,8 @@ export class DataCubeEditorSortColumnState {
     column: DataCubeQuerySnapshotColumn,
     direction: DataCubeQuerySnapshotSortDirection,
   ) {
+    super();
+
     makeObservable(this, {
       direction: observable,
       setDirection: action,
@@ -41,6 +47,10 @@ export class DataCubeEditorSortColumnState {
 
     this.column = column;
     this.direction = direction;
+  }
+
+  get name(): string {
+    return this.column.name;
   }
 
   setDirection(val: DataCubeQuerySnapshotSortDirection): void {
@@ -51,114 +61,18 @@ export class DataCubeEditorSortColumnState {
 export class DataCubeEditorSortsPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly dataCubeState!: DataCubeState;
+  readonly dataCube!: DataCubeState;
+  readonly columnsSelector!: DataCubeEditorColumnsSelectorState<DataCubeEditorSortColumnState>;
 
-  availableColumns: DataCubeEditorSortColumnState[] = [];
-  selectedColumns: DataCubeEditorSortColumnState[] = [];
-  availableColumnsSearchText = '';
-  selectedColumnsSearchText = '';
-
-  constructor(dataCubeState: DataCubeState) {
-    this.dataCubeState = dataCubeState;
-
-    makeObservable(this, {
-      availableColumns: observable,
-      selectedColumns: observable,
-      availableColumnsSearchText: observable,
-      selectedColumnsSearchText: observable,
-      setAvailableColumns: action,
-      setSelectedColumns: action,
-      addAvailableColumn: action,
-      addSelectedColumn: action,
-      addAllAvailableColumns: action,
-      addAllSelectedColumns: action,
-      setSelectedColumnsSearchText: action,
-      setAvailableColumnsSearchText: action,
-      availableColumnsSearchResults: computed,
-      selectedColumnsSearchResults: computed,
-    });
-  }
-
-  setAvailableColumns(val: DataCubeEditorSortColumnState[]): void {
-    this.availableColumns = val;
-  }
-
-  setSelectedColumns(val: DataCubeEditorSortColumnState[]): void {
-    this.selectedColumns = val;
-  }
-
-  addAvailableColumn(columnName: string): void {
-    const column = this.availableColumns.find(
-      (col) => col.column.name === columnName,
-    );
-    if (column) {
-      this.setAvailableColumns(
-        this.availableColumns.filter((col) => col.column.name !== columnName),
-      );
-      this.setSelectedColumns(this.selectedColumns.concat(column));
-    }
-  }
-
-  addSelectedColumn(columnName: string): void {
-    const column = this.selectedColumns.find(
-      (col) => col.column.name === columnName,
-    );
-    if (column) {
-      this.setSelectedColumns(
-        this.selectedColumns.filter((col) => col.column.name !== columnName),
-      );
-      this.setAvailableColumns(this.availableColumns.concat(column));
-    }
-  }
-
-  addAllAvailableColumns(): void {
-    this.setSelectedColumns(this.selectedColumns.concat(this.availableColumns));
-    this.setAvailableColumns([]);
-  }
-
-  addAllSelectedColumns(): void {
-    this.setAvailableColumns(
-      this.availableColumns.concat(this.selectedColumns),
-    );
-    this.setSelectedColumns([]);
-  }
-
-  setAvailableColumnsSearchText(val: string): void {
-    this.availableColumnsSearchText = val;
-  }
-
-  setSelectedColumnsSearchText(val: string): void {
-    this.selectedColumnsSearchText = val;
-  }
-
-  get availableColumnsSearchResults(): DataCubeEditorSortColumnState[] {
-    if (this.availableColumnsSearchText) {
-      return this.availableColumns.filter((col) =>
-        col.column.name
-          .toLowerCase()
-          .includes(this.availableColumnsSearchText.toLowerCase()),
-      );
-    } else {
-      return this.availableColumns;
-    }
-  }
-
-  get selectedColumnsSearchResults(): DataCubeEditorSortColumnState[] {
-    if (this.selectedColumnsSearchText) {
-      return this.selectedColumns.filter((col) =>
-        col.column.name
-          .toLowerCase()
-          .includes(this.selectedColumnsSearchText.toLowerCase()),
-      );
-    } else {
-      return this.selectedColumns;
-    }
+  constructor(dataCube: DataCubeState) {
+    this.dataCube = dataCube;
+    this.columnsSelector = new DataCubeEditorColumnsSelectorState();
   }
 
   applySnaphot(snapshot: DataCubeQuerySnapshot): void {
     const columns = snapshot.stageCols('sort');
     const sortColumns = snapshot.data.sortColumns;
-    this.setAvailableColumns(
+    this.columnsSelector.setAvailableColumns(
       columns
         .filter(
           (col) => !sortColumns.find((sortCol) => sortCol.name === col.name),
@@ -171,7 +85,7 @@ export class DataCubeEditorSortsPanelState
             ),
         ),
     );
-    this.setSelectedColumns(
+    this.columnsSelector.setSelectedColumns(
       sortColumns.map(
         (col) =>
           new DataCubeEditorSortColumnState(
@@ -187,7 +101,7 @@ export class DataCubeEditorSortsPanelState
     baseSnapshot: DataCubeQuerySnapshot,
   ): boolean {
     const newSortColumns: DataCubeQuerySnapshotSortColumn[] =
-      this.selectedColumns.map((sortInfo) => ({
+      this.columnsSelector.selectedColumns.map((sortInfo) => ({
         name: sortInfo.column.name,
         type: sortInfo.column.type,
         direction: sortInfo.direction,

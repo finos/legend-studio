@@ -16,13 +16,23 @@
 
 import { observer } from 'mobx-react-lite';
 import { useREPLStore } from '../../REPLStoreProvider.js';
+import { DataCubeIcon } from '@finos/legend-art';
 
 export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
   const replStore = useREPLStore();
   const panel = replStore.dataCubeState.editor.generalPropertiesPanel;
 
   return (
-    <div className="flex h-full w-full p-4">
+    <div className="data-cube-column-selector h-full w-full p-2">
+      <div className="flex h-6">
+        <div className="flex h-6 items-center text-xl font-medium">
+          <DataCubeIcon.TableOptions />
+        </div>
+        <div className="ml-1 flex h-6 items-center text-xl font-medium">
+          General Properties
+        </div>
+      </div>
+      <div className="flex h-[calc(100%_-_24px)] w-full p-4"></div>
       <div className="flex h-6 w-full items-center">
         <div className="flex h-full w-32 items-center">Report Title:</div>
         <input

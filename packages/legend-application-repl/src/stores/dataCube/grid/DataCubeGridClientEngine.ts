@@ -32,15 +32,9 @@ import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { generateRowGroupingDrilldownExecutableQueryPostProcessor } from './DataCubeGridQueryBuilder.js';
 import { makeObservable, observable, runInAction } from 'mobx';
 
-type GridClientResultCellDataType =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined;
-
-type GridClientRowDataType = {
-  [key: string]: GridClientResultCellDataType;
+type GridClientCellValue = string | number | boolean | null | undefined;
+type GridClientRowData = {
+  [key: string]: GridClientCellValue;
 };
 
 export const INTERNAL__GRID_CLIENT_HEADER_HEIGHT = 24;
@@ -63,9 +57,9 @@ export enum GridClientAggregateOperation {
   AVERAGE = 'avg',
 }
 
-function toRowData(tds: TabularDataSet): GridClientRowDataType[] {
+function TDStoRowData(tds: TabularDataSet): GridClientRowData[] {
   return tds.rows.map((_row, rowIdx) => {
-    const row: GridClientRowDataType = {};
+    const row: GridClientRowData = {};
     const cols = tds.columns;
     _row.values.forEach((value, colIdx) => {
       // `ag-grid` shows `false` value as empty string so we have
@@ -140,7 +134,7 @@ export class DataCubeGridClientServerSideDataSource
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
       const result = await this.grid.dataCube.engine.executeQuery(lambda);
-      const rowData = toRowData(result.result);
+      const rowData = TDStoRowData(result.result);
       if (this.grid.isPaginationEnabled) {
         params.success({ rowData });
         // Only update row count when loading the top-level drilldown data

@@ -14,28 +14,28 @@
  * limitations under the License.
  */
 
-import { observer } from 'mobx-react-lite';
 import { DataCubeIcon } from '@finos/legend-art';
+import { observer } from 'mobx-react-lite';
 import { useREPLStore } from '../../REPLStoreProvider.js';
-import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
+import { useEffect } from 'react';
 
-export const DataCubeEditorSortsPanel = observer(() => {
+export const DataCubeEditorHPivotsPanel = observer(() => {
   const replStore = useREPLStore();
   const panel = replStore.dataCubeState.editor.sortsPanel;
+
+  useEffect(() => {}, [panel]); // TODO: @akphi - remove this dummy useEffect
 
   return (
     <div className="data-cube-column-selector h-full w-full p-2">
       <div className="flex h-6">
         <div className="flex h-6 items-center text-xl font-medium">
-          <DataCubeIcon.TableSort />
+          <DataCubeIcon.TablePivot />
         </div>
         <div className="ml-1 flex h-6 items-center text-xl font-medium">
-          Sorts
+          Horizontal Pivots
         </div>
       </div>
-      <div className="flex h-[calc(100%_-_24px)] w-full">
-        <DataCubeEditorColumnsSelector selector={panel.columnsSelector} />
-      </div>
+      <div className="flex h-[calc(100%_-_24px)] w-full"></div>
     </div>
   );
 });

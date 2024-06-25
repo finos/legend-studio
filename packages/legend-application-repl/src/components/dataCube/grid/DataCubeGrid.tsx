@@ -32,10 +32,11 @@ import {
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
-// We MUST NEVER completely surpress this warning, else it's a violation of the ag-grid license
+// We MUST NEVER completely surpress this warning in production, else it's a violation of the ag-grid license!
+// See https://www.ag-grid.com/javascript-data-grid/licensing/
 const __INTERNAL__original_console_error = console.error; // eslint-disable-line no-console
 // eslint-disable-next-line no-console
-console.error = (message?: unknown): void => {
+console.error = (message?: unknown, ...agrs: unknown[]): void => {
   console.log(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
 };
 
@@ -53,7 +54,7 @@ export const DataCubeGrid = observer(() => {
   }, [grid.clientLicenseKey]);
 
   return (
-    <div className="flex-1">
+    <div className="data-cube-grid flex-1">
       <div className="h-[calc(100%_-_20px)] w-full">
         <AgGridReact
           className="ag-theme-balham"
@@ -67,6 +68,7 @@ export const DataCubeGrid = observer(() => {
           ]}
           onGridReady={(params): void => {
             grid.configureClient(params.api);
+            // restore original error logging
             console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
           }}
           // -------------------------------------- ROW GROUPING --------------------------------------
@@ -113,7 +115,7 @@ export const DataCubeGrid = observer(() => {
       <div className="relative flex h-5 w-full justify-between border-b border-b-neutral-200 bg-neutral-100">
         {Boolean(scrollHintText) && (
           <div className="absolute -top-8 right-4 flex items-center rounded-sm border border-neutral-300 bg-neutral-100 p-1 pr-2 text-neutral-500 shadow-sm">
-            <DataCubeIcon.Scroll className="text-lg" />
+            <DataCubeIcon.TableScroll className="text-lg" />
             <div className="ml-1 font-mono text-sm">{scrollHintText}</div>
           </div>
         )}

@@ -18,19 +18,61 @@
 // merging them in the main icon registry, we should review them
 
 import { GoBrowser, GoPin, GoX } from 'react-icons/go';
-import { GrBottomCorner } from 'react-icons/gr';
 import { MdOutlineInsertPageBreak } from 'react-icons/md';
-import { HiOutlineCube } from 'react-icons/hi';
-import { VscBook } from 'react-icons/vsc';
 import { PiMouseScroll } from 'react-icons/pi';
+import {
+  TbBook,
+  TbCube,
+  TbNote,
+  TbTable,
+  TbTableColumn,
+  TbTableRow,
+  TbTableDown,
+  TbTableOptions,
+  TbColumnInsertRight,
+  TbTablePlus,
+  TbColumnRemove,
+  TbColumns3,
+  TbFreezeRow,
+  TbFreezeColumn,
+  TbFreezeRowColumn,
+  TbCode,
+  TbFilter,
+  TbFilterPlus,
+  TbFilterCode,
+  TbSettingsFilled,
+  TbChevronLeft,
+  TbChevronRight,
+  TbSearch,
+} from 'react-icons/tb';
 
 export const DataCubeIcon = {
-  Cube: HiOutlineCube,
-  Documentation: VscBook,
-  Pagination: MdOutlineInsertPageBreak,
+  ChevronLeft: TbChevronLeft,
+  ChevronRight: TbChevronRight,
+  Code: TbCode,
+  Cube: TbCube,
+  Documentation: TbBook,
+  Note: TbNote,
   Pin: GoPin,
-  ResizeCornerSE: GrBottomCorner,
-  Scroll: PiMouseScroll,
+  Search: TbSearch,
+  Table: TbTable,
+  TableColumn: TbFreezeColumn,
+  TableColumnOptions__Settings: TbSettingsFilled,
+  TableColumns: TbColumns3,
+  TableExtendedColumn: TbColumnInsertRight,
+  TableFilter: TbFilter,
+  TableFilterPlus: TbFilterPlus,
+  TableFilterCode: TbFilterCode,
+  TableGroupBy: TbTableColumn,
+  TableOptions: TbTableOptions,
+  TablePagination: MdOutlineInsertPageBreak,
+  TablePivot: TbTableRow,
+  TablePlus: TbTablePlus,
+  TableRemoveColumn: TbColumnRemove,
+  TableRow: TbFreezeRow,
+  TableRowColumn: TbFreezeRowColumn,
+  TableScroll: PiMouseScroll,
+  TableSort: TbTableDown,
   Window: GoBrowser,
   X: GoX,
 };

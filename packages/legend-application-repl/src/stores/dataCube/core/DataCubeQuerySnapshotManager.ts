@@ -30,15 +30,15 @@ import type { DataCubeQuery } from '../../../server/models/DataCubeQuery.js';
 // const DATA_CUBE_MAX_SNAPSHOT_COUNT = 100;
 
 export class DataCubeQuerySnapshotManager {
-  private readonly dataCubeState: DataCubeState;
+  private readonly dataCube: DataCubeState;
   private readonly subscribers: DataCubeQuerySnapshotSubscriber[] = [];
   private readonly snapshots: DataCubeQuerySnapshot[] = [];
 
   private _initialSnapshot: DataCubeQuerySnapshot | undefined;
   private _initialQuery: DataCubeQuery | undefined;
 
-  constructor(dataCubeState: DataCubeState) {
-    this.dataCubeState = dataCubeState;
+  constructor(dataCube: DataCubeState) {
+    this.dataCube = dataCube;
   }
 
   get currentSnapshot(): DataCubeQuerySnapshot {
@@ -83,7 +83,7 @@ export class DataCubeQuerySnapshotManager {
       if (currentSnapshot?.uuid !== snapshot.uuid) {
         subscriber.receiveSnapshot(snapshot).catch((error: unknown) => {
           assertErrorThrown(error);
-          this.dataCubeState.application.logService.error(
+          this.dataCube.application.logService.error(
             LogEvent.create(
               APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
             ),

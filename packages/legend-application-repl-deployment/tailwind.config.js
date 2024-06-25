@@ -19,6 +19,8 @@ export default {
   content: ['./src/**/*.tsx', '../legend-*/src/**/*.tsx'],
   theme: {
     fontSize: {
+      '3xs': ['6px', '6px'],
+      '2xs': ['7px', '7px'],
       xs: ['8px', '8px'],
       sm: ['10px', '12px'],
       base: ['12px', '16px'],
@@ -41,5 +43,28 @@ export default {
       ],
     },
   },
-  plugins: [],
+  // Expose Tailwind color as CSS variables
+  // See https://gist.github.com/Merott/d2a19b32db07565e94f10d13d11a8574
+  // TODO: the better solution is to use theme() and PostCSS
+  // See https://gist.github.com/Merott/d2a19b32db07565e94f10d13d11a8574?permalink_comment_id=4729744#gistcomment-4729744
+  plugins: [
+    function ({ addBase, theme }) {
+      function extractColorVars(colorObj, colorGroup = '') {
+        return Object.keys(colorObj).reduce((vars, colorKey) => {
+          const value = colorObj[colorKey];
+
+          const newVars =
+            typeof value === 'string'
+              ? { [`--tw-color${colorGroup}-${colorKey}`]: value }
+              : extractColorVars(value, `-${colorKey}`);
+
+          return { ...vars, ...newVars };
+        }, {});
+      }
+
+      addBase({
+        ':root': extractColorVars(theme('colors')),
+      });
+    },
+  ],
 };

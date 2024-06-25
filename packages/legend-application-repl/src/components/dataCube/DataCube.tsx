@@ -28,8 +28,8 @@ const DataCubeStatusBar = observer(() => {
 
   return (
     <div className="flex h-5 w-full bg-neutral-100">
-      <button>
-        <DataCubeIcon.Documentation className="pl-1 text-2xl text-sky-600" />
+      <button className="pl-2">
+        <DataCubeIcon.Documentation className="text-xl text-sky-600" />
       </button>
       <button
         className="flex w-1/2 items-center px-2 text-sky-600 underline"
@@ -66,7 +66,7 @@ export const DataCube = observer(() => {
   const dataCubeState = dataCubeStore.dataCubeState;
 
   useEffect(() => {
-    dataCubeState.initialize().catch(applicationStore.alertUnhandledError);
+    dataCubeState.initialize().catch(applicationStore.logUnhandledError);
   }, [dataCubeState, applicationStore]);
 
   return (

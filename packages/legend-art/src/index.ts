@@ -77,5 +77,4 @@ export * from './utils/ComponentUtils.js';
 
 export * from './markdown/MarkdownTextViewer.js';
 
-export * from './interaction/Draggable.js';
-export * from './interaction/Resizable.js';
+export * from './Interaction.js';

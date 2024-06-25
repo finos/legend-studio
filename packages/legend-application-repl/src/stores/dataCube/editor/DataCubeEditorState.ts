@@ -29,6 +29,7 @@ export enum DATA_CUBE_EDITOR_TAB {
   HORIZONTAL_PIVOTS = 'HPivots',
   SORTS = 'Sorts',
   EXTENDED_COLUMNS = 'Extended Columns',
+  FILTER = 'Filter',
   GENERAL_PROPERTIES = 'General Properties',
   COLUMN_PROPERTIES = 'Column Properties',
   CODE = 'Code',
@@ -44,8 +45,8 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
   isPanelOpen = false;
   currentTab = DATA_CUBE_EDITOR_TAB.GENERAL_PROPERTIES;
 
-  constructor(dataCubeState: DataCubeState) {
-    super(dataCubeState);
+  constructor(dataCube: DataCubeState) {
+    super(dataCube);
 
     makeObservable(this, {
       applyChanges: action,

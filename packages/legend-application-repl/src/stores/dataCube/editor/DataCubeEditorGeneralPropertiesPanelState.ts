@@ -22,12 +22,12 @@ import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.j
 export class DataCubeEditorGeneralPropertiesPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly dataCubeState!: DataCubeState;
+  readonly dataCube!: DataCubeState;
   name = '';
   limit = -1;
 
-  constructor(dataCubeState: DataCubeState) {
-    this.dataCubeState = dataCubeState;
+  constructor(dataCube: DataCubeState) {
+    this.dataCube = dataCube;
 
     makeObservable(this, {
       name: observable,

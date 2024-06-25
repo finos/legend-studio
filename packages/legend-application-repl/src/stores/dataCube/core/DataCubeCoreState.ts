@@ -27,8 +27,8 @@ export class DataCubeCoreState extends DataCubeQuerySnapshotSubscriber {
   name = DATA_CUBE_DEFAULT_REPORT_NAME;
   private startTime?: number | undefined;
 
-  constructor(dataCubeState: DataCubeState) {
-    super(dataCubeState);
+  constructor(dataCube: DataCubeState) {
+    super(dataCube);
 
     makeObservable(this, {
       name: observable,

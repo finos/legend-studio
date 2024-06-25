@@ -2678,6 +2678,7 @@ __metadata:
     react-reflex: "npm:4.2.6"
     react-resizable: "npm:3.0.5"
     react-resize-detector: "npm:11.0.1"
+    react-rnd: "npm:10.4.11"
     react-select: "npm:4.3.1"
     react-window: "npm:1.8.10"
     remark-gfm: "npm:4.0.0"
@@ -15315,6 +15316,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"re-resizable@npm:6.9.17":
+  version: 6.9.17
+  resolution: "re-resizable@npm:6.9.17"
+  peerDependencies:
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 10/768c3a0fe39d6916caf4e003240d326d62c4d7512c7d3115cc2a98085416fdba80097afdbb93df57b69543c41ce56b33589f2fea6987cd5149faa83cf11c8ba1
+  languageName: node
+  linkType: hard
+
 "react-chartjs-2@npm:5.2.0":
   version: 5.2.0
   resolution: "react-chartjs-2@npm:5.2.0"
@@ -15503,6 +15514,20 @@ __metadata:
     react: ^18.0.0
     react-dom: ^18.0.0
   checksum: 10/42bb34cb8f54d9128ffd8ea31ca251b6b21318705113412fb241f5a932eedef7b60e4adbdccdf9e073dae6c9e7f1c06bc1925eda6c0abb2fb982af8b2898361e
+  languageName: node
+  linkType: hard
+
+"react-rnd@npm:10.4.11":
+  version: 10.4.11
+  resolution: "react-rnd@npm:10.4.11"
+  dependencies:
+    re-resizable: "npm:6.9.17"
+    react-draggable: "npm:4.4.6"
+    tslib: "npm:2.6.2"
+  peerDependencies:
+    react: ">=16.3.0"
+    react-dom: ">=16.3.0"
+  checksum: 10/b1362efc490e593c336ceb8c4b19ce266976f96c7a4fcef4e06703f12a16731fbc50143f5bf6532d9262603f6ef81d740747a62c06c2ec372089947d96cd98e4
   languageName: node
   linkType: hard
 
@@ -17743,6 +17768,13 @@ __metadata:
     minimist: "npm:^1.2.6"
     strip-bom: "npm:^3.0.0"
   checksum: 10/2041beaedc6c271fc3bedd12e0da0cc553e65d030d4ff26044b771fac5752d0460944c0b5e680f670c2868c95c664a256cec960ae528888db6ded83524e33a14
+  languageName: node
+  linkType: hard
+
+"tslib@npm:2.6.2":
+  version: 2.6.2
+  resolution: "tslib@npm:2.6.2"
+  checksum: 10/bd26c22d36736513980091a1e356378e8b662ded04204453d353a7f34a4c21ed0afc59b5f90719d4ba756e581a162ecbf93118dc9c6be5acf70aa309188166ca
   languageName: node
   linkType: hard
 

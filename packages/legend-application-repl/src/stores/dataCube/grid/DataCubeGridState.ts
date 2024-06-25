@@ -29,8 +29,8 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   clientLicenseKey?: string | undefined;
   isPaginationEnabled = false;
 
-  constructor(dataCubeState: DataCubeState) {
-    super(dataCubeState);
+  constructor(dataCube: DataCubeState) {
+    super(dataCube);
 
     makeObservable(this, {
       clientDataSource: observable,
