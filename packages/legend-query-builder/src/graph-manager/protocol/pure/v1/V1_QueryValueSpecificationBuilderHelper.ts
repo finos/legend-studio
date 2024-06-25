@@ -27,10 +27,10 @@ import {
 import {
   type V1_GraphBuilderContext,
   type V1_ProcessingContext,
-  V1_ValueSpecification,
   type ValueSpecification,
-  type SimpleFunctionExpression,
   type Type,
+  type SimpleFunctionExpression,
+  V1_ValueSpecification,
   V1_buildBaseSimpleFunctionExpression,
   V1_buildGenericFunctionExpression,
   extractElementNameFromPath,
@@ -580,7 +580,7 @@ export const V1_buildFilterFunctionExpression = (
   return expression;
 };
 
-export const V1_buildTypedProjectFunctionExpression = (
+const V1_buildTypedProjectFunctionExpression = (
   functionName: string,
   parameters: V1_ValueSpecification[],
   openVariables: string[],
@@ -684,6 +684,158 @@ export const V1_buildTypedProjectFunctionExpression = (
   return expression;
 };
 
+const V1_buildColFunctionExpression = (
+  valueSpecification: V1_ValueSpecification,
+  precedingExperession: ValueSpecification,
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): SimpleFunctionExpression => {
+  const appliedFunc = guaranteeType(
+    valueSpecification,
+    V1_AppliedFunction,
+    `Can't build tds col func: only support applied function`,
+  );
+  assertTrue(
+    matchFunctionName(
+      appliedFunc.function,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_COL,
+    ),
+    `Can't build tds col func: unsupported func name ${appliedFunc.function}`,
+  );
+  assertTrue(
+    appliedFunc.parameters.length === 2,
+    `Can't build tds col func: only support col function with 2 parameters`,
+  );
+  const colLambda = guaranteeType(
+    appliedFunc.parameters[0],
+    V1_Lambda,
+    `Can't build tds col func: only support first parameter of col function as Lambda`,
+  );
+  let lambda: ValueSpecification;
+  try {
+    colLambda.parameters.forEach((variable): void => {
+      if (variable.name && !variable.class) {
+        const variableExpression = new VariableExpression(
+          variable.name,
+          Multiplicity.ONE,
+        );
+        variableExpression.genericType = precedingExperession.genericType;
+        processingContext.addInferredVariables(
+          variable.name,
+          variableExpression,
+        );
+      }
+    });
+    lambda = buildProjectionColumnLambda(
+      colLambda,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
+  } catch {
+    lambda = new INTERNAL__UnknownValueSpecification(
+      V1_serializeValueSpecification(
+        colLambda,
+        compileContext.extensions.plugins,
+      ),
+    );
+  }
+  guaranteeType(
+    appliedFunc.parameters[1],
+    V1_CString,
+    `Can't build tds col func: only support second parameter of col function as String`,
+  );
+  const colNameValueSpec = guaranteeNonNullable(
+    appliedFunc.parameters[1],
+  ).accept_ValueSpecificationVisitor(
+    new V1_ValueSpecificationBuilder(
+      compileContext,
+      processingContext,
+      openVariables,
+    ),
+  );
+  const colFunctionExpression = V1_buildBaseSimpleFunctionExpression(
+    [lambda, colNameValueSpec],
+    appliedFunc.function,
+    compileContext,
+  );
+  return colFunctionExpression;
+};
+
+const V1_buildTDSProjectWithColFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): SimpleFunctionExpression => {
+  assertTrue(
+    parameters.length === 2,
+    `Can't build tds project() expression: project() expects 2 arguments`,
+  );
+  const precedingExperession = (
+    parameters[0] as V1_ValueSpecification
+  ).accept_ValueSpecificationVisitor(
+    new V1_ValueSpecificationBuilder(
+      compileContext,
+      processingContext,
+      openVariables,
+    ),
+  );
+  assertNonNullable(
+    precedingExperession.genericType,
+    `Can't build tds project() expression: preceding expression return type is missing`,
+  );
+  const colFuncExpress = guaranteeNonNullable(
+    parameters[1],
+    `Can't build tds project() expression: second parameter is missing`,
+  );
+  let secondProcessedParameter: ValueSpecification;
+  if (colFuncExpress instanceof V1_Collection) {
+    const processedColExpressions = new CollectionInstanceValue(
+      compileContext.graph.getMultiplicity(
+        colFuncExpress.multiplicity.lowerBound,
+        colFuncExpress.multiplicity.upperBound,
+      ),
+    );
+    processedColExpressions.values = colFuncExpress.values.map((value) =>
+      V1_buildColFunctionExpression(
+        value,
+        precedingExperession,
+        openVariables,
+        compileContext,
+        processingContext,
+      ),
+    );
+    secondProcessedParameter = processedColExpressions;
+  } else {
+    assertType(
+      colFuncExpress,
+      V1_AppliedFunction,
+      `Can't build project() expression: project() expects argument #2 to be a function`,
+    );
+    secondProcessedParameter = V1_buildColFunctionExpression(
+      colFuncExpress,
+      precedingExperession,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
+  }
+  const expression = V1_buildBaseSimpleFunctionExpression(
+    [precedingExperession, secondProcessedParameter],
+    functionName,
+    compileContext,
+  );
+  expression.genericType = GenericTypeExplicitReference.create(
+    new GenericType(
+      compileContext.resolveType(QUERY_BUILDER_PURE_PATH.TDS_ROW).value,
+    ),
+  );
+  return expression;
+};
+
 export const V1_buildProjectFunctionExpression = (
   functionName: string,
   parameters: V1_ValueSpecification[],
@@ -692,15 +844,24 @@ export const V1_buildProjectFunctionExpression = (
   processingContext: V1_ProcessingContext,
 ): SimpleFunctionExpression => {
   if (parameters.length === 2) {
-    return V1_buildTypedProjectFunctionExpression(
-      functionName,
-      parameters,
-      openVariables,
-      compileContext,
-      processingContext,
-    );
+    try {
+      return V1_buildTDSProjectWithColFunctionExpression(
+        functionName,
+        parameters,
+        openVariables,
+        compileContext,
+        processingContext,
+      );
+    } catch {
+      return V1_buildTypedProjectFunctionExpression(
+        functionName,
+        parameters,
+        openVariables,
+        compileContext,
+        processingContext,
+      );
+    }
   }
-
   const length = parameters.length;
   assertTrue(
     length === 3 || length === 2,
@@ -723,15 +884,19 @@ export const V1_buildProjectFunctionExpression = (
   );
 
   const columnExpressions = parameters[1];
-  assertType(
-    columnExpressions,
-    V1_Collection,
-    `Can't build project() expression: project() expects argument #1 to be a collection`,
-  );
-  topLevelLambdaParameters = columnExpressions.values
-    .filter(filterByType(V1_Lambda))
-    .map((lambda) => lambda.parameters)
-    .flat();
+  if (columnExpressions instanceof V1_Lambda) {
+    topLevelLambdaParameters = columnExpressions.parameters;
+  } else {
+    assertType(
+      columnExpressions,
+      V1_Collection,
+      `Can't build project() expression: project() expects argument #1 to be a collection`,
+    );
+    topLevelLambdaParameters = columnExpressions.values
+      .filter(filterByType(V1_Lambda))
+      .map((lambda) => lambda.parameters)
+      .flat();
+  }
 
   const variables = new Set<string>();
   // Make sure top-level lambdas have their lambda parameter types set properly
@@ -753,7 +918,13 @@ export const V1_buildProjectFunctionExpression = (
       columnExpressions.multiplicity.upperBound,
     ),
   );
-  processedColumnExpressions.values = columnExpressions.values.map((value) => {
+  let colExpressionValues: V1_ValueSpecification[] = [];
+  if (columnExpressions instanceof V1_Lambda) {
+    colExpressionValues = [columnExpressions];
+  } else {
+    colExpressionValues = columnExpressions.values;
+  }
+  processedColumnExpressions.values = colExpressionValues.map((value) => {
     try {
       return buildProjectionColumnLambda(
         value,
