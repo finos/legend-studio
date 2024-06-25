@@ -66,7 +66,6 @@ import type {
   LegendApplicationPlugin,
   LegendApplicationPluginManager,
 } from '@finos/legend-application';
-import { isUsedDateFunctionSupportedInFormMode } from '../QueryBuilderStateBuilder.js';
 
 export const createSupportedFunctionExpression = (
   supportedFuncName: string,
@@ -337,8 +336,7 @@ export const getValueSpecificationStringValue = (
       isSubType(
         valueSpecification.genericType.value.rawType,
         PrimitiveType.DATE,
-      ) &&
-      isUsedDateFunctionSupportedInFormMode(valueSpecification)
+      )
     ) {
       return buildDatePickerOption(valueSpecification, applicationStore).label;
     }
