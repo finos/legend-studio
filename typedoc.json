@@ -30,5 +30,5 @@
   "theme": "legend",
   "customCss": "./website/legend-typedoc-theme.css",
   "logLevel": "Verbose",
-  "treatWarningsAsErrors": true
+  "treatWarningsAsErrors": false // TODO: we should enable this once we want to properly enforce the doc generation
 }

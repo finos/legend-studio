@@ -16,114 +16,72 @@
 
 import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
 import type { DataCubeConfiguration } from '../../../server/models/DataCubeQuery.js';
-import { uuid, type PlainObject, type Writable } from '@finos/legend-shared';
-import type {
-  DATA_CUBE_AGGREGATE_FUNCTION,
-  DATA_CUBE_COLUMN_SORT_DIRECTION,
-  DATA_CUBE_FILTER_OPERATION,
-} from '../DataCubeMetaModelConst.js';
+import {
+  IllegalStateError,
+  guaranteeNonNullable,
+  uuid,
+  type PlainObject,
+  type Writable,
+} from '@finos/legend-shared';
 
-// export enum FILTER_OPERATION {
-//   EQUALS = 'equal',
-//   NOT_EQUAL = 'notEqual',
-//   GREATER_THAN = 'greaterThan',
-//   GREATER_THAN_OR_EQUAL = 'greaterThanOrEqual',
-//   LESS_THAN = 'lessThan',
-//   LESS_THAN_OR_EQUAL = 'lessThanOrEqual',
-//   BLANK = 'isEmpty',
-//   NOT_BLANK = 'isNotEmpty',
-//   CONTAINS = 'contains',
-//   NOT_CONTAINS = 'notContains',
-//   STARTS_WITH = 'startsWith',
-//   ENDS_WITH = 'endsWith',
-// }
-
-// export enum FILTER_GROUP {
-//   AND = 'and',
-//   OR = 'or',
-// }
-
-// export enum FILTER_TYPE {
-//   TEXT = 'text',
-//   NUMBER = 'number',
-// }
-
-// export class TDSFilterCondition {
-//   operation!: TDS_FILTER_OPERATION;
-//   value!: unknown;
-
-//   constructor(operation: TDS_FILTER_OPERATION, value: unknown) {
-//     this.operation = operation;
-//     this.value = value;
-//   }
-
-//   static readonly serialization = new SerializationFactory(
-//     createModelSchema(TDSFilterCondition, {
-//       operation: primitive(),
-//       value: primitive(),
-//     }),
-//   );
-// }
-
-// export class TDSFilter {
-//   column!: string;
-//   columnType!: PRIMITIVE_TYPE;
-//   conditions!: TDSFilterCondition[];
-//   groupOperation!: TDS_FILTER_GROUP;
-
-//   constructor(
-//     column: string,
-//     columnType: PRIMITIVE_TYPE,
-//     conditions: TDSFilterCondition[],
-//     groupOperation: TDS_FILTER_GROUP,
-//   ) {
-//     this.column = column;
-//     this.columnType = columnType;
-//     this.conditions = conditions;
-//     this.groupOperation = groupOperation;
-//   }
-
-//   static readonly serialization = new SerializationFactory(
-//     createModelSchema(TDSFilter, {
-//       column: primitive(),
-//       columnType: primitive(),
-//       conditions: list(
-//         usingModelSchema(TDSFilterCondition.serialization.schema),
-//       ),
-//       groupOperation: primitive(),
-//     }),
-//   );
-// }
-
-export type DataCubeQueryFilterCondition = DataCubeQuerySnapshotColumn & {
-  value: unknown;
-  operation: DATA_CUBE_FILTER_OPERATION;
-};
-
-export type DataCubeQueryFilter = {
-  groupOperation: string;
-  conditions: (DataCubeQueryFilterCondition | DataCubeQueryFilter)[];
-};
-
-export enum DataCubeQuerySnapshotColumnOrigin {
-  SOURCE,
-  LEAF_EXTENDED,
-  RENAME,
-  GROUP_BY,
-  SELECT,
-  PIVOT,
-  GROUP_EXTENDED,
+export enum DataCubeQuerySnapshotAggregateFunction {
+  AVERAGE = 'average',
+  COUNT = 'count',
+  DISTINCT = 'distinct',
+  FIRST = 'first',
+  JOIN_STRINGS = 'joinStrings',
+  LAST = 'last',
+  MAX = 'max',
+  MIN = 'min',
+  SUM = 'sum',
+  STD_DEV_POPULATION = 'stdDevPopulation',
+  STD_DEV_SAMPLE = 'stdDevSample',
+  UNIQUE_VALUE_ONLY = 'uniqueValueOnly',
 }
+
+export enum DataCubeQuerySnapshotFilterOperation {
+  EQUAL = 'equal',
+  NOT_EQUAL = 'notEqual',
+  GREATER_THAN = 'greaterThan',
+  GREATER_THAN_OR_EQUAL = 'greaterThanOrEqual',
+  LESS_THAN = 'lessThan',
+  LESS_THAN_OR_EQUAL = 'lessThanOrEqual',
+  BLANK = 'isEmpty',
+  NOT_BLANK = 'isNotEmpty',
+  CONTAINS = 'contains',
+  NOT_CONTAINS = 'notContains',
+  STARTS_WITH = 'startsWith',
+  ENDS_WITH = 'endsWith',
+}
+
+export enum DataCubeQuerySnapshotSortDirection {
+  ASCENDING = 'ascending',
+  DESCENDING = 'descending',
+}
+
+export enum DataCubeQueryFilterGroupOperation {
+  AND = 'AND',
+  OR = 'OR',
+}
+
+export type DataCubeQuerySnapshotFilterCondition =
+  DataCubeQuerySnapshotColumn & {
+    value: unknown;
+    operation: DataCubeQuerySnapshotFilterOperation;
+  };
+
+export type DataCubeQuerySnapshotFilter = {
+  groupOperation: DataCubeQueryFilterGroupOperation;
+  conditions: (
+    | DataCubeQuerySnapshotFilterCondition
+    | DataCubeQuerySnapshotFilter
+  )[];
+};
 
 export type DataCubeQuerySnapshotColumn = {
   name: string;
   type: string;
 };
-
-export type DataCubeQuerySnapshotColumnWithOrigin =
-  DataCubeQuerySnapshotColumn & {
-    origin: DataCubeQuerySnapshotColumnOrigin;
-  };
 
 export type DataCubeQuerySnapshotExtendedColumn =
   DataCubeQuerySnapshotColumn & {
@@ -131,82 +89,136 @@ export type DataCubeQuerySnapshotExtendedColumn =
     code: string;
   };
 
-export type DataCubeQuerySnapshotRenamedColumn = DataCubeQuerySnapshotColumn & {
-  oldName: string;
-};
-
 export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {
-  direction: DATA_CUBE_COLUMN_SORT_DIRECTION;
+  direction: DataCubeQuerySnapshotSortDirection;
 };
 
 export type DataCubeQuerySnapshotAggregateColumn =
   DataCubeQuerySnapshotColumn & {
-    function: DATA_CUBE_AGGREGATE_FUNCTION;
+    function: DataCubeQuerySnapshotAggregateFunction;
   };
 
-export type DataCubeQuerySnapshot = {
-  readonly uuid: string;
+export type DataCubeQuerySnapshotGroupBy = {
+  columns: DataCubeQuerySnapshotColumn[];
+  aggColumns: DataCubeQuerySnapshotAggregateColumn[];
+};
+
+export type DataCubeQuerySnapshotPivot = {
+  columns: DataCubeQuerySnapshotColumn[];
+  aggColumns: DataCubeQuerySnapshotAggregateColumn[];
+  castColumns: DataCubeQuerySnapshotColumn[];
+};
+
+export type DataCubeQuerySnapshotData = {
   name: string;
   runtime: string;
   sourceQuery: PlainObject<V1_ValueSpecification>;
   configuration: DataCubeConfiguration;
-
   originalColumns: DataCubeQuerySnapshotColumn[];
   leafExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
-  filter?: DataCubeQueryFilter | undefined;
-  renamedColumns: DataCubeQuerySnapshotRenamedColumn[];
-  groupByColumns: DataCubeQuerySnapshotColumn[];
-  groupByExpandedKeys: string[];
-  groupByAggColumns: DataCubeQuerySnapshotAggregateColumn[];
-  groupByFilter?: DataCubeQueryFilter | undefined;
-  selectedColumns: DataCubeQuerySnapshotColumn[];
-  pivotColumns: DataCubeQuerySnapshotColumn[];
-  pivotAggColumns: DataCubeQuerySnapshotAggregateColumn[];
-  castColumns: DataCubeQuerySnapshotColumn[];
+  filter?: DataCubeQuerySnapshotFilter | undefined;
+  groupBy?: DataCubeQuerySnapshotGroupBy | undefined;
+  pivot?: DataCubeQuerySnapshotPivot | undefined;
   groupExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
+  selectColumns: DataCubeQuerySnapshotColumn[];
   sortColumns: DataCubeQuerySnapshotSortColumn[];
   limit: number | undefined;
-  columns: DataCubeQuerySnapshotColumnWithOrigin[];
 };
 
-// ------------------------------------- UTILITIES -------------------------------------
+type DataCubeQuerySnapshotStage =
+  | 'leaf-extend'
+  | 'filter'
+  | 'aggregation'
+  | 'group-extend'
+  | 'select'
+  | 'sort';
 
-export function createSnapshot(
-  name: string,
-  runtime: string,
-  sourceQuery: PlainObject<V1_ValueSpecification>,
-  configuration: DataCubeConfiguration,
-): DataCubeQuerySnapshot {
-  return {
-    uuid: uuid(),
-    name,
-    runtime,
-    sourceQuery,
-    configuration,
+export class DataCubeQuerySnapshot {
+  readonly uuid = uuid();
+  timestamp = Date.now();
+  readonly data: DataCubeQuerySnapshotData;
 
-    originalColumns: [],
-    leafExtendedColumns: [],
-    filter: undefined,
-    renamedColumns: [],
-    groupByColumns: [],
-    groupByExpandedKeys: [],
-    groupByAggColumns: [],
-    selectedColumns: [],
-    pivotColumns: [],
-    pivotAggColumns: [],
-    castColumns: [],
-    groupExtendedColumns: [],
-    groupByFilter: undefined,
-    sortColumns: [],
-    limit: undefined,
-    columns: [],
-  };
+  private constructor(
+    name: string,
+    runtime: string,
+    sourceQuery: PlainObject<V1_ValueSpecification>,
+    configuration: DataCubeConfiguration,
+  ) {
+    this.data = {
+      name,
+      runtime,
+      sourceQuery,
+      configuration,
+      originalColumns: [],
+      leafExtendedColumns: [],
+      filter: undefined,
+      groupBy: undefined,
+      pivot: undefined,
+      groupExtendedColumns: [],
+      selectColumns: [],
+      sortColumns: [],
+      limit: undefined,
+    };
+  }
+
+  static create(
+    name: string,
+    runtime: string,
+    sourceQuery: PlainObject<V1_ValueSpecification>,
+    configuration: DataCubeConfiguration,
+  ) {
+    return new DataCubeQuerySnapshot(name, runtime, sourceQuery, configuration);
+  }
+
+  clone(): DataCubeQuerySnapshot {
+    const clone = new DataCubeQuerySnapshot('', '', {}, {});
+    (clone.data as Writable<DataCubeQuerySnapshotData>) = JSON.parse(
+      JSON.stringify(this.data),
+    ) as DataCubeQuerySnapshotData;
+    return clone;
+  }
+
+  /**
+   * Get available columns at a certain stage of the query
+   */
+  stageCols(stage: DataCubeQuerySnapshotStage): DataCubeQuerySnapshotColumn[] {
+    switch (stage) {
+      case 'leaf-extend':
+        return [...this.data.originalColumns];
+      case 'filter':
+      case 'aggregation':
+        return [...this.data.originalColumns, ...this.data.leafExtendedColumns];
+      case 'group-extend':
+        // TODO: @akphi - add pivot columns
+        return [...this.data.originalColumns, ...this.data.leafExtendedColumns];
+      case 'select':
+        // TODO: @akphi - add pivot columns
+        return [
+          ...this.data.originalColumns,
+          ...this.data.leafExtendedColumns,
+          ...this.data.groupExtendedColumns,
+        ];
+      case 'sort':
+        return [...this.data.selectColumns];
+      default:
+        throw new IllegalStateError(`Unknown stage '${stage}'`);
+    }
+  }
 }
 
-export function cloneSnapshot(
-  snapshot: DataCubeQuerySnapshot,
-): DataCubeQuerySnapshot {
-  const clone = JSON.parse(JSON.stringify(snapshot)) as DataCubeQuerySnapshot;
-  (clone as Writable<DataCubeQuerySnapshot>).uuid = uuid();
-  return clone;
+export function _findCol<T extends DataCubeQuerySnapshotColumn>(
+  cols: T[] | undefined,
+  name: string,
+): T | undefined {
+  return cols?.find((c) => c.name === name);
+}
+
+export function _getCol<T extends DataCubeQuerySnapshotColumn>(
+  cols: T[] | undefined,
+  name: string,
+): T {
+  return guaranteeNonNullable(
+    cols?.find((c) => c.name === name),
+    `Can't find column '${name}'`,
+  );
 }

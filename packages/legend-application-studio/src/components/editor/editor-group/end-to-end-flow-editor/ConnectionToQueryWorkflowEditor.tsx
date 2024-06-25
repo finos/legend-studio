@@ -189,7 +189,7 @@ export const QueryConnectionDatabaseGrammarEditor = observer(
               .isInProgress
           }
         />
-        <div className="panel__content__form__section__header__prompt  query-connection-database-builder-editor__prompt">
+        <div className="panel__content__form__section__header__prompt query-connection-database-builder-editor__prompt">
           Joins could be added manually and please be aware that only one
           database is supported in this flow
         </div>
@@ -374,7 +374,7 @@ export const QueryConnectionConfirmationAndGrammarEditor = observer(
               .isCompilingCode.isInProgress
           }
         />
-        <div className="panel__content__form__section__header__prompt  query-connection-database-builder-editor__prompt">
+        <div className="panel__content__form__section__header__prompt query-connection-database-builder-editor__prompt">
           Please confirm models below will be added to the project and click
           query to open query builder
         </div>

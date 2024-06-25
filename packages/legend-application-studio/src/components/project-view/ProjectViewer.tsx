@@ -177,7 +177,7 @@ const ProjectViewerStatusBar = observer(() => {
         </button>
         <button
           className={clsx(
-            'editor__status-bar__action editor__status-bar__clear__generation-btn ',
+            'editor__status-bar__action editor__status-bar__clear__generation-btn',
 
             {
               'editor__status-bar__action editor__status-bar__clear__generation-btn--wiggling':

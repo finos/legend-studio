@@ -44,6 +44,7 @@
  * See https://github.com/prettier/prettier/issues/5287
  */
 export default {
+  plugins: ['prettier-plugin-tailwindcss'],
   singleQuote: true,
   trailingComma: 'all',
 };

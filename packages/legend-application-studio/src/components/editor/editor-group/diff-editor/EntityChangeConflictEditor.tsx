@@ -771,7 +771,7 @@ export const EntityChangeConflictEditor = observer(
         {!isReadOnly && (
           <div className="entity-change-conflict-editor__actions">
             <button
-              className="btn--dark btn--important  entity-change-conflict-editor__action entity-change-conflict-editor__action__use-yours-btn"
+              className="btn--dark btn--important entity-change-conflict-editor__action entity-change-conflict-editor__action__use-yours-btn"
               disabled={!conflictEditorState.canUseYours}
               onClick={useYours}
             >

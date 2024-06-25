@@ -612,7 +612,7 @@ const FunctionTestEditor = observer(
             functionTestState.selectedAsertionState && (
               <>
                 <div className="function-test-editor__doc">
-                  <div className="panel__content__form__section ">
+                  <div className="panel__content__form__section">
                     <div className="panel__content__form__section__header__label">
                       Test Documentation
                     </div>

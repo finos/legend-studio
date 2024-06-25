@@ -316,7 +316,7 @@ const updateExistingPostFilterConditionNodeData = (
           .map((v) =>
             v instanceof EnumValueInstanceValue
               ? v.values.map((ef) => ef.value.name)
-              : (v as InstanceValue).values,
+              : v.values,
           )
           .flat()
           .includes(_cellData.value ?? data?.value);

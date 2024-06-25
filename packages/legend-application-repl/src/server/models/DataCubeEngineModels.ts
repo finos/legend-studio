@@ -23,7 +23,7 @@ import {
   V1_serializeValueSpecification,
   V1_lambdaModelSchema,
 } from '@finos/legend-graph';
-import type { DataCubeQueryColumn } from './DataCubeQuery.js';
+import { DataCubeQuery, type DataCubeQueryColumn } from './DataCubeQuery.js';
 
 export class DataCubeGetQueryCodeInput {
   query!: V1_ValueSpecification; // TODO: @akphi - consider if we should update this to use Lambda instead
@@ -82,3 +82,25 @@ export type DataCubeExecutionResult = {
 export type RelationType = {
   columns: DataCubeQueryColumn[];
 };
+
+export class DataCubeGetBaseQueryResult {
+  query!: DataCubeQuery;
+  timestamp!: number;
+  partialQuery!: V1_ValueSpecification;
+  sourceQuery!: V1_ValueSpecification;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataCubeGetBaseQueryResult, {
+      partialQuery: custom(
+        (val) => V1_serializeValueSpecification(val, []),
+        (val) => V1_deserializeValueSpecification(val, []),
+      ),
+      query: usingModelSchema(DataCubeQuery.serialization.schema),
+      sourceQuery: custom(
+        (val) => V1_serializeValueSpecification(val, []),
+        (val) => V1_deserializeValueSpecification(val, []),
+      ),
+      timestamp: primitive(),
+    }),
+  );
+}

@@ -88,7 +88,7 @@ export const RelationalRootQueryTempTableGraphFetchExecutionNodeViewer: React.FC
                 Details
               </PanelListItem>
               <PanelDivider />
-              <table className="table query-builder__store-mapping-global-graph-fetch__container__table">
+              <table className="query-builder__store-mapping-global-graph-fetch__container__table table">
                 <thead>
                   <tr>
                     <th className="table__cell--left">Property</th>

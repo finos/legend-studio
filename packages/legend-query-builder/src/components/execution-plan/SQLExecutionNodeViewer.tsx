@@ -116,7 +116,7 @@ export const SQLExecutionNodeViewerHelper: React.FC<{
               Result Columns
             </PanelListItem>
             <PanelDivider />
-            <table className="table query-builder__sql__container__table">
+            <table className="query-builder__sql__container__table table">
               <thead>
                 <tr>
                   <th className="table__cell--left">Label</th>

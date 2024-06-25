@@ -17,58 +17,49 @@
 import type {
   IServerSideDatasource,
   IServerSideGetRowsParams,
-  IServerSideGetRowsRequest,
 } from '@ag-grid-community/core';
 import type { DataCubeGridState } from './DataCubeGridState.js';
 import {
-  cloneSnapshot,
-  type DataCubeQueryFilter,
-  type DataCubeQueryFilterCondition,
-  type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotAggregateColumn,
-  type DataCubeQuerySnapshotColumn,
-  type DataCubeQuerySnapshotSortColumn,
-} from '../core/DataCubeQuerySnapshot.js';
-import {
   LogEvent,
   assertErrorThrown,
-  deepEqual,
   guaranteeNonNullable,
   isBoolean,
 } from '@finos/legend-shared';
-import { buildExecutableQueryFromSnapshot } from '../core/DataCubeQueryBuilder.js';
-import {
-  type TabularDataSet,
-  V1_Lambda,
-  PRIMITIVE_TYPE,
-  extractElementNameFromPath,
-} from '@finos/legend-graph';
-import {
-  DATA_CUBE_COLUMN_SORT_DIRECTION,
-  DATA_CUBE_FILTER_OPERATION,
-  DATA_CUBE_FUNCTIONS,
-} from '../DataCubeMetaModelConst.js';
+import { buildExecutableQuery } from '../core/DataCubeQueryBuilder.js';
+import { type TabularDataSet, V1_Lambda } from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
+import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
+import { generateRowGroupingDrilldownExecutableQueryPostProcessor } from './DataCubeGridQueryBuilder.js';
+import { makeObservable, observable, runInAction } from 'mobx';
 
-export type GridClientResultCellDataType =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined;
-
-export type GridClientRowDataType = {
-  [key: string]: GridClientResultCellDataType;
+type GridClientCellValue = string | number | boolean | null | undefined;
+type GridClientRowData = {
+  [key: string]: GridClientCellValue;
 };
+
+export const INTERNAL__GRID_CLIENT_HEADER_HEIGHT = 24;
+export const INTERNAL__GRID_CLIENT_ROW_HEIGHT = 20;
+export const INTERNAL__GRID_CLIENT_ROW_BUFFER = 50;
+export const INTERNAL__GRID_CLIENT_TREE_COLUMN_ID = 'INTERNAL__tree';
+export const INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID =
+  'INTERNAL__count';
 
 export enum GridClientSortDirection {
   ASCENDING = 'asc',
   DESCENDING = 'desc',
 }
 
-export const toRowData = (tds: TabularDataSet): GridClientRowDataType[] =>
-  tds.rows.map((_row, rowIdx) => {
-    const row: GridClientRowDataType = {};
+export enum GridClientAggregateOperation {
+  COUNT = 'count',
+  SUM = 'sum',
+  MAX = 'max',
+  MIN = 'min',
+  AVERAGE = 'avg',
+}
+
+function TDStoRowData(tds: TabularDataSet): GridClientRowData[] {
+  return tds.rows.map((_row, rowIdx) => {
+    const row: GridClientRowData = {};
     const cols = tds.columns;
     _row.values.forEach((value, colIdx) => {
       // `ag-grid` shows `false` value as empty string so we have
@@ -78,36 +69,97 @@ export const toRowData = (tds: TabularDataSet): GridClientRowDataType[] =>
     row.rowNumber = rowIdx;
     return row;
   });
+}
 
 export class DataCubeGridClientServerSideDataSource
   implements IServerSideDatasource
 {
   readonly grid: DataCubeGridState;
+  rowCount: number | undefined = undefined;
 
   constructor(grid: DataCubeGridState) {
+    makeObservable(this, {
+      rowCount: observable,
+    });
+
     this.grid = grid;
   }
 
   async fetchRows(
     params: IServerSideGetRowsParams<unknown, unknown>,
   ): Promise<void> {
+    // ------------------------------ GRID OPTIONS ------------------------------
+    // Here, we make adjustments to the grid display in response to the new
+    // request, in case the grid action has not impacted the layout in an
+    // adequate way.
+
+    // Toggle the visibility of the tree column based on the presence of row-group columns
+    if (params.request.rowGroupCols.length) {
+      params.api.setColumnsVisible(
+        [INTERNAL__GRID_CLIENT_TREE_COLUMN_ID],
+        true,
+      );
+    } else {
+      params.api.setColumnsVisible(
+        [INTERNAL__GRID_CLIENT_TREE_COLUMN_ID],
+        false,
+      );
+    }
+
+    // ------------------------------ SNAPSHOT ------------------------------
+
     const currentSnapshot = guaranteeNonNullable(this.grid.getLatestSnapshot());
-    const syncedSnapshot = this.syncSnapshot(params.request, currentSnapshot);
+    const syncedSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
     if (syncedSnapshot.uuid !== currentSnapshot.uuid) {
       this.grid.publishSnapshot(syncedSnapshot);
     }
+
+    // ------------------------------ DATA ------------------------------
+
     try {
-      const executableQuery = buildExecutableQueryFromSnapshot(syncedSnapshot);
+      const executableQuery = buildExecutableQuery(syncedSnapshot, {
+        postProcessor: generateRowGroupingDrilldownExecutableQueryPostProcessor(
+          params.request.groupKeys,
+        ),
+        pagination:
+          this.grid.isPaginationEnabled &&
+          params.request.startRow !== undefined &&
+          params.request.endRow !== undefined
+            ? {
+                start: params.request.startRow,
+                end: params.request.endRow,
+              }
+            : undefined,
+      });
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
-      const result = await this.grid.dataCubeState.engine.executeQuery(lambda);
-      const rowData = toRowData(result.result);
-      params.success({ rowData });
+      const result = await this.grid.dataCube.engine.executeQuery(lambda);
+      const rowData = TDStoRowData(result.result);
+      if (this.grid.isPaginationEnabled) {
+        params.success({ rowData });
+        // Only update row count when loading the top-level drilldown data
+        if (params.request.groupKeys.length === 0) {
+          runInAction(() => {
+            this.rowCount = (params.request.startRow ?? 0) + rowData.length;
+          });
+        }
+      } else {
+        params.success({
+          rowData,
+          // Setting row count to disable inifite-scrolling when pagination is disabled
+          // See https://www.ag-grid.com/javascript-data-grid/infinite-scrolling/#setting-last-row-index
+          rowCount: rowData.length,
+        });
+        // Only update row count when loading the top-level drilldown data
+        if (params.request.groupKeys.length === 0) {
+          runInAction(() => {
+            this.rowCount = rowData.length;
+          });
+        }
+      }
     } catch (error) {
       assertErrorThrown(error);
-      this.grid.dataCubeState.applicationStore.notificationService.notifyError(
-        error,
-      );
+      this.grid.dataCube.application.notificationService.notifyError(error);
       params.fail();
     }
   }
@@ -115,95 +167,11 @@ export class DataCubeGridClientServerSideDataSource
   getRows(params: IServerSideGetRowsParams<unknown, unknown>): void {
     this.fetchRows(params).catch((error: unknown) => {
       assertErrorThrown(error);
-      this.grid.dataCubeState.applicationStore.logService.error(
+      this.grid.dataCube.application.logService.error(
         LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
         `Error ocurred while fetching data for grid should have been handled gracefully`,
         error,
       );
     });
-  }
-
-  private syncSnapshot(
-    request: IServerSideGetRowsRequest,
-    baseSnapshot: DataCubeQuerySnapshot,
-  ): DataCubeQuerySnapshot {
-    let createNew = false;
-
-    // --------------------------------- GROUP BY ---------------------------------
-    const groupByExpandedKeys = request.groupKeys;
-    const groupByColumns = request.rowGroupCols.map((r) => {
-      const column = baseSnapshot.columns.find((col) => col.name === r.id);
-      return {
-        name: r.id,
-        type: guaranteeNonNullable(column).type,
-      } as DataCubeQuerySnapshotColumn;
-    });
-    const groupByAggColumns = request.valueCols.map((v) => {
-      const type = baseSnapshot.columns.find(
-        (col) => col.name === v.field,
-      )?.type;
-      return {
-        name: v.field,
-        type: type,
-        function: v.aggFunc,
-      } as DataCubeQuerySnapshotAggregateColumn;
-    });
-    let groupByFilter: DataCubeQueryFilter | undefined;
-
-    for (let index = 0; index < groupByExpandedKeys.length; index++) {
-      const groupFilter = {
-        conditions: [
-          {
-            name: guaranteeNonNullable(groupByColumns.at(index)).name,
-            type: PRIMITIVE_TYPE.STRING,
-            operation: DATA_CUBE_FILTER_OPERATION.EQUALS,
-            value: groupByExpandedKeys.at(index),
-          } as DataCubeQueryFilterCondition,
-        ],
-        groupOperation: extractElementNameFromPath(DATA_CUBE_FUNCTIONS.AND),
-      } as DataCubeQueryFilter;
-
-      groupByFilter = groupFilter;
-    }
-
-    // --------------------------------- SORT ---------------------------------
-
-    const newSortColumns: DataCubeQuerySnapshotSortColumn[] =
-      request.sortModel.map((sortInfo) => {
-        const column = guaranteeNonNullable(
-          baseSnapshot.columns.find((col) => col.name === sortInfo.colId),
-        );
-        return {
-          name: sortInfo.colId,
-          type: column.type,
-          direction:
-            sortInfo.sort === GridClientSortDirection.ASCENDING
-              ? DATA_CUBE_COLUMN_SORT_DIRECTION.ASCENDING
-              : DATA_CUBE_COLUMN_SORT_DIRECTION.DESCENDING,
-        };
-      });
-
-    if (
-      !deepEqual(newSortColumns, baseSnapshot.sortColumns) ||
-      !deepEqual(groupByExpandedKeys, baseSnapshot.groupByExpandedKeys) ||
-      !deepEqual(groupByColumns, baseSnapshot.groupByColumns) ||
-      !deepEqual(groupByAggColumns, baseSnapshot.groupByAggColumns) ||
-      !deepEqual(groupByFilter, baseSnapshot.groupByFilter)
-    ) {
-      createNew = true;
-    }
-
-    // --------------------------------- FINALIZE ---------------------------------
-
-    if (createNew) {
-      const newSnapshot = cloneSnapshot(baseSnapshot);
-      newSnapshot.sortColumns = newSortColumns;
-      newSnapshot.groupByExpandedKeys = groupByExpandedKeys;
-      newSnapshot.groupByColumns = groupByColumns;
-      newSnapshot.groupByAggColumns = groupByAggColumns;
-      newSnapshot.groupByFilter = groupByFilter;
-      return newSnapshot;
-    }
-    return baseSnapshot;
   }
 }

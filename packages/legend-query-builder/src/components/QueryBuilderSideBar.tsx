@@ -131,7 +131,7 @@ export const QueryBuilderClassSelector = observer(
 
     return (
       <div className="query-builder__setup__config-group query-builder__setup__config-group--class">
-        <div className="query-builder__setup__config-group__item ">
+        <div className="query-builder__setup__config-group__item">
           <label
             className="btn--sm query-builder__setup__config-group__item__label"
             title="entity"

@@ -30,7 +30,7 @@ import {
   V1_ParserError,
 } from '@finos/legend-graph';
 
-export class DataCubeQueryEditorState {
+class DataCubeQueryEditorState {
   uuid = uuid();
   query: string;
   parserError?: ParserError | undefined;
@@ -77,13 +77,13 @@ export class DataCubeQueryEditorState {
   }
 }
 
-export class DataCubeQueryCodeEditorState {
-  readonly dataCubeState!: DataCubeState;
+export class DataCubeEditorCodePanelState {
+  readonly dataCube!: DataCubeState;
 
   queryEditorState!: DataCubeQueryEditorState;
   currentSubQuery?: string | undefined;
 
-  constructor(dataCubeState: DataCubeState) {
+  constructor(dataCube: DataCubeState) {
     makeObservable(this, {
       currentSubQuery: observable,
       queryEditorState: observable,
@@ -91,7 +91,7 @@ export class DataCubeQueryCodeEditorState {
       parseQuery: flow,
     });
 
-    this.dataCubeState = dataCubeState;
+    this.dataCube = dataCube;
     this.queryEditorState = new DataCubeQueryEditorState('');
   }
 
@@ -103,7 +103,7 @@ export class DataCubeQueryCodeEditorState {
     try {
       this.queryEditorState.setParserError(undefined);
       yield flowResult(
-        this.dataCubeState.editorStore.client.parseQuery({
+        this.dataCube.replStore.client.parseQuery({
           code: `|${this.queryEditorState.query}`,
         }),
       );

@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
+/***************************************************************************************
+ * [CORE]
+ *
+ * These are utilities used to build the executable query from the query snapshot.
+ * The executable query is then used to fetch data.
+ ***************************************************************************************/
+
 import {
   PRIMITIVE_TYPE,
   V1_AppliedFunction,
@@ -37,13 +44,19 @@ import {
   type V1_PrimitiveValueSpecification,
   V1_Variable,
   V1_deserializeValueSpecification,
-  extractElementNameFromPath,
+  extractElementNameFromPath as _name,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import type {
-  DataCubeQueryFilterCondition,
-  DataCubeQueryFilter,
-  DataCubeQuerySnapshot,
+import {
+  type DataCubeQuerySnapshotFilterCondition,
+  type DataCubeQuerySnapshotFilter,
+  type DataCubeQuerySnapshot,
+  DataCubeQuerySnapshotSortDirection,
+  DataCubeQuerySnapshotFilterOperation,
+  DataCubeQueryFilterGroupOperation,
+  _findCol,
+  type DataCubeQuerySnapshotColumn,
+  type DataCubeQuerySnapshotAggregateColumn,
 } from './DataCubeQuerySnapshot.js';
 import {
   guaranteeNonNullable,
@@ -51,404 +64,404 @@ import {
   guaranteeIsBoolean,
   guaranteeIsNumber,
   UnsupportedOperationError,
+  guaranteeType,
+  type PlainObject,
 } from '@finos/legend-shared';
 import {
-  DATA_CUBE_AGGREGATE_FUNCTION,
-  DATA_CUBE_COLUMN_SORT_DIRECTION,
-  DATA_CUBE_FILTER_OPERATION,
-  DATA_CUBE_FUNCTIONS,
+  DataCubeFunction,
   DEFAULT_LAMBDA_VARIABLE_NAME,
-} from '../DataCubeMetaModelConst.js';
+  INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME,
+  type DataCubeQueryFunctionMap,
+} from './DataCubeQueryEngine.js';
 
-function createColSpec(
-  name: string,
-  type?: string | undefined,
-  function1?: V1_Lambda | undefined,
-  function2?: V1_Lambda | undefined,
-): V1_ClassInstance {
+// --------------------------------- UTILITIES ---------------------------------
+
+function _deserializeToLambda(json: PlainObject<V1_Lambda>) {
+  return guaranteeType(V1_deserializeValueSpecification(json, []), V1_Lambda);
+}
+
+export function _var(name?: string | undefined) {
+  const variable = new V1_Variable();
+  variable.name = name ?? DEFAULT_LAMBDA_VARIABLE_NAME;
+  return variable;
+}
+
+export function _property(name: string, variable?: V1_Variable | undefined) {
+  const property = new V1_AppliedProperty();
+  property.property = name;
+  property.parameters.push(variable ?? _var());
+  return property;
+}
+
+export function _lambda(
+  parameters: V1_Variable[],
+  body: V1_ValueSpecification[],
+) {
+  const lambda = new V1_Lambda();
+  lambda.parameters = parameters;
+  lambda.body = body;
+  return lambda;
+}
+
+export function _function(
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+) {
+  const func = new V1_AppliedFunction();
+  func.function = functionName;
+  func.parameters = parameters;
+  return func;
+}
+
+function _collection(values: V1_ValueSpecification[]) {
+  const collection = new V1_Collection();
+  collection.multiplicity = new V1_Multiplicity(values.length, values.length);
+  collection.values = values;
+  return collection;
+}
+
+export function _value(
+  type: string,
+  value: unknown,
+): V1_PrimitiveValueSpecification {
+  const _val = <T extends V1_PrimitiveValueSpecification & { value: unknown }>(
+    primitiveValue: T,
+    val: unknown,
+  ): T => {
+    primitiveValue.value = val;
+    return primitiveValue;
+  };
+  switch (type) {
+    case PRIMITIVE_TYPE.STRING:
+      return _val(new V1_CString(), guaranteeIsString(value));
+    case PRIMITIVE_TYPE.BOOLEAN:
+      return _val(new V1_CBoolean(), guaranteeIsBoolean(value));
+    case PRIMITIVE_TYPE.NUMBER:
+    case PRIMITIVE_TYPE.DECIMAL:
+      return _val(new V1_CDecimal(), guaranteeIsNumber(value));
+    case PRIMITIVE_TYPE.INTEGER:
+      return _val(new V1_CInteger(), guaranteeIsNumber(value));
+    case PRIMITIVE_TYPE.FLOAT:
+      return _val(new V1_CFloat(), guaranteeIsNumber(value));
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.DATETIME:
+      return _val(new V1_CDateTime(), guaranteeIsString(value));
+    case PRIMITIVE_TYPE.STRICTDATE:
+      return _val(new V1_CStrictDate(), guaranteeIsString(value));
+    case PRIMITIVE_TYPE.STRICTTIME:
+      return _val(new V1_CStrictTime(), guaranteeIsString(value));
+    default:
+      throw new UnsupportedOperationError(`Unsupported column type '${type}'`);
+  }
+}
+
+function _elementPtr(fullPath: string) {
+  const ptr = new V1_PackageableElementPtr();
+  ptr.fullPath = fullPath;
+  return ptr;
+}
+
+function _classInstance(type: string, value: unknown) {
   const instance = new V1_ClassInstance();
-  instance.type = V1_ClassInstanceType.COL_SPEC;
-  const colSpec = new V1_ColSpec();
-  colSpec.name = name;
-  colSpec.type = type;
-  colSpec.function1 = function1;
-  colSpec.function2 = function2;
-  instance.value = colSpec;
+  instance.type = type;
+  instance.value = value;
   return instance;
 }
 
-function getAggregationColSpec(
-  column: string,
-  functionName: string,
-  columnType: string,
-  // Temporary. Remove it when we support groupBy with empty aggregations
-  columnName?: string,
-): V1_ColSpec {
+export function _colSpec(
+  name: string,
+  function1?: V1_Lambda | undefined,
+  function2?: V1_Lambda | undefined,
+) {
   const colSpec = new V1_ColSpec();
-  const aggLambda = new V1_Lambda();
-  const property = new V1_AppliedProperty();
-  property.property = column;
-  property.class = columnType;
-  const defaultVariable = new V1_Variable();
-  defaultVariable.name = DEFAULT_LAMBDA_VARIABLE_NAME;
-  property.parameters = [defaultVariable];
-  aggLambda.body.push(property);
-  aggLambda.parameters.push(defaultVariable);
-  colSpec.function1 = aggLambda;
-
-  const funcLambda = new V1_Lambda();
-  const aggFunc = new V1_AppliedFunction();
-  aggFunc.function = functionName;
-  const aggVariable = new V1_Variable();
-  aggVariable.name = 'agg';
-  funcLambda.body.push(aggFunc);
-  aggFunc.parameters.push(aggVariable);
-  funcLambda.parameters.push(aggVariable);
-  colSpec.function2 = funcLambda;
-
-  colSpec.name = columnName ?? column;
+  colSpec.name = name;
+  colSpec.function1 = function1;
+  colSpec.function2 = function2;
   return colSpec;
 }
 
-function getPrimitiveValueSpecification(
-  type: string,
-  column: unknown,
-): V1_PrimitiveValueSpecification {
-  switch (type) {
-    case PRIMITIVE_TYPE.STRING: {
-      const stringValue = new V1_CString();
-      stringValue.value = guaranteeIsString(column);
-      return stringValue;
-    }
-    case PRIMITIVE_TYPE.BOOLEAN: {
-      const booleanValue = new V1_CBoolean();
-      booleanValue.value = guaranteeIsBoolean(column);
-      return booleanValue;
-    }
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.DECIMAL: {
-      const cDecimal = new V1_CDecimal();
-      cDecimal.value = guaranteeIsNumber(column);
-      return cDecimal;
-    }
-    case PRIMITIVE_TYPE.INTEGER: {
-      const cInteger = new V1_CInteger();
-      cInteger.value = guaranteeIsNumber(column);
-      return cInteger;
-    }
-    case PRIMITIVE_TYPE.FLOAT: {
-      const cFloat = new V1_CFloat();
-      cFloat.value = guaranteeIsNumber(column);
-      return cFloat;
-    }
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME: {
-      const cDateTime = new V1_CDateTime();
-      cDateTime.value = guaranteeIsString(column);
-      return cDateTime;
-    }
-    case PRIMITIVE_TYPE.STRICTDATE: {
-      const cStrictDate = new V1_CStrictDate();
-      cStrictDate.value = guaranteeIsString(column);
-      return cStrictDate;
-    }
-    case PRIMITIVE_TYPE.STRICTTIME: {
-      const cStrictTime = new V1_CStrictTime();
-      cStrictTime.value = guaranteeIsString(column);
-      return cStrictTime;
-    }
-    default:
-      throw new UnsupportedOperationError(
-        `Unsupported dataCube column type ${type}`,
-      );
-  }
+// --------------------------------- BUILDING BLOCKS ---------------------------------
+
+export function _col(
+  name: string,
+  function1?: V1_Lambda | undefined,
+  function2?: V1_Lambda | undefined,
+) {
+  return _classInstance(
+    V1_ClassInstanceType.COL_SPEC,
+    _colSpec(name, function1, function2),
+  );
 }
 
-function processFilterQuery(filter: object): V1_ValueSpecification {
-  const defaultVariable = new V1_Variable();
-  defaultVariable.name = DEFAULT_LAMBDA_VARIABLE_NAME;
+export function _cols(colSpecs: V1_ColSpec[]) {
+  const colSpecArray = new V1_ColSpecArray();
+  colSpecArray.colSpecs = colSpecs;
+  return _classInstance(V1_ClassInstanceType.COL_SPEC_ARRAY, colSpecArray);
+}
+
+export function _aggCols(
+  columns: DataCubeQuerySnapshotAggregateColumn[],
+): V1_ColSpec[] {
+  const variable = _var();
+  return columns.length
+    ? columns.map((agg) =>
+        _colSpec(
+          agg.name,
+          _lambda([variable], [_property(agg.name, variable)]),
+          _lambda([variable], [_function(agg.function, [variable])]),
+        ),
+      )
+    : // if no aggregates are specified, add a dummy count() aggregate to satisfy compiler
+      [
+        _colSpec(
+          INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME,
+          _lambda([variable], [variable]),
+          _lambda([variable], [_function(DataCubeFunction.COUNT, [variable])]),
+        ),
+      ];
+}
+
+export function _filter(
+  filter: DataCubeQuerySnapshotFilter | DataCubeQuerySnapshotFilterCondition,
+): V1_ValueSpecification {
   if ('groupOperation' in filter) {
-    const groupFilter = filter as DataCubeQueryFilter;
-    let conditionExpressions: V1_ValueSpecification[] = [];
-    groupFilter.conditions.forEach((condition) => {
-      const conditionExpression = processFilterQuery(condition);
-      conditionExpressions.push(conditionExpression);
-      if (conditionExpressions.length === 2) {
-        const groupCondition = groupFilter.groupOperation;
-        const groupFunc = new V1_AppliedFunction();
-        groupFunc.function = groupCondition;
-        groupFunc.parameters = conditionExpressions;
-        conditionExpressions = [groupFunc];
+    const group = filter;
+    const groupOperation =
+      group.groupOperation === DataCubeQueryFilterGroupOperation.AND
+        ? DataCubeFunction.AND
+        : DataCubeFunction.OR;
+    let conditions: V1_ValueSpecification[] = [];
+    group.conditions.forEach((condition) => {
+      conditions.push(_filter(condition));
+      // NOTE: a group operation (and/or) function can only have 2 parameters, so we
+      // have to breakdown the group operation into nested group functions
+      if (conditions.length === 2) {
+        conditions = [_function(groupOperation, conditions)];
       }
     });
-    if (conditionExpressions.length === 1) {
-      return guaranteeNonNullable(conditionExpressions[0]);
-    }
+    return guaranteeNonNullable(conditions[0]);
   } else {
-    const condition = filter as DataCubeQueryFilterCondition;
-    const filterCondition = new V1_AppliedFunction();
-    const property = new V1_AppliedProperty();
-    property.property = condition.name;
-    property.class = condition.type;
-    property.parameters = [defaultVariable];
-
+    const condition = filter;
+    const property = _property(condition.name);
+    const _cond = (fn: string, ...p: V1_ValueSpecification[]) =>
+      _function(_name(fn), [property, ...p]);
+    const _val = () => _value(condition.type, condition.value);
+    const _not = (fn: V1_AppliedFunction) =>
+      _function(_name(DataCubeFunction.NOT), [fn]);
     switch (condition.operation) {
-      case DATA_CUBE_FILTER_OPERATION.EQUALS:
-      case DATA_CUBE_FILTER_OPERATION.GREATER_THAN:
-      case DATA_CUBE_FILTER_OPERATION.GREATER_THAN_OR_EQUAL:
-      case DATA_CUBE_FILTER_OPERATION.LESS_THAN:
-      case DATA_CUBE_FILTER_OPERATION.LESS_THAN_OR_EQUAL:
-      case DATA_CUBE_FILTER_OPERATION.CONTAINS:
-      case DATA_CUBE_FILTER_OPERATION.ENDS_WITH:
-      case DATA_CUBE_FILTER_OPERATION.STARTS_WITH: {
-        filterCondition.function = condition.operation;
-        filterCondition.parameters.push(property);
-        filterCondition.parameters.push(
-          getPrimitiveValueSpecification(condition.type, condition.value),
-        );
-        break;
-      }
-      case DATA_CUBE_FILTER_OPERATION.BLANK: {
-        filterCondition.function = condition.operation;
-        filterCondition.parameters.push(property);
-        break;
-      }
-      case DATA_CUBE_FILTER_OPERATION.NOT_EQUAL: {
-        filterCondition.function = extractElementNameFromPath(
-          DATA_CUBE_FUNCTIONS.NOT,
-        );
-
-        const filterConditionFunc = new V1_AppliedFunction();
-        filterConditionFunc.function = DATA_CUBE_FILTER_OPERATION.EQUALS;
-        filterConditionFunc.parameters.push(property);
-        filterConditionFunc.parameters.push(
-          getPrimitiveValueSpecification(condition.type, condition.value),
-        );
-
-        filterCondition.parameters.push(filterConditionFunc);
-        break;
-      }
-      case DATA_CUBE_FILTER_OPERATION.NOT_BLANK: {
-        filterCondition.function = extractElementNameFromPath(
-          DATA_CUBE_FUNCTIONS.NOT,
-        );
-
-        const filterConditionFunc = new V1_AppliedFunction();
-        filterConditionFunc.function = DATA_CUBE_FILTER_OPERATION.BLANK;
-        filterConditionFunc.parameters.push(property);
-        filterConditionFunc.parameters.push(
-          getPrimitiveValueSpecification(condition.type, condition.value),
-        );
-
-        filterCondition.parameters.push(filterConditionFunc);
-        break;
-      }
-      case DATA_CUBE_FILTER_OPERATION.NOT_CONTAINS: {
-        filterCondition.function = extractElementNameFromPath(
-          DATA_CUBE_FUNCTIONS.NOT,
-        );
-
-        const filterConditionFunc = new V1_AppliedFunction();
-        filterConditionFunc.function = DATA_CUBE_FILTER_OPERATION.CONTAINS;
-        filterConditionFunc.parameters.push(property);
-        filterConditionFunc.parameters.push(
-          getPrimitiveValueSpecification(condition.type, condition.value),
-        );
-
-        filterCondition.parameters.push(filterConditionFunc);
-        break;
-      }
+      case DataCubeQuerySnapshotFilterOperation.EQUAL:
+        return _cond(DataCubeFunction.EQUAL, _val());
+      case DataCubeQuerySnapshotFilterOperation.GREATER_THAN:
+        return _cond(DataCubeFunction.GREATER_THAN, _val());
+      case DataCubeQuerySnapshotFilterOperation.GREATER_THAN_OR_EQUAL:
+        return _cond(DataCubeFunction.GREATER_THAN_EQUAL, _val());
+      case DataCubeQuerySnapshotFilterOperation.LESS_THAN:
+        return _cond(DataCubeFunction.LESS_THAN, _val());
+      case DataCubeQuerySnapshotFilterOperation.LESS_THAN_OR_EQUAL:
+        return _cond(DataCubeFunction.LESS_THAN_EQUAL, _val());
+      case DataCubeQuerySnapshotFilterOperation.CONTAINS:
+        return _cond(DataCubeFunction.CONTAINS, _val());
+      case DataCubeQuerySnapshotFilterOperation.ENDS_WITH:
+        return _cond(DataCubeFunction.ENDS_WITH, _val());
+      case DataCubeQuerySnapshotFilterOperation.STARTS_WITH:
+        return _cond(DataCubeFunction.STARTS_WITH, _val());
+      case DataCubeQuerySnapshotFilterOperation.BLANK:
+        return _cond(DataCubeFunction.IS_EMPTY);
+      case DataCubeQuerySnapshotFilterOperation.NOT_EQUAL:
+        return _not(_cond(DataCubeFunction.EQUAL, _val()));
+      case DataCubeQuerySnapshotFilterOperation.NOT_BLANK:
+        return _not(_cond(DataCubeFunction.IS_EMPTY));
+      case DataCubeQuerySnapshotFilterOperation.NOT_CONTAINS:
+        return _not(_cond(DataCubeFunction.CONTAINS, _val()));
       default:
         throw new UnsupportedOperationError(
-          `Unsupported filter operation ${condition.operation}`,
+          `Unsupported filter operation '${condition.operation}'`,
         );
     }
-    return filterCondition;
   }
-  throw new UnsupportedOperationError(`Unsupported dataCube filter`, filter);
 }
 
-export function buildExecutableQueryFromSnapshot(
-  snapshot: DataCubeQuerySnapshot,
-): V1_ValueSpecification {
-  const sourceQuery = V1_deserializeValueSpecification(
-    snapshot.sourceQuery,
-    [],
+export function _groupByExtend(
+  columns: DataCubeQuerySnapshotColumn[],
+  columnsUsedInGroupBy: DataCubeQuerySnapshotColumn[],
+) {
+  const missingCols = columns.filter(
+    (col) => !_findCol(columnsUsedInGroupBy, col.name),
   );
+  return missingCols.length
+    ? _function(_name(DataCubeFunction.EXTEND), [
+        _cols(
+          missingCols.map((col) =>
+            _colSpec(
+              col.name,
+              _lambda([_var()], [_value(PRIMITIVE_TYPE.STRING, '')]),
+            ),
+          ),
+        ),
+      ])
+    : undefined;
+}
+
+// --------------------------------- MAIN ---------------------------------
+
+export function buildExecutableQuery(
+  snapshot: DataCubeQuerySnapshot,
+  options?: {
+    postProcessor?: (
+      snapshot: DataCubeQuerySnapshot,
+      sequence: V1_AppliedFunction[],
+      funcMap: DataCubeQueryFunctionMap,
+    ) => void;
+    pagination?:
+      | {
+          start: number;
+          end: number;
+        }
+      | undefined;
+  },
+): V1_ValueSpecification {
+  const data = snapshot.data;
+  const sourceQuery = V1_deserializeValueSpecification(data.sourceQuery, []);
   const sequence: V1_AppliedFunction[] = [];
+  const funcMap: DataCubeQueryFunctionMap = {};
+  const _process = (
+    funcMapKey: keyof DataCubeQueryFunctionMap,
+    func: V1_AppliedFunction,
+  ) => {
+    sequence.push(func);
+    funcMap[funcMapKey] = func;
+  };
 
   // --------------------------------- LEAF EXTEND ---------------------------------
-  // TODO: @akphi - implement this
 
-  // --------------------------------- FILTER ---------------------------------
-  // TODO: @akphi - implement this
-
-  // --------------------------------- GROUP BY FILTER ---------------------------------
-  if (snapshot.groupByFilter) {
-    const filter = snapshot.groupByFilter;
-    const filterValueSpec = processFilterQuery(filter);
-    const filterLambda = new V1_Lambda();
-    const defaultVariable = new V1_Variable();
-    defaultVariable.name = DEFAULT_LAMBDA_VARIABLE_NAME;
-    filterLambda.body = [filterValueSpec];
-
-    filterLambda.parameters = [defaultVariable];
-    const filterFunc = new V1_AppliedFunction();
-    filterFunc.function = extractElementNameFromPath(
-      DATA_CUBE_FUNCTIONS.FILTER,
+  if (data.leafExtendedColumns.length) {
+    _process(
+      'leafExtend',
+      _function(_name(DataCubeFunction.EXTEND), [
+        _cols(
+          data.leafExtendedColumns.map((col) =>
+            _colSpec(col.name, _deserializeToLambda(col.lambda)),
+          ),
+        ),
+      ]),
     );
-    filterFunc.parameters.push(filterLambda);
-    sequence.push(filterFunc);
   }
 
-  // --------------------------------- RENAME ---------------------------------
-  // TODO: @akphi - implement this
+  // --------------------------------- FILTER ---------------------------------
+
+  if (data.filter) {
+    _process(
+      'filter',
+      _function(_name(DataCubeFunction.FILTER), [
+        _lambda([_var()], [_filter(data.filter)]),
+      ]),
+    );
+  }
 
   // --------------------------------- GROUP BY ---------------------------------
-  // TODO: @akphi - implement this
-  if (snapshot.groupByColumns.length) {
-    const groupByInstance = new V1_ClassInstance();
-    groupByInstance.type = V1_ClassInstanceType.COL_SPEC_ARRAY;
-    const groupByColSpecArray = new V1_ColSpecArray();
-    const aggregationColSpecArray = new V1_ColSpecArray();
-    const aggregationInstance = new V1_ClassInstance();
-    aggregationInstance.type = V1_ClassInstanceType.COL_SPEC_ARRAY;
 
-    if (
-      snapshot.groupByExpandedKeys.length !== snapshot.groupByColumns.length
-    ) {
-      const groupKeys = snapshot.groupByExpandedKeys;
-      for (let index = 0; index <= groupKeys.length; index++) {
-        const currentGroupByColumn = snapshot.groupByColumns[index];
-        const columnSpec = new V1_ColSpec();
-        columnSpec.name = guaranteeNonNullable(currentGroupByColumn).name;
-        groupByColSpecArray.colSpecs.push(columnSpec);
-      }
+  if (data.groupBy) {
+    const groupBy = data.groupBy;
+    _process(
+      'groupBy',
+      _function(_name(DataCubeFunction.GROUP_BY), [
+        _cols(groupBy.columns.map((col) => _colSpec(col.name))),
+        _cols(_aggCols(groupBy.aggColumns)),
+      ]),
+    );
 
-      // Temporary. Remove it later when we support empty aggregations
-      if (snapshot.groupByAggColumns.length === 0) {
-        const column = guaranteeNonNullable(snapshot.groupByColumns[0]);
-        const colSpec = getAggregationColSpec(
-          column.name,
-          DATA_CUBE_AGGREGATE_FUNCTION.COUNT,
-          PRIMITIVE_TYPE.STRING,
-          DATA_CUBE_AGGREGATE_FUNCTION.COUNT,
-        );
-        aggregationColSpecArray.colSpecs.push(colSpec);
-      }
+    // extend columns to maintain the same set of columns prior to groupBy()
+    const groupByExtend = _groupByExtend(snapshot.stageCols('aggregation'), [
+      ...groupBy.columns,
+      ...groupBy.aggColumns,
+    ]);
+    if (groupByExtend) {
+      _process('groupByExtend', groupByExtend);
     }
+  }
 
-    if (
-      snapshot.groupByExpandedKeys.length === 0 ||
-      snapshot.groupByExpandedKeys.length !== snapshot.groupByColumns.length
-    ) {
-      snapshot.groupByAggColumns.forEach((agg) => {
-        const colSpec = getAggregationColSpec(agg.name, agg.function, agg.type);
-        aggregationColSpecArray.colSpecs.push(colSpec);
-      });
-    }
+  // --------------------------------- PIVOT ---------------------------------
+  // TODO: @akphi - implement this and CAST
 
-    groupByInstance.value = groupByColSpecArray;
-    aggregationInstance.value = aggregationColSpecArray;
+  // --------------------------------- GROUP EXTEND ---------------------------------
 
-    if (
-      groupByColSpecArray.colSpecs.length !== 0 ||
-      aggregationColSpecArray.colSpecs.length !== 0
-    ) {
-      const groupBy = new V1_AppliedFunction();
-      groupBy.function = extractElementNameFromPath(
-        DATA_CUBE_FUNCTIONS.GROUP_BY,
-      );
-      groupBy.parameters = [groupByInstance, aggregationInstance];
-      sequence.push(groupBy);
-    }
+  if (data.groupExtendedColumns.length) {
+    _process(
+      'groupExtend',
+      _function(_name(DataCubeFunction.EXTEND), [
+        _cols(
+          data.groupExtendedColumns.map((col) =>
+            _colSpec(col.name, _deserializeToLambda(col.lambda)),
+          ),
+        ),
+      ]),
+    );
   }
 
   // --------------------------------- SELECT ---------------------------------
-  // TODO: @akphi - implement this
 
-  // --------------------------------- PIVOT ---------------------------------
-  // TODO: @akphi - implement this
-
-  // --------------------------------- CAST ---------------------------------
-  // TODO: @akphi - implement this
-
-  // --------------------------------- GROUP EXTEND ---------------------------------
-  if (snapshot.groupByExpandedKeys.length !== snapshot.groupByColumns.length) {
-    const extendFunc = new V1_AppliedFunction();
-    extendFunc.function = extractElementNameFromPath(
-      DATA_CUBE_FUNCTIONS.EXTEND,
+  if (data.selectColumns.length) {
+    _process(
+      'select',
+      _function(_name(DataCubeFunction.SELECT), [
+        _cols(data.selectColumns.map((col) => _colSpec(col.name))),
+      ]),
     );
-    const classInstance = new V1_ClassInstance();
-    classInstance.type = V1_ClassInstanceType.COL_SPEC_ARRAY;
-    const colSpecArray = new V1_ColSpecArray();
-    classInstance.value = colSpecArray;
-    snapshot.columns.forEach((col) => {
-      if (!snapshot.groupByColumns.find((c) => c.name === col.name)) {
-        const colSpec = new V1_ColSpec();
-        const lambda = new V1_Lambda();
-        const defaultVariable = new V1_Variable();
-        defaultVariable.name = DEFAULT_LAMBDA_VARIABLE_NAME;
-        lambda.parameters.push(defaultVariable);
-        const variableValue = new V1_CString();
-        variableValue.value = '';
-        lambda.body.push(variableValue);
-        colSpec.function1 = lambda;
-        colSpec.name = col.name;
-        colSpecArray.colSpecs.push(colSpec);
-      }
-    });
-    extendFunc.parameters.push(classInstance);
-
-    sequence.push(extendFunc);
   }
 
   // --------------------------------- SORT ---------------------------------
 
-  if (snapshot.sortColumns.length) {
-    const sort = new V1_AppliedFunction();
-    sort.function = extractElementNameFromPath(DATA_CUBE_FUNCTIONS.SORT);
-    const sortInfos = new V1_Collection();
-    sortInfos.multiplicity = new V1_Multiplicity(
-      snapshot.sortColumns.length,
-      snapshot.sortColumns.length,
+  if (data.sortColumns.length) {
+    _process(
+      'sort',
+      _function(_name(DataCubeFunction.SORT), [
+        _collection(
+          data.sortColumns.map((col) =>
+            _function(
+              _name(
+                col.direction === DataCubeQuerySnapshotSortDirection.ASCENDING
+                  ? DataCubeFunction.ASC
+                  : DataCubeFunction.DESC,
+              ),
+              [_col(col.name)],
+            ),
+          ),
+        ),
+      ]),
     );
-    snapshot.sortColumns.forEach((sortCol) => {
-      if (
-        snapshot.groupByColumns.length ===
-          snapshot.groupByExpandedKeys.length ||
-        snapshot.groupByColumns.map((col) => col.name).indexOf(sortCol.name) ===
-          snapshot.groupByExpandedKeys.length
-      ) {
-        const sortInfo = new V1_AppliedFunction();
-        sortInfo.function = extractElementNameFromPath(
-          sortCol.direction === DATA_CUBE_COLUMN_SORT_DIRECTION.ASCENDING
-            ? DATA_CUBE_FUNCTIONS.ASC
-            : DATA_CUBE_FUNCTIONS.DESC,
-        );
-        sortInfo.parameters.push(createColSpec(sortCol.name));
-        sortInfos.values.push(sortInfo);
-      }
-    });
-    sort.parameters.push(sortInfos);
-    if (sortInfos.values.length) {
-      sequence.push(sort);
-    }
   }
 
   // --------------------------------- LIMIT ---------------------------------
-  // TODO: @akphi - implement this
+
+  if (data.limit) {
+    _process(
+      'limit',
+      _function(_name(DataCubeFunction.LIMIT), [
+        _value(PRIMITIVE_TYPE.INTEGER, data.limit),
+      ]),
+    );
+  }
+
+  // --------------------------------- SLICE ---------------------------------
+
+  if (options?.pagination) {
+    sequence.push(
+      _function(_name(DataCubeFunction.SLICE), [
+        _value(PRIMITIVE_TYPE.INTEGER, options.pagination.start),
+        _value(PRIMITIVE_TYPE.INTEGER, options.pagination.end),
+      ]),
+    );
+  }
 
   // --------------------------------- FROM ---------------------------------
 
-  const fromFunc = new V1_AppliedFunction();
-  fromFunc.function = extractElementNameFromPath(DATA_CUBE_FUNCTIONS.FROM);
-  const runtimePtr = new V1_PackageableElementPtr();
-  runtimePtr.fullPath = snapshot.runtime;
-  fromFunc.parameters.push(runtimePtr);
-  sequence.push(fromFunc);
+  sequence.push(
+    _function(_name(DataCubeFunction.FROM), [_elementPtr(data.runtime)]),
+  );
 
   // --------------------------------- FINALIZE ---------------------------------
+
+  options?.postProcessor?.(snapshot, sequence, funcMap);
 
   if (!sequence.length) {
     return sourceQuery;
@@ -458,22 +471,5 @@ export function buildExecutableQueryFromSnapshot(
       i === 0 ? sourceQuery : guaranteeNonNullable(sequence[i - 1]),
     );
   }
-
   return guaranteeNonNullable(sequence[sequence.length - 1]);
 }
-
-// export async function buildPersistentQueryFromSnapshot(
-//   snapshot: DataCubeQuerySnapshot,
-// ) {
-//   return new DataCubeQuery(
-//     snapshot.name,
-//     snapshot.sourceQuery,
-//     snapshot.configuration,
-//   );
-// }
-
-// name!: string;
-// query!: string;
-// partialQuery!: string;
-// source!: DataCubeQuerySource;
-// configuration!: DataCubeConfiguration;

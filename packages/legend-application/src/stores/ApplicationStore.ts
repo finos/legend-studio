@@ -202,12 +202,16 @@ export class ApplicationStore<
    * of throwing them to the UI. This enforces that by throwing `IllegalStateError`
    */
   alertUnhandledError = (error: Error): void => {
+    this.logUnhandledError(error);
+    this.notificationService.notifyIllegalState(error.message);
+  };
+
+  logUnhandledError = (error: Error): void => {
     this.logService.error(
       LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
       'Encountered unhandled error in component tree',
       error,
     );
-    this.notificationService.notifyIllegalState(error.message);
   };
 
   /**

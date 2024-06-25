@@ -15,5 +15,9 @@
  */
 
 import Draggable from 'react-draggable';
+import { Resizable, ResizableBox } from 'react-resizable';
+import { Rnd } from 'react-rnd';
 
 export { Draggable };
+export { Resizable, ResizableBox };
+export { Rnd as ResizableAndDraggableBox };

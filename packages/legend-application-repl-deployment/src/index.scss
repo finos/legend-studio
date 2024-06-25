@@ -19,3 +19,9 @@
 @import url('@finos/legend-lego/lib/index.css');
 
 @import url('@finos/legend-application-repl/lib/index.css');
+
+html {
+  box-sizing: border-box;
+  font-family: Roboto, sans-serif;
+  overflow-y: hidden;
+}
