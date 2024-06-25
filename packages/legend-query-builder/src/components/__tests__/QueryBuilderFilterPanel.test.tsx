@@ -2057,9 +2057,11 @@ test(
     ).toHaveProperty('disabled', true);
 
     // Enter value
-    const filterValueInput = getByRole(filterPanel, 'textbox');
+    let filterValueInput = getByRole(filterPanel, 'textbox');
     fireEvent.change(filterValueInput, { target: { value: 'test' } });
     await waitFor(() => getByDisplayValue(filterPanel, 'test'));
+    fireEvent.blur(filterValueInput);
+    expect(getByText(filterPanel, '"test"')).not.toBeNull();
 
     // Verify no validation issue
     expect(queryByText(filterPanel, '1 issue')).toBeNull();
@@ -2068,8 +2070,11 @@ test(
     ).toHaveProperty('disabled', false);
 
     // Delete value to set it to empty string
+    fireEvent.click(getByText(filterPanel, '"test"'));
+    filterValueInput = getByRole(filterPanel, 'textbox');
     fireEvent.change(filterValueInput, { target: { value: '' } });
-    await waitFor(() => getByDisplayValue(filterPanel, ''));
+    fireEvent.blur(filterValueInput);
+    await waitFor(() => getByText(filterPanel, '""'));
 
     // Verify no validation issue
     expect(queryByText(filterPanel, '1 issue')).toBeNull();
@@ -2078,10 +2083,13 @@ test(
     ).toHaveProperty('disabled', false);
 
     // Click reset button
+    fireEvent.click(getByText(filterPanel, '""'));
+    filterValueInput = getByRole(filterPanel, 'textbox');
     fireEvent.click(getByTitle(filterPanel, 'Reset'));
+    fireEvent.blur(filterValueInput);
 
     // Verify value is reset
-    await waitFor(() => getByDisplayValue(filterPanel, ''));
+    await waitFor(() => getByText(filterPanel, '""'));
 
     // Verify validation issue
     expect(getByText(filterPanel, '1 issue')).not.toBeNull();
@@ -2233,8 +2241,10 @@ test(
     ).toHaveProperty('disabled', true);
 
     // Enter value
-    const filterValueInput = getByRole(filterPanel, 'textbox');
+    let filterValueInput = getByRole(filterPanel, 'textbox');
     fireEvent.change(filterValueInput, { target: { value: '123' } });
+    fireEvent.blur(filterValueInput);
+    expect(getByText(filterPanel, '"123"')).not.toBeNull();
 
     // Verify no validation issues
     expect(queryByText(filterPanel, '1 issue')).toBeNull();
@@ -2243,10 +2253,13 @@ test(
     ).toHaveProperty('disabled', false);
 
     // Click reset button
+    fireEvent.click(getByText(filterPanel, '"123"'));
+    filterValueInput = getByRole(filterPanel, 'textbox');
     fireEvent.click(getByTitle(filterPanel, 'Reset'));
+    fireEvent.blur(filterValueInput);
 
     // Verify value is reset
-    await waitFor(() => getByDisplayValue(filterPanel, ''));
+    await waitFor(() => getByText(filterPanel, '""'));
 
     // Verify validation issue
     expect(getByText(filterPanel, '1 issue')).not.toBeNull();
@@ -2544,6 +2557,8 @@ test(
 
     // Verify value is reset
     await waitFor(() => getByText(filterPanel, 'Select value'));
+    fireEvent.blur(getByText(filterPanel, 'Select value'));
+    expect(getByText(filterPanel, '""')).not.toBeNull();
 
     // Verify validation issue
     expect(getByText(filterPanel, '1 issue')).not.toBeNull();
