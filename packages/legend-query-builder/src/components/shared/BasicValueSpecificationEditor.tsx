@@ -1494,7 +1494,9 @@ export const EditableBasicValueSpecificationEditor = observer(
         !isSubType(
           valueSpecification.genericType.value.rawType,
           PrimitiveType.DATE,
-        )) ||
+        ) &&
+        valueSpecification.genericType.value.rawType !==
+          PrimitiveType.BOOLEAN) ||
       valueSpecification instanceof EnumValueInstanceValue;
 
     const shouldRenderEditor = isEditingValue || !editableDisplayValueSupported;
