@@ -311,6 +311,7 @@ $group-node-width: 3.5rem;
       @include flexVCenter;
 
       width: fit-content;
+      max-width: calc(50% - 3rem);
       height: 2.8rem;
     }
 
