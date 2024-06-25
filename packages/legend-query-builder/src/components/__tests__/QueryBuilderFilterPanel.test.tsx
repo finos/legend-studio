@@ -42,6 +42,8 @@ import {
   TEST_DATA__simpleFilterWithGroupOperationAndExists,
   TEST_DATA__simpleFilterWithThreeNodes,
   TEST_DATA__simpleLambdaWithFirstDayOfYearDateFunction,
+  TEST_DATA__getAllWithOneIntegerConditionFilter,
+  TEST_DATA_getAllWithOneFloatConditionFilter,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
@@ -54,7 +56,11 @@ import {
   TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
 } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import { integrationTest } from '@finos/legend-shared/test';
-import { create_RawLambda, stub_RawLambda } from '@finos/legend-graph';
+import {
+  create_RawLambda,
+  stub_RawLambda,
+  PrimitiveInstanceValue,
+} from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   TEST__setUpQueryBuilder,
@@ -65,7 +71,11 @@ import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDerivedPropFromParentUsedInFilter from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDerivedPropFromParentUsedInFilter.json';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  getNullableFirstEntry,
+  guaranteeType,
+} from '@finos/legend-shared';
 import TEST_MilestoningModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Milestoning.json' assert { type: 'json' };
 import {
   TEST_DATA__simpleFilterWithBiTemporalSourceAndBiTemporalTarget,
@@ -90,6 +100,7 @@ import {
   TEST_DATA__simpleFilterWithSubType,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
 import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
+import { QueryBuilderFilterTreeConditionNodeData } from '../../stores/filter/QueryBuilderFilterState.js';
 
 test(
   integrationTest(
@@ -296,6 +307,7 @@ test(
     );
     expect(queryByText(ageFilterCondition, 'integerConst')).not.toBeNull();
     fireEvent.click(getByTitle(ageFilterCondition, 'Reset'));
+    fireEvent.click(getByText(ageFilterCondition, '""'));
     expect(queryByDisplayValue(ageFilterCondition, '')).not.toBeNull();
     expect(
       queryByTitle(ageFilterCondition, 'Evaluate Expression (Enter)'),
@@ -326,7 +338,7 @@ test(
     await waitFor(() => expect(containerNodes.length).toBe(1));
     const ageNode = guaranteeNonNullable(containerNodes[0]);
     expect(getByText(ageNode, 'Age')).not.toBeNull();
-    const ageValue = getByDisplayValue(ageNode, '');
+    const ageValue = getByText(ageNode, '""');
     // drag and drop
     const constantPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
@@ -1447,13 +1459,13 @@ test(
       getByText(guaranteeNonNullable(contentNodes[2]), 'First Name'),
     );
     await waitFor(() => getByText(guaranteeNonNullable(contentNodes[2]), 'is'));
-    await waitFor(() =>
-      getByDisplayValue(guaranteeNonNullable(contentNodes[2]), ''),
-    );
+    await waitFor(() => getByText(guaranteeNonNullable(contentNodes[2]), '""'));
     await waitFor(() =>
       getByText(guaranteeNonNullable(contentNodes[3]), 'Last Name'),
     );
     await waitFor(() => getByText(guaranteeNonNullable(contentNodes[3]), 'is'));
+    // Last Name is the most recently added node, so it shows the BasicValueSpecificationEditor
+    // instead of the editable (blue underlined) text.
     await waitFor(() =>
       getByDisplayValue(guaranteeNonNullable(contentNodes[3]), ''),
     );
@@ -1535,9 +1547,7 @@ test(
       getByText(guaranteeNonNullable(contentNodes[2]), 'First Name'),
     );
     await waitFor(() => getByText(guaranteeNonNullable(contentNodes[2]), 'is'));
-    await waitFor(() =>
-      getByDisplayValue(guaranteeNonNullable(contentNodes[2]), ''),
-    );
+    await waitFor(() => getByText(guaranteeNonNullable(contentNodes[2]), '""'));
     await waitFor(() =>
       getByText(guaranteeNonNullable(contentNodes[3]), 'Employees'),
     );
@@ -1548,100 +1558,8 @@ test(
       getByText(guaranteeNonNullable(contentNodes[4]), 'Last Name'),
     );
     await waitFor(() => getByText(guaranteeNonNullable(contentNodes[4]), 'is'));
-    await waitFor(() =>
-      getByDisplayValue(guaranteeNonNullable(contentNodes[4]), ''),
-    );
-  },
-);
-
-test(
-  integrationTest(
-    `Query builder loads simple filter when we create multiple exists from group condition by DnD`,
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__QueryBuilder_Model_SimpleRelational,
-      stub_RawLambda(),
-      'execution::RelationalMapping',
-      'execution::Runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
-    );
-
-    const _class =
-      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
-    await act(async () => {
-      queryBuilderState.changeClass(_class);
-    });
-    const filterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
-      ),
-    );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
-    );
-
-    // Drag and drop
-    let dropZone = await waitFor(() =>
-      getByText(filterPanel, 'Add a filter condition'),
-    );
-
-    await waitFor(() => getByText(explorerPanel, 'Employees'));
-    fireEvent.click(getByText(explorerPanel, 'Employees'));
-    let dragSource = await waitFor(() =>
-      getByText(explorerPanel, 'First Name'),
-    );
-    fireEvent.dragStart(dragSource);
-    fireEvent.dragEnter(dropZone);
-    fireEvent.dragOver(dropZone);
-    await findByText(filterPanel, 'Add a filter condition');
-    fireEvent.drop(getByText(filterPanel, 'Add a filter condition'));
-    fireEvent.click(renderResult.getByText('Proceed'));
-
-    dragSource = await waitFor(() => getByText(explorerPanel, 'Last Name'));
-    const filterTree = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE),
-    );
-    dropZone = filterTree;
-    fireEvent.dragStart(dragSource);
-    fireEvent.dragEnter(dropZone);
-    fireEvent.dragOver(dropZone);
-    await findByText(filterPanel, 'Add filter to main group');
-    fireEvent.drop(getByText(filterPanel, 'Add filter to main group'));
-    fireEvent.click(renderResult.getByText('Proceed'));
-    const contentNodes = await waitFor(() =>
-      getAllByTestId(
-        filterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
-      ),
-    );
-    expect(contentNodes.length).toBe(5);
-    await waitFor(() =>
-      getByText(guaranteeNonNullable(contentNodes[0]), 'and'),
-    );
-    await waitFor(() =>
-      getByText(guaranteeNonNullable(contentNodes[1]), 'Employees'),
-    );
-    await waitFor(() =>
-      getByText(guaranteeNonNullable(contentNodes[1]), 'exists'),
-    );
-    await waitFor(() =>
-      getByText(guaranteeNonNullable(contentNodes[2]), 'First Name'),
-    );
-    await waitFor(() => getByText(guaranteeNonNullable(contentNodes[2]), 'is'));
-    await waitFor(() =>
-      getByDisplayValue(guaranteeNonNullable(contentNodes[2]), ''),
-    );
-    await waitFor(() =>
-      getByText(guaranteeNonNullable(contentNodes[3]), 'Employees'),
-    );
-    await waitFor(() =>
-      getByText(guaranteeNonNullable(contentNodes[3]), 'exists'),
-    );
-    await waitFor(() =>
-      getByText(guaranteeNonNullable(contentNodes[4]), 'Last Name'),
-    );
-    await waitFor(() => getByText(guaranteeNonNullable(contentNodes[4]), 'is'));
+    // Last Name is the most recently added node, so it shows the BasicValueSpecificationEditor
+    // instead of the editable (blue underlined) text.
     await waitFor(() =>
       getByDisplayValue(guaranteeNonNullable(contentNodes[4]), ''),
     );
@@ -1943,6 +1861,127 @@ test(
       ),
     );
     await waitFor(() => getByText(filterPanel, 'Derived Prop From Parent'));
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder filter supports special numeric values (integer)',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    await waitFor(() => renderResult.getByText('Add a filter condition'));
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__getAllWithOneIntegerConditionFilter.parameters,
+          TEST_DATA__getAllWithOneIntegerConditionFilter.body,
+        ),
+      );
+    });
+
+    const filterConditionValue = guaranteeType(
+      guaranteeType(
+        getNullableFirstEntry(
+          Array.from(queryBuilderState.filterState.nodes.values()),
+        ),
+        QueryBuilderFilterTreeConditionNodeData,
+      ).condition.value,
+      PrimitiveInstanceValue,
+    );
+
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    await waitFor(() => getByText(filterPanel, 'Age'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+
+    let filterValueDisplay = getByText(filterPanel, '"0"');
+    fireEvent.click(filterValueDisplay);
+    let inputEl = getByDisplayValue(filterPanel, '0');
+
+    // valid input should be recorded and saved to state
+    fireEvent.change(inputEl, { target: { value: '1000' } });
+    fireEvent.blur(inputEl);
+    expect(filterConditionValue.values[0]).toEqual(1000);
+    await waitFor(() => getByText(filterPanel, '"1000"'));
+
+    // expressions should evaluate when evaluate button is clicked
+    filterValueDisplay = getByText(filterPanel, '"1000"');
+    fireEvent.click(filterValueDisplay);
+    inputEl = getByDisplayValue(filterPanel, '1000');
+    fireEvent.change(inputEl, { target: { value: '4 * 2' } });
+    fireEvent.click(getByTitle(filterPanel, 'Evaluate Expression (Enter)'));
+    await waitFor(() => expect(filterConditionValue.values[0]).toEqual(8));
+    await waitFor(() => getByDisplayValue(filterPanel, '8'));
+
+    // bad input should be reset to initial value on blur
+    fireEvent.change(inputEl, { target: { value: '1asd' } });
+    fireEvent.blur(inputEl);
+    expect(filterConditionValue.values[0]).toEqual(8);
+    await waitFor(() => getByText(filterPanel, '"8"'));
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder filter supports special numeric values (float)',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    await waitFor(() => renderResult.getByText('Add a filter condition'));
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA_getAllWithOneFloatConditionFilter.parameters,
+          TEST_DATA_getAllWithOneFloatConditionFilter.body,
+        ),
+      );
+    });
+
+    const filterConditionValue = guaranteeType(
+      guaranteeType(
+        getNullableFirstEntry(
+          Array.from(queryBuilderState.filterState.nodes.values()),
+        ),
+        QueryBuilderFilterTreeConditionNodeData,
+      ).condition.value,
+      PrimitiveInstanceValue,
+    );
+
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    await waitFor(() => getByText(filterPanel, 'Firm/Average Employees Age'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+
+    const filterValueDisplay = getByText(filterPanel, '"0"');
+    fireEvent.click(filterValueDisplay);
+    const inputEl = getByDisplayValue(filterPanel, '0');
+
+    // valid input should be recorded and saved to state
+    fireEvent.change(inputEl, { target: { value: '-.1' } });
+    fireEvent.blur(inputEl);
+    expect(filterConditionValue.values[0]).toEqual(-0.1);
+    await waitFor(() => getByText(filterPanel, '"-0.1"'));
   },
 );
 
