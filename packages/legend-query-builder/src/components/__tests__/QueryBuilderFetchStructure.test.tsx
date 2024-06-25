@@ -338,7 +338,7 @@ test(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
       ),
     );
-    await waitFor(() => getByText(filterPanel, filterValue));
+    await waitFor(() => getByText(filterPanel, `"${filterValue}"`));
 
     await waitFor(() => getByText(filterPanel, 'First Name'));
     await waitFor(() => getByText(filterPanel, 'is'));
@@ -373,10 +373,10 @@ test(
     );
     await waitFor(() => getByText(filterPanel, 'or'));
     filterValue = 'lastNameTest';
-    await waitFor(() => getByText(filterPanel, filterValue));
+    await waitFor(() => getByText(filterPanel, `"${filterValue}"`));
     await waitFor(() => getByText(filterPanel, 'First Name'));
     const lastNameFilterValue = 'lastNameTest';
-    await waitFor(() => getByText(filterPanel, lastNameFilterValue));
+    await waitFor(() => getByText(filterPanel, `"${lastNameFilterValue}"`));
     await waitFor(() => getByText(filterPanel, 'Last Name'));
     expect(queryBuilderState.filterState.nodes.size).toBe(3);
     expect(tdsState.projectionColumns.length).toBe(0);
