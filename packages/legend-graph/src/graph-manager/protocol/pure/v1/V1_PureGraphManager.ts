@@ -3029,6 +3029,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     owernship.users = serviceConfig.serviceOwners;
     service.ownership = owernship;
     service.pattern = serviceConfig.pattern;
+    service.documentation = '';
     const lambda = await this.engine.transformCodeToLambda(
       query.content,
       undefined,
