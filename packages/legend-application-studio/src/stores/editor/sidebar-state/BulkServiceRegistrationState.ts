@@ -215,7 +215,7 @@ export class GlobalBulkServiceRegistrationState {
 
       const successfulResults = registrationResults.filter(
         (result) => result instanceof ServiceRegistrationSuccess,
-      ) as ServiceRegistrationSuccess[];
+      );
 
       if (this.activatePostRegistration) {
         yield Promise.resolve(

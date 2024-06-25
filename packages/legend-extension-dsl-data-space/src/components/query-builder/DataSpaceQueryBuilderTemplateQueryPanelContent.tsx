@@ -183,7 +183,7 @@ const DataSpaceQueryBuilderTemplateQueryPanel = observer(
     const templateQueryButtonRef = useRef<HTMLButtonElement>(null);
     const templateQueries = queryBuilderState.dataSpace.executables?.filter(
       (e) => e instanceof DataSpaceExecutableTemplate,
-    ) as DataSpaceExecutableTemplate[] | undefined;
+    );
 
     const showTemplateQueries = (): void => {
       queryBuilderState.setTemplateQueryDialogOpen(true);
