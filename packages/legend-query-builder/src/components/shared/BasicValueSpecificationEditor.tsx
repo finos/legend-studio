@@ -307,7 +307,6 @@ const StringPrimitiveInstanceValueEditor = observer(
       ) {
         handleBlur?.();
       }
-      event.preventDefault();
     };
 
     return (
@@ -648,7 +647,6 @@ const EnumValueInstanceValueEditor = observer(
       ) {
         handleBlur?.();
       }
-      event.preventDefault();
     };
 
     return (
