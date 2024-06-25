@@ -22,7 +22,6 @@ import {
   DataGrid,
   type DataGridApi,
   type DataGridCellRange,
-  type DataGridColumnApi,
   type DataGridColumnDefinition,
   type DataGridGetContextMenuItemsParams,
   type DataGridIRowNode,
@@ -249,9 +248,7 @@ export const QueryBuilderTDSGridResult = observer(
     const applicationStore = useApplicationStore();
     const darkMode =
       !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
-    const [columnAPi, setColumnApi] = useState<DataGridColumnApi | undefined>(
-      undefined,
-    );
+    const [gridApi, setGridApi] = useState<DataGridApi | undefined>(undefined);
     const [aggFuncParams, setAggFuncParams] = useState<
       DataGridIAggFuncParams | undefined
     >(undefined);
@@ -262,12 +259,12 @@ export const QueryBuilderTDSGridResult = observer(
       : getColDefs(executionResult, resultState);
 
     const onSaveGridColumnState = (): void => {
-      if (!columnAPi) {
+      if (!gridApi) {
         return;
       }
       resultState.setGridConfig({
-        columns: columnAPi.getColumnState(),
-        isPivotModeEnabled: columnAPi.isPivotMode(),
+        columns: gridApi.getColumnState(),
+        isPivotModeEnabled: gridApi.isPivotMode(),
         isLocalModeEnabled: true,
         previewLimit: resultState.previewLimit,
         ...(resultState.wavgAggregationState?.weightedColumnIdPairs && {
@@ -368,7 +365,7 @@ export const QueryBuilderTDSGridResult = observer(
       ],
     );
 
-    const weightedColumnOptions = columnAPi
+    const weightedColumnOptions = gridApi
       ?.getColumns()
       ?.filter((c) => c.getColDef().cellDataType === 'number')
       .map((col) => ({
@@ -458,7 +455,7 @@ export const QueryBuilderTDSGridResult = observer(
 
     useEffect(() => {
       if (aggFuncParams) {
-        aggFuncParams.columnApi.setColumnAggFunc(
+        aggFuncParams.api.setColumnAggFunc(
           aggFuncParams.colDef.field!,
           QueryBuilderDataGridCustomAggregationFunction.WAVG,
         );
@@ -480,10 +477,12 @@ export const QueryBuilderTDSGridResult = observer(
             <DataGrid
               rowData={getRowDataFromExecutionResult(executionResult)}
               onGridReady={(params): void => {
-                setColumnApi(params.columnApi);
-                params.columnApi.setPivotMode(
-                  Boolean(resultState.gridConfig?.isPivotModeEnabled),
-                );
+                setGridApi(params.api);
+                params.api.updateGridOptions({
+                  pivotMode: Boolean(
+                    resultState.gridConfig?.isPivotModeEnabled,
+                  ),
+                });
               }}
               gridOptions={{
                 suppressScrollOnNewData: true,

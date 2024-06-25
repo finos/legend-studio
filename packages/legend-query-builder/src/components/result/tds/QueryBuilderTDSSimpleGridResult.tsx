@@ -114,11 +114,11 @@ const QueryResultCellRenderer = observer(
       ) {
         return undefined;
       }
-      if (params.columnApi.getColumnState()[colIndex]?.sort === 'asc') {
+      if (params.api.getColumnState()[colIndex]?.sort === 'asc') {
         resultState.executionResult.result.rows.sort((a, b) =>
           getTDSRowRankByColumnInAsc(a, b, colIndex),
         );
-      } else if (params.columnApi.getColumnState()[colIndex]?.sort === 'desc') {
+      } else if (params.api.getColumnState()[colIndex]?.sort === 'desc') {
         resultState.executionResult.result.rows.sort((a, b) =>
           getTDSRowRankByColumnInAsc(b, a, colIndex),
         );
