@@ -47,6 +47,7 @@ import {
   TbAlertTriangle,
   TbExclamationCircle,
   TbCaretDownFilled,
+  TbLoader2,
 } from 'react-icons/tb';
 
 export const DataCubeIcon = {
@@ -55,6 +56,7 @@ export const DataCubeIcon = {
   ChevronRight: TbChevronRight,
   Code: TbCode,
   Cube: TbCube,
+  Loader: TbLoader2,
   Documentation: TbBook,
   Note: TbNote,
   Pin: GoPin,

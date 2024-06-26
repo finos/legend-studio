@@ -57,44 +57,41 @@ export const DataCubeGrid = observer(() => {
     <div className="data-cube-grid flex-1">
       <div className="h-[calc(100%_-_20px)] w-full">
         <AgGridReact
-          className="ag-theme-balham"
-          modules={[
-            // community
-            ClientSideRowModelModule,
-            // enterprise
-            ServerSideRowModelModule,
-            RowGroupingModule,
-            MenuModule,
-          ]}
-          onGridReady={(params): void => {
-            grid.configureClient(params.api);
-            // restore original error logging
-            console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
-          }}
           // -------------------------------------- ROW GROUPING --------------------------------------
           rowGroupPanelShow="always"
           suppressScrollOnNewData={true}
           groupDisplayType="custom" // keeps the column set stable even when row grouping is used
           suppressRowGroupHidesColumns={true} // keeps the column set stable even when row grouping is used
+          // Keeps the columns stable even when aggregation is used
+          suppressAggFuncInHeader={true}
           // -------------------------------------- PIVOT --------------------------------------
           // pivotPanelShow="always"
           // pivotMode={true}
-          // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
-          rowModelType="serverSide"
-          serverSideDatasource={grid.clientDataSource}
-          // -------------------------------------- GENERIC --------------------------------------
-          suppressBrowserResizeObserver={true}
-          animateRows={false} // improve performance
-          // NOTE: since we shrink the spacing, more rows can be shown, as such, setting higher row
-          // buffer will improve scrolling performance, but compromise initial load and various
-          // actions performance
-          rowBuffer={INTERNAL__GRID_CLIENT_ROW_BUFFER}
-          rowHeight={INTERNAL__GRID_CLIENT_ROW_HEIGHT}
-          headerHeight={INTERNAL__GRID_CLIENT_HEADER_HEIGHT}
+          // -------------------------------------- SORT --------------------------------------
           // Force multi-sorting since this is what the query supports anyway
           alwaysMultiSort={true}
-          // Keeps the columns stable even when aggregation is used
-          suppressAggFuncInHeader={true}
+          // -------------------------------------- DISPLAY & INTERACTION --------------------------------------
+          className="ag-theme-balham"
+          rowHeight={INTERNAL__GRID_CLIENT_ROW_HEIGHT}
+          headerHeight={INTERNAL__GRID_CLIENT_HEADER_HEIGHT}
+          suppressBrowserResizeObserver={true}
+          reactiveCustomComponents={true} // TODO: remove on v32 as this would be default to `true` then
+          noRowsOverlayComponent={() => (
+            <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-semibold text-neutral-400">
+              <div>
+                <DataCubeIcon.WarningCircle className="mr-1 stroke-2 text-lg" />
+              </div>
+              0 rows
+            </div>
+          )}
+          loadingOverlayComponent={() => (
+            <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-semibold text-neutral-400">
+              <div>
+                <DataCubeIcon.Loader className="mr-1 animate-spin stroke-2 text-lg" />
+              </div>
+              Loading...
+            </div>
+          )}
           // Show cursor position when scrolling
           onBodyScroll={(event) => {
             const rowCount = event.api.getDisplayedRowCount();
@@ -110,6 +107,29 @@ export const DataCubeGrid = observer(() => {
             setScrollHintText(`${start}-${end}/${rowCount}`);
           }}
           onBodyScrollEnd={() => setScrollHintText('')}
+          // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
+          rowModelType="serverSide"
+          serverSideDatasource={grid.clientDataSource}
+          // -------------------------------------- PERFORMANCE --------------------------------------
+          // NOTE: since we shrink the spacing, more rows can be shown, as such, setting higher row
+          // buffer will improve scrolling performance, but compromise initial load and various
+          // actions performance
+          rowBuffer={INTERNAL__GRID_CLIENT_ROW_BUFFER}
+          animateRows={false} // improve performance
+          // -------------------------------------- SETUP --------------------------------------
+          modules={[
+            // community
+            ClientSideRowModelModule,
+            // enterprise
+            ServerSideRowModelModule,
+            RowGroupingModule,
+            MenuModule,
+          ]}
+          onGridReady={(params): void => {
+            grid.configureClient(params.api);
+            // restore original error logging
+            console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
+          }}
         />
       </div>
       <div className="relative flex h-5 w-full justify-between border-b border-b-neutral-200 bg-neutral-100">

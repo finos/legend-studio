@@ -79,6 +79,11 @@ const SortDirectionDropdown = observer(
             hideBackdrop: true,
             transitionDuration: 0,
           }}
+          /**
+           * ag-grid row select event listener is at a deeper layer than this dropdown trigger
+           * so in order to prevent selecting the row while opening the dropdown, we need to stop
+           * the propagation as event capturing is happening, not when it's bubbling.
+           */
           useCapture={true}
         >
           <div>{getSortDirectionLabel(column.operation)}</div>
