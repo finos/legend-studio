@@ -20,7 +20,7 @@ import { DataCubeIcon } from '@finos/legend-art';
 
 export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
   const replStore = useREPLStore();
-  const panel = replStore.dataCubeState.editor.generalPropertiesPanel;
+  const panel = replStore.dataCube.editor.generalPropertiesPanel;
 
   return (
     <div className="data-cube-column-selector h-full w-full p-2">

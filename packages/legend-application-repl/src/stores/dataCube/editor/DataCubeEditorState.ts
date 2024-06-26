@@ -59,9 +59,9 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
       closePanel: action,
     });
 
-    this.sortsPanel = new DataCubeEditorSortsPanelState(this.dataCube);
+    this.sortsPanel = new DataCubeEditorSortsPanelState(this);
     this.generalPropertiesPanel = new DataCubeEditorGeneralPropertiesPanelState(
-      this.dataCube,
+      this,
     );
     this.codePanel = new DataCubeEditorCodePanelState(this.dataCube);
   }

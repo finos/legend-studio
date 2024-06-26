@@ -30,6 +30,16 @@ export default {
       '3xl': ['24px', '32px'],
     },
     fontFamily: {
+      sans: [
+        'Roboto',
+        'ui-sans-serif',
+        'system-ui',
+        'sans-serif',
+        'Apple Color Emoji',
+        'Segoe UI Emoji',
+        'Segoe UI Symbol',
+        'Noto Color Emoji',
+      ],
       mono: [
         'ui-monospace',
         'Roboto Mono',

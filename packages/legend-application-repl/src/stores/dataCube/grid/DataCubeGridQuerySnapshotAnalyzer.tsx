@@ -164,6 +164,7 @@ export function generateGridOptionsFromSnapshot(
           'justify-content': 'space-between',
           display: 'flex',
         },
+        sortable: false, // TODO: @akphi - we can support this in the configuration
       } satisfies ColDef,
       ...data.selectColumns.map(
         (col) =>

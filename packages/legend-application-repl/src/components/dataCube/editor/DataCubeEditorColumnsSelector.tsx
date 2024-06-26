@@ -345,9 +345,9 @@ export const DataCubeEditorColumnsSelector = observer(
                      * Support double-click to add all (filtered by search) columns
                      */
                     headerComponent: (params: CustomCellRendererProps<T>) => (
-                      <div
+                      <button
                         title="Double-click to add all columns"
-                        className="flex h-full w-full cursor-pointer items-center justify-between pl-0.5"
+                        className="flex h-full w-full items-center justify-between pl-0.5"
                         onDoubleClick={() => {
                           // The columns being moved are scoped by the current search
                           const filteredData = getDataForAllFilteredNodes(
@@ -371,7 +371,7 @@ export const DataCubeEditorColumnsSelector = observer(
                           gridApi={params.api}
                           scope="available"
                         />
-                      </div>
+                      </button>
                     ),
                     cellRenderer: (params: CustomCellRendererProps<T>) => {
                       const data = params.data;
@@ -416,7 +416,7 @@ export const DataCubeEditorColumnsSelector = observer(
         <div className="flex h-full w-10 items-center justify-center">
           <div className="flex flex-col">
             <button
-              className="flex cursor-pointer items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-neutral-500 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400"
+              className="flex items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-neutral-500 hover:bg-neutral-200 disabled:bg-neutral-200 disabled:text-neutral-400"
               title="Add selected columns"
               /**
                * Support add selected (filtered by search) columns
@@ -449,7 +449,7 @@ export const DataCubeEditorColumnsSelector = observer(
               <DataCubeIcon.ChevronRight className="text-2xl" />
             </button>
             <button
-              className="mt-2 flex cursor-pointer items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-neutral-500 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400"
+              className="mt-2 flex items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-neutral-500 hover:bg-neutral-200 disabled:bg-neutral-200 disabled:text-neutral-400"
               title="Remove selected columns"
               /**
                * Support remove selected (filtered by search) columns
@@ -548,9 +548,9 @@ export const DataCubeEditorColumnsSelector = observer(
                      * Support double-click to remove all (filtered by search) columns
                      */
                     headerComponent: (params: CustomCellRendererProps<T>) => (
-                      <div
+                      <button
                         title="Double-click to remove all columns"
-                        className="flex h-full w-full cursor-pointer items-center justify-between pl-0.5"
+                        className="flex h-full w-full items-center justify-between pl-0.5"
                         onDoubleClick={() => {
                           // The columns being moved are scoped by the current search
                           const filteredData = getDataForAllFilteredNodes(
@@ -574,7 +574,7 @@ export const DataCubeEditorColumnsSelector = observer(
                           gridApi={params.api}
                           scope="selected"
                         />
-                      </div>
+                      </button>
                     ),
                     cellRenderer: (params: CustomCellRendererProps<T>) => {
                       const data = params.data;

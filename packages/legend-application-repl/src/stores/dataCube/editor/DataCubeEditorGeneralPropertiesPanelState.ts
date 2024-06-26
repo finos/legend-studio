@@ -18,16 +18,20 @@ import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
+import type { DataCubeEditorState } from './DataCubeEditorState.js';
 
 export class DataCubeEditorGeneralPropertiesPanelState
   implements DataCubeQueryEditorPanelState
 {
   readonly dataCube!: DataCubeState;
+  readonly editor!: DataCubeEditorState;
+
   name = '';
   limit = -1;
 
-  constructor(dataCube: DataCubeState) {
-    this.dataCube = dataCube;
+  constructor(editor: DataCubeEditorState) {
+    this.editor = editor;
+    this.dataCube = editor.dataCube;
 
     makeObservable(this, {
       name: observable,

@@ -21,7 +21,7 @@ import { useEffect } from 'react';
 
 export const DataCubeEditorColumnsPanel = observer(() => {
   const replStore = useREPLStore();
-  const panel = replStore.dataCubeState.editor.sortsPanel;
+  const panel = replStore.dataCube.editor.sortsPanel;
 
   useEffect(() => {}, [panel]); // TODO: @akphi - remove this dummy useEffect
 

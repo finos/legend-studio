@@ -22,6 +22,7 @@ import type { DataCubeEditorColumnsSelectorState } from '../../../stores/dataCub
 import type { DataCubeEditorSortColumnState } from '../../../stores/dataCube/editor/DataCubeEditorSortsPanelState.js';
 import { DataCubeQuerySnapshotSortOperation } from '../../../stores/dataCube/core/DataCubeQuerySnapshot.js';
 import { IllegalStateError } from '@finos/legend-shared';
+import { WIP_Badge } from '../../shared/WIP.js';
 
 function getSortDirectionLabel(operation: DataCubeQuerySnapshotSortOperation) {
   switch (operation) {
@@ -43,15 +44,15 @@ const SortDirectionDropdown = observer(
 
     return (
       <div className="group relative flex h-full items-center">
-        <div className="flex h-[18px] w-20 items-center border border-transparent px-1 text-sm text-neutral-500 group-hover:invisible">
+        <div className="flex h-[18px] w-32 items-center border border-transparent px-2 text-sm text-neutral-500 group-hover:invisible">
           {getSortDirectionLabel(column.operation)}
         </div>
         <DropdownMenu
-          className="invisible absolute right-0 z-10 flex h-[18px] w-20 items-center justify-between border border-neutral-500 pl-1 pr-0.5 text-sm text-neutral-700 group-hover:visible"
+          className="invisible absolute right-0 z-10 flex h-[18px] w-32 items-center justify-between border border-neutral-500 pl-2 pr-0.5 text-sm text-neutral-700 group-hover:visible"
           content={
-            <div className="w-20 border-neutral-500 bg-white">
+            <menu className="w-32 border border-neutral-300 bg-white text-sm">
               <div
-                className="flex h-5 cursor-pointer items-center px-2 text-sm hover:bg-neutral-100"
+                className="flex h-5 items-center px-2 hover:bg-neutral-100"
                 onClick={() =>
                   column.setOperation(
                     DataCubeQuerySnapshotSortOperation.ASCENDING,
@@ -60,8 +61,12 @@ const SortDirectionDropdown = observer(
               >
                 Ascending
               </div>
+              <div className="flex h-5 items-center px-2 text-neutral-400">
+                {`Ascending (abs)`}
+                <WIP_Badge />
+              </div>
               <div
-                className="flex h-5 cursor-pointer items-center px-2 text-sm hover:bg-neutral-100"
+                className="flex h-5 items-center px-2 hover:bg-neutral-100"
                 onClick={() =>
                   column.setOperation(
                     DataCubeQuerySnapshotSortOperation.DESCENDING,
@@ -70,7 +75,11 @@ const SortDirectionDropdown = observer(
               >
                 Descending
               </div>
-            </div>
+              <div className="flex h-5 items-center px-2 text-neutral-400">
+                {`Descending (abs)`}
+                <WIP_Badge />
+              </div>
+            </menu>
           }
           menuProps={{
             anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
@@ -98,7 +107,7 @@ const SortDirectionDropdown = observer(
 
 export const DataCubeEditorSortsPanel = observer(() => {
   const replStore = useREPLStore();
-  const panel = replStore.dataCubeState.editor.sortsPanel;
+  const panel = replStore.dataCube.editor.sortsPanel;
 
   return (
     <div className="data-cube-column-selector h-full w-full p-2">

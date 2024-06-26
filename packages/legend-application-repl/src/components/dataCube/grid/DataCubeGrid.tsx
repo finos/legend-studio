@@ -19,6 +19,7 @@ import { LicenseManager } from '@ag-grid-enterprise/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { ServerSideRowModelModule } from '@ag-grid-enterprise/server-side-row-model';
 import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
+import { ClipboardModule } from '@ag-grid-enterprise/clipboard';
 import { MenuModule } from '@ag-grid-enterprise/menu';
 import { AgGridReact } from '@ag-grid-community/react';
 import { useEffect, useState } from 'react';
@@ -29,6 +30,8 @@ import {
   INTERNAL__GRID_CLIENT_ROW_BUFFER,
   INTERNAL__GRID_CLIENT_ROW_HEIGHT,
 } from '../../../stores/dataCube/grid/DataCubeGridClientEngine.js';
+import { RangeSelectionModule } from '@ag-grid-enterprise/range-selection';
+import { buildGridMenu } from './menu/DataCubeGridMenu.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
@@ -42,9 +45,8 @@ console.error = (message?: unknown, ...agrs: unknown[]): void => {
 
 export const DataCubeGrid = observer(() => {
   const replStore = useREPLStore();
-  const dataCubeState = replStore.dataCubeState;
-  const grid = dataCubeState.grid;
-
+  const dataCube = replStore.dataCube;
+  const grid = dataCube.grid;
   const [scrollHintText, setScrollHintText] = useState('');
 
   useEffect(() => {
@@ -92,6 +94,11 @@ export const DataCubeGrid = observer(() => {
               Loading...
             </div>
           )}
+          preventDefaultOnContextMenu={true}
+          columnMenu="new" // ensure context menu works on header
+          getContextMenuItems={buildGridMenu}
+          getMainMenuItems={buildGridMenu}
+          enableRangeSelection={true}
           // Show cursor position when scrolling
           onBodyScroll={(event) => {
             const rowCount = event.api.getDisplayedRowCount();
@@ -105,6 +112,7 @@ export const DataCubeGrid = observer(() => {
               Math.floor(range.bottom / INTERNAL__GRID_CLIENT_ROW_HEIGHT),
             );
             setScrollHintText(`${start}-${end}/${rowCount}`);
+            event.api.hidePopupMenu(); // hide context-menu while scrolling
           }}
           onBodyScrollEnd={() => setScrollHintText('')}
           // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
@@ -124,11 +132,16 @@ export const DataCubeGrid = observer(() => {
             ServerSideRowModelModule,
             RowGroupingModule,
             MenuModule,
+            ClipboardModule,
+            RangeSelectionModule,
           ]}
           onGridReady={(params): void => {
             grid.configureClient(params.api);
             // restore original error logging
             console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
+          }}
+          context={{
+            dataCube,
           }}
         />
       </div>

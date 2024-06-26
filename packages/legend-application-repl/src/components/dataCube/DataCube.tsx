@@ -24,7 +24,7 @@ import { DataCubeIcon } from '@finos/legend-art';
 
 const DataCubeStatusBar = observer(() => {
   const dataCubeStore = useREPLStore();
-  const dataCubeState = dataCubeStore.dataCubeState;
+  const dataCube = dataCubeStore.dataCube;
 
   return (
     <div className="flex h-5 w-full bg-neutral-100">
@@ -33,7 +33,7 @@ const DataCubeStatusBar = observer(() => {
       </button>
       <button
         className="flex w-1/2 items-center px-2 text-sky-600 underline"
-        onClick={(): void => dataCubeState.editor.openPanel()}
+        onClick={(): void => dataCube.editor.openPanel()}
       >
         Pivot
       </button>
@@ -46,13 +46,13 @@ const DataCubeStatusBar = observer(() => {
 
 const DataCubeTitleBar = observer(() => {
   const dataCubeStore = useREPLStore();
-  const dataCubeState = dataCubeStore.dataCubeState;
+  const dataCube = dataCubeStore.dataCube;
 
   return (
     <div className="flex h-6 justify-between bg-neutral-100">
       <div className="flex select-none items-center pl-1 pr-2 text-lg font-medium">
         <DataCubeIcon.Cube className="mr-1 h-4 w-4" />
-        <div>{dataCubeState.editor.generalPropertiesPanel.name}</div>
+        <div>{dataCube.editor.generalPropertiesPanel.name}</div>
         {/* TODO: @akphi - add save icon */}
       </div>
     </div>
@@ -63,11 +63,11 @@ export const DataCube = observer(() => {
   const dataCubeStore = useREPLStore();
   const ref = useRef<HTMLDivElement>(null);
   const applicationStore = useApplicationStore();
-  const dataCubeState = dataCubeStore.dataCubeState;
+  const dataCube = dataCubeStore.dataCube;
 
   useEffect(() => {
-    dataCubeState.initialize().catch(applicationStore.logUnhandledError);
-  }, [dataCubeState, applicationStore]);
+    dataCube.initialize().catch(applicationStore.logUnhandledError);
+  }, [dataCube, applicationStore]);
 
   return (
     <div
@@ -77,9 +77,7 @@ export const DataCube = observer(() => {
       <DataCubeTitleBar />
       <DataCubeGrid />
       <DataCubeStatusBar />
-      {dataCubeState.editor.isPanelOpen && (
-        <DataCubeEditor containerRef={ref} />
-      )}
+      {dataCube.editor.isPanelOpen && <DataCubeEditor containerRef={ref} />}
     </div>
   );
 });

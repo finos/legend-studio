@@ -46,7 +46,7 @@ export const DataCubeEditor = observer(
       height: PANEL_DEFAULT_HEIGHT,
     });
     const replStore = useREPLStore();
-    const editor = replStore.dataCubeState.editor;
+    const editor = replStore.dataCube.editor;
     const selectedTab = editor.currentTab;
     const tabs = [
       DATA_CUBE_EDITOR_TAB.COLUMNS,
