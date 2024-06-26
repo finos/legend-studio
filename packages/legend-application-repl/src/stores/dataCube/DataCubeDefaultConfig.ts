@@ -14,5 +14,4 @@
  * limitations under the License.
  */
 
-@import url('@ag-grid-community/styles/ag-grid.css');
-@import url('@ag-grid-community/styles/ag-theme-balham.css');
+export const DATA_CUBE_DEFAULT_REPORT_NAME = 'New Report';

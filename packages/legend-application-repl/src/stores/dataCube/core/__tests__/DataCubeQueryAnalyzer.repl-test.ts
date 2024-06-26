@@ -21,7 +21,7 @@ import {
 import { ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification } from '@finos/legend-graph/test';
 import { unitTest } from '@finos/legend-shared/test';
 import { describe, expect, test } from '@jest/globals';
-import { validateAndBuildBaseSnapshot } from '../DataCubeQueryAnalyzer.js';
+import { validateAndBuildQuerySnapshot } from '../DataCubeQuerySnapshotBuilder.js';
 import { assertErrorThrown } from '@finos/legend-shared';
 import {
   DataCubeQuery,
@@ -37,11 +37,9 @@ type BaseSnapshotAnalysisTestCase = [
 
 const cases: BaseSnapshotAnalysisTestCase[] = [
   ['Valid: extend()', 'extend(~[a:x|1])', [], ''],
-  ['Valid: rename()', 'rename(~a,~newA)', [], ''],
-  ['Valid: rename()->rename()', 'rename(~a,~newA)->rename(~b,~newB)', [], ''],
   ['Valid: filter()', 'filter(x|$x.a==1)', [], ''],
   ['Valid: groupBy()', 'groupBy(~a, ~b:x|$x.a:x|$x->sum())', [], ''],
-  ['Valid: select()', 'select(~a)', [], ''],
+  ['Valid: select()', 'select(~[a])', ['a:Integer'], ''],
   // TODO: @akphi - enable when engine supports relation casting syntax
   // See https://github.com/finos/legend-engine/pull/2873
   // [
@@ -53,14 +51,14 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
   ['Valid: sort()', 'sort([~a->ascending()])', ['a:Integer'], ''],
   ['Valid: limit()', 'limit(10)', [], ''],
   [
-    'Valid: Usage - Filter: extend()->rename()->filter()->sort()->limit()',
-    'extend(~[a:x|1])->rename(~a,~newA)->filter(x|$x.a==1)->sort([ascending(~a)])->limit(10)',
+    'Valid: Usage - Filter: extend()->filter()->sort()->limit()',
+    'extend(~[a:x|1])->filter(x|$x.a==1)->sort([ascending(~a)])->limit(10)',
     ['a:Integer'],
     '',
   ],
   [
-    'Valid: Usage - Column Selection: extend()->rename()->filter()->select()->sort()->limit()',
-    'extend(~[a:x|1])->rename(~a,~newA)->filter(x|$x.a==1)->select(~a)->sort([ascending(~a)])->limit(10)',
+    'Valid: Usage - Column Selection: extend()->filter()->select()->sort()->limit()',
+    'extend(~[a:x|1])->filter(x|$x.a==1)->select(~[a])->sort([ascending(~a)])->limit(10)',
     ['a:Integer'],
     '',
   ],
@@ -72,7 +70,7 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
   ],
   [
     'Valid: Usage - V-Pivot: groupBy()->extend()->sort()->limit()',
-    'extend(~[a:x|1])->rename(~a,~newA)->filter(x|$x.a==1)->groupBy(~a, ~b:x|$x.a:x|$x->sum())->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
+    'extend(~[a:x|1])->filter(x|$x.a==1)->groupBy(~a, ~b:x|$x.a:x|$x->sum())->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
     ['a:Integer'],
     '',
   ],
@@ -87,8 +85,8 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
   // TODO: @akphi - enable when engine supports relation casting syntax
   // See https://github.com/finos/legend-engine/pull/2873
   // [
-  //   'Valid: Full form: extend()->rename()->filter()->groupBy()->select()->pivot()->cast()->extend()->sort()->limit()',
-  //   'extend(~[a:x|1])->rename(~a,~newA)->filter(x|$x.a==1)->groupBy(~a, ~b:x|$x.a:x|$x->sum())->select(~a)->pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
+  //   'Valid: Full form: extend()->filter()->groupBy()->select()->pivot()->cast()->extend()->sort()->limit()',
+  //   'extend(~[a:x|1])->filter(x|$x.a==1)->groupBy(~a, ~b:x|$x.a:x|$x->sum())->select(~a)->pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
   //   ['a:Integer'],
   //   '',
   // ],
@@ -96,7 +94,7 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
     'Invalid: Not a chain of function call',
     '2',
     [],
-    'Query sequence must be a sequence of function calls (e.g. x()->y()->z())',
+    'Query must be a sequence of function calls (e.g. x()->y()->z())',
   ],
   [
     'Invalid: Unsupported function',
@@ -105,14 +103,14 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
     'Found unsupported function something()',
   ],
   [
-    'Invalid: Unsupported function composition: extend()->filter()->rename()',
-    'extend(~[a:x|1])->filter(x|$x.a==1)->rename(~a,~newA)',
+    'Invalid: Unsupported function composition: filter()->extend()->filter()',
+    'filter(x|$x.a==1)->extend(~[a:x|1])->filter(x|$x.a==1)',
     [],
-    'Unsupported function composition extend()->filter()->rename() (supported composition: extend()->rename()->filter()->groupBy()->select()->pivot()->cast()->extend()->sort()->limit())',
+    'Unsupported function composition filter()->extend()->filter() (supported composition: extend()->filter()->groupBy()->pivot()->cast()->extend()->select()->sort()->limit())',
   ],
   [
     'Invalid: Group-level extend() used when no aggregation/grouping presents',
-    'extend(~[a:x|1])->rename(~a,~newA)->filter(x|$x.a==1)->extend(~[b:x|1])',
+    'extend(~[a:x|1])->filter(x|$x.a==1)->extend(~[b:x|1])',
     [],
     'Found invalid usage of group-level extend() for query without aggregation such as pivot() and groupBy()',
   ],
@@ -160,10 +158,7 @@ describe(unitTest('Analyze and build base snapshot'), () => {
         };
       });
       try {
-        validateAndBuildBaseSnapshot(baseQuery, {
-          partialQuery,
-          sourceQuery: new V1_Lambda(), // dummy value
-        });
+        validateAndBuildQuerySnapshot(partialQuery, new V1_Lambda(), baseQuery);
         expect('').toEqual(problem);
       } catch (error: unknown) {
         assertErrorThrown(error);

@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
+import type { LegendREPLApplicationStore } from '../../LegendREPLBaseStore.js';
+import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeEngine } from './DataCubeEngine.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
-import type { DataCubeQuerySnapshotManager } from './DataCubeQuerySnapshotManager.js';
 
 export abstract class DataCubeQuerySnapshotSubscriber {
-  readonly manager: DataCubeQuerySnapshotManager;
+  readonly dataCube!: DataCubeState;
+  readonly application!: LegendREPLApplicationStore;
+  readonly engine!: DataCubeEngine;
+
   private latestSnapshot: DataCubeQuerySnapshot | undefined;
 
-  constructor(snapshotManager: DataCubeQuerySnapshotManager) {
-    this.manager = snapshotManager;
+  constructor(dataCube: DataCubeState) {
+    this.dataCube = dataCube;
+    this.application = dataCube.application;
+    this.engine = dataCube.engine;
   }
 
   abstract applySnapshot(snapshot: DataCubeQuerySnapshot): Promise<void>;
+  abstract initialize(): Promise<void>;
 
   async receiveSnapshot(snapshot: DataCubeQuerySnapshot): Promise<void> {
     this.latestSnapshot = snapshot;
@@ -34,7 +42,7 @@ export abstract class DataCubeQuerySnapshotSubscriber {
 
   publishSnapshot(snapshot: DataCubeQuerySnapshot): void {
     this.latestSnapshot = snapshot;
-    this.manager.broadcastSnapshot(snapshot);
+    this.dataCube.snapshotManager.broadcastSnapshot(snapshot);
   }
 
   getLatestSnapshot(): DataCubeQuerySnapshot | undefined {

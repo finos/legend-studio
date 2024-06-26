@@ -44,4 +44,4 @@ export const getQueryBuilderGraphManagerExtension = (
         extension instanceof QueryBuilder_PureGraphManagerExtension,
     ),
     `Can't find query builder Pure graph manager extension`,
-  ) as QueryBuilder_PureGraphManagerExtension;
+  );

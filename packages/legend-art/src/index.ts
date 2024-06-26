@@ -18,6 +18,7 @@ export * from './icon/Icon.js';
 export * from './icon/TypeIcon.js';
 export * from './icon/LegendLogo.js';
 export * from './icon/SVGIcon.js';
+export * from './icon/DataCubeIcon.js';
 
 export * from './loader/LoadingIcon.js';
 export * from './loader/CubesLoadingIndicator.js';
@@ -31,6 +32,7 @@ export * from './autocomplete/CustomSelectorInput.js';
 export * from './badge/Badge.js';
 
 export * from './button/Button.js';
+export * from './button/Switch.js';
 
 export * from './card/BaseCard.js';
 
@@ -75,4 +77,4 @@ export * from './utils/ComponentUtils.js';
 
 export * from './markdown/MarkdownTextViewer.js';
 
-export * from './drag-and-drop/Draggable.js';
+export * from './Interaction.js';

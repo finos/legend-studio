@@ -16,7 +16,7 @@
 
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 
-export interface DataCubeQueryEditorSubState {
+export interface DataCubeQueryEditorPanelState {
   /**
    * Update the editor state based on the snapshot
    */

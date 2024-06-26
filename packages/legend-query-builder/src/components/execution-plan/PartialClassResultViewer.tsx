@@ -30,7 +30,7 @@ export const PartialClassResultTypeViewer: React.FC<{
       </PanelListItem>
       <PanelDivider />
       {
-        <table className="table query-builder__result__container__table--partial-class">
+        <table className="query-builder__result__container__table--partial-class table">
           <thead>
             <tr>
               <th className="table__cell--left">Property</th>

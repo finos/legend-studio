@@ -21,9 +21,6 @@ import {
   configureCodeEditorComponent,
   setupPureLanguageService,
 } from '@finos/legend-lego/code-editor';
-import { ModuleRegistry } from '@ag-grid-community/core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
 
 export class Core_LegendREPLApplicationPlugin extends LegendREPLApplicationPlugin {
   static NAME = packageJson.extensions.applicationREPLPlugin;
@@ -35,10 +32,6 @@ export class Core_LegendREPLApplicationPlugin extends LegendREPLApplicationPlugi
   override getExtraApplicationSetups(): LegendApplicationSetup[] {
     return [
       async (applicationStore) => {
-        ModuleRegistry.registerModules([
-          ClientSideRowModelModule,
-          RowGroupingModule,
-        ]);
         await configureCodeEditorComponent(applicationStore);
         setupPureLanguageService();
       },

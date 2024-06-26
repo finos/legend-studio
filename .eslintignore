@@ -17,4 +17,5 @@
 .pnp.*
 
 # Exceptions
+/packages/legend-application-repl/grammar/parser/*
 /packages/legend-dev-utils/__tests__/fixtures/src/dummy.ts

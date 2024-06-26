@@ -224,7 +224,7 @@ export const FileSystemViewer = observer(
                     className={clsx(
                       'generation-result-viewer__regenerate-btn',
                       {
-                        ' generation-result-viewer__regenerate-btn--loading':
+                        'generation-result-viewer__regenerate-btn--loading':
                           generatedFileState.generatingAction.isInProgress,
                       },
                     )}

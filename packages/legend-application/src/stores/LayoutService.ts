@@ -100,6 +100,10 @@ export class LayoutService {
     return document.querySelector(`[data-elementid='${val}']`) ?? undefined;
   }
 
+  setWindowTitle(value: string): void {
+    document.title = value;
+  }
+
   /**
    * Change the ID used to find the base element to mount the backdrop on.
    * This is useful when we want to use backdrop with embedded application which

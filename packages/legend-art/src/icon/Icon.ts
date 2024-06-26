@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-/* eslint @typescript-eslint/no-unsafe-assignment: 0 */
-
 //======================================================= TB =======================================================
 import {
   TbArrowsJoin2,
@@ -613,7 +611,7 @@ export const DroidIcon = RiRobotFill;
 export const GovernanceIcon = RiGovernmentFill;
 export const CostCircleIcon = RiMoneyDollarCircleFill;
 
-//======================================================= Fc =======================================================
+//======================================================= FC =======================================================
 import { FcWorkflow } from 'react-icons/fc';
 
 export const WorkflowIcon = FcWorkflow;

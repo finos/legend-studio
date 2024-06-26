@@ -86,7 +86,7 @@ export const getCollectionValueSpecificationType = (
 ): Type | undefined => {
   if (values.every((val) => val instanceof PrimitiveInstanceValue)) {
     const valuePrimitiveTypes: (PrimitiveType | undefined)[] = [];
-    (values as PrimitiveInstanceValue[]).forEach((val) => {
+    values.forEach((val) => {
       const primitiveType = val.genericType.value.rawType;
       switch (primitiveType.path) {
         case PRIMITIVE_TYPE.STRING:
@@ -118,7 +118,7 @@ export const getCollectionValueSpecificationType = (
     return valuePrimitiveTypes[0] as PrimitiveType;
   } else if (values.every((val) => val instanceof EnumValueInstanceValue)) {
     const valueEnumerationTypes: Enumeration[] = [];
-    (values as EnumValueInstanceValue[]).forEach((val) => {
+    values.forEach((val) => {
       addUniqueEntry(
         valueEnumerationTypes,
         guaranteeNonNullable(val.values[0]).value._OWNER,

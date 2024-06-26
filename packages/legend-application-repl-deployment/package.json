@@ -22,7 +22,7 @@
   "scripts": {
     "build:tailwindcss": "tailwindcss -i ./style/tailwind.css -o ./lib/tailwind.css --minify",
     "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
-    "bundle": "yarn clean && yarn build:tailwindcss && yarn build:webpack && node ./scripts/setup.js --dir ./dist/repl",
+    "bundle": "yarn clean && yarn build:tailwindcss && yarn build:webpack && node ./scripts/setup.js --dir ./dist/repl --use-dynamic-repl-server",
     "bundle:analyze": "cross-env NODE_ENV=production webpack --mode production --analyze",
     "bundle:fast": "cross-env NODE_ENV=production PRODUCTION_MODE=fast webpack --mode production && node ./scripts/setup.js --dir ./dist/repl",
     "clean": "yarn clean:cache && rimraf \"dist\" \"lib\"",
@@ -36,7 +36,6 @@
     "publish:pre-prepare": "yarn clean && yarn build:tailwindcss && yarn build:webpack && node ./scripts/setup.js --dir ./dist/repl --use-dynamic-repl-server",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
-    "serve": "npx http-server ./dist -p 3000 -a localhost -g --cors -o /repl",
     "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js --dir ./dev"
   },
   "dependencies": {
@@ -53,8 +52,8 @@
     "npm-run-all": "4.1.5",
     "rimraf": "5.0.7",
     "tailwindcss": "3.4.4",
-    "typescript": "5.4.5",
-    "webpack": "5.91.0",
+    "typescript": "5.5.2",
+    "webpack": "5.92.1",
     "webpack-bundle-analyzer": "4.10.2",
     "webpack-cli": "5.1.4",
     "webpack-dev-server": "5.0.4"

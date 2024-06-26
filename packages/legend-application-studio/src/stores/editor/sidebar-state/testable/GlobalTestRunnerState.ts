@@ -320,7 +320,7 @@ export const getTestableResultFromAssertionStatus = (
     const assertionStatuses = Array.from(assertionStatus.values());
     if (assertionStatuses.every((t) => t instanceof AssertPass)) {
       return TESTABLE_RESULT.PASSED;
-    } else if (assertionStatuses.find((t) => t instanceof AssertFail)) {
+    } else {
       return TESTABLE_RESULT.FAILED;
     }
   }
