@@ -142,6 +142,7 @@ const processTDSProjectColExpression = (
  *  Person.all()->project([x|x.firmID], ['Id'])
  *  Person.all()->project(x|x.firmID, ['Id'])
  *  Person.all()->project([x|x.firmID], 'Id')
+ *  Person.all()->project(x|x.firmID, 'Id')
  *  Person.all()->project(col({p:my::Person[1]|$p.firmID}, 'Id'))
  *  Person.all()->project([ col({p:my::Person[1]|$p.firmID}, 'Id') ])
  */
