@@ -95,7 +95,7 @@ export const MilestoningParameterEditor = observer(
           <BasicValueSpecificationEditor
             valueSpecification={parameter}
             graph={queryBuilderState.graphManagerState.graph}
-            obseverContext={queryBuilderState.observerContext}
+            observerContext={queryBuilderState.observerContext}
             setValueSpecification={(val: ValueSpecification): void =>
               setParameter(val)
             }

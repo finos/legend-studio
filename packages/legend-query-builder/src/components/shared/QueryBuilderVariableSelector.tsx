@@ -61,7 +61,10 @@ export const getNameOfValueSpecification = (
       return possibleDateLabel;
     }
   }
-  return getValueSpecificationStringValue(value);
+  return getValueSpecificationStringValue(
+    value,
+    queryBuilderState.applicationStore,
+  );
 };
 
 const QueryBuilderVariableContextMenu = observer(

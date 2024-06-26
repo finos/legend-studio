@@ -260,7 +260,7 @@ const ServiceTestParameterEditor = observer(
                   paramState.updateValueSpecification(val);
                 }}
                 graph={setupState.editorStore.graphManagerState.graph}
-                obseverContext={
+                observerContext={
                   setupState.editorStore.changeDetectionState.observerContext
                 }
                 typeCheckOption={{

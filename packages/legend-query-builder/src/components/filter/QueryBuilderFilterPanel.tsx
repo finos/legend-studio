@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { useRef, useState, useCallback, forwardRef, useMemo } from 'react';
+import {
+  useRef,
+  useState,
+  useCallback,
+  forwardRef,
+  useMemo,
+  useEffect,
+} from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
@@ -103,9 +110,9 @@ import type { QueryBuilderFilterOperator } from '../../stores/filter/QueryBuilde
 import { isTypeCompatibleForAssignment } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOperationHelper.js';
 import {
-  BasicValueSpecificationEditor,
   type QueryBuilderVariableDragSource,
   QUERY_BUILDER_VARIABLE_DND_TYPE,
+  EditableBasicValueSpecificationEditor,
 } from '../shared/BasicValueSpecificationEditor.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 import { getPropertyChainName } from '../../stores/QueryBuilderPropertyEditorState.js';
@@ -350,6 +357,7 @@ export const buildFilterTreeWithExists = (
     undefined,
     filterConditionState,
   );
+  treeNode.setIsNewlyAdded(true);
   filterState.addNodeFromNode(treeNode, parentNode);
   if (targetDropNode instanceof QueryBuilderFilterTreeBlankConditionNodeData) {
     filterState.removeNodeAndPruneBranch(targetDropNode);
@@ -511,6 +519,7 @@ const buildFilterTree = (
       undefined,
       filterConditionState,
     );
+    treeNode.setIsNewlyAdded(true);
     // Check if there are any exists node present in the parent nodes of the target.
     // This would change the way we build the filter tree
     let cn: QueryBuilderFilterTreeNodeData | undefined = targetDropNode;
@@ -798,6 +807,10 @@ const QueryBuilderFilterConditionEditor = observer(
       cleanUpReloadValues,
     };
 
+    useEffect(() => {
+      node.setIsNewlyAdded(false);
+    }, [node]);
+
     return (
       <div
         className="dnd__entry__container"
@@ -856,11 +869,11 @@ const QueryBuilderFilterConditionEditor = observer(
                   isDragOver={isFilterValueDragOver}
                   label="Change Filter Value"
                 >
-                  <BasicValueSpecificationEditor
+                  <EditableBasicValueSpecificationEditor
                     valueSpecification={node.condition.value}
                     setValueSpecification={changeValueSpecification}
                     graph={graph}
-                    obseverContext={queryBuilderState.observerContext}
+                    observerContext={queryBuilderState.observerContext}
                     typeCheckOption={{
                       expectedType:
                         node.condition.propertyExpressionState
@@ -872,6 +885,7 @@ const QueryBuilderFilterConditionEditor = observer(
                     isConstant={queryBuilderState.constantState.isValueSpecConstant(
                       node.condition.value,
                     )}
+                    initializeAsEditable={node.isNewlyAdded}
                   />
                 </PanelEntryDropZonePlaceholder>
               </div>

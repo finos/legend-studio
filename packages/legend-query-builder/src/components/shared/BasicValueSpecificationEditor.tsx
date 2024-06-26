@@ -22,6 +22,7 @@ import {
   type TooltipPlacement,
   type InputActionData,
   type SelectActionData,
+  type SelectComponent,
   Tooltip,
   DollarIcon,
   clsx,
@@ -41,6 +42,7 @@ import {
   type Type,
   type ValueSpecification,
   type PureModel,
+  type ObserverContext,
   PrimitiveInstanceValue,
   CollectionInstanceValue,
   EnumValueInstanceValue,
@@ -54,9 +56,9 @@ import {
   GenericType,
   Enumeration,
   getMultiplicityDescription,
-  type ObserverContext,
   matchFunctionName,
   isSubType,
+  InstanceValue,
 } from '@finos/legend-graph';
 import {
   type DebouncedFunc,
@@ -220,14 +222,18 @@ const VariableExpressionParameterEditor = observer(
 
 const StringPrimitiveInstanceValueEditor = observer(
   forwardRef<
-    HTMLInputElement,
+    HTMLInputElement | SelectComponent,
     {
       valueSpecification: PrimitiveInstanceValue;
       className?: string | undefined;
       setValueSpecification: (val: ValueSpecification) => void;
       resetValue: () => void;
       selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
-      obseverContext: ObserverContext;
+      observerContext: ObserverContext;
+      handleBlur?: (() => void) | undefined;
+      handleKeyDown?:
+        | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
+        | undefined;
     }
   >(function StringPrimitiveInstanceValueEditor(props, ref) {
     const {
@@ -236,13 +242,15 @@ const StringPrimitiveInstanceValueEditor = observer(
       resetValue,
       setValueSpecification,
       selectorConfig,
-      obseverContext,
+      observerContext,
+      handleBlur,
+      handleKeyDown,
     } = props;
     const useSelector = Boolean(selectorConfig);
     const applicationStore = useApplicationStore();
     const value = valueSpecification.values[0] as string | null;
     const updateValueSpec = (val: string): void => {
-      instanceValue_setValue(valueSpecification, val, 0, obseverContext);
+      instanceValue_setValue(valueSpecification, val, 0, observerContext);
       setValueSpecification(valueSpecification);
     };
     const changeInputValue: React.ChangeEventHandler<HTMLInputElement> = (
@@ -287,9 +295,22 @@ const StringPrimitiveInstanceValueEditor = observer(
       : undefined;
     const noOptionsMessage =
       selectorConfig?.values === undefined ? (): null => null : undefined;
+    const resetButtonName = `reset-${valueSpecification.hashCode}`;
+    const inputName = `input-${valueSpecification.hashCode}`;
+
+    const onBlur = (
+      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+    ): void => {
+      if (
+        event.relatedTarget?.name !== resetButtonName &&
+        event.relatedTarget?.name !== inputName
+      ) {
+        handleBlur?.();
+      }
+    };
 
     return (
-      <div className={clsx('value-spec-editor', className)}>
+      <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
         {useSelector ? (
           <CustomSelectorInput
             className="value-spec-editor__enum-selector"
@@ -310,6 +331,9 @@ const StringPrimitiveInstanceValueEditor = observer(
             }}
             hasError={!isValidInstanceValue(valueSpecification)}
             placeholder={value === '' ? '(empty)' : undefined}
+            ref={ref as React.Ref<SelectComponent>}
+            onKeyDown={handleKeyDown}
+            inputName={inputName}
           />
         ) : (
           <InputWithInlineValidation
@@ -318,17 +342,19 @@ const StringPrimitiveInstanceValueEditor = observer(
             value={value ?? ''}
             placeholder={value === '' ? '(empty)' : undefined}
             onChange={changeInputValue}
-            ref={ref}
+            ref={ref as React.Ref<HTMLInputElement>}
             error={
               !isValidInstanceValue(valueSpecification)
                 ? 'Invalid String value'
                 : undefined
             }
+            onKeyDown={handleKeyDown}
+            name={inputName}
           />
         )}
         <button
           className="value-spec-editor__reset-btn"
-          name="Reset"
+          name={resetButtonName}
           title="Reset"
           onClick={resetValue}
         >
@@ -345,18 +371,18 @@ const BooleanPrimitiveInstanceValueEditor = observer(
     className?: string | undefined;
     resetValue: () => void;
     setValueSpecification: (val: ValueSpecification) => void;
-    obseverContext: ObserverContext;
+    observerContext: ObserverContext;
   }) => {
     const {
       valueSpecification,
       className,
       resetValue,
       setValueSpecification,
-      obseverContext,
+      observerContext,
     } = props;
     const value = valueSpecification.values[0] as boolean;
     const toggleValue = (): void => {
-      instanceValue_setValue(valueSpecification, !value, 0, obseverContext);
+      instanceValue_setValue(valueSpecification, !value, 0, observerContext);
       setValueSpecification(valueSpecification);
     };
 
@@ -392,7 +418,11 @@ const NumberPrimitiveInstanceValueEditor = observer(
       className?: string | undefined;
       resetValue: () => void;
       setValueSpecification: (val: ValueSpecification) => void;
-      obseverContext: ObserverContext;
+      observerContext: ObserverContext;
+      handleBlur?: (() => void) | undefined;
+      handleKeyDown?:
+        | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
+        | undefined;
     }
   >(function NumberPrimitiveInstanceValueEditor(props, ref) {
     const {
@@ -401,7 +431,9 @@ const NumberPrimitiveInstanceValueEditor = observer(
       className,
       resetValue,
       setValueSpecification,
-      obseverContext,
+      observerContext,
+      handleBlur,
+      handleKeyDown,
     } = props;
     const [value, setValue] = useState(
       valueSpecification.values[0] === null
@@ -429,7 +461,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
             valueSpecification,
             parsedValue,
             0,
-            obseverContext,
+            observerContext,
           );
           setValueSpecification(valueSpecification);
         }
@@ -496,8 +528,24 @@ const NumberPrimitiveInstanceValueEditor = observer(
       }
     }, [numericValue, valueSpecification]);
 
+    const resetButtonName = `reset-${valueSpecification.hashCode}`;
+    const inputName = `input-${valueSpecification.hashCode}`;
+    const calculateButtonName = `calculate-${valueSpecification.hashCode}`;
+
+    const onBlur = (
+      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+    ): void => {
+      if (
+        event.relatedTarget?.name !== resetButtonName &&
+        event.relatedTarget?.name !== inputName &&
+        event.relatedTarget?.name !== calculateButtonName
+      ) {
+        handleBlur?.();
+      }
+    };
+
     return (
-      <div className={clsx('value-spec-editor', className)}>
+      <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
         <div className="value-spec-editor__number__input-container">
           <input
             ref={inputRef}
@@ -516,12 +564,17 @@ const NumberPrimitiveInstanceValueEditor = observer(
             value={value}
             onChange={handleInputChange}
             onBlur={calculateExpression}
-            onKeyDown={onKeyDown}
+            onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+              onKeyDown(event);
+              handleKeyDown?.(event);
+            }}
+            name={inputName}
           />
           <div className="value-spec-editor__number__actions">
             <button
               className="value-spec-editor__number__action"
               title="Evaluate Expression (Enter)"
+              name={calculateButtonName}
               onClick={calculateExpression}
             >
               <CalculateIcon />
@@ -530,7 +583,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
         </div>
         <button
           className="value-spec-editor__reset-btn"
-          name="Reset"
+          name={resetButtonName}
           title="Reset"
           onClick={resetValue}
         >
@@ -547,14 +600,16 @@ const EnumValueInstanceValueEditor = observer(
     className?: string | undefined;
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
-    obseverContext: ObserverContext;
+    observerContext: ObserverContext;
+    handleBlur?: (() => void) | undefined;
   }) => {
     const {
       valueSpecification,
       className,
       resetValue,
       setValueSpecification,
-      obseverContext,
+      observerContext,
+      handleBlur,
     } = props;
     const applicationStore = useApplicationStore();
     const enumType = guaranteeType(
@@ -569,18 +624,33 @@ const EnumValueInstanceValueEditor = observer(
       label: value.name,
       value: value,
     }));
+    const resetButtonName = `reset-${valueSpecification.hashCode}`;
+    const inputName = `input-${valueSpecification.hashCode}`;
+
     const changeValue = (val: { value: Enum; label: string }): void => {
       instanceValue_setValue(
         valueSpecification,
         EnumValueExplicitReference.create(val.value),
         0,
-        obseverContext,
+        observerContext,
       );
       setValueSpecification(valueSpecification);
+      handleBlur?.();
+    };
+
+    const onBlur = (
+      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+    ): void => {
+      if (
+        event.relatedTarget?.name !== resetButtonName &&
+        event.relatedTarget?.name !== inputName
+      ) {
+        handleBlur?.();
+      }
     };
 
     return (
-      <div className={clsx('value-spec-editor', className)}>
+      <div className={clsx('value-spec-editor', className)} onBlur={onBlur}>
         <CustomSelectorInput
           className="value-spec-editor__enum-selector"
           options={options}
@@ -591,10 +661,12 @@ const EnumValueInstanceValueEditor = observer(
           }
           hasError={!isValidInstanceValue(valueSpecification)}
           placeholder="Select value"
+          autoFocus={true}
+          inputName={inputName}
         />
         <button
           className="value-spec-editor__reset-btn"
-          name="Reset"
+          name={resetButtonName}
           title="Reset"
           onClick={resetValue}
         >
@@ -672,7 +744,9 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       { label: string; value: string }[]
     >(
       valueSpecification.values
-        .map((valueSpec) => getValueSpecificationStringValue(valueSpec))
+        .map((valueSpec) =>
+          getValueSpecificationStringValue(valueSpec, applicationStore),
+        )
         .filter(isNonEmptyString)
         .map((value) => ({
           label: value,
@@ -707,7 +781,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       value: ValueSpecification,
     ): { label: string; value: string } => {
       const stringValue = guaranteeNonNullable(
-        getValueSpecificationStringValue(value),
+        getValueSpecificationStringValue(value, applicationStore),
       );
       return {
         label: stringValue,
@@ -736,10 +810,11 @@ const PrimitiveCollectionInstanceValueEditor = observer(
 
         if (
           newValueSpec === null ||
-          getValueSpecificationStringValue(newValueSpec) === undefined ||
+          getValueSpecificationStringValue(newValueSpec, applicationStore) ===
+            undefined ||
           isValueAlreadySelected(
             guaranteeNonNullable(
-              getValueSpecificationStringValue(newValueSpec),
+              getValueSpecificationStringValue(newValueSpec, applicationStore),
             ),
           )
         ) {
@@ -849,7 +924,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
               observerContext,
             );
             return newValueSpec
-              ? getValueSpecificationStringValue(newValueSpec)
+              ? getValueSpecificationStringValue(newValueSpec, applicationStore)
               : null;
           })
           .filter(isNonNullable),
@@ -1009,7 +1084,7 @@ const CollectionValueInstanceValueEditor = observer(
     resetValue: () => void;
     setValueSpecification: (val: ValueSpecification) => void;
     selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
-    obseverContext: ObserverContext;
+    observerContext: ObserverContext;
   }) => {
     const {
       valueSpecification,
@@ -1018,7 +1093,7 @@ const CollectionValueInstanceValueEditor = observer(
       resetValue,
       setValueSpecification,
       selectorConfig,
-      obseverContext,
+      observerContext,
     } = props;
 
     const [editable, setEditable] = useState(false);
@@ -1051,7 +1126,7 @@ const CollectionValueInstanceValueEditor = observer(
             {expectedType instanceof Enumeration ? (
               <EnumCollectionInstanceValueEditor
                 valueSpecification={valueSpecification}
-                observerContext={obseverContext}
+                observerContext={observerContext}
                 saveEdit={saveEdit}
               />
             ) : (
@@ -1060,7 +1135,7 @@ const CollectionValueInstanceValueEditor = observer(
                 expectedType={expectedType}
                 saveEdit={saveEdit}
                 selectorConfig={selectorConfig}
-                observerContext={obseverContext}
+                observerContext={observerContext}
               />
             )}
             <button
@@ -1105,19 +1180,23 @@ const DateInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue | SimpleFunctionExpression;
     graph: PureModel;
-    obseverContext: ObserverContext;
+    observerContext: ObserverContext;
     typeCheckOption: TypeCheckOption;
     className?: string | undefined;
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
+    handleBlur?: (() => void) | undefined;
+    displayAsEditableValue?: boolean | undefined;
   }) => {
     const {
       valueSpecification,
       setValueSpecification,
       graph,
-      obseverContext,
+      observerContext,
       typeCheckOption,
       resetValue,
+      handleBlur,
+      displayAsEditableValue,
     } = props;
 
     return (
@@ -1125,22 +1204,26 @@ const DateInstanceValueEditor = observer(
         <CustomDatePicker
           valueSpecification={valueSpecification}
           graph={graph}
-          observerContext={obseverContext}
+          observerContext={observerContext}
           typeCheckOption={typeCheckOption}
           setValueSpecification={setValueSpecification}
           hasError={
             valueSpecification instanceof PrimitiveInstanceValue &&
             !isValidInstanceValue(valueSpecification)
           }
+          handleBlur={handleBlur}
+          displayAsEditableValue={displayAsEditableValue}
         />
-        <button
-          className="value-spec-editor__reset-btn"
-          name="Reset"
-          title="Reset"
-          onClick={resetValue}
-        >
-          <RefreshIcon />
-        </button>
+        {!displayAsEditableValue && (
+          <button
+            className="value-spec-editor__reset-btn"
+            name="Reset"
+            title="Reset"
+            onClick={resetValue}
+          >
+            <RefreshIcon />
+          </button>
+        )}
       </div>
     );
   },
@@ -1157,25 +1240,33 @@ export const BasicValueSpecificationEditor = forwardRef<
   {
     valueSpecification: ValueSpecification;
     graph: PureModel;
-    obseverContext: ObserverContext;
+    observerContext: ObserverContext;
     typeCheckOption: TypeCheckOption;
     className?: string | undefined;
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
-    isConstant?: boolean;
+    isConstant?: boolean | undefined;
     selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+    handleBlur?: (() => void) | undefined;
+    handleKeyDown?:
+      | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
+      | undefined;
+    displayDateEditorAsEditableValue?: boolean | undefined;
   }
 >(function BasicValueSpecificationEditor(props, ref) {
   const {
     className,
     valueSpecification,
     graph,
-    obseverContext,
+    observerContext,
     typeCheckOption,
     setValueSpecification,
     resetValue,
     selectorConfig,
     isConstant,
+    handleBlur,
+    handleKeyDown,
+    displayDateEditorAsEditableValue,
   } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
@@ -1188,8 +1279,10 @@ export const BasicValueSpecificationEditor = forwardRef<
             className={className}
             resetValue={resetValue}
             selectorConfig={selectorConfig}
-            obseverContext={obseverContext}
+            observerContext={observerContext}
             ref={ref}
+            handleBlur={handleBlur}
+            handleKeyDown={handleKeyDown}
           />
         );
       case PRIMITIVE_TYPE.BOOLEAN:
@@ -1199,7 +1292,7 @@ export const BasicValueSpecificationEditor = forwardRef<
             setValueSpecification={setValueSpecification}
             className={className}
             resetValue={resetValue}
-            obseverContext={obseverContext}
+            observerContext={observerContext}
           />
         );
       case PRIMITIVE_TYPE.NUMBER:
@@ -1215,8 +1308,10 @@ export const BasicValueSpecificationEditor = forwardRef<
             setValueSpecification={setValueSpecification}
             className={className}
             resetValue={resetValue}
-            obseverContext={obseverContext}
+            observerContext={observerContext}
             ref={ref}
+            handleBlur={handleBlur}
+            handleKeyDown={handleKeyDown}
           />
         );
       case PRIMITIVE_TYPE.DATE:
@@ -1227,11 +1322,13 @@ export const BasicValueSpecificationEditor = forwardRef<
           <DateInstanceValueEditor
             valueSpecification={valueSpecification}
             graph={graph}
-            obseverContext={obseverContext}
+            observerContext={observerContext}
             typeCheckOption={typeCheckOption}
             className={className}
             setValueSpecification={setValueSpecification}
             resetValue={resetValue}
+            handleBlur={handleBlur}
+            displayAsEditableValue={displayDateEditorAsEditableValue}
           />
         );
       default:
@@ -1244,7 +1341,8 @@ export const BasicValueSpecificationEditor = forwardRef<
         className={className}
         resetValue={resetValue}
         setValueSpecification={setValueSpecification}
-        obseverContext={obseverContext}
+        observerContext={observerContext}
+        handleBlur={handleBlur}
       />
     );
   } else if (
@@ -1263,7 +1361,7 @@ export const BasicValueSpecificationEditor = forwardRef<
         resetValue={resetValue}
         setValueSpecification={setValueSpecification}
         selectorConfig={selectorConfig}
-        obseverContext={obseverContext}
+        observerContext={observerContext}
       />
     );
   }
@@ -1282,10 +1380,13 @@ export const BasicValueSpecificationEditor = forwardRef<
       <BasicValueSpecificationEditor
         valueSpecification={valueSpecification.getValue()}
         graph={graph}
-        obseverContext={obseverContext}
+        observerContext={observerContext}
         typeCheckOption={typeCheckOption}
         setValueSpecification={setValueSpecification}
         resetValue={resetValue}
+        handleBlur={handleBlur}
+        handleKeyDown={handleKeyDown}
+        displayDateEditorAsEditableValue={displayDateEditorAsEditableValue}
       />
     );
   } else if (valueSpecification instanceof SimpleFunctionExpression) {
@@ -1295,11 +1396,13 @@ export const BasicValueSpecificationEditor = forwardRef<
           <DateInstanceValueEditor
             valueSpecification={valueSpecification}
             graph={graph}
-            obseverContext={obseverContext}
+            observerContext={observerContext}
             typeCheckOption={typeCheckOption}
             className={className}
             setValueSpecification={setValueSpecification}
             resetValue={resetValue}
+            handleBlur={handleBlur}
+            displayAsEditableValue={displayDateEditorAsEditableValue}
           />
         );
       } else {
@@ -1316,7 +1419,7 @@ export const BasicValueSpecificationEditor = forwardRef<
     ) {
       const simplifiedValue = simplifyValueExpression(
         valueSpecification,
-        obseverContext,
+        observerContext,
       );
       if (
         simplifiedValue instanceof PrimitiveInstanceValue &&
@@ -1335,8 +1438,10 @@ export const BasicValueSpecificationEditor = forwardRef<
             setValueSpecification={setValueSpecification}
             className={className}
             resetValue={resetValue}
-            obseverContext={obseverContext}
+            observerContext={observerContext}
             ref={ref}
+            handleBlur={handleBlur}
+            handleKeyDown={handleKeyDown}
           />
         );
       }
@@ -1345,3 +1450,100 @@ export const BasicValueSpecificationEditor = forwardRef<
 
   return <UnsupportedValueSpecificationEditor />;
 });
+
+export const EditableBasicValueSpecificationEditor = observer(
+  (props: {
+    valueSpecification: ValueSpecification;
+    setValueSpecification: (valueSpec: ValueSpecification) => void;
+    graph: PureModel;
+    observerContext: ObserverContext;
+    typeCheckOption: TypeCheckOption;
+    resetValue: () => void;
+    selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
+    isConstant?: boolean;
+    initializeAsEditable?: boolean;
+  }) => {
+    const {
+      valueSpecification,
+      setValueSpecification,
+      graph,
+      observerContext,
+      typeCheckOption,
+      resetValue,
+      selectorConfig,
+      isConstant,
+      initializeAsEditable,
+    } = props;
+    const applicationStore = useApplicationStore();
+
+    const [isEditingValue, setIsEditingValue] = useState(
+      initializeAsEditable ?? false,
+    );
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+      if (isEditingValue) {
+        inputRef.current?.focus();
+      }
+    }, [isEditingValue, inputRef]);
+
+    const editableDisplayValueSupported =
+      (valueSpecification instanceof PrimitiveInstanceValue &&
+        !isSubType(
+          valueSpecification.genericType.value.rawType,
+          PrimitiveType.DATE,
+        ) &&
+        valueSpecification.genericType.value.rawType !==
+          PrimitiveType.BOOLEAN) ||
+      valueSpecification instanceof EnumValueInstanceValue;
+
+    const shouldRenderEditor = isEditingValue || !editableDisplayValueSupported;
+
+    const valueSpecStringValue = getValueSpecificationStringValue(
+      valueSpecification,
+      applicationStore,
+      {
+        omitEnumOwnerName: true,
+      },
+    );
+
+    return shouldRenderEditor ? (
+      <BasicValueSpecificationEditor
+        valueSpecification={valueSpecification}
+        setValueSpecification={setValueSpecification}
+        graph={graph}
+        observerContext={observerContext}
+        typeCheckOption={typeCheckOption}
+        resetValue={resetValue}
+        selectorConfig={selectorConfig}
+        isConstant={isConstant}
+        ref={inputRef}
+        handleBlur={() => setIsEditingValue(false)}
+        handleKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+          if (event.key === 'Enter') {
+            setIsEditingValue(false);
+          }
+        }}
+        displayDateEditorAsEditableValue={true}
+      />
+    ) : (
+      <div className="value-spec-editor__editable__display">
+        <span
+          className={clsx(
+            'value-spec-editor__editable__display--content editable-value',
+            {
+              'value-spec-editor__editable__display--content--error':
+                valueSpecification instanceof InstanceValue &&
+                !isValidInstanceValue(valueSpecification),
+            },
+          )}
+          onClick={() => {
+            setIsEditingValue(true);
+          }}
+        >
+          {`"${valueSpecStringValue !== undefined ? valueSpecStringValue : ''}"`}
+        </span>
+      </div>
+    );
+  },
+);

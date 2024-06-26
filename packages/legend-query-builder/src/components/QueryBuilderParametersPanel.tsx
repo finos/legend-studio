@@ -266,7 +266,7 @@ const VariableExpressionEditor = observer(
                       setDefaultMilestoningValue(deepClone(val));
                     }}
                     graph={queryBuilderState.graphManagerState.graph}
-                    obseverContext={queryBuilderState.observerContext}
+                    observerContext={queryBuilderState.observerContext}
                     typeCheckOption={{
                       expectedType: selectedType.value,
                       match: selectedType.value === PrimitiveType.DATETIME,

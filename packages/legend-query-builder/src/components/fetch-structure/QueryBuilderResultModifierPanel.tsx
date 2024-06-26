@@ -960,7 +960,7 @@ export const QueryResultModifierModal = observer(
                               watermarkState.queryBuilderState.graphManagerState
                                 .graph
                             }
-                            obseverContext={
+                            observerContext={
                               watermarkState.queryBuilderState.observerContext
                             }
                             typeCheckOption={{
