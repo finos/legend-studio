@@ -17,7 +17,7 @@
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import {
-  DataCubeQuerySnapshotSortDirection,
+  DataCubeQuerySnapshotSortOperation,
   _getCol,
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
@@ -32,29 +32,29 @@ import {
 
 export class DataCubeEditorSortColumnState extends DataCubeEditorColumnsSelectorColumnState {
   readonly column: DataCubeQuerySnapshotColumn;
-  direction: DataCubeQuerySnapshotSortDirection;
+  operation: DataCubeQuerySnapshotSortOperation;
 
   constructor(
     column: DataCubeQuerySnapshotColumn,
-    direction: DataCubeQuerySnapshotSortDirection,
+    direction: DataCubeQuerySnapshotSortOperation,
   ) {
     super();
 
     makeObservable(this, {
-      direction: observable,
-      setDirection: action,
+      operation: observable,
+      setOperation: action,
     });
 
     this.column = column;
-    this.direction = direction;
+    this.operation = direction;
   }
 
   get name(): string {
     return this.column.name;
   }
 
-  setDirection(val: DataCubeQuerySnapshotSortDirection): void {
-    this.direction = val;
+  setOperation(val: DataCubeQuerySnapshotSortOperation): void {
+    this.operation = val;
   }
 }
 
@@ -81,7 +81,7 @@ export class DataCubeEditorSortsPanelState
           (col) =>
             new DataCubeEditorSortColumnState(
               _getCol(columns, col.name),
-              DataCubeQuerySnapshotSortDirection.ASCENDING,
+              DataCubeQuerySnapshotSortOperation.ASCENDING,
             ),
         ),
     );
@@ -90,7 +90,7 @@ export class DataCubeEditorSortsPanelState
         (col) =>
           new DataCubeEditorSortColumnState(
             _getCol(columns, col.name),
-            col.direction,
+            col.operation,
           ),
       ),
     );
@@ -104,7 +104,7 @@ export class DataCubeEditorSortsPanelState
       this.columnsSelector.selectedColumns.map((sortInfo) => ({
         name: sortInfo.column.name,
         type: sortInfo.column.type,
-        direction: sortInfo.direction,
+        operation: sortInfo.operation,
       }));
 
     if (!deepEqual(newSortColumns, baseSnapshot.data.sortColumns)) {

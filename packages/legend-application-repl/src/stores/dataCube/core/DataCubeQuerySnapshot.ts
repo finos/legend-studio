@@ -54,7 +54,7 @@ export enum DataCubeQuerySnapshotFilterOperation {
   ENDS_WITH = 'endsWith',
 }
 
-export enum DataCubeQuerySnapshotSortDirection {
+export enum DataCubeQuerySnapshotSortOperation {
   ASCENDING = 'ascending',
   DESCENDING = 'descending',
 }
@@ -90,7 +90,7 @@ export type DataCubeQuerySnapshotExtendedColumn =
   };
 
 export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {
-  direction: DataCubeQuerySnapshotSortDirection;
+  operation: DataCubeQuerySnapshotSortOperation;
 };
 
 export type DataCubeQuerySnapshotAggregateColumn =

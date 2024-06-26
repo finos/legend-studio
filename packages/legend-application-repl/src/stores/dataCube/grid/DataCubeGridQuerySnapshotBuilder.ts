@@ -25,7 +25,7 @@ import type { IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import {
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotSortColumn,
-  DataCubeQuerySnapshotSortDirection,
+  DataCubeQuerySnapshotSortOperation,
   _getCol,
   DataCubeQuerySnapshotAggregateFunction,
   type DataCubeQuerySnapshotGroupBy,
@@ -98,10 +98,10 @@ export function buildQuerySnapshot(
     const availableCols = baseSnapshot.stageCols('sort');
     sortColumns = request.sortModel.map((item) => ({
       ..._getCol(availableCols, item.colId),
-      direction:
+      operation:
         item.sort === GridClientSortDirection.ASCENDING
-          ? DataCubeQuerySnapshotSortDirection.ASCENDING
-          : DataCubeQuerySnapshotSortDirection.DESCENDING,
+          ? DataCubeQuerySnapshotSortOperation.ASCENDING
+          : DataCubeQuerySnapshotSortOperation.DESCENDING,
     }));
   }
 

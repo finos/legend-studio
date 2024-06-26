@@ -51,7 +51,7 @@ import {
   type DataCubeQuerySnapshotFilterCondition,
   type DataCubeQuerySnapshotFilter,
   type DataCubeQuerySnapshot,
-  DataCubeQuerySnapshotSortDirection,
+  DataCubeQuerySnapshotSortOperation,
   DataCubeQuerySnapshotFilterOperation,
   DataCubeQueryFilterGroupOperation,
   _findCol,
@@ -419,7 +419,7 @@ export function buildExecutableQuery(
           data.sortColumns.map((col) =>
             _function(
               _name(
-                col.direction === DataCubeQuerySnapshotSortDirection.ASCENDING
+                col.operation === DataCubeQuerySnapshotSortOperation.ASCENDING
                   ? DataCubeFunction.ASC
                   : DataCubeFunction.DESC,
               ),

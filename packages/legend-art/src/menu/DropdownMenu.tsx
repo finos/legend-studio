@@ -28,6 +28,7 @@ export const DropdownMenu: React.FC<{
   title?: string | undefined;
   onOpen?: (() => void) | undefined;
   onClose?: (() => void) | undefined;
+  useCapture?: boolean | undefined;
 }> = (props) => {
   const {
     open,
@@ -39,6 +40,7 @@ export const DropdownMenu: React.FC<{
     disabled,
     onClose,
     onOpen,
+    useCapture,
   } = props;
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
@@ -48,12 +50,7 @@ export const DropdownMenu: React.FC<{
     if (disabled) {
       return;
     }
-    if (anchorEl) {
-      // if the trigger is clicked and the menu is already opened, close it
-      onClose?.();
-      setAnchorEl(null);
-    } else if (triggerRef.current) {
-      // if the trigger is clicked, open the dropdown menu
+    if (triggerRef.current) {
       onOpen?.();
       setAnchorEl(triggerRef.current);
     }
@@ -73,30 +70,49 @@ export const DropdownMenu: React.FC<{
   }, [anchorEl, open]);
 
   return (
-    <button
-      ref={triggerRef}
-      className={className}
-      disabled={disabled}
-      onClick={onTriggerClick}
-      tabIndex={-1}
-      title={title}
-    >
-      {children}
+    <>
+      <button
+        ref={triggerRef}
+        className={className}
+        disabled={disabled}
+        {...(useCapture
+          ? {
+              onClickCapture: onTriggerClick,
+              onClick: (event) => {
+                event.stopPropagation();
+              },
+            }
+          : { onClick: onTriggerClick })}
+        tabIndex={-1}
+        title={title}
+      >
+        {children}
+      </button>
       <BaseMenu
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         anchorEl={anchorEl}
         open={(open === undefined || Boolean(open)) && Boolean(anchorEl)}
-        BackdropProps={{
-          invisible: true,
+        slotProps={{
+          root: {
+            slotProps: {
+              backdrop: {
+                invisible: true,
+              },
+            },
+          },
         }}
         elevation={0}
         marginThreshold={0}
         disableRestoreFocus={true}
+        onClick={() => {
+          onClose?.();
+          setAnchorEl(null);
+        }}
         {...menuProps}
       >
         {content}
       </BaseMenu>
-    </button>
+    </>
   );
 };

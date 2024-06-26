@@ -44,9 +44,13 @@ import {
   TbChevronLeft,
   TbChevronRight,
   TbSearch,
+  TbAlertTriangle,
+  TbExclamationCircle,
+  TbCaretDownFilled,
 } from 'react-icons/tb';
 
 export const DataCubeIcon = {
+  CaretDown: TbCaretDownFilled,
   ChevronLeft: TbChevronLeft,
   ChevronRight: TbChevronRight,
   Code: TbCode,
@@ -75,4 +79,6 @@ export const DataCubeIcon = {
   TableSort: TbTableDown,
   Window: GoBrowser,
   X: GoX,
+  Warning: TbAlertTriangle,
+  WarningCircle: TbExclamationCircle,
 };

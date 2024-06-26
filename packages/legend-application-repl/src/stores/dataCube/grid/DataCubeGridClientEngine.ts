@@ -15,6 +15,8 @@
  */
 
 import type {
+  GridApi,
+  IRowNode,
   IServerSideDatasource,
   IServerSideGetRowsParams,
 } from '@ag-grid-community/core';
@@ -55,6 +57,30 @@ export enum GridClientAggregateOperation {
   MAX = 'max',
   MIN = 'min',
   AVERAGE = 'avg',
+}
+
+export function getDataForAllNodes<T>(client: GridApi<T>): T[] {
+  const rows: T[] = [];
+  client.forEachNode((node: IRowNode<T>) => {
+    if (node.data) {
+      rows.push(node.data);
+    }
+  });
+  return rows;
+}
+
+/**
+ * NOTE: this method does not work for server-side row model.
+ * It only works when client-side filter is being applied
+ */
+export function getDataForAllFilteredNodes<T>(client: GridApi<T>): T[] {
+  const rows: T[] = [];
+  client.forEachNodeAfterFilter((node: IRowNode<T>) => {
+    if (node.data) {
+      rows.push(node.data);
+    }
+  });
+  return rows;
 }
 
 function TDStoRowData(tds: TabularDataSet): GridClientRowData[] {

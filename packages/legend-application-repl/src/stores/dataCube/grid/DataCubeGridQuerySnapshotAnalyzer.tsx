@@ -23,7 +23,7 @@
 
 import {
   DataCubeQuerySnapshotAggregateFunction,
-  DataCubeQuerySnapshotSortDirection,
+  DataCubeQuerySnapshotSortOperation,
   _findCol,
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
@@ -95,7 +95,7 @@ function _sortSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
   }
   return {
     sort:
-      sortCol.direction === DataCubeQuerySnapshotSortDirection.ASCENDING
+      sortCol.operation === DataCubeQuerySnapshotSortOperation.ASCENDING
         ? GridClientSortDirection.ASCENDING
         : GridClientSortDirection.DESCENDING,
     sortIndex: sortColumns.indexOf(sortCol),
