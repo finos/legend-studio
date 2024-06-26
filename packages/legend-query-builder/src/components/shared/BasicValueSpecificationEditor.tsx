@@ -1502,7 +1502,9 @@ export const EditableBasicValueSpecificationEditor = observer(
     const valueSpecStringValue = getValueSpecificationStringValue(
       valueSpecification,
       applicationStore,
-      true,
+      {
+        omitEnumOwnerName: true,
+      },
     );
 
     return shouldRenderEditor ? (
