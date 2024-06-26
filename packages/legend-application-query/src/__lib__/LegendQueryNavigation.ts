@@ -199,11 +199,12 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
   (
     studioApplicationUrl: string,
     projectId: string,
+    versionId: string | undefined,
     entityPath: string | undefined,
   ): string =>
     `${studioApplicationUrl}/view/${projectId}${
-      entityPath ? `/entity/${entityPath}` : ''
-    }`;
+      versionId ? `/version/${versionId}` : ''
+    }${entityPath ? `/entity/${entityPath}` : ''}`;
 
 /**
  * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
@@ -234,3 +235,20 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectService
 export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl =
   (studioApplicationUrl: string, queryId: string): string =>
     `${studioApplicationUrl}/extensions/productionize-query/${queryId}`;
+
+/**
+ * @external_application_navigation This depends on Legend Taxonomy routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateTaxonomyDataspaceViewUrl =
+  (
+    taxonomyApplicationUrl: string,
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    dataspacePath: string,
+  ): string =>
+    `${taxonomyApplicationUrl}/dataspace/${generateGAVCoordinates(
+      groupId,
+      artifactId,
+      versionId,
+    )}/${dataspacePath}`;
