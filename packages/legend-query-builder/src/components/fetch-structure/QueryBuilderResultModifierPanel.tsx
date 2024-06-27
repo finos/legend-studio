@@ -868,48 +868,55 @@ export const QueryResultModifierModal = observer(
                       )}
                     </>
                   )}
-                  <PanelFormSection>
-                    <div className="panel__content__form__section__header__label">
-                      List of compatible milestoning parameters
-                    </div>
-                  </PanelFormSection>
-                  <div className="panel__content__form__section__list__items">
-                    <PanelFormListItems title="Available parameters">
-                      {filteredParameterStates.length === 0 && (
-                        <> No available parameters </>
-                      )}
-                      {filteredParameterStates.map((pState) => (
-                        <VariableViewer
-                          key={pState.uuid}
-                          variable={pState.parameter}
-                          isReadOnly={true}
-                          queryBuilderState={milestoningState.queryBuilderState}
-                          option={{ hideMilestoningParameterValueString: true }}
-                        />
-                      ))}
-                    </PanelFormListItems>
-                    {Boolean(filteredConstantState.length) && (
-                      <PanelFormListItems title="Available constants">
-                        {filteredConstantState.map((constantState) => (
-                          <VariableViewer
-                            key={constantState.uuid}
-                            variable={constantState.variable}
-                            value={{
-                              val:
-                                constantState instanceof
-                                QueryBuilderSimpleConstantExpressionState
-                                  ? constantState.value
-                                  : undefined,
-                            }}
-                            queryBuilderState={
-                              milestoningState.queryBuilderState
-                            }
-                            isReadOnly={true}
-                          />
-                        ))}
-                      </PanelFormListItems>
-                    )}
-                  </div>
+                  {!(isAllVersionsEnabled && !isAllVersionsInRangeEnabled) && (
+                    <>
+                      <PanelFormSection>
+                        <div className="panel__content__form__section__header__label">
+                          List of compatible milestoning parameters
+                        </div>
+                      </PanelFormSection>
+                      <div className="panel__content__form__section__list__items">
+                        {filteredParameterStates.length > 0 && (
+                          <PanelFormListItems title="Available parameters">
+                            {filteredParameterStates.map((pState) => (
+                              <VariableViewer
+                                key={pState.uuid}
+                                variable={pState.parameter}
+                                isReadOnly={true}
+                                queryBuilderState={
+                                  milestoningState.queryBuilderState
+                                }
+                                option={{
+                                  hideMilestoningParameterValueString: true,
+                                }}
+                              />
+                            ))}
+                          </PanelFormListItems>
+                        )}
+                        {Boolean(filteredConstantState.length) && (
+                          <PanelFormListItems title="Available constants">
+                            {filteredConstantState.map((constantState) => (
+                              <VariableViewer
+                                key={constantState.uuid}
+                                variable={constantState.variable}
+                                value={{
+                                  val:
+                                    constantState instanceof
+                                    QueryBuilderSimpleConstantExpressionState
+                                      ? constantState.value
+                                      : undefined,
+                                }}
+                                queryBuilderState={
+                                  milestoningState.queryBuilderState
+                                }
+                                isReadOnly={true}
+                              />
+                            ))}
+                          </PanelFormListItems>
+                        )}
+                      </div>
+                    </>
+                  )}
                   <div className="query-builder__projection__options__section-name">
                     Other
                   </div>

@@ -517,7 +517,18 @@ export class QueryBuilderMilestoningState implements Hashable {
     const usedInProcessingDate = this.processingDate
       ? isValueExpressionReferencedInValue(variable, this.processingDate)
       : false;
-    return usedInBusiness || usedInProcessingDate;
+    const usedInStartDate = this.startDate
+      ? isValueExpressionReferencedInValue(variable, this.startDate)
+      : false;
+    const usedInEndState = this.endDate
+      ? isValueExpressionReferencedInValue(variable, this.endDate)
+      : false;
+    return (
+      usedInBusiness ||
+      usedInProcessingDate ||
+      usedInStartDate ||
+      usedInEndState
+    );
   }
 
   isMilestoningParameter(parameter: VariableExpression): boolean {

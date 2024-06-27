@@ -88,6 +88,7 @@ import { QueryEditorExistingQueryHeader } from './QueryEditor.js';
 import { DataSpaceTemplateQueryCreatorStore } from '../stores/data-space/DataSpaceTemplateQueryCreatorStore.js';
 import { createViewSDLCProjectHandler } from '../stores/data-space/DataSpaceQueryBuilderHelper.js';
 import { DataSpaceQueryCreatorStore } from '../stores/data-space/DataSpaceQueryCreatorStore.js';
+import { QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS } from '../../../legend-query-builder/src/graph/QueryBuilderMetaModelConst.js';
 
 export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   static NAME = packageJson.extensions.applicationQueryPlugin;
@@ -551,7 +552,13 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                           type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                           handler:
                             queryBuilderState.applicationStore.guardUnhandledError(
-                              async () => queryBuilderState.resetQueryContent(),
+                              async () => {
+                                queryBuilderState.resetQueryContent();
+                                queryBuilderState.setGetAllFunction(
+                                  QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
+                                );
+                                queryBuilderState.milestoningState.updateMilestoningConfiguration();
+                              },
                             ),
                         },
                         {
@@ -564,6 +571,10 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                   );
                 } else {
                   queryBuilderState.resetQueryContent();
+                  queryBuilderState.setGetAllFunction(
+                    QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
+                  );
+                  queryBuilderState.milestoningState.updateMilestoningConfiguration();
                 }
               }
             };
