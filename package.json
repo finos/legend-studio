@@ -8,7 +8,7 @@
     "scripts/github-bot"
   ],
   "scripts": {
-    "build": "yarn clean && npm-run-all build:ts build:vscode-extension-dependencies build:sass",
+    "build": "yarn clean && npm-run-all build:ts build:sass",
     "build:doc": "yarn typedoc",
     "build:vscode-extension-dependencies": "yarn workspace @finos/legend-vscode-extension-dependencies build:cjs",
     "build:sass": "node ./scripts/workflow/buildSassAll.js --compressed",

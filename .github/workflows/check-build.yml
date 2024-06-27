@@ -87,7 +87,7 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Build application
-        run: yarn build && yarn workspace ${{ matrix.application }} bundle
+        run: yarn build && yarn build:vscode-extension-dependencies && yarn workspace ${{ matrix.application }} bundle
         env:
           # Webpack build could consume a large amount of memory
           NODE_OPTIONS: '--max-old-space-size=4096'
