@@ -63,35 +63,23 @@ export class QueryBuilderMilestoningState implements Hashable {
   // TODO: Change this when we modify how we deal with milestoning.
   // See https://github.com/finos/legend-studio/issues/1149
   businessDate?: ValueSpecification | undefined;
-  businessDateValue?: ValueSpecification | undefined;
   processingDate?: ValueSpecification | undefined;
-  processingDateValue?: ValueSpecification | undefined;
 
   startDate?: ValueSpecification | undefined;
-  startDateValue?: ValueSpecification | undefined;
   endDate?: ValueSpecification | undefined;
-  endDateValue?: ValueSpecification | undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
       processingDate: observable,
-      processingDateValue: observable,
       businessDate: observable,
-      businessDateValue: observable,
       startDate: observable,
-      startDateValue: observable,
       endDate: observable,
-      endDateValue: observable,
       showMilestoningEditor: observable,
 
       setProcessingDate: action,
       setBusinessDate: action,
       setStartDate: action,
       setEndDate: action,
-      setProcessingDateValue: action,
-      setBusinessDateValue: action,
-      setStartDateValue: action,
-      setEndDateValue: action,
       setShowMilestoningEditor: action,
       clearMilestoningDates: action,
       setAllVersions: action,
@@ -290,22 +278,12 @@ export class QueryBuilderMilestoningState implements Hashable {
     this.startDate = val
       ? observe_ValueSpecification(val, this.queryBuilderState.observerContext)
       : val;
-    this.setStartDateValue(this.getMilestoningParameterValue(this.startDate));
-  }
-
-  setStartDateValue(val: ValueSpecification | undefined): void {
-    this.startDateValue = val;
   }
 
   setEndDate(val: ValueSpecification | undefined): void {
     this.endDate = val
       ? observe_ValueSpecification(val, this.queryBuilderState.observerContext)
       : val;
-    this.setEndDateValue(this.getMilestoningParameterValue(this.endDate));
-  }
-
-  setEndDateValue(val: ValueSpecification | undefined): void {
-    this.endDateValue = val;
   }
 
   setShowMilestoningEditor(val: boolean): void {
@@ -334,26 +312,12 @@ export class QueryBuilderMilestoningState implements Hashable {
     this.processingDate = val
       ? observe_ValueSpecification(val, this.queryBuilderState.observerContext)
       : val;
-    this.setProcessingDateValue(
-      this.getMilestoningParameterValue(this.processingDate),
-    );
-  }
-
-  setProcessingDateValue(val: ValueSpecification | undefined): void {
-    this.processingDateValue = val;
   }
 
   setBusinessDate(val: ValueSpecification | undefined): void {
     this.businessDate = val
       ? observe_ValueSpecification(val, this.queryBuilderState.observerContext)
       : val;
-    this.setBusinessDateValue(
-      this.getMilestoningParameterValue(this.businessDate),
-    );
-  }
-
-  setBusinessDateValue(val: ValueSpecification | undefined): void {
-    this.businessDateValue = val;
   }
 
   initializeAllVersionsInRangeParameters(): void {

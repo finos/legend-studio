@@ -420,16 +420,20 @@ export const QueryResultModifierModal = observer(
     const [startDate, setStartDate] = useState(milestoningState.startDate);
     const [endDate, setEndDate] = useState(milestoningState.endDate);
     const [businessDateValue, setBusinessDateValue] = useState(
-      milestoningState.businessDateValue,
+      milestoningState.getMilestoningParameterValue(
+        milestoningState.businessDate,
+      ),
     );
     const [processingDateValue, setProcessingDateValue] = useState(
-      milestoningState.processingDateValue,
+      milestoningState.getMilestoningParameterValue(
+        milestoningState.processingDate,
+      ),
     );
     const [startDateValue, setStartDateValue] = useState(
-      milestoningState.startDateValue,
+      milestoningState.getMilestoningParameterValue(milestoningState.startDate),
     );
     const [endDateValue, setEndDateValue] = useState(
-      milestoningState.endDateValue,
+      milestoningState.getMilestoningParameterValue(milestoningState.endDate),
     );
 
     const shouldFilterMilestoningParamIfNotUsed = (
@@ -732,10 +736,6 @@ export const QueryResultModifierModal = observer(
       milestoningState.processingDate,
       milestoningState.startDate,
       milestoningState.endDate,
-      milestoningState.businessDateValue,
-      milestoningState.processingDateValue,
-      milestoningState.startDateValue,
-      milestoningState.endDateValue,
       milestoningState.queryBuilderState.class,
     ]);
 
