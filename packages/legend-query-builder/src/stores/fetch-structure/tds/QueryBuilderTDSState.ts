@@ -122,6 +122,7 @@ export class QueryBuilderTDSState
   isConvertDerivationProjectionObjects = false;
   showPostFilterPanel: boolean;
   showWindowFuncPanel = false;
+  useColFunc = false;
 
   postFilterOperators: QueryBuilderPostFilterOperator[] =
     getQueryBuilderCorePostFilterOperators();
@@ -144,6 +145,7 @@ export class QueryBuilderTDSState
       isConvertDerivationProjectionObjects: observable,
       showPostFilterPanel: observable,
       showWindowFuncPanel: observable,
+      useColFunc: observable,
       TEMPORARY__showPostFetchStructurePanel: computed,
       derivations: computed,
       hasParserError: computed,
@@ -157,6 +159,7 @@ export class QueryBuilderTDSState
       initializeWithQuery: action,
       setShowPostFilterPanel: action,
       setShowWindowFuncPanel: action,
+      setUseColFunc: action,
       checkBeforeChangingImplementation: action,
       convertDerivationProjectionObjects: flow,
       fetchDerivedReturnTypes: flow,
@@ -457,6 +460,10 @@ export class QueryBuilderTDSState
 
   setShowWindowFuncPanel(val: boolean): void {
     this.showWindowFuncPanel = val;
+  }
+
+  setUseColFunc(val: boolean): void {
+    this.useColFunc = val;
   }
 
   *convertDerivationProjectionObjects(): GeneratorFn<void> {
