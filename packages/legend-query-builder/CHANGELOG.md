@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.14.52
+
+### Patch Changes
+
+- [#3289](https://github.com/finos/legend-studio/pull/3289) [`55cbb56`](https://github.com/finos/legend-studio/commit/55cbb56e63de03f3f52e597858ecff750c286952) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support project() variants
+
+- [#3285](https://github.com/finos/legend-studio/pull/3285) [`2dd80ef`](https://github.com/finos/legend-studio/commit/2dd80efd96c6cdaf8e3923c1d7587f1cabfbffaf) ([@travisstebbins](https://github.com/travisstebbins)) - Display filter values as editable values with blue underlined text
+
 ## 4.14.51
 
 ## 4.14.50
