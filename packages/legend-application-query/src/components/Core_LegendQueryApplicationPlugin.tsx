@@ -68,6 +68,7 @@ import {
   generateDataSpaceQuerySetupRoute,
 } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import {
+  QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
   type QueryBuilderHeaderActionConfiguration,
   type QueryBuilderMenuActionConfiguration,
 } from '@finos/legend-query-builder';
@@ -88,7 +89,6 @@ import { QueryEditorExistingQueryHeader } from './QueryEditor.js';
 import { DataSpaceTemplateQueryCreatorStore } from '../stores/data-space/DataSpaceTemplateQueryCreatorStore.js';
 import { createViewSDLCProjectHandler } from '../stores/data-space/DataSpaceQueryBuilderHelper.js';
 import { DataSpaceQueryCreatorStore } from '../stores/data-space/DataSpaceQueryCreatorStore.js';
-import { QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS } from '../../../legend-query-builder/src/graph/QueryBuilderMetaModelConst.js';
 
 export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   static NAME = packageJson.extensions.applicationQueryPlugin;
