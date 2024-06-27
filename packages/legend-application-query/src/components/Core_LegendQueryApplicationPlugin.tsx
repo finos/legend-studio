@@ -247,6 +247,22 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         key: 'promote-as-template-query',
         title: 'Promote Curated Template query...',
         label: 'Curated Template Query',
+        disableFunc: (queryBuilderState): boolean => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            if (
+              editorStore instanceof ExistingQueryEditorStore &&
+              queryBuilderState instanceof DataSpaceQueryBuilderState
+            ) {
+              return false;
+            }
+          }
+          return true;
+        },
         onClick: (queryBuilderState): void => {
           if (
             queryBuilderState.workflowState.actionConfig instanceof
