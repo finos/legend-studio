@@ -61,7 +61,11 @@ export class DataCubeEditorGeneralPropertiesPanelState
 
   applySnaphot(snapshot: DataCubeQuerySnapshot): void {
     this.setName(snapshot.data.name);
-    this.setLimit(snapshot.data.limit || -1);
+    this.setLimit(
+      snapshot.data.limit !== undefined && snapshot.data.limit > 0
+        ? snapshot.data.limit
+        : -1,
+    );
     this.setConfiguration(
       DataCubeMutableConfiguration.create(snapshot.data.configuration),
     );

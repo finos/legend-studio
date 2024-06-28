@@ -77,7 +77,7 @@ export class DataCubeQuerySnapshotManager {
   }
 
   broadcastSnapshot(snapshot: DataCubeQuerySnapshot): void {
-    if (!snapshot.isFinalized) {
+    if (!snapshot.isFinalized()) {
       this.dataCube.application.logService.error(
         LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
         `Snapshot must be finalized before broadcasting`,
