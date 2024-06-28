@@ -838,7 +838,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       (this.changeHistoryState.canRedo ||
         this.changeHistoryState.canUndo ||
         !this.filterState.isEmpty ||
-        !this.fetchStructureState.implementation.isFilterEmpty)
+        !this.fetchStructureState.implementation.isFilterEmpty ||
+        !this.constantState.isEmpty)
     );
   }
 
