@@ -67,6 +67,7 @@ export enum DataCubeFunction {
   // UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
 }
 
+export const DEFAULT_REPORT_NAME = 'New Report';
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
 export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
 

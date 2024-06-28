@@ -33,6 +33,7 @@ export enum DATA_CUBE_EDITOR_TAB {
   GENERAL_PROPERTIES = 'General Properties',
   COLUMN_PROPERTIES = 'Column Properties',
   CODE = 'Code',
+  DEVELOPER = 'Developer',
   // DEVELOPER_OPTIONS = 'Developer',
   // PIVOT_LAYOUT = 'Pivot Layout',
 }
@@ -82,12 +83,11 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const snapshot = baseSnapshot.clone();
 
-    const createNew = [
-      this.sortsPanel.buildSnapshot(snapshot, baseSnapshot),
-      this.generalPropertiesPanel.buildSnapshot(snapshot, baseSnapshot),
-    ].some(Boolean);
+    this.sortsPanel.buildSnapshot(snapshot, baseSnapshot);
+    this.generalPropertiesPanel.buildSnapshot(snapshot, baseSnapshot);
 
-    if (createNew) {
+    snapshot.finalize();
+    if (snapshot.hashCode !== baseSnapshot.hashCode) {
       this.publishSnapshot(snapshot);
     }
   }

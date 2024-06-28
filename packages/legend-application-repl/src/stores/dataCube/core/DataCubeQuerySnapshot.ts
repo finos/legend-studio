@@ -15,10 +15,12 @@
  */
 
 import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
-import type { DataCubeConfiguration } from '../../../server/models/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from './DataCubeConfiguration.js';
 import {
   IllegalStateError,
   guaranteeNonNullable,
+  hashObject,
+  pruneObject,
   uuid,
   type PlainObject,
   type Writable,
@@ -138,6 +140,9 @@ export class DataCubeQuerySnapshot {
   timestamp = Date.now();
   readonly data: DataCubeQuerySnapshotData;
 
+  private _finalized = false;
+  private _hashCode?: string | undefined;
+
   private constructor(
     name: string,
     runtime: string,
@@ -203,6 +208,38 @@ export class DataCubeQuerySnapshot {
       default:
         throw new IllegalStateError(`Unknown stage '${stage}'`);
     }
+  }
+
+  isFinalized(): boolean {
+    return this._finalized;
+  }
+
+  finalize(): DataCubeQuerySnapshot {
+    if (this._finalized) {
+      return this;
+    }
+    this._hashCode = this.computeHashCode();
+    this._finalized = true;
+    return this;
+  }
+
+  get hashCode(): string {
+    if (!this._finalized || !this._hashCode) {
+      throw new IllegalStateError('Snapshot is not finalized');
+    }
+    return this._hashCode;
+  }
+
+  /**
+   * NOTE: if this becomes a performance bottleneck, we can consider
+   * more granular hashing strategy
+   *
+   * Here, we are just hashing the raw object, but we must ensure
+   * to properly prune the snapshot data object before hashing
+   * else there would be mismatch
+   */
+  private computeHashCode(): string {
+    return hashObject(pruneObject(this.data));
   }
 }
 

@@ -21,10 +21,8 @@ import {
   _getCol,
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
-  type DataCubeQuerySnapshotSortColumn,
 } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
-import { deepEqual } from '@finos/legend-shared';
 import {
   DataCubeEditorColumnsSelectorColumnState,
   DataCubeEditorColumnsSelectorState,
@@ -173,18 +171,13 @@ export class DataCubeEditorSortsPanelState
   buildSnapshot(
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
-  ): boolean {
-    const newSortColumns: DataCubeQuerySnapshotSortColumn[] =
-      this.columnsSelector.selectedColumns.map((sortInfo) => ({
+  ): void {
+    newSnapshot.data.sortColumns = this.columnsSelector.selectedColumns.map(
+      (sortInfo) => ({
         name: sortInfo.column.name,
         type: sortInfo.column.type,
         operation: sortInfo.operation,
-      }));
-
-    if (!deepEqual(newSortColumns, baseSnapshot.data.sortColumns)) {
-      newSnapshot.data.sortColumns = newSortColumns;
-      return true;
-    }
-    return false;
+      }),
+    );
   }
 }

@@ -24,15 +24,12 @@
 import type { IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import {
   type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotSortColumn,
   DataCubeQuerySnapshotSortOperation,
   _getCol,
   DataCubeQuerySnapshotAggregateFunction,
-  type DataCubeQuerySnapshotGroupBy,
 } from '../core/DataCubeQuerySnapshot.js';
 import {
   IllegalStateError,
-  deepEqual,
   guaranteeNonNullable,
   isNonNullable,
 } from '@finos/legend-shared';
@@ -68,15 +65,13 @@ export function buildQuerySnapshot(
   request: IServerSideGetRowsRequest,
   baseSnapshot: DataCubeQuerySnapshot,
 ): DataCubeQuerySnapshot {
-  let createNew = false;
+  const snapshot = baseSnapshot.clone();
 
   // --------------------------------- GROUP BY ---------------------------------
 
-  let groupBy: undefined | DataCubeQuerySnapshotGroupBy = undefined;
-
   if (request.rowGroupCols.length) {
     const availableCols = baseSnapshot.stageCols('aggregation');
-    groupBy = {
+    snapshot.data.groupBy = {
       columns: request.rowGroupCols.map((col) => ({
         name: col.id,
         type: _getCol(availableCols, col.id).type,
@@ -89,39 +84,24 @@ export function buildQuerySnapshot(
           function: _aggFunc(col.aggFunc as GridClientAggregateOperation),
         })),
     };
+  } else {
+    snapshot.data.groupBy = undefined;
   }
 
   // --------------------------------- SORT ---------------------------------
 
-  let sortColumns: DataCubeQuerySnapshotSortColumn[] = [];
-  if (request.sortModel.length) {
-    const availableCols = baseSnapshot.stageCols('sort');
-    sortColumns = request.sortModel.map((item) => ({
-      ..._getCol(availableCols, item.colId),
-      operation:
-        item.sort === GridClientSortDirection.ASCENDING
-          ? DataCubeQuerySnapshotSortOperation.ASCENDING
-          : DataCubeQuerySnapshotSortOperation.DESCENDING,
-    }));
-  }
+  snapshot.data.sortColumns = request.sortModel.map((item) => ({
+    ..._getCol(baseSnapshot.stageCols('sort'), item.colId),
+    operation:
+      item.sort === GridClientSortDirection.ASCENDING
+        ? DataCubeQuerySnapshotSortOperation.ASCENDING
+        : DataCubeQuerySnapshotSortOperation.DESCENDING,
+  }));
 
   // --------------------------------- SELECT ---------------------------------
   // TODO: @akphi - Implement this
 
   // --------------------------------- FINALIZE ---------------------------------
 
-  if (
-    !deepEqual(sortColumns, baseSnapshot.data.sortColumns) ||
-    !deepEqual(groupBy, baseSnapshot.data.groupBy)
-  ) {
-    createNew = true;
-  }
-
-  if (createNew) {
-    const newSnapshot = baseSnapshot.clone();
-    newSnapshot.data.sortColumns = sortColumns;
-    newSnapshot.data.groupBy = groupBy;
-    return newSnapshot;
-  }
-  return baseSnapshot;
+  return snapshot.finalize();
 }

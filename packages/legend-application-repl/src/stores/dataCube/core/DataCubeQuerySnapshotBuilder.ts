@@ -50,7 +50,7 @@ import {
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
-import { DataCubeConfiguration } from '../../../server/models/DataCubeConfiguration.js';
+import { DataCubeConfiguration } from './DataCubeConfiguration.js';
 import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
 
 // --------------------------------- UTILITIES ---------------------------------
@@ -283,7 +283,7 @@ function extractFunctionMap(
   const pivot = sequence.find((func) =>
     matchFunctionName(func.function, DataCubeFunction.PIVOT),
   );
-  const cast = sequence.find((func) =>
+  const pivotCast = sequence.find((func) =>
     matchFunctionName(func.function, DataCubeFunction.CAST),
   );
   const sort = sequence.find((func) =>
@@ -297,7 +297,7 @@ function extractFunctionMap(
     filter,
     groupBy,
     pivot,
-    pivotCast: cast,
+    pivotCast,
     groupExtend,
     select,
     sort,
@@ -337,7 +337,10 @@ export function validateAndBuildQuerySnapshot(
 
   // --------------------------------- SOURCE ---------------------------------
 
-  data.originalColumns = baseQuery.source.columns;
+  data.originalColumns = baseQuery.source.columns.map((col) => ({
+    name: col.name,
+    type: col.type,
+  }));
   data.originalColumns.map((col) => colsMap.set(col.name, col));
 
   // --------------------------------- LEAF EXTEND ---------------------------------
@@ -397,7 +400,13 @@ export function validateAndBuildQuerySnapshot(
   }
 
   // --------------------------------- CONFIGURATION ---------------------------------
-  // Validate and repair the configuration based off the analysis of the query
+  // The data query takes precedence over the configuration, we do this for 2 reasons
+  // 1. The purpose of the configuration is to provide the layout and styling
+  //    customization on top of the data query result grid. If conflicts happen between
+  //    the configuration and the query, we will reconciliate by modifying the configuration
+  // 2. The configuration when missing, can be generated from default presets. This helps
+  //    helps with use cases where the query might comes from a different source, such as
+  //    Studio or Query, or another part of Engine.
 
   const configuration = baseQuery.configuration
     ? DataCubeConfiguration.serialization.fromJson(baseQuery.configuration)
@@ -406,5 +415,5 @@ export function validateAndBuildQuerySnapshot(
   data.configuration =
     DataCubeConfiguration.serialization.toJson(configuration);
 
-  return snapshot;
+  return snapshot.finalize();
 }

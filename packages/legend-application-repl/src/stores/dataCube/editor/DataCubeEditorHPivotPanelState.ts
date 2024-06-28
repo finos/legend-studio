@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
-import { DataCubeMutableConfiguration } from './DataCubeMutableConfiguration.js';
 
 export class DataCubeEditorGeneralPropertiesPanelState
   implements DataCubeQueryEditorPanelState
@@ -27,53 +25,19 @@ export class DataCubeEditorGeneralPropertiesPanelState
   readonly dataCube!: DataCubeState;
   readonly editor!: DataCubeEditorState;
 
-  name = '';
-  limit = -1;
-  configuration = new DataCubeMutableConfiguration();
-
   constructor(editor: DataCubeEditorState) {
     this.editor = editor;
     this.dataCube = editor.dataCube;
-
-    makeObservable(this, {
-      name: observable,
-      setName: action,
-
-      limit: observable,
-      setLimit: action,
-
-      configuration: observable,
-      setConfiguration: action,
-    });
-  }
-
-  setName(val: string): void {
-    this.name = val;
-  }
-
-  setLimit(val: number): void {
-    this.limit = val;
-  }
-
-  setConfiguration(val: DataCubeMutableConfiguration): void {
-    this.configuration = val;
   }
 
   applySnaphot(snapshot: DataCubeQuerySnapshot): void {
-    this.setName(snapshot.data.name);
-    this.setLimit(snapshot.data.limit || -1);
-    this.setConfiguration(
-      DataCubeMutableConfiguration.create(snapshot.data.configuration),
-    );
+    // TODO
   }
 
   buildSnapshot(
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
   ): void {
-    const data = newSnapshot.data;
-    data.name = this.name;
-    data.limit = this.limit <= 0 ? undefined : this.limit;
-    // TODO: configuration
+    // TODO
   }
 }

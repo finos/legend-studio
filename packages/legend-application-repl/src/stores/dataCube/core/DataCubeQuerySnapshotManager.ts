@@ -77,6 +77,13 @@ export class DataCubeQuerySnapshotManager {
   }
 
   broadcastSnapshot(snapshot: DataCubeQuerySnapshot): void {
+    if (!snapshot.isFinalized) {
+      this.dataCube.application.logService.error(
+        LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
+        `Snapshot must be finalized before broadcasting`,
+      );
+      return;
+    }
     this.snapshots.push(snapshot);
     this.subscribers.forEach((subscriber) => {
       const currentSnapshot = subscriber.getLatestSnapshot();
@@ -87,7 +94,7 @@ export class DataCubeQuerySnapshotManager {
             LogEvent.create(
               APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
             ),
-            `Subscribers receiving and applying new snapshot should be handled gracefully`,
+            `Error occured while subscribers receiving and applying new snapshot should be handled gracefully`,
             error,
           );
         });

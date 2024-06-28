@@ -28,6 +28,7 @@ import { DataCubeEditorFilterPanel } from './DataCubeEditorFilterPanel.js';
 import { DataCubeEditorExtendedColumnsPanel } from './DataCubeEditorExtendedColumnsPanel.js';
 import { DataCubeEditorCodePanel } from './DataCubeEditorCodePanel.js';
 import { DataCubeEditorColumnPropertiesPanel } from './DataCubeEditorColumnPropertiesPanel.js';
+import { DataCubeEditorDeveloperPanel } from './DataCubeEditorDeveloperPanel.js';
 
 const __DATA_CUBE_EDITOR_HEADER_CLASS_NAME = 'data-cube__editor__header';
 const PANEL_DEFAULT_OFFSET = 50;
@@ -58,6 +59,7 @@ export const DataCubeEditor = observer(
       DATA_CUBE_EDITOR_TAB.GENERAL_PROPERTIES,
       DATA_CUBE_EDITOR_TAB.COLUMN_PROPERTIES,
       DATA_CUBE_EDITOR_TAB.CODE,
+      DATA_CUBE_EDITOR_TAB.DEVELOPER,
     ];
 
     useEffect(() => {
@@ -203,6 +205,9 @@ export const DataCubeEditor = observer(
               )}
               {selectedTab === DATA_CUBE_EDITOR_TAB.CODE && (
                 <DataCubeEditorCodePanel />
+              )}
+              {selectedTab === DATA_CUBE_EDITOR_TAB.DEVELOPER && (
+                <DataCubeEditorDeveloperPanel />
               )}
             </div>
           </div>

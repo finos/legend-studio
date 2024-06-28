@@ -48,9 +48,12 @@ import {
   TbExclamationCircle,
   TbCaretDownFilled,
   TbLoader2,
+  TbSettingsBolt,
+  TbSettings,
 } from 'react-icons/tb';
 
 export const DataCubeIcon = {
+  AdvancedSettings: TbSettingsBolt,
   CaretDown: TbCaretDownFilled,
   ChevronLeft: TbChevronLeft,
   ChevronRight: TbChevronRight,
@@ -61,6 +64,7 @@ export const DataCubeIcon = {
   Note: TbNote,
   Pin: GoPin,
   Search: TbSearch,
+  Settings: TbSettings,
   Table: TbTable,
   TableColumn: TbFreezeColumn,
   TableColumnOptions__Settings: TbSettingsFilled,

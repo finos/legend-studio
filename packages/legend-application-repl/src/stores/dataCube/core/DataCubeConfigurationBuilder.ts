@@ -18,11 +18,8 @@ import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
-} from '../../../server/models/DataCubeConfiguration.js';
-import {
-  DataCubeAggregateFunction,
-  DataCubeColumnKind,
-} from './DataCubeQueryEngine.js';
+} from './DataCubeConfiguration.js';
+import { DataCubeColumnKind } from './DataCubeQueryEngine.js';
 
 export function buildDefaultColumnConfiguration(column: {
   name: string;
@@ -39,8 +36,6 @@ export function buildDefaultColumnConfiguration(column: {
       config.decimals = type === PRIMITIVE_TYPE.INTEGER ? 0 : 2;
       config.displayCommas = true;
       config.negativeNumberInParens = true;
-      config.aggregateFunction = DataCubeAggregateFunction.SUM;
-      config.excludeFromHPivot = false;
       break;
     }
     default: {

@@ -30,6 +30,7 @@ import {
   type DebouncedFunc,
   isObject,
 } from 'lodash-es';
+import { diff as deepDiff } from 'deep-object-diff';
 import { UnsupportedOperationError } from './error/ErrorUtils.js';
 import { format as prettyPrintObject } from 'pretty-format';
 import { assertTrue, guaranteeNonNullable } from './error/AssertionUtils.js';
@@ -40,6 +41,7 @@ export {
   clone,
   deepClone,
   deepEqual,
+  deepDiff,
   findLast,
   isEmpty,
   pickBy,

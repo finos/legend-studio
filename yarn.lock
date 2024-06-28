@@ -3328,6 +3328,7 @@ __metadata:
     "@types/uuid": "npm:10.0.0"
     cross-env: "npm:7.0.3"
     date-fns: "npm:3.6.0"
+    deep-object-diff: "npm:^1.1.9"
     eslint: "npm:8.57.0"
     fuse.js: "npm:7.0.0"
     hash.js: "npm:1.1.7"
@@ -7954,6 +7955,13 @@ __metadata:
   version: 0.1.4
   resolution: "deep-is@npm:0.1.4"
   checksum: 10/ec12d074aef5ae5e81fa470b9317c313142c9e8e2afe3f8efa124db309720db96d1d222b82b84c834e5f87e7a614b44a4684b6683583118b87c833b3be40d4d8
+  languageName: node
+  linkType: hard
+
+"deep-object-diff@npm:^1.1.9":
+  version: 1.1.9
+  resolution: "deep-object-diff@npm:1.1.9"
+  checksum: 10/b9771cc1ca08a34e408309eaab967bd2ab697684abdfa1262f4283ced8230a9ace966322f356364ff71a785c6e9cc356b7596582e900da5726e6b87d4b2a1463
   languageName: node
   linkType: hard
 

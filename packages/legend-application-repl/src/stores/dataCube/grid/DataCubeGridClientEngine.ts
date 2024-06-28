@@ -113,6 +113,8 @@ export class DataCubeGridClientServerSideDataSource
   async fetchRows(
     params: IServerSideGetRowsParams<unknown, unknown>,
   ): Promise<void> {
+    const task = this.grid.dataCube.newTask('Fetching data');
+
     // ------------------------------ GRID OPTIONS ------------------------------
     // Here, we make adjustments to the grid display in response to the new
     // request, in case the grid action has not impacted the layout in an
@@ -134,8 +136,10 @@ export class DataCubeGridClientServerSideDataSource
     // ------------------------------ SNAPSHOT ------------------------------
 
     const currentSnapshot = guaranteeNonNullable(this.grid.getLatestSnapshot());
+    // TODO: when we support pivoting, we should make a quick call to check for columns
+    // created by pivots and specify them as cast columns when pivot is activated
     const syncedSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
-    if (syncedSnapshot.uuid !== currentSnapshot.uuid) {
+    if (syncedSnapshot.hashCode !== currentSnapshot.hashCode) {
       this.grid.publishSnapshot(syncedSnapshot);
     }
 
@@ -186,6 +190,8 @@ export class DataCubeGridClientServerSideDataSource
       assertErrorThrown(error);
       this.grid.dataCube.application.notificationService.notifyError(error);
       params.fail();
+    } finally {
+      this.grid.dataCube.endTask(task);
     }
   }
 

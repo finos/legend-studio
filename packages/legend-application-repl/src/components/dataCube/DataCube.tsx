@@ -20,26 +20,49 @@ import { useEffect, useRef } from 'react';
 import { DataCubeGrid } from './grid/DataCubeGrid.js';
 import { DataCubeEditor } from './editor/DataCubeEditor.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { DataCubeIcon } from '@finos/legend-art';
+import { DataCubeIcon, ProgressBar } from '@finos/legend-art';
 
 const DataCubeStatusBar = observer(() => {
   const dataCubeStore = useREPLStore();
   const dataCube = dataCubeStore.dataCube;
 
   return (
-    <div className="flex h-5 w-full bg-neutral-100">
-      <button className="pl-2">
-        <DataCubeIcon.Documentation className="text-xl text-sky-600" />
-      </button>
-      <button
-        className="flex w-1/2 items-center px-2 text-sky-600 underline"
-        onClick={(): void => dataCube.editor.openPanel()}
-      >
-        Pivot
-      </button>
-      <button className="flex w-1/2 items-center px-2 text-sky-600 underline">
-        Filter
-      </button>
+    <div className="flex h-5 w-full justify-between bg-neutral-100">
+      <div className="flex flex-1">
+        <button
+          className="pl-2 text-sky-600 hover:text-sky-700"
+          title="See Documentation"
+        >
+          <DataCubeIcon.Documentation className="text-xl" />
+        </button>
+        <button
+          className="flex items-center px-3 text-sky-600 hover:text-sky-700"
+          onClick={(): void => dataCube.editor.openPanel()}
+        >
+          <DataCubeIcon.Settings className="text-xl" />
+          <div className="pl-0.5 underline">Properties</div>
+        </button>
+        <div className="flex-1">
+          <button className="flex items-center text-sky-600 hover:text-sky-700">
+            <DataCubeIcon.TableFilter className="text-lg" />
+            <div className="pl-0.5 underline">Filter</div>
+          </button>
+        </div>
+      </div>
+      <div className="flex items-center px-2">
+        <div className="flex h-3.5 w-48 border-[0.5px] border-neutral-300">
+          {dataCube.runningTaskes.size > 0 && (
+            <ProgressBar
+              classes={{
+                root: 'h-3.5 w-full bg-transparent',
+                bar1Indeterminate: 'bg-green-500',
+                bar2Indeterminate: 'bg-green-500',
+              }}
+              variant="indeterminate"
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 });

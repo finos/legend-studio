@@ -18,13 +18,13 @@ import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import { DataCubeQuerySnapshotSubscriber } from './DataCubeQuerySnapshotSubscriber.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
-import { DATA_CUBE_DEFAULT_REPORT_NAME } from '../DataCubeDefaultConfig.js';
 import type { DataCubeQuery } from '../../../server/models/DataCubeQuery.js';
 import { formatDate } from '@finos/legend-shared';
+import { DEFAULT_REPORT_NAME } from './DataCubeQueryEngine.js';
 
 export class DataCubeCoreState extends DataCubeQuerySnapshotSubscriber {
   baseQuery!: DataCubeQuery;
-  name = DATA_CUBE_DEFAULT_REPORT_NAME;
+  name = DEFAULT_REPORT_NAME;
   private startTime?: number | undefined;
 
   constructor(dataCube: DataCubeState) {
