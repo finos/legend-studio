@@ -48,10 +48,6 @@ import {
 } from './QueryBuilderStateBuilder.js';
 import { QueryBuilderUnsupportedQueryState } from './QueryBuilderUnsupportedQueryState.js';
 import {
-  ExistingQueryEditorStore,
-  QueryBuilderActionConfig_QueryApplication,
-} from '@finos/legend-application-query';
-import {
   type Class,
   type Mapping,
   type Runtime,
@@ -493,6 +489,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.watermarkState = new QueryBuilderWatermarkState(this);
     this.checkEntitlementsState = new QueryBuilderCheckEntitlementsState(this);
+    this.changeHistoryState = new QueryBuilderChangeHistoryState(this);
     this.isCalendarEnabled = false;
 
     const currentFetchStructureImplementationType =
@@ -837,10 +834,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   get isUnsavedQueryWithChanges(): boolean {
     return (
-      this.workflowState.actionConfig instanceof
-        QueryBuilderActionConfig_QueryApplication &&
-      this.workflowState.actionConfig.editorStore instanceof
-        ExistingQueryEditorStore &&
+      this.changeDetectionState.hashCodeSnapshot === undefined &&
       (this.changeHistoryState.canRedo ||
         this.changeHistoryState.canUndo ||
         !this.filterState.isEmpty ||
