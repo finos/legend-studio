@@ -317,7 +317,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                 }
               };
 
-            queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
+            queryBuilderState.alertUnsavedChanges(() => {
               proceedCuratedTemplateQueryPromotion().catch(
                 editorStore.applicationStore.alertUnhandledError,
               );

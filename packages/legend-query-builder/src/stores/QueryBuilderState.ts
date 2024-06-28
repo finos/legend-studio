@@ -78,9 +78,11 @@ import {
   QueryExplicitExecutionContext,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
-import type {
-  CommandRegistrar,
-  GenericLegendApplicationStore,
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  type CommandRegistrar,
+  type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import { QueryFunctionsExplorerState } from './explorer/QueryFunctionsExplorerState.js';
 import {
@@ -214,6 +216,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       isQuerySupported: computed,
       allValidationIssues: computed,
       canBuildQuery: computed,
+      isUnsavedQueryWithChanges: computed,
 
       setShowFunctionsExplorerPanel: action,
       setShowParametersPanel: action,
@@ -826,6 +829,46 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       !this.fetchStructureState.implementation
         .hasInvalidDerivedPropertyParameters
     );
+  }
+
+  get isUnsavedQueryWithChanges(): boolean {
+    return (
+      this.changeDetectionState.hashCodeSnapshot === undefined &&
+      (this.changeHistoryState.canRedo ||
+        this.changeHistoryState.canUndo ||
+        !this.filterState.isEmpty ||
+        !this.fetchStructureState.implementation.isFilterEmpty)
+    );
+  }
+
+  alertUnsavedChanges(onProceed: () => void): void {
+    console.log('this.hasChanged?', this.changeDetectionState.hasChanged);
+    if (
+      this.changeDetectionState.hasChanged ||
+      this.isUnsavedQueryWithChanges
+    ) {
+      this.applicationStore.alertService.setActionAlertInfo({
+        message:
+          'Unsaved changes will be lost if you continue. Do you still want to proceed?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: this.applicationStore.guardUnhandledError(async () =>
+              onProceed(),
+            ),
+          },
+          {
+            label: 'Abort',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    } else {
+      onProceed();
+    }
   }
 
   /**

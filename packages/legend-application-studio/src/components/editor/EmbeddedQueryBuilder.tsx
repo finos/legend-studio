@@ -53,7 +53,7 @@ const QueryBuilderDialog = observer(
     const toggleMaximize = (): void => setIsMaximized(!isMaximized);
 
     const confirmCloseQueryBuilder = (): void => {
-      queryBuilderState.changeDetectionState.alertUnsavedChanges((): void => {
+      queryBuilderState.alertUnsavedChanges((): void => {
         flowResult(
           embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
             undefined,

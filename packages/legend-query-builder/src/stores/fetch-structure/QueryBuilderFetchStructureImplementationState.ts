@@ -77,6 +77,7 @@ export abstract class QueryBuilderFetchStructureImplementationState
   ): void;
   abstract initialize(): void;
   abstract initializeWithQuery(): void;
+  abstract get isFilterEmpty(): boolean;
   abstract get hasInvalidFilterValues(): boolean;
   abstract get hasInvalidDerivedPropertyParameters(): boolean;
   abstract get hashCode(): string;

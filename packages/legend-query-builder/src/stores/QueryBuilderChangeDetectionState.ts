@@ -146,31 +146,4 @@ export class QueryBuilderChangeDetectionState {
     this.querySnapshot = initialQuery;
     this.initState.complete();
   }
-
-  alertUnsavedChanges(onProceed: () => void): void {
-    if (this.hasChanged) {
-      this.querybuilderState.applicationStore.alertService.setActionAlertInfo({
-        message:
-          'Unsaved changes will be lost if you continue. Do you still want to proceed?',
-        type: ActionAlertType.CAUTION,
-        actions: [
-          {
-            label: 'Proceed',
-            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler:
-              this.querybuilderState.applicationStore.guardUnhandledError(
-                async () => onProceed(),
-              ),
-          },
-          {
-            label: 'Abort',
-            type: ActionAlertActionType.PROCEED,
-            default: true,
-          },
-        ],
-      });
-    } else {
-      onProceed();
-    }
-  }
 }
