@@ -48,6 +48,10 @@ import {
 } from './QueryBuilderStateBuilder.js';
 import { QueryBuilderUnsupportedQueryState } from './QueryBuilderUnsupportedQueryState.js';
 import {
+  ExistingQueryEditorStore,
+  QueryBuilderActionConfig_QueryApplication,
+} from '@finos/legend-application-query';
+import {
   type Class,
   type Mapping,
   type Runtime,
@@ -833,7 +837,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   get isUnsavedQueryWithChanges(): boolean {
     return (
-      this.changeDetectionState.hashCodeSnapshot === undefined &&
+      this.workflowState.actionConfig instanceof
+        QueryBuilderActionConfig_QueryApplication &&
+      this.workflowState.actionConfig.editorStore instanceof
+        ExistingQueryEditorStore &&
       (this.changeHistoryState.canRedo ||
         this.changeHistoryState.canUndo ||
         !this.filterState.isEmpty ||
@@ -842,7 +849,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   }
 
   alertUnsavedChanges(onProceed: () => void): void {
-    console.log('this.hasChanged?', this.changeDetectionState.hasChanged);
     if (
       this.changeDetectionState.hasChanged ||
       this.isUnsavedQueryWithChanges
