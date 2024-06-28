@@ -168,7 +168,7 @@ export const QueryEditorDataspaceInfoModal = observer(
               <div className="dataspace-info-modal__field">
                 <div className="dataspace-info-modal__field__label">Name</div>
                 <div className="dataspace-info-modal__field__value">
-                  {dataspace.title}
+                  {dataspace.title ?? dataspace.name}
                 </div>
               </div>
               <div className="dataspace-info-modal__field">
