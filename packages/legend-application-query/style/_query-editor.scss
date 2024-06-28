@@ -278,10 +278,6 @@
   width: 80rem;
   padding: 1rem;
 
-  .modal__title {
-    margin-bottom: 1rem;
-  }
-
   &__container {
     overflow-y: hidden !important;
   }
@@ -292,6 +288,19 @@
 
   .selector-input__menu {
     z-index: 1;
+  }
+
+  &__header {
+    @include flexVCenter;
+
+    justify-content: space-between;
+
+    &__open-btn {
+      height: 2.8rem;
+      padding: 0 1rem;
+      border-radius: 0.2rem;
+      margin-right: 0.3rem;
+    }
   }
 
   &__actions {

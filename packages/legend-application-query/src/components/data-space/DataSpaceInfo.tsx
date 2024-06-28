@@ -21,7 +21,11 @@ import {
   Panel,
   PanelFullContent,
 } from '@finos/legend-art';
-import { StoreProjectData } from '@finos/legend-server-depot';
+import {
+  LATEST_VERSION_ALIAS,
+  StoreProjectData,
+  VersionedProjectData,
+} from '@finos/legend-server-depot';
 import { observer } from 'mobx-react-lite';
 import { type QueryEditorStore } from '../../stores/QueryEditorStore.js';
 import {
@@ -30,8 +34,8 @@ import {
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
-  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateTaxonomyDataspaceViewUrl,
 } from '../../__lib__/LegendQueryNavigation.js';
 import { flowResult } from 'mobx';
 import { assertErrorThrown } from '@finos/legend-shared';
@@ -51,7 +55,7 @@ export const QueryEditorDataspaceInfoModal = observer(
     const { editorStore, dataspace, executionContext, open, closeModal } =
       props;
     const projectInfo = editorStore.getProjectInfo();
-    const visitElement = async (path: string): Promise<void> => {
+    const visitElement = async (path: string | undefined): Promise<void> => {
       try {
         if (projectInfo) {
           const project = StoreProjectData.serialization.fromJson(
@@ -60,10 +64,21 @@ export const QueryEditorDataspaceInfoModal = observer(
               projectInfo.artifactId,
             ),
           );
+          const versionId =
+            projectInfo.versionId === LATEST_VERSION_ALIAS
+              ? VersionedProjectData.serialization.fromJson(
+                  await editorStore.depotServerClient.getLatestVersion(
+                    projectInfo.groupId,
+                    projectInfo.artifactId,
+                  ),
+                ).versionId
+              : projectInfo.versionId;
+
           editorStore.applicationStore.navigationService.navigator.visitAddress(
             EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
               editorStore.applicationStore.config.studioApplicationUrl,
               project.projectId,
+              versionId,
               path,
             ),
           );
@@ -71,7 +86,9 @@ export const QueryEditorDataspaceInfoModal = observer(
       } catch (error) {
         assertErrorThrown(error);
         editorStore.applicationStore.notificationService.notifyError(
-          `Can't visit element of path: '${path}'`,
+          path
+            ? `Can't visit element of path: '${path}'`
+            : `Can't visit project`,
         );
       }
     };
@@ -82,6 +99,23 @@ export const QueryEditorDataspaceInfoModal = observer(
         ? executionContext.defaultRuntime.value.runtimeValue.connections[0]
             ?.storeConnections[0]?.connection
         : undefined;
+
+    const openInTaxonomy = (): void => {
+      if (
+        projectInfo &&
+        editorStore.applicationStore.config.taxonomyApplicationUrl
+      ) {
+        editorStore.applicationStore.navigationService.navigator.visitAddress(
+          EXTERNAL_APPLICATION_NAVIGATION__generateTaxonomyDataspaceViewUrl(
+            editorStore.applicationStore.config.taxonomyApplicationUrl,
+            projectInfo.groupId,
+            projectInfo.artifactId,
+            projectInfo.versionId,
+            dataspace.path,
+          ),
+        );
+      }
+    };
 
     return (
       <Dialog
@@ -99,7 +133,23 @@ export const QueryEditorDataspaceInfoModal = observer(
           }
           className="dataspace-info-modal"
         >
-          <ModalTitle title="About Dataspace" />
+          <div className="dataspace-info-modal__header">
+            <ModalTitle title="About Dataspace" />
+            <button
+              className="btn--dark dataspace-info-modal__header__open-btn"
+              title="Close"
+              disabled={
+                !(
+                  editorStore.applicationStore.config.taxonomyApplicationUrl &&
+                  projectInfo
+                )
+              }
+              onClick={openInTaxonomy}
+            >
+              Open Dataspace
+            </button>
+          </div>
+
           <Panel>
             <PanelFullContent>
               {projectInfo && (
@@ -109,25 +159,7 @@ export const QueryEditorDataspaceInfoModal = observer(
                   </div>
                   <div
                     className="dataspace-info-modal__field__value dataspace-info-modal__field__value--linkable"
-                    onClick={() => {
-                      try {
-                        editorStore.applicationStore.navigationService.navigator.visitAddress(
-                          EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
-                            editorStore.applicationStore.config
-                              .studioApplicationUrl,
-                            projectInfo.groupId,
-                            projectInfo.artifactId,
-                            projectInfo.versionId,
-                            undefined,
-                          ),
-                        );
-                      } catch (error) {
-                        assertErrorThrown(error);
-                        editorStore.applicationStore.notificationService.notifyError(
-                          `Can't visit project: '${projectInfo.groupId}:${projectInfo.artifactId}:${projectInfo.versionId}'`,
-                        );
-                      }
-                    }}
+                    onClick={() => flowResult(visitElement(undefined))}
                   >
                     {`${projectInfo.groupId}:${projectInfo.artifactId}:${projectInfo.versionId}`}
                   </div>
@@ -136,7 +168,7 @@ export const QueryEditorDataspaceInfoModal = observer(
               <div className="dataspace-info-modal__field">
                 <div className="dataspace-info-modal__field__label">Name</div>
                 <div className="dataspace-info-modal__field__value">
-                  {dataspace.title}
+                  {dataspace.title ?? dataspace.name}
                 </div>
               </div>
               <div className="dataspace-info-modal__field">

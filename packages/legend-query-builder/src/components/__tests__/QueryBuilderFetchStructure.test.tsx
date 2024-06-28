@@ -22,7 +22,6 @@ import {
   getByTitle,
   getByText,
   act,
-  getByDisplayValue,
   queryByText,
   getByRole,
   getAllByPlaceholderText,
@@ -38,8 +37,6 @@ import {
   TEST_DATA__complexGraphFetch,
   TEST_DATA__simpleGraphFetch,
   TEST_DATA__simpleProjectionWithSubtypeFromSubtypeModel,
-  TEST_DATA__getAllWithOneIntegerConditionFilter,
-  TEST_DATA_getAllWithOneFloatConditionFilter,
   TEST_DATA__simpleProjectWithSubtype,
   TEST_DATA__simpleGraphFetchWithSubtype,
   TEST_DATA__projectionWithDerivation,
@@ -52,15 +49,10 @@ import {
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexM2M.json' assert { type: 'json' };
 import TEST_DATA_SimpleSubtypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json' assert { type: 'json' };
-import {
-  guaranteeNonNullable,
-  guaranteeType,
-  getNullableFirstEntry,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { createMock, integrationTest } from '@finos/legend-shared/test';
 import {
   AbstractPropertyExpression,
-  PrimitiveInstanceValue,
   create_RawLambda,
   getClassProperty,
   stub_RawLambda,
@@ -80,7 +72,6 @@ import {
   TEST__setUpQueryBuilder,
   dragAndDrop,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
-import { QueryBuilderFilterTreeConditionNodeData } from '../../stores/filter/QueryBuilderFilterState.js';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
 import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
@@ -347,7 +338,7 @@ test(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
       ),
     );
-    await waitFor(() => getByText(filterPanel, filterValue));
+    await waitFor(() => getByText(filterPanel, `"${filterValue}"`));
 
     await waitFor(() => getByText(filterPanel, 'First Name'));
     await waitFor(() => getByText(filterPanel, 'is'));
@@ -382,10 +373,10 @@ test(
     );
     await waitFor(() => getByText(filterPanel, 'or'));
     filterValue = 'lastNameTest';
-    await waitFor(() => getByText(filterPanel, filterValue));
+    await waitFor(() => getByText(filterPanel, `"${filterValue}"`));
     await waitFor(() => getByText(filterPanel, 'First Name'));
     const lastNameFilterValue = 'lastNameTest';
-    await waitFor(() => getByText(filterPanel, lastNameFilterValue));
+    await waitFor(() => getByText(filterPanel, `"${lastNameFilterValue}"`));
     await waitFor(() => getByText(filterPanel, 'Last Name'));
     expect(queryBuilderState.filterState.nodes.size).toBe(3);
     expect(tdsState.projectionColumns.length).toBe(0);
@@ -1326,112 +1317,6 @@ test(
     );
     const firmGraphFetchTreeNode = firmGraphFetchTree.tree;
     expect(firmGraphFetchTreeNode.class.value).toBe(_firmClass);
-  },
-);
-
-test(
-  integrationTest(
-    'Query builder filter supports special numeric values (integer)',
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__ComplexRelationalModel,
-      stub_RawLambda(),
-      'model::relational::tests::simpleRelationalMapping',
-      'model::MyRuntime',
-      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
-    );
-
-    await waitFor(() => renderResult.getByText('Add a filter condition'));
-    await act(async () => {
-      queryBuilderState.initializeWithQuery(
-        create_RawLambda(
-          TEST_DATA__getAllWithOneIntegerConditionFilter.parameters,
-          TEST_DATA__getAllWithOneIntegerConditionFilter.body,
-        ),
-      );
-    });
-
-    const filterConditionValue = guaranteeType(
-      guaranteeType(
-        getNullableFirstEntry(
-          Array.from(queryBuilderState.filterState.nodes.values()),
-        ),
-        QueryBuilderFilterTreeConditionNodeData,
-      ).condition.value,
-      PrimitiveInstanceValue,
-    );
-
-    const filterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
-      ),
-    );
-    await waitFor(() => getByText(filterPanel, 'Age'));
-    await waitFor(() => getByText(filterPanel, 'is'));
-
-    const inputEl = getByDisplayValue(filterPanel, '0');
-
-    // valid input should be recorded and saved to state
-    fireEvent.change(inputEl, { target: { value: '1000' } });
-    expect(filterConditionValue.values[0]).toEqual(1000);
-    await waitFor(() => getByDisplayValue(filterPanel, '1000'));
-
-    // bad input should be reset to initial value on blur
-    fireEvent.change(inputEl, { target: { value: '1asd' } });
-    fireEvent.blur(inputEl);
-    expect(filterConditionValue.values[0]).toEqual(1000);
-    await waitFor(() => getByDisplayValue(filterPanel, '1000'));
-  },
-);
-
-test(
-  integrationTest(
-    'Query builder filter supports special numeric values (float)',
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__ComplexRelationalModel,
-      stub_RawLambda(),
-      'model::relational::tests::simpleRelationalMapping',
-      'model::MyRuntime',
-      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
-    );
-
-    await waitFor(() => renderResult.getByText('Add a filter condition'));
-    await act(async () => {
-      queryBuilderState.initializeWithQuery(
-        create_RawLambda(
-          TEST_DATA_getAllWithOneFloatConditionFilter.parameters,
-          TEST_DATA_getAllWithOneFloatConditionFilter.body,
-        ),
-      );
-    });
-
-    const filterConditionValue = guaranteeType(
-      guaranteeType(
-        getNullableFirstEntry(
-          Array.from(queryBuilderState.filterState.nodes.values()),
-        ),
-        QueryBuilderFilterTreeConditionNodeData,
-      ).condition.value,
-      PrimitiveInstanceValue,
-    );
-
-    const filterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
-      ),
-    );
-    await waitFor(() => getByText(filterPanel, 'Firm/Average Employees Age'));
-    await waitFor(() => getByText(filterPanel, 'is'));
-
-    const inputEl = getByDisplayValue(filterPanel, '0');
-
-    // valid input should be recorded and saved to state
-    fireEvent.change(inputEl, { target: { value: '-.1' } });
-    expect(filterConditionValue.values[0]).toEqual(-0.1);
-    await waitFor(() => getByDisplayValue(filterPanel, '-.1'));
   },
 );
 

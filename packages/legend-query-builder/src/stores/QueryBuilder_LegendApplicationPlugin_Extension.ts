@@ -86,7 +86,7 @@ export type QueryBuilderHeaderActionConfiguration = {
 export type QueryBuilderMenuActionConfiguration = {
   key: string;
   title?: string;
-  disableFunc?: (queryBuilderState: QueryBuilderState) => void;
+  disableFunc?: (queryBuilderState: QueryBuilderState) => boolean;
   label: string;
   onClick: (queryBuilderState: QueryBuilderState) => void;
   icon?: React.ReactNode;

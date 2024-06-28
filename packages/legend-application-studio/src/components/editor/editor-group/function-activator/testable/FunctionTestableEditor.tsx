@@ -475,7 +475,7 @@ const FunctionTestParameterEditor = observer(
                   paramState.updateValueSpecification(val);
                 }}
                 graph={functionTestState.editorStore.graphManagerState.graph}
-                obseverContext={
+                observerContext={
                   functionTestState.editorStore.changeDetectionState
                     .observerContext
                 }

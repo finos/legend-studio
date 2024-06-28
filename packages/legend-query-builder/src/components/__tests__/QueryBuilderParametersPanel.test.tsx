@@ -565,7 +565,7 @@ test(integrationTest('Query builder renders custom date label'), async () => {
   });
 
   await waitFor(() =>
-    renderResult.getByText('2 Day(s) Before Previous Day of Week'),
+    renderResult.getByText('"2 Day(s) Before Previous Day of Week"'),
   );
 });
 

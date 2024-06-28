@@ -69,6 +69,10 @@
       margin-right: 1rem;
     }
 
+    &__divider--light {
+      margin-left: 1rem;
+    }
+
     &__group {
       @include flexVCenter;
 
@@ -405,6 +409,7 @@
     &__section-name {
       font-size: 1.8rem;
       font-weight: 700;
+      margin-top: 1rem;
       padding: 1rem;
     }
 
