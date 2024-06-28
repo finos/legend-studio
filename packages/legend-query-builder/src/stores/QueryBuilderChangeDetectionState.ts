@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-import {
-  ActionAlertActionType,
-  ActionAlertType,
-} from '@finos/legend-application';
 import type { RawLambda } from '@finos/legend-graph';
 import {
   ActionState,
