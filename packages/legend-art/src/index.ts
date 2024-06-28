@@ -78,3 +78,5 @@ export * from './utils/ComponentUtils.js';
 export * from './markdown/MarkdownTextViewer.js';
 
 export * from './Interaction.js';
+
+export * from './color/TailwindCSSPalette.js';

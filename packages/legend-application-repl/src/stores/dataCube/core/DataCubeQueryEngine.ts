@@ -62,9 +62,9 @@ export enum DataCubeFunction {
   MAX = 'meta::pure::functions::collection::max',
   MIN = 'meta::pure::functions::collection::min',
   SUM = 'meta::pure::functions::math::sum',
-  STD_DEV_POPULATION = 'meta::pure::functions::math::stdDevPopulation',
-  STD_DEV_SAMPLE = 'meta::pure::functions::math::stdDevSample',
-  UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
+  // STD_DEV_POPULATION = 'meta::pure::functions::math::stdDevPopulation',
+  // STD_DEV_SAMPLE = 'meta::pure::functions::math::stdDevSample',
+  // UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
 }
 
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
@@ -74,6 +74,7 @@ export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
 // when no aggregate is specified in groupBy() or pivot()
 export const INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME =
   'INTERNAL__filler_count_agg_column';
+export const DEFAULT__ROW_BUFFER = 50;
 
 export type DataCubeQueryFunctionMap = {
   leafExtend?: V1_AppliedFunction | undefined;
@@ -88,3 +89,71 @@ export type DataCubeQueryFunctionMap = {
   sort?: V1_AppliedFunction | undefined;
   limit?: V1_AppliedFunction | undefined;
 };
+
+export enum DataCubeNumberScale {
+  BASIS_POINT = 'Basis Points (bp)',
+  PERCENT = 'Percent (%)',
+  THOUSANDS = 'Thousands (k)',
+  MILLIONS = 'Millions (m)',
+  BILLIONS = 'Billions (b)',
+  AUTO = 'Auto (k/m/b)',
+}
+
+export enum DataCubeSelectionStat {
+  COUNT = 'Count',
+  SUM = 'Sum',
+  MIN = 'Min',
+  MAX = 'Max',
+  AVERAGE = 'Average',
+}
+
+export enum DataCubeFont {
+  ARIAL = 'Arial', // sans-serif
+  ROBOTO = 'Roboto', // sans-serif
+  ROBOTO_CONDENSED = 'Roboto Condensed', // sans-serif
+
+  TIMES_NEW_ROMAN = 'Times New Roman', // serif
+  GEORGIA = 'Georgia', // serif
+  ROBOTO_SERIF = 'Roboto Serif', // serif
+
+  JERBRAIN_MONO = 'Jetbrain Mono', // monospaced
+  ROBOTO_MONO = 'Roboto Mono', // monospaced
+  UBUNTU_MONO = 'Ubuntu Mono', // monospaced
+}
+
+export enum DataCubeColumnKind {
+  MEASURE = 'Measure',
+  DIMENSION = 'Dimension',
+}
+
+export enum DataCubeAggregateFunction {
+  SUM = 'sum',
+  AVERAGE = 'avg',
+  COUNT = 'count',
+  MIN = 'min',
+  MAX = 'max',
+  UNIQUE = 'uniq',
+  FIRST = 'first',
+  LAST = 'last',
+  MEDIAN = 'median',
+  VARIANCE = 'var',
+  STANDARD_DEVIATION = 'std',
+  // STANDARD_ERROR = 'stderr',
+  // NULL = 'null',
+  // ssq
+  // countvalid
+  // countnull
+  // uniqunstrict
+  // minmagnitude
+  // maxmagnitude
+  // commonprefix
+  //commonprefixunstrict
+  // strjoin
+  // strjoinuniq
+  // splitjoin
+  // daterange
+  // wavg
+  // wstderr
+  // wsum
+  // custom
+}

@@ -47,7 +47,7 @@ export class DataCubeCoreState extends DataCubeQuerySnapshotSubscriber {
       this.startTime = snapshot.timestamp;
     }
     this.application.layoutService.setWindowTitle(
-      `\u25A6 ${data.name}${this.startTime ? ` - ${formatDate(new Date(this.startTime), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
+      `\u229E ${data.name}${this.startTime ? ` - ${formatDate(new Date(this.startTime), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
     );
   }
 

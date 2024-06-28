@@ -30,6 +30,7 @@ import {
   raw,
   serialize,
 } from 'serializr';
+import type { DataCubeConfiguration } from './DataCubeConfiguration.js';
 
 export abstract class DataCubeQuerySource {
   columns: DataCubeQueryColumn[] = [];
@@ -97,21 +98,17 @@ function serializeQuerySource(
   );
 }
 
-export class DataCubeConfiguration {
-  // TODO
-}
-
 export class DataCubeQuery {
   name!: string;
   query!: string;
   partialQuery!: string;
   source!: DataCubeQuerySource;
-  configuration!: DataCubeConfiguration;
+  configuration?: PlainObject<DataCubeConfiguration> | undefined;
 
   constructor(
     name: string,
     query: string,
-    configuration: DataCubeConfiguration,
+    configuration?: PlainObject<DataCubeConfiguration> | undefined,
   ) {
     this.name = name;
     this.query = query;

@@ -145,7 +145,7 @@ describe(unitTest('Analyze and build base snapshot'), () => {
         await ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(code),
         [],
       );
-      const baseQuery = new DataCubeQuery('', '', {});
+      const baseQuery = new DataCubeQuery('', '', undefined);
       baseQuery.source = new DataCubeQuerySourceREPLExecutedQuery();
       baseQuery.partialQuery = code;
       baseQuery.source.query = '';

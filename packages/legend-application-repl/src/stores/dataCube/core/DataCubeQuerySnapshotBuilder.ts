@@ -50,6 +50,8 @@ import {
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
+import { DataCubeConfiguration } from '../../../server/models/DataCubeConfiguration.js';
+import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -326,7 +328,7 @@ export function validateAndBuildQuerySnapshot(
     baseQuery.name,
     baseQuery.source.runtime,
     V1_serializeValueSpecification(sourceQuery, []),
-    baseQuery.configuration,
+    {},
   );
   const data = snapshot.data;
   const colsMap = new Map<string, DataCubeQuerySnapshotColumn>();
@@ -393,6 +395,16 @@ export function validateAndBuildQuerySnapshot(
     assertType(value, V1_CInteger);
     data.limit = value.value;
   }
+
+  // --------------------------------- CONFIGURATION ---------------------------------
+  // Validate and repair the configuration based off the analysis of the query
+
+  const configuration = baseQuery.configuration
+    ? DataCubeConfiguration.serialization.fromJson(baseQuery.configuration)
+    : buildDefaultConfiguration(baseQuery.source.columns);
+  // TODO: @akphi - implement this
+  data.configuration =
+    DataCubeConfiguration.serialization.toJson(configuration);
 
   return snapshot;
 }

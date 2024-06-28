@@ -15,7 +15,7 @@
  */
 
 import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
-import type { DataCubeConfiguration } from '../../../server/models/DataCubeQuery.js';
+import type { DataCubeConfiguration } from '../../../server/models/DataCubeConfiguration.js';
 import {
   IllegalStateError,
   guaranteeNonNullable,
@@ -113,7 +113,7 @@ export type DataCubeQuerySnapshotData = {
   name: string;
   runtime: string;
   sourceQuery: PlainObject<V1_ValueSpecification>;
-  configuration: DataCubeConfiguration;
+  configuration: PlainObject<DataCubeConfiguration>;
   originalColumns: DataCubeQuerySnapshotColumn[];
   leafExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
   filter?: DataCubeQuerySnapshotFilter | undefined;
@@ -142,7 +142,7 @@ export class DataCubeQuerySnapshot {
     name: string,
     runtime: string,
     sourceQuery: PlainObject<V1_ValueSpecification>,
-    configuration: DataCubeConfiguration,
+    configuration: PlainObject<DataCubeConfiguration>,
   ) {
     this.data = {
       name,
@@ -165,7 +165,7 @@ export class DataCubeQuerySnapshot {
     name: string,
     runtime: string,
     sourceQuery: PlainObject<V1_ValueSpecification>,
-    configuration: DataCubeConfiguration,
+    configuration: PlainObject<DataCubeConfiguration>,
   ) {
     return new DataCubeQuerySnapshot(name, runtime, sourceQuery, configuration);
   }

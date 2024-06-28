@@ -22,7 +22,7 @@ import { DataCubeQuerySnapshotSortOperation } from '../../../../stores/dataCube/
 export function buildGridSortsMenu(
   editor: DataCubeEditorState,
   column: Column | undefined,
-  value: unknown | undefined,
+  value: unknown,
 ): MenuItemDef {
   if (!column) {
     return {
