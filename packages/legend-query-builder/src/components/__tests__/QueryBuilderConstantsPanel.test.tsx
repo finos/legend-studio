@@ -1291,3 +1291,55 @@ test(
     ).toBe(true);
   },
 );
+
+test(
+  integrationTest(
+    'Query builder warns about losing unsaved changes when constant is created',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+    );
+    const constantsPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
+    );
+
+    // Create constant
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    const constantNameInput = getConstantNameInput(renderResult);
+    const constantValueInput = getConstantValueInput(renderResult);
+    fireEvent.change(constantNameInput, { target: { value: 'c_var_1' } });
+    fireEvent.change(constantValueInput, { target: { value: 'test' } });
+    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
+
+    // change entity
+    const entityContainer = guaranteeNonNullable(
+      renderResult.getByText('Entity').parentElement,
+    );
+    selectFirstOptionFromCustomSelectorInput(entityContainer);
+
+    // check for modal
+    expect(
+      renderResult.getByText(
+        'Unsaved changes will be lost if you continue. Do you still want to proceed?',
+      ),
+    ).not.toBeNull();
+  },
+);
