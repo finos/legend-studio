@@ -71,6 +71,7 @@ import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/gr
 import {
   TEST__setUpQueryBuilder,
   dragAndDrop,
+  selectFromCustomSelectorInput,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
 import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
@@ -1912,5 +1913,70 @@ test(
       }),
     );
     await waitFor(() => getByText(projectionPanel, '50'));
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder warns about losing unsaved changes when column is added to fetch structure panel',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop column
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'First Name'),
+    );
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+
+    // check fetch-structure
+    const FIRST_NAME_ALIAS = 'First Name';
+    expect(
+      await waitFor(() => queryByText(tdsProjectionPanel, FIRST_NAME_ALIAS)),
+    ).not.toBeNull();
+
+    // change entity
+    const entityContainer = guaranteeNonNullable(
+      renderResult.getByText('Entity').parentElement,
+    );
+    selectFromCustomSelectorInput(entityContainer, 'Product');
+
+    // check for modal
+    expect(
+      renderResult.getByText(
+        'Unsaved changes will be lost if you continue. Do you still want to proceed?',
+      ),
+    ).not.toBeNull();
   },
 );
