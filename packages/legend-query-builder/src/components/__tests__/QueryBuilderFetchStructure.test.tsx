@@ -71,7 +71,7 @@ import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/gr
 import {
   TEST__setUpQueryBuilder,
   dragAndDrop,
-  selectFromCustomSelectorInput,
+  selectFirstOptionFromCustomSelectorInput,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
 import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
@@ -1970,7 +1970,7 @@ test(
     const entityContainer = guaranteeNonNullable(
       renderResult.getByText('Entity').parentElement,
     );
-    selectFromCustomSelectorInput(entityContainer, 'Product');
+    selectFirstOptionFromCustomSelectorInput(entityContainer);
 
     // check for modal
     expect(
