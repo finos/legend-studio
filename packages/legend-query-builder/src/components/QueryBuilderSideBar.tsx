@@ -125,8 +125,10 @@ export const QueryBuilderClassSelector = observer(
       if (val.value === queryBuilderState.class) {
         return;
       }
-      queryBuilderState.changeClass(val.value);
-      onClassChange?.(val.value);
+      queryBuilderState.alertUnsavedChanges(() => {
+        queryBuilderState.changeClass(val.value);
+        onClassChange?.(val.value);
+      });
     };
 
     return (
