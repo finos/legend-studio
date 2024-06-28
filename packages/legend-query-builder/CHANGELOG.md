@@ -1,5 +1,17 @@
 # @finos/legend-query-builder
 
+## 4.14.53
+
+### Patch Changes
+
+- [#3297](https://github.com/finos/legend-studio/pull/3297) [`db471ef`](https://github.com/finos/legend-studio/commit/db471ef43040a9aac7de8f9f4b64feaeb840091c) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support reset query content also will reset milestoning config.
+
+  StartDate and EndDate parameters should be undeletable if used in query.
+
+  Hide avaialble parameter and constant lists when choosing allVersions
+
+- [#3294](https://github.com/finos/legend-studio/pull/3294) [`b897478`](https://github.com/finos/legend-studio/commit/b897478dead43581b62b4b14e0a716b6dc6af2c9) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - make milestoning param value editable in Query Option
+
 ## 4.14.52
 
 ### Patch Changes
