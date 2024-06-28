@@ -471,7 +471,9 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.resultState = resultState;
   }
 
-  resetQueryContent(): void {
+  resetQueryContent(options?: {
+    preserveChangeHistoryState?: boolean | undefined;
+  }): void {
     this.textEditorState = new QueryBuilderTextEditorState(this);
     this.unsupportedQueryState = new QueryBuilderUnsupportedQueryState(this);
     this.milestoningState = new QueryBuilderMilestoningState(this);
@@ -489,7 +491,9 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.watermarkState = new QueryBuilderWatermarkState(this);
     this.checkEntitlementsState = new QueryBuilderCheckEntitlementsState(this);
-    this.changeHistoryState = new QueryBuilderChangeHistoryState(this);
+    if (!options?.preserveChangeHistoryState) {
+      this.changeHistoryState = new QueryBuilderChangeHistoryState(this);
+    }
     this.isCalendarEnabled = false;
 
     const currentFetchStructureImplementationType =
@@ -676,7 +680,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
         previousStateParameterValues = paramValues;
       }
       this.resetQueryResult({ preserveResult: options?.preserveResult });
-      this.resetQueryContent();
+      this.resetQueryContent({ preserveChangeHistoryState: true });
 
       if (!isStubbed_RawLambda(query)) {
         const valueSpec = observe_ValueSpecification(
@@ -712,7 +716,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
         error,
       );
       this.resetQueryResult({ preserveResult: options?.preserveResult });
-      this.resetQueryContent();
+      this.resetQueryContent({ preserveChangeHistoryState: true });
       this.unsupportedQueryState.setLambdaError(error);
       this.unsupportedQueryState.setRawLambda(query);
       this.setClass(undefined);
