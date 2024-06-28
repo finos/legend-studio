@@ -25,6 +25,7 @@ import {
 } from '@finos/legend-graph';
 import {
   act,
+  findByText,
   fireEvent,
   getAllByText,
   getByDisplayValue,
@@ -41,6 +42,7 @@ import {
 import {
   QUERY_BUILDER_TEST_ID,
   dragAndDrop,
+  selectFirstOptionFromCustomSelectorInput,
 } from '@finos/legend-query-builder';
 import {
   TEST_DATA__ResultState_entities,
@@ -48,6 +50,7 @@ import {
   TEST_DATA__modelCoverageAnalysisResult,
   TEST_DATA__simpleProjectionQuery,
 } from './TEST_DATA__QueryBuilder_ResultStateTest.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 test(
   integrationTest(
@@ -418,5 +421,84 @@ test(
     );
     expect(saveAsNewQueryButton.hasAttribute('disabled')).toBe(false);
     expect(renderResult.queryByText('1 issue')).toBeNull();
+  },
+);
+
+test(
+  integrationTest('Query editor warns if about to lose unsaved changes'),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
+      TEST__provideMockedQueryEditorStore(),
+      TEST_DATA__ResultState_entities,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__modelCoverageAnalysisResult,
+    );
+    const _class = 'model::Person';
+
+    const _modelClass =
+      queryBuilderState.graphManagerState.graph.getClass(_class);
+
+    await act(async () => {
+      queryBuilderState.changeClass(_modelClass);
+    });
+
+    const tdsProjectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'First Name'),
+    );
+    await dragAndDrop(
+      dragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    await findByText(tdsProjectionPanel, 'First Name');
+
+    // Click new query button
+    const queryActionsPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_ACTIONS,
+    );
+    fireEvent.click(
+      getByRole(queryActionsPanel, 'button', {
+        name: 'New Query',
+      }),
+    );
+
+    // Check for modal
+    expect(
+      renderResult.getByText(
+        'Unsaved changes will be lost if you continue. Do you still want to proceed?',
+      ),
+    ).not.toBeNull();
+
+    // Click abort
+    fireEvent.click(renderResult.getByRole('button', { name: 'Abort' }));
+
+    // Click load query button
+    const entityContainer = guaranteeNonNullable(
+      renderResult.getByText('Entity').parentElement,
+    );
+    selectFirstOptionFromCustomSelectorInput(entityContainer);
+
+    // Check for modal
+    expect(
+      renderResult.getByText(
+        'Unsaved changes will be lost if you continue. Do you still want to proceed?',
+      ),
+    ).not.toBeNull();
   },
 );
