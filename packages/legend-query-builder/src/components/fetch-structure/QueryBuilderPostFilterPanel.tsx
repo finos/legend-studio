@@ -24,7 +24,7 @@ import {
   ChevronRightIcon,
   clsx,
   ContextMenu,
-  DropdownMenu,
+  ControlledDropdownMenu,
   FilledTriangleIcon,
   MenuContent,
   MenuContentItem,
@@ -525,7 +525,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
                 colState={node.condition.leftConditionValue}
               />
             </div>
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="query-builder-post-filter-tree__condition-node__operator"
               title="Choose Operator..."
               content={
@@ -553,7 +553,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
               <div className="query-builder-post-filter-tree__condition-node__operator__dropdown__trigger">
                 <CaretDownIcon />
               </div>
-            </DropdownMenu>
+            </ControlledDropdownMenu>
             {renderRightVal()}
           </div>
         </PanelEntryDropZonePlaceholder>
@@ -1081,7 +1081,7 @@ const QueryBuilderPostFilterPanelContent = observer(
             )}
           </div>
           <div className="panel__header__actions">
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="panel__header__action"
               title="Show Post-Filter Options Menu..."
               content={
@@ -1154,7 +1154,7 @@ const QueryBuilderPostFilterPanelContent = observer(
               }
             >
               <MoreVerticalIcon className="query-builder__icon__more-options" />
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </div>
         </div>
         <PanelContent>

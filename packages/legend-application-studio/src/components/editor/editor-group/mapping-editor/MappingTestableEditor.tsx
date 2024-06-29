@@ -42,7 +42,7 @@ import {
   compareLabelFn,
   CustomSelectorInput,
   Dialog,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
   Modal,
@@ -704,7 +704,7 @@ const MappingTestSuiteQueryEditor = observer(
                   Edit Query
                 </div>
               </button>
-              <DropdownMenu
+              <ControlledDropdownMenu
                 className="btn__dropdown-combo__dropdown-btn"
                 content={
                   <MenuContent>
@@ -728,7 +728,7 @@ const MappingTestSuiteQueryEditor = observer(
                 }}
               >
                 <CaretDownIcon />
-              </DropdownMenu>
+              </ControlledDropdownMenu>
             </div>
           </div>
         </div>

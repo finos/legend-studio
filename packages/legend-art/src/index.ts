@@ -42,6 +42,7 @@ export * from './dialog/Modal.js';
 
 export * from './divider/Divider.js';
 
+export * from './menu/BaseMenu.js';
 export * from './menu/MenuContent.js';
 export * from './menu/ContextMenu.js';
 export * from './menu/DropdownMenu.js';

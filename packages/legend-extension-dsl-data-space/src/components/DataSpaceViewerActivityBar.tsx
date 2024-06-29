@@ -32,7 +32,7 @@ import {
   MenuContent,
   MenuContentItem,
   MenuIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   DataReadyIcon,
   SparkleIcon,
 } from '@finos/legend-art';
@@ -55,7 +55,7 @@ const ActivityBarMenu = observer(
     return (
       <>
         <div className="data-space__viewer__activity-bar__menu">
-          <DropdownMenu
+          <ControlledDropdownMenu
             className="data-space__viewer__activity-bar__menu-item"
             menuProps={{
               anchorOrigin: { vertical: 'top', horizontal: 'right' },
@@ -73,7 +73,7 @@ const ActivityBarMenu = observer(
             }
           >
             <MenuIcon />
-          </DropdownMenu>
+          </ControlledDropdownMenu>
         </div>
       </>
     );

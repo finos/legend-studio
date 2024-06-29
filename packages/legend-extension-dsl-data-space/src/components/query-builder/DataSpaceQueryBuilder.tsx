@@ -17,7 +17,7 @@
 import {
   CustomSelectorInput,
   createFilter,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContentItem,
   MenuContent,
   MenuContentItemIcon,
@@ -229,7 +229,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       <div className="query-builder__setup__config-group">
         <PanelHeader title="properties">
           <PanelHeaderActions>
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="panel__header__action query-builder__setup__config-group__header__dropdown-trigger"
               title="Show Settings..."
               content={
@@ -258,7 +258,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
               }}
             >
               <MoreVerticalIcon className="query-builder__icon__more-options" />
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </PanelHeaderActions>
         </PanelHeader>
         <div className="query-builder__setup__config-group__content">

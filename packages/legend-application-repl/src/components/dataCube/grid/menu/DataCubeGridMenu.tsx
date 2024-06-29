@@ -20,7 +20,7 @@ import type {
   MenuItemDef,
 } from '@ag-grid-community/core';
 import type { DataCubeState } from '../../../../stores/dataCube/DataCubeState.js';
-import { WIP_MenuItem } from '../../../shared/WIP.js';
+import { WIP_GridMenuItem } from '../../../shared/WIP.js';
 import { buildGridSortsMenu } from './DataCubeGridSortsMenu.js';
 
 export function buildGridMenu(
@@ -37,43 +37,43 @@ export function buildGridMenu(
   const result: (string | MenuItemDef)[] = [
     {
       name: 'Export',
-      menuItem: WIP_MenuItem,
+      menuItem: WIP_GridMenuItem,
       cssClasses: ['!opacity-100'],
       subMenu: [
         {
           name: 'HTML',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: 'Plain Text',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: 'PDF',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: 'Excel',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: 'CSV',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         'separator',
         {
           name: 'DataCube Specification',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
@@ -81,55 +81,55 @@ export function buildGridMenu(
     },
     {
       name: 'Email',
-      menuItem: WIP_MenuItem,
+      menuItem: WIP_GridMenuItem,
       cssClasses: ['!opacity-100'],
       subMenu: [
         {
           name: 'HTML',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: 'Plain Text',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         'separator',
         {
           name: 'HTML Attachment',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: 'Plain Text',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: 'PDF Attachment',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: 'Excel Attachment',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: 'CSV Attachment',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: 'DataCube Specification Attachment',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
@@ -137,24 +137,24 @@ export function buildGridMenu(
     },
     {
       name: 'Copy',
-      menuItem: WIP_MenuItem,
+      menuItem: WIP_GridMenuItem,
       cssClasses: ['!opacity-100'],
       subMenu: [
         {
           name: 'Plain Text',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: 'Selected Row(s) as Plain Text',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: 'Selected Column as Plain Text',
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
@@ -164,7 +164,7 @@ export function buildGridMenu(
     buildGridSortsMenu(editor, column, value),
     {
       name: 'Filter',
-      menuItem: WIP_MenuItem,
+      menuItem: WIP_GridMenuItem,
       disabled: true,
       cssClasses: ['!opacity-100'],
       subMenu: [
@@ -172,13 +172,13 @@ export function buildGridMenu(
           ? [
               {
                 name: `Add Filter: ${column.getColId()} = {value}`,
-                menuItem: WIP_MenuItem,
+                menuItem: WIP_GridMenuItem,
                 cssClasses: ['!opacity-100'],
                 disabled: true,
               },
               {
                 name: `More Filters on ${column.getColId()}...`,
-                menuItem: WIP_MenuItem,
+                menuItem: WIP_GridMenuItem,
                 cssClasses: ['!opacity-100'],
                 disabled: true,
                 subMenu: [], // TODO
@@ -196,7 +196,7 @@ export function buildGridMenu(
     },
     {
       name: 'Pivot',
-      menuItem: WIP_MenuItem,
+      menuItem: WIP_GridMenuItem,
       disabled: true,
       cssClasses: ['!opacity-100'],
       subMenu: [
@@ -204,19 +204,19 @@ export function buildGridMenu(
           ? [
               {
                 name: `VPivot on ${column.getColId()}`,
-                menuItem: WIP_MenuItem,
+                menuItem: WIP_GridMenuItem,
                 cssClasses: ['!opacity-100'],
                 disabled: true,
               },
               {
                 name: `Add VPivot on ${column.getColId()}`,
-                menuItem: WIP_MenuItem,
+                menuItem: WIP_GridMenuItem,
                 cssClasses: ['!opacity-100'],
                 disabled: true,
               },
               {
                 name: `Remove VPivot on ${column.getColId()}`,
-                menuItem: WIP_MenuItem,
+                menuItem: WIP_GridMenuItem,
                 cssClasses: ['!opacity-100'],
                 disabled: true,
               },
@@ -225,7 +225,7 @@ export function buildGridMenu(
           : []),
         {
           name: `Clear All VPivots`,
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
@@ -233,20 +233,20 @@ export function buildGridMenu(
     },
     {
       name: 'Heatmap',
-      menuItem: WIP_MenuItem,
+      menuItem: WIP_GridMenuItem,
       cssClasses: ['!opacity-100'],
       disabled: !column,
       subMenu: column
         ? [
             {
               name: `Add to ${column.getColId()}`,
-              menuItem: WIP_MenuItem,
+              menuItem: WIP_GridMenuItem,
               cssClasses: ['!opacity-100'],
               disabled: true,
             },
             {
               name: `Remove from ${column.getColId()}`,
-              menuItem: WIP_MenuItem,
+              menuItem: WIP_GridMenuItem,
               cssClasses: ['!opacity-100'],
               disabled: true,
             },
@@ -255,25 +255,25 @@ export function buildGridMenu(
     },
     {
       name: 'Extended Columns',
-      menuItem: WIP_MenuItem,
+      menuItem: WIP_GridMenuItem,
       cssClasses: ['!opacity-100'],
       disabled: true,
       subMenu: [
         {
           name: `Add New Column...`,
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: `Edit {column}`,
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: `Remove {column}`,
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
@@ -281,25 +281,25 @@ export function buildGridMenu(
     },
     {
       name: 'Custom Groupings',
-      menuItem: WIP_MenuItem,
+      menuItem: WIP_GridMenuItem,
       cssClasses: ['!opacity-100'],
       disabled: true,
       subMenu: [
         {
           name: `Add New Grouping...`,
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: `Edit {column}`,
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: `Remove {column}`,
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
@@ -308,26 +308,26 @@ export function buildGridMenu(
     'separator',
     {
       name: 'Resize',
-      menuItem: WIP_MenuItem,
+      menuItem: WIP_GridMenuItem,
       cssClasses: ['!opacity-100'],
       disabled: true,
       subMenu: [
         {
           name: `Size to Fit Content`,
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: `Autosize`,
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         'separator',
         {
           name: `Autosize All Columns`,
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
@@ -335,26 +335,26 @@ export function buildGridMenu(
     },
     {
       name: 'Pin',
-      menuItem: WIP_MenuItem,
+      menuItem: WIP_GridMenuItem,
       cssClasses: ['!opacity-100'],
       disabled: true,
       subMenu: [
         {
           name: `Pin Left`,
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         {
           name: `Pin Right`,
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
         'separator',
         {
           name: `Remove Pinning`,
-          menuItem: WIP_MenuItem,
+          menuItem: WIP_GridMenuItem,
           cssClasses: ['!opacity-100'],
           disabled: true,
         },
@@ -362,20 +362,20 @@ export function buildGridMenu(
     },
     {
       name: 'Hide',
-      menuItem: WIP_MenuItem,
+      menuItem: WIP_GridMenuItem,
       cssClasses: ['!opacity-100'],
       disabled: true,
     },
     'separator',
     {
       name: 'Show Plot...',
-      menuItem: WIP_MenuItem,
+      menuItem: WIP_GridMenuItem,
       cssClasses: ['!opacity-100'],
       disabled: true,
     },
     {
       name: 'Show TreeMap...',
-      menuItem: WIP_MenuItem,
+      menuItem: WIP_GridMenuItem,
       cssClasses: ['!opacity-100'],
       disabled: true,
     },

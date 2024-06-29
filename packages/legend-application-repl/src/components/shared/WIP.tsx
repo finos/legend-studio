@@ -19,7 +19,7 @@ import {
   type CustomMenuItemProps,
 } from '@ag-grid-community/react';
 
-export function WIP_MenuItem({ name, subMenu }: CustomMenuItemProps) {
+export function WIP_GridMenuItem({ name, subMenu }: CustomMenuItemProps) {
   useGridMenuItem({
     configureDefaults: () => true,
   });
@@ -42,7 +42,7 @@ export function WIP_MenuItem({ name, subMenu }: CustomMenuItemProps) {
 export function WIP_Badge() {
   return (
     <div
-      className="color-neutral-700 text-2xs ml-1 rounded-md bg-sky-500 px-1 py-0.5 font-semibold text-white"
+      className="color-neutral-700 text-2xs ml-1 select-none rounded-md bg-sky-500 px-1 py-0.5 font-semibold text-white"
       title="Work In Progress"
     >
       WIP

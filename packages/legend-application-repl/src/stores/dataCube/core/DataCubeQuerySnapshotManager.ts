@@ -26,7 +26,7 @@ import {
 } from '@finos/legend-shared';
 import type { DataCubeQuery } from '../../../server/models/DataCubeQuery.js';
 
-// TODO: use this when we implement undo/redo
+// TODO: set a stack depth when we implement undo/redo
 // const DATA_CUBE_MAX_SNAPSHOT_COUNT = 100;
 
 export class DataCubeQuerySnapshotManager {

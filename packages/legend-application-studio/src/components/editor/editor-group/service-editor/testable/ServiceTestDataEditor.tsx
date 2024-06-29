@@ -21,7 +21,7 @@ import {
   ContextMenu,
   CustomSelectorInput,
   Dialog,
-  DropdownMenu,
+  ControlledDropdownMenu,
   InfoCircleIcon,
   MaskIcon,
   MenuContent,
@@ -549,7 +549,7 @@ export const ConnectionTestDataEditor = observer(
                   Generate
                 </div>
               </button>
-              <DropdownMenu
+              <ControlledDropdownMenu
                 className="btn__dropdown-combo__dropdown-btn"
                 content={
                   <MenuContent>
@@ -581,7 +581,7 @@ export const ConnectionTestDataEditor = observer(
                 }}
               >
                 <CaretDownIcon />
-              </DropdownMenu>
+              </ControlledDropdownMenu>
             </div>
             <button
               className="panel__header__action service-execution-editor__test-data__generate-btn"

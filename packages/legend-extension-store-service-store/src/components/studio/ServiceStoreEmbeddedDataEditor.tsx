@@ -19,7 +19,7 @@ import {
   clsx,
   ContextMenu,
   CustomSelectorInput,
-  DropdownMenu,
+  ControlledDropdownMenu,
   LockIcon,
   MenuContent,
   MenuContentItem,
@@ -657,7 +657,7 @@ export const ServiceRequestPatternEditor = observer(
                 </div>
               </div>
               <div className="service-request-pattern-editor__header__actions">
-                <DropdownMenu
+                <ControlledDropdownMenu
                   className="service-request-pattern-editor__type"
                   disabled={isReadOnly}
                   content={
@@ -684,7 +684,7 @@ export const ServiceRequestPatternEditor = observer(
                   <div className="service-request-pattern-editor__type__icon">
                     <CaretDownIcon />
                   </div>
-                </DropdownMenu>
+                </ControlledDropdownMenu>
               </div>
             </div>
             <div className="service-request-pattern-editor__content">

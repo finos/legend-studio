@@ -15,10 +15,11 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import type { MenuProps as MuiMenuProps } from '@mui/material';
-import { BaseMenu } from './BaseMenu.js';
+import type { MenuItemProps, MenuProps as MuiMenuProps } from '@mui/material';
+import { BaseMenu, BaseMenuItem, Menu } from './BaseMenu.js';
+import { cn } from '../utils/ComponentUtils.js';
 
-export const DropdownMenu: React.FC<{
+export const ControlledDropdownMenu: React.FC<{
   children: React.ReactNode;
   open?: boolean | undefined;
   menuProps?: Partial<MuiMenuProps> | undefined;
@@ -83,12 +84,11 @@ export const DropdownMenu: React.FC<{
               },
             }
           : { onClick: onTriggerClick })}
-        tabIndex={-1}
         title={title}
       >
         {children}
       </button>
-      <BaseMenu
+      <Menu
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         anchorEl={anchorEl}
@@ -105,6 +105,8 @@ export const DropdownMenu: React.FC<{
         elevation={0}
         marginThreshold={0}
         disableRestoreFocus={true}
+        hideBackdrop={true}
+        transitionDuration={0}
         onClick={() => {
           onClose?.();
           setAnchorEl(null);
@@ -112,7 +114,72 @@ export const DropdownMenu: React.FC<{
         {...menuProps}
       >
         {content}
-      </BaseMenu>
+      </Menu>
     </>
   );
 };
+
+export function useDropdownMenu() {
+  const [anchorEl, setAnchorEl] = useState<Element | null>(null);
+  return [
+    (event: React.MouseEvent<Element>) => setAnchorEl(event.currentTarget),
+    () => setAnchorEl(null),
+    {
+      anchorEl,
+      onClose: () => setAnchorEl(null),
+    },
+  ] as const;
+}
+
+export function DropdownMenu(props: {
+  children: React.ReactNode;
+  anchorEl: Element | null;
+  onClose: () => void;
+  className?: string | undefined;
+  menuProps?: Partial<MuiMenuProps> | undefined;
+}) {
+  const { className, menuProps, children, onClose, anchorEl } = props;
+
+  if (!anchorEl) {
+    return null;
+  }
+  return (
+    <BaseMenu
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      anchorEl={anchorEl}
+      open={Boolean(anchorEl)}
+      slotProps={{
+        root: {
+          slotProps: {
+            backdrop: {
+              invisible: true,
+            },
+          },
+        },
+      }}
+      classes={{
+        list: cn('p-0 rounded-none', className),
+      }}
+      elevation={1}
+      marginThreshold={0}
+      disableRestoreFocus={true}
+      transitionDuration={0}
+      onClose={onClose}
+      {...menuProps}
+    >
+      {children}
+    </BaseMenu>
+  );
+}
+
+export function DropdownMenuItem(props: MenuItemProps) {
+  return (
+    <BaseMenuItem
+      {...props}
+      style={{
+        cursor: 'default',
+      }}
+    />
+  );
+}

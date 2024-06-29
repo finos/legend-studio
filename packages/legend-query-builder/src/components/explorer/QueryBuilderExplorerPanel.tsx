@@ -26,7 +26,7 @@ import {
   Dialog,
   TreeView,
   BlankPanelContent,
-  DropdownMenu,
+  ControlledDropdownMenu,
   ContextMenu,
   MenuContent,
   MenuContentItem,
@@ -928,7 +928,7 @@ export const QueryBuilderExplorerPanel = observer(
             <PanelHeaderActionItem onClick={collapseTree} title="Collapse Tree">
               <CompressIcon />
             </PanelHeaderActionItem>
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="panel__header__action"
               title="Show Options Menu..."
               content={
@@ -972,7 +972,7 @@ export const QueryBuilderExplorerPanel = observer(
               }}
             >
               <MoreVerticalIcon className="query-builder__icon__more-options" />
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </PanelHeaderActions>
           {propertySearchPanelState.isSearchPanelOpen && (
             <QueryBuilderPropertySearchPanel

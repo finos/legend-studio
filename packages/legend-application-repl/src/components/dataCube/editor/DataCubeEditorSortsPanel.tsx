@@ -15,7 +15,12 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { DataCubeIcon, DropdownMenu } from '@finos/legend-art';
+import {
+  DataCubeIcon,
+  useDropdownMenu,
+  DropdownMenuItem,
+  DropdownMenu,
+} from '@finos/legend-art';
 import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
 import type { DataCubeEditorColumnsSelectorState } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
@@ -41,64 +46,69 @@ const SortDirectionDropdown = observer(
     column: DataCubeEditorSortColumnState;
   }) => {
     const { column } = props;
+    const [openMenu, closeMenu, menuProps] = useDropdownMenu();
 
     return (
       <div className="group relative flex h-full items-center">
         <div className="flex h-[18px] w-32 items-center border border-transparent px-2 text-sm text-neutral-500 group-hover:invisible">
           {getSortDirectionLabel(column.operation)}
         </div>
-        <DropdownMenu
+        <button
           className="invisible absolute right-0 z-10 flex h-[18px] w-32 items-center justify-between border border-neutral-500 pl-2 pr-0.5 text-sm text-neutral-700 group-hover:visible"
-          content={
-            <menu className="w-32 border border-neutral-300 bg-white text-sm">
-              <div
-                className="flex h-5 items-center px-2 hover:bg-neutral-100"
-                onClick={() =>
-                  column.setOperation(
-                    DataCubeQuerySnapshotSortOperation.ASCENDING,
-                  )
-                }
-              >
-                Ascending
-              </div>
-              <div className="flex h-5 items-center px-2 text-neutral-400">
-                {`Ascending (abs)`}
-                <WIP_Badge />
-              </div>
-              <div
-                className="flex h-5 items-center px-2 hover:bg-neutral-100"
-                onClick={() =>
-                  column.setOperation(
-                    DataCubeQuerySnapshotSortOperation.DESCENDING,
-                  )
-                }
-              >
-                Descending
-              </div>
-              <div className="flex h-5 items-center px-2 text-neutral-400">
-                {`Descending (abs)`}
-                <WIP_Badge />
-              </div>
-            </menu>
-          }
-          menuProps={{
-            anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-            transformOrigin: { vertical: 'top', horizontal: 'right' },
-            elevation: 2,
-            hideBackdrop: true,
-            transitionDuration: 0,
-          }}
           /**
            * ag-grid row select event listener is at a deeper layer than this dropdown trigger
            * so in order to prevent selecting the row while opening the dropdown, we need to stop
            * the propagation as event capturing is happening, not when it's bubbling.
            */
-          useCapture={true}
+          onClickCapture={(event) => {
+            event.stopPropagation();
+            openMenu(event);
+          }}
+          onClick={(event) => event.stopPropagation()}
         >
           <div>{getSortDirectionLabel(column.operation)}</div>
           <div>
             <DataCubeIcon.CaretDown />
           </div>
+        </button>
+        <DropdownMenu
+          className="w-32 select-none border border-neutral-300 bg-white"
+          {...menuProps}
+        >
+          <DropdownMenuItem
+            className="flex h-5 items-center px-2 text-sm hover:bg-neutral-100"
+            onClick={() => {
+              column.setOperation(DataCubeQuerySnapshotSortOperation.ASCENDING);
+              closeMenu();
+            }}
+          >
+            Ascending
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="flex h-5 items-center px-2 text-sm text-neutral-400"
+            disabled={true}
+          >
+            {`Ascending (abs)`}
+            <WIP_Badge />
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="flex h-5 items-center px-2 text-sm hover:bg-neutral-100"
+            onClick={() => {
+              column.setOperation(
+                DataCubeQuerySnapshotSortOperation.DESCENDING,
+              );
+              closeMenu();
+            }}
+          >
+            Descending
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="flex h-5 items-center px-2 text-sm text-neutral-400"
+            disabled={true}
+          >
+            {`Descending (abs)`}
+            <WIP_Badge />
+          </DropdownMenuItem>
         </DropdownMenu>
       </div>
     );

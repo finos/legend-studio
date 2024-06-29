@@ -18,7 +18,7 @@ import {
   Dialog,
   PanelLoadingIndicator,
   BlankPanelContent,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
   MenuIcon,
@@ -622,7 +622,7 @@ export const QueryEditor = observer(() => {
       <div className="query-editor__logo-header">
         <div className="query-editor__logo-header__combo">
           <div className="query-editor__logo-header__combo__menu">
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="query-editor__logo-header__combo__menu-item"
               menuProps={{
                 anchorOrigin: { vertical: 'top', horizontal: 'right' },
@@ -666,7 +666,7 @@ export const QueryEditor = observer(() => {
               }
             >
               <MenuIcon />
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </div>
           <div className="query-editor__logo-header__combo__name">
             Legend Query

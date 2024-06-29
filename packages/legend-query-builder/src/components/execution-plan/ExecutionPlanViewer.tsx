@@ -28,7 +28,7 @@ import {
   ChevronRightIcon,
   MenuContentItem,
   MenuContent,
-  DropdownMenu,
+  ControlledDropdownMenu,
   BlankPanelContent,
   PanelContent,
   ModalHeader,
@@ -684,7 +684,7 @@ const ExecutionPlanViewPanel = observer(
                   {executionPlanState.selectedNode.label}
                 </button>
               </div>
-              <DropdownMenu
+              <ControlledDropdownMenu
                 className="execution-plan-viewer__panel__view-mode__type"
                 title="View as..."
                 content={
@@ -717,7 +717,7 @@ const ExecutionPlanViewPanel = observer(
                 <div className="execution-plan-viewer__panel__view-mode__type__label">
                   {executionPlanState.viewMode}
                 </div>
-              </DropdownMenu>
+              </ControlledDropdownMenu>
             </div>
             <div className="panel__content execution-plan-viewer__panel__content">
               {executionPlanState.viewMode === EXECUTION_PLAN_VIEW_MODE.JSON &&

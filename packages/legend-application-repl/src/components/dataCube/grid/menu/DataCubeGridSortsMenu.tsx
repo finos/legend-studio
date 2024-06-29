@@ -15,7 +15,7 @@
  */
 
 import type { Column, MenuItemDef } from '@ag-grid-community/core';
-import { WIP_MenuItem } from '../../../shared/WIP.js';
+import { WIP_GridMenuItem } from '../../../shared/WIP.js';
 import type { DataCubeEditorState } from '../../../../stores/dataCube/editor/DataCubeEditorState.js';
 import { DataCubeQuerySnapshotSortOperation } from '../../../../stores/dataCube/core/DataCubeQuerySnapshot.js';
 
@@ -49,7 +49,7 @@ export function buildGridSortsMenu(
       },
       {
         name: 'Ascending Absolute',
-        menuItem: WIP_MenuItem,
+        menuItem: WIP_GridMenuItem,
         cssClasses: ['!opacity-100'],
         disabled: true,
       },
@@ -67,7 +67,7 @@ export function buildGridSortsMenu(
       },
       {
         name: 'Descending Absolute',
-        menuItem: WIP_MenuItem,
+        menuItem: WIP_GridMenuItem,
         cssClasses: ['!opacity-100'],
         disabled: true,
       },
@@ -86,7 +86,7 @@ export function buildGridSortsMenu(
       },
       {
         name: 'Add Ascending Absolute',
-        menuItem: WIP_MenuItem,
+        menuItem: WIP_GridMenuItem,
         cssClasses: ['!opacity-100'],
         disabled: true,
       },
@@ -104,7 +104,7 @@ export function buildGridSortsMenu(
       },
       {
         name: 'Add Descending Absolute',
-        menuItem: WIP_MenuItem,
+        menuItem: WIP_GridMenuItem,
         cssClasses: ['!opacity-100'],
         disabled: true,
       },

@@ -44,7 +44,7 @@ import {
   createFilter,
   CustomSelectorInput,
   KeyboardIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentDivider,
   MenuContentItem,
@@ -1401,7 +1401,7 @@ const DiagramEditorHeader = observer(
             <DistributeVerticalIcon className="diagram-editor__icon--aligner" />
           </button>
         </div>
-        <DropdownMenu
+        <ControlledDropdownMenu
           className="diagram-editor__header__dropdown"
           title="Zoom..."
           content={
@@ -1436,7 +1436,7 @@ const DiagramEditorHeader = observer(
           <div className="diagram-editor__header__dropdown__trigger diagram-editor__header__zoomer__dropdown__trigger">
             <CaretDownIcon />
           </div>
-        </DropdownMenu>
+        </ControlledDropdownMenu>
         <div className="diagram-editor__header__actions">
           <button
             className={clsx('diagram-editor__header__action', {

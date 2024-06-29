@@ -26,7 +26,7 @@ import {
   clsx,
   SearchIcon,
   TimesIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
   BlankPanelContent,
@@ -474,7 +474,7 @@ export const QueryLoader = observer(
                             </div>
                           </div>
                         </div>
-                        <DropdownMenu
+                        <ControlledDropdownMenu
                           className="query-loader__result__actions-menu"
                           title="More Actions..."
                           content={
@@ -518,7 +518,7 @@ export const QueryLoader = observer(
                           }}
                         >
                           <MoreVerticalIcon />
-                        </DropdownMenu>
+                        </ControlledDropdownMenu>
                         <div className="query-loader__result__arrow">
                           <ThinChevronRightIcon />
                         </div>
@@ -555,7 +555,7 @@ export const QueryLoader = observer(
                             {templateQuery.description}
                           </div>
                         </div>
-                        <DropdownMenu
+                        <ControlledDropdownMenu
                           className="query-loader__result__actions-menu"
                           title="More Actions..."
                           content={
@@ -585,7 +585,7 @@ export const QueryLoader = observer(
                           }}
                         >
                           <MoreVerticalIcon />
-                        </DropdownMenu>
+                        </ControlledDropdownMenu>
                         <div className="query-loader__result__arrow">
                           <ThinChevronRightIcon />
                         </div>

@@ -56,6 +56,7 @@ export class DataCubeState {
     makeObservable(this, {
       runningTaskes: observable,
       newTask: action,
+      endTask: action,
     });
 
     this.replStore = replStore;

@@ -21,7 +21,7 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   HackerIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
   MenuContentItemIcon,
@@ -602,7 +602,7 @@ export const QueryBuilder = observer(
                       {actionConfig.renderer(queryBuilderState)}
                     </Fragment>
                   ))}
-                <DropdownMenu
+                <ControlledDropdownMenu
                   className="query-builder__header__advanced-dropdown"
                   title="Show Advanced Menu..."
                   content={
@@ -902,8 +902,8 @@ export const QueryBuilder = observer(
                     Advanced
                   </div>
                   <CaretDownIcon className="query-builder__header__advanced-dropdown__icon" />
-                </DropdownMenu>
-                <DropdownMenu
+                </ControlledDropdownMenu>
+                <ControlledDropdownMenu
                   className="query-builder__header__advanced-dropdown"
                   content={
                     <MenuContent>
@@ -960,7 +960,7 @@ export const QueryBuilder = observer(
                     Help...
                   </div>
                   <CaretDownIcon className="query-builder__header__advanced-dropdown__icon" />
-                </DropdownMenu>
+                </ControlledDropdownMenu>
               </div>
             </div>
             <div className="query-builder__main">

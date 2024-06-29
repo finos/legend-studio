@@ -17,7 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
-  DropdownMenu,
+  ControlledDropdownMenu,
   ContextMenu,
   TimesIcon,
   MenuContentItem,
@@ -154,7 +154,7 @@ export const ProjectReviewerPanel = observer(() => {
         </div>
         <div className="workspace-review-panel__header__actions">
           {currentTabState instanceof EntityDiffViewState && (
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="workspace-review-panel__element-view__type"
               title="View as..."
               content={
@@ -181,7 +181,7 @@ export const ProjectReviewerPanel = observer(() => {
               <div className="workspace-review-panel__element-view__type__label">
                 {currentTabState.diffMode}
               </div>
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           )}
         </div>
       </div>
