@@ -20,8 +20,8 @@ import type {
   MenuItemDef,
 } from '@ag-grid-community/core';
 import type { DataCubeState } from '../../../../stores/dataCube/DataCubeState.js';
-import { WIP_GridMenuItem } from '../../../shared/WIP.js';
 import { buildGridSortsMenu } from './DataCubeGridSortsMenu.js';
+import { WIP_GridMenuItem } from '../DataCubeGridShared.js';
 
 export function buildGridMenu(
   params:

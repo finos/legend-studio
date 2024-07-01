@@ -31,7 +31,7 @@ import {
 } from '../../../stores/dataCube/grid/DataCubeGridClientEngine.js';
 import { RangeSelectionModule } from '@ag-grid-enterprise/range-selection';
 import { buildGridMenu } from './menu/DataCubeGridMenu.js';
-import { DEFAULT__ROW_BUFFER } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
+import { DEFAULT_ROW_BUFFER } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
@@ -122,7 +122,7 @@ export const DataCubeGrid = observer(() => {
           // NOTE: since we shrink the spacing, more rows can be shown, as such, setting higher row
           // buffer will improve scrolling performance, but compromise initial load and various
           // actions performance
-          rowBuffer={DEFAULT__ROW_BUFFER}
+          rowBuffer={DEFAULT_ROW_BUFFER}
           animateRows={false} // improve performance
           // -------------------------------------- SETUP --------------------------------------
           modules={[

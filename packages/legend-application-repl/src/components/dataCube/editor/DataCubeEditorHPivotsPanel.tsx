@@ -26,7 +26,7 @@ export const DataCubeEditorHPivotsPanel = observer(() => {
   useEffect(() => {}, [panel]); // TODO: @akphi - remove this dummy useEffect
 
   return (
-    <div className="data-cube-column-selector h-full w-full p-2">
+    <div className="h-full w-full select-none p-2">
       <div className="flex h-6">
         <div className="flex h-6 items-center text-xl font-medium">
           <DataCubeIcon.TablePivot />

@@ -20,6 +20,8 @@ import type {
   DataCubeAggregateFunction,
   DataCubeNumberScale,
   DataCubeSelectionStat,
+  DataCubeFontFormatUnderlinedVariant,
+  DataCubeFontTextAlignment,
 } from '../core/DataCubeQueryEngine.js';
 import { type PlainObject } from '@finos/legend-shared';
 import { makeObservable, observable, action } from 'mobx';
@@ -59,8 +61,8 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       negativeNumberInParens: observable,
       setNegativeNumberInParens: action,
 
-      scaleNumber: observable,
-      setScaleNumber: action,
+      numberScale: observable,
+      setNumberScale: action,
 
       hPivotSortFunction: observable,
       setHPivotSortFunction: action,
@@ -76,6 +78,15 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
 
       fontItalic: observable,
       setFontItalic: action,
+
+      fontUnderlined: observable,
+      setFontUnderlined: action,
+
+      fontStrikethrough: observable,
+      setFontStrikethrough: action,
+
+      textAlign: observable,
+      setTextAlign: action,
 
       foregroundColor: observable,
       setForegroundColor: action,
@@ -144,8 +155,8 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.negativeNumberInParens = value;
   }
 
-  setScaleNumber(value: DataCubeNumberScale | undefined): void {
-    this.scaleNumber = value;
+  setNumberScale(value: DataCubeNumberScale | undefined): void {
+    this.numberScale = value;
   }
 
   setHPivotSortFunction(value: string | undefined): void {
@@ -166,6 +177,20 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
 
   setFontItalic(value: boolean): void {
     this.fontItalic = value;
+  }
+
+  setFontUnderlined(
+    value: DataCubeFontFormatUnderlinedVariant | undefined,
+  ): void {
+    this.fontUnderlined = value;
+  }
+
+  setTextAlign(value: DataCubeFontTextAlignment): void {
+    this.textAlign = value;
+  }
+
+  setFontStrikethrough(value: boolean): void {
+    this.fontStrikethrough = value;
   }
 
   setForegroundColor(value: string): void {
@@ -256,6 +281,15 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
       defaultFontItalic: observable,
       setDefaultFontItalic: action,
 
+      defaultFontUnderlined: observable,
+      setDefaultFontUnderlined: action,
+
+      defaultFontStrikethrough: observable,
+      setDefaultFontStrikethrough: action,
+
+      defaultTextAlign: observable,
+      setDefaultTextAlign: action,
+
       defaultForegroundColor: observable,
       setDefaultForegroundColor: action,
 
@@ -280,14 +314,17 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
       defaultBackgroundErrorColor: observable,
       setDefaultBackgroundErrorColor: action,
 
-      alternateColor: observable,
-      setAlternateColor: action,
+      alternateRows: observable,
+      setAlternateRows: action,
 
-      alternateColorSkippedRowsCount: observable,
-      setAlternateColorSkippedRowsCount: action,
+      alternateRowsColor: observable,
+      setAlternateRowsColor: action,
 
-      scaleNumber: observable,
-      setScaleNumber: action,
+      alternateRowsCount: observable,
+      setAlternateRowsCount: action,
+
+      numberScale: observable,
+      setNumberScale: action,
 
       selectionStats: observable,
       setSelectionStats: action,
@@ -356,6 +393,20 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
     this.defaultFontItalic = value;
   }
 
+  setDefaultFontUnderlined(
+    value: DataCubeFontFormatUnderlinedVariant | undefined,
+  ): void {
+    this.defaultFontUnderlined = value;
+  }
+
+  setDefaultFontStrikethrough(value: boolean): void {
+    this.defaultFontStrikethrough = value;
+  }
+
+  setDefaultTextAlign(value: DataCubeFontTextAlignment): void {
+    this.defaultTextAlign = value;
+  }
+
   setDefaultForegroundColor(value: string): void {
     this.defaultForegroundColor = value;
   }
@@ -388,16 +439,20 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
     this.defaultBackgroundErrorColor = value;
   }
 
-  setAlternateColor(value: string): void {
-    this.alternateColor = value;
+  setAlternateRows(value: boolean): void {
+    this.alternateRows = value;
   }
 
-  setAlternateColorSkippedRowsCount(value: number): void {
-    this.alternateColorSkippedRowsCount = value;
+  setAlternateRowsColor(value: string): void {
+    this.alternateRowsColor = value;
   }
 
-  setScaleNumber(value: DataCubeNumberScale | undefined): void {
-    this.scaleNumber = value;
+  setAlternateRowsCount(value: number): void {
+    this.alternateRowsCount = value;
+  }
+
+  setNumberScale(value: DataCubeNumberScale | undefined): void {
+    this.numberScale = value;
   }
 
   setSelectionStats(value: DataCubeSelectionStat[]): void {

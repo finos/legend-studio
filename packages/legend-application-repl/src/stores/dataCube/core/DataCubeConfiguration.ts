@@ -18,7 +18,15 @@ import { TailwindCSSPalette } from '@finos/legend-art';
 import {
   DataCubeColumnKind,
   DataCubeFont,
-  DEFAULT__ROW_BUFFER,
+  DataCubeFontTextAlignment,
+  DEFAULT_ROW_BUFFER,
+  DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_ERROR_FOREGROUND_COLOR,
+  DEFAULT_FOREGROUND_COLOR,
+  DEFAULT_NEGATIVE_FOREGROUND_COLOR,
+  DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR,
+  DEFAULT_ZERO_FOREGROUND_COLOR,
+  type DataCubeFontFormatUnderlinedVariant,
   type DataCubeNumberScale,
   type DataCubeSelectionStat,
 } from './DataCubeQueryEngine.js';
@@ -32,10 +40,10 @@ export class DataCubeColumnConfiguration {
   kind: DataCubeColumnKind = DataCubeColumnKind.DIMENSION;
   displayName?: string | undefined;
 
-  scaleNumber?: DataCubeNumberScale | undefined;
   decimals?: number | undefined;
   displayCommas = false;
   negativeNumberInParens = false;
+  numberScale?: DataCubeNumberScale | undefined;
 
   hPivotSortFunction?: string | undefined;
 
@@ -43,14 +51,17 @@ export class DataCubeColumnConfiguration {
   fontSize = 8;
   fontBold = false;
   fontItalic = false;
+  fontUnderlined?: DataCubeFontFormatUnderlinedVariant | undefined = undefined;
+  fontStrikethrough = false;
+  textAlign = DataCubeFontTextAlignment.LEFT;
   foregroundColor = TailwindCSSPalette.black;
-  foregroundNegativeColor = TailwindCSSPalette.red[500];
-  foregroundZeroColor = TailwindCSSPalette.neutral[400];
-  foregroundErrorColor = TailwindCSSPalette.blue[600];
-  backgroundColor = TailwindCSSPalette.black;
-  backgroundNegativeColor = TailwindCSSPalette.white;
-  backgroundZeroColor = TailwindCSSPalette.white;
-  backgroundErrorColor = TailwindCSSPalette.white;
+  foregroundNegativeColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
+  foregroundZeroColor = DEFAULT_ZERO_FOREGROUND_COLOR;
+  foregroundErrorColor = DEFAULT_ERROR_FOREGROUND_COLOR;
+  backgroundColor = DEFAULT_BACKGROUND_COLOR;
+  backgroundNegativeColor = DEFAULT_BACKGROUND_COLOR;
+  backgroundZeroColor = DEFAULT_BACKGROUND_COLOR;
+  backgroundErrorColor = DEFAULT_BACKGROUND_COLOR;
 
   blur = false;
   hideFromView = false;
@@ -77,11 +88,14 @@ export class DataCubeColumnConfiguration {
       fontFamily: primitive(),
       fontItalic: primitive(),
       fontSize: primitive(),
+      fontStrikethrough: primitive(),
+      fontUnderlined: optional(primitive()),
       hPivotSortFunction: optional(primitive()),
       kind: primitive(),
-      negativeNumberInParens: primitive(),
       name: primitive(),
-      scaleNumber: optional(primitive()),
+      negativeNumberInParens: primitive(),
+      numberScale: optional(primitive()),
+      textAlign: primitive(),
       type: primitive(),
     }),
   );
@@ -95,40 +109,49 @@ export class DataCubeConfiguration {
   showHorizontalGridLine = false;
   showVerticalGridLine = false;
   defaultFontFamily = DataCubeFont.ROBOTO;
-  defaultFontSize = 8;
+  defaultFontSize = 12;
   defaultFontBold = false;
   defaultFontItalic = false;
-  defaultForegroundColor = TailwindCSSPalette.black;
-  defaultForegroundNegativeColor = TailwindCSSPalette.red[500];
-  defaultForegroundZeroColor = TailwindCSSPalette.neutral[400];
-  defaultForegroundErrorColor = TailwindCSSPalette.blue[600];
-  defaultBackgroundColor = TailwindCSSPalette.black;
-  defaultBackgroundNegativeColor = TailwindCSSPalette.white;
-  defaultBackgroundZeroColor = TailwindCSSPalette.white;
-  defaultBackgroundErrorColor = TailwindCSSPalette.white;
-  alternateColor = TailwindCSSPalette.sky[100];
-  alternateColorSkippedRowsCount = 1;
+  defaultFontUnderlined?: DataCubeFontFormatUnderlinedVariant | undefined =
+    undefined;
+  defaultFontStrikethrough = false;
+  defaultTextAlign = DataCubeFontTextAlignment.LEFT;
+  defaultForegroundColor = DEFAULT_FOREGROUND_COLOR;
+  defaultForegroundNegativeColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
+  defaultForegroundZeroColor = DEFAULT_ZERO_FOREGROUND_COLOR;
+  defaultForegroundErrorColor = DEFAULT_ERROR_FOREGROUND_COLOR;
+  defaultBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+  defaultBackgroundNegativeColor = DEFAULT_BACKGROUND_COLOR;
+  defaultBackgroundZeroColor = DEFAULT_BACKGROUND_COLOR;
+  defaultBackgroundErrorColor = DEFAULT_BACKGROUND_COLOR;
+  alternateRows = false;
+  alternateRowsColor = DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR;
+  alternateRowsCount = 1;
 
   // manualRefresh: boolean;
-  scaleNumber?: DataCubeNumberScale | undefined;
+  numberScale?: DataCubeNumberScale | undefined;
   selectionStats: DataCubeSelectionStat[] = [];
 
-  rowBuffer = DEFAULT__ROW_BUFFER;
   showWarningForTruncatedResult = true;
 
+  // aggregatio
   initialExpandLevel?: number | undefined;
-  showRootAggregation = true;
+  showRootAggregation = false;
   showLeafCount = true;
   addPivotTotalColumn = true;
   addPivotTotalColumnOnLeft = true;
   treeGroupSortFunction?: string | undefined;
 
+  // advanced
+  rowBuffer = DEFAULT_ROW_BUFFER;
+
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeConfiguration, {
       addPivotTotalColumn: primitive(),
       addPivotTotalColumnOnLeft: primitive(),
-      alternateColor: primitive(),
-      alternateColorSkippedRowsCount: primitive(),
+      alternateRows: primitive(),
+      alternateRowsColor: primitive(),
+      alternateRowsCount: primitive(),
       columns: list(
         usingModelSchema(DataCubeColumnConfiguration.serialization.schema),
       ),
@@ -140,15 +163,18 @@ export class DataCubeConfiguration {
       defaultFontFamily: primitive(),
       defaultFontItalic: primitive(),
       defaultFontSize: primitive(),
+      defaultFontStrikethrough: primitive(),
+      defaultFontUnderlined: optional(primitive()),
       defaultForegroundColor: primitive(),
       defaultForegroundErrorColor: primitive(),
       defaultForegroundNegativeColor: primitive(),
       defaultForegroundZeroColor: primitive(),
+      defaultTextAlign: primitive(),
       description: optional(primitive()),
       initialExpandLevel: optional(primitive()),
 
+      numberScale: optional(primitive()),
       rowBuffer: primitive(),
-      scaleNumber: optional(primitive()),
       selectionStats: list(primitive()),
       showHorizontalGridLine: primitive(),
       showLeafCount: primitive(),

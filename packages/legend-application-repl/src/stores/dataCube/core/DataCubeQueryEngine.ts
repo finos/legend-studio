@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { TailwindCSSPalette } from '@finos/legend-art';
 import type { V1_AppliedFunction } from '@finos/legend-graph';
 
 export enum DataCubeFunction {
@@ -75,7 +76,7 @@ export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
 // when no aggregate is specified in groupBy() or pivot()
 export const INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME =
   'INTERNAL__filler_count_agg_column';
-export const DEFAULT__ROW_BUFFER = 50;
+export const DEFAULT_ROW_BUFFER = 50;
 
 export type DataCubeQueryFunctionMap = {
   leafExtend?: V1_AppliedFunction | undefined;
@@ -109,17 +110,42 @@ export enum DataCubeSelectionStat {
 }
 
 export enum DataCubeFont {
-  ARIAL = 'Arial', // sans-serif
-  ROBOTO = 'Roboto', // sans-serif
-  ROBOTO_CONDENSED = 'Roboto Condensed', // sans-serif
+  // sans-serif
+  ARIAL = 'Arial',
+  ROBOTO = 'Roboto',
+  ROBOTO_CONDENSED = 'Roboto Condensed',
 
-  TIMES_NEW_ROMAN = 'Times New Roman', // serif
-  GEORGIA = 'Georgia', // serif
-  ROBOTO_SERIF = 'Roboto Serif', // serif
+  // serif
+  TIMES_NEW_ROMAN = 'Times New Roman',
+  GEORGIA = 'Georgia',
+  ROBOTO_SERIF = 'Roboto Serif',
 
-  JERBRAIN_MONO = 'Jetbrain Mono', // monospaced
-  ROBOTO_MONO = 'Roboto Mono', // monospaced
-  UBUNTU_MONO = 'Ubuntu Mono', // monospaced
+  // monospaced
+  JERBRAIN_MONO = 'Jetbrain Mono',
+  ROBOTO_MONO = 'Roboto Mono',
+  UBUNTU_MONO = 'Ubuntu Mono',
+}
+
+export enum DataCubeFontTextAlignment {
+  CENTER = 'center',
+  LEFT = 'left',
+  RIGHT = 'right',
+}
+
+export const DEFAULT_FOREGROUND_COLOR = TailwindCSSPalette.black;
+export const DEFAULT_BACKGROUND_COLOR = TailwindCSSPalette.black;
+export const DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR =
+  TailwindCSSPalette.sky[100];
+export const DEFAULT_NEGATIVE_FOREGROUND_COLOR = TailwindCSSPalette.red[500];
+export const DEFAULT_ZERO_FOREGROUND_COLOR = TailwindCSSPalette.neutral[400];
+export const DEFAULT_ERROR_FOREGROUND_COLOR = TailwindCSSPalette.blue[600];
+
+export enum DataCubeFontFormatUnderlinedVariant {
+  SOLID = 'Solid',
+  DASHED = 'Dashed',
+  DOTTED = 'Dotted',
+  DOUBLE = 'Double',
+  WAVY = 'Wavy',
 }
 
 export enum DataCubeColumnKind {

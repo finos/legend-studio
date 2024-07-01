@@ -1196,7 +1196,7 @@ const QueryBuilderPostFilterPanelContent = observer(
                   className="query-builder-post-filter-tree__free-drop-zone"
                   label="Add post-filter to main group"
                 >
-                  <></>{' '}
+                  <></>
                 </PanelEntryDropZonePlaceholder>
               </div>
             )}

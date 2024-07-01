@@ -18,6 +18,7 @@ import {
   useGridMenuItem,
   type CustomMenuItemProps,
 } from '@ag-grid-community/react';
+import { WIP_Badge } from '../editor/DataCubeEditorShared.js';
 
 export function WIP_GridMenuItem({ name, subMenu }: CustomMenuItemProps) {
   useGridMenuItem({
@@ -35,17 +36,6 @@ export function WIP_GridMenuItem({ name, subMenu }: CustomMenuItemProps) {
       <span className="ag-menu-option-part ag-menu-option-popup-pointer select-none">
         {subMenu && <span className="ag-icon ag-icon-small-right"></span>}
       </span>
-    </div>
-  );
-}
-
-export function WIP_Badge() {
-  return (
-    <div
-      className="color-neutral-700 text-2xs ml-1 select-none rounded-md bg-sky-500 px-1 py-0.5 font-semibold text-white"
-      title="Work In Progress"
-    >
-      WIP
     </div>
   );
 }

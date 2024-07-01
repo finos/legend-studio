@@ -18,8 +18,20 @@
 // merging them in the main icon registry, we should review them
 
 import { GoBrowser, GoPin, GoX } from 'react-icons/go';
-import { MdOutlineInsertPageBreak } from 'react-icons/md';
-import { PiMouseScroll } from 'react-icons/pi';
+import { GrCheckbox, GrCheckboxSelected } from 'react-icons/gr';
+import {
+  MdOutlineFormatBold,
+  MdOutlineFormatItalic,
+  MdOutlineStrikethroughS,
+  MdOutlineFormatUnderlined,
+  MdOutlineInsertPageBreak,
+} from 'react-icons/md';
+import {
+  PiMouseScroll,
+  PiTextAlignCenter,
+  PiTextAlignLeft,
+  PiTextAlignRight,
+} from 'react-icons/pi';
 import {
   TbBook,
   TbCube,
@@ -55,12 +67,18 @@ import {
 export const DataCubeIcon = {
   AdvancedSettings: TbSettingsBolt,
   CaretDown: TbCaretDownFilled,
+  Checkbox: GrCheckbox,
+  CheckboxSelected: GrCheckboxSelected,
   ChevronLeft: TbChevronLeft,
   ChevronRight: TbChevronRight,
   Code: TbCode,
   Cube: TbCube,
-  Loader: TbLoader2,
   Documentation: TbBook,
+  FontBold: MdOutlineFormatBold,
+  FontItalic: MdOutlineFormatItalic,
+  FontUnderlined: MdOutlineFormatUnderlined,
+  FontStrikethrough: MdOutlineStrikethroughS,
+  Loader: TbLoader2,
   Note: TbNote,
   Pin: GoPin,
   Search: TbSearch,
@@ -83,6 +101,9 @@ export const DataCubeIcon = {
   TableRowColumn: TbFreezeRowColumn,
   TableScroll: PiMouseScroll,
   TableSort: TbTableDown,
+  TextAlignLeft: PiTextAlignLeft,
+  TextAlignCenter: PiTextAlignCenter,
+  TextAlignRight: PiTextAlignRight,
   Window: GoBrowser,
   X: GoX,
   Warning: TbAlertTriangle,

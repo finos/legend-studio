@@ -17,13 +17,7 @@
 @import url('@ag-grid-community/styles/ag-grid.css');
 @import url('@ag-grid-community/styles/ag-theme-balham.css');
 
-input:focus-visible,
-button:focus-visible {
-  outline-color: var(--tw-color-sky-600);
-  outline-offset: -1px;
-  outline-width: 1.5px;
-  outline-style: solid;
-}
+// ---------------------------------------- NORMALIZE ----------------------------------------
 
 html {
   box-sizing: border-box;
@@ -33,10 +27,6 @@ html {
 body {
   // default font size is 12px everywhere to make the app more compact
   font-size: 12px;
-}
-
-menu {
-  user-select: none;
 }
 
 ::-webkit-scrollbar-track {
@@ -63,6 +53,56 @@ menu {
 
 ::-webkit-scrollbar-thumb:window-inactive {
   background: #00000005;
+}
+
+// ---------------------------------------- RESET ----------------------------------------
+
+input:focus-visible,
+button:focus-visible {
+  outline-color: var(--tw-color-sky-600);
+  outline-offset: -1px;
+  outline-width: 1.5px;
+  outline-style: solid;
+}
+
+.MuiCheckbox-root.Mui-focusVisible svg {
+  outline-color: var(--tw-color-sky-600);
+  outline-offset: -2px;
+  outline-width: 1.5px;
+  outline-style: solid;
+}
+
+// ---------------------------------------- CUSTOMIZE ----------------------------------------
+
+.data-cube-color-picker {
+  .react-colorful {
+    width: 270px;
+    height: 100px;
+    border-radius: 2px;
+    border: 0.5px solid var(--tw-color-neutral-600);
+  }
+
+  .react-colorful__saturation {
+    border-radius: 2px 2px 0 0;
+  }
+
+  .react-colorful__pointer {
+    width: 12px;
+    height: 12px;
+  }
+
+  .react-colorful__hue {
+    height: 12px;
+  }
+
+  .react-colorful__last-control {
+    border-radius: 0 0 2px 2px;
+    height: 12px;
+  }
+}
+
+.data-cube-color-picker--disabled {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100' %3E%3Cpath d='M1 0 L0 1 L99 100 L100 99' stroke-width='4' stroke='%23e5e5e5' /%3E%3C/svg%3E");
 }
 
 .data-cube-grid .ag-theme-balham {

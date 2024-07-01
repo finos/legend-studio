@@ -75,7 +75,7 @@ const DataCubeTitleBar = observer(() => {
     <div className="flex h-6 justify-between bg-neutral-100">
       <div className="flex select-none items-center pl-1 pr-2 text-lg font-medium">
         <DataCubeIcon.Cube className="mr-1 h-4 w-4" />
-        <div>{dataCube.editor.generalPropertiesPanel.name}</div>
+        <div>{dataCube.core.name}</div>
         {/* TODO: @akphi - add save icon */}
       </div>
     </div>

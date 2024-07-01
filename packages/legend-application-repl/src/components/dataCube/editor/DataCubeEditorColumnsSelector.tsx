@@ -282,7 +282,7 @@ export const DataCubeEditorColumnsSelector = observer(
     ]);
 
     return (
-      <div className="flex h-full w-full">
+      <div className="data-cube-column-selector flex h-full w-full">
         <div className="h-full w-[calc(50%_-_20px)]">
           <div className="flex h-5 items-center text-sm">
             Available columns:

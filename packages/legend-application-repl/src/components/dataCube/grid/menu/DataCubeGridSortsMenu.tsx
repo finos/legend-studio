@@ -15,9 +15,9 @@
  */
 
 import type { Column, MenuItemDef } from '@ag-grid-community/core';
-import { WIP_GridMenuItem } from '../../../shared/WIP.js';
 import type { DataCubeEditorState } from '../../../../stores/dataCube/editor/DataCubeEditorState.js';
 import { DataCubeQuerySnapshotSortOperation } from '../../../../stores/dataCube/core/DataCubeQuerySnapshot.js';
+import { WIP_GridMenuItem } from '../DataCubeGridShared.js';
 
 export function buildGridSortsMenu(
   editor: DataCubeEditorState,

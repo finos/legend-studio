@@ -17,7 +17,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { MenuItemProps, MenuProps as MuiMenuProps } from '@mui/material';
 import { BaseMenu, BaseMenuItem, Menu } from './BaseMenu.js';
-import { cn } from '../utils/ComponentUtils.js';
 
 export const ControlledDropdownMenu: React.FC<{
   children: React.ReactNode;
@@ -131,14 +130,16 @@ export function useDropdownMenu() {
   ] as const;
 }
 
-export function DropdownMenu(props: {
+export type DropdownMenuProps = {
   children: React.ReactNode;
   anchorEl: Element | null;
   onClose: () => void;
   className?: string | undefined;
   menuProps?: Partial<MuiMenuProps> | undefined;
-}) {
-  const { className, menuProps, children, onClose, anchorEl } = props;
+};
+
+export function DropdownMenu(props: DropdownMenuProps) {
+  const { menuProps, children, onClose, anchorEl } = props;
 
   if (!anchorEl) {
     return null;
@@ -158,12 +159,8 @@ export function DropdownMenu(props: {
           },
         },
       }}
-      classes={{
-        list: cn('p-0 rounded-none', className),
-      }}
       elevation={1}
       marginThreshold={0}
-      disableRestoreFocus={true}
       transitionDuration={0}
       onClose={onClose}
       {...menuProps}
@@ -173,7 +170,9 @@ export function DropdownMenu(props: {
   );
 }
 
-export function DropdownMenuItem(props: MenuItemProps) {
+export type DropdownMenuItemProps = MenuItemProps;
+
+export function DropdownMenuItem(props: DropdownMenuItemProps) {
   return (
     <BaseMenuItem
       {...props}

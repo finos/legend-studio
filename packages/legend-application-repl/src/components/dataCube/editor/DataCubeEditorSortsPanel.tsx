@@ -27,7 +27,7 @@ import type { DataCubeEditorColumnsSelectorState } from '../../../stores/dataCub
 import type { DataCubeEditorSortColumnState } from '../../../stores/dataCube/editor/DataCubeEditorSortsPanelState.js';
 import { DataCubeQuerySnapshotSortOperation } from '../../../stores/dataCube/core/DataCubeQuerySnapshot.js';
 import { IllegalStateError } from '@finos/legend-shared';
-import { WIP_Badge } from '../../shared/WIP.js';
+import { WIP_Badge } from './DataCubeEditorShared.js';
 
 function getSortDirectionLabel(operation: DataCubeQuerySnapshotSortOperation) {
   switch (operation) {
@@ -120,7 +120,7 @@ export const DataCubeEditorSortsPanel = observer(() => {
   const panel = replStore.dataCube.editor.sortsPanel;
 
   return (
-    <div className="data-cube-column-selector h-full w-full p-2">
+    <div className="h-full w-full select-none p-2">
       <div className="flex h-6">
         <div className="flex h-6 items-center text-xl font-medium">
           <DataCubeIcon.TableSort />

@@ -16,6 +16,10 @@
 
 // Clone Tailwind CSS color palette to use for component code
 // Source: https://github.com/tailwindlabs/tailwindcss/blob/master/src/public/colors.js
+
+export type TailwindCSSColorScaleKey = keyof typeof TailwindCSSPalette;
+export type TailwindCSSColorScale = (typeof TailwindCSSPalette)['slate'];
+
 export const TailwindCSSPalette = {
   black: '#000000',
   white: '#ffffff',
