@@ -137,7 +137,7 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
 
   override get sideBarClassName(): string | undefined {
     return this.executionContexts.length
-      ? 'query-builder__setup__service--with-mutiple-execution'
+      ? 'query-builder__setup__service--with-multiple-execution'
       : 'query-builder__setup__service';
   }
 

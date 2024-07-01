@@ -17,16 +17,6 @@
 @use 'mixins' as *;
 
 .query-builder__setup__service {
-  &--with-mutiple-execution {
-    .query-builder__setup.panel {
-      height: 13.1rem;
-    }
-
-    .query-builder__side-bar__content {
-      height: calc(100% - 13.1rem);
-    }
-  }
-
   &__icon__service {
     color: var(--color-blue-50);
   }
