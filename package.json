@@ -10,7 +10,6 @@
   "scripts": {
     "build": "yarn clean && npm-run-all build:ts build:sass",
     "build:doc": "yarn typedoc",
-    "build:vscode-extension-dependencies": "yarn workspace @finos/legend-vscode-extension-dependencies build:cjs",
     "build:sass": "node ./scripts/workflow/buildSassAll.js --compressed",
     "build:ts": "tsc --build tsconfig.build.json",
     "build:website": "rimraf \"build/docs\" && yarn build:doc && node ./scripts/website/prepareSiteContent.js",

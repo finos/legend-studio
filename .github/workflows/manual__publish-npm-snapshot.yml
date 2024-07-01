@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Publish to NPM
-        run: yarn build && yarn build:vscode-extension-dependencies && yarn publish:snapshot
+        run: yarn build && yarn publish:snapshot
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           # Webpack build could consume a large amount of memory
