@@ -63,7 +63,7 @@
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "antlr4": "4.13.1-patch-1",
-    "mobx": "6.12.4",
+    "mobx": "6.12.5",
     "mobx-react-lite": "4.0.7",
     "monaco-editor": "0.50.0",
     "react": "18.3.1",

@@ -29,7 +29,7 @@
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
-    "postcss": "8.4.38",
+    "postcss": "8.4.39",
     "postcss-scss": "4.0.9",
     "stylelint-config-standard": "36.0.1",
     "stylelint-scss": "6.3.2"
