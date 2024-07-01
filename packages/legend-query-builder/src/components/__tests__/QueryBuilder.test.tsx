@@ -15,7 +15,13 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { waitFor, fireEvent, act, getByRole } from '@testing-library/react';
+import {
+  waitFor,
+  fireEvent,
+  act,
+  getByRole,
+  getByText,
+} from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared/test';
 import { create_RawLambda, stub_RawLambda } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
@@ -53,6 +59,8 @@ test(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
       ),
     );
+    const filterValueDisplay = getByText(filterPanel, '"0"');
+    fireEvent.click(filterValueDisplay);
     fireEvent.click(getByRole(filterPanel, 'button', { name: 'Reset' }));
 
     // Verify buttons are disabled

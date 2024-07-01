@@ -116,6 +116,7 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   TDS_TAKE = 'meta::pure::tds::take',
   TDS_RESTRICT = 'meta::pure::tds::restrict',
   TDS_FUNC = 'meta::pure::tds::func',
+  TDS_COL = 'meta::pure::tds::col',
 
   // Relation
   RELATION_PROJECT = 'meta::pure::functions::relation::project',

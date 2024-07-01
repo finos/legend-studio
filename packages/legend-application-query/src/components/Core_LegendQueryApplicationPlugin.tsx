@@ -68,6 +68,7 @@ import {
   generateDataSpaceQuerySetupRoute,
 } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import {
+  QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
   type QueryBuilderHeaderActionConfiguration,
   type QueryBuilderMenuActionConfiguration,
 } from '@finos/legend-query-builder';
@@ -247,6 +248,22 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         key: 'promote-as-template-query',
         title: 'Promote Curated Template query...',
         label: 'Curated Template Query',
+        disableFunc: (queryBuilderState): boolean => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            if (
+              editorStore instanceof ExistingQueryEditorStore &&
+              queryBuilderState instanceof DataSpaceQueryBuilderState
+            ) {
+              return false;
+            }
+          }
+          return true;
+        },
         onClick: (queryBuilderState): void => {
           if (
             queryBuilderState.workflowState.actionConfig instanceof
@@ -535,7 +552,13 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                           type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                           handler:
                             queryBuilderState.applicationStore.guardUnhandledError(
-                              async () => queryBuilderState.resetQueryContent(),
+                              async () => {
+                                queryBuilderState.resetQueryContent();
+                                queryBuilderState.setGetAllFunction(
+                                  QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
+                                );
+                                queryBuilderState.milestoningState.updateMilestoningConfiguration();
+                              },
                             ),
                         },
                         {
@@ -548,6 +571,10 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                   );
                 } else {
                   queryBuilderState.resetQueryContent();
+                  queryBuilderState.setGetAllFunction(
+                    QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
+                  );
+                  queryBuilderState.milestoningState.updateMilestoningConfiguration();
                 }
               }
             };

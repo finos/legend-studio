@@ -1,5 +1,27 @@
 # @finos/legend-query-builder
 
+## 4.14.54
+
+## 4.14.53
+
+### Patch Changes
+
+- [#3297](https://github.com/finos/legend-studio/pull/3297) [`db471ef`](https://github.com/finos/legend-studio/commit/db471ef43040a9aac7de8f9f4b64feaeb840091c) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support reset query content also will reset milestoning config.
+
+  StartDate and EndDate parameters should be undeletable if used in query.
+
+  Hide avaialble parameter and constant lists when choosing allVersions
+
+- [#3294](https://github.com/finos/legend-studio/pull/3294) [`b897478`](https://github.com/finos/legend-studio/commit/b897478dead43581b62b4b14e0a716b6dc6af2c9) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - make milestoning param value editable in Query Option
+
+## 4.14.52
+
+### Patch Changes
+
+- [#3289](https://github.com/finos/legend-studio/pull/3289) [`55cbb56`](https://github.com/finos/legend-studio/commit/55cbb56e63de03f3f52e597858ecff750c286952) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support project() variants
+
+- [#3285](https://github.com/finos/legend-studio/pull/3285) [`2dd80ef`](https://github.com/finos/legend-studio/commit/2dd80efd96c6cdaf8e3923c1d7587f1cabfbffaf) ([@travisstebbins](https://github.com/travisstebbins)) - Display filter values as editable values with blue underlined text
+
 ## 4.14.51
 
 ## 4.14.50

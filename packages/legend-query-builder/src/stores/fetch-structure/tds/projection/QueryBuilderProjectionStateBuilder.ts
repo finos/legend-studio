@@ -28,6 +28,7 @@ import {
   V1_RawLambda,
   VariableExpression,
   PrimitiveInstanceValue,
+  LambdaFunctionInstanceValue,
 } from '@finos/legend-graph';
 import {
   assertNonNullable,
@@ -59,22 +60,11 @@ import {
 import { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import { SortColumnState } from '../QueryResultSetModifierState.js';
 
-export const processTDSProjectExpression = (
+const validateTDSProjectPrecedingExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
   parentLambda: LambdaFunction,
 ): void => {
-  // update fetch-structure
-  queryBuilderState.fetchStructureState.changeImplementation(
-    FETCH_STRUCTURE_IMPLEMENTATION.TABULAR_DATA_STRUCTURE,
-  );
-
-  // check parameters
-  assertTrue(
-    expression.parametersValues.length === 3,
-    `Can't process project() expression: project() expects 2 arguments`,
-  );
-
   // check preceding expression
   const precedingExpression = guaranteeType(
     expression.parametersValues[0],
@@ -96,47 +86,143 @@ export const processTDSProjectExpression = (
     parentLambda,
     queryBuilderState,
   );
+};
+
+// process project() that uses col()
+const processTDSProjectColExpression = (
+  expression: SimpleFunctionExpression,
+  queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
+): void => {
+  // update fetch-structure
+  queryBuilderState.fetchStructureState.changeImplementation(
+    FETCH_STRUCTURE_IMPLEMENTATION.TABULAR_DATA_STRUCTURE,
+  );
+  // check parameters
+  assertTrue(
+    expression.parametersValues.length === 2,
+    `Can't process project() expression: project() expects 2 arguments`,
+  );
+
+  validateTDSProjectPrecedingExpression(
+    expression,
+    queryBuilderState,
+    parentLambda,
+  );
 
   // check columns
   const columnLambdas = expression.parametersValues[1];
-  assertType(
-    columnLambdas,
-    CollectionInstanceValue,
-    `Can't process project() expression: project() expects argument #1 to be a collection`,
-  );
-  columnLambdas.values.map((value) =>
+  if (columnLambdas instanceof CollectionInstanceValue) {
+    columnLambdas.values.map((value) =>
+      QueryBuilderValueSpecificationProcessor.processChild(
+        value,
+        expression,
+        parentLambda,
+        queryBuilderState,
+      ),
+    );
+  } else {
+    assertType(
+      columnLambdas,
+      SimpleFunctionExpression,
+      `Can't process project() expression: project() expects argument #1 to be a function expression`,
+    );
     QueryBuilderValueSpecificationProcessor.processChild(
-      value,
+      columnLambdas,
       expression,
       parentLambda,
       queryBuilderState,
-    ),
-  );
-
-  // check column aliases
-  const columnAliases = expression.parametersValues[2];
-  assertType(
-    columnAliases,
-    CollectionInstanceValue,
-    `Can't process project() expression: project() expects argument #2 to be a collection`,
-  );
-  assertTrue(
-    columnLambdas.values.length === columnAliases.values.length,
-    `Can't process project() expression: number of aliases does not match the number of columns`,
-  );
-  const aliases = columnAliases.values
-    .map(extractNullableStringFromInstanceValue)
-    .filter(isNonNullable);
-
-  // build state
-  if (
-    queryBuilderState.fetchStructureState.implementation instanceof
-    QueryBuilderTDSState
-  ) {
-    const tdsState = queryBuilderState.fetchStructureState.implementation;
-    tdsState.projectionColumns.forEach((column, idx) =>
-      column.setColumnName(aliases[idx] as string),
     );
+  }
+};
+
+/**
+ *  process project()
+ *  variants could be:
+ *  Person.all()->project([x|x.firmID], ['Id'])
+ *  Person.all()->project(x|x.firmID, ['Id'])
+ *  Person.all()->project([x|x.firmID], 'Id')
+ *  Person.all()->project(x|x.firmID, 'Id')
+ *  Person.all()->project(col({p:my::Person[1]|$p.firmID}, 'Id'))
+ *  Person.all()->project([ col({p:my::Person[1]|$p.firmID}, 'Id') ])
+ */
+export const processTDSProjectExpression = (
+  expression: SimpleFunctionExpression,
+  queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
+): void => {
+  if (expression.parametersValues.length === 2) {
+    processTDSProjectColExpression(expression, queryBuilderState, parentLambda);
+  } else {
+    // update fetch-structure
+    queryBuilderState.fetchStructureState.changeImplementation(
+      FETCH_STRUCTURE_IMPLEMENTATION.TABULAR_DATA_STRUCTURE,
+    );
+
+    // check parameters
+    assertTrue(
+      expression.parametersValues.length === 3,
+      `Can't process project() expression: project() expects 3 arguments`,
+    );
+
+    // check preceding expression
+    validateTDSProjectPrecedingExpression(
+      expression,
+      queryBuilderState,
+      parentLambda,
+    );
+
+    // check columns
+    const columnLambdas = expression.parametersValues[1];
+    assertType(
+      columnLambdas,
+      CollectionInstanceValue,
+      `Can't process project() expression: project() expects argument #1 to be a collection`,
+    );
+    columnLambdas.values.map((value) =>
+      QueryBuilderValueSpecificationProcessor.processChild(
+        value,
+        expression,
+        parentLambda,
+        queryBuilderState,
+      ),
+    );
+
+    // check column aliases
+    const columnAliases = expression.parametersValues[2];
+    let aliases: string[] = [];
+    if (columnAliases instanceof CollectionInstanceValue) {
+      assertType(
+        columnAliases,
+        CollectionInstanceValue,
+        `Can't process project() expression: project() expects argument #2 to be a collection or a string`,
+      );
+      aliases = columnAliases.values
+        .map(extractNullableStringFromInstanceValue)
+        .filter(isNonNullable);
+    } else {
+      assertType(
+        columnAliases,
+        PrimitiveInstanceValue,
+        `Can't process project() expression: project() expects argument #2 to be a collection or string`,
+      );
+      aliases = [columnAliases.values[0] as string];
+    }
+    assertTrue(
+      columnLambdas.values.length === aliases.length,
+      `Can't process project() expression: number of aliases does not match the number of columns`,
+    );
+
+    // build state
+    if (
+      queryBuilderState.fetchStructureState.implementation instanceof
+      QueryBuilderTDSState
+    ) {
+      const tdsState = queryBuilderState.fetchStructureState.implementation;
+      tdsState.projectionColumns.forEach((column, idx) =>
+        column.setColumnName(aliases[idx] as string),
+      );
+    }
   }
 };
 
@@ -244,6 +330,44 @@ export const processTDSProjectionDerivationExpression = (
     if (columnName) {
       columnState.setColumnName(columnName);
     }
+  }
+};
+
+export const processTDSColExpression = (
+  expression: SimpleFunctionExpression,
+  queryBuilderState: QueryBuilderState,
+): void => {
+  // check parameters
+  assertTrue(
+    expression.parametersValues.length === 2,
+    `Can't process col() func expression: col() expects 2 argument`,
+  );
+  // check preceding expression
+  const lambdaFunc = guaranteeType(
+    expression.parametersValues[0],
+    LambdaFunctionInstanceValue,
+    `Can't process col() func expressionn: only support col() immediately following an lambda function`,
+  );
+  const colNameInstance = guaranteeType(
+    expression.parametersValues[1],
+    PrimitiveInstanceValue,
+    `Can't process col() func expression: the #2 argument of col() should be a string`,
+  );
+  processTDSProjectionColumnPropertyExpression(
+    guaranteeType(
+      lambdaFunc.values[0]?.expressionSequence[0],
+      AbstractPropertyExpression,
+      `Can't process col() func expression: lambda function of col() should contain AbstractPropertyExpression`,
+    ),
+    colNameInstance.values[0] as string,
+    queryBuilderState,
+  );
+  if (
+    queryBuilderState.fetchStructureState.implementation instanceof
+    QueryBuilderTDSState
+  ) {
+    const tdsState = queryBuilderState.fetchStructureState.implementation;
+    tdsState.setUseColFunc(true);
   }
 };
 

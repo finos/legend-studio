@@ -1,5 +1,13 @@
 # @finos/legend-art
 
+## 7.1.40
+
+## 7.1.39
+
+### Patch Changes
+
+- [#3285](https://github.com/finos/legend-studio/pull/3285) [`2dd80ef`](https://github.com/finos/legend-studio/commit/2dd80efd96c6cdaf8e3923c1d7587f1cabfbffaf) ([@travisstebbins](https://github.com/travisstebbins)) - Allow passing custom name to CustomSelectorInput input component
+
 ## 7.1.38
 
 ## 7.1.37

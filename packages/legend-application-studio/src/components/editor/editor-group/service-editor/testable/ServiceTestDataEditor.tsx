@@ -162,7 +162,7 @@ export const RowIdentifierEditor = observer(
               tableRowIdentifierState.connectionTestDataState.editorStore
                 .graphManagerState.graph
             }
-            obseverContext={
+            observerContext={
               tableRowIdentifierState.connectionTestDataState.editorStore
                 .changeDetectionState.observerContext
             }

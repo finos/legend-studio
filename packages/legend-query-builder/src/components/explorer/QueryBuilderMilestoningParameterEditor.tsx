@@ -25,6 +25,7 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   PrimitiveType,
+  VariableExpression,
 } from '@finos/legend-graph';
 import { useDrop } from 'react-dnd';
 import { PanelEntryDropZonePlaceholder } from '@finos/legend-art';
@@ -33,16 +34,27 @@ import {
   BasicValueSpecificationEditor,
   type QueryBuilderVariableDragSource,
   QUERY_BUILDER_VARIABLE_DND_TYPE,
+  EditableBasicValueSpecificationEditor,
 } from '../shared/BasicValueSpecificationEditor.js';
 import { instanceValue_setValues } from '../../stores/shared/ValueSpecificationModifierHelper.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
+import { createSupportedFunctionExpression } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 
 export const MilestoningParameterEditor = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
     parameter: ValueSpecification;
     setParameter: (val: ValueSpecification) => void;
+    parameterValue: ValueSpecification | undefined;
+    setParameterValue: (val: ValueSpecification) => void;
   }) => {
-    const { queryBuilderState, parameter, setParameter } = props;
+    const {
+      queryBuilderState,
+      parameter,
+      setParameter,
+      parameterValue,
+      setParameterValue,
+    } = props;
     const handleDrop = useCallback(
       (item: QueryBuilderVariableDragSource): void => {
         setParameter(item.variable);
@@ -87,27 +99,53 @@ export const MilestoningParameterEditor = observer(
     };
 
     return (
-      <div ref={dropConnector} className="query-builder__variable-editor">
-        <PanelEntryDropZonePlaceholder
-          isDragOver={isDragOver}
-          label="Change Milestoning Parameter Value"
-        >
-          <BasicValueSpecificationEditor
-            valueSpecification={parameter}
-            graph={queryBuilderState.graphManagerState.graph}
-            obseverContext={queryBuilderState.observerContext}
-            setValueSpecification={(val: ValueSpecification): void =>
-              setParameter(val)
-            }
-            typeCheckOption={{
-              expectedType: PrimitiveType.DATE,
-            }}
-            resetValue={resetMilestoningParameter}
-            isConstant={queryBuilderState.constantState.isValueSpecConstant(
-              parameter,
-            )}
-          />
-        </PanelEntryDropZonePlaceholder>
+      <div
+        ref={dropConnector}
+        className="query-builder__milestoning-panel__variable-editor"
+      >
+        <div className="query-builder__milestoning-panel__variable-editor__variable">
+          <PanelEntryDropZonePlaceholder
+            isDragOver={isDragOver}
+            label="Change Milestoning Parameter Value"
+          >
+            <BasicValueSpecificationEditor
+              valueSpecification={parameter}
+              graph={queryBuilderState.graphManagerState.graph}
+              observerContext={queryBuilderState.observerContext}
+              setValueSpecification={(val: ValueSpecification): void =>
+                setParameter(val)
+              }
+              typeCheckOption={{
+                expectedType: PrimitiveType.DATE,
+              }}
+              resetValue={resetMilestoningParameter}
+              isConstant={queryBuilderState.constantState.isValueSpecConstant(
+                parameter,
+              )}
+            />
+          </PanelEntryDropZonePlaceholder>
+        </div>
+        {parameter instanceof VariableExpression && parameterValue && (
+          <div className="query-builder__milestoning-panel__variable-editor__value">
+            <EditableBasicValueSpecificationEditor
+              valueSpecification={parameterValue}
+              setValueSpecification={setParameterValue}
+              graph={queryBuilderState.graphManagerState.graph}
+              observerContext={queryBuilderState.observerContext}
+              typeCheckOption={{
+                expectedType: PrimitiveType.DATE,
+              }}
+              resetValue={() => {
+                const now = createSupportedFunctionExpression(
+                  QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOW,
+                  PrimitiveType.DATETIME,
+                );
+                setParameterValue(now);
+              }}
+              initializeAsEditable={true}
+            />
+          </div>
+        )}
       </div>
     );
   },

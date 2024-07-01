@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-diagram",
-  "version": "8.0.184",
+  "version": "8.0.188",
   "description": "Legend extension for Diagram DSL",
   "keywords": [
     "legend",
@@ -21,6 +21,7 @@
   "sideEffects": false,
   "type": "module",
   "exports": {
+    ".": "./lib/index.js",
     "./graph": "./lib/graph-manager/index.js",
     "./application": "./lib/components/index.js",
     "./application-studio": "./lib/components/studio/index.js",

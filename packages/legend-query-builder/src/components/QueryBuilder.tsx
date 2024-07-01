@@ -484,6 +484,7 @@ export const QueryBuilder = observer(
             plugin as QueryBuilder_LegendApplicationPlugin_Extension
           ).getExtraQueryBuilderHelpMenuActionConfigurations?.() ?? [],
       )
+      .filter((item) => !item.disableFunc?.(queryBuilderState))
       .map((item) => (
         <MenuContentItem
           key={item.key}

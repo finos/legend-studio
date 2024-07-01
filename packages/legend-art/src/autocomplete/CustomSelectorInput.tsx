@@ -227,6 +227,7 @@ const CustomInput: React.FC<
   const additionalProps = {
     onPaste: props.selectProps.onPaste,
     placeholder: props.selectProps.inputPlaceholder,
+    name: props.selectProps.inputName,
   };
 
   return (
@@ -254,6 +255,7 @@ interface CustomSelectorInputProps extends Props<SelectOption, true> {
   onPaste?: (event: React.ClipboardEvent<string>) => void;
   placeholder?: string;
   inputPlaceholder?: string;
+  inputName?: string;
 }
 
 export type SelectComponent =

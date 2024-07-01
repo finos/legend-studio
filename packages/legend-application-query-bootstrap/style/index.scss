@@ -438,6 +438,10 @@
     }
   }
 
+  .value-spec-editor__editable__display--content--error {
+    color: var(--color-red-180) !important;
+  }
+
   // ---------------------------- Derived Property Editor -------------------------------
 
   .query-builder-property-editor__section__content--empty {

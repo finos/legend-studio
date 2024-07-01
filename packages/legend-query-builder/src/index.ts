@@ -54,6 +54,7 @@ export {
   TDS_COLUMN_GETTER,
   COLUMN_SORT_TYPE,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+  QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
 } from './graph/QueryBuilderMetaModelConst.js';
 export { getQueryBuilderGraphManagerExtension } from './graph-manager/protocol/pure/QueryBuilder_PureGraphManagerExtension.js';
 export type { ServiceExecutionAnalysisResult } from './graph-manager/action/analytics/ServiceExecutionAnalysis.js';

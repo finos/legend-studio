@@ -306,7 +306,7 @@ const EqualToAsssertionEditor = observer(
                 equalToAssertionState.updateValueSpec(val);
               }}
               graph={editorStore.graphManagerState.graph}
-              obseverContext={editorStore.changeDetectionState.observerContext}
+              observerContext={editorStore.changeDetectionState.observerContext}
               resetValue={resetNode}
               typeCheckOption={{
                 expectedType:

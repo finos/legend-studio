@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.17.15
+
+## 28.17.14
+
+## 28.17.13
+
+### Patch Changes
+
+- [#3285](https://github.com/finos/legend-studio/pull/3285) [`2dd80ef`](https://github.com/finos/legend-studio/commit/2dd80efd96c6cdaf8e3923c1d7587f1cabfbffaf) ([@travisstebbins](https://github.com/travisstebbins)) - Fix typo in component prop name
+
 ## 28.17.12
 
 ## 28.17.11

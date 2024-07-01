@@ -61,7 +61,10 @@ export const getNameOfValueSpecification = (
       return possibleDateLabel;
     }
   }
-  return getValueSpecificationStringValue(value);
+  return getValueSpecificationStringValue(
+    value,
+    queryBuilderState.applicationStore,
+  );
 };
 
 const QueryBuilderVariableContextMenu = observer(
@@ -127,6 +130,9 @@ export const VariableViewer = observer(
           handler: () => void;
         }[]
       | undefined;
+    option?: {
+      hideMilestoningParameterValueString?: boolean;
+    };
   }) => {
     const {
       variable,
@@ -135,6 +141,7 @@ export const VariableViewer = observer(
       isReadOnly,
       queryBuilderState,
       extraContextMenuActions,
+      option,
     } = props;
     const isVariableUsed = queryBuilderState.isVariableUsed(variable);
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
@@ -244,9 +251,11 @@ export const VariableViewer = observer(
                       <div className="query-builder__variables__variable__type__label query-builder__variables__variable__type__label--milestoning">
                         milestoning
                       </div>
-                      <div className="query-builder__constants__value">
-                        {milestoningParameterValueString}
-                      </div>
+                      {!option?.hideMilestoningParameterValueString && (
+                        <div className="query-builder__constants__value">
+                          {milestoningParameterValueString}
+                        </div>
+                      )}
                     </>
                   )}
                 </div>

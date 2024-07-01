@@ -72,6 +72,7 @@ export const createViewSDLCProjectHandler =
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
           matchingSDLCEntry.url,
           project.projectId,
+          undefined,
           entityPath,
         ),
       );

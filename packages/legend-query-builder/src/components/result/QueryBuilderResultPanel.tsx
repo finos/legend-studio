@@ -334,6 +334,7 @@ export const QueryBuilderResultPanel = observer(
         <MenuContentItem
           key={item.key}
           title={item.title ?? ''}
+          disabled={item.disableFunc?.(queryBuilderState) ?? false}
           onClick={() => {
             item.onClick(queryBuilderState);
           }}

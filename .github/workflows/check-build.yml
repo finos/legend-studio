@@ -41,6 +41,8 @@ jobs:
             os: ubuntu-latest
           - application: '@finos/legend-server-showcase-deployment'
             os: ubuntu-latest
+          - application: '@finos/legend-vscode-extension-dependencies'
+            os: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.1.7

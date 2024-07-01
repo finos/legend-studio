@@ -1146,7 +1146,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                       aggregateColumnState.calendarFunction?.setEndDate(val);
                     }}
                     graph={tdsState.queryBuilderState.graphManagerState.graph}
-                    obseverContext={tdsState.queryBuilderState.observerContext}
+                    observerContext={tdsState.queryBuilderState.observerContext}
                     typeCheckOption={{
                       expectedType: PrimitiveType.STRICTDATE,
                     }}
@@ -1353,7 +1353,17 @@ export const QueryBuilderTDSPanel = observer(
                     : 'Set Query Options'}
                 </div>
               </button>
-              <div className="query-builder__projection__result-modifier-prompt__divider">
+
+              <div
+                className={clsx(
+                  'query-builder__projection__result-modifier-prompt__divider',
+                  {
+                    'query-builder__projection__result-modifier-prompt__divider--light':
+                      applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled,
+                  },
+                )}
+              >
                 {tdsState.isQueryOptionsSet && ' - '}
               </div>
               {tdsState.queryBuilderState.milestoningState

@@ -251,7 +251,7 @@ const DerivedPropertyParameterValueEditor = observer(
                 );
               }}
               graph={graph}
-              obseverContext={
+              observerContext={
                 derivedPropertyExpressionState.queryBuilderState.observerContext
               }
               typeCheckOption={{

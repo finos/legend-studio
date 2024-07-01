@@ -1,5 +1,9 @@
 # @finos/babel-preset-legend-studio
 
+## 2.0.66
+
+## 2.0.65
+
 ## 2.0.64
 
 ## 2.0.63

@@ -42,6 +42,7 @@ import {
   CORE_PURE_PATH,
   buildRawLambdaFromLambdaFunction,
   getValueSpecificationReturnType,
+  isSubType,
 } from '@finos/legend-graph';
 import {
   Randomizer,
@@ -58,6 +59,13 @@ import {
   QUERY_BUILDER_PURE_PATH,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
 } from '../../graph/QueryBuilderMetaModelConst.js';
+import { buildDatePickerOption } from '../../components/shared/CustomDatePicker.js';
+import type {
+  ApplicationStore,
+  LegendApplicationConfig,
+  LegendApplicationPlugin,
+  LegendApplicationPluginManager,
+} from '@finos/legend-application';
 
 export const createSupportedFunctionExpression = (
   supportedFuncName: string,
@@ -293,21 +301,53 @@ export const generateVariableExpressionMockValue = (
 
 export const getValueSpecificationStringValue = (
   valueSpecification: ValueSpecification,
+  applicationStore: ApplicationStore<
+    LegendApplicationConfig,
+    LegendApplicationPluginManager<LegendApplicationPlugin>
+  >,
+  options?: {
+    omitEnumOwnerName?: boolean;
+  },
 ): string | undefined => {
   if (valueSpecification instanceof PrimitiveInstanceValue) {
+    if (
+      isSubType(
+        valueSpecification.genericType.value.rawType,
+        PrimitiveType.DATE,
+      )
+    ) {
+      return buildDatePickerOption(valueSpecification, applicationStore).label;
+    }
     return valueSpecification.values[0]?.toString();
   } else if (valueSpecification instanceof EnumValueInstanceValue) {
     const _enum = valueSpecification.values[0];
+    if (options?.omitEnumOwnerName) {
+      return _enum?.value.name;
+    }
     return `${_enum?.ownerReference.value.name}.${_enum?.value.name}`;
   } else if (valueSpecification instanceof VariableExpression) {
     return valueSpecification.name;
   } else if (valueSpecification instanceof INTERNAL__PropagatedValue) {
-    return getValueSpecificationStringValue(valueSpecification.getValue());
+    return getValueSpecificationStringValue(
+      valueSpecification.getValue(),
+      applicationStore,
+    );
   } else if (valueSpecification instanceof SimpleFunctionExpression) {
+    if (
+      valueSpecification.genericType?.value.rawType !== undefined &&
+      isSubType(
+        valueSpecification.genericType.value.rawType,
+        PrimitiveType.DATE,
+      )
+    ) {
+      return buildDatePickerOption(valueSpecification, applicationStore).label;
+    }
     return valueSpecification.functionName;
   } else if (valueSpecification instanceof CollectionInstanceValue) {
     return valueSpecification.values
-      .map(getValueSpecificationStringValue)
+      .map((valueSpec) =>
+        getValueSpecificationStringValue(valueSpec, applicationStore),
+      )
       .join(',');
   }
   return undefined;
@@ -336,7 +376,7 @@ export const valueSpecReturnTDS = (
 export const convertTextToPrimitiveInstanceValue = (
   expectedType: Type,
   value: string,
-  obseverContext: ObserverContext,
+  observerContext: ObserverContext,
 ): PrimitiveInstanceValue | null => {
   let result = null;
   if (expectedType instanceof PrimitiveType) {
@@ -345,7 +385,7 @@ export const convertTextToPrimitiveInstanceValue = (
         result = new PrimitiveInstanceValue(
           GenericTypeExplicitReference.create(new GenericType(expectedType)),
         );
-        instanceValue_setValues(result, [value.toString()], obseverContext);
+        instanceValue_setValues(result, [value.toString()], observerContext);
         break;
       }
       case PRIMITIVE_TYPE.NUMBER:
@@ -358,7 +398,7 @@ export const convertTextToPrimitiveInstanceValue = (
         result = new PrimitiveInstanceValue(
           GenericTypeExplicitReference.create(new GenericType(expectedType)),
         );
-        instanceValue_setValues(result, [Number(value)], obseverContext);
+        instanceValue_setValues(result, [Number(value)], observerContext);
         break;
       }
       case PRIMITIVE_TYPE.DATE:
@@ -369,7 +409,7 @@ export const convertTextToPrimitiveInstanceValue = (
         result = new PrimitiveInstanceValue(
           GenericTypeExplicitReference.create(new GenericType(expectedType)),
         );
-        instanceValue_setValues(result, [value], obseverContext);
+        instanceValue_setValues(result, [value], observerContext);
         break;
       }
       case PRIMITIVE_TYPE.DATETIME: {
@@ -385,7 +425,7 @@ export const convertTextToPrimitiveInstanceValue = (
         result = new PrimitiveInstanceValue(
           GenericTypeExplicitReference.create(new GenericType(expectedType)),
         );
-        instanceValue_setValues(result, [value], obseverContext);
+        instanceValue_setValues(result, [value], observerContext);
         break;
       }
       default:

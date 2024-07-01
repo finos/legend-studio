@@ -657,6 +657,30 @@
   &__all-versions-in-range-editor {
     margin: 1rem 0;
   }
+
+  &__variable-editor {
+    @include flexCenter;
+
+    width: 100%;
+    justify-content: space-between;
+    height: 2.8rem;
+
+    &__variable {
+      width: 50%;
+    }
+
+    &__value {
+      width: 45%;
+      color: var(--color-blue-200);
+      font-weight: 500;
+      padding-left: 0.5rem;
+      cursor: pointer;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-decoration: underline;
+      text-decoration-style: dotted;
+    }
+  }
 }
 
 .query-builder__side-bar {

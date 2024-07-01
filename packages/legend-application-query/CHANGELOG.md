@@ -1,5 +1,21 @@
 # @finos/legend-application-query
 
+## 13.5.11
+
+## 13.5.10
+
+## 13.5.9
+
+## 13.5.8
+
+### Patch Changes
+
+- [#3295](https://github.com/finos/legend-studio/pull/3295) [`6ff62bf`](https://github.com/finos/legend-studio/commit/6ff62bfcac2490292ff56fa47a407df169249e02) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Disable `Curated Template Query` when condition is not applied.
+
+  Add `Open in Taxonomy` button in `About Dataspace`.
+
+  Fix visit project link in `About Dataspace`.
+
 ## 13.5.7
 
 ## 13.5.6

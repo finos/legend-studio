@@ -125,6 +125,10 @@
       }
     }
 
+    &__editable__display--content--error {
+      color: var(--color-red-200) !important;
+    }
+
     &__options {
       min-width: 29rem;
 
@@ -417,6 +421,10 @@
       font-size: 1.2rem;
       color: var(--color-light-grey-250);
     }
+  }
+
+  &__editable__display--content--error {
+    color: var(--color-red-200) !important;
   }
 
   &:hover &__list-editor__preview,

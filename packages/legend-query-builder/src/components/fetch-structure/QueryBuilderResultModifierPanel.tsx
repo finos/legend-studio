@@ -419,6 +419,22 @@ export const QueryResultModifierModal = observer(
     );
     const [startDate, setStartDate] = useState(milestoningState.startDate);
     const [endDate, setEndDate] = useState(milestoningState.endDate);
+    const [businessDateValue, setBusinessDateValue] = useState(
+      milestoningState.getMilestoningParameterValue(
+        milestoningState.businessDate,
+      ),
+    );
+    const [processingDateValue, setProcessingDateValue] = useState(
+      milestoningState.getMilestoningParameterValue(
+        milestoningState.processingDate,
+      ),
+    );
+    const [startDateValue, setStartDateValue] = useState(
+      milestoningState.getMilestoningParameterValue(milestoningState.startDate),
+    );
+    const [endDateValue, setEndDateValue] = useState(
+      milestoningState.getMilestoningParameterValue(milestoningState.endDate),
+    );
 
     const shouldFilterMilestoningParamIfNotUsed = (
       param: ValueSpecification | undefined,
@@ -491,28 +507,28 @@ export const QueryResultModifierModal = observer(
         );
         setParameterStates(allParamStates);
         if (!businessDate) {
-          setBusinessDate(
-            allParamStates.find(
-              (ps) =>
-                ps.variableName ===
-                (milestoningState.businessDate &&
-                milestoningState.businessDate instanceof VariableExpression
-                  ? milestoningState.businessDate.name
-                  : BUSINESS_DATE_MILESTONING_PROPERTY_NAME),
-            )?.parameter,
+          const lambdaParamState = allParamStates.find(
+            (ps) =>
+              ps.variableName ===
+              (milestoningState.businessDate &&
+              milestoningState.businessDate instanceof VariableExpression
+                ? milestoningState.businessDate.name
+                : BUSINESS_DATE_MILESTONING_PROPERTY_NAME),
           );
+          setBusinessDate(lambdaParamState?.parameter);
+          setBusinessDateValue(lambdaParamState?.value);
         }
         if (!processingDate) {
-          setProcessingDate(
-            allParamStates.find(
-              (ps) =>
-                ps.variableName ===
-                (milestoningState.businessDate &&
-                milestoningState.processingDate instanceof VariableExpression
-                  ? milestoningState.processingDate.name
-                  : PROCESSING_DATE_MILESTONING_PROPERTY_NAME),
-            )?.parameter,
+          const lambdaParamState = allParamStates.find(
+            (ps) =>
+              ps.variableName ===
+              (milestoningState.businessDate &&
+              milestoningState.processingDate instanceof VariableExpression
+                ? milestoningState.processingDate.name
+                : PROCESSING_DATE_MILESTONING_PROPERTY_NAME),
           );
+          setProcessingDate(lambdaParamState?.parameter);
+          setProcessingDateValue(lambdaParamState?.value);
         }
       }
       setIsAllVersionsEnabled(Boolean(value));
@@ -552,6 +568,7 @@ export const QueryResultModifierModal = observer(
           MILESTONING_START_DATE_PARAMETER_NAME,
         );
         setStartDate(startDateParameterState.parameter);
+        setStartDateValue(startDateParameterState.value);
       }
       if (!(endDate && endDate instanceof VariableExpression)) {
         endDateParameterState = getOrCreateNewLambdaParameterState(
@@ -559,6 +576,7 @@ export const QueryResultModifierModal = observer(
           MILESTONING_END_DATE_PARAMETER_NAME,
         );
         setEndDate(endDateParameterState.parameter);
+        setEndDateValue(endDateParameterState.value);
       }
       setParameterStates([
         ...new Set([
@@ -601,6 +619,24 @@ export const QueryResultModifierModal = observer(
       setParameterStates(
         milestoningState.queryBuilderState.parametersState.parameterStates,
       );
+      setStartDateValue(
+        milestoningState.getMilestoningParameterValue(
+          milestoningState.startDate,
+        ),
+      );
+      setEndDateValue(
+        milestoningState.getMilestoningParameterValue(milestoningState.endDate),
+      );
+      setProcessingDateValue(
+        milestoningState.getMilestoningParameterValue(
+          milestoningState.processingDate,
+        ),
+      );
+      setBusinessDateValue(
+        milestoningState.getMilestoningParameterValue(
+          milestoningState.businessDate,
+        ),
+      );
     };
 
     // Handle user actions
@@ -630,6 +666,11 @@ export const QueryResultModifierModal = observer(
         milestoningState.queryBuilderState.setGetAllFunction(
           QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
         );
+        milestoningState.updateMilestoningParameterValue(
+          startDate,
+          startDateValue,
+        );
+        milestoningState.updateMilestoningParameterValue(endDate, endDateValue);
       } else if (isAllVersionsEnabled) {
         milestoningState.clearGetAllParameters();
         milestoningState.queryBuilderState.setGetAllFunction(
@@ -643,6 +684,14 @@ export const QueryResultModifierModal = observer(
         milestoningState.setProcessingDate(processingDate);
         milestoningState.queryBuilderState.setGetAllFunction(
           QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL,
+        );
+        milestoningState.updateMilestoningParameterValue(
+          processingDate,
+          processingDateValue,
+        );
+        milestoningState.updateMilestoningParameterValue(
+          businessDate,
+          businessDateValue,
         );
       }
       milestoningState.updateQueryBuilderState();
@@ -660,7 +709,26 @@ export const QueryResultModifierModal = observer(
       setParameterStates(
         milestoningState.queryBuilderState.parametersState.parameterStates,
       );
+      setStartDateValue(
+        milestoningState.getMilestoningParameterValue(
+          milestoningState.startDate,
+        ),
+      );
+      setEndDateValue(
+        milestoningState.getMilestoningParameterValue(milestoningState.endDate),
+      );
+      setProcessingDateValue(
+        milestoningState.getMilestoningParameterValue(
+          milestoningState.processingDate,
+        ),
+      );
+      setBusinessDateValue(
+        milestoningState.getMilestoningParameterValue(
+          milestoningState.businessDate,
+        ),
+      );
     }, [
+      milestoningState,
       milestoningState.isAllVersionsEnabled,
       milestoningState.isAllVersionsInRangeEnabled,
       milestoningState.queryBuilderState.parametersState.parameterStates,
@@ -724,17 +792,25 @@ export const QueryResultModifierModal = observer(
                                 <div className="panel__content__form__section__header__label">
                                   Start Date
                                 </div>
+                                <div className="panel__content__form__section__header__prompt">
+                                  Choose a value for this milestoning parameter
+                                </div>
                                 <MilestoningParameterEditor
                                   queryBuilderState={
                                     milestoningState.queryBuilderState
                                   }
                                   parameter={startDate}
                                   setParameter={setStartDate}
+                                  parameterValue={startDateValue}
+                                  setParameterValue={setStartDateValue}
                                 />
                               </PanelFormSection>
                               <PanelFormSection>
                                 <div className="panel__content__form__section__header__label">
                                   End Date
+                                </div>
+                                <div className="panel__content__form__section__header__prompt">
+                                  Choose a value for this milestoning parameter
                                 </div>
                                 <MilestoningParameterEditor
                                   queryBuilderState={
@@ -742,6 +818,8 @@ export const QueryResultModifierModal = observer(
                                   }
                                   parameter={endDate}
                                   setParameter={setEndDate}
+                                  parameterValue={endDateValue}
+                                  setParameterValue={setEndDateValue}
                                 />
                               </PanelFormSection>
                             </div>
@@ -755,12 +833,17 @@ export const QueryResultModifierModal = observer(
                           <div className="panel__content__form__section__header__label">
                             Processing Date
                           </div>
+                          <div className="panel__content__form__section__header__prompt">
+                            Choose a value for this milestoning parameter
+                          </div>
                           <MilestoningParameterEditor
                             queryBuilderState={
                               milestoningState.queryBuilderState
                             }
                             parameter={processingDate}
                             setParameter={setProcessingDate}
+                            parameterValue={processingDateValue}
+                            setParameterValue={setProcessingDateValue}
                           />
                         </PanelFormSection>
                       )}
@@ -769,58 +852,71 @@ export const QueryResultModifierModal = observer(
                           <div className="panel__content__form__section__header__label">
                             Business Date
                           </div>
+                          <div className="panel__content__form__section__header__prompt">
+                            Choose a value for this milestoning parameter
+                          </div>
                           <MilestoningParameterEditor
                             queryBuilderState={
                               milestoningState.queryBuilderState
                             }
                             parameter={businessDate}
                             setParameter={setBusinessDate}
+                            parameterValue={businessDateValue}
+                            setParameterValue={setBusinessDateValue}
                           />
                         </PanelFormSection>
                       )}
                     </>
                   )}
-                  <PanelFormSection>
-                    <div className="panel__content__form__section__header__label">
-                      List of compatible milestoning parameters
-                    </div>
-                  </PanelFormSection>
-                  <div className="panel__content__form__section__list__items">
-                    <PanelFormListItems title="Available parameters">
-                      {filteredParameterStates.length === 0 && (
-                        <> No available parameters </>
-                      )}
-                      {filteredParameterStates.map((pState) => (
-                        <VariableViewer
-                          key={pState.uuid}
-                          variable={pState.parameter}
-                          isReadOnly={true}
-                          queryBuilderState={milestoningState.queryBuilderState}
-                        />
-                      ))}
-                    </PanelFormListItems>
-                    {Boolean(filteredConstantState.length) && (
-                      <PanelFormListItems title="Available constants">
-                        {filteredConstantState.map((constantState) => (
-                          <VariableViewer
-                            key={constantState.uuid}
-                            variable={constantState.variable}
-                            value={{
-                              val:
-                                constantState instanceof
-                                QueryBuilderSimpleConstantExpressionState
-                                  ? constantState.value
-                                  : undefined,
-                            }}
-                            queryBuilderState={
-                              milestoningState.queryBuilderState
-                            }
-                            isReadOnly={true}
-                          />
-                        ))}
-                      </PanelFormListItems>
-                    )}
-                  </div>
+                  {!(isAllVersionsEnabled && !isAllVersionsInRangeEnabled) && (
+                    <>
+                      <PanelFormSection>
+                        <div className="panel__content__form__section__header__label">
+                          List of compatible milestoning parameters
+                        </div>
+                      </PanelFormSection>
+                      <div className="panel__content__form__section__list__items">
+                        {filteredParameterStates.length > 0 && (
+                          <PanelFormListItems title="Available parameters">
+                            {filteredParameterStates.map((pState) => (
+                              <VariableViewer
+                                key={pState.uuid}
+                                variable={pState.parameter}
+                                isReadOnly={true}
+                                queryBuilderState={
+                                  milestoningState.queryBuilderState
+                                }
+                                option={{
+                                  hideMilestoningParameterValueString: true,
+                                }}
+                              />
+                            ))}
+                          </PanelFormListItems>
+                        )}
+                        {Boolean(filteredConstantState.length) && (
+                          <PanelFormListItems title="Available constants">
+                            {filteredConstantState.map((constantState) => (
+                              <VariableViewer
+                                key={constantState.uuid}
+                                variable={constantState.variable}
+                                value={{
+                                  val:
+                                    constantState instanceof
+                                    QueryBuilderSimpleConstantExpressionState
+                                      ? constantState.value
+                                      : undefined,
+                                }}
+                                queryBuilderState={
+                                  milestoningState.queryBuilderState
+                                }
+                                isReadOnly={true}
+                              />
+                            ))}
+                          </PanelFormListItems>
+                        )}
+                      </div>
+                    </>
+                  )}
                   <div className="query-builder__projection__options__section-name">
                     Other
                   </div>
@@ -960,7 +1056,7 @@ export const QueryResultModifierModal = observer(
                               watermarkState.queryBuilderState.graphManagerState
                                 .graph
                             }
-                            obseverContext={
+                            observerContext={
                               watermarkState.queryBuilderState.observerContext
                             }
                             typeCheckOption={{

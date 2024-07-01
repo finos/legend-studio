@@ -516,6 +516,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.resetQueryResult();
     if (!options?.keepQueryContent) {
       this.resetQueryContent();
+      this.setGetAllFunction(QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL);
       this.milestoningState.updateMilestoningConfiguration();
     }
     this.executionContextState.setMapping(val);
