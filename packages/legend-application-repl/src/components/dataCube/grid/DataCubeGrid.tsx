@@ -29,6 +29,9 @@ import {
   INTERNAL__GRID_CLIENT_ROW_BUFFER,
   INTERNAL__GRID_CLIENT_ROW_HEIGHT,
 } from '../../../stores/dataCube/grid/DataCubeGridClientEngine.js';
+import { ModuleRegistry } from '@ag-grid-community/core';
+import { CsvExportModule } from '@ag-grid-community/csv-export';
+import { ExcelExportModule } from '@ag-grid-enterprise/excel-export';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
@@ -39,6 +42,8 @@ const __INTERNAL__original_console_error = console.error; // eslint-disable-line
 console.error = (message?: unknown, ...agrs: unknown[]): void => {
   console.log(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
 };
+
+ModuleRegistry.registerModules([CsvExportModule, ExcelExportModule]);
 
 export const DataCubeGrid = observer(() => {
   const replStore = useREPLStore();

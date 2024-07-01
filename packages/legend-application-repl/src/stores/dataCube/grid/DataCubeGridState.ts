@@ -16,7 +16,7 @@
 
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
-import type { GridApi } from '@ag-grid-community/core';
+import type { ColumnApi, GridApi } from '@ag-grid-community/core';
 import type { DataCubeState } from '../DataCubeState.js';
 import { DataCubeGridClientServerSideDataSource } from './DataCubeGridClientEngine.js';
 import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
@@ -28,6 +28,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   clientDataSource: DataCubeGridClientServerSideDataSource;
   clientLicenseKey?: string | undefined;
   isPaginationEnabled = false;
+  isLoading = false;
 
   constructor(dataCube: DataCubeState) {
     super(dataCube);
@@ -37,9 +38,12 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
 
       clientLicenseKey: observable,
       setClientLicenseKey: action,
-
+      isLoading: observable,
       isPaginationEnabled: observable,
       setPaginationEnabled: action,
+      // configureClient:action,
+      generateCSVFile: action,
+      generateExcelFile: action,
     });
 
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
@@ -68,6 +72,10 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     }
   }
 
+  setLoading(val: boolean): void {
+    this.isLoading = val;
+  }
+
   configureClient(val: GridApi | undefined): void {
     this._client = val;
   }
@@ -86,4 +94,24 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
       await this.dataCube.replStore.client.getGridClientLicenseKey(),
     );
   }
+
+  generateCSVFile = () => {
+    console.log('csv generated');
+    if (this._client) {
+      this.setLoading(true);
+      this._client.exportDataAsCsv();
+      this.setLoading(false);
+    } else {
+      console.error('Grid API not set');
+    }
+  };
+
+  generateExcelFile = () => {
+    console.log('excel converted to file');
+    if (this._client) {
+      this._client.exportDataAsExcel();
+    } else {
+      console.error('Grid API not set');
+    }
+  };
 }

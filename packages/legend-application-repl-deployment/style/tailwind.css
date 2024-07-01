@@ -17,3 +17,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.generate_formats {
+  background-color: #4ade80;
+  border-radius: 8px;
+}
+
+.btn_container {
+  display: flex;
+  align-items: flex-end;
+  padding: 2px;
+  margin: 15px;
+}
+
+.loading-indicator {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  background-color: rgb(0 0 0 / 60%);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+}

@@ -2475,9 +2475,11 @@ __metadata:
   dependencies:
     "@ag-grid-community/client-side-row-model": "npm:31.3.2"
     "@ag-grid-community/core": "npm:31.3.2"
+    "@ag-grid-community/csv-export": "npm:31.3.2"
     "@ag-grid-community/react": "npm:31.3.2"
     "@ag-grid-community/styles": "npm:31.3.2"
     "@ag-grid-enterprise/core": "npm:31.3.2"
+    "@ag-grid-enterprise/excel-export": "npm:31.3.2"
     "@ag-grid-enterprise/menu": "npm:31.3.2"
     "@ag-grid-enterprise/row-grouping": "npm:31.3.2"
     "@ag-grid-enterprise/server-side-row-model": "npm:31.3.2"

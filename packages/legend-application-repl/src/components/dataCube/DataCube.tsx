@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { useREPLStore } from '../REPLStoreProvider.js';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DataCubeGrid } from './grid/DataCubeGrid.js';
 import { DataCubeEditor } from './editor/DataCubeEditor.js';
 import { useApplicationStore } from '@finos/legend-application';
@@ -47,13 +47,58 @@ const DataCubeStatusBar = observer(() => {
 const DataCubeTitleBar = observer(() => {
   const dataCubeStore = useREPLStore();
   const dataCubeState = dataCubeStore.dataCubeState;
+  const [dropdownVisible, setDropdownVisible] = useState(false);
 
+  const handleButtonClick = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
+
+  const handleOptionClick = (option: string) => {
+    setDropdownVisible(false);
+    if (option === 'excel') {
+      dataCubeState.grid.generateExcelFile();
+    } else if (option === 'csv') {
+      dataCubeState.grid.generateCSVFile();
+    }
+  };
   return (
     <div className="flex h-6 justify-between bg-neutral-100">
       <div className="flex select-none items-center pl-1 pr-2 text-lg font-medium">
         <DataCubeIcon.Cube className="mr-1 h-4 w-4" />
         <div>{dataCubeState.editor.generalPropertiesPanel.name}</div>
         {/* TODO: @akphi - add save icon */}
+        <div className="btn_container relative">
+          <button
+            className="generate_formats"
+            onClick={handleButtonClick}
+            // onClick={dataCubeState.grid.generateExcelFile}
+          >
+            Click here
+          </button>
+          {dropdownVisible && (
+            <div className="relative left-10 z-10 mt-20 w-48 rounded border bg-white shadow-lg">
+              <div
+                className="cursor-pointer px-4 py-2 hover:bg-gray-200"
+                onClick={() => {
+                  handleOptionClick('excel');
+                }}
+              >
+                Export To Excel
+              </div>
+              <div
+                className="curosor-pointer px-4 py-2 hover:bg-gray-200"
+                onClick={() => handleOptionClick('csv')}
+              >
+                Convert To CSV
+              </div>
+            </div>
+          )}
+        </div>
+        {dataCubeState.grid.isLoading && (
+          <div className="loading-indicator">
+            <span>Loading...</span>
+          </div>
+        )}
       </div>
     </div>
   );
