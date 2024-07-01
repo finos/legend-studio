@@ -53,7 +53,7 @@ jobs:
           username: finos
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Publish to Docker
-        run: yarn build && yarn workspace ${{ matrix.package }} publish:docker ${{ github.event.inputs.tag }}
+        run: yarn build && yarn build:vscode-extension-dependencies && yarn workspace ${{ matrix.package }} publish:docker ${{ github.event.inputs.tag }}
         env:
           # Webpack build could consume a large amount of memory
           NODE_OPTIONS: '--max-old-space-size=4096'
