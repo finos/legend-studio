@@ -278,15 +278,9 @@ export const QueryBuilderTDSGridResult = observer(
       api: DataGridApi<QueryBuilderTDSRowDataType>,
     ): QueryBuilderTDSResultCellData[] => {
       const selectedRanges: DataGridCellRange[] | null = api.getCellRanges();
-      console.log('selectedRanges:', selectedRanges);
-      const nodes = api.getRenderedNodes();
-      console.log('nodes:', nodes);
-      const selectedNodes = api.getSelectedNodes();
-      const selectedRows = api.getSelectedRows();
-      console.log('selectedNodes:', selectedNodes);
-      console.log('selectedRows:', selectedRows);
+      const nodes = [] as DataGridIRowNode<QueryBuilderTDSRowDataType>[];
+      api.forEachNode((node) => nodes.push(node));
       const columns = api.getColumnDefs() as DataGridColumnDefinition[];
-      console.log('columns:', columns);
       const selectedCells = [];
       if (selectedRanges) {
         for (const selectedRange of selectedRanges) {
@@ -295,9 +289,6 @@ export const QueryBuilderTDSGridResult = observer(
           const selectedColumns: string[] = selectedRange.columns.map((col) =>
             col.getColId(),
           );
-          console.log('startRow:', startRow);
-          console.log('endRow:', endRow);
-          console.log('selectedColumns:', selectedColumns);
           for (let x: number = startRow; x <= endRow; x++) {
             const curRowData = nodes.find(
               (n) => (n as DataGridIRowNode).rowIndex === x,
@@ -539,37 +530,10 @@ export const QueryBuilderTDSGridResult = observer(
               }}
               onRangeSelectionChanged={(event) => {
                 const selectedCells = getSelectedCells(event.api);
-                console.log(
-                  'onRangeSelectionChanged selectedCells:',
-                  selectedCells,
+                resultState.setSelectedCells([]);
+                selectedCells.forEach((cell) =>
+                  resultState.addSelectedCell(cell),
                 );
-                // resultState.setSelectedCells([]);
-                // selectedCells.forEach((cell) =>
-                //   resultState.addSelectedCell(cell),
-                // );
-              }}
-              onSelectionChanged={(event) => {
-                const selectedNodes = event.api.getSelectedNodes();
-                const selectedRows = event.api.getSelectedRows();
-                console.log('columns:', event.api.getColumns());
-                console.log('event:', event);
-                console.log('onSelectionChanged selectedNodes:', selectedNodes);
-                console.log('onSelectionChanged selectedRows:', selectedRows);
-                // resultState.setSelectedCells([]);
-                // selectedNodes.forEach((cell) =>
-                //   resultState.addSelectedCell({
-                //     value: Object.entries(cell)
-                //       .find((rData) => rData[0] === col)
-                //       ?.at(1),
-                //     columnName: col,
-                //     coordinates: {
-                //       rowIndex: x,
-                //       colIndex: columns.findIndex(
-                //         (colDef) => colDef.colId === col,
-                //       ),
-                //     },
-                //   } as QueryBuilderTDSResultCellData),
-                // );
               }}
               suppressFieldDotNotation={true}
               suppressClipboardPaste={false}
