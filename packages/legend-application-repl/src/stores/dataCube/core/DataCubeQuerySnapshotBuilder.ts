@@ -135,12 +135,12 @@ const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN: {
   required?: boolean | undefined;
 }[] = [
   { func: DataCubeFunction.EXTEND },
+  { func: DataCubeFunction.SELECT },
   { func: DataCubeFunction.FILTER },
   { func: DataCubeFunction.GROUP_BY },
   { func: DataCubeFunction.PIVOT },
   { func: DataCubeFunction.CAST },
   { func: DataCubeFunction.EXTEND },
-  { func: DataCubeFunction.SELECT },
   { func: DataCubeFunction.SORT },
   { func: DataCubeFunction.LIMIT },
 ];
@@ -271,14 +271,14 @@ function extractFunctionMap(
     }
   }
 
+  const select = sequence.find((func) =>
+    matchFunctionName(func.function, DataCubeFunction.SELECT),
+  );
   const filter = sequence.find((func) =>
     matchFunctionName(func.function, DataCubeFunction.FILTER),
   );
   const groupBy = sequence.find((func) =>
     matchFunctionName(func.function, DataCubeFunction.GROUP_BY),
-  );
-  const select = sequence.find((func) =>
-    matchFunctionName(func.function, DataCubeFunction.SELECT),
   );
   const pivot = sequence.find((func) =>
     matchFunctionName(func.function, DataCubeFunction.PIVOT),
@@ -294,12 +294,12 @@ function extractFunctionMap(
   );
   return {
     leafExtend,
+    select,
     filter,
     groupBy,
     pivot,
     pivotCast,
     groupExtend,
-    select,
     sort,
     limit,
   };
@@ -346,6 +346,16 @@ export function validateAndBuildQuerySnapshot(
   // --------------------------------- LEAF EXTEND ---------------------------------
   // TODO: @akphi - implement this
 
+  // --------------------------------- SELECT ---------------------------------
+
+  if (funcMap.select) {
+    data.selectColumns = _colSpecArrayParam(funcMap.select, 0).colSpecs.map(
+      (colSpec) => ({
+        ..._col(colSpec),
+      }),
+    );
+  }
+
   // --------------------------------- FILTER ---------------------------------
   // TODO: @akphi - implement this
 
@@ -378,16 +388,6 @@ export function validateAndBuildQuerySnapshot(
               : DataCubeQuerySnapshotSortOperation.DESCENDING,
         };
       },
-    );
-  }
-
-  // --------------------------------- SELECT ---------------------------------
-
-  if (funcMap.select) {
-    data.selectColumns = _colSpecArrayParam(funcMap.select, 0).colSpecs.map(
-      (colSpec) => ({
-        ..._col(colSpec),
-      }),
     );
   }
 

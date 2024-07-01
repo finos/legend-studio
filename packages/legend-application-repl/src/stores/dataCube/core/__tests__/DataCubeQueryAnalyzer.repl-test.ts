@@ -57,8 +57,8 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
     '',
   ],
   [
-    'Valid: Usage - Column Selection: extend()->filter()->select()->sort()->limit()',
-    'extend(~[a:x|1])->filter(x|$x.a==1)->select(~[a])->sort([ascending(~a)])->limit(10)',
+    'Valid: Usage - Column Selection: extend()->select()->filter()->sort()->limit()',
+    'extend(~[a:x|1])->select(~[a])->filter(x|$x.a==1)->sort([ascending(~a)])->limit(10)',
     ['a:Integer'],
     '',
   ],
@@ -106,7 +106,7 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
     'Invalid: Unsupported function composition: filter()->extend()->filter()',
     'filter(x|$x.a==1)->extend(~[a:x|1])->filter(x|$x.a==1)',
     [],
-    'Unsupported function composition filter()->extend()->filter() (supported composition: extend()->filter()->groupBy()->pivot()->cast()->extend()->select()->sort()->limit())',
+    'Unsupported function composition filter()->extend()->filter() (supported composition: extend()->select()->filter()->groupBy()->pivot()->cast()->extend()->sort()->limit())',
   ],
   [
     'Invalid: Group-level extend() used when no aggregation/grouping presents',

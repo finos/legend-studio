@@ -161,7 +161,7 @@ export function generateGridOptionsFromSnapshot(
         lockPosition: true,
         cellStyle: {
           flex: 1,
-          'justify-content': 'space-between',
+          justifyContent: 'space-between',
           display: 'flex',
         },
         sortable: false, // TODO: @akphi - we can support this in the configuration

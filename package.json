@@ -43,6 +43,7 @@
     "fix:format": "prettier --write --loglevel=warn \"(scripts|docs)/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" && yarn sort-package-json \"package.json\" \"packages/*/package.json\"",
     "fix:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{mjs,cjs,js,ts,tsx}\" --report-unused-disable-directives --fix && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --parallel --exclude legend-studio -vv run lint:js --fix",
     "fix:style": "yarn lint:style --fix",
+    "fix:watchman": "node ./scripts/test/fixWatchman.js",
     "git:install-hooks": "husky install",
     "git:pre-commit": "lint-staged --config ./package.json",
     "git:upstream:setup": "git remote add upstream https://github.com/finos/legend-studio.git",
