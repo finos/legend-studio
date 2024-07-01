@@ -278,7 +278,8 @@ export const QueryBuilderTDSGridResult = observer(
       api: DataGridApi<QueryBuilderTDSRowDataType>,
     ): QueryBuilderTDSResultCellData[] => {
       const selectedRanges: DataGridCellRange[] | null = api.getCellRanges();
-      const nodes = api.getRenderedNodes();
+      const nodes = [] as DataGridIRowNode<QueryBuilderTDSRowDataType>[];
+      api.forEachNode((node) => nodes.push(node));
       const columns = api.getColumnDefs() as DataGridColumnDefinition[];
       const selectedCells = [];
       if (selectedRanges) {
