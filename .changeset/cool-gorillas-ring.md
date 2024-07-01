@@ -1,3 +1,3 @@
 ---
-'@finos/legend-vscode-extension-dependencies': patch
+'@finos/legend-vscode-extension-dependencies': major
 ---
