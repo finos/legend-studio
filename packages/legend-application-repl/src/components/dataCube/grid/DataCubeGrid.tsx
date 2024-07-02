@@ -57,7 +57,7 @@ export const DataCubeGrid = observer(() => {
 
   return (
     <div className="data-cube-grid flex-1">
-      <div className="h-[calc(100%_-_20px)] w-full">
+      <div className="relative h-[calc(100%_-_20px)] w-full">
         <AgGridReact
           // -------------------------------------- ROW GROUPING --------------------------------------
           rowGroupPanelShow="always"
@@ -144,21 +144,37 @@ export const DataCubeGrid = observer(() => {
             dataCube,
           }}
         />
-      </div>
-      <div className="relative flex h-5 w-full justify-between border-b border-b-neutral-200 bg-neutral-100">
         {Boolean(scrollHintText) && (
-          <div className="absolute -top-8 right-4 flex items-center rounded-sm border border-neutral-300 bg-neutral-100 p-1 pr-2 text-neutral-500 shadow-sm">
+          <div className="absolute bottom-4 right-4 flex items-center rounded-sm border border-neutral-300 bg-neutral-100 p-1 pr-2 text-neutral-500 shadow-sm">
             <DataCubeIcon.TableScroll className="text-lg" />
             <div className="ml-1 font-mono text-sm">{scrollHintText}</div>
           </div>
         )}
+      </div>
+
+      <div className="relative flex h-5 w-full select-none justify-between border-b border-neutral-200 bg-neutral-100">
         <div />
-        <div className="flex items-center">
-          <div className="select-none p-2 font-mono text-sm text-neutral-500">
+        <div className="flex h-full items-center">
+          <div className="flex h-full items-center px-2 font-mono text-sm text-neutral-500">
             {grid.clientDataSource.rowCount
-              ? `(${grid.clientDataSource.rowCount} rows)`
+              ? `Rows: ${grid.clientDataSource.rowCount}`
               : ''}
           </div>
+          {grid.configuration.limit !== undefined &&
+            grid.configuration.showWarningForTruncatedResult && (
+              // TODO: if we want to properly warn if the data has been truncated due to row limit,
+              // this would require us to fetch n+1 rows when limit=n
+              // This is feature is not difficult to implement, but it would be implemented most cleanly
+              // when we change the query execution engine to return the total number of rows,
+              // so for now, we simply just warn about truncation whenever a limit != -1 is specified
+              <>
+                <div className="h-3 w-[1px] bg-neutral-200" />
+                <div className="flex h-full items-center px-2 text-orange-500">
+                  <DataCubeIcon.Warning className="stroke-[3px]" />
+                  <div className="ml-1 text-sm font-semibold">{`Results truncated to fit within row limit (${grid.configuration.limit})`}</div>
+                </div>
+              </>
+            )}
           <div className="h-3 w-[1px] bg-neutral-200" />
           <button
             className="flex h-full items-center p-2"
