@@ -36,13 +36,22 @@ export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_VALUE = 'query-builder-filter-tree__condition-node__value',
   // post filter
   QUERY_BUILDER_POST_FILTER_PANEL = 'query__builder__post__filter-panel',
-  QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT = 'query__builder__post__filter-tree-node__content',
+  QUERY_BUILDER_POST_FILTER_TREE = 'query__builder__post__filter__tree',
+  QUERY_BUILDER_POST_FILTER_TREE_NODE_BLOCK = 'query__builder__post__filter__tree__node-block',
+  QUERY_BUILDER_POST_FILTER_TREE_NODE_CHILDREN = 'query__builder__post__filter__tree__node-children',
+  QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTAINER = 'query__builder__post__filter__tree__node-container',
+  QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT = 'query__builder__post__filter__tree__node-content',
+  // window function panel
   QUERY_BUILDER_WINDOW_GROUPBY = 'query__builder__window',
+  // explorer panel
   QUERY_BUILDER_EXPLORER = 'query__builder__explorer',
   QUERY_BUILDER_PROPERTY_SEARCH_PANEL = 'query__builder__property__search__panel',
   QUERY_BUILDER_PERCENTILE_PANEL = 'query__builder__percentile__panel',
+  // parameter panel
   QUERY_BUILDER_PARAMETERS = 'query-builder__parameters',
+  // constant panel
   QUERY_BUILDER_CONSTANTS = 'query-builder__constants',
+  // other
   QUERY_BUILDER_TOOLTIP_ICON = 'query-builder__tooltip__icon',
   // result panel
   QUERY_BUILDER_RESULT_VALUES = 'QUERY_BUILDER_RESULT_VALUES',

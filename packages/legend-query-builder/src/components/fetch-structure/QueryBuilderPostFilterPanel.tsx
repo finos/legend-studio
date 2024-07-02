@@ -20,12 +20,9 @@ import {
   type TreeNodeViewProps,
   BlankPanelPlaceholder,
   CaretDownIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
   clsx,
   ContextMenu,
   ControlledDropdownMenu,
-  FilledTriangleIcon,
   MenuContent,
   MenuContentItem,
   TimesIcon,
@@ -185,28 +182,21 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
       node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND ? 'AND' : 'OR';
 
     return (
-      <div className="query-builder-post-filter-tree__node__label__content dnd__entry__container">
+      <div className="dnd__entry__container">
         <PanelEntryDropZonePlaceholder
           isDragOver={isDragOver}
           isDroppable={isDroppable}
-          label={`Add to Logical Group '${operationName}'`}
+          label={operationName}
+          className="query-builder-post-filter-tree__group-node__drop-zone"
         >
           <div
-            className={clsx('query-builder-post-filter-tree__group-node', {
-              'query-builder-post-filter-tree__group-node--and':
-                node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND,
-              'query-builder-post-filter-tree__group-node--or':
-                node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.OR,
-            })}
+            className="query-builder-post-filter-tree__group-node"
             title="Switch Operation"
             onClick={switchOperation}
           >
-            <div className="query-builder-post-filter-tree__group-node__label">
+            <div className="query-builder-post-filter-tree__group-node__label editable-value">
               {node.groupOperation}
             </div>
-            <button className="query-builder-post-filter-tree__group-node__action">
-              <FilledTriangleIcon />
-            </button>
           </div>
         </PanelEntryDropZonePlaceholder>
       </div>
@@ -513,7 +503,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
     };
 
     return (
-      <div className="query-builder-post-filter-tree__node__label__content dnd__entry__container">
+      <div className="dnd__entry__container">
         <PanelEntryDropZonePlaceholder
           isDragOver={isDragOver && !isFilterValueDragOver}
           alwaysShowChildren={true}
@@ -594,19 +584,18 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       }
     >,
   ) => {
-    const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
+    const { node, onNodeSelect, innerProps } = props;
     const { tdsState } = innerProps;
-    const ref = useRef<HTMLDivElement>(null);
+    const dragRef = useRef<HTMLDivElement>(null);
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const applicationStore = useApplicationStore();
     const postFilterState = tdsState.postFilterState;
-    const isExpandable =
-      node instanceof QueryBuilderPostFilterTreeGroupNodeData;
     const selectNode = (): void => onNodeSelect?.(node);
-    const toggleExpandNode = (): void => node.setIsOpen(!node.isOpen);
     const removeNode = (): void =>
       postFilterState.removeNodeAndPruneBranch(node);
+
+    // Drag and Drop
     const handleDrop = useCallback(
       (item: QueryBuilderPostFilterDropTarget, type: string): void => {
         if (QUERY_BUILDER_POST_FILTER_DND_TYPE.CONDITION === type) {
@@ -730,15 +719,14 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
                 : QUERY_BUILDER_POST_FILTER_DND_TYPE.BLANK_CONDITION,
           item: () => ({ node }),
           end: (): void => postFilterState.setRearrangingConditions(false),
+          canDrag: () =>
+            node instanceof QueryBuilderPostFilterTreeConditionNodeData ||
+            node instanceof QueryBuilderPostFilterTreeBlankConditionNodeData,
         }),
         [node, postFilterState],
       );
-    dragConnector(dropConnector(ref));
+    dragConnector(dropConnector(dragRef));
     useDragPreviewLayer(dragPreviewConnector);
-
-    // context menu
-    const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
-    const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
 
     const { isDroppable } = useDragLayer((monitor) => ({
       isDroppable:
@@ -747,95 +735,94 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
           monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
     }));
 
+    // context menu
+    const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
+    const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
+
+    const showRemoveButton =
+      node instanceof QueryBuilderPostFilterTreeConditionNodeData ||
+      node instanceof QueryBuilderPostFilterTreeBlankConditionNodeData;
+
     return (
-      <ContextMenu
-        content={
-          <QueryBuilderPostFilterConditionContextMenu
-            tdsState={tdsState}
-            node={node}
-          />
+      <div
+        data-testid={
+          QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTAINER
         }
-        menuProps={{ elevation: 7 }}
-        onOpen={onContextMenuOpen}
-        onClose={onContextMenuClose}
+        onClick={
+          node instanceof QueryBuilderPostFilterTreeConditionNodeData ||
+          node instanceof QueryBuilderPostFilterTreeBlankConditionNodeData
+            ? selectNode
+            : undefined
+        }
+        className={clsx('query-builder-post-filter-tree__node__container', {
+          'query-builder-post-filter-tree__node__container--group':
+            node instanceof QueryBuilderPostFilterTreeGroupNodeData,
+          'query-builder-post-filter-tree__node__container--condition':
+            node instanceof QueryBuilderPostFilterTreeConditionNodeData ||
+            node instanceof QueryBuilderPostFilterTreeBlankConditionNodeData,
+          'query-builder-post-filter-tree__node__container--no-hover':
+            postFilterState.isRearrangingConditions,
+          'query-builder-post-filter-tree__node__container--selected':
+            node === postFilterState.selectedNode,
+          'query-builder-post-filter-tree__node__container--selected-from-context-menu':
+            isSelectedFromContextMenu,
+        })}
       >
-        <div
-          ref={ref}
-          data-testid={
-            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT
+        <ContextMenu
+          content={
+            <QueryBuilderPostFilterConditionContextMenu
+              tdsState={tdsState}
+              node={node}
+            />
           }
-          className={clsx(
-            'tree-view__node__container query-builder-post-filter-tree__node__container',
-            {
-              'query-builder-post-filter-tree__node__container--no-hover':
-                postFilterState.isRearrangingConditions,
-              'query-builder-post-filter-tree__node__container--selected':
-                node === postFilterState.selectedNode,
-              'query-builder-post-filter-tree__node__container--selected-from-context-menu':
-                isSelectedFromContextMenu,
-            },
-          )}
+          menuProps={{ elevation: 7 }}
+          onOpen={onContextMenuOpen}
+          onClose={onContextMenuClose}
+          className="query-builder-post-filter-tree__node__context-menu"
         >
           <div
+            data-testid={
+              QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT
+            }
             className="query-builder-post-filter-tree__node__content"
-            style={{
-              paddingLeft: `${(level - 1) * (stepPaddingInRem ?? 2) + 1.5}rem`,
-              display: 'flex',
-            }}
-            onClick={selectNode}
+            ref={dragRef}
           >
-            {isExpandable && (
-              <div
-                className="query-builder-post-filter-tree__expand-icon"
-                onClick={toggleExpandNode}
-              >
-                {node.isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
-              </div>
+            {node instanceof QueryBuilderPostFilterTreeGroupNodeData && (
+              <QueryBuilderPostFilterGroupConditionEditor
+                node={node}
+                isDroppable={isDroppable}
+                isDragOver={isDragOver}
+              />
             )}
-            <div
-              className={clsx(
-                'tree-view__node__label query-builder-post-filter-tree__node__label',
-                {
-                  'query-builder-post-filter-tree__node__label--expandable':
-                    isExpandable,
-                },
-              )}
-            >
-              {node instanceof QueryBuilderPostFilterTreeGroupNodeData && (
-                <QueryBuilderPostFilterGroupConditionEditor
-                  node={node}
-                  isDroppable={isDroppable}
-                  isDragOver={isDragOver}
-                />
-              )}
-              {node instanceof QueryBuilderPostFilterTreeConditionNodeData && (
-                <QueryBuilderPostFilterConditionEditor
-                  node={node}
-                  isDragOver={deepIsDragOver}
-                />
-              )}
-              {node instanceof
-                QueryBuilderPostFilterTreeBlankConditionNodeData && (
-                <QueryBuilderPostFilterBlankConditionEditor
-                  node={node}
-                  isDragOver={isDragOver}
-                  isDroppable={isDroppable}
-                />
-              )}
+            {node instanceof QueryBuilderPostFilterTreeConditionNodeData && (
+              <QueryBuilderPostFilterConditionEditor
+                node={node}
+                isDragOver={deepIsDragOver}
+              />
+            )}
+            {node instanceof
+              QueryBuilderPostFilterTreeBlankConditionNodeData && (
+              <QueryBuilderPostFilterBlankConditionEditor
+                node={node}
+                isDragOver={isDragOver}
+                isDroppable={isDroppable}
+              />
+            )}
+          </div>
+          {showRemoveButton && (
+            <div className="query-builder-post-filter-tree__node__actions">
+              <button
+                className="query-builder-post-filter-tree__node__action"
+                tabIndex={-1}
+                title="Remove"
+                onClick={removeNode}
+              >
+                <TimesIcon />
+              </button>
             </div>
-          </div>
-          <div className="query-builder-post-filter-tree__node__actions">
-            <button
-              className="query-builder-post-filter-tree__node__action"
-              tabIndex={-1}
-              title="Remove"
-              onClick={removeNode}
-            >
-              <TimesIcon />
-            </button>
-          </div>
-        </div>
-      </ContextMenu>
+          )}
+        </ContextMenu>
+      </div>
     );
   },
 );
@@ -858,7 +845,15 @@ const QueryBuilderPostFilterTreeNodeView = observer(
       innerProps,
     } = props;
     return (
-      <div className="tree-view__node__block">
+      <div
+        data-testid={
+          QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_BLOCK
+        }
+        className={clsx('query-builder-post-filter-tree__node__block', {
+          'query-builder-post-filter-tree__node__block--group':
+            node instanceof QueryBuilderPostFilterTreeGroupNodeData,
+        })}
+      >
         <QueryBuilderPostFilterTreeNodeContainer
           node={node}
           level={level + 1}
@@ -866,17 +861,25 @@ const QueryBuilderPostFilterTreeNodeView = observer(
           onNodeSelect={onNodeSelect}
           innerProps={innerProps}
         />
-        {node.isOpen &&
-          getChildNodes(node).map((childNode) => (
-            <QueryBuilderPostFilterTreeNodeView
-              key={childNode.id}
-              node={childNode}
-              level={level + 1}
-              onNodeSelect={onNodeSelect}
-              getChildNodes={getChildNodes}
-              innerProps={innerProps}
-            />
-          ))}
+        {node.isOpen && getChildNodes(node).length > 0 && (
+          <div
+            data-testid={
+              QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CHILDREN
+            }
+            className="query-builder-post-filter-tree__node__children"
+          >
+            {getChildNodes(node).map((childNode) => (
+              <QueryBuilderPostFilterTreeNodeView
+                key={childNode.id}
+                node={childNode}
+                level={level + 1}
+                onNodeSelect={onNodeSelect}
+                getChildNodes={getChildNodes}
+                innerProps={innerProps}
+              />
+            ))}
+          </div>
+        )}
       </div>
     );
   },
@@ -900,7 +903,10 @@ const QueryBuilderPostFilterTree = observer(
         ? node.childrenIds.map((id) => postFilterState.getNode(id))
         : [];
     return (
-      <div className="tree-view__node__root query-builder-post-filter-tree__root">
+      <div
+        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE}
+        className="tree-view__node__root query-builder-post-filter-tree__root"
+      >
         {rootNodes.map((node) => (
           <QueryBuilderPostFilterTreeNodeView
             key={node.id}
