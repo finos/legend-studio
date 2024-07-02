@@ -489,15 +489,13 @@ const QueryBuilderPostFilterConditionEditor = observer(
               isDroppable={isFilterValueDroppable}
               label="Change Filter Value"
             >
-              <div className="query-builder-post-filter-tree__condition-node__property">
-                <QueryBuilderColumnBadge
-                  colState={rightConditionValue.tdsColumn}
-                  onColumnChange={
-                    isFilterValueDroppable ? changeRightCol : undefined
-                  }
-                  removeColumn={removeTDSColumnValue}
-                />
-              </div>
+              <QueryBuilderColumnBadge
+                colState={rightConditionValue.tdsColumn}
+                onColumnChange={
+                  isFilterValueDroppable ? changeRightCol : undefined
+                }
+                removeColumn={removeTDSColumnValue}
+              />
             </PanelEntryDropZonePlaceholder>
           </div>
         );
