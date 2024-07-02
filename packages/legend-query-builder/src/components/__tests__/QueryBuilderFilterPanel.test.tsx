@@ -2675,3 +2675,68 @@ test(
     ).toHaveProperty('disabled', false);
   },
 );
+
+test(
+  integrationTest(
+    `Query builder warns about losing unsaved changes when filter is added`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    // Drag and drop
+    const dropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    const dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Legal Name'),
+    );
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Legal Name'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+
+    // Verify undo button is disabled
+    expect(renderResult.getByRole('button', { name: 'Undo' })).toHaveProperty(
+      'disabled',
+      true,
+    );
+
+    // change entity
+    const entityContainer = guaranteeNonNullable(
+      renderResult.getByText('Entity').parentElement,
+    );
+    selectFirstOptionFromCustomSelectorInput(entityContainer);
+
+    // check for modal
+    expect(
+      renderResult.getByText(
+        'Unsaved changes will be lost if you continue. Do you still want to proceed?',
+      ),
+    ).not.toBeNull();
+  },
+);

@@ -529,6 +529,10 @@ export class QueryBuilderGraphFetchTreeState
     );
   }
 
+  get isFilterEmpty(): boolean {
+    return false;
+  }
+
   get hasInvalidFilterValues(): boolean {
     return false;
   }

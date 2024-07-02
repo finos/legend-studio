@@ -300,15 +300,13 @@ export abstract class QueryEditorStore {
       this.graphManagerState,
       {
         loadQuery: (query: LightQuery): void => {
-          this.queryBuilderState?.changeDetectionState.alertUnsavedChanges(
-            () => {
-              this.queryLoaderState.setQueryLoaderDialogOpen(false);
-              applicationStore.navigationService.navigator.goToLocation(
-                generateExistingQueryEditorRoute(query.id),
-                { ignoreBlocking: true },
-              );
-            },
-          );
+          this.queryBuilderState?.alertUnsavedChanges(() => {
+            this.queryLoaderState.setQueryLoaderDialogOpen(false);
+            applicationStore.navigationService.navigator.goToLocation(
+              generateExistingQueryEditorRoute(query.id),
+              { ignoreBlocking: true },
+            );
+          });
         },
         fetchDefaultQueries: async (): Promise<LightQuery[]> => {
           const recentReviewedQueries =

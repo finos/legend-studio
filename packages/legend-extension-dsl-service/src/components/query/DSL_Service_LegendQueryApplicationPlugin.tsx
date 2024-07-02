@@ -81,7 +81,7 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
               }
             };
 
-            queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
+            queryBuilderState.alertUnsavedChanges(() => {
               openQueryProductionizer().catch(
                 editorStore.applicationStore.alertUnhandledError,
               );

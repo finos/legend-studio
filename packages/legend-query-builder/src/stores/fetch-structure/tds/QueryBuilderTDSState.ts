@@ -824,6 +824,10 @@ export class QueryBuilderTDSState
     return Boolean(usedInProjection ?? usedInPostFilter);
   }
 
+  get isFilterEmpty(): boolean {
+    return this.postFilterState.isEmpty;
+  }
+
   get hasInvalidFilterValues(): boolean {
     return (
       this.postFilterState.hasInvalidFilterValues ||

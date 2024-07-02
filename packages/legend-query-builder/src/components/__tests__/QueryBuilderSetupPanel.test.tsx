@@ -28,7 +28,7 @@ import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../
 import { TEST_DATA__simpleProjectionWithConstantsAndParameters } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import {
   TEST__setUpQueryBuilder,
-  selectFromCustomSelectorInput,
+  selectFirstOptionFromCustomSelectorInput,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
@@ -62,22 +62,13 @@ test(
     const entitySelectorContainer = guaranteeNonNullable(
       await waitFor(() => getByText(queryBuilderSetup, 'Entity').parentElement),
     );
-    // select FirmExtension from dropdown
-    selectFromCustomSelectorInput(
-      entitySelectorContainer,
-      'FirmExtensionmodel::pure::tests::model::simple::FirmExtension',
-    );
-    await waitFor(() => getByText(queryBuilderSetup, 'FirmExtension'));
-    // select synonym from dropdown
-    selectFromCustomSelectorInput(
-      entitySelectorContainer,
-      'Synonymmodel::pure::tests::model::simple::Synonym',
-    );
-    await waitFor(() => getByText(queryBuilderSetup, 'Synonym'));
+    // select entity from dropdown
+    selectFirstOptionFromCustomSelectorInput(entitySelectorContainer);
+    await waitFor(() => getByText(queryBuilderSetup, 'Account'));
     const queryBuilderExplorerTree = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
     );
-    await waitFor(() => getByText(queryBuilderExplorerTree, 'Synonym'));
+    await waitFor(() => getByText(queryBuilderExplorerTree, 'Account'));
   },
   50000,
 );
