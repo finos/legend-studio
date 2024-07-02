@@ -40,25 +40,6 @@ class DataCubeGridDatasourceConfiguration {
   }
 }
 
-class DataCubeGridLayoutConfiguration {
-  readonly showHorizontalGridLines?: boolean | undefined;
-  readonly showVerticalGridLines?: boolean | undefined;
-  readonly showWarningForTruncatedResult?: boolean | undefined;
-  readonly gridLineColor?: string | undefined;
-
-  constructor(input: {
-    snapshot?: DataCubeQuerySnapshot | undefined;
-    queryConfiguration?: DataCubeConfiguration | undefined;
-  }) {
-    const { queryConfiguration } = input;
-    this.showWarningForTruncatedResult =
-      queryConfiguration?.showWarningForTruncatedResult;
-    this.showHorizontalGridLines = queryConfiguration?.showHorizontalGridLines;
-    this.showVerticalGridLines = queryConfiguration?.showVerticalGridLines;
-    this.gridLineColor = queryConfiguration?.gridLineColor;
-  }
-}
-
 export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   private _client?: GridApi | undefined;
   clientDataSource: DataCubeGridClientServerSideDataSource;
@@ -66,7 +47,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
 
   isPaginationEnabled = false;
   datasourceConfiguration: DataCubeGridDatasourceConfiguration;
-  layoutConfiguration: DataCubeGridLayoutConfiguration;
+  queryConfiguration: DataCubeConfiguration;
 
   constructor(dataCube: DataCubeState) {
     super(dataCube);
@@ -74,7 +55,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     makeObservable(this, {
       clientDataSource: observable,
       datasourceConfiguration: observable,
-      layoutConfiguration: observable,
+      queryConfiguration: observable,
 
       clientLicenseKey: observable,
       setClientLicenseKey: action,
@@ -84,7 +65,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     });
 
     this.datasourceConfiguration = new DataCubeGridDatasourceConfiguration({});
-    this.layoutConfiguration = new DataCubeGridLayoutConfiguration({});
+    this.queryConfiguration = new DataCubeConfiguration();
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
   }
 
@@ -124,10 +105,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
         snapshot,
         queryConfiguration,
       });
-      this.layoutConfiguration = new DataCubeGridLayoutConfiguration({
-        snapshot,
-        queryConfiguration,
-      });
+      this.queryConfiguration = queryConfiguration;
     });
     if (
       existingExtraConfiguration?.hashCode !==

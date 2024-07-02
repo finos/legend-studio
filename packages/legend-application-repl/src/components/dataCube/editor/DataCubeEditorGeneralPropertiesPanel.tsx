@@ -158,7 +158,9 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               onChange={() =>
                 configuration.setShowLeafCount(!configuration.showLeafCount)
               }
+              disabled={true}
             />
+            <WIP_Badge />
           </div>
 
           <div className="mt-2 flex h-4 w-full items-center">
@@ -279,7 +281,6 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             </div>
             <DataCubeEditorNumberInput
               className="w-14 text-sm"
-              disabled={!configuration.alternateRows}
               value={panel.limit}
               min={-1}
               step={1}
@@ -691,11 +692,29 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               Hightlight Rows:
             </div>
             <DataCubeEditorCheckbox
-              label="Alternate color every"
+              label="Standard Mode"
+              checked={configuration.alternateRowsStandardMode}
+              onChange={() => {
+                if (configuration.alternateRowsStandardMode) {
+                  configuration.setAlternateRowsStandardMode(false);
+                } else {
+                  configuration.setAlternateRowsStandardMode(true);
+                  configuration.setAlternateRows(false);
+                }
+              }}
+            />
+            <DataCubeEditorCheckbox
+              className="ml-3"
+              label="Custom: Alternate color every"
               checked={configuration.alternateRows}
-              onChange={() =>
-                configuration.setAlternateRows(!configuration.alternateRows)
-              }
+              onChange={() => {
+                if (configuration.alternateRows) {
+                  configuration.setAlternateRows(false);
+                } else {
+                  configuration.setAlternateRows(true);
+                  configuration.setAlternateRowsStandardMode(false);
+                }
+              }}
             />
             <DataCubeEditorNumberInput
               className="ml-1.5 w-14 text-sm"

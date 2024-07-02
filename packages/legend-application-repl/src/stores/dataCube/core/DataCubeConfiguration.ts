@@ -138,7 +138,8 @@ export class DataCubeConfiguration {
   defaultBackgroundNegativeColor = DEFAULT_BACKGROUND_COLOR;
   defaultBackgroundZeroColor = DEFAULT_BACKGROUND_COLOR;
   defaultBackgroundErrorColor = DEFAULT_BACKGROUND_COLOR;
-  alternateRows = true;
+  alternateRows = false;
+  alternateRowsStandardMode = true;
   alternateRowsColor = DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR;
   alternateRowsCount = 1;
 
@@ -151,7 +152,7 @@ export class DataCubeConfiguration {
   // aggregation
   initialExpandLevel?: number | undefined;
   showRootAggregation = false;
-  showLeafCount = true;
+  showLeafCount = false;
   addPivotTotalColumn = true;
   addPivotTotalColumnOnLeft = true;
   treeGroupSortFunction?: string | undefined;
@@ -166,6 +167,7 @@ export class DataCubeConfiguration {
       alternateRows: primitive(),
       alternateRowsColor: primitive(),
       alternateRowsCount: primitive(),
+      alternateRowsStandardMode: primitive(),
       columns: list(
         usingModelSchema(DataCubeColumnConfiguration.serialization.schema),
       ),

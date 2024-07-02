@@ -166,6 +166,7 @@ export function getDataType(type: string): DataCubeColumnDataType {
 export const DEFAULT_GRID_LINE_COLOR = TailwindCSSPalette.neutral[200];
 export const DEFAULT_FOREGROUND_COLOR = TailwindCSSPalette.black;
 export const DEFAULT_BACKGROUND_COLOR = TailwindCSSPalette.white;
+export const DEFAULT_ROW_BACKGROUND_COLOR = TailwindCSSPalette.white;
 export const DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR =
   TailwindCSSPalette.sky[100];
 export const DEFAULT_NEGATIVE_FOREGROUND_COLOR = TailwindCSSPalette.red[500];

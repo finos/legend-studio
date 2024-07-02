@@ -132,7 +132,7 @@ button:focus-visible {
   --ag-icon-font-color: var(--tw-color-neutral-500);
   --ag-row-border-color: transparent;
   --ag-header-foreground-color: var(--tw-color-black);
-  --ag-odd-row-background-color: var(--tw-color-white);
+  --ag-odd-row-background-color: var(--tw-white);
   --ag-row-hover-color: #d4d4d415; // tailwind neutral 300
   // NOTE: These are icons taken from Tabler and URI encoded
   // See https://yoksel.github.io/url-encoder/
@@ -199,6 +199,11 @@ button:focus-visible {
   // configuration will programatically toggle the styles or set the CSS variables' values
 
   --ag-grid-line-color: var(--ag-border-color);
+  --ag-row-highlight-color: var(--tw-white);
+
+  .data-cube-grid__utility--highlight-row {
+    background-color: var(--ag-row-highlight-color);
+  }
 
   .data-cube-grid__utility--show-vertical-grid-lines {
     --ag-cell-horizontal-border: 1px solid var(--ag-grid-line-color);

@@ -33,7 +33,9 @@ import { RangeSelectionModule } from '@ag-grid-enterprise/range-selection';
 import { buildGridMenu } from './menu/DataCubeGridMenu.js';
 import {
   DEFAULT_GRID_LINE_COLOR,
+  DEFAULT_ROW_BACKGROUND_COLOR,
   DEFAULT_ROW_BUFFER,
+  DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR,
 } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
@@ -63,10 +65,23 @@ export const DataCubeGrid = observer(() => {
     if (gridContainerRef.current) {
       gridContainerRef.current.style.setProperty(
         '--ag-grid-line-color',
-        grid.layoutConfiguration.gridLineColor ?? DEFAULT_GRID_LINE_COLOR,
+        grid.queryConfiguration.gridLineColor ?? DEFAULT_GRID_LINE_COLOR,
+      );
+      gridContainerRef.current.style.setProperty(
+        '--ag-row-highlight-color',
+        grid.queryConfiguration.alternateRows
+          ? grid.queryConfiguration.alternateRowsColor
+          : DEFAULT_ROW_BACKGROUND_COLOR,
+      );
+      gridContainerRef.current.style.setProperty(
+        '--ag-odd-row-background-color',
+        grid.queryConfiguration.alternateRowsStandardMode &&
+          !grid.queryConfiguration.alternateRows
+          ? DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR
+          : DEFAULT_ROW_BACKGROUND_COLOR,
       );
     }
-  }, [grid.layoutConfiguration]);
+  }, [grid.queryConfiguration]);
 
   return (
     <div
@@ -76,9 +91,9 @@ export const DataCubeGrid = observer(() => {
       <div
         className={cn('relative h-[calc(100%_-_20px)] w-full', {
           'data-cube-grid__utility--show-horizontal-grid-lines':
-            grid.layoutConfiguration.showHorizontalGridLines,
+            grid.queryConfiguration.showHorizontalGridLines,
           'data-cube-grid__utility--show-vertical-grid-lines':
-            grid.layoutConfiguration.showVerticalGridLines,
+            grid.queryConfiguration.showVerticalGridLines,
         })}
       >
         <AgGridReact
@@ -96,6 +111,20 @@ export const DataCubeGrid = observer(() => {
           // Force multi-sorting since this is what the query supports anyway
           alwaysMultiSort={true}
           // -------------------------------------- DISPLAY & INTERACTION --------------------------------------
+          {...(grid.queryConfiguration.alternateRows
+            ? {
+                // NOTE: this feature is fairly heavy in terms of performance because it requires computation
+                // per row being renderd on the screen, causing fast scrolls to result in janks and lags due to rows
+                // not being rendered in time
+                // See https://www.ag-grid.com/javascript-data-grid/row-styles/#refresh-of-styles
+                rowClassRules: {
+                  'data-cube-grid__utility--highlight-row': (params) =>
+                    params.rowIndex %
+                      (grid.queryConfiguration.alternateRowsCount * 2) >=
+                    grid.queryConfiguration.alternateRowsCount,
+                },
+              }
+            : {})}
           rowHeight={INTERNAL__GRID_CLIENT_ROW_HEIGHT}
           headerHeight={INTERNAL__GRID_CLIENT_HEADER_HEIGHT}
           suppressBrowserResizeObserver={true}
@@ -183,7 +212,7 @@ export const DataCubeGrid = observer(() => {
               : ''}
           </div>
           {grid.datasourceConfiguration.limit !== undefined &&
-            grid.layoutConfiguration.showWarningForTruncatedResult && (
+            grid.queryConfiguration.showWarningForTruncatedResult && (
               // TODO: if we want to properly warn if the data has been truncated due to row limit,
               // this would require us to fetch n+1 rows when limit=n
               // This is feature is not difficult to implement, but it would be implemented most cleanly

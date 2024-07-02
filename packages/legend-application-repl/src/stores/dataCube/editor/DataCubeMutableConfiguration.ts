@@ -366,6 +366,9 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
       alternateRowsCount: observable,
       setAlternateRowsCount: action,
 
+      alternateRowsStandardMode: observable,
+      setAlternateRowsStandardMode: action,
+
       numberScale: observable,
       setNumberScale: action,
 
@@ -496,6 +499,10 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
 
   setAlternateRowsCount(value: number): void {
     this.alternateRowsCount = value;
+  }
+
+  setAlternateRowsStandardMode(value: boolean): void {
+    this.alternateRowsStandardMode = value;
   }
 
   setNumberScale(value: DataCubeNumberScale | undefined): void {
