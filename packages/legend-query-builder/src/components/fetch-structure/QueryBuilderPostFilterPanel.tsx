@@ -209,10 +209,10 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
 export const QueryBuilderColumnBadge = observer(
   (props: {
     colState: QueryBuilderTDSColumnState;
+    removeColumn: () => void;
     onColumnChange?:
       | ((columnState: QueryBuilderProjectionColumnState) => Promise<void>)
       | undefined;
-    removeColumn?: () => void;
   }) => {
     const { colState, onColumnChange, removeColumn } = props;
     const applicationStore = useApplicationStore();
@@ -275,16 +275,14 @@ export const QueryBuilderColumnBadge = observer(
             <InfoCircleIcon />
           </div>
         </QueryBuilderColumnInfoTooltip>
-        {removeColumn && (
-          <button
-            className="query-builder-column-badge__action"
-            name="Reset"
-            title="Reset"
-            onClick={removeColumn}
-          >
-            <RefreshIcon />
-          </button>
-        )}
+        <button
+          className="query-builder-column-badge__action"
+          name="Reset"
+          title="Reset"
+          onClick={removeColumn}
+        >
+          <RefreshIcon />
+        </button>
       </div>
     );
 
