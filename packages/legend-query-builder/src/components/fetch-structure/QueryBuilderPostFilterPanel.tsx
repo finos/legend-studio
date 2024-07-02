@@ -111,6 +111,7 @@ import {
   QueryBuilderPostFilterOperator_In,
   QueryBuilderPostFilterOperator_NotIn,
 } from '../../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
+import { QueryBuilderPropertyNameDisplay } from '../QueryBuilderPropertyExpressionEditor.js';
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
   forwardRef<
@@ -511,8 +512,9 @@ const QueryBuilderPostFilterConditionEditor = observer(
         >
           <div className="query-builder-post-filter-tree__condition-node">
             <div className="query-builder-post-filter-tree__condition-node__property">
-              <QueryBuilderColumnBadge
-                colState={node.condition.leftConditionValue}
+              <QueryBuilderPropertyNameDisplay
+                columnName={node.condition.leftConditionValue.columnName}
+                title={node.condition.leftConditionValue.columnName}
               />
             </div>
             <ControlledDropdownMenu
