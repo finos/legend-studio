@@ -166,28 +166,30 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             </div>
             <DataCubeEditorCheckbox
               label="Tree"
-              checked={configuration.showTreeLine}
+              checked={configuration.showTreeLines}
               onChange={() =>
-                configuration.setShowTreeLine(!configuration.showTreeLine)
+                configuration.setShowTreeLines(!configuration.showTreeLines)
               }
+              disabled={true}
             />
+            <WIP_Badge />
             <DataCubeEditorCheckbox
               className="ml-2"
               label="Horizontal"
-              checked={configuration.showHorizontalGridLine}
+              checked={configuration.showHorizontalGridLines}
               onChange={() =>
-                configuration.setShowHorizontalGridLine(
-                  !configuration.showHorizontalGridLine,
+                configuration.setShowHorizontalGridLines(
+                  !configuration.showHorizontalGridLines,
                 )
               }
             />
             <DataCubeEditorCheckbox
               className="ml-2"
               label="Vertical"
-              checked={configuration.showVerticalGridLine}
+              checked={configuration.showVerticalGridLines}
               onChange={() =>
-                configuration.setShowVerticalGridLine(
-                  !configuration.showVerticalGridLine,
+                configuration.setShowVerticalGridLines(
+                  !configuration.showVerticalGridLines,
                 )
               }
             />

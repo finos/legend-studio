@@ -117,9 +117,9 @@ export class DataCubeConfiguration {
   description?: string | undefined;
   columns: DataCubeColumnConfiguration[] = [];
 
-  showTreeLine = true;
-  showHorizontalGridLine = false;
-  showVerticalGridLine = false;
+  showTreeLines = false;
+  showHorizontalGridLines = false;
+  showVerticalGridLines = true;
   defaultFontFamily = DataCubeFont.ROBOTO;
   defaultFontSize = 12;
   defaultFontBold = false;
@@ -188,11 +188,11 @@ export class DataCubeConfiguration {
       numberScale: optional(primitive()),
       rowBuffer: primitive(),
       selectionStats: list(primitive()),
-      showHorizontalGridLine: primitive(),
+      showHorizontalGridLines: primitive(),
       showLeafCount: primitive(),
       showRootAggregation: primitive(),
-      showTreeLine: primitive(),
-      showVerticalGridLine: primitive(),
+      showTreeLines: primitive(),
+      showVerticalGridLines: primitive(),
       showWarningForTruncatedResult: primitive(),
       treeGroupSortFunction: optional(primitive()),
     }),

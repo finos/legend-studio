@@ -24,22 +24,36 @@ import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import { generateGridOptionsFromSnapshot } from './DataCubeGridQuerySnapshotAnalyzer.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
-class DataCubeGridConfiguration {
+class DataCubeGridDatasourceConfiguration {
   readonly limit?: number | undefined;
+
+  constructor(input: {
+    snapshot?: DataCubeQuerySnapshot | undefined;
+    queryConfiguration?: DataCubeConfiguration | undefined;
+  }) {
+    const { snapshot } = input;
+    this.limit = snapshot?.data.limit;
+  }
+
+  get hashCode(): string {
+    return hashArray([`limit: ${this.limit ?? ''}`]);
+  }
+}
+
+class DataCubeGridLayoutConfiguration {
+  readonly showHorizontalGridLines?: boolean | undefined;
+  readonly showVerticalGridLines?: boolean | undefined;
   readonly showWarningForTruncatedResult?: boolean | undefined;
 
   constructor(input: {
     snapshot?: DataCubeQuerySnapshot | undefined;
     queryConfiguration?: DataCubeConfiguration | undefined;
   }) {
-    const { snapshot, queryConfiguration } = input;
-    this.limit = snapshot?.data.limit;
+    const { queryConfiguration } = input;
     this.showWarningForTruncatedResult =
       queryConfiguration?.showWarningForTruncatedResult;
-  }
-
-  get hashCode(): string {
-    return hashArray([`limit: ${this.limit ?? ''}`]);
+    this.showHorizontalGridLines = queryConfiguration?.showHorizontalGridLines;
+    this.showVerticalGridLines = queryConfiguration?.showVerticalGridLines;
   }
 }
 
@@ -49,14 +63,16 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   clientLicenseKey?: string | undefined;
 
   isPaginationEnabled = false;
-  configuration: DataCubeGridConfiguration;
+  datasourceConfiguration: DataCubeGridDatasourceConfiguration;
+  layoutConfiguration: DataCubeGridLayoutConfiguration;
 
   constructor(dataCube: DataCubeState) {
     super(dataCube);
 
     makeObservable(this, {
       clientDataSource: observable,
-      configuration: observable,
+      datasourceConfiguration: observable,
+      layoutConfiguration: observable,
 
       clientLicenseKey: observable,
       setClientLicenseKey: action,
@@ -65,7 +81,8 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
       setPaginationEnabled: action,
     });
 
-    this.configuration = new DataCubeGridConfiguration({});
+    this.datasourceConfiguration = new DataCubeGridDatasourceConfiguration({});
+    this.layoutConfiguration = new DataCubeGridLayoutConfiguration({});
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
   }
 
@@ -92,7 +109,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   }
 
   override async applySnapshot(snapshot: DataCubeQuerySnapshot): Promise<void> {
-    const existingExtraConfiguration = this.configuration;
+    const existingExtraConfiguration = this.datasourceConfiguration;
     const queryConfiguration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
     );
@@ -101,12 +118,19 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     // in the grid client options, we will need to manually reset the grid by resetting the
     // datasource to ensure we don't fetch the result twice while forcing the data to be refreshed
     runInAction(() => {
-      this.configuration = new DataCubeGridConfiguration({
+      this.datasourceConfiguration = new DataCubeGridDatasourceConfiguration({
+        snapshot,
+        queryConfiguration,
+      });
+      this.layoutConfiguration = new DataCubeGridLayoutConfiguration({
         snapshot,
         queryConfiguration,
       });
     });
-    if (existingExtraConfiguration?.hashCode !== this.configuration?.hashCode) {
+    if (
+      existingExtraConfiguration?.hashCode !==
+      this.datasourceConfiguration?.hashCode
+    ) {
       // reset the entire grid
       this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
     }

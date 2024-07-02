@@ -56,8 +56,15 @@ export const DataCubeGrid = observer(() => {
   }, [grid.clientLicenseKey]);
 
   return (
-    <div className="data-cube-grid flex-1">
-      <div className="relative h-[calc(100%_-_20px)] w-full">
+    <div className="data-cube-grid ag-theme-balham flex-1">
+      <div
+        className={cn('relative h-[calc(100%_-_20px)] w-full', {
+          'data-cube-grid__utility--show-horizontal-grid-lines':
+            grid.layoutConfiguration.showHorizontalGridLines,
+          'data-cube-grid__utility--show-vertical-grid-lines':
+            grid.layoutConfiguration.showVerticalGridLines,
+        })}
+      >
         <AgGridReact
           // -------------------------------------- ROW GROUPING --------------------------------------
           rowGroupPanelShow="always"
@@ -73,7 +80,6 @@ export const DataCubeGrid = observer(() => {
           // Force multi-sorting since this is what the query supports anyway
           alwaysMultiSort={true}
           // -------------------------------------- DISPLAY & INTERACTION --------------------------------------
-          className="ag-theme-balham"
           rowHeight={INTERNAL__GRID_CLIENT_ROW_HEIGHT}
           headerHeight={INTERNAL__GRID_CLIENT_HEADER_HEIGHT}
           suppressBrowserResizeObserver={true}
@@ -160,8 +166,8 @@ export const DataCubeGrid = observer(() => {
               ? `Rows: ${grid.clientDataSource.rowCount}`
               : ''}
           </div>
-          {grid.configuration.limit !== undefined &&
-            grid.configuration.showWarningForTruncatedResult && (
+          {grid.datasourceConfiguration.limit !== undefined &&
+            grid.layoutConfiguration.showWarningForTruncatedResult && (
               // TODO: if we want to properly warn if the data has been truncated due to row limit,
               // this would require us to fetch n+1 rows when limit=n
               // This is feature is not difficult to implement, but it would be implemented most cleanly
@@ -171,7 +177,7 @@ export const DataCubeGrid = observer(() => {
                 <div className="h-3 w-[1px] bg-neutral-200" />
                 <div className="flex h-full items-center px-2 text-orange-500">
                   <DataCubeIcon.Warning className="stroke-[3px]" />
-                  <div className="ml-1 text-sm font-semibold">{`Results truncated to fit within row limit (${grid.configuration.limit})`}</div>
+                  <div className="ml-1 text-sm font-semibold">{`Results truncated to fit within row limit (${grid.datasourceConfiguration.limit})`}</div>
                 </div>
               </>
             )}

@@ -300,14 +300,14 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
       description: observable,
       setDescription: action,
 
-      showTreeLine: observable,
-      setShowTreeLine: action,
+      showTreeLines: observable,
+      setShowTreeLines: action,
 
-      showHorizontalGridLine: observable,
-      setShowHorizontalGridLine: action,
+      showHorizontalGridLines: observable,
+      setShowHorizontalGridLines: action,
 
-      showVerticalGridLine: observable,
-      setShowVerticalGridLine: action,
+      showVerticalGridLines: observable,
+      setShowVerticalGridLines: action,
 
       defaultFontFamily: observable,
       setDefaultFontFamily: action,
@@ -405,16 +405,16 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
     this.description = value;
   }
 
-  setShowTreeLine(value: boolean): void {
-    this.showTreeLine = value;
+  setShowTreeLines(value: boolean): void {
+    this.showTreeLines = value;
   }
 
-  setShowHorizontalGridLine(value: boolean): void {
-    this.showHorizontalGridLine = value;
+  setShowHorizontalGridLines(value: boolean): void {
+    this.showHorizontalGridLines = value;
   }
 
-  setShowVerticalGridLine(value: boolean): void {
-    this.showVerticalGridLine = value;
+  setShowVerticalGridLines(value: boolean): void {
+    this.showVerticalGridLines = value;
   }
 
   setDefaultFontFamily(value: DataCubeFont): void {
