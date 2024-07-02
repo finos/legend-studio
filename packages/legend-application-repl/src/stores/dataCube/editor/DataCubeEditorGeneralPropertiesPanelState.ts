@@ -32,9 +32,6 @@ export class DataCubeEditorGeneralPropertiesPanelState
   configuration = new DataCubeMutableConfiguration();
 
   constructor(editor: DataCubeEditorState) {
-    this.editor = editor;
-    this.dataCube = editor.dataCube;
-
     makeObservable(this, {
       name: observable,
       setName: action,
@@ -45,6 +42,9 @@ export class DataCubeEditorGeneralPropertiesPanelState
       configuration: observable,
       setConfiguration: action,
     });
+
+    this.editor = editor;
+    this.dataCube = editor.dataCube;
   }
 
   setName(val: string): void {
@@ -78,6 +78,6 @@ export class DataCubeEditorGeneralPropertiesPanelState
     const data = newSnapshot.data;
     data.name = this.name;
     data.limit = this.limit <= 0 ? undefined : this.limit;
-    // TODO: configuration
+    data.configuration = this.configuration.serialize();
   }
 }

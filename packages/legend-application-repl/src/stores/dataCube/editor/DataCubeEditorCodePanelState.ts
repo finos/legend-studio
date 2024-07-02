@@ -29,6 +29,7 @@ import {
   SourceInformation,
   V1_ParserError,
 } from '@finos/legend-graph';
+import type { DataCubeEditorState } from './DataCubeEditorState.js';
 
 class DataCubeQueryEditorState {
   uuid = uuid();
@@ -79,11 +80,12 @@ class DataCubeQueryEditorState {
 
 export class DataCubeEditorCodePanelState {
   readonly dataCube!: DataCubeState;
+  readonly editor: DataCubeEditorState;
 
   queryEditorState!: DataCubeQueryEditorState;
   currentSubQuery?: string | undefined;
 
-  constructor(dataCube: DataCubeState) {
+  constructor(editor: DataCubeEditorState) {
     makeObservable(this, {
       currentSubQuery: observable,
       queryEditorState: observable,
@@ -91,7 +93,8 @@ export class DataCubeEditorCodePanelState {
       parseQuery: flow,
     });
 
-    this.dataCube = dataCube;
+    this.editor = editor;
+    this.dataCube = editor.dataCube;
     this.queryEditorState = new DataCubeQueryEditorState('');
   }
 

@@ -347,6 +347,17 @@ export function buildExecutableQuery(
     );
   }
 
+  // --------------------------------- SELECT ---------------------------------
+
+  if (data.selectColumns.length) {
+    _process(
+      'select',
+      _function(_name(DataCubeFunction.SELECT), [
+        _cols(data.selectColumns.map((col) => _colSpec(col.name))),
+      ]),
+    );
+  }
+
   // --------------------------------- FILTER ---------------------------------
 
   if (data.filter) {
@@ -394,17 +405,6 @@ export function buildExecutableQuery(
             _colSpec(col.name, _deserializeToLambda(col.lambda)),
           ),
         ),
-      ]),
-    );
-  }
-
-  // --------------------------------- SELECT ---------------------------------
-
-  if (data.selectColumns.length) {
-    _process(
-      'select',
-      _function(_name(DataCubeFunction.SELECT), [
-        _cols(data.selectColumns.map((col) => _colSpec(col.name))),
       ]),
     );
   }

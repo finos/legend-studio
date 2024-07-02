@@ -72,6 +72,14 @@ button:focus-visible {
   outline-style: solid;
 }
 
+.data-cube-editor-checkbox--checked svg {
+  color: var(--tw-color-neutral-600);
+}
+
+.data-cube-editor-checkbox--disabled svg {
+  color: var(--tw-color-neutral-300);
+}
+
 // ---------------------------------------- CUSTOMIZE ----------------------------------------
 
 .data-cube-color-picker {

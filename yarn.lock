@@ -2651,10 +2651,13 @@ __metadata:
     "@emotion/styled": "npm:11.11.5"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@fontsource/jetbrains-mono": "npm:5.0.20"
     "@fontsource/raleway": "npm:5.0.19"
     "@fontsource/roboto": "npm:5.0.13"
     "@fontsource/roboto-condensed": "npm:5.0.16"
     "@fontsource/roboto-mono": "npm:5.0.18"
+    "@fontsource/roboto-serif": "npm:5.0.13"
+    "@fontsource/ubuntu-mono": "npm:5.0.20"
     "@jest/globals": "npm:29.7.0"
     "@mui/material": "npm:5.15.21"
     "@types/react": "npm:18.3.3"
@@ -3375,6 +3378,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-vscode-extension-dependencies@workspace:packages/legend-vscode-extension-dependencies"
   dependencies:
+    "@babel/core": "npm:7.24.7"
     "@finos/legend-application-studio": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
@@ -3451,6 +3455,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fontsource/jetbrains-mono@npm:5.0.20":
+  version: 5.0.20
+  resolution: "@fontsource/jetbrains-mono@npm:5.0.20"
+  checksum: 10/18c3ff2c1245c8d34e93e9bb000bfb3685b5be405f61f218fdbeeedd6ace1dc6d03df6d470535e9614bcbb29b675a221fd1c53d35d550ad773a1ef7031995840
+  languageName: node
+  linkType: hard
+
 "@fontsource/raleway@npm:5.0.19":
   version: 5.0.19
   resolution: "@fontsource/raleway@npm:5.0.19"
@@ -3472,10 +3483,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fontsource/roboto-serif@npm:5.0.13":
+  version: 5.0.13
+  resolution: "@fontsource/roboto-serif@npm:5.0.13"
+  checksum: 10/f1280caf1518e046acb5eebeebef5136501f6e166b049022654a587369603f9d6db8e715008a27d25ea4372a1092aec3ca43235e25a032e6564e5558a7c0b480
+  languageName: node
+  linkType: hard
+
 "@fontsource/roboto@npm:5.0.13":
   version: 5.0.13
   resolution: "@fontsource/roboto@npm:5.0.13"
   checksum: 10/225eb68f99eab76e6d1bee97f977799bd67c4bd3ea55ea2674fdc083a189781e1cdfeea1f58bdf7f11d4e6cf15f9ce837e575ace691898f1129d08ef3aa6ed4d
+  languageName: node
+  linkType: hard
+
+"@fontsource/ubuntu-mono@npm:5.0.20":
+  version: 5.0.20
+  resolution: "@fontsource/ubuntu-mono@npm:5.0.20"
+  checksum: 10/ca2a3d3b39da20186de7eecb5e6f517f74b97e00bae70fc74aaa6a7364df1de2459571ebe380a48323ee3694476dfa385b068dcecba251a671ff0bf9baacfec9
   languageName: node
   linkType: hard
 

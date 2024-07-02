@@ -79,7 +79,7 @@ export const DataCubeGrid = observer(() => {
           suppressBrowserResizeObserver={true}
           reactiveCustomComponents={true} // TODO: remove on v32 as this would be default to `true` then
           noRowsOverlayComponent={() => (
-            <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-semibold text-neutral-400">
+            <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-medium text-neutral-400">
               <div>
                 <DataCubeIcon.WarningCircle className="mr-1 stroke-2 text-lg" />
               </div>
@@ -87,7 +87,7 @@ export const DataCubeGrid = observer(() => {
             </div>
           )}
           loadingOverlayComponent={() => (
-            <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-semibold text-neutral-400">
+            <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-medium text-neutral-400">
               <div>
                 <DataCubeIcon.Loader className="mr-1 animate-spin stroke-2 text-lg" />
               </div>

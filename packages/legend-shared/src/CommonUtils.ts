@@ -49,6 +49,7 @@ export {
   uniq,
   debounce,
   throttle,
+  toNumber,
   type DebouncedFunc,
 };
 

@@ -29,6 +29,7 @@ import {
   type DataCubeFontFormatUnderlinedVariant,
   type DataCubeNumberScale,
   type DataCubeSelectionStat,
+  type DataCubeColumnPinPlacement,
 } from './DataCubeQueryEngine.js';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, list, optional, primitive } from 'serializr';
@@ -66,6 +67,12 @@ export class DataCubeColumnConfiguration {
   blur = false;
   hideFromView = false;
 
+  fixedWidth?: number | undefined;
+  minWidth?: number | undefined;
+  maxWidth?: number | undefined;
+  pinned?: DataCubeColumnPinPlacement | undefined;
+  displayAsLink = false;
+
   constructor(name: string, type: string) {
     this.name = name;
     this.type = type;
@@ -78,8 +85,10 @@ export class DataCubeColumnConfiguration {
       backgroundNegativeColor: primitive(),
       backgroundZeroColor: primitive(),
       decimals: optional(primitive()),
+      displayAsLink: primitive(),
       displayCommas: primitive(),
       displayName: optional(primitive()),
+      fixedWidth: optional(primitive()),
       foregroundColor: primitive(),
       foregroundErrorColor: primitive(),
       foregroundNegativeColor: primitive(),
@@ -92,9 +101,12 @@ export class DataCubeColumnConfiguration {
       fontUnderlined: optional(primitive()),
       hPivotSortFunction: optional(primitive()),
       kind: primitive(),
+      maxWidth: optional(primitive()),
+      minWidth: optional(primitive()),
       name: primitive(),
       negativeNumberInParens: primitive(),
       numberScale: optional(primitive()),
+      pinned: optional(primitive()),
       textAlign: primitive(),
       type: primitive(),
     }),
@@ -124,7 +136,7 @@ export class DataCubeConfiguration {
   defaultBackgroundNegativeColor = DEFAULT_BACKGROUND_COLOR;
   defaultBackgroundZeroColor = DEFAULT_BACKGROUND_COLOR;
   defaultBackgroundErrorColor = DEFAULT_BACKGROUND_COLOR;
-  alternateRows = false;
+  alternateRows = true;
   alternateRowsColor = DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR;
   alternateRowsCount = 1;
 
@@ -134,7 +146,7 @@ export class DataCubeConfiguration {
 
   showWarningForTruncatedResult = true;
 
-  // aggregatio
+  // aggregation
   initialExpandLevel?: number | undefined;
   showRootAggregation = false;
   showLeafCount = true;

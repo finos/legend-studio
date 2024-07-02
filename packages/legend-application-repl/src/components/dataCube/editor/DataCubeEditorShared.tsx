@@ -30,7 +30,8 @@ import {
   type TailwindCSSColorScale,
   type TailwindCSSColorScaleKey,
 } from '@finos/legend-art';
-import { useState } from 'react';
+import { toNumber } from '@finos/legend-shared';
+import React, { forwardRef, useEffect, useState } from 'react';
 
 export function WIP_Badge() {
   return (
@@ -43,14 +44,104 @@ export function WIP_Badge() {
   );
 }
 
-export function DataCubeEditorInput(
+export const DataCubeEditorNumberInput = forwardRef(
+  function DataCubeEditorBaseNumberInput(
+    props: React.InputHTMLAttributes<HTMLInputElement> & {
+      min?: number | undefined;
+      max?: number | undefined;
+      step?: number | undefined;
+      isValid?: (value: number | undefined) => boolean;
+      isDecimal?: boolean | undefined;
+      defaultValue?: number | undefined;
+      value: number | undefined;
+      setValue: (value?: number | undefined) => void;
+      className?: string | undefined;
+    },
+    ref: React.Ref<HTMLInputElement>,
+  ) {
+    const {
+      min,
+      max,
+      step,
+      value,
+      setValue,
+      isValid,
+      isDecimal,
+      defaultValue,
+      disabled,
+      className,
+    } = props;
+    const [inputValue, setInputValue] = useState<string | number>(value ?? '');
+
+    useEffect(() => {
+      setInputValue(value ?? '');
+    }, [value]);
+
+    return (
+      <input
+        className={cn(
+          'h-6 flex-shrink-0 border border-neutral-400 px-1.5 disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
+          className,
+        )}
+        ref={ref}
+        inputMode="numeric"
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        value={inputValue}
+        disabled={Boolean(disabled)}
+        onChange={(event) => {
+          const newInputValue = event.target.value;
+          setInputValue(newInputValue);
+          const numericValue = isDecimal
+            ? toNumber(newInputValue)
+            : parseInt(newInputValue, 10);
+          if (
+            isNaN(numericValue) ||
+            // NOTE: `toNumber` parses empty string as `0`, which is not what we want, so we want to do the explicit check here
+            !newInputValue ||
+            (isValid !== undefined
+              ? !isValid(numericValue)
+              : (min !== undefined && numericValue < min) ||
+                (max !== undefined && numericValue > max))
+          ) {
+            return;
+          }
+          setValue(numericValue);
+        }}
+        onBlur={() => {
+          const numericValue = isDecimal
+            ? toNumber(inputValue)
+            : parseInt(inputValue.toString(), 10);
+          if (
+            isNaN(numericValue) ||
+            // NOTE: `toNumber` parses empty string as `0`, which is not what we want, so we want to do the explicit check here
+            !inputValue ||
+            (isValid !== undefined
+              ? !isValid(numericValue)
+              : (min !== undefined && numericValue < min) ||
+                (max !== undefined && numericValue > max))
+          ) {
+            setValue(defaultValue);
+            setInputValue(defaultValue ?? '');
+          } else {
+            setInputValue(value ?? '');
+          }
+        }}
+      />
+    );
+  },
+);
+
+export function DataCubeEditorTextInput(
   props: React.InputHTMLAttributes<HTMLInputElement>,
 ) {
   const { className, ...otherProps } = props;
   return (
     <input
       className={cn(
-        'h-6 w-full border border-neutral-400 px-1.5 disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
+        'h-6 flex-shrink-0 border border-neutral-400 px-1.5 disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
         className,
       )}
       {...otherProps}
@@ -59,9 +150,12 @@ export function DataCubeEditorInput(
 }
 
 export function DataCubeEditorCheckbox(
-  props: CheckboxProps & { label?: React.ReactNode },
+  props: CheckboxProps & {
+    label?: React.ReactNode;
+    onChange: () => void;
+  },
 ) {
-  const { label, className, ...otherProps } = props;
+  const { label, className, onChange, disabled, ...otherProps } = props;
   return (
     <>
       <Checkbox
@@ -72,16 +166,25 @@ export function DataCubeEditorCheckbox(
           root: cn(
             // Make sure the icons used have consistent stroke width with other components' borders
             // and that the left side is offseted to align well with other components
-            'p-0 text-neutral-400 [&_*]:stroke-[1.5px] -ml-[1px]',
+            'p-0 text-neutral-600 [&_*]:stroke-[1.5px] -ml-[1px]',
             className,
           ),
-          checked: '!text-neutral-600',
-          disabled: '!text-neutral-300',
+          checked: 'data-cube-editor-checkbox--checked',
+          disabled: 'data-cube-editor-checkbox--disabled',
         }}
+        onChange={onChange}
+        disabled={disabled}
         {...otherProps}
       />
       {Boolean(label) && (
-        <div className="flex-shrink-0 pl-1 text-sm">{label}</div>
+        <button
+          className="flex-shrink-0 pl-1 text-sm disabled:text-neutral-300"
+          onClick={onChange}
+          disabled={disabled}
+          tabIndex={-1}
+        >
+          {label}
+        </button>
       )}
     </>
   );
@@ -94,7 +197,7 @@ export function DataCubeEditorDropdownMenuTrigger(
   return (
     <button
       className={cn(
-        'group flex h-6 items-center justify-between border border-neutral-400 px-1.5 pr-0.5 text-sm disabled:select-none disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
+        'group flex h-6 flex-shrink-0 items-center justify-between border border-neutral-400 px-1.5 pr-0.5 text-sm disabled:select-none disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
         className,
       )}
       {...otherProps}

@@ -15,7 +15,7 @@
  */
 
 import { TailwindCSSPalette } from '@finos/legend-art';
-import type { V1_AppliedFunction } from '@finos/legend-graph';
+import { PRIMITIVE_TYPE, type V1_AppliedFunction } from '@finos/legend-graph';
 
 export enum DataCubeFunction {
   // relation
@@ -63,9 +63,12 @@ export enum DataCubeFunction {
   MAX = 'meta::pure::functions::collection::max',
   MIN = 'meta::pure::functions::collection::min',
   SUM = 'meta::pure::functions::math::sum',
-  // STD_DEV_POPULATION = 'meta::pure::functions::math::stdDevPopulation',
-  // STD_DEV_SAMPLE = 'meta::pure::functions::math::stdDevSample',
+  STDDEV_POP = 'meta::pure::functions::math::stdDevPopulation',
+  STDDEV_SAMP = 'meta::pure::functions::math::stdDevSample',
+  VAR_POP = 'meta::pure::functions::math::variancePopulation',
+  VAR_SAMP = 'meta::pure::functions::math::varianceSample',
   // UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
+  // PERCENTILE = 'meta::pure::functions::math::percentile',
 }
 
 export const DEFAULT_REPORT_NAME = 'New Report';
@@ -121,24 +124,55 @@ export enum DataCubeFont {
   ROBOTO_SERIF = 'Roboto Serif',
 
   // monospaced
-  JERBRAIN_MONO = 'Jetbrain Mono',
+  JERBRAINS_MONO = 'Jetbrains Mono',
   ROBOTO_MONO = 'Roboto Mono',
   UBUNTU_MONO = 'Ubuntu Mono',
 }
 
 export enum DataCubeFontTextAlignment {
-  CENTER = 'center',
-  LEFT = 'left',
-  RIGHT = 'right',
+  CENTER = 'Center',
+  LEFT = 'Left',
+  RIGHT = 'Right',
+}
+
+export enum DataCubeColumnPinPlacement {
+  LEFT = 'Left',
+  RIGHT = 'Right',
+}
+
+export enum DataCubeColumnDataType {
+  NUMBER = 'number',
+  DATE = 'date',
+  TEXT = 'text',
+}
+
+export function getDataType(type: string): DataCubeColumnDataType {
+  switch (type) {
+    case PRIMITIVE_TYPE.NUMBER:
+    case PRIMITIVE_TYPE.INTEGER:
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.FLOAT:
+      return DataCubeColumnDataType.NUMBER;
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.DATETIME:
+    case PRIMITIVE_TYPE.STRICTDATE:
+      return DataCubeColumnDataType.DATE;
+    case PRIMITIVE_TYPE.STRING:
+    default:
+      return DataCubeColumnDataType.TEXT;
+  }
 }
 
 export const DEFAULT_FOREGROUND_COLOR = TailwindCSSPalette.black;
-export const DEFAULT_BACKGROUND_COLOR = TailwindCSSPalette.black;
+export const DEFAULT_BACKGROUND_COLOR = TailwindCSSPalette.white;
 export const DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR =
   TailwindCSSPalette.sky[100];
 export const DEFAULT_NEGATIVE_FOREGROUND_COLOR = TailwindCSSPalette.red[500];
 export const DEFAULT_ZERO_FOREGROUND_COLOR = TailwindCSSPalette.neutral[400];
 export const DEFAULT_ERROR_FOREGROUND_COLOR = TailwindCSSPalette.blue[600];
+export const DEFAULT_COLUMN_WIDTH = 300;
+export const DEFAULT_COLUMN_MIN_WIDTH = 100;
+export const DEFAULT_COLUMN_MAX_WIDTH = undefined;
 
 export enum DataCubeFontFormatUnderlinedVariant {
   SOLID = 'Solid',
@@ -159,12 +193,14 @@ export enum DataCubeAggregateFunction {
   COUNT = 'count',
   MIN = 'min',
   MAX = 'max',
-  UNIQUE = 'uniq',
+  // UNIQUE = 'uniq',
   FIRST = 'first',
   LAST = 'last',
   MEDIAN = 'median',
-  VARIANCE = 'var',
-  STANDARD_DEVIATION = 'std',
+  VAR_POP = 'var_samp',
+  VAR_SAMP = 'var_pop',
+  STDDEV_POP = 'stddev_pop',
+  STDDEV_SAMP = 'stddev_samp',
   // STANDARD_ERROR = 'stderr',
   // NULL = 'null',
   // ssq
@@ -174,7 +210,7 @@ export enum DataCubeAggregateFunction {
   // minmagnitude
   // maxmagnitude
   // commonprefix
-  //commonprefixunstrict
+  // commonprefixunstrict
   // strjoin
   // strjoinuniq
   // splitjoin

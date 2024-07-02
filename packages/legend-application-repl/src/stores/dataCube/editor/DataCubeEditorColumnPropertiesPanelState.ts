@@ -19,10 +19,8 @@ import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
-import {
-  DataCubeMutableColumnConfiguration,
-  DataCubeMutableConfiguration,
-} from './DataCubeMutableConfiguration.js';
+import { DataCubeMutableColumnConfiguration } from './DataCubeMutableConfiguration.js';
+import { getNonNullableEntry, type PlainObject } from '@finos/legend-shared';
 
 export class DataCubeEditorColumnPropertiesPanelState
   implements DataCubeQueryEditorPanelState
@@ -62,24 +60,23 @@ export class DataCubeEditorColumnPropertiesPanelState
   }
 
   applySnaphot(snapshot: DataCubeQuerySnapshot): void {
-    // this.setName(snapshot.data.name);
-    // this.setLimit(
-    //   snapshot.data.limit !== undefined && snapshot.data.limit > 0
-    //     ? snapshot.data.limit
-    //     : -1,
-    // );
-    // this.setConfiguration(
-    //   DataCubeMutableConfiguration.create(snapshot.data.configuration),
-    // );
+    this.setColumns(
+      (snapshot.data.configuration as { columns: PlainObject[] }).columns.map(
+        (column) => DataCubeMutableColumnConfiguration.create(column),
+      ),
+    );
+    if (!this.selectedColumn && this.columns.length) {
+      this.setSelectedColumnName(getNonNullableEntry(this.columns, 0).name);
+    }
   }
 
   buildSnapshot(
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
   ): void {
-    // const data = newSnapshot.data;
-    // data.name = this.name;
-    // data.limit = this.limit <= 0 ? undefined : this.limit;
-    // // TODO: configuration
+    newSnapshot.data.configuration = {
+      ...newSnapshot.data.configuration,
+      columns: this.columns.map((column) => column.serialize()),
+    };
   }
 }

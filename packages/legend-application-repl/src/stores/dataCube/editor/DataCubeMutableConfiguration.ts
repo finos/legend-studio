@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-import type {
-  DataCubeColumnKind,
-  DataCubeFont,
-  DataCubeAggregateFunction,
-  DataCubeNumberScale,
-  DataCubeSelectionStat,
-  DataCubeFontFormatUnderlinedVariant,
-  DataCubeFontTextAlignment,
+import {
+  getDataType,
+  type DataCubeColumnKind,
+  type DataCubeFont,
+  type DataCubeAggregateFunction,
+  type DataCubeNumberScale,
+  type DataCubeSelectionStat,
+  type DataCubeFontFormatUnderlinedVariant,
+  type DataCubeFontTextAlignment,
+  type DataCubeColumnDataType,
+  type DataCubeColumnPinPlacement,
 } from '../core/DataCubeQueryEngine.js';
-import { type PlainObject } from '@finos/legend-shared';
+import { type PlainObject, type Writable } from '@finos/legend-shared';
 import { makeObservable, observable, action } from 'mobx';
 import {
   DataCubeColumnConfiguration,
@@ -33,17 +36,19 @@ import {
 export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfiguration {
   aggregateFunction?: DataCubeAggregateFunction | undefined;
   weightColumn?: string | undefined;
-  excludeFromHPivot = true;
+  excludedFromHPivot = true;
+
+  readonly dataType!: DataCubeColumnDataType;
 
   static create(
-    name: string,
-    type: string,
     json: PlainObject<DataCubeColumnConfiguration>,
   ): DataCubeMutableColumnConfiguration {
     const configuration = Object.assign(
-      new DataCubeMutableColumnConfiguration(name, type),
+      new DataCubeMutableColumnConfiguration('', ''),
       DataCubeColumnConfiguration.serialization.fromJson(json),
     );
+    (configuration as Writable<DataCubeMutableColumnConfiguration>).dataType =
+      getDataType(configuration.type);
 
     makeObservable(configuration, {
       kind: observable,
@@ -124,8 +129,23 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       weightColumn: observable,
       setWeightColumn: action,
 
-      excludeFromHPivot: observable,
-      setExcludeFromHPivot: action,
+      excludedFromHPivot: observable,
+      setExcludedFromHPivot: action,
+
+      fixedWidth: observable,
+      setFixedWidth: action,
+
+      minWidth: observable,
+      setMinWidth: action,
+
+      maxWidth: observable,
+      setMaxWidth: action,
+
+      pinned: observable,
+      setPinned: action,
+
+      displayAsLink: observable,
+      setDisplayAsLink: action,
     });
 
     return configuration;
@@ -233,6 +253,26 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.hideFromView = value;
   }
 
+  setFixedWidth(value: number | undefined): void {
+    this.fixedWidth = value;
+  }
+
+  setMinWidth(value: number | undefined): void {
+    this.minWidth = value;
+  }
+
+  setMaxWidth(value: number | undefined): void {
+    this.maxWidth = value;
+  }
+
+  setPinned(value: DataCubeColumnPinPlacement | undefined): void {
+    this.pinned = value;
+  }
+
+  setDisplayAsLink(value: boolean): void {
+    this.displayAsLink = value;
+  }
+
   setAggregateFunction(value: DataCubeAggregateFunction | undefined): void {
     this.aggregateFunction = value;
   }
@@ -241,8 +281,8 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.weightColumn = value;
   }
 
-  setExcludeFromHPivot(value: boolean): void {
-    this.excludeFromHPivot = value;
+  setExcludedFromHPivot(value: boolean): void {
+    this.excludedFromHPivot = value;
   }
 }
 

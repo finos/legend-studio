@@ -37,7 +37,8 @@ import {
   DataCubeEditorDropdownMenuItem,
   DataCubeEditorDropdownMenuItemSeparator,
   DataCubeEditorDropdownMenuTrigger,
-  DataCubeEditorInput,
+  DataCubeEditorTextInput,
+  DataCubeEditorNumberInput,
   WIP_Badge,
 } from './DataCubeEditorShared.js';
 
@@ -92,8 +93,8 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Report Title:
             </div>
-            <DataCubeEditorInput
-              className="text-lg font-semibold"
+            <DataCubeEditorTextInput
+              className="w-96 text-lg font-semibold"
               value={panel.name}
               onChange={(event) => {
                 panel.setName(event.target.value);
@@ -110,23 +111,21 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               onClick={openInitialExpandLevelDropdown}
               disabled={true}
             >
-              {configuration.initialExpandLevel
-                ? configuration.initialExpandLevel
-                : '(None)'}
+              {configuration.initialExpandLevel ?? '(None)'}
             </DataCubeEditorDropdownMenuTrigger>
             <DataCubeEditorDropdownMenu
               className="w-14"
               {...initialExpandLevelDropdownProps}
             >
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((level) => (
+              {[undefined, 1, 2, 3, 4, 5, 6, 7, 8].map((level) => (
                 <DataCubeEditorDropdownMenuItem
-                  key={level}
+                  key={level ?? ''}
                   onClick={() => {
                     configuration.setInitialExpandLevel(level);
                     closeInitialExpandLevelDropdown();
                   }}
                 >
-                  {level !== 0 ? level : '(None)'}
+                  {level ?? '(None)'}
                 </DataCubeEditorDropdownMenuItem>
               ))}
             </DataCubeEditorDropdownMenu>
@@ -144,7 +143,9 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   !configuration.showRootAggregation,
                 )
               }
+              disabled={true}
             />
+            <WIP_Badge />
           </div>
 
           <div className="mt-2 flex h-4 w-full items-center">
@@ -165,38 +166,42 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             </div>
             <DataCubeEditorCheckbox
               label="Tree"
-              checked={configuration.showLeafCount}
+              checked={configuration.showTreeLine}
               onChange={() =>
-                configuration.setShowLeafCount(!configuration.showLeafCount)
+                configuration.setShowTreeLine(!configuration.showTreeLine)
               }
             />
             <DataCubeEditorCheckbox
               className="ml-2"
               label="Horizontal"
-              checked={configuration.showLeafCount}
+              checked={configuration.showHorizontalGridLine}
               onChange={() =>
-                configuration.setShowLeafCount(!configuration.showLeafCount)
+                configuration.setShowHorizontalGridLine(
+                  !configuration.showHorizontalGridLine,
+                )
               }
             />
             <DataCubeEditorCheckbox
               className="ml-2"
               label="Vertical"
-              checked={configuration.showLeafCount}
+              checked={configuration.showVerticalGridLine}
               onChange={() =>
-                configuration.setShowLeafCount(!configuration.showLeafCount)
+                configuration.setShowVerticalGridLine(
+                  !configuration.showVerticalGridLine,
+                )
               }
             />
           </div>
 
           <div className="mt-2 flex h-6 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-              Scale Numbers:
+              Default Number Scale:
             </div>
             <DataCubeEditorDropdownMenuTrigger
               className="w-32"
               onClick={openNumberScaleDropdown}
             >
-              {configuration.numberScale ? configuration.numberScale : '(None)'}
+              {configuration.numberScale ?? '(None)'}
             </DataCubeEditorDropdownMenuTrigger>
             <DataCubeEditorDropdownMenu
               className="w-32"
@@ -218,7 +223,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                     closeNumberScaleDropdown();
                   }}
                 >
-                  {scale !== undefined ? scale : '(None)'}
+                  {scale ?? '(None)'}
                 </DataCubeEditorDropdownMenuItem>
               ))}
             </DataCubeEditorDropdownMenu>
@@ -262,23 +267,17 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Row Limit:
             </div>
-            <DataCubeEditorInput
+            <DataCubeEditorNumberInput
               className="w-14 text-sm"
-              type="number"
-              inputMode="numeric"
+              disabled={!configuration.alternateRows}
               value={panel.limit}
-              onChange={(event) => {
-                const value = parseInt(event.target.value, 10);
-                panel.setLimit(
-                  value < 0
-                    ? -1
-                    : value === 0
-                      ? panel.limit < 0
-                        ? 1
-                        : -1
-                      : value,
-                );
-              }}
+              min={-1}
+              step={1}
+              defaultValue={-1}
+              isValid={(value) =>
+                value !== undefined && (value === -1 || value > 0)
+              }
+              setValue={(value) => panel.setLimit(value ?? -1)}
             />
             <div className="flex-shrink-0 pl-1 text-sm italic text-neutral-500">
               Truncate result to this many rows at every level. Use -1 for
@@ -348,7 +347,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               ))}
               <DataCubeEditorDropdownMenuItemSeparator />
               {[
-                DataCubeFont.JERBRAIN_MONO,
+                DataCubeFont.JERBRAINS_MONO,
                 DataCubeFont.ROBOTO_MONO,
                 DataCubeFont.UBUNTU_MONO,
               ].map((font) => (
@@ -688,22 +687,23 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 configuration.setAlternateRows(!configuration.alternateRows)
               }
             />
-            <DataCubeEditorInput
+            <DataCubeEditorNumberInput
               className="ml-1.5 w-14 text-sm"
-              type="number"
-              inputMode="numeric"
               disabled={!configuration.alternateRows}
+              min={1}
+              step={1}
+              defaultValue={1}
+              isValid={(value) => value !== undefined && value > 0}
               value={configuration.alternateRowsCount}
-              onChange={(event) => {
-                const value = parseInt(event.target.value, 10);
-                configuration.setAlternateRowsCount(value <= 0 ? 1 : value);
-              }}
+              setValue={(value) =>
+                configuration.setAlternateRowsCount(value ?? 1)
+              }
             />
             <div className="ml-1.5 flex-shrink-0 text-sm">{`row(s)`}</div>
             <DataCubeEditorColorPickerButton
               className="ml-[5px]"
               disabled={!configuration.alternateRows}
-              color={configuration.defaultBackgroundErrorColor}
+              color={configuration.alternateRowsColor}
               defaultColor={DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR}
               onChange={(value) =>
                 configuration.setDefaultBackgroundErrorColor(value)
