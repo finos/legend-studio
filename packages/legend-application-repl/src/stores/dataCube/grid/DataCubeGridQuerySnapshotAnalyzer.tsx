@@ -36,6 +36,7 @@ import {
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import { IllegalStateError } from '@finos/legend-shared';
+import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -132,6 +133,7 @@ function _rowGroupSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
 
 export function generateGridOptionsFromSnapshot(
   snapshot: DataCubeQuerySnapshot,
+  configuration: DataCubeConfiguration,
 ): GridOptions {
   const data = snapshot.data;
   const gridOptions: GridOptions = {
