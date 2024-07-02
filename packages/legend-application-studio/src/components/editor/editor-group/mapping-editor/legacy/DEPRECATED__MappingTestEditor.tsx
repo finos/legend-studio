@@ -34,7 +34,7 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
@@ -274,7 +274,7 @@ const MappingTestQueryEditor = observer(
                   Edit Query
                 </div>
               </button>
-              <DropdownMenu
+              <ControlledDropdownMenu
                 className="btn__dropdown-combo__dropdown-btn"
                 content={
                   <MenuContent>
@@ -298,7 +298,7 @@ const MappingTestQueryEditor = observer(
                 }}
               >
                 <CaretDownIcon />
-              </DropdownMenu>
+              </ControlledDropdownMenu>
             </div>
           </div>
         </div>
@@ -434,7 +434,7 @@ const RelationalMappingTestInputDataTypeSelector = observer(
         relationalInputData_setInputType(inputDataState.inputData, val);
       };
     return (
-      <DropdownMenu
+      <ControlledDropdownMenu
         className="mapping-test-editor__input-data-panel__type-selector"
         title="Choose input data type..."
         disabled={isReadOnly}
@@ -458,7 +458,7 @@ const RelationalMappingTestInputDataTypeSelector = observer(
           </div>
           <CaretDownIcon />
         </div>
-      </DropdownMenu>
+      </ControlledDropdownMenu>
     );
   },
 );
@@ -814,7 +814,7 @@ export const DEPRECATED__MappingTestEditor = observer(
                       Run Test
                     </div>
                   </button>
-                  <DropdownMenu
+                  <ControlledDropdownMenu
                     className="btn__dropdown-combo__dropdown-btn"
                     disabled={
                       testState.isExecutingTest || testState.isGeneratingPlan
@@ -841,7 +841,7 @@ export const DEPRECATED__MappingTestEditor = observer(
                     }}
                   >
                     <CaretDownIcon />
-                  </DropdownMenu>
+                  </ControlledDropdownMenu>
                 </>
               )}
             </div>

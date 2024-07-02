@@ -66,3 +66,5 @@ export const Button: React.FC<{
     </button>
   );
 };
+
+export { Checkbox, type CheckboxProps } from '@mui/material';

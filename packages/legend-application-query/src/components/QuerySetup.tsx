@@ -20,7 +20,7 @@ import {
   QuestionCircleIcon,
   CogIcon,
   MoreHorizontalIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   PencilIcon,
   ThinChevronDownIcon,
   CircleIcon,
@@ -214,7 +214,7 @@ const QuerySetupActionGroup = observer(
         )}
         <div className="query-setup__landing-page__action-group__header">
           {(!tag || setupStore.tagToFocus === tag) && (
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="query-setup__landing-page__action-group__config"
               title="Show settings..."
               content={<QuerySetupActionGroupConfigMenu />}
@@ -229,7 +229,7 @@ const QuerySetupActionGroup = observer(
                   <CircleIcon />
                 </div>
               )}
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           )}
         </div>
         <div className="query-setup__landing-page__action-group__body">

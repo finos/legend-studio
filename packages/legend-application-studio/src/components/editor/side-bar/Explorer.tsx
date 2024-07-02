@@ -32,7 +32,7 @@ import {
   MenuContentItemIcon,
   MenuContentItemLabel,
   ContextMenu,
-  DropdownMenu,
+  ControlledDropdownMenu,
   PanelLoadingIndicator,
   BlankPanelContent,
   TreeView,
@@ -405,7 +405,7 @@ const SampleDataGenerator = observer(() => {
           >
             <CodeIcon />
           </div>
-          <DropdownMenu
+          <ControlledDropdownMenu
             className="sample-data-generator__controller__format-selector"
             title="Choose Element Type..."
             content={
@@ -428,7 +428,7 @@ const SampleDataGenerator = observer(() => {
             <div className="sample-data-generator__controller__format-selector__dropdown-indicator">
               <CaretDownIcon />
             </div>
-          </DropdownMenu>
+          </ControlledDropdownMenu>
           <div
             className="sample-data-generator__controller__icon"
             title="depth"
@@ -1339,7 +1339,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
         </button>
       )}
       {!editorStore.disableGraphEditing && (
-        <DropdownMenu
+        <ControlledDropdownMenu
           className="panel__header__action"
           title="New Element... (Ctrl + Shift + N)"
           disabled={
@@ -1356,7 +1356,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
           }}
         >
           <PlusIcon />
-        </DropdownMenu>
+        </ControlledDropdownMenu>
       )}
       <button
         className="panel__header__action"

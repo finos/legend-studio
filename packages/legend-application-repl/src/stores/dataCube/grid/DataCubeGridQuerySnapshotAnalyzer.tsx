@@ -23,7 +23,7 @@
 
 import {
   DataCubeQuerySnapshotAggregateFunction,
-  DataCubeQuerySnapshotSortDirection,
+  DataCubeQuerySnapshotSortOperation,
   _findCol,
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
@@ -95,7 +95,7 @@ function _sortSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
   }
   return {
     sort:
-      sortCol.direction === DataCubeQuerySnapshotSortDirection.ASCENDING
+      sortCol.operation === DataCubeQuerySnapshotSortOperation.ASCENDING
         ? GridClientSortDirection.ASCENDING
         : GridClientSortDirection.DESCENDING,
     sortIndex: sortColumns.indexOf(sortCol),
@@ -161,9 +161,10 @@ export function generateGridOptionsFromSnapshot(
         lockPosition: true,
         cellStyle: {
           flex: 1,
-          'justify-content': 'space-between',
+          justifyContent: 'space-between',
           display: 'flex',
         },
+        sortable: false, // TODO: @akphi - we can support this in the configuration
       } satisfies ColDef,
       ...data.selectColumns.map(
         (col) =>

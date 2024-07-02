@@ -27,7 +27,7 @@ import {
   CustomSelectorInput,
   TimesIcon,
   Dialog,
-  DropdownMenu,
+  ControlledDropdownMenu,
   CaretDownIcon,
   MenuContentItem,
   MenuContent,
@@ -932,7 +932,7 @@ const ProjectVersionDependencyEditor = observer(
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
         />
-        <DropdownMenu
+        <ControlledDropdownMenu
           className="project-dependency-editor__visit-project-btn__dropdown-trigger btn--medium"
           content={
             <MenuContent>
@@ -958,7 +958,7 @@ const ProjectVersionDependencyEditor = observer(
           }
         >
           Go to... <CaretDownIcon title="Show more options..." />
-        </DropdownMenu>
+        </ControlledDropdownMenu>
 
         <button
           className="project-dependency-editor__remove-btn btn--dark btn--caution"

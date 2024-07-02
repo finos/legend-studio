@@ -15,20 +15,21 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { DataCubeIcon } from '@finos/legend-art';
+import { cn, DataCubeIcon } from '@finos/legend-art';
 import type {
   ColDef,
   ColDefField,
   GridApi,
-  IRowNode,
+  ModelUpdatedEvent,
   RowDragEndEvent,
   SelectionChangedEvent,
 } from '@ag-grid-community/core';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   AgGridReact,
   type AgGridReactProps,
   type CustomCellRendererProps,
+  type CustomNoRowsOverlayProps,
 } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import type {
@@ -36,6 +37,10 @@ import type {
   DataCubeEditorColumnsSelectorState,
 } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
 import { isNonNullable } from '@finos/legend-shared';
+import {
+  getDataForAllFilteredNodes,
+  getDataForAllNodes,
+} from '../../../stores/dataCube/grid/DataCubeGridClientEngine.js';
 
 function getBaseGridProps<
   T extends DataCubeEditorColumnsSelectorColumnState,
@@ -55,7 +60,50 @@ function getBaseGridProps<
     headerHeight: 20,
     suppressRowHoverHighlight: false,
     reactiveCustomComponents: true, // TODO: remove on v32 as this would be default to `true` then
-    noRowsOverlayComponent: () => <div />,
+    noRowsOverlayComponent: (
+      params: CustomNoRowsOverlayProps<T> & {
+        violationSeverity?: 'warning' | 'error' | undefined;
+      },
+    ) => {
+      if (params.api.getQuickFilter()) {
+        return (
+          <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-semibold text-neutral-400">
+            <div>
+              <DataCubeIcon.WarningCircle className="mr-1 text-lg" />
+            </div>
+            No match found
+          </div>
+        );
+      }
+      if (params.violationSeverity) {
+        return (
+          <div
+            className={cn(
+              'flex items-center border-[1.5px] p-2 font-semibold',
+              {
+                'border-amber-400 text-amber-500':
+                  params.violationSeverity === 'warning',
+                'border-red-400 text-red-500':
+                  params.violationSeverity === 'error',
+              },
+            )}
+          >
+            <div>
+              <DataCubeIcon.Warning className="mr-1 text-lg" />
+            </div>
+            No columns selected
+          </div>
+        );
+      }
+      return <div />;
+    },
+    // Show no rows overlay when there are no search results
+    // See https://stackoverflow.com/a/72637410
+    onModelUpdated: (event: ModelUpdatedEvent<T>) => {
+      event.api.getDisplayedRowCount() === 0
+        ? event.api.showNoRowsOverlay()
+        : event.api.hideOverlay();
+    },
   };
 }
 
@@ -80,14 +128,54 @@ function getBaseColumnDef<
       }
       return (params.rowNode?.data as T).name;
     },
+    getQuickFilterText: (params) => params.value,
   };
 }
+
+/**
+ * Move this display to a separate component to avoid re-rendering the header too frequently
+ */
+const ColumnsSearchResultCountBadge = observer(
+  function ColumnsSearchResultCountBadge<
+    T extends DataCubeEditorColumnsSelectorColumnState,
+  >(props: {
+    selector: DataCubeEditorColumnsSelectorState<T>;
+    gridApi: GridApi<T>;
+    scope: 'available' | 'selected';
+  }) {
+    const { selector, gridApi, scope } = props;
+    return (
+      <div className="flex items-center justify-center rounded-lg bg-neutral-500 px-1 py-0.5 font-mono text-xs font-bold text-white">
+        {`${getDataForAllFilteredNodes(gridApi).length}/${scope === 'available' ? selector.availableColumns.length : selector.selectedColumns.length}`}
+        <span className="hidden">
+          {scope === 'available'
+            ? // subscribing to the search text to trigger re-render as it changes
+              selector.availableColumnsSearchText
+            : selector.selectedColumnsSearchText}
+        </span>
+      </div>
+    );
+  },
+);
 
 export const DataCubeEditorColumnsSelector = observer(
   function DataCubeEditorColumnsSelector<
     T extends DataCubeEditorColumnsSelectorColumnState,
-  >(props: { selector: DataCubeEditorColumnsSelectorState<T> }) {
-    const { selector } = props;
+  >(props: {
+    selector: DataCubeEditorColumnsSelectorState<T>;
+    extraColumnComponent?:
+      | React.FC<{
+          selector: DataCubeEditorColumnsSelectorState<T>;
+          column: T;
+        }>
+      | undefined;
+    noColumnsSelectedViolationSeverity?: 'warning' | 'error' | undefined;
+  }) {
+    const {
+      selector,
+      extraColumnComponent,
+      noColumnsSelectedViolationSeverity,
+    } = props;
     const [selectedAvailableColumns, setSelectedAvailableColumns] = useState<
       T[]
     >([]);
@@ -98,6 +186,10 @@ export const DataCubeEditorColumnsSelector = observer(
       useState<GridApi | null>(null);
     const [selectedColumnsGridApi, setSelectedColumnsGridApi] =
       useState<GridApi | null>(null);
+    const searchAvailableColumnsInputRef = useRef<HTMLInputElement | null>(
+      null,
+    );
+    const searchSelectedColumnsInputRef = useRef<HTMLInputElement | null>(null);
 
     /**
      * Since we use managed row dragging for selected columns,
@@ -107,16 +199,11 @@ export const DataCubeEditorColumnsSelector = observer(
      */
     const onSelectedColumnsDragStop = useCallback(
       (params: RowDragEndEvent<T>) => {
-        const newRowData: T[] = [];
-        params.api.forEachNode((node: IRowNode<T>) => {
-          if (node.data) {
-            newRowData.push(node.data);
-          }
-        });
-        selector.setSelectedColumns(newRowData);
+        const newData = getDataForAllNodes(params.api);
+        selector.setSelectedColumns(newData);
         selector.setAvailableColumns(
           selector.availableColumns.filter(
-            (column) => !newRowData.includes(column),
+            (column) => !newData.includes(column),
           ),
         );
       },
@@ -154,17 +241,16 @@ export const DataCubeEditorColumnsSelector = observer(
         if (event.overIndex === -1) {
           return;
         }
-        const newRowData: T[] = [];
-        event.api.forEachNode((node: IRowNode<T>) => {
-          if (node.data) {
-            newRowData.push(node.data);
-          }
-        });
-        selector.setSelectedColumns(newRowData);
+        const newData = getDataForAllNodes(event.api);
+        selector.setSelectedColumns(newData);
       },
       [selector],
     );
 
+    /**
+     * Setup row drop zones for each grid to be the other
+     * See https://www.ag-grid.com/react-data-grid/row-dragging-to-grid/
+     */
     useEffect(() => {
       if (!availableColumnsGridApi || !selectedColumnsGridApi) {
         return;
@@ -196,7 +282,7 @@ export const DataCubeEditorColumnsSelector = observer(
     ]);
 
     return (
-      <div className="flex h-full w-full">
+      <div className="data-cube-column-selector flex h-full w-full">
         <div className="h-full w-[calc(50%_-_20px)]">
           <div className="flex h-5 items-center text-sm">
             Available columns:
@@ -204,12 +290,35 @@ export const DataCubeEditorColumnsSelector = observer(
           <div className="h-[calc(100%_-_20px)] rounded-sm border border-neutral-200">
             <div className="relative h-6 border-b border-neutral-200">
               <input
-                className="h-full w-full pl-10 placeholder-neutral-400"
+                className="h-full w-full pl-10 pr-6 placeholder-neutral-400"
+                ref={searchAvailableColumnsInputRef}
                 placeholder="Click here to search..."
+                value={selector.availableColumnsSearchText}
+                onChange={(event) =>
+                  selector.setAvailableColumnsSearchText(event.target.value)
+                }
+                onKeyDown={(event) => {
+                  if (event.code === 'Escape') {
+                    event.stopPropagation();
+                    searchAvailableColumnsInputRef.current?.select();
+                    selector.setAvailableColumnsSearchText('');
+                  }
+                }}
               />
               <div className="absolute left-0 top-0 flex h-6 w-10 items-center justify-center">
                 <DataCubeIcon.Search className="stroke-[3px] text-lg text-neutral-500" />
               </div>
+              <button
+                className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center text-neutral-500 disabled:text-neutral-300"
+                disabled={!selector.availableColumnsSearchText}
+                title="Clear search [Esc]"
+                onClick={() => {
+                  selector.setAvailableColumnsSearchText('');
+                  searchAvailableColumnsInputRef.current?.focus();
+                }}
+              >
+                <DataCubeIcon.X className="text-lg" />
+              </button>
             </div>
             <div className="h-[calc(100%_-_24px)]">
               <AgGridReact
@@ -218,7 +327,6 @@ export const DataCubeEditorColumnsSelector = observer(
                 // and to make sure the row data and the available columns state are in sync
                 rowDragManaged={false}
                 onGridReady={(params) => setAvailableColumnsGridApi(params.api)}
-                rowData={selector.availableColumns}
                 onSelectionChanged={(event: SelectionChangedEvent<T>) => {
                   setSelectedAvailableColumns(
                     event.api
@@ -227,23 +335,43 @@ export const DataCubeEditorColumnsSelector = observer(
                       .filter(isNonNullable),
                   );
                 }}
+                // Using ag-grid quick filter is a cheap way to implement search
+                quickFilterText={selector.availableColumnsSearchText}
+                rowData={selector.availableColumns}
                 columnDefs={[
                   {
                     ...getBaseColumnDef<T>(),
+                    /**
+                     * Support double-click to add all (filtered by search) columns
+                     */
                     headerComponent: (params: CustomCellRendererProps<T>) => (
-                      <div
+                      <button
                         title="Double-click to add all columns"
-                        className="flex h-full w-full cursor-pointer items-center pl-0.5"
+                        className="flex h-full w-full items-center justify-between pl-0.5"
                         onDoubleClick={() => {
-                          // TODO: scope this by the current search
+                          // The columns being moved are scoped by the current search
+                          const filteredData = getDataForAllFilteredNodes(
+                            params.api,
+                          );
                           selector.setSelectedColumns([
                             ...selector.selectedColumns,
-                            ...selector.availableColumns,
+                            ...filteredData,
                           ]);
-                          selector.setAvailableColumns([]);
+                          selector.setAvailableColumns(
+                            selector.availableColumns.filter(
+                              (column) => !filteredData.includes(column),
+                            ),
+                          );
                           params.api.clearFocusedCell();
                         }}
-                      >{`[All Columns]`}</div>
+                      >
+                        <div>{`[All Columns]`}</div>
+                        <ColumnsSearchResultCountBadge
+                          selector={selector}
+                          gridApi={params.api}
+                          scope="available"
+                        />
+                      </button>
                     ),
                     cellRenderer: (params: CustomCellRendererProps<T>) => {
                       const data = params.data;
@@ -252,7 +380,7 @@ export const DataCubeEditorColumnsSelector = observer(
                       }
                       return (
                         <div
-                          className="h-full w-full cursor-pointer pl-2"
+                          className="flex h-full w-full cursor-pointer"
                           title={`[${data.name}]\nDouble-click to add column`}
                           onDoubleClick={() => {
                             selector.setSelectedColumns([
@@ -267,7 +395,15 @@ export const DataCubeEditorColumnsSelector = observer(
                             params.api.clearFocusedCell();
                           }}
                         >
-                          {data.name}
+                          <div className="h-full flex-1 items-center overflow-hidden overflow-ellipsis whitespace-nowrap pl-2">
+                            {data.name}
+                          </div>
+                          <div className="flex h-full">
+                            {extraColumnComponent?.({
+                              selector,
+                              column: data,
+                            }) ?? null}
+                          </div>
                         </div>
                       );
                     },
@@ -280,40 +416,66 @@ export const DataCubeEditorColumnsSelector = observer(
         <div className="flex h-full w-10 items-center justify-center">
           <div className="flex flex-col">
             <button
-              className="flex cursor-pointer items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-neutral-500 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400"
+              className="flex items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-neutral-500 hover:bg-neutral-200 disabled:bg-neutral-200 disabled:text-neutral-400"
               title="Add selected columns"
+              /**
+               * Support add selected (filtered by search) columns
+               * We reset the selection after this operation
+               */
               onClick={() => {
-                // TODO: scope this by the current search
+                if (!availableColumnsGridApi) {
+                  return;
+                }
+                // The columns being moved are scoped by the current search
+                const filteredData = getDataForAllFilteredNodes(
+                  availableColumnsGridApi,
+                );
+                const columnsToMove = selectedAvailableColumns.filter(
+                  (column) => filteredData.includes(column),
+                );
                 selector.setSelectedColumns([
                   ...selector.selectedColumns,
-                  ...selectedAvailableColumns,
+                  ...columnsToMove,
                 ]);
                 selector.setAvailableColumns(
                   selector.availableColumns.filter(
-                    (column) => !selectedAvailableColumns.includes(column),
+                    (column) => !columnsToMove.includes(column),
                   ),
                 );
-                availableColumnsGridApi?.clearFocusedCell();
+                availableColumnsGridApi.clearFocusedCell();
               }}
               disabled={selectedAvailableColumns.length === 0}
             >
               <DataCubeIcon.ChevronRight className="text-2xl" />
             </button>
             <button
-              className="mt-2 flex cursor-pointer items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-neutral-500 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400"
+              className="mt-2 flex items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-neutral-500 hover:bg-neutral-200 disabled:bg-neutral-200 disabled:text-neutral-400"
               title="Remove selected columns"
+              /**
+               * Support remove selected (filtered by search) columns
+               * We reset the selection after this operation
+               */
               onClick={() => {
-                // TODO: scope this by the current search
+                if (!selectedColumnsGridApi) {
+                  return;
+                }
+                // The columns being moved are scoped by the current search
+                const filteredData = getDataForAllFilteredNodes(
+                  selectedColumnsGridApi,
+                );
+                const columnsToMove = selectedSelectedColumns.filter((column) =>
+                  filteredData.includes(column),
+                );
                 selector.setAvailableColumns([
                   ...selector.availableColumns,
-                  ...selectedSelectedColumns,
+                  ...columnsToMove,
                 ]);
                 selector.setSelectedColumns(
                   selector.selectedColumns.filter(
-                    (column) => !selectedSelectedColumns.includes(column),
+                    (column) => !columnsToMove.includes(column),
                   ),
                 );
-                selectedColumnsGridApi?.clearFocusedCell();
+                selectedColumnsGridApi.clearFocusedCell();
               }}
               disabled={selectedSelectedColumns.length === 0}
             >
@@ -327,11 +489,33 @@ export const DataCubeEditorColumnsSelector = observer(
             <div className="relative h-6 border-b border-neutral-200">
               <input
                 className="h-full w-full pl-10 placeholder-neutral-400"
+                ref={searchSelectedColumnsInputRef}
                 placeholder="Click here to search..."
+                value={selector.selectedColumnsSearchText}
+                onChange={(event) =>
+                  selector.setSelectedColumnsSearchText(event.target.value)
+                }
+                onKeyDown={(event) => {
+                  if (event.code === 'Escape') {
+                    event.stopPropagation();
+                    selector.setSelectedColumnsSearchText('');
+                  }
+                }}
               />
               <div className="absolute left-0 top-0 flex h-6 w-10 items-center justify-center">
                 <DataCubeIcon.Search className="stroke-[3px] text-lg text-neutral-500" />
               </div>
+              <button
+                className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center text-neutral-500 disabled:text-neutral-300"
+                disabled={!selector.selectedColumnsSearchText}
+                title="Clear search [Esc]"
+                onClick={() => {
+                  selector.setSelectedColumnsSearchText('');
+                  searchSelectedColumnsInputRef.current?.focus();
+                }}
+              >
+                <DataCubeIcon.X className="text-lg" />
+              </button>
             </div>
             <div className="h-[calc(100%_-_24px)]">
               <AgGridReact
@@ -351,24 +535,46 @@ export const DataCubeEditorColumnsSelector = observer(
                       .filter(isNonNullable),
                   );
                 }}
+                // Using ag-grid quick filter is a cheap way to implement search
+                quickFilterText={selector.selectedColumnsSearchText}
+                noRowsOverlayComponentParams={{
+                  violationSeverity: noColumnsSelectedViolationSeverity,
+                }}
                 rowData={selector.selectedColumns}
                 columnDefs={[
                   {
                     ...getBaseColumnDef<T>(),
+                    /**
+                     * Support double-click to remove all (filtered by search) columns
+                     */
                     headerComponent: (params: CustomCellRendererProps<T>) => (
-                      <div
+                      <button
                         title="Double-click to remove all columns"
-                        className="flex h-full w-full cursor-pointer items-center pl-0.5"
+                        className="flex h-full w-full items-center justify-between pl-0.5"
                         onDoubleClick={() => {
-                          // TODO: scope this by the current search
+                          // The columns being moved are scoped by the current search
+                          const filteredData = getDataForAllFilteredNodes(
+                            params.api,
+                          );
                           selector.setAvailableColumns([
                             ...selector.availableColumns,
-                            ...selector.selectedColumns,
+                            ...filteredData,
                           ]);
-                          selector.setSelectedColumns([]);
+                          selector.setSelectedColumns(
+                            selector.selectedColumns.filter(
+                              (column) => !filteredData.includes(column),
+                            ),
+                          );
                           params.api.clearFocusedCell();
                         }}
-                      >{`[All Columns]`}</div>
+                      >
+                        <div>{`[All Columns]`}</div>
+                        <ColumnsSearchResultCountBadge
+                          selector={selector}
+                          gridApi={params.api}
+                          scope="selected"
+                        />
+                      </button>
                     ),
                     cellRenderer: (params: CustomCellRendererProps<T>) => {
                       const data = params.data;
@@ -377,7 +583,7 @@ export const DataCubeEditorColumnsSelector = observer(
                       }
                       return (
                         <div
-                          className="h-full w-full cursor-pointer pl-2"
+                          className="flex h-full w-full cursor-pointer"
                           title={`[${data.name}]\nDouble-click to remove column`}
                           onDoubleClick={() => {
                             selector.setAvailableColumns([
@@ -392,7 +598,15 @@ export const DataCubeEditorColumnsSelector = observer(
                             params.api.clearFocusedCell();
                           }}
                         >
-                          {data.name}
+                          <div className="h-full flex-1 items-center overflow-hidden overflow-ellipsis whitespace-nowrap pl-2">
+                            {data.name}
+                          </div>
+                          <div className="flex h-full">
+                            {extraColumnComponent?.({
+                              selector,
+                              column: data,
+                            }) ?? null}
+                          </div>
                         </div>
                       );
                     },

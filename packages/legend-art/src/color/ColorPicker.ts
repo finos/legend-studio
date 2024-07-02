@@ -14,4 +14,8 @@
  * limitations under the License.
  */
 
-export const DATA_CUBE_DEFAULT_REPORT_NAME = 'New Report';
+export {
+  HexColorPicker,
+  HexAlphaColorPicker,
+  HexColorInput,
+} from 'react-colorful';

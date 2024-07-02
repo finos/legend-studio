@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import type { V1_AppliedFunction } from '@finos/legend-graph';
+import { TailwindCSSPalette } from '@finos/legend-art';
+import { PRIMITIVE_TYPE, type V1_AppliedFunction } from '@finos/legend-graph';
 
 export enum DataCubeFunction {
   // relation
@@ -62,11 +63,15 @@ export enum DataCubeFunction {
   MAX = 'meta::pure::functions::collection::max',
   MIN = 'meta::pure::functions::collection::min',
   SUM = 'meta::pure::functions::math::sum',
-  STD_DEV_POPULATION = 'meta::pure::functions::math::stdDevPopulation',
-  STD_DEV_SAMPLE = 'meta::pure::functions::math::stdDevSample',
-  UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
+  STDDEV_POP = 'meta::pure::functions::math::stdDevPopulation',
+  STDDEV_SAMP = 'meta::pure::functions::math::stdDevSample',
+  VAR_POP = 'meta::pure::functions::math::variancePopulation',
+  VAR_SAMP = 'meta::pure::functions::math::varianceSample',
+  // UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
+  // PERCENTILE = 'meta::pure::functions::math::percentile',
 }
 
+export const DEFAULT_REPORT_NAME = 'New Report';
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
 export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
 
@@ -74,6 +79,7 @@ export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
 // when no aggregate is specified in groupBy() or pivot()
 export const INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME =
   'INTERNAL__filler_count_agg_column';
+export const DEFAULT_ROW_BUFFER = 50;
 
 export type DataCubeQueryFunctionMap = {
   leafExtend?: V1_AppliedFunction | undefined;
@@ -88,3 +94,129 @@ export type DataCubeQueryFunctionMap = {
   sort?: V1_AppliedFunction | undefined;
   limit?: V1_AppliedFunction | undefined;
 };
+
+export enum DataCubeNumberScale {
+  BASIS_POINT = 'Basis Points (bp)',
+  PERCENT = 'Percent (%)',
+  THOUSANDS = 'Thousands (k)',
+  MILLIONS = 'Millions (m)',
+  BILLIONS = 'Billions (b)',
+  AUTO = 'Auto (k/m/b)',
+}
+
+export enum DataCubeSelectionStat {
+  COUNT = 'Count',
+  SUM = 'Sum',
+  MIN = 'Min',
+  MAX = 'Max',
+  AVERAGE = 'Average',
+}
+
+export enum DataCubeFont {
+  // sans-serif
+  ARIAL = 'Arial',
+  ROBOTO = 'Roboto',
+  ROBOTO_CONDENSED = 'Roboto Condensed',
+
+  // serif
+  TIMES_NEW_ROMAN = 'Times New Roman',
+  GEORGIA = 'Georgia',
+  ROBOTO_SERIF = 'Roboto Serif',
+
+  // monospaced
+  JERBRAINS_MONO = 'Jetbrains Mono',
+  ROBOTO_MONO = 'Roboto Mono',
+  UBUNTU_MONO = 'Ubuntu Mono',
+}
+
+export enum DataCubeFontTextAlignment {
+  CENTER = 'Center',
+  LEFT = 'Left',
+  RIGHT = 'Right',
+}
+
+export enum DataCubeColumnPinPlacement {
+  LEFT = 'Left',
+  RIGHT = 'Right',
+}
+
+export enum DataCubeColumnDataType {
+  NUMBER = 'number',
+  DATE = 'date',
+  TEXT = 'text',
+}
+
+export function getDataType(type: string): DataCubeColumnDataType {
+  switch (type) {
+    case PRIMITIVE_TYPE.NUMBER:
+    case PRIMITIVE_TYPE.INTEGER:
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.FLOAT:
+      return DataCubeColumnDataType.NUMBER;
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.DATETIME:
+    case PRIMITIVE_TYPE.STRICTDATE:
+      return DataCubeColumnDataType.DATE;
+    case PRIMITIVE_TYPE.STRING:
+    default:
+      return DataCubeColumnDataType.TEXT;
+  }
+}
+
+export const DEFAULT_FOREGROUND_COLOR = TailwindCSSPalette.black;
+export const DEFAULT_BACKGROUND_COLOR = TailwindCSSPalette.white;
+export const DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR =
+  TailwindCSSPalette.sky[100];
+export const DEFAULT_NEGATIVE_FOREGROUND_COLOR = TailwindCSSPalette.red[500];
+export const DEFAULT_ZERO_FOREGROUND_COLOR = TailwindCSSPalette.neutral[400];
+export const DEFAULT_ERROR_FOREGROUND_COLOR = TailwindCSSPalette.blue[600];
+export const DEFAULT_COLUMN_WIDTH = 300;
+export const DEFAULT_COLUMN_MIN_WIDTH = 100;
+export const DEFAULT_COLUMN_MAX_WIDTH = undefined;
+
+export enum DataCubeFontFormatUnderlinedVariant {
+  SOLID = 'Solid',
+  DASHED = 'Dashed',
+  DOTTED = 'Dotted',
+  DOUBLE = 'Double',
+  WAVY = 'Wavy',
+}
+
+export enum DataCubeColumnKind {
+  MEASURE = 'Measure',
+  DIMENSION = 'Dimension',
+}
+
+export enum DataCubeAggregateFunction {
+  SUM = 'sum',
+  AVERAGE = 'avg',
+  COUNT = 'count',
+  MIN = 'min',
+  MAX = 'max',
+  // UNIQUE = 'uniq',
+  FIRST = 'first',
+  LAST = 'last',
+  MEDIAN = 'median',
+  VAR_POP = 'var_samp',
+  VAR_SAMP = 'var_pop',
+  STDDEV_POP = 'stddev_pop',
+  STDDEV_SAMP = 'stddev_samp',
+  // STANDARD_ERROR = 'stderr',
+  // NULL = 'null',
+  // ssq
+  // countvalid
+  // countnull
+  // uniqunstrict
+  // minmagnitude
+  // maxmagnitude
+  // commonprefix
+  // commonprefixunstrict
+  // strjoin
+  // strjoinuniq
+  // splitjoin
+  // daterange
+  // wavg
+  // wstderr
+  // wsum
+  // custom
+}

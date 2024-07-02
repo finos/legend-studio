@@ -16,7 +16,7 @@
 
 import { useState, useRef } from 'react';
 import type { MenuProps as MuiMenuProps } from '@mui/material';
-import { BaseMenu } from './BaseMenu.js';
+import { Menu } from './BaseMenu.js';
 
 export const ContextMenu: React.FC<{
   children: React.ReactNode;
@@ -100,7 +100,7 @@ export const ContextMenu: React.FC<{
       onContextMenu={onContextMenu}
     >
       {children}
-      <BaseMenu
+      <Menu
         key={`${left}, ${top}`} // if coordinate changes, re-render the menu
         open={isOpen}
         anchorPosition={{ left, top }}
@@ -116,7 +116,7 @@ export const ContextMenu: React.FC<{
         {...menuProps}
       >
         {isOpen && content}
-      </BaseMenu>
+      </Menu>
     </div>
   );
 };

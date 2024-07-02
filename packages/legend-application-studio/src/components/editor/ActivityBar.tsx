@@ -24,7 +24,7 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
   clsx,
-  DropdownMenu,
+  ControlledDropdownMenu,
   RepoIcon,
   MenuContent,
   MenuContentItem,
@@ -115,7 +115,7 @@ export const ActivityBarMenu: React.FC = () => {
   return (
     <>
       <div className="activity-bar__menu">
-        <DropdownMenu
+        <ControlledDropdownMenu
           className="activity-bar__menu-item"
           menuProps={{
             anchorOrigin: { vertical: 'top', horizontal: 'right' },
@@ -155,7 +155,7 @@ export const ActivityBarMenu: React.FC = () => {
           }
         >
           <MenuIcon />
-        </DropdownMenu>
+        </ControlledDropdownMenu>
       </div>
       <LegendStudioAppInfo open={openAppInfo} closeModal={hideAppInfo} />
     </>
@@ -431,7 +431,7 @@ export const ActivityBar = observer(() => {
       >
         <ReadMeIcon />
       </button>
-      <DropdownMenu
+      <ControlledDropdownMenu
         className="activity-bar__item"
         title="Settings"
         content={<SettingsMenu />}
@@ -442,7 +442,7 @@ export const ActivityBar = observer(() => {
         }}
       >
         <CogIcon />
-      </DropdownMenu>
+      </ControlledDropdownMenu>
     </div>
   );
 });

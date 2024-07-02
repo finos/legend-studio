@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import {
   type SelectComponent,
   compareLabelFn,
-  DropdownMenu,
+  ControlledDropdownMenu,
   NonBlockingDialog,
   createFilter,
   CustomSelectorInput,
@@ -106,7 +106,7 @@ export const ProjectSearchCommand = observer(() => {
         className="search-modal"
       >
         <div className="project-search-command">
-          <DropdownMenu
+          <ControlledDropdownMenu
             className="project-search-command__type"
             title="Choose Element Type..."
             content={
@@ -139,7 +139,7 @@ export const ProjectSearchCommand = observer(() => {
             <div className="project-search-command__type__selector">
               <CaretDownIcon />
             </div>
-          </DropdownMenu>
+          </ControlledDropdownMenu>
           <CustomSelectorInput
             ref={selectorRef}
             className="project-search-command__input"

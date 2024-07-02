@@ -29,5 +29,5 @@ export interface DataCubeQueryEditorPanelState {
   buildSnapshot(
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
-  ): boolean;
+  ): void;
 }

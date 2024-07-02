@@ -28,7 +28,7 @@ import {
   type TreeNodeViewProps,
   clsx,
   ContextMenu,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
   BlankPanelPlaceholder,
@@ -828,7 +828,7 @@ const QueryBuilderFilterConditionEditor = observer(
                 propertyExpressionState={node.condition.propertyExpressionState}
               />
             </div>
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="query-builder-filter-tree__condition-node__operator"
               title="Choose Operator..."
               content={
@@ -856,7 +856,7 @@ const QueryBuilderFilterConditionEditor = observer(
               <div className="query-builder-filter-tree__condition-node__operator__dropdown__trigger">
                 <CaretDownIcon />
               </div>
-            </DropdownMenu>
+            </ControlledDropdownMenu>
             {node.condition.value && (
               <div
                 ref={dropConnector}
@@ -1499,7 +1499,7 @@ export const QueryBuilderFilterPanel = observer(
           </div>
 
           <div className="panel__header__actions">
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="panel__header__action"
               title="Show Filter Options Menu..."
               content={
@@ -1572,7 +1572,7 @@ export const QueryBuilderFilterPanel = observer(
               }
             >
               <MoreVerticalIcon className="query-builder__icon__more-options" />
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </div>
         </div>
         <PanelContent>

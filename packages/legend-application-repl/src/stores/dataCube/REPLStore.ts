@@ -25,11 +25,11 @@ export class REPLStore {
   readonly client: REPLServerClient;
 
   // TODO: when we support multi-view, we would need to support multiple states
-  dataCubeState!: DataCubeState;
+  dataCube!: DataCubeState;
 
   constructor(applicationStore: LegendREPLApplicationStore) {
     makeObservable(this, {
-      dataCubeState: observable,
+      dataCube: observable,
     });
     this.applicationStore = applicationStore;
     this.client = new REPLServerClient(
@@ -40,6 +40,6 @@ export class REPLStore {
           : this.applicationStore.config.replUrl,
       }),
     );
-    this.dataCubeState = new DataCubeState(this);
+    this.dataCube = new DataCubeState(this);
   }
 }

@@ -31,7 +31,7 @@ import {
   FlaskIcon,
   ResizablePanelSplitterLine,
   compareLabelFn,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
@@ -560,7 +560,7 @@ const RelationalMappingExecutionInputDataTypeSelector = observer(
       };
 
     return (
-      <DropdownMenu
+      <ControlledDropdownMenu
         className="mapping-execution-builder__input-data-panel__type-selector"
         title="Choose input data type..."
         content={
@@ -583,7 +583,7 @@ const RelationalMappingExecutionInputDataTypeSelector = observer(
           </div>
           <CaretDownIcon />
         </div>
-      </DropdownMenu>
+      </ControlledDropdownMenu>
     );
   },
 );
@@ -819,7 +819,7 @@ export const MappingExecutionBuilder = observer(
                       Run Query
                     </div>
                   </button>
-                  <DropdownMenu
+                  <ControlledDropdownMenu
                     className="btn__dropdown-combo__dropdown-btn"
                     disabled={
                       isStubbed_RawLambda(queryState.query) ||
@@ -849,7 +849,7 @@ export const MappingExecutionBuilder = observer(
                     }}
                   >
                     <CaretDownIcon />
-                  </DropdownMenu>
+                  </ControlledDropdownMenu>
                 </>
               )}
             </div>

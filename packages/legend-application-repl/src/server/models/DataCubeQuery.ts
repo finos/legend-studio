@@ -97,21 +97,17 @@ function serializeQuerySource(
   );
 }
 
-export class DataCubeConfiguration {
-  // TODO
-}
-
 export class DataCubeQuery {
   name!: string;
   query!: string;
   partialQuery!: string;
   source!: DataCubeQuerySource;
-  configuration!: DataCubeConfiguration;
+  configuration?: PlainObject | undefined;
 
   constructor(
     name: string,
     query: string,
-    configuration: DataCubeConfiguration,
+    configuration?: PlainObject | undefined,
   ) {
     this.name = name;
     this.query = query;

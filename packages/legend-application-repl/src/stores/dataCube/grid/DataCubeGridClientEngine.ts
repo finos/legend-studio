@@ -15,6 +15,8 @@
  */
 
 import type {
+  GridApi,
+  IRowNode,
   IServerSideDatasource,
   IServerSideGetRowsParams,
 } from '@ag-grid-community/core';
@@ -39,7 +41,6 @@ type GridClientRowData = {
 
 export const INTERNAL__GRID_CLIENT_HEADER_HEIGHT = 24;
 export const INTERNAL__GRID_CLIENT_ROW_HEIGHT = 20;
-export const INTERNAL__GRID_CLIENT_ROW_BUFFER = 50;
 export const INTERNAL__GRID_CLIENT_TREE_COLUMN_ID = 'INTERNAL__tree';
 export const INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID =
   'INTERNAL__count';
@@ -55,6 +56,30 @@ export enum GridClientAggregateOperation {
   MAX = 'max',
   MIN = 'min',
   AVERAGE = 'avg',
+}
+
+export function getDataForAllNodes<T>(client: GridApi<T>): T[] {
+  const rows: T[] = [];
+  client.forEachNode((node: IRowNode<T>) => {
+    if (node.data) {
+      rows.push(node.data);
+    }
+  });
+  return rows;
+}
+
+/**
+ * NOTE: this method does not work for server-side row model.
+ * It only works when client-side filter is being applied
+ */
+export function getDataForAllFilteredNodes<T>(client: GridApi<T>): T[] {
+  const rows: T[] = [];
+  client.forEachNodeAfterFilter((node: IRowNode<T>) => {
+    if (node.data) {
+      rows.push(node.data);
+    }
+  });
+  return rows;
 }
 
 function TDStoRowData(tds: TabularDataSet): GridClientRowData[] {
@@ -88,6 +113,8 @@ export class DataCubeGridClientServerSideDataSource
   async fetchRows(
     params: IServerSideGetRowsParams<unknown, unknown>,
   ): Promise<void> {
+    const task = this.grid.dataCube.newTask('Fetching data');
+
     // ------------------------------ GRID OPTIONS ------------------------------
     // Here, we make adjustments to the grid display in response to the new
     // request, in case the grid action has not impacted the layout in an
@@ -109,8 +136,10 @@ export class DataCubeGridClientServerSideDataSource
     // ------------------------------ SNAPSHOT ------------------------------
 
     const currentSnapshot = guaranteeNonNullable(this.grid.getLatestSnapshot());
+    // TODO: when we support pivoting, we should make a quick call to check for columns
+    // created by pivots and specify them as cast columns when pivot is activated
     const syncedSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
-    if (syncedSnapshot.uuid !== currentSnapshot.uuid) {
+    if (syncedSnapshot.hashCode !== currentSnapshot.hashCode) {
       this.grid.publishSnapshot(syncedSnapshot);
     }
 
@@ -161,6 +190,8 @@ export class DataCubeGridClientServerSideDataSource
       assertErrorThrown(error);
       this.grid.dataCube.application.notificationService.notifyError(error);
       params.fail();
+    } finally {
+      this.grid.dataCube.endTask(task);
     }
   }
 

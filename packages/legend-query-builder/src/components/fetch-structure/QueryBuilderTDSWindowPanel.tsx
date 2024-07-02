@@ -20,7 +20,7 @@ import {
   PanelContent,
   PanelDropZone,
   BlankPanelPlaceholder,
-  DropdownMenu,
+  ControlledDropdownMenu,
   InputWithInlineValidation,
   MenuContent,
   MenuContentItem,
@@ -439,7 +439,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
                     >
                       {selectedOperatorState.operator.getLabel()}
                     </div>
-                    <DropdownMenu
+                    <ControlledDropdownMenu
                       className="query-builder__olap__column__operation__operator__dropdown"
                       title="Choose Window Function Operator..."
                       disabled={!operators.length}
@@ -474,7 +474,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
                       <div className="query-builder__olap__column__operation__operator__dropdown__trigger">
                         <CaretDownIcon />
                       </div>
-                    </DropdownMenu>
+                    </ControlledDropdownMenu>
                   </div>
                 </div>
               </div>
@@ -553,7 +553,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
                       {selectedSortBy.sortType.toLowerCase()}
                     </div>
                   )}
-                  <DropdownMenu
+                  <ControlledDropdownMenu
                     className="query-builder__olap__column__sortby__operator__dropdown"
                     title="Choose Window Function SortBy Operator..."
                     content={
@@ -601,7 +601,7 @@ const QueryBuilderWindowColumnModalEditor = observer(
                     >
                       <CaretDownIcon />
                     </div>
-                  </DropdownMenu>
+                  </ControlledDropdownMenu>
                 </div>
               </div>
             </PanelFormSection>
@@ -1007,7 +1007,7 @@ const QueryBuilderWindowColumnEditor = observer(
               >
                 {operationState.operator.getLabel()}
               </div>
-              <DropdownMenu
+              <ControlledDropdownMenu
                 className="query-builder__olap__column__operation__operator__dropdown"
                 disabled={!operators.length}
                 title="Choose Window Function Operator..."
@@ -1036,7 +1036,7 @@ const QueryBuilderWindowColumnEditor = observer(
                 <div className="query-builder__olap__column__operation__operator__dropdown__trigger">
                   <CaretDownIcon />
                 </div>
-              </DropdownMenu>
+              </ControlledDropdownMenu>
             </div>
           </div>
           <div className="query-builder__olap__column__window">
@@ -1132,7 +1132,7 @@ const QueryBuilderWindowColumnEditor = observer(
                   {sortByState.sortType.toLowerCase()}
                 </div>
               )}
-              <DropdownMenu
+              <ControlledDropdownMenu
                 className="query-builder__olap__column__sortby__operator__dropdown"
                 title="Choose Window Function SortBy Operator..."
                 content={
@@ -1176,7 +1176,7 @@ const QueryBuilderWindowColumnEditor = observer(
                 <div className="query-builder__olap__column__sortby__operator__dropdown__trigger">
                   <CaretDownIcon />
                 </div>
-              </DropdownMenu>
+              </ControlledDropdownMenu>
             </div>
           </div>
           <div className="query-builder__olap__column__name">

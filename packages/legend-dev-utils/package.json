@@ -83,7 +83,7 @@
     "mini-css-extract-plugin": "2.9.0",
     "monaco-editor": "0.50.0",
     "monaco-editor-webpack-plugin": "7.1.0",
-    "postcss": "8.4.38",
+    "postcss": "8.4.39",
     "postcss-loader": "8.1.1",
     "react-refresh": "0.14.2",
     "resolve": "1.22.8",

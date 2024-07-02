@@ -50,7 +50,7 @@ import { NewServiceModal } from '../service-editor/NewServiceModal.js';
 import {
   CaretDownIcon,
   Dialog,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
   MenuContentItemLabel,
@@ -334,7 +334,7 @@ const PromoteToServiceQueryBuilderAction = observer(
 
     return (
       <>
-        <DropdownMenu
+        <ControlledDropdownMenu
           className="query-builder__dialog__header__custom-action"
           title="Promote Query..."
           content={
@@ -362,7 +362,7 @@ const PromoteToServiceQueryBuilderAction = observer(
             Save As...
           </div>
           <CaretDownIcon className="query-builder__sub-header__custom-action__icon" />
-        </DropdownMenu>
+        </ControlledDropdownMenu>
         {renderSaveAsModal()}
       </>
     );

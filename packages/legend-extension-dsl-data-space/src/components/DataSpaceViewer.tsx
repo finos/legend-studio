@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import {
   CaretDownIcon,
   CaretUpIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentDivider,
   MenuContentItem,
@@ -88,7 +88,7 @@ const DataSpaceHeader = observer(
             )}
           </div>
           <div className="data-space__viewer__header__actions">
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="data-space__viewer__header__execution-context-selector"
               menuProps={{
                 anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
@@ -132,8 +132,8 @@ const DataSpaceHeader = observer(
                   <CaretDownIcon />
                 </div>
               </div>
-            </DropdownMenu>
-            <DropdownMenu
+            </ControlledDropdownMenu>
+            <ControlledDropdownMenu
               className="data-space__viewer__header__actions-selector"
               menuProps={{
                 anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
@@ -198,7 +198,7 @@ const DataSpaceHeader = observer(
               }
             >
               <MoreVerticalIcon />
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </div>
         </div>
       </div>

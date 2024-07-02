@@ -21,7 +21,7 @@ import {
   Dialog,
   PanelLoadingIndicator,
   PlayIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   CaretDownIcon,
   MenuContentItem,
@@ -318,7 +318,7 @@ export const ServiceExecutionQueryEditor = observer(
                   Edit Query
                 </div>
               </button>
-              <DropdownMenu
+              <ControlledDropdownMenu
                 className="btn__dropdown-combo__dropdown-btn"
                 content={
                   <MenuContent>
@@ -336,7 +336,7 @@ export const ServiceExecutionQueryEditor = observer(
                 }}
               >
                 <CaretDownIcon />
-              </DropdownMenu>
+              </ControlledDropdownMenu>
             </div>
             <div className="btn__dropdown-combo btn__dropdown-combo--primary">
               {executionState.isRunningQuery ? (
@@ -366,7 +366,7 @@ export const ServiceExecutionQueryEditor = observer(
                       Run Query
                     </div>
                   </button>
-                  <DropdownMenu
+                  <ControlledDropdownMenu
                     className="btn__dropdown-combo__dropdown-btn"
                     disabled={executionIsRunning}
                     content={
@@ -391,11 +391,11 @@ export const ServiceExecutionQueryEditor = observer(
                     }}
                   >
                     <CaretDownIcon />
-                  </DropdownMenu>
+                  </ControlledDropdownMenu>
                 </>
               )}
             </div>
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="btn__dropdown-combo"
               disabled={executionIsRunning}
               content={
@@ -428,7 +428,7 @@ export const ServiceExecutionQueryEditor = observer(
               <div className="btn__dropdown-combo__dropdown-btn">
                 <CaretDownIcon />
               </div>
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </div>
         </div>
         <div className="panel__content property-mapping-editor__entry__container">

@@ -18,13 +18,13 @@ import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import { DataCubeQuerySnapshotSubscriber } from './DataCubeQuerySnapshotSubscriber.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
-import { DATA_CUBE_DEFAULT_REPORT_NAME } from '../DataCubeDefaultConfig.js';
 import type { DataCubeQuery } from '../../../server/models/DataCubeQuery.js';
 import { formatDate } from '@finos/legend-shared';
+import { DEFAULT_REPORT_NAME } from './DataCubeQueryEngine.js';
 
 export class DataCubeCoreState extends DataCubeQuerySnapshotSubscriber {
   baseQuery!: DataCubeQuery;
-  name = DATA_CUBE_DEFAULT_REPORT_NAME;
+  name = DEFAULT_REPORT_NAME;
   private startTime?: number | undefined;
 
   constructor(dataCube: DataCubeState) {
@@ -47,7 +47,7 @@ export class DataCubeCoreState extends DataCubeQuerySnapshotSubscriber {
       this.startTime = snapshot.timestamp;
     }
     this.application.layoutService.setWindowTitle(
-      `\u25A6 ${data.name}${this.startTime ? ` - ${formatDate(new Date(this.startTime), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
+      `\u229E ${data.name}${this.startTime ? ` - ${formatDate(new Date(this.startTime), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
     );
   }
 

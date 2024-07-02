@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-import { type MenuProps as MuiMenuProps, Menu as MuiMenu } from '@mui/material';
+import {
+  type MenuProps as MuiMenuProps,
+  Menu as MuiMenu,
+  MenuItem as MuiMenuItem,
+} from '@mui/material';
 
-export const BaseMenu: React.FC<MuiMenuProps> = (props) => {
+export const Menu: React.FC<MuiMenuProps> = (props) => {
   const { children, classes, ...otherProps } = props;
 
   return (
@@ -33,3 +37,5 @@ export const BaseMenu: React.FC<MuiMenuProps> = (props) => {
     </MuiMenu>
   );
 };
+
+export { MuiMenuItem as BaseMenuItem, MuiMenu as BaseMenu };

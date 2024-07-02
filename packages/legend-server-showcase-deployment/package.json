@@ -53,7 +53,7 @@
     "@fastify/cors": "9.0.1",
     "@finos/legend-server-showcase": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "fastify": "4.28.0"
+    "fastify": "4.28.1"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

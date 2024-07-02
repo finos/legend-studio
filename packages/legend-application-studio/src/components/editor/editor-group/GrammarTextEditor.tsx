@@ -30,7 +30,7 @@ import {
   MenuContentItem,
   PanelLoadingIndicator,
   CaretDownIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContentItemIcon,
   CheckIcon,
   MenuContentItemLabel,
@@ -1251,7 +1251,7 @@ export const GrammarTextEditor = observer(() => {
             </button>
           </div>
           <div className="query-builder__header__actions">
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="query-builder__header__advanced-dropdown"
               title="Show Advanced Menu..."
               content={
@@ -1284,7 +1284,7 @@ export const GrammarTextEditor = observer(() => {
                 Advanced
               </div>
               <CaretDownIcon className="query-builder__header__advanced-dropdown__icon" />
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </div>
         </div>
       </div>

@@ -51,7 +51,7 @@ import {
   ModalBody,
   ModalFooter,
   CaretDownIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   BlankPanelContent,
   MenuContent,
   MenuContentItem,
@@ -1377,7 +1377,7 @@ export const FunctionEditor = observer(() => {
                           Run
                         </div>
                       </button>
-                      <DropdownMenu
+                      <ControlledDropdownMenu
                         className="btn__dropdown-combo__dropdown-btn"
                         disabled={executionIsRunning}
                         content={
@@ -1408,7 +1408,7 @@ export const FunctionEditor = observer(() => {
                         }}
                       >
                         <CaretDownIcon />
-                      </DropdownMenu>
+                      </ControlledDropdownMenu>
                     </>
                   )}
                 </div>

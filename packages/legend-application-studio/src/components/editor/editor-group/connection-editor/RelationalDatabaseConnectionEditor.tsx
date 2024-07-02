@@ -35,7 +35,7 @@ import {
   MenuContent,
   MenuContentItem,
   PanelListSelectorItem,
-  DropdownMenu,
+  ControlledDropdownMenu,
   PanelTabs,
   BlankPanelContent,
   ResizablePanelSplitterLine,
@@ -1345,7 +1345,7 @@ const PostProcessorRelationalConnectionEditor = observer(
                   <Panel>
                     <PanelHeader title="post-processor">
                       <PanelHeaderActions>
-                        <DropdownMenu
+                        <ControlledDropdownMenu
                           title="Create post-processor"
                           className="panel__header__action"
                           disabled={isReadOnly}
@@ -1374,7 +1374,7 @@ const PostProcessorRelationalConnectionEditor = observer(
                           }}
                         >
                           <PlusIcon />
-                        </DropdownMenu>
+                        </ControlledDropdownMenu>
                       </PanelHeaderActions>
                     </PanelHeader>
                     <PanelContent>

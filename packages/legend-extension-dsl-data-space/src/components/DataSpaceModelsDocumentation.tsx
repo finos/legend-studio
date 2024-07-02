@@ -22,7 +22,7 @@ import {
   ChevronRightIcon,
   ClockIcon,
   CogIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   FilterIcon,
   InfoCircleIcon,
   MenuContent,
@@ -281,7 +281,7 @@ const ElementContentCellRenderer = observer(
                 <InfoCircleIcon className="data-space__viewer__models-documentation__grid__cell__action__info" />
               </div>
             </ElementInfoTooltip>
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="data-space__viewer__models-documentation__grid__cell__action"
               menuProps={{
                 anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
@@ -300,7 +300,7 @@ const ElementContentCellRenderer = observer(
               }
             >
               <MoreVerticalIcon />
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </div>
         </div>
       );
@@ -326,7 +326,7 @@ const ElementContentCellRenderer = observer(
                 <InfoCircleIcon className="data-space__viewer__models-documentation__grid__cell__action__info" />
               </div>
             </ElementInfoTooltip>
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="data-space__viewer__models-documentation__grid__cell__action"
               menuProps={{
                 anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
@@ -342,7 +342,7 @@ const ElementContentCellRenderer = observer(
               }
             >
               <MoreVerticalIcon />
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </div>
         </div>
       );
@@ -368,7 +368,7 @@ const ElementContentCellRenderer = observer(
                 <InfoCircleIcon className="data-space__viewer__models-documentation__grid__cell__action__info" />
               </div>
             </ElementInfoTooltip>
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="data-space__viewer__models-documentation__grid__cell__action"
               menuProps={{
                 anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
@@ -384,7 +384,7 @@ const ElementContentCellRenderer = observer(
               }
             >
               <MoreVerticalIcon />
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </div>
         </div>
       );
@@ -454,7 +454,7 @@ const SubElementDocContentCellRenderer = observer(
                 <InfoCircleIcon className="data-space__viewer__models-documentation__grid__cell__action__info" />
               </div>
             </PropertyInfoTooltip>
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="data-space__viewer__models-documentation__grid__cell__action"
               menuProps={{
                 anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
@@ -470,7 +470,7 @@ const SubElementDocContentCellRenderer = observer(
               }
             >
               <MoreVerticalIcon />
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </div>
         </div>
       );
@@ -496,7 +496,7 @@ const SubElementDocContentCellRenderer = observer(
             </div>
           </div>
           <div className="data-space__viewer__models-documentation__grid__cell__actions">
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="data-space__viewer__models-documentation__grid__cell__action"
               menuProps={{
                 anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
@@ -512,7 +512,7 @@ const SubElementDocContentCellRenderer = observer(
               }
             >
               <MoreVerticalIcon />
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </div>
         </div>
       );
