@@ -26,6 +26,7 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_ERROR_FOREGROUND_COLOR,
   DEFAULT_FOREGROUND_COLOR,
+  DEFAULT_GRID_LINE_COLOR,
   DEFAULT_NEGATIVE_FOREGROUND_COLOR,
   DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR,
   DEFAULT_ZERO_FOREGROUND_COLOR,
@@ -192,6 +193,13 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   !configuration.showVerticalGridLines,
                 )
               }
+            />
+            <div className="ml-2 h-[1px] w-2 bg-neutral-400" />
+            <DataCubeEditorColorPickerButton
+              className="ml-2"
+              color={configuration.gridLineColor}
+              defaultColor={DEFAULT_GRID_LINE_COLOR}
+              onChange={(value) => configuration.setGridLineColor(value)}
             />
           </div>
 

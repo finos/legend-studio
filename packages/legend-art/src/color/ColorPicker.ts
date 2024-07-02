@@ -19,3 +19,6 @@ export {
   HexAlphaColorPicker,
   HexColorInput,
 } from 'react-colorful';
+
+import parseColor from 'color-parse';
+export { parseColor };

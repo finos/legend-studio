@@ -44,6 +44,7 @@ class DataCubeGridLayoutConfiguration {
   readonly showHorizontalGridLines?: boolean | undefined;
   readonly showVerticalGridLines?: boolean | undefined;
   readonly showWarningForTruncatedResult?: boolean | undefined;
+  readonly gridLineColor?: string | undefined;
 
   constructor(input: {
     snapshot?: DataCubeQuerySnapshot | undefined;
@@ -54,6 +55,7 @@ class DataCubeGridLayoutConfiguration {
       queryConfiguration?.showWarningForTruncatedResult;
     this.showHorizontalGridLines = queryConfiguration?.showHorizontalGridLines;
     this.showVerticalGridLines = queryConfiguration?.showVerticalGridLines;
+    this.gridLineColor = queryConfiguration?.gridLineColor;
   }
 }
 

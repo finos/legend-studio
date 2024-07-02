@@ -22,7 +22,7 @@ import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
 import { ClipboardModule } from '@ag-grid-enterprise/clipboard';
 import { MenuModule } from '@ag-grid-enterprise/menu';
 import { AgGridReact } from '@ag-grid-community/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeIcon, Switch, cn } from '@finos/legend-art';
 import {
@@ -31,7 +31,10 @@ import {
 } from '../../../stores/dataCube/grid/DataCubeGridClientEngine.js';
 import { RangeSelectionModule } from '@ag-grid-enterprise/range-selection';
 import { buildGridMenu } from './menu/DataCubeGridMenu.js';
-import { DEFAULT_ROW_BUFFER } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
+import {
+  DEFAULT_GRID_LINE_COLOR,
+  DEFAULT_ROW_BUFFER,
+} from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
@@ -47,6 +50,7 @@ export const DataCubeGrid = observer(() => {
   const replStore = useREPLStore();
   const dataCube = replStore.dataCube;
   const grid = dataCube.grid;
+  const gridContainerRef = useRef<HTMLDivElement | null>(null);
   const [scrollHintText, setScrollHintText] = useState('');
 
   useEffect(() => {
@@ -55,8 +59,20 @@ export const DataCubeGrid = observer(() => {
     }
   }, [grid.clientLicenseKey]);
 
+  useEffect(() => {
+    if (gridContainerRef.current) {
+      gridContainerRef.current.style.setProperty(
+        '--ag-grid-line-color',
+        grid.layoutConfiguration.gridLineColor ?? DEFAULT_GRID_LINE_COLOR,
+      );
+    }
+  }, [grid.layoutConfiguration]);
+
   return (
-    <div className="data-cube-grid ag-theme-balham flex-1">
+    <div
+      className="data-cube-grid ag-theme-balham flex-1"
+      ref={gridContainerRef}
+    >
       <div
         className={cn('relative h-[calc(100%_-_20px)] w-full', {
           'data-cube-grid__utility--show-horizontal-grid-lines':

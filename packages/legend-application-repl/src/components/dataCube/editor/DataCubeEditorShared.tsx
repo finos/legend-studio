@@ -309,8 +309,8 @@ function DataCubeEditorColorPicker(props: {
         <div className="flex">
           {[
             // Colors from Better Colors - https://clrs.cc/
+            undefined,
             '#000000',
-            '#111111',
             '#AAAAAA',
             '#DDDDDD',
             '#FFFFFF',
@@ -329,16 +329,16 @@ function DataCubeEditorColorPicker(props: {
             '#85144B',
           ].map((_color) => (
             <div
-              key={_color}
+              key={_color ?? ''}
               className="mr-0.5 border-[0.5px] border-neutral-300 last:mr-0"
             >
               <button
                 className="flex h-3 w-3 flex-shrink-0"
                 style={{
-                  background: _color,
+                  background: _color ?? 'white',
                 }}
                 onClick={(): void => {
-                  setColor(_color);
+                  setColor(_color ?? '#00000000');
                 }}
               />
             </div>

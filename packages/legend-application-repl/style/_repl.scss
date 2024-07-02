@@ -193,14 +193,19 @@ button:focus-visible {
 
   // TODO: cell/range selection color
 
-  // ---------------------------------------- UTILITIES ----------------------------------------
+  // --------------------------------- CONFIGURATION DRIVEN ---------------------------------
+  //
+  // NOTE: these following styles are controlled by the configuration. Changes in the
+  // configuration will programatically toggle the styles or set the CSS variables' values
+
+  --ag-grid-line-color: var(--ag-border-color);
 
   .data-cube-grid__utility--show-vertical-grid-lines {
-    --ag-cell-horizontal-border: 1px solid var(--ag-border-color);
+    --ag-cell-horizontal-border: 1px solid var(--ag-grid-line-color);
   }
 
   .data-cube-grid__utility--show-horizontal-grid-lines {
-    --ag-row-border-color: var(--ag-border-color);
+    --ag-row-border-color: var(--ag-grid-line-color);
   }
 }
 

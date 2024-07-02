@@ -309,6 +309,9 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
       showVerticalGridLines: observable,
       setShowVerticalGridLines: action,
 
+      gridLineColor: observable,
+      setGridLineColor: action,
+
       defaultFontFamily: observable,
       setDefaultFontFamily: action,
 
@@ -415,6 +418,10 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
 
   setShowVerticalGridLines(value: boolean): void {
     this.showVerticalGridLines = value;
+  }
+
+  setGridLineColor(value: string): void {
+    this.gridLineColor = value;
   }
 
   setDefaultFontFamily(value: DataCubeFont): void {

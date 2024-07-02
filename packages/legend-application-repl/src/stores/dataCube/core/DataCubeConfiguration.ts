@@ -30,6 +30,7 @@ import {
   type DataCubeNumberScale,
   type DataCubeSelectionStat,
   type DataCubeColumnPinPlacement,
+  DEFAULT_GRID_LINE_COLOR,
 } from './DataCubeQueryEngine.js';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, list, optional, primitive } from 'serializr';
@@ -120,6 +121,7 @@ export class DataCubeConfiguration {
   showTreeLines = false;
   showHorizontalGridLines = false;
   showVerticalGridLines = true;
+  gridLineColor = DEFAULT_GRID_LINE_COLOR;
   defaultFontFamily = DataCubeFont.ROBOTO;
   defaultFontSize = 12;
   defaultFontBold = false;
@@ -183,6 +185,7 @@ export class DataCubeConfiguration {
       defaultForegroundZeroColor: primitive(),
       defaultTextAlign: primitive(),
       description: optional(primitive()),
+      gridLineColor: primitive(),
       initialExpandLevel: optional(primitive()),
 
       numberScale: optional(primitive()),
