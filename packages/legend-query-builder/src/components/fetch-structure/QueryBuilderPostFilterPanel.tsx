@@ -990,6 +990,14 @@ const QueryBuilderPostFilterPanelContent = observer(
         );
       }
     };
+
+    const { isDroppable } = useDragLayer((monitor) => ({
+      isDroppable:
+        monitor.isDragging() &&
+        (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
+          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
+    }));
+
     // Drag and Drop
     const handleDrop = useCallback(
       async (item: QueryBuilderPostFilterDropTarget): Promise<void> => {
@@ -1061,13 +1069,6 @@ const QueryBuilderPostFilterPanelContent = observer(
 
     const addPostFilterRef = useRef<HTMLInputElement>(null);
     dropTargetConnector(addPostFilterRef);
-
-    const { isDroppable } = useDragLayer((monitor) => ({
-      isDroppable:
-        monitor.isDragging() &&
-        (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
-          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
-    }));
 
     return (
       <>
