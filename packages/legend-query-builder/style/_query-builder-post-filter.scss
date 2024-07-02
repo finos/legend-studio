@@ -183,10 +183,6 @@
     }
   }
 
-  &__node__drop-zone-placeholder {
-    height: fit-content;
-  }
-
   &__group-node {
     @include flexVCenter;
 
@@ -247,18 +243,13 @@
 
     width: 100%;
     height: 100%;
-    padding: 0 0.2rem;
 
     &__property {
       @include flexVCenter;
 
-      width: calc(50% - 3rem);
+      width: fit-content;
+      max-width: calc(50% - 3rem);
       height: 2.8rem;
-
-      .query-builder-property-expression-badge {
-        width: fit-content;
-        min-width: 50%;
-      }
     }
 
     &__operator {
