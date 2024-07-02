@@ -216,19 +216,28 @@ export class QueryBuilderPostFilterTreeConditionNodeData
   implements Hashable
 {
   condition: PostFilterConditionState;
+  isNewlyAdded: boolean;
 
   constructor(
     parentId: string | undefined,
     condition: PostFilterConditionState,
+    isNewlyAdded?: boolean,
   ) {
     super(parentId);
 
     makeObservable(this, {
       condition: observable,
+      isNewlyAdded: observable,
+      setIsNewlyAdded: action,
       dragPreviewLabel: computed,
     });
 
     this.condition = condition;
+    this.isNewlyAdded = isNewlyAdded ?? false;
+  }
+
+  setIsNewlyAdded(val: boolean): void {
+    this.isNewlyAdded = val;
   }
 
   get dragPreviewLabel(): string {

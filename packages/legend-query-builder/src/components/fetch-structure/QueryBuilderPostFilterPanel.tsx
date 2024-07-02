@@ -62,6 +62,7 @@ import { observer } from 'mobx-react-lite';
 import React, {
   forwardRef,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -93,8 +94,8 @@ import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOpe
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import {
   type QueryBuilderVariableDragSource,
-  BasicValueSpecificationEditor,
   QUERY_BUILDER_VARIABLE_DND_TYPE,
+  EditableBasicValueSpecificationEditor,
 } from '../shared/BasicValueSpecificationEditor.js';
 import {
   QueryBuilderColumnInfoTooltip,
@@ -449,7 +450,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
               isDroppable={isFilterValueDroppable}
               label="Change Filter Value"
             >
-              <BasicValueSpecificationEditor
+              <EditableBasicValueSpecificationEditor
                 valueSpecification={rightConditionValue.value}
                 setValueSpecification={changeValueSpecification}
                 graph={graph}
@@ -464,6 +465,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
                 isConstant={queryBuilderState.constantState.isValueSpecConstant(
                   rightConditionValue.value,
                 )}
+                initializeAsEditable={node.isNewlyAdded}
               />
             </PanelEntryDropZonePlaceholder>
           </div>
@@ -502,6 +504,10 @@ const QueryBuilderPostFilterConditionEditor = observer(
       }
       return null;
     };
+
+    useEffect(() => {
+      node.setIsNewlyAdded(false);
+    }, [node]);
 
     return (
       <div className="dnd__entry__container">
@@ -613,6 +619,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
                   nodeBeingDragged.id,
                 ) as QueryBuilderPostFilterTreeConditionNodeData
               ).condition,
+              true,
             );
 
           if (node instanceof QueryBuilderPostFilterTreeConditionNodeData) {
@@ -658,6 +665,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
               new QueryBuilderPostFilterTreeConditionNodeData(
                 undefined,
                 conditionState,
+                true,
               ),
               node,
             );
@@ -1047,6 +1055,7 @@ const QueryBuilderPostFilterPanelContent = observer(
           new QueryBuilderPostFilterTreeConditionNodeData(
             undefined,
             postFilterConditionState,
+            true,
           ),
           undefined,
         );
