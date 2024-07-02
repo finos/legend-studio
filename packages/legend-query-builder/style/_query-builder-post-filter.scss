@@ -255,7 +255,7 @@
     &__operator {
       @include flexVCenter;
 
-      margin: 0 0.5rem;
+      margin: 0 1rem;
     }
 
     &__operator__label {
@@ -294,21 +294,34 @@
     &__value {
       @include flexCenter;
 
-      flex-grow: 1;
-      height: 2.8rem;
+      justify-content: left;
+      width: 100%;
+      height: fit-content;
+      min-height: 2.8rem;
       border-radius: 0.2rem;
       font-size: 1.2rem;
       font-weight: 500;
-
-      .query-builder-post-filter-tree__condition-node__property {
-        width: 100%;
-
-        .query-builder-column-badge__property__info {
-          width: 2rem;
-          margin: 0;
-        }
-      }
     }
+
+    // &__value {
+    //   @include flexCenter;
+
+    //   justify-content: left;
+    //   flex-grow: 1;
+    //   height: 2.8rem;
+    //   border-radius: 0.2rem;
+    //   font-size: 1.2rem;
+    //   font-weight: 500;
+
+    //   .query-builder-post-filter-tree__condition-node__property {
+    //     width: 100%;
+
+    //     .query-builder-column-badge__property__info {
+    //       width: 2rem;
+    //       margin: 0;
+    //     }
+    //   }
+    // }
   }
 }
 
