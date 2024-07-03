@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  ContentType,
+  downloadFileUsingDataURI,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
-import type { ColumnApi, GridApi } from '@ag-grid-community/core';
+import type { GridApi } from '@ag-grid-community/core';
 import type { DataCubeState } from '../DataCubeState.js';
 import { DataCubeGridClientServerSideDataSource } from './DataCubeGridClientEngine.js';
 import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
@@ -28,21 +32,18 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   clientDataSource: DataCubeGridClientServerSideDataSource;
   clientLicenseKey?: string | undefined;
   isPaginationEnabled = false;
-  isLoading = false;
 
   constructor(dataCube: DataCubeState) {
     super(dataCube);
 
     makeObservable(this, {
       clientDataSource: observable,
-
       clientLicenseKey: observable,
       setClientLicenseKey: action,
       isPaginationEnabled: observable,
       setPaginationEnabled: action,
       generateCSVFile: action,
       generateExcelFile: action,
-      //add_email
     });
 
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
@@ -90,21 +91,156 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     );
   }
 
-  generateCSVFile = () => {
-    console.log('csv generated');
-    if (this._client) {
-      this._client.exportDataAsCsv();
-    } else {
-      console.error('Grid API not set');
+  generateCSVFile = (): string => {
+    if (!this._client) {
+      throw new Error('Grid API is not initialized.');
     }
+    const params = {
+      fileName: 'csv_data.csv',
+      suppressQuotes: true,
+      processcellCallbacks: (cell: any) => {
+        return cell ? cell.toString() : '';
+      },
+    };
+    return this._client.getDataAsCsv(params) || '';
   };
 
   generateExcelFile = () => {
-    console.log('excel converted to file');
-    if (this._client) {
-      this._client.exportDataAsExcel();
-    } else {
-      console.error('Grid API not set');
+    if (!this._client) {
+      throw new Error('Grid API is not initialized.');
+    }
+    const params = {
+      fileName: 'excel_data.xlsx',
+      processcellCallbacks: (cell: any) => {
+        return cell ? cell.toString() : '';
+      },
+    };
+    this._client.exportDataAsExcel(params);
+  };
+
+  blobToBase64 = (blob: Blob): Promise<string> => {
+    // console.log(blob);
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result;
+        if (typeof result === 'string') {
+          const base64Data = result.split(',')[1];
+          if (base64Data) {
+            resolve(base64Data);
+          } else {
+            reject(
+              new Error('Failed to convert blob to base64. Base64 is invalid'),
+            );
+          }
+        } else {
+          reject(
+            new Error('Failed to convert blob to base64. Filereader is null'),
+          );
+        }
+      };
+      reader.onerror = () => {
+        reject(
+          new Error(
+            'Failed to convert blob to base64: something wrong with filereader.',
+          ),
+        );
+      };
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  generateEmail = async (isHtml: boolean, includeAttachments: boolean) => {
+    try {
+      //1. generate files
+      // const csvFileGenerator = await this.generateCSVFile();
+      // const xlsxFileGenerator = await this.generateExcelFile();
+
+      // 2. convert the files to blob
+      // const cvsBlob = new Blob([csvFileGenerator], { type: 'text/csv' });
+      const textContent =
+        'Please find the attached CSV and Excel(.xlsx) files.';
+      const htmlContent = `
+      <html>
+       <body>
+        <p>${textContent}</p>
+       <body>
+      </html>
+      `;
+
+      const emailBody = isHtml ? htmlContent : textContent;
+      const contentType = isHtml ? 'text/html' : 'text/plain';
+
+      let emlContent = `
+      From: somebody@test.com
+      To: someone@test.com
+      Subject: subject of the some files generated
+      MIME-Version: 1.0
+      `;
+
+      if (includeAttachments) {
+        const csvContent = this.generateCSVFile();
+        const csvBlob = new Blob([csvContent], { type: 'text/csv' });
+
+        const xlsxBlob = this._client?.getDataAsExcel({
+          fileName: 'excel_data.xlsx',
+          processCellCallback: (cell: any) => {
+            return cell ? cell.toString() : '';
+          },
+        });
+
+        if (!(xlsxBlob instanceof Blob)) {
+          throw new Error('Failed to generate Excel file as a Blob.');
+        }
+
+        // 4. generate email content with attachements
+        const boundaryMixed = 'boundary----------123456789----------987654321';
+        const boundaryAlternative =
+          'boundary----------0987654321----------1234567890';
+
+        emlContent += `
+Content-Type: multipart/mixed; boundary="${boundaryMixed}"
+
+--${boundaryMixed}
+Content-Type: multipart/alternative; boundary="${boundaryAlternative}"
+
+--${boundaryAlternative}
+
+Content-Type:${contentType}; charset: "UTF-8"
+Content-Transfer-Encoding: 7bit
+
+--${emailBody}
+
+--${boundaryAlternative}--
+
+--${boundaryMixed}
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; name="excelFile.xlsx"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="excelFile.xlsx"
+
+${await this.blobToBase64(xlsxBlob)}
+
+--${boundaryMixed}
+Content-Type: text/csv; name="csvFile.csv"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="csvFile.csv"
+
+${await this.blobToBase64(csvBlob)};
+
+--${boundaryMixed}--
+`;
+      } else {
+        emlContent += `
+Content-Type: ${contentType}; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+${emailBody}
+`;
+      }
+
+      downloadFileUsingDataURI('emlFile.eml', emlContent, ContentType.ALL); //NEED TO ADD MESSAGE_RFC822 to CONTENT-TYPE
+    } catch (error) {
+      console.error('Error creating EML file:', error);
     }
   };
 }
