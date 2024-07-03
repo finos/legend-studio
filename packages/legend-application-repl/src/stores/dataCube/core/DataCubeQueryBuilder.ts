@@ -51,7 +51,7 @@ import {
   type DataCubeQuerySnapshotFilterCondition,
   type DataCubeQuerySnapshotFilter,
   type DataCubeQuerySnapshot,
-  DataCubeQuerySnapshotSortDirection,
+  DataCubeQuerySnapshotSortOperation,
   DataCubeQuerySnapshotFilterOperation,
   DataCubeQueryFilterGroupOperation,
   _findCol,
@@ -347,6 +347,17 @@ export function buildExecutableQuery(
     );
   }
 
+  // --------------------------------- SELECT ---------------------------------
+
+  if (data.selectColumns.length) {
+    _process(
+      'select',
+      _function(_name(DataCubeFunction.SELECT), [
+        _cols(data.selectColumns.map((col) => _colSpec(col.name))),
+      ]),
+    );
+  }
+
   // --------------------------------- FILTER ---------------------------------
 
   if (data.filter) {
@@ -398,17 +409,6 @@ export function buildExecutableQuery(
     );
   }
 
-  // --------------------------------- SELECT ---------------------------------
-
-  if (data.selectColumns.length) {
-    _process(
-      'select',
-      _function(_name(DataCubeFunction.SELECT), [
-        _cols(data.selectColumns.map((col) => _colSpec(col.name))),
-      ]),
-    );
-  }
-
   // --------------------------------- SORT ---------------------------------
 
   if (data.sortColumns.length) {
@@ -419,7 +419,7 @@ export function buildExecutableQuery(
           data.sortColumns.map((col) =>
             _function(
               _name(
-                col.direction === DataCubeQuerySnapshotSortDirection.ASCENDING
+                col.operation === DataCubeQuerySnapshotSortOperation.ASCENDING
                   ? DataCubeFunction.ASC
                   : DataCubeFunction.DESC,
               ),

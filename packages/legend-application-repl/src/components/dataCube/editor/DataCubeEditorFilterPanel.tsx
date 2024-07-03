@@ -21,12 +21,12 @@ import { useEffect } from 'react';
 
 export const DataCubeEditorFilterPanel = observer(() => {
   const replStore = useREPLStore();
-  const panel = replStore.dataCubeState.editor.sortsPanel;
+  const panel = replStore.dataCube.editor.sortsPanel;
 
   useEffect(() => {}, [panel]); // TODO: @akphi - remove this dummy useEffect
 
   return (
-    <div className="data-cube-column-selector h-full w-full p-2">
+    <div className="h-full w-full select-none p-2">
       <div className="flex h-6">
         <div className="flex h-6 items-center text-xl font-medium">
           <DataCubeIcon.TableFilter />

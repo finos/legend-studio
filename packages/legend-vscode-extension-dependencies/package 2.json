@@ -1,0 +1,65 @@
+{
+  "name": "@finos/legend-vscode-extension-dependencies",
+  "version": "2.0.0",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-vscode-extension-dependencies",
+  "bugs": {
+    "url": "https://github.com/finos/legend-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-vscode-extension-dependencies"
+  },
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./lib/index.js",
+      "require": "./lib/bundles/bundle.cjs.js"
+    }
+  },
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build:ts": "tsc --project ./tsconfig.build.json",
+    "bundle": "yarn clean && yarn build:ts && yarn rollup -c && echo '{\"type\": \"commonjs\"}' > lib/bundles/package.json",
+    "clean": "npm-run-all clean:cache clean:lib",
+    "clean:cache": "rimraf \"build\"",
+    "clean:lib": "rimraf \"lib\"",
+    "dev": "npm-run-all --parallel dev:ts",
+    "dev:ts": "tsc --watch --preserveWatchOutput",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
+    "publish:pre-prepare": "yarn bundle",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@finos/legend-application-studio": "workspace:*",
+    "@finos/legend-extension-dsl-diagram": "workspace:*",
+    "@finos/legend-graph": "workspace:*",
+    "@finos/legend-shared": "workspace:*",
+    "@finos/legend-storage": "workspace:*"
+  },
+  "devDependencies": {
+    "@finos/legend-dev-utils": "workspace:*",
+    "@rollup/plugin-babel": "6.0.4",
+    "@rollup/plugin-commonjs": "26.0.1",
+    "@rollup/plugin-json": "6.1.0",
+    "@rollup/plugin-node-resolve": "15.2.3",
+    "@rollup/plugin-terser": "0.4.4",
+    "cross-env": "7.0.3",
+    "eslint": "8.57.0",
+    "npm-run-all": "4.1.5",
+    "rimraf": "5.0.7",
+    "rollup": "4.18.0",
+    "rollup-plugin-flow": "1.1.1",
+    "rollup-plugin-import-css": "3.5.0",
+    "typescript": "5.4.5"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
+  }
+}

@@ -18,6 +18,9 @@ import { makeObservable, observable, action } from 'mobx';
 
 export abstract class DataCubeEditorColumnsSelectorColumnState {
   abstract get name(): string;
+  resetWhenMadeAvailable(): void {
+    // do nothing
+  }
 }
 
 export class DataCubeEditorColumnsSelectorState<
@@ -45,6 +48,7 @@ export class DataCubeEditorColumnsSelectorState<
     this.availableColumns = val
       .slice()
       .sort((a, b) => a.name.localeCompare(b.name));
+    this.availableColumns.forEach((column) => column.resetWhenMadeAvailable());
   }
 
   setSelectedColumns(val: T[]): void {
@@ -57,5 +61,13 @@ export class DataCubeEditorColumnsSelectorState<
 
   setSelectedColumnsSearchText(val: string): void {
     this.selectedColumnsSearchText = val;
+  }
+
+  getAvailableColumn(colName: string): T | undefined {
+    return this.availableColumns.find((col) => col.name === colName);
+  }
+
+  getSelectedColumn(colName: string): T | undefined {
+    return this.selectedColumns.find((col) => col.name === colName);
   }
 }

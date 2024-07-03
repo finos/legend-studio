@@ -24,7 +24,7 @@ import {
 import {
   CaretDownIcon,
   clsx,
-  DropdownMenu,
+  ControlledDropdownMenu,
   InfoCircleIcon,
   LockIcon,
   MenuContent,
@@ -123,7 +123,7 @@ export const ExternalFormatDataEditor = observer(
             </div>
           </div>
           <div className="external-format-data-editor__header__actions">
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="external-format-data-editor__type"
               disabled={isReadOnly}
               content={
@@ -150,7 +150,7 @@ export const ExternalFormatDataEditor = observer(
               <div className="external-format-data-editor__type__icon">
                 <CaretDownIcon />
               </div>
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </div>
         </div>
         <div className={clsx('external-format-data-editor__content')}>

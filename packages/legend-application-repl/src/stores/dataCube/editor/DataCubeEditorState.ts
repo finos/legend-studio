@@ -22,6 +22,7 @@ import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSu
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGeneralPropertiesPanelState.js';
+import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumnPropertiesPanelState.js';
 
 export enum DATA_CUBE_EDITOR_TAB {
   COLUMNS = 'Columns',
@@ -33,13 +34,13 @@ export enum DATA_CUBE_EDITOR_TAB {
   GENERAL_PROPERTIES = 'General Properties',
   COLUMN_PROPERTIES = 'Column Properties',
   CODE = 'Code',
-  // DEVELOPER_OPTIONS = 'Developer',
-  // PIVOT_LAYOUT = 'Pivot Layout',
+  DEVELOPER = 'Developer',
 }
 
 export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
   readonly sortsPanel: DataCubeEditorSortsPanelState;
   readonly generalPropertiesPanel: DataCubeEditorGeneralPropertiesPanelState;
+  readonly columnPropertiesPanel: DataCubeEditorColumnPropertiesPanelState;
   readonly codePanel: DataCubeEditorCodePanelState;
 
   isPanelOpen = false;
@@ -59,11 +60,14 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
       closePanel: action,
     });
 
-    this.sortsPanel = new DataCubeEditorSortsPanelState(this.dataCube);
+    this.sortsPanel = new DataCubeEditorSortsPanelState(this);
     this.generalPropertiesPanel = new DataCubeEditorGeneralPropertiesPanelState(
-      this.dataCube,
+      this,
     );
-    this.codePanel = new DataCubeEditorCodePanelState(this.dataCube);
+    this.columnPropertiesPanel = new DataCubeEditorColumnPropertiesPanelState(
+      this,
+    );
+    this.codePanel = new DataCubeEditorCodePanelState(this);
   }
 
   openPanel(): void {
@@ -82,12 +86,14 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const snapshot = baseSnapshot.clone();
 
-    const createNew = [
-      this.sortsPanel.buildSnapshot(snapshot, baseSnapshot),
-      this.generalPropertiesPanel.buildSnapshot(snapshot, baseSnapshot),
-    ].some(Boolean);
+    this.sortsPanel.buildSnapshot(snapshot, baseSnapshot);
+    // NOTE: snapshot must be processed first to build the container configuration
+    // before proceeding to process the columns' configuration
+    this.generalPropertiesPanel.buildSnapshot(snapshot, baseSnapshot);
+    this.columnPropertiesPanel.buildSnapshot(snapshot, baseSnapshot);
 
-    if (createNew) {
+    snapshot.finalize();
+    if (snapshot.hashCode !== baseSnapshot.hashCode) {
       this.publishSnapshot(snapshot);
     }
   }
@@ -95,6 +101,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
   override async applySnapshot(snapshot: DataCubeQuerySnapshot): Promise<void> {
     this.sortsPanel.applySnaphot(snapshot);
     this.generalPropertiesPanel.applySnaphot(snapshot);
+    this.columnPropertiesPanel.applySnaphot(snapshot);
   }
 
   override async initialize(): Promise<void> {

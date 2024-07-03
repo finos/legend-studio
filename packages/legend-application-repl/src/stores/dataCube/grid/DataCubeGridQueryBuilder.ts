@@ -139,16 +139,6 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
 
       // --------------------------------- PIVOT ---------------------------------
       // TODO: @akphi - implement this and CAST
-
-      // --------------------------------- SELECT ---------------------------------
-      if (funcMap.select && drilldownValues.length < groupBy.columns.length) {
-        funcMap.select.parameters = [
-          _cols([
-            ...data.selectColumns.map((col) => _colSpec(col.name)),
-            _colSpec(INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID),
-          ]),
-        ];
-      }
     }
   };
 }

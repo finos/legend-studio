@@ -36,7 +36,7 @@ import {
 import type { DataCubeQuery } from '../../../server/models/DataCubeQuery.js';
 import {
   DataCubeQuerySnapshot,
-  DataCubeQuerySnapshotSortDirection,
+  DataCubeQuerySnapshotSortOperation,
   type DataCubeQuerySnapshotColumn,
 } from './DataCubeQuerySnapshot.js';
 import {
@@ -50,6 +50,8 @@ import {
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
+import { DataCubeConfiguration } from './DataCubeConfiguration.js';
+import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -133,12 +135,12 @@ const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN: {
   required?: boolean | undefined;
 }[] = [
   { func: DataCubeFunction.EXTEND },
+  { func: DataCubeFunction.SELECT },
   { func: DataCubeFunction.FILTER },
   { func: DataCubeFunction.GROUP_BY },
   { func: DataCubeFunction.PIVOT },
   { func: DataCubeFunction.CAST },
   { func: DataCubeFunction.EXTEND },
-  { func: DataCubeFunction.SELECT },
   { func: DataCubeFunction.SORT },
   { func: DataCubeFunction.LIMIT },
 ];
@@ -269,19 +271,19 @@ function extractFunctionMap(
     }
   }
 
+  const select = sequence.find((func) =>
+    matchFunctionName(func.function, DataCubeFunction.SELECT),
+  );
   const filter = sequence.find((func) =>
     matchFunctionName(func.function, DataCubeFunction.FILTER),
   );
   const groupBy = sequence.find((func) =>
     matchFunctionName(func.function, DataCubeFunction.GROUP_BY),
   );
-  const select = sequence.find((func) =>
-    matchFunctionName(func.function, DataCubeFunction.SELECT),
-  );
   const pivot = sequence.find((func) =>
     matchFunctionName(func.function, DataCubeFunction.PIVOT),
   );
-  const cast = sequence.find((func) =>
+  const pivotCast = sequence.find((func) =>
     matchFunctionName(func.function, DataCubeFunction.CAST),
   );
   const sort = sequence.find((func) =>
@@ -292,12 +294,12 @@ function extractFunctionMap(
   );
   return {
     leafExtend,
+    select,
     filter,
     groupBy,
     pivot,
-    pivotCast: cast,
+    pivotCast,
     groupExtend,
-    select,
     sort,
     limit,
   };
@@ -326,7 +328,7 @@ export function validateAndBuildQuerySnapshot(
     baseQuery.name,
     baseQuery.source.runtime,
     V1_serializeValueSpecification(sourceQuery, []),
-    baseQuery.configuration,
+    {},
   );
   const data = snapshot.data;
   const colsMap = new Map<string, DataCubeQuerySnapshotColumn>();
@@ -335,11 +337,24 @@ export function validateAndBuildQuerySnapshot(
 
   // --------------------------------- SOURCE ---------------------------------
 
-  data.originalColumns = baseQuery.source.columns;
+  data.originalColumns = baseQuery.source.columns.map((col) => ({
+    name: col.name,
+    type: col.type,
+  }));
   data.originalColumns.map((col) => colsMap.set(col.name, col));
 
   // --------------------------------- LEAF EXTEND ---------------------------------
   // TODO: @akphi - implement this
+
+  // --------------------------------- SELECT ---------------------------------
+
+  if (funcMap.select) {
+    data.selectColumns = _colSpecArrayParam(funcMap.select, 0).colSpecs.map(
+      (colSpec) => ({
+        ..._col(colSpec),
+      }),
+    );
+  }
 
   // --------------------------------- FILTER ---------------------------------
   // TODO: @akphi - implement this
@@ -367,22 +382,12 @@ export function validateAndBuildQuerySnapshot(
         ]);
         return {
           ..._col(_colSpecParam(sortColFunc, 0)),
-          direction:
+          operation:
             _name(sortColFunc.function) === DataCubeFunction.ASC
-              ? DataCubeQuerySnapshotSortDirection.ASCENDING
-              : DataCubeQuerySnapshotSortDirection.DESCENDING,
+              ? DataCubeQuerySnapshotSortOperation.ASCENDING
+              : DataCubeQuerySnapshotSortOperation.DESCENDING,
         };
       },
-    );
-  }
-
-  // --------------------------------- SELECT ---------------------------------
-
-  if (funcMap.select) {
-    data.selectColumns = _colSpecArrayParam(funcMap.select, 0).colSpecs.map(
-      (colSpec) => ({
-        ..._col(colSpec),
-      }),
     );
   }
 
@@ -394,5 +399,21 @@ export function validateAndBuildQuerySnapshot(
     data.limit = value.value;
   }
 
-  return snapshot;
+  // --------------------------------- CONFIGURATION ---------------------------------
+  // The data query takes precedence over the configuration, we do this for 2 reasons
+  // 1. The purpose of the configuration is to provide the layout and styling
+  //    customization on top of the data query result grid. If conflicts happen between
+  //    the configuration and the query, we will reconciliate by modifying the configuration
+  // 2. The configuration when missing, can be generated from default presets. This helps
+  //    helps with use cases where the query might comes from a different source, such as
+  //    Studio or Query, or another part of Engine.
+
+  const configuration = baseQuery.configuration
+    ? DataCubeConfiguration.serialization.fromJson(baseQuery.configuration)
+    : buildDefaultConfiguration(baseQuery.source.columns);
+  // TODO: @akphi - implement this
+  data.configuration =
+    DataCubeConfiguration.serialization.toJson(configuration);
+
+  return snapshot.finalize();
 }

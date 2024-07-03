@@ -45,7 +45,7 @@ export const getBaseWebpackConfig = (
   arg,
   dirname,
   { babelConfigPath },
-  isRelativePathSupported,
+  useRelativePath,
 ) => {
   if (!dirname) {
     throw new Error(`\`dirname\` is required to build Webpack config`);
@@ -126,7 +126,7 @@ export const getBaseWebpackConfig = (
           use: [
             {
               loader: MiniCssExtractPlugin.loader,
-              options: isRelativePathSupported
+              options: useRelativePath
                 ? {
                     publicPath: '../',
                   }
@@ -260,7 +260,7 @@ export const getWebAppBaseWebpackConfig = (
     {
       babelConfigPath,
     },
-    appConfig.isRelativePathSupported,
+    appConfig.useRelativePath,
   );
   validateAppConfig(appConfig, dirname);
 
@@ -288,7 +288,7 @@ export const getWebAppBaseWebpackConfig = (
       }`,
       publicPath: isEnvDevelopment
         ? '/'
-        : appConfig.isRelativePathSupported
+        : appConfig.useRelativePath
           ? './'
           : appConfig.baseUrl,
       filename: `${staticPath}/${

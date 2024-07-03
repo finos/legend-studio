@@ -20,34 +20,57 @@ import { useEffect, useRef, useState } from 'react';
 import { DataCubeGrid } from './grid/DataCubeGrid.js';
 import { DataCubeEditor } from './editor/DataCubeEditor.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { DataCubeIcon } from '@finos/legend-art';
+import { DataCubeIcon, ProgressBar } from '@finos/legend-art';
 
 const DataCubeStatusBar = observer(() => {
   const dataCubeStore = useREPLStore();
-  const dataCubeState = dataCubeStore.dataCubeState;
+  const dataCube = dataCubeStore.dataCube;
 
   return (
-    <div className="flex h-5 w-full bg-neutral-100">
-      <button className="pl-2">
-        <DataCubeIcon.Documentation className="text-xl text-sky-600" />
-      </button>
-      <button
-        className="flex w-1/2 items-center px-2 text-sky-600 underline"
-        onClick={(): void => dataCubeState.editor.openPanel()}
-      >
-        Pivot
-      </button>
-      <button className="flex w-1/2 items-center px-2 text-sky-600 underline">
-        Filter
-      </button>
+    <div className="flex h-5 w-full justify-between bg-neutral-100">
+      <div className="flex flex-1">
+        <button
+          className="pl-2 text-sky-600 hover:text-sky-700"
+          title="See Documentation"
+        >
+          <DataCubeIcon.Documentation className="text-xl" />
+        </button>
+        <button
+          className="flex items-center px-3 text-sky-600 hover:text-sky-700"
+          onClick={(): void => dataCube.editor.openPanel()}
+        >
+          <DataCubeIcon.Settings className="text-xl" />
+          <div className="pl-0.5 underline">Properties</div>
+        </button>
+        <div className="flex-1">
+          <button className="flex items-center text-sky-600 hover:text-sky-700">
+            <DataCubeIcon.TableFilter className="text-lg" />
+            <div className="pl-0.5 underline">Filter</div>
+          </button>
+        </div>
+      </div>
+      <div className="flex items-center px-2">
+        <div className="flex h-3.5 w-48 border-[0.5px] border-neutral-300">
+          {dataCube.runningTaskes.size > 0 && (
+            <ProgressBar
+              classes={{
+                root: 'h-3.5 w-full bg-transparent',
+                bar1Indeterminate: 'bg-green-500',
+                bar2Indeterminate: 'bg-green-500',
+              }}
+              variant="indeterminate"
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 });
 
 const DataCubeTitleBar = observer(() => {
   const dataCubeStore = useREPLStore();
-  const dataCubeState = dataCubeStore.dataCubeState;
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const dataCube = dataCubeStore.dataCube;
 
   const handleButtonClick = () => {
     setDropdownVisible(!dropdownVisible);
@@ -56,23 +79,19 @@ const DataCubeTitleBar = observer(() => {
   const handleOptionClick = (option: string) => {
     setDropdownVisible(false);
     if (option === 'excel') {
-      dataCubeState.grid.generateExcelFile();
+      dataCube.grid.generateExcelFile();
     } else if (option === 'csv') {
-      dataCubeState.grid.generateCSVFile();
+      dataCube.grid.generateCSVFile();
     }
   };
   return (
     <div className="flex h-6 justify-between bg-neutral-100">
       <div className="flex select-none items-center pl-1 pr-2 text-lg font-medium">
         <DataCubeIcon.Cube className="mr-1 h-4 w-4" />
-        <div>{dataCubeState.editor.generalPropertiesPanel.name}</div>
+        <div>{dataCube.editor.generalPropertiesPanel.name}</div>
         {/* TODO: @akphi - add save icon */}
         <div className="btn_container relative">
-          <button
-            className="generate_formats"
-            onClick={handleButtonClick}
-            // onClick={dataCubeState.grid.generateExcelFile}
-          >
+          <button className="generate_formats" onClick={handleButtonClick}>
             Click here
           </button>
           {dropdownVisible && (
@@ -94,11 +113,6 @@ const DataCubeTitleBar = observer(() => {
             </div>
           )}
         </div>
-        {dataCubeState.grid.isLoading && (
-          <div className="loading-indicator">
-            <span>Loading...</span>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -108,11 +122,11 @@ export const DataCube = observer(() => {
   const dataCubeStore = useREPLStore();
   const ref = useRef<HTMLDivElement>(null);
   const applicationStore = useApplicationStore();
-  const dataCubeState = dataCubeStore.dataCubeState;
+  const dataCube = dataCubeStore.dataCube;
 
   useEffect(() => {
-    dataCubeState.initialize().catch(applicationStore.logUnhandledError);
-  }, [dataCubeState, applicationStore]);
+    dataCube.initialize().catch(applicationStore.logUnhandledError);
+  }, [dataCube, applicationStore]);
 
   return (
     <div
@@ -122,9 +136,7 @@ export const DataCube = observer(() => {
       <DataCubeTitleBar />
       <DataCubeGrid />
       <DataCubeStatusBar />
-      {dataCubeState.editor.isPanelOpen && (
-        <DataCubeEditor containerRef={ref} />
-      )}
+      {dataCube.editor.isPanelOpen && <DataCubeEditor containerRef={ref} />}
     </div>
   );
 });

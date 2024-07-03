@@ -17,12 +17,28 @@
 import type { REPLStore } from './REPLStore.js';
 import { DataCubeGridState } from './grid/DataCubeGridState.js';
 import { DataCubeEditorState } from './editor/DataCubeEditorState.js';
-import { ActionState, assertErrorThrown } from '@finos/legend-shared';
+import { assertErrorThrown, uuid } from '@finos/legend-shared';
 import { DataCubeEngine } from './core/DataCubeEngine.js';
 import { DataCubeQuerySnapshotManager } from './core/DataCubeQuerySnapshotManager.js';
 import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
 import { DataCubeCoreState } from './core/DataCubeCoreState.js';
 import { validateAndBuildQuerySnapshot } from './core/DataCubeQuerySnapshotBuilder.js';
+import { action, makeObservable, observable } from 'mobx';
+
+export class DataCubeTask {
+  uuid = uuid();
+  name: string;
+  startTime = Date.now();
+  endTime?: number | undefined;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  end(): void {
+    this.endTime = Date.now();
+  }
+}
 
 export class DataCubeState {
   readonly replStore: REPLStore;
@@ -34,9 +50,15 @@ export class DataCubeState {
   readonly grid: DataCubeGridState;
   readonly editor: DataCubeEditorState;
 
-  readonly initState = ActionState.create();
+  readonly runningTaskes = new Map<string, DataCubeTask>();
 
   constructor(replStore: REPLStore) {
+    makeObservable(this, {
+      runningTaskes: observable,
+      newTask: action,
+      endTask: action,
+    });
+
     this.replStore = replStore;
     this.application = replStore.applicationStore;
     this.engine = new DataCubeEngine(this.replStore.client);
@@ -48,8 +70,20 @@ export class DataCubeState {
     this.editor = new DataCubeEditorState(this);
   }
 
+  newTask(name: string): DataCubeTask {
+    const task = new DataCubeTask(name);
+    this.runningTaskes.set(task.uuid, task);
+    return task;
+  }
+
+  endTask(task: DataCubeTask): DataCubeTask {
+    task.end();
+    this.runningTaskes.delete(task.uuid);
+    return task;
+  }
+
   async initialize(): Promise<void> {
-    this.initState.inProgress();
+    const task = this.newTask('Initializing');
     try {
       await Promise.all(
         [this.core, this.editor, this.grid].map(async (state) => {
@@ -65,11 +99,11 @@ export class DataCubeState {
       );
       initialSnapshot.timestamp = result.timestamp;
       this.snapshotManager.broadcastSnapshot(initialSnapshot);
-      this.initState.complete();
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.application.notificationService.notifyError(error);
-      this.initState.fail();
+    } finally {
+      this.endTask(task);
     }
   }
 }

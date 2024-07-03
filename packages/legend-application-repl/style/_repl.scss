@@ -1,0 +1,231 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import url('@ag-grid-community/styles/ag-grid.css');
+@import url('@ag-grid-community/styles/ag-theme-balham.css');
+
+// ---------------------------------------- NORMALIZE ----------------------------------------
+
+html {
+  box-sizing: border-box;
+  font-family: Roboto, sans-serif;
+}
+
+body {
+  // default font size is 12px everywhere to make the app more compact
+  font-size: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00000010;
+  border: 0.2rem solid transparent;
+  background-clip: content-box;
+  border-radius: 0.4rem;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00000020;
+  border: 0.2rem solid transparent;
+  background-clip: content-box;
+  border-radius: 0.4rem;
+}
+
+::-webkit-scrollbar-thumb:window-inactive {
+  background: #00000005;
+}
+
+// ---------------------------------------- RESET ----------------------------------------
+
+input:focus-visible,
+button:focus-visible {
+  outline-color: var(--tw-color-sky-600);
+  outline-offset: -1px;
+  outline-width: 1.5px;
+  outline-style: solid;
+}
+
+.MuiCheckbox-root.Mui-focusVisible svg {
+  outline-color: var(--tw-color-sky-600);
+  outline-offset: -2px;
+  outline-width: 1.5px;
+  outline-style: solid;
+}
+
+.data-cube-editor-checkbox--checked svg {
+  color: var(--tw-color-neutral-600);
+}
+
+.data-cube-editor-checkbox--disabled svg {
+  color: var(--tw-color-neutral-300);
+}
+
+// ---------------------------------------- CUSTOMIZE ----------------------------------------
+
+.data-cube-color-picker {
+  .react-colorful {
+    width: 270px;
+    height: 100px;
+    border-radius: 2px;
+    border: 0.5px solid var(--tw-color-neutral-600);
+  }
+
+  .react-colorful__saturation {
+    border-radius: 2px 2px 0 0;
+  }
+
+  .react-colorful__pointer {
+    width: 12px;
+    height: 12px;
+  }
+
+  .react-colorful__hue {
+    height: 12px;
+  }
+
+  .react-colorful__last-control {
+    border-radius: 0 0 2px 2px;
+    height: 12px;
+  }
+}
+
+.data-cube-color-picker--disabled {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100' %3E%3Cpath d='M1 0 L0 1 L99 100 L100 99' stroke-width='4' stroke='%23e5e5e5' /%3E%3C/svg%3E");
+}
+
+.data-cube-grid .ag-theme-balham {
+  --ag-input-focus-border-color: var(--tw-color-sky-600);
+  --ag-balham-active-color: var(--tw-color-sky-600);
+  --ag-range-selection-border-color: var(--tw-color-sky-600);
+  --ag-range-selection-highlight-color: var(
+    --tw-color-sky-50
+  ); // color for the brief highlight animation when cells are copied
+
+  --ag-border-color: var(--tw-color-neutral-200);
+  --ag-header-background-color: var(--tw-color-neutral-100);
+  --ag-header-height: 24px;
+  --ag-row-height: 20px;
+  --ag-font-size: 12px;
+  --ag-grid-size: 1px;
+  --ag-icon-size: 12px;
+  --ag-font-family: 'Roboto', sans-serif;
+  --ag-icon-font-color: var(--tw-color-neutral-500);
+  --ag-row-border-color: transparent;
+  --ag-header-foreground-color: var(--tw-color-black);
+  --ag-odd-row-background-color: var(--tw-color-white);
+  --ag-row-hover-color: #d4d4d415; // tailwind neutral 300
+  // NOTE: These are icons taken from Tabler and URI encoded
+  // See https://yoksel.github.io/url-encoder/
+  // See https://tablericons.com/
+  // See https://github.com/tabler/tabler-icons
+  --ag-icon-font-code-group: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='icon icon-tabler icon-tabler-table-column' width='12' height='12' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23000000' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z' /%3E%3Cpath d='M10 10h11' /%3E%3Cpath d='M10 3v18' /%3E%3Cpath d='M9 3l-6 6' /%3E%3Cpath d='M10 7l-7 7' /%3E%3Cpath d='M10 12l-7 7' /%3E%3Cpath d='M10 17l-4 4' /%3E%3C/svg%3E");
+  --ag-icon-font-code-pivot: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='icon icon-tabler icon-tabler-table-row' width='12' height='12' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23000000' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z' /%3E%3Cpath d='M9 3l-6 6' /%3E%3Cpath d='M14 3l-7 7' /%3E%3Cpath d='M19 3l-7 7' /%3E%3Cpath d='M21 6l-4 4' /%3E%3Cpath d='M3 10h18' /%3E%3Cpath d='M10 10v11' /%3E%3C/svg%3E");
+
+  .ag-column-drop-cell {
+    height: 16px;
+    display: flex;
+    align-items: center;
+
+    .ag-column-drop-cell-text {
+      height: 16px;
+    }
+  }
+
+  .ag-column-drop-empty-message.ag-column-drop-horizontal-empty-message {
+    font-size: 0;
+  }
+
+  .ag-column-drop-list.ag-column-drop-horizontal-list[aria-label='Row Groups']
+    .ag-column-drop-empty-message.ag-column-drop-horizontal-empty-message::after {
+    content: 'Drag columns here to set vertical pivots';
+    font-size: 11px;
+  }
+
+  .ag-column-drop-list.ag-column-drop-horizontal-list[aria-label='Column Labels']
+    .ag-column-drop-empty-message.ag-column-drop-horizontal-empty-message::after {
+    content: 'Drag columns here to set horizontal pivots';
+    font-size: 11px;
+  }
+
+  .ag-header-cell-label .ag-sort-order {
+    font-size: 10px;
+    margin-left: 5px;
+    margin-right: -2px;
+    color: var(--tw-color-neutral-500);
+    font-weight: 500;
+  }
+
+  .ag-menu-list {
+    min-width: 120px;
+  }
+
+  .ag-menu-option-icon {
+    padding: 5px 5px 0;
+  }
+
+  .ag-menu-option-part {
+    padding: 5px 2px;
+  }
+
+  .ag-menu-option-popup-pointer {
+    padding: 5px 5px 5px 0;
+  }
+
+  // TODO: cell/range selection color
+}
+
+.data-cube-column-selector .ag-theme-balham {
+  --ag-balham-active-color: var(--tw-color-sky-600);
+  --ag-input-focus-border-color: var(--tw-color-sky-600);
+  --ag-range-selection-border-color: var(--tw-color-sky-600);
+  --ag-selected-row-background-color: var(--tw-color-sky-200);
+  --ag-border-color: var(--tw-color-white);
+  --ag-header-background-color: var(--tw-color-white);
+  --ag-header-height: 20px;
+  --ag-row-height: 20px;
+  --ag-font-size: 12px;
+  --ag-grid-size: 1px;
+  --ag-icon-size: 12px;
+  --ag-font-family: 'Roboto', sans-serif;
+  --ag-icon-font-color: var(--tw-color-neutral-500);
+  --ag-row-border-color: transparent;
+  --ag-header-foreground-color: var(--tw-color-black);
+  --ag-row-hover-color: #d4d4d415; // tailwind neutral 300
+  --ag-header-column-separator-display: none;
+
+  .ag-header-cell {
+    padding-left: 20px;
+  }
+
+  // ag-grid header always comes with a big padding, we want to suppress that
+  .ag-header-cell:focus-visible::after {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+
+  .ag-drag-handle.ag-row-drag {
+    margin-right: 5px;
+  }
+}

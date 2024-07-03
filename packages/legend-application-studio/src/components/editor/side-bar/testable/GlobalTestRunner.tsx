@@ -42,7 +42,7 @@ import {
   Panel,
   PanelHeader,
   OffIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContentItemIcon,
   CheckIcon,
   MenuContentItemLabel,
@@ -497,7 +497,7 @@ export const TestablePanelRunner = observer(
               {globalTestRunnerState.testableStates?.length ?? '0'}
             </div>
 
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="panel__header__action"
               title="Show Options Menu..."
               content={
@@ -525,7 +525,7 @@ export const TestablePanelRunner = observer(
               }}
             >
               <MoreVerticalIcon className="query-builder__icon__more-options" />
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </div>
         </PanelHeader>
         {(globalTestRunnerState.testableStates ?? []).map((testableState) => {

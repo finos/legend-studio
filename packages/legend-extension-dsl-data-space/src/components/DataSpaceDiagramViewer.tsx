@@ -23,7 +23,7 @@ import {
   ContextMenu,
   CustomSelectorInput,
   DescriptionIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentDivider,
   MenuContentItem,
@@ -432,7 +432,7 @@ const DataSpaceDiagramViewerHeader = observer(
                 </button>
               </div>
               <div className="data-space__viewer__diagram-viewer__header__group__separator" />
-              <DropdownMenu
+              <ControlledDropdownMenu
                 className="data-space__viewer__diagram-viewer__header__group data-space__viewer__diagram-viewer__header__dropdown"
                 title="Zoom..."
                 content={
@@ -467,7 +467,7 @@ const DataSpaceDiagramViewerHeader = observer(
                 <div className="data-space__viewer__diagram-viewer__header__dropdown__trigger data-space__viewer__diagram-viewer__header__zoomer__dropdown__trigger">
                   <CaretDownIcon />
                 </div>
-              </DropdownMenu>
+              </ControlledDropdownMenu>
             </>
           )}
         </div>

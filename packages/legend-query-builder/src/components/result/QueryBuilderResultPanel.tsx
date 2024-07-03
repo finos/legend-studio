@@ -17,7 +17,7 @@
 import {
   BlankPanelContent,
   PlayIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
@@ -517,7 +517,7 @@ export const QueryBuilderResultPanel = observer(
                     <PlayIcon />
                     Run Query
                   </button>
-                  <DropdownMenu
+                  <ControlledDropdownMenu
                     className="btn__dropdown-combo__dropdown-btn query-builder__result__execute-btn__btn query-builder__result__execute-btn__btn--green"
                     disabled={isRunQueryDisabled}
                     content={
@@ -552,11 +552,11 @@ export const QueryBuilderResultPanel = observer(
                     }}
                   >
                     <CaretDownIcon />
-                  </DropdownMenu>
+                  </ControlledDropdownMenu>
                 </>
               )}
             </div>
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="query-builder__result__export__dropdown"
               title="Export"
               disabled={!isQueryValid}
@@ -604,7 +604,7 @@ export const QueryBuilderResultPanel = observer(
               <div className="query-builder__result__export__dropdown__trigger">
                 <CaretDownIcon />
               </div>
-            </DropdownMenu>
+            </ControlledDropdownMenu>
             {resultState.isQueryUsageViewerOpened && (
               <QueryUsageViewer resultState={resultState} />
             )}

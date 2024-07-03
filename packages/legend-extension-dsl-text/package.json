@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-text",
-  "version": "6.0.186",
+  "version": "6.0.187",
   "description": "Legend extension for Text DSL",
   "keywords": [
     "legend",
@@ -52,7 +52,7 @@
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
     "@types/react": "18.3.3",
-    "mobx": "6.12.4",
+    "mobx": "6.12.5",
     "mobx-react-lite": "4.0.7",
     "react": "18.3.1",
     "serializr": "3.0.2"

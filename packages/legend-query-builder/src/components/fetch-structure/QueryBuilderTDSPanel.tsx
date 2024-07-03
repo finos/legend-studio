@@ -21,7 +21,7 @@ import {
   BlankPanelPlaceholder,
   CalculatorIcon,
   TimesIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
@@ -1044,7 +1044,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                       <CalendarClockIcon />
                     </div>
                   )}
-                <DropdownMenu
+                <ControlledDropdownMenu
                   className="query-builder__projection__column__aggregate__operator__dropdown"
                   title="Choose Aggregate Operator..."
                   disabled={!aggreateOperators.length}
@@ -1089,7 +1089,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                   <div className="query-builder__projection__column__aggregate__operator__dropdown__trigger">
                     <CaretDownIcon />
                   </div>
-                </DropdownMenu>
+                </ControlledDropdownMenu>
               </div>
             </div>
             <div className="query-builder__projection__column__actions">

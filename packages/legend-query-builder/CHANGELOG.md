@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.14.55
+
+### Patch Changes
+
+- [#3308](https://github.com/finos/legend-studio/pull/3308) [`a2c7a31`](https://github.com/finos/legend-studio/commit/a2c7a31f3d79e04dbbad14478b09a3d02ce2b4cf) ([@travisstebbins](https://github.com/travisstebbins)) - Fix multi-execution context service query builder properties panel styling
+
+- [#3309](https://github.com/finos/legend-studio/pull/3309) [`93d90bb`](https://github.com/finos/legend-studio/commit/93d90bb01885f7de2d63441d722151f50ed4b2e8) ([@travisstebbins](https://github.com/travisstebbins)) - Result panel "filter by" produces incorrect list
+
 ## 4.14.54
 
 ## 4.14.53

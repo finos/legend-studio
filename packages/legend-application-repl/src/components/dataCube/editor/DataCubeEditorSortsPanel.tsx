@@ -15,16 +15,112 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { DataCubeIcon } from '@finos/legend-art';
+import {
+  DataCubeIcon,
+  useDropdownMenu,
+  DropdownMenuItem,
+  DropdownMenu,
+} from '@finos/legend-art';
 import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
+import type { DataCubeEditorColumnsSelectorState } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
+import type { DataCubeEditorSortColumnState } from '../../../stores/dataCube/editor/DataCubeEditorSortsPanelState.js';
+import { DataCubeQuerySnapshotSortOperation } from '../../../stores/dataCube/core/DataCubeQuerySnapshot.js';
+import { IllegalStateError } from '@finos/legend-shared';
+import { WIP_Badge } from './DataCubeEditorShared.js';
+
+function getSortDirectionLabel(operation: DataCubeQuerySnapshotSortOperation) {
+  switch (operation) {
+    case DataCubeQuerySnapshotSortOperation.ASCENDING:
+      return 'Ascending';
+    case DataCubeQuerySnapshotSortOperation.DESCENDING:
+      return 'Descending';
+    default:
+      throw new IllegalStateError(`Unsupported sort operation '${operation}'`);
+  }
+}
+
+const SortDirectionDropdown = observer(
+  (props: {
+    selector: DataCubeEditorColumnsSelectorState<DataCubeEditorSortColumnState>;
+    column: DataCubeEditorSortColumnState;
+  }) => {
+    const { column } = props;
+    const [openMenu, closeMenu, menuProps] = useDropdownMenu();
+
+    return (
+      <div className="group relative flex h-full items-center">
+        <div className="flex h-[18px] w-32 items-center border border-transparent px-2 text-sm text-neutral-500 group-hover:invisible">
+          {getSortDirectionLabel(column.operation)}
+        </div>
+        <button
+          className="invisible absolute right-0 z-10 flex h-[18px] w-32 items-center justify-between border border-neutral-500 pl-2 pr-0.5 text-sm text-neutral-700 group-hover:visible"
+          /**
+           * ag-grid row select event listener is at a deeper layer than this dropdown trigger
+           * so in order to prevent selecting the row while opening the dropdown, we need to stop
+           * the propagation as event capturing is happening, not when it's bubbling.
+           */
+          onClickCapture={(event) => {
+            event.stopPropagation();
+            openMenu(event);
+          }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div>{getSortDirectionLabel(column.operation)}</div>
+          <div>
+            <DataCubeIcon.CaretDown />
+          </div>
+        </button>
+        <DropdownMenu
+          className="w-32 select-none border border-neutral-300 bg-white"
+          {...menuProps}
+        >
+          <DropdownMenuItem
+            className="flex h-5 items-center px-2 text-sm hover:bg-neutral-100"
+            onClick={() => {
+              column.setOperation(DataCubeQuerySnapshotSortOperation.ASCENDING);
+              closeMenu();
+            }}
+          >
+            Ascending
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="flex h-5 items-center px-2 text-sm text-neutral-400"
+            disabled={true}
+          >
+            {`Ascending (abs)`}
+            <WIP_Badge />
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="flex h-5 items-center px-2 text-sm hover:bg-neutral-100"
+            onClick={() => {
+              column.setOperation(
+                DataCubeQuerySnapshotSortOperation.DESCENDING,
+              );
+              closeMenu();
+            }}
+          >
+            Descending
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="flex h-5 items-center px-2 text-sm text-neutral-400"
+            disabled={true}
+          >
+            {`Descending (abs)`}
+            <WIP_Badge />
+          </DropdownMenuItem>
+        </DropdownMenu>
+      </div>
+    );
+  },
+);
 
 export const DataCubeEditorSortsPanel = observer(() => {
   const replStore = useREPLStore();
-  const panel = replStore.dataCubeState.editor.sortsPanel;
+  const panel = replStore.dataCube.editor.sortsPanel;
 
   return (
-    <div className="data-cube-column-selector h-full w-full p-2">
+    <div className="h-full w-full select-none p-2">
       <div className="flex h-6">
         <div className="flex h-6 items-center text-xl font-medium">
           <DataCubeIcon.TableSort />
@@ -34,7 +130,10 @@ export const DataCubeEditorSortsPanel = observer(() => {
         </div>
       </div>
       <div className="flex h-[calc(100%_-_24px)] w-full">
-        <DataCubeEditorColumnsSelector selector={panel.columnsSelector} />
+        <DataCubeEditorColumnsSelector
+          selector={panel.columnsSelector}
+          extraColumnComponent={(props) => <SortDirectionDropdown {...props} />}
+        />
       </div>
     </div>
   );

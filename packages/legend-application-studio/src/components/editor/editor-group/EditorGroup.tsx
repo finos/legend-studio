@@ -18,7 +18,7 @@ import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
   PlusIcon,
@@ -469,7 +469,7 @@ export const EditorGroup = observer(() => {
         </div>
         <div className="editor-group__header__actions">
           {currentTabState instanceof ElementEditorState && (
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="editor-group__view-mode__type"
               title="View as..."
               content={
@@ -565,10 +565,10 @@ export const EditorGroup = observer(() => {
                 {currentTabState.generationModeState?.label ??
                   currentTabState.editMode}
               </div>
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           )}
           {currentTabState instanceof EntityDiffViewState && (
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="editor-group__view-mode__type"
               title="View as..."
               content={
@@ -604,7 +604,7 @@ export const EditorGroup = observer(() => {
               <div className="editor-group__view-mode__type__label">
                 {currentTabState.diffMode}
               </div>
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           )}
         </div>
       </div>

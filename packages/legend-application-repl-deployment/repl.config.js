@@ -29,11 +29,11 @@ export default {
    */
   baseUrl: '/repl/',
   /**
-   * `isRelativePathSupported` [boolean, optional]
+   * `useRelativePath` [boolean, optional]
    * Boolean flag to check if your website supports resolution of relative
    * paths for resources
    */
-  isRelativePathSupported: true,
+  useRelativePath: true,
   /**
    * `devServerOptions` [object, optional]
    * Options to override `webpack-dev-server` configs.

@@ -32,7 +32,7 @@ import {
   TreeView,
   BlankPanelContent,
   MenuContentItem,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   CheckIcon,
   MenuContentItemIcon,
@@ -454,7 +454,7 @@ export const QueryBuilderFunctionsExplorerPanel = observer(
                 />
               )}
             </div>
-            <DropdownMenu
+            <ControlledDropdownMenu
               className="panel__header__action"
               title="Show Options Menu..."
               content={
@@ -476,7 +476,7 @@ export const QueryBuilderFunctionsExplorerPanel = observer(
               }}
             >
               <MoreVerticalIcon className="query-builder__icon__more-options" />
-            </DropdownMenu>
+            </ControlledDropdownMenu>
           </div>
         </div>
         <div className="panel__content query-builder__functions-explorer__content">

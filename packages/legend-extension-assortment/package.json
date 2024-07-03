@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-assortment",
-  "version": "0.0.164",
+  "version": "0.0.165",
   "description": "An assortment of Legend extensions",
   "keywords": [
     "legend",
@@ -49,7 +49,7 @@
     "@finos/legend-lego": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@types/react": "18.3.3",
-    "mobx": "6.12.4",
+    "mobx": "6.12.5",
     "mobx-react-lite": "4.0.7",
     "react": "18.3.1",
     "serializr": "3.0.2"

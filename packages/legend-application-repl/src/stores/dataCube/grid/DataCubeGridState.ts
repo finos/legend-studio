@@ -38,12 +38,11 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
 
       clientLicenseKey: observable,
       setClientLicenseKey: action,
-      isLoading: observable,
       isPaginationEnabled: observable,
       setPaginationEnabled: action,
-      // configureClient:action,
       generateCSVFile: action,
       generateExcelFile: action,
+      //add_email
     });
 
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
@@ -72,10 +71,6 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     }
   }
 
-  setLoading(val: boolean): void {
-    this.isLoading = val;
-  }
-
   configureClient(val: GridApi | undefined): void {
     this._client = val;
   }
@@ -98,9 +93,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   generateCSVFile = () => {
     console.log('csv generated');
     if (this._client) {
-      this.setLoading(true);
       this._client.exportDataAsCsv();
-      this.setLoading(false);
     } else {
       console.error('Grid API not set');
     }

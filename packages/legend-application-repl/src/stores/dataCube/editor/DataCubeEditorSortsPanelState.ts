@@ -17,44 +17,47 @@
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import {
-  DataCubeQuerySnapshotSortDirection,
+  DataCubeQuerySnapshotSortOperation,
   _getCol,
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
-  type DataCubeQuerySnapshotSortColumn,
 } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
-import { deepEqual } from '@finos/legend-shared';
 import {
   DataCubeEditorColumnsSelectorColumnState,
   DataCubeEditorColumnsSelectorState,
 } from './DataCubeEditorColumnsSelectorState.js';
+import type { DataCubeEditorState } from './DataCubeEditorState.js';
 
 export class DataCubeEditorSortColumnState extends DataCubeEditorColumnsSelectorColumnState {
   readonly column: DataCubeQuerySnapshotColumn;
-  direction: DataCubeQuerySnapshotSortDirection;
+  operation: DataCubeQuerySnapshotSortOperation;
 
   constructor(
     column: DataCubeQuerySnapshotColumn,
-    direction: DataCubeQuerySnapshotSortDirection,
+    direction: DataCubeQuerySnapshotSortOperation,
   ) {
     super();
 
     makeObservable(this, {
-      direction: observable,
-      setDirection: action,
+      operation: observable,
+      setOperation: action,
     });
 
     this.column = column;
-    this.direction = direction;
+    this.operation = direction;
   }
 
   get name(): string {
     return this.column.name;
   }
 
-  setDirection(val: DataCubeQuerySnapshotSortDirection): void {
-    this.direction = val;
+  override resetWhenMadeAvailable(): void {
+    this.setOperation(DataCubeQuerySnapshotSortOperation.ASCENDING);
+  }
+
+  setOperation(val: DataCubeQuerySnapshotSortOperation): void {
+    this.operation = val;
   }
 }
 
@@ -62,11 +65,80 @@ export class DataCubeEditorSortsPanelState
   implements DataCubeQueryEditorPanelState
 {
   readonly dataCube!: DataCubeState;
+  readonly editor!: DataCubeEditorState;
   readonly columnsSelector!: DataCubeEditorColumnsSelectorState<DataCubeEditorSortColumnState>;
 
-  constructor(dataCube: DataCubeState) {
-    this.dataCube = dataCube;
+  constructor(editor: DataCubeEditorState) {
+    this.editor = editor;
+    this.dataCube = editor.dataCube;
     this.columnsSelector = new DataCubeEditorColumnsSelectorState();
+  }
+
+  getActionableSortColumn(
+    colName: string,
+    operation: DataCubeQuerySnapshotSortOperation,
+  ): DataCubeEditorSortColumnState | undefined {
+    let column = this.columnsSelector.getAvailableColumn(colName);
+    if (!column) {
+      const selectedColumn = this.columnsSelector.getSelectedColumn(colName);
+      if (selectedColumn && selectedColumn.operation !== operation) {
+        column = selectedColumn;
+      }
+    }
+    return column;
+  }
+
+  sortByColumn(
+    colName: string,
+    operation: DataCubeQuerySnapshotSortOperation,
+  ): void {
+    const column = this.getActionableSortColumn(colName, operation);
+    if (!column) {
+      return;
+    }
+    column.setOperation(operation);
+
+    this.columnsSelector.setAvailableColumns(
+      [
+        ...this.columnsSelector.availableColumns,
+        ...this.columnsSelector.selectedColumns,
+      ].filter((col) => col.name !== colName),
+    );
+    this.columnsSelector.setSelectedColumns([column]);
+    this.editor.applyChanges();
+  }
+
+  addSortByColumn(
+    colName: string,
+    operation: DataCubeQuerySnapshotSortOperation,
+  ): void {
+    const column = this.getActionableSortColumn(colName, operation);
+    if (!column) {
+      return;
+    }
+    column.setOperation(operation);
+
+    this.columnsSelector.setAvailableColumns(
+      this.columnsSelector.availableColumns.filter(
+        (col) => col.name !== colName,
+      ),
+    );
+    this.columnsSelector.setSelectedColumns([
+      ...this.columnsSelector.selectedColumns,
+      column,
+    ]);
+    this.editor.applyChanges();
+  }
+
+  clearAllSorts(): void {
+    if (this.columnsSelector.selectedColumns.length !== 0) {
+      this.columnsSelector.setAvailableColumns([
+        ...this.columnsSelector.availableColumns,
+        ...this.columnsSelector.selectedColumns,
+      ]);
+      this.columnsSelector.setSelectedColumns([]);
+      this.editor.applyChanges();
+    }
   }
 
   applySnaphot(snapshot: DataCubeQuerySnapshot): void {
@@ -81,7 +153,7 @@ export class DataCubeEditorSortsPanelState
           (col) =>
             new DataCubeEditorSortColumnState(
               _getCol(columns, col.name),
-              DataCubeQuerySnapshotSortDirection.ASCENDING,
+              DataCubeQuerySnapshotSortOperation.ASCENDING,
             ),
         ),
     );
@@ -90,7 +162,7 @@ export class DataCubeEditorSortsPanelState
         (col) =>
           new DataCubeEditorSortColumnState(
             _getCol(columns, col.name),
-            col.direction,
+            col.operation,
           ),
       ),
     );
@@ -99,18 +171,13 @@ export class DataCubeEditorSortsPanelState
   buildSnapshot(
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
-  ): boolean {
-    const newSortColumns: DataCubeQuerySnapshotSortColumn[] =
-      this.columnsSelector.selectedColumns.map((sortInfo) => ({
+  ): void {
+    newSnapshot.data.sortColumns = this.columnsSelector.selectedColumns.map(
+      (sortInfo) => ({
         name: sortInfo.column.name,
         type: sortInfo.column.type,
-        direction: sortInfo.direction,
-      }));
-
-    if (!deepEqual(newSortColumns, baseSnapshot.data.sortColumns)) {
-      newSnapshot.data.sortColumns = newSortColumns;
-      return true;
-    }
-    return false;
+        operation: sortInfo.operation,
+      }),
+    );
   }
 }

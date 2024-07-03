@@ -26,7 +26,7 @@ import {
   Button,
   CaretDownIcon,
   DroidIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   InfoCircleIcon,
   ManageSearchIcon,
   MenuContent,
@@ -640,7 +640,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                     Save
                   </div>
                 </Button>
-                <DropdownMenu
+                <ControlledDropdownMenu
                   className="query-editor__header__action-combo__dropdown-btn"
                   disabled={editorStore.isViewProjectActionDisabled}
                   title="query__editor__save-dropdown"
@@ -666,7 +666,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                   }
                 >
                   <CaretDownIcon />
-                </DropdownMenu>
+                </ControlledDropdownMenu>
               </div>
             );
           }

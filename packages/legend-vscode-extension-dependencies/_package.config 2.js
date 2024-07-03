@@ -14,4 +14,11 @@
  * limitations under the License.
  */
 
-export const DATA_CUBE_DEFAULT_REPORT_NAME = 'New Report';
+export default {
+  publish: {
+    typescript: {
+      main: './tsconfig.publish.json',
+      others: ['./tsconfig.package.json'],
+    },
+  },
+};

@@ -15,10 +15,12 @@
  */
 
 import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
-import type { DataCubeConfiguration } from '../../../server/models/DataCubeQuery.js';
+import type { DataCubeConfiguration } from './DataCubeConfiguration.js';
 import {
   IllegalStateError,
   guaranteeNonNullable,
+  hashObject,
+  pruneObject,
   uuid,
   type PlainObject,
   type Writable,
@@ -54,7 +56,7 @@ export enum DataCubeQuerySnapshotFilterOperation {
   ENDS_WITH = 'endsWith',
 }
 
-export enum DataCubeQuerySnapshotSortDirection {
+export enum DataCubeQuerySnapshotSortOperation {
   ASCENDING = 'ascending',
   DESCENDING = 'descending',
 }
@@ -90,7 +92,7 @@ export type DataCubeQuerySnapshotExtendedColumn =
   };
 
 export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {
-  direction: DataCubeQuerySnapshotSortDirection;
+  operation: DataCubeQuerySnapshotSortOperation;
 };
 
 export type DataCubeQuerySnapshotAggregateColumn =
@@ -113,7 +115,7 @@ export type DataCubeQuerySnapshotData = {
   name: string;
   runtime: string;
   sourceQuery: PlainObject<V1_ValueSpecification>;
-  configuration: DataCubeConfiguration;
+  configuration: PlainObject<DataCubeConfiguration>;
   originalColumns: DataCubeQuerySnapshotColumn[];
   leafExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
   filter?: DataCubeQuerySnapshotFilter | undefined;
@@ -138,11 +140,14 @@ export class DataCubeQuerySnapshot {
   timestamp = Date.now();
   readonly data: DataCubeQuerySnapshotData;
 
+  private _finalized = false;
+  private _hashCode?: string | undefined;
+
   private constructor(
     name: string,
     runtime: string,
     sourceQuery: PlainObject<V1_ValueSpecification>,
-    configuration: DataCubeConfiguration,
+    configuration: PlainObject<DataCubeConfiguration>,
   ) {
     this.data = {
       name,
@@ -165,7 +170,7 @@ export class DataCubeQuerySnapshot {
     name: string,
     runtime: string,
     sourceQuery: PlainObject<V1_ValueSpecification>,
-    configuration: DataCubeConfiguration,
+    configuration: PlainObject<DataCubeConfiguration>,
   ) {
     return new DataCubeQuerySnapshot(name, runtime, sourceQuery, configuration);
   }
@@ -203,6 +208,38 @@ export class DataCubeQuerySnapshot {
       default:
         throw new IllegalStateError(`Unknown stage '${stage}'`);
     }
+  }
+
+  isFinalized(): boolean {
+    return this._finalized;
+  }
+
+  finalize(): DataCubeQuerySnapshot {
+    if (this._finalized) {
+      return this;
+    }
+    this._hashCode = this.computeHashCode();
+    this._finalized = true;
+    return this;
+  }
+
+  get hashCode(): string {
+    if (!this._finalized || !this._hashCode) {
+      throw new IllegalStateError('Snapshot is not finalized');
+    }
+    return this._hashCode;
+  }
+
+  /**
+   * NOTE: if this becomes a performance bottleneck, we can consider
+   * more granular hashing strategy
+   *
+   * Here, we are just hashing the raw object, but we must ensure
+   * to properly prune the snapshot data object before hashing
+   * else there would be mismatch
+   */
+  private computeHashCode(): string {
+    return hashObject(pruneObject(this.data));
   }
 }
 

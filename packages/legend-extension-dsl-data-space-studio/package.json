@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-data-space-studio",
-  "version": "0.1.32",
+  "version": "0.1.33",
   "description": "Legend extension for Data Space DSL - Studio",
   "keywords": [
     "legend",
@@ -50,7 +50,7 @@
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "mobx": "6.12.4",
+    "mobx": "6.12.5",
     "mobx-react-lite": "4.0.7"
   },
   "devDependencies": {

@@ -23,7 +23,7 @@ import {
   OpenPreviewIcon,
   LockIcon,
   CaretDownIcon,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
   MarkdownTextViewer,
@@ -93,7 +93,7 @@ export const TextElementEditor = observer(() => {
               <LockIcon />
             </div>
           )}
-          <DropdownMenu
+          <ControlledDropdownMenu
             className="text-element-editor__header__configs__type"
             disabled={isReadOnly}
             content={
@@ -121,7 +121,7 @@ export const TextElementEditor = observer(() => {
             <div className="text-element-editor__header__configs__type__icon">
               <CaretDownIcon />
             </div>
-          </DropdownMenu>
+          </ControlledDropdownMenu>
           {isPreviewSupported ? (
             <button
               title={showPreview ? `Hide Preview` : `Show Preview`}

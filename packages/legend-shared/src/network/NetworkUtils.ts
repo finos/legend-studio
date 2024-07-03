@@ -43,7 +43,7 @@ export const URL_SEPARATOR = '/';
  *  Reference: https://uibakery.io/regex-library/url
  */
 const URL_REGEX = new RegExp(
-  '^https?://(?:www.)?[-a-zA-Z0-9@:%._+~#=]{1,256}.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$',
+  '^(?:https?|ssh|ftp|file)://(?:www.)?[-a-zA-Z0-9@:%._+~#=]{1,256}.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$',
 );
 export const HttpStatus = StatusCodes;
 export const CHARSET = 'charset=utf-8';

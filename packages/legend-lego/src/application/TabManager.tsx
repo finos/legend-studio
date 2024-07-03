@@ -19,7 +19,7 @@ import {
   clsx,
   ContextMenu,
   DragPreviewLayer,
-  DropdownMenu,
+  ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
   PanelEntryDropZonePlaceholder,
@@ -212,7 +212,7 @@ const Tab = observer(
 const TabMenu = observer((props: { managerTabState: TabManagerState }) => {
   const { managerTabState } = props;
   return (
-    <DropdownMenu
+    <ControlledDropdownMenu
       className="tab-manager__menu__toggler"
       title="Show All Tabs"
       content={
@@ -251,7 +251,7 @@ const TabMenu = observer((props: { managerTabState: TabManagerState }) => {
       }}
     >
       <ChevronDownIcon />
-    </DropdownMenu>
+    </ControlledDropdownMenu>
   );
 });
 

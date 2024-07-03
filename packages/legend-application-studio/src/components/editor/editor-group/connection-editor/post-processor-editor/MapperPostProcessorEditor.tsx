@@ -24,7 +24,7 @@ import {
   ContextMenu,
   MenuContent,
   MenuContentItem,
-  DropdownMenu,
+  ControlledDropdownMenu,
   PanelListSelectorItem,
   BlankPanelContent,
   ResizablePanelSplitterLine,
@@ -137,7 +137,7 @@ export const MapperPostProcessorEditor = observer(
               <Panel>
                 <PanelHeader title="mapper">
                   <PanelHeaderActions>
-                    <DropdownMenu
+                    <ControlledDropdownMenu
                       title="Create mapper"
                       className="panel__header__action"
                       disabled={isReadOnly}
@@ -164,7 +164,7 @@ export const MapperPostProcessorEditor = observer(
                       }}
                     >
                       <PlusIcon />
-                    </DropdownMenu>
+                    </ControlledDropdownMenu>
                   </PanelHeaderActions>
                 </PanelHeader>
                 <PanelContent>
