@@ -157,8 +157,6 @@ type ColumnData = {
 function _displaySpec(columnData: ColumnData) {
   const { column, configuration, gridConfiguration } = columnData;
   const dataType = getDataType(column.type);
-  const scaleNumberType =
-    configuration.numberScale ?? gridConfiguration.numberScale;
   return {
     // setting the cell data type might helps guide the grid to render the cell properly
     // and optimize the grid performance slightly by avoiding unnecessary type inference
@@ -173,7 +171,7 @@ function _displaySpec(columnData: ColumnData) {
             const showNegativeNumberInParens =
               configuration.negativeNumberInParens && value < 0;
             // 1. apply the number scale
-            const scaledNumber = scaleNumber(value, scaleNumberType);
+            const scaledNumber = scaleNumber(value, configuration.numberScale);
             // 2. apply the number formatter
             const formattedValue = (
               showNegativeNumberInParens

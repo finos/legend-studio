@@ -79,7 +79,7 @@ export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
 // when no aggregate is specified in groupBy() or pivot()
 export const INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME =
   'INTERNAL__filler_count_agg_column';
-export const DEFAULT_ROW_BUFFER = 50;
+export const DEFAULT_ROW_BUFFER = 20;
 
 export type DataCubeQueryFunctionMap = {
   leafExtend?: V1_AppliedFunction | undefined;
@@ -165,17 +165,26 @@ export function getDataType(type: string): DataCubeColumnDataType {
 }
 
 export const DEFAULT_GRID_LINE_COLOR = TailwindCSSPalette.neutral[200];
-export const DEFAULT_FOREGROUND_COLOR = TailwindCSSPalette.black;
-export const DEFAULT_BACKGROUND_COLOR = TailwindCSSPalette.white;
-export const DEFAULT_ROW_BACKGROUND_COLOR = TailwindCSSPalette.white;
 export const DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR =
   TailwindCSSPalette.sky[100];
-export const DEFAULT_NEGATIVE_FOREGROUND_COLOR = TailwindCSSPalette.red[500];
-export const DEFAULT_ZERO_FOREGROUND_COLOR = TailwindCSSPalette.neutral[400];
-export const DEFAULT_ERROR_FOREGROUND_COLOR = TailwindCSSPalette.blue[600];
+
 export const DEFAULT_COLUMN_WIDTH = 300;
 export const DEFAULT_COLUMN_MIN_WIDTH = 100;
 export const DEFAULT_COLUMN_MAX_WIDTH = undefined;
+
+export const DEFAULT_FONT_FAMILY = DataCubeFont.ROBOTO;
+export const DEFAULT_FONT_SIZE = 12;
+export const DEFAULT_FONT_BOLD = false;
+export const DEFAULT_FONT_ITALIC = false;
+export const DEFAULT_FONT_UNDERLINED = undefined;
+export const DEFAULT_FONT_STRIKETHROUGH = false;
+export const DEFAULT_TEXT_ALIGN = DataCubeFontTextAlignment.LEFT;
+export const DEFAULT_FOREGROUND_COLOR = TailwindCSSPalette.black;
+export const DEFAULT_BACKGROUND_COLOR = TailwindCSSPalette.white;
+export const DEFAULT_ROW_BACKGROUND_COLOR = TailwindCSSPalette.white;
+export const DEFAULT_NEGATIVE_FOREGROUND_COLOR = TailwindCSSPalette.red[500];
+export const DEFAULT_ZERO_FOREGROUND_COLOR = TailwindCSSPalette.neutral[400];
+export const DEFAULT_ERROR_FOREGROUND_COLOR = TailwindCSSPalette.blue[600];
 
 export enum DataCubeFontFormatUnderlinedVariant {
   SOLID = 'Solid',

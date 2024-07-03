@@ -72,6 +72,7 @@ export const DataCubeGrid = observer(() => {
           ? grid.queryConfiguration.alternateRowsColor
           : DEFAULT_ROW_BACKGROUND_COLOR,
       );
+      gridContainerRef.current.computedStyleMap();
       gridContainerRef.current.style.setProperty(
         '--ag-odd-row-background-color',
         grid.queryConfiguration.alternateRowsStandardMode &&

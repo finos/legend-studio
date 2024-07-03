@@ -98,7 +98,10 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     }
   }
 
-  override async applySnapshot(snapshot: DataCubeQuerySnapshot): Promise<void> {
+  override async applySnapshot(
+    snapshot: DataCubeQuerySnapshot,
+    previousSnapshot: DataCubeQuerySnapshot | undefined,
+  ): Promise<void> {
     this.sortsPanel.applySnaphot(snapshot);
     this.generalPropertiesPanel.applySnaphot(snapshot);
     this.columnPropertiesPanel.applySnaphot(snapshot);

@@ -25,9 +25,21 @@ import {
   type DataCubeFontTextAlignment,
   type DataCubeColumnDataType,
   type DataCubeColumnPinPlacement,
+  DEFAULT_FONT_FAMILY,
+  DEFAULT_FONT_SIZE,
+  DEFAULT_FONT_BOLD,
+  DEFAULT_FONT_ITALIC,
+  DEFAULT_FONT_UNDERLINED,
+  DEFAULT_FONT_STRIKETHROUGH,
+  DEFAULT_TEXT_ALIGN,
+  DEFAULT_FOREGROUND_COLOR,
+  DEFAULT_NEGATIVE_FOREGROUND_COLOR,
+  DEFAULT_ZERO_FOREGROUND_COLOR,
+  DEFAULT_ERROR_FOREGROUND_COLOR,
+  DEFAULT_BACKGROUND_COLOR,
 } from '../core/DataCubeQueryEngine.js';
 import { type PlainObject, type Writable } from '@finos/legend-shared';
-import { makeObservable, observable, action } from 'mobx';
+import { makeObservable, observable, action, computed } from 'mobx';
 import {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
@@ -35,7 +47,6 @@ import {
 
 export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfiguration {
   aggregateFunction?: DataCubeAggregateFunction | undefined;
-  weightColumn?: string | undefined;
   excludedFromHPivot = true;
 
   readonly dataType!: DataCubeColumnDataType;
@@ -126,9 +137,6 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       aggregateFunction: observable,
       setAggregateFunction: action,
 
-      weightColumn: observable,
-      setWeightColumn: action,
-
       excludedFromHPivot: observable,
       setExcludedFromHPivot: action,
 
@@ -146,6 +154,9 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
 
       displayAsLink: observable,
       setDisplayAsLink: action,
+
+      isUsingDefaultStyling: computed,
+      useDefaultStyling: action,
     });
 
     return configuration;
@@ -153,6 +164,44 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
 
   serialize(): PlainObject<DataCubeColumnConfiguration> {
     return DataCubeColumnConfiguration.serialization.toJson(this);
+  }
+
+  get isUsingDefaultStyling(): boolean {
+    return (
+      this.fontFamily === undefined &&
+      this.fontSize === undefined &&
+      this.fontBold === undefined &&
+      this.fontItalic === undefined &&
+      this.fontUnderlined === undefined &&
+      this.fontStrikethrough === undefined &&
+      this.textAlign === undefined &&
+      this.foregroundColor === undefined &&
+      this.foregroundNegativeColor === undefined &&
+      this.foregroundZeroColor === undefined &&
+      this.foregroundErrorColor === undefined &&
+      this.backgroundColor === undefined &&
+      this.backgroundNegativeColor === undefined &&
+      this.backgroundZeroColor === undefined &&
+      this.backgroundErrorColor === undefined
+    );
+  }
+
+  useDefaultStyling(): void {
+    this.fontFamily = undefined;
+    this.fontSize = undefined;
+    this.fontBold = undefined;
+    this.fontItalic = undefined;
+    this.fontUnderlined = undefined;
+    this.fontStrikethrough = undefined;
+    this.textAlign = undefined;
+    this.foregroundColor = undefined;
+    this.foregroundNegativeColor = undefined;
+    this.foregroundZeroColor = undefined;
+    this.foregroundErrorColor = undefined;
+    this.backgroundColor = undefined;
+    this.backgroundNegativeColor = undefined;
+    this.backgroundZeroColor = undefined;
+    this.backgroundErrorColor = undefined;
   }
 
   setKind(value: DataCubeColumnKind): void {
@@ -183,19 +232,19 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.hPivotSortFunction = value;
   }
 
-  setFontFamily(value: DataCubeFont): void {
+  setFontFamily(value: DataCubeFont | undefined): void {
     this.fontFamily = value;
   }
 
-  setFontSize(value: number): void {
+  setFontSize(value: number | undefined): void {
     this.fontSize = value;
   }
 
-  setFontBold(value: boolean): void {
+  setFontBold(value: boolean | undefined): void {
     this.fontBold = value;
   }
 
-  setFontItalic(value: boolean): void {
+  setFontItalic(value: boolean | undefined): void {
     this.fontItalic = value;
   }
 
@@ -205,43 +254,43 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.fontUnderlined = value;
   }
 
-  setTextAlign(value: DataCubeFontTextAlignment): void {
-    this.textAlign = value;
-  }
-
-  setFontStrikethrough(value: boolean): void {
+  setFontStrikethrough(value: boolean | undefined): void {
     this.fontStrikethrough = value;
   }
 
-  setForegroundColor(value: string): void {
+  setTextAlign(value: DataCubeFontTextAlignment | undefined): void {
+    this.textAlign = value;
+  }
+
+  setForegroundColor(value: string | undefined): void {
     this.foregroundColor = value;
   }
 
-  setForegroundNegativeColor(value: string): void {
+  setForegroundNegativeColor(value: string | undefined): void {
     this.foregroundNegativeColor = value;
   }
 
-  setForegroundZeroColor(value: string): void {
+  setForegroundZeroColor(value: string | undefined): void {
     this.foregroundZeroColor = value;
   }
 
-  setForegroundErrorColor(value: string): void {
+  setForegroundErrorColor(value: string | undefined): void {
     this.foregroundErrorColor = value;
   }
 
-  setBackgroundColor(value: string): void {
+  setBackgroundColor(value: string | undefined): void {
     this.backgroundColor = value;
   }
 
-  setBackgroundNegativeColor(value: string): void {
+  setBackgroundNegativeColor(value: string | undefined): void {
     this.backgroundNegativeColor = value;
   }
 
-  setBackgroundZeroColor(value: string): void {
+  setBackgroundZeroColor(value: string | undefined): void {
     this.backgroundZeroColor = value;
   }
 
-  setBackgroundErrorColor(value: string): void {
+  setBackgroundErrorColor(value: string | undefined): void {
     this.backgroundErrorColor = value;
   }
 
@@ -275,10 +324,6 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
 
   setAggregateFunction(value: DataCubeAggregateFunction | undefined): void {
     this.aggregateFunction = value;
-  }
-
-  setWeightColumn(value: string | undefined): void {
-    this.weightColumn = value;
   }
 
   setExcludedFromHPivot(value: boolean): void {
@@ -369,9 +414,6 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
       alternateRowsStandardMode: observable,
       setAlternateRowsStandardMode: action,
 
-      numberScale: observable,
-      setNumberScale: action,
-
       selectionStats: observable,
       setSelectionStats: action,
 
@@ -398,9 +440,51 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
 
       treeGroupSortFunction: observable,
       setTreeGroupSortFunction: action,
+
+      isUsingDefaultStyling: computed,
+      useDefaultStyling: action,
     });
 
     return configuration;
+  }
+
+  get isUsingDefaultStyling(): boolean {
+    return (
+      this.defaultFontFamily === DEFAULT_FONT_FAMILY &&
+      this.defaultFontSize === DEFAULT_FONT_SIZE &&
+      this.defaultFontBold === DEFAULT_FONT_BOLD &&
+      this.defaultFontItalic === DEFAULT_FONT_ITALIC &&
+      this.defaultFontUnderlined === DEFAULT_FONT_UNDERLINED &&
+      this.defaultFontStrikethrough === DEFAULT_FONT_STRIKETHROUGH &&
+      this.defaultTextAlign === DEFAULT_TEXT_ALIGN &&
+      this.defaultForegroundColor === DEFAULT_FOREGROUND_COLOR &&
+      this.defaultForegroundNegativeColor ===
+        DEFAULT_NEGATIVE_FOREGROUND_COLOR &&
+      this.defaultForegroundZeroColor === DEFAULT_ZERO_FOREGROUND_COLOR &&
+      this.defaultForegroundErrorColor === DEFAULT_ERROR_FOREGROUND_COLOR &&
+      this.defaultBackgroundColor === DEFAULT_BACKGROUND_COLOR &&
+      this.defaultBackgroundNegativeColor === DEFAULT_BACKGROUND_COLOR &&
+      this.defaultBackgroundZeroColor === DEFAULT_BACKGROUND_COLOR &&
+      this.defaultBackgroundErrorColor === DEFAULT_BACKGROUND_COLOR
+    );
+  }
+
+  useDefaultStyling(): void {
+    this.defaultFontFamily = DEFAULT_FONT_FAMILY;
+    this.defaultFontSize = DEFAULT_FONT_SIZE;
+    this.defaultFontBold = DEFAULT_FONT_BOLD;
+    this.defaultFontItalic = DEFAULT_FONT_ITALIC;
+    this.defaultFontUnderlined = DEFAULT_FONT_UNDERLINED;
+    this.defaultFontStrikethrough = DEFAULT_FONT_STRIKETHROUGH;
+    this.defaultTextAlign = DEFAULT_TEXT_ALIGN;
+    this.defaultForegroundColor = DEFAULT_FOREGROUND_COLOR;
+    this.defaultForegroundNegativeColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
+    this.defaultForegroundZeroColor = DEFAULT_ZERO_FOREGROUND_COLOR;
+    this.defaultForegroundErrorColor = DEFAULT_ERROR_FOREGROUND_COLOR;
+    this.defaultBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+    this.defaultBackgroundNegativeColor = DEFAULT_BACKGROUND_COLOR;
+    this.defaultBackgroundZeroColor = DEFAULT_BACKGROUND_COLOR;
+    this.defaultBackgroundErrorColor = DEFAULT_BACKGROUND_COLOR;
   }
 
   serialize(): PlainObject<DataCubeConfiguration> {
@@ -503,10 +587,6 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
 
   setAlternateRowsStandardMode(value: boolean): void {
     this.alternateRowsStandardMode = value;
-  }
-
-  setNumberScale(value: DataCubeNumberScale | undefined): void {
-    this.numberScale = value;
   }
 
   setSelectionStats(value: DataCubeSelectionStat[]): void {

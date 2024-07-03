@@ -91,7 +91,10 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     this._client = val;
   }
 
-  override async applySnapshot(snapshot: DataCubeQuerySnapshot): Promise<void> {
+  override async applySnapshot(
+    snapshot: DataCubeQuerySnapshot,
+    previousSnapshot: DataCubeQuerySnapshot | undefined,
+  ): Promise<void> {
     const existingExtraConfiguration = this.datasourceConfiguration;
     const queryConfiguration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,

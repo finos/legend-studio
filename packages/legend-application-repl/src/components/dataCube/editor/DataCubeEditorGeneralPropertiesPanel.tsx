@@ -21,7 +21,6 @@ import {
   DataCubeFont,
   DataCubeFontFormatUnderlinedVariant,
   DataCubeFontTextAlignment,
-  DataCubeNumberScale,
   DataCubeSelectionStat,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_ERROR_FOREGROUND_COLOR,
@@ -51,11 +50,6 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
     openInitialExpandLevelDropdown,
     closeInitialExpandLevelDropdown,
     initialExpandLevelDropdownProps,
-  ] = useDropdownMenu();
-  const [
-    openNumberScaleDropdown,
-    closeNumberScaleDropdown,
-    numberScaleDropdownProps,
   ] = useDropdownMenu();
   const [
     openSelectionStatDropdown,
@@ -207,43 +201,6 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
 
           <div className="mt-2 flex h-6 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-              Default Number Scale:
-            </div>
-            <DataCubeEditorDropdownMenuTrigger
-              className="w-32"
-              onClick={openNumberScaleDropdown}
-            >
-              {configuration.numberScale ?? '(None)'}
-            </DataCubeEditorDropdownMenuTrigger>
-            <DataCubeEditorDropdownMenu
-              className="w-32"
-              {...numberScaleDropdownProps}
-            >
-              {[
-                undefined,
-                DataCubeNumberScale.PERCENT,
-                DataCubeNumberScale.BASIS_POINT,
-                DataCubeNumberScale.THOUSANDS,
-                DataCubeNumberScale.MILLIONS,
-                DataCubeNumberScale.BILLIONS,
-                DataCubeNumberScale.TRILLIONS,
-                DataCubeNumberScale.AUTO,
-              ].map((scale) => (
-                <DataCubeEditorDropdownMenuItem
-                  key={scale ?? ''}
-                  onClick={() => {
-                    configuration.setNumberScale(scale);
-                    closeNumberScaleDropdown();
-                  }}
-                >
-                  {scale ?? '(None)'}
-                </DataCubeEditorDropdownMenuItem>
-              ))}
-            </DataCubeEditorDropdownMenu>
-          </div>
-
-          <div className="mt-2 flex h-6 w-full items-center">
-            <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Show Selection Stats:
             </div>
             <DataCubeEditorDropdownMenuTrigger
@@ -306,6 +263,59 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 configuration.setShowWarningForTruncatedResult(
                   !configuration.showWarningForTruncatedResult,
                 )
+              }
+            />
+          </div>
+
+          <div className="mt-1 flex h-4 w-full items-center">
+            <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
+              Hightlight Rows:
+            </div>
+            <DataCubeEditorCheckbox
+              label="Standard Mode"
+              checked={configuration.alternateRowsStandardMode}
+              onChange={() => {
+                if (configuration.alternateRowsStandardMode) {
+                  configuration.setAlternateRowsStandardMode(false);
+                } else {
+                  configuration.setAlternateRowsStandardMode(true);
+                  configuration.setAlternateRows(false);
+                }
+              }}
+            />
+            <DataCubeEditorCheckbox
+              className="ml-3"
+              label="Custom: Alternate color every"
+              checked={configuration.alternateRows}
+              onChange={() => {
+                if (configuration.alternateRows) {
+                  configuration.setAlternateRows(false);
+                } else {
+                  configuration.setAlternateRows(true);
+                  configuration.setAlternateRowsStandardMode(false);
+                }
+              }}
+            />
+            <DataCubeEditorNumberInput
+              className="ml-1.5 w-14 text-sm"
+              disabled={!configuration.alternateRows}
+              min={1}
+              step={1}
+              defaultValue={1}
+              isValid={(value) => value !== undefined && value > 0}
+              value={configuration.alternateRowsCount}
+              setValue={(value) =>
+                configuration.setAlternateRowsCount(value ?? 1)
+              }
+            />
+            <div className="ml-1.5 flex-shrink-0 text-sm">{`row(s)`}</div>
+            <DataCubeEditorColorPickerButton
+              className="ml-[5px]"
+              disabled={!configuration.alternateRows}
+              color={configuration.alternateRowsColor}
+              defaultColor={DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR}
+              onChange={(value) =>
+                configuration.setDefaultBackgroundErrorColor(value)
               }
             />
           </div>
@@ -688,57 +698,18 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             </div>
           </div>
 
-          <div className="mt-3 flex h-4 w-full items-center">
-            <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-              Hightlight Rows:
+          <div className="mt-2 flex w-full">
+            <div className="flex h-6 w-32 flex-shrink-0 items-center text-sm" />
+            <div className="w-80">
+              <div className="mb-2 h-[1px] w-full bg-neutral-200" />
+              <button
+                className="flex h-5 items-center justify-center rounded-sm border border-neutral-400 bg-neutral-200 p-0 px-1 text-sm text-neutral-700 disabled:text-neutral-400"
+                disabled={configuration.isUsingDefaultStyling}
+                onClick={() => configuration.useDefaultStyling()}
+              >
+                Use Default Styling
+              </button>
             </div>
-            <DataCubeEditorCheckbox
-              label="Standard Mode"
-              checked={configuration.alternateRowsStandardMode}
-              onChange={() => {
-                if (configuration.alternateRowsStandardMode) {
-                  configuration.setAlternateRowsStandardMode(false);
-                } else {
-                  configuration.setAlternateRowsStandardMode(true);
-                  configuration.setAlternateRows(false);
-                }
-              }}
-            />
-            <DataCubeEditorCheckbox
-              className="ml-3"
-              label="Custom: Alternate color every"
-              checked={configuration.alternateRows}
-              onChange={() => {
-                if (configuration.alternateRows) {
-                  configuration.setAlternateRows(false);
-                } else {
-                  configuration.setAlternateRows(true);
-                  configuration.setAlternateRowsStandardMode(false);
-                }
-              }}
-            />
-            <DataCubeEditorNumberInput
-              className="ml-1.5 w-14 text-sm"
-              disabled={!configuration.alternateRows}
-              min={1}
-              step={1}
-              defaultValue={1}
-              isValid={(value) => value !== undefined && value > 0}
-              value={configuration.alternateRowsCount}
-              setValue={(value) =>
-                configuration.setAlternateRowsCount(value ?? 1)
-              }
-            />
-            <div className="ml-1.5 flex-shrink-0 text-sm">{`row(s)`}</div>
-            <DataCubeEditorColorPickerButton
-              className="ml-[5px]"
-              disabled={!configuration.alternateRows}
-              color={configuration.alternateRowsColor}
-              defaultColor={DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR}
-              onChange={(value) =>
-                configuration.setDefaultBackgroundErrorColor(value)
-              }
-            />
           </div>
         </div>
       </div>

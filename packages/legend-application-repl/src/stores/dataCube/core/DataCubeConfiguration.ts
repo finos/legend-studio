@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import { TailwindCSSPalette } from '@finos/legend-art';
 import {
-  DataCubeColumnKind,
-  DataCubeFont,
-  DataCubeFontTextAlignment,
   DEFAULT_ROW_BUFFER,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_ERROR_FOREGROUND_COLOR,
@@ -26,11 +22,21 @@ import {
   DEFAULT_NEGATIVE_FOREGROUND_COLOR,
   DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR,
   DEFAULT_ZERO_FOREGROUND_COLOR,
+  DEFAULT_GRID_LINE_COLOR,
+  DEFAULT_FONT_FAMILY,
+  DEFAULT_FONT_SIZE,
+  DEFAULT_FONT_BOLD,
+  DEFAULT_FONT_ITALIC,
+  DEFAULT_FONT_STRIKETHROUGH,
+  DEFAULT_TEXT_ALIGN,
+  DEFAULT_FONT_UNDERLINED,
+  DataCubeColumnKind,
+  type DataCubeFont,
+  type DataCubeFontTextAlignment,
   type DataCubeFontFormatUnderlinedVariant,
   type DataCubeNumberScale,
   type DataCubeSelectionStat,
   type DataCubeColumnPinPlacement,
-  DEFAULT_GRID_LINE_COLOR,
 } from './DataCubeQueryEngine.js';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, list, optional, primitive } from 'serializr';
@@ -49,21 +55,21 @@ export class DataCubeColumnConfiguration {
 
   hPivotSortFunction?: string | undefined;
 
-  fontFamily = DataCubeFont.ROBOTO;
-  fontSize = 8;
-  fontBold = false;
-  fontItalic = false;
-  fontUnderlined?: DataCubeFontFormatUnderlinedVariant | undefined = undefined;
-  fontStrikethrough = false;
-  textAlign = DataCubeFontTextAlignment.LEFT;
-  foregroundColor = TailwindCSSPalette.black;
-  foregroundNegativeColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
-  foregroundZeroColor = DEFAULT_ZERO_FOREGROUND_COLOR;
-  foregroundErrorColor = DEFAULT_ERROR_FOREGROUND_COLOR;
-  backgroundColor = DEFAULT_BACKGROUND_COLOR;
-  backgroundNegativeColor = DEFAULT_BACKGROUND_COLOR;
-  backgroundZeroColor = DEFAULT_BACKGROUND_COLOR;
-  backgroundErrorColor = DEFAULT_BACKGROUND_COLOR;
+  fontFamily?: DataCubeFont | undefined;
+  fontSize?: number | undefined;
+  fontBold?: boolean | undefined;
+  fontItalic?: boolean | undefined;
+  fontUnderlined?: DataCubeFontFormatUnderlinedVariant | undefined;
+  fontStrikethrough?: boolean | undefined;
+  textAlign?: DataCubeFontTextAlignment | undefined;
+  foregroundColor?: string | undefined;
+  foregroundNegativeColor?: string | undefined;
+  foregroundZeroColor?: string | undefined;
+  foregroundErrorColor?: string | undefined;
+  backgroundColor?: string | undefined;
+  backgroundNegativeColor?: string | undefined;
+  backgroundZeroColor?: string | undefined;
+  backgroundErrorColor?: string | undefined;
 
   blur = false;
   hideFromView = false;
@@ -81,24 +87,24 @@ export class DataCubeColumnConfiguration {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeColumnConfiguration, {
-      backgroundColor: primitive(),
-      backgroundErrorColor: primitive(),
-      backgroundNegativeColor: primitive(),
-      backgroundZeroColor: primitive(),
+      backgroundColor: optional(primitive()),
+      backgroundErrorColor: optional(primitive()),
+      backgroundNegativeColor: optional(primitive()),
+      backgroundZeroColor: optional(primitive()),
       decimals: optional(primitive()),
       displayAsLink: primitive(),
       displayCommas: primitive(),
       displayName: optional(primitive()),
       fixedWidth: optional(primitive()),
-      foregroundColor: primitive(),
-      foregroundErrorColor: primitive(),
-      foregroundNegativeColor: primitive(),
-      foregroundZeroColor: primitive(),
-      fontBold: primitive(),
-      fontFamily: primitive(),
-      fontItalic: primitive(),
-      fontSize: primitive(),
-      fontStrikethrough: primitive(),
+      foregroundColor: optional(primitive()),
+      foregroundErrorColor: optional(primitive()),
+      foregroundNegativeColor: optional(primitive()),
+      foregroundZeroColor: optional(primitive()),
+      fontBold: optional(primitive()),
+      fontFamily: optional(primitive()),
+      fontItalic: optional(primitive()),
+      fontSize: optional(primitive()),
+      fontStrikethrough: optional(primitive()),
       fontUnderlined: optional(primitive()),
       hPivotSortFunction: optional(primitive()),
       kind: primitive(),
@@ -108,7 +114,7 @@ export class DataCubeColumnConfiguration {
       negativeNumberInParens: primitive(),
       numberScale: optional(primitive()),
       pinned: optional(primitive()),
-      textAlign: primitive(),
+      textAlign: optional(primitive()),
       type: primitive(),
     }),
   );
@@ -122,14 +128,15 @@ export class DataCubeConfiguration {
   showHorizontalGridLines = false;
   showVerticalGridLines = true;
   gridLineColor = DEFAULT_GRID_LINE_COLOR;
-  defaultFontFamily = DataCubeFont.ROBOTO;
-  defaultFontSize = 12;
-  defaultFontBold = false;
-  defaultFontItalic = false;
+
+  defaultFontFamily = DEFAULT_FONT_FAMILY;
+  defaultFontSize = DEFAULT_FONT_SIZE;
+  defaultFontBold = DEFAULT_FONT_BOLD;
+  defaultFontItalic = DEFAULT_FONT_ITALIC;
   defaultFontUnderlined?: DataCubeFontFormatUnderlinedVariant | undefined =
-    undefined;
-  defaultFontStrikethrough = false;
-  defaultTextAlign = DataCubeFontTextAlignment.LEFT;
+    DEFAULT_FONT_UNDERLINED;
+  defaultFontStrikethrough = DEFAULT_FONT_STRIKETHROUGH;
+  defaultTextAlign = DEFAULT_TEXT_ALIGN;
   defaultForegroundColor = DEFAULT_FOREGROUND_COLOR;
   defaultForegroundNegativeColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
   defaultForegroundZeroColor = DEFAULT_ZERO_FOREGROUND_COLOR;
@@ -138,16 +145,11 @@ export class DataCubeConfiguration {
   defaultBackgroundNegativeColor = DEFAULT_BACKGROUND_COLOR;
   defaultBackgroundZeroColor = DEFAULT_BACKGROUND_COLOR;
   defaultBackgroundErrorColor = DEFAULT_BACKGROUND_COLOR;
+
   alternateRows = false;
   alternateRowsStandardMode = true;
   alternateRowsColor = DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR;
   alternateRowsCount = 1;
-
-  // manualRefresh: boolean;
-  numberScale?: DataCubeNumberScale | undefined;
-  selectionStats: DataCubeSelectionStat[] = [];
-
-  showWarningForTruncatedResult = true;
 
   // aggregation
   initialExpandLevel?: number | undefined;
@@ -156,6 +158,10 @@ export class DataCubeConfiguration {
   addPivotTotalColumn = true;
   addPivotTotalColumnOnLeft = true;
   treeGroupSortFunction?: string | undefined;
+
+  // misc
+  selectionStats: DataCubeSelectionStat[] = [];
+  showWarningForTruncatedResult = true;
 
   // advanced
   rowBuffer = DEFAULT_ROW_BUFFER;
@@ -190,7 +196,6 @@ export class DataCubeConfiguration {
       gridLineColor: primitive(),
       initialExpandLevel: optional(primitive()),
 
-      numberScale: optional(primitive()),
       rowBuffer: primitive(),
       selectionStats: list(primitive()),
       showHorizontalGridLines: primitive(),

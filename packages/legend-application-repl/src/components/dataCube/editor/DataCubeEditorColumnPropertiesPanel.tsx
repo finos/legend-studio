@@ -36,20 +36,17 @@ import {
   DataCubeFontFormatUnderlinedVariant,
   DataCubeFontTextAlignment,
   DataCubeNumberScale,
-  DEFAULT_BACKGROUND_COLOR,
   DEFAULT_COLUMN_MAX_WIDTH,
   DEFAULT_COLUMN_MIN_WIDTH,
   DEFAULT_COLUMN_WIDTH,
-  DEFAULT_ERROR_FOREGROUND_COLOR,
-  DEFAULT_FOREGROUND_COLOR,
-  DEFAULT_NEGATIVE_FOREGROUND_COLOR,
-  DEFAULT_ZERO_FOREGROUND_COLOR,
 } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 
 export const DataCubeEditorColumnPropertiesPanel = observer(() => {
   const replStore = useREPLStore();
   const dataCube = replStore.dataCube;
   const panel = dataCube.editor.columnPropertiesPanel;
+  const gridConfiguration =
+    dataCube.editor.generalPropertiesPanel.configuration;
   const selectedColumn = panel.selectedColumn;
   const [openColumnsDropdown, closeColumnsDropdown, columnsDropdownProps] =
     useDropdownMenu();
@@ -272,17 +269,6 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       ))}
                     </DataCubeEditorDropdownMenu>
                     <WIP_Badge />
-                    <div className="ml-2 h-[1px] w-4 bg-neutral-400" />
-                    <div className="mx-2 flex h-full flex-shrink-0 items-center text-sm">
-                      Weight Column:
-                    </div>
-                    <DataCubeEditorDropdownMenuTrigger
-                      className="w-32"
-                      disabled={true}
-                    >
-                      {selectedColumn.weightColumn ?? '(None)'}
-                    </DataCubeEditorDropdownMenuTrigger>
-                    <WIP_Badge />
                   </div>
 
                   <div className="mt-2 flex h-4 w-full items-center">
@@ -321,390 +307,23 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                 </>
               )}
 
-              <div className="my-2 h-[1px] w-full bg-neutral-200" />
-
-              <div className="mt-3 flex h-6 w-full items-center">
-                <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-                  Font:
-                </div>
-                <DataCubeEditorDropdownMenuTrigger
-                  className="w-28"
-                  onClick={openFontFamilyDropdown}
-                >
-                  {selectedColumn.fontFamily}
-                </DataCubeEditorDropdownMenuTrigger>
-                <DataCubeEditorDropdownMenu
-                  className="w-28"
-                  {...fontFamilyDropdownProps}
-                >
-                  {[
-                    DataCubeFont.ARIAL,
-                    DataCubeFont.ROBOTO,
-                    DataCubeFont.ROBOTO_CONDENSED,
-                  ].map((font) => (
-                    <DataCubeEditorDropdownMenuItem
-                      key={font}
-                      onClick={() => {
-                        selectedColumn.setFontFamily(font);
-                        closeFontFamilyDropdown();
-                      }}
-                    >
-                      {font}
-                    </DataCubeEditorDropdownMenuItem>
-                  ))}
-                  <DataCubeEditorDropdownMenuItemSeparator />
-                  {[
-                    DataCubeFont.GEORGIA,
-                    DataCubeFont.ROBOTO_SERIF,
-                    DataCubeFont.TIMES_NEW_ROMAN,
-                  ].map((font) => (
-                    <DataCubeEditorDropdownMenuItem
-                      key={font}
-                      onClick={() => {
-                        selectedColumn.setFontFamily(font);
-                        closeFontFamilyDropdown();
-                      }}
-                    >
-                      {font}
-                    </DataCubeEditorDropdownMenuItem>
-                  ))}
-                  <DataCubeEditorDropdownMenuItemSeparator />
-                  {[
-                    DataCubeFont.JERBRAINS_MONO,
-                    DataCubeFont.ROBOTO_MONO,
-                    DataCubeFont.UBUNTU_MONO,
-                  ].map((font) => (
-                    <DataCubeEditorDropdownMenuItem
-                      key={font}
-                      onClick={() => {
-                        selectedColumn.setFontFamily(font);
-                        closeFontFamilyDropdown();
-                      }}
-                    >
-                      {font}
-                    </DataCubeEditorDropdownMenuItem>
-                  ))}
-                </DataCubeEditorDropdownMenu>
-
-                <DataCubeEditorDropdownMenuTrigger
-                  className="ml-1 w-10"
-                  onClick={openFontSizeDropdown}
-                >
-                  {selectedColumn.fontSize}
-                </DataCubeEditorDropdownMenuTrigger>
-                <DataCubeEditorDropdownMenu
-                  className="w-10"
-                  {...openFontSizeDropdownProps}
-                >
-                  {[
-                    4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26,
-                    28, 32, 36, 48, 72,
-                  ].map((size) => (
-                    <DataCubeEditorDropdownMenuItem
-                      key={size}
-                      onClick={() => {
-                        selectedColumn.setFontSize(size);
-                        closeFontSizeDropdown();
-                      }}
-                    >
-                      {size}
-                    </DataCubeEditorDropdownMenuItem>
-                  ))}
-                </DataCubeEditorDropdownMenu>
-
-                <div className="relative ml-2 flex h-5">
-                  <button
-                    title="Bold"
-                    className={cn(
-                      'relative flex h-5 w-5 items-center justify-center rounded-bl-sm rounded-tl-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
-                      {
-                        'bg-neutral-200': selectedColumn.fontBold,
-                      },
-                    )}
-                    onClick={() =>
-                      selectedColumn.setFontBold(!selectedColumn.fontBold)
-                    }
-                  >
-                    <DataCubeIcon.FontBold />
-                  </button>
-                  <button
-                    title="Italic"
-                    className={cn(
-                      'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
-                      {
-                        'bg-neutral-200': selectedColumn.fontItalic,
-                      },
-                    )}
-                    onClick={() =>
-                      selectedColumn.setFontItalic(!selectedColumn.fontItalic)
-                    }
-                  >
-                    <DataCubeIcon.FontItalic />
-                  </button>
-                  <button
-                    title={`Underline${selectedColumn.fontUnderlined ? ` (${selectedColumn.fontUnderlined})` : ''}`}
-                    className={cn(
-                      'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
-                      {
-                        'bg-neutral-200':
-                          selectedColumn.fontUnderlined !== undefined,
-                      },
-                    )}
-                    onClick={() =>
-                      selectedColumn.setFontUnderlined(
-                        selectedColumn.fontUnderlined === undefined
-                          ? DataCubeFontFormatUnderlinedVariant.SOLID
-                          : undefined,
-                      )
-                    }
-                  >
-                    <DataCubeIcon.FontUnderlined />
-                  </button>
-                  <button
-                    className="text-2xs relative -ml-[1px] flex h-5 w-2.5 items-center justify-center border border-neutral-400 border-l-neutral-200 bg-neutral-50 p-0 text-neutral-600 focus-visible:z-[1]"
-                    onClick={openFontFormatUnderlinedVariantDropdown}
-                  >
-                    <DataCubeIcon.CaretDown />
-                  </button>
-                  <DataCubeEditorDropdownMenu
-                    className="w-14"
-                    {...fontFormatUnderlinedVariantDropdownProps}
-                  >
-                    {[
-                      DataCubeFontFormatUnderlinedVariant.SOLID,
-                      DataCubeFontFormatUnderlinedVariant.DASHED,
-                      DataCubeFontFormatUnderlinedVariant.DOTTED,
-                      DataCubeFontFormatUnderlinedVariant.DOUBLE,
-                      DataCubeFontFormatUnderlinedVariant.WAVY,
-                    ].map((variant) => (
-                      <DataCubeEditorDropdownMenuItem
-                        className="relative"
-                        key={variant}
-                        onClick={() => {
-                          selectedColumn.setFontUnderlined(variant);
-                          closeFontFormatUnderlinedVariantDropdown();
-                        }}
-                      >
-                        <div
-                          className={cn(
-                            '!hover:underline absolute top-0 !underline',
-                            {
-                              '!hover:decoration-solid !decoration-solid':
-                                variant ===
-                                DataCubeFontFormatUnderlinedVariant.SOLID,
-                              '!hover:decoration-dashed !decoration-dashed':
-                                variant ===
-                                DataCubeFontFormatUnderlinedVariant.DASHED,
-                              '!hover:decoration-dotted !decoration-dotted':
-                                variant ===
-                                DataCubeFontFormatUnderlinedVariant.DOTTED,
-                              '!hover:decoration-double !decoration-double':
-                                variant ===
-                                DataCubeFontFormatUnderlinedVariant.DOUBLE,
-                              '!hover:decoration-wavy !decoration-wavy':
-                                variant ===
-                                DataCubeFontFormatUnderlinedVariant.WAVY,
-                              'text-sky-600':
-                                variant === selectedColumn.fontUnderlined,
-                            },
-                          )}
-                        >
-                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        </div>
-                      </DataCubeEditorDropdownMenuItem>
-                    ))}
-                  </DataCubeEditorDropdownMenu>
-                  <button
-                    title="Strikethrough"
-                    className={cn(
-                      'relative -ml-[1px] flex h-5 w-5 items-center justify-center rounded-br-sm rounded-tr-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
-                      {
-                        'bg-neutral-200': selectedColumn.fontStrikethrough,
-                      },
-                    )}
-                    onClick={() =>
-                      selectedColumn.setFontStrikethrough(
-                        !selectedColumn.fontStrikethrough,
-                      )
-                    }
-                  >
-                    <DataCubeIcon.FontStrikethrough />
-                  </button>
-                </div>
-
-                <div className="relative ml-2 flex h-5">
-                  <button
-                    title="Align Left"
-                    className={cn(
-                      'relative flex h-5 w-5 items-center justify-center rounded-bl-sm rounded-tl-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
-                      {
-                        'bg-neutral-200':
-                          selectedColumn.textAlign ===
-                          DataCubeFontTextAlignment.LEFT,
-                      },
-                    )}
-                    onClick={() =>
-                      selectedColumn.setTextAlign(
-                        DataCubeFontTextAlignment.LEFT,
-                      )
-                    }
-                  >
-                    <DataCubeIcon.TextAlignLeft />
-                  </button>
-                  <button
-                    title="Align Center"
-                    className={cn(
-                      'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
-                      {
-                        'bg-neutral-200':
-                          selectedColumn.textAlign ===
-                          DataCubeFontTextAlignment.CENTER,
-                      },
-                    )}
-                    onClick={() =>
-                      selectedColumn.setTextAlign(
-                        DataCubeFontTextAlignment.CENTER,
-                      )
-                    }
-                  >
-                    <DataCubeIcon.TextAlignCenter />
-                  </button>
-                  <button
-                    title="Align Right"
-                    className={cn(
-                      'relative -ml-[1px] flex h-5 w-5 items-center justify-center rounded-br-sm rounded-tr-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
-                      {
-                        'bg-neutral-200':
-                          selectedColumn.textAlign ===
-                          DataCubeFontTextAlignment.RIGHT,
-                      },
-                    )}
-                    onClick={() =>
-                      selectedColumn.setTextAlign(
-                        DataCubeFontTextAlignment.RIGHT,
-                      )
-                    }
-                  >
-                    <DataCubeIcon.TextAlignRight />
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-2 flex w-full">
-                <div className="flex h-6 w-32 flex-shrink-0 items-center text-sm">
-                  Colors:
-                </div>
-                <div className="h-18">
-                  <div className="flex h-6">
-                    <div className="w-16 flex-shrink-0" />
-                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center text-sm">
-                      Normal
-                    </div>
-                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center text-sm">
-                      Negative
-                    </div>
-                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center text-sm">
-                      Zero
-                    </div>
-                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center text-sm">
-                      Error
-                    </div>
-                  </div>
-                  <div className="flex h-6">
-                    <div className="flex h-full w-16 flex-shrink-0 items-center text-sm">
-                      Foreground:
-                    </div>
-                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
-                        color={selectedColumn.foregroundColor}
-                        defaultColor={DEFAULT_FOREGROUND_COLOR}
-                        onChange={(value) =>
-                          selectedColumn.setForegroundColor(value)
-                        }
-                      />
-                    </div>
-                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
-                        color={selectedColumn.foregroundNegativeColor}
-                        defaultColor={DEFAULT_NEGATIVE_FOREGROUND_COLOR}
-                        onChange={(value) =>
-                          selectedColumn.setForegroundNegativeColor(value)
-                        }
-                      />
-                    </div>
-                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
-                        color={selectedColumn.foregroundZeroColor}
-                        defaultColor={DEFAULT_ZERO_FOREGROUND_COLOR}
-                        onChange={(value) =>
-                          selectedColumn.setForegroundZeroColor(value)
-                        }
-                      />
-                    </div>
-                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
-                        color={selectedColumn.foregroundErrorColor}
-                        defaultColor={DEFAULT_ERROR_FOREGROUND_COLOR}
-                        onChange={(value) =>
-                          selectedColumn.setForegroundErrorColor(value)
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="flex h-6">
-                    <div className="flex h-full w-16 flex-shrink-0 items-center text-sm">
-                      Background:
-                    </div>
-                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
-                        color={selectedColumn.backgroundColor}
-                        defaultColor={DEFAULT_BACKGROUND_COLOR}
-                        onChange={(value) =>
-                          selectedColumn.setBackgroundColor(value)
-                        }
-                      />
-                    </div>
-                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
-                        color={selectedColumn.backgroundNegativeColor}
-                        defaultColor={DEFAULT_BACKGROUND_COLOR}
-                        onChange={(value) =>
-                          selectedColumn.setBackgroundNegativeColor(value)
-                        }
-                      />
-                    </div>
-                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
-                        color={selectedColumn.backgroundZeroColor}
-                        defaultColor={DEFAULT_BACKGROUND_COLOR}
-                        onChange={(value) =>
-                          selectedColumn.setBackgroundZeroColor(value)
-                        }
-                      />
-                    </div>
-                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
-                        color={selectedColumn.backgroundErrorColor}
-                        defaultColor={DEFAULT_BACKGROUND_COLOR}
-                        onChange={(value) =>
-                          selectedColumn.setBackgroundErrorColor(value)
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               <div className="mt-2 flex h-4 w-full items-center">
                 <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-                  Hide from View?
+                  Visibility:
                 </div>
                 <DataCubeEditorCheckbox
+                  label="Blur content"
+                  checked={selectedColumn.blur}
+                  onChange={() => selectedColumn.setBlur(!selectedColumn.blur)}
+                  disabled={selectedColumn.hideFromView}
+                />
+                <DataCubeEditorCheckbox
+                  className="ml-3"
+                  label="Hide from view"
                   checked={selectedColumn.hideFromView}
                   onChange={() =>
                     selectedColumn.setHideFromView(!selectedColumn.hideFromView)
                   }
-                  disabled={true}
                 />
                 <WIP_Badge />
               </div>
@@ -741,7 +360,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                 </DataCubeEditorDropdownMenu>
               </div>
 
-              <div className="mt-2 flex h-6 w-full items-center">
+              <div className="mt-1.5 flex h-6 w-full items-center">
                 <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                   Width:
                 </div>
@@ -770,7 +389,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                 />
 
                 <DataCubeEditorCheckbox
-                  className="ml-2"
+                  className="ml-3"
                   label="Fixed"
                   checked={selectedColumn.fixedWidth !== undefined}
                   onChange={() => {
@@ -853,16 +472,456 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                 />
               </div>
 
-              <div className="mt-2 flex h-4 w-full items-center">
+              <div className="my-2 h-[1px] w-full bg-neutral-200" />
+
+              <div className="mt-3 flex h-6 w-full items-center">
                 <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-                  Blur Content?
+                  Font:
                 </div>
-                <DataCubeEditorCheckbox
-                  checked={selectedColumn.blur}
-                  onChange={() => selectedColumn.setBlur(!selectedColumn.blur)}
-                  disabled={true}
-                />
-                <WIP_Badge />
+                <DataCubeEditorDropdownMenuTrigger
+                  className="w-28"
+                  onClick={openFontFamilyDropdown}
+                >
+                  {selectedColumn.fontFamily ??
+                    gridConfiguration.defaultFontFamily}
+                </DataCubeEditorDropdownMenuTrigger>
+                <DataCubeEditorDropdownMenu
+                  className="w-28"
+                  {...fontFamilyDropdownProps}
+                >
+                  {[
+                    DataCubeFont.ARIAL,
+                    DataCubeFont.ROBOTO,
+                    DataCubeFont.ROBOTO_CONDENSED,
+                  ].map((font) => (
+                    <DataCubeEditorDropdownMenuItem
+                      key={font}
+                      onClick={() => {
+                        selectedColumn.setFontFamily(font);
+                        closeFontFamilyDropdown();
+                      }}
+                    >
+                      {font}
+                    </DataCubeEditorDropdownMenuItem>
+                  ))}
+                  <DataCubeEditorDropdownMenuItemSeparator />
+                  {[
+                    DataCubeFont.GEORGIA,
+                    DataCubeFont.ROBOTO_SERIF,
+                    DataCubeFont.TIMES_NEW_ROMAN,
+                  ].map((font) => (
+                    <DataCubeEditorDropdownMenuItem
+                      key={font}
+                      onClick={() => {
+                        selectedColumn.setFontFamily(font);
+                        closeFontFamilyDropdown();
+                      }}
+                    >
+                      {font}
+                    </DataCubeEditorDropdownMenuItem>
+                  ))}
+                  <DataCubeEditorDropdownMenuItemSeparator />
+                  {[
+                    DataCubeFont.JERBRAINS_MONO,
+                    DataCubeFont.ROBOTO_MONO,
+                    DataCubeFont.UBUNTU_MONO,
+                  ].map((font) => (
+                    <DataCubeEditorDropdownMenuItem
+                      key={font}
+                      onClick={() => {
+                        selectedColumn.setFontFamily(font);
+                        closeFontFamilyDropdown();
+                      }}
+                    >
+                      {font}
+                    </DataCubeEditorDropdownMenuItem>
+                  ))}
+                </DataCubeEditorDropdownMenu>
+
+                <DataCubeEditorDropdownMenuTrigger
+                  className="ml-1 w-10"
+                  onClick={openFontSizeDropdown}
+                >
+                  {selectedColumn.fontSize ?? gridConfiguration.defaultFontSize}
+                </DataCubeEditorDropdownMenuTrigger>
+                <DataCubeEditorDropdownMenu
+                  className="w-10"
+                  {...openFontSizeDropdownProps}
+                >
+                  {[
+                    4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26,
+                    28, 32, 36, 48, 72,
+                  ].map((size) => (
+                    <DataCubeEditorDropdownMenuItem
+                      key={size}
+                      onClick={() => {
+                        selectedColumn.setFontSize(size);
+                        closeFontSizeDropdown();
+                      }}
+                    >
+                      {size}
+                    </DataCubeEditorDropdownMenuItem>
+                  ))}
+                </DataCubeEditorDropdownMenu>
+
+                <div className="relative ml-2 flex h-5">
+                  <button
+                    title="Bold"
+                    className={cn(
+                      'relative flex h-5 w-5 items-center justify-center rounded-bl-sm rounded-tl-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                      {
+                        'bg-neutral-200':
+                          selectedColumn.fontBold ??
+                          gridConfiguration.defaultFontBold,
+                      },
+                    )}
+                    onClick={() =>
+                      selectedColumn.setFontBold(
+                        !(
+                          selectedColumn.fontBold ??
+                          gridConfiguration.defaultFontBold
+                        ),
+                      )
+                    }
+                  >
+                    <DataCubeIcon.FontBold />
+                  </button>
+                  <button
+                    title="Italic"
+                    className={cn(
+                      'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                      {
+                        'bg-neutral-200':
+                          selectedColumn.fontItalic ??
+                          gridConfiguration.defaultFontItalic,
+                      },
+                    )}
+                    onClick={() =>
+                      selectedColumn.setFontItalic(
+                        !(
+                          selectedColumn.fontItalic ??
+                          gridConfiguration.defaultFontItalic
+                        ),
+                      )
+                    }
+                  >
+                    <DataCubeIcon.FontItalic />
+                  </button>
+                  <button
+                    title={`Underline${selectedColumn.fontUnderlined ? ` (${selectedColumn.fontUnderlined})` : ''}`}
+                    className={cn(
+                      'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                      {
+                        'bg-neutral-200':
+                          (selectedColumn.fontUnderlined ??
+                            gridConfiguration.defaultFontUnderlined) !==
+                          undefined,
+                      },
+                    )}
+                    onClick={() =>
+                      selectedColumn.setFontUnderlined(
+                        (selectedColumn.fontUnderlined ??
+                          gridConfiguration.defaultFontUnderlined) === undefined
+                          ? DataCubeFontFormatUnderlinedVariant.SOLID
+                          : undefined,
+                      )
+                    }
+                  >
+                    <DataCubeIcon.FontUnderlined />
+                  </button>
+                  <button
+                    className="text-2xs relative -ml-[1px] flex h-5 w-2.5 items-center justify-center border border-neutral-400 border-l-neutral-200 bg-neutral-50 p-0 text-neutral-600 focus-visible:z-[1]"
+                    onClick={openFontFormatUnderlinedVariantDropdown}
+                  >
+                    <DataCubeIcon.CaretDown />
+                  </button>
+                  <DataCubeEditorDropdownMenu
+                    className="w-14"
+                    {...fontFormatUnderlinedVariantDropdownProps}
+                  >
+                    {[
+                      DataCubeFontFormatUnderlinedVariant.SOLID,
+                      DataCubeFontFormatUnderlinedVariant.DASHED,
+                      DataCubeFontFormatUnderlinedVariant.DOTTED,
+                      DataCubeFontFormatUnderlinedVariant.DOUBLE,
+                      DataCubeFontFormatUnderlinedVariant.WAVY,
+                    ].map((variant) => (
+                      <DataCubeEditorDropdownMenuItem
+                        className="relative"
+                        key={variant}
+                        onClick={() => {
+                          selectedColumn.setFontUnderlined(variant);
+                          closeFontFormatUnderlinedVariantDropdown();
+                        }}
+                      >
+                        <div
+                          className={cn(
+                            '!hover:underline absolute top-0 !underline',
+                            {
+                              '!hover:decoration-solid !decoration-solid':
+                                variant ===
+                                DataCubeFontFormatUnderlinedVariant.SOLID,
+                              '!hover:decoration-dashed !decoration-dashed':
+                                variant ===
+                                DataCubeFontFormatUnderlinedVariant.DASHED,
+                              '!hover:decoration-dotted !decoration-dotted':
+                                variant ===
+                                DataCubeFontFormatUnderlinedVariant.DOTTED,
+                              '!hover:decoration-double !decoration-double':
+                                variant ===
+                                DataCubeFontFormatUnderlinedVariant.DOUBLE,
+                              '!hover:decoration-wavy !decoration-wavy':
+                                variant ===
+                                DataCubeFontFormatUnderlinedVariant.WAVY,
+                              'text-sky-600':
+                                variant ===
+                                (selectedColumn.fontUnderlined ??
+                                  gridConfiguration.defaultFontUnderlined),
+                            },
+                          )}
+                        >
+                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        </div>
+                      </DataCubeEditorDropdownMenuItem>
+                    ))}
+                  </DataCubeEditorDropdownMenu>
+                  <button
+                    title="Strikethrough"
+                    className={cn(
+                      'relative -ml-[1px] flex h-5 w-5 items-center justify-center rounded-br-sm rounded-tr-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                      {
+                        'bg-neutral-200':
+                          selectedColumn.fontStrikethrough ??
+                          gridConfiguration.defaultFontStrikethrough,
+                      },
+                    )}
+                    onClick={() =>
+                      selectedColumn.setFontStrikethrough(
+                        !(
+                          selectedColumn.fontStrikethrough ??
+                          gridConfiguration.defaultFontStrikethrough
+                        ),
+                      )
+                    }
+                  >
+                    <DataCubeIcon.FontStrikethrough />
+                  </button>
+                </div>
+
+                <div className="relative ml-2 flex h-5">
+                  <button
+                    title="Align Left"
+                    className={cn(
+                      'relative flex h-5 w-5 items-center justify-center rounded-bl-sm rounded-tl-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                      {
+                        'bg-neutral-200':
+                          (selectedColumn.textAlign ??
+                            gridConfiguration.defaultTextAlign) ===
+                          DataCubeFontTextAlignment.LEFT,
+                      },
+                    )}
+                    onClick={() =>
+                      selectedColumn.setTextAlign(
+                        DataCubeFontTextAlignment.LEFT,
+                      )
+                    }
+                  >
+                    <DataCubeIcon.TextAlignLeft />
+                  </button>
+                  <button
+                    title="Align Center"
+                    className={cn(
+                      'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                      {
+                        'bg-neutral-200':
+                          (selectedColumn.textAlign ??
+                            gridConfiguration.defaultTextAlign) ===
+                          DataCubeFontTextAlignment.CENTER,
+                      },
+                    )}
+                    onClick={() =>
+                      selectedColumn.setTextAlign(
+                        DataCubeFontTextAlignment.CENTER,
+                      )
+                    }
+                  >
+                    <DataCubeIcon.TextAlignCenter />
+                  </button>
+                  <button
+                    title="Align Right"
+                    className={cn(
+                      'relative -ml-[1px] flex h-5 w-5 items-center justify-center rounded-br-sm rounded-tr-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                      {
+                        'bg-neutral-200':
+                          (selectedColumn.textAlign ??
+                            gridConfiguration.defaultTextAlign) ===
+                          DataCubeFontTextAlignment.RIGHT,
+                      },
+                    )}
+                    onClick={() =>
+                      selectedColumn.setTextAlign(
+                        DataCubeFontTextAlignment.RIGHT,
+                      )
+                    }
+                  >
+                    <DataCubeIcon.TextAlignRight />
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-2 flex w-full">
+                <div className="flex h-6 w-32 flex-shrink-0 items-center text-sm">
+                  Colors:
+                </div>
+                <div className="h-18">
+                  <div className="flex h-6">
+                    <div className="w-16 flex-shrink-0" />
+                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center text-sm">
+                      Normal
+                    </div>
+                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center text-sm">
+                      Negative
+                    </div>
+                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center text-sm">
+                      Zero
+                    </div>
+                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center text-sm">
+                      Error
+                    </div>
+                  </div>
+                  <div className="flex h-6">
+                    <div className="flex h-full w-16 flex-shrink-0 items-center text-sm">
+                      Foreground:
+                    </div>
+                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
+                      <DataCubeEditorColorPickerButton
+                        color={
+                          selectedColumn.foregroundColor ??
+                          gridConfiguration.defaultForegroundColor
+                        }
+                        defaultColor={gridConfiguration.defaultForegroundColor}
+                        onChange={(value) =>
+                          selectedColumn.setForegroundColor(value)
+                        }
+                      />
+                    </div>
+                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
+                      <DataCubeEditorColorPickerButton
+                        color={
+                          selectedColumn.foregroundNegativeColor ??
+                          gridConfiguration.defaultForegroundNegativeColor
+                        }
+                        defaultColor={
+                          gridConfiguration.defaultForegroundNegativeColor
+                        }
+                        onChange={(value) =>
+                          selectedColumn.setForegroundNegativeColor(value)
+                        }
+                      />
+                    </div>
+                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
+                      <DataCubeEditorColorPickerButton
+                        color={
+                          selectedColumn.foregroundZeroColor ??
+                          gridConfiguration.defaultForegroundZeroColor
+                        }
+                        defaultColor={
+                          gridConfiguration.defaultForegroundZeroColor
+                        }
+                        onChange={(value) =>
+                          selectedColumn.setForegroundZeroColor(value)
+                        }
+                      />
+                    </div>
+                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
+                      <DataCubeEditorColorPickerButton
+                        color={
+                          selectedColumn.foregroundErrorColor ??
+                          gridConfiguration.defaultForegroundErrorColor
+                        }
+                        defaultColor={
+                          gridConfiguration.defaultForegroundErrorColor
+                        }
+                        onChange={(value) =>
+                          selectedColumn.setForegroundErrorColor(value)
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="flex h-6">
+                    <div className="flex h-full w-16 flex-shrink-0 items-center text-sm">
+                      Background:
+                    </div>
+                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
+                      <DataCubeEditorColorPickerButton
+                        color={
+                          selectedColumn.backgroundColor ??
+                          gridConfiguration.defaultBackgroundColor
+                        }
+                        defaultColor={gridConfiguration.defaultBackgroundColor}
+                        onChange={(value) =>
+                          selectedColumn.setBackgroundColor(value)
+                        }
+                      />
+                    </div>
+                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
+                      <DataCubeEditorColorPickerButton
+                        color={
+                          selectedColumn.backgroundNegativeColor ??
+                          gridConfiguration.defaultBackgroundNegativeColor
+                        }
+                        defaultColor={
+                          gridConfiguration.defaultBackgroundNegativeColor
+                        }
+                        onChange={(value) =>
+                          selectedColumn.setBackgroundNegativeColor(value)
+                        }
+                      />
+                    </div>
+                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
+                      <DataCubeEditorColorPickerButton
+                        color={
+                          selectedColumn.backgroundZeroColor ??
+                          gridConfiguration.defaultBackgroundZeroColor
+                        }
+                        defaultColor={
+                          gridConfiguration.defaultBackgroundZeroColor
+                        }
+                        onChange={(value) =>
+                          selectedColumn.setBackgroundZeroColor(value)
+                        }
+                      />
+                    </div>
+                    <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
+                      <DataCubeEditorColorPickerButton
+                        color={
+                          selectedColumn.backgroundErrorColor ??
+                          gridConfiguration.defaultBackgroundErrorColor
+                        }
+                        defaultColor={
+                          gridConfiguration.defaultBackgroundErrorColor
+                        }
+                        onChange={(value) =>
+                          selectedColumn.setBackgroundErrorColor(value)
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-2 flex w-full">
+                <div className="flex h-6 w-32 flex-shrink-0 items-center text-sm" />
+                <div className="w-80">
+                  <div className="mb-2 h-[1px] w-full bg-neutral-200" />
+                  <button
+                    className="flex h-5 items-center justify-center rounded-sm border border-neutral-400 bg-neutral-200 p-0 px-1 text-sm text-neutral-700 disabled:text-neutral-400"
+                    disabled={selectedColumn.isUsingDefaultStyling}
+                    onClick={() => selectedColumn.useDefaultStyling()}
+                  >
+                    Use Default Styling
+                  </button>
+                </div>
               </div>
             </>
           )}
