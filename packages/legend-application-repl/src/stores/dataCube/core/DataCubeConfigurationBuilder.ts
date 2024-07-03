@@ -19,7 +19,10 @@ import {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
 } from './DataCubeConfiguration.js';
-import { DataCubeColumnKind } from './DataCubeQueryEngine.js';
+import {
+  DataCubeColumnKind,
+  DataCubeFontTextAlignment,
+} from './DataCubeQueryEngine.js';
 
 export function buildDefaultColumnConfiguration(column: {
   name: string;
@@ -36,6 +39,7 @@ export function buildDefaultColumnConfiguration(column: {
       config.decimals = type === PRIMITIVE_TYPE.INTEGER ? 0 : 2;
       config.displayCommas = true;
       config.negativeNumberInParens = true;
+      config.textAlign = DataCubeFontTextAlignment.RIGHT; // always align number to the right
       break;
     }
     default: {

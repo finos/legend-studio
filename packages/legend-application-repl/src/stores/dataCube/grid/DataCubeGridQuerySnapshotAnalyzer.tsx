@@ -41,10 +41,33 @@ import type {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
 } from '../core/DataCubeConfiguration.js';
+import {
+  DataCubeColumnDataType,
+  DataCubeNumberScale,
+  getDataType,
+} from '../core/DataCubeQueryEngine.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
-function _allowedAggFuncs(column: DataCubeQuerySnapshotColumn): string[] {
+// See https://www.ag-grid.com/javascript-data-grid/cell-data-types/
+function _cellDataType(column: DataCubeQuerySnapshotColumn) {
+  switch (column.type) {
+    case PRIMITIVE_TYPE.NUMBER:
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.INTEGER:
+    case PRIMITIVE_TYPE.FLOAT:
+      return 'number';
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.DATETIME:
+    case PRIMITIVE_TYPE.STRICTDATE:
+      return 'dateString';
+    case PRIMITIVE_TYPE.STRING:
+    default:
+      return 'text';
+  }
+}
+
+function _allowedAggFuncs(column: DataCubeQuerySnapshotColumn) {
   switch (column.type) {
     case PRIMITIVE_TYPE.STRING:
       return [];
@@ -87,25 +110,123 @@ function _aggFunc(
   }
 }
 
+function scaleNumber(
+  value: number,
+  type: DataCubeNumberScale | undefined,
+): { value: number; unit: string | undefined } {
+  switch (type) {
+    case DataCubeNumberScale.PERCENT:
+      return { value: value * 1e2, unit: '%' };
+    case DataCubeNumberScale.BASIS_POINT:
+      return { value: value * 1e4, unit: 'bp' };
+    case DataCubeNumberScale.THOUSANDS:
+      return { value: value / 1e3, unit: 'k' };
+    case DataCubeNumberScale.MILLIONS:
+      return { value: value / 1e6, unit: 'm' };
+    case DataCubeNumberScale.BILLIONS:
+      return { value: value / 1e9, unit: 'b' };
+    case DataCubeNumberScale.TRILLIONS:
+      return { value: value / 1e12, unit: 't' };
+    case DataCubeNumberScale.AUTO:
+      return scaleNumber(
+        value,
+        value >= 1e12
+          ? DataCubeNumberScale.TRILLIONS
+          : value >= 1e9
+            ? DataCubeNumberScale.BILLIONS
+            : value >= 1e6
+              ? DataCubeNumberScale.MILLIONS
+              : value >= 1e3
+                ? DataCubeNumberScale.THOUSANDS
+                : undefined,
+      );
+    default:
+      return { value, unit: undefined };
+  }
+}
+
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
-function _sizeSpec(columnConfiguration: DataCubeColumnConfiguration) {
+type ColumnData = {
+  snapshot: DataCubeQuerySnapshot;
+  column: DataCubeQuerySnapshotColumn;
+  configuration: DataCubeColumnConfiguration;
+  gridConfiguration: DataCubeConfiguration;
+};
+
+function _displaySpec(columnData: ColumnData) {
+  const { column, configuration, gridConfiguration } = columnData;
+  const dataType = getDataType(column.type);
+  const scaleNumberType =
+    configuration.numberScale ?? gridConfiguration.numberScale;
   return {
-    // TODO: if we support column resize to fit content, should we disable this behavior?
-    resizable: columnConfiguration.fixedWidth === undefined,
-    // suppressAutoSize: columnConfiguration.fixedWidth !== undefined,
-    width: columnConfiguration.fixedWidth,
-    minWidth: Math.max(
-      columnConfiguration.minWidth ?? INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
-      INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
-    ),
-    maxWidth: columnConfiguration.maxWidth,
+    // setting the cell data type might helps guide the grid to render the cell properly
+    // and optimize the grid performance slightly by avoiding unnecessary type inference
+    cellDataType: _cellDataType(column),
+    valueFormatter:
+      dataType === DataCubeColumnDataType.NUMBER
+        ? (params) => {
+            const value = params.value as number | null;
+            if (value === null) {
+              return null;
+            }
+            const showNegativeNumberInParens =
+              configuration.negativeNumberInParens && value < 0;
+            // 1. apply the number scale
+            const scaledNumber = scaleNumber(value, scaleNumberType);
+            // 2. apply the number formatter
+            const formattedValue = (
+              showNegativeNumberInParens
+                ? Math.abs(scaledNumber.value)
+                : scaledNumber.value
+            ).toLocaleString(undefined, {
+              useGrouping: configuration.displayCommas,
+              ...(configuration.decimals !== undefined
+                ? {
+                    minimumFractionDigits: configuration.decimals,
+                    maximumFractionDigits: configuration.decimals,
+                  }
+                : {}),
+            });
+            // 3. add the parentheses (and then the unit)
+            return (
+              (showNegativeNumberInParens
+                ? `(${formattedValue})`
+                : formattedValue) +
+              (scaledNumber.unit ? ` ${scaledNumber.unit}` : '')
+            );
+          }
+        : (params) => params.value,
   } as ColDef;
 }
 
-function _sortSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
+function _sizeSpec(columnData: ColumnData) {
+  const { configuration } = columnData;
+  return {
+    // NOTE: there is a problem with ag-grid when scrolling horizontally, the header row
+    // lags behind the data, it seems to be caused by synchronizing scroll not working properly
+    // There is currently, no way around this
+    // See https://github.com/ag-grid/ag-grid/issues/5233
+    // See https://github.com/ag-grid/ag-grid/issues/7620
+    // See https://github.com/ag-grid/ag-grid/issues/6292
+    // See https://issues.chromium.org/issues/40890343#comment11
+    //
+    // TODO: if we support column resize to fit content, should we disable this behavior?
+    resizable: configuration.fixedWidth === undefined,
+    // suppressAutoSize: columnConfiguration.fixedWidth !== undefined,
+    width: configuration.fixedWidth,
+    minWidth: Math.max(
+      configuration.minWidth ?? INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
+      INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
+    ),
+    maxWidth: configuration.maxWidth,
+  } as ColDef;
+}
+
+function _sortSpec(columnData: ColumnData) {
+  const { snapshot, column } = columnData;
   const sortColumns = snapshot.data.sortColumns;
-  const sortCol = _findCol(sortColumns, colName);
+  const sortCol = _findCol(sortColumns, column.name);
   return {
     sortable: true, // if this is pivot column, no sorting is allowed
     sort: sortCol
@@ -117,12 +238,13 @@ function _sortSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
   } as ColDef;
 }
 
-function _rowGroupSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
+function _rowGroupSpec(columnData: ColumnData) {
+  const { snapshot, column } = columnData;
   const data = snapshot.data;
   const columns = snapshot.stageCols('aggregation');
-  const column = _findCol(columns, colName);
-  const groupByCol = _findCol(data.groupBy?.columns, colName);
-  const aggCol = _findCol(data.groupBy?.aggColumns, colName);
+  const rowGroupColumn = _findCol(columns, column.name);
+  const groupByCol = _findCol(data.groupBy?.columns, column.name);
+  const aggCol = _findCol(data.groupBy?.aggColumns, column.name);
   return {
     enableRowGroup: true,
     enableValue: true,
@@ -130,7 +252,7 @@ function _rowGroupSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
     // TODO: @akphi - add this from configuration object
     aggFunc: aggCol
       ? _aggFunc(aggCol.function)
-      : column
+      : rowGroupColumn
         ? (
             [
               PRIMITIVE_TYPE.NUMBER,
@@ -138,12 +260,12 @@ function _rowGroupSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
               PRIMITIVE_TYPE.FLOAT,
               PRIMITIVE_TYPE.INTEGER,
             ] as string[]
-          ).includes(column.type)
+          ).includes(rowGroupColumn.type)
           ? GridClientAggregateOperation.SUM
           : null
         : null,
     // TODO: @akphi - add this from configuration object
-    allowedAggFuncs: column ? _allowedAggFuncs(column) : [],
+    allowedAggFuncs: rowGroupColumn ? _allowedAggFuncs(rowGroupColumn) : [],
   } satisfies ColDef;
 }
 
@@ -187,18 +309,24 @@ export function generateGridOptionsFromSnapshot(
         sortable: false, // TODO: @akphi - we can support this in the configuration
       } satisfies ColDef,
       // TODO: handle pivot and column grouping
-      ...data.selectColumns.map((col) => {
-        const columnConfiguration = guaranteeNonNullable(
-          configuration.columns.find((c) => c.name === col.name),
-        );
+      ...data.selectColumns.map((column) => {
+        const columnData = {
+          snapshot,
+          column,
+          configuration: guaranteeNonNullable(
+            configuration.columns.find((col) => col.name === column.name),
+          ),
+          gridConfiguration: configuration,
+        };
         return {
-          headerName: col.name,
-          field: col.name,
+          headerName: column.name,
+          field: column.name,
           menuTabs: [],
 
-          ..._sizeSpec(columnConfiguration),
-          ..._sortSpec(snapshot, col.name),
-          ..._rowGroupSpec(snapshot, col.name),
+          ..._displaySpec(columnData),
+          ..._sizeSpec(columnData),
+          ..._sortSpec(columnData),
+          ..._rowGroupSpec(columnData),
         } satisfies ColDef | ColGroupDef;
       }),
     ],

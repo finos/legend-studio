@@ -222,6 +222,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                         DataCubeNumberScale.THOUSANDS,
                         DataCubeNumberScale.MILLIONS,
                         DataCubeNumberScale.BILLIONS,
+                        DataCubeNumberScale.TRILLIONS,
                         DataCubeNumberScale.AUTO,
                       ].map((scale) => (
                         <DataCubeEditorDropdownMenuItem

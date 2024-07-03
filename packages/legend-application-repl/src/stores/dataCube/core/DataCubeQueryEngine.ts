@@ -101,7 +101,8 @@ export enum DataCubeNumberScale {
   THOUSANDS = 'Thousands (k)',
   MILLIONS = 'Millions (m)',
   BILLIONS = 'Billions (b)',
-  AUTO = 'Auto (k/m/b)',
+  TRILLIONS = 'Trillions (t)',
+  AUTO = 'Auto (k/m/b/t)',
 }
 
 export enum DataCubeSelectionStat {
