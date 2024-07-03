@@ -17,15 +17,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* .generate_formats {
-  background-color: #4ade80;
-  border-radius: 8px;
-}
-
-.btn_container {
-  display: flex;
-  align-items: flex-end;
-  padding: 2px;
-  margin: 15px;
-} */

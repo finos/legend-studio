@@ -37,8 +37,8 @@ export function buildGridMenu(
   const result: (string | MenuItemDef)[] = [
     {
       name: 'Export',
-      menuItem: WIP_GridMenuItem,
-      cssClasses: ['!opacity-100'],
+      // menuItem: WIP_GridMenuItem,
+      // cssClasses: ['!opacity-100'],
       subMenu: [
         {
           name: 'HTML',
@@ -60,15 +60,15 @@ export function buildGridMenu(
         },
         {
           name: 'Excel',
-          menuItem: WIP_GridMenuItem,
-          cssClasses: ['!opacity-100'],
-          disabled: true,
+          action: () => {
+            dataCube.grid.generateExcelFile();
+          },
         },
         {
           name: 'CSV',
-          menuItem: WIP_GridMenuItem,
-          cssClasses: ['!opacity-100'],
-          disabled: true,
+          action: () => {
+            dataCube.grid.generateCSVFile();
+          },
         },
         'separator',
         {

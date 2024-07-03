@@ -69,50 +69,14 @@ const DataCubeStatusBar = observer(() => {
 
 const DataCubeTitleBar = observer(() => {
   const dataCubeStore = useREPLStore();
-  const [dropdownVisible, setDropdownVisible] = useState(false);
   const dataCube = dataCubeStore.dataCube;
 
-  const handleButtonClick = () => {
-    setDropdownVisible(!dropdownVisible);
-  };
-
-  const handleOptionClick = (option: string) => {
-    setDropdownVisible(false);
-    if (option === 'excel') {
-      dataCube.grid.generateExcelFile();
-    } else if (option === 'csv') {
-      dataCube.grid.generateCSVFile();
-    }
-  };
   return (
     <div className="flex h-6 justify-between bg-neutral-100">
       <div className="flex select-none items-center pl-1 pr-2 text-lg font-medium">
         <DataCubeIcon.Cube className="mr-1 h-4 w-4" />
         <div>{dataCube.editor.generalPropertiesPanel.name}</div>
         {/* TODO: @akphi - add save icon */}
-        <div className="btn_container relative">
-          <button className="generate_formats" onClick={handleButtonClick}>
-            Click here
-          </button>
-          {dropdownVisible && (
-            <div className="relative left-10 z-10 mt-20 w-48 rounded border bg-white shadow-lg">
-              <div
-                className="cursor-pointer px-4 py-2 hover:bg-gray-200"
-                onClick={() => {
-                  handleOptionClick('excel');
-                }}
-              >
-                Export To Excel
-              </div>
-              <div
-                className="curosor-pointer px-4 py-2 hover:bg-gray-200"
-                onClick={() => handleOptionClick('csv')}
-              >
-                Convert To CSV
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );
