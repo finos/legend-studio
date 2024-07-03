@@ -113,6 +113,7 @@ import {
   QueryBuilderPostFilterOperator_NotIn,
 } from '../../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
 import { QueryBuilderPropertyNameDisplay } from '../QueryBuilderPropertyExpressionEditor.js';
+import { convertTextToPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
   forwardRef<
@@ -409,11 +410,17 @@ const QueryBuilderPostFilterConditionEditor = observer(
     };
     const debouncedTypeaheadSearch = useMemo(
       () =>
-        debounce(
-          (inputVal: string) => node.condition.handleTypeaheadSearch(),
-          1000,
-        ),
-      [node],
+        debounce((inputValue: string) => {
+          const inputValueSpec = convertTextToPrimitiveInstanceValue(
+            PrimitiveType.STRING,
+            inputValue,
+            queryBuilderState.observerContext,
+          );
+          return node.condition.handleTypeaheadSearch(
+            inputValueSpec ?? undefined,
+          );
+        }, 1000),
+      [node, queryBuilderState.observerContext],
     );
     const cleanUpReloadValues = (): void => {
       node.condition.typeaheadSearchState.complete();

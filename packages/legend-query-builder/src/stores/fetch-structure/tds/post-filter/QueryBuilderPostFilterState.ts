@@ -470,7 +470,9 @@ export class PostFilterConditionState implements Hashable {
       );
     }
   }
-  *handleTypeaheadSearch(): GeneratorFn<void> {
+  *handleTypeaheadSearch(
+    searchValue?: ValueSpecification | undefined,
+  ): GeneratorFn<void> {
     try {
       this.typeaheadSearchState.inProgress();
       this.typeaheadSearchResults = undefined;
@@ -484,13 +486,14 @@ export class PostFilterConditionState implements Hashable {
         this.rightConditionValue,
         PostFilterValueSpecConditionValueState,
       );
-      if (performTypeahead(rightConditionValue.value)) {
+      const value = searchValue ?? rightConditionValue.value;
+      if (performTypeahead(value)) {
         const result =
           (yield this.postFilterState.tdsState.queryBuilderState.graphManagerState.graphManager.runQuery(
             buildProjectionColumnTypeaheadQuery(
               this.postFilterState.tdsState.queryBuilderState,
               columnState,
-              rightConditionValue.value,
+              value,
             ),
             guaranteeNonNullable(
               this.postFilterState.tdsState.queryBuilderState
