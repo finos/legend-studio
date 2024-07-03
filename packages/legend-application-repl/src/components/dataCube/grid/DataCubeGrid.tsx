@@ -174,6 +174,7 @@ export const DataCubeGrid = observer(() => {
           // actions performance
           rowBuffer={DEFAULT_ROW_BUFFER}
           animateRows={false} // improve performance
+          suppressColumnMoveAnimation={true} // improve performance
           // -------------------------------------- SETUP --------------------------------------
           modules={[
             // community

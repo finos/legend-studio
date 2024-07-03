@@ -33,10 +33,14 @@ import {
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
   GridClientAggregateOperation,
   GridClientSortDirection,
+  INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
-import { IllegalStateError } from '@finos/legend-shared';
-import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
+import { guaranteeNonNullable, IllegalStateError } from '@finos/legend-shared';
+import type {
+  DataCubeColumnConfiguration,
+  DataCubeConfiguration,
+} from '../core/DataCubeConfiguration.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -85,22 +89,32 @@ function _aggFunc(
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
+function _sizeSpec(columnConfiguration: DataCubeColumnConfiguration) {
+  return {
+    // TODO: if we support column resize to fit content, should we disable this behavior?
+    resizable: columnConfiguration.fixedWidth === undefined,
+    // suppressAutoSize: columnConfiguration.fixedWidth !== undefined,
+    width: columnConfiguration.fixedWidth,
+    minWidth: Math.max(
+      columnConfiguration.minWidth ?? INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
+      INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
+    ),
+    maxWidth: columnConfiguration.maxWidth,
+  } as ColDef;
+}
+
 function _sortSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
   const sortColumns = snapshot.data.sortColumns;
   const sortCol = _findCol(sortColumns, colName);
-  if (!sortCol) {
-    return {
-      sort: null,
-      sortIndex: null,
-    };
-  }
   return {
-    sort:
-      sortCol.operation === DataCubeQuerySnapshotSortOperation.ASCENDING
+    sortable: true, // if this is pivot column, no sorting is allowed
+    sort: sortCol
+      ? sortCol.operation === DataCubeQuerySnapshotSortOperation.ASCENDING
         ? GridClientSortDirection.ASCENDING
-        : GridClientSortDirection.DESCENDING,
-    sortIndex: sortColumns.indexOf(sortCol),
-  } satisfies ColDef;
+        : GridClientSortDirection.DESCENDING
+      : null,
+    sortIndex: sortCol ? sortColumns.indexOf(sortCol) : null,
+  } as ColDef;
 }
 
 function _rowGroupSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
@@ -110,6 +124,8 @@ function _rowGroupSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
   const groupByCol = _findCol(data.groupBy?.columns, colName);
   const aggCol = _findCol(data.groupBy?.aggColumns, colName);
   return {
+    enableRowGroup: true,
+    enableValue: true,
     rowGroup: Boolean(groupByCol),
     // TODO: @akphi - add this from configuration object
     aggFunc: aggCol
@@ -130,6 +146,8 @@ function _rowGroupSpec(snapshot: DataCubeQuerySnapshot, colName: string) {
     allowedAggFuncs: column ? _allowedAggFuncs(column) : [],
   } satisfies ColDef;
 }
+
+// --------------------------------- MAIN ---------------------------------
 
 export function generateGridOptionsFromSnapshot(
   snapshot: DataCubeQuerySnapshot,
@@ -168,25 +186,21 @@ export function generateGridOptionsFromSnapshot(
         },
         sortable: false, // TODO: @akphi - we can support this in the configuration
       } satisfies ColDef,
-      ...data.selectColumns.map(
-        (col) =>
-          ({
-            headerName: col.name,
-            field: col.name,
+      // TODO: handle pivot and column grouping
+      ...data.selectColumns.map((col) => {
+        const columnConfiguration = guaranteeNonNullable(
+          configuration.columns.find((c) => c.name === col.name),
+        );
+        return {
+          headerName: col.name,
+          field: col.name,
+          menuTabs: [],
 
-            // TODO: configure
-            flex: 1, // when the column supposed to fill the remainig space of the grid
-            resizable: true,
-            minWidth: 50,
-
-            sortable: true, // if this is pivot column, no sorting is allowed
-            enableRowGroup: true,
-            enableValue: true,
-            menuTabs: ['generalMenuTab', 'columnsMenuTab'],
-            ..._sortSpec(snapshot, col.name),
-            ..._rowGroupSpec(snapshot, col.name),
-          }) satisfies ColDef | ColGroupDef,
-      ),
+          ..._sizeSpec(columnConfiguration),
+          ..._sortSpec(snapshot, col.name),
+          ..._rowGroupSpec(snapshot, col.name),
+        } satisfies ColDef | ColGroupDef;
+      }),
     ],
   };
 
