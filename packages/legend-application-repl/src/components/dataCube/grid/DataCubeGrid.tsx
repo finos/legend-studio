@@ -32,7 +32,6 @@ import {
 import { RangeSelectionModule } from '@ag-grid-enterprise/range-selection';
 import { buildGridMenu } from './menu/DataCubeGridMenu.js';
 import {
-  DEFAULT_GRID_LINE_COLOR,
   DEFAULT_ROW_BACKGROUND_COLOR,
   DEFAULT_ROW_BUFFER,
   DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR,
@@ -65,7 +64,7 @@ export const DataCubeGrid = observer(() => {
     if (gridContainerRef.current) {
       gridContainerRef.current.style.setProperty(
         '--ag-grid-line-color',
-        grid.queryConfiguration.gridLineColor ?? DEFAULT_GRID_LINE_COLOR,
+        grid.queryConfiguration.gridLineColor,
       );
       gridContainerRef.current.style.setProperty(
         '--ag-row-highlight-color',

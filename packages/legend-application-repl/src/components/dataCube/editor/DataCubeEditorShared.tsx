@@ -23,6 +23,7 @@ import {
   DropdownMenuItem,
   HexAlphaColorPicker,
   HexColorInput,
+  parseColor,
   TailwindCSSPalette,
   type CheckboxProps,
   type DropdownMenuItemProps,
@@ -245,6 +246,8 @@ export function DataCubeEditorDropdownMenuItemSeparator() {
   return <div className="my-0.5 h-[1px] w-full bg-neutral-200" />;
 }
 
+const DEFAULT_TRANSPARENT_COLOR = '#00000000';
+
 function DataCubeEditorColorPicker(props: {
   color: string;
   onChange: (value: string) => void;
@@ -309,7 +312,7 @@ function DataCubeEditorColorPicker(props: {
         <div className="flex">
           {[
             // Colors from Better Colors - https://clrs.cc/
-            undefined,
+            DEFAULT_TRANSPARENT_COLOR,
             '#000000',
             '#AAAAAA',
             '#DDDDDD',
@@ -329,16 +332,22 @@ function DataCubeEditorColorPicker(props: {
             '#85144B',
           ].map((_color) => (
             <div
-              key={_color ?? ''}
-              className="mr-0.5 border-[0.5px] border-neutral-300 last:mr-0"
+              key={_color}
+              className={cn(
+                'mr-0.5 border-[0.5px] border-neutral-300 last:mr-0',
+                {
+                  'data-cube-color-picker--transparent border-neutral-400':
+                    _color === DEFAULT_TRANSPARENT_COLOR,
+                },
+              )}
             >
               <button
                 className="flex h-3 w-3 flex-shrink-0"
                 style={{
-                  background: _color ?? 'white',
+                  background: _color,
                 }}
                 onClick={(): void => {
-                  setColor(_color ?? '#00000000');
+                  setColor(_color);
                 }}
               />
             </div>
@@ -349,7 +358,7 @@ function DataCubeEditorColorPicker(props: {
       <div className="flex h-6 items-center justify-between p-1">
         <div className="flex">
           <div
-            className="h-4 w-4 flex-shrink-0 rounded-sm"
+            className="h-4 w-4 flex-shrink-0 rounded-sm border-[0.5px] border-neutral-300"
             style={{ background: color }}
           />
           <HexColorInput
@@ -384,7 +393,12 @@ function DataCubeEditorColorPicker(props: {
           <button
             className="ml-1 h-4 w-9 border border-neutral-400 bg-neutral-300 px-1 text-xs hover:brightness-95"
             onClick={(): void => {
-              onChange(color);
+              onChange(
+                // if color is completely transparent, set it to #00000000
+                parseColor(color).alpha === 0
+                  ? DEFAULT_TRANSPARENT_COLOR
+                  : color,
+              );
               onClose();
             }}
           >
@@ -412,6 +426,8 @@ export function DataCubeEditorColorPickerButton(props: {
           'group h-5 w-10 border border-neutral-300 p-[1px] disabled:border-neutral-200',
           {
             'data-cube-color-picker--disabled': Boolean(disabled),
+            'data-cube-color-picker--transparent':
+              !disabled && color === DEFAULT_TRANSPARENT_COLOR,
           },
           className,
         )}

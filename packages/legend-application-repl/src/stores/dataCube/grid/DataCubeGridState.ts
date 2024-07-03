@@ -108,8 +108,8 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
       this.queryConfiguration = queryConfiguration;
     });
     if (
-      existingExtraConfiguration?.hashCode !==
-      this.datasourceConfiguration?.hashCode
+      existingExtraConfiguration.hashCode !==
+      this.datasourceConfiguration.hashCode
     ) {
       // reset the entire grid
       this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
