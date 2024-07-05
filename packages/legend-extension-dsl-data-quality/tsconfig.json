@@ -15,6 +15,7 @@
     { "path": "../legend-storage" },
     { "path": "../legend-art" },
     { "path": "../legend-lego" },
+    { "path": "../legend-application" },
     { "path": "../legend-extension-dsl-data-space" },
     { "path": "../legend-query-builder" }
   ]

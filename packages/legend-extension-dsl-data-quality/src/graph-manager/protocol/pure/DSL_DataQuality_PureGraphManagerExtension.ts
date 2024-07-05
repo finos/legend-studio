@@ -56,4 +56,4 @@ export const getDataQualityPureGraphManagerExtension = (
         extension instanceof DSL_DataQuality_PureGraphManagerExtension,
     ),
     `Can't find Data Quality Pure graph manager extension`,
-  ) as DSL_DataQuality_PureGraphManagerExtension;
+  );

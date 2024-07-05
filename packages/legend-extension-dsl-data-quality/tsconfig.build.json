@@ -18,6 +18,7 @@
     { "path": "../legend-storage/tsconfig.build.json" },
     { "path": "../legend-art/tsconfig.build.json" },
     { "path": "../legend-lego/tsconfig.build.json" },
+    { "path": "../legend-application/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-data-space/tsconfig.build.json" },
     { "path": "../legend-query-builder/tsconfig.build.json" }
   ]
