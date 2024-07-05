@@ -166,6 +166,14 @@ export { V1_ColSpec } from './graph-manager/protocol/pure/v1/model/valueSpecific
 export { V1_ColSpecArray } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_ColSpecArray.js';
 export { V1_PrimitiveValueSpecification } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_PrimitiveValueSpecification.js';
 export { V1_INTERNAL__UnknownFunctionActivator } from './graph-manager/protocol/pure/v1/model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
+export {
+  V1_GraphFetchTree,
+  type V1_GraphFetchTreeVisitor,
+} from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/graph/V1_GraphFetchTree.js';
+export { V1_RootGraphFetchTree } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/graph/V1_RootGraphFetchTree.js';
+export { V1_PropertyGraphFetchTree } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/graph/V1_PropertyGraphFetchTree.js';
+export { V1_SubTypeGraphFetchTree } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/graph/V1_SubTypeGraphFetchTree.js';
+
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
 export { INTERNAL__UnknownExecutionResult } from './graph-manager/action/execution/INTERNAL__UnknownExecutionResult.js';
@@ -344,6 +352,7 @@ export {
   V1_pureModelContextDataPropSchema,
   V1_deserializePureModelContextData,
   V1_serializePureModelContextData,
+  V1_legendSDLCSerializationModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
 export {
   V1_propertyPointerModelSchema,
@@ -356,12 +365,18 @@ export {
   V1_ClassInstanceType,
   V1_lambdaModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
-export { V1_transformRootValueSpecification } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_ValueSpecificationTransformer.js';
+export {
+  V1_transformRootValueSpecification,
+  V1_transformGraphFetchTree,
+} from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_ValueSpecificationTransformer.js';
 export {
   V1_buildValueSpecification,
   V1_ValueSpecificationBuilder,
   V1_buildGenericFunctionExpression,
   V1_buildBaseSimpleFunctionExpression,
+  V1_buildGraphFetchTree,
+  V1_buildPropertyGraphFetchTree,
+  V1_buildRootGraphFetchTree,
 } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_TestBuilderHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';

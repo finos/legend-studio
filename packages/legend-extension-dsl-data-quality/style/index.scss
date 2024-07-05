@@ -1,0 +1,67 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+@forward 'data-quality-validation-builder';
+
+.data-quality-constraints {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+
+  &__body {
+    display: flex;
+  }
+}
+
+.element-creation-basis {
+  width: 50%;
+}
+
+.data-quality-explorer {
+  &__new-element-modal__driver {
+    height: 2.8rem;
+    width: 100%;
+    margin-bottom: 1rem;
+
+    &__dropdown {
+      width: 100%;
+    }
+  }
+}
+
+.icon--dataQuality {
+  color: var(--color-blue-50);
+}
+
+.constraints-selection-tab {
+  height: 100%;
+  width: 100%;
+}
+
+.constraints-selection-node {
+  display: flex;
+  flex-direction: column;
+}
+
+.structure-validations-btn {
+  color: var(--color-light-grey-0);
+  height: 2.2rem;
+  border-radius: 0.2rem;
+  margin-right: 0.3rem;
+  width: 15rem;
+  font-size: 1.2rem;
+}

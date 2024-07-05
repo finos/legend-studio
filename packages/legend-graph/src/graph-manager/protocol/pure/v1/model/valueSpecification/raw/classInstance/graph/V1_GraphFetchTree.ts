@@ -17,6 +17,7 @@
 import type { V1_PropertyGraphFetchTree } from './V1_PropertyGraphFetchTree.js';
 import type { V1_RootGraphFetchTree } from './V1_RootGraphFetchTree.js';
 import type { V1_SubTypeGraphFetchTree } from './V1_SubTypeGraphFetchTree.js';
+import type { Hashable } from '@finos/legend-shared';
 
 export interface V1_GraphFetchTreeVisitor<T> {
   visit_RootGraphFetchTree(valueSpecification: V1_RootGraphFetchTree): T;
@@ -26,10 +27,11 @@ export interface V1_GraphFetchTreeVisitor<T> {
   visit_SubTypeGraphFetchTree(valueSpecification: V1_SubTypeGraphFetchTree): T;
 }
 
-export abstract class V1_GraphFetchTree {
+export abstract class V1_GraphFetchTree implements Hashable {
   subTrees: V1_GraphFetchTree[] = [];
   subTypeTrees: V1_SubTypeGraphFetchTree[] = [];
 
+  abstract get hashCode(): string;
   abstract accept_GraphFetchTreeVisitor<T>(
     visitor: V1_GraphFetchTreeVisitor<T>,
   ): T;

@@ -52,6 +52,9 @@
     {
       "path": "packages/legend-vscode-extension-dependencies/tsconfig.build.json"
     },
+    {
+      "path": "packages/legend-extension-dsl-data-quality/tsconfig.build.json"
+    },
     // fixtures
     { "path": "fixtures/legend-mock-server/tsconfig.build.json" }
   ]
