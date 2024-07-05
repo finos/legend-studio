@@ -1159,9 +1159,8 @@ test(
       getAllByText(resultModifierPromptPanel, 'Processing Date'),
     );
     expect(
-      await (
-        await waitFor(() => getAllByText(resultModifierPromptPanel, 'Now'))
-      ).length,
+      (await waitFor(() => getAllByText(resultModifierPromptPanel, 'Now')))
+        .length,
     ).toBe(2);
     expect(queryBuilderState.parametersState.parameterStates.length).toBe(2);
   },
