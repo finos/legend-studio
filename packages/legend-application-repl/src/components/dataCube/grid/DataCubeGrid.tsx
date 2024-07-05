@@ -27,9 +27,10 @@ import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeIcon, Switch, cn, Global, css } from '@finos/legend-art';
 import {
   generateBackgroundColorUtilityClassName,
+  generateFontCaseUtilityClassName,
   generateFontFamilyUtilityClassName,
   generateFontSizeUtilityClassName,
-  generateFontUnderlinedUtilityClassName,
+  generateFontUnderlineUtilityClassName,
   generateTextAlignUtilityClassName,
   generateTextColorUtilityClassName,
   INTERNAL__GRID_CLIENT_HEADER_HEIGHT,
@@ -40,7 +41,8 @@ import { RangeSelectionModule } from '@ag-grid-enterprise/range-selection';
 import { buildGridMenu } from './menu/DataCubeGridMenu.js';
 import {
   DataCubeFont,
-  DataCubeFontFormatUnderlinedVariant,
+  DataCubeFontCase,
+  DataCubeFontFormatUnderlineVariant,
   DataCubeFontTextAlignment,
   DEFAULT_ROW_BACKGROUND_COLOR,
   DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR,
@@ -166,20 +168,30 @@ export const DataCubeGridStyleController = observer(() => {
           font-style: italic;
         }
         ${[
-          DataCubeFontFormatUnderlinedVariant.SOLID,
-          DataCubeFontFormatUnderlinedVariant.DASHED,
-          DataCubeFontFormatUnderlinedVariant.DOTTED,
-          DataCubeFontFormatUnderlinedVariant.DOUBLE,
-          DataCubeFontFormatUnderlinedVariant.WAVY,
+          DataCubeFontFormatUnderlineVariant.SOLID,
+          DataCubeFontFormatUnderlineVariant.DASHED,
+          DataCubeFontFormatUnderlineVariant.DOTTED,
+          DataCubeFontFormatUnderlineVariant.DOUBLE,
+          DataCubeFontFormatUnderlineVariant.WAVY,
         ]
           .map(
             (variant) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateFontUnderlinedUtilityClassName(variant)}{text-decoration:underline ${variant};}`,
+              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateFontUnderlineUtilityClassName(variant)}{text-decoration:underline ${variant};}`,
           )
           .join('\n')}
         .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_STRIKETHROUGH} {
           text-decoration: line-through;
         }
+        ${[
+          DataCubeFontCase.LOWERCASE,
+          DataCubeFontCase.UPPERCASE,
+          DataCubeFontCase.CAPITALIZE,
+        ]
+          .map(
+            (fontCase) =>
+              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateFontCaseUtilityClassName(fontCase)}{text-transform:${fontCase};}`,
+          )
+          .join('\n')}
         ${[
           DataCubeFontTextAlignment.LEFT,
           DataCubeFontTextAlignment.CENTER,

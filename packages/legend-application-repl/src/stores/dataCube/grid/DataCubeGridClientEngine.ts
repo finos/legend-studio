@@ -49,8 +49,9 @@ export enum INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME {
   FONT_SIZE_PREFIX = 'data-cube-grid__utility--font-size-',
   FONT_BOLD = 'data-cube-grid__utility--font-style-bold',
   FONT_ITALIC = 'data-cube-grid__utility--font-style-italic',
-  FONT_UNDERLINED_PREFIX = 'data-cube-grid__utility--font-style-underlined-',
+  FONT_UNDERLINE_PREFIX = 'data-cube-grid__utility--font-style-underline-',
   FONT_STRIKETHROUGH = 'data-cube-grid__utility--font-style-strikethrough',
+  FONT_CASE_PREFIX = 'data-cube-grid__utility--font-style-case-',
   TEXT_ALIGN_PREFIX = 'data-cube-grid__utility--text-align-',
   TEXT_COLOR_PREFIX = 'data-cube-grid__utility--text-color-',
   BACKGROUND_COLOR_PREFIX = 'data-cube-grid__utility--background-color-',
@@ -59,10 +60,14 @@ export const generateFontFamilyUtilityClassName = (fontFamily: string) =>
   `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_FAMILY_PREFIX}${fontFamily.replaceAll(' ', '-')}`;
 export const generateFontSizeUtilityClassName = (fontSize: number) =>
   `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_SIZE_PREFIX}${fontSize}`;
-export const generateFontUnderlinedUtilityClassName = (
+export const generateFontUnderlineUtilityClassName = (
   variant: string | undefined,
 ) =>
-  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_UNDERLINED_PREFIX}${variant ?? 'none'}`;
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_UNDERLINE_PREFIX}${variant ?? 'none'}`;
+export const generateFontCaseUtilityClassName = (
+  fontCase: string | undefined,
+) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_CASE_PREFIX}${fontCase ?? 'none'}`;
 export const generateTextAlignUtilityClassName = (alignment: string) =>
   `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.TEXT_ALIGN_PREFIX}${alignment}`;
 export const generateTextColorUtilityClassName = (color: string) =>

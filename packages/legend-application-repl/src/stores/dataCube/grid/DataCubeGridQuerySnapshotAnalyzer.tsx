@@ -37,10 +37,11 @@ import {
   INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME,
   generateFontFamilyUtilityClassName,
   generateFontSizeUtilityClassName,
-  generateFontUnderlinedUtilityClassName,
+  generateFontUnderlineUtilityClassName,
   generateTextAlignUtilityClassName,
   generateTextColorUtilityClassName,
   generateBackgroundColorUtilityClassName,
+  generateFontCaseUtilityClassName,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
@@ -180,8 +181,9 @@ function _displaySpec(columnData: ColumnData) {
   const fontStrikethrough =
     configuration.fontStrikethrough ??
     gridConfiguration.defaultFontStrikethrough;
-  const fontUnderlined =
-    configuration.fontUnderlined ?? gridConfiguration.defaultFontUnderlined;
+  const fontUnderline =
+    configuration.fontUnderline ?? gridConfiguration.defaultFontUnderline;
+  const fontCase = configuration.fontCase ?? gridConfiguration.defaultFontCase;
   const textAlign =
     configuration.textAlign ?? gridConfiguration.defaultTextAlign;
   const foregroundColor =
@@ -263,8 +265,10 @@ function _displaySpec(columnData: ColumnData) {
         fontItalic,
       [INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_STRIKETHROUGH]: () =>
         fontStrikethrough,
-      [generateFontUnderlinedUtilityClassName(fontUnderlined)]: () =>
-        Boolean(fontUnderlined),
+      [generateFontUnderlineUtilityClassName(fontUnderline)]: () =>
+        Boolean(fontUnderline),
+      [generateFontCaseUtilityClassName(fontCase)]: (params) =>
+        dataType === DataCubeColumnDataType.TEXT && Boolean(fontCase),
       [generateTextAlignUtilityClassName(textAlign)]: () => true,
       [generateTextColorUtilityClassName(foregroundColor)]: (params) => {
         if (dataType !== DataCubeColumnDataType.NUMBER) {

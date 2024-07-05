@@ -30,13 +30,15 @@ import {
   DEFAULT_FONT_STRIKETHROUGH,
   DEFAULT_TEXT_ALIGN,
   DEFAULT_FONT_UNDERLINED,
+  DEFAULT_FONT_CASE,
   DataCubeColumnKind,
   type DataCubeFont,
   type DataCubeFontTextAlignment,
-  type DataCubeFontFormatUnderlinedVariant,
+  type DataCubeFontFormatUnderlineVariant,
   type DataCubeNumberScale,
   type DataCubeSelectionStat,
   type DataCubeColumnPinPlacement,
+  type DataCubeFontCase,
 } from './DataCubeQueryEngine.js';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, list, optional, primitive } from 'serializr';
@@ -59,8 +61,9 @@ export class DataCubeColumnConfiguration {
   fontSize?: number | undefined;
   fontBold?: boolean | undefined;
   fontItalic?: boolean | undefined;
-  fontUnderlined?: DataCubeFontFormatUnderlinedVariant | undefined;
+  fontUnderline?: DataCubeFontFormatUnderlineVariant | undefined;
   fontStrikethrough?: boolean | undefined;
+  fontCase?: DataCubeFontCase | undefined;
   textAlign?: DataCubeFontTextAlignment | undefined;
   foregroundColor?: string | undefined;
   negativeForegroundColor?: string | undefined;
@@ -97,11 +100,12 @@ export class DataCubeColumnConfiguration {
       fixedWidth: optional(primitive()),
       foregroundColor: optional(primitive()),
       fontBold: optional(primitive()),
+      fontCase: optional(primitive()),
       fontFamily: optional(primitive()),
       fontItalic: optional(primitive()),
       fontSize: optional(primitive()),
       fontStrikethrough: optional(primitive()),
-      fontUnderlined: optional(primitive()),
+      fontUnderline: optional(primitive()),
       hPivotSortFunction: optional(primitive()),
       kind: primitive(),
       maxWidth: optional(primitive()),
@@ -133,9 +137,10 @@ export class DataCubeConfiguration {
   defaultFontSize = DEFAULT_FONT_SIZE;
   defaultFontBold = DEFAULT_FONT_BOLD;
   defaultFontItalic = DEFAULT_FONT_ITALIC;
-  defaultFontUnderlined?: DataCubeFontFormatUnderlinedVariant | undefined =
+  defaultFontUnderline?: DataCubeFontFormatUnderlineVariant | undefined =
     DEFAULT_FONT_UNDERLINED;
   defaultFontStrikethrough = DEFAULT_FONT_STRIKETHROUGH;
+  defaultFontCase?: DataCubeFontCase | undefined = DEFAULT_FONT_CASE;
   defaultTextAlign = DEFAULT_TEXT_ALIGN;
   defaultForegroundColor = DEFAULT_FOREGROUND_COLOR;
   defaultNegativeForegroundColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
@@ -181,11 +186,12 @@ export class DataCubeConfiguration {
       defaultErrorBackgroundColor: primitive(),
       defaultErrorForegroundColor: primitive(),
       defaultFontBold: primitive(),
+      defaultFontCase: optional(primitive()),
       defaultFontFamily: primitive(),
       defaultFontItalic: primitive(),
       defaultFontSize: primitive(),
       defaultFontStrikethrough: primitive(),
-      defaultFontUnderlined: optional(primitive()),
+      defaultFontUnderline: optional(primitive()),
       defaultForegroundColor: primitive(),
       defaultNegativeBackgroundColor: primitive(),
       defaultNegativeForegroundColor: primitive(),

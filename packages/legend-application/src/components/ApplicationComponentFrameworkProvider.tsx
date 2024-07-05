@@ -217,3 +217,59 @@ export const ApplicationComponentFrameworkProvider = observer(
     );
   },
 );
+
+export const SimpleApplicationComponentFrameworkProvider = observer(
+  (props: { children: React.ReactNode }) => {
+    const { children } = props;
+    const applicationStore = useApplicationStore();
+    const disableContextMenu: React.MouseEventHandler = (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+    };
+
+    const keyBindingMap = buildHotkeysConfiguration(
+      applicationStore.keyboardShortcutsService.commandKeyMap,
+      (keyCombination: string, event: KeyboardEvent) => {
+        // prevent default from potentially clashing key combinations with platform native keyboard shortcuts
+        // NOTE: Though tempting since it's a good way to simplify and potentially avoid conflicts,
+        // we should not call `preventDefault()` because if we have any hotkey sequence which is too short,
+        // such as `r`, `a` - we risk blocking some very common interaction, i.e. user typing, or even
+        // constructing longer key combinations
+        if (PLATFORM_NATIVE_KEYBOARD_SHORTCUTS.includes(keyCombination)) {
+          event.preventDefault();
+        }
+        applicationStore.keyboardShortcutsService.dispatch(keyCombination);
+      },
+    );
+
+    useEffect(() => {
+      const onKeyEvent = createKeybindingsHandler(keyBindingMap);
+      document.addEventListener('keydown', onKeyEvent);
+      return () => {
+        document.removeEventListener('keydown', onKeyEvent);
+      };
+    }, [keyBindingMap]);
+
+    return (
+      <LegendStyleProvider>
+        <DndProvider backend={HTML5Backend}>
+          <div
+            className="app__container"
+            // NOTE: this `id` is used to quickly identify this DOM node so we could manually
+            // dispatch keyboard event here in order to be captured by our global hotkeys matchers
+            data-elementid={
+              APPLICATION_COMPONENT_ELEMENT_ID.TOP_LEVEL_CONTAINER
+            }
+            // Disable global context menu so that only places in the app that supports context-menu will be effective
+            onContextMenu={disableContextMenu}
+          >
+            <BackdropContainer
+              elementId={APPLICATION_COMPONENT_ELEMENT_ID.BACKDROP_CONTAINER}
+            />
+            {children}
+          </div>
+        </DndProvider>
+      </LegendStyleProvider>
+    );
+  },
+);

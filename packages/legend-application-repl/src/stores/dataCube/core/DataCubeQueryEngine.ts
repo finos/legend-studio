@@ -136,7 +136,13 @@ export enum DataCubeFontTextAlignment {
   RIGHT = 'right',
 }
 
-export enum DataCubeFontFormatUnderlinedVariant {
+export enum DataCubeFontCase {
+  LOWERCASE = 'lowercase',
+  UPPERCASE = 'uppercase',
+  CAPITALIZE = 'capitalize',
+}
+
+export enum DataCubeFontFormatUnderlineVariant {
   SOLID = 'solid',
   DASHED = 'dashed',
   DOTTED = 'dotted',
@@ -223,6 +229,7 @@ export const DEFAULT_FONT_FAMILY = DataCubeFont.ROBOTO;
 export const DEFAULT_FONT_SIZE = 12;
 export const DEFAULT_FONT_BOLD = false;
 export const DEFAULT_FONT_ITALIC = false;
+export const DEFAULT_FONT_CASE = undefined;
 export const DEFAULT_FONT_UNDERLINED = undefined;
 export const DEFAULT_FONT_STRIKETHROUGH = false;
 export const DEFAULT_TEXT_ALIGN = DataCubeFontTextAlignment.LEFT;

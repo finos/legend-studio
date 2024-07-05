@@ -21,7 +21,8 @@ import {
   type DataCubeAggregateFunction,
   type DataCubeNumberScale,
   type DataCubeSelectionStat,
-  type DataCubeFontFormatUnderlinedVariant,
+  type DataCubeFontFormatUnderlineVariant,
+  type DataCubeFontCase,
   type DataCubeFontTextAlignment,
   type DataCubeColumnDataType,
   type DataCubeColumnPinPlacement,
@@ -95,11 +96,14 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       fontItalic: observable,
       setFontItalic: action,
 
-      fontUnderlined: observable,
-      setFontUnderlined: action,
+      fontUnderline: observable,
+      setFontUnderline: action,
 
       fontStrikethrough: observable,
       setFontStrikethrough: action,
+
+      fontCase: observable,
+      setFontCase: action,
 
       textAlign: observable,
       setTextAlign: action,
@@ -172,7 +176,7 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       this.fontSize === undefined &&
       this.fontBold === undefined &&
       this.fontItalic === undefined &&
-      this.fontUnderlined === undefined &&
+      this.fontUnderline === undefined &&
       this.fontStrikethrough === undefined &&
       this.textAlign === undefined &&
       this.foregroundColor === undefined &&
@@ -191,7 +195,7 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.fontSize = undefined;
     this.fontBold = undefined;
     this.fontItalic = undefined;
-    this.fontUnderlined = undefined;
+    this.fontUnderline = undefined;
     this.fontStrikethrough = undefined;
     this.textAlign = undefined;
     this.foregroundColor = undefined;
@@ -248,14 +252,18 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.fontItalic = value;
   }
 
-  setFontUnderlined(
-    value: DataCubeFontFormatUnderlinedVariant | undefined,
+  setFontUnderline(
+    value: DataCubeFontFormatUnderlineVariant | undefined,
   ): void {
-    this.fontUnderlined = value;
+    this.fontUnderline = value;
   }
 
   setFontStrikethrough(value: boolean | undefined): void {
     this.fontStrikethrough = value;
+  }
+
+  setFontCase(value: DataCubeFontCase | undefined): void {
+    this.fontCase = value;
   }
 
   setTextAlign(value: DataCubeFontTextAlignment | undefined): void {
@@ -369,11 +377,14 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
       defaultFontItalic: observable,
       setDefaultFontItalic: action,
 
-      defaultFontUnderlined: observable,
-      setDefaultFontUnderlined: action,
+      defaultFontUnderline: observable,
+      setDefaultFontUnderline: action,
 
       defaultFontStrikethrough: observable,
       setDefaultFontStrikethrough: action,
+
+      defaultFontCase: observable,
+      setDefaultFontCase: action,
 
       defaultTextAlign: observable,
       setDefaultTextAlign: action,
@@ -454,7 +465,7 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
       this.defaultFontSize === DEFAULT_FONT_SIZE &&
       this.defaultFontBold === DEFAULT_FONT_BOLD &&
       this.defaultFontItalic === DEFAULT_FONT_ITALIC &&
-      this.defaultFontUnderlined === DEFAULT_FONT_UNDERLINED &&
+      this.defaultFontUnderline === DEFAULT_FONT_UNDERLINED &&
       this.defaultFontStrikethrough === DEFAULT_FONT_STRIKETHROUGH &&
       this.defaultTextAlign === DEFAULT_TEXT_ALIGN &&
       this.defaultForegroundColor === DEFAULT_FOREGROUND_COLOR &&
@@ -474,7 +485,7 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
     this.defaultFontSize = DEFAULT_FONT_SIZE;
     this.defaultFontBold = DEFAULT_FONT_BOLD;
     this.defaultFontItalic = DEFAULT_FONT_ITALIC;
-    this.defaultFontUnderlined = DEFAULT_FONT_UNDERLINED;
+    this.defaultFontUnderline = DEFAULT_FONT_UNDERLINED;
     this.defaultFontStrikethrough = DEFAULT_FONT_STRIKETHROUGH;
     this.defaultTextAlign = DEFAULT_TEXT_ALIGN;
     this.defaultForegroundColor = DEFAULT_FOREGROUND_COLOR;
@@ -527,14 +538,18 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
     this.defaultFontItalic = value;
   }
 
-  setDefaultFontUnderlined(
-    value: DataCubeFontFormatUnderlinedVariant | undefined,
+  setDefaultFontUnderline(
+    value: DataCubeFontFormatUnderlineVariant | undefined,
   ): void {
-    this.defaultFontUnderlined = value;
+    this.defaultFontUnderline = value;
   }
 
   setDefaultFontStrikethrough(value: boolean): void {
     this.defaultFontStrikethrough = value;
+  }
+
+  setDefaultFontCase(value: DataCubeFontCase | undefined): void {
+    this.defaultFontCase = value;
   }
 
   setDefaultTextAlign(value: DataCubeFontTextAlignment): void {

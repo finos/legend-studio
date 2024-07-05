@@ -35,7 +35,8 @@ import {
   DataCubeColumnKind,
   DataCubeColumnPinPlacement,
   DataCubeFont,
-  DataCubeFontFormatUnderlinedVariant,
+  DataCubeFontCase,
+  DataCubeFontFormatUnderlineVariant,
   DataCubeFontTextAlignment,
   DataCubeNumberScale,
   DEFAULT_COLUMN_MAX_WIDTH,
@@ -75,15 +76,17 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
     openFontSizeDropdownProps,
   ] = useDropdownMenu();
   const [
-    openFontFormatUnderlinedVariantDropdown,
-    closeFontFormatUnderlinedVariantDropdown,
-    fontFormatUnderlinedVariantDropdownProps,
+    openFontFormatUnderlineVariantDropdown,
+    closeFontFormatUnderlineVariantDropdown,
+    fontFormatUnderlineVariantDropdownProps,
   ] = useDropdownMenu();
   const [
     openColumnPinDropdown,
     closeColumnPinDropdown,
     columnPinDropdownProps,
   ] = useDropdownMenu();
+  const [openFontCaseDropdown, closeFontCaseDropdown, fontCaseDropdownProps] =
+    useDropdownMenu();
 
   return (
     <div className="h-full w-full select-none p-2">
@@ -661,56 +664,64 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <DataCubeIcon.FontItalic />
                   </button>
                   <button
-                    title={`Underline${selectedColumn.fontUnderlined ? ` (${selectedColumn.fontUnderlined})` : ''}`}
+                    title={`Underline${selectedColumn.fontUnderline ?? gridConfiguration.defaultFontUnderline ? ` (${selectedColumn.fontUnderline ?? gridConfiguration.defaultFontUnderline})` : ''}`}
                     className={cn(
                       'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                       {
                         'bg-neutral-200':
-                          (selectedColumn.fontUnderlined ??
-                            gridConfiguration.defaultFontUnderlined) !==
+                          (selectedColumn.fontUnderline ??
+                            gridConfiguration.defaultFontUnderline) !==
                           undefined,
                       },
                     )}
                     onClick={() => {
                       if (
-                        (selectedColumn.fontUnderlined ??
-                          gridConfiguration.defaultFontUnderlined) === undefined
+                        (selectedColumn.fontUnderline ??
+                          gridConfiguration.defaultFontUnderline) === undefined
                       ) {
-                        selectedColumn.setFontUnderlined(
-                          DataCubeFontFormatUnderlinedVariant.SOLID,
+                        selectedColumn.setFontUnderline(
+                          DataCubeFontFormatUnderlineVariant.SOLID,
                         );
                         selectedColumn.setFontStrikethrough(false);
                       } else {
-                        selectedColumn.setFontUnderlined(undefined);
+                        selectedColumn.setFontUnderline(undefined);
                       }
                     }}
                   >
-                    <DataCubeIcon.FontUnderlined />
+                    <DataCubeIcon.FontUnderline />
                   </button>
                   <button
-                    className="text-2xs relative -ml-[1px] flex h-5 w-2.5 items-center justify-center border border-neutral-400 border-l-neutral-200 bg-neutral-50 p-0 text-neutral-600 focus-visible:z-[1]"
-                    onClick={openFontFormatUnderlinedVariantDropdown}
+                    className="text-2xs relative -ml-[1px] flex h-5 w-2.5 items-center justify-center border border-l-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-600 focus-visible:z-[1]"
+                    onClick={openFontFormatUnderlineVariantDropdown}
                   >
+                    <div
+                      className={cn('h-4 w-[0.5px] bg-neutral-200', {
+                        'opacity-0':
+                          (selectedColumn.fontUnderline ??
+                            gridConfiguration.defaultFontUnderline) !==
+                          undefined,
+                      })}
+                    />
                     <DataCubeIcon.CaretDown />
                   </button>
                   <DataCubeEditorDropdownMenu
                     className="w-14"
-                    {...fontFormatUnderlinedVariantDropdownProps}
+                    {...fontFormatUnderlineVariantDropdownProps}
                   >
                     {[
-                      DataCubeFontFormatUnderlinedVariant.SOLID,
-                      DataCubeFontFormatUnderlinedVariant.DASHED,
-                      DataCubeFontFormatUnderlinedVariant.DOTTED,
-                      DataCubeFontFormatUnderlinedVariant.DOUBLE,
-                      DataCubeFontFormatUnderlinedVariant.WAVY,
+                      DataCubeFontFormatUnderlineVariant.SOLID,
+                      DataCubeFontFormatUnderlineVariant.DASHED,
+                      DataCubeFontFormatUnderlineVariant.DOTTED,
+                      DataCubeFontFormatUnderlineVariant.DOUBLE,
+                      DataCubeFontFormatUnderlineVariant.WAVY,
                     ].map((variant) => (
                       <DataCubeEditorDropdownMenuItem
                         className="relative"
                         key={variant}
                         onClick={() => {
-                          selectedColumn.setFontUnderlined(variant);
+                          selectedColumn.setFontUnderline(variant);
                           selectedColumn.setFontStrikethrough(false);
-                          closeFontFormatUnderlinedVariantDropdown();
+                          closeFontFormatUnderlineVariantDropdown();
                         }}
                       >
                         <div
@@ -719,23 +730,23 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                             {
                               '!hover:decoration-solid !decoration-solid':
                                 variant ===
-                                DataCubeFontFormatUnderlinedVariant.SOLID,
+                                DataCubeFontFormatUnderlineVariant.SOLID,
                               '!hover:decoration-dashed !decoration-dashed':
                                 variant ===
-                                DataCubeFontFormatUnderlinedVariant.DASHED,
+                                DataCubeFontFormatUnderlineVariant.DASHED,
                               '!hover:decoration-dotted !decoration-dotted':
                                 variant ===
-                                DataCubeFontFormatUnderlinedVariant.DOTTED,
+                                DataCubeFontFormatUnderlineVariant.DOTTED,
                               '!hover:decoration-double !decoration-double':
                                 variant ===
-                                DataCubeFontFormatUnderlinedVariant.DOUBLE,
+                                DataCubeFontFormatUnderlineVariant.DOUBLE,
                               '!hover:decoration-wavy !decoration-wavy':
                                 variant ===
-                                DataCubeFontFormatUnderlinedVariant.WAVY,
+                                DataCubeFontFormatUnderlineVariant.WAVY,
                               'text-sky-600':
                                 variant ===
-                                (selectedColumn.fontUnderlined ??
-                                  gridConfiguration.defaultFontUnderlined),
+                                (selectedColumn.fontUnderline ??
+                                  gridConfiguration.defaultFontUnderline),
                             },
                           )}
                         >
@@ -747,7 +758,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   <button
                     title="Strikethrough"
                     className={cn(
-                      'relative -ml-[1px] flex h-5 w-5 items-center justify-center rounded-br-sm rounded-tr-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                      'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                       {
                         'bg-neutral-200':
                           selectedColumn.fontStrikethrough ??
@@ -762,12 +773,82 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                         selectedColumn.setFontStrikethrough(false);
                       } else {
                         selectedColumn.setFontStrikethrough(true);
-                        selectedColumn.setFontUnderlined(undefined);
+                        selectedColumn.setFontUnderline(undefined);
                       }
                     }}
                   >
                     <DataCubeIcon.FontStrikethrough />
                   </button>
+                  <button
+                    title={`Case${selectedColumn.fontCase ?? gridConfiguration.defaultFontCase ? ` (${selectedColumn.fontCase ?? gridConfiguration.defaultFontCase})` : ''}`}
+                    className={cn(
+                      'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                      {
+                        'bg-neutral-200':
+                          (selectedColumn.fontCase ??
+                            gridConfiguration.defaultFontCase) !== undefined,
+                      },
+                    )}
+                    onClick={() => {
+                      if (
+                        (selectedColumn.fontCase ??
+                          gridConfiguration.defaultFontCase) === undefined
+                      ) {
+                        selectedColumn.setFontCase(DataCubeFontCase.UPPERCASE);
+                      } else {
+                        selectedColumn.setFontCase(undefined);
+                      }
+                    }}
+                  >
+                    <DataCubeIcon.FontCase className="stroke-[0.5px]" />
+                  </button>
+                  <button
+                    className="text-2xs relative -ml-[1px] flex h-5 w-2.5 items-center justify-center rounded-br-sm rounded-tr-sm border border-l-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-600 focus-visible:z-[1]"
+                    onClick={openFontCaseDropdown}
+                  >
+                    <div
+                      className={cn('h-4 w-[0.5px] bg-neutral-200', {
+                        'opacity-0':
+                          (selectedColumn.fontCase ??
+                            gridConfiguration.defaultFontCase) !== undefined,
+                      })}
+                    />
+                    <DataCubeIcon.CaretDown />
+                  </button>
+                  <DataCubeEditorDropdownMenu
+                    className="w-20"
+                    {...fontCaseDropdownProps}
+                  >
+                    {[
+                      DataCubeFontCase.LOWERCASE,
+                      DataCubeFontCase.UPPERCASE,
+                      DataCubeFontCase.CAPITALIZE,
+                    ].map((fontCase) => (
+                      <DataCubeEditorDropdownMenuItem
+                        className="relative"
+                        key={fontCase}
+                        onClick={() => {
+                          selectedColumn.setFontCase(fontCase);
+                          closeFontCaseDropdown();
+                        }}
+                      >
+                        <div
+                          className={cn({
+                            lowercase: fontCase === DataCubeFontCase.LOWERCASE,
+                            uppercase: fontCase === DataCubeFontCase.UPPERCASE,
+                            capitalize:
+                              fontCase === DataCubeFontCase.CAPITALIZE,
+                            'text-sky-600':
+                              fontCase ===
+                              (selectedColumn.fontCase ??
+                                gridConfiguration.defaultFontCase),
+                          })}
+                        >
+                          {fontCase}
+                        </div>
+                      </DataCubeEditorDropdownMenuItem>
+                    ))}
+                  </DataCubeEditorDropdownMenu>
                 </div>
 
                 <div className="relative ml-2 flex h-5">
