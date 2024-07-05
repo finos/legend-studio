@@ -216,19 +216,28 @@ export class QueryBuilderPostFilterTreeConditionNodeData
   implements Hashable
 {
   condition: PostFilterConditionState;
+  isNewlyAdded: boolean;
 
   constructor(
     parentId: string | undefined,
     condition: PostFilterConditionState,
+    isNewlyAdded?: boolean,
   ) {
     super(parentId);
 
     makeObservable(this, {
       condition: observable,
+      isNewlyAdded: observable,
+      setIsNewlyAdded: action,
       dragPreviewLabel: computed,
     });
 
     this.condition = condition;
+    this.isNewlyAdded = isNewlyAdded ?? false;
+  }
+
+  setIsNewlyAdded(val: boolean): void {
+    this.isNewlyAdded = val;
   }
 
   get dragPreviewLabel(): string {
@@ -461,7 +470,9 @@ export class PostFilterConditionState implements Hashable {
       );
     }
   }
-  *handleTypeaheadSearch(): GeneratorFn<void> {
+  *handleTypeaheadSearch(
+    searchValue?: ValueSpecification | undefined,
+  ): GeneratorFn<void> {
     try {
       this.typeaheadSearchState.inProgress();
       this.typeaheadSearchResults = undefined;
@@ -475,13 +486,14 @@ export class PostFilterConditionState implements Hashable {
         this.rightConditionValue,
         PostFilterValueSpecConditionValueState,
       );
-      if (performTypeahead(rightConditionValue.value)) {
+      const value = searchValue ?? rightConditionValue.value;
+      if (performTypeahead(value)) {
         const result =
           (yield this.postFilterState.tdsState.queryBuilderState.graphManagerState.graphManager.runQuery(
             buildProjectionColumnTypeaheadQuery(
               this.postFilterState.tdsState.queryBuilderState,
               columnState,
-              rightConditionValue.value,
+              value,
             ),
             guaranteeNonNullable(
               this.postFilterState.tdsState.queryBuilderState
