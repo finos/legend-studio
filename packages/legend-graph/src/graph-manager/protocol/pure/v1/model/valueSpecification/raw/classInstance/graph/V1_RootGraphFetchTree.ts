@@ -18,11 +18,22 @@ import {
   V1_GraphFetchTree,
   type V1_GraphFetchTreeVisitor,
 } from './V1_GraphFetchTree.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../graph/Core_HashUtils.js';
+import { hashArray } from '@finos/legend-shared';
 
 export class V1_RootGraphFetchTree extends V1_GraphFetchTree {
   class!: string;
 
   accept_GraphFetchTreeVisitor<T>(visitor: V1_GraphFetchTreeVisitor<T>): T {
     return visitor.visit_RootGraphFetchTree(this);
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.ROOT_GRAPH_FETCH_TREE,
+      hashArray(this.subTrees),
+      hashArray(this.subTypeTrees),
+      this.class,
+    ]);
   }
 }

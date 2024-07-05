@@ -23,6 +23,7 @@ export * from './DSL_DataSpace_GraphManagerPreset.js';
 
 export {
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+  DATA_SPACE_ELEMENT_POINTER,
   extractDataSpaceTaxonomyNodes,
 } from './protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 
@@ -32,3 +33,7 @@ export { DSL_DataSpace_getGraphManagerExtension } from './protocol/pure/DSL_Data
 export * from './action/analytics/DataSpaceAnalysis.js';
 export * from './action/analytics/DataSpaceAnalysisHelper.js';
 export * from './protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
+export * from '../stores/shared/DataSpaceInfo.js';
+export * from '../stores/query-builder/DataSpaceQueryBuilderState.js';
+
+export { observe_DataSpace } from '../graph-manager/action/changeDetection/DSL_DataSpace_ObserverHelper.js';

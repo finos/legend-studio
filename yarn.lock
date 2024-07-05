@@ -2372,6 +2372,7 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-assortment": "workspace:*"
+    "@finos/legend-extension-dsl-data-quality": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-extension-dsl-persistence": "workspace:*"
@@ -2519,6 +2520,7 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-assortment": "workspace:*"
+    "@finos/legend-extension-dsl-data-quality": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-extension-dsl-data-space-studio": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
@@ -2757,6 +2759,41 @@ __metadata:
     mobx-react-lite: "npm:4.0.7"
     npm-run-all: "npm:4.1.5"
     react: "npm:18.3.1"
+    rimraf: "npm:5.0.7"
+    sass: "npm:1.77.4"
+    serializr: "npm:3.0.2"
+    typescript: "npm:5.4.5"
+  peerDependencies:
+    react: ^18.0.0
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-extension-dsl-data-quality@workspace:*, @finos/legend-extension-dsl-data-quality@workspace:packages/legend-extension-dsl-data-quality":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-extension-dsl-data-quality@workspace:packages/legend-extension-dsl-data-quality"
+  dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-application-studio": "workspace:*"
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-extension-dsl-data-space": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
+    "@finos/legend-query-builder": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
+    "@jest/globals": "npm:29.7.0"
+    "@types/react": "npm:18.3.3"
+    "@types/react-dom": "npm:18.3.0"
+    cross-env: "npm:7.0.3"
+    eslint: "npm:8.57.0"
+    jest: "npm:29.7.0"
+    mobx: "npm:6.12.3"
+    mobx-react-lite: "npm:4.0.7"
+    npm-run-all: "npm:4.1.5"
+    react: "npm:18.3.1"
+    react-dnd: "npm:16.0.1"
+    react-dom: "npm:18.3.1"
     rimraf: "npm:5.0.7"
     sass: "npm:1.77.4"
     serializr: "npm:3.0.2"
@@ -14897,6 +14934,7 @@ __metadata:
   version: 7.0.1
   resolution: "postcss-unique-selectors@npm:7.0.1"
   dependencies:
+    cssesc: "npm:^3.0.0"
     postcss-selector-parser: "npm:^6.1.0"
   peerDependencies:
     postcss: ^8.4.31

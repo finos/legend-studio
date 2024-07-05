@@ -781,7 +781,7 @@ export function V1_buildGraphFetchTree(
   canResolveLocalProperty?: boolean | undefined,
 ): GraphFetchTree {
   if (graphFetchTree instanceof V1_PropertyGraphFetchTree) {
-    return buildPropertyGraphFetchTree(
+    return V1_buildPropertyGraphFetchTree(
       graphFetchTree,
       context,
       guaranteeNonNullable(parentClass),
@@ -790,7 +790,7 @@ export function V1_buildGraphFetchTree(
       canResolveLocalProperty,
     );
   } else if (graphFetchTree instanceof V1_RootGraphFetchTree) {
-    return buildRootGraphFetchTree(
+    return V1_buildRootGraphFetchTree(
       graphFetchTree,
       context,
       openVariables,
@@ -822,7 +822,7 @@ const createThisVariableForClass = (
   return _var;
 };
 
-function buildPropertyGraphFetchTree(
+export function V1_buildPropertyGraphFetchTree(
   propertyGraphFetchTree: V1_PropertyGraphFetchTree,
   context: V1_GraphBuilderContext,
   parentClass: Class,
@@ -927,7 +927,7 @@ function buildPropertyGraphFetchTree(
   return _propertyGraphFetchTree;
 }
 
-function buildRootGraphFetchTree(
+export function V1_buildRootGraphFetchTree(
   rootGraphFetchTree: V1_RootGraphFetchTree,
   context: V1_GraphBuilderContext,
   openVariables: string[],

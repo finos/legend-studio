@@ -48,6 +48,7 @@
     "@finos/legend-application-query": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-extension-assortment": "workspace:*",
+    "@finos/legend-extension-dsl-data-quality": "workspace:*",
     "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-extension-dsl-persistence": "workspace:*",

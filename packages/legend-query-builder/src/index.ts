@@ -17,7 +17,10 @@
 // application
 export * from './__lib__/QueryBuilderTelemetryHelper.js';
 export * from './__lib__/QueryBuilderEvent.js';
-
+export {
+  QueryBuilderExplorerState,
+  QueryBuilderExplorerPreviewDataState,
+} from './stores/explorer/QueryBuilderExplorerState.js';
 export { QueryBuilder_GraphManagerPreset } from './graph-manager/QueryBuilder_GraphManagerPreset.js';
 export { QueryBuilderConfig } from './graph-manager/QueryBuilderConfig.js';
 export { QUERY_BUILDER_TEST_ID } from './__lib__/QueryBuilderTesting.js';
@@ -71,7 +74,18 @@ export {
   QueryBuilderChangeDetectionState,
 } from './stores/QueryBuilderChangeDetectionState.js';
 export { QueryBuilderResultValues } from './components/result/QueryBuilderResultPanel.js';
-
+export {
+  QueryBuilderTaggedValueInfoTooltip,
+  QueryBuilderPropertyInfoTooltip,
+  QueryBuilderDerivationInfoTooltip,
+} from './components/shared/QueryBuilderPropertyInfoTooltip.js';
+export { QueryBuilderRootClassInfoTooltip } from './components/shared/QueryBuilderRootClassInfoTooltip.js';
+export {
+  renderPropertyTypeIcon,
+  checkForDeprecatedNode,
+  getQueryBuilderExplorerTreeNodeSortRank,
+  QueryBuilderSubclassInfoTooltip,
+} from './components/explorer/QueryBuilderExplorerPanel.js';
 // ------------------------------------------- Shared components -------------------------------------------
 
 export * from './components/shared/LambdaEditor.js';
@@ -96,3 +110,11 @@ export * from './stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
 export * from './stores/data-access/DataAccessState.js';
 export * from './components/data-access/DataAccessOverview.js';
 export * from './stores/query-workflow/QueryBuilderWorkFlowState.js';
+export * from './stores/explorer/QueryBuilderExplorerState.js';
+export * from './stores/explorer/QueryBuilderPropertySearchState.js';
+export * from './stores/explorer/QueryFunctionsExplorerState.js';
+export * from './components/filter/QueryBuilderFilterPanel.js';
+export * from './stores/filter/QueryBuilderFilterValueSpecificationBuilder.js';
+export * from './stores/QueryBuilderValueSpecificationHelper.js';
+export * from './stores/filter/QueryBuilderFilterState.js';
+export * from './stores/filter/QueryBuilderFilterStateBuilder.js';

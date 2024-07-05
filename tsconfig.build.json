@@ -49,6 +49,9 @@
     {
       "path": "packages/legend-extension-store-relational/tsconfig.build.json"
     },
+    {
+      "path": "packages/legend-extension-dsl-data-quality/tsconfig.build.json"
+    },
     // fixtures
     { "path": "fixtures/legend-mock-server/tsconfig.build.json" }
   ]

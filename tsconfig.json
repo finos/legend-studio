@@ -55,6 +55,7 @@
     { "path": "packages/legend-extension-store-service-store" },
     { "path": "packages/legend-extension-store-flat-data" },
     { "path": "packages/legend-extension-store-relational" },
+    { "path":  "packages/legend-extension-dsl-data-quality"},
     // fixtures
     { "path": "fixtures/legend-mock-server" }
   ]

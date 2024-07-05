@@ -86,11 +86,11 @@ export const formatDataSpaceOptionLabel = (
   </div>
 );
 
-type ExecutionContextOption = {
+export type ExecutionContextOption = {
   label: string;
   value: DataSpaceExecutionContext;
 };
-const buildExecutionContextOption = (
+export const buildExecutionContextOption = (
   value: DataSpaceExecutionContext,
 ): ExecutionContextOption => ({
   label: value.name,
