@@ -315,7 +315,6 @@ const DataCubeGridClient = observer(() => {
         rowHeight={INTERNAL__GRID_CLIENT_ROW_HEIGHT}
         headerHeight={INTERNAL__GRID_CLIENT_HEADER_HEIGHT}
         suppressBrowserResizeObserver={true}
-        reactiveCustomComponents={true} // TODO: remove on v32 as this would be default to `true` then
         noRowsOverlayComponent={() => (
           <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-medium text-neutral-400">
             <div>

@@ -45,16 +45,16 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@ag-grid-community/client-side-row-model": "31.3.2",
-    "@ag-grid-community/core": "31.3.2",
-    "@ag-grid-community/react": "31.3.2",
-    "@ag-grid-community/styles": "31.3.2",
-    "@ag-grid-enterprise/clipboard": "31.3.2",
-    "@ag-grid-enterprise/core": "31.3.2",
-    "@ag-grid-enterprise/menu": "31.3.2",
-    "@ag-grid-enterprise/range-selection": "31.3.2",
-    "@ag-grid-enterprise/row-grouping": "31.3.2",
-    "@ag-grid-enterprise/server-side-row-model": "31.3.2",
+    "@ag-grid-community/client-side-row-model": "32.0.0",
+    "@ag-grid-community/core": "32.0.0",
+    "@ag-grid-community/react": "32.0.0",
+    "@ag-grid-community/styles": "32.0.0",
+    "@ag-grid-enterprise/clipboard": "32.0.0",
+    "@ag-grid-enterprise/core": "32.0.0",
+    "@ag-grid-enterprise/menu": "32.0.0",
+    "@ag-grid-enterprise/range-selection": "32.0.0",
+    "@ag-grid-enterprise/row-grouping": "32.0.0",
+    "@ag-grid-enterprise/server-side-row-model": "32.0.0",
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
@@ -63,7 +63,7 @@
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "antlr4": "4.13.1-patch-1",
-    "mobx": "6.12.5",
+    "mobx": "6.13.0",
     "mobx-react-lite": "4.0.7",
     "monaco-editor": "0.50.0",
     "react": "18.3.1",
@@ -80,7 +80,7 @@
     "npm-run-all": "4.1.5",
     "rimraf": "5.0.7",
     "sass": "1.77.6",
-    "typescript": "5.5.2"
+    "typescript": "5.5.3"
   },
   "peerDependencies": {
     "react": "^18.0.0"

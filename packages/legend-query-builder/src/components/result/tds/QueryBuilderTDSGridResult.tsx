@@ -427,10 +427,10 @@ export const QueryBuilderTDSGridResult = observer(
           const weightedColumnId =
             resultState.wavgAggregationState?.weightedColumnIdPairs.get(column);
           if (weightedColumnId) {
-            const weightedColumnSum = param.rowNode.allLeafChildren
+            const weightedColumnSum = (param.rowNode.allLeafChildren ?? [])
               .map((node) => node.data[weightedColumnId])
               .reduce((a, b) => a + b) as number;
-            const weightedColumnMultiply = param.rowNode.allLeafChildren
+            const weightedColumnMultiply = (param.rowNode.allLeafChildren ?? [])
               .map((node) => node.data[weightedColumnId] * node.data[column])
               .reduce((a, b) => a + b);
             if (weightedColumnSum !== 0) {
