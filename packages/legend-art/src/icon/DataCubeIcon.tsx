@@ -32,6 +32,7 @@ import {
   PiTextAlignLeft,
   PiTextAlignRight,
 } from 'react-icons/pi';
+import { RxLetterCaseCapitalize } from 'react-icons/rx';
 import {
   TbBook,
   TbCube,
@@ -62,19 +63,24 @@ import {
   TbLoader2,
   TbSettingsBolt,
   TbSettings,
+  TbChevronDown,
+  TbCaretRightFilled,
 } from 'react-icons/tb';
 
 export const DataCubeIcon = {
   AdvancedSettings: TbSettingsBolt,
   CaretDown: TbCaretDownFilled,
+  CaretRight: TbCaretRightFilled,
   Checkbox: GrCheckbox,
   CheckboxSelected: GrCheckboxSelected,
   ChevronLeft: TbChevronLeft,
   ChevronRight: TbChevronRight,
+  ChevronDown: TbChevronDown,
   Code: TbCode,
   Cube: TbCube,
   Documentation: TbBook,
   FontBold: MdOutlineFormatBold,
+  FontCapitalize: RxLetterCaseCapitalize,
   FontItalic: MdOutlineFormatItalic,
   FontUnderlined: MdOutlineFormatUnderlined,
   FontStrikethrough: MdOutlineStrikethroughS,

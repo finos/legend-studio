@@ -18,6 +18,7 @@ import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useREPLStore } from '../../REPLStoreProvider.js';
 import {
+  Advanced_Badge,
   DataCubeEditorCheckbox,
   DataCubeEditorColorPickerButton,
   DataCubeEditorDropdownMenu,
@@ -31,6 +32,7 @@ import {
 import {
   DataCubeAggregateFunction,
   DataCubeColumnDataType,
+  DataCubeColumnKind,
   DataCubeColumnPinPlacement,
   DataCubeFont,
   DataCubeFontFormatUnderlinedVariant,
@@ -49,6 +51,8 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
     dataCube.editor.generalPropertiesPanel.configuration;
   const selectedColumn = panel.selectedColumn;
   const [openColumnsDropdown, closeColumnsDropdown, columnsDropdownProps] =
+    useDropdownMenu();
+  const [openKindDropdown, closeKindDropdown, kindDropdownProps] =
     useDropdownMenu();
   const [
     openAggregationTypeDropdown,
@@ -83,13 +87,25 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
 
   return (
     <div className="h-full w-full select-none p-2">
-      <div className="flex h-6">
-        <div className="relative flex h-6 items-center text-xl font-medium">
-          <DataCubeIcon.TableColumn />
-          <DataCubeIcon.TableColumnOptions__Settings className="absolute bottom-1 right-0 bg-white text-xs" />
+      <div className="flex h-6 justify-between">
+        <div className="flex h-full">
+          <div className="relative flex h-6 items-center text-xl font-medium">
+            <DataCubeIcon.TableColumn />
+            <DataCubeIcon.TableColumnOptions__Settings className="absolute bottom-1 right-0 bg-white text-xs" />
+          </div>
+          <div className="ml-1 flex h-6 items-center text-xl font-medium">
+            Column Properties
+          </div>
         </div>
-        <div className="ml-1 flex h-6 items-center text-xl font-medium">
-          Column Properties
+        <div className="flex h-full items-center pr-2">
+          <DataCubeEditorCheckbox
+            label="Show advanced settings"
+            checked={panel.showAdvancedSettings}
+            onChange={() =>
+              panel.setShowAdvancedSettings(!panel.showAdvancedSettings)
+            }
+          />
+          <Advanced_Badge />
         </div>
       </div>
       <div className="flex h-[calc(100%_-_24px)] w-full">
@@ -102,7 +118,16 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
               className="w-80"
               onClick={openColumnsDropdown}
             >
-              {selectedColumn?.name ?? '(None)'}
+              <div className="flex h-full w-full items-center">
+                <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">
+                  {selectedColumn?.name ?? '(None)'}
+                </div>
+                {selectedColumn && (
+                  <div className="ml-1.5 mr-0.5 flex h-3.5 w-12 flex-shrink-0 items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-xs font-medium uppercase text-neutral-600">
+                    {selectedColumn.dataType}
+                  </div>
+                )}
+              </div>
             </DataCubeEditorDropdownMenuTrigger>
             <DataCubeEditorDropdownMenu
               className="w-80"
@@ -116,23 +141,50 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     closeColumnsDropdown();
                   }}
                 >
-                  {column.name}
+                  <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">
+                    {column.name}
+                  </div>
+                  <div className="ml-1.5 mr-0.5 flex h-3.5 w-12 flex-shrink-0 items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-xs font-medium uppercase text-neutral-600">
+                    {column.dataType}
+                  </div>
                 </DataCubeEditorDropdownMenuItem>
               ))}
             </DataCubeEditorDropdownMenu>
-            {selectedColumn && (
-              // TODO: if this is an extended column, show the info and link it
-              // e.g. `Extended Column (Leaf)`, `Extended Column (Group)`
-              // with arrow button to go to the extended column editor
+            {panel.showAdvancedSettings && selectedColumn && (
               <>
-                <div className="ml-2 h-[1px] w-4 bg-neutral-400" />
-                <div className="ml-2 flex h-4 items-center justify-center rounded-sm border border-neutral-500 px-2 font-mono text-sm font-medium text-neutral-500">
-                  <div className="mr-1.5 flex h-full items-center uppercase">
-                    {selectedColumn.dataType}
+                <div className="mx-2 h-[1px] w-4 flex-shrink-0 bg-neutral-400" />
+                <div className="flex h-6 items-center">
+                  <div className="flex h-full flex-shrink-0 items-center text-sm">
+                    Kind:
                   </div>
-                  <div className="flex h-full items-center border-l border-l-neutral-500 pl-1.5 uppercase">
+                  <DataCubeEditorDropdownMenuTrigger
+                    className="ml-1 w-20"
+                    onClick={openKindDropdown}
+                    disabled={true}
+                  >
                     {selectedColumn.kind}
-                  </div>
+                  </DataCubeEditorDropdownMenuTrigger>
+                  <DataCubeEditorDropdownMenu
+                    className="w-20"
+                    {...kindDropdownProps}
+                  >
+                    {[
+                      DataCubeColumnKind.DIMENSION,
+                      DataCubeColumnKind.MEASURE,
+                    ].map((kind) => (
+                      <DataCubeEditorDropdownMenuItem
+                        key={kind}
+                        onClick={() => {
+                          selectedColumn.setKind(kind);
+                          closeKindDropdown();
+                        }}
+                      >
+                        {kind}
+                      </DataCubeEditorDropdownMenuItem>
+                    ))}
+                  </DataCubeEditorDropdownMenu>
+                  <Advanced_Badge />
+                  <WIP_Badge />
                 </div>
               </>
             )}
@@ -324,6 +376,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   onChange={() =>
                     selectedColumn.setHideFromView(!selectedColumn.hideFromView)
                   }
+                  disabled={true}
                 />
                 <WIP_Badge />
               </div>
@@ -402,7 +455,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     selectedColumn.setMaxWidth(undefined);
                   }}
                 />
-                <div className="ml-1 h-[1px] w-2 bg-neutral-400" />
+                <div className="ml-1 h-[1px] w-2 flex-shrink-0 bg-neutral-400" />
                 <DataCubeEditorNumberInput
                   className="ml-1 w-16 text-sm"
                   min={0}
@@ -441,7 +494,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     }
                   }}
                 />
-                <div className="ml-1 h-[1px] w-2 bg-neutral-400" />
+                <div className="ml-1 h-[1px] w-2 flex-shrink-0 bg-neutral-400" />
                 <DataCubeEditorNumberInput
                   className="ml-1 w-16 text-sm"
                   min={0}
@@ -454,7 +507,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   }}
                   disabled={selectedColumn.fixedWidth !== undefined}
                 />
-                <div className="ml-1 h-[1px] w-1 bg-neutral-400" />
+                <div className="ml-1 h-[1px] w-1 flex-shrink-0 bg-neutral-400" />
                 <DataCubeEditorNumberInput
                   className="ml-1 w-16 text-sm"
                   min={selectedColumn.minWidth ?? 0}

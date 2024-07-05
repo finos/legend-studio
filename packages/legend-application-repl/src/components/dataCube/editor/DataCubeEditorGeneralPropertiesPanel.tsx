@@ -190,7 +190,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 )
               }
             />
-            <div className="ml-2 h-[1px] w-2 bg-neutral-400" />
+            <div className="ml-2 h-[1px] w-2 flex-shrink-0 bg-neutral-400" />
             <DataCubeEditorColorPickerButton
               className="ml-2"
               color={configuration.gridLineColor}
@@ -272,7 +272,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               Hightlight Rows:
             </div>
             <DataCubeEditorCheckbox
-              label="Standard Mode"
+              label="Standard mode"
               checked={configuration.alternateRowsStandardMode}
               onChange={() => {
                 if (configuration.alternateRowsStandardMode) {
@@ -465,9 +465,15 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 <DataCubeIcon.FontUnderlined />
               </button>
               <button
-                className="text-2xs relative -ml-[1px] flex h-5 w-2.5 items-center justify-center border border-neutral-400 border-l-neutral-200 bg-neutral-50 p-0 text-neutral-600 focus-visible:z-[1]"
+                className="text-2xs relative -ml-[1px] flex h-5 w-2.5 items-center justify-center border border-l-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-600 focus-visible:z-[1]"
                 onClick={openFontFormatUnderlinedVariantDropdown}
               >
+                <div
+                  className={cn('h-4 w-[0.5px] bg-neutral-200', {
+                    'opacity-0':
+                      configuration.defaultFontUnderlined !== undefined,
+                  })}
+                />
                 <DataCubeIcon.CaretDown />
               </button>
               <DataCubeEditorDropdownMenu

@@ -30,6 +30,7 @@ export class DataCubeEditorColumnPropertiesPanelState
 
   columns: DataCubeMutableColumnConfiguration[] = [];
   selectedColumnName?: string | undefined;
+  showAdvancedSettings = false;
 
   constructor(editor: DataCubeEditorState) {
     makeObservable(this, {
@@ -39,6 +40,9 @@ export class DataCubeEditorColumnPropertiesPanelState
       selectedColumnName: observable,
       setSelectedColumnName: action,
       selectedColumn: computed,
+
+      showAdvancedSettings: observable,
+      setShowAdvancedSettings: action,
     });
 
     this.editor = editor;
@@ -57,6 +61,10 @@ export class DataCubeEditorColumnPropertiesPanelState
     return this.columns.find(
       (column) => column.name === this.selectedColumnName,
     );
+  }
+
+  setShowAdvancedSettings(val: boolean): void {
+    this.showAdvancedSettings = val;
   }
 
   applySnaphot(snapshot: DataCubeQuerySnapshot): void {

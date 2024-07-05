@@ -37,10 +37,21 @@ import React, { forwardRef, useEffect, useState } from 'react';
 export function WIP_Badge() {
   return (
     <div
-      className="color-neutral-700 text-2xs ml-1 select-none rounded-md bg-sky-500 px-1 py-0.5 font-semibold text-white"
+      className="text-2xs ml-1 select-none rounded-md bg-sky-500 px-1 py-0.5 font-semibold text-white"
       title="Work In Progress"
     >
       WIP
+    </div>
+  );
+}
+
+export function Advanced_Badge() {
+  return (
+    <div
+      className="text-2xs ml-1 select-none rounded-md bg-amber-500 px-1 py-0.5 font-semibold text-white"
+      title="Advanced: Becareful when using this feature!"
+    >
+      ADV
     </div>
   );
 }
@@ -198,13 +209,15 @@ export function DataCubeEditorDropdownMenuTrigger(
   return (
     <button
       className={cn(
-        'group flex h-6 flex-shrink-0 items-center justify-between border border-neutral-400 px-1.5 pr-0.5 text-sm disabled:select-none disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
+        'group flex h-6 flex-shrink-0 items-center justify-between border border-neutral-400 pl-1.5 text-sm disabled:select-none disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
         className,
       )}
       {...otherProps}
     >
-      {props.children}
-      <div className="text-neutral-500 group-disabled:text-neutral-400">
+      <div className="w-[calc(100%_-_12px)] overflow-hidden overflow-ellipsis whitespace-nowrap text-left">
+        {props.children}
+      </div>
+      <div className="flex h-full w-3 items-center justify-center text-neutral-500 group-disabled:text-neutral-400">
         <DataCubeIcon.CaretDown />
       </div>
     </button>
@@ -234,7 +247,7 @@ export function DataCubeEditorDropdownMenuItem(props: DropdownMenuItemProps) {
   return (
     <DropdownMenuItem
       className={cn(
-        'flex h-5 items-center px-1.5 text-sm hover:bg-neutral-100 focus-visible:bg-neutral-100',
+        'flex h-5 w-full items-center px-1.5 text-sm hover:bg-neutral-100 focus-visible:bg-neutral-100',
         className,
       )}
       {...otherProps}

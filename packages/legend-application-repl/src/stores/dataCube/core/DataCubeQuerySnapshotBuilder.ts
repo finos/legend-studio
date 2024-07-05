@@ -115,12 +115,12 @@ const _SUPPORTED_TOP_LEVEL_FUNCTIONS: {
   func: string;
   parameters: number;
 }[] = [
-  { func: DataCubeFunction.EXTEND, parameters: 1 },
   { func: DataCubeFunction.FILTER, parameters: 1 },
+  { func: DataCubeFunction.EXTEND, parameters: 1 },
+  { func: DataCubeFunction.SELECT, parameters: 1 },
   { func: DataCubeFunction.GROUP_BY, parameters: 3 },
   { func: DataCubeFunction.LIMIT, parameters: 1 },
   { func: DataCubeFunction.PIVOT, parameters: 3 },
-  { func: DataCubeFunction.SELECT, parameters: 1 },
   { func: DataCubeFunction.SORT, parameters: 1 },
 
   { func: DataCubeFunction.CAST, parameters: 1 },
@@ -134,9 +134,9 @@ const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN: {
   repeat?: boolean | undefined;
   required?: boolean | undefined;
 }[] = [
+  { func: DataCubeFunction.FILTER },
   { func: DataCubeFunction.EXTEND },
   { func: DataCubeFunction.SELECT },
-  { func: DataCubeFunction.FILTER },
   { func: DataCubeFunction.GROUP_BY },
   { func: DataCubeFunction.PIVOT },
   { func: DataCubeFunction.CAST },
@@ -343,6 +343,9 @@ export function validateAndBuildQuerySnapshot(
   }));
   data.originalColumns.map((col) => colsMap.set(col.name, col));
 
+  // --------------------------------- FILTER ---------------------------------
+  // TODO: @akphi - implement this
+
   // --------------------------------- LEAF EXTEND ---------------------------------
   // TODO: @akphi - implement this
 
@@ -355,10 +358,6 @@ export function validateAndBuildQuerySnapshot(
       }),
     );
   }
-
-  // --------------------------------- FILTER ---------------------------------
-  // TODO: @akphi - implement this
-
   // --------------------------------- GROUP BY ---------------------------------
   // TODO: @akphi - implement this
 
