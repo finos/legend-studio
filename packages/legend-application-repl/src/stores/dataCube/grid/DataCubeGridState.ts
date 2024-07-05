@@ -46,6 +46,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   clientLicenseKey?: string | undefined;
 
   isPaginationEnabled = false;
+  scrollHintText = '';
   datasourceConfiguration: DataCubeGridDatasourceConfiguration;
   queryConfiguration: DataCubeConfiguration;
 
@@ -62,6 +63,9 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
 
       isPaginationEnabled: observable,
       setPaginationEnabled: action,
+
+      scrollHintText: observable,
+      setScrollHintText: action,
     });
 
     this.datasourceConfiguration = new DataCubeGridDatasourceConfiguration({});
@@ -81,6 +85,10 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     // for how many page that we loaded when pagination is off, the datasource
     // will fire that many data fetch operations which is expensive.
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
+  }
+
+  setScrollHintText(val: string): void {
+    this.scrollHintText = val;
   }
 
   get client(): GridApi {

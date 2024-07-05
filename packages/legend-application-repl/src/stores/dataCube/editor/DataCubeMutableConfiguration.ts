@@ -107,26 +107,26 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       foregroundColor: observable,
       setForegroundColor: action,
 
-      foregroundNegativeColor: observable,
-      setForegroundNegativeColor: action,
+      negativeForegroundColor: observable,
+      setNegativeForegroundColor: action,
 
-      foregroundZeroColor: observable,
-      setForegroundZeroColor: action,
+      zeroForegroundColor: observable,
+      setZeroForegroundColor: action,
 
-      foregroundErrorColor: observable,
-      setForegroundErrorColor: action,
+      errorForegroundColor: observable,
+      setErrorForegroundColor: action,
 
       backgroundColor: observable,
       setBackgroundColor: action,
 
-      backgroundNegativeColor: observable,
-      setBackgroundNegativeColor: action,
+      negativeBackgroundColor: observable,
+      setNegativeBackgroundColor: action,
 
-      backgroundZeroColor: observable,
-      setBackgroundZeroColor: action,
+      zeroBackgroundColor: observable,
+      setZeroBackgroundColor: action,
 
-      backgroundErrorColor: observable,
-      setBackgroundErrorColor: action,
+      errorBackgroundColor: observable,
+      setErrorBackgroundColor: action,
 
       blur: observable,
       setBlur: action,
@@ -176,13 +176,13 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       this.fontStrikethrough === undefined &&
       this.textAlign === undefined &&
       this.foregroundColor === undefined &&
-      this.foregroundNegativeColor === undefined &&
-      this.foregroundZeroColor === undefined &&
-      this.foregroundErrorColor === undefined &&
+      this.negativeForegroundColor === undefined &&
+      this.zeroForegroundColor === undefined &&
+      this.errorForegroundColor === undefined &&
       this.backgroundColor === undefined &&
-      this.backgroundNegativeColor === undefined &&
-      this.backgroundZeroColor === undefined &&
-      this.backgroundErrorColor === undefined
+      this.negativeBackgroundColor === undefined &&
+      this.zeroBackgroundColor === undefined &&
+      this.errorBackgroundColor === undefined
     );
   }
 
@@ -195,13 +195,13 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.fontStrikethrough = undefined;
     this.textAlign = undefined;
     this.foregroundColor = undefined;
-    this.foregroundNegativeColor = undefined;
-    this.foregroundZeroColor = undefined;
-    this.foregroundErrorColor = undefined;
+    this.negativeForegroundColor = undefined;
+    this.zeroForegroundColor = undefined;
+    this.errorForegroundColor = undefined;
     this.backgroundColor = undefined;
-    this.backgroundNegativeColor = undefined;
-    this.backgroundZeroColor = undefined;
-    this.backgroundErrorColor = undefined;
+    this.negativeBackgroundColor = undefined;
+    this.zeroBackgroundColor = undefined;
+    this.errorBackgroundColor = undefined;
   }
 
   setKind(value: DataCubeColumnKind): void {
@@ -266,32 +266,32 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.foregroundColor = value;
   }
 
-  setForegroundNegativeColor(value: string | undefined): void {
-    this.foregroundNegativeColor = value;
+  setNegativeForegroundColor(value: string | undefined): void {
+    this.negativeForegroundColor = value;
   }
 
-  setForegroundZeroColor(value: string | undefined): void {
-    this.foregroundZeroColor = value;
+  setZeroForegroundColor(value: string | undefined): void {
+    this.zeroForegroundColor = value;
   }
 
-  setForegroundErrorColor(value: string | undefined): void {
-    this.foregroundErrorColor = value;
+  setErrorForegroundColor(value: string | undefined): void {
+    this.errorForegroundColor = value;
   }
 
   setBackgroundColor(value: string | undefined): void {
     this.backgroundColor = value;
   }
 
-  setBackgroundNegativeColor(value: string | undefined): void {
-    this.backgroundNegativeColor = value;
+  setNegativeBackgroundColor(value: string | undefined): void {
+    this.negativeBackgroundColor = value;
   }
 
-  setBackgroundZeroColor(value: string | undefined): void {
-    this.backgroundZeroColor = value;
+  setZeroBackgroundColor(value: string | undefined): void {
+    this.zeroBackgroundColor = value;
   }
 
-  setBackgroundErrorColor(value: string | undefined): void {
-    this.backgroundErrorColor = value;
+  setErrorBackgroundColor(value: string | undefined): void {
+    this.errorBackgroundColor = value;
   }
 
   setBlur(value: boolean): void {
@@ -381,26 +381,26 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
       defaultForegroundColor: observable,
       setDefaultForegroundColor: action,
 
-      defaultForegroundNegativeColor: observable,
-      setDefaultForegroundNegativeColor: action,
+      defaultNegativeForegroundColor: observable,
+      setDefaultNegativeForegroundColor: action,
 
-      defaultForegroundZeroColor: observable,
-      setDefaultForegroundZeroColor: action,
+      defaultZeroForegroundColor: observable,
+      setDefaultZeroForegroundColor: action,
 
-      defaultForegroundErrorColor: observable,
-      setDefaultForegroundErrorColor: action,
+      defaultErrorForegroundColor: observable,
+      setDefaultErrorForegroundColor: action,
 
       defaultBackgroundColor: observable,
       setDefaultBackgroundColor: action,
 
-      defaultBackgroundNegativeColor: observable,
-      setDefaultBackgroundNegativeColor: action,
+      defaultNegativeBackgroundColor: observable,
+      setDefaultNegativeBackgroundColor: action,
 
-      defaultBackgroundZeroColor: observable,
-      setDefaultBackgroundZeroColor: action,
+      defaultZeroBackgroundColor: observable,
+      setDefaultZeroBackgroundColor: action,
 
-      defaultBackgroundErrorColor: observable,
-      setDefaultBackgroundErrorColor: action,
+      defaultErrorBackgroundColor: observable,
+      setDefaultErrorBackgroundColor: action,
 
       alternateRows: observable,
       setAlternateRows: action,
@@ -458,14 +458,14 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
       this.defaultFontStrikethrough === DEFAULT_FONT_STRIKETHROUGH &&
       this.defaultTextAlign === DEFAULT_TEXT_ALIGN &&
       this.defaultForegroundColor === DEFAULT_FOREGROUND_COLOR &&
-      this.defaultForegroundNegativeColor ===
+      this.defaultNegativeForegroundColor ===
         DEFAULT_NEGATIVE_FOREGROUND_COLOR &&
-      this.defaultForegroundZeroColor === DEFAULT_ZERO_FOREGROUND_COLOR &&
-      this.defaultForegroundErrorColor === DEFAULT_ERROR_FOREGROUND_COLOR &&
+      this.defaultZeroForegroundColor === DEFAULT_ZERO_FOREGROUND_COLOR &&
+      this.defaultErrorForegroundColor === DEFAULT_ERROR_FOREGROUND_COLOR &&
       this.defaultBackgroundColor === DEFAULT_BACKGROUND_COLOR &&
-      this.defaultBackgroundNegativeColor === DEFAULT_BACKGROUND_COLOR &&
-      this.defaultBackgroundZeroColor === DEFAULT_BACKGROUND_COLOR &&
-      this.defaultBackgroundErrorColor === DEFAULT_BACKGROUND_COLOR
+      this.defaultNegativeBackgroundColor === DEFAULT_BACKGROUND_COLOR &&
+      this.defaultZeroBackgroundColor === DEFAULT_BACKGROUND_COLOR &&
+      this.defaultErrorBackgroundColor === DEFAULT_BACKGROUND_COLOR
     );
   }
 
@@ -478,13 +478,13 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
     this.defaultFontStrikethrough = DEFAULT_FONT_STRIKETHROUGH;
     this.defaultTextAlign = DEFAULT_TEXT_ALIGN;
     this.defaultForegroundColor = DEFAULT_FOREGROUND_COLOR;
-    this.defaultForegroundNegativeColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
-    this.defaultForegroundZeroColor = DEFAULT_ZERO_FOREGROUND_COLOR;
-    this.defaultForegroundErrorColor = DEFAULT_ERROR_FOREGROUND_COLOR;
+    this.defaultNegativeForegroundColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
+    this.defaultZeroForegroundColor = DEFAULT_ZERO_FOREGROUND_COLOR;
+    this.defaultErrorForegroundColor = DEFAULT_ERROR_FOREGROUND_COLOR;
     this.defaultBackgroundColor = DEFAULT_BACKGROUND_COLOR;
-    this.defaultBackgroundNegativeColor = DEFAULT_BACKGROUND_COLOR;
-    this.defaultBackgroundZeroColor = DEFAULT_BACKGROUND_COLOR;
-    this.defaultBackgroundErrorColor = DEFAULT_BACKGROUND_COLOR;
+    this.defaultNegativeBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+    this.defaultZeroBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+    this.defaultErrorBackgroundColor = DEFAULT_BACKGROUND_COLOR;
   }
 
   serialize(): PlainObject<DataCubeConfiguration> {
@@ -545,32 +545,32 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
     this.defaultForegroundColor = value;
   }
 
-  setDefaultForegroundNegativeColor(value: string): void {
-    this.defaultForegroundNegativeColor = value;
+  setDefaultNegativeForegroundColor(value: string): void {
+    this.defaultNegativeForegroundColor = value;
   }
 
-  setDefaultForegroundZeroColor(value: string): void {
-    this.defaultForegroundZeroColor = value;
+  setDefaultZeroForegroundColor(value: string): void {
+    this.defaultZeroForegroundColor = value;
   }
 
-  setDefaultForegroundErrorColor(value: string): void {
-    this.defaultForegroundErrorColor = value;
+  setDefaultErrorForegroundColor(value: string): void {
+    this.defaultErrorForegroundColor = value;
   }
 
   setDefaultBackgroundColor(value: string): void {
     this.defaultBackgroundColor = value;
   }
 
-  setDefaultBackgroundNegativeColor(value: string): void {
-    this.defaultBackgroundNegativeColor = value;
+  setDefaultNegativeBackgroundColor(value: string): void {
+    this.defaultNegativeBackgroundColor = value;
   }
 
-  setDefaultBackgroundZeroColor(value: string): void {
-    this.defaultBackgroundZeroColor = value;
+  setDefaultZeroBackgroundColor(value: string): void {
+    this.defaultZeroBackgroundColor = value;
   }
 
-  setDefaultBackgroundErrorColor(value: string): void {
-    this.defaultBackgroundErrorColor = value;
+  setDefaultErrorBackgroundColor(value: string): void {
+    this.defaultErrorBackgroundColor = value;
   }
 
   setAlternateRows(value: boolean): void {

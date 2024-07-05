@@ -39,6 +39,37 @@ type GridClientRowData = {
   [key: string]: GridClientCellValue;
 };
 
+export enum INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME {
+  ROOT = 'data-cube-grid.ag-theme-balham',
+  HIGHLIGHT_ROW = 'data-cube-grid__utility--highlight-row',
+  SHOW_VERTICAL_GRID_LINES = 'data-cube-grid__utility--show-vertical-grid-lines',
+  SHOW_HORIZONTAL_GRID_LINES = 'data-cube-grid__utility--show-horizontal-grid-lines',
+
+  FONT_FAMILY_PREFIX = 'data-cube-grid__utility--font-family-',
+  FONT_SIZE_PREFIX = 'data-cube-grid__utility--font-size-',
+  FONT_BOLD = 'data-cube-grid__utility--font-style-bold',
+  FONT_ITALIC = 'data-cube-grid__utility--font-style-italic',
+  FONT_UNDERLINED_PREFIX = 'data-cube-grid__utility--font-style-underlined-',
+  FONT_STRIKETHROUGH = 'data-cube-grid__utility--font-style-strikethrough',
+  TEXT_ALIGN_PREFIX = 'data-cube-grid__utility--text-align-',
+  TEXT_COLOR_PREFIX = 'data-cube-grid__utility--text-color-',
+  BACKGROUND_COLOR_PREFIX = 'data-cube-grid__utility--background-color-',
+}
+export const generateFontFamilyUtilityClassName = (fontFamily: string) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_FAMILY_PREFIX}${fontFamily.replaceAll(' ', '-')}`;
+export const generateFontSizeUtilityClassName = (fontSize: number) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_SIZE_PREFIX}${fontSize}`;
+export const generateFontUnderlinedUtilityClassName = (
+  variant: string | undefined,
+) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_UNDERLINED_PREFIX}${variant ?? 'none'}`;
+export const generateTextAlignUtilityClassName = (alignment: string) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.TEXT_ALIGN_PREFIX}${alignment}`;
+export const generateTextColorUtilityClassName = (color: string) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.TEXT_COLOR_PREFIX}${color.substring(1)}`;
+export const generateBackgroundColorUtilityClassName = (color: string) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BACKGROUND_COLOR_PREFIX}${color.substring(1)}`;
+
 export const INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH = 50;
 export const INTERNAL__GRID_CLIENT_HEADER_HEIGHT = 24;
 export const INTERNAL__GRID_CLIENT_ROW_HEIGHT = 20;

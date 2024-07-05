@@ -618,14 +618,19 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                           undefined,
                       },
                     )}
-                    onClick={() =>
-                      selectedColumn.setFontUnderlined(
+                    onClick={() => {
+                      if (
                         (selectedColumn.fontUnderlined ??
                           gridConfiguration.defaultFontUnderlined) === undefined
-                          ? DataCubeFontFormatUnderlinedVariant.SOLID
-                          : undefined,
-                      )
-                    }
+                      ) {
+                        selectedColumn.setFontUnderlined(
+                          DataCubeFontFormatUnderlinedVariant.SOLID,
+                        );
+                        selectedColumn.setFontStrikethrough(false);
+                      } else {
+                        selectedColumn.setFontUnderlined(undefined);
+                      }
+                    }}
                   >
                     <DataCubeIcon.FontUnderlined />
                   </button>
@@ -651,6 +656,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                         key={variant}
                         onClick={() => {
                           selectedColumn.setFontUnderlined(variant);
+                          selectedColumn.setFontStrikethrough(false);
                           closeFontFormatUnderlinedVariantDropdown();
                         }}
                       >
@@ -695,14 +701,17 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                           gridConfiguration.defaultFontStrikethrough,
                       },
                     )}
-                    onClick={() =>
-                      selectedColumn.setFontStrikethrough(
-                        !(
-                          selectedColumn.fontStrikethrough ??
-                          gridConfiguration.defaultFontStrikethrough
-                        ),
-                      )
-                    }
+                    onClick={() => {
+                      if (
+                        selectedColumn.fontStrikethrough ??
+                        gridConfiguration.defaultFontStrikethrough
+                      ) {
+                        selectedColumn.setFontStrikethrough(false);
+                      } else {
+                        selectedColumn.setFontStrikethrough(true);
+                        selectedColumn.setFontUnderlined(undefined);
+                      }
+                    }}
                   >
                     <DataCubeIcon.FontStrikethrough />
                   </button>
@@ -808,42 +817,42 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                       <DataCubeEditorColorPickerButton
                         color={
-                          selectedColumn.foregroundNegativeColor ??
-                          gridConfiguration.defaultForegroundNegativeColor
+                          selectedColumn.negativeForegroundColor ??
+                          gridConfiguration.defaultNegativeForegroundColor
                         }
                         defaultColor={
-                          gridConfiguration.defaultForegroundNegativeColor
+                          gridConfiguration.defaultNegativeForegroundColor
                         }
                         onChange={(value) =>
-                          selectedColumn.setForegroundNegativeColor(value)
+                          selectedColumn.setNegativeForegroundColor(value)
                         }
                       />
                     </div>
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                       <DataCubeEditorColorPickerButton
                         color={
-                          selectedColumn.foregroundZeroColor ??
-                          gridConfiguration.defaultForegroundZeroColor
+                          selectedColumn.zeroForegroundColor ??
+                          gridConfiguration.defaultZeroForegroundColor
                         }
                         defaultColor={
-                          gridConfiguration.defaultForegroundZeroColor
+                          gridConfiguration.defaultZeroForegroundColor
                         }
                         onChange={(value) =>
-                          selectedColumn.setForegroundZeroColor(value)
+                          selectedColumn.setZeroForegroundColor(value)
                         }
                       />
                     </div>
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                       <DataCubeEditorColorPickerButton
                         color={
-                          selectedColumn.foregroundErrorColor ??
-                          gridConfiguration.defaultForegroundErrorColor
+                          selectedColumn.errorForegroundColor ??
+                          gridConfiguration.defaultErrorForegroundColor
                         }
                         defaultColor={
-                          gridConfiguration.defaultForegroundErrorColor
+                          gridConfiguration.defaultErrorForegroundColor
                         }
                         onChange={(value) =>
-                          selectedColumn.setForegroundErrorColor(value)
+                          selectedColumn.setErrorForegroundColor(value)
                         }
                       />
                     </div>
@@ -867,42 +876,42 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                       <DataCubeEditorColorPickerButton
                         color={
-                          selectedColumn.backgroundNegativeColor ??
-                          gridConfiguration.defaultBackgroundNegativeColor
+                          selectedColumn.negativeBackgroundColor ??
+                          gridConfiguration.defaultNegativeBackgroundColor
                         }
                         defaultColor={
-                          gridConfiguration.defaultBackgroundNegativeColor
+                          gridConfiguration.defaultNegativeBackgroundColor
                         }
                         onChange={(value) =>
-                          selectedColumn.setBackgroundNegativeColor(value)
+                          selectedColumn.setNegativeBackgroundColor(value)
                         }
                       />
                     </div>
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                       <DataCubeEditorColorPickerButton
                         color={
-                          selectedColumn.backgroundZeroColor ??
-                          gridConfiguration.defaultBackgroundZeroColor
+                          selectedColumn.zeroBackgroundColor ??
+                          gridConfiguration.defaultZeroBackgroundColor
                         }
                         defaultColor={
-                          gridConfiguration.defaultBackgroundZeroColor
+                          gridConfiguration.defaultZeroBackgroundColor
                         }
                         onChange={(value) =>
-                          selectedColumn.setBackgroundZeroColor(value)
+                          selectedColumn.setZeroBackgroundColor(value)
                         }
                       />
                     </div>
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                       <DataCubeEditorColorPickerButton
                         color={
-                          selectedColumn.backgroundErrorColor ??
-                          gridConfiguration.defaultBackgroundErrorColor
+                          selectedColumn.errorBackgroundColor ??
+                          gridConfiguration.defaultErrorBackgroundColor
                         }
                         defaultColor={
-                          gridConfiguration.defaultBackgroundErrorColor
+                          gridConfiguration.defaultErrorBackgroundColor
                         }
                         onChange={(value) =>
-                          selectedColumn.setBackgroundErrorColor(value)
+                          selectedColumn.setErrorBackgroundColor(value)
                         }
                       />
                     </div>

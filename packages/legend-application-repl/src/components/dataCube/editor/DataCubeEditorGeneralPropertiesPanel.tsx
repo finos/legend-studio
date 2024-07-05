@@ -314,9 +314,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               disabled={!configuration.alternateRows}
               color={configuration.alternateRowsColor}
               defaultColor={DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR}
-              onChange={(value) =>
-                configuration.setDefaultBackgroundErrorColor(value)
-              }
+              onChange={(value) => configuration.setAlternateRowsColor(value)}
             />
           </div>
 
@@ -453,13 +451,16 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                       configuration.defaultFontUnderlined !== undefined,
                   },
                 )}
-                onClick={() =>
-                  configuration.setDefaultFontUnderlined(
-                    configuration.defaultFontUnderlined === undefined
-                      ? DataCubeFontFormatUnderlinedVariant.SOLID
-                      : undefined,
-                  )
-                }
+                onClick={() => {
+                  if (configuration.defaultFontUnderlined === undefined) {
+                    configuration.setDefaultFontUnderlined(
+                      DataCubeFontFormatUnderlinedVariant.SOLID,
+                    );
+                    configuration.setDefaultFontStrikethrough(false);
+                  } else {
+                    configuration.setDefaultFontUnderlined(undefined);
+                  }
+                }}
               >
                 <DataCubeIcon.FontUnderlined />
               </button>
@@ -485,6 +486,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                     key={variant}
                     onClick={() => {
                       configuration.setDefaultFontUnderlined(variant);
+                      configuration.setDefaultFontStrikethrough(false);
                       closeFontFormatUnderlinedVariantDropdown();
                     }}
                   >
@@ -525,11 +527,14 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                     'bg-neutral-200': configuration.defaultFontStrikethrough,
                   },
                 )}
-                onClick={() =>
-                  configuration.setDefaultFontStrikethrough(
-                    !configuration.defaultFontStrikethrough,
-                  )
-                }
+                onClick={() => {
+                  if (configuration.defaultFontStrikethrough) {
+                    configuration.setDefaultFontStrikethrough(false);
+                  } else {
+                    configuration.setDefaultFontStrikethrough(true);
+                    configuration.setDefaultFontUnderlined(undefined);
+                  }
+                }}
               >
                 <DataCubeIcon.FontStrikethrough />
               </button>
@@ -628,28 +633,28 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                   <DataCubeEditorColorPickerButton
-                    color={configuration.defaultForegroundNegativeColor}
+                    color={configuration.defaultNegativeForegroundColor}
                     defaultColor={DEFAULT_NEGATIVE_FOREGROUND_COLOR}
                     onChange={(value) =>
-                      configuration.setDefaultForegroundNegativeColor(value)
+                      configuration.setDefaultNegativeForegroundColor(value)
                     }
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                   <DataCubeEditorColorPickerButton
-                    color={configuration.defaultForegroundZeroColor}
+                    color={configuration.defaultZeroForegroundColor}
                     defaultColor={DEFAULT_ZERO_FOREGROUND_COLOR}
                     onChange={(value) =>
-                      configuration.setDefaultForegroundZeroColor(value)
+                      configuration.setDefaultZeroForegroundColor(value)
                     }
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                   <DataCubeEditorColorPickerButton
-                    color={configuration.defaultForegroundErrorColor}
+                    color={configuration.defaultErrorForegroundColor}
                     defaultColor={DEFAULT_ERROR_FOREGROUND_COLOR}
                     onChange={(value) =>
-                      configuration.setDefaultForegroundErrorColor(value)
+                      configuration.setDefaultErrorForegroundColor(value)
                     }
                   />
                 </div>
@@ -669,28 +674,28 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                   <DataCubeEditorColorPickerButton
-                    color={configuration.defaultBackgroundNegativeColor}
+                    color={configuration.defaultNegativeBackgroundColor}
                     defaultColor={DEFAULT_BACKGROUND_COLOR}
                     onChange={(value) =>
-                      configuration.setDefaultBackgroundNegativeColor(value)
+                      configuration.setDefaultNegativeBackgroundColor(value)
                     }
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                   <DataCubeEditorColorPickerButton
-                    color={configuration.defaultBackgroundZeroColor}
+                    color={configuration.defaultZeroBackgroundColor}
                     defaultColor={DEFAULT_BACKGROUND_COLOR}
                     onChange={(value) =>
-                      configuration.setDefaultBackgroundZeroColor(value)
+                      configuration.setDefaultZeroBackgroundColor(value)
                     }
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                   <DataCubeEditorColorPickerButton
-                    color={configuration.defaultBackgroundErrorColor}
+                    color={configuration.defaultErrorBackgroundColor}
                     defaultColor={DEFAULT_BACKGROUND_COLOR}
                     onChange={(value) =>
-                      configuration.setDefaultBackgroundErrorColor(value)
+                      configuration.setDefaultErrorBackgroundColor(value)
                     }
                   />
                 </div>

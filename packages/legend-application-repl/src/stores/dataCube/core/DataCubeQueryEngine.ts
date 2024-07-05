@@ -124,16 +124,63 @@ export enum DataCubeFont {
   GEORGIA = 'Georgia',
   ROBOTO_SERIF = 'Roboto Serif',
 
-  // monospaced
+  // monospace
   JERBRAINS_MONO = 'Jetbrains Mono',
   ROBOTO_MONO = 'Roboto Mono',
   UBUNTU_MONO = 'Ubuntu Mono',
 }
 
 export enum DataCubeFontTextAlignment {
-  CENTER = 'Center',
-  LEFT = 'Left',
-  RIGHT = 'Right',
+  CENTER = 'center',
+  LEFT = 'left',
+  RIGHT = 'right',
+}
+
+export enum DataCubeFontFormatUnderlinedVariant {
+  SOLID = 'solid',
+  DASHED = 'dashed',
+  DOTTED = 'dotted',
+  DOUBLE = 'double',
+  WAVY = 'wavy',
+}
+
+export enum DataCubeColumnKind {
+  MEASURE = 'Measure',
+  DIMENSION = 'Dimension',
+}
+
+export enum DataCubeAggregateFunction {
+  SUM = 'sum',
+  AVERAGE = 'avg',
+  COUNT = 'count',
+  MIN = 'min',
+  MAX = 'max',
+  // UNIQUE = 'uniq',
+  FIRST = 'first',
+  LAST = 'last',
+  MEDIAN = 'median',
+  VAR_POP = 'var_samp',
+  VAR_SAMP = 'var_pop',
+  STDDEV_POP = 'stddev_pop',
+  STDDEV_SAMP = 'stddev_samp',
+  // STANDARD_ERROR = 'stderr',
+  // NULL = 'null',
+  // ssq
+  // countvalid
+  // countnull
+  // uniqunstrict
+  // minmagnitude
+  // maxmagnitude
+  // commonprefix
+  // commonprefixunstrict
+  // strjoin
+  // strjoinuniq
+  // splitjoin
+  // daterange
+  // wavg
+  // wstderr
+  // wsum
+  // custom
 }
 
 export enum DataCubeColumnPinPlacement {
@@ -185,50 +232,3 @@ export const DEFAULT_ROW_BACKGROUND_COLOR = TailwindCSSPalette.white;
 export const DEFAULT_NEGATIVE_FOREGROUND_COLOR = TailwindCSSPalette.red[500];
 export const DEFAULT_ZERO_FOREGROUND_COLOR = TailwindCSSPalette.neutral[400];
 export const DEFAULT_ERROR_FOREGROUND_COLOR = TailwindCSSPalette.blue[600];
-
-export enum DataCubeFontFormatUnderlinedVariant {
-  SOLID = 'Solid',
-  DASHED = 'Dashed',
-  DOTTED = 'Dotted',
-  DOUBLE = 'Double',
-  WAVY = 'Wavy',
-}
-
-export enum DataCubeColumnKind {
-  MEASURE = 'Measure',
-  DIMENSION = 'Dimension',
-}
-
-export enum DataCubeAggregateFunction {
-  SUM = 'sum',
-  AVERAGE = 'avg',
-  COUNT = 'count',
-  MIN = 'min',
-  MAX = 'max',
-  // UNIQUE = 'uniq',
-  FIRST = 'first',
-  LAST = 'last',
-  MEDIAN = 'median',
-  VAR_POP = 'var_samp',
-  VAR_SAMP = 'var_pop',
-  STDDEV_POP = 'stddev_pop',
-  STDDEV_SAMP = 'stddev_samp',
-  // STANDARD_ERROR = 'stderr',
-  // NULL = 'null',
-  // ssq
-  // countvalid
-  // countnull
-  // uniqunstrict
-  // minmagnitude
-  // maxmagnitude
-  // commonprefix
-  // commonprefixunstrict
-  // strjoin
-  // strjoinuniq
-  // splitjoin
-  // daterange
-  // wavg
-  // wstderr
-  // wsum
-  // custom
-}

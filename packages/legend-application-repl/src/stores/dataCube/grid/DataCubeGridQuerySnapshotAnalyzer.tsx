@@ -34,9 +34,20 @@ import {
   GridClientAggregateOperation,
   GridClientSortDirection,
   INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
+  INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME,
+  generateFontFamilyUtilityClassName,
+  generateFontSizeUtilityClassName,
+  generateFontUnderlinedUtilityClassName,
+  generateTextAlignUtilityClassName,
+  generateTextColorUtilityClassName,
+  generateBackgroundColorUtilityClassName,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
-import { guaranteeNonNullable, IllegalStateError } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  IllegalStateError,
+  isNumber,
+} from '@finos/legend-shared';
 import type {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
@@ -44,8 +55,11 @@ import type {
 import {
   DataCubeColumnDataType,
   DataCubeNumberScale,
+  DEFAULT_ROW_BUFFER,
   getDataType,
 } from '../core/DataCubeQueryEngine.js';
+import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
+import { DataCubeIcon } from '@finos/legend-art';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -157,6 +171,41 @@ type ColumnData = {
 function _displaySpec(columnData: ColumnData) {
   const { column, configuration, gridConfiguration } = columnData;
   const dataType = getDataType(column.type);
+  const fontFamily =
+    configuration.fontFamily ?? gridConfiguration.defaultFontFamily;
+  const fontSize = configuration.fontSize ?? gridConfiguration.defaultFontSize;
+  const fontBold = configuration.fontBold ?? gridConfiguration.defaultFontBold;
+  const fontItalic =
+    configuration.fontItalic ?? gridConfiguration.defaultFontItalic;
+  const fontStrikethrough =
+    configuration.fontStrikethrough ??
+    gridConfiguration.defaultFontStrikethrough;
+  const fontUnderlined =
+    configuration.fontUnderlined ?? gridConfiguration.defaultFontUnderlined;
+  const textAlign =
+    configuration.textAlign ?? gridConfiguration.defaultTextAlign;
+  const foregroundColor =
+    configuration.foregroundColor ?? gridConfiguration.defaultForegroundColor;
+  const backgroundColor =
+    configuration.backgroundColor ?? gridConfiguration.defaultBackgroundColor;
+  const negativeForegroundColor =
+    configuration.negativeForegroundColor ??
+    gridConfiguration.defaultNegativeForegroundColor;
+  const negativeBackgroundColor =
+    configuration.negativeBackgroundColor ??
+    gridConfiguration.defaultNegativeBackgroundColor;
+  const zeroForegroundColor =
+    configuration.zeroForegroundColor ??
+    gridConfiguration.defaultZeroForegroundColor;
+  const zeroBackgroundColor =
+    configuration.zeroBackgroundColor ??
+    gridConfiguration.defaultZeroBackgroundColor;
+  const errorForegroundColor =
+    configuration.errorForegroundColor ??
+    gridConfiguration.defaultErrorForegroundColor;
+  const errorBackgroundColor =
+    configuration.errorBackgroundColor ??
+    gridConfiguration.defaultErrorBackgroundColor;
   return {
     // setting the cell data type might helps guide the grid to render the cell properly
     // and optimize the grid performance slightly by avoiding unnecessary type inference
@@ -164,8 +213,8 @@ function _displaySpec(columnData: ColumnData) {
     valueFormatter:
       dataType === DataCubeColumnDataType.NUMBER
         ? (params) => {
-            const value = params.value as number | null;
-            if (value === null) {
+            const value = params.value as number | null | undefined;
+            if (value === null || value === undefined) {
               return null;
             }
             const showNegativeNumberInParens =
@@ -195,6 +244,88 @@ function _displaySpec(columnData: ColumnData) {
             );
           }
         : (params) => params.value,
+    loadingCellRenderer: (props: CustomLoadingCellRendererProps) => {
+      if (props.node.failedLoad) {
+        return <span className="inline-flex items-center">#ERR</span>;
+      }
+      return (
+        <span className="inline-flex items-center">
+          <DataCubeIcon.Loader className="mr-1 animate-spin stroke-2" />
+          Loading
+        </span>
+      );
+    },
+    cellClassRules: {
+      [generateFontFamilyUtilityClassName(fontFamily)]: () => true,
+      [generateFontSizeUtilityClassName(fontSize)]: () => true,
+      [INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_BOLD]: () => fontBold,
+      [INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_ITALIC]: () =>
+        fontItalic,
+      [INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_STRIKETHROUGH]: () =>
+        fontStrikethrough,
+      [generateFontUnderlinedUtilityClassName(fontUnderlined)]: () =>
+        Boolean(fontUnderlined),
+      [generateTextAlignUtilityClassName(textAlign)]: () => true,
+      [generateTextColorUtilityClassName(foregroundColor)]: (params) => {
+        if (dataType !== DataCubeColumnDataType.NUMBER) {
+          return true;
+        }
+        return isNumber(params.value) && params.value > 0;
+      },
+      [generateBackgroundColorUtilityClassName(backgroundColor)]: (params) => {
+        if (dataType !== DataCubeColumnDataType.NUMBER) {
+          return true;
+        }
+        return isNumber(params.value) && params.value > 0;
+      },
+      [generateTextColorUtilityClassName(zeroForegroundColor)]: (params) => {
+        if (
+          dataType !== DataCubeColumnDataType.NUMBER ||
+          !isNumber(params.value)
+        ) {
+          return false;
+        }
+        return params.value === 0;
+      },
+      [generateBackgroundColorUtilityClassName(zeroBackgroundColor)]: (
+        params,
+      ) => {
+        if (
+          dataType !== DataCubeColumnDataType.NUMBER ||
+          !isNumber(params.value)
+        ) {
+          return false;
+        }
+        return params.value === 0;
+      },
+      [generateTextColorUtilityClassName(negativeForegroundColor)]: (
+        params,
+      ) => {
+        if (
+          dataType !== DataCubeColumnDataType.NUMBER ||
+          !isNumber(params.value)
+        ) {
+          return false;
+        }
+        return params.value < 0;
+      },
+      [generateBackgroundColorUtilityClassName(negativeBackgroundColor)]: (
+        params,
+      ) => {
+        if (
+          dataType !== DataCubeColumnDataType.NUMBER ||
+          !isNumber(params.value)
+        ) {
+          return false;
+        }
+        return params.value < 0;
+      },
+      [generateTextColorUtilityClassName(errorForegroundColor)]: (params) =>
+        params.node.failedLoad,
+      [generateBackgroundColorUtilityClassName(errorBackgroundColor)]: (
+        params,
+      ) => params.node.failedLoad,
+    },
   } as ColDef;
 }
 
@@ -274,7 +405,26 @@ export function generateGridOptionsFromSnapshot(
   configuration: DataCubeConfiguration,
 ): GridOptions {
   const data = snapshot.data;
-  const gridOptions: GridOptions = {
+  const gridOptions = {
+    /**
+     * NOTE: there is a strange issue where if we put dynamic configuration directly
+     * such as rowClassRules which depends on some changing state (e.g. alternateRows)
+     * as the grid component's props, the grid performance will be heavily compromised
+     * while if we programatically set it like this, it does not seem so taxing to the
+     * performance; perhaps something to do with React component rendering on props change
+     * so in general for grid options which are not static, we must configure them here
+     */
+    rowClassRules: configuration.alternateRows
+      ? {
+          [INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.HIGHLIGHT_ROW]: (
+            params,
+          ) =>
+            params.rowIndex % (configuration.alternateRowsCount * 2) >=
+            configuration.alternateRowsCount,
+        }
+      : null,
+    rowBuffer: DEFAULT_ROW_BUFFER,
+    // -------------------------------------- COLUMNS --------------------------------------
     columnDefs: [
       {
         headerName: '',
@@ -328,7 +478,7 @@ export function generateGridOptionsFromSnapshot(
         } satisfies ColDef | ColGroupDef;
       }),
     ],
-  };
+  } as GridOptions;
 
   return gridOptions;
 }

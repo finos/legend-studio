@@ -63,13 +63,13 @@ export class DataCubeColumnConfiguration {
   fontStrikethrough?: boolean | undefined;
   textAlign?: DataCubeFontTextAlignment | undefined;
   foregroundColor?: string | undefined;
-  foregroundNegativeColor?: string | undefined;
-  foregroundZeroColor?: string | undefined;
-  foregroundErrorColor?: string | undefined;
+  negativeForegroundColor?: string | undefined;
+  zeroForegroundColor?: string | undefined;
+  errorForegroundColor?: string | undefined;
   backgroundColor?: string | undefined;
-  backgroundNegativeColor?: string | undefined;
-  backgroundZeroColor?: string | undefined;
-  backgroundErrorColor?: string | undefined;
+  negativeBackgroundColor?: string | undefined;
+  zeroBackgroundColor?: string | undefined;
+  errorBackgroundColor?: string | undefined;
 
   blur = false;
   hideFromView = false;
@@ -88,18 +88,14 @@ export class DataCubeColumnConfiguration {
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeColumnConfiguration, {
       backgroundColor: optional(primitive()),
-      backgroundErrorColor: optional(primitive()),
-      backgroundNegativeColor: optional(primitive()),
-      backgroundZeroColor: optional(primitive()),
       decimals: optional(primitive()),
       displayAsLink: primitive(),
       displayCommas: primitive(),
       displayName: optional(primitive()),
+      errorBackgroundColor: optional(primitive()),
+      errorForegroundColor: optional(primitive()),
       fixedWidth: optional(primitive()),
       foregroundColor: optional(primitive()),
-      foregroundErrorColor: optional(primitive()),
-      foregroundNegativeColor: optional(primitive()),
-      foregroundZeroColor: optional(primitive()),
       fontBold: optional(primitive()),
       fontFamily: optional(primitive()),
       fontItalic: optional(primitive()),
@@ -111,11 +107,15 @@ export class DataCubeColumnConfiguration {
       maxWidth: optional(primitive()),
       minWidth: optional(primitive()),
       name: primitive(),
+      negativeBackgroundColor: optional(primitive()),
+      negativeForegroundColor: optional(primitive()),
       negativeNumberInParens: primitive(),
       numberScale: optional(primitive()),
       pinned: optional(primitive()),
       textAlign: optional(primitive()),
       type: primitive(),
+      zeroBackgroundColor: optional(primitive()),
+      zeroForegroundColor: optional(primitive()),
     }),
   );
 }
@@ -138,13 +138,13 @@ export class DataCubeConfiguration {
   defaultFontStrikethrough = DEFAULT_FONT_STRIKETHROUGH;
   defaultTextAlign = DEFAULT_TEXT_ALIGN;
   defaultForegroundColor = DEFAULT_FOREGROUND_COLOR;
-  defaultForegroundNegativeColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
-  defaultForegroundZeroColor = DEFAULT_ZERO_FOREGROUND_COLOR;
-  defaultForegroundErrorColor = DEFAULT_ERROR_FOREGROUND_COLOR;
+  defaultNegativeForegroundColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
+  defaultZeroForegroundColor = DEFAULT_ZERO_FOREGROUND_COLOR;
+  defaultErrorForegroundColor = DEFAULT_ERROR_FOREGROUND_COLOR;
   defaultBackgroundColor = DEFAULT_BACKGROUND_COLOR;
-  defaultBackgroundNegativeColor = DEFAULT_BACKGROUND_COLOR;
-  defaultBackgroundZeroColor = DEFAULT_BACKGROUND_COLOR;
-  defaultBackgroundErrorColor = DEFAULT_BACKGROUND_COLOR;
+  defaultNegativeBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+  defaultZeroBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+  defaultErrorBackgroundColor = DEFAULT_BACKGROUND_COLOR;
 
   alternateRows = false;
   alternateRowsStandardMode = true;
@@ -178,9 +178,8 @@ export class DataCubeConfiguration {
         usingModelSchema(DataCubeColumnConfiguration.serialization.schema),
       ),
       defaultBackgroundColor: primitive(),
-      defaultBackgroundErrorColor: primitive(),
-      defaultBackgroundNegativeColor: primitive(),
-      defaultBackgroundZeroColor: primitive(),
+      defaultErrorBackgroundColor: primitive(),
+      defaultErrorForegroundColor: primitive(),
       defaultFontBold: primitive(),
       defaultFontFamily: primitive(),
       defaultFontItalic: primitive(),
@@ -188,9 +187,10 @@ export class DataCubeConfiguration {
       defaultFontStrikethrough: primitive(),
       defaultFontUnderlined: optional(primitive()),
       defaultForegroundColor: primitive(),
-      defaultForegroundErrorColor: primitive(),
-      defaultForegroundNegativeColor: primitive(),
-      defaultForegroundZeroColor: primitive(),
+      defaultNegativeBackgroundColor: primitive(),
+      defaultNegativeForegroundColor: primitive(),
+      defaultZeroBackgroundColor: primitive(),
+      defaultZeroForegroundColor: primitive(),
       defaultTextAlign: primitive(),
       description: optional(primitive()),
       gridLineColor: primitive(),

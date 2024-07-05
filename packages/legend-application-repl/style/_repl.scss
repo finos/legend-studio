@@ -134,9 +134,7 @@ button:focus-visible {
   --ag-icon-size: 12px;
   --ag-font-family: 'Roboto', sans-serif;
   --ag-icon-font-color: var(--tw-color-neutral-500);
-  --ag-row-border-color: transparent;
   --ag-header-foreground-color: var(--tw-color-black);
-  --ag-odd-row-background-color: var(--tw-white);
   --ag-row-hover-color: #d4d4d415; // tailwind neutral 300
   // NOTE: These are icons taken from Tabler and URI encoded
   // See https://yoksel.github.io/url-encoder/
@@ -193,28 +191,6 @@ button:focus-visible {
 
   .ag-menu-option-popup-pointer {
     padding: 5px 5px 5px 0;
-  }
-
-  // TODO: cell/range selection color
-
-  // --------------------------------- CONFIGURATION DRIVEN ---------------------------------
-  //
-  // NOTE: these following styles are controlled by the configuration. Changes in the
-  // configuration will programatically toggle the styles or set the CSS variables' values
-
-  --ag-grid-line-color: var(--ag-border-color);
-  --ag-row-highlight-color: var(--tw-white);
-
-  .data-cube-grid__utility--highlight-row {
-    background-color: var(--ag-row-highlight-color);
-  }
-
-  .data-cube-grid__utility--show-vertical-grid-lines {
-    --ag-cell-horizontal-border: 1px solid var(--ag-grid-line-color);
-  }
-
-  .data-cube-grid__utility--show-horizontal-grid-lines {
-    --ag-row-border-color: var(--ag-grid-line-color);
   }
 }
 
