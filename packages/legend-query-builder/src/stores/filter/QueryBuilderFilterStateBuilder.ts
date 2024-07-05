@@ -399,3 +399,42 @@ export const processFilterExpression = (
    */
   filterState.simplifyTree();
 };
+
+export const processFilterLambda = (
+  lambdaFunc: LambdaFunction,
+  queryBuilderState: QueryBuilderState,
+): void => {
+  const filterState = queryBuilderState.filterState;
+
+  assertTrue(
+    lambdaFunc.expressionSequence.length === 1,
+    `Can't process filter() lambda: only support filter() lambda body with 1 expression`,
+  );
+  const rootExpression = guaranteeType(
+    lambdaFunc.expressionSequence[0],
+    SimpleFunctionExpression,
+    `Can't process filter() lambda: only support filter() lambda body with 1 expression`,
+  );
+
+  assertTrue(
+    lambdaFunc.functionType.parameters.length === 1,
+    `Can't process filter() lambda: only support filter() lambda with 1 parameter`,
+  );
+  filterState.setLambdaParameterName(
+    guaranteeType(
+      lambdaFunc.functionType.parameters[0],
+      VariableExpression,
+      `Can't process filter() lambda: only support filter() lambda with 1 parameter`,
+    ).name,
+  );
+
+  processFilterTree(rootExpression, filterState, undefined);
+
+  /**
+   * NOTE: Since group operations like and/or do not take more than 2 parameters, if there are
+   * more than 2 clauses in each group operations, then these clauses are converted into an
+   * unbalanced tree. However, this would look quite bad for UX, as such, we simplify the tree.
+   * After building the filter state.
+   */
+  filterState.simplifyTree();
+};

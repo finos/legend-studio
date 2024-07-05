@@ -33,6 +33,8 @@ import { DSL_Diagram_LegendStudioApplicationPlugin } from '@finos/legend-extensi
 import { DSL_Persistence_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-persistence/application-studio';
 import { STO_ServiceStore_LegendStudioApplicationPlugin } from '@finos/legend-extension-store-service-store/application-studio';
 import { Assortment_LegendStudioApplicationPreset } from '@finos/legend-extension-assortment/application-studio';
+import { DSL_DataQuality_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-data-quality/application-studio';
+import { DSL_DataQuality_GraphManagerPreset } from '@finos/legend-extension-dsl-data-quality/graph';
 
 export class LegendStudioWebApplication {
   static getPresetCollection(): AbstractPreset[] {
@@ -46,6 +48,7 @@ export class LegendStudioWebApplication {
       new STO_ServiceStore_GraphManagerPreset(),
 
       new Assortment_LegendStudioApplicationPreset(),
+      new DSL_DataQuality_GraphManagerPreset(),
     ];
   }
 
@@ -58,6 +61,7 @@ export class LegendStudioWebApplication {
       new DSL_Service_LegendStudioApplicationPlugin(),
       new DSL_Persistence_LegendStudioApplicationPlugin(),
       new STO_ServiceStore_LegendStudioApplicationPlugin(),
+      new DSL_DataQuality_LegendStudioApplicationPlugin(),
 
       // loggers
       new WebConsole(),

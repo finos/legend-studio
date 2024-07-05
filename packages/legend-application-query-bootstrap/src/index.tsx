@@ -28,6 +28,7 @@ import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-
 import { Assortment_GraphManagerPreset } from '@finos/legend-extension-assortment/graph';
 import { DSL_Service_LegendQueryApplicationPlugin } from '@finos/legend-extension-dsl-service/application-query';
 import { DSL_DataSpace_LegendApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application';
+import { DSL_DataQuality_GraphManagerPreset } from '@finos/legend-extension-dsl-data-quality/graph';
 
 export class LegendQueryWebApplication {
   static getPresetCollection(): AbstractPreset[] {
@@ -39,6 +40,7 @@ export class LegendQueryWebApplication {
       new DSL_DataSpace_GraphManagerPreset(),
       new DSL_Persistence_GraphManagerPreset(),
       new STO_ServiceStore_GraphManagerPreset(),
+      new DSL_DataQuality_GraphManagerPreset(),
     ];
   }
 

@@ -131,16 +131,19 @@ export const V1_entitiesToPureModelContextData = async (
   }
 };
 
-const legendSDLCSerializationModelSchema = createModelSchema(V1_LegendSDLC, {
-  _type: usingConstantValueSchema(V1_SDLCType.ALLOY),
-  baseVersion: optional(primitive()),
-  version: primitive(),
-  groupId: primitive(),
-  artifactId: primitive(),
-  packageableElementPointers: list(
-    usingModelSchema(V1_packageableElementPointerModelSchema),
-  ),
-});
+export const V1_legendSDLCSerializationModelSchema = createModelSchema(
+  V1_LegendSDLC,
+  {
+    _type: usingConstantValueSchema(V1_SDLCType.ALLOY),
+    baseVersion: optional(primitive()),
+    version: primitive(),
+    groupId: primitive(),
+    artifactId: primitive(),
+    packageableElementPointers: list(
+      usingModelSchema(V1_packageableElementPointerModelSchema),
+    ),
+  },
+);
 
 const V1_pureModelContextTextSchema = createModelSchema(
   V1_PureModelContextText,
@@ -156,7 +159,7 @@ const V1_pureModelContextPointerModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_PureModelContextType.POINTER),
     serializer: optional(usingModelSchema(V1_Protocol.serialization.schema)),
-    sdlcInfo: usingModelSchema(legendSDLCSerializationModelSchema),
+    sdlcInfo: usingModelSchema(V1_legendSDLCSerializationModelSchema),
   },
 );
 
