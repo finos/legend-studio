@@ -21,7 +21,7 @@ import {
   act,
   getByRole,
   queryAllByText,
-  queryByText,
+  findByText,
 } from '@testing-library/react';
 import { TEST_DATA__simpleProjection } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
@@ -130,8 +130,10 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
 
-    expect(queryByText(postFilterPanel, 'Edited First Name')).not.toBeNull();
-    expect(queryByText(postFilterPanel, 'is')).not.toBeNull();
-    expect(queryByText(postFilterPanel, 'Henry')).not.toBeNull();
+    expect(
+      await findByText(postFilterPanel, 'Edited First Name'),
+    ).not.toBeNull();
+    expect(await findByText(postFilterPanel, 'is')).not.toBeNull();
+    expect(await findByText(postFilterPanel, '"Henry"')).not.toBeNull();
   },
 );

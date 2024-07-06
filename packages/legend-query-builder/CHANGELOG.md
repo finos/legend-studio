@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.56
+
+### Patch Changes
+
+- [#3313](https://github.com/finos/legend-studio/pull/3313) [`034a3c4`](https://github.com/finos/legend-studio/commit/034a3c40a22f94d0dd8647f97c866d0a25ddc1e5) ([@travisstebbins](https://github.com/travisstebbins)) - Restyle post-filter panel
+
 ## 4.14.55
 
 ### Patch Changes

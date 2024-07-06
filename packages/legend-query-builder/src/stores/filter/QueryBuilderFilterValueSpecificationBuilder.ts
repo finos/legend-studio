@@ -39,7 +39,7 @@ import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaM
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilderConfig.js';
 import { buildPropertyExpressionChain } from '../QueryBuilderValueSpecificationBuilderHelper.js';
 
-const buildFilterConditionExpression = (
+export const buildFilterConditionExpression = (
   filterState: QueryBuilderFilterState,
   node: QueryBuilderFilterTreeNodeData,
 ): ValueSpecification | undefined => {

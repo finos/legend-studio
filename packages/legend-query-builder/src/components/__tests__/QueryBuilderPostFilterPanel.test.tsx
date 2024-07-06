@@ -22,7 +22,6 @@ import {
   queryAllByTestId,
   queryByText,
   queryByTitle,
-  queryByDisplayValue,
   fireEvent,
   getByDisplayValue,
   getByTitle,
@@ -31,6 +30,7 @@ import {
   getAllByTestId,
   getByRole,
   getAllByText,
+  findByDisplayValue,
 } from '@testing-library/react';
 import {
   TEST_DATA__lambda_WithDerivedProjectColumnsUsingConstAndParams,
@@ -63,7 +63,7 @@ import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   TEST__setUpQueryBuilder,
   dragAndDrop,
-  selectFromCustomSelectorInput,
+  selectFirstOptionFromCustomSelectorInput,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json' assert { type: 'json' };
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
@@ -116,7 +116,7 @@ test(
 
     expect(
       await waitFor(() =>
-        getByText(queryBuilderFilterPanel, '2023-09-09T16:06:10'),
+        getByText(queryBuilderFilterPanel, '"2023-09-09T16:06:10"'),
       ),
     ).not.toBeNull();
   },
@@ -150,18 +150,18 @@ test(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
       ),
     );
-    let nodeContents = queryAllByTestId(
+    let nodeContainers = queryAllByTestId(
       postFilterPanel,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTAINER,
     );
-    expect(nodeContents.length).toBe(7);
+    expect(nodeContainers.length).toBe(7);
     const andNode = guaranteeNonNullable(
-      nodeContents.find((n) => queryByText(n, 'and') !== null),
+      nodeContainers.find((n) => queryByText(n, 'and') !== null),
       'Unable to find and node',
     );
     expect(queryByTitle(andNode, 'Switch Operation')).not.toBeNull();
-    let orNode = guaranteeNonNullable(
-      nodeContents.find((n) => queryByText(n, 'or') !== null),
+    const orNode = guaranteeNonNullable(
+      nodeContainers.find((n) => queryByText(n, 'or') !== null),
       'Unable to find or node',
     );
     expect(queryByTitle(orNode, 'Switch Operation')).not.toBeNull();
@@ -171,7 +171,8 @@ test(
       value: string | number,
       elements: HTMLElement[],
       options?: {
-        valueIsInput?: true;
+        valueIsInput?: boolean;
+        shouldHaveResetButton?: boolean;
       },
       extraTitles?: string[],
     ): HTMLElement => {
@@ -179,54 +180,62 @@ test(
         elements.find((n) => queryByText(n, columnname) !== null),
         `Can't find post filter condition with property ${columnname}`,
       );
-      expect(queryByText(element, columnname)).not.toBeNull();
-      expect(queryByText(element, operator)).not.toBeNull();
-      expect(queryByTitle(element, 'Remove')).not.toBeNull();
-      expect(queryByTitle(element, 'Reset')).not.toBeNull();
-      expect(queryByTitle(element, 'Choose Operator...')).not.toBeNull();
+      expect(getByText(element, columnname)).not.toBeNull();
+      expect(getByText(element, operator)).not.toBeNull();
+      expect(getByTitle(element, 'Remove')).not.toBeNull();
+      expect(getByText(element, `"${value}"`)).not.toBeNull();
       if (options?.valueIsInput) {
-        expect(queryByDisplayValue(element, value)).not.toBeNull();
-      } else {
-        expect(queryByText(element, value)).not.toBeNull();
+        fireEvent.click(getByText(element, `"${value}"`));
+        expect(getByDisplayValue(element, value)).not.toBeNull();
       }
+      if (options?.shouldHaveResetButton) {
+        expect(getByTitle(element, 'Reset')).not.toBeNull();
+      }
+      expect(getByTitle(element, 'Choose Operator...')).not.toBeNull();
       extraTitles?.forEach((title) =>
-        expect(queryByTitle(element, title)).not.toBeNull(),
+        expect(getByTitle(element, title)).not.toBeNull(),
       );
+      if (options?.valueIsInput) {
+        fireEvent.blur(getByDisplayValue(element, value));
+      }
       return element;
     };
     let ageNode = testUniqueBasicPostFilterCondition(
       'Age',
       '>=',
       0,
-      nodeContents,
-      { valueIsInput: true },
+      nodeContainers,
+      { valueIsInput: true, shouldHaveResetButton: true },
       ['Evaluate Expression (Enter)'],
     );
     let firstNameNode = testUniqueBasicPostFilterCondition(
       'First Name',
       'ends with',
       'Testing',
-      nodeContents,
-      { valueIsInput: true },
+      nodeContainers,
+      { valueIsInput: true, shouldHaveResetButton: true },
     );
 
     let dobTimeNode = testUniqueBasicPostFilterCondition(
       'Dob Time',
       'is',
       '2023-09-30T11:47:13-0400',
-      nodeContents,
+      nodeContainers,
+      { shouldHaveResetButton: false },
     );
     let dobDateNode = testUniqueBasicPostFilterCondition(
       'Dob Date',
       'is not',
       'One Year Ago',
-      nodeContents,
+      nodeContainers,
+      { shouldHaveResetButton: false },
     );
     let strictDateNode = testUniqueBasicPostFilterCondition(
       'Dob Strict Date',
       '>',
       '2023-09-30',
-      nodeContents,
+      nodeContainers,
+      { shouldHaveResetButton: false },
     );
     const constantPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
@@ -236,19 +245,19 @@ test(
     );
     // dnd const `integerConst` -> Age Value
     const intConst = getByText(constantPanel, 'integerConst');
-    const displayValue = getByDisplayValue(ageNode, 0);
+    const intValueDisplay = getByText(ageNode, '"0"');
     await dragAndDrop(
       intConst,
-      displayValue,
+      intValueDisplay,
       postFilterPanel,
       'Change Filter Value',
     );
-    nodeContents = queryAllByTestId(
+    nodeContainers = queryAllByTestId(
       postFilterPanel,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTAINER,
     );
     ageNode = guaranteeNonNullable(
-      nodeContents.find((e) => queryByText(e, 'Age') !== null),
+      nodeContainers.find((e) => queryByText(e, 'Age') !== null),
     );
     expect(getByText(ageNode, 'Age')).not.toBeNull();
     expect(getByText(ageNode, '>=')).not.toBeNull();
@@ -257,19 +266,19 @@ test(
 
     // dnd const `stringConst` -> first Name Value
     const stringConst = getByText(constantPanel, 'stringConst');
-    const stringValue = getByDisplayValue(firstNameNode, 'Testing');
+    const stringValueDisplay = getByText(firstNameNode, '"Testing"');
     await dragAndDrop(
       stringConst,
-      stringValue,
+      stringValueDisplay,
       postFilterPanel,
       'Change Filter Value',
     );
-    nodeContents = queryAllByTestId(
+    nodeContainers = queryAllByTestId(
       postFilterPanel,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTAINER,
     );
     firstNameNode = guaranteeNonNullable(
-      nodeContents.find((e) => queryByText(e, 'First Name') !== null),
+      nodeContainers.find((e) => queryByText(e, 'First Name') !== null),
     );
     expect(getByText(firstNameNode, 'First Name')).not.toBeNull();
     expect(getByText(firstNameNode, 'ends with')).not.toBeNull();
@@ -278,15 +287,18 @@ test(
 
     // dnd const `dateFunction` -> Date Time Val
     const dateFunctionConst = getByText(constantPanel, 'dateFunction');
-    const dateVal = getByText(dobTimeNode, '2023-09-30T11:47:13-0400');
+    const dateValueDisplay = getByText(
+      dobTimeNode,
+      '"2023-09-30T11:47:13-0400"',
+    );
     await dragAndDrop(
       dateFunctionConst,
-      dateVal,
+      dateValueDisplay,
       dobTimeNode,
       'Change Filter Value',
     );
     dobTimeNode = guaranteeNonNullable(
-      nodeContents.find((e) => queryByText(e, 'Dob Time') !== null),
+      nodeContainers.find((e) => queryByText(e, 'Dob Time') !== null),
     );
     expect(getByText(dobTimeNode, 'Dob Time')).not.toBeNull();
     expect(getByText(dobTimeNode, 'is')).not.toBeNull();
@@ -295,15 +307,15 @@ test(
 
     // dnd const `absolute Date` -> Date Date
     const absoluteDateConst = getByText(constantPanel, 'absoluteDate');
-    const dateTimeVal = getByText(dobDateNode, 'One Year Ago');
+    const dateTimeValueDisplay = getByText(dobDateNode, '"One Year Ago"');
     await dragAndDrop(
       absoluteDateConst,
-      dateTimeVal,
+      dateTimeValueDisplay,
       dobDateNode,
       'Change Filter Value',
     );
     dobDateNode = guaranteeNonNullable(
-      nodeContents.find((e) => queryByText(e, 'Dob Date') !== null),
+      nodeContainers.find((e) => queryByText(e, 'Dob Date') !== null),
     );
     expect(getByText(dobDateNode, 'Dob Date')).not.toBeNull();
     expect(getByText(dobDateNode, 'is not')).not.toBeNull();
@@ -312,15 +324,15 @@ test(
 
     // dnd param `dateParam` -> Date Date
     const dateParam = getByText(parameterPanel, 'dateParam');
-    const strictDateVal = getByText(strictDateNode, '2023-09-30');
+    const strictDateValueDisplay = getByText(strictDateNode, '"2023-09-30"');
     await dragAndDrop(
       dateParam,
-      strictDateVal,
+      strictDateValueDisplay,
       strictDateNode,
       'Change Filter Value',
     );
     strictDateNode = guaranteeNonNullable(
-      nodeContents.find((e) => queryByText(e, 'Dob Strict Date') !== null),
+      nodeContainers.find((e) => queryByText(e, 'Dob Strict Date') !== null),
     );
     expect(getByText(strictDateNode, 'Dob Strict Date')).not.toBeNull();
     expect(getByText(strictDateNode, '>')).not.toBeNull();
@@ -375,28 +387,57 @@ test(
         queryBuilderState.buildQuery(),
       ),
     );
-    // remove ageNode/ first name node (should auto remove or node)
-    fireEvent.click(getByTitle(ageNode, 'Remove'));
-    nodeContents = queryAllByTestId(
+    // check that there is 1 'and' node and 1 'or' node
+    nodeContainers = queryAllByTestId(
       postFilterPanel,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTAINER,
     );
-    expect(nodeContents.length).toBe(6);
+    expect(
+      nodeContainers.filter((n) => queryByText(n, 'and') !== null),
+    ).toHaveLength(1);
+    expect(
+      nodeContainers.filter((n) => queryByText(n, 'or') !== null),
+    ).toHaveLength(1);
+    // remove ageNode/first name node (should auto remove and node)
+    fireEvent.click(getByTitle(ageNode, 'Remove'));
+    nodeContainers = queryAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTAINER,
+    );
+    expect(nodeContainers.length).toBe(6);
     firstNameNode = guaranteeNonNullable(
-      nodeContents.find((n) => queryByText(n, 'First Name')),
+      nodeContainers.find((n) => queryByText(n, 'First Name')),
     );
     fireEvent.click(getByTitle(firstNameNode, 'Remove'));
-    nodeContents = queryAllByTestId(
+    nodeContainers = queryAllByTestId(
       postFilterPanel,
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTAINER,
     );
-    expect(nodeContents.length).toBe(4);
-    orNode = guaranteeNonNullable(
-      nodeContents.find((n) => queryByText(n, 'or') !== null),
-      'Unable to find or node',
-    );
-    // click remove on top remove or node should clear all conditions
-    fireEvent.click(getByTitle(orNode, 'Remove'));
+    expect(nodeContainers.length).toBe(4);
+    // check that there is 1 'or' node and no 'and' node
+    expect(
+      nodeContainers.filter((n) => queryByText(n, 'and') !== null),
+    ).toHaveLength(0);
+    expect(
+      nodeContainers.filter((n) => queryByText(n, 'or') !== null),
+    ).toHaveLength(1);
+
+    // Remove all remaining post-filter nodes
+    while (
+      queryAllByTestId(
+        postFilterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTAINER,
+      ).length > 0
+    ) {
+      queryAllByTestId(
+        postFilterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTAINER,
+      ).forEach((_node) => {
+        if (queryByTitle(_node, 'Remove') !== null) {
+          fireEvent.click(getByTitle(_node, 'Remove'));
+        }
+      });
+    }
     expect(
       queryAllByTestId(
         postFilterPanel,
@@ -478,6 +519,8 @@ test(
     const tdsPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
     );
+
+    // remove all filter nodes
     while (
       queryAllByTestId(
         filterPanel,
@@ -499,23 +542,31 @@ test(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER,
       ),
     ).toHaveLength(0);
-    fireEvent.click(
-      getByTitle(
-        guaranteeNonNullable(
-          queryAllByTestId(
-            postFilterPanel,
-            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-          ).find((node) => queryByText(node, 'and') !== null),
-        ),
-        'Remove',
-      ),
-    );
-    expect(
+
+    // Remove all post filter nodes
+    while (
       queryAllByTestId(
         postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTAINER,
+      ).length > 0
+    ) {
+      queryAllByTestId(
+        postFilterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTAINER,
+      ).forEach((_node) => {
+        if (queryByTitle(_node, 'Remove') !== null) {
+          fireEvent.click(getByTitle(_node, 'Remove'));
+        }
+      });
+    }
+    expect(
+      queryAllByTestId(
+        filterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTAINER,
       ),
     ).toHaveLength(0);
+
+    // DND First Name from fetch structure to post-filter panel
     const cols = queryAllByTestId(
       tdsPanel,
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION_COLUMN,
@@ -540,9 +591,11 @@ test(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
       ),
     ).toHaveLength(1);
+    // Check node is created correctly
     expect(queryByText(postFilterPanel, 'Fist Name'));
     expect(queryByText(postFilterPanel, 'is'));
 
+    // Test is in list of operator
     fireEvent.click(getByTitle(postFilterPanel, 'Choose Operator...'));
     let switchMenu = renderResult.getByRole('menu');
     guaranteeNonNullable(EXPECTED_STRING_TYPES[PRIMITIVE_TYPE.STRING]).forEach(
@@ -550,15 +603,20 @@ test(
     );
     fireEvent.click(getByText(switchMenu, 'is in list of'));
     expect(queryByText(postFilterPanel, 'List(empty)'));
+    // Test doesn't contain operator
     fireEvent.click(getByTitle(postFilterPanel, 'Choose Operator...'));
     fireEvent.click(
       getByText(renderResult.getByRole('menu'), `doesn't contain`),
     );
+    fireEvent.click(getByText(postFilterPanel, '""'));
     const inputNode = getByDisplayValue(postFilterPanel, '');
     fireEvent.change(inputNode, {
       target: { value: 'basic string filter test' },
     });
-    getByDisplayValue(postFilterPanel, 'basic string filter test');
+    fireEvent.blur(inputNode);
+    getByText(postFilterPanel, '"basic string filter test"');
+
+    // DND Age from fetch structure to First Name node in post-filter panel
     const ageNameCol = guaranteeNonNullable(
       cols.find((q) => queryByText(q, 'Age')),
       `Can't find age projection col`,
@@ -581,16 +639,22 @@ test(
       postFilterNodes.find((e) => queryByText(e, 'Age') !== null),
       `Expected an 'Age' post filter node to be created`,
     );
+
+    // Test operators for int filter are available
     fireEvent.click(getByTitle(ageNodeCreated, 'Choose Operator...'));
     switchMenu = renderResult.getByRole('menu');
     guaranteeNonNullable(EXPECTED_STRING_TYPES[PRIMITIVE_TYPE.INTEGER]).forEach(
       (expectedOp) => getByText(switchMenu, expectedOp),
     );
-    const ageInupNode = getByDisplayValue(postFilterPanel, '');
-    fireEvent.change(ageInupNode, {
+    fireEvent.click(getByText(switchMenu, 'is'));
+    // Test int filter vlaue
+    fireEvent.click(getByText(postFilterPanel, '""'));
+    const ageInputNode = await findByDisplayValue(postFilterPanel, '');
+    fireEvent.change(ageInputNode, {
       target: { value: 55 },
     });
-    getByDisplayValue(postFilterPanel, 55);
+    fireEvent.blur(ageInputNode);
+    getByText(postFilterPanel, '"55"');
     expect(
       queryByTitle(firstNameCol, `This column is used and can't be removed`),
     ).not.toBeNull();
@@ -1551,7 +1615,12 @@ test(
     );
     await waitFor(() => getByText(postFilterPanel, 'Dob Date'));
     await waitFor(() => getByText(postFilterPanel, 'is'));
-    await waitFor(() => getByText(postFilterPanel, 'Select value'));
+    await waitFor(() =>
+      getByTitle(
+        postFilterPanel,
+        'Click to edit and pick from more date options',
+      ),
+    );
     const contentNodes = await waitFor(() =>
       getAllByTestId(
         postFilterPanel,
@@ -1567,7 +1636,10 @@ test(
     ).toHaveProperty('disabled', true);
 
     // Select value
-    const filterValueButton = getByText(postFilterPanel, 'Select value');
+    const filterValueButton = getByTitle(
+      postFilterPanel,
+      'Click to edit and pick from more date options',
+    );
     fireEvent.click(filterValueButton);
     fireEvent.click(renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.TODAY));
     fireEvent.keyDown(
@@ -1579,23 +1651,11 @@ test(
     );
 
     // Verify no validation issues
-    expect(getByText(postFilterPanel, 'Today')).not.toBeNull();
+    expect(getByText(postFilterPanel, '"Today"')).not.toBeNull();
     expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
     expect(
       renderResult.getByRole('button', { name: 'Run Query' }),
     ).toHaveProperty('disabled', false);
-
-    // Click reset button
-    fireEvent.click(getByTitle(postFilterPanel, 'Reset'));
-
-    // Verify value is reset
-    await waitFor(() => getByText(postFilterPanel, 'Select value'));
-
-    // Verify validation issue
-    expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', true);
   },
 );
 
@@ -1683,16 +1743,17 @@ test(
     const filterValueDropdown = guaranteeNonNullable(
       getByText(postFilterPanel, 'Select value').parentElement?.parentElement,
     );
-    selectFromCustomSelectorInput(filterValueDropdown, 'Corp');
+    selectFirstOptionFromCustomSelectorInput(filterValueDropdown, false, false);
 
     // Verify no validation issues
-    expect(getByText(postFilterPanel, 'Corp')).not.toBeNull();
+    expect(getByText(postFilterPanel, '"Corp"')).not.toBeNull();
     expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
     expect(
       renderResult.getByRole('button', { name: 'Run Query' }),
     ).toHaveProperty('disabled', false);
 
     // Click reset button
+    fireEvent.click(getByText(postFilterPanel, '"Corp"'));
     fireEvent.click(getByTitle(postFilterPanel, 'Reset'));
 
     // Verify value is reset
