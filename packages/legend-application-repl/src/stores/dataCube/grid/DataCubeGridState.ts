@@ -28,21 +28,18 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   clientDataSource: DataCubeGridClientServerSideDataSource;
   clientLicenseKey?: string | undefined;
   isPaginationEnabled = false;
-  isLoading = false;
 
   constructor(dataCube: DataCubeState) {
     super(dataCube);
 
     makeObservable(this, {
       clientDataSource: observable,
-
       clientLicenseKey: observable,
       setClientLicenseKey: action,
       isPaginationEnabled: observable,
       setPaginationEnabled: action,
       generateCSVFile: action,
       generateExcelFile: action,
-      //add_email
     });
 
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
@@ -91,7 +88,6 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   }
 
   generateCSVFile = () => {
-    console.log('csv generated');
     if (this._client) {
       this._client.exportDataAsCsv();
     } else {
@@ -100,7 +96,6 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   };
 
   generateExcelFile = () => {
-    console.log('excel converted to file');
     if (this._client) {
       this._client.exportDataAsExcel();
     } else {
