@@ -24,14 +24,7 @@ import { MenuModule } from '@ag-grid-enterprise/menu';
 import { AgGridReact } from '@ag-grid-community/react';
 import { useEffect } from 'react';
 import { useREPLStore } from '../../REPLStoreProvider.js';
-import {
-  DataCubeIcon,
-  Switch,
-  cn,
-  Global,
-  css,
-  TailwindCSSPalette,
-} from '@finos/legend-art';
+import { DataCubeIcon, Switch, cn, Global, css } from '@finos/legend-art';
 import {
   generateBackgroundColorUtilityClassName,
   generateFontCaseUtilityClassName,
@@ -56,8 +49,8 @@ import {
 } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 import { isNonNullable } from '@finos/legend-shared';
 import type {
-  DataCubeColumnConfiguration,
   DataCubeConfiguration,
+  DataCubeConfigurationColorKey,
 } from '../../../stores/dataCube/core/DataCubeConfiguration.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
@@ -70,38 +63,42 @@ console.error = (message?: unknown, ...agrs: unknown[]): void => {
   console.log(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type FilterEndsWith<Set, Text extends string> = Set extends `${infer _X}${Text}`
-  ? Set
-  : never;
-
 function textColorStyle(
-  key: string | undefined,
-  configField: FilterEndsWith<keyof DataCubeConfiguration, 'ForegroundColor'>,
-  columnConfigField: FilterEndsWith<
-    keyof DataCubeColumnConfiguration,
-    'oregroundColor' // need to cover `foregroundColor`
-  >,
+  key: DataCubeConfigurationColorKey,
   configuration: DataCubeConfiguration,
 ) {
   return `${Array.from(
     new Set([
-      configuration[configField],
+      configuration[`${key}ForegroundColor`],
       ...configuration.columns
-        .map((column) => column[columnConfigField])
+        .map((column) => column[`${key}ForegroundColor`])
         .filter(isNonNullable),
     ]).values(),
   )
-    // NOTE: we make sure transparent does not actually get rendered as a color
-    // else in the case where for a numeric column, if the default background color
-    // is set and the negative background color is set to transparent, cells with
-    // negative value will have no background color, which is not what we want
-    .filter((color) => color !== TailwindCSSPalette.transparent)
     .map(
       (color) =>
         `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateTextColorUtilityClassName(color, key)}{color:${color};}`,
     )
     .join('\n')}`;
+}
+
+function backgroundColorStyle(
+  key: DataCubeConfigurationColorKey,
+  configuration: DataCubeConfiguration,
+) {
+  return `${Array.from(
+    new Set([
+      configuration[`${key}BackgroundColor`],
+      ...configuration.columns
+        .map((column) => column[`${key}BackgroundColor`])
+        .filter(isNonNullable),
+    ]).values(),
+  )
+    .map(
+      (color) =>
+        `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateBackgroundColorUtilityClassName(color, key)}{background-color:${color};}`,
+    )
+    .join('\n')};`;
 }
 
 export const DataCubeGridStyleController = observer(() => {
@@ -215,130 +212,14 @@ export const DataCubeGridStyleController = observer(() => {
               `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateTextAlignUtilityClassName(alignment)}{text-align:${alignment};}`,
           )
           .join('\n')};
-        ${Array.from(
-          new Set([
-            configuration.defaultBackgroundColor,
-            ...configuration.columns
-              .map((column) => column.backgroundColor)
-              .filter(isNonNullable),
-          ]).values(),
-        )
-          .filter((color) => color !== TailwindCSSPalette.transparent)
-          .map(
-            (color) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateBackgroundColorUtilityClassName(color, undefined)}{background-color:${color};}`,
-          )
-          .join('\n')};
-        ${Array.from(
-          new Set([
-            configuration.defaultZeroBackgroundColor,
-            ...configuration.columns
-              .map((column) => column.zeroBackgroundColor)
-              .filter(isNonNullable),
-          ]).values(),
-        )
-          .filter((color) => color !== TailwindCSSPalette.transparent)
-          .map(
-            (color) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateBackgroundColorUtilityClassName(color, 'zero')}{background-color:${color};}`,
-          )
-          .join('\n')};
-        ${Array.from(
-          new Set([
-            configuration.defaultNegativeBackgroundColor,
-            ...configuration.columns
-              .map((column) => column.negativeBackgroundColor)
-              .filter(isNonNullable),
-          ]).values(),
-        )
-          .filter((color) => color !== TailwindCSSPalette.transparent)
-          .map(
-            (color) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateBackgroundColorUtilityClassName(color, 'negative')}{background-color:${color};}`,
-          )
-          .join('\n')};
-        ${Array.from(
-          new Set([
-            configuration.defaultErrorBackgroundColor,
-            ...configuration.columns
-              .map((column) => column.errorBackgroundColor)
-              .filter(isNonNullable),
-          ]).values(),
-        )
-          .filter((color) => color !== TailwindCSSPalette.transparent)
-          .map(
-            (color) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateBackgroundColorUtilityClassName(color, 'error')}{background-color:${color};}`,
-          )
-          .join('\n')};
-        ${textColorStyle(
-          undefined,
-          'defaultForegroundColor',
-          'foregroundColor',
-          configuration,
-        )}
-        ${textColorStyle(
-          'zero',
-          'defaultZeroForegroundColor',
-          'zeroForegroundColor',
-          configuration,
-        )}
-        ${Array.from(
-          new Set([
-            configuration.defaultForegroundColor,
-            ...configuration.columns
-              .map((column) => column.foregroundColor)
-              .filter(isNonNullable),
-          ]).values(),
-        )
-          .filter((color) => color !== TailwindCSSPalette.transparent)
-          .map(
-            (color) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateTextColorUtilityClassName(color, undefined)}{color:${color};}`,
-          )
-          .join('\n')};
-        ${Array.from(
-          new Set([
-            configuration.defaultZeroForegroundColor,
-            ...configuration.columns
-              .map((column) => column.zeroForegroundColor)
-              .filter(isNonNullable),
-          ]).values(),
-        )
-          .filter((color) => color !== TailwindCSSPalette.transparent)
-          .map(
-            (color) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateTextColorUtilityClassName(color, 'zero')}{color:${color};}`,
-          )
-          .join('\n')};
-        ${Array.from(
-          new Set([
-            configuration.defaultNegativeForegroundColor,
-            ...configuration.columns
-              .map((column) => column.negativeForegroundColor)
-              .filter(isNonNullable),
-          ]).values(),
-        )
-          .filter((color) => color !== TailwindCSSPalette.transparent)
-          .map(
-            (color) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateTextColorUtilityClassName(color, 'negative')}{color:${color};}`,
-          )
-          .join('\n')};
-        ${Array.from(
-          new Set([
-            configuration.defaultErrorForegroundColor,
-            ...configuration.columns
-              .map((column) => column.errorForegroundColor)
-              .filter(isNonNullable),
-          ]).values(),
-        )
-          .filter((color) => color !== TailwindCSSPalette.transparent)
-          .map(
-            (color) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateTextColorUtilityClassName(color, 'error')}{color:${color};}`,
-          )
-          .join('\n')};
+        ${backgroundColorStyle('normal', configuration)}
+        ${backgroundColorStyle('zero', configuration)}
+        ${backgroundColorStyle('negative', configuration)}
+        ${backgroundColorStyle('error', configuration)}
+        ${textColorStyle('normal', configuration)}
+        ${textColorStyle('zero', configuration)}
+        ${textColorStyle('negative', configuration)}
+        ${textColorStyle('error', configuration)}
         .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT}
           .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BLUR} {
           filter: blur(3px);

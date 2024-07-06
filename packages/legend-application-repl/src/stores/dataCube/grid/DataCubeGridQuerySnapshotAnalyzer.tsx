@@ -172,42 +172,38 @@ type ColumnData = {
 function _displaySpec(columnData: ColumnData) {
   const { column, configuration, gridConfiguration } = columnData;
   const dataType = getDataType(column.type);
-  const fontFamily =
-    configuration.fontFamily ?? gridConfiguration.defaultFontFamily;
-  const fontSize = configuration.fontSize ?? gridConfiguration.defaultFontSize;
-  const fontBold = configuration.fontBold ?? gridConfiguration.defaultFontBold;
-  const fontItalic =
-    configuration.fontItalic ?? gridConfiguration.defaultFontItalic;
+  const fontFamily = configuration.fontFamily ?? gridConfiguration.fontFamily;
+  const fontSize = configuration.fontSize ?? gridConfiguration.fontSize;
+  const fontBold = configuration.fontBold ?? gridConfiguration.fontBold;
+  const fontItalic = configuration.fontItalic ?? gridConfiguration.fontItalic;
   const fontStrikethrough =
-    configuration.fontStrikethrough ??
-    gridConfiguration.defaultFontStrikethrough;
+    configuration.fontStrikethrough ?? gridConfiguration.fontStrikethrough;
   const fontUnderline =
-    configuration.fontUnderline ?? gridConfiguration.defaultFontUnderline;
-  const fontCase = configuration.fontCase ?? gridConfiguration.defaultFontCase;
-  const textAlign =
-    configuration.textAlign ?? gridConfiguration.defaultTextAlign;
-  const foregroundColor =
-    configuration.foregroundColor ?? gridConfiguration.defaultForegroundColor;
-  const backgroundColor =
-    configuration.backgroundColor ?? gridConfiguration.defaultBackgroundColor;
+    configuration.fontUnderline ?? gridConfiguration.fontUnderline;
+  const fontCase = configuration.fontCase ?? gridConfiguration.fontCase;
+  const textAlign = configuration.textAlign ?? gridConfiguration.textAlign;
+  const normalForegroundColor =
+    configuration.normalForegroundColor ??
+    gridConfiguration.normalForegroundColor;
+  const normalBackgroundColor =
+    configuration.normalBackgroundColor ??
+    gridConfiguration.normalBackgroundColor;
   const negativeForegroundColor =
     configuration.negativeForegroundColor ??
-    gridConfiguration.defaultNegativeForegroundColor;
+    gridConfiguration.negativeForegroundColor;
   const negativeBackgroundColor =
     configuration.negativeBackgroundColor ??
-    gridConfiguration.defaultNegativeBackgroundColor;
+    gridConfiguration.negativeBackgroundColor;
   const zeroForegroundColor =
-    configuration.zeroForegroundColor ??
-    gridConfiguration.defaultZeroForegroundColor;
+    configuration.zeroForegroundColor ?? gridConfiguration.zeroForegroundColor;
   const zeroBackgroundColor =
-    configuration.zeroBackgroundColor ??
-    gridConfiguration.defaultZeroBackgroundColor;
+    configuration.zeroBackgroundColor ?? gridConfiguration.zeroBackgroundColor;
   const errorForegroundColor =
     configuration.errorForegroundColor ??
-    gridConfiguration.defaultErrorForegroundColor;
+    gridConfiguration.errorForegroundColor;
   const errorBackgroundColor =
     configuration.errorBackgroundColor ??
-    gridConfiguration.defaultErrorBackgroundColor;
+    gridConfiguration.errorBackgroundColor;
   return {
     // setting the cell data type might helps guide the grid to render the cell properly
     // and optimize the grid performance slightly by avoiding unnecessary type inference
@@ -270,10 +266,12 @@ function _displaySpec(columnData: ColumnData) {
       [generateFontCaseUtilityClassName(fontCase)]: (params) =>
         dataType === DataCubeColumnDataType.TEXT && Boolean(fontCase),
       [generateTextAlignUtilityClassName(textAlign)]: () => true,
-      [generateTextColorUtilityClassName(foregroundColor, undefined)]: () =>
-        true,
-      [generateBackgroundColorUtilityClassName(backgroundColor, undefined)]:
+      [generateTextColorUtilityClassName(normalForegroundColor, 'normal')]:
         () => true,
+      [generateBackgroundColorUtilityClassName(
+        normalBackgroundColor,
+        'normal',
+      )]: () => true,
       [generateTextColorUtilityClassName(zeroForegroundColor, 'zero')]: (
         params,
       ) =>

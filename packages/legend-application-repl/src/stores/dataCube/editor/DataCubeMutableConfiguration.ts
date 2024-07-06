@@ -108,8 +108,8 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       textAlign: observable,
       setTextAlign: action,
 
-      foregroundColor: observable,
-      setForegroundColor: action,
+      normalForegroundColor: observable,
+      setNormalForegroundColor: action,
 
       negativeForegroundColor: observable,
       setNegativeForegroundColor: action,
@@ -120,8 +120,8 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       errorForegroundColor: observable,
       setErrorForegroundColor: action,
 
-      backgroundColor: observable,
-      setBackgroundColor: action,
+      normalBackgroundColor: observable,
+      setNormalBackgroundColor: action,
 
       negativeBackgroundColor: observable,
       setNegativeBackgroundColor: action,
@@ -179,11 +179,11 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       this.fontUnderline === undefined &&
       this.fontStrikethrough === undefined &&
       this.textAlign === undefined &&
-      this.foregroundColor === undefined &&
+      this.normalForegroundColor === undefined &&
       this.negativeForegroundColor === undefined &&
       this.zeroForegroundColor === undefined &&
       this.errorForegroundColor === undefined &&
-      this.backgroundColor === undefined &&
+      this.normalBackgroundColor === undefined &&
       this.negativeBackgroundColor === undefined &&
       this.zeroBackgroundColor === undefined &&
       this.errorBackgroundColor === undefined
@@ -198,11 +198,11 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.fontUnderline = undefined;
     this.fontStrikethrough = undefined;
     this.textAlign = undefined;
-    this.foregroundColor = undefined;
+    this.normalForegroundColor = undefined;
     this.negativeForegroundColor = undefined;
     this.zeroForegroundColor = undefined;
     this.errorForegroundColor = undefined;
-    this.backgroundColor = undefined;
+    this.normalBackgroundColor = undefined;
     this.negativeBackgroundColor = undefined;
     this.zeroBackgroundColor = undefined;
     this.errorBackgroundColor = undefined;
@@ -270,8 +270,8 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.textAlign = value;
   }
 
-  setForegroundColor(value: string | undefined): void {
-    this.foregroundColor = value;
+  setNormalForegroundColor(value: string | undefined): void {
+    this.normalForegroundColor = value;
   }
 
   setNegativeForegroundColor(value: string | undefined): void {
@@ -286,8 +286,8 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.errorForegroundColor = value;
   }
 
-  setBackgroundColor(value: string | undefined): void {
-    this.backgroundColor = value;
+  setNormalBackgroundColor(value: string | undefined): void {
+    this.normalBackgroundColor = value;
   }
 
   setNegativeBackgroundColor(value: string | undefined): void {
@@ -365,53 +365,53 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
       gridLineColor: observable,
       setGridLineColor: action,
 
-      defaultFontFamily: observable,
-      setDefaultFontFamily: action,
+      fontFamily: observable,
+      setFontFamily: action,
 
-      defaultFontSize: observable,
-      setDefaultFontSize: action,
+      fontSize: observable,
+      setFontSize: action,
 
-      defaultFontBold: observable,
-      setDefaultFontBold: action,
+      fontBold: observable,
+      setFontBold: action,
 
-      defaultFontItalic: observable,
-      setDefaultFontItalic: action,
+      fontItalic: observable,
+      setFontItalic: action,
 
-      defaultFontUnderline: observable,
-      setDefaultFontUnderline: action,
+      fontUnderline: observable,
+      setFontUnderline: action,
 
-      defaultFontStrikethrough: observable,
-      setDefaultFontStrikethrough: action,
+      fontStrikethrough: observable,
+      setFontStrikethrough: action,
 
-      defaultFontCase: observable,
-      setDefaultFontCase: action,
+      fontCase: observable,
+      setFontCase: action,
 
-      defaultTextAlign: observable,
-      setDefaultTextAlign: action,
+      textAlign: observable,
+      setTextAlign: action,
 
-      defaultForegroundColor: observable,
-      setDefaultForegroundColor: action,
+      normalForegroundColor: observable,
+      setNormalForegroundColor: action,
 
-      defaultNegativeForegroundColor: observable,
-      setDefaultNegativeForegroundColor: action,
+      negativeForegroundColor: observable,
+      setNegativeForegroundColor: action,
 
-      defaultZeroForegroundColor: observable,
-      setDefaultZeroForegroundColor: action,
+      zeroForegroundColor: observable,
+      setZeroForegroundColor: action,
 
-      defaultErrorForegroundColor: observable,
-      setDefaultErrorForegroundColor: action,
+      errorForegroundColor: observable,
+      setErrorForegroundColor: action,
 
-      defaultBackgroundColor: observable,
-      setDefaultBackgroundColor: action,
+      normalBackgroundColor: observable,
+      setNormalBackgroundColor: action,
 
-      defaultNegativeBackgroundColor: observable,
-      setDefaultNegativeBackgroundColor: action,
+      negativeBackgroundColor: observable,
+      setNegativeBackgroundColor: action,
 
-      defaultZeroBackgroundColor: observable,
-      setDefaultZeroBackgroundColor: action,
+      zeroBackgroundColor: observable,
+      setZeroBackgroundColor: action,
 
-      defaultErrorBackgroundColor: observable,
-      setDefaultErrorBackgroundColor: action,
+      errorBackgroundColor: observable,
+      setErrorBackgroundColor: action,
 
       alternateRows: observable,
       setAlternateRows: action,
@@ -461,41 +461,40 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
 
   get isUsingDefaultStyling(): boolean {
     return (
-      this.defaultFontFamily === DEFAULT_FONT_FAMILY &&
-      this.defaultFontSize === DEFAULT_FONT_SIZE &&
-      this.defaultFontBold === DEFAULT_FONT_BOLD &&
-      this.defaultFontItalic === DEFAULT_FONT_ITALIC &&
-      this.defaultFontUnderline === DEFAULT_FONT_UNDERLINED &&
-      this.defaultFontStrikethrough === DEFAULT_FONT_STRIKETHROUGH &&
-      this.defaultTextAlign === DEFAULT_TEXT_ALIGN &&
-      this.defaultForegroundColor === DEFAULT_FOREGROUND_COLOR &&
-      this.defaultNegativeForegroundColor ===
-        DEFAULT_NEGATIVE_FOREGROUND_COLOR &&
-      this.defaultZeroForegroundColor === DEFAULT_ZERO_FOREGROUND_COLOR &&
-      this.defaultErrorForegroundColor === DEFAULT_ERROR_FOREGROUND_COLOR &&
-      this.defaultBackgroundColor === DEFAULT_BACKGROUND_COLOR &&
-      this.defaultNegativeBackgroundColor === DEFAULT_BACKGROUND_COLOR &&
-      this.defaultZeroBackgroundColor === DEFAULT_BACKGROUND_COLOR &&
-      this.defaultErrorBackgroundColor === DEFAULT_BACKGROUND_COLOR
+      this.fontFamily === DEFAULT_FONT_FAMILY &&
+      this.fontSize === DEFAULT_FONT_SIZE &&
+      this.fontBold === DEFAULT_FONT_BOLD &&
+      this.fontItalic === DEFAULT_FONT_ITALIC &&
+      this.fontUnderline === DEFAULT_FONT_UNDERLINED &&
+      this.fontStrikethrough === DEFAULT_FONT_STRIKETHROUGH &&
+      this.textAlign === DEFAULT_TEXT_ALIGN &&
+      this.normalForegroundColor === DEFAULT_FOREGROUND_COLOR &&
+      this.negativeForegroundColor === DEFAULT_NEGATIVE_FOREGROUND_COLOR &&
+      this.zeroForegroundColor === DEFAULT_ZERO_FOREGROUND_COLOR &&
+      this.errorForegroundColor === DEFAULT_ERROR_FOREGROUND_COLOR &&
+      this.normalBackgroundColor === DEFAULT_BACKGROUND_COLOR &&
+      this.negativeBackgroundColor === DEFAULT_BACKGROUND_COLOR &&
+      this.zeroBackgroundColor === DEFAULT_BACKGROUND_COLOR &&
+      this.errorBackgroundColor === DEFAULT_BACKGROUND_COLOR
     );
   }
 
   useDefaultStyling(): void {
-    this.defaultFontFamily = DEFAULT_FONT_FAMILY;
-    this.defaultFontSize = DEFAULT_FONT_SIZE;
-    this.defaultFontBold = DEFAULT_FONT_BOLD;
-    this.defaultFontItalic = DEFAULT_FONT_ITALIC;
-    this.defaultFontUnderline = DEFAULT_FONT_UNDERLINED;
-    this.defaultFontStrikethrough = DEFAULT_FONT_STRIKETHROUGH;
-    this.defaultTextAlign = DEFAULT_TEXT_ALIGN;
-    this.defaultForegroundColor = DEFAULT_FOREGROUND_COLOR;
-    this.defaultNegativeForegroundColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
-    this.defaultZeroForegroundColor = DEFAULT_ZERO_FOREGROUND_COLOR;
-    this.defaultErrorForegroundColor = DEFAULT_ERROR_FOREGROUND_COLOR;
-    this.defaultBackgroundColor = DEFAULT_BACKGROUND_COLOR;
-    this.defaultNegativeBackgroundColor = DEFAULT_BACKGROUND_COLOR;
-    this.defaultZeroBackgroundColor = DEFAULT_BACKGROUND_COLOR;
-    this.defaultErrorBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+    this.fontFamily = DEFAULT_FONT_FAMILY;
+    this.fontSize = DEFAULT_FONT_SIZE;
+    this.fontBold = DEFAULT_FONT_BOLD;
+    this.fontItalic = DEFAULT_FONT_ITALIC;
+    this.fontUnderline = DEFAULT_FONT_UNDERLINED;
+    this.fontStrikethrough = DEFAULT_FONT_STRIKETHROUGH;
+    this.textAlign = DEFAULT_TEXT_ALIGN;
+    this.normalForegroundColor = DEFAULT_FOREGROUND_COLOR;
+    this.negativeForegroundColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
+    this.zeroForegroundColor = DEFAULT_ZERO_FOREGROUND_COLOR;
+    this.errorForegroundColor = DEFAULT_ERROR_FOREGROUND_COLOR;
+    this.normalBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+    this.negativeBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+    this.zeroBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+    this.errorBackgroundColor = DEFAULT_BACKGROUND_COLOR;
   }
 
   serialize(): PlainObject<DataCubeConfiguration> {
@@ -522,70 +521,70 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
     this.gridLineColor = value;
   }
 
-  setDefaultFontFamily(value: DataCubeFont): void {
-    this.defaultFontFamily = value;
+  setFontFamily(value: DataCubeFont): void {
+    this.fontFamily = value;
   }
 
-  setDefaultFontSize(value: number): void {
-    this.defaultFontSize = value;
+  setFontSize(value: number): void {
+    this.fontSize = value;
   }
 
-  setDefaultFontBold(value: boolean): void {
-    this.defaultFontBold = value;
+  setFontBold(value: boolean): void {
+    this.fontBold = value;
   }
 
-  setDefaultFontItalic(value: boolean): void {
-    this.defaultFontItalic = value;
+  setFontItalic(value: boolean): void {
+    this.fontItalic = value;
   }
 
-  setDefaultFontUnderline(
+  setFontUnderline(
     value: DataCubeFontFormatUnderlineVariant | undefined,
   ): void {
-    this.defaultFontUnderline = value;
+    this.fontUnderline = value;
   }
 
-  setDefaultFontStrikethrough(value: boolean): void {
-    this.defaultFontStrikethrough = value;
+  setFontStrikethrough(value: boolean): void {
+    this.fontStrikethrough = value;
   }
 
-  setDefaultFontCase(value: DataCubeFontCase | undefined): void {
-    this.defaultFontCase = value;
+  setFontCase(value: DataCubeFontCase | undefined): void {
+    this.fontCase = value;
   }
 
-  setDefaultTextAlign(value: DataCubeFontTextAlignment): void {
-    this.defaultTextAlign = value;
+  setTextAlign(value: DataCubeFontTextAlignment): void {
+    this.textAlign = value;
   }
 
-  setDefaultForegroundColor(value: string): void {
-    this.defaultForegroundColor = value;
+  setNormalForegroundColor(value: string): void {
+    this.normalForegroundColor = value;
   }
 
-  setDefaultNegativeForegroundColor(value: string): void {
-    this.defaultNegativeForegroundColor = value;
+  setNegativeForegroundColor(value: string): void {
+    this.negativeForegroundColor = value;
   }
 
-  setDefaultZeroForegroundColor(value: string): void {
-    this.defaultZeroForegroundColor = value;
+  setZeroForegroundColor(value: string): void {
+    this.zeroForegroundColor = value;
   }
 
-  setDefaultErrorForegroundColor(value: string): void {
-    this.defaultErrorForegroundColor = value;
+  setErrorForegroundColor(value: string): void {
+    this.errorForegroundColor = value;
   }
 
-  setDefaultBackgroundColor(value: string): void {
-    this.defaultBackgroundColor = value;
+  setNormalBackgroundColor(value: string): void {
+    this.normalBackgroundColor = value;
   }
 
-  setDefaultNegativeBackgroundColor(value: string): void {
-    this.defaultNegativeBackgroundColor = value;
+  setNegativeBackgroundColor(value: string): void {
+    this.negativeBackgroundColor = value;
   }
 
-  setDefaultZeroBackgroundColor(value: string): void {
-    this.defaultZeroBackgroundColor = value;
+  setZeroBackgroundColor(value: string): void {
+    this.zeroBackgroundColor = value;
   }
 
-  setDefaultErrorBackgroundColor(value: string): void {
-    this.defaultErrorBackgroundColor = value;
+  setErrorBackgroundColor(value: string): void {
+    this.errorBackgroundColor = value;
   }
 
   setAlternateRows(value: boolean): void {

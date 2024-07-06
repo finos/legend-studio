@@ -331,7 +331,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               className="w-28"
               onClick={openFontFamilyDropdown}
             >
-              {configuration.defaultFontFamily}
+              {configuration.fontFamily}
             </DataCubeEditorDropdownMenuTrigger>
             <DataCubeEditorDropdownMenu
               className="w-28"
@@ -345,7 +345,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 <DataCubeEditorDropdownMenuItem
                   key={font}
                   onClick={() => {
-                    configuration.setDefaultFontFamily(font);
+                    configuration.setFontFamily(font);
                     closeFontFamilyDropdown();
                   }}
                 >
@@ -361,7 +361,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 <DataCubeEditorDropdownMenuItem
                   key={font}
                   onClick={() => {
-                    configuration.setDefaultFontFamily(font);
+                    configuration.setFontFamily(font);
                     closeFontFamilyDropdown();
                   }}
                 >
@@ -377,7 +377,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 <DataCubeEditorDropdownMenuItem
                   key={font}
                   onClick={() => {
-                    configuration.setDefaultFontFamily(font);
+                    configuration.setFontFamily(font);
                     closeFontFamilyDropdown();
                   }}
                 >
@@ -390,7 +390,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               className="ml-1 w-10"
               onClick={openFontSizeDropdown}
             >
-              {configuration.defaultFontSize}
+              {configuration.fontSize}
             </DataCubeEditorDropdownMenuTrigger>
             <DataCubeEditorDropdownMenu
               className="w-10"
@@ -403,7 +403,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 <DataCubeEditorDropdownMenuItem
                   key={size}
                   onClick={() => {
-                    configuration.setDefaultFontSize(size);
+                    configuration.setFontSize(size);
                     closeFontSizeDropdown();
                   }}
                 >
@@ -418,13 +418,11 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 className={cn(
                   'relative flex h-5 w-5 items-center justify-center rounded-bl-sm rounded-tl-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                   {
-                    'bg-neutral-200': configuration.defaultFontBold,
+                    'bg-neutral-200': configuration.fontBold,
                   },
                 )}
                 onClick={() =>
-                  configuration.setDefaultFontBold(
-                    !configuration.defaultFontBold,
-                  )
+                  configuration.setFontBold(!configuration.fontBold)
                 }
               >
                 <DataCubeIcon.FontBold />
@@ -434,34 +432,31 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 className={cn(
                   'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                   {
-                    'bg-neutral-200': configuration.defaultFontItalic,
+                    'bg-neutral-200': configuration.fontItalic,
                   },
                 )}
                 onClick={() =>
-                  configuration.setDefaultFontItalic(
-                    !configuration.defaultFontItalic,
-                  )
+                  configuration.setFontItalic(!configuration.fontItalic)
                 }
               >
                 <DataCubeIcon.FontItalic />
               </button>
               <button
-                title={`Underline${configuration.defaultFontUnderline ? ` (${configuration.defaultFontUnderline})` : ''}`}
+                title={`Underline${configuration.fontUnderline ? ` (${configuration.fontUnderline})` : ''}`}
                 className={cn(
                   'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                   {
-                    'bg-neutral-200':
-                      configuration.defaultFontUnderline !== undefined,
+                    'bg-neutral-200': configuration.fontUnderline !== undefined,
                   },
                 )}
                 onClick={() => {
-                  if (configuration.defaultFontUnderline === undefined) {
-                    configuration.setDefaultFontUnderline(
+                  if (configuration.fontUnderline === undefined) {
+                    configuration.setFontUnderline(
                       DataCubeFontFormatUnderlineVariant.SOLID,
                     );
-                    configuration.setDefaultFontStrikethrough(false);
+                    configuration.setFontStrikethrough(false);
                   } else {
-                    configuration.setDefaultFontUnderline(undefined);
+                    configuration.setFontUnderline(undefined);
                   }
                 }}
               >
@@ -473,8 +468,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               >
                 <div
                   className={cn('h-4 w-[0.5px] bg-neutral-200', {
-                    'opacity-0':
-                      configuration.defaultFontUnderline !== undefined,
+                    'opacity-0': configuration.fontUnderline !== undefined,
                   })}
                 />
                 <DataCubeIcon.CaretDown />
@@ -494,8 +488,8 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                     className="relative"
                     key={variant}
                     onClick={() => {
-                      configuration.setDefaultFontUnderline(variant);
-                      configuration.setDefaultFontStrikethrough(false);
+                      configuration.setFontUnderline(variant);
+                      configuration.setFontStrikethrough(false);
                       closeFontFormatUnderlineVariantDropdown();
                     }}
                   >
@@ -518,7 +512,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                           '!hover:decoration-wavy !decoration-wavy':
                             variant === DataCubeFontFormatUnderlineVariant.WAVY,
                           'text-sky-600':
-                            variant === configuration.defaultFontUnderline,
+                            variant === configuration.fontUnderline,
                         },
                       )}
                     >
@@ -532,32 +526,31 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 className={cn(
                   'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                   {
-                    'bg-neutral-200': configuration.defaultFontStrikethrough,
+                    'bg-neutral-200': configuration.fontStrikethrough,
                   },
                 )}
                 onClick={() => {
-                  if (configuration.defaultFontStrikethrough) {
-                    configuration.setDefaultFontStrikethrough(false);
+                  if (configuration.fontStrikethrough) {
+                    configuration.setFontStrikethrough(false);
                   } else {
-                    configuration.setDefaultFontStrikethrough(true);
-                    configuration.setDefaultFontUnderline(undefined);
+                    configuration.setFontStrikethrough(true);
+                    configuration.setFontUnderline(undefined);
                   }
                 }}
               >
                 <DataCubeIcon.FontStrikethrough />
               </button>
               <button
-                title={`Case${configuration.defaultFontCase ? ` (${configuration.defaultFontCase})` : ''}`}
+                title={`Case${configuration.fontCase ? ` (${configuration.fontCase})` : ''}`}
                 className={cn(
                   'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                   {
-                    'bg-neutral-200':
-                      configuration.defaultFontCase !== undefined,
+                    'bg-neutral-200': configuration.fontCase !== undefined,
                   },
                 )}
                 onClick={() => {
-                  configuration.setDefaultFontCase(
-                    configuration.defaultFontCase === undefined
+                  configuration.setFontCase(
+                    configuration.fontCase === undefined
                       ? DataCubeFontCase.UPPERCASE
                       : undefined,
                   );
@@ -571,7 +564,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               >
                 <div
                   className={cn('h-4 w-[0.5px] bg-neutral-200', {
-                    'opacity-0': configuration.defaultFontCase !== undefined,
+                    'opacity-0': configuration.fontCase !== undefined,
                   })}
                 />
                 <DataCubeIcon.CaretDown />
@@ -589,7 +582,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                     className="relative"
                     key={fontCase}
                     onClick={() => {
-                      configuration.setDefaultFontCase(fontCase);
+                      configuration.setFontCase(fontCase);
                       closeFontCaseDropdown();
                     }}
                   >
@@ -598,8 +591,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                         lowercase: fontCase === DataCubeFontCase.LOWERCASE,
                         uppercase: fontCase === DataCubeFontCase.UPPERCASE,
                         capitalize: fontCase === DataCubeFontCase.CAPITALIZE,
-                        'text-sky-600':
-                          fontCase === configuration.defaultFontCase,
+                        'text-sky-600': fontCase === configuration.fontCase,
                       })}
                     >
                       {fontCase}
@@ -616,14 +608,12 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   'relative flex h-5 w-5 items-center justify-center rounded-bl-sm rounded-tl-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                   {
                     'bg-neutral-200':
-                      configuration.defaultTextAlign ===
+                      configuration.textAlign ===
                       DataCubeFontTextAlignment.LEFT,
                   },
                 )}
                 onClick={() =>
-                  configuration.setDefaultTextAlign(
-                    DataCubeFontTextAlignment.LEFT,
-                  )
+                  configuration.setTextAlign(DataCubeFontTextAlignment.LEFT)
                 }
               >
                 <DataCubeIcon.TextAlignLeft />
@@ -634,14 +624,12 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                   {
                     'bg-neutral-200':
-                      configuration.defaultTextAlign ===
+                      configuration.textAlign ===
                       DataCubeFontTextAlignment.CENTER,
                   },
                 )}
                 onClick={() =>
-                  configuration.setDefaultTextAlign(
-                    DataCubeFontTextAlignment.CENTER,
-                  )
+                  configuration.setTextAlign(DataCubeFontTextAlignment.CENTER)
                 }
               >
                 <DataCubeIcon.TextAlignCenter />
@@ -652,14 +640,12 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   'relative -ml-[1px] flex h-5 w-5 items-center justify-center rounded-br-sm rounded-tr-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                   {
                     'bg-neutral-200':
-                      configuration.defaultTextAlign ===
+                      configuration.textAlign ===
                       DataCubeFontTextAlignment.RIGHT,
                   },
                 )}
                 onClick={() =>
-                  configuration.setDefaultTextAlign(
-                    DataCubeFontTextAlignment.RIGHT,
-                  )
+                  configuration.setTextAlign(DataCubeFontTextAlignment.RIGHT)
                 }
               >
                 <DataCubeIcon.TextAlignRight />
@@ -693,37 +679,37 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                   <DataCubeEditorColorPickerButton
-                    color={configuration.defaultForegroundColor}
+                    color={configuration.normalForegroundColor}
                     defaultColor={DEFAULT_FOREGROUND_COLOR}
                     onChange={(value) =>
-                      configuration.setDefaultForegroundColor(value)
+                      configuration.setNormalForegroundColor(value)
                     }
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                   <DataCubeEditorColorPickerButton
-                    color={configuration.defaultNegativeForegroundColor}
+                    color={configuration.negativeForegroundColor}
                     defaultColor={DEFAULT_NEGATIVE_FOREGROUND_COLOR}
                     onChange={(value) =>
-                      configuration.setDefaultNegativeForegroundColor(value)
+                      configuration.setNegativeForegroundColor(value)
                     }
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                   <DataCubeEditorColorPickerButton
-                    color={configuration.defaultZeroForegroundColor}
+                    color={configuration.zeroForegroundColor}
                     defaultColor={DEFAULT_ZERO_FOREGROUND_COLOR}
                     onChange={(value) =>
-                      configuration.setDefaultZeroForegroundColor(value)
+                      configuration.setZeroForegroundColor(value)
                     }
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                   <DataCubeEditorColorPickerButton
-                    color={configuration.defaultErrorForegroundColor}
+                    color={configuration.errorForegroundColor}
                     defaultColor={DEFAULT_ERROR_FOREGROUND_COLOR}
                     onChange={(value) =>
-                      configuration.setDefaultErrorForegroundColor(value)
+                      configuration.setErrorForegroundColor(value)
                     }
                   />
                 </div>
@@ -734,37 +720,37 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                   <DataCubeEditorColorPickerButton
-                    color={configuration.defaultBackgroundColor}
+                    color={configuration.normalBackgroundColor}
                     defaultColor={DEFAULT_BACKGROUND_COLOR}
                     onChange={(value) =>
-                      configuration.setDefaultBackgroundColor(value)
+                      configuration.setNormalBackgroundColor(value)
                     }
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                   <DataCubeEditorColorPickerButton
-                    color={configuration.defaultNegativeBackgroundColor}
+                    color={configuration.negativeBackgroundColor}
                     defaultColor={DEFAULT_BACKGROUND_COLOR}
                     onChange={(value) =>
-                      configuration.setDefaultNegativeBackgroundColor(value)
+                      configuration.setNegativeBackgroundColor(value)
                     }
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                   <DataCubeEditorColorPickerButton
-                    color={configuration.defaultZeroBackgroundColor}
+                    color={configuration.zeroBackgroundColor}
                     defaultColor={DEFAULT_BACKGROUND_COLOR}
                     onChange={(value) =>
-                      configuration.setDefaultZeroBackgroundColor(value)
+                      configuration.setZeroBackgroundColor(value)
                     }
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                   <DataCubeEditorColorPickerButton
-                    color={configuration.defaultErrorBackgroundColor}
+                    color={configuration.errorBackgroundColor}
                     defaultColor={DEFAULT_BACKGROUND_COLOR}
                     onChange={(value) =>
-                      configuration.setDefaultErrorBackgroundColor(value)
+                      configuration.setErrorBackgroundColor(value)
                     }
                   />
                 </div>

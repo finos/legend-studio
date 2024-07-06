@@ -33,6 +33,7 @@ import { APPLICATION_EVENT } from '@finos/legend-application';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { generateRowGroupingDrilldownExecutableQueryPostProcessor } from './DataCubeGridQueryBuilder.js';
 import { makeObservable, observable, runInAction } from 'mobx';
+import type { DataCubeConfigurationColorKey } from '../core/DataCubeConfiguration.js';
 
 type GridClientCellValue = string | number | boolean | null | undefined;
 type GridClientRowData = {
@@ -74,14 +75,14 @@ export const generateTextAlignUtilityClassName = (alignment: string) =>
   `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.TEXT_ALIGN_PREFIX}${alignment}`;
 export const generateTextColorUtilityClassName = (
   color: string,
-  prefix: string | undefined,
+  key: DataCubeConfigurationColorKey,
 ) =>
-  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.TEXT_COLOR_PREFIX}${prefix !== undefined ? `${prefix}-` : ''}${color.substring(1)}`;
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.TEXT_COLOR_PREFIX}${key}-${color.substring(1)}`;
 export const generateBackgroundColorUtilityClassName = (
   color: string,
-  prefix: string | undefined,
+  key: DataCubeConfigurationColorKey,
 ) =>
-  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BACKGROUND_COLOR_PREFIX}${prefix !== undefined ? `${prefix}-` : ''}${color.substring(1)}`;
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BACKGROUND_COLOR_PREFIX}${key}-${color.substring(1)}`;
 
 export const INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH = 50;
 export const INTERNAL__GRID_CLIENT_HEADER_HEIGHT = 24;

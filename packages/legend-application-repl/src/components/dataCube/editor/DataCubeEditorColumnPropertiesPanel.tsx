@@ -538,8 +538,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   className="w-28"
                   onClick={openFontFamilyDropdown}
                 >
-                  {selectedColumn.fontFamily ??
-                    gridConfiguration.defaultFontFamily}
+                  {selectedColumn.fontFamily ?? gridConfiguration.fontFamily}
                 </DataCubeEditorDropdownMenuTrigger>
                 <DataCubeEditorDropdownMenu
                   className="w-28"
@@ -598,7 +597,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   className="ml-1 w-10"
                   onClick={openFontSizeDropdown}
                 >
-                  {selectedColumn.fontSize ?? gridConfiguration.defaultFontSize}
+                  {selectedColumn.fontSize ?? gridConfiguration.fontSize}
                 </DataCubeEditorDropdownMenuTrigger>
                 <DataCubeEditorDropdownMenu
                   className="w-10"
@@ -627,15 +626,13 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       'relative flex h-5 w-5 items-center justify-center rounded-bl-sm rounded-tl-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                       {
                         'bg-neutral-200':
-                          selectedColumn.fontBold ??
-                          gridConfiguration.defaultFontBold,
+                          selectedColumn.fontBold ?? gridConfiguration.fontBold,
                       },
                     )}
                     onClick={() =>
                       selectedColumn.setFontBold(
                         !(
-                          selectedColumn.fontBold ??
-                          gridConfiguration.defaultFontBold
+                          selectedColumn.fontBold ?? gridConfiguration.fontBold
                         ),
                       )
                     }
@@ -649,14 +646,14 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       {
                         'bg-neutral-200':
                           selectedColumn.fontItalic ??
-                          gridConfiguration.defaultFontItalic,
+                          gridConfiguration.fontItalic,
                       },
                     )}
                     onClick={() =>
                       selectedColumn.setFontItalic(
                         !(
                           selectedColumn.fontItalic ??
-                          gridConfiguration.defaultFontItalic
+                          gridConfiguration.fontItalic
                         ),
                       )
                     }
@@ -664,20 +661,19 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <DataCubeIcon.FontItalic />
                   </button>
                   <button
-                    title={`Underline${selectedColumn.fontUnderline ?? gridConfiguration.defaultFontUnderline ? ` (${selectedColumn.fontUnderline ?? gridConfiguration.defaultFontUnderline})` : ''}`}
+                    title={`Underline${selectedColumn.fontUnderline ?? gridConfiguration.fontUnderline ? ` (${selectedColumn.fontUnderline ?? gridConfiguration.fontUnderline})` : ''}`}
                     className={cn(
                       'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                       {
                         'bg-neutral-200':
                           (selectedColumn.fontUnderline ??
-                            gridConfiguration.defaultFontUnderline) !==
-                          undefined,
+                            gridConfiguration.fontUnderline) !== undefined,
                       },
                     )}
                     onClick={() => {
                       if (
                         (selectedColumn.fontUnderline ??
-                          gridConfiguration.defaultFontUnderline) === undefined
+                          gridConfiguration.fontUnderline) === undefined
                       ) {
                         selectedColumn.setFontUnderline(
                           DataCubeFontFormatUnderlineVariant.SOLID,
@@ -698,8 +694,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       className={cn('h-4 w-[0.5px] bg-neutral-200', {
                         'opacity-0':
                           (selectedColumn.fontUnderline ??
-                            gridConfiguration.defaultFontUnderline) !==
-                          undefined,
+                            gridConfiguration.fontUnderline) !== undefined,
                       })}
                     />
                     <DataCubeIcon.CaretDown />
@@ -746,7 +741,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                               'text-sky-600':
                                 variant ===
                                 (selectedColumn.fontUnderline ??
-                                  gridConfiguration.defaultFontUnderline),
+                                  gridConfiguration.fontUnderline),
                             },
                           )}
                         >
@@ -762,13 +757,13 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       {
                         'bg-neutral-200':
                           selectedColumn.fontStrikethrough ??
-                          gridConfiguration.defaultFontStrikethrough,
+                          gridConfiguration.fontStrikethrough,
                       },
                     )}
                     onClick={() => {
                       if (
                         selectedColumn.fontStrikethrough ??
-                        gridConfiguration.defaultFontStrikethrough
+                        gridConfiguration.fontStrikethrough
                       ) {
                         selectedColumn.setFontStrikethrough(false);
                       } else {
@@ -780,19 +775,19 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <DataCubeIcon.FontStrikethrough />
                   </button>
                   <button
-                    title={`Case${selectedColumn.fontCase ?? gridConfiguration.defaultFontCase ? ` (${selectedColumn.fontCase ?? gridConfiguration.defaultFontCase})` : ''}`}
+                    title={`Case${selectedColumn.fontCase ?? gridConfiguration.fontCase ? ` (${selectedColumn.fontCase ?? gridConfiguration.fontCase})` : ''}`}
                     className={cn(
                       'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                       {
                         'bg-neutral-200':
                           (selectedColumn.fontCase ??
-                            gridConfiguration.defaultFontCase) !== undefined,
+                            gridConfiguration.fontCase) !== undefined,
                       },
                     )}
                     onClick={() => {
                       if (
                         (selectedColumn.fontCase ??
-                          gridConfiguration.defaultFontCase) === undefined
+                          gridConfiguration.fontCase) === undefined
                       ) {
                         selectedColumn.setFontCase(DataCubeFontCase.UPPERCASE);
                       } else {
@@ -810,7 +805,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       className={cn('h-4 w-[0.5px] bg-neutral-200', {
                         'opacity-0':
                           (selectedColumn.fontCase ??
-                            gridConfiguration.defaultFontCase) !== undefined,
+                            gridConfiguration.fontCase) !== undefined,
                       })}
                     />
                     <DataCubeIcon.CaretDown />
@@ -841,7 +836,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                             'text-sky-600':
                               fontCase ===
                               (selectedColumn.fontCase ??
-                                gridConfiguration.defaultFontCase),
+                                gridConfiguration.fontCase),
                           })}
                         >
                           {fontCase}
@@ -859,7 +854,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       {
                         'bg-neutral-200':
                           (selectedColumn.textAlign ??
-                            gridConfiguration.defaultTextAlign) ===
+                            gridConfiguration.textAlign) ===
                           DataCubeFontTextAlignment.LEFT,
                       },
                     )}
@@ -878,7 +873,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       {
                         'bg-neutral-200':
                           (selectedColumn.textAlign ??
-                            gridConfiguration.defaultTextAlign) ===
+                            gridConfiguration.textAlign) ===
                           DataCubeFontTextAlignment.CENTER,
                       },
                     )}
@@ -897,7 +892,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       {
                         'bg-neutral-200':
                           (selectedColumn.textAlign ??
-                            gridConfiguration.defaultTextAlign) ===
+                            gridConfiguration.textAlign) ===
                           DataCubeFontTextAlignment.RIGHT,
                       },
                     )}
@@ -939,12 +934,12 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                       <DataCubeEditorColorPickerButton
                         color={
-                          selectedColumn.foregroundColor ??
-                          gridConfiguration.defaultForegroundColor
+                          selectedColumn.normalForegroundColor ??
+                          gridConfiguration.normalForegroundColor
                         }
-                        defaultColor={gridConfiguration.defaultForegroundColor}
+                        defaultColor={gridConfiguration.normalForegroundColor}
                         onChange={(value) =>
-                          selectedColumn.setForegroundColor(value)
+                          selectedColumn.setNormalForegroundColor(value)
                         }
                       />
                     </div>
@@ -952,11 +947,9 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       <DataCubeEditorColorPickerButton
                         color={
                           selectedColumn.negativeForegroundColor ??
-                          gridConfiguration.defaultNegativeForegroundColor
+                          gridConfiguration.negativeForegroundColor
                         }
-                        defaultColor={
-                          gridConfiguration.defaultNegativeForegroundColor
-                        }
+                        defaultColor={gridConfiguration.negativeForegroundColor}
                         onChange={(value) =>
                           selectedColumn.setNegativeForegroundColor(value)
                         }
@@ -966,11 +959,9 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       <DataCubeEditorColorPickerButton
                         color={
                           selectedColumn.zeroForegroundColor ??
-                          gridConfiguration.defaultZeroForegroundColor
+                          gridConfiguration.zeroForegroundColor
                         }
-                        defaultColor={
-                          gridConfiguration.defaultZeroForegroundColor
-                        }
+                        defaultColor={gridConfiguration.zeroForegroundColor}
                         onChange={(value) =>
                           selectedColumn.setZeroForegroundColor(value)
                         }
@@ -980,11 +971,9 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       <DataCubeEditorColorPickerButton
                         color={
                           selectedColumn.errorForegroundColor ??
-                          gridConfiguration.defaultErrorForegroundColor
+                          gridConfiguration.errorForegroundColor
                         }
-                        defaultColor={
-                          gridConfiguration.defaultErrorForegroundColor
-                        }
+                        defaultColor={gridConfiguration.errorForegroundColor}
                         onChange={(value) =>
                           selectedColumn.setErrorForegroundColor(value)
                         }
@@ -998,12 +987,12 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
                       <DataCubeEditorColorPickerButton
                         color={
-                          selectedColumn.backgroundColor ??
-                          gridConfiguration.defaultBackgroundColor
+                          selectedColumn.normalBackgroundColor ??
+                          gridConfiguration.normalBackgroundColor
                         }
-                        defaultColor={gridConfiguration.defaultBackgroundColor}
+                        defaultColor={gridConfiguration.normalBackgroundColor}
                         onChange={(value) =>
-                          selectedColumn.setBackgroundColor(value)
+                          selectedColumn.setNormalBackgroundColor(value)
                         }
                       />
                     </div>
@@ -1011,11 +1000,9 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       <DataCubeEditorColorPickerButton
                         color={
                           selectedColumn.negativeBackgroundColor ??
-                          gridConfiguration.defaultNegativeBackgroundColor
+                          gridConfiguration.negativeBackgroundColor
                         }
-                        defaultColor={
-                          gridConfiguration.defaultNegativeBackgroundColor
-                        }
+                        defaultColor={gridConfiguration.negativeBackgroundColor}
                         onChange={(value) =>
                           selectedColumn.setNegativeBackgroundColor(value)
                         }
@@ -1025,11 +1012,9 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       <DataCubeEditorColorPickerButton
                         color={
                           selectedColumn.zeroBackgroundColor ??
-                          gridConfiguration.defaultZeroBackgroundColor
+                          gridConfiguration.zeroBackgroundColor
                         }
-                        defaultColor={
-                          gridConfiguration.defaultZeroBackgroundColor
-                        }
+                        defaultColor={gridConfiguration.zeroBackgroundColor}
                         onChange={(value) =>
                           selectedColumn.setZeroBackgroundColor(value)
                         }
@@ -1039,11 +1024,9 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       <DataCubeEditorColorPickerButton
                         color={
                           selectedColumn.errorBackgroundColor ??
-                          gridConfiguration.defaultErrorBackgroundColor
+                          gridConfiguration.errorBackgroundColor
                         }
-                        defaultColor={
-                          gridConfiguration.defaultErrorBackgroundColor
-                        }
+                        defaultColor={gridConfiguration.errorBackgroundColor}
                         onChange={(value) =>
                           selectedColumn.setErrorBackgroundColor(value)
                         }

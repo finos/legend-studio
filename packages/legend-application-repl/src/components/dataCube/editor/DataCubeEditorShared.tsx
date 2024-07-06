@@ -267,6 +267,13 @@ function DataCubeEditorColorPicker(props: {
 }) {
   const { onChange, onClose, defaultColor } = props;
   const [color, setColor] = useState(props.color);
+  const submit = () => {
+    onChange(
+      // if color is completely transparent, set it to #00000000
+      parseColor(color).alpha === 0 ? TailwindCSSPalette.transparent : color,
+    );
+    onClose();
+  };
 
   return (
     <div className="data-cube-color-picker rounded-none border border-neutral-400 bg-white">
@@ -311,8 +318,12 @@ function DataCubeEditorColorPicker(props: {
                 style={{
                   background: TailwindCSSPalette[scale][level],
                 }}
-                onClick={(): void => {
+                onClick={() => {
                   setColor(TailwindCSSPalette[scale][level]);
+                }}
+                onDoubleClick={() => {
+                  setColor(TailwindCSSPalette[scale][level]);
+                  submit();
                 }}
               />
             ))}
@@ -357,8 +368,12 @@ function DataCubeEditorColorPicker(props: {
                 style={{
                   background: _color,
                 }}
-                onClick={(): void => {
+                onClick={() => {
                   setColor(_color);
+                }}
+                onDoubleClick={() => {
+                  setColor(_color);
+                  submit();
                 }}
               />
             </div>
@@ -386,7 +401,7 @@ function DataCubeEditorColorPicker(props: {
           {defaultColor !== undefined && (
             <button
               className="ml-1 h-4 w-9 border border-neutral-400 bg-neutral-300 px-1 text-xs hover:brightness-95"
-              onClick={(): void => {
+              onClick={() => {
                 setColor(defaultColor);
               }}
             >
@@ -395,7 +410,7 @@ function DataCubeEditorColorPicker(props: {
           )}
           <button
             className="ml-1 h-4 w-9 border border-neutral-400 bg-neutral-300 px-1 text-xs hover:brightness-95"
-            onClick={(): void => {
+            onClick={() => {
               onClose();
             }}
           >
@@ -403,14 +418,8 @@ function DataCubeEditorColorPicker(props: {
           </button>
           <button
             className="ml-1 h-4 w-9 border border-neutral-400 bg-neutral-300 px-1 text-xs hover:brightness-95"
-            onClick={(): void => {
-              onChange(
-                // if color is completely transparent, set it to #00000000
-                parseColor(color).alpha === 0
-                  ? TailwindCSSPalette.transparent
-                  : color,
-              );
-              onClose();
+            onClick={() => {
+              submit();
             }}
           >
             OK
