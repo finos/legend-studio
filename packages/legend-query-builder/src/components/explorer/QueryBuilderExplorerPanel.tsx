@@ -106,7 +106,7 @@ import { getClassPropertyIcon } from '@finos/legend-lego/graph-editor';
 import { QueryBuilderRootClassInfoTooltip } from '../shared/QueryBuilderRootClassInfoTooltip.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 
-const checkForDeprecatedNode = (
+export const checkForDeprecatedNode = (
   node: QueryBuilderExplorerTreeNodeData,
   graph: PureModel,
   treeData: TreeData<QueryBuilderExplorerTreeNodeData>,
@@ -754,7 +754,7 @@ const QueryBuilderExplorerTreeNodeView = observer(
  * 4. Class Subtypes
  * Note: Derived property nodes will be ranked lower for each relevant return type
  */
-const getQueryBuilderExplorerTreeNodeSortRank = (
+export const getQueryBuilderExplorerTreeNodeSortRank = (
   node: QueryBuilderExplorerTreeNodeData,
 ): number => {
   if (node instanceof QueryBuilderExplorerTreeSubTypeNodeData) {

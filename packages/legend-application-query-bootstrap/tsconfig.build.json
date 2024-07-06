@@ -20,6 +20,7 @@
     {
       "path": "../legend-extension-store-service-store/tsconfig.build.json"
     },
-    { "path": "../legend-extension-dsl-text/tsconfig.build.json" }
+    { "path": "../legend-extension-dsl-text/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-data-quality/tsconfig.build.json" }
   ]
 }

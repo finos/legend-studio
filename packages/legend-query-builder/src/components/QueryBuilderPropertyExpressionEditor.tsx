@@ -376,10 +376,36 @@ export const QueryBuilderPropertyExpressionEditor = observer(
   },
 );
 
+export const QueryBuilderPropertyNameDisplay = observer(
+  (props: {
+    columnName: string;
+    title: string;
+    error?: boolean | undefined;
+    setIsEditingColumnName?: ((isEditing: boolean) => void) | undefined;
+  }) => {
+    const { columnName, title, error, setIsEditingColumnName } = props;
+    return (
+      <div className="query-builder__property__name__display" title={title}>
+        <span
+          className={clsx('query-builder__property__name__display__content', {
+            'query-builder__property__name__display__content--error': error,
+            'editable-value': setIsEditingColumnName,
+          })}
+          onClick={() => {
+            setIsEditingColumnName?.(true);
+          }}
+        >
+          {columnName}
+        </span>
+      </div>
+    );
+  },
+);
+
 export const QueryBuilderEditablePropertyName = observer(
   (props: {
     columnName: string;
-    setColumnName?: ((columnName: string) => void) | undefined;
+    setColumnName: ((columnName: string) => void) | undefined;
     error: string | undefined;
     title: string;
     defaultColumnName: string;
@@ -435,21 +461,14 @@ export const QueryBuilderEditablePropertyName = observer(
         />
       </div>
     ) : (
-      <div className="query-builder__property__name__display" title={title}>
-        <span
-          className={clsx('query-builder__property__name__display__content', {
-            'query-builder__property__name__display__content--error': error,
-            'editable-value': setColumnName,
-          })}
-          onClick={() => {
-            if (setColumnName) {
-              setIsEditingColumnName(true);
-            }
-          }}
-        >
-          {columnName}
-        </span>
-      </div>
+      <QueryBuilderPropertyNameDisplay
+        columnName={columnName}
+        title={title}
+        error={Boolean(error)}
+        setIsEditingColumnName={
+          setColumnName ? setIsEditingColumnName : undefined
+        }
+      />
     );
   },
 );

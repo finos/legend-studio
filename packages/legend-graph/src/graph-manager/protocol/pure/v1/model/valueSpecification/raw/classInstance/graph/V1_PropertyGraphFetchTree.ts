@@ -19,6 +19,8 @@ import {
   V1_GraphFetchTree,
   type V1_GraphFetchTreeVisitor,
 } from './V1_GraphFetchTree.js';
+import { hashArray } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../graph/Core_HashUtils.js';
 
 export class V1_PropertyGraphFetchTree extends V1_GraphFetchTree {
   property!: string;
@@ -28,5 +30,15 @@ export class V1_PropertyGraphFetchTree extends V1_GraphFetchTree {
 
   accept_GraphFetchTreeVisitor<T>(visitor: V1_GraphFetchTreeVisitor<T>): T {
     return visitor.visit_PropertyGraphFetchTree(this);
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.PROPERTY_GRAPH_FETCH_TREE,
+      hashArray(this.subTrees),
+      this.property,
+      this.alias ?? '',
+      this.subType ?? '',
+    ]);
   }
 }

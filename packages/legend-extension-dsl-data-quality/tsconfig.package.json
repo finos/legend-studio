@@ -1,0 +1,9 @@
+{
+  "extends": "@finos/legend-dev-utils/tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "lib",
+    "tsBuildInfoFile": "build/package.tsbuildinfo",
+    "rootDir": "."
+  },
+  "include": ["package.json"]
+}
