@@ -44,6 +44,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
       setPaginationEnabled: action,
       generateCSVFile: action,
       generateExcelFile: action,
+      generateEmail: action,
     });
 
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
@@ -91,18 +92,15 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     );
   }
 
-  generateCSVFile = (): string => {
-    if (!this._client) {
-      throw new Error('Grid API is not initialized.');
-    }
+  generateCSVFile = () => {
     const params = {
       fileName: 'csv_data.csv',
-      suppressQuotes: true,
-      processcellCallbacks: (cell: any) => {
-        return cell ? cell.toString() : '';
-      },
     };
-    return this._client.getDataAsCsv(params) || '';
+    if (this._client) {
+      this._client.exportDataAsCsv(params);
+    } else {
+      console.error('Grid API not set');
+    }
   };
 
   generateExcelFile = () => {
@@ -111,7 +109,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     }
     const params = {
       fileName: 'excel_data.xlsx',
-      processcellCallbacks: (cell: any) => {
+      processCellCallbacks: (cell: any) => {
         return cell ? cell.toString() : '';
       },
     };
@@ -119,7 +117,6 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   };
 
   blobToBase64 = (blob: Blob): Promise<string> => {
-    // console.log(blob);
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -129,21 +126,26 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
           if (base64Data) {
             resolve(base64Data);
           } else {
+            console.error('Base64 conversion failed: Invalid base64 data.');
             reject(
-              new Error('Failed to convert blob to base64. Base64 is invalid'),
+              new Error('Failed to convert blob to base64. Base64 is invalid.'),
             );
           }
         } else {
+          console.error(
+            'Base64 conversion failed: FileReader result is not a string.',
+          );
           reject(
-            new Error('Failed to convert blob to base64. Filereader is null'),
+            new Error(
+              'Failed to convert blob to base64. FileReader result is not a string.',
+            ),
           );
         }
       };
-      reader.onerror = () => {
+      reader.onerror = (error) => {
+        console.error('Base64 conversion failed: FileReader error.', error);
         reject(
-          new Error(
-            'Failed to convert blob to base64: something wrong with filereader.',
-          ),
+          new Error('Failed to convert blob to base64: FileReader error.'),
         );
       };
       reader.readAsDataURL(blob);
@@ -152,12 +154,6 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
 
   generateEmail = async (isHtml: boolean, includeAttachments: boolean) => {
     try {
-      //1. generate files
-      // const csvFileGenerator = await this.generateCSVFile();
-      // const xlsxFileGenerator = await this.generateExcelFile();
-
-      // 2. convert the files to blob
-      // const cvsBlob = new Blob([csvFileGenerator], { type: 'text/csv' });
       const textContent =
         'Please find the attached CSV and Excel(.xlsx) files.';
       const htmlContent = `
@@ -170,68 +166,82 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
 
       const emailBody = isHtml ? htmlContent : textContent;
       const contentType = isHtml ? 'text/html' : 'text/plain';
+      const boundaryMixed = 'boundary----------123456789----------987654321';
+      const boundaryAlternative =
+        'boundary----------0987654321----------1234567890';
 
       let emlContent = `
-      From: somebody@test.com
-      To: someone@test.com
-      Subject: subject of the some files generated
-      MIME-Version: 1.0
-      `;
-
-      if (includeAttachments) {
-        const csvContent = this.generateCSVFile();
-        const csvBlob = new Blob([csvContent], { type: 'text/csv' });
-
-        const xlsxBlob = this._client?.getDataAsExcel({
-          fileName: 'excel_data.xlsx',
-          processCellCallback: (cell: any) => {
-            return cell ? cell.toString() : '';
-          },
-        });
-
-        if (!(xlsxBlob instanceof Blob)) {
-          throw new Error('Failed to generate Excel file as a Blob.');
-        }
-
-        // 4. generate email content with attachements
-        const boundaryMixed = 'boundary----------123456789----------987654321';
-        const boundaryAlternative =
-          'boundary----------0987654321----------1234567890';
-
-        emlContent += `
+From: somebody@test.com
+To: someone@test.com
+Subject: subject of the some files generated
+MIME-Version: 1.0
 Content-Type: multipart/mixed; boundary="${boundaryMixed}"
 
 --${boundaryMixed}
 Content-Type: multipart/alternative; boundary="${boundaryAlternative}"
 
 --${boundaryAlternative}
-
-Content-Type:${contentType}; charset: "UTF-8"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 
---${emailBody}
+${textContent}
+
+--${boundaryAlternative}
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+${htmlContent}
 
 --${boundaryAlternative}--
+`;
 
+      if (includeAttachments) {
+        const csvContent =
+          this._client?.getDataAsCsv({
+            fileName: 'csv_data.csv',
+            columnSeparator: ',',
+            suppressQuotes: true,
+          }) ?? '';
+        const csvBlob = new Blob([csvContent], { type: 'text/csv' });
+
+        const xlsxContent = this._client?.getDataAsExcel({
+          fileName: 'excel_data.xlsx',
+          processCellCallback: (cell: any) => {
+            return cell ? cell.toString() : '';
+          },
+        });
+        let xlsxBlob;
+        if (xlsxContent instanceof Blob) {
+          xlsxBlob = xlsxContent;
+        } else if (typeof xlsxContent === 'string') {
+          xlsxBlob = new Blob([xlsxContent], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          });
+        } else {
+          throw new Error('Failed to generate Excel content.');
+        }
+
+        emlContent += `
 --${boundaryMixed}
-Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; name="excelFile.xlsx"
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; name="excel_data.xlsx"
 Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="excelFile.xlsx"
+Content-Disposition: attachment; filename="excel_data.xlsx"
 
 ${await this.blobToBase64(xlsxBlob)}
 
 --${boundaryMixed}
-Content-Type: text/csv; name="csvFile.csv"
+Content-Type: text/csv; name="csv_data.csv"
 Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="csvFile.csv"
+Content-Disposition: attachment; filename="csv_data.csv"
 
 ${await this.blobToBase64(csvBlob)};
 
 --${boundaryMixed}--
+
 `;
       } else {
         emlContent += `
-Content-Type: ${contentType}; charset="UTF-8"
+Content-Type: ${contentType}; charset= "UTF-8"
 Content-Transfer-Encoding: 7bit
 
 ${emailBody}
