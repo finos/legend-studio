@@ -90,6 +90,7 @@ export class DataCubeColumnConfiguration {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeColumnConfiguration, {
+      blur: primitive(),
       backgroundColor: optional(primitive()),
       decimals: optional(primitive()),
       displayAsLink: primitive(),
@@ -106,6 +107,7 @@ export class DataCubeColumnConfiguration {
       fontSize: optional(primitive()),
       fontStrikethrough: optional(primitive()),
       fontUnderline: optional(primitive()),
+      hideFromView: primitive(),
       hPivotSortFunction: optional(primitive()),
       kind: primitive(),
       maxWidth: optional(primitive()),

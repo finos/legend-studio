@@ -45,6 +45,8 @@ export enum INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME {
   SHOW_VERTICAL_GRID_LINES = 'data-cube-grid__utility--show-vertical-grid-lines',
   SHOW_HORIZONTAL_GRID_LINES = 'data-cube-grid__utility--show-horizontal-grid-lines',
 
+  BLUR = 'data-cube-grid__utility--blur',
+
   FONT_FAMILY_PREFIX = 'data-cube-grid__utility--font-family-',
   FONT_SIZE_PREFIX = 'data-cube-grid__utility--font-size-',
   FONT_BOLD = 'data-cube-grid__utility--font-style-bold',
@@ -70,10 +72,16 @@ export const generateFontCaseUtilityClassName = (
   `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_CASE_PREFIX}${fontCase ?? 'none'}`;
 export const generateTextAlignUtilityClassName = (alignment: string) =>
   `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.TEXT_ALIGN_PREFIX}${alignment}`;
-export const generateTextColorUtilityClassName = (color: string) =>
-  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.TEXT_COLOR_PREFIX}${color.substring(1)}`;
-export const generateBackgroundColorUtilityClassName = (color: string) =>
-  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BACKGROUND_COLOR_PREFIX}${color.substring(1)}`;
+export const generateTextColorUtilityClassName = (
+  color: string,
+  prefix: string | undefined,
+) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.TEXT_COLOR_PREFIX}${prefix !== undefined ? `${prefix}-` : ''}${color.substring(1)}`;
+export const generateBackgroundColorUtilityClassName = (
+  color: string,
+  prefix: string | undefined,
+) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BACKGROUND_COLOR_PREFIX}${prefix !== undefined ? `${prefix}-` : ''}${color.substring(1)}`;
 
 export const INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH = 50;
 export const INTERNAL__GRID_CLIENT_HEADER_HEIGHT = 24;

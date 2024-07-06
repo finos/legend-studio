@@ -270,65 +270,41 @@ function _displaySpec(columnData: ColumnData) {
       [generateFontCaseUtilityClassName(fontCase)]: (params) =>
         dataType === DataCubeColumnDataType.TEXT && Boolean(fontCase),
       [generateTextAlignUtilityClassName(textAlign)]: () => true,
-      [generateTextColorUtilityClassName(foregroundColor)]: (params) => {
-        if (dataType !== DataCubeColumnDataType.NUMBER) {
-          return true;
-        }
-        return isNumber(params.value) && params.value > 0;
-      },
-      [generateBackgroundColorUtilityClassName(backgroundColor)]: (params) => {
-        if (dataType !== DataCubeColumnDataType.NUMBER) {
-          return true;
-        }
-        return isNumber(params.value) && params.value > 0;
-      },
-      [generateTextColorUtilityClassName(zeroForegroundColor)]: (params) => {
-        if (
-          dataType !== DataCubeColumnDataType.NUMBER ||
-          !isNumber(params.value)
-        ) {
-          return false;
-        }
-        return params.value === 0;
-      },
-      [generateBackgroundColorUtilityClassName(zeroBackgroundColor)]: (
+      [generateTextColorUtilityClassName(foregroundColor, undefined)]: () =>
+        true,
+      [generateBackgroundColorUtilityClassName(backgroundColor, undefined)]:
+        () => true,
+      [generateTextColorUtilityClassName(zeroForegroundColor, 'zero')]: (
         params,
-      ) => {
-        if (
-          dataType !== DataCubeColumnDataType.NUMBER ||
-          !isNumber(params.value)
-        ) {
-          return false;
-        }
-        return params.value === 0;
-      },
-      [generateTextColorUtilityClassName(negativeForegroundColor)]: (
+      ) =>
+        dataType === DataCubeColumnDataType.NUMBER &&
+        isNumber(params.value) &&
+        params.value === 0,
+      [generateBackgroundColorUtilityClassName(zeroBackgroundColor, 'zero')]: (
         params,
-      ) => {
-        if (
-          dataType !== DataCubeColumnDataType.NUMBER ||
-          !isNumber(params.value)
-        ) {
-          return false;
-        }
-        return params.value < 0;
-      },
-      [generateBackgroundColorUtilityClassName(negativeBackgroundColor)]: (
-        params,
-      ) => {
-        if (
-          dataType !== DataCubeColumnDataType.NUMBER ||
-          !isNumber(params.value)
-        ) {
-          return false;
-        }
-        return params.value < 0;
-      },
-      [generateTextColorUtilityClassName(errorForegroundColor)]: (params) =>
-        params.node.failedLoad,
-      [generateBackgroundColorUtilityClassName(errorBackgroundColor)]: (
+      ) =>
+        dataType === DataCubeColumnDataType.NUMBER &&
+        isNumber(params.value) &&
+        params.value === 0,
+      [generateTextColorUtilityClassName(negativeForegroundColor, 'negative')]:
+        (params) =>
+          dataType === DataCubeColumnDataType.NUMBER &&
+          isNumber(params.value) &&
+          params.value < 0,
+      [generateBackgroundColorUtilityClassName(
+        negativeBackgroundColor,
+        'negative',
+      )]: (params) =>
+        dataType === DataCubeColumnDataType.NUMBER &&
+        isNumber(params.value) &&
+        params.value < 0,
+      [generateTextColorUtilityClassName(errorForegroundColor, 'error')]: (
         params,
       ) => params.node.failedLoad,
+      [generateBackgroundColorUtilityClassName(errorBackgroundColor, 'error')]:
+        (params) => params.node.failedLoad,
+      [INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BLUR]: () =>
+        configuration.blur,
     },
   } as ColDef;
 }

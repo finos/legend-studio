@@ -259,8 +259,6 @@ export function DataCubeEditorDropdownMenuItemSeparator() {
   return <div className="my-0.5 h-[1px] w-full bg-neutral-200" />;
 }
 
-const DEFAULT_TRANSPARENT_COLOR = '#00000000';
-
 function DataCubeEditorColorPicker(props: {
   color: string;
   onChange: (value: string) => void;
@@ -325,7 +323,7 @@ function DataCubeEditorColorPicker(props: {
         <div className="flex">
           {[
             // Colors from Better Colors - https://clrs.cc/
-            DEFAULT_TRANSPARENT_COLOR,
+            TailwindCSSPalette.transparent,
             '#000000',
             '#aaaaaa',
             '#dddddd',
@@ -350,7 +348,7 @@ function DataCubeEditorColorPicker(props: {
                 'mr-0.5 border-[0.5px] border-neutral-300 last:mr-0',
                 {
                   'data-cube-color-picker--transparent border-neutral-400':
-                    _color === DEFAULT_TRANSPARENT_COLOR,
+                    _color === TailwindCSSPalette.transparent,
                 },
               )}
             >
@@ -409,7 +407,7 @@ function DataCubeEditorColorPicker(props: {
               onChange(
                 // if color is completely transparent, set it to #00000000
                 parseColor(color).alpha === 0
-                  ? DEFAULT_TRANSPARENT_COLOR
+                  ? TailwindCSSPalette.transparent
                   : color,
               );
               onClose();
@@ -440,7 +438,7 @@ export function DataCubeEditorColorPickerButton(props: {
           {
             'data-cube-color-picker--disabled': Boolean(disabled),
             'data-cube-color-picker--transparent':
-              !disabled && color === DEFAULT_TRANSPARENT_COLOR,
+              !disabled && color === TailwindCSSPalette.transparent,
           },
           className,
         )}
