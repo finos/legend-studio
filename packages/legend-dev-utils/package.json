@@ -70,7 +70,7 @@
     "circular-dependency-plugin": "5.2.2",
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "7.1.2",
-    "cssnano": "7.0.3",
+    "cssnano": "7.0.4",
     "html-webpack-plugin": "5.6.0",
     "isbinaryfile": "5.0.2",
     "jest": "29.7.0",
@@ -95,7 +95,7 @@
   "devDependencies": {
     "cross-env": "7.0.3",
     "eslint": "8.57.0",
-    "rimraf": "5.0.7"
+    "rimraf": "5.0.8"
   },
   "publishConfig": {
     "directory": "build/publishContent"
