@@ -47,9 +47,8 @@ import {
 export const DataCubeEditorColumnPropertiesPanel = observer(() => {
   const replStore = useREPLStore();
   const dataCube = replStore.dataCube;
-  const panel = dataCube.editor.columnPropertiesPanel;
-  const gridConfiguration =
-    dataCube.editor.generalPropertiesPanel.configuration;
+  const panel = dataCube.editor.columnProperties;
+  const gridConfiguration = dataCube.editor.generalProperties.configuration;
   const selectedColumn = panel.selectedColumn;
   const [openColumnsDropdown, closeColumnsDropdown, columnsDropdownProps] =
     useDropdownMenu();

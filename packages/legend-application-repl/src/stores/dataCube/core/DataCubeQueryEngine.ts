@@ -222,7 +222,7 @@ export const DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR =
   TailwindCSSPalette.sky[100];
 
 export const DEFAULT_COLUMN_WIDTH = 300;
-export const DEFAULT_COLUMN_MIN_WIDTH = 100;
+export const DEFAULT_COLUMN_MIN_WIDTH = 50;
 export const DEFAULT_COLUMN_MAX_WIDTH = undefined;
 
 export const DEFAULT_FONT_FAMILY = DataCubeFont.ROBOTO;

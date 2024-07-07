@@ -49,6 +49,12 @@ export class DataCubeEditorColumnPropertiesPanelState
     this.dataCube = editor.dataCube;
   }
 
+  getColumnConfiguration(
+    colName: string | undefined,
+  ): DataCubeMutableColumnConfiguration | undefined {
+    return this.columns.find((col) => col.name === colName);
+  }
+
   setColumns(val: DataCubeMutableColumnConfiguration[]): void {
     this.columns = val;
   }

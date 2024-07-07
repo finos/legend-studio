@@ -42,11 +42,17 @@ import {
   generateTextColorUtilityClassName,
   generateBackgroundColorUtilityClassName,
   generateFontCaseUtilityClassName,
+  GridClientPinnedAlignement,
+  INTERNAL__GRID_CLIENT_ROW_HEIGHT,
+  INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING,
+  INTERNAL__GRID_CLIENT_HEADER_HEIGHT,
+  INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
   IllegalStateError,
+  isNonNullable,
   isNumber,
 } from '@finos/legend-shared';
 import type {
@@ -55,12 +61,15 @@ import type {
 } from '../core/DataCubeConfiguration.js';
 import {
   DataCubeColumnDataType,
+  DataCubeColumnPinPlacement,
   DataCubeNumberScale,
   DEFAULT_ROW_BUFFER,
   getDataType,
 } from '../core/DataCubeQueryEngine.js';
 import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
 import { DataCubeIcon } from '@finos/legend-art';
+import type { DataCubeState } from '../DataCubeState.js';
+import { buildGridMenu } from '../../../components/dataCube/grid/menu/DataCubeGridMenu.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -160,6 +169,20 @@ function scaleNumber(
   }
 }
 
+function DataCubeGridLoadingCellRenderer(
+  props: CustomLoadingCellRendererProps,
+) {
+  if (props.node.failedLoad) {
+    return <span className="inline-flex items-center">#ERR</span>;
+  }
+  return (
+    <span className="inline-flex items-center">
+      <DataCubeIcon.Loader className="mr-1 animate-spin stroke-2" />
+      Loading
+    </span>
+  );
+}
+
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
 type ColumnData = {
@@ -242,17 +265,7 @@ function _displaySpec(columnData: ColumnData) {
             );
           }
         : (params) => params.value,
-    loadingCellRenderer: (props: CustomLoadingCellRendererProps) => {
-      if (props.node.failedLoad) {
-        return <span className="inline-flex items-center">#ERR</span>;
-      }
-      return (
-        <span className="inline-flex items-center">
-          <DataCubeIcon.Loader className="mr-1 animate-spin stroke-2" />
-          Loading
-        </span>
-      );
-    },
+    loadingCellRenderer: DataCubeGridLoadingCellRenderer,
     cellClassRules: {
       [generateFontFamilyUtilityClassName(fontFamily)]: () => true,
       [generateFontSizeUtilityClassName(fontSize)]: () => true,
@@ -304,6 +317,16 @@ function _displaySpec(columnData: ColumnData) {
       [INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BLUR]: () =>
         configuration.blur,
     },
+    pinned:
+      configuration.pinned !== undefined
+        ? configuration.pinned === DataCubeColumnPinPlacement.RIGHT
+          ? GridClientPinnedAlignement.RIGHT
+          : GridClientPinnedAlignement.LEFT
+        : null,
+    tooltipValueGetter: (params) =>
+      isNonNullable(params.value)
+        ? `Value = ${params.value === '' ? "''" : params.value === true ? 'TRUE' : params.value === false ? 'FALSE' : params.value}`
+        : `Missing Value`,
   } as ColDef;
 }
 
@@ -378,9 +401,95 @@ function _rowGroupSpec(columnData: ColumnData) {
 
 // --------------------------------- MAIN ---------------------------------
 
+export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
+  const grid = dataCube.grid;
+
+  return {
+    // -------------------------------------- README --------------------------------------
+    // NOTE: we observe performance degradataion when configuring the grid via React component
+    // props when the options is non-static, i.e. changed when the query configuration changes.
+    // As such, we must ONLY ADD STATIC CONFIGURATION HERE, and dynamic configuration should be
+    // programatically updated when the query is modified.
+    //
+    //
+    // -------------------------------------- ROW GROUPING --------------------------------------
+    rowGroupPanelShow: 'always',
+    groupDisplayType: 'custom', // keeps the column set stable even when row grouping is used
+    suppressRowGroupHidesColumns: true, // keeps the column set stable even when row grouping is used
+    suppressAggFuncInHeader: true, //  keeps the columns stable when aggregation is used
+    // -------------------------------------- PIVOT --------------------------------------
+    // pivotPanelShow: "always"
+    // pivotMode:true,
+    // -------------------------------------- SORT --------------------------------------
+    // Force multi-sorting since this is what the query supports anyway
+    alwaysMultiSort: true,
+    // -------------------------------------- DISPLAY --------------------------------------
+    rowHeight: INTERNAL__GRID_CLIENT_ROW_HEIGHT,
+    headerHeight: INTERNAL__GRID_CLIENT_HEADER_HEIGHT,
+    suppressBrowserResizeObserver: true,
+    noRowsOverlayComponent: () => (
+      <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-medium text-neutral-400">
+        <div>
+          <DataCubeIcon.WarningCircle className="mr-1 stroke-2 text-lg" />
+        </div>
+        0 rows
+      </div>
+    ),
+    loadingOverlayComponent: () => (
+      <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-medium text-neutral-400">
+        <div>
+          <DataCubeIcon.Loader className="mr-1 animate-spin stroke-2 text-lg" />
+        </div>
+        Loading...
+      </div>
+    ),
+    // Show cursor position when scrolling
+    onBodyScroll: (event) => {
+      const rowCount = event.api.getDisplayedRowCount();
+      const range = event.api.getVerticalPixelRange();
+      const start = Math.max(
+        1,
+        Math.ceil(range.top / INTERNAL__GRID_CLIENT_ROW_HEIGHT) + 1,
+      );
+      const end = Math.min(
+        rowCount,
+        Math.floor(range.bottom / INTERNAL__GRID_CLIENT_ROW_HEIGHT),
+      );
+      grid.setScrollHintText(`${start}-${end}/${rowCount}`);
+      event.api.hidePopupMenu(); // hide context-menu while scrolling
+    },
+    onBodyScrollEnd: () => grid.setScrollHintText(''),
+    // -------------------------------------- CONTEXT MENU --------------------------------------
+    preventDefaultOnContextMenu: true, // prevent showing the browser's context menu
+    columnMenu: 'new', // ensure context menu works on header
+    getContextMenuItems: buildGridMenu,
+    getMainMenuItems: buildGridMenu,
+    // -------------------------------------- COLUMN SIZING --------------------------------------
+    autoSizePadding: INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING,
+    autoSizeStrategy: {
+      // resize to fit content initially
+      type: 'fitCellContents',
+    },
+    // -------------------------------------- TOOLTIP --------------------------------------
+    tooltipShowDelay: INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY,
+    tooltipInteraction: true,
+    // -------------------------------------- COLUMN MOVING --------------------------------------
+    suppressDragLeaveHidesColumns: true,
+    // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
+    suppressScrollOnNewData: true,
+    suppressServerSideFullWidthLoadingRow: true, // make sure each column has its own loading indicator instead of the whole row
+    // -------------------------------------- SELECTION --------------------------------------
+    enableRangeSelection: true,
+    // -------------------------------------- PERFORMANCE --------------------------------------
+    animateRows: false, // improve performance
+    suppressColumnMoveAnimation: true, // improve performance
+  };
+}
+
 export function generateGridOptionsFromSnapshot(
   snapshot: DataCubeQuerySnapshot,
   configuration: DataCubeConfiguration,
+  dataCube: DataCubeState,
 ): GridOptions {
   const data = snapshot.data;
   const gridOptions = {
@@ -402,7 +511,30 @@ export function generateGridOptionsFromSnapshot(
         }
       : null,
     rowBuffer: DEFAULT_ROW_BUFFER,
+
+    // -------------------------------------- EVENT HANDLERS --------------------------------------
+
+    onColumnPinned: (event) => {
+      if (event.column) {
+        const column = event.column;
+        const columnConfiguration =
+          dataCube.editor.columnProperties.getColumnConfiguration(
+            column.getColId(),
+          );
+        const pinned = column.getPinned();
+        columnConfiguration?.setPinned(
+          pinned === null
+            ? undefined
+            : pinned === GridClientPinnedAlignement.LEFT
+              ? DataCubeColumnPinPlacement.LEFT
+              : DataCubeColumnPinPlacement.RIGHT,
+        );
+        dataCube.editor.applyChanges();
+      }
+    },
+
     // -------------------------------------- COLUMNS --------------------------------------
+
     columnDefs: [
       {
         headerName: '',
@@ -427,11 +559,16 @@ export function generateGridOptionsFromSnapshot(
         hide: !snapshot.data.groupBy,
         lockPinned: true,
         lockPosition: true,
+        pinned: GridClientPinnedAlignement.LEFT,
         cellStyle: {
           flex: 1,
           justifyContent: 'space-between',
           display: 'flex',
         },
+        // TODO: display: coloring, text, etc.
+        // TODO: pinning (should we pin this left by default?)
+        // TODO: tooltip
+        loadingCellRenderer: DataCubeGridLoadingCellRenderer,
         sortable: false, // TODO: @akphi - we can support this in the configuration
       } satisfies ColDef,
       // TODO: handle pivot and column grouping
@@ -448,6 +585,7 @@ export function generateGridOptionsFromSnapshot(
           headerName: column.name,
           field: column.name,
           menuTabs: [],
+          suppressMovable: true,
 
           ..._displaySpec(columnData),
           ..._sizeSpec(columnData),

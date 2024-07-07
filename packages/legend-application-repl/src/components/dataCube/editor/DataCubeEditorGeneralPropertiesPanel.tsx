@@ -45,7 +45,7 @@ import {
 
 export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
   const replStore = useREPLStore();
-  const panel = replStore.dataCube.editor.generalPropertiesPanel;
+  const panel = replStore.dataCube.editor.generalProperties;
   const configuration = panel.configuration;
   const [
     openInitialExpandLevelDropdown,

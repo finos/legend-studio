@@ -38,10 +38,10 @@ export enum DATA_CUBE_EDITOR_TAB {
 }
 
 export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
-  readonly sortsPanel: DataCubeEditorSortsPanelState;
-  readonly generalPropertiesPanel: DataCubeEditorGeneralPropertiesPanelState;
-  readonly columnPropertiesPanel: DataCubeEditorColumnPropertiesPanelState;
-  readonly codePanel: DataCubeEditorCodePanelState;
+  readonly sorts: DataCubeEditorSortsPanelState;
+  readonly generalProperties: DataCubeEditorGeneralPropertiesPanelState;
+  readonly columnProperties: DataCubeEditorColumnPropertiesPanelState;
+  readonly code: DataCubeEditorCodePanelState;
 
   isPanelOpen = false;
   currentTab = DATA_CUBE_EDITOR_TAB.GENERAL_PROPERTIES;
@@ -60,14 +60,12 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
       closePanel: action,
     });
 
-    this.sortsPanel = new DataCubeEditorSortsPanelState(this);
-    this.generalPropertiesPanel = new DataCubeEditorGeneralPropertiesPanelState(
+    this.sorts = new DataCubeEditorSortsPanelState(this);
+    this.generalProperties = new DataCubeEditorGeneralPropertiesPanelState(
       this,
     );
-    this.columnPropertiesPanel = new DataCubeEditorColumnPropertiesPanelState(
-      this,
-    );
-    this.codePanel = new DataCubeEditorCodePanelState(this);
+    this.columnProperties = new DataCubeEditorColumnPropertiesPanelState(this);
+    this.code = new DataCubeEditorCodePanelState(this);
   }
 
   openPanel(): void {
@@ -86,11 +84,11 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const snapshot = baseSnapshot.clone();
 
-    this.sortsPanel.buildSnapshot(snapshot, baseSnapshot);
+    this.sorts.buildSnapshot(snapshot, baseSnapshot);
     // NOTE: snapshot must be processed first to build the container configuration
     // before proceeding to process the columns' configuration
-    this.generalPropertiesPanel.buildSnapshot(snapshot, baseSnapshot);
-    this.columnPropertiesPanel.buildSnapshot(snapshot, baseSnapshot);
+    this.generalProperties.buildSnapshot(snapshot, baseSnapshot);
+    this.columnProperties.buildSnapshot(snapshot, baseSnapshot);
 
     snapshot.finalize();
     if (snapshot.hashCode !== baseSnapshot.hashCode) {
@@ -102,9 +100,9 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,
   ): Promise<void> {
-    this.sortsPanel.applySnaphot(snapshot);
-    this.generalPropertiesPanel.applySnaphot(snapshot);
-    this.columnPropertiesPanel.applySnaphot(snapshot);
+    this.sorts.applySnaphot(snapshot);
+    this.generalProperties.applySnaphot(snapshot);
+    this.columnProperties.applySnaphot(snapshot);
   }
 
   override async initialize(): Promise<void> {

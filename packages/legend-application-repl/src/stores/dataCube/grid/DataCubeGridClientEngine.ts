@@ -87,9 +87,16 @@ export const generateBackgroundColorUtilityClassName = (
 export const INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH = 50;
 export const INTERNAL__GRID_CLIENT_HEADER_HEIGHT = 24;
 export const INTERNAL__GRID_CLIENT_ROW_HEIGHT = 20;
+export const INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY = 1000;
+export const INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING = 10;
 export const INTERNAL__GRID_CLIENT_TREE_COLUMN_ID = 'INTERNAL__tree';
 export const INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID =
   'INTERNAL__count';
+
+export enum GridClientPinnedAlignement {
+  LEFT = 'left',
+  RIGHT = 'right',
+}
 
 export enum GridClientSortDirection {
   ASCENDING = 'asc',

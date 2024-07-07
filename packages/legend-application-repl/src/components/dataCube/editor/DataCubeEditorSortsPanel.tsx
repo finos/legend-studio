@@ -117,7 +117,7 @@ const SortDirectionDropdown = observer(
 
 export const DataCubeEditorSortsPanel = observer(() => {
   const replStore = useREPLStore();
-  const panel = replStore.dataCube.editor.sortsPanel;
+  const panel = replStore.dataCube.editor.sorts;
 
   return (
     <div className="h-full w-full select-none p-2">

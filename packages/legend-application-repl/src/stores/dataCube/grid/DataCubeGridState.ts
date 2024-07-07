@@ -129,6 +129,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     const gridOptions = generateGridOptionsFromSnapshot(
       snapshot,
       queryConfiguration,
+      this.dataCube,
     );
     this.client.updateGridOptions(gridOptions);
   }

@@ -33,12 +33,9 @@ import {
   generateFontUnderlineUtilityClassName,
   generateTextAlignUtilityClassName,
   generateTextColorUtilityClassName,
-  INTERNAL__GRID_CLIENT_HEADER_HEIGHT,
-  INTERNAL__GRID_CLIENT_ROW_HEIGHT,
   INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME,
 } from '../../../stores/dataCube/grid/DataCubeGridClientEngine.js';
 import { RangeSelectionModule } from '@ag-grid-enterprise/range-selection';
-import { buildGridMenu } from './menu/DataCubeGridMenu.js';
 import {
   DataCubeFont,
   DataCubeFontCase,
@@ -52,6 +49,7 @@ import type {
   DataCubeConfiguration,
   DataCubeConfigurationColorKey,
 } from '../../../stores/dataCube/core/DataCubeConfiguration.js';
+import { generateBaseGridOptions } from '../../../stores/dataCube/grid/DataCubeGridQuerySnapshotAnalyzer.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
@@ -318,75 +316,17 @@ const DataCubeGridClient = observer(() => {
   return (
     <div className="relative h-[calc(100%_-_20px)] w-full">
       <AgGridReact
-        // -------------------------------------- README --------------------------------------
-        // NOTE: we observe performance degradataion when configuring the grid via React component
-        // props when the options is non-static, i.e. changed when the query configuration changes.
-        // As such, we must ONLY ADD STATIC CONFIGURATION HERE, and dynamic configuration should be
-        // programatically updated when the query is modified.
-        //
-        //
-        // -------------------------------------- ROW GROUPING --------------------------------------
-        rowGroupPanelShow="always"
-        groupDisplayType="custom" // keeps the column set stable even when row grouping is used
-        suppressRowGroupHidesColumns={true} // keeps the column set stable even when row grouping is used
-        suppressAggFuncInHeader={true} //  keeps the columns stable when aggregation is used
-        // -------------------------------------- PIVOT --------------------------------------
-        // pivotPanelShow="always"
-        // pivotMode={true}
-        // -------------------------------------- SORT --------------------------------------
-        // Force multi-sorting since this is what the query supports anyway
-        alwaysMultiSort={true}
-        // -------------------------------------- DISPLAY --------------------------------------
         className="data-cube-grid ag-theme-balham"
-        rowHeight={INTERNAL__GRID_CLIENT_ROW_HEIGHT}
-        headerHeight={INTERNAL__GRID_CLIENT_HEADER_HEIGHT}
-        suppressBrowserResizeObserver={true}
-        noRowsOverlayComponent={() => (
-          <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-medium text-neutral-400">
-            <div>
-              <DataCubeIcon.WarningCircle className="mr-1 stroke-2 text-lg" />
-            </div>
-            0 rows
-          </div>
-        )}
-        loadingOverlayComponent={() => (
-          <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-medium text-neutral-400">
-            <div>
-              <DataCubeIcon.Loader className="mr-1 animate-spin stroke-2 text-lg" />
-            </div>
-            Loading...
-          </div>
-        )}
-        preventDefaultOnContextMenu={true} // prevent showing the browser's context menu
-        columnMenu="new" // ensure context menu works on header
-        getContextMenuItems={buildGridMenu}
-        getMainMenuItems={buildGridMenu}
-        enableRangeSelection={true}
-        // Show cursor position when scrolling
-        onBodyScroll={(event) => {
-          const rowCount = event.api.getDisplayedRowCount();
-          const range = event.api.getVerticalPixelRange();
-          const start = Math.max(
-            1,
-            Math.ceil(range.top / INTERNAL__GRID_CLIENT_ROW_HEIGHT) + 1,
-          );
-          const end = Math.min(
-            rowCount,
-            Math.floor(range.bottom / INTERNAL__GRID_CLIENT_ROW_HEIGHT),
-          );
-          grid.setScrollHintText(`${start}-${end}/${rowCount}`);
-          event.api.hidePopupMenu(); // hide context-menu while scrolling
-        }}
-        onBodyScrollEnd={() => grid.setScrollHintText('')}
-        // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
         rowModelType="serverSide"
-        suppressScrollOnNewData={true}
         serverSideDatasource={grid.clientDataSource}
-        suppressServerSideFullWidthLoadingRow={true} // make sure each column has its own loading indicator instead of the whole row
-        // -------------------------------------- PERFORMANCE --------------------------------------
-        animateRows={false} // improve performance
-        suppressColumnMoveAnimation={true} // improve performance
-        // -------------------------------------- SETUP --------------------------------------
+        context={{
+          dataCube,
+        }}
+        onGridReady={(params): void => {
+          grid.configureClient(params.api);
+          // restore original error logging
+          console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
+        }}
         modules={[
           // community
           ClientSideRowModelModule,
@@ -397,14 +337,7 @@ const DataCubeGridClient = observer(() => {
           ClipboardModule,
           RangeSelectionModule,
         ]}
-        onGridReady={(params): void => {
-          grid.configureClient(params.api);
-          // restore original error logging
-          console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
-        }}
-        context={{
-          dataCube,
-        }}
+        {...generateBaseGridOptions(dataCube)}
       />
     </div>
   );

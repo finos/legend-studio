@@ -143,7 +143,7 @@ import { useREPLStore } from '../../REPLStoreProvider.js';
 
 export const DataCubeEditorCodePanel = observer(() => {
   const replStore = useREPLStore();
-  const panel = replStore.dataCube.editor.sortsPanel;
+  const panel = replStore.dataCube.editor.sorts;
   // const executeLambda = (): void => {
   //   // TODO: @akphi
   //   // flowResult(dataCubeState.executeLambda()).catch(

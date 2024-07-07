@@ -117,7 +117,8 @@ button:focus-visible {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100' %3E%3Cpath d='M0 100 L100 0' stroke-width='7' stroke='%23ef4444' /%3E%3C/svg%3E");
 }
 
-.data-cube-grid.ag-theme-balham {
+.data-cube-grid.ag-theme-balham,
+.data-cube-grid .ag-theme-balham {
   --ag-input-focus-border-color: var(--tw-color-sky-600);
   --ag-balham-active-color: var(--tw-color-sky-600);
   --ag-range-selection-border-color: var(--tw-color-sky-600);
@@ -136,12 +137,46 @@ button:focus-visible {
   --ag-icon-font-color: var(--tw-color-neutral-500);
   --ag-header-foreground-color: var(--tw-color-black);
   --ag-row-hover-color: #d4d4d415; // tailwind neutral 300
+  --ag-tooltip-background-color: var(--tw-color-white);
+  --ag-popup-shadow: 2px 2px 5px rgb(0 0 0 / 20%);
+
   // NOTE: These are icons taken from Tabler and URI encoded
   // See https://yoksel.github.io/url-encoder/
   // See https://tablericons.com/
   // See https://github.com/tabler/tabler-icons
   --ag-icon-font-code-group: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='icon icon-tabler icon-tabler-table-column' width='12' height='12' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23000000' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z' /%3E%3Cpath d='M10 10h11' /%3E%3Cpath d='M10 3v18' /%3E%3Cpath d='M9 3l-6 6' /%3E%3Cpath d='M10 7l-7 7' /%3E%3Cpath d='M10 12l-7 7' /%3E%3Cpath d='M10 17l-4 4' /%3E%3C/svg%3E");
   --ag-icon-font-code-pivot: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='icon icon-tabler icon-tabler-table-row' width='12' height='12' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23000000' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z' /%3E%3Cpath d='M9 3l-6 6' /%3E%3Cpath d='M14 3l-7 7' /%3E%3Cpath d='M19 3l-7 7' /%3E%3Cpath d='M21 6l-4 4' /%3E%3Cpath d='M3 10h18' /%3E%3Cpath d='M10 10v11' /%3E%3C/svg%3E");
+
+  // Improve visibility for pinned columns region
+  .ag-cell.ag-cell-last-left-pinned {
+    border-right: none;
+  }
+
+  .ag-pinned-left-header,
+  .ag-pinned-left-cols-container {
+    border-right: 3px double var(--tw-color-neutral-400);
+  }
+
+  .ag-cell.ag-cell-first-right-pinned {
+    border-left: none;
+  }
+
+  .ag-pinned-right-header,
+  .ag-pinned-right-cols-container {
+    border-left: 3px double var(--tw-color-neutral-400);
+  }
+
+  // Improve responsiveness for tooltip
+  .ag-tooltip {
+    padding: 3px 5px;
+    border: 1px solid var(--tw-color-neutral-500);
+    border-radius: 0;
+  }
+
+  .ag-tooltip.ag-tooltip-animate,
+  .ag-tooltip-custom.ag-tooltip-animate {
+    transition: opacity 0.2s;
+  }
 
   .ag-column-drop-cell {
     height: 16px;
