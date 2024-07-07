@@ -92,7 +92,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               Report Title:
             </div>
             <DataCubeEditorTextInput
-              className="w-96 text-lg font-semibold"
+              className="h-6 w-96 text-lg font-semibold"
               value={panel.name}
               onChange={(event) => {
                 panel.setName(event.target.value);
@@ -100,7 +100,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             />
           </div>
 
-          <div className="mt-2 flex h-6 w-full items-center">
+          <div className="mt-2 flex h-5 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Initially Expand to Level:
             </div>
@@ -130,7 +130,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             <WIP_Badge />
           </div>
 
-          <div className="mt-2 flex h-4 w-full items-center">
+          <div className="mt-2 flex h-5 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Show Root Aggregation?
             </div>
@@ -146,7 +146,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             <WIP_Badge />
           </div>
 
-          <div className="mt-2 flex h-4 w-full items-center">
+          <div className="mt-2 flex h-5 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Show Leaf Count?
             </div>
@@ -160,7 +160,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             <WIP_Badge />
           </div>
 
-          <div className="mt-2 flex h-4 w-full items-center">
+          <div className="mt-2 flex h-5 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Show Lines?
             </div>
@@ -202,7 +202,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             />
           </div>
 
-          <div className="mt-2 flex h-6 w-full items-center">
+          <div className="mt-2 flex h-5 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Show Selection Stats:
             </div>
@@ -236,7 +236,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             <WIP_Badge />
           </div>
 
-          <div className="mt-2 flex h-6 w-full items-center">
+          <div className="mt-2 flex h-5 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Row Limit:
             </div>
@@ -257,7 +257,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             </div>
           </div>
 
-          <div className="mt-1 flex h-6 w-full items-center">
+          <div className="mt-2 flex h-5 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm" />
             <DataCubeEditorCheckbox
               label="Display warning when truncated"
@@ -270,7 +270,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             />
           </div>
 
-          <div className="mt-1 flex h-4 w-full items-center">
+          <div className="mt-2 flex h-5 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Hightlight Rows:
             </div>
@@ -323,7 +323,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
 
           <div className="my-2 h-[1px] w-full bg-neutral-200" />
 
-          <div className="mt-3 flex h-6 w-full items-center">
+          <div className="mt-2 flex h-5 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Default Font:
             </div>

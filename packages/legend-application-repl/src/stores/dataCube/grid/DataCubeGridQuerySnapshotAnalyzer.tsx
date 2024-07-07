@@ -28,7 +28,12 @@ import {
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
 } from '../core/DataCubeQuerySnapshot.js';
-import type { ColDef, ColGroupDef, GridOptions } from '@ag-grid-community/core';
+import type {
+  ColDef,
+  ColGroupDef,
+  GridOptions,
+  ICellRendererParams,
+} from '@ag-grid-community/core';
 import {
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
   GridClientAggregateOperation,
@@ -50,10 +55,13 @@ import {
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
+  getQueryParameters,
+  getQueryParameterValue,
   guaranteeNonNullable,
   IllegalStateError,
   isNonNullable,
   isNumber,
+  isValidUrl,
 } from '@finos/legend-shared';
 import type {
   DataCubeColumnConfiguration,
@@ -64,6 +72,7 @@ import {
   DataCubeColumnPinPlacement,
   DataCubeNumberScale,
   DEFAULT_ROW_BUFFER,
+  DEFAULT_URL_LABEL_QUERY_PARAM,
   getDataType,
 } from '../core/DataCubeQueryEngine.js';
 import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
@@ -192,6 +201,34 @@ type ColumnData = {
   gridConfiguration: DataCubeConfiguration;
 };
 
+function getCellRenderer(columnData: ColumnData) {
+  const { column, configuration } = columnData;
+  const dataType = getDataType(column.type);
+  if (dataType === DataCubeColumnDataType.TEXT && configuration.displayAsLink) {
+    return function LinkRenderer(params: ICellRendererParams) {
+      const isUrl = isValidUrl(params.value);
+      if (!isUrl) {
+        return params.value;
+      }
+      const label = getQueryParameterValue(
+        configuration.linkLabelParameter ?? DEFAULT_URL_LABEL_QUERY_PARAM,
+        getQueryParameters(params.value, true),
+      );
+      return (
+        <a
+          href={params.value}
+          target="_blank"
+          rel="noreferrer"
+          className="text-blue-600 underline"
+        >
+          {label ?? params.value}
+        </a>
+      );
+    };
+  }
+  return null;
+}
+
 function _displaySpec(columnData: ColumnData) {
   const { column, configuration, gridConfiguration } = columnData;
   const dataType = getDataType(column.type);
@@ -227,6 +264,7 @@ function _displaySpec(columnData: ColumnData) {
   const errorBackgroundColor =
     configuration.errorBackgroundColor ??
     gridConfiguration.errorBackgroundColor;
+  const cellRenderer = getCellRenderer(columnData);
   return {
     // setting the cell data type might helps guide the grid to render the cell properly
     // and optimize the grid performance slightly by avoiding unnecessary type inference
@@ -317,6 +355,7 @@ function _displaySpec(columnData: ColumnData) {
       [INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BLUR]: () =>
         configuration.blur,
     },
+    cellRenderer: cellRenderer,
     pinned:
       configuration.pinned !== undefined
         ? configuration.pinned === DataCubeColumnPinPlacement.RIGHT

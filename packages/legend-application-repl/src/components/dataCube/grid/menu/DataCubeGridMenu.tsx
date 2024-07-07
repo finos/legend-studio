@@ -386,7 +386,7 @@ export function buildGridMenu(
         },
         {
           name: `Unpin`,
-          disabled: !column || !column.isPinned(),
+          disabled: !column?.isPinned(),
           action: () => {
             columnConfiguration?.setPinned(undefined);
             editor.applyChanges();

@@ -88,6 +88,7 @@ export class DataCubeColumnConfiguration {
   maxWidth?: number | undefined;
   pinned?: DataCubeColumnPinPlacement | undefined;
   displayAsLink = false;
+  linkLabelParameter?: string | undefined;
 
   constructor(name: string, type: string) {
     this.name = name;
@@ -114,6 +115,7 @@ export class DataCubeColumnConfiguration {
       hideFromView: primitive(),
       hPivotSortFunction: optional(primitive()),
       kind: primitive(),
+      linkLabelParameter: optional(primitive()),
       maxWidth: optional(primitive()),
       minWidth: optional(primitive()),
       name: primitive(),

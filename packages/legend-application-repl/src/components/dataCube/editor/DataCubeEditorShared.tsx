@@ -92,7 +92,7 @@ export const DataCubeEditorNumberInput = forwardRef(
     return (
       <input
         className={cn(
-          'h-6 flex-shrink-0 border border-neutral-400 px-1.5 disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
+          'h-5 flex-shrink-0 border border-neutral-400 px-1.5 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
           className,
         )}
         ref={ref}
@@ -153,7 +153,7 @@ export function DataCubeEditorTextInput(
   return (
     <input
       className={cn(
-        'h-6 flex-shrink-0 border border-neutral-400 px-1.5 disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
+        'h-5 flex-shrink-0 border border-neutral-400 px-1.5 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
         className,
       )}
       {...otherProps}
@@ -209,7 +209,7 @@ export function DataCubeEditorDropdownMenuTrigger(
   return (
     <button
       className={cn(
-        'group flex h-6 flex-shrink-0 items-center justify-between border border-neutral-400 pl-1.5 text-sm disabled:select-none disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
+        'group flex h-5 flex-shrink-0 items-center justify-between border border-neutral-400 pl-1.5 text-sm disabled:select-none disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
         className,
       )}
       {...otherProps}

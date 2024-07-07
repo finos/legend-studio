@@ -42,6 +42,7 @@ import {
   DEFAULT_COLUMN_MAX_WIDTH,
   DEFAULT_COLUMN_MIN_WIDTH,
   DEFAULT_COLUMN_WIDTH,
+  DEFAULT_URL_LABEL_QUERY_PARAM,
 } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 
 export const DataCubeEditorColumnPropertiesPanel = observer(() => {
@@ -196,7 +197,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
 
           {selectedColumn && (
             <>
-              <div className="mt-3 flex h-6 w-full items-center">
+              <div className="mt-2 flex h-5 w-full items-center">
                 <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                   Display Name:
                 </div>
@@ -214,7 +215,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
 
               {selectedColumn.dataType === DataCubeColumnDataType.NUMBER && (
                 <>
-                  <div className="mt-2 flex h-6 w-full items-center">
+                  <div className="mt-2 flex h-5 w-full items-center">
                     <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                       Number Format:
                     </div>
@@ -252,7 +253,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     />
                   </div>
 
-                  <div className="mt-2 flex h-6 w-full items-center">
+                  <div className="mt-2 flex h-5 w-full items-center">
                     <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                       Number Scale:
                     </div>
@@ -289,7 +290,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     </DataCubeEditorDropdownMenu>
                   </div>
 
-                  <div className="mt-2 flex h-6 w-full items-center">
+                  <div className="mt-2 flex h-5 w-full items-center">
                     <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                       Aggregation Type:
                     </div>
@@ -325,7 +326,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <WIP_Badge />
                   </div>
 
-                  <div className="mt-2 flex h-4 w-full items-center">
+                  <div className="mt-2 flex h-5 w-full items-center">
                     <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                       Exclude from HPivot?
                     </div>
@@ -345,7 +346,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
 
               {selectedColumn.dataType === DataCubeColumnDataType.TEXT && (
                 <>
-                  <div className="mt-2 flex h-4 w-full items-center">
+                  <div className="mt-2 flex h-5 w-full items-center">
                     <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                       Dislay as Link?
                     </div>
@@ -357,11 +358,26 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                         )
                       }
                     />
+                    <div className="ml-1 h-[1px] w-2 flex-shrink-0 bg-neutral-400" />
+                    <div className="ml-2 mr-1.5 flex h-full flex-shrink-0 items-center text-sm">
+                      Use Parameter in Link as Label:
+                    </div>
+                    <DataCubeEditorTextInput
+                      className="w-48"
+                      placeholder={DEFAULT_URL_LABEL_QUERY_PARAM}
+                      value={selectedColumn.linkLabelParameter ?? ''}
+                      onChange={(event) => {
+                        const value = event.target.value.trim();
+                        selectedColumn.setLinkLabelParameter(
+                          value !== '' ? value : undefined,
+                        );
+                      }}
+                    />
                   </div>
                 </>
               )}
 
-              <div className="mt-2 flex h-4 w-full items-center">
+              <div className="mt-2 flex h-5 w-full items-center">
                 <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                   Visibility:
                 </div>
@@ -383,7 +399,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                 <WIP_Badge />
               </div>
 
-              <div className="mt-2 flex h-6 w-full items-center">
+              <div className="mt-2 flex h-5 w-full items-center">
                 <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                   Pin:
                 </div>
@@ -529,7 +545,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
 
               <div className="my-2 h-[1px] w-full bg-neutral-200" />
 
-              <div className="mt-3 flex h-6 w-full items-center">
+              <div className="mt-2 flex h-5 w-full items-center">
                 <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                   Font:
                 </div>

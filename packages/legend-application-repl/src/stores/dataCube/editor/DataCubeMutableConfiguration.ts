@@ -159,6 +159,9 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       displayAsLink: observable,
       setDisplayAsLink: action,
 
+      linkLabelParameter: observable,
+      setLinkLabelParameter: action,
+
       isUsingDefaultStyling: computed,
       useDefaultStyling: action,
     });
@@ -328,6 +331,10 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
 
   setDisplayAsLink(value: boolean): void {
     this.displayAsLink = value;
+  }
+
+  setLinkLabelParameter(value: string | undefined): void {
+    this.linkLabelParameter = value;
   }
 
   setAggregateFunction(value: DataCubeAggregateFunction | undefined): void {
