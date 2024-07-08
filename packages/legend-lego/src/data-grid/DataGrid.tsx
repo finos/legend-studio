@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  AgGridReact,
-  type AgReactUiProps,
-  type AgGridReactProps,
-} from '@ag-grid-community/react';
+import { AgGridReact, type AgGridReactProps } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { CsvExportModule } from '@ag-grid-community/csv-export';
 import { ClipboardModule } from '@ag-grid-enterprise/clipboard';
@@ -67,7 +63,7 @@ export const allModules = communityModules.concat(enterpriseModules);
 declare const AG_GRID_LICENSE: string;
 
 export function DataGrid<TData = unknown>(
-  props: AgGridReactProps<TData> | AgReactUiProps<TData>,
+  props: AgGridReactProps<TData>,
 ): JSX.Element {
   if (AG_GRID_LICENSE) {
     LicenseManager.setLicenseKey(AG_GRID_LICENSE);
@@ -81,7 +77,10 @@ export function DataGrid<TData = unknown>(
       // See https://github.com/ag-grid/ag-grid/issues/2588
       suppressBrowserResizeObserver={true}
       {...props}
-      modules={AG_GRID_LICENSE ? allModules : communityModules}
+      // NOTE: for test, we don't want to handle the error messages outputed by ag-grid so
+      // we disable enterprise features for now
+      // eslint-disable-next-line no-process-env
+      modules={process.env.NODE_ENV === 'test' ? communityModules : allModules}
     />
   );
 }
