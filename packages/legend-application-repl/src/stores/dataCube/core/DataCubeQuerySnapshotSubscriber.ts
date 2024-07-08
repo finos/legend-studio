@@ -16,20 +16,17 @@
 
 import type { LegendREPLApplicationStore } from '../../LegendREPLBaseStore.js';
 import type { DataCubeState } from '../DataCubeState.js';
-import type { DataCubeEngine } from './DataCubeEngine.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 
 export abstract class DataCubeQuerySnapshotSubscriber {
   readonly dataCube!: DataCubeState;
   readonly application!: LegendREPLApplicationStore;
-  readonly engine!: DataCubeEngine;
 
   private latestSnapshot: DataCubeQuerySnapshot | undefined;
 
   constructor(dataCube: DataCubeState) {
     this.dataCube = dataCube;
     this.application = dataCube.application;
-    this.engine = dataCube.engine;
   }
 
   abstract applySnapshot(

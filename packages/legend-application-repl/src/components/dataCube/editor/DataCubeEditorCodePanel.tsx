@@ -18,6 +18,7 @@ import { observer } from 'mobx-react-lite';
 import { DataCubeIcon } from '@finos/legend-art';
 import { useEffect } from 'react';
 import { useREPLStore } from '../../REPLStoreProvider.js';
+import { WIP_Badge } from './DataCubeEditorShared.js';
 
 // const DataCubeCodeEditor = observer(() => {
 //   const replStore = useREPLStore();
@@ -161,6 +162,7 @@ export const DataCubeEditorCodePanel = observer(() => {
         </div>
         <div className="ml-1 flex h-6 items-center text-xl font-medium">
           Code
+          <WIP_Badge />
         </div>
       </div>
       <div className="flex h-[calc(100%_-_24px)] w-full"></div>

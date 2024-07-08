@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
-import { REPLServerClient } from '../../server/REPLServerClient.js';
+import type { LegendREPLApplicationStore } from './LegendREPLBaseStore.js';
+import { REPLServerClient } from '../server/REPLServerClient.js';
 import { NetworkClient } from '@finos/legend-shared';
 import { makeObservable, observable } from 'mobx';
-import { DataCubeState } from './DataCubeState.js';
+import { DataCubeState } from './dataCube/DataCubeState.js';
+import { DataCubeInfrastructure } from './dataCube/DataCubeInfrastructure.js';
 
 export class REPLStore {
   readonly applicationStore: LegendREPLApplicationStore;
   readonly client: REPLServerClient;
 
+  dataCubeInfrastructure!: DataCubeInfrastructure;
   // TODO: when we support multi-view, we would need to support multiple states
   dataCube!: DataCubeState;
 
@@ -40,6 +42,7 @@ export class REPLStore {
           : this.applicationStore.config.replUrl,
       }),
     );
+    this.dataCubeInfrastructure = new DataCubeInfrastructure(this);
     this.dataCube = new DataCubeState(this);
   }
 }

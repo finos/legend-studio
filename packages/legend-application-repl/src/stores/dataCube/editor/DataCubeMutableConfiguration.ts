@@ -435,9 +435,6 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
       selectionStats: observable,
       setSelectionStats: action,
 
-      rowBuffer: observable,
-      setRowBuffer: action,
-
       showWarningForTruncatedResult: observable,
       setShowWarningForTruncatedResult: action,
 
@@ -612,10 +609,6 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
 
   setSelectionStats(value: DataCubeSelectionStat[]): void {
     this.selectionStats = value;
-  }
-
-  setRowBuffer(value: number): void {
-    this.rowBuffer = value;
   }
 
   setShowWarningForTruncatedResult(value: boolean): void {

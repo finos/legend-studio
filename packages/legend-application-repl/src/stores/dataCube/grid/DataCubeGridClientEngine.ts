@@ -215,7 +215,8 @@ export class DataCubeGridClientServerSideDataSource
       });
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
-      const result = await this.grid.dataCube.engine.executeQuery(lambda);
+      const result =
+        await this.grid.dataCube.infrastructure.engine.executeQuery(lambda);
       const rowData = TDStoRowData(result.result);
       if (this.grid.isPaginationEnabled) {
         params.success({ rowData });

@@ -20,9 +20,10 @@ import { DataCubeEditorSortsPanelState } from './DataCubeEditorSortsPanelState.j
 import { DataCubeEditorCodePanelState } from './DataCubeEditorCodePanelState.js';
 import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, uuid } from '@finos/legend-shared';
 import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGeneralPropertiesPanelState.js';
 import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumnPropertiesPanelState.js';
+import type { REPLWindowConfig } from '../../../components/REPLWindow.js';
 
 export enum DATA_CUBE_EDITOR_TAB {
   COLUMNS = 'Columns',
@@ -34,7 +35,6 @@ export enum DATA_CUBE_EDITOR_TAB {
   GENERAL_PROPERTIES = 'General Properties',
   COLUMN_PROPERTIES = 'Column Properties',
   CODE = 'Code',
-  DEVELOPER = 'Developer',
 }
 
 export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
@@ -42,6 +42,12 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
   readonly generalProperties: DataCubeEditorGeneralPropertiesPanelState;
   readonly columnProperties: DataCubeEditorColumnPropertiesPanelState;
   readonly code: DataCubeEditorCodePanelState;
+
+  readonly window: REPLWindowConfig = {
+    uuid: uuid(),
+    title: 'Properties',
+    center: true,
+  };
 
   isPanelOpen = false;
   currentTab = DATA_CUBE_EDITOR_TAB.GENERAL_PROPERTIES;

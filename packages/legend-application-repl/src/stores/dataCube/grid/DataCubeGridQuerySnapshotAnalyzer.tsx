@@ -210,18 +210,19 @@ function getCellRenderer(columnData: ColumnData) {
       if (!isUrl) {
         return params.value;
       }
+      const url = params.value as string;
       const label = getQueryParameterValue(
         configuration.linkLabelParameter ?? DEFAULT_URL_LABEL_QUERY_PARAM,
-        getQueryParameters(params.value, true),
+        getQueryParameters(url, true),
       );
       return (
         <a
-          href={params.value}
+          href={url}
           target="_blank"
           rel="noreferrer"
           className="text-blue-600 underline"
         >
-          {label ?? params.value}
+          {label ?? url}
         </a>
       );
     };

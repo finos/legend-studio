@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import type { REPLStore } from './REPLStore.js';
+import type { REPLStore } from '../REPLStore.js';
 import { DataCubeGridState } from './grid/DataCubeGridState.js';
 import { DataCubeEditorState } from './editor/DataCubeEditorState.js';
 import { assertErrorThrown, uuid } from '@finos/legend-shared';
-import { DataCubeEngine } from './core/DataCubeEngine.js';
 import { DataCubeQuerySnapshotManager } from './core/DataCubeQuerySnapshotManager.js';
 import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
 import { DataCubeCoreState } from './core/DataCubeCoreState.js';
 import { validateAndBuildQuerySnapshot } from './core/DataCubeQuerySnapshotBuilder.js';
 import { action, makeObservable, observable } from 'mobx';
+import type { DataCubeInfrastructure } from './DataCubeInfrastructure.js';
 
 export class DataCubeTask {
   uuid = uuid();
@@ -43,25 +43,25 @@ export class DataCubeTask {
 export class DataCubeState {
   readonly replStore: REPLStore;
   readonly application: LegendREPLApplicationStore;
-  readonly engine: DataCubeEngine;
+  readonly infrastructure: DataCubeInfrastructure;
   readonly snapshotManager: DataCubeQuerySnapshotManager;
 
   readonly core: DataCubeCoreState;
   readonly grid: DataCubeGridState;
   readonly editor: DataCubeEditorState;
 
-  readonly runningTaskes = new Map<string, DataCubeTask>();
+  readonly runningTasks = new Map<string, DataCubeTask>();
 
   constructor(replStore: REPLStore) {
     makeObservable(this, {
-      runningTaskes: observable,
+      runningTasks: observable,
       newTask: action,
       endTask: action,
     });
 
     this.replStore = replStore;
     this.application = replStore.applicationStore;
-    this.engine = new DataCubeEngine(this.replStore.client);
+    this.infrastructure = replStore.dataCubeInfrastructure;
 
     // NOTE: snapshot manager must be instantiated before subscribers
     this.snapshotManager = new DataCubeQuerySnapshotManager(this);
@@ -72,13 +72,13 @@ export class DataCubeState {
 
   newTask(name: string): DataCubeTask {
     const task = new DataCubeTask(name);
-    this.runningTaskes.set(task.uuid, task);
+    this.runningTasks.set(task.uuid, task);
     return task;
   }
 
   endTask(task: DataCubeTask): DataCubeTask {
     task.end();
-    this.runningTaskes.delete(task.uuid);
+    this.runningTasks.delete(task.uuid);
     return task;
   }
 
@@ -91,7 +91,7 @@ export class DataCubeState {
           await state.initialize();
         }),
       );
-      const result = await this.engine.getBaseQuery();
+      const result = await this.infrastructure.engine.getBaseQuery();
       const initialSnapshot = validateAndBuildQuerySnapshot(
         result.partialQuery,
         result.sourceQuery,

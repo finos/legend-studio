@@ -23,14 +23,17 @@ import {
   V1_serializeExecutionResult,
   V1_buildExecutionResult,
 } from '@finos/legend-graph';
-import type { REPLServerClient } from '../../../server/REPLServerClient.js';
+import type { REPLServerClient } from '../../server/REPLServerClient.js';
 import {
   DataCubeGetBaseQueryResult,
   type CompletionItem,
-} from '../../../server/models/DataCubeEngineModels.js';
+} from '../../server/models/DataCubeEngineModels.js';
 import { guaranteeType } from '@finos/legend-shared';
+import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
+import type { REPLStore } from '../REPLStore.js';
+import { action, makeObservable, observable } from 'mobx';
 
-export class DataCubeEngine {
+class DataCubeEngine {
   private readonly client: REPLServerClient;
 
   constructor(client: REPLServerClient) {
@@ -77,5 +80,39 @@ export class DataCubeEngine {
       ),
       TDSExecutionResult,
     );
+  }
+}
+
+/**
+ * Infrastructure for data cube, can be shared across multiple data cube states
+ */
+export class DataCubeInfrastructure {
+  readonly replStore: REPLStore;
+  readonly application: LegendREPLApplicationStore;
+  readonly engine: DataCubeEngine;
+
+  gridClientRowBuffer = 50;
+  enableDebugMode = false;
+
+  constructor(replStore: REPLStore) {
+    makeObservable(this, {
+      gridClientRowBuffer: observable,
+      setGridClientRowBuffer: action,
+
+      enableDebugMode: observable,
+      setEnableDebugMode: action,
+    });
+
+    this.replStore = replStore;
+    this.application = replStore.applicationStore;
+    this.engine = new DataCubeEngine(replStore.client);
+  }
+
+  setGridClientRowBuffer(rowBuffer: number): void {
+    this.gridClientRowBuffer = rowBuffer;
+  }
+
+  setEnableDebugMode(enableDebugMode: boolean): void {
+    this.enableDebugMode = enableDebugMode;
   }
 }

@@ -15,7 +15,6 @@
  */
 
 import {
-  DEFAULT_ROW_BUFFER,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_ERROR_FOREGROUND_COLOR,
   DEFAULT_FOREGROUND_COLOR,
@@ -178,9 +177,6 @@ export class DataCubeConfiguration {
   selectionStats: DataCubeSelectionStat[] = [];
   showWarningForTruncatedResult = true;
 
-  // advanced
-  rowBuffer = DEFAULT_ROW_BUFFER;
-
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeConfiguration, {
       addPivotTotalColumn: primitive(),
@@ -208,7 +204,6 @@ export class DataCubeConfiguration {
       negativeForegroundColor: primitive(),
       normalBackgroundColor: primitive(),
       normalForegroundColor: primitive(),
-      rowBuffer: primitive(),
       selectionStats: list(primitive()),
       showHorizontalGridLines: primitive(),
       showLeafCount: primitive(),

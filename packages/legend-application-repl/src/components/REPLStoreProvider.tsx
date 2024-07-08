@@ -16,7 +16,7 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { REPLStore } from '../stores/dataCube/REPLStore.js';
+import { REPLStore } from '../stores/REPLStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LegendREPLApplicationConfig } from '../application/LegendREPLApplicationConfig.js';
