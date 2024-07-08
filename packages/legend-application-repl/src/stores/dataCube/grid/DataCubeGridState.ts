@@ -66,6 +66,9 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
 
       scrollHintText: observable,
       setScrollHintText: action,
+
+      generateCSVFile: action,
+      generateExcelFile: action,
     });
 
     this.datasourceConfiguration = new DataCubeGridDatasourceConfiguration({});
@@ -139,4 +142,20 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
       await this.dataCube.replStore.client.getGridClientLicenseKey(),
     );
   }
+
+  generateCSVFile = () => {
+    if (this._client) {
+      this._client.exportDataAsCsv();
+    } else {
+      console.error('Grid API not set');
+    }
+  };
+
+  generateExcelFile = () => {
+    if (this._client) {
+      this._client.exportDataAsExcel();
+    } else {
+      console.error('Grid API not set');
+    }
+  };
 }

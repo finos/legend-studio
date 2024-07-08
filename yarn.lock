@@ -2477,10 +2477,12 @@ __metadata:
   dependencies:
     "@ag-grid-community/client-side-row-model": "npm:32.0.0"
     "@ag-grid-community/core": "npm:32.0.0"
+    "@ag-grid-community/csv-export": "npm:32.0.0"
     "@ag-grid-community/react": "npm:32.0.0"
     "@ag-grid-community/styles": "npm:32.0.0"
     "@ag-grid-enterprise/clipboard": "npm:32.0.0"
     "@ag-grid-enterprise/core": "npm:32.0.0"
+    "@ag-grid-enterprise/excel-export": "npm:32.0.0"
     "@ag-grid-enterprise/menu": "npm:32.0.0"
     "@ag-grid-enterprise/range-selection": "npm:32.0.0"
     "@ag-grid-enterprise/row-grouping": "npm:32.0.0"
