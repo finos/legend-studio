@@ -23,6 +23,7 @@ import {
   DropdownMenuItem,
   HexAlphaColorPicker,
   HexColorInput,
+  parseColor,
   TailwindCSSPalette,
   type CheckboxProps,
   type DropdownMenuItemProps,
@@ -36,10 +37,21 @@ import React, { forwardRef, useEffect, useState } from 'react';
 export function WIP_Badge() {
   return (
     <div
-      className="color-neutral-700 text-2xs ml-1 select-none rounded-md bg-sky-500 px-1 py-0.5 font-semibold text-white"
+      className="text-2xs ml-1 select-none rounded-md bg-sky-500 px-1 py-0.5 font-semibold text-white"
       title="Work In Progress"
     >
       WIP
+    </div>
+  );
+}
+
+export function Advanced_Badge() {
+  return (
+    <div
+      className="text-2xs ml-1 select-none rounded-md bg-amber-500 px-1 py-0.5 font-semibold text-white"
+      title="Advanced: Becareful when using this feature!"
+    >
+      ADV
     </div>
   );
 }
@@ -80,7 +92,7 @@ export const DataCubeEditorNumberInput = forwardRef(
     return (
       <input
         className={cn(
-          'h-6 flex-shrink-0 border border-neutral-400 px-1.5 disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
+          'h-5 flex-shrink-0 border border-neutral-400 px-1.5 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
           className,
         )}
         ref={ref}
@@ -141,7 +153,7 @@ export function DataCubeEditorTextInput(
   return (
     <input
       className={cn(
-        'h-6 flex-shrink-0 border border-neutral-400 px-1.5 disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
+        'h-5 flex-shrink-0 border border-neutral-400 px-1.5 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
         className,
       )}
       {...otherProps}
@@ -197,13 +209,15 @@ export function DataCubeEditorDropdownMenuTrigger(
   return (
     <button
       className={cn(
-        'group flex h-6 flex-shrink-0 items-center justify-between border border-neutral-400 px-1.5 pr-0.5 text-sm disabled:select-none disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
+        'group flex h-5 flex-shrink-0 items-center justify-between border border-neutral-400 pl-1.5 text-sm disabled:select-none disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
         className,
       )}
       {...otherProps}
     >
-      {props.children}
-      <div className="text-neutral-500 group-disabled:text-neutral-400">
+      <div className="w-[calc(100%_-_12px)] overflow-hidden overflow-ellipsis whitespace-nowrap text-left">
+        {props.children}
+      </div>
+      <div className="flex h-full w-3 items-center justify-center text-neutral-500 group-disabled:text-neutral-400">
         <DataCubeIcon.CaretDown />
       </div>
     </button>
@@ -233,7 +247,7 @@ export function DataCubeEditorDropdownMenuItem(props: DropdownMenuItemProps) {
   return (
     <DropdownMenuItem
       className={cn(
-        'flex h-5 items-center px-1.5 text-sm hover:bg-neutral-100 focus-visible:bg-neutral-100',
+        'flex h-5 w-full items-center px-1.5 text-sm hover:bg-neutral-100 focus-visible:bg-neutral-100',
         className,
       )}
       {...otherProps}
@@ -253,6 +267,13 @@ function DataCubeEditorColorPicker(props: {
 }) {
   const { onChange, onClose, defaultColor } = props;
   const [color, setColor] = useState(props.color);
+  const submit = () => {
+    onChange(
+      // if color is completely transparent, set it to #00000000
+      parseColor(color).alpha === 0 ? TailwindCSSPalette.transparent : color,
+    );
+    onClose();
+  };
 
   return (
     <div className="data-cube-color-picker rounded-none border border-neutral-400 bg-white">
@@ -297,8 +318,12 @@ function DataCubeEditorColorPicker(props: {
                 style={{
                   background: TailwindCSSPalette[scale][level],
                 }}
-                onClick={(): void => {
+                onClick={() => {
                   setColor(TailwindCSSPalette[scale][level]);
+                }}
+                onDoubleClick={() => {
+                  setColor(TailwindCSSPalette[scale][level]);
+                  submit();
                 }}
               />
             ))}
@@ -309,36 +334,46 @@ function DataCubeEditorColorPicker(props: {
         <div className="flex">
           {[
             // Colors from Better Colors - https://clrs.cc/
+            TailwindCSSPalette.transparent,
             '#000000',
-            '#111111',
-            '#AAAAAA',
-            '#DDDDDD',
-            '#FFFFFF',
-            '#FF4136',
-            '#FF851B',
-            '#FFDC00',
-            '#01FF70',
-            '#2ECC40',
-            '#3D9970',
-            '#39CCCC',
-            '#7FDBFF',
-            '#0074D9',
-            '#001F3F',
-            '#B10DC9',
-            '#F012BE',
-            '#85144B',
+            '#aaaaaa',
+            '#dddddd',
+            '#ffffff',
+            '#ff4136',
+            '#ff851b',
+            '#ffdc00',
+            '#01ff70',
+            '#2ecc40',
+            '#3d9970',
+            '#39cccc',
+            '#7fdbff',
+            '#0074d9',
+            '#001f3f',
+            '#b10dc9',
+            '#f012be',
+            '#85144b',
           ].map((_color) => (
             <div
               key={_color}
-              className="mr-0.5 border-[0.5px] border-neutral-300 last:mr-0"
+              className={cn(
+                'mr-0.5 border-[0.5px] border-neutral-300 last:mr-0',
+                {
+                  'data-cube-color-picker--transparent border-neutral-400':
+                    _color === TailwindCSSPalette.transparent,
+                },
+              )}
             >
               <button
                 className="flex h-3 w-3 flex-shrink-0"
                 style={{
                   background: _color,
                 }}
-                onClick={(): void => {
+                onClick={() => {
                   setColor(_color);
+                }}
+                onDoubleClick={() => {
+                  setColor(_color);
+                  submit();
                 }}
               />
             </div>
@@ -349,7 +384,7 @@ function DataCubeEditorColorPicker(props: {
       <div className="flex h-6 items-center justify-between p-1">
         <div className="flex">
           <div
-            className="h-4 w-4 flex-shrink-0 rounded-sm"
+            className="h-4 w-4 flex-shrink-0 rounded-sm border-[0.5px] border-neutral-300"
             style={{ background: color }}
           />
           <HexColorInput
@@ -366,7 +401,7 @@ function DataCubeEditorColorPicker(props: {
           {defaultColor !== undefined && (
             <button
               className="ml-1 h-4 w-9 border border-neutral-400 bg-neutral-300 px-1 text-xs hover:brightness-95"
-              onClick={(): void => {
+              onClick={() => {
                 setColor(defaultColor);
               }}
             >
@@ -375,7 +410,7 @@ function DataCubeEditorColorPicker(props: {
           )}
           <button
             className="ml-1 h-4 w-9 border border-neutral-400 bg-neutral-300 px-1 text-xs hover:brightness-95"
-            onClick={(): void => {
+            onClick={() => {
               onClose();
             }}
           >
@@ -383,9 +418,8 @@ function DataCubeEditorColorPicker(props: {
           </button>
           <button
             className="ml-1 h-4 w-9 border border-neutral-400 bg-neutral-300 px-1 text-xs hover:brightness-95"
-            onClick={(): void => {
-              onChange(color);
-              onClose();
+            onClick={() => {
+              submit();
             }}
           >
             OK
@@ -412,6 +446,8 @@ export function DataCubeEditorColorPickerButton(props: {
           'group h-5 w-10 border border-neutral-300 p-[1px] disabled:border-neutral-200',
           {
             'data-cube-color-picker--disabled': Boolean(disabled),
+            'data-cube-color-picker--transparent':
+              !disabled && color === TailwindCSSPalette.transparent,
           },
           className,
         )}

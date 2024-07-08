@@ -51,7 +51,7 @@ const LegendREPLBaseStoreProvider: React.FC<{
 export const LegendREPLFrameworkProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => (
-  <ApplicationFrameworkProvider>
+  <ApplicationFrameworkProvider simple={true}>
     <LegendREPLBaseStoreProvider>{children}</LegendREPLBaseStoreProvider>
   </ApplicationFrameworkProvider>
 );

@@ -40,7 +40,10 @@ export class DataCubeCoreState extends DataCubeQuerySnapshotSubscriber {
     this.name = val;
   }
 
-  override async applySnapshot(snapshot: DataCubeQuerySnapshot): Promise<void> {
+  override async applySnapshot(
+    snapshot: DataCubeQuerySnapshot,
+    previousSnapshot: DataCubeQuerySnapshot | undefined,
+  ): Promise<void> {
     const data = snapshot.data;
     this.setName(data.name);
     if (!this.startTime) {

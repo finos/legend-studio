@@ -16,28 +16,29 @@
 
 import type { LegendREPLApplicationStore } from '../../LegendREPLBaseStore.js';
 import type { DataCubeState } from '../DataCubeState.js';
-import type { DataCubeEngine } from './DataCubeEngine.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 
 export abstract class DataCubeQuerySnapshotSubscriber {
   readonly dataCube!: DataCubeState;
   readonly application!: LegendREPLApplicationStore;
-  readonly engine!: DataCubeEngine;
 
   private latestSnapshot: DataCubeQuerySnapshot | undefined;
 
   constructor(dataCube: DataCubeState) {
     this.dataCube = dataCube;
     this.application = dataCube.application;
-    this.engine = dataCube.engine;
   }
 
-  abstract applySnapshot(snapshot: DataCubeQuerySnapshot): Promise<void>;
+  abstract applySnapshot(
+    snapshot: DataCubeQuerySnapshot,
+    previousSnapshot: DataCubeQuerySnapshot | undefined,
+  ): Promise<void>;
   abstract initialize(): Promise<void>;
 
   async receiveSnapshot(snapshot: DataCubeQuerySnapshot): Promise<void> {
+    const previousSnapshot = this.latestSnapshot;
     this.latestSnapshot = snapshot;
-    await this.applySnapshot(snapshot);
+    await this.applySnapshot(snapshot, previousSnapshot);
   }
 
   publishSnapshot(snapshot: DataCubeQuerySnapshot): void {

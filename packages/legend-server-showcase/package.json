@@ -40,7 +40,7 @@
   "dependencies": {
     "@finos/legend-shared": "workspace:*",
     "fastify": "4.28.1",
-    "mobx": "6.12.5",
+    "mobx": "6.13.0",
     "serializr": "3.0.2",
     "yaml": "2.4.5"
   },
@@ -51,8 +51,8 @@
     "eslint": "8.57.0",
     "jest": "29.7.0",
     "npm-run-all": "4.1.5",
-    "rimraf": "5.0.7",
-    "typescript": "5.5.2"
+    "rimraf": "5.0.8",
+    "typescript": "5.5.3"
   },
   "publishConfig": {
     "directory": "build/publishContent"

@@ -332,6 +332,17 @@ export function buildExecutableQuery(
     funcMap[funcMapKey] = func;
   };
 
+  // --------------------------------- FILTER ---------------------------------
+
+  if (data.filter) {
+    _process(
+      'filter',
+      _function(_name(DataCubeFunction.FILTER), [
+        _lambda([_var()], [_filter(data.filter)]),
+      ]),
+    );
+  }
+
   // --------------------------------- LEAF EXTEND ---------------------------------
 
   if (data.leafExtendedColumns.length) {
@@ -354,17 +365,6 @@ export function buildExecutableQuery(
       'select',
       _function(_name(DataCubeFunction.SELECT), [
         _cols(data.selectColumns.map((col) => _colSpec(col.name))),
-      ]),
-    );
-  }
-
-  // --------------------------------- FILTER ---------------------------------
-
-  if (data.filter) {
-    _process(
-      'filter',
-      _function(_name(DataCubeFunction.FILTER), [
-        _lambda([_var()], [_filter(data.filter)]),
       ]),
     );
   }

@@ -33,17 +33,70 @@ import { APPLICATION_EVENT } from '@finos/legend-application';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { generateRowGroupingDrilldownExecutableQueryPostProcessor } from './DataCubeGridQueryBuilder.js';
 import { makeObservable, observable, runInAction } from 'mobx';
+import type { DataCubeConfigurationColorKey } from '../core/DataCubeConfiguration.js';
 
 type GridClientCellValue = string | number | boolean | null | undefined;
 type GridClientRowData = {
   [key: string]: GridClientCellValue;
 };
 
+export enum INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME {
+  ROOT = 'data-cube-grid.ag-theme-balham',
+  HIGHLIGHT_ROW = 'data-cube-grid__utility--highlight-row',
+  SHOW_VERTICAL_GRID_LINES = 'data-cube-grid__utility--show-vertical-grid-lines',
+  SHOW_HORIZONTAL_GRID_LINES = 'data-cube-grid__utility--show-horizontal-grid-lines',
+
+  BLUR = 'data-cube-grid__utility--blur',
+
+  FONT_FAMILY_PREFIX = 'data-cube-grid__utility--font-family-',
+  FONT_SIZE_PREFIX = 'data-cube-grid__utility--font-size-',
+  FONT_BOLD = 'data-cube-grid__utility--font-style-bold',
+  FONT_ITALIC = 'data-cube-grid__utility--font-style-italic',
+  FONT_UNDERLINE_PREFIX = 'data-cube-grid__utility--font-style-underline-',
+  FONT_STRIKETHROUGH = 'data-cube-grid__utility--font-style-strikethrough',
+  FONT_CASE_PREFIX = 'data-cube-grid__utility--font-style-case-',
+  TEXT_ALIGN_PREFIX = 'data-cube-grid__utility--text-align-',
+  TEXT_COLOR_PREFIX = 'data-cube-grid__utility--text-color-',
+  BACKGROUND_COLOR_PREFIX = 'data-cube-grid__utility--background-color-',
+}
+export const generateFontFamilyUtilityClassName = (fontFamily: string) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_FAMILY_PREFIX}${fontFamily.replaceAll(' ', '-')}`;
+export const generateFontSizeUtilityClassName = (fontSize: number) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_SIZE_PREFIX}${fontSize}`;
+export const generateFontUnderlineUtilityClassName = (
+  variant: string | undefined,
+) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_UNDERLINE_PREFIX}${variant ?? 'none'}`;
+export const generateFontCaseUtilityClassName = (
+  fontCase: string | undefined,
+) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_CASE_PREFIX}${fontCase ?? 'none'}`;
+export const generateTextAlignUtilityClassName = (alignment: string) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.TEXT_ALIGN_PREFIX}${alignment}`;
+export const generateTextColorUtilityClassName = (
+  color: string,
+  key: DataCubeConfigurationColorKey,
+) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.TEXT_COLOR_PREFIX}${key}-${color.substring(1)}`;
+export const generateBackgroundColorUtilityClassName = (
+  color: string,
+  key: DataCubeConfigurationColorKey,
+) =>
+  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BACKGROUND_COLOR_PREFIX}${key}-${color.substring(1)}`;
+
+export const INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH = 50;
 export const INTERNAL__GRID_CLIENT_HEADER_HEIGHT = 24;
 export const INTERNAL__GRID_CLIENT_ROW_HEIGHT = 20;
+export const INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY = 1000;
+export const INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING = 10;
 export const INTERNAL__GRID_CLIENT_TREE_COLUMN_ID = 'INTERNAL__tree';
 export const INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID =
   'INTERNAL__count';
+
+export enum GridClientPinnedAlignement {
+  LEFT = 'left',
+  RIGHT = 'right',
+}
 
 export enum GridClientSortDirection {
   ASCENDING = 'asc',
@@ -162,7 +215,8 @@ export class DataCubeGridClientServerSideDataSource
       });
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
-      const result = await this.grid.dataCube.engine.executeQuery(lambda);
+      const result =
+        await this.grid.dataCube.infrastructure.engine.executeQuery(lambda);
       const rowData = TDStoRowData(result.result);
       if (this.grid.isPaginationEnabled) {
         params.success({ rowData });

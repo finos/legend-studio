@@ -55,14 +55,14 @@ export * from './popover/BasePopper.js';
 
 export * from './radio-group/BaseRadioGroup.js';
 
-export * from './panel/Panel.js';
-export * from './panel/PanelListSelectorItem.js';
-export * from './panel/BlankPanelContent.js';
-export * from './panel/BlankPanelPlaceholder.js';
-export * from './panel/PanelLoadingIndicator.js';
-export * from './panel/PanelDropZone.js';
-export * from './panel/PanelDisplayState.js';
-export * from './panel/ResizablePanel.js';
+export * from './layout/Panel.js';
+export * from './layout/PanelListSelectorItem.js';
+export * from './layout/BlankPanelContent.js';
+export * from './layout/BlankPanelPlaceholder.js';
+export * from './layout/PanelLoadingIndicator.js';
+export * from './layout/PanelDropZone.js';
+export * from './layout/PanelDisplayState.js';
+export * from './layout/ResizablePanel.js';
 
 export * from './loader/ProgressBar.js';
 

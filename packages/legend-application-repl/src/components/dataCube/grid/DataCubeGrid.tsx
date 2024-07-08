@@ -22,16 +22,34 @@ import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
 import { ClipboardModule } from '@ag-grid-enterprise/clipboard';
 import { MenuModule } from '@ag-grid-enterprise/menu';
 import { AgGridReact } from '@ag-grid-community/react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useREPLStore } from '../../REPLStoreProvider.js';
-import { DataCubeIcon, Switch, cn } from '@finos/legend-art';
+import { DataCubeIcon, Switch, cn, Global, css } from '@finos/legend-art';
 import {
-  INTERNAL__GRID_CLIENT_HEADER_HEIGHT,
-  INTERNAL__GRID_CLIENT_ROW_HEIGHT,
+  generateBackgroundColorUtilityClassName,
+  generateFontCaseUtilityClassName,
+  generateFontFamilyUtilityClassName,
+  generateFontSizeUtilityClassName,
+  generateFontUnderlineUtilityClassName,
+  generateTextAlignUtilityClassName,
+  generateTextColorUtilityClassName,
+  INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME,
 } from '../../../stores/dataCube/grid/DataCubeGridClientEngine.js';
 import { RangeSelectionModule } from '@ag-grid-enterprise/range-selection';
-import { buildGridMenu } from './menu/DataCubeGridMenu.js';
-import { DEFAULT_ROW_BUFFER } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
+import {
+  DataCubeFont,
+  DataCubeFontCase,
+  DataCubeFontFormatUnderlineVariant,
+  DataCubeFontTextAlignment,
+  DEFAULT_ROW_BACKGROUND_COLOR,
+  DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR,
+} from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
+import { isNonNullable } from '@finos/legend-shared';
+import type {
+  DataCubeConfiguration,
+  DataCubeConfigurationColorKey,
+} from '../../../stores/dataCube/core/DataCubeConfiguration.js';
+import { generateBaseGridOptions } from '../../../stores/dataCube/grid/DataCubeGridQuerySnapshotAnalyzer.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
@@ -43,11 +61,292 @@ console.error = (message?: unknown, ...agrs: unknown[]): void => {
   console.log(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
 };
 
+function textColorStyle(
+  key: DataCubeConfigurationColorKey,
+  configuration: DataCubeConfiguration,
+) {
+  return `${Array.from(
+    new Set([
+      configuration[`${key}ForegroundColor`],
+      ...configuration.columns
+        .map((column) => column[`${key}ForegroundColor`])
+        .filter(isNonNullable),
+    ]).values(),
+  )
+    .map(
+      (color) =>
+        `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateTextColorUtilityClassName(color, key)}{color:${color};}`,
+    )
+    .join('\n')}`;
+}
+
+function backgroundColorStyle(
+  key: DataCubeConfigurationColorKey,
+  configuration: DataCubeConfiguration,
+) {
+  return `${Array.from(
+    new Set([
+      configuration[`${key}BackgroundColor`],
+      ...configuration.columns
+        .map((column) => column[`${key}BackgroundColor`])
+        .filter(isNonNullable),
+    ]).values(),
+  )
+    .map(
+      (color) =>
+        `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateBackgroundColorUtilityClassName(color, key)}{background-color:${color};}`,
+    )
+    .join('\n')};`;
+}
+
+export const DataCubeGridStyleController = observer(() => {
+  const replStore = useREPLStore();
+  const dataCube = replStore.dataCube;
+  const grid = dataCube.grid;
+  const configuration = grid.queryConfiguration;
+
+  return (
+    <Global
+      styles={css`
+        .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} {
+          --ag-odd-row-background-color: ${grid.queryConfiguration
+            .alternateRowsStandardMode && !grid.queryConfiguration.alternateRows
+            ? DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR
+            : DEFAULT_ROW_BACKGROUND_COLOR};
+          --ag-cell-horizontal-border: ${grid.queryConfiguration
+            .showVerticalGridLines
+            ? `1px solid
+            ${grid.queryConfiguration.gridLineColor}`
+            : 'none'};
+          --ag-row-border-color: ${grid.queryConfiguration
+            .showHorizontalGridLines
+            ? grid.queryConfiguration.gridLineColor
+            : 'transparent'};
+        }
+        .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT}
+          .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.HIGHLIGHT_ROW} {
+          background-color: ${grid.queryConfiguration.alternateRows
+            ? grid.queryConfiguration.alternateRowsColor
+            : DEFAULT_ROW_BACKGROUND_COLOR};
+        }
+        ${[
+          DataCubeFont.ARIAL,
+          DataCubeFont.ROBOTO,
+          DataCubeFont.ROBOTO_CONDENSED,
+        ]
+          .map(
+            (fontFamily) =>
+              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateFontFamilyUtilityClassName(fontFamily)}{font-family:${fontFamily},sans-serif;}`,
+          )
+          .join('\n')}
+        ${[
+          DataCubeFont.GEORGIA,
+          DataCubeFont.ROBOTO_SERIF,
+          DataCubeFont.TIMES_NEW_ROMAN,
+        ]
+          .map(
+            (fontFamily) =>
+              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateFontFamilyUtilityClassName(fontFamily)}{font-family:${fontFamily},serif;}`,
+          )
+          .join('\n')}
+        ${[
+          DataCubeFont.JERBRAINS_MONO,
+          DataCubeFont.ROBOTO_MONO,
+          DataCubeFont.UBUNTU_MONO,
+        ]
+          .map(
+            (fontFamily) =>
+              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateFontFamilyUtilityClassName(fontFamily)}{font-family:${fontFamily},monospace;}`,
+          )
+          .join('\n')}
+          .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_BOLD} {
+          font-weight: 700;
+        }
+        ${[
+          4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 32, 36,
+          48, 72,
+        ]
+          .map(
+            (fontSize) =>
+              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateFontSizeUtilityClassName(fontSize)}{font-size:${fontSize}px;}`,
+          )
+          .join('\n')}
+        .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT}
+          .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_ITALIC} {
+          font-style: italic;
+        }
+        ${[
+          DataCubeFontFormatUnderlineVariant.SOLID,
+          DataCubeFontFormatUnderlineVariant.DASHED,
+          DataCubeFontFormatUnderlineVariant.DOTTED,
+          DataCubeFontFormatUnderlineVariant.DOUBLE,
+          DataCubeFontFormatUnderlineVariant.WAVY,
+        ]
+          .map(
+            (variant) =>
+              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateFontUnderlineUtilityClassName(variant)}{text-decoration:underline ${variant};}`,
+          )
+          .join('\n')}
+        .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_STRIKETHROUGH} {
+          text-decoration: line-through;
+        }
+        ${[
+          DataCubeFontCase.LOWERCASE,
+          DataCubeFontCase.UPPERCASE,
+          DataCubeFontCase.CAPITALIZE,
+        ]
+          .map(
+            (fontCase) =>
+              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateFontCaseUtilityClassName(fontCase)}{text-transform:${fontCase};}`,
+          )
+          .join('\n')}
+        ${[
+          DataCubeFontTextAlignment.LEFT,
+          DataCubeFontTextAlignment.CENTER,
+          DataCubeFontTextAlignment.RIGHT,
+        ]
+          .map(
+            (alignment) =>
+              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateTextAlignUtilityClassName(alignment)}{text-align:${alignment};}`,
+          )
+          .join('\n')};
+        ${backgroundColorStyle('normal', configuration)}
+        ${backgroundColorStyle('zero', configuration)}
+        ${backgroundColorStyle('negative', configuration)}
+        ${backgroundColorStyle('error', configuration)}
+        ${textColorStyle('normal', configuration)}
+        ${textColorStyle('zero', configuration)}
+        ${textColorStyle('negative', configuration)}
+        ${textColorStyle('error', configuration)}
+        .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT}
+          .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BLUR} {
+          filter: blur(3px);
+        }
+        .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT}
+          .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BLUR}:hover {
+          filter: none;
+        }
+      `}
+    />
+  );
+});
+
+const DataCubeGridStatusBar = observer(() => {
+  const replStore = useREPLStore();
+  const dataCube = replStore.dataCube;
+  const grid = dataCube.grid;
+  const scrollHintText = grid.scrollHintText;
+
+  return (
+    <div className="relative flex h-5 w-full select-none justify-between border-b border-neutral-200 bg-neutral-100">
+      {Boolean(scrollHintText) && (
+        <div className="absolute -top-9 right-4 flex items-center rounded-sm border border-neutral-300 bg-neutral-100 p-1 pr-2 text-neutral-500 shadow-sm">
+          <DataCubeIcon.TableScroll className="text-lg" />
+          <div className="ml-1 font-mono text-sm">{scrollHintText}</div>
+        </div>
+      )}
+      <div />
+      <div className="flex h-full items-center">
+        <div className="flex h-full items-center px-2 font-mono text-sm text-neutral-500">
+          {grid.clientDataSource.rowCount
+            ? `Rows: ${grid.clientDataSource.rowCount}`
+            : ''}
+        </div>
+        {grid.datasourceConfiguration.limit !== undefined &&
+          grid.queryConfiguration.showWarningForTruncatedResult && (
+            // TODO: if we want to properly warn if the data has been truncated due to row limit,
+            // this would require us to fetch n+1 rows when limit=n
+            // This is feature is not difficult to implement, but it would be implemented most cleanly
+            // when we change the query execution engine to return the total number of rows,
+            // so for now, we simply just warn about truncation whenever a limit != -1 is specified
+            <>
+              <div className="h-3 w-[1px] bg-neutral-200" />
+              <div className="flex h-full items-center px-2 text-orange-500">
+                <DataCubeIcon.Warning className="stroke-[3px]" />
+                <div className="ml-1 text-sm font-semibold">{`Results truncated to fit within row limit (${grid.datasourceConfiguration.limit})`}</div>
+              </div>
+            </>
+          )}
+        <div className="h-3 w-[1px] bg-neutral-200" />
+        <button
+          className="flex h-full items-center p-2"
+          onClick={(): void =>
+            grid.setPaginationEnabled(!grid.isPaginationEnabled)
+          }
+        >
+          <Switch
+            checked={grid.isPaginationEnabled}
+            classes={{
+              root: 'p-0 w-6 h-5 flex items-center',
+              input: 'w-2',
+              checked: '!translate-x-2 ease-in-out duration-100 transition',
+              thumb: cn('w-2 h-2', {
+                'bg-sky-600': grid.isPaginationEnabled,
+                'bg-neutral-500': !grid.isPaginationEnabled,
+              }),
+              switchBase:
+                'p-0.5 mt-1 translate-x-0 ease-in-out duration-100 transition',
+              track: cn('h-3 w-5 border', {
+                '!bg-sky-100 border-sky-600': grid.isPaginationEnabled,
+                '!bg-neutral-100 border-neutral-500': !grid.isPaginationEnabled,
+              }),
+            }}
+            disableRipple={true}
+            disableFocusRipple={true}
+          />
+          <div
+            className={cn('text-sm', {
+              'text-sky-600': grid.isPaginationEnabled,
+              'text-neutral-500': !grid.isPaginationEnabled,
+            })}
+          >
+            Pagination
+          </div>
+        </button>
+      </div>
+    </div>
+  );
+});
+
+const DataCubeGridClient = observer(() => {
+  const replStore = useREPLStore();
+  const dataCube = replStore.dataCube;
+  const grid = dataCube.grid;
+
+  return (
+    <div className="relative h-[calc(100%_-_20px)] w-full">
+      <AgGridReact
+        className="data-cube-grid ag-theme-balham"
+        rowModelType="serverSide"
+        serverSideDatasource={grid.clientDataSource}
+        context={{
+          dataCube,
+        }}
+        onGridReady={(params): void => {
+          grid.configureClient(params.api);
+          // restore original error logging
+          console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
+        }}
+        modules={[
+          // community
+          ClientSideRowModelModule,
+          // enterprise
+          ServerSideRowModelModule,
+          RowGroupingModule,
+          MenuModule,
+          ClipboardModule,
+          RangeSelectionModule,
+        ]}
+        {...generateBaseGridOptions(dataCube)}
+      />
+    </div>
+  );
+});
+
 export const DataCubeGrid = observer(() => {
   const replStore = useREPLStore();
   const dataCube = replStore.dataCube;
   const grid = dataCube.grid;
-  const [scrollHintText, setScrollHintText] = useState('');
 
   useEffect(() => {
     if (grid.clientLicenseKey) {
@@ -56,148 +355,10 @@ export const DataCubeGrid = observer(() => {
   }, [grid.clientLicenseKey]);
 
   return (
-    <div className="data-cube-grid flex-1">
-      <div className="h-[calc(100%_-_20px)] w-full">
-        <AgGridReact
-          // -------------------------------------- ROW GROUPING --------------------------------------
-          rowGroupPanelShow="always"
-          suppressScrollOnNewData={true}
-          groupDisplayType="custom" // keeps the column set stable even when row grouping is used
-          suppressRowGroupHidesColumns={true} // keeps the column set stable even when row grouping is used
-          // Keeps the columns stable even when aggregation is used
-          suppressAggFuncInHeader={true}
-          // -------------------------------------- PIVOT --------------------------------------
-          // pivotPanelShow="always"
-          // pivotMode={true}
-          // -------------------------------------- SORT --------------------------------------
-          // Force multi-sorting since this is what the query supports anyway
-          alwaysMultiSort={true}
-          // -------------------------------------- DISPLAY & INTERACTION --------------------------------------
-          className="ag-theme-balham"
-          rowHeight={INTERNAL__GRID_CLIENT_ROW_HEIGHT}
-          headerHeight={INTERNAL__GRID_CLIENT_HEADER_HEIGHT}
-          suppressBrowserResizeObserver={true}
-          reactiveCustomComponents={true} // TODO: remove on v32 as this would be default to `true` then
-          noRowsOverlayComponent={() => (
-            <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-medium text-neutral-400">
-              <div>
-                <DataCubeIcon.WarningCircle className="mr-1 stroke-2 text-lg" />
-              </div>
-              0 rows
-            </div>
-          )}
-          loadingOverlayComponent={() => (
-            <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-medium text-neutral-400">
-              <div>
-                <DataCubeIcon.Loader className="mr-1 animate-spin stroke-2 text-lg" />
-              </div>
-              Loading...
-            </div>
-          )}
-          preventDefaultOnContextMenu={true}
-          columnMenu="new" // ensure context menu works on header
-          getContextMenuItems={buildGridMenu}
-          getMainMenuItems={buildGridMenu}
-          enableRangeSelection={true}
-          // Show cursor position when scrolling
-          onBodyScroll={(event) => {
-            const rowCount = event.api.getDisplayedRowCount();
-            const range = event.api.getVerticalPixelRange();
-            const start = Math.max(
-              1,
-              Math.ceil(range.top / INTERNAL__GRID_CLIENT_ROW_HEIGHT) + 1,
-            );
-            const end = Math.min(
-              rowCount,
-              Math.floor(range.bottom / INTERNAL__GRID_CLIENT_ROW_HEIGHT),
-            );
-            setScrollHintText(`${start}-${end}/${rowCount}`);
-            event.api.hidePopupMenu(); // hide context-menu while scrolling
-          }}
-          onBodyScrollEnd={() => setScrollHintText('')}
-          // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
-          rowModelType="serverSide"
-          serverSideDatasource={grid.clientDataSource}
-          // -------------------------------------- PERFORMANCE --------------------------------------
-          // NOTE: since we shrink the spacing, more rows can be shown, as such, setting higher row
-          // buffer will improve scrolling performance, but compromise initial load and various
-          // actions performance
-          rowBuffer={DEFAULT_ROW_BUFFER}
-          animateRows={false} // improve performance
-          // -------------------------------------- SETUP --------------------------------------
-          modules={[
-            // community
-            ClientSideRowModelModule,
-            // enterprise
-            ServerSideRowModelModule,
-            RowGroupingModule,
-            MenuModule,
-            ClipboardModule,
-            RangeSelectionModule,
-          ]}
-          onGridReady={(params): void => {
-            grid.configureClient(params.api);
-            // restore original error logging
-            console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
-          }}
-          context={{
-            dataCube,
-          }}
-        />
-      </div>
-      <div className="relative flex h-5 w-full justify-between border-b border-b-neutral-200 bg-neutral-100">
-        {Boolean(scrollHintText) && (
-          <div className="absolute -top-8 right-4 flex items-center rounded-sm border border-neutral-300 bg-neutral-100 p-1 pr-2 text-neutral-500 shadow-sm">
-            <DataCubeIcon.TableScroll className="text-lg" />
-            <div className="ml-1 font-mono text-sm">{scrollHintText}</div>
-          </div>
-        )}
-        <div />
-        <div className="flex items-center">
-          <div className="select-none p-2 font-mono text-sm text-neutral-500">
-            {grid.clientDataSource.rowCount
-              ? `(${grid.clientDataSource.rowCount} rows)`
-              : ''}
-          </div>
-          <div className="h-3 w-[1px] bg-neutral-200" />
-          <button
-            className="flex h-full items-center p-2"
-            onClick={(): void =>
-              grid.setPaginationEnabled(!grid.isPaginationEnabled)
-            }
-          >
-            <Switch
-              checked={grid.isPaginationEnabled}
-              classes={{
-                root: 'p-0 w-6 h-5 flex items-center',
-                input: 'w-2',
-                checked: '!translate-x-2 ease-in-out duration-100 transition',
-                thumb: cn('w-2 h-2', {
-                  'bg-sky-600': grid.isPaginationEnabled,
-                  'bg-neutral-500': !grid.isPaginationEnabled,
-                }),
-                switchBase:
-                  'p-0.5 mt-1 translate-x-0 ease-in-out duration-100 transition',
-                track: cn('h-3 w-5 border', {
-                  '!bg-sky-100 border-sky-600': grid.isPaginationEnabled,
-                  '!bg-neutral-100 border-neutral-500':
-                    !grid.isPaginationEnabled,
-                }),
-              }}
-              disableRipple={true}
-              disableFocusRipple={true}
-            />
-            <div
-              className={cn('text-sm', {
-                'text-sky-600': grid.isPaginationEnabled,
-                'text-neutral-500': !grid.isPaginationEnabled,
-              })}
-            >
-              Pagination
-            </div>
-          </button>
-        </div>
-      </div>
+    <div className="flex-1">
+      <DataCubeGridStyleController />
+      <DataCubeGridClient />
+      <DataCubeGridStatusBar />
     </div>
   );
 });

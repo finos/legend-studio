@@ -20,7 +20,11 @@ import {
 } from '@ag-grid-community/react';
 import { WIP_Badge } from '../editor/DataCubeEditorShared.js';
 
-export function WIP_GridMenuItem({ name, subMenu }: CustomMenuItemProps) {
+export function WIP_GridMenuItem({
+  name,
+  subMenu,
+  checked,
+}: CustomMenuItemProps) {
   useGridMenuItem({
     configureDefaults: () => true,
   });

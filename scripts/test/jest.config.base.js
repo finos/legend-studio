@@ -46,6 +46,10 @@ export const getBaseJestConfig = (isGlobal) => {
       // ag-grid
       '@ag-grid-community',
       '@ag-grid-enterprise',
+
+      // color-parse
+      'color-parse',
+      'color-name',
     ],
   });
 

@@ -51,7 +51,7 @@ const DataCubeStatusBar = observer(() => {
       </div>
       <div className="flex items-center px-2">
         <div className="flex h-3.5 w-48 border-[0.5px] border-neutral-300">
-          {dataCube.runningTaskes.size > 0 && (
+          {dataCube.runningTasks.size > 0 && (
             <ProgressBar
               classes={{
                 root: 'h-3.5 w-full bg-transparent',

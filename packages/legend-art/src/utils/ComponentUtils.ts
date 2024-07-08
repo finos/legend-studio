@@ -36,3 +36,5 @@ export const useStateWithCallback = <T>(
   useEffect(() => callback(state), [state, callback]);
   return [state, setState];
 };
+
+export { Global, css } from '@emotion/react';

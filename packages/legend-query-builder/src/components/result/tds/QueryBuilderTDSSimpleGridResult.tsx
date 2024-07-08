@@ -33,6 +33,7 @@ import {
 import { QueryBuilderTDSState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { DEFAULT_LOCALE } from '../../../graph-manager/QueryBuilderConst.js';
 import {
+  guaranteeNonNullable,
   isBoolean,
   isNumber,
   isString,
@@ -54,6 +55,7 @@ const QueryResultCellRenderer = observer(
       resultState.queryBuilderState.fetchStructureState.implementation;
     const applicationStore = resultState.queryBuilderState.applicationStore;
     const cellValue = params.value as QueryBuilderTDSResultCellDataType;
+    const nodeRowIndex = guaranteeNonNullable(params.node.rowIndex);
     const darkMode =
       !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
 
@@ -82,7 +84,7 @@ const QueryResultCellRenderer = observer(
 
     const currentCellCoordinates = findCoordinatesFromResultValue(
       columnName,
-      params.rowIndex,
+      nodeRowIndex,
     );
     const cellInFilteredResults = resultState.selectedCells.some(
       (result) =>
@@ -143,7 +145,7 @@ const QueryResultCellRenderer = observer(
       if (event.shiftKey) {
         const coordinates = findCoordinatesFromResultValue(
           columnName,
-          params.rowIndex,
+          nodeRowIndex,
         );
         const actualValue = findResultValueFromCoordinates([
           coordinates.rowIndex,
@@ -162,7 +164,7 @@ const QueryResultCellRenderer = observer(
         resultState.setSelectedCells([]);
         const coordinates = findCoordinatesFromResultValue(
           columnName,
-          params.rowIndex,
+          nodeRowIndex,
         );
         const actualValue = findResultValueFromCoordinates([
           coordinates.rowIndex,
@@ -181,7 +183,7 @@ const QueryResultCellRenderer = observer(
       if (event.button === 2) {
         const coordinates = findCoordinatesFromResultValue(
           columnName,
-          params.rowIndex,
+          nodeRowIndex,
         );
         const isInSelected = isCoordinatesSelected(coordinates);
         if (!isInSelected) {
@@ -218,7 +220,7 @@ const QueryResultCellRenderer = observer(
         const firstCorner = results.coordinates;
         const secondCorner = findCoordinatesFromResultValue(
           columnName,
-          params.rowIndex,
+          nodeRowIndex,
         );
 
         resultState.setSelectedCells([results]);

@@ -14,25 +14,39 @@
  * limitations under the License.
  */
 
-import { TailwindCSSPalette } from '@finos/legend-art';
 import {
-  DataCubeColumnKind,
-  DataCubeFont,
-  DataCubeFontTextAlignment,
-  DEFAULT_ROW_BUFFER,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_ERROR_FOREGROUND_COLOR,
   DEFAULT_FOREGROUND_COLOR,
   DEFAULT_NEGATIVE_FOREGROUND_COLOR,
   DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR,
   DEFAULT_ZERO_FOREGROUND_COLOR,
-  type DataCubeFontFormatUnderlinedVariant,
+  DEFAULT_GRID_LINE_COLOR,
+  DEFAULT_FONT_FAMILY,
+  DEFAULT_FONT_SIZE,
+  DEFAULT_FONT_BOLD,
+  DEFAULT_FONT_ITALIC,
+  DEFAULT_FONT_STRIKETHROUGH,
+  DEFAULT_TEXT_ALIGN,
+  DEFAULT_FONT_UNDERLINED,
+  DEFAULT_FONT_CASE,
+  DataCubeColumnKind,
+  type DataCubeFont,
+  type DataCubeFontTextAlignment,
+  type DataCubeFontFormatUnderlineVariant,
   type DataCubeNumberScale,
   type DataCubeSelectionStat,
   type DataCubeColumnPinPlacement,
+  type DataCubeFontCase,
 } from './DataCubeQueryEngine.js';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, list, optional, primitive } from 'serializr';
+
+export type DataCubeConfigurationColorKey =
+  | 'normal'
+  | 'zero'
+  | 'negative'
+  | 'error';
 
 export class DataCubeColumnConfiguration {
   name: string;
@@ -48,21 +62,22 @@ export class DataCubeColumnConfiguration {
 
   hPivotSortFunction?: string | undefined;
 
-  fontFamily = DataCubeFont.ROBOTO;
-  fontSize = 8;
-  fontBold = false;
-  fontItalic = false;
-  fontUnderlined?: DataCubeFontFormatUnderlinedVariant | undefined = undefined;
-  fontStrikethrough = false;
-  textAlign = DataCubeFontTextAlignment.LEFT;
-  foregroundColor = TailwindCSSPalette.black;
-  foregroundNegativeColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
-  foregroundZeroColor = DEFAULT_ZERO_FOREGROUND_COLOR;
-  foregroundErrorColor = DEFAULT_ERROR_FOREGROUND_COLOR;
-  backgroundColor = DEFAULT_BACKGROUND_COLOR;
-  backgroundNegativeColor = DEFAULT_BACKGROUND_COLOR;
-  backgroundZeroColor = DEFAULT_BACKGROUND_COLOR;
-  backgroundErrorColor = DEFAULT_BACKGROUND_COLOR;
+  fontFamily?: DataCubeFont | undefined;
+  fontSize?: number | undefined;
+  fontBold?: boolean | undefined;
+  fontItalic?: boolean | undefined;
+  fontUnderline?: DataCubeFontFormatUnderlineVariant | undefined;
+  fontStrikethrough?: boolean | undefined;
+  fontCase?: DataCubeFontCase | undefined;
+  textAlign?: DataCubeFontTextAlignment | undefined;
+  normalForegroundColor?: string | undefined;
+  negativeForegroundColor?: string | undefined;
+  zeroForegroundColor?: string | undefined;
+  errorForegroundColor?: string | undefined;
+  normalBackgroundColor?: string | undefined;
+  negativeBackgroundColor?: string | undefined;
+  zeroBackgroundColor?: string | undefined;
+  errorBackgroundColor?: string | undefined;
 
   blur = false;
   hideFromView = false;
@@ -72,6 +87,7 @@ export class DataCubeColumnConfiguration {
   maxWidth?: number | undefined;
   pinned?: DataCubeColumnPinPlacement | undefined;
   displayAsLink = false;
+  linkLabelParameter?: string | undefined;
 
   constructor(name: string, type: string) {
     this.name = name;
@@ -80,35 +96,39 @@ export class DataCubeColumnConfiguration {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeColumnConfiguration, {
-      backgroundColor: primitive(),
-      backgroundErrorColor: primitive(),
-      backgroundNegativeColor: primitive(),
-      backgroundZeroColor: primitive(),
+      blur: primitive(),
       decimals: optional(primitive()),
       displayAsLink: primitive(),
       displayCommas: primitive(),
       displayName: optional(primitive()),
+      errorBackgroundColor: optional(primitive()),
+      errorForegroundColor: optional(primitive()),
       fixedWidth: optional(primitive()),
-      foregroundColor: primitive(),
-      foregroundErrorColor: primitive(),
-      foregroundNegativeColor: primitive(),
-      foregroundZeroColor: primitive(),
-      fontBold: primitive(),
-      fontFamily: primitive(),
-      fontItalic: primitive(),
-      fontSize: primitive(),
-      fontStrikethrough: primitive(),
-      fontUnderlined: optional(primitive()),
+      fontBold: optional(primitive()),
+      fontCase: optional(primitive()),
+      fontFamily: optional(primitive()),
+      fontItalic: optional(primitive()),
+      fontSize: optional(primitive()),
+      fontStrikethrough: optional(primitive()),
+      fontUnderline: optional(primitive()),
+      hideFromView: primitive(),
       hPivotSortFunction: optional(primitive()),
       kind: primitive(),
+      linkLabelParameter: optional(primitive()),
       maxWidth: optional(primitive()),
       minWidth: optional(primitive()),
       name: primitive(),
+      negativeBackgroundColor: optional(primitive()),
+      negativeForegroundColor: optional(primitive()),
+      normalBackgroundColor: optional(primitive()),
+      normalForegroundColor: optional(primitive()),
       negativeNumberInParens: primitive(),
       numberScale: optional(primitive()),
       pinned: optional(primitive()),
-      textAlign: primitive(),
+      textAlign: optional(primitive()),
       type: primitive(),
+      zeroBackgroundColor: optional(primitive()),
+      zeroForegroundColor: optional(primitive()),
     }),
   );
 }
@@ -117,45 +137,45 @@ export class DataCubeConfiguration {
   description?: string | undefined;
   columns: DataCubeColumnConfiguration[] = [];
 
-  showTreeLine = true;
-  showHorizontalGridLine = false;
-  showVerticalGridLine = false;
-  defaultFontFamily = DataCubeFont.ROBOTO;
-  defaultFontSize = 12;
-  defaultFontBold = false;
-  defaultFontItalic = false;
-  defaultFontUnderlined?: DataCubeFontFormatUnderlinedVariant | undefined =
-    undefined;
-  defaultFontStrikethrough = false;
-  defaultTextAlign = DataCubeFontTextAlignment.LEFT;
-  defaultForegroundColor = DEFAULT_FOREGROUND_COLOR;
-  defaultForegroundNegativeColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
-  defaultForegroundZeroColor = DEFAULT_ZERO_FOREGROUND_COLOR;
-  defaultForegroundErrorColor = DEFAULT_ERROR_FOREGROUND_COLOR;
-  defaultBackgroundColor = DEFAULT_BACKGROUND_COLOR;
-  defaultBackgroundNegativeColor = DEFAULT_BACKGROUND_COLOR;
-  defaultBackgroundZeroColor = DEFAULT_BACKGROUND_COLOR;
-  defaultBackgroundErrorColor = DEFAULT_BACKGROUND_COLOR;
-  alternateRows = true;
+  showTreeLines = false;
+  showHorizontalGridLines = false;
+  showVerticalGridLines = true;
+  gridLineColor = DEFAULT_GRID_LINE_COLOR;
+
+  fontFamily = DEFAULT_FONT_FAMILY;
+  fontSize = DEFAULT_FONT_SIZE;
+  fontBold = DEFAULT_FONT_BOLD;
+  fontItalic = DEFAULT_FONT_ITALIC;
+  fontUnderline?: DataCubeFontFormatUnderlineVariant | undefined =
+    DEFAULT_FONT_UNDERLINED;
+  fontStrikethrough = DEFAULT_FONT_STRIKETHROUGH;
+  fontCase?: DataCubeFontCase | undefined = DEFAULT_FONT_CASE;
+  textAlign = DEFAULT_TEXT_ALIGN;
+  normalForegroundColor = DEFAULT_FOREGROUND_COLOR;
+  negativeForegroundColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
+  zeroForegroundColor = DEFAULT_ZERO_FOREGROUND_COLOR;
+  errorForegroundColor = DEFAULT_ERROR_FOREGROUND_COLOR;
+  normalBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+  negativeBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+  zeroBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+  errorBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+
+  alternateRows = false;
+  alternateRowsStandardMode = true;
   alternateRowsColor = DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR;
   alternateRowsCount = 1;
-
-  // manualRefresh: boolean;
-  numberScale?: DataCubeNumberScale | undefined;
-  selectionStats: DataCubeSelectionStat[] = [];
-
-  showWarningForTruncatedResult = true;
 
   // aggregation
   initialExpandLevel?: number | undefined;
   showRootAggregation = false;
-  showLeafCount = true;
+  showLeafCount = false;
   addPivotTotalColumn = true;
   addPivotTotalColumnOnLeft = true;
   treeGroupSortFunction?: string | undefined;
 
-  // advanced
-  rowBuffer = DEFAULT_ROW_BUFFER;
+  // misc
+  selectionStats: DataCubeSelectionStat[] = [];
+  showWarningForTruncatedResult = true;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeConfiguration, {
@@ -164,37 +184,37 @@ export class DataCubeConfiguration {
       alternateRows: primitive(),
       alternateRowsColor: primitive(),
       alternateRowsCount: primitive(),
+      alternateRowsStandardMode: primitive(),
       columns: list(
         usingModelSchema(DataCubeColumnConfiguration.serialization.schema),
       ),
-      defaultBackgroundColor: primitive(),
-      defaultBackgroundErrorColor: primitive(),
-      defaultBackgroundNegativeColor: primitive(),
-      defaultBackgroundZeroColor: primitive(),
-      defaultFontBold: primitive(),
-      defaultFontFamily: primitive(),
-      defaultFontItalic: primitive(),
-      defaultFontSize: primitive(),
-      defaultFontStrikethrough: primitive(),
-      defaultFontUnderlined: optional(primitive()),
-      defaultForegroundColor: primitive(),
-      defaultForegroundErrorColor: primitive(),
-      defaultForegroundNegativeColor: primitive(),
-      defaultForegroundZeroColor: primitive(),
-      defaultTextAlign: primitive(),
+      errorBackgroundColor: primitive(),
+      errorForegroundColor: primitive(),
       description: optional(primitive()),
+      fontBold: primitive(),
+      fontCase: optional(primitive()),
+      fontFamily: primitive(),
+      fontItalic: primitive(),
+      fontSize: primitive(),
+      fontStrikethrough: primitive(),
+      fontUnderline: optional(primitive()),
+      gridLineColor: primitive(),
       initialExpandLevel: optional(primitive()),
-
-      numberScale: optional(primitive()),
-      rowBuffer: primitive(),
+      negativeBackgroundColor: primitive(),
+      negativeForegroundColor: primitive(),
+      normalBackgroundColor: primitive(),
+      normalForegroundColor: primitive(),
       selectionStats: list(primitive()),
-      showHorizontalGridLine: primitive(),
+      showHorizontalGridLines: primitive(),
       showLeafCount: primitive(),
       showRootAggregation: primitive(),
-      showTreeLine: primitive(),
-      showVerticalGridLine: primitive(),
+      showTreeLines: primitive(),
+      showVerticalGridLines: primitive(),
       showWarningForTruncatedResult: primitive(),
+      textAlign: primitive(),
       treeGroupSortFunction: optional(primitive()),
+      zeroBackgroundColor: primitive(),
+      zeroForegroundColor: primitive(),
     }),
   );
 }

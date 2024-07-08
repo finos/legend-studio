@@ -59,7 +59,6 @@ function getBaseGridProps<
     rowHeight: 20,
     headerHeight: 20,
     suppressRowHoverHighlight: false,
-    reactiveCustomComponents: true, // TODO: remove on v32 as this would be default to `true` then
     noRowsOverlayComponent: (
       params: CustomNoRowsOverlayProps<T> & {
         violationSeverity?: 'warning' | 'error' | undefined;

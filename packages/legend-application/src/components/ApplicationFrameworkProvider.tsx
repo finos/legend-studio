@@ -16,13 +16,19 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ApplicationComponentFrameworkProvider } from './ApplicationComponentFrameworkProvider.js';
+import {
+  ApplicationComponentFrameworkProvider,
+  SimpleApplicationComponentFrameworkProvider,
+} from './ApplicationComponentFrameworkProvider.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
 import { useApplicationPlatform } from './ApplicationPlatformProvider.js';
 
 export const ApplicationFrameworkProvider = observer(
-  (props: { children: React.ReactNode }): React.ReactElement => {
-    const { children } = props;
+  (props: {
+    children: React.ReactNode;
+    simple?: boolean | undefined;
+  }): React.ReactElement => {
+    const { children, simple } = props;
     const platform = useApplicationPlatform();
     const applicationStore = useApplicationStore();
 
@@ -38,6 +44,13 @@ export const ApplicationFrameworkProvider = observer(
     // TODO: would be great if we can have <React.StrictMode> here but since Mobx React is not ready for
     // concurrency yet, we would have to wait
     // See https://github.com/mobxjs/mobx/issues/2526
+    if (simple) {
+      return (
+        <SimpleApplicationComponentFrameworkProvider>
+          {children}
+        </SimpleApplicationComponentFrameworkProvider>
+      );
+    }
     return (
       <ApplicationComponentFrameworkProvider>
         {children}

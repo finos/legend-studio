@@ -37,12 +37,12 @@ export function buildGridSortsMenu(
     subMenu: [
       {
         name: 'Ascending',
-        disabled: !editor.sortsPanel.getActionableSortColumn(
+        disabled: !editor.sorts.getActionableSortColumn(
           column.getColId(),
           DataCubeQuerySnapshotSortOperation.ASCENDING,
         ),
         action: () =>
-          editor.sortsPanel.sortByColumn(
+          editor.sorts.sortByColumn(
             column.getColId(),
             DataCubeQuerySnapshotSortOperation.ASCENDING,
           ),
@@ -55,12 +55,12 @@ export function buildGridSortsMenu(
       },
       {
         name: 'Descending',
-        disabled: !editor.sortsPanel.getActionableSortColumn(
+        disabled: !editor.sorts.getActionableSortColumn(
           column.getColId(),
           DataCubeQuerySnapshotSortOperation.DESCENDING,
         ),
         action: () =>
-          editor.sortsPanel.sortByColumn(
+          editor.sorts.sortByColumn(
             column.getColId(),
             DataCubeQuerySnapshotSortOperation.DESCENDING,
           ),
@@ -74,12 +74,12 @@ export function buildGridSortsMenu(
       'separator',
       {
         name: 'Add Ascending',
-        disabled: !editor.sortsPanel.getActionableSortColumn(
+        disabled: !editor.sorts.getActionableSortColumn(
           column.getColId(),
           DataCubeQuerySnapshotSortOperation.ASCENDING,
         ),
         action: () =>
-          editor.sortsPanel.addSortByColumn(
+          editor.sorts.addSortByColumn(
             column.getColId(),
             DataCubeQuerySnapshotSortOperation.ASCENDING,
           ),
@@ -92,12 +92,12 @@ export function buildGridSortsMenu(
       },
       {
         name: 'Add Descending',
-        disabled: !editor.sortsPanel.getActionableSortColumn(
+        disabled: !editor.sorts.getActionableSortColumn(
           column.getColId(),
           DataCubeQuerySnapshotSortOperation.DESCENDING,
         ),
         action: () =>
-          editor.sortsPanel.addSortByColumn(
+          editor.sorts.addSortByColumn(
             column.getColId(),
             DataCubeQuerySnapshotSortOperation.DESCENDING,
           ),
@@ -111,9 +111,8 @@ export function buildGridSortsMenu(
       'separator',
       {
         name: 'Clear All Sorts',
-        disabled:
-          editor.sortsPanel.columnsSelector.selectedColumns.length === 0,
-        action: () => editor.sortsPanel.clearAllSorts(),
+        disabled: editor.sorts.columnsSelector.selectedColumns.length === 0,
+        action: () => editor.sorts.clearAllSorts(),
       },
     ],
   };

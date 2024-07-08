@@ -21,6 +21,7 @@ export type TailwindCSSColorScaleKey = keyof typeof TailwindCSSPalette;
 export type TailwindCSSColorScale = (typeof TailwindCSSPalette)['slate'];
 
 export const TailwindCSSPalette = {
+  transparent: '#00000000',
   black: '#000000',
   white: '#ffffff',
   slate: {

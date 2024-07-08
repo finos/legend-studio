@@ -41,8 +41,8 @@
   "devDependencies": {
     "cross-env": "7.0.3",
     "eslint": "8.57.0",
-    "rimraf": "5.0.7",
-    "typescript": "5.5.2"
+    "rimraf": "5.0.8",
+    "typescript": "5.5.3"
   },
   "peerDependencies": {
     "@babel/core": "^7.0.0"

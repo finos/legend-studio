@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
+import parseColor from 'color-parse';
+
 export {
   HexColorPicker,
   HexAlphaColorPicker,
   HexColorInput,
 } from 'react-colorful';
+
+export { parseColor };

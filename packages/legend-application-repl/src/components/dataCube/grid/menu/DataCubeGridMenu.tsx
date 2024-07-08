@@ -22,6 +22,11 @@ import type {
 import type { DataCubeState } from '../../../../stores/dataCube/DataCubeState.js';
 import { buildGridSortsMenu } from './DataCubeGridSortsMenu.js';
 import { WIP_GridMenuItem } from '../DataCubeGridShared.js';
+import {
+  DataCubeColumnPinPlacement,
+  DEFAULT_COLUMN_MIN_WIDTH,
+} from '../../../../stores/dataCube/core/DataCubeQueryEngine.js';
+import { isNonNullable } from '@finos/legend-shared';
 
 export function buildGridMenu(
   params:
@@ -32,6 +37,9 @@ export function buildGridMenu(
   const dataCube = context.dataCube;
   const editor = dataCube.editor;
   const column = params.column ?? undefined;
+  const columnConfiguration = editor.columnProperties.getColumnConfiguration(
+    column?.getColId(),
+  );
   const value: unknown = 'value' in params ? params.value : undefined;
 
   const result: (string | MenuItemDef)[] = [
@@ -308,55 +316,94 @@ export function buildGridMenu(
     'separator',
     {
       name: 'Resize',
-      menuItem: WIP_GridMenuItem,
-      cssClasses: ['!opacity-100'],
-      disabled: true,
       subMenu: [
         {
-          name: `Size to Fit Content`,
-          menuItem: WIP_GridMenuItem,
-          cssClasses: ['!opacity-100'],
-          disabled: true,
+          name: `Auto-size to Fit Content`,
+          action: () =>
+            params.api.autoSizeColumns(
+              [column?.getColId()].filter(isNonNullable),
+            ),
+          disabled: !column,
         },
         {
-          name: `Autosize`,
-          menuItem: WIP_GridMenuItem,
-          cssClasses: ['!opacity-100'],
-          disabled: true,
+          name: `Minimize Column`,
+          action: () => {
+            if (column) {
+              params.api.setColumnWidths([
+                {
+                  key: column.getColId(),
+                  newWidth:
+                    columnConfiguration?.minWidth ?? DEFAULT_COLUMN_MIN_WIDTH,
+                },
+              ]);
+            }
+          },
+          disabled: !column,
         },
         'separator',
         {
-          name: `Autosize All Columns`,
-          menuItem: WIP_GridMenuItem,
-          cssClasses: ['!opacity-100'],
-          disabled: true,
+          name: `Auto-size All Columns`,
+          action: () => params.api.autoSizeAllColumns(),
+        },
+        {
+          name: `Minimize All Columns`,
+          action: () => {
+            params.api.setColumnWidths(
+              dataCube.editor.columnProperties.columns.map((col) => ({
+                key: col.name,
+                newWidth:
+                  columnConfiguration?.minWidth ?? DEFAULT_COLUMN_MIN_WIDTH,
+              })),
+            );
+          },
+        },
+        {
+          name: `Size Grid to Fit Screen`,
+          action: () => params.api.sizeColumnsToFit(),
         },
       ],
     },
     {
       name: 'Pin',
-      menuItem: WIP_GridMenuItem,
-      cssClasses: ['!opacity-100'],
-      disabled: true,
       subMenu: [
         {
           name: `Pin Left`,
-          menuItem: WIP_GridMenuItem,
-          cssClasses: ['!opacity-100'],
-          disabled: true,
+          disabled: !column || column.isPinnedLeft(),
+          checked: Boolean(column?.isPinnedLeft()),
+          action: () => {
+            columnConfiguration?.setPinned(DataCubeColumnPinPlacement.LEFT);
+            editor.applyChanges();
+          },
         },
         {
           name: `Pin Right`,
-          menuItem: WIP_GridMenuItem,
-          cssClasses: ['!opacity-100'],
-          disabled: true,
+          disabled: !column || column.isPinnedRight(),
+          checked: Boolean(column?.isPinnedRight()),
+          action: () => {
+            columnConfiguration?.setPinned(DataCubeColumnPinPlacement.RIGHT);
+            editor.applyChanges();
+          },
+        },
+        {
+          name: `Unpin`,
+          disabled: !column?.isPinned(),
+          action: () => {
+            columnConfiguration?.setPinned(undefined);
+            editor.applyChanges();
+          },
         },
         'separator',
         {
-          name: `Remove Pinning`,
-          menuItem: WIP_GridMenuItem,
-          cssClasses: ['!opacity-100'],
-          disabled: true,
+          name: `Remove All Pinnings`,
+          disabled: editor.columnProperties.columns.every(
+            (col) => col.pinned === undefined,
+          ),
+          action: () => {
+            editor.columnProperties.columns.forEach((col) =>
+              col.setPinned(undefined),
+            );
+            editor.applyChanges();
+          },
         },
       ],
     },

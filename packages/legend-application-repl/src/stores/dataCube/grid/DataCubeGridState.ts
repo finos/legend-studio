@@ -14,34 +14,62 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-shared';
-import { action, makeObservable, observable } from 'mobx';
+import { guaranteeNonNullable, hashArray } from '@finos/legend-shared';
+import { action, makeObservable, observable, runInAction } from 'mobx';
 import type { GridApi } from '@ag-grid-community/core';
 import type { DataCubeState } from '../DataCubeState.js';
 import { DataCubeGridClientServerSideDataSource } from './DataCubeGridClientEngine.js';
 import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import { generateGridOptionsFromSnapshot } from './DataCubeGridQuerySnapshotAnalyzer.js';
+import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
+
+class DataCubeGridDatasourceConfiguration {
+  readonly limit?: number | undefined;
+
+  constructor(input: {
+    snapshot?: DataCubeQuerySnapshot | undefined;
+    queryConfiguration?: DataCubeConfiguration | undefined;
+  }) {
+    const { snapshot } = input;
+    this.limit = snapshot?.data.limit;
+  }
+
+  get hashCode(): string {
+    return hashArray([`limit: ${this.limit ?? ''}`]);
+  }
+}
 
 export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   private _client?: GridApi | undefined;
   clientDataSource: DataCubeGridClientServerSideDataSource;
   clientLicenseKey?: string | undefined;
+
   isPaginationEnabled = false;
+  scrollHintText = '';
+  datasourceConfiguration: DataCubeGridDatasourceConfiguration;
+  queryConfiguration: DataCubeConfiguration;
 
   constructor(dataCube: DataCubeState) {
     super(dataCube);
 
     makeObservable(this, {
       clientDataSource: observable,
+      datasourceConfiguration: observable,
+      queryConfiguration: observable,
 
       clientLicenseKey: observable,
       setClientLicenseKey: action,
 
       isPaginationEnabled: observable,
       setPaginationEnabled: action,
+
+      scrollHintText: observable,
+      setScrollHintText: action,
     });
 
+    this.datasourceConfiguration = new DataCubeGridDatasourceConfiguration({});
+    this.queryConfiguration = new DataCubeConfiguration();
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
   }
 
@@ -52,32 +80,57 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   setPaginationEnabled(val: boolean): void {
     this.isPaginationEnabled = val;
 
-    // When pagination is toggled off, we don't need to reset the grid since data is
-    // already loaded data will still be there, but we need to collapse all expanded
-    // row groupings since the data there are now stale.
-    // Maybe, we can handle this transition more elegantly by refreshing data for all
-    // expanded row groupings as well, but for now, we opt for the simple mechanics.
-    if (!this.isPaginationEnabled) {
-      this.client.collapseAll();
-      this.client.refreshServerSide();
-    } else {
-      // When pagination is toggled on, we simply reset the grid to clear all data and reset scroll;
-      // otherwise each page that we already loaded when pagination is off will get refetched by
-      // server-side data source, which is expensive.
-      this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
-    }
+    // hard reset the grid, this will force the grid to fetch data again
+    // NOTE: if we don't fully reset the datasource, and say we just turned on pagination,
+    // for how many page that we loaded when pagination is off, the datasource
+    // will fire that many data fetch operations which is expensive.
+    this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
   }
 
-  configureClient(val: GridApi | undefined): void {
-    this._client = val;
+  setScrollHintText(val: string): void {
+    this.scrollHintText = val;
   }
 
   get client(): GridApi {
     return guaranteeNonNullable(this._client, 'Grid client is not configured');
   }
 
-  override async applySnapshot(snapshot: DataCubeQuerySnapshot): Promise<void> {
-    const gridOptions = generateGridOptionsFromSnapshot(snapshot);
+  configureClient(val: GridApi | undefined): void {
+    this._client = val;
+  }
+
+  override async applySnapshot(
+    snapshot: DataCubeQuerySnapshot,
+    previousSnapshot: DataCubeQuerySnapshot | undefined,
+  ): Promise<void> {
+    const existingExtraConfiguration = this.datasourceConfiguration;
+    const queryConfiguration = DataCubeConfiguration.serialization.fromJson(
+      snapshot.data.configuration,
+    );
+
+    // NOTE: if one of the change affects the structure of the data cube but cannot be captured
+    // in the grid client options, we will need to manually reset the grid by resetting the
+    // datasource to ensure we don't fetch the result twice while forcing the data to be refreshed
+    runInAction(() => {
+      this.datasourceConfiguration = new DataCubeGridDatasourceConfiguration({
+        snapshot,
+        queryConfiguration,
+      });
+      this.queryConfiguration = queryConfiguration;
+    });
+    if (
+      existingExtraConfiguration.hashCode !==
+      this.datasourceConfiguration.hashCode
+    ) {
+      // reset the entire grid
+      this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
+    }
+
+    const gridOptions = generateGridOptionsFromSnapshot(
+      snapshot,
+      queryConfiguration,
+      this.dataCube,
+    );
     this.client.updateGridOptions(gridOptions);
   }
 
