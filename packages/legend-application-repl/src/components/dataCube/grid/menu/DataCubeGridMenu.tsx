@@ -87,33 +87,31 @@ export function buildGridMenu(
     },
     {
       name: 'Email',
-      menuItem: WIP_GridMenuItem,
-      cssClasses: ['!opacity-100'],
       subMenu: [
         {
           name: 'HTML',
-          menuItem: WIP_GridMenuItem,
-          cssClasses: ['!opacity-100'],
-          disabled: true,
+          action: () => {
+            dataCube.grid.generateEmail(true, true);
+          },
         },
         {
           name: 'Plain Text',
-          menuItem: WIP_GridMenuItem,
-          cssClasses: ['!opacity-100'],
-          disabled: true,
+          action: () => {
+            dataCube.grid.generateEmail(false, true);
+          },
         },
         'separator',
         {
           name: 'HTML Attachment',
-          menuItem: WIP_GridMenuItem,
-          cssClasses: ['!opacity-100'],
-          disabled: true,
+          action: () => {
+            dataCube.grid.generateEmail(true, true);
+          },
         },
         {
           name: 'Plain Text',
-          menuItem: WIP_GridMenuItem,
-          cssClasses: ['!opacity-100'],
-          disabled: true,
+          action: () => {
+            dataCube.grid.generateEmail(false, true);
+          },
         },
         {
           name: 'PDF Attachment',
