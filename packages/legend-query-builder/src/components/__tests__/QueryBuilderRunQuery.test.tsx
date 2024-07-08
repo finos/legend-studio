@@ -22,6 +22,8 @@ import {
   getByRole,
   queryAllByText,
   findByText,
+  getByTitle,
+  queryByText,
 } from '@testing-library/react';
 import { TEST_DATA__simpleProjection } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
@@ -130,6 +132,27 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
 
+    expect(
+      await findByText(postFilterPanel, 'Edited First Name'),
+    ).not.toBeNull();
+    expect(await findByText(postFilterPanel, 'is')).not.toBeNull();
+    expect(await findByText(postFilterPanel, '"Henry"')).not.toBeNull();
+
+    // remove post-filter
+    fireEvent.click(getByTitle(postFilterPanel, 'Remove'));
+    expect(queryByText(postFilterPanel, 'Edited First Name')).toBeNull();
+    expect(queryByText(postFilterPanel, 'is')).toBeNull();
+    expect(queryByText(postFilterPanel, '"Henry"')).toBeNull();
+
+    // re-add post-filter
+    await act(async () => {
+      filterByOrOutValues(
+        queryBuilderState.applicationStore,
+        queryBuilderState.resultState.mousedOverCell,
+        true,
+        state,
+      );
+    });
     expect(
       await findByText(postFilterPanel, 'Edited First Name'),
     ).not.toBeNull();
