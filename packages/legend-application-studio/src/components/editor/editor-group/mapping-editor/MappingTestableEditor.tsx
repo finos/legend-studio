@@ -87,6 +87,7 @@ import {
 } from '@finos/legend-application';
 import { flowResult } from 'mobx';
 import {
+  ExecutionPlanViewer,
   QueryBuilderTextEditorMode,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
@@ -122,6 +123,11 @@ import {
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
+import {
+  TestExecutionPlanDebugState,
+  TestUnknownDebugState,
+  type TestableDebugTestResultState,
+} from '../../../../stores/editor/editor-state/element-editor-state/testable/TestableEditorState.js';
 
 interface ClassSelectOption {
   label: string;
@@ -685,8 +691,70 @@ const MappingTestSuiteQueryEditor = observer(
       flowResult(testableQueryState.updateLamba(stub_RawLambda())),
     );
 
+    // debug
+    const disableDebug = !testSuiteState.selectTestState;
+    const debugQuery = (): void => {
+      flowResult(testSuiteState.debug()).catch(
+        testSuiteState.editorStore.applicationStore.alertUnhandledError,
+      );
+    };
+    const debugState = testSuiteState.selectTestState?.debugTestResultState;
+    const renderDebug = (
+      val: TestableDebugTestResultState,
+    ): React.ReactNode => {
+      const closeDebug = (): void =>
+        testSuiteState.selectTestState?.setDebugState(undefined);
+      if (val instanceof TestExecutionPlanDebugState) {
+        return (
+          <ExecutionPlanViewer executionPlanState={val.executionPlanState} />
+        );
+      }
+      if (val instanceof TestUnknownDebugState) {
+        return (
+          <Dialog
+            open={Boolean(debugState)}
+            onClose={closeDebug}
+            classes={{
+              root: 'editor-modal__root-container',
+              container: 'editor-modal__container',
+              paper: 'editor-modal__content',
+            }}
+          >
+            <Modal
+              className={clsx('editor-modal query-builder-text-mode__modal')}
+            >
+              <ModalHeader>
+                <div className="modal__title">{`Debug`}</div>
+              </ModalHeader>
+              <ModalBody>
+                <div
+                  className={clsx('query-builder-text-mode__modal__content')}
+                >
+                  <CodeEditor
+                    language={CODE_EDITOR_LANGUAGE.JSON}
+                    inputValue={JSON.stringify(val.testDebug.value)}
+                    isReadOnly={true}
+                  />
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <ModalFooterButton onClick={closeDebug} type="primary">
+                  Close
+                </ModalFooterButton>
+              </ModalFooter>
+            </Modal>
+          </Dialog>
+        );
+      }
+      return null;
+    };
     return (
       <div className="panel mapping-test-editor__query-panel">
+        <PanelLoadingIndicator
+          isLoading={Boolean(
+            testSuiteState.selectTestState?.debuggingTestAction.isInProgress,
+          )}
+        />
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">query</div>
@@ -730,6 +798,18 @@ const MappingTestSuiteQueryEditor = observer(
                 <CaretDownIcon />
               </ControlledDropdownMenu>
             </div>
+            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+              <button
+                className="btn__dropdown-combo__label"
+                onClick={debugQuery}
+                title="Debug Test With Exec Plan"
+                disabled={disableDebug}
+                tabIndex={-1}
+              >
+                <PlayIcon className="btn__dropdown-combo__label__icon" />
+                <div className="btn__dropdown-combo__label__title">Debug</div>
+              </button>
+            </div>
           </div>
         </div>
         {!isStubbed_RawLambda(testableQueryState.query) && (
@@ -744,6 +824,7 @@ const MappingTestSuiteQueryEditor = observer(
             </div>
           </PanelContent>
         )}
+        {debugState && renderDebug(debugState)}
       </div>
     );
   },

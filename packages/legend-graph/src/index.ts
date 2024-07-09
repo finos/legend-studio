@@ -393,6 +393,7 @@ export * from './graph/metamodel/pure/test/Testable.js';
 export * from './graph-manager/protocol/pure/extensions/Testable_PureProtocolProcessorPlugin_Extension.js';
 export * from './graph/metamodel/pure/test/result/RunTestsTestableInput.js';
 export * from './graph/metamodel/pure/test/result/TestResult.js';
+export * from './graph/metamodel/pure/test/result/DebugTestsResult.js';
 export * from './graph/metamodel/pure/test/assertion/status/AssertionStatus.js';
 export * from './graph/metamodel/pure/test/assertion/status/AssertFail.js';
 export * from './graph/metamodel/pure/test/assertion/status/AssertPass.js';
