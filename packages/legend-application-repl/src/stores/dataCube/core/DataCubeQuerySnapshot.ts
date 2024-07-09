@@ -188,23 +188,18 @@ export class DataCubeQuerySnapshot {
    */
   stageCols(stage: DataCubeQuerySnapshotStage): DataCubeQuerySnapshotColumn[] {
     switch (stage) {
+      case 'filter':
       case 'leaf-extend':
         return [...this.data.originalColumns];
-      case 'filter':
-      case 'aggregation':
+      case 'select':
         return [...this.data.originalColumns, ...this.data.leafExtendedColumns];
+      case 'aggregation':
+        return [...this.data.selectColumns];
       case 'group-extend':
         // TODO: @akphi - add pivot columns
-        return [...this.data.originalColumns, ...this.data.leafExtendedColumns];
-      case 'select':
-        // TODO: @akphi - add pivot columns
-        return [
-          ...this.data.originalColumns,
-          ...this.data.leafExtendedColumns,
-          ...this.data.groupExtendedColumns,
-        ];
-      case 'sort':
         return [...this.data.selectColumns];
+      case 'sort':
+        return [...this.data.selectColumns, ...this.data.groupExtendedColumns];
       default:
         throw new IllegalStateError(`Unknown stage '${stage}'`);
     }

@@ -24,6 +24,7 @@ import { guaranteeNonNullable, uuid } from '@finos/legend-shared';
 import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGeneralPropertiesPanelState.js';
 import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumnPropertiesPanelState.js';
 import type { REPLWindowConfig } from '../../../components/REPLWindow.js';
+import { DataCubeEditorColumnsPanelState } from './DataCubeEditorColumnsPanelState.js';
 
 export enum DATA_CUBE_EDITOR_TAB {
   COLUMNS = 'Columns',
@@ -38,9 +39,10 @@ export enum DATA_CUBE_EDITOR_TAB {
 }
 
 export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
-  readonly sorts: DataCubeEditorSortsPanelState;
   readonly generalProperties: DataCubeEditorGeneralPropertiesPanelState;
+  readonly columns: DataCubeEditorColumnsPanelState;
   readonly columnProperties: DataCubeEditorColumnPropertiesPanelState;
+  readonly sorts: DataCubeEditorSortsPanelState;
   readonly code: DataCubeEditorCodePanelState;
 
   readonly window: REPLWindowConfig = {
@@ -66,11 +68,12 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
       closePanel: action,
     });
 
-    this.sorts = new DataCubeEditorSortsPanelState(this);
     this.generalProperties = new DataCubeEditorGeneralPropertiesPanelState(
       this,
     );
+    this.columns = new DataCubeEditorColumnsPanelState(this);
     this.columnProperties = new DataCubeEditorColumnPropertiesPanelState(this);
+    this.sorts = new DataCubeEditorSortsPanelState(this);
     this.code = new DataCubeEditorCodePanelState(this);
   }
 
@@ -90,7 +93,9 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const snapshot = baseSnapshot.clone();
 
+    this.columns.buildSnapshot(snapshot, baseSnapshot);
     this.sorts.buildSnapshot(snapshot, baseSnapshot);
+
     // NOTE: snapshot must be processed first to build the container configuration
     // before proceeding to process the columns' configuration
     this.generalProperties.buildSnapshot(snapshot, baseSnapshot);
@@ -106,7 +111,9 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,
   ): Promise<void> {
+    this.columns.applySnaphot(snapshot);
     this.sorts.applySnaphot(snapshot);
+
     this.generalProperties.applySnaphot(snapshot);
     this.columnProperties.applySnaphot(snapshot);
   }

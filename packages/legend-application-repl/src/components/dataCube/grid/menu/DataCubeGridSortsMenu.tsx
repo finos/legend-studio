@@ -111,7 +111,7 @@ export function buildGridSortsMenu(
       'separator',
       {
         name: 'Clear All Sorts',
-        disabled: editor.sorts.columnsSelector.selectedColumns.length === 0,
+        disabled: editor.sorts.selector.selectedColumns.length === 0,
         action: () => editor.sorts.clearAllSorts(),
       },
     ],

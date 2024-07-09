@@ -43,10 +43,16 @@ export class DataCubeEditorColumnPropertiesPanelState
 
       showAdvancedSettings: observable,
       setShowAdvancedSettings: action,
+
+      hiddenColumns: computed,
     });
 
     this.editor = editor;
     this.dataCube = editor.dataCube;
+  }
+
+  get hiddenColumns(): DataCubeMutableColumnConfiguration[] {
+    return this.columns.filter((column) => column.hideFromView);
   }
 
   getColumnConfiguration(

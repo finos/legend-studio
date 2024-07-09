@@ -131,7 +131,7 @@ export const DataCubeEditorSortsPanel = observer(() => {
       </div>
       <div className="flex h-[calc(100%_-_24px)] w-full">
         <DataCubeEditorColumnsSelector
-          selector={panel.columnsSelector}
+          selector={panel.selector}
           extraColumnComponent={(props) => <SortDirectionDropdown {...props} />}
         />
       </div>

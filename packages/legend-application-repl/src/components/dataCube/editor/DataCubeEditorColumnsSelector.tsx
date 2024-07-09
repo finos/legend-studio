@@ -24,7 +24,7 @@ import type {
   RowDragEndEvent,
   SelectionChangedEvent,
 } from '@ag-grid-community/core';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   AgGridReact,
   type AgGridReactProps,
@@ -61,7 +61,7 @@ function getBaseGridProps<
     suppressRowHoverHighlight: false,
     noRowsOverlayComponent: (
       params: CustomNoRowsOverlayProps<T> & {
-        violationSeverity?: 'warning' | 'error' | undefined;
+        noColumnsSelectedRenderer?: (() => React.ReactNode) | undefined;
       },
     ) => {
       if (params.api.getQuickFilter()) {
@@ -74,25 +74,8 @@ function getBaseGridProps<
           </div>
         );
       }
-      if (params.violationSeverity) {
-        return (
-          <div
-            className={cn(
-              'flex items-center border-[1.5px] p-2 font-semibold',
-              {
-                'border-amber-400 text-amber-500':
-                  params.violationSeverity === 'warning',
-                'border-red-400 text-red-500':
-                  params.violationSeverity === 'error',
-              },
-            )}
-          >
-            <div>
-              <DataCubeIcon.Warning className="mr-1 text-lg" />
-            </div>
-            No columns selected
-          </div>
-        );
+      if (params.noColumnsSelectedRenderer) {
+        return params.noColumnsSelectedRenderer();
       }
       return <div />;
     },
@@ -168,13 +151,9 @@ export const DataCubeEditorColumnsSelector = observer(
           column: T;
         }>
       | undefined;
-    noColumnsSelectedViolationSeverity?: 'warning' | 'error' | undefined;
+    noColumnsSelectedRenderer?: (() => React.ReactNode) | undefined;
   }) {
-    const {
-      selector,
-      extraColumnComponent,
-      noColumnsSelectedViolationSeverity,
-    } = props;
+    const { selector, extraColumnComponent, noColumnsSelectedRenderer } = props;
     const [selectedAvailableColumns, setSelectedAvailableColumns] = useState<
       T[]
     >([]);
@@ -377,10 +356,15 @@ export const DataCubeEditorColumnsSelector = observer(
                       if (!data) {
                         return null;
                       }
+                      const isHidden =
+                        selector.hiddenAvailableColumns.includes(data);
+
                       return (
                         <div
-                          className="flex h-full w-full cursor-pointer"
-                          title={`[${data.name}]\nDouble-click to add column`}
+                          className={cn('flex h-full w-full cursor-pointer', {
+                            'text-neutral-400': isHidden,
+                          })}
+                          title={`[${data.name}]${isHidden ? ' - Hidden' : ''}\nDouble-click to add column`}
                           onDoubleClick={() => {
                             selector.setSelectedColumns([
                               ...selector.selectedColumns,
@@ -537,7 +521,7 @@ export const DataCubeEditorColumnsSelector = observer(
                 // Using ag-grid quick filter is a cheap way to implement search
                 quickFilterText={selector.selectedColumnsSearchText}
                 noRowsOverlayComponentParams={{
-                  violationSeverity: noColumnsSelectedViolationSeverity,
+                  noColumnsSelectedRenderer,
                 }}
                 rowData={selector.selectedColumns}
                 columnDefs={[
@@ -580,10 +564,15 @@ export const DataCubeEditorColumnsSelector = observer(
                       if (!data) {
                         return null;
                       }
+                      const isHidden =
+                        selector.hiddenSelectedColumns.includes(data);
+
                       return (
                         <div
-                          className="flex h-full w-full cursor-pointer"
-                          title={`[${data.name}]\nDouble-click to remove column`}
+                          className={cn('flex h-full w-full cursor-pointer', {
+                            'text-neutral-400': isHidden,
+                          })}
+                          title={`[${data.name}]${isHidden ? ' - Hidden' : ''}\nDouble-click to remove column`}
                           onDoubleClick={() => {
                             selector.setAvailableColumns([
                               ...selector.availableColumns,

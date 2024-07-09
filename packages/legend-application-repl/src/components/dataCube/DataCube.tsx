@@ -85,12 +85,12 @@ const DataCubeTitleBar = observer(() => {
 export const DataCube = observer(() => {
   const dataCubeStore = useREPLStore();
   const ref = useRef<HTMLDivElement>(null);
-  const applicationStore = useApplicationStore();
+  const application = useApplicationStore();
   const dataCube = dataCubeStore.dataCube;
 
   useEffect(() => {
-    dataCube.initialize().catch(applicationStore.logUnhandledError);
-  }, [dataCube, applicationStore]);
+    dataCube.initialize().catch(application.logUnhandledError);
+  }, [dataCube, application]);
 
   return (
     <div

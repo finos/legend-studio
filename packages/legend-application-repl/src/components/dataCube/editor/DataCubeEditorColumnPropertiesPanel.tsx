@@ -102,7 +102,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
         </div>
         <div className="flex h-full items-center pr-2">
           <DataCubeEditorCheckbox
-            label="Show advanced settings"
+            label="Show advanced settings?"
             checked={panel.showAdvancedSettings}
             onChange={() =>
               panel.setShowAdvancedSettings(!panel.showAdvancedSettings)
@@ -394,9 +394,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   onChange={() =>
                     selectedColumn.setHideFromView(!selectedColumn.hideFromView)
                   }
-                  disabled={true}
                 />
-                <WIP_Badge />
               </div>
 
               <div className="mt-2 flex h-5 w-full items-center">
