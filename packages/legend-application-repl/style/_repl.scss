@@ -235,19 +235,23 @@ button:focus-visible {
 
   .ag-column-panel {
     .ag-input-field-input.ag-text-field-input {
-      padding: 0 4px;
+      padding: 0 3px;
     }
   }
 
   .ag-column-drop-title-bar.ag-column-drop-vertical-title-bar {
     border-bottom: 1px solid var(--ag-border-color);
-    padding-bottom: 3px;
-    margin-bottom: 3px;
+    padding-bottom: var(--ag-grid-size);
+    margin-bottom: var(--ag-grid-size);
   }
 
   .ag-column-drop {
     // Gives more spacing to the tool panel compared to the grid where we favors compactness
-    --ag-grid-size: 2px;
+    --ag-grid-size: 3px;
+  }
+
+  .ag-column-drop-vertical {
+    padding-top: var(--ag-grid-size);
   }
 
   // ---------------------------------------------------------------------------

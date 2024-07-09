@@ -53,8 +53,8 @@ export function buildDefaultConfiguration(
   columns: { name: string; type: string }[],
 ): DataCubeConfiguration {
   const configuration = new DataCubeConfiguration();
-  configuration.columns = columns
-    .map((column) => buildDefaultColumnConfiguration(column))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  configuration.columns = columns.map((column) =>
+    buildDefaultColumnConfiguration(column),
+  );
   return configuration;
 }

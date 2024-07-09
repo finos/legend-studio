@@ -25,6 +25,7 @@ import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGener
 import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumnPropertiesPanelState.js';
 import type { REPLWindowConfig } from '../../../components/REPLWindow.js';
 import { DataCubeEditorColumnsPanelState } from './DataCubeEditorColumnsPanelState.js';
+import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
 export enum DATA_CUBE_EDITOR_TAB {
   COLUMNS = 'Columns',
@@ -111,11 +112,15 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,
   ): Promise<void> {
-    this.columns.applySnaphot(snapshot);
-    this.sorts.applySnaphot(snapshot);
+    const configuration = DataCubeConfiguration.serialization.fromJson(
+      snapshot.data.configuration,
+    );
 
-    this.generalProperties.applySnaphot(snapshot);
-    this.columnProperties.applySnaphot(snapshot);
+    this.columns.applySnaphot(snapshot, configuration);
+    this.sorts.applySnaphot(snapshot, configuration);
+
+    this.generalProperties.applySnaphot(snapshot, configuration);
+    this.columnProperties.applySnaphot(snapshot, configuration);
   }
 
   override async initialize(): Promise<void> {

@@ -45,6 +45,7 @@ import {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
 } from '../core/DataCubeConfiguration.js';
+import { buildDefaultColumnConfiguration } from '../core/DataCubeConfigurationBuilder.js';
 
 export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfiguration {
   aggregateFunction?: DataCubeAggregateFunction | undefined;
@@ -167,6 +168,17 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     });
 
     return configuration;
+  }
+
+  static createDefault(column: {
+    name: string;
+    type: string;
+  }): DataCubeMutableColumnConfiguration {
+    return DataCubeMutableColumnConfiguration.create(
+      DataCubeColumnConfiguration.serialization.toJson(
+        buildDefaultColumnConfiguration(column),
+      ),
+    );
   }
 
   serialize(): PlainObject<DataCubeColumnConfiguration> {

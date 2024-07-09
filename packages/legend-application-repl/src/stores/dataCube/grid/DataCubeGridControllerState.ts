@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import {
   type DataCubeColumnConfiguration,
   DataCubeConfiguration,
@@ -46,6 +46,8 @@ import { generateMenuBuilder } from './DataCubeGridMenuBuilder.js';
  */
 export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber {
   configuration = new DataCubeConfiguration();
+  selectableColumns: DataCubeQuerySnapshotColumn[] = [];
+  selectColumns: DataCubeQuerySnapshotColumn[] = [];
 
   sortableColumns: DataCubeQuerySnapshotColumn[] = [];
   sortColumns: DataCubeQuerySnapshotSortColumn[] = [];
@@ -124,15 +126,27 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber
     }
   }
 
+  rearrangeColumns(columnByNames: string[]) {
+    this.configuration.columns = columnByNames
+      .map((colName) => this.getColumnConfiguration(colName))
+      .filter(isNonNullable);
+    this.selectColumns = this.configuration.columns
+      .map((column) =>
+        this.selectColumns.find((col) => col.name === column.name),
+      )
+      .filter(isNonNullable);
+    this.applyChanges();
+  }
+
   removeAllPins() {
     this.configuration.columns.forEach((col) => (col.pinned = undefined));
     this.applyChanges();
   }
 
-  hideColumn(colName: string | undefined): void {
+  showColumn(colName: string | undefined, isVisible: boolean): void {
     const columnConfiguration = this.getColumnConfiguration(colName);
     if (columnConfiguration) {
-      columnConfiguration.hideFromView = true;
+      columnConfiguration.hideFromView = !isVisible;
       this.applyChanges();
     }
   }
@@ -141,6 +155,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const snapshot = baseSnapshot.clone();
 
+    snapshot.data.selectColumns = this.selectColumns;
     snapshot.data.sortColumns = this.sortColumns;
     snapshot.data.configuration = DataCubeConfiguration.serialization.toJson(
       this.configuration,
@@ -157,6 +172,9 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber
     previousSnapshot: DataCubeQuerySnapshot | undefined,
   ): Promise<void> {
     const newSnapshot = snapshot.clone();
+
+    this.selectableColumns = newSnapshot.stageCols('select');
+    this.selectColumns = newSnapshot.data.selectColumns;
 
     this.sortableColumns = newSnapshot.stageCols('sort');
     this.sortColumns = newSnapshot.data.sortColumns;

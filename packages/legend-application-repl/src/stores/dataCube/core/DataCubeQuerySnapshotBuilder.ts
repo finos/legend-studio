@@ -332,8 +332,13 @@ export function validateAndBuildQuerySnapshot(
   );
   const data = snapshot.data;
   const colsMap = new Map<string, DataCubeQuerySnapshotColumn>();
-  const _col = (colSpec: V1_ColSpec) =>
-    guaranteeNonNullable(colsMap.get(colSpec.name));
+  const _col = (colSpec: V1_ColSpec) => {
+    const column = guaranteeNonNullable(colsMap.get(colSpec.name));
+    return {
+      name: column.name,
+      type: column.type,
+    };
+  };
 
   // --------------------------------- SOURCE ---------------------------------
 

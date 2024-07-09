@@ -28,6 +28,7 @@ import {
   DataCubeEditorColumnsSelectorState,
 } from './DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
+import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
 export class DataCubeEditorSortColumnState extends DataCubeEditorColumnsSelectorColumnState {
   readonly column: DataCubeQuerySnapshotColumn;
@@ -77,7 +78,10 @@ export class DataCubeEditorSortsPanelState
     });
   }
 
-  applySnaphot(snapshot: DataCubeQuerySnapshot): void {
+  applySnaphot(
+    snapshot: DataCubeQuerySnapshot,
+    configuration: DataCubeConfiguration,
+  ): void {
     const columns = snapshot.stageCols('sort');
     const sortColumns = snapshot.data.sortColumns;
     this.selector.setAllAvailableColumns(

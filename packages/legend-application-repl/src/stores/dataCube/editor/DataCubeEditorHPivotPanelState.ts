@@ -15,6 +15,7 @@
  */
 
 import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
@@ -30,7 +31,10 @@ export class DataCubeEditorGeneralPropertiesPanelState
     this.dataCube = editor.dataCube;
   }
 
-  applySnaphot(snapshot: DataCubeQuerySnapshot): void {
+  applySnaphot(
+    snapshot: DataCubeQuerySnapshot,
+    configuration: DataCubeConfiguration,
+  ): void {
     // TODO
   }
 

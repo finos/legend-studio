@@ -479,7 +479,7 @@ export function generateMenuBuilder(
       },
       {
         name: 'Hide',
-        action: () => controller.hideColumn(columnName),
+        action: () => controller.showColumn(columnName, false),
       },
       'separator',
       {

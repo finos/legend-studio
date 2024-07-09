@@ -20,10 +20,13 @@ import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
 import { DataCubeEditorCheckbox } from './DataCubeEditorShared.js';
 import { DataCubeEditorColumnsSelectorColumnsVisibility } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
+import { useEffect } from 'react';
 
 export const DataCubeEditorColumnsPanel = observer(() => {
   const replStore = useREPLStore();
   const panel = replStore.dataCube.editor.columns;
+
+  useEffect(() => () => panel.propagateColumnSelectionChanges(), [panel]);
 
   return (
     <div className="h-full w-full select-none p-2">

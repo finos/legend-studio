@@ -20,7 +20,12 @@ import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { DataCubeMutableColumnConfiguration } from './DataCubeMutableConfiguration.js';
-import { getNonNullableEntry, type PlainObject } from '@finos/legend-shared';
+import {
+  getNonNullableEntry,
+  isNonNullable,
+  type PlainObject,
+} from '@finos/legend-shared';
+import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
 export class DataCubeEditorColumnPropertiesPanelState
   implements DataCubeQueryEditorPanelState
@@ -90,7 +95,10 @@ export class DataCubeEditorColumnPropertiesPanelState
     this.showAdvancedSettings = val;
   }
 
-  applySnaphot(snapshot: DataCubeQuerySnapshot): void {
+  applySnaphot(
+    snapshot: DataCubeQuerySnapshot,
+    configuration: DataCubeConfiguration,
+  ): void {
     this.setColumns(
       (snapshot.data.configuration as { columns: PlainObject[] }).columns.map(
         (column) => DataCubeMutableColumnConfiguration.create(column),
@@ -109,7 +117,12 @@ export class DataCubeEditorColumnPropertiesPanelState
   ): void {
     newSnapshot.data.configuration = {
       ...newSnapshot.data.configuration,
-      columns: this.configurableColumns.map((column) => column.serialize()),
+      // NOTE: make sure the order of column configurations is consistent with the order of selected columns
+      // as this would later be used to determine of order of displayed columns in the grid
+      columns: this.editor.columns.selector.allSelectedColumns
+        .map((col) => this.columns.find((column) => column.name === col.name))
+        .filter(isNonNullable)
+        .map((column) => column.serialize()),
     };
   }
 }
