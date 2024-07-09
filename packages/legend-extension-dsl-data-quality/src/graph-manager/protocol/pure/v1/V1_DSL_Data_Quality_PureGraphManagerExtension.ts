@@ -16,15 +16,19 @@
 
 import {
   type AbstractPureGraphManager,
-  type RawExecutionPlan,
   type ExecutionResult,
-  type PureModel,
-  type RootGraphFetchTree,
   type GraphDataOrigin,
-  type V1_RootGraphFetchTree,
+  type PureModel,
+  type RawExecutionPlan,
+  type RootGraphFetchTree,
+  type V1_ExecutionResult,
   type V1_PureModelContext,
+  type V1_RootGraphFetchTree,
   LegendSDLC,
   PureClientVersion,
+  V1_buildExecutionError,
+  V1_buildExecutionResult,
+  V1_ExecutionError,
   V1_GraphBuilderContextBuilder,
   V1_LegendSDLC,
   V1_ProcessingContext,
@@ -32,17 +36,22 @@ import {
   V1_PureGraphManager,
   V1_PureModelContextPointer,
   V1_pureModelContextPropSchema,
+  V1_serializeExecutionResult,
 } from '@finos/legend-graph';
 import { createModelSchema, optional, primitive } from 'serializr';
 import {
+  type PlainObject,
+  assertErrorThrown,
   guaranteeType,
+  NetworkClientError,
+  returnUndefOnError,
   SerializationFactory,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { DSL_DataQuality_PureGraphManagerExtension } from '../DSL_DataQuality_PureGraphManagerExtension.js';
 import {
-  V1_transformRootGraphFetchTreeToDataQualityRootGraphFetchTree,
   V1_buildDataQualityGraphFetchTree,
+  V1_transformRootGraphFetchTreeToDataQualityRootGraphFetchTree,
 } from './transformation/V1_ValueSpecificationBuilderHelper.js';
 import type { DataQualityRootGraphFetchTree } from '../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
 
@@ -96,6 +105,40 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       );
     }
     throw new UnsupportedOperationError('Unsupported graph origin');
+  }
+
+  private executeValidation = (
+    input: PlainObject<V1_DQExecuteInput>,
+    options?: {
+      returnAsResponse?: boolean;
+    },
+  ): Promise<PlainObject<V1_ExecutionResult> | Response> => {
+    const engineServerClient = this.graphManager.engine.getEngineServerClient();
+    return engineServerClient.postWithTracing(
+      engineServerClient.getTraceData(DQ_EXECUTE_PLAN),
+      `${engineServerClient._pure()}/dataquality/execute`,
+      input,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+      {
+        skipProcessing: Boolean(options?.returnAsResponse),
+      },
+    );
+  };
+
+  private async runValidationAndReturnString(
+    input: V1_DQExecuteInput,
+  ): Promise<string> {
+    return (
+      (await this.executeValidation(
+        V1_DQExecuteInput.serialization.toJson(input),
+        {
+          returnAsResponse: true,
+        },
+      )) as Response
+    ).text();
   }
 
   createExecutionInput(
@@ -154,18 +197,30 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       new V1_DQExecuteInput(),
     );
 
-    const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
-    const engineServerClient = this.graphManager.engine.getEngineServerClient();
-
-    return engineServerClient.postWithTracing(
-      engineServerClient.getTraceData(DQ_EXECUTE_PLAN),
-      `${engineServerClient._pure()}/dataquality/execute`,
-      serializedInput,
-      {},
-      undefined,
-      undefined,
-      { enableCompression: true },
-    );
+    try {
+      const validationResultInText =
+        await this.runValidationAndReturnString(input);
+      const rawExecutionResult =
+        returnUndefOnError(() =>
+          this.graphManager.engine.parseExecutionResults(
+            validationResultInText,
+            undefined,
+          ),
+        ) ?? validationResultInText;
+      const v1_executionResult =
+        V1_serializeExecutionResult(rawExecutionResult);
+      return V1_buildExecutionResult(v1_executionResult);
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof NetworkClientError) {
+        throw V1_buildExecutionError(
+          V1_ExecutionError.serialization.fromJson(
+            error.payload as PlainObject<V1_ExecutionError>,
+          ),
+        );
+      }
+      throw error;
+    }
   };
 
   debugExecutionPlanGeneration = async (

@@ -2800,7 +2800,7 @@ __metadata:
     cross-env: "npm:7.0.3"
     eslint: "npm:8.57.0"
     jest: "npm:29.7.0"
-    mobx: "npm:6.12.3"
+    mobx: "npm:6.13.0"
     mobx-react-lite: "npm:4.0.7"
     npm-run-all: "npm:4.1.5"
     react: "npm:18.3.1"
@@ -13679,13 +13679,6 @@ __metadata:
   peerDependencies:
     mobx: ^6.0.0
   checksum: 10/b2824be91bab1549c10301fe4afb197535ae772df5e412059a85b7b65263a4ff7024020743ce591f1a90ddc7ff97f81adb079722d30f2322d084062ebb061fd3
-  languageName: node
-  linkType: hard
-
-"mobx@npm:6.12.3":
-  version: 6.12.3
-  resolution: "mobx@npm:6.12.3"
-  checksum: 10/093b71f91f1f1962b34c3d937ce6906dddd2318c74655962211a8f94f0c2e1b02d970d0ac60ee753b054cc1de44d976a142dc5b77872e21191c6bb554a65b23b
   languageName: node
   linkType: hard
 
