@@ -36,10 +36,10 @@ export function buildGridMenu(
   const context = params.context;
   const dataCube = context.dataCube;
   const editor = dataCube.editor;
+  const controller = dataCube.grid.controller;
   const column = params.column ?? undefined;
-  const columnConfiguration = editor.columnProperties.getColumnConfiguration(
-    column?.getColId(),
-  );
+  const columnName = column?.getColId();
+  const columnConfiguration = controller.getColumnConfiguration(columnName);
   const value: unknown = 'value' in params ? params.value : undefined;
 
   const result: (string | MenuItemDef)[] = [
@@ -169,7 +169,7 @@ export function buildGridMenu(
       ],
     },
     'separator',
-    buildGridSortsMenu(editor, column, value),
+    buildGridSortsMenu(controller, column, value),
     {
       name: 'Filter',
       menuItem: WIP_GridMenuItem,
@@ -349,7 +349,8 @@ export function buildGridMenu(
           name: `Minimize All Columns`,
           action: () => {
             params.api.setColumnWidths(
-              dataCube.editor.columnProperties.columns.map((col) => ({
+              // TODO: take care of pivot columns
+              controller.configuration.columns.map((col) => ({
                 key: col.name,
                 newWidth:
                   columnConfiguration?.minWidth ?? DEFAULT_COLUMN_MIN_WIDTH,
@@ -370,40 +371,28 @@ export function buildGridMenu(
           name: `Pin Left`,
           disabled: !column || column.isPinnedLeft(),
           checked: Boolean(column?.isPinnedLeft()),
-          action: () => {
-            columnConfiguration?.setPinned(DataCubeColumnPinPlacement.LEFT);
-            editor.applyChanges();
-          },
+          action: () =>
+            controller.pinColumn(columnName, DataCubeColumnPinPlacement.LEFT),
         },
         {
           name: `Pin Right`,
           disabled: !column || column.isPinnedRight(),
           checked: Boolean(column?.isPinnedRight()),
-          action: () => {
-            columnConfiguration?.setPinned(DataCubeColumnPinPlacement.RIGHT);
-            editor.applyChanges();
-          },
+          action: () =>
+            controller.pinColumn(columnName, DataCubeColumnPinPlacement.RIGHT),
         },
         {
           name: `Unpin`,
           disabled: !column?.isPinned(),
-          action: () => {
-            columnConfiguration?.setPinned(undefined);
-            editor.applyChanges();
-          },
+          action: () => controller.pinColumn(columnName, undefined),
         },
         'separator',
         {
           name: `Remove All Pinnings`,
-          disabled: editor.columnProperties.columns.every(
+          disabled: controller.configuration.columns.every(
             (col) => col.pinned === undefined,
           ),
-          action: () => {
-            editor.columnProperties.columns.forEach((col) =>
-              col.setPinned(undefined),
-            );
-            editor.applyChanges();
-          },
+          action: () => controller.removeAllPins(),
         },
       ],
     },

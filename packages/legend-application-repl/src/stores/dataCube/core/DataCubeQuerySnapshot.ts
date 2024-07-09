@@ -156,11 +156,11 @@ export class DataCubeQuerySnapshot {
       configuration,
       originalColumns: [],
       leafExtendedColumns: [],
+      selectColumns: [],
       filter: undefined,
       groupBy: undefined,
       pivot: undefined,
       groupExtendedColumns: [],
-      selectColumns: [],
       sortColumns: [],
       limit: undefined,
     };

@@ -15,12 +15,12 @@
  */
 
 import type { Column, MenuItemDef } from '@ag-grid-community/core';
-import type { DataCubeEditorState } from '../../../../stores/dataCube/editor/DataCubeEditorState.js';
 import { DataCubeQuerySnapshotSortOperation } from '../../../../stores/dataCube/core/DataCubeQuerySnapshot.js';
 import { WIP_GridMenuItem } from '../DataCubeGridShared.js';
+import type { DataCubeGridControllerState } from '../../../../stores/dataCube/grid/DataCubeGridControllerState.js';
 
 export function buildGridSortsMenu(
-  editor: DataCubeEditorState,
+  controller: DataCubeGridControllerState,
   column: Column | undefined,
   value: unknown,
 ): MenuItemDef {
@@ -31,19 +31,20 @@ export function buildGridSortsMenu(
       subMenu: [],
     };
   }
+  const colName = column.getColId();
 
   return {
     name: 'Sort',
     subMenu: [
       {
         name: 'Ascending',
-        disabled: !editor.sorts.getActionableSortColumn(
-          column.getColId(),
+        disabled: !controller.getActionableSortColumn(
+          colName,
           DataCubeQuerySnapshotSortOperation.ASCENDING,
         ),
         action: () =>
-          editor.sorts.sortByColumn(
-            column.getColId(),
+          controller.sortByColumn(
+            colName,
             DataCubeQuerySnapshotSortOperation.ASCENDING,
           ),
       },
@@ -55,13 +56,13 @@ export function buildGridSortsMenu(
       },
       {
         name: 'Descending',
-        disabled: !editor.sorts.getActionableSortColumn(
-          column.getColId(),
+        disabled: !controller.getActionableSortColumn(
+          colName,
           DataCubeQuerySnapshotSortOperation.DESCENDING,
         ),
         action: () =>
-          editor.sorts.sortByColumn(
-            column.getColId(),
+          controller.sortByColumn(
+            colName,
             DataCubeQuerySnapshotSortOperation.DESCENDING,
           ),
       },
@@ -74,13 +75,13 @@ export function buildGridSortsMenu(
       'separator',
       {
         name: 'Add Ascending',
-        disabled: !editor.sorts.getActionableSortColumn(
-          column.getColId(),
+        disabled: !controller.getActionableSortColumn(
+          colName,
           DataCubeQuerySnapshotSortOperation.ASCENDING,
         ),
         action: () =>
-          editor.sorts.addSortByColumn(
-            column.getColId(),
+          controller.addSortByColumn(
+            colName,
             DataCubeQuerySnapshotSortOperation.ASCENDING,
           ),
       },
@@ -92,13 +93,13 @@ export function buildGridSortsMenu(
       },
       {
         name: 'Add Descending',
-        disabled: !editor.sorts.getActionableSortColumn(
-          column.getColId(),
+        disabled: !controller.getActionableSortColumn(
+          colName,
           DataCubeQuerySnapshotSortOperation.DESCENDING,
         ),
         action: () =>
-          editor.sorts.addSortByColumn(
-            column.getColId(),
+          controller.addSortByColumn(
+            colName,
             DataCubeQuerySnapshotSortOperation.DESCENDING,
           ),
       },
@@ -111,8 +112,8 @@ export function buildGridSortsMenu(
       'separator',
       {
         name: 'Clear All Sorts',
-        disabled: editor.sorts.selector.selectedColumns.length === 0,
-        action: () => editor.sorts.clearAllSorts(),
+        disabled: controller.sortColumns.length === 0,
+        action: () => controller.clearAllSorts(),
       },
     ],
   };

@@ -557,19 +557,15 @@ export function generateGridOptionsFromSnapshot(
     onColumnPinned: (event) => {
       if (event.column) {
         const column = event.column;
-        const columnConfiguration =
-          dataCube.editor.columnProperties.getColumnConfiguration(
-            column.getColId(),
-          );
         const pinned = column.getPinned();
-        columnConfiguration?.setPinned(
+        dataCube.grid.controller.pinColumn(
+          column.getColId(),
           pinned === null
             ? undefined
             : pinned === GridClientPinnedAlignement.LEFT
               ? DataCubeColumnPinPlacement.LEFT
               : DataCubeColumnPinPlacement.RIGHT,
         );
-        dataCube.editor.applyChanges();
       }
     },
 
