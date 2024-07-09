@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.10.9
+
+### Patch Changes
+
+- [#3326](https://github.com/finos/legend-studio/pull/3326) [`4fc2e94`](https://github.com/finos/legend-studio/commit/4fc2e94e90947a351b76e220825967922d0bf3a6) ([@viju4076](https://github.com/viju4076)) - dq validation bug fix
+
 ## 31.10.8
 
 ### Patch Changes
