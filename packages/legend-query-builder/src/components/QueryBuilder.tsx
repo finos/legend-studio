@@ -1036,6 +1036,14 @@ export const QueryBuilder = observer(
                           {renderPostFetchStructure()}
                         </ResizablePanel>
                       )}
+                      {queryBuilderState.isQueryChatOpened && (
+                        <ResizablePanelSplitter />
+                      )}
+                      {queryBuilderState.isQueryChatOpened && (
+                        <ResizablePanel minSize={300}>
+                          <QueryChat queryBuilderState={queryBuilderState} />
+                        </ResizablePanel>
+                      )}
                     </ResizablePanelGroup>
                   ) : (
                     <QueryBuilderUnsupportedQueryEditor
@@ -1056,9 +1064,6 @@ export const QueryBuilder = observer(
               </ResizablePanelGroup>
             </div>
           </div>
-          {queryBuilderState.isQueryChatOpened && (
-            <QueryChat queryBuilderState={queryBuilderState} />
-          )}
           {queryBuilderState.textEditorState.mode && (
             <QueryBuilderTextEditor queryBuilderState={queryBuilderState} />
           )}
