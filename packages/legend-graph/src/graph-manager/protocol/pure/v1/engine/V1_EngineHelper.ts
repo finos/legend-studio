@@ -113,6 +113,8 @@ export const V1_buildLightQuery = (
   );
   metamodel.owner = protocol.owner;
   metamodel.lastUpdatedAt = protocol.lastUpdatedAt;
+  metamodel.createdAt = protocol.createdAt;
+  metamodel.lastOpenAt = protocol.lastOpenAt;
   metamodel.isCurrentUserQuery =
     currentUserId !== undefined && protocol.owner === currentUserId;
   return metamodel;

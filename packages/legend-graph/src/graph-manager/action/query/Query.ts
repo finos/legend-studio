@@ -87,6 +87,8 @@ export class Query {
   runtime?: PackageableElementReference<PackageableRuntime> | undefined;
 
   lastUpdatedAt?: number | undefined;
+  createdAt?: number | undefined;
+  lastOpenAt?: number | undefined;
   isCurrentUserQuery = false;
   gridConfig?: QueryGridConfig | undefined;
 }
@@ -100,6 +102,8 @@ export class LightQuery {
   artifactId!: string;
   owner?: string | undefined;
   lastUpdatedAt?: number | undefined;
+  createdAt?: number | undefined;
+  lastOpenAt?: number | undefined;
 
   isCurrentUserQuery = false;
 }
@@ -114,6 +118,9 @@ export const toLightQuery = (query: Query): LightQuery => {
   lightQuery.originalVersionId = query.originalVersionId;
   lightQuery.owner = query.owner;
   lightQuery.isCurrentUserQuery = query.isCurrentUserQuery;
+  lightQuery.lastOpenAt = query.lastOpenAt;
+  lightQuery.createdAt = query.createdAt;
+  lightQuery.lastUpdatedAt = query.lastUpdatedAt;
   return lightQuery;
 };
 
