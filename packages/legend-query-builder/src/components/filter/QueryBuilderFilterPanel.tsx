@@ -88,6 +88,7 @@ import {
   getNullableFirstEntry,
   guaranteeNonNullable,
   guaranteeType,
+  prettyCONSTName,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
@@ -925,7 +926,7 @@ export const QueryBuilderExplorerTreeNodeBadge = observer(
           className="query-builder-column-badge__property"
           title={`${node.property.name}`}
         >
-          {node.property.name}
+          {prettyCONSTName(node.property.name)}
         </div>
         {/* <QueryBuilderColumnInfoTooltip
           columnState={colState}
