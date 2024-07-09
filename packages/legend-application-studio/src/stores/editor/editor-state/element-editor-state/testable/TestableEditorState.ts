@@ -20,6 +20,9 @@ import {
   type Testable,
   type TestAssertion,
   type TestResult,
+  type TestDebug,
+  UnknownTestDebug,
+  TestExecutionPlanDebug,
   TestExecuted,
   UniqueTestId,
   RunTestsTestableInput,
@@ -56,6 +59,7 @@ import {
   TEST_ASSERTION_TAB,
 } from './TestAssertionState.js';
 import type { ElementEditorState } from '../ElementEditorState.js';
+import { ExecutionPlanState } from '@finos/legend-query-builder';
 
 export class TestableTestResultState {
   readonly editorStore: EditorStore;
@@ -77,6 +81,90 @@ export class TestableTestResultState {
   }
 }
 
+export abstract class TestableDebugTestResultState {
+  readonly editorStore: EditorStore;
+  readonly testState: TestableTestEditorState;
+  testDebug: TestDebug | undefined;
+
+  constructor(testState: TestableTestEditorState, editorStore: EditorStore) {
+    this.editorStore = editorStore;
+    this.testState = testState;
+  }
+
+  abstract initialize(): TestableDebugTestResultState;
+}
+
+export class TestExecutionPlanDebugState extends TestableDebugTestResultState {
+  declare testDebug: TestExecutionPlanDebug;
+  executionPlanState: ExecutionPlanState;
+
+  constructor(
+    result: TestExecutionPlanDebug,
+    testState: TestableTestEditorState,
+    editorStore: EditorStore,
+  ) {
+    super(testState, editorStore);
+    this.testDebug = result;
+    this.executionPlanState = new ExecutionPlanState(
+      this.editorStore.applicationStore,
+      this.editorStore.graphManagerState,
+    );
+    makeObservable(this, {
+      executionPlanState: observable,
+      initialize: action,
+    });
+  }
+
+  override initialize(): TestableDebugTestResultState {
+    try {
+      this.executionPlanState.setRawPlan(this.testDebug.executionPlan);
+      const rawPlan = this.testDebug.executionPlan;
+      if (rawPlan) {
+        const plan =
+          this.editorStore.graphManagerState.graphManager.buildExecutionPlan(
+            rawPlan,
+            this.editorStore.graphManagerState.graph,
+          );
+        this.executionPlanState.initialize(plan);
+      }
+    } catch {
+      // do nothing
+    }
+    const debug = this.testDebug.debug?.join('\n');
+    if (debug) {
+      this.executionPlanState.setDebugText(debug);
+    }
+    if (this.testDebug.error) {
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Error generating exec plan: ${this.testDebug.error}`,
+      );
+    }
+    return this;
+  }
+}
+
+export class TestUnknownDebugState extends TestableDebugTestResultState {
+  declare testDebug: UnknownTestDebug;
+  executionPlanState: ExecutionPlanState;
+
+  constructor(
+    result: UnknownTestDebug,
+    testState: TestableTestEditorState,
+    editorStore: EditorStore,
+  ) {
+    super(testState, editorStore);
+    this.testDebug = result;
+    this.executionPlanState = new ExecutionPlanState(
+      this.editorStore.applicationStore,
+      this.editorStore.graphManagerState,
+    );
+  }
+
+  override initialize(): TestableDebugTestResultState {
+    return this;
+  }
+}
+
 export enum TESTABLE_TEST_TAB {
   SETUP = 'SETUP',
   ASSERTION = 'ASSERTION',
@@ -92,7 +180,9 @@ export abstract class TestableTestEditorState {
   assertionToRename: TestAssertion | undefined;
   runningTestAction = ActionState.create();
   testResultState: TestableTestResultState;
+  debugTestResultState: TestableDebugTestResultState | undefined;
   isReadOnly: boolean;
+  debuggingTestAction = ActionState.create();
 
   constructor(
     testable: Testable,
@@ -156,6 +246,26 @@ export abstract class TestableTestEditorState {
     input.unitTestIds.push(new UniqueTestId(suite, this.test));
     const testResults =
       await this.editorStore.graphManagerState.graphManager.runTests(
+        [input],
+        this.editorStore.graphManagerState.graph,
+      );
+    const result = guaranteeNonNullable(testResults[0]);
+    assertTrue(
+      result.testable === this.testable &&
+        result.atomicTest.id === this.test.id,
+      'Unexpected test result',
+    );
+    return result;
+  }
+
+  // Fetches test results. Caller of test should catch the error
+  async fetchDebugTestResult(): Promise<TestDebug> {
+    const input = new RunTestsTestableInput(this.testable);
+    const suite =
+      this.test.__parent instanceof TestSuite ? this.test.__parent : undefined;
+    input.unitTestIds.push(new UniqueTestId(suite, this.test));
+    const testResults =
+      await this.editorStore.graphManagerState.graphManager.debugTests(
         [input],
         this.editorStore.graphManagerState.graph,
       );
@@ -238,6 +348,44 @@ export abstract class TestableTestEditorState {
       );
       this.runningTestAction.fail();
     }
+  }
+
+  *debugTest(): GeneratorFn<void> {
+    try {
+      this.setDebugState(undefined);
+      this.debuggingTestAction.inProgress();
+      const result = (yield flowResult(
+        this.fetchDebugTestResult(),
+      )) as TestDebug;
+      const debugState = guaranteeNonNullable(
+        this.buildTestDebugState(result),
+        `can't build debug state for test: ${result.atomicTest.id}`,
+      );
+      this.setDebugState(debugState.initialize());
+      this.debuggingTestAction.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.debugTestResultState = undefined;
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Error running test: ${error.message}`,
+      );
+      this.debuggingTestAction.fail();
+    }
+  }
+
+  setDebugState(val: TestableDebugTestResultState | undefined): void {
+    this.debugTestResultState = val;
+  }
+
+  buildTestDebugState(
+    testDebug: TestDebug,
+  ): TestableDebugTestResultState | undefined {
+    if (testDebug instanceof TestExecutionPlanDebug) {
+      return new TestExecutionPlanDebugState(testDebug, this, this.editorStore);
+    } else if (testDebug instanceof UnknownTestDebug) {
+      return new TestUnknownDebugState(testDebug, this, this.editorStore);
+    }
+    return undefined;
   }
 }
 

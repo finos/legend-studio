@@ -71,6 +71,11 @@ import {
   V1_functionTestSuiteModelSchema,
 } from './V1_FunctionSeriaizationHelper.js';
 import { V1_FunctionTest } from '../../../model/packageableElements/function/test/V1_FunctionTest.js';
+import {
+  type V1_TestDebug,
+  V1_TestExecutionPlanDebug,
+  V1_UnknownTestDebug,
+} from '../../../engine/test/V1_DebugTestsResult.js';
 
 enum V1_AssertionStatusType {
   ASSERT_FAIL = 'assertFail',
@@ -90,6 +95,10 @@ enum V1_TestResultType {
   MULTI_EXECUTION_TEST_RESULT = 'multiExecutionTestResult',
   // Remove once https://github.com/finos/legend-engine/pull/808 is released
   TEMPROARY_MULTI_EXECUTION_TEST_RESULT = 'MultiExecutionServiceTestResult',
+}
+
+enum V1_DebugTestResultType {
+  PLAN_DEBUG = 'testExecutionPlanDebug',
 }
 
 export enum V1_TestSuiteType {
@@ -185,6 +194,28 @@ export const V1_testErrorModelSchema = createModelSchema(V1_TestError, {
   testSuiteId: primitive(),
 });
 
+export const V1_TestExecutionPlanDebugSchema = createModelSchema(
+  V1_TestExecutionPlanDebug,
+  {
+    atomicTestId: primitive(),
+    error: optional(primitive()),
+    testable: primitive(),
+    testSuiteId: primitive(),
+    executionPlan: optional(raw()),
+    debug: optional(list(primitive())),
+  },
+);
+
+export const V1_UnknownTestDebugSchema = createModelSchema(
+  V1_UnknownTestDebug,
+  {
+    atomicTestId: primitive(),
+    error: optional(primitive()),
+    testable: primitive(),
+    testSuiteId: primitive(),
+  },
+);
+
 export const V1_testExecutedModelSchema = createModelSchema(V1_TestExecuted, {
   assertStatuses: list(
     custom(
@@ -229,6 +260,20 @@ export function V1_deserializeTestResult(
       throw new UnsupportedOperationError(
         `Can't deserialize atomic test of type '${json._type}'`,
       );
+  }
+}
+
+export function V1_deserializeDebugTestResult(
+  json: PlainObject<V1_TestDebug>,
+): V1_TestDebug {
+  switch (json._type) {
+    case V1_DebugTestResultType.PLAN_DEBUG:
+      return deserialize(V1_TestExecutionPlanDebugSchema, json);
+    default: {
+      const unknown = deserialize(V1_UnknownTestDebugSchema, json);
+      unknown.value = json;
+      return unknown;
+    }
   }
 }
 

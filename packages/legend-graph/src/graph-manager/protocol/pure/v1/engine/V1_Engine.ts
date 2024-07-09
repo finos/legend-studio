@@ -146,6 +146,7 @@ import {
 import { V1_RelationalConnectionBuilder } from './relational/V1_RelationalConnectionBuilder.js';
 import { V1_DeploymentResult } from './functionActivator/V1_DeploymentResult.js';
 import type { PostValidationAssertionResult } from '../../../../../DSL_Service_Exports.js';
+import { V1_DebugTestsResult } from './test/V1_DebugTestsResult.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -838,6 +839,13 @@ export class V1_Engine {
       V1_RunTestsInput.serialization.toJson(input),
     )) as unknown as PlainObject<V1_RunTestsResult>;
     return V1_RunTestsResult.serialization.fromJson(result);
+  }
+
+  async debugTests(input: V1_RunTestsInput): Promise<V1_DebugTestsResult> {
+    const result = (await this.engineServerClient.debugTests(
+      V1_RunTestsInput.serialization.toJson(input),
+    )) as unknown as PlainObject<V1_DebugTestsResult>;
+    return V1_DebugTestsResult.serialization.fromJson(result);
   }
 
   // -------------------------------------------  Generation -------------------------------------------
