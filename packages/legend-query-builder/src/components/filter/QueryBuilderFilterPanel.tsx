@@ -112,7 +112,6 @@ import {
 } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnDragSource,
-  type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
 } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
@@ -139,11 +138,11 @@ import {
   QueryBuilderFilterOperator_NotIn,
 } from '../../stores/filter/operators/QueryBuilderFilterOperator_In.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
-import { QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE } from '../../stores/fetch-structure/tds/window/QueryBuilderWindowState.js';
 import {
   QueryBuilderColumnInfoTooltip,
   renderPropertyTypeIcon,
 } from '../fetch-structure/QueryBuilderTDSComponentHelper.js';
+import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 
 export const CAN_DROP_MAIN_GROUP_DND_TYPES_FETCH_SUPPORTED = [
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
@@ -770,94 +769,50 @@ export const QueryBuilderColumnBadge = observer(
   (props: {
     colState: QueryBuilderTDSColumnState;
     removeColumn: () => void;
-    onColumnChange?:
-      | ((columnState: QueryBuilderProjectionColumnState) => Promise<void>)
-      | undefined;
   }) => {
-    const { colState, onColumnChange, removeColumn } = props;
-    const applicationStore = useApplicationStore();
+    const { colState, removeColumn } = props;
     const type = colState.getColumnType();
-    const handleDrop = onColumnChange
-      ? useCallback(
-          (item: QueryBuilderProjectionColumnDragSource): Promise<void> =>
-            onColumnChange(item.columnState),
-          [onColumnChange],
-        )
-      : undefined;
-    const [{ isDragOver }, dropConnector] = useDrop<
-      QueryBuilderProjectionColumnDragSource,
-      void,
-      { isDragOver: boolean }
-    >(
-      () => ({
-        accept: [
-          QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-          QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
-        ],
-        drop: (item, monitor): void => {
-          if (!monitor.didDrop()) {
-            handleDrop?.(item).catch(applicationStore.alertUnhandledError);
-          } // prevent drop event propagation to accomondate for nested DnD
-        },
-        collect: (monitor) => ({
-          isDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [applicationStore, handleDrop],
-    );
 
-    const renderColumnBadgeContent = (): React.ReactNode => (
-      <div className="query-builder-column-badge__content">
-        {type && (
-          <div
-            className={clsx('query-builder-column-badge__type', {
-              'query-builder-column-badge__type--class': type instanceof Class,
-              'query-builder-column-badge__type--enumeration':
-                type instanceof Enumeration,
-              'query-builder-column-badge__type--primitive':
-                type instanceof PrimitiveType,
-            })}
-          >
-            {renderPropertyTypeIcon(type)}
-          </div>
-        )}
-        <div
-          className="query-builder-column-badge__property"
-          title={`${colState.columnName}`}
-        >
-          {colState.columnName}
-        </div>
-        <QueryBuilderColumnInfoTooltip
-          columnState={colState}
-          placement="bottom-end"
-        >
-          <div className="query-builder-column-badge__property__info">
-            <InfoCircleIcon />
-          </div>
-        </QueryBuilderColumnInfoTooltip>
-        <button
-          className="query-builder-column-badge__action"
-          name="Reset"
-          title="Reset"
-          onClick={removeColumn}
-        >
-          <RefreshIcon />
-        </button>
-      </div>
-    );
-
-    return onColumnChange ? (
-      <div ref={dropConnector} className="query-builder-column-badge">
-        <PanelEntryDropZonePlaceholder
-          isDragOver={isDragOver}
-          label="Change Property"
-        >
-          {renderColumnBadgeContent()}
-        </PanelEntryDropZonePlaceholder>
-      </div>
-    ) : (
+    return (
       <div className="query-builder-column-badge">
-        {renderColumnBadgeContent()}
+        <div className="query-builder-column-badge__content">
+          {type && (
+            <div
+              className={clsx('query-builder-column-badge__type', {
+                'query-builder-column-badge__type--class':
+                  type instanceof Class,
+                'query-builder-column-badge__type--enumeration':
+                  type instanceof Enumeration,
+                'query-builder-column-badge__type--primitive':
+                  type instanceof PrimitiveType,
+              })}
+            >
+              {renderPropertyTypeIcon(type)}
+            </div>
+          )}
+          <div
+            className="query-builder-column-badge__property"
+            title={`${colState.columnName}`}
+          >
+            {colState.columnName}
+          </div>
+          <QueryBuilderColumnInfoTooltip
+            columnState={colState}
+            placement="bottom-end"
+          >
+            <div className="query-builder-column-badge__property__info">
+              <InfoCircleIcon />
+            </div>
+          </QueryBuilderColumnInfoTooltip>
+          <button
+            className="query-builder-column-badge__action"
+            name="Reset"
+            title="Reset"
+            onClick={removeColumn}
+          >
+            <RefreshIcon />
+          </button>
+        </div>
       </div>
     );
   },
@@ -867,98 +822,56 @@ export const QueryBuilderExplorerTreeNodeBadge = observer(
   (props: {
     node: QueryBuilderExplorerTreePropertyNodeData;
     removeNode: () => void;
-    onNodeChange?:
-      | ((
-          explorerNode: QueryBuilderExplorerTreePropertyNodeData,
-        ) => Promise<void>)
-      | undefined;
   }) => {
-    const { node, removeNode, onNodeChange } = props;
-    const applicationStore = useApplicationStore();
+    const { node, removeNode } = props;
     const type = node.type;
 
-    const handleDrop = onNodeChange
-      ? useCallback(
-          (item: QueryBuilderExplorerTreeDragSource): Promise<void> =>
-            onNodeChange(item.node),
-          [onNodeChange],
-        )
-      : undefined;
-
-    const [{ isDragOver }, dropConnector] = useDrop<
-      QueryBuilderExplorerTreeDragSource,
-      void,
-      { isDragOver: boolean }
-    >(
-      () => ({
-        accept: [
-          QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-          QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
-        ],
-        drop: (item, monitor): void => {
-          if (!monitor.didDrop()) {
-            handleDrop?.(item).catch(applicationStore.alertUnhandledError);
-          } // prevent drop event propagation to accomondate for nested DnD
-        },
-        collect: (monitor) => ({
-          isDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [applicationStore, handleDrop],
-    );
-
-    const renderColumnBadgeContent = (): React.ReactNode => (
-      <div className="query-builder-column-badge__content">
-        {type && (
-          <div
-            className={clsx('query-builder-column-badge__type', {
-              'query-builder-column-badge__type--class': type instanceof Class,
-              'query-builder-column-badge__type--enumeration':
-                type instanceof Enumeration,
-              'query-builder-column-badge__type--primitive':
-                type instanceof PrimitiveType,
-            })}
-          >
-            {renderPropertyTypeIcon(type)}
-          </div>
-        )}
-        <div
-          className="query-builder-column-badge__property"
-          title={`${node.property.name}`}
-        >
-          {prettyCONSTName(node.property.name)}
-        </div>
-        {/* <QueryBuilderColumnInfoTooltip
-          columnState={colState}
-          placement="bottom-end"
-        >
-          <div className="query-builder-column-badge__property__info">
-            <InfoCircleIcon />
-          </div>
-        </QueryBuilderColumnInfoTooltip> */}
-        <button
-          className="query-builder-column-badge__action"
-          name="Reset"
-          title="Reset"
-          onClick={removeNode}
-        >
-          <RefreshIcon />
-        </button>
-      </div>
-    );
-
-    return onNodeChange ? (
-      <div ref={dropConnector} className="query-builder-column-badge">
-        <PanelEntryDropZonePlaceholder
-          isDragOver={isDragOver}
-          label="Change Property"
-        >
-          {renderColumnBadgeContent()}
-        </PanelEntryDropZonePlaceholder>
-      </div>
-    ) : (
+    return (
       <div className="query-builder-column-badge">
-        {renderColumnBadgeContent()}
+        <div className="query-builder-column-badge__content">
+          {type && (
+            <div
+              className={clsx('query-builder-column-badge__type', {
+                'query-builder-column-badge__type--class':
+                  type instanceof Class,
+                'query-builder-column-badge__type--enumeration':
+                  type instanceof Enumeration,
+                'query-builder-column-badge__type--primitive':
+                  type instanceof PrimitiveType,
+              })}
+            >
+              {renderPropertyTypeIcon(type)}
+            </div>
+          )}
+          <div
+            className="query-builder-column-badge__property"
+            title={`${node.property.name}`}
+          >
+            {prettyCONSTName(node.property.name)}
+          </div>
+          <QueryBuilderPropertyInfoTooltip
+            title={prettyCONSTName(node.property.name)}
+            property={node.property}
+            path={node.id}
+            isMapped={node.mappingData.mapped}
+            type={node.type}
+          >
+            <div
+              className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info"
+              data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TOOLTIP_ICON}
+            >
+              <InfoCircleIcon />
+            </div>
+          </QueryBuilderPropertyInfoTooltip>
+          <button
+            className="query-builder-column-badge__action"
+            name="Reset"
+            title="Reset"
+            onClick={removeNode}
+          >
+            <RefreshIcon />
+          </button>
+        </div>
       </div>
     );
   },
@@ -1166,11 +1079,6 @@ const QueryBuilderFilterConditionEditor = observer(
       } else if (
         rightConditionValue instanceof FilterTDSColumnValueConditionValueState
       ) {
-        const changeRightCol = async (
-          columnState: QueryBuilderProjectionColumnState,
-        ): Promise<void> => {
-          rightConditionValue.changeCol(columnState);
-        };
         return (
           <div
             ref={dropConnector}
@@ -1183,9 +1091,6 @@ const QueryBuilderFilterConditionEditor = observer(
             >
               <QueryBuilderColumnBadge
                 colState={rightConditionValue.tdsColumn}
-                onColumnChange={
-                  isFilterValueDroppable ? changeRightCol : undefined
-                }
                 removeColumn={removeTDSColumnValue}
               />
             </PanelEntryDropZonePlaceholder>
@@ -1194,11 +1099,6 @@ const QueryBuilderFilterConditionEditor = observer(
       } else if (
         rightConditionValue instanceof FilterExplorerTreeNodeConditionValueState
       ) {
-        const changeExplorerTreeNode = async (
-          explorerNode: QueryBuilderExplorerTreePropertyNodeData,
-        ): Promise<void> => {
-          rightConditionValue.changeNode(explorerNode);
-        };
         return (
           <div
             ref={dropConnector}
@@ -1211,9 +1111,6 @@ const QueryBuilderFilterConditionEditor = observer(
             >
               <QueryBuilderExplorerTreeNodeBadge
                 node={rightConditionValue.node}
-                onNodeChange={
-                  isFilterValueDroppable ? changeExplorerTreeNode : undefined
-                }
                 removeNode={removeExplorerTreeNodeValue}
               />
             </PanelEntryDropZonePlaceholder>
