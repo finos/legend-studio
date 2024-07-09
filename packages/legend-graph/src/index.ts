@@ -147,6 +147,8 @@ export { V1_ExternalFormatDescription } from './graph-manager/protocol/pure/v1/e
 export { V1_ExternalFormatModelGenerationInput } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatModelGeneration.js';
 export { V1_ExecuteInput } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecuteInput.js';
 export { V1_LambdaPrefix } from './graph-manager/protocol/pure/v1/engine/lambda/V1_LambdaPrefix.js';
+export { V1_ExecutionError } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionError.js';
+export { V1_buildExecutionError } from './graph-manager/protocol/pure/v1/engine/V1_EngineHelper.js';
 export {
   V1_buildExecutionResult,
   V1_serializeExecutionResult,

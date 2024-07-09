@@ -90,6 +90,7 @@ export class DataQualityGraphFetchTreeNodeData
       constraints: observable,
       isReadOnly: observable,
       setConstraintsForClass: action,
+      setConstraints: action,
       setIsReadOnly: action,
     });
 
@@ -139,7 +140,7 @@ export class DataQualityGraphFetchTreeNodeData
               constraintState.extractLambdaString(grammarText),
             );
           });
-          this.constraints = constraints;
+          this.setConstraints(constraints);
         })
         .catch((error) => {
           assertErrorThrown(error);
@@ -149,6 +150,10 @@ export class DataQualityGraphFetchTreeNodeData
           );
         });
     }
+  }
+
+  setConstraints(constraints: ConstraintState[]) {
+    this.constraints = constraints;
   }
 
   get type(): Type {
