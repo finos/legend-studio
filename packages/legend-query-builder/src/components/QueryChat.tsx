@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { Dialog } from '@finos/legend-art';
 import { useApplicationStore } from '@finos/legend-application';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
@@ -34,13 +33,6 @@ export const QueryChat = observer(
           ).getExtraQueryChatRenderers?.() ?? [],
       );
 
-    return (
-      <Dialog
-        open={queryBuilderState.isQueryChatOpened}
-        onClose={() => queryBuilderState.setIsQueryChatOpened(false)}
-      >
-        {extraQueryChatConfigurations[0]?.(queryBuilderState)}
-      </Dialog>
-    );
+    return extraQueryChatConfigurations[0]?.(queryBuilderState);
   },
 );
