@@ -178,8 +178,8 @@ export const DataCubeEditorColumnsSelector = observer(
     const onSelectedColumnsDragStop = useCallback(
       (params: RowDragEndEvent<T>) => {
         const newData = getDataForAllNodes(params.api);
-        selector.setSelectedColumns(newData);
-        selector.setAvailableColumns(
+        selector.setAllSelectedColumns(newData);
+        selector.setAllAvailableColumns(
           selector.availableColumns.filter(
             (column) => !newData.includes(column),
           ),
@@ -195,11 +195,11 @@ export const DataCubeEditorColumnsSelector = observer(
           .map((node) => node.data)
           .filter(isNonNullable);
 
-        selector.setAvailableColumns([
+        selector.setAllAvailableColumns([
           ...selector.availableColumns,
           ...columnsToMove,
         ]);
-        selector.setSelectedColumns(
+        selector.setAllSelectedColumns(
           selector.selectedColumns.filter(
             (column) => !columnsToMove.includes(column),
           ),
@@ -220,7 +220,7 @@ export const DataCubeEditorColumnsSelector = observer(
           return;
         }
         const newData = getDataForAllNodes(event.api);
-        selector.setSelectedColumns(newData);
+        selector.setAllSelectedColumns(newData);
       },
       [selector],
     );
@@ -331,11 +331,11 @@ export const DataCubeEditorColumnsSelector = observer(
                           const filteredData = getDataForAllFilteredNodes(
                             params.api,
                           );
-                          selector.setSelectedColumns([
+                          selector.setAllSelectedColumns([
                             ...selector.selectedColumns,
                             ...filteredData,
                           ]);
-                          selector.setAvailableColumns(
+                          selector.setAllAvailableColumns(
                             selector.availableColumns.filter(
                               (column) => !filteredData.includes(column),
                             ),
@@ -366,11 +366,11 @@ export const DataCubeEditorColumnsSelector = observer(
                           })}
                           title={`[${data.name}]${isHidden ? ' - Hidden' : ''}\nDouble-click to add column`}
                           onDoubleClick={() => {
-                            selector.setSelectedColumns([
+                            selector.setAllSelectedColumns([
                               ...selector.selectedColumns,
                               data,
                             ]);
-                            selector.setAvailableColumns(
+                            selector.setAllAvailableColumns(
                               selector.availableColumns.filter(
                                 (column) => column !== data,
                               ),
@@ -416,11 +416,11 @@ export const DataCubeEditorColumnsSelector = observer(
                 const columnsToMove = selectedAvailableColumns.filter(
                   (column) => filteredData.includes(column),
                 );
-                selector.setSelectedColumns([
+                selector.setAllSelectedColumns([
                   ...selector.selectedColumns,
                   ...columnsToMove,
                 ]);
-                selector.setAvailableColumns(
+                selector.setAllAvailableColumns(
                   selector.availableColumns.filter(
                     (column) => !columnsToMove.includes(column),
                   ),
@@ -449,11 +449,11 @@ export const DataCubeEditorColumnsSelector = observer(
                 const columnsToMove = selectedSelectedColumns.filter((column) =>
                   filteredData.includes(column),
                 );
-                selector.setAvailableColumns([
+                selector.setAllAvailableColumns([
                   ...selector.availableColumns,
                   ...columnsToMove,
                 ]);
-                selector.setSelectedColumns(
+                selector.setAllSelectedColumns(
                   selector.selectedColumns.filter(
                     (column) => !columnsToMove.includes(column),
                   ),
@@ -539,11 +539,11 @@ export const DataCubeEditorColumnsSelector = observer(
                           const filteredData = getDataForAllFilteredNodes(
                             params.api,
                           );
-                          selector.setAvailableColumns([
+                          selector.setAllAvailableColumns([
                             ...selector.availableColumns,
                             ...filteredData,
                           ]);
-                          selector.setSelectedColumns(
+                          selector.setAllSelectedColumns(
                             selector.selectedColumns.filter(
                               (column) => !filteredData.includes(column),
                             ),
@@ -574,11 +574,11 @@ export const DataCubeEditorColumnsSelector = observer(
                           })}
                           title={`[${data.name}]${isHidden ? ' - Hidden' : ''}\nDouble-click to remove column`}
                           onDoubleClick={() => {
-                            selector.setAvailableColumns([
+                            selector.setAllAvailableColumns([
                               ...selector.availableColumns,
                               data,
                             ]);
-                            selector.setSelectedColumns(
+                            selector.setAllSelectedColumns(
                               selector.selectedColumns.filter(
                                 (column) => column !== data,
                               ),

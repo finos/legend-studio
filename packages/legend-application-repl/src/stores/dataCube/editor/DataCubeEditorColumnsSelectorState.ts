@@ -34,8 +34,8 @@ export class DataCubeEditorColumnsSelectorState<
   readonly dataCube!: DataCubeState;
   readonly editor!: DataCubeEditorState;
 
-  private _availableColumns: T[] = [];
-  private _selectedColumns: T[] = [];
+  allAvailableColumns: T[] = [];
+  allSelectedColumns: T[] = [];
 
   availableColumnsSearchText = '';
   selectedColumnsSearchText = '';
@@ -56,21 +56,18 @@ export class DataCubeEditorColumnsSelectorState<
         | undefined;
     },
   ) {
-    makeObservable<
-      DataCubeEditorColumnsSelectorState<T>,
-      '_availableColumns' | '_selectedColumns'
-    >(this, {
-      _availableColumns: observable,
+    makeObservable(this, {
+      allAvailableColumns: observable,
       availableColumns: computed,
       visibleAvailableColumns: computed,
       hiddenAvailableColumns: computed,
-      setAvailableColumns: action,
+      setAllAvailableColumns: action,
 
-      _selectedColumns: observable,
+      allSelectedColumns: observable,
       selectedColumns: computed,
       visibleSelectedColumns: computed,
       hiddenSelectedColumns: computed,
-      setSelectedColumns: action,
+      setAllSelectedColumns: action,
 
       availableColumnsSearchText: observable,
       setAvailableColumnsSearchText: action,
@@ -97,7 +94,7 @@ export class DataCubeEditorColumnsSelectorState<
   }
 
   get hiddenAvailableColumns(): T[] {
-    return this._availableColumns.filter((column) =>
+    return this.allAvailableColumns.filter((column) =>
       Boolean(
         this.editor.columnProperties.hiddenColumns.find(
           (hiddenColumn) => hiddenColumn.name === column.name,
@@ -107,7 +104,7 @@ export class DataCubeEditorColumnsSelectorState<
   }
 
   get hiddenSelectedColumns(): T[] {
-    return this._selectedColumns.filter((column) =>
+    return this.allSelectedColumns.filter((column) =>
       Boolean(
         this.editor.columnProperties.hiddenColumns.find(
           (hiddenColumn) => hiddenColumn.name === column.name,
@@ -117,7 +114,7 @@ export class DataCubeEditorColumnsSelectorState<
   }
 
   get visibleAvailableColumns(): T[] {
-    return this._availableColumns.filter(
+    return this.allAvailableColumns.filter(
       (column) =>
         !this.editor.columnProperties.hiddenColumns.find(
           (hiddenColumn) => hiddenColumn.name === column.name,
@@ -126,7 +123,7 @@ export class DataCubeEditorColumnsSelectorState<
   }
 
   get visibleSelectedColumns(): T[] {
-    return this._selectedColumns.filter(
+    return this.allSelectedColumns.filter(
       (column) =>
         !this.editor.columnProperties.hiddenColumns.find(
           (hiddenColumn) => hiddenColumn.name === column.name,
@@ -141,7 +138,7 @@ export class DataCubeEditorColumnsSelectorState<
     ) {
       return this.visibleAvailableColumns;
     }
-    return this._availableColumns;
+    return this.allAvailableColumns;
   }
 
   get selectedColumns(): T[] {
@@ -151,18 +148,18 @@ export class DataCubeEditorColumnsSelectorState<
     ) {
       return this.visibleSelectedColumns;
     }
-    return this._selectedColumns;
+    return this.allSelectedColumns;
   }
 
-  setAvailableColumns(val: T[]): void {
-    this._availableColumns = val
+  setAllAvailableColumns(val: T[]): void {
+    this.allAvailableColumns = val
       .slice()
       .sort((a, b) => a.name.localeCompare(b.name));
     this.onChange?.(this);
   }
 
-  setSelectedColumns(val: T[]): void {
-    this._selectedColumns = val;
+  setAllSelectedColumns(val: T[]): void {
+    this.allSelectedColumns = val;
     this.onChange?.(this);
   }
 
@@ -175,10 +172,10 @@ export class DataCubeEditorColumnsSelectorState<
   }
 
   getAvailableColumn(colName: string): T | undefined {
-    return this._availableColumns.find((col) => col.name === colName);
+    return this.allAvailableColumns.find((col) => col.name === colName);
   }
 
   getSelectedColumn(colName: string): T | undefined {
-    return this._selectedColumns.find((col) => col.name === colName);
+    return this.allSelectedColumns.find((col) => col.name === colName);
   }
 }

@@ -80,7 +80,7 @@ export class DataCubeEditorSortsPanelState
   applySnaphot(snapshot: DataCubeQuerySnapshot): void {
     const columns = snapshot.stageCols('sort');
     const sortColumns = snapshot.data.sortColumns;
-    this.selector.setAvailableColumns(
+    this.selector.setAllAvailableColumns(
       columns
         .filter(
           (col) => !sortColumns.find((sortCol) => sortCol.name === col.name),
@@ -93,7 +93,7 @@ export class DataCubeEditorSortsPanelState
             ),
         ),
     );
-    this.selector.setSelectedColumns(
+    this.selector.setAllSelectedColumns(
       sortColumns.map(
         (col) =>
           new DataCubeEditorSortColumnState(

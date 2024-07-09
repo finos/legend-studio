@@ -398,9 +398,7 @@ export function buildGridMenu(
     },
     {
       name: 'Hide',
-      menuItem: WIP_GridMenuItem,
-      cssClasses: ['!opacity-100'],
-      disabled: true,
+      action: () => controller.hideColumn(columnName),
     },
     'separator',
     {

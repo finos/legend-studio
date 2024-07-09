@@ -270,6 +270,7 @@ function _displaySpec(columnData: ColumnData) {
     // setting the cell data type might helps guide the grid to render the cell properly
     // and optimize the grid performance slightly by avoiding unnecessary type inference
     cellDataType: _cellDataType(column),
+    hide: configuration.hideFromView,
     valueFormatter:
       dataType === DataCubeColumnDataType.NUMBER
         ? (params) => {

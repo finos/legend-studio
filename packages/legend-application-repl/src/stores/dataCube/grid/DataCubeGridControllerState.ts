@@ -28,6 +28,15 @@ import type {
 import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
 import type { DataCubeColumnPinPlacement } from '../core/DataCubeQueryEngine.js';
 
+/**
+ * This state is responsible for capturing edition to the data cube query
+ * caused by interaction with the grid which is not captured by the server-side row model
+ * datasource, e.g. column pinning, column visibility changes, etc.
+ *
+ * NOTE: since typically, each grid action causes a new snapshot to be created,
+ * we MUST NEVER use the editor here, as it could potentially create illegal state
+ * while the editor is still in the middle of a modification that has not been applied.
+ */
 export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber {
   configuration = new DataCubeConfiguration();
 

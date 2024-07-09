@@ -76,7 +76,7 @@ export class DataCubeEditorColumnsPanelState
   applySnaphot(snapshot: DataCubeQuerySnapshot): void {
     const columns = snapshot.stageCols('select');
     const selectColumns = snapshot.data.selectColumns;
-    this.selector.setAvailableColumns(
+    this.selector.setAllAvailableColumns(
       columns
         .filter(
           (col) =>
@@ -88,7 +88,7 @@ export class DataCubeEditorColumnsPanelState
           (col) => new DataCubeEditorColumnState(_getCol(columns, col.name)),
         ),
     );
-    this.selector.setSelectedColumns(
+    this.selector.setAllSelectedColumns(
       selectColumns.map(
         (col) => new DataCubeEditorColumnState(_getCol(columns, col.name)),
       ),

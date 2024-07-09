@@ -45,6 +45,7 @@ export class DataCubeEditorColumnPropertiesPanelState
       setShowAdvancedSettings: action,
 
       hiddenColumns: computed,
+      configurableColumns: computed,
     });
 
     this.editor = editor;
@@ -53,6 +54,16 @@ export class DataCubeEditorColumnPropertiesPanelState
 
   get hiddenColumns(): DataCubeMutableColumnConfiguration[] {
     return this.columns.filter((column) => column.hideFromView);
+  }
+
+  get configurableColumns(): DataCubeMutableColumnConfiguration[] {
+    return this.columns
+      .filter((column) =>
+        this.editor.columns.selector.allSelectedColumns.find(
+          (col) => col.name === column.name,
+        ),
+      )
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   getColumnConfiguration(
@@ -70,7 +81,7 @@ export class DataCubeEditorColumnPropertiesPanelState
   }
 
   get selectedColumn(): DataCubeMutableColumnConfiguration | undefined {
-    return this.columns.find(
+    return this.configurableColumns.find(
       (column) => column.name === this.selectedColumnName,
     );
   }
@@ -86,7 +97,9 @@ export class DataCubeEditorColumnPropertiesPanelState
       ),
     );
     if (!this.selectedColumn && this.columns.length) {
-      this.setSelectedColumnName(getNonNullableEntry(this.columns, 0).name);
+      this.setSelectedColumnName(
+        getNonNullableEntry(this.configurableColumns, 0).name,
+      );
     }
   }
 
@@ -96,7 +109,7 @@ export class DataCubeEditorColumnPropertiesPanelState
   ): void {
     newSnapshot.data.configuration = {
       ...newSnapshot.data.configuration,
-      columns: this.columns.map((column) => column.serialize()),
+      columns: this.configurableColumns.map((column) => column.serialize()),
     };
   }
 }

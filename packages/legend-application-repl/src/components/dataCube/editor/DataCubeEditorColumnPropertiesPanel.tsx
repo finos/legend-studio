@@ -136,7 +136,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
               className="w-80"
               {...columnsDropdownProps}
             >
-              {panel.columns.map((column) => (
+              {panel.configurableColumns.map((column) => (
                 <DataCubeEditorDropdownMenuItem
                   key={column.name}
                   onClick={() => {
