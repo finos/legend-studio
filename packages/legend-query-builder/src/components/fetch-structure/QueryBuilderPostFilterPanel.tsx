@@ -113,6 +113,7 @@ import {
 } from '../../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
 import { QueryBuilderPropertyNameDisplay } from '../QueryBuilderPropertyExpressionEditor.js';
 import { convertTextToPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
+import { isProjectionColumnDragSource } from '../shared/QueryBuilderFilterHelper.js';
 
 export const CAN_DROP_MAIN_GROUP_DND_TYPES = [
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
@@ -275,13 +276,6 @@ export const QueryBuilderColumnBadge = observer(
     );
   },
 );
-
-const isProjectionColumnDragSource = (
-  itemToTest:
-    | QueryBuilderVariableDragSource
-    | QueryBuilderProjectionColumnDragSource,
-): itemToTest is QueryBuilderProjectionColumnDragSource =>
-  Object.hasOwn(itemToTest, 'columnState');
 
 const canDropItemOntoNodeValue = (
   item: QueryBuilderVariableDragSource | QueryBuilderProjectionColumnDragSource,

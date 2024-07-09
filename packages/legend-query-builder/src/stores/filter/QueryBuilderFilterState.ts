@@ -33,7 +33,10 @@ import {
   hashArray,
   isNonNullable,
 } from '@finos/legend-shared';
-import type { QueryBuilderExplorerTreeDragSource } from '../explorer/QueryBuilderExplorerState.js';
+import type {
+  QueryBuilderExplorerTreeDragSource,
+  QueryBuilderExplorerTreePropertyNodeData,
+} from '../explorer/QueryBuilderExplorerState.js';
 import { QueryBuilderPropertyExpressionState } from '../QueryBuilderPropertyEditorState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import {
@@ -41,6 +44,7 @@ import {
   type AbstractPropertyExpression,
   type ValueSpecification,
   type VariableExpression,
+  type Type,
   observe_ValueSpecification,
   CollectionInstanceValue,
   InstanceValue,
@@ -56,10 +60,13 @@ import type { QueryBuilderFilterOperator } from './QueryBuilderFilterOperator.js
 import { QUERY_BUILDER_GROUP_OPERATION } from '../QueryBuilderGroupOperationHelper.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../QueryBuilderStateHashUtils.js';
 import {
+  getCollectionValueSpecificationType,
+  getNonCollectionValueSpecificationType,
   isValidInstanceValue,
   isValueExpressionReferencedInValue,
 } from '../QueryBuilderValueSpecificationHelper.js';
 import { instanceValue_setValues } from '../shared/ValueSpecificationModifierHelper.js';
+import type { QueryBuilderTDSColumnState } from '../fetch-structure/tds/QueryBuilderTDSColumnState.js';
 
 export enum QUERY_BUILDER_FILTER_DND_TYPE {
   GROUP_CONDITION = 'QUERY_BUILDER_FILTER_DND_TYPE.GROUP_CONDITION',
@@ -78,11 +85,141 @@ export type QueryBuilderFilterDropTarget =
 export type QueryBuilderFilterConditionRearrangeDropTarget =
   QueryBuilderFilterConditionDragSource;
 
+export abstract class FilterConditionValueState implements Hashable {
+  conditionState: FilterConditionState;
+
+  constructor(conditionState: FilterConditionState) {
+    this.conditionState = conditionState;
+  }
+
+  get type(): Type | undefined {
+    return undefined;
+  }
+
+  get isCollection(): boolean {
+    return false;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_CONDITION_RIGHT_VALUE,
+    ]);
+  }
+}
+
+export class FilterValueSpecConditionValueState extends FilterConditionValueState {
+  value?: ValueSpecification | undefined;
+
+  constructor(
+    conditionState: FilterConditionState,
+    value?: ValueSpecification | undefined,
+  ) {
+    super(conditionState);
+    makeObservable(this, {
+      value: observable,
+      setValue: action,
+    });
+    this.value = this.setValue(value);
+  }
+
+  override get type(): Type | undefined {
+    if (this.value instanceof CollectionInstanceValue) {
+      return getCollectionValueSpecificationType(
+        this.conditionState.filterState.queryBuilderState.graphManagerState
+          .graph,
+        this.value.values,
+      );
+    }
+    return this.value
+      ? getNonCollectionValueSpecificationType(this.value)
+      : undefined;
+  }
+
+  setValue(
+    val: ValueSpecification | undefined,
+  ): ValueSpecification | undefined {
+    this.value = val
+      ? observe_ValueSpecification(
+          val,
+          this.conditionState.filterState.queryBuilderState.observerContext,
+        )
+      : undefined;
+    return this.value;
+  }
+
+  override get isCollection(): boolean {
+    return this.value instanceof CollectionInstanceValue;
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_CONDITION_RIGHT_VALUE_SPEC,
+      this.value,
+    ]);
+  }
+}
+
+export class FilterTDSColumnValueConditionValueState extends FilterConditionValueState {
+  tdsColumn: QueryBuilderTDSColumnState;
+
+  constructor(
+    conditionState: FilterConditionState,
+    tdsColumn: QueryBuilderTDSColumnState,
+  ) {
+    super(conditionState);
+    makeObservable(this, {
+      tdsColumn: observable,
+      changeCol: action,
+    });
+    this.tdsColumn = tdsColumn;
+  }
+
+  override get type(): Type | undefined {
+    return this.tdsColumn.getColumnType();
+  }
+
+  override get isCollection(): boolean {
+    return false;
+  }
+
+  changeCol(col: QueryBuilderTDSColumnState): void {
+    this.tdsColumn = col;
+  }
+}
+
+export class FilterExplorerTreeNodeConditionValueState extends FilterConditionValueState {
+  node: QueryBuilderExplorerTreePropertyNodeData;
+
+  constructor(
+    conditionState: FilterConditionState,
+    node: QueryBuilderExplorerTreePropertyNodeData,
+  ) {
+    super(conditionState);
+    makeObservable(this, {
+      node: observable,
+      changeNode: action,
+    });
+    this.node = node;
+  }
+
+  override get type(): Type | undefined {
+    return this.node.type;
+  }
+
+  override get isCollection(): boolean {
+    return false;
+  }
+
+  changeNode(node: QueryBuilderExplorerTreePropertyNodeData): void {
+    this.node = node;
+  }
+}
+
 export class FilterConditionState implements Hashable {
   readonly filterState: QueryBuilderFilterState;
   propertyExpressionState: QueryBuilderPropertyExpressionState;
   operator!: QueryBuilderFilterOperator;
-  value?: ValueSpecification | undefined;
+  rightConditionValue?: FilterConditionValueState | undefined;
   existsLambdaParamNames: string[] = [];
   typeaheadSearchResults: string[] | undefined;
   typeaheadSearchState = ActionState.create();
@@ -94,16 +231,18 @@ export class FilterConditionState implements Hashable {
     makeObservable(this, {
       propertyExpressionState: observable,
       operator: observable,
-      value: observable,
+      rightConditionValue: observable,
       existsLambdaParamNames: observable,
       typeaheadSearchResults: observable,
-      operators: computed,
-      changeProperty: action,
       changeOperator: action,
       setOperator: action,
-      setValue: action,
+      setRightConditionValue: action,
       addExistsLambdaParamNames: action,
+      buildFromValueSpec: action,
+      buildFromTDSColumn: action,
+      buildFromExplorerTreeNode: action,
       handleTypeaheadSearch: flow,
+      operators: computed,
       hashCode: computed,
     });
 
@@ -119,7 +258,7 @@ export class FilterConditionState implements Hashable {
       `Can't find an operator for property '${this.propertyExpressionState.path}': no operators registered`,
     );
     this.operator = this.operators[0] as QueryBuilderFilterOperator;
-    this.setValue(this.operator.getDefaultFilterConditionValue(this));
+    this.buildFromValueSpec(this.operator.getDefaultFilterConditionValue(this));
   }
 
   get operators(): QueryBuilderFilterOperator[] {
@@ -131,10 +270,14 @@ export class FilterConditionState implements Hashable {
   *handleTypeaheadSearch(
     searchValue?: ValueSpecification | undefined,
   ): GeneratorFn<void> {
-    const value = searchValue ?? this.value;
     try {
       this.typeaheadSearchState.inProgress();
       this.typeaheadSearchResults = undefined;
+      const rightConditionValue = guaranteeType(
+        this.rightConditionValue,
+        FilterValueSpecConditionValueState,
+      );
+      const value = searchValue ?? rightConditionValue.value;
       if (performTypeahead(value)) {
         const result =
           (yield this.filterState.queryBuilderState.graphManagerState.graphManager.runQuery(
@@ -164,65 +307,32 @@ export class FilterConditionState implements Hashable {
     }
   }
 
-  changeProperty(propertyExpression: AbstractPropertyExpression): void {
-    try {
-      // first, check if the new property is supported
-      new FilterConditionState(this.filterState, propertyExpression);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.filterState.queryBuilderState.applicationStore.notificationService.notifyError(
-        error,
-      );
-      return;
-    }
-
-    // observe the property expression
-    observe_ValueSpecification(
-      propertyExpression,
-      this.filterState.queryBuilderState.observerContext,
-    );
-
-    this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
-      this.filterState.queryBuilderState,
-      propertyExpression,
-    );
-
-    const newCompatibleOperators = this.operators;
-    assertTrue(
-      newCompatibleOperators.length !== 0,
-      `Can't find an operator for property '${this.propertyExpressionState.path}': no operators registered`,
-    );
-    if (!newCompatibleOperators.includes(this.operator)) {
-      this.changeOperator(
-        newCompatibleOperators[0] as QueryBuilderFilterOperator,
-      );
-    } else if (!this.operator.isCompatibleWithFilterConditionValue(this)) {
-      this.setValue(this.operator.getDefaultFilterConditionValue(this));
-    }
-  }
-
   changeOperator(val: QueryBuilderFilterOperator): void {
     this.setOperator(val);
     if (!this.operator.isCompatibleWithFilterConditionValue(this)) {
       let defaultValue = this.operator.getDefaultFilterConditionValue(this);
       if (
         defaultValue instanceof CollectionInstanceValue &&
-        this.value instanceof InstanceValue &&
-        isValidInstanceValue(this.value)
+        this.rightConditionValue instanceof
+          FilterValueSpecConditionValueState &&
+        this.rightConditionValue.value instanceof InstanceValue &&
+        isValidInstanceValue(this.rightConditionValue.value)
       ) {
         instanceValue_setValues(
           defaultValue,
-          [this.value],
+          [this.rightConditionValue],
           this.filterState.queryBuilderState.observerContext,
         );
       } else if (
         defaultValue instanceof InstanceValue &&
-        this.value instanceof CollectionInstanceValue &&
-        this.value.values.length
+        this.rightConditionValue instanceof
+          FilterValueSpecConditionValueState &&
+        this.rightConditionValue.value instanceof CollectionInstanceValue &&
+        this.rightConditionValue.value.values.length
       ) {
-        defaultValue = this.value.values[0];
+        defaultValue = this.rightConditionValue.value.values[0];
       }
-      this.setValue(defaultValue);
+      this.buildFromValueSpec(defaultValue);
     }
   }
 
@@ -230,24 +340,59 @@ export class FilterConditionState implements Hashable {
     this.operator = val;
   }
 
-  setValue(val: ValueSpecification | undefined): void {
-    this.value = val
-      ? observe_ValueSpecification(
-          val,
-          this.filterState.queryBuilderState.observerContext,
-        )
-      : undefined;
+  setRightConditionValue(val: FilterConditionValueState | undefined): void {
+    this.rightConditionValue = val;
   }
 
   addExistsLambdaParamNames(val: string): void {
     this.existsLambdaParamNames.push(val);
   }
 
+  buildFromValueSpec(val: ValueSpecification | undefined): void {
+    if (
+      this.rightConditionValue instanceof FilterValueSpecConditionValueState
+    ) {
+      this.rightConditionValue.setValue(val);
+    } else {
+      this.setRightConditionValue(
+        new FilterValueSpecConditionValueState(this, val),
+      );
+    }
+  }
+
+  buildFromTDSColumn(tdsColumn: QueryBuilderTDSColumnState): void {
+    if (
+      this.rightConditionValue instanceof
+      FilterTDSColumnValueConditionValueState
+    ) {
+      this.rightConditionValue.changeCol(tdsColumn);
+    } else {
+      this.setRightConditionValue(
+        new FilterTDSColumnValueConditionValueState(this, tdsColumn),
+      );
+    }
+  }
+
+  buildFromExplorerTreeNode(
+    node: QueryBuilderExplorerTreePropertyNodeData,
+  ): void {
+    if (
+      this.rightConditionValue instanceof
+      FilterExplorerTreeNodeConditionValueState
+    ) {
+      this.rightConditionValue.changeNode(node);
+    } else {
+      this.setRightConditionValue(
+        new FilterExplorerTreeNodeConditionValueState(this, node),
+      );
+    }
+  }
+
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.FILTER_CONDITION_STATE,
       this.propertyExpressionState,
-      this.value ?? '',
+      this.rightConditionValue ?? '',
       this.operator,
     ]);
   }
@@ -965,7 +1110,12 @@ export class QueryBuilderFilterState
     return Boolean(
       Array.from(this.nodes.values())
         .filter(filterByType(QueryBuilderFilterTreeConditionNodeData))
-        .map((node) => node.condition.value)
+        .map((node) =>
+          node.condition.rightConditionValue instanceof
+          FilterValueSpecConditionValueState
+            ? node.condition.rightConditionValue.value
+            : undefined,
+        )
         .filter(isNonNullable)
         .find((value) => isValueExpressionReferencedInValue(variable, value)),
     );
@@ -976,8 +1126,8 @@ export class QueryBuilderFilterState
     Array.from(this.nodes.values()).forEach((node) => {
       if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
         if (
-          node.condition.value instanceof InstanceValue &&
-          !isValidInstanceValue(node.condition.value)
+          node.condition.rightConditionValue instanceof InstanceValue &&
+          !isValidInstanceValue(node.condition.rightConditionValue)
         ) {
           validationIssues.push(
             `Filter value for ${node.condition.propertyExpressionState.title} is missing or invalid`,
@@ -997,8 +1147,8 @@ export class QueryBuilderFilterState
     return Array.from(this.nodes.values()).some(
       (node) =>
         node instanceof QueryBuilderFilterTreeConditionNodeData &&
-        node.condition.value instanceof InstanceValue &&
-        !isValidInstanceValue(node.condition.value),
+        node.condition.rightConditionValue instanceof InstanceValue &&
+        !isValidInstanceValue(node.condition.rightConditionValue),
     );
   }
 

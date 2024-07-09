@@ -30,6 +30,7 @@ import {
 } from '@finos/legend-shared';
 import {
   FilterConditionState,
+  FilterValueSpecConditionValueState,
   type QueryBuilderFilterState,
 } from '../QueryBuilderFilterState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
@@ -52,8 +53,15 @@ export const buildFilterConditionExpression = (
   );
   expression.parametersValues.push(guaranteeNonNullable(propertyExpression));
   // NOTE: there are simple operators which do not require any params (e.g. isEmpty)
-  if (filterConditionState.value) {
-    expression.parametersValues.push(filterConditionState.value);
+  if (
+    filterConditionState.rightConditionValue &&
+    filterConditionState.rightConditionValue instanceof
+      FilterValueSpecConditionValueState &&
+    filterConditionState.rightConditionValue.value !== undefined
+  ) {
+    expression.parametersValues.push(
+      filterConditionState.rightConditionValue.value,
+    );
   }
   return expression;
 };
@@ -155,18 +163,24 @@ export const buildFilterConditionState = (
     // value
     const value = mainExpressionWithOperator.parametersValues[1];
     if (hasNoValue || !value) {
-      filterConditionState.setValue(undefined);
+      filterConditionState.setRightConditionValue(undefined);
     } else {
-      filterConditionState.setValue(
-        simplifyValueExpression(
-          value,
-          filterConditionState.filterState.queryBuilderState.observerContext,
+      filterConditionState.setRightConditionValue(
+        new FilterValueSpecConditionValueState(
+          filterConditionState,
+          simplifyValueExpression(
+            value,
+            filterConditionState.filterState.queryBuilderState.observerContext,
+          ),
         ),
       );
     }
     if (!operator.isCompatibleWithFilterConditionValue(filterConditionState)) {
-      filterConditionState.setValue(
-        operator.getDefaultFilterConditionValue(filterConditionState),
+      filterConditionState.setRightConditionValue(
+        new FilterValueSpecConditionValueState(
+          filterConditionState,
+          operator.getDefaultFilterConditionValue(filterConditionState),
+        ),
       );
     }
     return filterConditionState;

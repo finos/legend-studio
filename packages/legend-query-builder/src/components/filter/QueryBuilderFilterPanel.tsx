@@ -50,6 +50,7 @@ import {
   MenuContentItemIcon,
   MenuContentItemLabel,
   InfoCircleIcon,
+  RefreshIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderFilterConditionDragSource,
@@ -63,10 +64,14 @@ import {
   QueryBuilderFilterTreeExistsNodeData,
   QueryBuilderFilterTreeOperationNodeData,
   type QueryBuilderFilterState,
+  FilterTDSColumnValueConditionValueState,
+  FilterExplorerTreeNodeConditionValueState,
+  FilterValueSpecConditionValueState,
 } from '../../stores/filter/QueryBuilderFilterState.js';
 import { useDrag, useDragLayer, useDrop } from 'react-dnd';
 import {
   type QueryBuilderExplorerTreeDragSource,
+  type QueryBuilderExplorerTreePropertyNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
@@ -92,17 +97,21 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import {
+  type ValueSpecification,
+  type Type,
   AbstractPropertyExpression,
   extractElementNameFromPath,
   matchFunctionName,
   Multiplicity,
   SimpleFunctionExpression,
-  type ValueSpecification,
   VariableExpression,
   PrimitiveType,
+  Class,
+  Enumeration,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnDragSource,
+  type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
 } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
@@ -120,6 +129,20 @@ import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaM
 import { buildPropertyExpressionChain } from '../../stores/QueryBuilderValueSpecificationBuilderHelper.js';
 import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
 import { convertTextToPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
+import {
+  isExplorerTreeDragSource,
+  isProjectionColumnDragSource,
+} from '../shared/QueryBuilderFilterHelper.js';
+import {
+  QueryBuilderFilterOperator_In,
+  QueryBuilderFilterOperator_NotIn,
+} from '../../stores/filter/operators/QueryBuilderFilterOperator_In.js';
+import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
+import { QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE } from '../../stores/fetch-structure/tds/window/QueryBuilderWindowState.js';
+import {
+  QueryBuilderColumnInfoTooltip,
+  renderPropertyTypeIcon,
+} from '../fetch-structure/QueryBuilderTDSComponentHelper.js';
 
 export const CAN_DROP_MAIN_GROUP_DND_TYPES_FETCH_SUPPORTED = [
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
@@ -742,6 +765,232 @@ const QueryBuilderFilterExistsConditionEditor = observer(
   },
 );
 
+export const QueryBuilderColumnBadge = observer(
+  (props: {
+    colState: QueryBuilderTDSColumnState;
+    removeColumn: () => void;
+    onColumnChange?:
+      | ((columnState: QueryBuilderProjectionColumnState) => Promise<void>)
+      | undefined;
+  }) => {
+    const { colState, onColumnChange, removeColumn } = props;
+    const applicationStore = useApplicationStore();
+    const type = colState.getColumnType();
+    const handleDrop = onColumnChange
+      ? useCallback(
+          (item: QueryBuilderProjectionColumnDragSource): Promise<void> =>
+            onColumnChange(item.columnState),
+          [onColumnChange],
+        )
+      : undefined;
+    const [{ isDragOver }, dropConnector] = useDrop<
+      QueryBuilderProjectionColumnDragSource,
+      void,
+      { isDragOver: boolean }
+    >(
+      () => ({
+        accept: [
+          QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+          QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
+        ],
+        drop: (item, monitor): void => {
+          if (!monitor.didDrop()) {
+            handleDrop?.(item).catch(applicationStore.alertUnhandledError);
+          } // prevent drop event propagation to accomondate for nested DnD
+        },
+        collect: (monitor) => ({
+          isDragOver: monitor.isOver({ shallow: true }),
+        }),
+      }),
+      [applicationStore, handleDrop],
+    );
+
+    const renderColumnBadgeContent = (): React.ReactNode => (
+      <div className="query-builder-column-badge__content">
+        {type && (
+          <div
+            className={clsx('query-builder-column-badge__type', {
+              'query-builder-column-badge__type--class': type instanceof Class,
+              'query-builder-column-badge__type--enumeration':
+                type instanceof Enumeration,
+              'query-builder-column-badge__type--primitive':
+                type instanceof PrimitiveType,
+            })}
+          >
+            {renderPropertyTypeIcon(type)}
+          </div>
+        )}
+        <div
+          className="query-builder-column-badge__property"
+          title={`${colState.columnName}`}
+        >
+          {colState.columnName}
+        </div>
+        <QueryBuilderColumnInfoTooltip
+          columnState={colState}
+          placement="bottom-end"
+        >
+          <div className="query-builder-column-badge__property__info">
+            <InfoCircleIcon />
+          </div>
+        </QueryBuilderColumnInfoTooltip>
+        <button
+          className="query-builder-column-badge__action"
+          name="Reset"
+          title="Reset"
+          onClick={removeColumn}
+        >
+          <RefreshIcon />
+        </button>
+      </div>
+    );
+
+    return onColumnChange ? (
+      <div ref={dropConnector} className="query-builder-column-badge">
+        <PanelEntryDropZonePlaceholder
+          isDragOver={isDragOver}
+          label="Change Property"
+        >
+          {renderColumnBadgeContent()}
+        </PanelEntryDropZonePlaceholder>
+      </div>
+    ) : (
+      <div className="query-builder-column-badge">
+        {renderColumnBadgeContent()}
+      </div>
+    );
+  },
+);
+
+export const QueryBuilderExplorerTreeNodeBadge = observer(
+  (props: {
+    node: QueryBuilderExplorerTreePropertyNodeData;
+    removeNode: () => void;
+    onNodeChange?:
+      | ((
+          explorerNode: QueryBuilderExplorerTreePropertyNodeData,
+        ) => Promise<void>)
+      | undefined;
+  }) => {
+    const { node, removeNode, onNodeChange } = props;
+    const applicationStore = useApplicationStore();
+    const type = node.type;
+
+    const handleDrop = onNodeChange
+      ? useCallback(
+          (item: QueryBuilderExplorerTreeDragSource): Promise<void> =>
+            onNodeChange(item.node),
+          [onNodeChange],
+        )
+      : undefined;
+
+    const [{ isDragOver }, dropConnector] = useDrop<
+      QueryBuilderExplorerTreeDragSource,
+      void,
+      { isDragOver: boolean }
+    >(
+      () => ({
+        accept: [
+          QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+          QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
+        ],
+        drop: (item, monitor): void => {
+          if (!monitor.didDrop()) {
+            handleDrop?.(item).catch(applicationStore.alertUnhandledError);
+          } // prevent drop event propagation to accomondate for nested DnD
+        },
+        collect: (monitor) => ({
+          isDragOver: monitor.isOver({ shallow: true }),
+        }),
+      }),
+      [applicationStore, handleDrop],
+    );
+
+    const renderColumnBadgeContent = (): React.ReactNode => (
+      <div className="query-builder-column-badge__content">
+        {type && (
+          <div
+            className={clsx('query-builder-column-badge__type', {
+              'query-builder-column-badge__type--class': type instanceof Class,
+              'query-builder-column-badge__type--enumeration':
+                type instanceof Enumeration,
+              'query-builder-column-badge__type--primitive':
+                type instanceof PrimitiveType,
+            })}
+          >
+            {renderPropertyTypeIcon(type)}
+          </div>
+        )}
+        <div
+          className="query-builder-column-badge__property"
+          title={`${node.property.name}`}
+        >
+          {node.property.name}
+        </div>
+        {/* <QueryBuilderColumnInfoTooltip
+          columnState={colState}
+          placement="bottom-end"
+        >
+          <div className="query-builder-column-badge__property__info">
+            <InfoCircleIcon />
+          </div>
+        </QueryBuilderColumnInfoTooltip> */}
+        <button
+          className="query-builder-column-badge__action"
+          name="Reset"
+          title="Reset"
+          onClick={removeNode}
+        >
+          <RefreshIcon />
+        </button>
+      </div>
+    );
+
+    return onNodeChange ? (
+      <div ref={dropConnector} className="query-builder-column-badge">
+        <PanelEntryDropZonePlaceholder
+          isDragOver={isDragOver}
+          label="Change Property"
+        >
+          {renderColumnBadgeContent()}
+        </PanelEntryDropZonePlaceholder>
+      </div>
+    ) : (
+      <div className="query-builder-column-badge">
+        {renderColumnBadgeContent()}
+      </div>
+    );
+  },
+);
+
+const getItemType = (
+  item:
+    | QueryBuilderVariableDragSource
+    | QueryBuilderProjectionColumnDragSource
+    | QueryBuilderExplorerTreeDragSource,
+): Type | undefined =>
+  isProjectionColumnDragSource(item)
+    ? item.columnState.getColumnType()
+    : isExplorerTreeDragSource(item)
+      ? item.node.property.genericType.value.rawType
+      : item.variable.genericType?.value.rawType;
+
+const canDropTypeOntoNodeValue = (
+  type: Type | undefined,
+  condition: FilterConditionState,
+): boolean => {
+  const conditionOperator = condition.operator;
+  const conditionValueType =
+    condition.propertyExpressionState.propertyExpression.func.value.genericType
+      .value.rawType;
+  return (
+    conditionValueType !== undefined &&
+    !(conditionOperator instanceof QueryBuilderFilterOperator_In) &&
+    !(conditionOperator instanceof QueryBuilderFilterOperator_NotIn) &&
+    isTypeCompatibleForAssignment(type, conditionValueType)
+  );
+};
+
 const QueryBuilderFilterConditionEditor = observer(
   (props: {
     node: QueryBuilderFilterTreeConditionNodeData;
@@ -751,26 +1000,45 @@ const QueryBuilderFilterConditionEditor = observer(
     const graph =
       node.condition.filterState.queryBuilderState.graphManagerState.graph;
     const queryBuilderState = node.condition.filterState.queryBuilderState;
+    const rightConditionValue = node.condition.rightConditionValue;
     const applicationStore = useApplicationStore();
-    const changeOperator = (val: QueryBuilderFilterOperator) => (): void =>
-      node.condition.changeOperator(val);
+
     // Drag and Drop on filter condition value
     const handleDrop = useCallback(
-      (item: QueryBuilderVariableDragSource): void => {
-        const parameterType = item.variable.genericType?.value.rawType;
+      (
+        item:
+          | QueryBuilderVariableDragSource
+          | QueryBuilderProjectionColumnDragSource
+          | QueryBuilderExplorerTreeDragSource,
+      ): void => {
+        const itemType = isProjectionColumnDragSource(item)
+          ? item.columnState.getColumnType()
+          : isExplorerTreeDragSource(item)
+            ? item.node.property.genericType.value.rawType
+            : item.variable.genericType?.value.rawType;
         const conditionValueType =
           node.condition.propertyExpressionState.propertyExpression.func.value
             .genericType.value.rawType;
-        if (isTypeCompatibleForAssignment(parameterType, conditionValueType)) {
-          node.condition.setValue(item.variable);
+        if (
+          itemType !== undefined &&
+          canDropTypeOntoNodeValue(itemType, node.condition)
+        ) {
+          if (isProjectionColumnDragSource(item)) {
+            node.condition.buildFromTDSColumn(item.columnState);
+          } else if (isExplorerTreeDragSource(item)) {
+            node.condition.buildFromExplorerTreeNode(item.node);
+          } else {
+            node.condition.buildFromValueSpec(item.variable);
+          }
         } else {
           applicationStore.notificationService.notifyWarning(
-            `Incompatible parameter type ${parameterType?.name}. ${parameterType?.name} is not compatible with type ${conditionValueType.name}.`,
+            `Incompatible parameter type ${itemType?.name}. ${itemType?.name} is not compatible with type ${conditionValueType.name}.`,
           );
         }
       },
       [applicationStore, node.condition],
     );
+
     const [{ isFilterValueDragOver }, dropConnector] = useDrop<
       QueryBuilderVariableDragSource,
       void,
@@ -790,11 +1058,51 @@ const QueryBuilderFilterConditionEditor = observer(
       [handleDrop],
     );
 
+    const { isFilterValueDroppable } = useDragLayer((monitor) => ({
+      isFilterValueDroppable:
+        monitor.isDragging() &&
+        (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
+          monitor.getItemType() === QUERY_BUILDER_VARIABLE_DND_TYPE ||
+          monitor.getItemType() ===
+            QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY ||
+          monitor.getItemType() ===
+            QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY) &&
+        canDropTypeOntoNodeValue(
+          getItemType(monitor.getItem()),
+          node.condition,
+        ),
+    }));
+
+    // actions
+    const changeOperator = (val: QueryBuilderFilterOperator) => (): void =>
+      node.condition.changeOperator(val);
+
     const resetNode = (): void => {
-      node.condition.setValue(
+      node.condition.buildFromValueSpec(
         node.condition.operator.getDefaultFilterConditionValue(node.condition),
       );
     };
+
+    const cleanUpReloadValues = (): void => {
+      node.condition.typeaheadSearchState.complete();
+    };
+
+    const removeTDSColumnValue = (): void => {
+      node.condition.buildFromValueSpec(
+        node.condition.operator.getDefaultFilterConditionValue(node.condition),
+      );
+    };
+
+    const removeExplorerTreeNodeValue = (): void => {
+      node.condition.buildFromValueSpec(
+        node.condition.operator.getDefaultFilterConditionValue(node.condition),
+      );
+    };
+
+    const changeValueSpecification = (val: ValueSpecification): void => {
+      node.condition.buildFromValueSpec(val);
+    };
+
     const debouncedTypeaheadSearch = useMemo(
       () =>
         debounce((inputValue: string) => {
@@ -809,17 +1117,109 @@ const QueryBuilderFilterConditionEditor = observer(
         }, 1000),
       [node, queryBuilderState.observerContext],
     );
-    const cleanUpReloadValues = (): void => {
-      node.condition.typeaheadSearchState.complete();
-    };
-    const changeValueSpecification = (val: ValueSpecification): void => {
-      node.condition.setValue(val);
-    };
+
     const selectorConfig = {
       values: node.condition.typeaheadSearchResults,
       isLoading: node.condition.typeaheadSearchState.isInProgress,
       reloadValues: debouncedTypeaheadSearch,
       cleanUpReloadValues,
+    };
+
+    const renderRightValue = (): React.ReactNode => {
+      if (
+        rightConditionValue instanceof FilterValueSpecConditionValueState &&
+        rightConditionValue.value
+      ) {
+        return (
+          <div
+            ref={dropConnector}
+            data-testid={
+              QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_VALUE
+            }
+            className="query-builder-filter-tree__condition-node__value"
+          >
+            <PanelEntryDropZonePlaceholder
+              isDragOver={isFilterValueDragOver}
+              label="Change Filter Value"
+            >
+              <EditableBasicValueSpecificationEditor
+                valueSpecification={rightConditionValue.value}
+                setValueSpecification={changeValueSpecification}
+                graph={graph}
+                observerContext={queryBuilderState.observerContext}
+                typeCheckOption={{
+                  expectedType:
+                    node.condition.propertyExpressionState.propertyExpression
+                      .func.value.genericType.value.rawType,
+                }}
+                resetValue={resetNode}
+                selectorConfig={selectorConfig}
+                isConstant={queryBuilderState.constantState.isValueSpecConstant(
+                  rightConditionValue.value,
+                )}
+                initializeAsEditable={node.isNewlyAdded}
+              />
+            </PanelEntryDropZonePlaceholder>
+          </div>
+        );
+      } else if (
+        rightConditionValue instanceof FilterTDSColumnValueConditionValueState
+      ) {
+        const changeRightCol = async (
+          columnState: QueryBuilderProjectionColumnState,
+        ): Promise<void> => {
+          rightConditionValue.changeCol(columnState);
+        };
+        return (
+          <div
+            ref={dropConnector}
+            className="query-builder-post-filter-tree__condition-node__value"
+          >
+            <PanelEntryDropZonePlaceholder
+              isDragOver={isFilterValueDragOver}
+              isDroppable={isFilterValueDroppable}
+              label="Change Filter Value"
+            >
+              <QueryBuilderColumnBadge
+                colState={rightConditionValue.tdsColumn}
+                onColumnChange={
+                  isFilterValueDroppable ? changeRightCol : undefined
+                }
+                removeColumn={removeTDSColumnValue}
+              />
+            </PanelEntryDropZonePlaceholder>
+          </div>
+        );
+      } else if (
+        rightConditionValue instanceof FilterExplorerTreeNodeConditionValueState
+      ) {
+        const changeExplorerTreeNode = async (
+          explorerNode: QueryBuilderExplorerTreePropertyNodeData,
+        ): Promise<void> => {
+          rightConditionValue.changeNode(explorerNode);
+        };
+        return (
+          <div
+            ref={dropConnector}
+            className="query-builder-post-filter-tree__condition-node__value"
+          >
+            <PanelEntryDropZonePlaceholder
+              isDragOver={isFilterValueDragOver}
+              isDroppable={isFilterValueDroppable}
+              label="Change Filter Value"
+            >
+              <QueryBuilderExplorerTreeNodeBadge
+                node={rightConditionValue.node}
+                onNodeChange={
+                  isFilterValueDroppable ? changeExplorerTreeNode : undefined
+                }
+                removeNode={removeExplorerTreeNodeValue}
+              />
+            </PanelEntryDropZonePlaceholder>
+          </div>
+        );
+      }
+      return null;
     };
 
     useEffect(() => {
@@ -835,7 +1235,7 @@ const QueryBuilderFilterConditionEditor = observer(
       >
         <PanelEntryDropZonePlaceholder
           isDragOver={isDragOver}
-          label="Add New Logical Group"
+          alwaysShowChildren={true}
         >
           <div className="query-builder-filter-tree__condition-node">
             <div className="query-builder-filter-tree__condition-node__property">
@@ -872,39 +1272,7 @@ const QueryBuilderFilterConditionEditor = observer(
                 <CaretDownIcon />
               </div>
             </ControlledDropdownMenu>
-            {node.condition.value && (
-              <div
-                ref={dropConnector}
-                data-testid={
-                  QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_VALUE
-                }
-                className="query-builder-filter-tree__condition-node__value"
-              >
-                <PanelEntryDropZonePlaceholder
-                  isDragOver={isFilterValueDragOver}
-                  label="Change Filter Value"
-                >
-                  <EditableBasicValueSpecificationEditor
-                    valueSpecification={node.condition.value}
-                    setValueSpecification={changeValueSpecification}
-                    graph={graph}
-                    observerContext={queryBuilderState.observerContext}
-                    typeCheckOption={{
-                      expectedType:
-                        node.condition.propertyExpressionState
-                          .propertyExpression.func.value.genericType.value
-                          .rawType,
-                    }}
-                    resetValue={resetNode}
-                    selectorConfig={selectorConfig}
-                    isConstant={queryBuilderState.constantState.isValueSpecConstant(
-                      node.condition.value,
-                    )}
-                    initializeAsEditable={node.isNewlyAdded}
-                  />
-                </PanelEntryDropZonePlaceholder>
-              </div>
-            )}
+            {renderRightValue()}
           </div>
         </PanelEntryDropZonePlaceholder>
       </div>

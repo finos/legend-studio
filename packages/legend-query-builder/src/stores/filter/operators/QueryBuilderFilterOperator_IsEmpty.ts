@@ -69,7 +69,7 @@ export class QueryBuilderFilterOperator_IsEmpty
   isCompatibleWithFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): boolean {
-    return filterConditionState.value === undefined;
+    return filterConditionState.rightConditionValue === undefined;
   }
 
   getDefaultFilterConditionValue(

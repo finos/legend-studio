@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import type {
-  QueryBuilderFilterState,
-  FilterConditionState,
+import {
+  type QueryBuilderFilterState,
+  type FilterConditionState,
+  FilterValueSpecConditionValueState,
 } from '../QueryBuilderFilterState.js';
 import { QueryBuilderFilterOperator } from '../QueryBuilderFilterOperator.js';
 import {
@@ -81,7 +82,11 @@ export class QueryBuilderFilterOperator_In
     const propertyType =
       filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
-    const valueSpec = filterConditionState.value;
+    const valueSpec: ValueSpecification | undefined =
+      filterConditionState.rightConditionValue instanceof
+      FilterValueSpecConditionValueState
+        ? filterConditionState.rightConditionValue.value
+        : undefined;
     if (valueSpec instanceof CollectionInstanceValue) {
       if (valueSpec.values.length === 0) {
         return true;

@@ -37,7 +37,6 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
   buildNotExpression,
-  getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../QueryBuilderStateHashUtils.js';
@@ -64,9 +63,11 @@ export class QueryBuilderFilterOperator_StartWith
   isCompatibleWithFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): boolean {
-    const type = filterConditionState.value
-      ? getNonCollectionValueSpecificationType(filterConditionState.value)
-      : undefined;
+    const type =
+      filterConditionState.rightConditionValue &&
+      !filterConditionState.rightConditionValue.isCollection
+        ? filterConditionState.rightConditionValue.type
+        : undefined;
     return PrimitiveType.STRING === type;
   }
 

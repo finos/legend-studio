@@ -2004,7 +2004,7 @@ test(
           Array.from(queryBuilderState.filterState.nodes.values()),
         ),
         QueryBuilderFilterTreeConditionNodeData,
-      ).condition.value,
+      ).condition.rightConditionValue,
       PrimitiveInstanceValue,
     );
 
@@ -2072,7 +2072,7 @@ test(
           Array.from(queryBuilderState.filterState.nodes.values()),
         ),
         QueryBuilderFilterTreeConditionNodeData,
-      ).condition.value,
+      ).condition.rightConditionValue,
       PrimitiveInstanceValue,
     );
 
