@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.5.14
+
+### Patch Changes
+
+- [#3204](https://github.com/finos/legend-studio/pull/3204) [`aef6560`](https://github.com/finos/legend-studio/commit/aef656034324424171c33cabf9ba470bceb31b8c) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add sortby dropdown in Query Loader
+
 ## 13.5.13
 
 ## 13.5.12
