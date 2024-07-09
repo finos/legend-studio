@@ -21,6 +21,8 @@ import { ServerSideRowModelModule } from '@ag-grid-enterprise/server-side-row-mo
 import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
 import { ClipboardModule } from '@ag-grid-enterprise/clipboard';
 import { MenuModule } from '@ag-grid-enterprise/menu';
+import { SideBarModule } from '@ag-grid-enterprise/side-bar';
+import { ColumnsToolPanelModule } from '@ag-grid-enterprise/column-tool-panel';
 import { AgGridReact } from '@ag-grid-community/react';
 import { useEffect } from 'react';
 import { useREPLStore } from '../../REPLStoreProvider.js';
@@ -231,20 +233,39 @@ export const DataCubeGridStyleController = observer(() => {
   );
 });
 
-const DataCubeGridStatusBar = observer(() => {
+const DataCubeGridScroller = observer(() => {
   const replStore = useREPLStore();
   const dataCube = replStore.dataCube;
   const grid = dataCube.grid;
   const scrollHintText = grid.scrollHintText;
+  const gridClientSideBarElement = document.querySelector(
+    '.data-cube-grid .ag-side-bar',
+  );
+
+  return (
+    <div
+      className="absolute -top-9 flex items-center rounded-sm border border-neutral-300 bg-neutral-100 p-1 pr-2 text-neutral-500 shadow-sm"
+      style={{
+        right:
+          gridClientSideBarElement !== null
+            ? gridClientSideBarElement.getBoundingClientRect().width + 12
+            : 16,
+      }}
+    >
+      <DataCubeIcon.TableScroll className="text-lg" />
+      <div className="ml-1 font-mono text-sm">{scrollHintText ?? ''}</div>
+    </div>
+  );
+});
+
+const DataCubeGridStatusBar = observer(() => {
+  const replStore = useREPLStore();
+  const dataCube = replStore.dataCube;
+  const grid = dataCube.grid;
 
   return (
     <div className="relative flex h-5 w-full select-none justify-between border-b border-neutral-200 bg-neutral-100">
-      {Boolean(scrollHintText) && (
-        <div className="absolute -top-9 right-4 flex items-center rounded-sm border border-neutral-300 bg-neutral-100 p-1 pr-2 text-neutral-500 shadow-sm">
-          <DataCubeIcon.TableScroll className="text-lg" />
-          <div className="ml-1 font-mono text-sm">{scrollHintText}</div>
-        </div>
-      )}
+      {Boolean(grid.scrollHintText) && <DataCubeGridScroller />}
       <div />
       <div className="flex h-full items-center">
         <div className="flex h-full items-center px-2 font-mono text-sm text-neutral-500">
@@ -336,6 +357,8 @@ const DataCubeGridClient = observer(() => {
           MenuModule,
           ClipboardModule,
           RangeSelectionModule,
+          SideBarModule,
+          ColumnsToolPanelModule,
         ]}
         {...generateBaseGridOptions(dataCube)}
       />

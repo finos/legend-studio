@@ -52,6 +52,7 @@ import {
   INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING,
   INTERNAL__GRID_CLIENT_HEADER_HEIGHT,
   INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY,
+  INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
@@ -103,7 +104,6 @@ function _cellDataType(column: DataCubeQuerySnapshotColumn) {
 function _allowedAggFuncs(column: DataCubeQuerySnapshotColumn) {
   switch (column.type) {
     case PRIMITIVE_TYPE.STRING:
-      return [];
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.DATETIME:
     case PRIMITIVE_TYPE.STRICTDATE:
@@ -499,7 +499,7 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
       grid.setScrollHintText(`${start}-${end}/${rowCount}`);
       event.api.hidePopupMenu(); // hide context-menu while scrolling
     },
-    onBodyScrollEnd: () => grid.setScrollHintText(''),
+    onBodyScrollEnd: () => grid.setScrollHintText(undefined),
     // -------------------------------------- CONTEXT MENU --------------------------------------
     preventDefaultOnContextMenu: true, // prevent showing the browser's context menu
     columnMenu: 'new', // ensure context menu works on header
@@ -521,6 +521,28 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     suppressServerSideFullWidthLoadingRow: true, // make sure each column has its own loading indicator instead of the whole row
     // -------------------------------------- SELECTION --------------------------------------
     enableRangeSelection: true,
+    // -------------------------------------- SIDEBAR --------------------------------------
+    sideBar: {
+      toolPanels: [
+        {
+          id: 'columns',
+          labelDefault: 'Columns',
+          labelKey: 'columns',
+          iconKey: 'columns',
+          toolPanel: 'agColumnsToolPanel',
+          minWidth: INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
+          width: INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
+          toolPanelParams: {
+            suppressValues: true,
+            // TODO: enable when we support pivot
+            suppressPivotMode: true,
+            suppressPivots: true,
+          },
+        },
+      ],
+      position: 'right',
+    },
+    allowDragFromColumnsToolPanel: true,
     // -------------------------------------- PERFORMANCE --------------------------------------
     animateRows: false, // improve performance
     suppressColumnMoveAnimation: true, // improve performance
@@ -622,7 +644,8 @@ export function generateGridOptionsFromSnapshot(
           headerName: column.name,
           field: column.name,
           menuTabs: [],
-          suppressMovable: true,
+          // suppressMovable: true,
+          // pivot: true,
 
           ..._displaySpec(columnData),
           ..._sizeSpec(columnData),

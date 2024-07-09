@@ -136,18 +136,12 @@ button:focus-visible {
   --ag-font-family: 'Roboto', sans-serif;
   --ag-icon-font-color: var(--tw-color-neutral-500);
   --ag-header-foreground-color: var(--tw-color-black);
-  --ag-row-hover-color: #d4d4d415; // tailwind neutral 300
-  --ag-tooltip-background-color: var(--tw-color-white);
+  --ag-row-hover-color: #d4d4d415; // from tailwind neutral 300
   --ag-popup-shadow: 2px 2px 5px rgb(0 0 0 / 20%);
 
-  // NOTE: These are icons taken from Tabler and URI encoded
-  // See https://yoksel.github.io/url-encoder/
-  // See https://tablericons.com/
-  // See https://github.com/tabler/tabler-icons
-  --ag-icon-font-code-group: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='icon icon-tabler icon-tabler-table-column' width='12' height='12' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23000000' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z' /%3E%3Cpath d='M10 10h11' /%3E%3Cpath d='M10 3v18' /%3E%3Cpath d='M9 3l-6 6' /%3E%3Cpath d='M10 7l-7 7' /%3E%3Cpath d='M10 12l-7 7' /%3E%3Cpath d='M10 17l-4 4' /%3E%3C/svg%3E");
-  --ag-icon-font-code-pivot: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='icon icon-tabler icon-tabler-table-row' width='12' height='12' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23000000' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z' /%3E%3Cpath d='M9 3l-6 6' /%3E%3Cpath d='M14 3l-7 7' /%3E%3Cpath d='M19 3l-7 7' /%3E%3Cpath d='M21 6l-4 4' /%3E%3Cpath d='M3 10h18' /%3E%3Cpath d='M10 10v11' /%3E%3C/svg%3E");
+  // --------------------------------- Pinning ---------------------------------
+  // Improve visibility of pinned columns
 
-  // Improve visibility for pinned columns region
   .ag-cell.ag-cell-last-left-pinned {
     border-right: none;
   }
@@ -166,7 +160,11 @@ button:focus-visible {
     border-left: 3px double var(--tw-color-neutral-400);
   }
 
-  // Improve responsiveness for tooltip
+  // --------------------------------- Tooltip ---------------------------------
+  // Improve visibility of tooltips
+
+  --ag-tooltip-background-color: var(--tw-color-white);
+
   .ag-tooltip {
     padding: 3px 5px;
     border: 1px solid var(--tw-color-neutral-500);
@@ -178,6 +176,47 @@ button:focus-visible {
     transition: opacity 0.2s;
   }
 
+  // --------------------------------- Header ---------------------------------
+
+  .ag-header-cell-label .ag-sort-order {
+    font-size: 10px;
+    margin-left: 5px;
+    margin-right: -2px;
+    color: var(--tw-color-neutral-500);
+    font-weight: 500;
+  }
+
+  // --------------------------------- Context Menu ---------------------------------
+  .ag-menu {
+    // Gives more spacing to the menu compared to the grid where we favors compactness
+    --ag-grid-size: 3px;
+  }
+
+  .ag-menu-list {
+    min-width: 120px;
+  }
+
+  // --------------------------------- Side Bar + Drop Zone (for pivoting) ---------------------------------
+  // These are styling for the row grouping and pivot drop zones / panels on top of the grid and the side bar
+  // NOTE: we need to do some CSS hacking to rename some terminology hard-coded with ag-grid:
+  // e.g. row group -> vertical pivot, column label -> horizontal pivot
+  //
+  // These styles, therefore, are farily fragile and should be frequently reviewed when upgrading ag-grid
+
+  // NOTE: These are icons taken from Tabler and URI encoded
+  // See https://yoksel.github.io/url-encoder/
+  // See https://tablericons.com/
+  // See https://github.com/tabler/tabler-icons
+  --ag-icon-font-code-group: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='icon icon-tabler icon-tabler-table-column' width='12' height='12' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23000000' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z' /%3E%3Cpath d='M10 10h11' /%3E%3Cpath d='M10 3v18' /%3E%3Cpath d='M9 3l-6 6' /%3E%3Cpath d='M10 7l-7 7' /%3E%3Cpath d='M10 12l-7 7' /%3E%3Cpath d='M10 17l-4 4' /%3E%3C/svg%3E");
+  --ag-icon-font-code-pivot: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='icon icon-tabler icon-tabler-table-row' width='12' height='12' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23000000' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z' /%3E%3Cpath d='M9 3l-6 6' /%3E%3Cpath d='M14 3l-7 7' /%3E%3Cpath d='M19 3l-7 7' /%3E%3Cpath d='M21 6l-4 4' /%3E%3Cpath d='M3 10h18' /%3E%3Cpath d='M10 10v11' /%3E%3C/svg%3E");
+  --ag-icon-font-code-columns: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='icon icon-tabler icon-tabler-columns-3' width='12' height='12' viewBox='0 0 24 24' stroke-width='1.5' stroke='black' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M3 3m0 1a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v16a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1zm6 -1v18m6 -18v18' /%3E%3C/svg%3E");
+  --ag-control-panel-background-color: var(--tw-color-neutral-100);
+  --ag-widget-container-horizontal-padding: 4px;
+  --ag-widget-container-vertical-padding: 4px;
+  --ag-list-item-height: 18px;
+  --ag-widget-horizontal-spacing: 4px;
+  --ag-widget-vertical-spacing: 4px;
+
   .ag-column-drop-cell {
     height: 16px;
     display: flex;
@@ -185,8 +224,35 @@ button:focus-visible {
 
     .ag-column-drop-cell-text {
       height: 16px;
+      line-height: 16px;
+      color: var(--ag-secondary-foreground-color);
     }
   }
+
+  .ag-side-bar {
+    background: var(--tw-color-neutral-100);
+  }
+
+  .ag-column-panel {
+    .ag-input-field-input.ag-text-field-input {
+      padding: 0 4px;
+    }
+  }
+
+  .ag-column-drop-title-bar.ag-column-drop-vertical-title-bar {
+    border-bottom: 1px solid var(--ag-border-color);
+    padding-bottom: 3px;
+    margin-bottom: 3px;
+  }
+
+  .ag-column-drop {
+    // Gives more spacing to the tool panel compared to the grid where we favors compactness
+    --ag-grid-size: 2px;
+  }
+
+  // ---------------------------------------------------------------------------
+  // NOTE: These following styles hacks the hard-coded terminology in ag-grid
+  // They are brittle and should be reviewed when upgrading ag-grid
 
   .ag-column-drop-empty-message.ag-column-drop-horizontal-empty-message {
     font-size: 0;
@@ -204,29 +270,39 @@ button:focus-visible {
     font-size: 11px;
   }
 
-  .ag-header-cell-label .ag-sort-order {
-    font-size: 10px;
-    margin-left: 5px;
-    margin-right: -2px;
-    color: var(--tw-color-neutral-500);
-    font-weight: 500;
+  .ag-column-drop-title-bar.ag-column-drop-vertical-title-bar
+    .ag-column-drop-title.ag-column-drop-vertical-title {
+    font-size: 0;
   }
 
-  .ag-menu-list {
-    min-width: 120px;
+  .ag-column-drop-title-bar.ag-column-drop-vertical-title-bar
+    .ag-icon.ag-icon-group
+    + span::after {
+    content: 'Vertical Pivots';
+    font-size: 11px;
   }
 
-  .ag-menu-option-icon {
-    padding: 5px 5px 0;
+  .ag-column-drop-title-bar.ag-column-drop-vertical-title-bar
+    .ag-icon.ag-icon-pivot
+    + span::after {
+    content: 'Horizontal Pivots';
+    font-size: 11px;
   }
 
-  .ag-menu-option-part {
-    padding: 5px 2px;
+  .ag-column-drop-empty-message.ag-column-drop-vertical-empty-message {
+    font-size: 0;
+    padding-top: 5px;
   }
 
-  .ag-menu-option-popup-pointer {
-    padding: 5px 5px 5px 0;
+  .ag-column-drop-list.ag-column-drop-vertical-list[aria-label='Row Groups']
+    .ag-column-drop-empty-message.ag-column-drop-vertical-empty-message::after,
+  .ag-column-drop-list.ag-column-drop-vertical-list[aria-label='Column Labels']
+    .ag-column-drop-empty-message.ag-column-drop-vertical-empty-message::after {
+    content: 'Drag columns here to set pivots';
+    font-size: 11px;
+    font-weight: initial;
   }
+  // ---------------------------------------------------------------------------
 }
 
 .data-cube-column-selector .ag-theme-balham {

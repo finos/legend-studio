@@ -48,7 +48,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   clientLicenseKey?: string | undefined;
 
   isPaginationEnabled = false;
-  scrollHintText = '';
+  scrollHintText?: string | undefined;
   datasourceConfiguration: DataCubeGridDatasourceConfiguration;
   queryConfiguration: DataCubeConfiguration;
 
@@ -90,7 +90,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
   }
 
-  setScrollHintText(val: string): void {
+  setScrollHintText(val: string | undefined): void {
     this.scrollHintText = val;
   }
 
