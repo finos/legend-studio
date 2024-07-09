@@ -79,7 +79,6 @@ import {
 import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
 import { DataCubeIcon } from '@finos/legend-art';
 import type { DataCubeState } from '../DataCubeState.js';
-import { buildGridMenu } from '../../../components/dataCube/grid/menu/DataCubeGridMenu.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -460,7 +459,7 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     suppressAggFuncInHeader: true, //  keeps the columns stable when aggregation is used
     // -------------------------------------- PIVOT --------------------------------------
     // pivotPanelShow: "always"
-    // pivotMode:true,
+    // pivotMode:true, // TODO: need to make sure we don't hide away any columns when this is enabled
     // -------------------------------------- SORT --------------------------------------
     // Force multi-sorting since this is what the query supports anyway
     alwaysMultiSort: true,
@@ -503,8 +502,10 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     // -------------------------------------- CONTEXT MENU --------------------------------------
     preventDefaultOnContextMenu: true, // prevent showing the browser's context menu
     columnMenu: 'new', // ensure context menu works on header
-    getContextMenuItems: buildGridMenu,
-    getMainMenuItems: buildGridMenu,
+    // NOTE: dynamically generate the content of the context menu to make sure the items are not stale
+    getContextMenuItems: (params) =>
+      grid.controller.menuBuilder?.(params) ?? [],
+    getMainMenuItems: (params) => grid.controller.menuBuilder?.(params) ?? [],
     // -------------------------------------- COLUMN SIZING --------------------------------------
     autoSizePadding: INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING,
     autoSizeStrategy: {

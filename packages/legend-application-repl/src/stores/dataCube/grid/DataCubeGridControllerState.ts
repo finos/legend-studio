@@ -27,6 +27,13 @@ import type {
 } from '../core/DataCubeQuerySnapshot.js';
 import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
 import type { DataCubeColumnPinPlacement } from '../core/DataCubeQueryEngine.js';
+import type {
+  GetContextMenuItemsParams,
+  GetMainMenuItemsParams,
+  MenuItemDef,
+} from '@ag-grid-community/core';
+import type { DataCubeState } from '../DataCubeState.js';
+import { generateMenuBuilder } from './DataCubeGridMenuBuilder.js';
 
 /**
  * This state is responsible for capturing edition to the data cube query
@@ -42,6 +49,14 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber
 
   sortableColumns: DataCubeQuerySnapshotColumn[] = [];
   sortColumns: DataCubeQuerySnapshotSortColumn[] = [];
+
+  menuBuilder?:
+    | ((
+        params:
+          | GetContextMenuItemsParams<unknown, { dataCube: DataCubeState }>
+          | GetMainMenuItemsParams<unknown, { dataCube: DataCubeState }>,
+      ) => (string | MenuItemDef)[])
+    | undefined;
 
   getActionableSortColumn(
     colName: string,
@@ -149,6 +164,8 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber
     this.configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
     );
+
+    this.menuBuilder = generateMenuBuilder(this);
   }
 
   override async initialize(): Promise<void> {
