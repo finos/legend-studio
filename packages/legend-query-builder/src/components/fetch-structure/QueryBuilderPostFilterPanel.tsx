@@ -114,6 +114,11 @@ import {
 import { QueryBuilderPropertyNameDisplay } from '../QueryBuilderPropertyExpressionEditor.js';
 import { convertTextToPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 
+export const CAN_DROP_MAIN_GROUP_DND_TYPES = [
+  QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+  QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
+];
+
 export const CAN_DROP_POST_FILTER_NODE_DND_TYPES = [
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
   QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
@@ -967,7 +972,7 @@ const QueryBuilderPostFilterPanelContent = observer(
     const { isDroppable } = useDragLayer((monitor) => ({
       isDroppable:
         monitor.isDragging() &&
-        CAN_DROP_POST_FILTER_NODE_DND_TYPES.includes(
+        CAN_DROP_MAIN_GROUP_DND_TYPES.includes(
           monitor.getItemType()?.toString() ?? '',
         ),
     }));
@@ -1026,7 +1031,7 @@ const QueryBuilderPostFilterPanelContent = observer(
       { isDragOver: boolean }
     >(
       () => ({
-        accept: CAN_DROP_POST_FILTER_NODE_DND_TYPES,
+        accept: CAN_DROP_MAIN_GROUP_DND_TYPES,
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item).catch(applicationStore.alertUnhandledError);
