@@ -17,9 +17,16 @@
 import { makeObservable, observable, action, computed } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
-export abstract class DataCubeEditorColumnsSelectorColumnState {
-  abstract get name(): string;
+export class DataCubeEditorColumnsSelectorColumnState {
+  readonly name: string;
+  readonly type: string;
+
+  constructor(name: string, type: string) {
+    this.name = name;
+    this.type = type;
+  }
 }
 
 export enum DataCubeEditorColumnsSelectorColumnsVisibility {
@@ -28,14 +35,13 @@ export enum DataCubeEditorColumnsSelectorColumnsVisibility {
   HIDDEN = 'hidden',
 }
 
-export class DataCubeEditorColumnsSelectorState<
+export abstract class DataCubeEditorColumnsSelectorState<
   T extends DataCubeEditorColumnsSelectorColumnState,
 > {
   readonly dataCube!: DataCubeState;
   readonly editor!: DataCubeEditorState;
 
-  allAvailableColumns: T[] = [];
-  allSelectedColumns: T[] = [];
+  selectedColumns: T[] = [];
 
   availableColumnsSearchText = '';
   selectedColumnsSearchText = '';
@@ -57,17 +63,12 @@ export class DataCubeEditorColumnsSelectorState<
     },
   ) {
     makeObservable(this, {
-      allAvailableColumns: observable,
       availableColumns: computed,
-      visibleAvailableColumns: computed,
-      hiddenAvailableColumns: computed,
-      setAllAvailableColumns: action,
+      availableColumnsForDisplay: computed,
+      selectedColumnsForDisplay: computed,
 
-      allSelectedColumns: observable,
-      selectedColumns: computed,
-      visibleSelectedColumns: computed,
-      hiddenSelectedColumns: computed,
-      setAllSelectedColumns: action,
+      selectedColumns: observable,
+      setSelectedColumns: action,
 
       availableColumnsSearchText: observable,
       setAvailableColumnsSearchText: action,
@@ -93,73 +94,38 @@ export class DataCubeEditorColumnsSelectorState<
     this.columnsVisibility = visibility;
   }
 
-  get hiddenAvailableColumns(): T[] {
-    return this.allAvailableColumns.filter((column) =>
-      Boolean(
-        this.editor.columnProperties.hiddenColumns.find(
-          (hiddenColumn) => hiddenColumn.name === column.name,
-        ),
-      ),
-    );
+  abstract get availableColumns(): T[];
+
+  get availableColumnsForDisplay(): T[] {
+    return this.availableColumns
+      .filter(
+        (column) =>
+          !this.selectedColumns.find((col) => column.name === col.name),
+      )
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .filter(
+        (column) =>
+          this.columnsVisibility !==
+            DataCubeEditorColumnsSelectorColumnsVisibility.HIDDEN ||
+          !this.editor.columnProperties.columns.find(
+            (col) => col.name === column.name,
+          )?.hideFromView,
+      );
   }
 
-  get hiddenSelectedColumns(): T[] {
-    return this.allSelectedColumns.filter((column) =>
-      Boolean(
-        this.editor.columnProperties.hiddenColumns.find(
-          (hiddenColumn) => hiddenColumn.name === column.name,
-        ),
-      ),
-    );
-  }
-
-  get visibleAvailableColumns(): T[] {
-    return this.allAvailableColumns.filter(
+  get selectedColumnsForDisplay(): T[] {
+    return this.selectedColumns.filter(
       (column) =>
-        !this.editor.columnProperties.hiddenColumns.find(
-          (hiddenColumn) => hiddenColumn.name === column.name,
-        ),
+        this.columnsVisibility !==
+          DataCubeEditorColumnsSelectorColumnsVisibility.HIDDEN ||
+        !this.editor.columnProperties.columns.find(
+          (col) => col.name === column.name,
+        )?.hideFromView,
     );
   }
 
-  get visibleSelectedColumns(): T[] {
-    return this.allSelectedColumns.filter(
-      (column) =>
-        !this.editor.columnProperties.hiddenColumns.find(
-          (hiddenColumn) => hiddenColumn.name === column.name,
-        ),
-    );
-  }
-
-  get availableColumns(): T[] {
-    if (
-      this.columnsVisibility ===
-      DataCubeEditorColumnsSelectorColumnsVisibility.HIDDEN
-    ) {
-      return this.visibleAvailableColumns;
-    }
-    return this.allAvailableColumns;
-  }
-
-  get selectedColumns(): T[] {
-    if (
-      this.columnsVisibility ===
-      DataCubeEditorColumnsSelectorColumnsVisibility.HIDDEN
-    ) {
-      return this.visibleSelectedColumns;
-    }
-    return this.allSelectedColumns;
-  }
-
-  setAllAvailableColumns(val: T[]): void {
-    this.allAvailableColumns = val
-      .slice()
-      .sort((a, b) => a.name.localeCompare(b.name));
-    this.onChange?.(this);
-  }
-
-  setAllSelectedColumns(val: T[]): void {
-    this.allSelectedColumns = val;
+  setSelectedColumns(val: T[]): void {
+    this.selectedColumns = val.map((col) => this.cloneColumn(col));
     this.onChange?.(this);
   }
 
@@ -171,11 +137,12 @@ export class DataCubeEditorColumnsSelectorState<
     this.selectedColumnsSearchText = val;
   }
 
-  getAvailableColumn(colName: string): T | undefined {
-    return this.allAvailableColumns.find((col) => col.name === colName);
+  getColumn(colName: string): T {
+    return guaranteeNonNullable(
+      this.availableColumns.find((col) => col.name === colName),
+      `Can't find column '${colName}'`,
+    );
   }
 
-  getSelectedColumn(colName: string): T | undefined {
-    return this.allSelectedColumns.find((col) => col.name === colName);
-  }
+  abstract cloneColumn(column: T): T;
 }

@@ -342,11 +342,11 @@ export function validateAndBuildQuerySnapshot(
 
   // --------------------------------- SOURCE ---------------------------------
 
-  data.originalColumns = baseQuery.source.columns.map((col) => ({
+  data.sourceColumns = baseQuery.source.columns.map((col) => ({
     name: col.name,
     type: col.type,
   }));
-  data.originalColumns.map((col) => colsMap.set(col.name, col));
+  data.sourceColumns.map((col) => colsMap.set(col.name, col));
 
   // --------------------------------- FILTER ---------------------------------
   // TODO: @akphi - implement this

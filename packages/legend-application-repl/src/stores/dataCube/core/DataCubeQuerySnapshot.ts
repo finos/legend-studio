@@ -82,7 +82,7 @@ export type DataCubeQuerySnapshotData = {
   runtime: string;
   sourceQuery: PlainObject<V1_ValueSpecification>;
   configuration: PlainObject<DataCubeConfiguration>;
-  originalColumns: DataCubeQuerySnapshotColumn[];
+  sourceColumns: DataCubeQuerySnapshotColumn[];
   leafExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
   filter?: DataCubeQuerySnapshotFilter | undefined;
   groupBy?: DataCubeQuerySnapshotGroupBy | undefined;
@@ -120,7 +120,7 @@ export class DataCubeQuerySnapshot {
       runtime,
       sourceQuery,
       configuration,
-      originalColumns: [],
+      sourceColumns: [],
       leafExtendedColumns: [],
       selectColumns: [],
       filter: undefined,
@@ -156,9 +156,9 @@ export class DataCubeQuerySnapshot {
     switch (stage) {
       case 'filter':
       case 'leaf-extend':
-        return [...this.data.originalColumns];
+        return [...this.data.sourceColumns];
       case 'select':
-        return [...this.data.originalColumns, ...this.data.leafExtendedColumns];
+        return [...this.data.sourceColumns, ...this.data.leafExtendedColumns];
       case 'aggregation':
         return [...this.data.selectColumns];
       case 'group-extend':

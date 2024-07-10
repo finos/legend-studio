@@ -16,11 +16,7 @@
 
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
-import {
-  _getCol,
-  type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotColumn,
-} from '../core/DataCubeQuerySnapshot.js';
+import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import { DataCubeQuerySortOperation } from '../core/DataCubeQueryEngine.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import {
@@ -31,30 +27,48 @@ import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
 export class DataCubeEditorSortColumnState extends DataCubeEditorColumnsSelectorColumnState {
-  readonly column: DataCubeQuerySnapshotColumn;
   operation: DataCubeQuerySortOperation;
 
   constructor(
-    column: DataCubeQuerySnapshotColumn,
+    name: string,
+    type: string,
     direction: DataCubeQuerySortOperation,
   ) {
-    super();
+    super(name, type);
 
     makeObservable(this, {
       operation: observable,
       setOperation: action,
     });
 
-    this.column = column;
     this.operation = direction;
-  }
-
-  get name(): string {
-    return this.column.name;
   }
 
   setOperation(val: DataCubeQuerySortOperation): void {
     this.operation = val;
+  }
+}
+
+export class DataCubeEditorSortColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorSortColumnState> {
+  override cloneColumn(
+    column: DataCubeEditorSortColumnState,
+  ): DataCubeEditorSortColumnState {
+    return new DataCubeEditorSortColumnState(
+      column.name,
+      column.type,
+      column.operation,
+    );
+  }
+
+  override get availableColumns(): DataCubeEditorSortColumnState[] {
+    return this.editor.columns.selector.selectedColumns.map(
+      (col) =>
+        new DataCubeEditorSortColumnState(
+          col.name,
+          col.type,
+          DataCubeQuerySortOperation.ASCENDING,
+        ),
+    );
   }
 }
 
@@ -68,43 +82,22 @@ export class DataCubeEditorSortsPanelState
   constructor(editor: DataCubeEditorState) {
     this.editor = editor;
     this.dataCube = editor.dataCube;
-    this.selector = new DataCubeEditorColumnsSelectorState(editor, {
-      onChange: (selector) => {
-        // reset sort direction for all columns made available
-        selector.availableColumns.forEach((col) =>
-          col.setOperation(DataCubeQuerySortOperation.ASCENDING),
-        );
-      },
-    });
+    this.selector = new DataCubeEditorSortColumnsSelectorState(editor);
   }
 
   applySnaphot(
     snapshot: DataCubeQuerySnapshot,
     configuration: DataCubeConfiguration,
   ): void {
-    const columns = snapshot.stageCols('sort');
-    const sortColumns = snapshot.data.sortColumns;
-    this.selector.setAllAvailableColumns(
-      columns
-        .filter(
-          (col) => !sortColumns.find((sortCol) => sortCol.name === col.name),
-        )
-        .map(
-          (col) =>
-            new DataCubeEditorSortColumnState(
-              _getCol(columns, col.name),
-              DataCubeQuerySortOperation.ASCENDING,
-            ),
-        ),
-    );
-    this.selector.setAllSelectedColumns(
-      sortColumns.map(
-        (col) =>
-          new DataCubeEditorSortColumnState(
-            _getCol(columns, col.name),
-            col.operation,
-          ),
-      ),
+    this.selector.setSelectedColumns(
+      snapshot.data.sortColumns.map((col) => {
+        const column = this.selector.getColumn(col.name);
+        return new DataCubeEditorSortColumnState(
+          column.name,
+          column.type,
+          col.operation,
+        );
+      }),
     );
   }
 
@@ -112,12 +105,10 @@ export class DataCubeEditorSortsPanelState
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
   ): void {
-    newSnapshot.data.sortColumns = this.selector.selectedColumns.map(
-      (sortInfo) => ({
-        name: sortInfo.column.name,
-        type: sortInfo.column.type,
-        operation: sortInfo.operation,
-      }),
-    );
+    newSnapshot.data.sortColumns = this.selector.selectedColumns.map((col) => ({
+      name: col.name,
+      type: col.type,
+      operation: col.operation,
+    }));
   }
 }

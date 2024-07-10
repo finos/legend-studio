@@ -18,11 +18,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeColumnKind } from '../core/DataCubeQueryEngine.js';
-import {
-  _getCol,
-  type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotColumn,
-} from '../core/DataCubeQuerySnapshot.js';
+import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import {
   DataCubeEditorColumnsSelectorColumnState,
   DataCubeEditorColumnsSelectorState,
@@ -30,17 +26,29 @@ import {
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 
-export class DataCubeEditorGroupByColumnState extends DataCubeEditorColumnsSelectorColumnState {
-  readonly column: DataCubeQuerySnapshotColumn;
-
-  constructor(column: DataCubeQuerySnapshotColumn) {
-    super();
-
-    this.column = column;
+export class DataCubeEditorVerticalPivotColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState> {
+  override cloneColumn(
+    column: DataCubeEditorColumnsSelectorColumnState,
+  ): DataCubeEditorColumnsSelectorColumnState {
+    return new DataCubeEditorColumnsSelectorColumnState(
+      column.name,
+      column.type,
+    );
   }
 
-  get name(): string {
-    return this.column.name;
+  override get availableColumns(): DataCubeEditorColumnsSelectorColumnState[] {
+    return this.editor.columns.selector.selectedColumns
+      .map(
+        // TODO: filter group extended columns
+        (col) =>
+          new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
+      )
+      .filter(
+        (column) =>
+          this.editor.columnProperties.columns.find(
+            (col) => col.name === column.name,
+          )?.kind === DataCubeColumnKind.DIMENSION,
+      );
   }
 }
 
@@ -49,46 +57,22 @@ export class DataCubeEditorVerticalPivotsPanelState
 {
   readonly dataCube!: DataCubeState;
   readonly editor!: DataCubeEditorState;
-  readonly selector!: DataCubeEditorColumnsSelectorState<DataCubeEditorGroupByColumnState>;
+  readonly selector!: DataCubeEditorVerticalPivotColumnsSelectorState;
 
   constructor(editor: DataCubeEditorState) {
     this.editor = editor;
     this.dataCube = editor.dataCube;
-    this.selector = new DataCubeEditorColumnsSelectorState(editor, {
-      onChange: (selector) => {
-        // do nothing
-      },
-    });
+    this.selector = new DataCubeEditorVerticalPivotColumnsSelectorState(editor);
   }
 
   applySnaphot(
     snapshot: DataCubeQuerySnapshot,
     configuration: DataCubeConfiguration,
   ): void {
-    const columns = snapshot
-      .stageCols('aggregation')
-      .filter(
-        (column) =>
-          configuration.columns.find((col) => col.name === column.name)
-            ?.kind === DataCubeColumnKind.DIMENSION,
-      );
-    this.selector.setAllAvailableColumns(
-      columns
-        .filter(
-          (col) =>
-            !snapshot.data.groupBy?.columns.find(
-              (column) => column.name === col.name,
-            ),
-        )
-        .map(
-          (col) =>
-            new DataCubeEditorGroupByColumnState(_getCol(columns, col.name)),
-        ),
-    );
-    this.selector.setAllSelectedColumns(
+    this.selector.setSelectedColumns(
       (snapshot.data.groupBy?.columns ?? []).map(
         (col) =>
-          new DataCubeEditorGroupByColumnState(_getCol(columns, col.name)),
+          new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
       ),
     );
   }
@@ -100,7 +84,7 @@ export class DataCubeEditorVerticalPivotsPanelState
     newSnapshot.data.groupBy = {
       columns: this.selector.selectedColumns.map((column) => ({
         name: column.name,
-        type: column.column.type,
+        type: column.type,
       })),
       aggColumns: this.editor.columnProperties.columns
         .filter(
