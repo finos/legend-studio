@@ -26,23 +26,25 @@ import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumn
 import type { REPLWindowConfig } from '../../../components/REPLWindow.js';
 import { DataCubeEditorColumnsPanelState } from './DataCubeEditorColumnsPanelState.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
+import { DataCubeEditorVerticalPivotsPanelState } from './DataCubeEditorVerticalPivotsPanelState.js';
 
 export enum DATA_CUBE_EDITOR_TAB {
-  COLUMNS = 'Columns',
-  VERTICAL_PIVOTS = 'VPivots',
-  HORIZONTAL_PIVOTS = 'HPivots',
-  SORTS = 'Sorts',
-  EXTENDED_COLUMNS = 'Extended Columns',
-  FILTER = 'Filter',
   GENERAL_PROPERTIES = 'General Properties',
   COLUMN_PROPERTIES = 'Column Properties',
+  FILTER = 'Filter',
+  EXTENDED_COLUMNS = 'Extended Columns',
+  COLUMNS = 'Columns',
+  VERTICAL_PIVOTS = 'Vertical Pivots',
+  HORIZONTAL_PIVOTS = 'Horizontal Pivots',
+  SORTS = 'Sorts',
   CODE = 'Code',
 }
 
 export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
   readonly generalProperties: DataCubeEditorGeneralPropertiesPanelState;
-  readonly columns: DataCubeEditorColumnsPanelState;
   readonly columnProperties: DataCubeEditorColumnPropertiesPanelState;
+  readonly columns: DataCubeEditorColumnsPanelState;
+  readonly verticalPivots: DataCubeEditorVerticalPivotsPanelState;
   readonly sorts: DataCubeEditorSortsPanelState;
   readonly code: DataCubeEditorCodePanelState;
 
@@ -72,8 +74,9 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     this.generalProperties = new DataCubeEditorGeneralPropertiesPanelState(
       this,
     );
-    this.columns = new DataCubeEditorColumnsPanelState(this);
     this.columnProperties = new DataCubeEditorColumnPropertiesPanelState(this);
+    this.columns = new DataCubeEditorColumnsPanelState(this);
+    this.verticalPivots = new DataCubeEditorVerticalPivotsPanelState(this);
     this.sorts = new DataCubeEditorSortsPanelState(this);
     this.code = new DataCubeEditorCodePanelState(this);
   }
@@ -94,11 +97,15 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const snapshot = baseSnapshot.clone();
 
+    // NOTE: column selection must be processed first so necassary
+    // prunings can be done to make sure other panel stats are in sync
+    // with the current column selection
     this.columns.buildSnapshot(snapshot, baseSnapshot);
+    this.verticalPivots.buildSnapshot(snapshot, baseSnapshot);
     this.sorts.buildSnapshot(snapshot, baseSnapshot);
 
-    // NOTE: snapshot must be processed first to build the container configuration
-    // before proceeding to process the columns' configuration
+    // grid configuration must be processed before processing columns' configuration
+    // to properly generate the container configuration
     this.generalProperties.buildSnapshot(snapshot, baseSnapshot);
     this.columnProperties.buildSnapshot(snapshot, baseSnapshot);
 
@@ -117,6 +124,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     );
 
     this.columns.applySnaphot(snapshot, configuration);
+    this.verticalPivots.applySnaphot(snapshot, configuration);
     this.sorts.applySnaphot(snapshot, configuration);
 
     this.generalProperties.applySnaphot(snapshot, configuration);

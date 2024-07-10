@@ -18,12 +18,10 @@ import {
   type V1_AppliedFunction,
   extractElementNameFromPath as _name,
 } from '@finos/legend-graph';
+import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import {
   DataCubeQueryFilterGroupOperation,
-  DataCubeQuerySnapshotFilterOperation,
-  type DataCubeQuerySnapshot,
-} from '../core/DataCubeQuerySnapshot.js';
-import {
+  DataCubeQueryFilterOperation,
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
 } from '../core/DataCubeQueryEngine.js';
@@ -95,7 +93,7 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
                 _filter({
                   conditions: drilldownValues.map((drilldownValue, i) => ({
                     ...guaranteeNonNullable(groupBy.columns[i]),
-                    operation: DataCubeQuerySnapshotFilterOperation.EQUAL,
+                    operation: DataCubeQueryFilterOperation.EQUAL,
                     value: drilldownValue,
                   })),
                   groupOperation: DataCubeQueryFilterGroupOperation.AND,

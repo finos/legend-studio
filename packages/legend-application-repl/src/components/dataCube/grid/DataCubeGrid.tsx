@@ -51,7 +51,7 @@ import type {
   DataCubeConfiguration,
   DataCubeConfigurationColorKey,
 } from '../../../stores/dataCube/core/DataCubeConfiguration.js';
-import { generateBaseGridOptions } from '../../../stores/dataCube/grid/DataCubeGridQuerySnapshotAnalyzer.js';
+import { generateBaseGridOptions } from '../../../stores/dataCube/grid/DataCubeGridConfigurationBuilder.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.

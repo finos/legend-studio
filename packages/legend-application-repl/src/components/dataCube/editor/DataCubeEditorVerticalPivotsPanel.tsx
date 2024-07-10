@@ -17,27 +17,25 @@
 import { DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useREPLStore } from '../../REPLStoreProvider.js';
-import { useEffect } from 'react';
-import { WIP_Badge } from './DataCubeEditorShared.js';
+import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
 
-export const DataCubeEditorHPivotsPanel = observer(() => {
+export const DataCubeEditorVerticalPivotsPanel = observer(() => {
   const replStore = useREPLStore();
-  const panel = replStore.dataCube.editor.sorts;
-
-  useEffect(() => {}, [panel]); // TODO: @akphi - remove this dummy useEffect
+  const panel = replStore.dataCube.editor.verticalPivots;
 
   return (
     <div className="h-full w-full select-none p-2">
       <div className="flex h-6">
         <div className="flex h-6 items-center text-xl font-medium">
-          <DataCubeIcon.TablePivot />
+          <DataCubeIcon.TableGroupBy />
         </div>
         <div className="ml-1 flex h-6 items-center text-xl font-medium">
-          Horizontal Pivots
-          <WIP_Badge />
+          Vertical Pivots
         </div>
       </div>
-      <div className="flex h-[calc(100%_-_24px)] w-full"></div>
+      <div className="flex h-[calc(100%_-_24px)] w-full">
+        <DataCubeEditorColumnsSelector selector={panel.selector} />
+      </div>
     </div>
   );
 });

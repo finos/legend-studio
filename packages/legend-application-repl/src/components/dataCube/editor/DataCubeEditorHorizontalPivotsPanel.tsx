@@ -20,7 +20,7 @@ import { useREPLStore } from '../../REPLStoreProvider.js';
 import { useEffect } from 'react';
 import { WIP_Badge } from './DataCubeEditorShared.js';
 
-export const DataCubeEditorVPivotsPanel = observer(() => {
+export const DataCubeEditorHorizontalPivotsPanel = observer(() => {
   const replStore = useREPLStore();
   const panel = replStore.dataCube.editor.sorts;
 
@@ -30,10 +30,10 @@ export const DataCubeEditorVPivotsPanel = observer(() => {
     <div className="h-full w-full select-none p-2">
       <div className="flex h-6">
         <div className="flex h-6 items-center text-xl font-medium">
-          <DataCubeIcon.TableGroupBy />
+          <DataCubeIcon.TablePivot />
         </div>
         <div className="ml-1 flex h-6 items-center text-xl font-medium">
-          Vertical Pivots
+          Horizontal Pivots
           <WIP_Badge />
         </div>
       </div>

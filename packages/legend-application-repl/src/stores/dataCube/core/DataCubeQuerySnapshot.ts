@@ -25,51 +25,17 @@ import {
   type PlainObject,
   type Writable,
 } from '@finos/legend-shared';
-
-export enum DataCubeQuerySnapshotAggregateFunction {
-  AVERAGE = 'average',
-  COUNT = 'count',
-  DISTINCT = 'distinct',
-  FIRST = 'first',
-  JOIN_STRINGS = 'joinStrings',
-  LAST = 'last',
-  MAX = 'max',
-  MIN = 'min',
-  SUM = 'sum',
-  STD_DEV_POPULATION = 'stdDevPopulation',
-  STD_DEV_SAMPLE = 'stdDevSample',
-  UNIQUE_VALUE_ONLY = 'uniqueValueOnly',
-}
-
-export enum DataCubeQuerySnapshotFilterOperation {
-  EQUAL = 'equal',
-  NOT_EQUAL = 'notEqual',
-  GREATER_THAN = 'greaterThan',
-  GREATER_THAN_OR_EQUAL = 'greaterThanOrEqual',
-  LESS_THAN = 'lessThan',
-  LESS_THAN_OR_EQUAL = 'lessThanOrEqual',
-  BLANK = 'isEmpty',
-  NOT_BLANK = 'isNotEmpty',
-  CONTAINS = 'contains',
-  NOT_CONTAINS = 'notContains',
-  STARTS_WITH = 'startsWith',
-  ENDS_WITH = 'endsWith',
-}
-
-export enum DataCubeQuerySnapshotSortOperation {
-  ASCENDING = 'ascending',
-  DESCENDING = 'descending',
-}
-
-export enum DataCubeQueryFilterGroupOperation {
-  AND = 'AND',
-  OR = 'OR',
-}
+import type {
+  DataCubeAggregateFunction,
+  DataCubeQueryFilterGroupOperation,
+  DataCubeQueryFilterOperation,
+  DataCubeQuerySortOperation,
+} from './DataCubeQueryEngine.js';
 
 export type DataCubeQuerySnapshotFilterCondition =
   DataCubeQuerySnapshotColumn & {
     value: unknown;
-    operation: DataCubeQuerySnapshotFilterOperation;
+    operation: DataCubeQueryFilterOperation;
   };
 
 export type DataCubeQuerySnapshotFilter = {
@@ -92,12 +58,12 @@ export type DataCubeQuerySnapshotExtendedColumn =
   };
 
 export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {
-  operation: DataCubeQuerySnapshotSortOperation;
+  operation: DataCubeQuerySortOperation;
 };
 
 export type DataCubeQuerySnapshotAggregateColumn =
   DataCubeQuerySnapshotColumn & {
-    function: DataCubeQuerySnapshotAggregateFunction;
+    function: DataCubeAggregateFunction;
   };
 
 export type DataCubeQuerySnapshotGroupBy = {

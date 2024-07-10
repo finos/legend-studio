@@ -21,7 +21,7 @@ import type { DataCubeState } from '../DataCubeState.js';
 import { DataCubeGridClientServerSideDataSource } from './DataCubeGridClientEngine.js';
 import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
-import { generateGridOptionsFromSnapshot } from './DataCubeGridQuerySnapshotAnalyzer.js';
+import { generateGridOptionsFromSnapshot } from './DataCubeGridConfigurationBuilder.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeGridControllerState } from './DataCubeGridControllerState.js';
 

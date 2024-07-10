@@ -189,6 +189,31 @@ export enum DataCubeAggregateFunction {
   // custom
 }
 
+export enum DataCubeQueryFilterOperation {
+  EQUAL = 'equal',
+  NOT_EQUAL = 'notEqual',
+  GREATER_THAN = 'greaterThan',
+  GREATER_THAN_OR_EQUAL = 'greaterThanOrEqual',
+  LESS_THAN = 'lessThan',
+  LESS_THAN_OR_EQUAL = 'lessThanOrEqual',
+  BLANK = 'isEmpty',
+  NOT_BLANK = 'isNotEmpty',
+  CONTAINS = 'contains',
+  NOT_CONTAINS = 'notContains',
+  STARTS_WITH = 'startsWith',
+  ENDS_WITH = 'endsWith',
+}
+
+export enum DataCubeQueryFilterGroupOperation {
+  AND = 'and',
+  OR = 'or',
+}
+
+export enum DataCubeQuerySortOperation {
+  ASCENDING = 'ascending',
+  DESCENDING = 'descending',
+}
+
 export enum DataCubeColumnPinPlacement {
   LEFT = 'Left',
   RIGHT = 'Right',

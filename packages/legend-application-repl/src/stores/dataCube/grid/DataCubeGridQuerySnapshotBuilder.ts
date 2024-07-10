@@ -24,9 +24,7 @@
 import type { IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import {
   type DataCubeQuerySnapshot,
-  DataCubeQuerySnapshotSortOperation,
   _getCol,
-  DataCubeQuerySnapshotAggregateFunction,
 } from '../core/DataCubeQuerySnapshot.js';
 import {
   IllegalStateError,
@@ -37,23 +35,27 @@ import {
   GridClientAggregateOperation,
   GridClientSortDirection,
 } from './DataCubeGridClientEngine.js';
+import {
+  DataCubeQuerySortOperation,
+  DataCubeAggregateFunction,
+} from '../core/DataCubeQueryEngine.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
 function _aggFunc(
   func: GridClientAggregateOperation,
-): DataCubeQuerySnapshotAggregateFunction {
+): DataCubeAggregateFunction {
   switch (func) {
     case GridClientAggregateOperation.AVERAGE:
-      return DataCubeQuerySnapshotAggregateFunction.AVERAGE;
+      return DataCubeAggregateFunction.AVERAGE;
     case GridClientAggregateOperation.COUNT:
-      return DataCubeQuerySnapshotAggregateFunction.COUNT;
+      return DataCubeAggregateFunction.COUNT;
     case GridClientAggregateOperation.MAX:
-      return DataCubeQuerySnapshotAggregateFunction.MAX;
+      return DataCubeAggregateFunction.MAX;
     case GridClientAggregateOperation.MIN:
-      return DataCubeQuerySnapshotAggregateFunction.MIN;
+      return DataCubeAggregateFunction.MIN;
     case GridClientAggregateOperation.SUM:
-      return DataCubeQuerySnapshotAggregateFunction.SUM;
+      return DataCubeAggregateFunction.SUM;
     default:
       throw new IllegalStateError(`Unsupported aggregate function '${func}'`);
   }
@@ -97,8 +99,8 @@ export function buildQuerySnapshot(
     ..._getCol(baseSnapshot.stageCols('sort'), item.colId),
     operation:
       item.sort === GridClientSortDirection.ASCENDING
-        ? DataCubeQuerySnapshotSortOperation.ASCENDING
-        : DataCubeQuerySnapshotSortOperation.DESCENDING,
+        ? DataCubeQuerySortOperation.ASCENDING
+        : DataCubeQuerySortOperation.DESCENDING,
   }));
 
   // --------------------------------- FINALIZE ---------------------------------

@@ -22,8 +22,6 @@
  ***************************************************************************************/
 
 import {
-  DataCubeQuerySnapshotAggregateFunction,
-  DataCubeQuerySnapshotSortOperation,
   _findCol,
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
@@ -53,6 +51,7 @@ import {
   INTERNAL__GRID_CLIENT_HEADER_HEIGHT,
   INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY,
   INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
+  INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
@@ -68,12 +67,15 @@ import type {
   DataCubeConfiguration,
 } from '../core/DataCubeConfiguration.js';
 import {
+  DataCubeAggregateFunction,
   DataCubeColumnDataType,
   DataCubeColumnPinPlacement,
   DataCubeNumberScale,
   DEFAULT_ROW_BUFFER,
   DEFAULT_URL_LABEL_QUERY_PARAM,
   getDataType,
+  DataCubeQuerySortOperation,
+  DataCubeColumnKind,
 } from '../core/DataCubeQueryEngine.js';
 import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
 import { DataCubeIcon } from '@finos/legend-art';
@@ -123,18 +125,18 @@ function _allowedAggFuncs(column: DataCubeQuerySnapshotColumn) {
 }
 
 function _aggFunc(
-  func: DataCubeQuerySnapshotAggregateFunction,
+  func: DataCubeAggregateFunction,
 ): GridClientAggregateOperation {
   switch (func) {
-    case DataCubeQuerySnapshotAggregateFunction.AVERAGE:
+    case DataCubeAggregateFunction.AVERAGE:
       return GridClientAggregateOperation.AVERAGE;
-    case DataCubeQuerySnapshotAggregateFunction.COUNT:
+    case DataCubeAggregateFunction.COUNT:
       return GridClientAggregateOperation.COUNT;
-    case DataCubeQuerySnapshotAggregateFunction.MAX:
+    case DataCubeAggregateFunction.MAX:
       return GridClientAggregateOperation.MAX;
-    case DataCubeQuerySnapshotAggregateFunction.MIN:
+    case DataCubeAggregateFunction.MIN:
       return GridClientAggregateOperation.MIN;
-    case DataCubeQuerySnapshotAggregateFunction.SUM:
+    case DataCubeAggregateFunction.SUM:
       return GridClientAggregateOperation.SUM;
     default:
       throw new IllegalStateError(`Unsupported aggregate function '${func}'`);
@@ -390,7 +392,7 @@ function _sortSpec(columnData: ColumnData) {
   return {
     sortable: true, // if this is pivot column, no sorting is allowed
     sort: sortCol
-      ? sortCol.operation === DataCubeQuerySnapshotSortOperation.ASCENDING
+      ? sortCol.operation === DataCubeQuerySortOperation.ASCENDING
         ? GridClientSortDirection.ASCENDING
         : GridClientSortDirection.DESCENDING
       : null,
@@ -406,8 +408,8 @@ function _rowGroupSpec(columnData: ColumnData) {
   const groupByCol = _findCol(data.groupBy?.columns, column.name);
   const aggCol = _findCol(data.groupBy?.aggColumns, column.name);
   return {
-    enableRowGroup: true,
-    enableValue: true,
+    enableRowGroup: column.kind === DataCubeColumnKind.DIMENSION,
+    enableValue: column.kind === DataCubeColumnKind.MEASURE,
     rowGroup: Boolean(groupByCol),
     // TODO: @akphi - add this from configuration object
     aggFunc: aggCol
@@ -447,6 +449,8 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     groupDisplayType: 'custom', // keeps the column set stable even when row grouping is used
     suppressRowGroupHidesColumns: true, // keeps the column set stable even when row grouping is used
     suppressAggFuncInHeader: true, //  keeps the columns stable when aggregation is used
+    getChildCount: (data) =>
+      data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID],
     // -------------------------------------- PIVOT --------------------------------------
     // pivotPanelShow: "always"
     // pivotMode:true, // TODO: need to make sure we don't hide away any columns when this is enabled

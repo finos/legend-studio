@@ -36,7 +36,6 @@ import {
 import type { DataCubeQuery } from '../../../server/models/DataCubeQuery.js';
 import {
   DataCubeQuerySnapshot,
-  DataCubeQuerySnapshotSortOperation,
   type DataCubeQuerySnapshotColumn,
 } from './DataCubeQuerySnapshot.js';
 import {
@@ -47,6 +46,7 @@ import {
   type Clazz,
 } from '@finos/legend-shared';
 import {
+  DataCubeQuerySortOperation,
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
@@ -388,8 +388,8 @@ export function validateAndBuildQuerySnapshot(
           ..._col(_colSpecParam(sortColFunc, 0)),
           operation:
             _name(sortColFunc.function) === DataCubeFunction.ASC
-              ? DataCubeQuerySnapshotSortOperation.ASCENDING
-              : DataCubeQuerySnapshotSortOperation.DESCENDING,
+              ? DataCubeQuerySortOperation.ASCENDING
+              : DataCubeQuerySortOperation.DESCENDING,
         };
       },
     );

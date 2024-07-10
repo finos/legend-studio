@@ -21,11 +21,12 @@ import type {
 } from '@ag-grid-community/core';
 import { WIP_GridMenuItem } from '../../../components/dataCube/grid/DataCubeGridShared.js';
 import {
+  DataCubeQuerySortOperation,
   DataCubeColumnPinPlacement,
   DEFAULT_COLUMN_MIN_WIDTH,
+  DataCubeColumnKind,
 } from '../core/DataCubeQueryEngine.js';
 import { isNonNullable } from '@finos/legend-shared';
-import { DataCubeQuerySnapshotSortOperation } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeGridControllerState } from './DataCubeGridControllerState.js';
 
 export function generateMenuBuilder(
@@ -39,83 +40,103 @@ export function generateMenuBuilder(
   return (params: GetContextMenuItemsParams | GetMainMenuItemsParams) => {
     const column = params.column ?? undefined;
     const columnName = column?.getColId();
+    const columnConfiguration = controller.getColumnConfiguration(columnName);
     const value: unknown = 'value' in params ? params.value : undefined;
 
     const sortMenu = [
-      !column || !columnName
-        ? {
-            name: 'Sort',
-            disabled: true,
-            subMenu: [],
-          }
-        : {
-            name: 'Sort',
-            subMenu: [
-              {
-                name: 'Ascending',
-                action: () =>
-                  controller.sortByColumn(
-                    columnName,
-                    DataCubeQuerySnapshotSortOperation.ASCENDING,
+      {
+        name: 'Sort',
+        subMenu: [
+          ...(column && columnName
+            ? [
+                {
+                  name: 'Ascending',
+                  action: () =>
+                    controller.setSortByColumn(
+                      columnName,
+                      DataCubeQuerySortOperation.ASCENDING,
+                    ),
+                },
+                {
+                  name: 'Ascending Absolute',
+                  menuItem: WIP_GridMenuItem,
+                  cssClasses: ['!opacity-100'],
+                  disabled: true,
+                },
+                {
+                  name: 'Descending',
+                  action: () =>
+                    controller.setSortByColumn(
+                      columnName,
+                      DataCubeQuerySortOperation.DESCENDING,
+                    ),
+                },
+                {
+                  name: 'Descending Absolute',
+                  menuItem: WIP_GridMenuItem,
+                  cssClasses: ['!opacity-100'],
+                  disabled: true,
+                },
+                {
+                  name: 'Clear Sort',
+                  disabled: !controller.sortColumns.find(
+                    (col) => col.name === columnName,
                   ),
-              },
-              {
-                name: 'Ascending Absolute',
-                menuItem: WIP_GridMenuItem,
-                cssClasses: ['!opacity-100'],
-                disabled: true,
-              },
-              {
-                name: 'Descending',
-                action: () =>
-                  controller.sortByColumn(
-                    columnName,
-                    DataCubeQuerySnapshotSortOperation.DESCENDING,
+                  action: () => controller.clearSortByColumn(columnName),
+                },
+                'separator',
+                {
+                  name: 'Add Ascending',
+                  disabled: Boolean(
+                    controller.sortColumns.find(
+                      (col) =>
+                        col.name === columnName &&
+                        col.operation === DataCubeQuerySortOperation.ASCENDING,
+                    ),
                   ),
-              },
-              {
-                name: 'Descending Absolute',
-                menuItem: WIP_GridMenuItem,
-                cssClasses: ['!opacity-100'],
-                disabled: true,
-              },
-              'separator',
-              {
-                name: 'Add Ascending',
-                action: () =>
-                  controller.addSortByColumn(
-                    columnName,
-                    DataCubeQuerySnapshotSortOperation.ASCENDING,
+                  action: () =>
+                    controller.addSortByColumn(
+                      columnName,
+                      DataCubeQuerySortOperation.ASCENDING,
+                    ),
+                },
+                {
+                  name: 'Add Ascending Absolute',
+                  menuItem: WIP_GridMenuItem,
+                  cssClasses: ['!opacity-100'],
+                  disabled: true,
+                },
+                {
+                  name: 'Add Descending',
+                  disabled: Boolean(
+                    controller.sortColumns.find(
+                      (col) =>
+                        col.name === columnName &&
+                        col.operation === DataCubeQuerySortOperation.DESCENDING,
+                    ),
                   ),
-              },
-              {
-                name: 'Add Ascending Absolute',
-                menuItem: WIP_GridMenuItem,
-                cssClasses: ['!opacity-100'],
-                disabled: true,
-              },
-              {
-                name: 'Add Descending',
-                action: () =>
-                  controller.addSortByColumn(
-                    columnName,
-                    DataCubeQuerySnapshotSortOperation.DESCENDING,
-                  ),
-              },
-              {
-                name: 'Add Descending Absolute',
-                menuItem: WIP_GridMenuItem,
-                cssClasses: ['!opacity-100'],
-                disabled: true,
-              },
-              'separator',
-              {
-                name: 'Clear All Sorts',
-                disabled: controller.sortColumns.length === 0,
-                action: () => controller.clearAllSorts(),
-              },
-            ],
+                  action: () =>
+                    controller.addSortByColumn(
+                      columnName,
+                      DataCubeQuerySortOperation.DESCENDING,
+                    ),
+                },
+                {
+                  name: 'Add Descending Absolute',
+                  menuItem: WIP_GridMenuItem,
+                  cssClasses: ['!opacity-100'],
+                  disabled: true,
+                },
+                'separator',
+              ]
+            : []),
+          {
+            name: 'Clear All Sorts',
+            disabled: controller.sortColumns.length === 0,
+            action: () => controller.clearAllSorts(),
           },
+        ],
+      },
     ];
 
     return [
@@ -280,38 +301,39 @@ export function generateMenuBuilder(
       },
       {
         name: 'Pivot',
-        menuItem: WIP_GridMenuItem,
-        disabled: true,
-        cssClasses: ['!opacity-100'],
         subMenu: [
-          ...(column
+          ...(column &&
+          columnName &&
+          columnConfiguration?.kind === DataCubeColumnKind.DIMENSION
             ? [
                 {
-                  name: `VPivot on ${column.getColId()}`,
-                  menuItem: WIP_GridMenuItem,
-                  cssClasses: ['!opacity-100'],
-                  disabled: true,
+                  name: `Vertical Pivot on ${column.getColId()}`,
+                  action: () => controller.setVerticalPivotOnColumn(columnName),
                 },
                 {
-                  name: `Add VPivot on ${column.getColId()}`,
-                  menuItem: WIP_GridMenuItem,
-                  cssClasses: ['!opacity-100'],
-                  disabled: true,
+                  name: `Add Vertical Pivot on ${column.getColId()}`,
+                  disabled: Boolean(
+                    controller.verticalPivotedColumns.find(
+                      (col) => col.name === columnName,
+                    ),
+                  ),
+                  action: () => controller.addVerticalPivotOnColumn(columnName),
                 },
                 {
-                  name: `Remove VPivot on ${column.getColId()}`,
-                  menuItem: WIP_GridMenuItem,
-                  cssClasses: ['!opacity-100'],
-                  disabled: true,
+                  name: `Remove Vertical Pivot on ${column.getColId()}`,
+                  disabled: !controller.verticalPivotedColumns.find(
+                    (col) => col.name === columnName,
+                  ),
+                  action: () =>
+                    controller.removeVerticalPivotOnColumn(columnName),
                 },
                 'separator',
               ]
             : []),
           {
-            name: `Clear All VPivots`,
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
+            name: `Clear All Vertical Pivots`,
+            disabled: controller.verticalPivotedColumns.length === 0,
+            action: () => controller.clearAllVerticalPivots(),
           },
         ],
       },
@@ -479,6 +501,7 @@ export function generateMenuBuilder(
       },
       {
         name: 'Hide',
+        disabled: !column,
         action: () => controller.showColumn(columnName, false),
       },
       'separator',

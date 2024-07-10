@@ -331,10 +331,10 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       Exclude from HPivot?
                     </div>
                     <DataCubeEditorCheckbox
-                      checked={selectedColumn.excludedFromHPivot}
+                      checked={selectedColumn.excludedFromHorizontalPivot}
                       onChange={() =>
-                        selectedColumn.setExcludedFromHPivot(
-                          !selectedColumn.excludedFromHPivot,
+                        selectedColumn.setExcludedFromHorizontalPivot(
+                          !selectedColumn.excludedFromHorizontalPivot,
                         )
                       }
                       disabled={true}

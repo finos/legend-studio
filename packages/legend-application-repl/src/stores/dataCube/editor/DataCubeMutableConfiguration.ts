@@ -48,9 +48,6 @@ import {
 import { buildDefaultColumnConfiguration } from '../core/DataCubeConfigurationBuilder.js';
 
 export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfiguration {
-  aggregateFunction?: DataCubeAggregateFunction | undefined;
-  excludedFromHPivot = true;
-
   readonly dataType!: DataCubeColumnDataType;
 
   static create(
@@ -142,8 +139,8 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       aggregateFunction: observable,
       setAggregateFunction: action,
 
-      excludedFromHPivot: observable,
-      setExcludedFromHPivot: action,
+      excludedFromHorizontalPivot: observable,
+      setExcludedFromHorizontalPivot: action,
 
       fixedWidth: observable,
       setFixedWidth: action,
@@ -353,8 +350,8 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.aggregateFunction = value;
   }
 
-  setExcludedFromHPivot(value: boolean): void {
-    this.excludedFromHPivot = value;
+  setExcludedFromHorizontalPivot(value: boolean): void {
+    this.excludedFromHorizontalPivot = value;
   }
 }
 

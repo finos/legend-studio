@@ -51,9 +51,6 @@ import {
   type DataCubeQuerySnapshotFilterCondition,
   type DataCubeQuerySnapshotFilter,
   type DataCubeQuerySnapshot,
-  DataCubeQuerySnapshotSortOperation,
-  DataCubeQuerySnapshotFilterOperation,
-  DataCubeQueryFilterGroupOperation,
   _findCol,
   type DataCubeQuerySnapshotColumn,
   type DataCubeQuerySnapshotAggregateColumn,
@@ -71,6 +68,9 @@ import {
   DataCubeFunction,
   DEFAULT_LAMBDA_VARIABLE_NAME,
   INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME,
+  DataCubeQuerySortOperation,
+  DataCubeQueryFilterOperation,
+  DataCubeQueryFilterGroupOperation,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
 
@@ -249,29 +249,29 @@ export function _filter(
     const _not = (fn: V1_AppliedFunction) =>
       _function(_name(DataCubeFunction.NOT), [fn]);
     switch (condition.operation) {
-      case DataCubeQuerySnapshotFilterOperation.EQUAL:
+      case DataCubeQueryFilterOperation.EQUAL:
         return _cond(DataCubeFunction.EQUAL, _val());
-      case DataCubeQuerySnapshotFilterOperation.GREATER_THAN:
+      case DataCubeQueryFilterOperation.GREATER_THAN:
         return _cond(DataCubeFunction.GREATER_THAN, _val());
-      case DataCubeQuerySnapshotFilterOperation.GREATER_THAN_OR_EQUAL:
+      case DataCubeQueryFilterOperation.GREATER_THAN_OR_EQUAL:
         return _cond(DataCubeFunction.GREATER_THAN_EQUAL, _val());
-      case DataCubeQuerySnapshotFilterOperation.LESS_THAN:
+      case DataCubeQueryFilterOperation.LESS_THAN:
         return _cond(DataCubeFunction.LESS_THAN, _val());
-      case DataCubeQuerySnapshotFilterOperation.LESS_THAN_OR_EQUAL:
+      case DataCubeQueryFilterOperation.LESS_THAN_OR_EQUAL:
         return _cond(DataCubeFunction.LESS_THAN_EQUAL, _val());
-      case DataCubeQuerySnapshotFilterOperation.CONTAINS:
+      case DataCubeQueryFilterOperation.CONTAINS:
         return _cond(DataCubeFunction.CONTAINS, _val());
-      case DataCubeQuerySnapshotFilterOperation.ENDS_WITH:
+      case DataCubeQueryFilterOperation.ENDS_WITH:
         return _cond(DataCubeFunction.ENDS_WITH, _val());
-      case DataCubeQuerySnapshotFilterOperation.STARTS_WITH:
+      case DataCubeQueryFilterOperation.STARTS_WITH:
         return _cond(DataCubeFunction.STARTS_WITH, _val());
-      case DataCubeQuerySnapshotFilterOperation.BLANK:
+      case DataCubeQueryFilterOperation.BLANK:
         return _cond(DataCubeFunction.IS_EMPTY);
-      case DataCubeQuerySnapshotFilterOperation.NOT_EQUAL:
+      case DataCubeQueryFilterOperation.NOT_EQUAL:
         return _not(_cond(DataCubeFunction.EQUAL, _val()));
-      case DataCubeQuerySnapshotFilterOperation.NOT_BLANK:
+      case DataCubeQueryFilterOperation.NOT_BLANK:
         return _not(_cond(DataCubeFunction.IS_EMPTY));
-      case DataCubeQuerySnapshotFilterOperation.NOT_CONTAINS:
+      case DataCubeQueryFilterOperation.NOT_CONTAINS:
         return _not(_cond(DataCubeFunction.CONTAINS, _val()));
       default:
         throw new UnsupportedOperationError(
@@ -419,7 +419,7 @@ export function buildExecutableQuery(
           data.sortColumns.map((col) =>
             _function(
               _name(
-                col.operation === DataCubeQuerySnapshotSortOperation.ASCENDING
+                col.operation === DataCubeQuerySortOperation.ASCENDING
                   ? DataCubeFunction.ASC
                   : DataCubeFunction.DESC,
               ),
