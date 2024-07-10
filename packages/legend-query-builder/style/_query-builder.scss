@@ -323,6 +323,7 @@
     &__display {
       @include ellipsisTextOverflow;
 
+      color: var(--color-light-grey-0);
       font-size: 1.4rem;
       flex: 4;
       max-width: fit-content;
