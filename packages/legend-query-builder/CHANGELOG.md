@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.58
+
+### Patch Changes
+
+- [#3330](https://github.com/finos/legend-studio/pull/3330) [`6aacb30`](https://github.com/finos/legend-studio/commit/6aacb30d7202378cec8baa0b9eb89b041f16f12d) ([@pragyasri-gs](https://github.com/pragyasri-gs)) - Removing dialog from Query Chat and adding it as a panel.
+
 ## 4.14.57
 
 ## 4.14.56
