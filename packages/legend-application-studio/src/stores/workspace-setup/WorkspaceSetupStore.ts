@@ -26,6 +26,7 @@ import {
   UnsupportedOperationError,
   guaranteeNonNullable,
   guaranteeType,
+  exactSearch,
 } from '@finos/legend-shared';
 import { generateSetupRoute } from '../../__lib__/LegendStudioNavigation.js';
 import {
@@ -347,7 +348,9 @@ export class WorkspaceSetupStore {
       this.projects = (
         (yield this.sdlcServerClient.getProjects(
           undefined,
-          isValidSearchString ? searchText : undefined,
+          // We apply an exact search on the input text because we show exact searches with
+          // custom selector. This avoids losing some results with the additional filtering.
+          isValidSearchString ? exactSearch(searchText) : undefined,
           undefined,
           DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
         )) as PlainObject<Project>[]
