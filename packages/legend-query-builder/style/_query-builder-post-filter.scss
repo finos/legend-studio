@@ -349,6 +349,7 @@
   &__property {
     @include ellipsisTextOverflow;
 
+    color: var(--color-light-grey-200);
     padding: 0 1rem;
     font-size: 1.2rem;
     font-weight: 700;

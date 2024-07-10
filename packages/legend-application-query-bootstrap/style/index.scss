@@ -1589,6 +1589,10 @@
       }
     }
 
+    .query-builder-column-badge__property {
+      color: var(--color-dark-grey-400);
+    }
+
     .query-builder-post-filter-tree__node__container--selected,
     .query-builder-post-filter-tree__node__container--selected:hover {
       background: var(--color-legacylight-light-blue-50);
