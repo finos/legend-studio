@@ -946,8 +946,12 @@
 
   .dnd__entry-dropzone__placeholder--active
     .dnd__entry-dropzone__placeholder__content {
-    background: var(--color-dnd__overlay-light);
     border-color: var(--color-light-grey-400);
+  }
+
+  .dnd__entry-dropzone__placeholder--active
+    > .dnd__entry-dropzone__placeholder__content {
+    background: var(--color-dnd__overlay-light);
   }
 
   .dnd__entry-dropzone__placeholder--droppable
