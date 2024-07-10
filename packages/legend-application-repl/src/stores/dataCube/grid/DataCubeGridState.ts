@@ -228,8 +228,8 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
         'boundary----------0987654321----------1234567890';
 
       let emlContent = `
-From: somebody@test.com
-To: someone@test.com
+From:
+To:
 Subject: subject of the some files generated
 MIME-Version: 1.0
 Content-Type: multipart/mixed; boundary="${boundaryMixed}"
@@ -305,7 +305,11 @@ ${emailBody}
 `;
       }
 
-      downloadFileUsingDataURI('emlFile.eml', emlContent, ContentType.ALL); //NEED TO ADD MESSAGE_RFC822 to CONTENT-TYPE
+      downloadFileUsingDataURI(
+        'emlFile.eml',
+        emlContent,
+        ContentType.MESSAGE_RFC822,
+      ); //NEED TO ADD MESSAGE_RFC822 to CONTENT-TYPE
     } catch (error) {
       console.error('Error creating EML file:', error);
     }

@@ -64,7 +64,7 @@ console.error = (message?: unknown, ...agrs: unknown[]): void => {
   console.log(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
 };
 
-ModuleRegistry.registerModules([CsvExportModule, ExcelExportModule]);
+ModuleRegistry.registerModules(ExcelExportModule);
 
 function textColorStyle(
   key: DataCubeConfigurationColorKey,
@@ -335,12 +335,14 @@ const DataCubeGridClient = observer(() => {
         modules={[
           // community
           ClientSideRowModelModule,
+          CsvExportModule,
           // enterprise
           ServerSideRowModelModule,
           RowGroupingModule,
           MenuModule,
           ClipboardModule,
           RangeSelectionModule,
+          ExcelExportModule,
         ]}
         {...generateBaseGridOptions(dataCube)}
       />
