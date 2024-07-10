@@ -101,6 +101,7 @@ import {
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
 import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
 import { QueryBuilderFilterTreeConditionNodeData } from '../../stores/filter/QueryBuilderFilterState.js';
+import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 
 test(
   integrationTest(
@@ -405,6 +406,116 @@ test(
       ),
     );
     expect(contentNodes.length).toBe(1);
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder filter and post-filter show correct drop zone placeholders`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+      const tdsState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      tdsState.setShowPostFilterPanel(true);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+    const postFilterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
+      ),
+    );
+    const fetchStructurePanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
+      ),
+    );
+
+    // Drag and drop from explorer to filter
+    const filterDropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    const explorerDragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Legal Name'),
+    );
+    await dragAndDrop(
+      explorerDragSource,
+      filterDropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Legal Name'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+
+    // Drag and drop from explorer to fetch structure
+    const tdsDropZone = await findByText(
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      explorerDragSource,
+      tdsDropZone,
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+    await findByText(fetchStructurePanel, 'Legal Name');
+
+    // Drag and drop from fetch structure to post-filter
+    const fetchStructureDragSource = getByText(
+      fetchStructurePanel,
+      'Legal Name',
+    );
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
+    );
+    await dragAndDrop(
+      fetchStructureDragSource,
+      postFilterDropZone,
+      postFilterPanel,
+      'Add a post-filter condition',
+    );
+
+    // Dragging filter node doesn't activate main drop zone for filter panel or post-filter panel
+    const filterNode = getByText(filterPanel, 'Legal Name');
+    fireEvent.dragStart(filterNode);
+    expect(queryByText(filterPanel, 'Add filter to main group')).toBeNull();
+    expect(
+      queryByText(postFilterPanel, 'Add post-filter to main group'),
+    ).toBeNull();
+
+    // Dragging TDS column does activate main drop zone for filter panel
+    fireEvent.dragStart(fetchStructureDragSource);
+    expect(
+      await findByText(filterPanel, 'Add filter to main group'),
+    ).not.toBeNull();
+
+    // Dragging explorer node does activate main drop zone for filter panel
+    fireEvent.dragStart(explorerDragSource);
+    expect(
+      await findByText(filterPanel, 'Add filter to main group'),
+    ).not.toBeNull();
   },
 );
 
