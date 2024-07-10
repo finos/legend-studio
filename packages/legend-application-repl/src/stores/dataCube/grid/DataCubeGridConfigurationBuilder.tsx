@@ -22,8 +22,6 @@
  ***************************************************************************************/
 
 import {
-  DataCubeQuerySnapshotAggregateFunction,
-  DataCubeQuerySnapshotSortOperation,
   _findCol,
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
@@ -52,12 +50,13 @@ import {
   INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING,
   INTERNAL__GRID_CLIENT_HEADER_HEIGHT,
   INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY,
+  INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
+  INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
   getQueryParameters,
   getQueryParameterValue,
-  guaranteeNonNullable,
   IllegalStateError,
   isNonNullable,
   isNumber,
@@ -68,17 +67,19 @@ import type {
   DataCubeConfiguration,
 } from '../core/DataCubeConfiguration.js';
 import {
+  DataCubeAggregateFunction,
   DataCubeColumnDataType,
   DataCubeColumnPinPlacement,
   DataCubeNumberScale,
   DEFAULT_ROW_BUFFER,
   DEFAULT_URL_LABEL_QUERY_PARAM,
   getDataType,
+  DataCubeQuerySortOperation,
+  DataCubeColumnKind,
 } from '../core/DataCubeQueryEngine.js';
 import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
 import { DataCubeIcon } from '@finos/legend-art';
 import type { DataCubeState } from '../DataCubeState.js';
-import { buildGridMenu } from '../../../components/dataCube/grid/menu/DataCubeGridMenu.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -103,7 +104,6 @@ function _cellDataType(column: DataCubeQuerySnapshotColumn) {
 function _allowedAggFuncs(column: DataCubeQuerySnapshotColumn) {
   switch (column.type) {
     case PRIMITIVE_TYPE.STRING:
-      return [];
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.DATETIME:
     case PRIMITIVE_TYPE.STRICTDATE:
@@ -125,18 +125,18 @@ function _allowedAggFuncs(column: DataCubeQuerySnapshotColumn) {
 }
 
 function _aggFunc(
-  func: DataCubeQuerySnapshotAggregateFunction,
+  func: DataCubeAggregateFunction,
 ): GridClientAggregateOperation {
   switch (func) {
-    case DataCubeQuerySnapshotAggregateFunction.AVERAGE:
+    case DataCubeAggregateFunction.AVERAGE:
       return GridClientAggregateOperation.AVERAGE;
-    case DataCubeQuerySnapshotAggregateFunction.COUNT:
+    case DataCubeAggregateFunction.COUNT:
       return GridClientAggregateOperation.COUNT;
-    case DataCubeQuerySnapshotAggregateFunction.MAX:
+    case DataCubeAggregateFunction.MAX:
       return GridClientAggregateOperation.MAX;
-    case DataCubeQuerySnapshotAggregateFunction.MIN:
+    case DataCubeAggregateFunction.MIN:
       return GridClientAggregateOperation.MIN;
-    case DataCubeQuerySnapshotAggregateFunction.SUM:
+    case DataCubeAggregateFunction.SUM:
       return GridClientAggregateOperation.SUM;
     default:
       throw new IllegalStateError(`Unsupported aggregate function '${func}'`);
@@ -196,15 +196,14 @@ function DataCubeGridLoadingCellRenderer(
 
 type ColumnData = {
   snapshot: DataCubeQuerySnapshot;
-  column: DataCubeQuerySnapshotColumn;
-  configuration: DataCubeColumnConfiguration;
-  gridConfiguration: DataCubeConfiguration;
+  column: DataCubeColumnConfiguration;
+  configuration: DataCubeConfiguration;
 };
 
 function getCellRenderer(columnData: ColumnData) {
-  const { column, configuration } = columnData;
+  const { column } = columnData;
   const dataType = getDataType(column.type);
-  if (dataType === DataCubeColumnDataType.TEXT && configuration.displayAsLink) {
+  if (dataType === DataCubeColumnDataType.TEXT && column.displayAsLink) {
     return function LinkRenderer(params: ICellRendererParams) {
       const isUrl = isValidUrl(params.value);
       if (!isUrl) {
@@ -212,7 +211,7 @@ function getCellRenderer(columnData: ColumnData) {
       }
       const url = params.value as string;
       const label = getQueryParameterValue(
-        configuration.linkLabelParameter ?? DEFAULT_URL_LABEL_QUERY_PARAM,
+        column.linkLabelParameter ?? DEFAULT_URL_LABEL_QUERY_PARAM,
         getQueryParameters(url, true),
       );
       return (
@@ -231,45 +230,39 @@ function getCellRenderer(columnData: ColumnData) {
 }
 
 function _displaySpec(columnData: ColumnData) {
-  const { column, configuration, gridConfiguration } = columnData;
+  const { column, configuration } = columnData;
   const dataType = getDataType(column.type);
-  const fontFamily = configuration.fontFamily ?? gridConfiguration.fontFamily;
-  const fontSize = configuration.fontSize ?? gridConfiguration.fontSize;
-  const fontBold = configuration.fontBold ?? gridConfiguration.fontBold;
-  const fontItalic = configuration.fontItalic ?? gridConfiguration.fontItalic;
+  const fontFamily = column.fontFamily ?? configuration.fontFamily;
+  const fontSize = column.fontSize ?? configuration.fontSize;
+  const fontBold = column.fontBold ?? configuration.fontBold;
+  const fontItalic = column.fontItalic ?? configuration.fontItalic;
   const fontStrikethrough =
-    configuration.fontStrikethrough ?? gridConfiguration.fontStrikethrough;
-  const fontUnderline =
-    configuration.fontUnderline ?? gridConfiguration.fontUnderline;
-  const fontCase = configuration.fontCase ?? gridConfiguration.fontCase;
-  const textAlign = configuration.textAlign ?? gridConfiguration.textAlign;
+    column.fontStrikethrough ?? configuration.fontStrikethrough;
+  const fontUnderline = column.fontUnderline ?? configuration.fontUnderline;
+  const fontCase = column.fontCase ?? configuration.fontCase;
+  const textAlign = column.textAlign ?? configuration.textAlign;
   const normalForegroundColor =
-    configuration.normalForegroundColor ??
-    gridConfiguration.normalForegroundColor;
+    column.normalForegroundColor ?? configuration.normalForegroundColor;
   const normalBackgroundColor =
-    configuration.normalBackgroundColor ??
-    gridConfiguration.normalBackgroundColor;
+    column.normalBackgroundColor ?? configuration.normalBackgroundColor;
   const negativeForegroundColor =
-    configuration.negativeForegroundColor ??
-    gridConfiguration.negativeForegroundColor;
+    column.negativeForegroundColor ?? configuration.negativeForegroundColor;
   const negativeBackgroundColor =
-    configuration.negativeBackgroundColor ??
-    gridConfiguration.negativeBackgroundColor;
+    column.negativeBackgroundColor ?? configuration.negativeBackgroundColor;
   const zeroForegroundColor =
-    configuration.zeroForegroundColor ?? gridConfiguration.zeroForegroundColor;
+    column.zeroForegroundColor ?? configuration.zeroForegroundColor;
   const zeroBackgroundColor =
-    configuration.zeroBackgroundColor ?? gridConfiguration.zeroBackgroundColor;
+    column.zeroBackgroundColor ?? configuration.zeroBackgroundColor;
   const errorForegroundColor =
-    configuration.errorForegroundColor ??
-    gridConfiguration.errorForegroundColor;
+    column.errorForegroundColor ?? configuration.errorForegroundColor;
   const errorBackgroundColor =
-    configuration.errorBackgroundColor ??
-    gridConfiguration.errorBackgroundColor;
+    column.errorBackgroundColor ?? configuration.errorBackgroundColor;
   const cellRenderer = getCellRenderer(columnData);
   return {
     // setting the cell data type might helps guide the grid to render the cell properly
     // and optimize the grid performance slightly by avoiding unnecessary type inference
     cellDataType: _cellDataType(column),
+    hide: column.hideFromView,
     valueFormatter:
       dataType === DataCubeColumnDataType.NUMBER
         ? (params) => {
@@ -278,20 +271,20 @@ function _displaySpec(columnData: ColumnData) {
               return null;
             }
             const showNegativeNumberInParens =
-              configuration.negativeNumberInParens && value < 0;
+              column.negativeNumberInParens && value < 0;
             // 1. apply the number scale
-            const scaledNumber = scaleNumber(value, configuration.numberScale);
+            const scaledNumber = scaleNumber(value, column.numberScale);
             // 2. apply the number formatter
             const formattedValue = (
               showNegativeNumberInParens
                 ? Math.abs(scaledNumber.value)
                 : scaledNumber.value
             ).toLocaleString(undefined, {
-              useGrouping: configuration.displayCommas,
-              ...(configuration.decimals !== undefined
+              useGrouping: column.displayCommas,
+              ...(column.decimals !== undefined
                 ? {
-                    minimumFractionDigits: configuration.decimals,
-                    maximumFractionDigits: configuration.decimals,
+                    minimumFractionDigits: column.decimals,
+                    maximumFractionDigits: column.decimals,
                   }
                 : {}),
             });
@@ -353,13 +346,12 @@ function _displaySpec(columnData: ColumnData) {
       ) => params.node.failedLoad,
       [generateBackgroundColorUtilityClassName(errorBackgroundColor, 'error')]:
         (params) => params.node.failedLoad,
-      [INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BLUR]: () =>
-        configuration.blur,
+      [INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BLUR]: () => column.blur,
     },
     cellRenderer: cellRenderer,
     pinned:
-      configuration.pinned !== undefined
-        ? configuration.pinned === DataCubeColumnPinPlacement.RIGHT
+      column.pinned !== undefined
+        ? column.pinned === DataCubeColumnPinPlacement.RIGHT
           ? GridClientPinnedAlignement.RIGHT
           : GridClientPinnedAlignement.LEFT
         : null,
@@ -371,7 +363,7 @@ function _displaySpec(columnData: ColumnData) {
 }
 
 function _sizeSpec(columnData: ColumnData) {
-  const { configuration } = columnData;
+  const { column } = columnData;
   return {
     // NOTE: there is a problem with ag-grid when scrolling horizontally, the header row
     // lags behind the data, it seems to be caused by synchronizing scroll not working properly
@@ -382,14 +374,14 @@ function _sizeSpec(columnData: ColumnData) {
     // See https://issues.chromium.org/issues/40890343#comment11
     //
     // TODO: if we support column resize to fit content, should we disable this behavior?
-    resizable: configuration.fixedWidth === undefined,
+    resizable: column.fixedWidth === undefined,
     // suppressAutoSize: columnConfiguration.fixedWidth !== undefined,
-    width: configuration.fixedWidth,
+    width: column.fixedWidth,
     minWidth: Math.max(
-      configuration.minWidth ?? INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
+      column.minWidth ?? INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
       INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
     ),
-    maxWidth: configuration.maxWidth,
+    maxWidth: column.maxWidth,
   } as ColDef;
 }
 
@@ -400,7 +392,7 @@ function _sortSpec(columnData: ColumnData) {
   return {
     sortable: true, // if this is pivot column, no sorting is allowed
     sort: sortCol
-      ? sortCol.operation === DataCubeQuerySnapshotSortOperation.ASCENDING
+      ? sortCol.operation === DataCubeQuerySortOperation.ASCENDING
         ? GridClientSortDirection.ASCENDING
         : GridClientSortDirection.DESCENDING
       : null,
@@ -416,8 +408,8 @@ function _rowGroupSpec(columnData: ColumnData) {
   const groupByCol = _findCol(data.groupBy?.columns, column.name);
   const aggCol = _findCol(data.groupBy?.aggColumns, column.name);
   return {
-    enableRowGroup: true,
-    enableValue: true,
+    enableRowGroup: column.kind === DataCubeColumnKind.DIMENSION,
+    enableValue: column.kind === DataCubeColumnKind.MEASURE,
     rowGroup: Boolean(groupByCol),
     // TODO: @akphi - add this from configuration object
     aggFunc: aggCol
@@ -457,9 +449,11 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     groupDisplayType: 'custom', // keeps the column set stable even when row grouping is used
     suppressRowGroupHidesColumns: true, // keeps the column set stable even when row grouping is used
     suppressAggFuncInHeader: true, //  keeps the columns stable when aggregation is used
+    getChildCount: (data) =>
+      data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID],
     // -------------------------------------- PIVOT --------------------------------------
     // pivotPanelShow: "always"
-    // pivotMode:true,
+    // pivotMode:true, // TODO: need to make sure we don't hide away any columns when this is enabled
     // -------------------------------------- SORT --------------------------------------
     // Force multi-sorting since this is what the query supports anyway
     alwaysMultiSort: true,
@@ -498,12 +492,14 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
       grid.setScrollHintText(`${start}-${end}/${rowCount}`);
       event.api.hidePopupMenu(); // hide context-menu while scrolling
     },
-    onBodyScrollEnd: () => grid.setScrollHintText(''),
+    onBodyScrollEnd: () => grid.setScrollHintText(undefined),
     // -------------------------------------- CONTEXT MENU --------------------------------------
     preventDefaultOnContextMenu: true, // prevent showing the browser's context menu
     columnMenu: 'new', // ensure context menu works on header
-    getContextMenuItems: buildGridMenu,
-    getMainMenuItems: buildGridMenu,
+    // NOTE: dynamically generate the content of the context menu to make sure the items are not stale
+    getContextMenuItems: (params) =>
+      grid.controller.menuBuilder?.(params) ?? [],
+    getMainMenuItems: (params) => grid.controller.menuBuilder?.(params) ?? [],
     // -------------------------------------- COLUMN SIZING --------------------------------------
     autoSizePadding: INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING,
     autoSizeStrategy: {
@@ -514,12 +510,34 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     tooltipShowDelay: INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY,
     tooltipInteraction: true,
     // -------------------------------------- COLUMN MOVING --------------------------------------
-    suppressDragLeaveHidesColumns: true,
+    // suppressDragLeaveHidesColumns: true,
     // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
     suppressScrollOnNewData: true,
     suppressServerSideFullWidthLoadingRow: true, // make sure each column has its own loading indicator instead of the whole row
     // -------------------------------------- SELECTION --------------------------------------
     enableRangeSelection: true,
+    // -------------------------------------- SIDEBAR --------------------------------------
+    sideBar: {
+      toolPanels: [
+        {
+          id: 'columns',
+          labelDefault: 'Columns',
+          labelKey: 'columns',
+          iconKey: 'columns',
+          toolPanel: 'agColumnsToolPanel',
+          minWidth: INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
+          width: INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
+          toolPanelParams: {
+            suppressValues: true,
+            // TODO: enable when we support pivot
+            suppressPivotMode: true,
+            suppressPivots: true,
+          },
+        },
+      ],
+      position: 'right',
+    },
+    // allowDragFromColumnsToolPanel: true,
     // -------------------------------------- PERFORMANCE --------------------------------------
     animateRows: false, // improve performance
     suppressColumnMoveAnimation: true, // improve performance
@@ -531,7 +549,6 @@ export function generateGridOptionsFromSnapshot(
   configuration: DataCubeConfiguration,
   dataCube: DataCubeState,
 ): GridOptions {
-  const data = snapshot.data;
   const gridOptions = {
     /**
      * NOTE: there is a strange issue where if we put dynamic configuration directly
@@ -557,19 +574,34 @@ export function generateGridOptionsFromSnapshot(
     onColumnPinned: (event) => {
       if (event.column) {
         const column = event.column;
-        const columnConfiguration =
-          dataCube.editor.columnProperties.getColumnConfiguration(
-            column.getColId(),
-          );
         const pinned = column.getPinned();
-        columnConfiguration?.setPinned(
+        dataCube.grid.controller.pinColumn(
+          column.getColId(),
           pinned === null
             ? undefined
             : pinned === GridClientPinnedAlignement.LEFT
               ? DataCubeColumnPinPlacement.LEFT
               : DataCubeColumnPinPlacement.RIGHT,
         );
-        dataCube.editor.applyChanges();
+      }
+    },
+
+    onColumnMoved: (event) => {
+      // make sure the move event is finished before syncing the changes
+      if (event.column && event.finished) {
+        dataCube.grid.controller.rearrangeColumns(
+          (event.api.getColumnDefs() ?? [])
+            .filter((col): col is ColDef => !('children' in col))
+            .map((col) => col.colId ?? ''),
+        );
+      }
+    },
+
+    onColumnVisible: (event) => {
+      if (event.column) {
+        const column = event.column;
+        const isVisible = column.isVisible();
+        dataCube.grid.controller.showColumn(column.getColId(), isVisible);
       }
     },
 
@@ -612,20 +644,16 @@ export function generateGridOptionsFromSnapshot(
         sortable: false, // TODO: @akphi - we can support this in the configuration
       } satisfies ColDef,
       // TODO: handle pivot and column grouping
-      ...data.selectColumns.map((column) => {
+      ...configuration.columns.map((column) => {
         const columnData = {
           snapshot,
           column,
-          configuration: guaranteeNonNullable(
-            configuration.columns.find((col) => col.name === column.name),
-          ),
-          gridConfiguration: configuration,
+          configuration,
         };
         return {
           headerName: column.name,
           field: column.name,
           menuTabs: [],
-          suppressMovable: true,
 
           ..._displaySpec(columnData),
           ..._sizeSpec(columnData),

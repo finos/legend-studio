@@ -95,7 +95,7 @@
   "devDependencies": {
     "cross-env": "7.0.3",
     "eslint": "8.57.0",
-    "rimraf": "5.0.8"
+    "rimraf": "5.0.9"
   },
   "publishConfig": {
     "directory": "build/publishContent"

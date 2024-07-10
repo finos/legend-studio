@@ -20,8 +20,8 @@ import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeEditorSortsPanel } from './DataCubeEditorSortsPanel.js';
 import { DataCubeEditorGeneralPropertiesPanel } from './DataCubeEditorGeneralPropertiesPanel.js';
 import { DataCubeEditorColumnsPanel } from './DataCubeEditorColumnsPanel.js';
-import { DataCubeEditorVPivotsPanel } from './DataCubeEditorVPivotsPanel.js';
-import { DataCubeEditorHPivotsPanel } from './DataCubeEditorHPivotsPanel.js';
+import { DataCubeEditorVerticalPivotsPanel } from './DataCubeEditorVerticalPivotsPanel.js';
+import { DataCubeEditorHorizontalPivotsPanel } from './DataCubeEditorHorizontalPivotsPanel.js';
 import { DataCubeEditorFilterPanel } from './DataCubeEditorFilterPanel.js';
 import { DataCubeEditorExtendedColumnsPanel } from './DataCubeEditorExtendedColumnsPanel.js';
 import { DataCubeEditorCodePanel } from './DataCubeEditorCodePanel.js';
@@ -37,10 +37,10 @@ export const DataCubeEditor = observer(
     const selectedTab = editor.currentTab;
     const tabs = [
       DATA_CUBE_EDITOR_TAB.GENERAL_PROPERTIES,
+      DATA_CUBE_EDITOR_TAB.COLUMN_PROPERTIES,
       DATA_CUBE_EDITOR_TAB.FILTER,
       DATA_CUBE_EDITOR_TAB.EXTENDED_COLUMNS,
       DATA_CUBE_EDITOR_TAB.COLUMNS,
-      DATA_CUBE_EDITOR_TAB.COLUMN_PROPERTIES,
       DATA_CUBE_EDITOR_TAB.VERTICAL_PIVOTS,
       DATA_CUBE_EDITOR_TAB.HORIZONTAL_PIVOTS,
       DATA_CUBE_EDITOR_TAB.SORTS,
@@ -72,6 +72,18 @@ export const DataCubeEditor = observer(
             ))}
           </div>
           <div className="h-full w-full overflow-auto border border-neutral-300 bg-white">
+            {selectedTab === DATA_CUBE_EDITOR_TAB.GENERAL_PROPERTIES && (
+              <DataCubeEditorGeneralPropertiesPanel />
+            )}
+            {selectedTab === DATA_CUBE_EDITOR_TAB.COLUMN_PROPERTIES && (
+              <DataCubeEditorColumnPropertiesPanel />
+            )}
+            {selectedTab === DATA_CUBE_EDITOR_TAB.FILTER && (
+              <DataCubeEditorFilterPanel />
+            )}
+            {selectedTab === DATA_CUBE_EDITOR_TAB.EXTENDED_COLUMNS && (
+              <DataCubeEditorExtendedColumnsPanel />
+            )}
             {selectedTab === DATA_CUBE_EDITOR_TAB.COLUMNS && (
               <DataCubeEditorColumnsPanel />
             )}
@@ -79,22 +91,10 @@ export const DataCubeEditor = observer(
               <DataCubeEditorSortsPanel />
             )}
             {selectedTab === DATA_CUBE_EDITOR_TAB.VERTICAL_PIVOTS && (
-              <DataCubeEditorVPivotsPanel />
+              <DataCubeEditorVerticalPivotsPanel />
             )}
             {selectedTab === DATA_CUBE_EDITOR_TAB.HORIZONTAL_PIVOTS && (
-              <DataCubeEditorHPivotsPanel />
-            )}
-            {selectedTab === DATA_CUBE_EDITOR_TAB.EXTENDED_COLUMNS && (
-              <DataCubeEditorExtendedColumnsPanel />
-            )}
-            {selectedTab === DATA_CUBE_EDITOR_TAB.FILTER && (
-              <DataCubeEditorFilterPanel />
-            )}
-            {selectedTab === DATA_CUBE_EDITOR_TAB.GENERAL_PROPERTIES && (
-              <DataCubeEditorGeneralPropertiesPanel />
-            )}
-            {selectedTab === DATA_CUBE_EDITOR_TAB.COLUMN_PROPERTIES && (
-              <DataCubeEditorColumnPropertiesPanel />
+              <DataCubeEditorHorizontalPivotsPanel />
             )}
             {selectedTab === DATA_CUBE_EDITOR_TAB.CODE && (
               <DataCubeEditorCodePanel />

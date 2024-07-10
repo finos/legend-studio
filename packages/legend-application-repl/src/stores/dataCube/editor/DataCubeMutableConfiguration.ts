@@ -45,11 +45,9 @@ import {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
 } from '../core/DataCubeConfiguration.js';
+import { buildDefaultColumnConfiguration } from '../core/DataCubeConfigurationBuilder.js';
 
 export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfiguration {
-  aggregateFunction?: DataCubeAggregateFunction | undefined;
-  excludedFromHPivot = true;
-
   readonly dataType!: DataCubeColumnDataType;
 
   static create(
@@ -141,8 +139,8 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       aggregateFunction: observable,
       setAggregateFunction: action,
 
-      excludedFromHPivot: observable,
-      setExcludedFromHPivot: action,
+      excludedFromHorizontalPivot: observable,
+      setExcludedFromHorizontalPivot: action,
 
       fixedWidth: observable,
       setFixedWidth: action,
@@ -167,6 +165,17 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     });
 
     return configuration;
+  }
+
+  static createDefault(column: {
+    name: string;
+    type: string;
+  }): DataCubeMutableColumnConfiguration {
+    return DataCubeMutableColumnConfiguration.create(
+      DataCubeColumnConfiguration.serialization.toJson(
+        buildDefaultColumnConfiguration(column),
+      ),
+    );
   }
 
   serialize(): PlainObject<DataCubeColumnConfiguration> {
@@ -341,8 +350,8 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.aggregateFunction = value;
   }
 
-  setExcludedFromHPivot(value: boolean): void {
-    this.excludedFromHPivot = value;
+  setExcludedFromHorizontalPivot(value: boolean): void {
+    this.excludedFromHorizontalPivot = value;
   }
 }
 

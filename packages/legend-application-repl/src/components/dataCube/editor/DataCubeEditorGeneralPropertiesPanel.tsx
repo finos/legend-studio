@@ -230,7 +230,9 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                     // TODO
                     closeSelectionStatDropdown();
                   }}
-                ></DataCubeEditorDropdownMenuItem>
+                >
+                  {operation}
+                </DataCubeEditorDropdownMenuItem>
               ))}
             </DataCubeEditorDropdownMenu>
             <WIP_Badge />

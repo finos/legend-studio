@@ -21,8 +21,9 @@ import type { DataCubeState } from '../DataCubeState.js';
 import { DataCubeGridClientServerSideDataSource } from './DataCubeGridClientEngine.js';
 import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
-import { generateGridOptionsFromSnapshot } from './DataCubeGridQuerySnapshotAnalyzer.js';
+import { generateGridOptionsFromSnapshot } from './DataCubeGridConfigurationBuilder.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
+import { DataCubeGridControllerState } from './DataCubeGridControllerState.js';
 
 class DataCubeGridDatasourceConfiguration {
   readonly limit?: number | undefined;
@@ -41,12 +42,13 @@ class DataCubeGridDatasourceConfiguration {
 }
 
 export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
+  readonly controller!: DataCubeGridControllerState;
   private _client?: GridApi | undefined;
   clientDataSource: DataCubeGridClientServerSideDataSource;
   clientLicenseKey?: string | undefined;
 
   isPaginationEnabled = false;
-  scrollHintText = '';
+  scrollHintText?: string | undefined;
   datasourceConfiguration: DataCubeGridDatasourceConfiguration;
   queryConfiguration: DataCubeConfiguration;
 
@@ -68,6 +70,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
       setScrollHintText: action,
     });
 
+    this.controller = new DataCubeGridControllerState(this.dataCube);
     this.datasourceConfiguration = new DataCubeGridDatasourceConfiguration({});
     this.queryConfiguration = new DataCubeConfiguration();
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
@@ -87,7 +90,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
   }
 
-  setScrollHintText(val: string): void {
+  setScrollHintText(val: string | undefined): void {
     this.scrollHintText = val;
   }
 

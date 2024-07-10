@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
+import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 
 export interface DataCubeQueryEditorPanelState {
   /**
    * Update the editor state based on the snapshot
    */
-  applySnaphot(snapshot: DataCubeQuerySnapshot): void;
+  applySnaphot(
+    snapshot: DataCubeQuerySnapshot,
+    configuration: DataCubeConfiguration,
+  ): void;
 
   /**
    * Build and enrich the snapshot with data from the editor state

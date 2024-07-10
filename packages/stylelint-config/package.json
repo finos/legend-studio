@@ -32,12 +32,12 @@
     "postcss": "8.4.39",
     "postcss-scss": "4.0.9",
     "stylelint-config-standard": "36.0.1",
-    "stylelint-scss": "6.3.2"
+    "stylelint-scss": "6.4.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
     "eslint": "8.57.0",
-    "rimraf": "5.0.8"
+    "rimraf": "5.0.9"
   },
   "peerDependencies": {
     "stylelint": ">16.0.0"

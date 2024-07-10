@@ -84,6 +84,7 @@ export const generateBackgroundColorUtilityClassName = (
 ) =>
   `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BACKGROUND_COLOR_PREFIX}${key}-${color.substring(1)}`;
 
+export const INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH = 200;
 export const INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH = 50;
 export const INTERNAL__GRID_CLIENT_HEADER_HEIGHT = 24;
 export const INTERNAL__GRID_CLIENT_ROW_HEIGHT = 20;

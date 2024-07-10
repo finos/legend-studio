@@ -20,7 +20,12 @@ import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { DataCubeMutableColumnConfiguration } from './DataCubeMutableConfiguration.js';
-import { getNonNullableEntry, type PlainObject } from '@finos/legend-shared';
+import {
+  getNonNullableEntry,
+  isNonNullable,
+  type PlainObject,
+} from '@finos/legend-shared';
+import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
 export class DataCubeEditorColumnPropertiesPanelState
   implements DataCubeQueryEditorPanelState
@@ -43,10 +48,27 @@ export class DataCubeEditorColumnPropertiesPanelState
 
       showAdvancedSettings: observable,
       setShowAdvancedSettings: action,
+
+      hiddenColumns: computed,
+      configurableColumns: computed,
     });
 
     this.editor = editor;
     this.dataCube = editor.dataCube;
+  }
+
+  get hiddenColumns(): DataCubeMutableColumnConfiguration[] {
+    return this.columns.filter((column) => column.hideFromView);
+  }
+
+  get configurableColumns(): DataCubeMutableColumnConfiguration[] {
+    return this.columns
+      .filter((column) =>
+        this.editor.columns.selector.allSelectedColumns.find(
+          (col) => col.name === column.name,
+        ),
+      )
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   getColumnConfiguration(
@@ -64,7 +86,7 @@ export class DataCubeEditorColumnPropertiesPanelState
   }
 
   get selectedColumn(): DataCubeMutableColumnConfiguration | undefined {
-    return this.columns.find(
+    return this.configurableColumns.find(
       (column) => column.name === this.selectedColumnName,
     );
   }
@@ -73,14 +95,19 @@ export class DataCubeEditorColumnPropertiesPanelState
     this.showAdvancedSettings = val;
   }
 
-  applySnaphot(snapshot: DataCubeQuerySnapshot): void {
+  applySnaphot(
+    snapshot: DataCubeQuerySnapshot,
+    configuration: DataCubeConfiguration,
+  ): void {
     this.setColumns(
       (snapshot.data.configuration as { columns: PlainObject[] }).columns.map(
         (column) => DataCubeMutableColumnConfiguration.create(column),
       ),
     );
     if (!this.selectedColumn && this.columns.length) {
-      this.setSelectedColumnName(getNonNullableEntry(this.columns, 0).name);
+      this.setSelectedColumnName(
+        getNonNullableEntry(this.configurableColumns, 0).name,
+      );
     }
   }
 
@@ -90,7 +117,12 @@ export class DataCubeEditorColumnPropertiesPanelState
   ): void {
     newSnapshot.data.configuration = {
       ...newSnapshot.data.configuration,
-      columns: this.columns.map((column) => column.serialize()),
+      // NOTE: make sure the order of column configurations is consistent with the order of selected columns
+      // as this would later be used to determine of order of displayed columns in the grid
+      columns: this.editor.columns.selector.allSelectedColumns
+        .map((col) => this.columns.find((column) => column.name === col.name))
+        .filter(isNonNullable)
+        .map((column) => column.serialize()),
     };
   }
 }

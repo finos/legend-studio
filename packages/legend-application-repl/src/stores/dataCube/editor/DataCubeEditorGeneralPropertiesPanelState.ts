@@ -20,6 +20,7 @@ import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { DataCubeMutableConfiguration } from './DataCubeMutableConfiguration.js';
+import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
 export class DataCubeEditorGeneralPropertiesPanelState
   implements DataCubeQueryEditorPanelState
@@ -59,7 +60,10 @@ export class DataCubeEditorGeneralPropertiesPanelState
     this.configuration = val;
   }
 
-  applySnaphot(snapshot: DataCubeQuerySnapshot): void {
+  applySnaphot(
+    snapshot: DataCubeQuerySnapshot,
+    configuration: DataCubeConfiguration,
+  ): void {
     this.setName(snapshot.data.name);
     this.setLimit(
       snapshot.data.limit !== undefined && snapshot.data.limit > 0

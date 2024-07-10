@@ -66,8 +66,8 @@ export class DataCubeState {
     // NOTE: snapshot manager must be instantiated before subscribers
     this.snapshotManager = new DataCubeQuerySnapshotManager(this);
     this.core = new DataCubeCoreState(this);
-    this.grid = new DataCubeGridState(this);
     this.editor = new DataCubeEditorState(this);
+    this.grid = new DataCubeGridState(this);
   }
 
   newTask(name: string): DataCubeTask {
@@ -86,10 +86,12 @@ export class DataCubeState {
     const task = this.newTask('Initializing');
     try {
       await Promise.all(
-        [this.core, this.editor, this.grid].map(async (state) => {
-          this.snapshotManager.registerSubscriber(state);
-          await state.initialize();
-        }),
+        [this.core, this.editor, this.grid, this.grid.controller].map(
+          async (state) => {
+            this.snapshotManager.registerSubscriber(state);
+            await state.initialize();
+          },
+        ),
       );
       const result = await this.infrastructure.engine.getBaseQuery();
       const initialSnapshot = validateAndBuildQuerySnapshot(

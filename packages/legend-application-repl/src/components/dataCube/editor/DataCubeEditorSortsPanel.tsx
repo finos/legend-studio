@@ -25,15 +25,15 @@ import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
 import type { DataCubeEditorColumnsSelectorState } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeEditorSortColumnState } from '../../../stores/dataCube/editor/DataCubeEditorSortsPanelState.js';
-import { DataCubeQuerySnapshotSortOperation } from '../../../stores/dataCube/core/DataCubeQuerySnapshot.js';
+import { DataCubeQuerySortOperation } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 import { IllegalStateError } from '@finos/legend-shared';
 import { WIP_Badge } from './DataCubeEditorShared.js';
 
-function getSortDirectionLabel(operation: DataCubeQuerySnapshotSortOperation) {
+function getSortDirectionLabel(operation: DataCubeQuerySortOperation) {
   switch (operation) {
-    case DataCubeQuerySnapshotSortOperation.ASCENDING:
+    case DataCubeQuerySortOperation.ASCENDING:
       return 'Ascending';
-    case DataCubeQuerySnapshotSortOperation.DESCENDING:
+    case DataCubeQuerySortOperation.DESCENDING:
       return 'Descending';
     default:
       throw new IllegalStateError(`Unsupported sort operation '${operation}'`);
@@ -78,7 +78,7 @@ const SortDirectionDropdown = observer(
           <DropdownMenuItem
             className="flex h-5 items-center px-2 text-sm hover:bg-neutral-100"
             onClick={() => {
-              column.setOperation(DataCubeQuerySnapshotSortOperation.ASCENDING);
+              column.setOperation(DataCubeQuerySortOperation.ASCENDING);
               closeMenu();
             }}
           >
@@ -94,9 +94,7 @@ const SortDirectionDropdown = observer(
           <DropdownMenuItem
             className="flex h-5 items-center px-2 text-sm hover:bg-neutral-100"
             onClick={() => {
-              column.setOperation(
-                DataCubeQuerySnapshotSortOperation.DESCENDING,
-              );
+              column.setOperation(DataCubeQuerySortOperation.DESCENDING);
               closeMenu();
             }}
           >
@@ -131,7 +129,7 @@ export const DataCubeEditorSortsPanel = observer(() => {
       </div>
       <div className="flex h-[calc(100%_-_24px)] w-full">
         <DataCubeEditorColumnsSelector
-          selector={panel.columnsSelector}
+          selector={panel.selector}
           extraColumnComponent={(props) => <SortDirectionDropdown {...props} />}
         />
       </div>
