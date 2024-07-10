@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.10.10
+
+### Patch Changes
+
+- [#3265](https://github.com/finos/legend-studio/pull/3265) [`beb5599`](https://github.com/finos/legend-studio/commit/beb5599ea58831487321c4bcaf08a19ac8f9af75) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add debug option in mapping tests which shows execution plan and debug log + error when generating exec plan.
+
 ## 31.10.9
 
 ### Patch Changes
