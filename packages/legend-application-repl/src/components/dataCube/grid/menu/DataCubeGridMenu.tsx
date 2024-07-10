@@ -45,6 +45,8 @@ export function buildGridMenu(
   const result: (string | MenuItemDef)[] = [
     {
       name: 'Export',
+      menuItem: WIP_GridMenuItem,
+      cssClasses: ['!opacity-100'],
       subMenu: [
         {
           name: 'HTML',
@@ -66,15 +68,15 @@ export function buildGridMenu(
         },
         {
           name: 'Excel',
-          action: () => {
-            dataCube.grid.generateExcelFile();
-          },
+          menuItem: WIP_GridMenuItem,
+          cssClasses: ['!opacity-100'],
+          disabled: true,
         },
         {
           name: 'CSV',
-          action: () => {
-            dataCube.grid.generateCSVFile();
-          },
+          menuItem: WIP_GridMenuItem,
+          cssClasses: ['!opacity-100'],
+          disabled: true,
         },
         'separator',
         {
@@ -87,31 +89,33 @@ export function buildGridMenu(
     },
     {
       name: 'Email',
+      menuItem: WIP_GridMenuItem,
+      cssClasses: ['!opacity-100'],
       subMenu: [
         {
           name: 'HTML',
-          action: () => {
-            dataCube.grid.generateEmail(true, true);
-          },
+          menuItem: WIP_GridMenuItem,
+          cssClasses: ['!opacity-100'],
+          disabled: true,
         },
         {
           name: 'Plain Text',
-          action: () => {
-            dataCube.grid.generateEmail(false, true);
-          },
+          menuItem: WIP_GridMenuItem,
+          cssClasses: ['!opacity-100'],
+          disabled: true,
         },
         'separator',
         {
           name: 'HTML Attachment',
-          action: () => {
-            dataCube.grid.generateEmail(true, true);
-          },
+          menuItem: WIP_GridMenuItem,
+          cssClasses: ['!opacity-100'],
+          disabled: true,
         },
         {
           name: 'Plain Text',
-          action: () => {
-            dataCube.grid.generateEmail(false, true);
-          },
+          menuItem: WIP_GridMenuItem,
+          cssClasses: ['!opacity-100'],
+          disabled: true,
         },
         {
           name: 'PDF Attachment',
