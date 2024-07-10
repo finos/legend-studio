@@ -24,13 +24,13 @@ $group-node-width: 3.5rem;
   }
 
   &__free-drop-zone {
+    height: 100%;
+
     &__container {
       min-height: 3.8rem;
       height: 100%;
       padding: 0.5rem;
     }
-
-    height: 100%;
   }
 
   &__node__block {
