@@ -82,7 +82,6 @@ import {
   PostFilterTDSColumnValueConditionValueState,
 } from '../../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
 import {
-  type QueryBuilderProjectionColumnState,
   type QueryBuilderProjectionColumnDragSource,
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
   QueryBuilderDerivationProjectionColumnState,
@@ -114,6 +113,18 @@ import {
 } from '../../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
 import { QueryBuilderPropertyNameDisplay } from '../QueryBuilderPropertyExpressionEditor.js';
 import { convertTextToPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
+
+export const CAN_DROP_POST_FILTER_NODE_DND_TYPES = [
+  QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+  QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
+  QUERY_BUILDER_POST_FILTER_DND_TYPE.CONDITION,
+];
+
+export const CAN_DROP_POST_FILTER_VALUE_DND_TYPES = [
+  QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+  QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
+  QUERY_BUILDER_VARIABLE_DND_TYPE,
+];
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
   forwardRef<
@@ -169,7 +180,7 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
     isDragOver: boolean;
     isDroppable: boolean;
   }) => {
-    const { node, isDragOver, isDroppable: isDroppable } = props;
+    const { node, isDragOver, isDroppable } = props;
     const switchOperation: React.MouseEventHandler<HTMLDivElement> = (
       event,
     ): void => {
@@ -211,94 +222,50 @@ export const QueryBuilderColumnBadge = observer(
   (props: {
     colState: QueryBuilderTDSColumnState;
     removeColumn: () => void;
-    onColumnChange?:
-      | ((columnState: QueryBuilderProjectionColumnState) => Promise<void>)
-      | undefined;
   }) => {
-    const { colState, onColumnChange, removeColumn } = props;
-    const applicationStore = useApplicationStore();
+    const { colState, removeColumn } = props;
     const type = colState.getColumnType();
-    const handleDrop = onColumnChange
-      ? useCallback(
-          (item: QueryBuilderProjectionColumnDragSource): Promise<void> =>
-            onColumnChange(item.columnState),
-          [onColumnChange],
-        )
-      : undefined;
-    const [{ isDragOver }, dropConnector] = useDrop<
-      QueryBuilderProjectionColumnDragSource,
-      void,
-      { isDragOver: boolean }
-    >(
-      () => ({
-        accept: [
-          QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-          QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
-        ],
-        drop: (item, monitor): void => {
-          if (!monitor.didDrop()) {
-            handleDrop?.(item).catch(applicationStore.alertUnhandledError);
-          } // prevent drop event propagation to accomondate for nested DnD
-        },
-        collect: (monitor) => ({
-          isDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [applicationStore, handleDrop],
-    );
 
-    const renderColumnBadgeContent = (): React.ReactNode => (
-      <div className="query-builder-column-badge__content">
-        {type && (
-          <div
-            className={clsx('query-builder-column-badge__type', {
-              'query-builder-column-badge__type--class': type instanceof Class,
-              'query-builder-column-badge__type--enumeration':
-                type instanceof Enumeration,
-              'query-builder-column-badge__type--primitive':
-                type instanceof PrimitiveType,
-            })}
-          >
-            {renderPropertyTypeIcon(type)}
-          </div>
-        )}
-        <div
-          className="query-builder-column-badge__property"
-          title={`${colState.columnName}`}
-        >
-          {colState.columnName}
-        </div>
-        <QueryBuilderColumnInfoTooltip
-          columnState={colState}
-          placement="bottom-end"
-        >
-          <div className="query-builder-column-badge__property__info">
-            <InfoCircleIcon />
-          </div>
-        </QueryBuilderColumnInfoTooltip>
-        <button
-          className="query-builder-column-badge__action"
-          name="Reset"
-          title="Reset"
-          onClick={removeColumn}
-        >
-          <RefreshIcon />
-        </button>
-      </div>
-    );
-
-    return onColumnChange ? (
-      <div ref={dropConnector} className="query-builder-column-badge">
-        <PanelEntryDropZonePlaceholder
-          isDragOver={isDragOver}
-          label="Change Property"
-        >
-          {renderColumnBadgeContent()}
-        </PanelEntryDropZonePlaceholder>
-      </div>
-    ) : (
+    return (
       <div className="query-builder-column-badge">
-        {renderColumnBadgeContent()}
+        <div className="query-builder-column-badge__content">
+          {type && (
+            <div
+              className={clsx('query-builder-column-badge__type', {
+                'query-builder-column-badge__type--class':
+                  type instanceof Class,
+                'query-builder-column-badge__type--enumeration':
+                  type instanceof Enumeration,
+                'query-builder-column-badge__type--primitive':
+                  type instanceof PrimitiveType,
+              })}
+            >
+              {renderPropertyTypeIcon(type)}
+            </div>
+          )}
+          <div
+            className="query-builder-column-badge__property"
+            title={`${colState.columnName}`}
+          >
+            {colState.columnName}
+          </div>
+          <QueryBuilderColumnInfoTooltip
+            columnState={colState}
+            placement="bottom-end"
+          >
+            <div className="query-builder-column-badge__property__info">
+              <InfoCircleIcon />
+            </div>
+          </QueryBuilderColumnInfoTooltip>
+          <button
+            className="query-builder-column-badge__action"
+            name="Reset"
+            title="Reset"
+            onClick={removeColumn}
+          >
+            <RefreshIcon />
+          </button>
+        </div>
       </div>
     );
   },
@@ -378,10 +345,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
       { isFilterValueDragOver: boolean }
     >(
       () => ({
-        accept: [
-          QUERY_BUILDER_VARIABLE_DND_TYPE,
-          QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-        ],
+        accept: CAN_DROP_POST_FILTER_VALUE_DND_TYPES,
         canDrop: (item): boolean =>
           canDropItemOntoNodeValue(item, node.condition),
         drop: (item, monitor): void => {
@@ -399,8 +363,9 @@ const QueryBuilderPostFilterConditionEditor = observer(
     const { isFilterValueDroppable } = useDragLayer((monitor) => ({
       isFilterValueDroppable:
         monitor.isDragging() &&
-        (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
-          monitor.getItemType() === QUERY_BUILDER_VARIABLE_DND_TYPE) &&
+        CAN_DROP_POST_FILTER_VALUE_DND_TYPES.includes(
+          monitor.getItemType()?.toString() ?? '',
+        ) &&
         canDropItemOntoNodeValue(monitor.getItem(), node.condition),
     }));
     const resetNode = (): void => {
@@ -479,11 +444,6 @@ const QueryBuilderPostFilterConditionEditor = observer(
         rightConditionValue instanceof
         PostFilterTDSColumnValueConditionValueState
       ) {
-        const changeRightCol = async (
-          columnState: QueryBuilderProjectionColumnState,
-        ): Promise<void> => {
-          rightConditionValue.changeCol(columnState);
-        };
         return (
           <div
             ref={dropConnector}
@@ -496,9 +456,6 @@ const QueryBuilderPostFilterConditionEditor = observer(
             >
               <QueryBuilderColumnBadge
                 colState={rightConditionValue.tdsColumn}
-                onColumnChange={
-                  isFilterValueDroppable ? changeRightCol : undefined
-                }
                 removeColumn={removeTDSColumnValue}
               />
             </PanelEntryDropZonePlaceholder>
@@ -703,11 +660,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       { isDragOver: boolean; deepIsDragOver: boolean }
     >(
       () => ({
-        accept: [
-          ...Object.values(QUERY_BUILDER_POST_FILTER_DND_TYPE),
-          QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-          QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
-        ],
+        accept: CAN_DROP_POST_FILTER_NODE_DND_TYPES,
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item, monitor.getItemType() as string);
@@ -744,8 +697,9 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
     const { isDroppable } = useDragLayer((monitor) => ({
       isDroppable:
         monitor.isDragging() &&
-        (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
-          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
+        CAN_DROP_POST_FILTER_NODE_DND_TYPES.includes(
+          monitor.getItemType()?.toString() ?? '',
+        ),
     }));
 
     // context menu
@@ -1013,8 +967,9 @@ const QueryBuilderPostFilterPanelContent = observer(
     const { isDroppable } = useDragLayer((monitor) => ({
       isDroppable:
         monitor.isDragging() &&
-        (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
-          monitor.getItemType() === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE),
+        CAN_DROP_POST_FILTER_NODE_DND_TYPES.includes(
+          monitor.getItemType()?.toString() ?? '',
+        ),
     }));
 
     // Drag and Drop
@@ -1071,10 +1026,7 @@ const QueryBuilderPostFilterPanelContent = observer(
       { isDragOver: boolean }
     >(
       () => ({
-        accept: [
-          QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-          QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
-        ],
+        accept: CAN_DROP_POST_FILTER_NODE_DND_TYPES,
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item).catch(applicationStore.alertUnhandledError);

@@ -81,9 +81,9 @@ import { buildtdsPropertyExpressionFromColState } from './operators/QueryBuilder
 import { TDS_COLUMN_GETTER } from '../../../../graph/QueryBuilderMetaModelConst.js';
 
 export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
-  GROUP_CONDITION = 'GROUP_CONDITION',
-  CONDITION = 'CONDITION',
-  BLANK_CONDITION = 'BLANK_CONDITION',
+  GROUP_CONDITION = 'QUERY_BUILDER_POST_FILTER_DND_TYPE.GROUP_CONDITION',
+  CONDITION = 'QUERY_BUILDER_POST_FILTER_DND_TYPE.CONDITION',
+  BLANK_CONDITION = 'QUERY_BUILDER_POST_FILTER_DND_TYPE.BLANK_CONDITION',
 }
 
 export const getTypeFromDerivedProperty = (
