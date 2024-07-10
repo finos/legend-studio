@@ -17,7 +17,6 @@
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import {
-  _getCol,
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
 } from '../core/DataCubeQuerySnapshot.js';
@@ -31,17 +30,23 @@ import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { type DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeMutableColumnConfiguration } from './DataCubeMutableConfiguration.js';
 
-export class DataCubeEditorColumnState extends DataCubeEditorColumnsSelectorColumnState {
-  readonly column: DataCubeQuerySnapshotColumn;
-
-  constructor(column: DataCubeQuerySnapshotColumn) {
-    super();
-
-    this.column = column;
+export class DataCubeEditorBasicColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState> {
+  override cloneColumn(
+    column: DataCubeEditorColumnsSelectorColumnState,
+  ): DataCubeEditorColumnsSelectorColumnState {
+    return new DataCubeEditorColumnsSelectorColumnState(
+      column.name,
+      column.type,
+    );
   }
 
-  get name(): string {
-    return this.column.name;
+  override get availableColumns(): DataCubeEditorColumnsSelectorColumnState[] {
+    return [
+      ...this.editor.columns.sourceColumns,
+      // TODO: add extended columns
+    ].map(
+      (col) => new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
+    );
   }
 }
 
@@ -50,23 +55,24 @@ export class DataCubeEditorColumnsPanelState
 {
   readonly dataCube!: DataCubeState;
   readonly editor!: DataCubeEditorState;
-  readonly selector!: DataCubeEditorColumnsSelectorState<DataCubeEditorColumnState>;
+  readonly selector!: DataCubeEditorBasicColumnsSelectorState;
 
-  showHiddenColumns = false;
+  sourceColumns: DataCubeQuerySnapshotColumn[] = [];
 
   constructor(editor: DataCubeEditorState) {
     makeObservable(this, {
-      showHiddenColumns: observable,
-      setShowHiddenColumns: action,
+      sourceColumns: observable,
+      setSourceColumns: action,
     });
 
     this.editor = editor;
     this.dataCube = editor.dataCube;
-    this.selector = new DataCubeEditorColumnsSelectorState(editor, {
+    this.selector = new DataCubeEditorBasicColumnsSelectorState(editor, {
       initialColumnsVisibility:
         DataCubeEditorColumnsSelectorColumnsVisibility.HIDDEN,
       onChange: (selector) => {
-        selector.allSelectedColumns
+        // populate a default configuration for the newly selected columns
+        selector.selectedColumns
           .filter(
             (col) =>
               !this.editor.columnProperties.columns.find(
@@ -78,7 +84,7 @@ export class DataCubeEditorColumnsPanelState
               ...this.editor.columnProperties.columns,
               DataCubeMutableColumnConfiguration.createDefault({
                 name: col.name,
-                type: col.column.type,
+                type: col.type,
               }),
             ]);
           });
@@ -98,73 +104,46 @@ export class DataCubeEditorColumnsPanelState
     // prune column properties
     this.editor.columnProperties.setColumns(
       this.editor.columnProperties.columns.filter((column) =>
-        this.selector.allSelectedColumns.find(
-          (col) => col.name === column.name,
-        ),
+        this.selector.selectedColumns.find((col) => col.name === column.name),
       ),
     );
 
     // prune sorts
-    this.editor.sorts.selector.setAllAvailableColumns(
-      this.editor.sorts.selector.allAvailableColumns.filter((column) =>
-        this.selector.allSelectedColumns.find(
-          (col) => col.name === column.name,
-        ),
-      ),
-    );
-    this.editor.sorts.selector.setAllSelectedColumns(
-      this.editor.sorts.selector.allSelectedColumns.filter((column) =>
-        this.selector.allSelectedColumns.find(
-          (col) => col.name === column.name,
-        ),
+    this.editor.sorts.selector.setSelectedColumns(
+      this.editor.sorts.selector.selectedColumns.filter((column) =>
+        this.selector.selectedColumns.find((col) => col.name === column.name),
       ),
     );
 
-    // TODO: prune groupBy columns
-    // this.editor.sorts.selector.setAllAvailableColumns(
-    //   this.editor.sorts.selector.allAvailableColumns.filter((column) =>
-    //     this.selector.allSelectedColumns.find(
-    //       (col) => col.name === column.name,
-    //     ),
-    //   ),
-    // );
-    // this.editor.sorts.selector.setAllSelectedColumns(
-    //   this.editor.sorts.selector.allSelectedColumns.filter((column) =>
-    //     this.selector.allSelectedColumns.find(
-    //       (col) => col.name === column.name,
-    //     ),
-    //   ),
-    // );
+    // prune vertical pivots columns
+    this.editor.verticalPivots.selector.setSelectedColumns(
+      this.editor.verticalPivots.selector.selectedColumns.filter((column) =>
+        this.selector.selectedColumns.find((col) => col.name === column.name),
+      ),
+    );
 
-    // TODO: prune pivot columns and agg columns?
+    // TODO: prune horizontal pivots columns
   }
 
-  setShowHiddenColumns(val: boolean): void {
-    this.showHiddenColumns = val;
+  setSourceColumns(columns: DataCubeQuerySnapshotColumn[]): void {
+    this.sourceColumns = columns;
   }
 
   applySnaphot(
     snapshot: DataCubeQuerySnapshot,
     configuration: DataCubeConfiguration,
   ): void {
-    const columns = [
-      ...snapshot.stageCols('select'),
-      ...snapshot.data.groupExtendedColumns,
-    ];
-    this.selector.setAllAvailableColumns(
-      columns
-        .filter(
-          (col) =>
-            !configuration.columns.find((column) => column.name === col.name),
-        )
-        .map(
-          (col) => new DataCubeEditorColumnState(_getCol(columns, col.name)),
-        ),
-    );
-    this.selector.setAllSelectedColumns(
-      configuration.columns.map(
-        (col) => new DataCubeEditorColumnState(_getCol(columns, col.name)),
-      ),
+    this.setSourceColumns(snapshot.data.sourceColumns);
+    this.selector.setSelectedColumns(
+      // extract selected columns from the configuration since the configuration specifies the order
+      // taking into account the group extended columns
+      configuration.columns.map((col) => {
+        const column = this.selector.getColumn(col.name);
+        return new DataCubeEditorColumnsSelectorColumnState(
+          column.name,
+          column.type,
+        );
+      }),
     );
   }
 
@@ -173,17 +152,11 @@ export class DataCubeEditorColumnsPanelState
     baseSnapshot: DataCubeQuerySnapshot,
   ): void {
     this.propagateColumnSelectionChanges();
-
-    const selectableColumns = baseSnapshot.stageCols('select');
     newSnapshot.data.selectColumns = this.selector.selectedColumns
-      .filter((col) =>
-        selectableColumns.find(
-          (selectableCol) => selectableCol.name === col.name,
-        ),
-      )
+      // TODO: filter by group extended columns
       .map((col) => ({
-        name: col.column.name,
-        type: col.column.type,
+        name: col.name,
+        type: col.type,
       }));
   }
 }

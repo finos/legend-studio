@@ -24,6 +24,8 @@ import { MenuModule } from '@ag-grid-enterprise/menu';
 import { SideBarModule } from '@ag-grid-enterprise/side-bar';
 import { ColumnsToolPanelModule } from '@ag-grid-enterprise/column-tool-panel';
 import { AgGridReact } from '@ag-grid-community/react';
+import { CsvExportModule } from '@ag-grid-community/csv-export';
+import { ExcelExportModule } from '@ag-grid-enterprise/excel-export';
 import { useEffect } from 'react';
 import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeIcon, Switch, cn, Global, css } from '@finos/legend-art';
@@ -351,6 +353,7 @@ const DataCubeGridClient = observer(() => {
         modules={[
           // community
           ClientSideRowModelModule,
+          CsvExportModule,
           // enterprise
           ServerSideRowModelModule,
           RowGroupingModule,
@@ -359,6 +362,7 @@ const DataCubeGridClient = observer(() => {
           RangeSelectionModule,
           SideBarModule,
           ColumnsToolPanelModule,
+          ExcelExportModule,
         ]}
         {...generateBaseGridOptions(dataCube)}
       />

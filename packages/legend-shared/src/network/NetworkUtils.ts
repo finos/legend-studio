@@ -57,9 +57,12 @@ export enum ContentType {
   APPLICATION_JSON = 'application/json',
   APPLICATION_XML = 'application/xml',
   APPLICATION_ZLIB = 'application/zlib',
+  APPLICATION_XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   TEXT_PLAIN = 'text/plain',
+  TEXT_HTML = 'text/html',
   TEXT_CSV = 'text/csv',
   ALL = '*/*',
+  MESSAGE_RFC822 = 'message/rfc822',
 }
 
 export enum HttpMethod {

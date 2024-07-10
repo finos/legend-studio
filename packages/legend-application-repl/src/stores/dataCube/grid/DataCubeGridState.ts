@@ -24,6 +24,7 @@ import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import { generateGridOptionsFromSnapshot } from './DataCubeGridConfigurationBuilder.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeGridControllerState } from './DataCubeGridControllerState.js';
+import { DataCubeGridClientExportEngine } from './DataCubeGridClientExportEngine.js';
 
 class DataCubeGridDatasourceConfiguration {
   readonly limit?: number | undefined;
@@ -43,7 +44,9 @@ class DataCubeGridDatasourceConfiguration {
 
 export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   readonly controller!: DataCubeGridControllerState;
+  readonly exportEngine!: DataCubeGridClientExportEngine;
   private _client?: GridApi | undefined;
+
   clientDataSource: DataCubeGridClientServerSideDataSource;
   clientLicenseKey?: string | undefined;
 
@@ -71,6 +74,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     });
 
     this.controller = new DataCubeGridControllerState(this.dataCube);
+    this.exportEngine = new DataCubeGridClientExportEngine(this);
     this.datasourceConfiguration = new DataCubeGridDatasourceConfiguration({});
     this.queryConfiguration = new DataCubeConfiguration();
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);

@@ -64,7 +64,7 @@ export class DataCubeEditorColumnPropertiesPanelState
   get configurableColumns(): DataCubeMutableColumnConfiguration[] {
     return this.columns
       .filter((column) =>
-        this.editor.columns.selector.allSelectedColumns.find(
+        this.editor.columns.selector.selectedColumns.find(
           (col) => col.name === column.name,
         ),
       )
@@ -119,7 +119,7 @@ export class DataCubeEditorColumnPropertiesPanelState
       ...newSnapshot.data.configuration,
       // NOTE: make sure the order of column configurations is consistent with the order of selected columns
       // as this would later be used to determine of order of displayed columns in the grid
-      columns: this.editor.columns.selector.allSelectedColumns
+      columns: this.editor.columns.selector.selectedColumns
         .map((col) => this.columns.find((column) => column.name === col.name))
         .filter(isNonNullable)
         .map((column) => column.serialize()),

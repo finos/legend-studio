@@ -40,6 +40,14 @@ type GridClientRowData = {
   [key: string]: GridClientCellValue;
 };
 
+export enum DataCubeGridClientExportFormat {
+  CSV = 'CSV',
+  EXCEL = 'EXCEL',
+  PLAIN_TEXT = 'PLAIN_TEXT',
+  HTML = 'HTML',
+  PDF = 'PDF',
+}
+
 export enum INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME {
   ROOT = 'data-cube-grid.ag-theme-balham',
   HIGHLIGHT_ROW = 'data-cube-grid__utility--highlight-row',
