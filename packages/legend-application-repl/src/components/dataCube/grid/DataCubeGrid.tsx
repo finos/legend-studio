@@ -50,6 +50,9 @@ import type {
   DataCubeConfigurationColorKey,
 } from '../../../stores/dataCube/core/DataCubeConfiguration.js';
 import { generateBaseGridOptions } from '../../../stores/dataCube/grid/DataCubeGridQuerySnapshotAnalyzer.js';
+import { ModuleRegistry } from '@ag-grid-community/core';
+import { CsvExportModule } from '@ag-grid-community/csv-export';
+import { ExcelExportModule } from '@ag-grid-enterprise/excel-export';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
@@ -60,6 +63,8 @@ const __INTERNAL__original_console_error = console.error; // eslint-disable-line
 console.error = (message?: unknown, ...agrs: unknown[]): void => {
   console.log(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
 };
+
+ModuleRegistry.registerModules(ExcelExportModule);
 
 function textColorStyle(
   key: DataCubeConfigurationColorKey,
@@ -330,12 +335,14 @@ const DataCubeGridClient = observer(() => {
         modules={[
           // community
           ClientSideRowModelModule,
+          CsvExportModule,
           // enterprise
           ServerSideRowModelModule,
           RowGroupingModule,
           MenuModule,
           ClipboardModule,
           RangeSelectionModule,
+          ExcelExportModule,
         ]}
         {...generateBaseGridOptions(dataCube)}
       />
