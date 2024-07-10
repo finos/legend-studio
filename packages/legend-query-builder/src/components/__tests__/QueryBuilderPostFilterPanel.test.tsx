@@ -31,6 +31,7 @@ import {
   getByRole,
   getAllByText,
   findByDisplayValue,
+  findByText,
 } from '@testing-library/react';
 import {
   TEST_DATA__lambda_WithDerivedProjectColumnsUsingConstAndParams,
@@ -1050,6 +1051,116 @@ test(
       ),
     );
     expect(contentNodes.length).toBe(3);
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder filter and post-filter show correct drop zone placeholders`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+      const tdsState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      tdsState.setShowPostFilterPanel(true);
+    });
+    const filterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+      ),
+    );
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+    const postFilterPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
+      ),
+    );
+    const fetchStructurePanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
+      ),
+    );
+
+    // Drag and drop from explorer to filter
+    const filterDropZone = await waitFor(() =>
+      getByText(filterPanel, 'Add a filter condition'),
+    );
+    const explorerDragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Legal Name'),
+    );
+    await dragAndDrop(
+      explorerDragSource,
+      filterDropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await waitFor(() => getByText(filterPanel, 'Legal Name'));
+    await waitFor(() => getByText(filterPanel, 'is'));
+    await waitFor(() => getByDisplayValue(filterPanel, ''));
+
+    // Drag and drop from explorer to fetch structure
+    const tdsDropZone = await findByText(
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      explorerDragSource,
+      tdsDropZone,
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+    await findByText(fetchStructurePanel, 'Legal Name');
+
+    // Drag and drop from fetch structure to post-filter
+    const fetchStructureDragSource = getByText(
+      fetchStructurePanel,
+      'Legal Name',
+    );
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
+    );
+    await dragAndDrop(
+      fetchStructureDragSource,
+      postFilterDropZone,
+      postFilterPanel,
+      'Add a post-filter condition',
+    );
+
+    // Dragging post-filter node doesn't activate main drop zone for filter panel or post-filter panel
+    const postFilterNode = getByText(postFilterPanel, 'Legal Name');
+    fireEvent.dragStart(postFilterNode);
+    expect(queryByText(filterPanel, 'Add filter to main group')).toBeNull();
+    expect(
+      queryByText(postFilterPanel, 'Add post-filter to main group'),
+    ).toBeNull();
+
+    // Dragging TDS column does activate main drop zone for post-filter panel
+    fireEvent.dragStart(fetchStructureDragSource);
+    expect(
+      await findByText(postFilterPanel, 'Add post-filter to main group'),
+    ).not.toBeNull();
+
+    // Dragging explorer node doesn't activate main drop zone for post-filter panel
+    fireEvent.dragStart(explorerDragSource);
+    expect(
+      queryByText(postFilterPanel, 'Add post-filter to main group'),
+    ).toBeNull();
   },
 );
 
