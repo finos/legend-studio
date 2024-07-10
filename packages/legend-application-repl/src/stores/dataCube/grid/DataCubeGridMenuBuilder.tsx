@@ -28,6 +28,7 @@ import {
 } from '../core/DataCubeQueryEngine.js';
 import { isNonNullable } from '@finos/legend-shared';
 import type { DataCubeGridControllerState } from './DataCubeGridControllerState.js';
+import { DataCubeGridClientExportFormat } from './DataCubeGridClientEngine.js';
 
 export function generateMenuBuilder(
   controller: DataCubeGridControllerState,
@@ -142,8 +143,6 @@ export function generateMenuBuilder(
     return [
       {
         name: 'Export',
-        menuItem: WIP_GridMenuItem,
-        cssClasses: ['!opacity-100'],
         subMenu: [
           {
             name: 'HTML',
@@ -165,15 +164,17 @@ export function generateMenuBuilder(
           },
           {
             name: 'Excel',
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
+            action: () =>
+              dataCube.grid.exportEngine.exportFile(
+                DataCubeGridClientExportFormat.EXCEL,
+              ),
           },
           {
             name: 'CSV',
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
+            action: () =>
+              dataCube.grid.exportEngine.exportFile(
+                DataCubeGridClientExportFormat.CSV,
+              ),
           },
           'separator',
           {
@@ -186,8 +187,6 @@ export function generateMenuBuilder(
       },
       {
         name: 'Email',
-        menuItem: WIP_GridMenuItem,
-        cssClasses: ['!opacity-100'],
         subMenu: [
           {
             name: 'HTML',
@@ -209,7 +208,7 @@ export function generateMenuBuilder(
             disabled: true,
           },
           {
-            name: 'Plain Text',
+            name: 'Plain Text Attachment',
             menuItem: WIP_GridMenuItem,
             cssClasses: ['!opacity-100'],
             disabled: true,
@@ -222,15 +221,19 @@ export function generateMenuBuilder(
           },
           {
             name: 'Excel Attachment',
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
+            action: () => {
+              dataCube.grid.exportEngine
+                .exportEmail(DataCubeGridClientExportFormat.EXCEL)
+                .catch(dataCube.application.logUnhandledError);
+            },
           },
           {
             name: 'CSV Attachment',
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
+            action: () => {
+              dataCube.grid.exportEngine
+                .exportEmail(DataCubeGridClientExportFormat.CSV)
+                .catch(dataCube.application.logUnhandledError);
+            },
           },
           {
             name: 'DataCube Specification Attachment',
