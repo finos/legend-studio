@@ -211,9 +211,9 @@ export class FilterPropertyExpressionStateConditionValueState extends FilterCond
     this.propertyExpressionState = propertyExpressionState;
   }
 
-  override get type(): Type | undefined {
-    return this.propertyExpressionState.propertyExpression.genericType?.value
-      .rawType;
+  override get type(): Type {
+    return this.propertyExpressionState.propertyExpression.func.value
+      .genericType.value.rawType;
   }
 
   override get isCollection(): boolean {
