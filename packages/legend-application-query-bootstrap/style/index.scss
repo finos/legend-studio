@@ -946,8 +946,12 @@
 
   .dnd__entry-dropzone__placeholder--active
     .dnd__entry-dropzone__placeholder__content {
-    background: var(--color-dnd__overlay-light);
     border-color: var(--color-light-grey-400);
+  }
+
+  .dnd__entry-dropzone__placeholder--active
+    > .dnd__entry-dropzone__placeholder__content {
+    background: var(--color-dnd__overlay-light);
   }
 
   .dnd__entry-dropzone__placeholder--droppable
@@ -1557,6 +1561,19 @@
 
     // ------------------------------------ Post-filter Panel ---------------------------------------
 
+    .query-builder-post-filter-tree__node__children {
+      border-color: var(--color-legacylight-light-grey-400);
+
+      &::before,
+      &::after {
+        border-color: var(--color-legacylight-light-grey-400);
+      }
+
+      .query-builder-post-filter-tree__node__block::before {
+        border-color: var(--color-legacylight-light-grey-400);
+      }
+    }
+
     .query-builder-column-badge__content {
       background: var(--color-light-grey-150);
       color: var(--color-dark-grey-400);
@@ -1574,6 +1591,10 @@
       &--primitive {
         background: var(--color-blue-50);
       }
+    }
+
+    .query-builder-column-badge__property {
+      color: var(--color-dark-grey-400);
     }
 
     .query-builder-post-filter-tree__node__container--selected,
@@ -1595,14 +1616,6 @@
       background: var(--color-blue-200);
     }
 
-    .query-builder-post-filter-tree__group-node.query-builder-post-filter-tree__group-node--and {
-      background: var(--color-legacylight-light-blue-200);
-    }
-
-    .query-builder-post-filter-tree__group-node.query-builder-post-filter-tree__group-node--or {
-      background: var(--color-magenta-300);
-    }
-
     .query-builder-post-filter-tree__node__container--selected
       .query-builder-post-filter-tree__blank-node,
     .query-builder-post-filter-tree__node__container--selected:hover
@@ -1616,6 +1629,12 @@
 
     .query-builder-post-filter-tree__expand-icon svg {
       color: var(--color-legacylight-dark-grey-200);
+    }
+
+    .query-builder-post-filter-tree__group-node__drop-zone {
+      .dnd__entry-dropzone__placeholder__label {
+        color: var(--color-light-blue-200);
+      }
     }
 
     // ------------------------------------ OLAP Panel ---------------------------------------
@@ -1842,6 +1861,10 @@
           background: var(--color-legacylight-light-blue-400) !important;
         }
       }
+    }
+
+    .query-builder__property__name__display {
+      color: var(--color-legacylight-dark-grey-200);
     }
 
     .blank-panel-placeholder__text {

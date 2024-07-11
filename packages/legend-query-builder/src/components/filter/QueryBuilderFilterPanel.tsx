@@ -121,6 +121,34 @@ import { buildPropertyExpressionChain } from '../../stores/QueryBuilderValueSpec
 import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
 import { convertTextToPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 
+export const CAN_DROP_MAIN_GROUP_DND_TYPES_FETCH_SUPPORTED = [
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+  QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+];
+
+export const CAN_DROP_MAIN_GROUP_DND_TYPES = [
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+];
+
+export const CAN_DROP_FILTER_NODE_DND_TYPES_FETCH_SUPPORTED = [
+  QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+  QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+];
+
+export const CAN_DROP_FILTER_NODE_DND_TYPES = [
+  QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+];
+
+export const CAN_DROP_FILTER_VALUE_DND_TYPES = [
+  QUERY_BUILDER_VARIABLE_DND_TYPE,
+];
+
 const isCollectionProperty = (
   propertyExpression: AbstractPropertyExpression,
 ): boolean => {
@@ -605,19 +633,6 @@ const buildFilterTree = (
   }
 };
 
-export const IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED = [
-  QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
-  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-  QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-];
-
-export const IS_DRAGGABLE_FILTER_DND_TYPES = [
-  QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
-  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-];
-
 const QueryBuilderFilterGroupConditionEditor = observer(
   (props: {
     node: QueryBuilderFilterTreeGroupNodeData;
@@ -762,7 +777,7 @@ const QueryBuilderFilterConditionEditor = observer(
       { isFilterValueDragOver: boolean }
     >(
       () => ({
-        accept: [QUERY_BUILDER_VARIABLE_DND_TYPE],
+        accept: CAN_DROP_FILTER_VALUE_DND_TYPES,
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item);
@@ -1084,8 +1099,8 @@ const QueryBuilderFilterTreeNodeContainer = observer(
       () => ({
         accept:
           queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
-            ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED
-            : IS_DRAGGABLE_FILTER_DND_TYPES,
+            ? CAN_DROP_FILTER_NODE_DND_TYPES_FETCH_SUPPORTED
+            : CAN_DROP_FILTER_NODE_DND_TYPES,
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item, monitor.getItemType() as string);
@@ -1121,8 +1136,8 @@ const QueryBuilderFilterTreeNodeContainer = observer(
       isDroppable:
         monitor.isDragging() &&
         (queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
-          ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED
-          : IS_DRAGGABLE_FILTER_DND_TYPES
+          ? CAN_DROP_FILTER_NODE_DND_TYPES_FETCH_SUPPORTED
+          : CAN_DROP_FILTER_NODE_DND_TYPES
         ).includes(monitor.getItemType()?.toString() ?? ''),
     }));
 
@@ -1408,8 +1423,8 @@ export const QueryBuilderFilterPanel = observer(
       isDroppable:
         monitor.isDragging() &&
         (queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
-          ? IS_DRAGGABLE_FILTER_DND_TYPES_FETCH_SUPPORTED
-          : IS_DRAGGABLE_FILTER_DND_TYPES
+          ? CAN_DROP_MAIN_GROUP_DND_TYPES_FETCH_SUPPORTED
+          : CAN_DROP_MAIN_GROUP_DND_TYPES
         ).includes(monitor.getItemType()?.toString() ?? ''),
     }));
 
@@ -1459,15 +1474,8 @@ export const QueryBuilderFilterPanel = observer(
       () => ({
         accept:
           queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
-            ? [
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-                QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-              ]
-            : [
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-              ],
+            ? CAN_DROP_MAIN_GROUP_DND_TYPES_FETCH_SUPPORTED
+            : CAN_DROP_MAIN_GROUP_DND_TYPES,
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item, monitor.getItemType() as string);
