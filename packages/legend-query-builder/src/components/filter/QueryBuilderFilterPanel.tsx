@@ -134,11 +134,7 @@ import {
   QueryBuilderFilterOperator_In,
   QueryBuilderFilterOperator_NotIn,
 } from '../../stores/filter/operators/QueryBuilderFilterOperator_In.js';
-import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
-import {
-  QueryBuilderColumnInfoTooltip,
-  renderPropertyTypeIcon,
-} from '../fetch-structure/QueryBuilderTDSComponentHelper.js';
+import { renderPropertyTypeIcon } from '../fetch-structure/QueryBuilderTDSComponentHelper.js';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import { getItemType } from '../shared/QueryBuilderFilterHelper.js';
 
@@ -735,13 +731,13 @@ const QueryBuilderFilterExistsConditionEditor = observer(
   },
 );
 
-export const QueryBuilderColumnBadge = observer(
+export const QueryBuilderFilterPropertyExpressionBadge = observer(
   (props: {
-    colState: QueryBuilderTDSColumnState;
-    removeColumn: () => void;
+    rightConditionValue: FilterPropertyExpressionStateConditionValueState;
+    removePropertyExpressionValue: () => void;
   }) => {
-    const { colState, removeColumn } = props;
-    const type = colState.getColumnType();
+    const { rightConditionValue, removePropertyExpressionValue } = props;
+    const type = rightConditionValue.type;
 
     return (
       <div className="query-builder-column-badge">
@@ -762,23 +758,39 @@ export const QueryBuilderColumnBadge = observer(
           )}
           <div
             className="query-builder-column-badge__property"
-            title={`${colState.columnName}`}
+            title={
+              rightConditionValue.propertyExpressionState.propertyExpression
+                .func.value.name
+            }
           >
-            {colState.columnName}
+            <QueryBuilderPropertyExpressionBadge
+              propertyExpressionState={
+                rightConditionValue.propertyExpressionState
+              }
+            />
           </div>
-          <QueryBuilderColumnInfoTooltip
-            columnState={colState}
+          <QueryBuilderPropertyInfoTooltip
+            title={
+              rightConditionValue.propertyExpressionState.propertyExpression
+                .func.value.name
+            }
+            property={
+              rightConditionValue.propertyExpressionState.propertyExpression
+                .func.value
+            }
+            path={rightConditionValue.propertyExpressionState.path}
+            isMapped={true} // todo: figure out how to get the right value for this prop or omit it
             placement="bottom-end"
           >
             <div className="query-builder-column-badge__property__info">
               <InfoCircleIcon />
             </div>
-          </QueryBuilderColumnInfoTooltip>
+          </QueryBuilderPropertyInfoTooltip>
           <button
             className="query-builder-column-badge__action"
             name="Reset"
             title="Reset"
-            onClick={removeColumn}
+            onClick={removePropertyExpressionValue}
           >
             <RefreshIcon />
           </button>
@@ -992,7 +1004,6 @@ const QueryBuilderFilterConditionEditor = observer(
         rightConditionValue instanceof
         FilterPropertyExpressionStateConditionValueState
       ) {
-        const type = rightConditionValue.type;
         return (
           <div
             ref={dropConnector}
@@ -1003,54 +1014,10 @@ const QueryBuilderFilterConditionEditor = observer(
               isDroppable={isFilterValueDroppable}
               label="Change Filter Value"
             >
-              <div className="query-builder-column-badge">
-                <div className="query-builder-column-badge__content">
-                  {type && (
-                    <div
-                      className={clsx('query-builder-column-badge__type', {
-                        'query-builder-column-badge__type--class':
-                          type instanceof Class,
-                        'query-builder-column-badge__type--enumeration':
-                          type instanceof Enumeration,
-                        'query-builder-column-badge__type--primitive':
-                          type instanceof PrimitiveType,
-                      })}
-                    >
-                      {renderPropertyTypeIcon(type)}
-                    </div>
-                  )}
-                  <QueryBuilderPropertyExpressionBadge
-                    propertyExpressionState={
-                      rightConditionValue.propertyExpressionState
-                    }
-                  />
-                  <QueryBuilderPropertyInfoTooltip
-                    title={
-                      rightConditionValue.propertyExpressionState
-                        .propertyExpression.func.value.name
-                    }
-                    property={
-                      rightConditionValue.propertyExpressionState
-                        .propertyExpression.func.value
-                    }
-                    path={rightConditionValue.propertyExpressionState.path}
-                    isMapped={true}
-                    placement="bottom-end"
-                  >
-                    <div className="query-builder-column-badge__property__info">
-                      <InfoCircleIcon />
-                    </div>
-                  </QueryBuilderPropertyInfoTooltip>
-                  <button
-                    className="query-builder-column-badge__action"
-                    name="Reset"
-                    title="Reset"
-                    onClick={removePropertyExpressionValue}
-                  >
-                    <RefreshIcon />
-                  </button>
-                </div>
-              </div>
+              <QueryBuilderFilterPropertyExpressionBadge
+                rightConditionValue={rightConditionValue}
+                removePropertyExpressionValue={removePropertyExpressionValue}
+              />
             </PanelEntryDropZonePlaceholder>
           </div>
         );
