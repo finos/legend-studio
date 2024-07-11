@@ -740,24 +740,27 @@ export const QueryBuilderFilterPropertyExpressionBadge = observer(
     const type = rightConditionValue.type;
 
     return (
-      <div className="query-builder-column-badge">
-        <div className="query-builder-column-badge__content">
+      <div className="query-builder-filter-property-expression-badge">
+        <div className="query-builder-filter-property-expression-badge__content">
           {type && (
             <div
-              className={clsx('query-builder-column-badge__type', {
-                'query-builder-column-badge__type--class':
-                  type instanceof Class,
-                'query-builder-column-badge__type--enumeration':
-                  type instanceof Enumeration,
-                'query-builder-column-badge__type--primitive':
-                  type instanceof PrimitiveType,
-              })}
+              className={clsx(
+                'query-builder-filter-property-expression-badge__type',
+                {
+                  'query-builder-filter-property-expression-badge__type--class':
+                    type instanceof Class,
+                  'query-builder-filter-property-expression-badge__type--enumeration':
+                    type instanceof Enumeration,
+                  'query-builder-filter-property-expression-badge__type--primitive':
+                    type instanceof PrimitiveType,
+                },
+              )}
             >
               {renderPropertyTypeIcon(type)}
             </div>
           )}
           <div
-            className="query-builder-column-badge__property"
+            className="query-builder-filter-property-expression-badge__property"
             title={
               rightConditionValue.propertyExpressionState.propertyExpression
                 .func.value.name
@@ -782,12 +785,12 @@ export const QueryBuilderFilterPropertyExpressionBadge = observer(
             isMapped={true} // todo: figure out how to get the right value for this prop or omit it
             placement="bottom-end"
           >
-            <div className="query-builder-column-badge__property__info">
+            <div className="query-builder-filter-property-expression-badge__property__info">
               <InfoCircleIcon />
             </div>
           </QueryBuilderPropertyInfoTooltip>
           <button
-            className="query-builder-column-badge__action"
+            className="query-builder-filter-property-expression-badge__action"
             name="Reset"
             title="Reset"
             onClick={removePropertyExpressionValue}
@@ -1007,7 +1010,7 @@ const QueryBuilderFilterConditionEditor = observer(
         return (
           <div
             ref={dropConnector}
-            className="query-builder-post-filter-tree__condition-node__value"
+            className="query-builder-filter-tree__condition-node__value"
           >
             <PanelEntryDropZonePlaceholder
               isDragOver={isFilterValueDragOver}
