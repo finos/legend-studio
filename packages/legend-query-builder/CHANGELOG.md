@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.14.59
+
+### Patch Changes
+
+- [#3328](https://github.com/finos/legend-studio/pull/3328) [`f784dab`](https://github.com/finos/legend-studio/commit/f784dab85eb1411338b54415e768f3d79759b447) ([@travisstebbins](https://github.com/travisstebbins)) - Fix bugs with post-filter panel and filter by
+
+- [#3339](https://github.com/finos/legend-studio/pull/3339) [`6b6f5c2`](https://github.com/finos/legend-studio/commit/6b6f5c26d67a45b5f8ac403561a2e2d29023ed41) ([@travisstebbins](https://github.com/travisstebbins)) - Fix handling of DND for different element types in filter and post-filter panels and fix post-filter panel styling
+
 ## 4.14.58
 
 ### Patch Changes

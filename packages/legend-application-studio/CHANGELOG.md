@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.1
+
+### Patch Changes
+
+- [#3337](https://github.com/finos/legend-studio/pull/3337) [`c9fb799`](https://github.com/finos/legend-studio/commit/c9fb7994e5c8d89622faa0a3b761eedd2d8562e1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use exact search on first filtering of load projects.
+
 ## 28.18.0
 
 ### Minor Changes
