@@ -139,6 +139,20 @@ button:focus-visible {
   --ag-row-hover-color: #d4d4d415; // from tailwind neutral 300
   --ag-popup-shadow: 2px 2px 5px rgb(0 0 0 / 20%);
 
+  // tooltip
+  --ag-tooltip-background-color: var(--tw-color-white);
+
+  // side bar and drop zones
+  --ag-icon-font-code-group: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='icon icon-tabler icon-tabler-table-column' width='12' height='12' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23000000' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z' /%3E%3Cpath d='M10 10h11' /%3E%3Cpath d='M10 3v18' /%3E%3Cpath d='M9 3l-6 6' /%3E%3Cpath d='M10 7l-7 7' /%3E%3Cpath d='M10 12l-7 7' /%3E%3Cpath d='M10 17l-4 4' /%3E%3C/svg%3E");
+  --ag-icon-font-code-pivot: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='icon icon-tabler icon-tabler-table-row' width='12' height='12' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23000000' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z' /%3E%3Cpath d='M9 3l-6 6' /%3E%3Cpath d='M14 3l-7 7' /%3E%3Cpath d='M19 3l-7 7' /%3E%3Cpath d='M21 6l-4 4' /%3E%3Cpath d='M3 10h18' /%3E%3Cpath d='M10 10v11' /%3E%3C/svg%3E");
+  --ag-icon-font-code-columns: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='icon icon-tabler icon-tabler-columns-3' width='12' height='12' viewBox='0 0 24 24' stroke-width='1.5' stroke='black' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M3 3m0 1a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v16a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1zm6 -1v18m6 -18v18' /%3E%3C/svg%3E");
+  --ag-control-panel-background-color: var(--tw-color-neutral-100);
+  --ag-widget-container-horizontal-padding: 4px;
+  --ag-widget-container-vertical-padding: 4px;
+  --ag-list-item-height: 18px;
+  --ag-widget-horizontal-spacing: 4px;
+  --ag-widget-vertical-spacing: 4px;
+
   // --------------------------------- Pinning ---------------------------------
   // Improve visibility of pinned columns
 
@@ -162,8 +176,6 @@ button:focus-visible {
 
   // --------------------------------- Tooltip ---------------------------------
   // Improve visibility of tooltips
-
-  --ag-tooltip-background-color: var(--tw-color-white);
 
   .ag-tooltip {
     padding: 3px 5px;
@@ -207,15 +219,6 @@ button:focus-visible {
   // See https://yoksel.github.io/url-encoder/
   // See https://tablericons.com/
   // See https://github.com/tabler/tabler-icons
-  --ag-icon-font-code-group: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='icon icon-tabler icon-tabler-table-column' width='12' height='12' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23000000' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z' /%3E%3Cpath d='M10 10h11' /%3E%3Cpath d='M10 3v18' /%3E%3Cpath d='M9 3l-6 6' /%3E%3Cpath d='M10 7l-7 7' /%3E%3Cpath d='M10 12l-7 7' /%3E%3Cpath d='M10 17l-4 4' /%3E%3C/svg%3E");
-  --ag-icon-font-code-pivot: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='icon icon-tabler icon-tabler-table-row' width='12' height='12' viewBox='0 0 24 24' stroke-width='1.5' stroke='%23000000' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z' /%3E%3Cpath d='M9 3l-6 6' /%3E%3Cpath d='M14 3l-7 7' /%3E%3Cpath d='M19 3l-7 7' /%3E%3Cpath d='M21 6l-4 4' /%3E%3Cpath d='M3 10h18' /%3E%3Cpath d='M10 10v11' /%3E%3C/svg%3E");
-  --ag-icon-font-code-columns: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='icon icon-tabler icon-tabler-columns-3' width='12' height='12' viewBox='0 0 24 24' stroke-width='1.5' stroke='black' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M3 3m0 1a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v16a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1zm6 -1v18m6 -18v18' /%3E%3C/svg%3E");
-  --ag-control-panel-background-color: var(--tw-color-neutral-100);
-  --ag-widget-container-horizontal-padding: 4px;
-  --ag-widget-container-vertical-padding: 4px;
-  --ag-list-item-height: 18px;
-  --ag-widget-horizontal-spacing: 4px;
-  --ag-widget-vertical-spacing: 4px;
 
   .ag-column-drop-cell {
     height: 16px;

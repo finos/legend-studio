@@ -81,25 +81,27 @@ export class DataCubeEditorVerticalPivotsPanelState
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
   ): void {
-    newSnapshot.data.groupBy = {
-      columns: this.selector.selectedColumns.map((column) => ({
-        name: column.name,
-        type: column.type,
-      })),
-      aggColumns: this.editor.columnProperties.columns
-        .filter(
-          (column) =>
-            column.kind === DataCubeColumnKind.MEASURE &&
-            column.aggregateFunction !== undefined &&
-            this.selector.selectedColumns.find(
-              (col) => col.name !== column.name,
-            ),
-        )
-        .map((column) => ({
-          name: column.name,
-          type: column.type,
-          function: guaranteeNonNullable(column.aggregateFunction),
-        })),
-    };
+    newSnapshot.data.groupBy = this.selector.selectedColumns.length
+      ? {
+          columns: this.selector.selectedColumns.map((column) => ({
+            name: column.name,
+            type: column.type,
+          })),
+          aggColumns: this.editor.columnProperties.columns
+            .filter(
+              (column) =>
+                column.kind === DataCubeColumnKind.MEASURE &&
+                column.aggregateFunction !== undefined &&
+                this.selector.selectedColumns.find(
+                  (col) => col.name !== column.name,
+                ),
+            )
+            .map((column) => ({
+              name: column.name,
+              type: column.type,
+              function: guaranteeNonNullable(column.aggregateFunction),
+            })),
+        }
+      : undefined;
   }
 }

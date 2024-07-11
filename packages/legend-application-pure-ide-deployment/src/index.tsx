@@ -16,6 +16,6 @@
 
 import { LegendPureIDEWebApplication } from '@finos/legend-application-pure-ide';
 import config from '../pure-ide.config.js';
-import './index.scss';
+import './index.css';
 
 LegendPureIDEWebApplication.run(config.baseUrl);
