@@ -158,6 +158,7 @@
   &__node__children {
     @include flexVCenter;
 
+    width: calc(100% - query-builder-filter.$group-node-width);
     height: 100%;
     flex: 1;
     flex-direction: column;
@@ -302,6 +303,11 @@
       border-radius: 0.2rem;
       font-size: 1.2rem;
       font-weight: 500;
+
+      .value-spec-editor {
+        width: 10rem;
+        flex: 1;
+      }
     }
   }
 }

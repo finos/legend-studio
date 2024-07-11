@@ -155,6 +155,7 @@ $group-node-width: 3.5rem;
   &__node__children {
     @include flexVCenter;
 
+    width: calc(100% - $group-node-width);
     height: 100%;
     flex: 1;
     flex-direction: column;
@@ -364,6 +365,11 @@ $group-node-width: 3.5rem;
       border-radius: 0.2rem;
       font-size: 1.2rem;
       font-weight: 500;
+
+      .value-spec-editor {
+        width: 10rem;
+        flex: 1;
+      }
     }
   }
 }

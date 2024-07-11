@@ -1158,12 +1158,6 @@ const QueryBuilderFilterTreeNodeContainer = observer(
         data-testid={
           QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTAINER
         }
-        onClick={
-          node instanceof QueryBuilderFilterTreeConditionNodeData ||
-          node instanceof QueryBuilderFilterTreeBlankConditionNodeData
-            ? selectNode
-            : undefined
-        }
         className={clsx('query-builder-filter-tree__node__container', {
           'query-builder-filter-tree__node__container--group':
             node instanceof QueryBuilderFilterTreeGroupNodeData,
@@ -1200,6 +1194,12 @@ const QueryBuilderFilterTreeNodeContainer = observer(
             }
             className="query-builder-filter-tree__node__content"
             ref={dragRef}
+            onClick={
+              node instanceof QueryBuilderFilterTreeConditionNodeData ||
+              node instanceof QueryBuilderFilterTreeBlankConditionNodeData
+                ? selectNode
+                : undefined
+            }
           >
             {node instanceof QueryBuilderFilterTreeGroupNodeData && (
               <QueryBuilderFilterGroupConditionEditor

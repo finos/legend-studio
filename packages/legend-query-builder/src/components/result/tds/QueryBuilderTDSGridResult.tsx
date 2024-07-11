@@ -284,8 +284,10 @@ export const QueryBuilderTDSGridResult = observer(
       const selectedCells = [];
       if (selectedRanges) {
         for (const selectedRange of selectedRanges) {
-          const startRow: number = selectedRange.startRow?.rowIndex ?? 0;
-          const endRow: number = selectedRange.endRow?.rowIndex ?? 0;
+          const rangeStart: number = selectedRange.startRow?.rowIndex ?? 0;
+          const rangeEnd: number = selectedRange.endRow?.rowIndex ?? 0;
+          const startRow = rangeStart < rangeEnd ? rangeStart : rangeEnd;
+          const endRow = rangeStart < rangeEnd ? rangeEnd : rangeStart;
           const selectedColumns: string[] = selectedRange.columns.map((col) =>
             col.getColId(),
           );
