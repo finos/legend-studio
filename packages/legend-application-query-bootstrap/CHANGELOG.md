@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 12.1.0
+
+### Patch Changes
+
+- [#3339](https://github.com/finos/legend-studio/pull/3339) [`6b6f5c2`](https://github.com/finos/legend-studio/commit/6b6f5c26d67a45b5f8ac403561a2e2d29023ed41) ([@travisstebbins](https://github.com/travisstebbins)) - Fix light mode styling for post-filter panel
+
 ## 12.0.0
 
 ## 11.75.0
