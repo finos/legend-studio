@@ -168,6 +168,9 @@ export const CAN_DROP_FILTER_NODE_DND_TYPES = [
 ];
 
 export const CAN_DROP_FILTER_VALUE_DND_TYPES = [
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+  QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
   QUERY_BUILDER_VARIABLE_DND_TYPE,
 ];
 
@@ -959,12 +962,9 @@ const QueryBuilderFilterConditionEditor = observer(
     const { isFilterValueDroppable } = useDragLayer((monitor) => ({
       isFilterValueDroppable:
         monitor.isDragging() &&
-        (monitor.getItemType() === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
-          monitor.getItemType() === QUERY_BUILDER_VARIABLE_DND_TYPE ||
-          monitor.getItemType() ===
-            QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY ||
-          monitor.getItemType() ===
-            QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY) &&
+        CAN_DROP_FILTER_VALUE_DND_TYPES.includes(
+          monitor.getItemType()?.toString() ?? '',
+        ) &&
         canDropTypeOntoNodeValue(
           getItemType(monitor.getItem()),
           node.condition,
@@ -1026,6 +1026,7 @@ const QueryBuilderFilterConditionEditor = observer(
           >
             <PanelEntryDropZonePlaceholder
               isDragOver={isFilterValueDragOver}
+              isDroppable={isFilterValueDroppable}
               label="Change Filter Value"
             >
               <EditableBasicValueSpecificationEditor
@@ -1062,7 +1063,7 @@ const QueryBuilderFilterConditionEditor = observer(
               isDroppable={isFilterValueDroppable}
               label="Change Filter Value"
             >
-              {rightConditionValue.propertyExpression.functionName}
+              {rightConditionValue.propertyExpression.func.value.name}
             </PanelEntryDropZonePlaceholder>
           </div>
         );
