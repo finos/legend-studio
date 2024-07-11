@@ -16,6 +16,6 @@
 
 import { LegendStudioWebApplication } from '@finos/legend-application-studio-bootstrap';
 import config from '../studio.config.js';
-import './index.scss';
+import './index.css';
 
 LegendStudioWebApplication.run(config.baseUrl);

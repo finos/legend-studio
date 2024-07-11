@@ -16,7 +16,7 @@
 
 import { LegendREPLWebApplication } from '@finos/legend-application-repl';
 import '../lib/tailwind.css'; // eslint-disable-line @finos/legend-studio/no-cross-workspace-non-export-usage
-import './index.scss';
+import './index.css';
 
 // Resolve baseUrl relatively for application to work in vscode code-server
 const relativeBaseUrl = new URL('./', window.location.href).pathname;

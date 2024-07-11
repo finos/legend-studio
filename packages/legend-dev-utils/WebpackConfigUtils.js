@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import * as sass from 'sass';
 import { resolve, join } from 'path';
 import { existsSync } from 'fs';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
@@ -149,13 +148,6 @@ export const getBaseWebpackConfig = (
                     require.resolve('cssnano'), // minification
                   ].filter(Boolean),
                 },
-                sourceMap: enableSourceMap,
-              },
-            },
-            {
-              loader: require.resolve('sass-loader'),
-              options: {
-                implementation: sass,
                 sourceMap: enableSourceMap,
               },
             },
