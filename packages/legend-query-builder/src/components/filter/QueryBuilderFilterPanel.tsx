@@ -54,7 +54,7 @@ import {
 } from '@finos/legend-art';
 import {
   type QueryBuilderFilterConditionDragSource,
-  type QueryBuilderFilterDropTarget,
+  type QueryBuilderFilterNodeDropTarget,
   type QueryBuilderFilterTreeNodeData,
   QUERY_BUILDER_FILTER_DND_TYPE,
   FilterConditionState,
@@ -65,8 +65,9 @@ import {
   QueryBuilderFilterTreeOperationNodeData,
   type QueryBuilderFilterState,
   FilterValueSpecConditionValueState,
-  FilterPropertyExpressionConditionValueState,
+  FilterPropertyExpressionStateConditionValueState,
   isCollectionProperty,
+  type QueryBuilderFilterValueDropTarget,
 } from '../../stores/filter/QueryBuilderFilterState.js';
 import { useDrag, useDragLayer, useDrop } from 'react-dnd';
 import {
@@ -123,15 +124,14 @@ import {
   EditableBasicValueSpecificationEditor,
 } from '../shared/BasicValueSpecificationEditor.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
-import { getPropertyChainName } from '../../stores/QueryBuilderPropertyEditorState.js';
+import {
+  QueryBuilderPropertyExpressionState,
+  getPropertyChainName,
+} from '../../stores/QueryBuilderPropertyEditorState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import { buildPropertyExpressionChain } from '../../stores/QueryBuilderValueSpecificationBuilderHelper.js';
 import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
 import { convertTextToPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
-import {
-  isExplorerTreeDragSource,
-  isProjectionColumnDragSource,
-} from '../shared/QueryBuilderFilterHelper.js';
 import {
   QueryBuilderFilterOperator_In,
   QueryBuilderFilterOperator_NotIn,
@@ -142,6 +142,7 @@ import {
   renderPropertyTypeIcon,
 } from '../fetch-structure/QueryBuilderTDSComponentHelper.js';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
+import { getItemType } from '../shared/QueryBuilderFilterHelper.js';
 
 export const CAN_DROP_MAIN_GROUP_DND_TYPES_FETCH_SUPPORTED = [
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
@@ -848,18 +849,6 @@ export const QueryBuilderExplorerTreeNodeBadge = observer(
   },
 );
 
-const getItemType = (
-  item:
-    | QueryBuilderVariableDragSource
-    | QueryBuilderProjectionColumnDragSource
-    | QueryBuilderExplorerTreeDragSource,
-): Type | undefined =>
-  isProjectionColumnDragSource(item)
-    ? item.columnState.getColumnType()
-    : isExplorerTreeDragSource(item)
-      ? item.node.property.genericType.value.rawType
-      : item.variable.genericType?.value.rawType;
-
 const canDropTypeOntoNodeValue = (
   type: Type | undefined,
   condition: FilterConditionState,
@@ -890,17 +879,8 @@ const QueryBuilderFilterConditionEditor = observer(
 
     // Drag and Drop on filter condition value
     const handleDrop = useCallback(
-      (
-        item:
-          | QueryBuilderVariableDragSource
-          | QueryBuilderProjectionColumnDragSource
-          | QueryBuilderExplorerTreeDragSource,
-      ): void => {
-        const itemType = isProjectionColumnDragSource(item)
-          ? item.columnState.getColumnType()
-          : isExplorerTreeDragSource(item)
-            ? item.node.property.genericType.value.rawType
-            : item.variable.genericType?.value.rawType;
+      (item: QueryBuilderFilterValueDropTarget, type: string): void => {
+        const itemType = getItemType(item, type);
         const conditionValueType =
           node.condition.propertyExpressionState.propertyExpression.func.value
             .genericType.value.rawType;
@@ -908,28 +888,42 @@ const QueryBuilderFilterConditionEditor = observer(
           itemType !== undefined &&
           canDropTypeOntoNodeValue(itemType, node.condition)
         ) {
-          if (isProjectionColumnDragSource(item)) {
+          if (type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE) {
+            const columnState = (item as QueryBuilderProjectionColumnDragSource)
+              .columnState;
             if (
-              item.columnState instanceof
-              QueryBuilderSimpleProjectionColumnState
+              columnState instanceof QueryBuilderSimpleProjectionColumnState
             ) {
-              node.condition.buildFromPropertyExpression(
-                item.columnState.propertyExpressionState.propertyExpression,
+              node.condition.buildFromPropertyExpressionState(
+                columnState.propertyExpressionState,
               );
             } else {
               throw new UnsupportedOperationError(
                 `Dragging and Dropping derivation projection column is not supported.`,
               );
             }
-          } else if (isExplorerTreeDragSource(item)) {
-            node.condition.buildFromPropertyExpression(
-              buildPropertyExpressionFromExplorerTreeNodeData(
-                item.node,
-                node.condition.filterState.queryBuilderState.explorerState,
+          } else if (
+            type === QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY ||
+            type === QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY
+          ) {
+            const explorerNode = (item as QueryBuilderExplorerTreeDragSource)
+              .node;
+            node.condition.buildFromPropertyExpressionState(
+              new QueryBuilderPropertyExpressionState(
+                queryBuilderState,
+                buildPropertyExpressionFromExplorerTreeNodeData(
+                  explorerNode,
+                  node.condition.filterState.queryBuilderState.explorerState,
+                ),
               ),
             );
+          } else if (type === QUERY_BUILDER_VARIABLE_DND_TYPE) {
+            const variable = (item as QueryBuilderVariableDragSource).variable;
+            node.condition.buildFromValueSpec(variable);
           } else {
-            node.condition.buildFromValueSpec(item.variable);
+            applicationStore.notificationService.notifyWarning(
+              `Dragging and Dropping ${type} to filter panel is not supported.`,
+            );
           }
         } else {
           applicationStore.notificationService.notifyWarning(
@@ -937,7 +931,7 @@ const QueryBuilderFilterConditionEditor = observer(
           );
         }
       },
-      [applicationStore, node.condition],
+      [applicationStore, node.condition, queryBuilderState],
     );
 
     const [{ isFilterValueDragOver }, dropConnector] = useDrop<
@@ -949,7 +943,7 @@ const QueryBuilderFilterConditionEditor = observer(
         accept: CAN_DROP_FILTER_VALUE_DND_TYPES,
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
-            handleDrop(item);
+            handleDrop(item, monitor.getItemType() as string);
           } // prevent drop event propagation to accomondate for nested DnD
         },
         collect: (monitor) => ({
@@ -966,7 +960,7 @@ const QueryBuilderFilterConditionEditor = observer(
           monitor.getItemType()?.toString() ?? '',
         ) &&
         canDropTypeOntoNodeValue(
-          getItemType(monitor.getItem()),
+          getItemType(monitor.getItem(), monitor.getItemType() as string),
           node.condition,
         ),
     }));
@@ -1051,7 +1045,7 @@ const QueryBuilderFilterConditionEditor = observer(
         );
       } else if (
         rightConditionValue instanceof
-        FilterPropertyExpressionConditionValueState
+        FilterPropertyExpressionStateConditionValueState
       ) {
         return (
           <div
@@ -1063,7 +1057,11 @@ const QueryBuilderFilterConditionEditor = observer(
               isDroppable={isFilterValueDroppable}
               label="Change Filter Value"
             >
-              {rightConditionValue.propertyExpression.func.value.name}
+              <QueryBuilderPropertyExpressionEditor
+                propertyExpressionState={
+                  rightConditionValue.propertyExpressionState
+                }
+              />
             </PanelEntryDropZonePlaceholder>
           </div>
         );
@@ -1222,7 +1220,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
 
     // Drag and Drop
     const handleDrop = useCallback(
-      (item: QueryBuilderFilterDropTarget, type: string): void => {
+      (item: QueryBuilderFilterNodeDropTarget, type: string): void => {
         if (QUERY_BUILDER_FILTER_DND_TYPE.CONDITION === type) {
           const nodeBeingDragged = (
             item as QueryBuilderFilterConditionDragSource
@@ -1647,7 +1645,7 @@ export const QueryBuilderFilterPanel = observer(
 
     // Drag and Drop
     const handleDrop = useCallback(
-      (item: QueryBuilderFilterDropTarget, type: string): void => {
+      (item: QueryBuilderFilterNodeDropTarget, type: string): void => {
         try {
           let propertyExpression;
           if (type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE) {

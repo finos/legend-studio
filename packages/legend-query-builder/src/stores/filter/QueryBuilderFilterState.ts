@@ -66,6 +66,7 @@ import {
 } from '../QueryBuilderValueSpecificationHelper.js';
 import { instanceValue_setValues } from '../shared/ValueSpecificationModifierHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
+import type { QueryBuilderVariableDragSource } from '../../components/shared/BasicValueSpecificationEditor.js';
 
 export enum QUERY_BUILDER_FILTER_DND_TYPE {
   GROUP_CONDITION = 'QUERY_BUILDER_FILTER_DND_TYPE.GROUP_CONDITION',
@@ -77,10 +78,16 @@ export interface QueryBuilderFilterConditionDragSource {
   node: QueryBuilderFilterTreeNodeData;
 }
 
-export type QueryBuilderFilterDropTarget =
+export type QueryBuilderFilterNodeDropTarget =
   | QueryBuilderExplorerTreeDragSource
   | QueryBuilderProjectionColumnDragSource
   | QueryBuilderFilterConditionDragSource;
+
+export type QueryBuilderFilterValueDropTarget =
+  | QueryBuilderVariableDragSource
+  | QueryBuilderProjectionColumnDragSource
+  | QueryBuilderExplorerTreeDragSource;
+
 export type QueryBuilderFilterConditionRearrangeDropTarget =
   QueryBuilderFilterConditionDragSource;
 
@@ -189,33 +196,36 @@ export class FilterValueSpecConditionValueState extends FilterConditionValueStat
   }
 }
 
-export class FilterPropertyExpressionConditionValueState extends FilterConditionValueState {
-  propertyExpression: AbstractPropertyExpression;
+export class FilterPropertyExpressionStateConditionValueState extends FilterConditionValueState {
+  propertyExpressionState: QueryBuilderPropertyExpressionState;
 
   constructor(
     conditionState: FilterConditionState,
-    propertyExpression: AbstractPropertyExpression,
+    propertyExpressionState: QueryBuilderPropertyExpressionState,
   ) {
     super(conditionState);
     makeObservable(this, {
-      propertyExpression: observable,
-      changePropertyExpression: action,
+      propertyExpressionState: observable,
+      changePropertyExpressionState: action,
     });
-    this.propertyExpression = propertyExpression;
+    this.propertyExpressionState = propertyExpressionState;
   }
 
   override get type(): Type | undefined {
-    return this.propertyExpression.genericType?.value.rawType;
+    return this.propertyExpressionState.propertyExpression.genericType?.value
+      .rawType;
   }
 
   override get isCollection(): boolean {
-    return isCollectionProperty(this.propertyExpression);
+    return isCollectionProperty(
+      this.propertyExpressionState.propertyExpression,
+    );
   }
 
-  changePropertyExpression(
-    propertyExpression: AbstractPropertyExpression,
+  changePropertyExpressionState(
+    propertyExpressionState: QueryBuilderPropertyExpressionState,
   ): void {
-    this.propertyExpression = propertyExpression;
+    this.propertyExpressionState = propertyExpressionState;
   }
 }
 
@@ -243,7 +253,7 @@ export class FilterConditionState implements Hashable {
       setRightConditionValue: action,
       addExistsLambdaParamNames: action,
       buildFromValueSpec: action,
-      buildFromPropertyExpression: action,
+      buildFromPropertyExpressionState: action,
       handleTypeaheadSearch: flow,
       operators: computed,
       hashCode: computed,
@@ -363,19 +373,21 @@ export class FilterConditionState implements Hashable {
     }
   }
 
-  buildFromPropertyExpression(
-    propertyExpression: AbstractPropertyExpression,
+  buildFromPropertyExpressionState(
+    propertyExpressionState: QueryBuilderPropertyExpressionState,
   ): void {
     if (
       this.rightConditionValue instanceof
-      FilterPropertyExpressionConditionValueState
+      FilterPropertyExpressionStateConditionValueState
     ) {
-      this.rightConditionValue.changePropertyExpression(propertyExpression);
+      this.rightConditionValue.changePropertyExpressionState(
+        propertyExpressionState,
+      );
     } else {
       this.setRightConditionValue(
-        new FilterPropertyExpressionConditionValueState(
+        new FilterPropertyExpressionStateConditionValueState(
           this,
-          propertyExpression,
+          propertyExpressionState,
         ),
       );
     }
