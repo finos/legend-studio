@@ -72,7 +72,6 @@ import {
 import { useDrag, useDragLayer, useDrop } from 'react-dnd';
 import {
   type QueryBuilderExplorerTreeDragSource,
-  type QueryBuilderExplorerTreePropertyNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
@@ -88,7 +87,6 @@ import {
   generateEnumerableNameFromToken,
   guaranteeNonNullable,
   guaranteeType,
-  prettyCONSTName,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
@@ -790,65 +788,6 @@ export const QueryBuilderColumnBadge = observer(
   },
 );
 
-export const QueryBuilderExplorerTreeNodeBadge = observer(
-  (props: {
-    node: QueryBuilderExplorerTreePropertyNodeData;
-    removeNode: () => void;
-  }) => {
-    const { node, removeNode } = props;
-    const type = node.type;
-
-    return (
-      <div className="query-builder-column-badge">
-        <div className="query-builder-column-badge__content">
-          {type && (
-            <div
-              className={clsx('query-builder-column-badge__type', {
-                'query-builder-column-badge__type--class':
-                  type instanceof Class,
-                'query-builder-column-badge__type--enumeration':
-                  type instanceof Enumeration,
-                'query-builder-column-badge__type--primitive':
-                  type instanceof PrimitiveType,
-              })}
-            >
-              {renderPropertyTypeIcon(type)}
-            </div>
-          )}
-          <div
-            className="query-builder-column-badge__property"
-            title={`${node.property.name}`}
-          >
-            {prettyCONSTName(node.property.name)}
-          </div>
-          <QueryBuilderPropertyInfoTooltip
-            title={prettyCONSTName(node.property.name)}
-            property={node.property}
-            path={node.id}
-            isMapped={node.mappingData.mapped}
-            type={node.type}
-          >
-            <div
-              className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info"
-              data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TOOLTIP_ICON}
-            >
-              <InfoCircleIcon />
-            </div>
-          </QueryBuilderPropertyInfoTooltip>
-          <button
-            className="query-builder-column-badge__action"
-            name="Reset"
-            title="Reset"
-            onClick={removeNode}
-          >
-            <RefreshIcon />
-          </button>
-        </div>
-      </div>
-    );
-  },
-);
-
 const canDropTypeOntoNodeValue = (
   type: Type | undefined,
   condition: FilterConditionState,
@@ -983,6 +922,12 @@ const QueryBuilderFilterConditionEditor = observer(
       node.condition.buildFromValueSpec(val);
     };
 
+    const removePropertyExpressionValue = (): void => {
+      node.condition.buildFromValueSpec(
+        node.condition.operator.getDefaultFilterConditionValue(node.condition),
+      );
+    };
+
     const debouncedTypeaheadSearch = useMemo(
       () =>
         debounce((inputValue: string) => {
@@ -1047,6 +992,7 @@ const QueryBuilderFilterConditionEditor = observer(
         rightConditionValue instanceof
         FilterPropertyExpressionStateConditionValueState
       ) {
+        const type = rightConditionValue.type;
         return (
           <div
             ref={dropConnector}
@@ -1057,11 +1003,54 @@ const QueryBuilderFilterConditionEditor = observer(
               isDroppable={isFilterValueDroppable}
               label="Change Filter Value"
             >
-              <QueryBuilderPropertyExpressionEditor
-                propertyExpressionState={
-                  rightConditionValue.propertyExpressionState
-                }
-              />
+              <div className="query-builder-column-badge">
+                <div className="query-builder-column-badge__content">
+                  {type && (
+                    <div
+                      className={clsx('query-builder-column-badge__type', {
+                        'query-builder-column-badge__type--class':
+                          type instanceof Class,
+                        'query-builder-column-badge__type--enumeration':
+                          type instanceof Enumeration,
+                        'query-builder-column-badge__type--primitive':
+                          type instanceof PrimitiveType,
+                      })}
+                    >
+                      {renderPropertyTypeIcon(type)}
+                    </div>
+                  )}
+                  <QueryBuilderPropertyExpressionBadge
+                    propertyExpressionState={
+                      rightConditionValue.propertyExpressionState
+                    }
+                  />
+                  <QueryBuilderPropertyInfoTooltip
+                    title={
+                      rightConditionValue.propertyExpressionState
+                        .propertyExpression.func.value.name
+                    }
+                    property={
+                      rightConditionValue.propertyExpressionState
+                        .propertyExpression.func.value
+                    }
+                    path={rightConditionValue.propertyExpressionState.path}
+                    isMapped={true}
+                    placement="bottom-end"
+                  >
+                    <div className="query-builder-column-badge__property__info">
+                      <InfoCircleIcon />
+                    </div>
+                  </QueryBuilderPropertyInfoTooltip>
+                  <button
+                    className="query-builder-column-badge__action"
+                    name="Reset"
+                    title="Reset"
+                    onClick={removePropertyExpressionValue}
+                  >
+                    <RefreshIcon />
+                  </button>
+                </div>
+              </div>
             </PanelEntryDropZonePlaceholder>
           </div>
         );
