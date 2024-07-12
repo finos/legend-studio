@@ -372,7 +372,10 @@ const QueryBuilderPostFilterConditionEditor = observer(
         CAN_DROP_POST_FILTER_VALUE_DND_TYPES.includes(
           monitor.getItemType()?.toString() ?? '',
         ) &&
-        canDropTypeOntoNodeValue(monitor.getItem(), node.condition),
+        canDropTypeOntoNodeValue(
+          getItemType(monitor.getItem(), monitor.getItemType() as string),
+          node.condition,
+        ),
     }));
     const resetNode = (): void => {
       node.condition.buildFromValueSpec(
