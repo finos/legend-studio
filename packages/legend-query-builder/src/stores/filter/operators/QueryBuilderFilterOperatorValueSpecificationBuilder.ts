@@ -38,6 +38,7 @@ import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMe
 import { simplifyValueExpression } from '../../QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderFilterOperator } from '../QueryBuilderFilterOperator.js';
 import { buildPropertyExpressionChain } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
+import { QueryBuilderPropertyExpressionState } from '../../QueryBuilderPropertyEditorState.js';
 
 export const buildFilterConditionExpression = (
   filterConditionState: FilterConditionState,
@@ -180,6 +181,16 @@ export const buildFilterConditionState = (
     const value = mainExpressionWithOperator.parametersValues[1];
     if (hasNoValue || !value) {
       filterConditionState.setRightConditionValue(undefined);
+    } else if (value instanceof AbstractPropertyExpression) {
+      filterConditionState.setRightConditionValue(
+        new FilterPropertyExpressionStateConditionValueState(
+          filterConditionState,
+          new QueryBuilderPropertyExpressionState(
+            filterState.queryBuilderState,
+            value,
+          ),
+        ),
+      );
     } else {
       filterConditionState.setRightConditionValue(
         new FilterValueSpecConditionValueState(
