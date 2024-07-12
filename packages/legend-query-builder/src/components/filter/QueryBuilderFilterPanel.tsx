@@ -895,13 +895,19 @@ const QueryBuilderFilterConditionEditor = observer(
     >(
       () => ({
         accept: CAN_DROP_FILTER_VALUE_DND_TYPES,
+        canDrop: (item, monitor): boolean =>
+          canDropTypeOntoNodeValue(
+            getItemType(item, monitor.getItemType() as string),
+            node.condition,
+          ),
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item, monitor.getItemType() as string);
           } // prevent drop event propagation to accomondate for nested DnD
         },
         collect: (monitor) => ({
-          isFilterValueDragOver: monitor.isOver({ shallow: true }),
+          isFilterValueDragOver:
+            monitor.isOver({ shallow: true }) && monitor.canDrop(),
         }),
       }),
       [handleDrop],
@@ -1040,7 +1046,7 @@ const QueryBuilderFilterConditionEditor = observer(
         }
       >
         <PanelEntryDropZonePlaceholder
-          isDragOver={isDragOver}
+          isDragOver={isDragOver && !isFilterValueDragOver}
           alwaysShowChildren={true}
         >
           <div className="query-builder-filter-tree__condition-node">
@@ -1265,10 +1271,10 @@ const QueryBuilderFilterTreeNodeContainer = observer(
       },
       [applicationStore, filterState, node],
     );
-    const [{ isDragOver }, dropConnector] = useDrop<
+    const [{ isDragOver, deepIsDragOver }, dropConnector] = useDrop<
       QueryBuilderFilterConditionDragSource,
       void,
-      { isDragOver: boolean }
+      { isDragOver: boolean; deepIsDragOver: boolean }
     >(
       () => ({
         accept:
@@ -1282,6 +1288,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
         },
         collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
+          deepIsDragOver: monitor.isOver({ shallow: false }),
         }),
       }),
       [handleDrop],
@@ -1396,7 +1403,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
             {node instanceof QueryBuilderFilterTreeConditionNodeData && (
               <QueryBuilderFilterConditionEditor
                 node={node}
-                isDragOver={isDragOver}
+                isDragOver={deepIsDragOver}
               />
             )}
             {node instanceof QueryBuilderFilterTreeBlankConditionNodeData && (
