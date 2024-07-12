@@ -480,7 +480,6 @@ const QueryBuilderPostFilterConditionEditor = observer(
         <PanelEntryDropZonePlaceholder
           isDragOver={isDragOver && !isFilterValueDragOver}
           alwaysShowChildren={true}
-          className="query-builder-post-filter-tree__node__drop-zone-placeholder"
         >
           <div className="query-builder-post-filter-tree__condition-node">
             <div className="query-builder-post-filter-tree__condition-node__property">
