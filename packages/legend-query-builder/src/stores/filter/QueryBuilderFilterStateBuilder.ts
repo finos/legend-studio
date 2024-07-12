@@ -314,8 +314,8 @@ const processFilterTree = (
       }
     }
     for (const operator of filterState.operators) {
-      // NOTE: this allow plugin author to either return `undefined` or throw error
-      // if there is a problem with building the lambda. Either case, the plugin is
+      // NOTE: this allows plugin author to either return `undefined` or throw error
+      // if there is a problem with building the lambda. In either case, the plugin is
       // considered as not supporting the lambda.
       const filterConditionState = returnUndefOnError(() =>
         operator.buildFilterConditionState(filterState, expression),
