@@ -30,6 +30,7 @@ import {
 } from '@finos/legend-shared';
 import {
   FilterConditionState,
+  FilterPropertyExpressionStateConditionValueState,
   FilterValueSpecConditionValueState,
   type QueryBuilderFilterState,
 } from '../QueryBuilderFilterState.js';
@@ -62,6 +63,21 @@ export const buildFilterConditionExpression = (
     expression.parametersValues.push(
       filterConditionState.rightConditionValue.value,
     );
+  } else if (
+    filterConditionState.rightConditionValue &&
+    filterConditionState.rightConditionValue instanceof
+      FilterPropertyExpressionStateConditionValueState &&
+    filterConditionState.rightConditionValue.propertyExpressionState
+      .propertyExpression.func.value.name !== undefined
+  ) {
+    const rightConditionPropertyExpression = buildPropertyExpressionChain(
+      filterConditionState.rightConditionValue.propertyExpressionState
+        .propertyExpression,
+      filterConditionState.propertyExpressionState.queryBuilderState,
+      lambdaParameterName ??
+        filterConditionState.filterState.lambdaParameterName,
+    );
+    expression.parametersValues.push(rightConditionPropertyExpression);
   }
   return expression;
 };
