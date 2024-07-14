@@ -158,12 +158,15 @@ export class DataCubeGridClientExportEngine {
 
     downloadFileUsingDataURI(
       `${fileName}.eml`,
-      `${EMAIL_CONTENT}--${EMAIL_MIXED_BOUNDARY}\n` +
+      // NOTE: empty lines before email content can cause some mail client to not
+      // recognize the email content, e.g. Outlook
+      `${EMAIL_CONTENT.trimStart()}--${EMAIL_MIXED_BOUNDARY}\n` +
         `Content-Type: ${contentType}; name="${fileNameWithExtension}"\n` +
         `Content-Transfer-Encoding: base64\n` +
         `Content-Disposition: attachment; filename="${fileNameWithExtension}"\n\n` +
         `${attachment}\n\n` +
         `--${EMAIL_MIXED_BOUNDARY}--`,
+      // This MIME type here might not matter
       ContentType.MESSAGE_RFC822,
     );
   }
