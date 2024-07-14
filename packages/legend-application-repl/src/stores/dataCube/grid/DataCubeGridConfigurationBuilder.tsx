@@ -510,7 +510,7 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     tooltipShowDelay: INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY,
     tooltipInteraction: true,
     // -------------------------------------- COLUMN MOVING --------------------------------------
-    // suppressDragLeaveHidesColumns: true,
+    suppressDragLeaveHidesColumns: true, // disable this since it's quite easy to accidentally hide columns while moving
     // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
     suppressScrollOnNewData: true,
     suppressServerSideFullWidthLoadingRow: true, // make sure each column has its own loading indicator instead of the whole row
