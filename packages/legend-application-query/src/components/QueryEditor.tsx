@@ -61,6 +61,7 @@ import {
   ReleaseLogManager,
   ReleaseNotesManager,
   useApplicationStore,
+  useURLQueryParams,
 } from '@finos/legend-application';
 import { useParams } from '@finos/legend-application/browser';
 import {
@@ -755,12 +756,44 @@ export const QueryEditor = observer(() => {
   );
 });
 
+const EXISTING_QUERY_PARAM_SUFFIX = 'p:';
+
+const processQueryParams = (
+  urlQuery: URLSearchParams,
+): Record<string, string> | undefined => {
+  if (urlQuery.size > 0) {
+    const paramValues: Record<string, string> = {};
+    const processedKeys: string[] = [];
+    urlQuery.forEach((queryValue, key) => {
+      if (key.startsWith(EXISTING_QUERY_PARAM_SUFFIX)) {
+        paramValues[key.slice(EXISTING_QUERY_PARAM_SUFFIX.length)] = queryValue;
+        processedKeys.push(key);
+      }
+    });
+    processedKeys.forEach((k) => urlQuery.delete(k));
+    return Object.values(paramValues).length === 0 ? undefined : paramValues;
+  }
+
+  return undefined;
+};
+
 export const ExistingQueryEditor = observer(() => {
+  const applicationStore = useApplicationStore();
   const params = useParams<ExistingQueryEditorPathParams>();
   const queryId = params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.QUERY_ID];
+  const queryParams = useURLQueryParams();
+  const processed = processQueryParams(queryParams);
+  useEffect(() => {
+    // clear params
+    if (processed && Object.keys(processed).length) {
+      applicationStore.navigationService.navigator.updateCurrentLocation(
+        generateExistingQueryEditorRoute(queryId),
+      );
+    }
+  }, [applicationStore, queryId, processed]);
 
   return (
-    <ExistingQueryEditorStoreProvider queryId={queryId}>
+    <ExistingQueryEditorStoreProvider queryId={queryId} params={processed}>
       <QueryEditor />
     </ExistingQueryEditorStoreProvider>
   );

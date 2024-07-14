@@ -31,6 +31,7 @@ export * from './components/ApplicationFrameworkProvider.js';
 export * from './components/useApplicationNavigationContext.js';
 export * from './components/useCommands.js';
 export * from './components/ReleaseNotesManager.js';
+export * from './components/ApplicationRoutes.js';
 export {
   forceDispatchKeyboardEvent,
   BackdropContainer,
