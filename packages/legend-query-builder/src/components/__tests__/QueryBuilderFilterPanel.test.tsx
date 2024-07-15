@@ -100,7 +100,10 @@ import {
   TEST_DATA__simpleFilterWithSubType,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
 import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
-import { QueryBuilderFilterTreeConditionNodeData } from '../../stores/filter/QueryBuilderFilterState.js';
+import {
+  FilterValueSpecConditionValueState,
+  QueryBuilderFilterTreeConditionNodeData,
+} from '../../stores/filter/QueryBuilderFilterState.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 
 test(
@@ -654,8 +657,8 @@ test(
     fireEvent.dragStart(dragSource);
     fireEvent.dragEnter(dropZone);
     fireEvent.dragOver(dropZone);
-    await findByText(legalNameFilterTreeNode, 'Add New Logical Group');
-    fireEvent.drop(getByText(legalNameFilterTreeNode, 'Add New Logical Group'));
+    await findByText(legalNameFilterTreeNode, 'Legal Name');
+    fireEvent.drop(getByText(legalNameFilterTreeNode, 'Legal Name'));
     fireEvent.click(renderResult.getByText('Proceed'));
     await waitFor(() => getByText(filterPanel, 'Employees'));
     await waitFor(() => getByText(filterPanel, 'First Name'));
@@ -748,7 +751,7 @@ test(
       dragSource,
       dropZone,
       firstNameFilterTreeNode,
-      'Add New Logical Group',
+      'First Name',
     );
     await waitFor(() => getByText(filterPanel, 'Employees'));
     await waitFor(() => getByText(filterPanel, 'First Name'));
@@ -845,7 +848,7 @@ test(
       dragSource,
       dropZone,
       legalNameFilterTreeNode,
-      'Add New Logical Group',
+      'Legal Name',
     );
     filterTreeNodes = await waitFor(() =>
       getAllByTestId(
@@ -2000,11 +2003,14 @@ test(
 
     const filterConditionValue = guaranteeType(
       guaranteeType(
-        getNullableFirstEntry(
-          Array.from(queryBuilderState.filterState.nodes.values()),
-        ),
-        QueryBuilderFilterTreeConditionNodeData,
-      ).condition.rightConditionValue,
+        guaranteeType(
+          getNullableFirstEntry(
+            Array.from(queryBuilderState.filterState.nodes.values()),
+          ),
+          QueryBuilderFilterTreeConditionNodeData,
+        ).condition.rightConditionValue,
+        FilterValueSpecConditionValueState,
+      ).value,
       PrimitiveInstanceValue,
     );
 
@@ -2068,11 +2074,14 @@ test(
 
     const filterConditionValue = guaranteeType(
       guaranteeType(
-        getNullableFirstEntry(
-          Array.from(queryBuilderState.filterState.nodes.values()),
-        ),
-        QueryBuilderFilterTreeConditionNodeData,
-      ).condition.rightConditionValue,
+        guaranteeType(
+          getNullableFirstEntry(
+            Array.from(queryBuilderState.filterState.nodes.values()),
+          ),
+          QueryBuilderFilterTreeConditionNodeData,
+        ).condition.rightConditionValue,
+        FilterValueSpecConditionValueState,
+      ).value,
       PrimitiveInstanceValue,
     );
 
