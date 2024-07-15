@@ -1137,14 +1137,21 @@ export class QueryBuilderFilterState
     );
   }
 
+  isInvalidFilterValue(node: QueryBuilderFilterTreeNodeData): boolean {
+    return (
+      node instanceof QueryBuilderFilterTreeConditionNodeData &&
+      node.condition.rightConditionValue instanceof
+        FilterValueSpecConditionValueState &&
+      node.condition.rightConditionValue.value instanceof InstanceValue &&
+      !isValidInstanceValue(node.condition.rightConditionValue.value)
+    );
+  }
+
   get allValidationIssues(): string[] {
     const validationIssues: string[] = [];
     Array.from(this.nodes.values()).forEach((node) => {
       if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
-        if (
-          node.condition.rightConditionValue instanceof InstanceValue &&
-          !isValidInstanceValue(node.condition.rightConditionValue)
-        ) {
+        if (this.isInvalidFilterValue(node)) {
           validationIssues.push(
             `Filter value for ${node.condition.propertyExpressionState.title} is missing or invalid`,
           );
@@ -1160,12 +1167,7 @@ export class QueryBuilderFilterState
   }
 
   get hasInvalidFilterValues(): boolean {
-    return Array.from(this.nodes.values()).some(
-      (node) =>
-        node instanceof QueryBuilderFilterTreeConditionNodeData &&
-        node.condition.rightConditionValue instanceof InstanceValue &&
-        !isValidInstanceValue(node.condition.rightConditionValue),
-    );
+    return Array.from(this.nodes.values()).some(this.isInvalidFilterValue);
   }
 
   get hasInvalidDerivedPropertyParameters(): boolean {
