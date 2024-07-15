@@ -835,9 +835,6 @@ const QueryBuilderFilterConditionEditor = observer(
     const handleDrop = useCallback(
       (item: QueryBuilderFilterValueDropTarget, type: string): void => {
         const itemType = getItemType(item, type);
-        const conditionValueType =
-          node.condition.propertyExpressionState.propertyExpression.func.value
-            .genericType.value.rawType;
         if (
           itemType !== undefined &&
           canDropTypeOntoNodeValue(itemType, node.condition)
@@ -900,6 +897,9 @@ const QueryBuilderFilterConditionEditor = observer(
             );
           }
         } else {
+          const conditionValueType =
+            node.condition.propertyExpressionState.propertyExpression.func.value
+              .genericType.value.rawType;
           applicationStore.notificationService.notifyWarning(
             `Incompatible parameter type ${itemType?.name}. ${itemType?.name} is not compatible with type ${conditionValueType.name}.`,
           );
