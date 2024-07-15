@@ -848,9 +848,19 @@ const QueryBuilderFilterConditionEditor = observer(
             if (
               columnState instanceof QueryBuilderSimpleProjectionColumnState
             ) {
-              node.condition.buildFromPropertyExpressionState(
-                columnState.propertyExpressionState,
-              );
+              const propertyExpressionState =
+                columnState.propertyExpressionState;
+              if (
+                isCollectionProperty(propertyExpressionState.propertyExpression)
+              ) {
+                applicationStore.notificationService.notifyWarning(
+                  'Collection types are not supported for filter condition values.',
+                );
+              } else {
+                node.condition.buildFromPropertyExpressionState(
+                  propertyExpressionState,
+                );
+              }
             } else {
               throw new UnsupportedOperationError(
                 `Dragging and Dropping derivation projection column is not supported.`,
@@ -862,15 +872,25 @@ const QueryBuilderFilterConditionEditor = observer(
           ) {
             const explorerNode = (item as QueryBuilderExplorerTreeDragSource)
               .node;
-            node.condition.buildFromPropertyExpressionState(
+            const propertyExpressionState =
               new QueryBuilderPropertyExpressionState(
                 queryBuilderState,
                 buildPropertyExpressionFromExplorerTreeNodeData(
                   explorerNode,
                   node.condition.filterState.queryBuilderState.explorerState,
                 ),
-              ),
-            );
+              );
+            if (
+              isCollectionProperty(propertyExpressionState.propertyExpression)
+            ) {
+              applicationStore.notificationService.notifyWarning(
+                'Collection types are not supported for filter condition values.',
+              );
+            } else {
+              node.condition.buildFromPropertyExpressionState(
+                propertyExpressionState,
+              );
+            }
           } else if (type === QUERY_BUILDER_VARIABLE_DND_TYPE) {
             const variable = (item as QueryBuilderVariableDragSource).variable;
             node.condition.buildFromValueSpec(variable);
