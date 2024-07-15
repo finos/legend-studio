@@ -585,6 +585,17 @@ export class QueryBuilderFilterTreeConditionNodeData
     this.isNewlyAdded = val;
   }
 
+  get isExistsNodeChild(): boolean {
+    let parentNode = this.condition.filterState.getParentNode(this);
+    while (parentNode !== null && parentNode !== undefined) {
+      if (parentNode instanceof QueryBuilderFilterTreeExistsNodeData) {
+        return true;
+      }
+      parentNode = this.condition.filterState.getParentNode(parentNode);
+    }
+    return false;
+  }
+
   get dragPreviewLabel(): string {
     return this.condition.propertyExpressionState.title;
   }

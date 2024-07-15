@@ -839,18 +839,63 @@ const QueryBuilderFilterConditionEditor = observer(
           itemType !== undefined &&
           canDropTypeOntoNodeValue(itemType, node.condition)
         ) {
-          if (type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE) {
-            const columnState = (item as QueryBuilderProjectionColumnDragSource)
-              .columnState;
+          try {
             if (
-              columnState instanceof QueryBuilderSimpleProjectionColumnState
+              (type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
+                type === QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY ||
+                type ===
+                  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY) &&
+              node.isExistsNodeChild
             ) {
+              throw new UnsupportedOperationError(
+                'Collection filter does not support property for filter condition value.',
+              );
+            }
+            if (type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE) {
+              const columnState = (
+                item as QueryBuilderProjectionColumnDragSource
+              ).columnState;
+              if (
+                columnState instanceof QueryBuilderSimpleProjectionColumnState
+              ) {
+                const propertyExpressionState =
+                  columnState.propertyExpressionState;
+                if (
+                  isCollectionProperty(
+                    propertyExpressionState.propertyExpression,
+                  )
+                ) {
+                  throw new UnsupportedOperationError(
+                    'Collection types are not supported for filter condition values.',
+                  );
+                } else {
+                  node.condition.buildFromPropertyExpressionState(
+                    propertyExpressionState,
+                  );
+                }
+              } else {
+                throw new UnsupportedOperationError(
+                  `Dragging and Dropping derivation projection column is not supported.`,
+                );
+              }
+            } else if (
+              type === QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY ||
+              type === QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY
+            ) {
+              const explorerNode = (item as QueryBuilderExplorerTreeDragSource)
+                .node;
               const propertyExpressionState =
-                columnState.propertyExpressionState;
+                new QueryBuilderPropertyExpressionState(
+                  queryBuilderState,
+                  buildPropertyExpressionFromExplorerTreeNodeData(
+                    explorerNode,
+                    node.condition.filterState.queryBuilderState.explorerState,
+                  ),
+                );
               if (
                 isCollectionProperty(propertyExpressionState.propertyExpression)
               ) {
-                applicationStore.notificationService.notifyWarning(
+                throw new UnsupportedOperationError(
                   'Collection types are not supported for filter condition values.',
                 );
               } else {
@@ -858,43 +903,19 @@ const QueryBuilderFilterConditionEditor = observer(
                   propertyExpressionState,
                 );
               }
+            } else if (type === QUERY_BUILDER_VARIABLE_DND_TYPE) {
+              const variable = (item as QueryBuilderVariableDragSource)
+                .variable;
+              node.condition.buildFromValueSpec(variable);
             } else {
-              throw new UnsupportedOperationError(
-                `Dragging and Dropping derivation projection column is not supported.`,
-              );
-            }
-          } else if (
-            type === QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY ||
-            type === QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY
-          ) {
-            const explorerNode = (item as QueryBuilderExplorerTreeDragSource)
-              .node;
-            const propertyExpressionState =
-              new QueryBuilderPropertyExpressionState(
-                queryBuilderState,
-                buildPropertyExpressionFromExplorerTreeNodeData(
-                  explorerNode,
-                  node.condition.filterState.queryBuilderState.explorerState,
-                ),
-              );
-            if (
-              isCollectionProperty(propertyExpressionState.propertyExpression)
-            ) {
               applicationStore.notificationService.notifyWarning(
-                'Collection types are not supported for filter condition values.',
-              );
-            } else {
-              node.condition.buildFromPropertyExpressionState(
-                propertyExpressionState,
+                `Dragging and Dropping ${type} to filter panel is not supported.`,
               );
             }
-          } else if (type === QUERY_BUILDER_VARIABLE_DND_TYPE) {
-            const variable = (item as QueryBuilderVariableDragSource).variable;
-            node.condition.buildFromValueSpec(variable);
-          } else {
-            applicationStore.notificationService.notifyWarning(
-              `Dragging and Dropping ${type} to filter panel is not supported.`,
-            );
+          } catch (error) {
+            assertErrorThrown(error);
+            applicationStore.notificationService.notifyWarning(error.message);
+            return;
           }
         } else {
           const conditionValueType =
@@ -905,7 +926,12 @@ const QueryBuilderFilterConditionEditor = observer(
           );
         }
       },
-      [applicationStore, node.condition, queryBuilderState],
+      [
+        applicationStore,
+        queryBuilderState,
+        node.condition,
+        node.isExistsNodeChild,
+      ],
     );
 
     const [{ isFilterValueDragOver }, dropConnector] = useDrop<
