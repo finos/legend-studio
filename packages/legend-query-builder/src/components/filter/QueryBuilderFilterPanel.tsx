@@ -734,9 +734,9 @@ const QueryBuilderFilterExistsConditionEditor = observer(
 export const QueryBuilderFilterPropertyExpressionBadge = observer(
   (props: {
     rightConditionValue: FilterPropertyExpressionStateConditionValueState;
-    removePropertyExpressionValue: () => void;
+    resetNode: () => void;
   }) => {
-    const { rightConditionValue, removePropertyExpressionValue } = props;
+    const { rightConditionValue, resetNode } = props;
     const type = rightConditionValue.type;
 
     return (
@@ -793,7 +793,7 @@ export const QueryBuilderFilterPropertyExpressionBadge = observer(
             className="query-builder-filter-property-expression-badge__action"
             name="Reset"
             title="Reset"
-            onClick={removePropertyExpressionValue}
+            onClick={resetNode}
           >
             <RefreshIcon />
           </button>
@@ -989,12 +989,6 @@ const QueryBuilderFilterConditionEditor = observer(
       node.condition.buildFromValueSpec(val);
     };
 
-    const removePropertyExpressionValue = (): void => {
-      node.condition.buildFromValueSpec(
-        node.condition.operator.getDefaultFilterConditionValue(node.condition),
-      );
-    };
-
     const debouncedTypeaheadSearch = useMemo(
       () =>
         debounce((inputValue: string) => {
@@ -1071,7 +1065,7 @@ const QueryBuilderFilterConditionEditor = observer(
             >
               <QueryBuilderFilterPropertyExpressionBadge
                 rightConditionValue={rightConditionValue}
-                removePropertyExpressionValue={removePropertyExpressionValue}
+                resetNode={resetNode}
               />
             </PanelEntryDropZonePlaceholder>
           </div>
