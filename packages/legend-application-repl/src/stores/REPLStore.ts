@@ -27,13 +27,16 @@ import { DataCubeState } from './dataCube/DataCubeState.js';
 import { DataCubeEngine } from './dataCube/DataCubeEngine.js';
 import { LicenseManager } from '@ag-grid-enterprise/core';
 import { APPLICATION_EVENT } from '@finos/legend-application';
+import { LayoutManagerState } from './LayoutManagerState.js';
 
 export class REPLStore {
   readonly application: LegendREPLApplicationStore;
   readonly client: REPLServerClient;
+  readonly layout: LayoutManagerState;
   readonly initState = ActionState.create();
 
   dataCubeEngine!: DataCubeEngine;
+
   // TODO: when we support multi-view, we would need to support multiple states
   dataCube!: DataCubeState;
 
@@ -51,6 +54,7 @@ export class REPLStore {
           : this.application.config.replUrl,
       }),
     );
+    this.layout = new LayoutManagerState(this.application);
     this.dataCubeEngine = new DataCubeEngine(this);
     this.dataCube = new DataCubeState(this);
   }

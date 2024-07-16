@@ -18,9 +18,9 @@ import { observer } from 'mobx-react-lite';
 import { useREPLStore } from '../REPLStoreProvider.js';
 import { useEffect, useRef } from 'react';
 import { DataCubeGrid } from './grid/DataCubeGrid.js';
-import { DataCubeEditor } from './editor/DataCubeEditor.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { DataCubeIcon, ProgressBar } from '@finos/legend-art';
+import { LayoutManager } from '../LayoutManager.js';
 
 const DataCubeStatusBar = observer(() => {
   const dataCubeStore = useREPLStore();
@@ -37,7 +37,7 @@ const DataCubeStatusBar = observer(() => {
         </button>
         <button
           className="flex items-center px-3 text-sky-600 hover:text-sky-700"
-          onClick={(): void => dataCube.editor.openPanel()}
+          onClick={(): void => dataCube.editor.open()}
         >
           <DataCubeIcon.Settings className="text-xl" />
           <div className="pl-0.5 underline">Properties</div>
@@ -76,17 +76,17 @@ const DataCubeTitleBar = observer(() => {
       <div className="flex select-none items-center pl-1 pr-2 text-lg font-medium">
         <DataCubeIcon.Cube className="mr-1 h-4 w-4" />
         <div>{dataCube.core.name}</div>
-        {/* TODO: @akphi - add save icon */}
+        {/* TODO: @akphi - add menu icon */}
       </div>
     </div>
   );
 });
 
 export const DataCube = observer(() => {
-  const dataCubeStore = useREPLStore();
+  const replStore = useREPLStore();
   const ref = useRef<HTMLDivElement>(null);
   const application = useApplicationStore();
-  const dataCube = dataCubeStore.dataCube;
+  const dataCube = replStore.dataCube;
 
   useEffect(() => {
     dataCube.initialize().catch(application.logUnhandledError);
@@ -100,7 +100,7 @@ export const DataCube = observer(() => {
       <DataCubeTitleBar />
       <DataCubeGrid />
       <DataCubeStatusBar />
-      {dataCube.editor.isPanelOpen && <DataCubeEditor containerRef={ref} />}
+      <LayoutManager layoutManagerState={replStore.layout} containerRef={ref} />
     </div>
   );
 });

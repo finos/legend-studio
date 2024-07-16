@@ -523,11 +523,9 @@ export function generateMenuBuilder(
       'separator',
       {
         name: 'Properties...',
-        disabled: editor.isPanelOpen,
+        disabled: Boolean(editor.window),
         action: () => {
-          if (!editor.isPanelOpen) {
-            editor.openPanel();
-          }
+          editor.open();
         },
       },
     ];

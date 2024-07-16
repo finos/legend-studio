@@ -16,6 +16,11 @@
 
 import { useState } from 'react';
 import { DataCubeIcon, ResizableAndDraggableBox, cn } from '@finos/legend-art';
+import type {
+  LayoutManagerState,
+  WindowState,
+} from '../stores/LayoutManagerState.js';
+import { observer } from 'mobx-react-lite';
 
 const WINDOW_DEFAULT_OFFSET = 50;
 const WINDOW_DEFAULT_WIDTH = 800;
@@ -23,38 +28,24 @@ const WINDOW_DEFAULT_HEIGHT = 600;
 const WINDOW_DEFAULT_MIN_WIDTH = 300;
 const WINDOW_DEFAULT_MIN_HEIGHT = 300;
 
-export type REPLWindowConfig = {
-  title: string;
-  uuid: string;
-
-  x?: number | undefined;
-  y?: number | undefined;
-  width?: number | undefined;
-  height?: number | undefined;
-  minWidth?: number | undefined;
-  minHeight?: number | undefined;
-  center?: boolean | undefined;
-};
-
-export const REPLWindow = (props: {
+export const Window = (props: {
   containerRef: React.RefObject<HTMLDivElement>;
-  children: React.ReactNode;
-  config: REPLWindowConfig;
-  onClose: () => void;
+  layoutManagerState: LayoutManagerState;
+  windowState: WindowState;
 }) => {
-  const { containerRef, children, onClose, config } = props;
-
+  const { containerRef, layoutManagerState, windowState } = props;
+  const configuration = windowState.configuration.window;
   const [windowSpec, setWindowSpec] = useState(() => {
-    const x = config.x ?? WINDOW_DEFAULT_OFFSET;
-    const y = config.y ?? WINDOW_DEFAULT_OFFSET;
-    const width = config.width ?? WINDOW_DEFAULT_WIDTH;
-    const height = config.height ?? WINDOW_DEFAULT_HEIGHT;
+    const x = configuration.x ?? WINDOW_DEFAULT_OFFSET;
+    const y = configuration.y ?? WINDOW_DEFAULT_OFFSET;
+    const width = configuration.width ?? WINDOW_DEFAULT_WIDTH;
+    const height = configuration.height ?? WINDOW_DEFAULT_HEIGHT;
 
     if (containerRef.current) {
       const { width: containerWidth, height: containerHeight } =
         containerRef.current.getBoundingClientRect();
 
-      if (config.center) {
+      if (configuration.center) {
         const finalWidth =
           width + WINDOW_DEFAULT_OFFSET * 2 > containerWidth
             ? containerWidth - WINDOW_DEFAULT_OFFSET * 2
@@ -96,15 +87,15 @@ export const REPLWindow = (props: {
   return (
     <ResizableAndDraggableBox
       className="absolute z-10"
-      handle={`.data-cube__window-${config.uuid}`}
+      handle={`.data-cube__window-${windowState.uuid}`}
       position={{ x: windowSpec.x, y: windowSpec.y }}
       size={{ width: windowSpec.width, height: windowSpec.height }}
-      minWidth={config.minWidth ?? WINDOW_DEFAULT_MIN_WIDTH}
-      minHeight={config.minHeight ?? WINDOW_DEFAULT_MIN_HEIGHT}
+      minWidth={configuration.minWidth ?? WINDOW_DEFAULT_MIN_WIDTH}
+      minHeight={configuration.minHeight ?? WINDOW_DEFAULT_MIN_HEIGHT}
       onDragStop={(event, data) => {
         setWindowSpec({ ...windowSpec, x: data.x, y: data.y });
       }}
-      dragHandleClassName={`data-cube__window-${config.uuid}`}
+      dragHandleClassName={`data-cube__window-${windowState.uuid}`}
       onResize={(event, direction, ref, delta, position) => {
         setWindowSpec({
           ...position,
@@ -160,20 +151,44 @@ export const REPLWindow = (props: {
       <div className="h-full w-full border border-neutral-400 bg-neutral-200 shadow-xl">
         <div
           className={cn(
-            `data-cube__window-${config.uuid}`,
+            `data-cube__window-${windowState.uuid}`,
             'flex h-6 w-full select-none items-center justify-between border-b border-b-neutral-300 bg-white active:cursor-move',
           )}
         >
-          <div className="px-2">{config.title}</div>
+          <div className="px-2">{windowState.configuration.title}</div>
           <button
             className="flex h-[23px] w-6 items-center justify-center hover:bg-red-500 hover:text-white"
-            onClick={onClose}
+            onClick={() => layoutManagerState.closeWindow(windowState)}
           >
             <DataCubeIcon.X />
           </button>
         </div>
-        <div className="h-[calc(100%_-_24px)] w-full">{children}</div>
+        <div className="h-[calc(100%_-_24px)] w-full">
+          {windowState.configuration.contentRenderer(windowState.configuration)}
+        </div>
       </div>
     </ResizableAndDraggableBox>
   );
 };
+
+export const LayoutManager = observer(
+  (props: {
+    containerRef: React.RefObject<HTMLDivElement>;
+    layoutManagerState: LayoutManagerState;
+  }) => {
+    const { containerRef, layoutManagerState } = props;
+
+    return (
+      <>
+        {layoutManagerState.windows.map((windowState) => (
+          <Window
+            key={windowState.uuid}
+            containerRef={containerRef}
+            layoutManagerState={layoutManagerState}
+            windowState={windowState}
+          />
+        ))}
+      </>
+    );
+  },
+);
