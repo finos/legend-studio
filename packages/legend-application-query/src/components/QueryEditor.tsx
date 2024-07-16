@@ -755,12 +755,43 @@ export const QueryEditor = observer(() => {
   );
 });
 
+const EXISTING_QUERY_PARAM_SUFFIX = 'p:';
+
+const processQueryParams = (
+  urlQuery: Record<string, string | undefined>,
+): Record<string, string> | undefined => {
+  const queryParamEntries = Array.from(Object.entries(urlQuery));
+  if (queryParamEntries.length) {
+    const paramValues: Record<string, string> = {};
+    queryParamEntries.forEach(([key, queryValue]) => {
+      if (queryValue && key.startsWith(EXISTING_QUERY_PARAM_SUFFIX)) {
+        paramValues[key.slice(EXISTING_QUERY_PARAM_SUFFIX.length)] = queryValue;
+      }
+    });
+    return Object.values(paramValues).length === 0 ? undefined : paramValues;
+  }
+
+  return undefined;
+};
+
 export const ExistingQueryEditor = observer(() => {
+  const applicationStore = useApplicationStore();
   const params = useParams<ExistingQueryEditorPathParams>();
   const queryId = params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.QUERY_ID];
+  const queryParams =
+    applicationStore.navigationService.navigator.getCurrentLocationParameters();
+  const processed = processQueryParams(queryParams);
+  useEffect(() => {
+    // clear params
+    if (processed && Object.keys(processed).length) {
+      applicationStore.navigationService.navigator.updateCurrentLocation(
+        generateExistingQueryEditorRoute(queryId),
+      );
+    }
+  }, [applicationStore, queryId, processed]);
 
   return (
-    <ExistingQueryEditorStoreProvider queryId={queryId}>
+    <ExistingQueryEditorStoreProvider queryId={queryId} params={processed}>
       <QueryEditor />
     </ExistingQueryEditorStoreProvider>
   );

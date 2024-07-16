@@ -38,6 +38,7 @@ import {
   assertNonNullable,
   returnUndefOnError,
   UnsupportedOperationError,
+  filterByType,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
@@ -67,6 +68,9 @@ import {
   QueryDataSpaceExecutionContext,
   QueryExplicitExecutionContext,
   QueryProjectCoordinates,
+  buildLambdaVariableExpressions,
+  VariableExpression,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   generateExistingQueryEditorRoute,
@@ -1147,16 +1151,45 @@ const resolveExecutionContext = (
   return matchingExecContexts[0];
 };
 
+const processQueryParams = (
+  query: RawLambda,
+  savedQueryParams: QueryParameterValue[] | undefined,
+  urlParams: Record<string, string> | undefined,
+  graphManagerState: GraphManagerState,
+): Map<string, string> | undefined => {
+  const resolvedStringParams = new Map<string, string>();
+  savedQueryParams?.forEach((e) => {
+    resolvedStringParams.set(e.name, e.content);
+  });
+  // here we overwrite any params coming from the url
+  if (urlParams && Object.values(urlParams).length > 0) {
+    const compiledParams = returnUndefOnError(() =>
+      buildLambdaVariableExpressions(query, graphManagerState),
+    )?.filter(filterByType(VariableExpression));
+    Object.entries(urlParams).forEach(([key, value]) => {
+      const cP = compiledParams?.find((e) => e.name === key);
+      if (cP?.genericType?.value.rawType === PrimitiveType.STRING) {
+        resolvedStringParams.set(key, `'${value}'`);
+      } else {
+        resolvedStringParams.set(key, value);
+      }
+    });
+  }
+  return resolvedStringParams.size > 0 ? resolvedStringParams : undefined;
+};
+
 export class ExistingQueryEditorStore extends QueryEditorStore {
   private queryId: string;
   private _lightQuery?: LightQuery | undefined;
   query: Query | undefined;
+  urlQueryParamValues: Record<string, string> | undefined;
   updateState: ExistingQueryUpdateState;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
     queryId: string,
+    urlQueryParamValues: Record<string, string> | undefined,
   ) {
     super(applicationStore, depotServerClient);
 
@@ -1171,6 +1204,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     });
 
     this.queryId = queryId;
+    this.urlQueryParamValues = urlQueryParamValues;
     this.updateState = new ExistingQueryUpdateState(this);
   }
 
@@ -1427,27 +1461,40 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     // if no extension found, fall back to basic `class -> mapping -> runtime` mode
     const queryBuilderState = await this.initQueryBuildStateFromQuery(query);
 
-    // leverage initialization of query builder state to ensure we handle unsupported queries
-    let defaultParameters: Map<string, ValueSpecification> | undefined =
-      undefined;
-    if (query.defaultParameterValues?.length) {
-      const params = new Map<string, string>();
-      query.defaultParameterValues.forEach((e) => {
-        params.set(e.name, e.content);
-      });
-      defaultParameters =
-        await this.graphManagerState.graphManager.pureCodeToValueSpecifications(
-          params,
-          this.graphManagerState.graph,
-        );
-    }
-
     const initailizeQueryStateStopWatch = new StopWatch();
     const initailizeQueryStateReport = reportGraphAnalytics(
       this.graphManagerState.graph,
     );
+    const existingQueryLambda =
+      await this.graphManagerState.graphManager.pureCodeToLambda(query.content);
+
+    // leverage initialization of query builder state to ensure we handle unsupported queries
+    let defaultParameters: Map<string, ValueSpecification> | undefined =
+      undefined;
+    const processedQueryParamValues = processQueryParams(
+      existingQueryLambda,
+      query.defaultParameterValues,
+      this.urlQueryParamValues,
+      this.graphManagerState,
+    );
+    if (processedQueryParamValues?.size) {
+      try {
+        defaultParameters =
+          await this.graphManagerState.graphManager.pureCodeToValueSpecifications(
+            processedQueryParamValues,
+            this.graphManagerState.graph,
+          );
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.logService.error(
+          LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
+          `Error resolving preset query param values: ${error.message}`,
+        );
+      }
+    }
+
     queryBuilderState.initializeWithQuery(
-      await this.graphManagerState.graphManager.pureCodeToLambda(query.content),
+      existingQueryLambda,
       defaultParameters,
       query.gridConfig,
     );
