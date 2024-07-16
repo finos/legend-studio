@@ -782,7 +782,7 @@ export const QueryBuilderFilterPropertyExpressionBadge = observer(
                 .func.value
             }
             path={rightConditionValue.propertyExpressionState.path}
-            isMapped={true} // todo: figure out how to get the right value for this prop or omit it
+            isMapped={true}
             placement="bottom-end"
           >
             <div className="query-builder-filter-property-expression-badge__property__info">
