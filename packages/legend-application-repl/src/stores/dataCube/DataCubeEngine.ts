@@ -26,6 +26,7 @@ import {
 import type { REPLServerClient } from '../../server/REPLServerClient.js';
 import {
   DataCubeGetBaseQueryResult,
+  type DataCubeInfrastructureInfo,
   type CompletionItem,
 } from '../../server/models/DataCubeEngineModels.js';
 import { guaranteeType } from '@finos/legend-shared';
@@ -33,15 +34,46 @@ import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
 import type { REPLStore } from '../REPLStore.js';
 import { action, makeObservable, observable } from 'mobx';
 
-class DataCubeEngine {
+export class DataCubeEngine {
+  readonly replStore: REPLStore;
+  readonly application: LegendREPLApplicationStore;
   private readonly client: REPLServerClient;
 
-  constructor(client: REPLServerClient) {
-    this.client = client;
+  enableDebugMode = false;
+  gridClientRowBuffer = 50;
+  gridClientPurgeClosedRowNodes = false;
+
+  constructor(replStore: REPLStore) {
+    makeObservable(this, {
+      enableDebugMode: observable,
+      setEnableDebugMode: action,
+
+      gridClientRowBuffer: observable,
+      setGridClientRowBuffer: action,
+
+      gridClientPurgeClosedRowNodes: observable,
+      setGridClientPurgeClosedRowNodes: action,
+    });
+
+    this.replStore = replStore;
+    this.application = replStore.application;
+    this.client = replStore.client;
   }
 
-  async getGridClientLicenseKey(): Promise<string> {
-    return this.client.getGridClientLicenseKey();
+  setEnableDebugMode(enableDebugMode: boolean): void {
+    this.enableDebugMode = enableDebugMode;
+  }
+
+  setGridClientRowBuffer(rowBuffer: number): void {
+    this.gridClientRowBuffer = rowBuffer;
+  }
+
+  setGridClientPurgeClosedRowNodes(purgeClosedRowNodes: boolean): void {
+    this.gridClientPurgeClosedRowNodes = purgeClosedRowNodes;
+  }
+
+  async getInfrastructureInfo(): Promise<DataCubeInfrastructureInfo> {
+    return this.client.getInfrastructureInfo();
   }
 
   async getQueryTypeahead(
@@ -73,6 +105,7 @@ class DataCubeEngine {
   async executeQuery(query: V1_Lambda): Promise<TDSExecutionResult> {
     const result = await this.client.executeQuery({
       query: V1_serializeValueSpecification(query, []),
+      debug: this.enableDebugMode,
     });
     return guaranteeType(
       V1_buildExecutionResult(
@@ -80,39 +113,5 @@ class DataCubeEngine {
       ),
       TDSExecutionResult,
     );
-  }
-}
-
-/**
- * Infrastructure for data cube, can be shared across multiple data cube states
- */
-export class DataCubeInfrastructure {
-  readonly replStore: REPLStore;
-  readonly application: LegendREPLApplicationStore;
-  readonly engine: DataCubeEngine;
-
-  gridClientRowBuffer = 50;
-  enableDebugMode = false;
-
-  constructor(replStore: REPLStore) {
-    makeObservable(this, {
-      gridClientRowBuffer: observable,
-      setGridClientRowBuffer: action,
-
-      enableDebugMode: observable,
-      setEnableDebugMode: action,
-    });
-
-    this.replStore = replStore;
-    this.application = replStore.applicationStore;
-    this.engine = new DataCubeEngine(replStore.client);
-  }
-
-  setGridClientRowBuffer(rowBuffer: number): void {
-    this.gridClientRowBuffer = rowBuffer;
-  }
-
-  setEnableDebugMode(enableDebugMode: boolean): void {
-    this.enableDebugMode = enableDebugMode;
   }
 }

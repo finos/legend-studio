@@ -23,7 +23,7 @@ import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
 import { DataCubeCoreState } from './core/DataCubeCoreState.js';
 import { validateAndBuildQuerySnapshot } from './core/DataCubeQuerySnapshotBuilder.js';
 import { action, makeObservable, observable } from 'mobx';
-import type { DataCubeInfrastructure } from './DataCubeInfrastructure.js';
+import type { DataCubeEngine } from './DataCubeEngine.js';
 
 export class DataCubeTask {
   uuid = uuid();
@@ -43,7 +43,7 @@ export class DataCubeTask {
 export class DataCubeState {
   readonly replStore: REPLStore;
   readonly application: LegendREPLApplicationStore;
-  readonly infrastructure: DataCubeInfrastructure;
+  readonly engine: DataCubeEngine;
   readonly snapshotManager: DataCubeQuerySnapshotManager;
 
   readonly core: DataCubeCoreState;
@@ -60,8 +60,8 @@ export class DataCubeState {
     });
 
     this.replStore = replStore;
-    this.application = replStore.applicationStore;
-    this.infrastructure = replStore.dataCubeInfrastructure;
+    this.application = replStore.application;
+    this.engine = replStore.dataCubeEngine;
 
     // NOTE: snapshot manager must be instantiated before subscribers
     this.snapshotManager = new DataCubeQuerySnapshotManager(this);
@@ -93,7 +93,7 @@ export class DataCubeState {
           },
         ),
       );
-      const result = await this.infrastructure.engine.getBaseQuery();
+      const result = await this.engine.getBaseQuery();
       const initialSnapshot = validateAndBuildQuerySnapshot(
         result.partialQuery,
         result.sourceQuery,

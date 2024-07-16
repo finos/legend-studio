@@ -48,7 +48,6 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   private _client?: GridApi | undefined;
 
   clientDataSource: DataCubeGridClientServerSideDataSource;
-  clientLicenseKey?: string | undefined;
 
   isPaginationEnabled = false;
   scrollHintText?: string | undefined;
@@ -63,9 +62,6 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
       datasourceConfiguration: observable,
       queryConfiguration: observable,
 
-      clientLicenseKey: observable,
-      setClientLicenseKey: action,
-
       isPaginationEnabled: observable,
       setPaginationEnabled: action,
 
@@ -78,10 +74,6 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     this.datasourceConfiguration = new DataCubeGridDatasourceConfiguration({});
     this.queryConfiguration = new DataCubeConfiguration();
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
-  }
-
-  setClientLicenseKey(val: string): void {
-    this.clientLicenseKey = val;
   }
 
   setPaginationEnabled(val: boolean): void {
@@ -142,8 +134,6 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
   }
 
   override async initialize(): Promise<void> {
-    this.setClientLicenseKey(
-      await this.dataCube.replStore.client.getGridClientLicenseKey(),
-    );
+    // do nothing
   }
 }

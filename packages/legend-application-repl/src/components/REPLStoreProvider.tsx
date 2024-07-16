@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { createContext, useContext } from 'react';
-import { useLocalObservable } from 'mobx-react-lite';
+import { createContext, useContext, useEffect } from 'react';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import { REPLStore } from '../stores/REPLStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
@@ -24,22 +24,28 @@ import type { LegendREPLPluginManager } from '../application/LegendREPLPluginMan
 
 const REPLStoreContext = createContext<REPLStore | undefined>(undefined);
 
-export const REPLStoreProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement => {
-  const applicationStore = useApplicationStore<
-    LegendREPLApplicationConfig,
-    LegendREPLPluginManager
-  >();
-  const store = useLocalObservable(() => new REPLStore(applicationStore));
-  return (
-    <REPLStoreContext.Provider value={store}>
-      {children}
-    </REPLStoreContext.Provider>
-  );
-};
+export const REPLStoreProvider = observer(
+  ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    const applicationStore = useApplicationStore<
+      LegendREPLApplicationConfig,
+      LegendREPLPluginManager
+    >();
+    const store = useLocalObservable(() => new REPLStore(applicationStore));
+
+    useEffect(() => {
+      store.initialize();
+    }, [store]);
+
+    if (!store.initState.hasSucceeded) {
+      return <></>;
+    }
+    return (
+      <REPLStoreContext.Provider value={store}>
+        {children}
+      </REPLStoreContext.Provider>
+    );
+  },
+);
 
 export const useREPLStore = (): REPLStore =>
   guaranteeNonNullable(

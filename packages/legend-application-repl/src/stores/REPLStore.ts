@@ -16,16 +16,22 @@
 
 import type { LegendREPLApplicationStore } from './LegendREPLBaseStore.js';
 import { REPLServerClient } from '../server/REPLServerClient.js';
-import { NetworkClient } from '@finos/legend-shared';
+import {
+  ActionState,
+  assertErrorThrown,
+  NetworkClient,
+} from '@finos/legend-shared';
 import { makeObservable, observable } from 'mobx';
 import { DataCubeState } from './dataCube/DataCubeState.js';
-import { DataCubeInfrastructure } from './dataCube/DataCubeInfrastructure.js';
+import { DataCubeEngine } from './dataCube/DataCubeEngine.js';
+import { LicenseManager } from '@ag-grid-enterprise/core';
 
 export class REPLStore {
-  readonly applicationStore: LegendREPLApplicationStore;
+  readonly application: LegendREPLApplicationStore;
   readonly client: REPLServerClient;
+  readonly initState = ActionState.create();
 
-  dataCubeInfrastructure!: DataCubeInfrastructure;
+  dataCubeEngine!: DataCubeEngine;
   // TODO: when we support multi-view, we would need to support multiple states
   dataCube!: DataCubeState;
 
@@ -33,16 +39,39 @@ export class REPLStore {
     makeObservable(this, {
       dataCube: observable,
     });
-    this.applicationStore = applicationStore;
+
+    this.application = applicationStore;
     this.client = new REPLServerClient(
       new NetworkClient({
-        baseUrl: this.applicationStore.config.useDynamicREPLServer
+        baseUrl: this.application.config.useDynamicREPLServer
           ? window.location.origin +
-            this.applicationStore.config.baseAddress.replace('/repl/', '')
-          : this.applicationStore.config.replUrl,
+            this.application.config.baseAddress.replace('/repl/', '')
+          : this.application.config.replUrl,
       }),
     );
-    this.dataCubeInfrastructure = new DataCubeInfrastructure(this);
+    this.dataCubeEngine = new DataCubeEngine(this);
     this.dataCube = new DataCubeState(this);
+  }
+
+  async initialize(): Promise<void> {
+    if (!this.initState.isInInitialState) {
+      this.application.notificationService.notifyIllegalState(
+        'REPL store is re-initialized',
+      );
+      return;
+    }
+    this.initState.inProgress();
+
+    try {
+      const info = await this.dataCubeEngine.getInfrastructureInfo();
+      if (info.gridClientLicense) {
+        LicenseManager.setLicenseKey(info.gridClientLicense);
+      }
+      this.initState.pass();
+    } catch (error: unknown) {
+      assertErrorThrown(error);
+      this.application.notificationService.notifyError(error);
+      this.initState.fail();
+    }
   }
 }

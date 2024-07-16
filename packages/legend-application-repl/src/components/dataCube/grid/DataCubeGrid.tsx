@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { LicenseManager } from '@ag-grid-enterprise/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { ServerSideRowModelModule } from '@ag-grid-enterprise/server-side-row-model';
 import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
@@ -26,7 +25,6 @@ import { ColumnsToolPanelModule } from '@ag-grid-enterprise/column-tool-panel';
 import { AgGridReact } from '@ag-grid-community/react';
 import { CsvExportModule } from '@ag-grid-community/csv-export';
 import { ExcelExportModule } from '@ag-grid-enterprise/excel-export';
-import { useEffect } from 'react';
 import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeIcon, Switch, cn, Global, css } from '@finos/legend-art';
 import {
@@ -243,15 +241,21 @@ const DataCubeGridScroller = observer(() => {
   const gridClientSideBarElement = document.querySelector(
     '.data-cube-grid .ag-side-bar',
   );
+  const gridVerticalScrollbar = document.querySelector(
+    '.data-cube-grid  .ag-body-vertical-scroll',
+  );
 
   return (
     <div
       className="absolute -top-9 flex items-center rounded-sm border border-neutral-300 bg-neutral-100 p-1 pr-2 text-neutral-500 shadow-sm"
       style={{
         right:
-          gridClientSideBarElement !== null
+          (gridClientSideBarElement !== null
             ? gridClientSideBarElement.getBoundingClientRect().width + 12
-            : 16,
+            : 16) +
+          (gridVerticalScrollbar !== null
+            ? gridVerticalScrollbar.getBoundingClientRect().width
+            : 0),
       }}
     >
       <DataCubeIcon.TableScroll className="text-lg" />
@@ -370,22 +374,10 @@ const DataCubeGridClient = observer(() => {
   );
 });
 
-export const DataCubeGrid = observer(() => {
-  const replStore = useREPLStore();
-  const dataCube = replStore.dataCube;
-  const grid = dataCube.grid;
-
-  useEffect(() => {
-    if (grid.clientLicenseKey) {
-      LicenseManager.setLicenseKey(grid.clientLicenseKey);
-    }
-  }, [grid.clientLicenseKey]);
-
-  return (
-    <div className="flex-1">
-      <DataCubeGridStyleController />
-      <DataCubeGridClient />
-      <DataCubeGridStatusBar />
-    </div>
-  );
-});
+export const DataCubeGrid = observer(() => (
+  <div className="flex-1">
+    <DataCubeGridStyleController />
+    <DataCubeGridClient />
+    <DataCubeGridStatusBar />
+  </div>
+));

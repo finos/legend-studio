@@ -29,6 +29,7 @@ import type {
   DataCubeExecutionInput,
   DataCubeExecutionResult,
   DataCubeGetBaseQueryResult,
+  DataCubeInfrastructureInfo,
 } from './models/DataCubeEngineModels.js';
 import type { V1_ValueSpecification } from '@finos/legend-graph';
 
@@ -50,8 +51,8 @@ export class REPLServerClient {
     return `${this.baseUrl}/api/dataCube`;
   }
 
-  async getGridClientLicenseKey(): Promise<string> {
-    return this.networkClient.get(`${this.dataCube}/gridLicenseKey`);
+  async getInfrastructureInfo(): Promise<DataCubeInfrastructureInfo> {
+    return this.networkClient.get(`${this.dataCube}/infrastructureInfo`);
   }
 
   async getQueryTypeahead(

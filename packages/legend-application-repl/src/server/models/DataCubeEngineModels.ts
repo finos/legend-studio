@@ -25,6 +25,16 @@ import {
 } from '@finos/legend-graph';
 import { DataCubeQuery, type DataCubeQueryColumn } from './DataCubeQuery.js';
 
+export class DataCubeInfrastructureInfo {
+  gridClientLicense?: string | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataCubeInfrastructureInfo, {
+      gridClientLicense: optional(primitive()),
+    }),
+  );
+}
+
 export class DataCubeGetQueryCodeInput {
   query!: V1_ValueSpecification; // TODO: @akphi - consider if we should update this to use Lambda instead
   pretty?: boolean;
@@ -67,9 +77,11 @@ export class DataCubeGetQueryRelationReturnTypeInput {
 
 export class DataCubeExecutionInput {
   query!: V1_Lambda;
+  debug?: boolean | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeExecutionInput, {
+      debug: optional(primitive()),
       query: usingModelSchema(V1_lambdaModelSchema([])),
     }),
   );

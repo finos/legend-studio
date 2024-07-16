@@ -449,6 +449,7 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     groupDisplayType: 'custom', // keeps the column set stable even when row grouping is used
     suppressRowGroupHidesColumns: true, // keeps the column set stable even when row grouping is used
     suppressAggFuncInHeader: true, //  keeps the columns stable when aggregation is used
+    // purgeClosedRowNodes: true, // remove closed row nodes from the cache to allow reloading failed rows? - or should we have declarative action to retry?
     getChildCount: (data) =>
       data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID],
     // -------------------------------------- PIVOT --------------------------------------
