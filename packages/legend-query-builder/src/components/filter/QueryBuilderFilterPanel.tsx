@@ -875,7 +875,7 @@ const QueryBuilderFilterConditionEditor = observer(
                 }
               } else {
                 throw new UnsupportedOperationError(
-                  `Dragging and Dropping derivation projection column is not supported.`,
+                  'Derivation projection columns are not supported for filter condition values.',
                 );
               }
             } else if (

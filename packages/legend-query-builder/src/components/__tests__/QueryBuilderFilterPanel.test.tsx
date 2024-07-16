@@ -31,6 +31,8 @@ import {
   getAllByTestId,
   findByText,
   getByRole,
+  findByDisplayValue,
+  findByTitle,
 } from '@testing-library/react';
 import {
   TEST_DATA__getAllWithOneIntegerIsInConditionFilter,
@@ -105,6 +107,7 @@ import {
   QueryBuilderFilterTreeConditionNodeData,
 } from '../../stores/filter/QueryBuilderFilterState.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 
 test(
   integrationTest(
@@ -409,6 +412,395 @@ test(
       ),
     );
     expect(contentNodes.length).toBe(1);
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder doesn't allow TDS derivation column in filter panel`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: false,
+    });
+
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const fetchStructurePanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
+    );
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+    );
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+
+    // Create derivation column
+    fireEvent.click(
+      await findByTitle(fetchStructurePanel, 'Add a new derivation'),
+    );
+    expect(
+      await findByText(fetchStructurePanel, '(derivation)'),
+    ).not.toBeNull();
+
+    // Drag and drop derivation column to filter panel
+    const derivationColumnDragSource = getByText(
+      fetchStructurePanel,
+      '(derivation)',
+    );
+    await dragAndDrop(
+      derivationColumnDragSource,
+      filterPanel,
+      filterPanel,
+      'Add a filter condition',
+    );
+
+    // Verify value is not set and warning is shown
+    expect(queryByText(filterPanel, '(derivation)')).toBeNull();
+    expect(
+      await renderResult.findByText(
+        'Dragging and Dropping derivation projection column is not supported.',
+      ),
+    ).not.toBeNull();
+
+    // Drag and drop proprety as filter condition
+    const dropZone = await findByText(filterPanel, 'Add a filter condition');
+    const firstNameExplorerNodeDragSource = await findByText(
+      explorerPanel,
+      'First Name',
+    );
+    await dragAndDrop(
+      firstNameExplorerNodeDragSource,
+      dropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await findByText(filterPanel, 'First Name');
+    await findByText(filterPanel, 'is');
+    await findByDisplayValue(filterPanel, '');
+    fireEvent.blur(getByDisplayValue(filterPanel, ''));
+    await findByText(filterPanel, '""');
+
+    // Try to drag and drop derivation column as filter condition value
+    // TODO: get the below mock to work so we can mock the network request call
+    // instead of manually setting the derivation column return type. To accomplish
+    // this, we will likely need to update the MockedMonacoEditorInstance so we can
+    // properly blur the editor input to call the getLambdaReturnType method.
+    // createSpy(
+    //   queryBuilderState.graphManagerState.graphManager,
+    //   'getLambdaReturnType',
+    // ).mockResolvedValue('string');
+    await act(async () => {
+      (
+        queryBuilderState.fetchStructureState
+          .implementation as QueryBuilderTDSState
+      ).derivations[0]?.setLambdaReturnType('String');
+    });
+    await dragAndDrop(
+      derivationColumnDragSource,
+      dropZone,
+      filterPanel,
+      'Change Filter Value',
+    );
+
+    // Verify no new filter and warning is shown
+    expect(queryByText(filterPanel, '(derivation)')).toBeNull();
+    expect(
+      await renderResult.findByText(
+        'Derivation projection columns are not supported for filter condition values.',
+      ),
+    ).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder allows DND explorer property to compatible filter value`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+    );
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+
+    // Drag and drop proprety as filter condition
+    const dropZone = await findByText(filterPanel, 'Add a filter condition');
+    const dragSource = await findByText(explorerPanel, 'First Name');
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await findByText(filterPanel, 'First Name');
+    await findByText(filterPanel, 'is');
+    await findByDisplayValue(filterPanel, '');
+    fireEvent.blur(getByDisplayValue(filterPanel, ''));
+    await findByText(filterPanel, '""');
+
+    // Drag and drop property as filter condition value
+    const lastNameNodeDragSource = await findByText(explorerPanel, 'Last Name');
+    await dragAndDrop(
+      lastNameNodeDragSource,
+      filterPanel,
+      filterPanel,
+      'Change Filter Value',
+    );
+    expect(await findByText(filterPanel, 'Last Name')).not.toBeNull();
+
+    // Click reset button to remove filter value
+    fireEvent.click(getByTitle(filterPanel, 'Reset'));
+    expect(queryByText(filterPanel, 'Last Name')).toBeNull();
+
+    // Drag incompatible value and ensure no placeholder is shown
+    const isActiveNodeDragSource = await findByText(explorerPanel, 'Is Active');
+    fireEvent.dragStart(isActiveNodeDragSource);
+    expect(queryByText(filterPanel, 'Change Filter Value')).toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder allows DND fetch structure column to compatible filter value`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const fetchStructurePanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
+    );
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+    );
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+
+    // Drag and drop proprety as filter condition
+    const dropZone = await findByText(filterPanel, 'Add a filter condition');
+    const dragSource = await findByText(explorerPanel, 'First Name');
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await findByText(filterPanel, 'First Name');
+    await findByText(filterPanel, 'is');
+    await findByDisplayValue(filterPanel, '');
+    fireEvent.blur(getByDisplayValue(filterPanel, ''));
+    await findByText(filterPanel, '""');
+
+    // Drag and drop property to fetch structure
+    const lastNameNodeDragSource = await findByText(explorerPanel, 'Last Name');
+    await dragAndDrop(
+      lastNameNodeDragSource,
+      fetchStructurePanel,
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+    expect(await findByText(fetchStructurePanel, 'Last Name')).not.toBeNull();
+
+    // Drag and drop fetch structure column as filter condition value
+    const lastNameColumnDragSource = await findByText(
+      fetchStructurePanel,
+      'Last Name',
+    );
+    await dragAndDrop(
+      lastNameColumnDragSource,
+      filterPanel,
+      filterPanel,
+      'Change Filter Value',
+    );
+    expect(await findByText(filterPanel, 'Last Name')).not.toBeNull();
+
+    // Click reset button to remove filter value
+    fireEvent.click(getByTitle(filterPanel, 'Reset'));
+    expect(queryByText(filterPanel, 'Last Name')).toBeNull();
+
+    // Drag and drop another property to fetch structure
+    const isActiveNodeDragSource = await findByText(explorerPanel, 'Is Active');
+    await dragAndDrop(
+      isActiveNodeDragSource,
+      fetchStructurePanel,
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+    expect(await findByText(fetchStructurePanel, 'Is Active')).not.toBeNull();
+
+    // Drag incompatible value from fetch structure and ensure no placeholder is shown
+    const isActiveColumnDragSource = await findByText(
+      fetchStructurePanel,
+      'Is Active',
+    );
+    fireEvent.dragStart(isActiveColumnDragSource);
+    expect(queryByText(filterPanel, 'Change Filter Value')).toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder doesn't allow exploded property to have property expression filter condition value`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+    });
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+    );
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+
+    // Expand explorer tree node
+    fireEvent.click(await findByText(explorerPanel, 'Employees'));
+
+    // Drag and drop exploded proprety as filter condition
+    const dropZone = await findByText(filterPanel, 'Add a filter condition');
+    const dragSource = await findByText(explorerPanel, 'First Name');
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+
+    fireEvent.click(
+      await renderResult.findByRole('button', { name: 'Proceed' }),
+    );
+    await findByText(filterPanel, 'First Name');
+    await findByText(filterPanel, 'exists');
+    await findByText(filterPanel, 'is');
+    await findByDisplayValue(filterPanel, '');
+    fireEvent.blur(getByDisplayValue(filterPanel, ''));
+    await findByText(filterPanel, '""');
+
+    // Drag and drop property as filter condition value
+    const lastNameNodeDragSource = await findByText(explorerPanel, 'Last Name');
+    await dragAndDrop(
+      lastNameNodeDragSource,
+      filterPanel,
+      filterPanel,
+      'Change Filter Value',
+    );
+    expect(queryByText(filterPanel, 'Last Name')).toBeNull();
+    expect(
+      await renderResult.findByText(
+        'Collection filter does not support property for filter condition value.',
+      ),
+    ).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder doesn't allow filter condition to have exploded property as right side value`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+    });
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+    );
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+
+    // Drag and drop regular proprety as filter condition
+    const dropZone = await findByText(filterPanel, 'Add a filter condition');
+    const dragSource = await findByText(explorerPanel, 'Legal Name');
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await findByText(filterPanel, 'Legal Name');
+    await findByText(filterPanel, 'is');
+    await findByDisplayValue(filterPanel, '');
+    fireEvent.blur(getByDisplayValue(filterPanel, ''));
+    await findByText(filterPanel, '""');
+
+    // Expand explorer tree node
+    fireEvent.click(await findByText(explorerPanel, 'Employees'));
+
+    // Drag and drop property as filter condition value
+    const firstNameNodeDragSource = await findByText(
+      explorerPanel,
+      'First Name',
+    );
+    await dragAndDrop(
+      firstNameNodeDragSource,
+      filterPanel,
+      filterPanel,
+      'Change Filter Value',
+    );
+    expect(queryByText(filterPanel, 'First Name')).toBeNull();
+    expect(
+      await renderResult.findByText(
+        'Collection types are not supported for filter condition values.',
+      ),
+    ).not.toBeNull();
   },
 );
 
