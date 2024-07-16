@@ -553,16 +553,24 @@ export class EditorStore implements CommandRegistrar {
        */
       // eslint-disable-next-line no-process-env
       if (process.env.NODE_ENV === 'development') {
-        this.applicationStore.logService.info(
-          LogEvent.create(APPLICATION_EVENT.DEVELOPMENT_ISSUE),
+        this.applicationStore.logService.debug(
+          LogEvent.create(APPLICATION_EVENT.DEBUG),
           `Fast-refreshing the app - undoing cleanUp() and preventing initialize() recall in editor store...`,
         );
         this.changeDetectionState.start();
         return;
       }
-      this.applicationStore.notificationService.notifyIllegalState(
-        'Editor store is re-initialized',
-      );
+      // eslint-disable-next-line no-process-env
+      if (process.env.NODE_ENV === 'production') {
+        this.applicationStore.notificationService.notifyIllegalState(
+          'Editor store is re-initialized',
+        );
+      } else {
+        this.applicationStore.logService.debug(
+          LogEvent.create(APPLICATION_EVENT.DEBUG),
+          'Editor store is re-initialized',
+        );
+      }
       return;
     }
     this.initState.inProgress();

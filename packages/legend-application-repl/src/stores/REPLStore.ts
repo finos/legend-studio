@@ -19,12 +19,14 @@ import { REPLServerClient } from '../server/REPLServerClient.js';
 import {
   ActionState,
   assertErrorThrown,
+  LogEvent,
   NetworkClient,
 } from '@finos/legend-shared';
 import { makeObservable, observable } from 'mobx';
 import { DataCubeState } from './dataCube/DataCubeState.js';
 import { DataCubeEngine } from './dataCube/DataCubeEngine.js';
 import { LicenseManager } from '@ag-grid-enterprise/core';
+import { APPLICATION_EVENT } from '@finos/legend-application';
 
 export class REPLStore {
   readonly application: LegendREPLApplicationStore;
@@ -55,9 +57,17 @@ export class REPLStore {
 
   async initialize(): Promise<void> {
     if (!this.initState.isInInitialState) {
-      this.application.notificationService.notifyIllegalState(
-        'REPL store is re-initialized',
-      );
+      // eslint-disable-next-line no-process-env
+      if (process.env.NODE_ENV === 'production') {
+        this.application.notificationService.notifyIllegalState(
+          'REPL store is re-initialized',
+        );
+      } else {
+        this.application.logService.debug(
+          LogEvent.create(APPLICATION_EVENT.DEBUG),
+          'REPL store is re-initialized',
+        );
+      }
       return;
     }
     this.initState.inProgress();

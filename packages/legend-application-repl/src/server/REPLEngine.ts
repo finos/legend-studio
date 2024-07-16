@@ -89,6 +89,7 @@ export class DataCubeExecutionInput {
 
 export type DataCubeExecutionResult = {
   result: string;
+  executedSQL: string;
 };
 
 export type RelationType = {

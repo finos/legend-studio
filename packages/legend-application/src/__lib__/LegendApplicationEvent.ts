@@ -43,11 +43,11 @@ export enum APPLICATION_EVENT {
 
   COMMAND_CENTER_REGISTRATION__FAILURE = 'application.command.registration.failure',
 
-  DEVELOPMENT_ISSUE = 'development.issue',
-
   APPLICATION_CONTEXT__ACCESS = 'application.context.access',
 
   APPLICATION_USAGE__INTERRUPT = 'application.usage.interrupt',
 
   APPLICATION_TELEMETRY_EVENT__FAILURE = 'application.telemetry-event.failure',
+
+  DEBUG = 'development.debug',
 }

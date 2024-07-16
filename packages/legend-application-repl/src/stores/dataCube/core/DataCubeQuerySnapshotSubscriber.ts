@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { deepDiff } from '@finos/legend-shared';
 import type { LegendREPLApplicationStore } from '../../LegendREPLBaseStore.js';
 import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
@@ -42,6 +43,15 @@ export abstract class DataCubeQuerySnapshotSubscriber {
   }
 
   publishSnapshot(snapshot: DataCubeQuerySnapshot): void {
+    if (this.dataCube.engine.enableDebugMode) {
+      this.application.debugProcess(
+        `New Snapshot`,
+        '\nSnapshot',
+        snapshot,
+        '\nDiff',
+        deepDiff(snapshot, this.latestSnapshot ?? {}),
+      );
+    }
     this.latestSnapshot = snapshot;
     this.dataCube.snapshotManager.broadcastSnapshot(snapshot);
   }

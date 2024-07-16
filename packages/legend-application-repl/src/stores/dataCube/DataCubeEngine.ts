@@ -39,7 +39,7 @@ export class DataCubeEngine {
   readonly application: LegendREPLApplicationStore;
   private readonly client: REPLServerClient;
 
-  enableDebugMode = false;
+  enableDebugMode = true;
   gridClientRowBuffer = 50;
   gridClientPurgeClosedRowNodes = false;
 
@@ -72,6 +72,13 @@ export class DataCubeEngine {
     this.gridClientPurgeClosedRowNodes = purgeClosedRowNodes;
   }
 
+  private applyChanges(): void {
+    this.replStore.dataCube.grid.client.updateGridOptions({
+      rowBuffer: this.gridClientRowBuffer,
+      purgeClosedRowNodes: this.gridClientPurgeClosedRowNodes,
+    });
+  }
+
   async getInfrastructureInfo(): Promise<DataCubeInfrastructureInfo> {
     return this.client.getInfrastructureInfo();
   }
@@ -102,16 +109,21 @@ export class DataCubeEngine {
     );
   }
 
-  async executeQuery(query: V1_Lambda): Promise<TDSExecutionResult> {
+  async executeQuery(
+    query: V1_Lambda,
+  ): Promise<{ result: TDSExecutionResult; executedSQL: string }> {
     const result = await this.client.executeQuery({
       query: V1_serializeValueSpecification(query, []),
       debug: this.enableDebugMode,
     });
-    return guaranteeType(
-      V1_buildExecutionResult(
-        V1_serializeExecutionResult(JSON.parse(result.result)),
+    return {
+      result: guaranteeType(
+        V1_buildExecutionResult(
+          V1_serializeExecutionResult(JSON.parse(result.result)),
+        ),
+        TDSExecutionResult,
       ),
-      TDSExecutionResult,
-    );
+      executedSQL: result.executedSQL,
+    };
   }
 }

@@ -225,7 +225,15 @@ export class DataCubeGridClientServerSideDataSource
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
       const result = await this.grid.dataCube.engine.executeQuery(lambda);
-      const rowData = TDStoRowData(result.result);
+      const rowData = TDStoRowData(result.result.result);
+      if (this.grid.dataCube.engine.enableDebugMode) {
+        this.grid.dataCube.application.debugProcess(
+          `Execution`,
+          `\nConfig: pagination=${this.grid.isPaginationEnabled}`,
+          `\nStats: ${rowData.length} rows, ${result.result.result.columns.length} columns`,
+          `\nSQL: ${result.executedSQL}`,
+        );
+      }
       if (this.grid.isPaginationEnabled) {
         params.success({ rowData });
         // Only update row count when loading the top-level drilldown data

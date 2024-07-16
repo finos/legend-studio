@@ -60,7 +60,7 @@ import { generateBaseGridOptions } from '../../../stores/dataCube/grid/DataCubeG
 const __INTERNAL__original_console_error = console.error; // eslint-disable-line no-console
 // eslint-disable-next-line no-console
 console.error = (message?: unknown, ...agrs: unknown[]): void => {
-  console.log(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
+  console.debug(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
 };
 
 function textColorStyle(

@@ -538,7 +538,7 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
       ],
       position: 'right',
     },
-    // allowDragFromColumnsToolPanel: true,
+    allowDragFromColumnsToolPanel: true,
     // -------------------------------------- PERFORMANCE --------------------------------------
     animateRows: false, // improve performance
     suppressColumnMoveAnimation: true, // improve performance

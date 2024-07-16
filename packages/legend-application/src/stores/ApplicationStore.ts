@@ -168,9 +168,17 @@ export class ApplicationStore<
 
   async initialize(platform: ApplicationPlatform): Promise<void> {
     if (!this.initState.isInInitialState) {
-      this.notificationService.notifyIllegalState(
-        'Application store is re-initialized',
-      );
+      // eslint-disable-next-line no-process-env
+      if (process.env.NODE_ENV === 'production') {
+        this.notificationService.notifyIllegalState(
+          'Application store is re-initialized',
+        );
+      } else {
+        this.logService.debug(
+          LogEvent.create(APPLICATION_EVENT.DEBUG),
+          'Application store is re-initialized',
+        );
+      }
       return;
     }
     this.initState.inProgress();
@@ -213,6 +221,15 @@ export class ApplicationStore<
       error,
     );
   };
+
+  debugProcess(processName: string, ...data: unknown[]): void {
+    this.logService.debug(
+      LogEvent.create(APPLICATION_EVENT.DEBUG),
+      `\n------ START DEBUG PROCESS: ${processName} ------\n`,
+      ...data,
+      `\n------- END DEBUG PROCESS: ${processName} -------\n`,
+    );
+  }
 
   /**
    * Guarantee that the action being used by the component does not throw unhandled errors
