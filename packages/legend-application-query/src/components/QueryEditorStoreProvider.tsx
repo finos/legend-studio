@@ -36,7 +36,8 @@ export const QueryEditorStoreContext = createContext<
 export const ExistingQueryEditorStoreProvider: React.FC<{
   children: React.ReactNode;
   queryId: string;
-}> = ({ children, queryId }) => {
+  params: Record<string, string> | undefined;
+}> = ({ children, queryId, params }) => {
   const applicationStore = useLegendQueryApplicationStore();
   const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
@@ -45,6 +46,7 @@ export const ExistingQueryEditorStoreProvider: React.FC<{
         applicationStore,
         baseStore.depotServerClient,
         queryId,
+        params,
       ),
   );
   return (
