@@ -1496,3 +1496,69 @@ export const TEST_DATA__nestedFilterWithSubType = {
   ],
   parameters: [],
 };
+
+export const TEST_DATA__lambda_filterWithRightSidePropertyExpression = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'domain::COVIDData',
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'property',
+                  property: 'state',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      property: 'demographics',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  _type: 'property',
+                  property: 'fips',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'x',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
