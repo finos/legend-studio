@@ -26,7 +26,7 @@ import { assertErrorThrown } from '@finos/legend-shared';
 import {
   DataCubeQuery,
   DataCubeQuerySourceREPLExecutedQuery,
-} from '../../../../server/models/DataCubeQuery.js';
+} from '../../../../server/DataCubeQuery.js';
 
 type BaseSnapshotAnalysisTestCase = [
   string, // name

@@ -28,7 +28,7 @@ import {
   DataCubeGetBaseQueryResult,
   type DataCubeInfrastructureInfo,
   type CompletionItem,
-} from '../../server/models/DataCubeEngineModels.js';
+} from '../../server/REPLEngine.js';
 import { guaranteeType } from '@finos/legend-shared';
 import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
 import type { REPLStore } from '../REPLStore.js';

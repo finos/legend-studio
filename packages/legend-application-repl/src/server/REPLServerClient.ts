@@ -30,7 +30,7 @@ import type {
   DataCubeExecutionResult,
   DataCubeGetBaseQueryResult,
   DataCubeInfrastructureInfo,
-} from './models/DataCubeEngineModels.js';
+} from './REPLEngine.js';
 import type { V1_ValueSpecification } from '@finos/legend-graph';
 
 export class REPLServerClient {

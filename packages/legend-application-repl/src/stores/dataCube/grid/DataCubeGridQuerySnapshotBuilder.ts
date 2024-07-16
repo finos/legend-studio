@@ -69,9 +69,6 @@ export function buildQuerySnapshot(
 ): DataCubeQuerySnapshot {
   const snapshot = baseSnapshot.clone();
 
-  // --------------------------------- SELECT ---------------------------------
-  // TODO: @akphi - Implement this
-
   // --------------------------------- GROUP BY ---------------------------------
 
   if (request.rowGroupCols.length) {
