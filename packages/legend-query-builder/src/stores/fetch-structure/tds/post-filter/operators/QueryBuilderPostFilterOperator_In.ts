@@ -79,7 +79,7 @@ export class QueryBuilderPostFilterOperator_In
       postFilterConditionState.leftConditionValue.getColumnType(),
     );
     const rightSide = postFilterConditionState.rightConditionValue;
-    // `in`/`not in` doest not support right hand value being column state as the multipliticy for columns are [0..1]
+    // `in`/`not in` does not support right hand value being column state as the multipliticy for columns are [0..1]
     if (rightSide instanceof PostFilterValueSpecConditionValueState) {
       const valueSpec = rightSide.value;
       if (valueSpec instanceof CollectionInstanceValue) {

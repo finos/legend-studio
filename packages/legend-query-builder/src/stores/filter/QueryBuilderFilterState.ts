@@ -324,16 +324,18 @@ export class FilterConditionState implements Hashable {
     this.setOperator(val);
     if (!this.operator.isCompatibleWithFilterConditionValue(this)) {
       let defaultValue = this.operator.getDefaultFilterConditionValue(this);
+      // Don't allow invalid InstanceValues or empty strings to be set as list element
       if (
         defaultValue instanceof CollectionInstanceValue &&
         this.rightConditionValue instanceof
           FilterValueSpecConditionValueState &&
         this.rightConditionValue.value instanceof InstanceValue &&
-        isValidInstanceValue(this.rightConditionValue.value)
+        isValidInstanceValue(this.rightConditionValue.value) &&
+        this.rightConditionValue.value.values[0] !== ''
       ) {
         instanceValue_setValues(
           defaultValue,
-          [this.rightConditionValue],
+          [this.rightConditionValue.value],
           this.filterState.queryBuilderState.observerContext,
         );
       } else if (
