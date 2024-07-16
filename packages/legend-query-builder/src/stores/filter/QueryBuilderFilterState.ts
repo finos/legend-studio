@@ -1163,6 +1163,15 @@ export class QueryBuilderFilterState
             `Derived property parameter value for ${node.condition.propertyExpressionState.title} is missing or invalid`,
           );
         }
+        if (
+          node.condition.rightConditionValue instanceof
+            FilterPropertyExpressionStateConditionValueState &&
+          !node.condition.rightConditionValue.propertyExpressionState.isValid
+        ) {
+          validationIssues.push(
+            `Derived property parameter value for ${node.condition.rightConditionValue.propertyExpressionState.title} is missing or invalid`,
+          );
+        }
       }
     });
     return validationIssues;
@@ -1176,7 +1185,11 @@ export class QueryBuilderFilterState
     return Array.from(this.nodes.values()).some(
       (node) =>
         node instanceof QueryBuilderFilterTreeConditionNodeData &&
-        !node.condition.propertyExpressionState.isValid,
+        (!node.condition.propertyExpressionState.isValid ||
+          (node.condition.rightConditionValue instanceof
+            FilterPropertyExpressionStateConditionValueState &&
+            !node.condition.rightConditionValue.propertyExpressionState
+              .isValid)),
     );
   }
 
