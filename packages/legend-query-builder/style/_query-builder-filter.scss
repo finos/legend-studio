@@ -439,6 +439,12 @@ $group-node-width: 3.5rem;
             font-size: 1.4rem;
             color: var(--color-light-grey-400);
           }
+
+          &:hover {
+            svg {
+              color: var(--color-light-grey-200);
+            }
+          }
         }
 
         &__action {

@@ -1591,6 +1591,12 @@
     }
 
     .query-builder-filter-property-expression-badge__property {
+      &__info:hover {
+        svg {
+          color: var(--color-dark-grey-350);
+        }
+      }
+
       .query-builder__property__name__display__content {
         color: var(--color-dark-grey-400);
       }
