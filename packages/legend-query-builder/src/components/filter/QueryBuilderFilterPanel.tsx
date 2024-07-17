@@ -107,6 +107,7 @@ import {
   PrimitiveType,
   Class,
   Enumeration,
+  PropertyExplicitReference,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnDragSource,
@@ -129,7 +130,10 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
 import { buildPropertyExpressionChain } from '../../stores/QueryBuilderValueSpecificationBuilderHelper.js';
 import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
-import { convertTextToPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
+import {
+  cloneValueSpecification,
+  convertTextToPrimitiveInstanceValue,
+} from '../../stores/shared/ValueSpecificationEditorHelper.js';
 import {
   QueryBuilderFilterOperator_In,
   QueryBuilderFilterOperator_NotIn,
@@ -137,6 +141,10 @@ import {
 import { renderPropertyTypeIcon } from '../fetch-structure/QueryBuilderTDSComponentHelper.js';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import { getItemType } from '../shared/QueryBuilderFilterHelper.js';
+import {
+  functionExpression_setParametersValues,
+  propertyExpression_setFunc,
+} from '../../stores/shared/ValueSpecificationModifierHelper.js';
 
 export const CAN_DROP_MAIN_GROUP_DND_TYPES_FETCH_SUPPORTED = [
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
@@ -1659,10 +1667,29 @@ export const QueryBuilderFilterPanel = observer(
               (item as QueryBuilderProjectionColumnDragSource)
                 .columnState instanceof QueryBuilderSimpleProjectionColumnState
             ) {
-              propertyExpression = (
+              const columnPropertyExpression = (
                 (item as QueryBuilderProjectionColumnDragSource)
                   .columnState as QueryBuilderSimpleProjectionColumnState
               ).propertyExpressionState.propertyExpression;
+              propertyExpression = new AbstractPropertyExpression(
+                columnPropertyExpression.functionName,
+              );
+              propertyExpression_setFunc(
+                propertyExpression,
+                PropertyExplicitReference.create(
+                  guaranteeNonNullable(columnPropertyExpression.func.value),
+                ),
+              );
+              functionExpression_setParametersValues(
+                propertyExpression,
+                columnPropertyExpression.parametersValues.map((param) =>
+                  cloneValueSpecification(
+                    param,
+                    queryBuilderState.observerContext,
+                  ),
+                ),
+                queryBuilderState.observerContext,
+              );
             } else {
               throw new UnsupportedOperationError(
                 `Dragging and Dropping derivation projection column is not supported.`,
@@ -1684,7 +1711,7 @@ export const QueryBuilderFilterPanel = observer(
           return;
         }
       },
-      [applicationStore, filterState],
+      [applicationStore, filterState, queryBuilderState.observerContext],
     );
 
     const [{ isDragOver }, dropTargetConnector] = useDrop<
