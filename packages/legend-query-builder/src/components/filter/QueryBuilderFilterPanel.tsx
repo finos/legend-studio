@@ -1297,10 +1297,13 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                   .columnState instanceof
                 QueryBuilderSimpleProjectionColumnState
               ) {
-                propertyExpression = (
-                  (item as QueryBuilderProjectionColumnDragSource)
-                    .columnState as QueryBuilderSimpleProjectionColumnState
-                ).propertyExpressionState.propertyExpression;
+                propertyExpression = clonePropertyExpression(
+                  (
+                    (item as QueryBuilderProjectionColumnDragSource)
+                      .columnState as QueryBuilderSimpleProjectionColumnState
+                  ).propertyExpressionState.propertyExpression,
+                  queryBuilderState.observerContext,
+                );
               } else {
                 throw new UnsupportedOperationError(
                   `Dragging and Dropping derivation projection column is not supported.`,
@@ -1345,7 +1348,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
           }
         }
       },
-      [applicationStore, filterState, node],
+      [applicationStore, filterState, node, queryBuilderState.observerContext],
     );
     const [{ isDragOver, deepIsDragOver }, dropConnector] = useDrop<
       QueryBuilderFilterConditionDragSource,
