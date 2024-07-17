@@ -139,7 +139,7 @@ import {
 } from '../../stores/filter/operators/QueryBuilderFilterOperator_In.js';
 import { renderPropertyTypeIcon } from '../fetch-structure/QueryBuilderTDSComponentHelper.js';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
-import { getItemType } from '../shared/QueryBuilderFilterHelper.js';
+import { getDNDItemType } from '../shared/QueryBuilderFilterHelper.js';
 
 export const CAN_DROP_MAIN_GROUP_DND_TYPES_FETCH_SUPPORTED = [
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
@@ -834,7 +834,7 @@ const QueryBuilderFilterConditionEditor = observer(
     // Drag and Drop on filter condition value
     const handleDrop = useCallback(
       (item: QueryBuilderFilterValueDropTarget, type: string): void => {
-        const itemType = getItemType(item, type);
+        const itemType = getDNDItemType(item, type);
         if (
           itemType !== undefined &&
           canDropTypeOntoNodeValue(itemType, node.condition)
@@ -945,7 +945,7 @@ const QueryBuilderFilterConditionEditor = observer(
         accept: CAN_DROP_FILTER_VALUE_DND_TYPES,
         canDrop: (item, monitor): boolean =>
           canDropTypeOntoNodeValue(
-            getItemType(item, monitor.getItemType() as string),
+            getDNDItemType(item, monitor.getItemType() as string),
             node.condition,
           ),
         drop: (item, monitor): void => {
@@ -968,7 +968,7 @@ const QueryBuilderFilterConditionEditor = observer(
           monitor.getItemType()?.toString() ?? '',
         ) &&
         canDropTypeOntoNodeValue(
-          getItemType(monitor.getItem(), monitor.getItemType() as string),
+          getDNDItemType(monitor.getItem(), monitor.getItemType() as string),
           node.condition,
         ),
     }));

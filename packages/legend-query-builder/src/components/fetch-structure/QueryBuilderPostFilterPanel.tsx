@@ -114,7 +114,7 @@ import {
 } from '../../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
 import { QueryBuilderPropertyNameDisplay } from '../QueryBuilderPropertyExpressionEditor.js';
 import { convertTextToPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
-import { getItemType } from '../shared/QueryBuilderFilterHelper.js';
+import { getDNDItemType } from '../shared/QueryBuilderFilterHelper.js';
 
 export const CAN_DROP_MAIN_GROUP_DND_TYPES = [
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
@@ -313,7 +313,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
           | QueryBuilderProjectionColumnDragSource,
         type: string,
       ): void => {
-        const itemType = getItemType(item, type);
+        const itemType = getDNDItemType(item, type);
         const conditionValueType =
           node.condition.leftConditionValue.getColumnType();
         if (canDropTypeOntoNodeValue(itemType, node.condition)) {
@@ -351,7 +351,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
         accept: CAN_DROP_POST_FILTER_VALUE_DND_TYPES,
         canDrop: (item, monitor): boolean =>
           canDropTypeOntoNodeValue(
-            getItemType(item, monitor.getItemType() as string),
+            getDNDItemType(item, monitor.getItemType() as string),
             node.condition,
           ),
         drop: (item, monitor): void => {
@@ -373,7 +373,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
           monitor.getItemType()?.toString() ?? '',
         ) &&
         canDropTypeOntoNodeValue(
-          getItemType(monitor.getItem(), monitor.getItemType() as string),
+          getDNDItemType(monitor.getItem(), monitor.getItemType() as string),
           node.condition,
         ),
     }));

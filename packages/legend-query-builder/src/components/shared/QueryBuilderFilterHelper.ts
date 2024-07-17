@@ -29,7 +29,7 @@ import {
   type QueryBuilderVariableDragSource,
 } from './BasicValueSpecificationEditor.js';
 
-export const getItemType = (
+export const getDNDItemType = (
   item: QueryBuilderFilterValueDropTarget,
   type: string,
 ): Type | undefined => {
