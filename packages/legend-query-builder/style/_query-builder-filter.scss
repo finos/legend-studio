@@ -413,9 +413,13 @@ $group-node-width: 3.5rem;
 
           color: var(--color-light-grey-200);
           padding: 0 1rem;
-          font-size: 1.2rem;
-          font-weight: 700;
           width: 100%;
+
+          .query-builder__property__name__display__content {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--color-light-grey-200);
+          }
 
           .query-builder-property-expression-badge__action {
             height: 100%;
