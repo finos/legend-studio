@@ -96,8 +96,9 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import {
-  type ValueSpecification,
+  type ObserverContext,
   type Type,
+  type ValueSpecification,
   AbstractPropertyExpression,
   extractElementNameFromPath,
   matchFunctionName,
@@ -628,6 +629,33 @@ const buildFilterTree = (
       filterState.addNodeFromNode(treeNode, undefined);
     }
   }
+};
+
+/**
+ * This function clones a PropertyExpression so that derived property parameter values
+ * don't get shallow copied from the fetch structure panel to the filter panel.
+ */
+const clonePropertyExpression = (
+  propertyExpression: AbstractPropertyExpression,
+  observerContext: ObserverContext,
+): AbstractPropertyExpression => {
+  const clonedPropertyExpression = new AbstractPropertyExpression(
+    propertyExpression.functionName,
+  );
+  propertyExpression_setFunc(
+    clonedPropertyExpression,
+    PropertyExplicitReference.create(
+      guaranteeNonNullable(propertyExpression.func.value),
+    ),
+  );
+  functionExpression_setParametersValues(
+    clonedPropertyExpression,
+    propertyExpression.parametersValues.map((param) =>
+      cloneValueSpecification(param, observerContext),
+    ),
+    observerContext,
+  );
+  return clonedPropertyExpression;
 };
 
 const QueryBuilderFilterGroupConditionEditor = observer(
@@ -1667,27 +1695,11 @@ export const QueryBuilderFilterPanel = observer(
               (item as QueryBuilderProjectionColumnDragSource)
                 .columnState instanceof QueryBuilderSimpleProjectionColumnState
             ) {
-              const columnPropertyExpression = (
-                (item as QueryBuilderProjectionColumnDragSource)
-                  .columnState as QueryBuilderSimpleProjectionColumnState
-              ).propertyExpressionState.propertyExpression;
-              propertyExpression = new AbstractPropertyExpression(
-                columnPropertyExpression.functionName,
-              );
-              propertyExpression_setFunc(
-                propertyExpression,
-                PropertyExplicitReference.create(
-                  guaranteeNonNullable(columnPropertyExpression.func.value),
-                ),
-              );
-              functionExpression_setParametersValues(
-                propertyExpression,
-                columnPropertyExpression.parametersValues.map((param) =>
-                  cloneValueSpecification(
-                    param,
-                    queryBuilderState.observerContext,
-                  ),
-                ),
+              propertyExpression = clonePropertyExpression(
+                (
+                  (item as QueryBuilderProjectionColumnDragSource)
+                    .columnState as QueryBuilderSimpleProjectionColumnState
+                ).propertyExpressionState.propertyExpression,
                 queryBuilderState.observerContext,
               );
             } else {
