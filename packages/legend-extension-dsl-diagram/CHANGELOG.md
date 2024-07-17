@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-diagram
 
+## 8.0.194
+
 ## 8.0.193
 
 ## 8.0.192
