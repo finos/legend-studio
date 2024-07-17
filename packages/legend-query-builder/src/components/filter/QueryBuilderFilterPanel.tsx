@@ -894,19 +894,21 @@ const QueryBuilderFilterConditionEditor = observer(
               if (
                 columnState instanceof QueryBuilderSimpleProjectionColumnState
               ) {
-                const propertyExpressionState =
-                  columnState.propertyExpressionState;
-                if (
-                  isCollectionProperty(
-                    propertyExpressionState.propertyExpression,
-                  )
-                ) {
+                const columnPropertyExpression =
+                  columnState.propertyExpressionState.propertyExpression;
+                if (isCollectionProperty(columnPropertyExpression)) {
                   throw new UnsupportedOperationError(
                     'Collection types are not supported for filter condition values.',
                   );
                 } else {
                   node.condition.buildFromPropertyExpressionState(
-                    propertyExpressionState,
+                    new QueryBuilderPropertyExpressionState(
+                      queryBuilderState,
+                      clonePropertyExpression(
+                        columnPropertyExpression,
+                        queryBuilderState.observerContext,
+                      ),
+                    ),
                   );
                 }
               } else {
