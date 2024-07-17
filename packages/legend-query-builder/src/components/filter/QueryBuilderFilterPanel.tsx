@@ -745,23 +745,21 @@ export const QueryBuilderFilterPropertyExpressionBadge = observer(
     return (
       <div className="query-builder-filter-property-expression-badge">
         <div className="query-builder-filter-property-expression-badge__content">
-          {type && (
-            <div
-              className={clsx(
-                'query-builder-filter-property-expression-badge__type',
-                {
-                  'query-builder-filter-property-expression-badge__type--class':
-                    type instanceof Class,
-                  'query-builder-filter-property-expression-badge__type--enumeration':
-                    type instanceof Enumeration,
-                  'query-builder-filter-property-expression-badge__type--primitive':
-                    type instanceof PrimitiveType,
-                },
-              )}
-            >
-              {renderPropertyTypeIcon(type)}
-            </div>
-          )}
+          <div
+            className={clsx(
+              'query-builder-filter-property-expression-badge__type',
+              {
+                'query-builder-filter-property-expression-badge__type--class':
+                  type instanceof Class,
+                'query-builder-filter-property-expression-badge__type--enumeration':
+                  type instanceof Enumeration,
+                'query-builder-filter-property-expression-badge__type--primitive':
+                  type instanceof PrimitiveType,
+              },
+            )}
+          >
+            {renderPropertyTypeIcon(type)}
+          </div>
           <div
             className="query-builder-filter-property-expression-badge__property"
             title={
@@ -815,7 +813,6 @@ const canDropTypeOntoNodeValue = (
     condition.propertyExpressionState.propertyExpression.func.value.genericType
       .value.rawType;
   return (
-    conditionValueType !== undefined &&
     !(conditionOperator instanceof QueryBuilderFilterOperator_In) &&
     !(conditionOperator instanceof QueryBuilderFilterOperator_NotIn) &&
     isTypeCompatibleForAssignment(type, conditionValueType)

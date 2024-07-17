@@ -589,7 +589,7 @@ export class QueryBuilderFilterTreeConditionNodeData
 
   get isExistsNodeChild(): boolean {
     let parentNode = this.condition.filterState.getParentNode(this);
-    while (parentNode !== null && parentNode !== undefined) {
+    while (parentNode !== undefined) {
       if (parentNode instanceof QueryBuilderFilterTreeExistsNodeData) {
         return true;
       }
@@ -1178,7 +1178,9 @@ export class QueryBuilderFilterState
   }
 
   get hasInvalidFilterValues(): boolean {
-    return Array.from(this.nodes.values()).some(this.isInvalidFilterValue);
+    return Array.from(this.nodes.values()).some((node) =>
+      this.isInvalidFilterValue(node),
+    );
   }
 
   get hasInvalidDerivedPropertyParameters(): boolean {

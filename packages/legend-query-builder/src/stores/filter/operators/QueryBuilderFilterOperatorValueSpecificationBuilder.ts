@@ -67,9 +67,7 @@ export const buildFilterConditionExpression = (
   } else if (
     filterConditionState.rightConditionValue &&
     filterConditionState.rightConditionValue instanceof
-      FilterPropertyExpressionStateConditionValueState &&
-    filterConditionState.rightConditionValue.propertyExpressionState
-      .propertyExpression.func.value.name !== undefined
+      FilterPropertyExpressionStateConditionValueState
   ) {
     const rightConditionPropertyExpression = buildPropertyExpressionChain(
       filterConditionState.rightConditionValue.propertyExpressionState
