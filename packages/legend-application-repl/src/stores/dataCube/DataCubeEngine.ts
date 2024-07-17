@@ -62,17 +62,22 @@ export class DataCubeEngine {
 
   setEnableDebugMode(enableDebugMode: boolean): void {
     this.enableDebugMode = enableDebugMode;
+    this.applyChanges();
   }
 
   setGridClientRowBuffer(rowBuffer: number): void {
     this.gridClientRowBuffer = rowBuffer;
+    this.applyChanges();
   }
 
   setGridClientPurgeClosedRowNodes(purgeClosedRowNodes: boolean): void {
     this.gridClientPurgeClosedRowNodes = purgeClosedRowNodes;
+    this.applyChanges();
   }
 
   private applyChanges(): void {
+    // When we support multi-view (i.e. multiple instances of DataCubes) we would need to traverse
+    // through and update the configurations of all of their grid clients
     this.replStore.dataCube.grid.client.updateGridOptions({
       rowBuffer: this.gridClientRowBuffer,
       purgeClosedRowNodes: this.gridClientPurgeClosedRowNodes,

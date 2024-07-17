@@ -41,7 +41,7 @@ export class DataCubeTask {
 }
 
 export class DataCubeState {
-  readonly replStore: REPLStore;
+  readonly repl: REPLStore;
   readonly application: LegendREPLApplicationStore;
   readonly engine: DataCubeEngine;
   readonly snapshotManager: DataCubeQuerySnapshotManager;
@@ -52,16 +52,16 @@ export class DataCubeState {
 
   readonly runningTasks = new Map<string, DataCubeTask>();
 
-  constructor(replStore: REPLStore) {
+  constructor(repl: REPLStore) {
     makeObservable(this, {
       runningTasks: observable,
       newTask: action,
       endTask: action,
     });
 
-    this.replStore = replStore;
-    this.application = replStore.application;
-    this.engine = replStore.dataCubeEngine;
+    this.repl = repl;
+    this.application = repl.application;
+    this.engine = repl.dataCubeEngine;
 
     // NOTE: snapshot manager must be instantiated before subscribers
     this.snapshotManager = new DataCubeQuerySnapshotManager(this);
@@ -103,7 +103,7 @@ export class DataCubeState {
       this.snapshotManager.broadcastSnapshot(initialSnapshot);
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.application.notificationService.notifyError(error);
+      this.repl.notifyError(error, `Initialization failure: ${error.message}`);
     } finally {
       this.endTask(task);
     }

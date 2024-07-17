@@ -523,10 +523,8 @@ export function generateMenuBuilder(
       'separator',
       {
         name: 'Properties...',
-        disabled: Boolean(editor.window),
-        action: () => {
-          editor.open();
-        },
+        disabled: editor.display.isOpen,
+        action: () => editor.display.open(),
       },
     ];
   };

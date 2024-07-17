@@ -258,7 +258,11 @@ export class DataCubeGridClientServerSideDataSource
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.grid.dataCube.application.notificationService.notifyError(error);
+      this.grid.dataCube.repl.notifyError(
+        error,
+        `Data fetch failure: ${error.message}`,
+        error.stack,
+      );
       params.fail();
     } finally {
       this.grid.dataCube.endTask(task);

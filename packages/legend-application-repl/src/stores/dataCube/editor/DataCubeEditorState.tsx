@@ -26,11 +26,7 @@ import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumn
 import { DataCubeEditorColumnsPanelState } from './DataCubeEditorColumnsPanelState.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeEditorVerticalPivotsPanelState } from './DataCubeEditorVerticalPivotsPanelState.js';
-import {
-  LayoutConfiguration,
-  WindowState,
-  type LayoutElementOwnerState,
-} from '../../LayoutManagerState.js';
+import { SingletonModeDisplayState } from '../../LayoutManagerState.js';
 import { DataCubeEditor } from '../../../components/dataCube/editor/DataCubeEditor.js';
 
 export enum DATA_CUBE_EDITOR_TAB {
@@ -45,11 +41,8 @@ export enum DATA_CUBE_EDITOR_TAB {
   CODE = 'Code',
 }
 
-export class DataCubeEditorState
-  extends DataCubeQuerySnapshotSubscriber
-  implements LayoutElementOwnerState
-{
-  readonly layout: LayoutConfiguration;
+export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
+  readonly display: SingletonModeDisplayState;
   readonly generalProperties: DataCubeEditorGeneralPropertiesPanelState;
   readonly columnProperties: DataCubeEditorColumnPropertiesPanelState;
   readonly columns: DataCubeEditorColumnsPanelState;
@@ -57,7 +50,6 @@ export class DataCubeEditorState
   readonly sorts: DataCubeEditorSortsPanelState;
   readonly code: DataCubeEditorCodePanelState;
 
-  window?: WindowState | undefined;
   currentTab = DATA_CUBE_EDITOR_TAB.GENERAL_PROPERTIES;
 
   constructor(dataCube: DataCubeState) {
@@ -68,19 +60,13 @@ export class DataCubeEditorState
 
       currentTab: observable,
       setCurrentTab: action,
-
-      open: action,
-      close: action,
     });
 
-    this.layout = new LayoutConfiguration(
-      this,
-      () => <DataCubeEditor />,
+    this.display = new SingletonModeDisplayState(
+      this.dataCube.repl.layout,
       'Properties',
+      () => <DataCubeEditor />,
     );
-    this.layout.window = {
-      center: true,
-    };
     this.generalProperties = new DataCubeEditorGeneralPropertiesPanelState(
       this,
     );
@@ -89,22 +75,6 @@ export class DataCubeEditorState
     this.verticalPivots = new DataCubeEditorVerticalPivotsPanelState(this);
     this.sorts = new DataCubeEditorSortsPanelState(this);
     this.code = new DataCubeEditorCodePanelState(this);
-  }
-
-  open(): void {
-    if (this.window) {
-      this.dataCube.replStore.layout.bringWindowFront(this.window);
-    } else {
-      this.window = new WindowState(this.layout);
-      this.dataCube.replStore.layout.newWindow(this.window);
-    }
-  }
-
-  close(): void {
-    if (this.window) {
-      this.dataCube.replStore.layout.closeWindow(this.window);
-      this.window = undefined;
-    }
   }
 
   setCurrentTab(val: DATA_CUBE_EDITOR_TAB): void {

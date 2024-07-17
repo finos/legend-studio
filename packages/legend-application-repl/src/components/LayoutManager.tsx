@@ -16,17 +16,16 @@
 
 import { useState } from 'react';
 import { DataCubeIcon, ResizableAndDraggableBox, cn } from '@finos/legend-art';
-import type {
-  LayoutManagerState,
-  WindowState,
+import {
+  WINDOW_DEFAULT_HEIGHT,
+  WINDOW_DEFAULT_MIN_HEIGHT,
+  WINDOW_DEFAULT_MIN_WIDTH,
+  WINDOW_DEFAULT_OFFSET,
+  WINDOW_DEFAULT_WIDTH,
+  type LayoutManagerState,
+  type WindowState,
 } from '../stores/LayoutManagerState.js';
 import { observer } from 'mobx-react-lite';
-
-const WINDOW_DEFAULT_OFFSET = 50;
-const WINDOW_DEFAULT_WIDTH = 800;
-const WINDOW_DEFAULT_HEIGHT = 600;
-const WINDOW_DEFAULT_MIN_WIDTH = 300;
-const WINDOW_DEFAULT_MIN_HEIGHT = 300;
 
 export const Window = (props: {
   containerRef: React.RefObject<HTMLDivElement>;
@@ -148,7 +147,12 @@ export const Window = (props: {
         },
       }}
     >
-      <div className="h-full w-full border border-neutral-400 bg-neutral-200 shadow-xl">
+      <div
+        className="h-full w-full border border-neutral-400 bg-neutral-200 shadow-xl"
+        onMouseDown={() => {
+          layoutManagerState.bringWindowFront(windowState);
+        }}
+      >
         <div
           className={cn(
             `data-cube__window-${windowState.uuid}`,

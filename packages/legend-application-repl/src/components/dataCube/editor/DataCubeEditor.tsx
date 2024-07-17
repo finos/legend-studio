@@ -98,14 +98,14 @@ export const DataCubeEditor = observer(() => {
           className="h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
           onClick={(): void => {
             editor.applyChanges();
-            editor.close();
+            editor.display.close();
           }}
         >
           OK
         </button>
         <button
           className="ml-2 h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
-          onClick={() => editor.close()}
+          onClick={() => editor.display.close()}
         >
           Cancel
         </button>

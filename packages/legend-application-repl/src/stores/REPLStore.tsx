@@ -27,13 +27,24 @@ import { DataCubeState } from './dataCube/DataCubeState.js';
 import { DataCubeEngine } from './dataCube/DataCubeEngine.js';
 import { LicenseManager } from '@ag-grid-enterprise/core';
 import { APPLICATION_EVENT } from '@finos/legend-application';
-import { LayoutManagerState } from './LayoutManagerState.js';
+import {
+  DEFAULT_ALERT_WINDOW_CONFIG,
+  LayoutConfiguration,
+  LayoutManagerState,
+  SingletonModeDisplayState,
+  WindowState,
+} from './LayoutManagerState.js';
+import { DataCubeEditor } from '../components/dataCube/editor/DataCubeEditor.js';
+import { REPLDocumentationService } from './REPLDocumentationService.js';
+import { REPLErrorAlert } from '../components/repl/REPLErrorAlert.js';
 
 export class REPLStore {
   readonly application: LegendREPLApplicationStore;
   readonly client: REPLServerClient;
   readonly layout: LayoutManagerState;
+  readonly documentationService: REPLDocumentationService;
   readonly initState = ActionState.create();
+  readonly settingsDisplay: SingletonModeDisplayState;
 
   dataCubeEngine!: DataCubeEngine;
 
@@ -55,8 +66,25 @@ export class REPLStore {
       }),
     );
     this.layout = new LayoutManagerState(this.application);
+    this.documentationService = new REPLDocumentationService();
     this.dataCubeEngine = new DataCubeEngine(this);
     this.dataCube = new DataCubeState(this);
+    this.settingsDisplay = new SingletonModeDisplayState(
+      this.layout,
+      'Settings',
+      () => <DataCubeEditor />,
+    );
+  }
+
+  notifyError(error: Error, message: string, text?: string | undefined): void {
+    this.application.notificationService.notifyError(error);
+    const window = new WindowState(
+      new LayoutConfiguration('Error', () => (
+        <REPLErrorAlert message={message} text={text} />
+      )),
+    );
+    window.configuration.window = DEFAULT_ALERT_WINDOW_CONFIG;
+    this.layout.newWindow(window);
   }
 
   async initialize(): Promise<void> {
@@ -84,7 +112,7 @@ export class REPLStore {
       this.initState.pass();
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.application.notificationService.notifyError(error);
+      this.notifyError(error, `Initialization failure: ${error.message}`);
       this.initState.fail();
     }
   }
