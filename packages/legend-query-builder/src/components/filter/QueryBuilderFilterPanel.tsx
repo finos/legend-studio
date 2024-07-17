@@ -96,7 +96,6 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import {
-  type ObserverContext,
   type Type,
   type ValueSpecification,
   AbstractPropertyExpression,
@@ -108,7 +107,6 @@ import {
   PrimitiveType,
   Class,
   Enumeration,
-  PropertyExplicitReference,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnDragSource,
@@ -132,7 +130,7 @@ import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaM
 import { buildPropertyExpressionChain } from '../../stores/QueryBuilderValueSpecificationBuilderHelper.js';
 import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
 import {
-  cloneValueSpecification,
+  cloneAbstractPropertyExpression,
   convertTextToPrimitiveInstanceValue,
 } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 import {
@@ -142,10 +140,6 @@ import {
 import { renderPropertyTypeIcon } from '../fetch-structure/QueryBuilderTDSComponentHelper.js';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import { getItemType } from '../shared/QueryBuilderFilterHelper.js';
-import {
-  functionExpression_setParametersValues,
-  propertyExpression_setFunc,
-} from '../../stores/shared/ValueSpecificationModifierHelper.js';
 
 export const CAN_DROP_MAIN_GROUP_DND_TYPES_FETCH_SUPPORTED = [
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
@@ -631,33 +625,6 @@ const buildFilterTree = (
   }
 };
 
-/**
- * This function clones a PropertyExpression so that derived property parameter values
- * don't get shallow copied from the fetch structure panel to the filter panel.
- */
-const clonePropertyExpression = (
-  propertyExpression: AbstractPropertyExpression,
-  observerContext: ObserverContext,
-): AbstractPropertyExpression => {
-  const clonedPropertyExpression = new AbstractPropertyExpression(
-    propertyExpression.functionName,
-  );
-  propertyExpression_setFunc(
-    clonedPropertyExpression,
-    PropertyExplicitReference.create(
-      guaranteeNonNullable(propertyExpression.func.value),
-    ),
-  );
-  functionExpression_setParametersValues(
-    clonedPropertyExpression,
-    propertyExpression.parametersValues.map((param) =>
-      cloneValueSpecification(param, observerContext),
-    ),
-    observerContext,
-  );
-  return clonedPropertyExpression;
-};
-
 const QueryBuilderFilterGroupConditionEditor = observer(
   (props: {
     node: QueryBuilderFilterTreeGroupNodeData;
@@ -904,7 +871,7 @@ const QueryBuilderFilterConditionEditor = observer(
                   node.condition.buildFromPropertyExpressionState(
                     new QueryBuilderPropertyExpressionState(
                       queryBuilderState,
-                      clonePropertyExpression(
+                      cloneAbstractPropertyExpression(
                         columnPropertyExpression,
                         queryBuilderState.observerContext,
                       ),
@@ -1299,7 +1266,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                   .columnState instanceof
                 QueryBuilderSimpleProjectionColumnState
               ) {
-                propertyExpression = clonePropertyExpression(
+                propertyExpression = cloneAbstractPropertyExpression(
                   (
                     (item as QueryBuilderProjectionColumnDragSource)
                       .columnState as QueryBuilderSimpleProjectionColumnState
@@ -1700,7 +1667,7 @@ export const QueryBuilderFilterPanel = observer(
               (item as QueryBuilderProjectionColumnDragSource)
                 .columnState instanceof QueryBuilderSimpleProjectionColumnState
             ) {
-              propertyExpression = clonePropertyExpression(
+              propertyExpression = cloneAbstractPropertyExpression(
                 (
                   (item as QueryBuilderProjectionColumnDragSource)
                     .columnState as QueryBuilderSimpleProjectionColumnState

@@ -43,16 +43,21 @@ import {
   buildRawLambdaFromLambdaFunction,
   getValueSpecificationReturnType,
   isSubType,
+  AbstractPropertyExpression,
+  PropertyExplicitReference,
 } from '@finos/legend-graph';
 import {
   Randomizer,
   UnsupportedOperationError,
   deepClone,
+  guaranteeNonNullable,
   returnUndefOnError,
 } from '@finos/legend-shared';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationHelper.js';
 import {
+  functionExpression_setParametersValues,
   instanceValue_setValues,
+  propertyExpression_setFunc,
   valueSpecification_setGenericType,
 } from './ValueSpecificationModifierHelper.js';
 import {
@@ -101,6 +106,29 @@ export const cloneValueSpecification = (
   copy.genericType = valueSpecification.genericType;
   copy.multiplicity = valueSpecification.multiplicity;
   return copy;
+};
+
+export const cloneAbstractPropertyExpression = (
+  propertyExpression: AbstractPropertyExpression,
+  observerContext: ObserverContext,
+): AbstractPropertyExpression => {
+  const clonedPropertyExpression = new AbstractPropertyExpression(
+    propertyExpression.functionName,
+  );
+  propertyExpression_setFunc(
+    clonedPropertyExpression,
+    PropertyExplicitReference.create(
+      guaranteeNonNullable(propertyExpression.func.value),
+    ),
+  );
+  functionExpression_setParametersValues(
+    clonedPropertyExpression,
+    propertyExpression.parametersValues.map((param) =>
+      cloneValueSpecification(param, observerContext),
+    ),
+    observerContext,
+  );
+  return clonedPropertyExpression;
 };
 
 export const createMockPrimitiveValueSpecification = (
