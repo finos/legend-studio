@@ -1040,7 +1040,7 @@ export const QueryBuilder = observer(
                         <ResizablePanelSplitter />
                       )}
                       {queryBuilderState.isQueryChatOpened && (
-                        <ResizablePanel minSize={300}>
+                        <ResizablePanel size={450}>
                           <QueryChat queryBuilderState={queryBuilderState} />
                         </ResizablePanel>
                       )}
