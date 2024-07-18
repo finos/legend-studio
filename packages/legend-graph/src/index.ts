@@ -75,7 +75,10 @@ export * from './graph/metamodel/pure/packageableElements/service/TableRowIdenti
 export * from './graph/metamodel/pure/packageableElements/service/TablePtr.js';
 export { FunctionActivator } from './graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 export { INTERNAL__UnknownFunctionActivator } from './graph/metamodel/pure/packageableElements/function/INTERNAL__UnknownFunctionActivator.js';
-export { SnowflakeApp } from './graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
+export {
+  SnowflakePermissionScheme,
+  SnowflakeApp,
+} from './graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
 export { SnowflakeAppDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
 export { INTERNAL__UnknownElement } from './graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
 export {

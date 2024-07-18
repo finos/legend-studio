@@ -190,6 +190,14 @@ export class V1_ElementFirstPassBuilder
     );
     metamodel.applicationName = element.applicationName;
     metamodel.description = element.description;
+    if (element.usageRole) {
+      metamodel.usageRole = element.usageRole;
+    }
+    if (element.permissionScheme) {
+      metamodel.permissionScheme = element.permissionScheme;
+    }
+
+    metamodel.description = element.description;
     return metamodel;
   }
 

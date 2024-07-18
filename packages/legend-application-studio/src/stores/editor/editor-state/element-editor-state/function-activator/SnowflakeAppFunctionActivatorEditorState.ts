@@ -16,6 +16,7 @@
 
 import {
   type PackageableConnection,
+  type SnowflakePermissionScheme,
   SnowflakeApp,
   ConnectionPointer,
   InMemoryGraphData,
@@ -46,6 +47,8 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
       activator: computed,
       reprocess: action,
       updateOwnership: action,
+      updateUsageRole: action,
+      updatePermissionScopte: action,
       updateAppDescription: action,
       updateApplicationName: action,
       updateConnection: action,
@@ -79,6 +82,14 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
 
   updateApplicationName(val: string): void {
     this.activator.applicationName = val;
+  }
+
+  updateUsageRole(val: string): void {
+    this.activator.usageRole = val;
+  }
+
+  updatePermissionScopte(val: SnowflakePermissionScheme): void {
+    this.activator.permissionScheme = val;
   }
 
   updateAppDescription(val: string): void {

@@ -170,6 +170,8 @@ export const V1_snowflakeAppModelSchema = createModelSchema(V1_SnowflakeApp, {
   function: usingModelSchema(V1_packageableElementPointerModelSchema),
   name: primitive(),
   package: primitive(),
+  permissionScheme: optional(primitive()),
+  usageRole: optional(primitive()),
   stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
