@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.5.17
+
+### Patch Changes
+
+- [#3347](https://github.com/finos/legend-studio/pull/3347) [`cf588c5`](https://github.com/finos/legend-studio/commit/cf588c552a78ca67e9d24affe8a8bc33f679df8f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support opening query with default url param values using the url query key `p:{param}`.
+
 ## 13.5.16
 
 ## 13.5.15
