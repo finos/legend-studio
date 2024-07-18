@@ -26,7 +26,7 @@ import { makeObservable, observable } from 'mobx';
 import { DataCubeState } from './dataCube/DataCubeState.js';
 import { DataCubeEngine } from './dataCube/DataCubeEngine.js';
 import { LicenseManager } from '@ag-grid-enterprise/core';
-import { APPLICATION_EVENT } from '@finos/legend-application';
+import { ActionAlertType, APPLICATION_EVENT } from '@finos/legend-application';
 import {
   DEFAULT_ALERT_WINDOW_CONFIG,
   LayoutConfiguration,
@@ -36,7 +36,7 @@ import {
 } from './LayoutManagerState.js';
 import { DataCubeEditor } from '../components/dataCube/editor/DataCubeEditor.js';
 import { REPLDocumentationService } from './REPLDocumentationService.js';
-import { REPLErrorAlert } from '../components/repl/REPLErrorAlert.js';
+import { ErrorAlert } from '../components/repl/Alert.js';
 
 export class REPLStore {
   readonly application: LegendREPLApplicationStore;
@@ -80,7 +80,7 @@ export class REPLStore {
     this.application.notificationService.notifyError(error);
     const window = new WindowState(
       new LayoutConfiguration('Error', () => (
-        <REPLErrorAlert message={message} text={text} />
+        <ErrorAlert message={message} text={text} />
       )),
     );
     window.configuration.window = DEFAULT_ALERT_WINDOW_CONFIG;
@@ -112,7 +112,11 @@ export class REPLStore {
       this.initState.pass();
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.notifyError(error, `Initialization failure: ${error.message}`);
+      this.application.alertService.setActionAlertInfo({
+        message: `Initialization failure: ${error.message}`,
+        type: ActionAlertType.ERROR,
+        actions: [],
+      });
       this.initState.fail();
     }
   }

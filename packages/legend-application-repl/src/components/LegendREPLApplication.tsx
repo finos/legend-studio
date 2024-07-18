@@ -24,6 +24,7 @@ import { DataCube } from './dataCube/DataCube.js';
 import { LegendREPLFrameworkProvider } from './LegendREPLFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
 import { withREPLStore } from './REPLStoreProvider.js';
+import { ActionAlert } from './repl/Alert.js';
 
 export const LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN = Object.freeze({
   DATA_CUBE: `/dataCube`,
@@ -55,6 +56,7 @@ export const LegendREPLWebApplication: React.FC<{
     <BrowserEnvironmentProvider baseUrl={baseUrl}>
       <LegendREPLFrameworkProvider>
         <LegendREPLRouter />
+        <ActionAlert />
       </LegendREPLFrameworkProvider>
     </BrowserEnvironmentProvider>
   );

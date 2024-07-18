@@ -24,6 +24,7 @@ import { DataCubeCoreState } from './core/DataCubeCoreState.js';
 import { validateAndBuildQuerySnapshot } from './core/DataCubeQuerySnapshotBuilder.js';
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeEngine } from './DataCubeEngine.js';
+import { ActionAlertType } from '@finos/legend-application';
 
 export class DataCubeTask {
   uuid = uuid();
@@ -103,7 +104,11 @@ export class DataCubeState {
       this.snapshotManager.broadcastSnapshot(initialSnapshot);
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.repl.notifyError(error, `Initialization failure: ${error.message}`);
+      this.repl.application.alertService.setActionAlertInfo({
+        message: `Initialization failure: ${error.message}`,
+        type: ActionAlertType.ERROR,
+        actions: [],
+      });
     } finally {
       this.endTask(task);
     }
