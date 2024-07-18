@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.10.13
+
+### Patch Changes
+
+- [#3345](https://github.com/finos/legend-studio/pull/3345) [`a9ab9d1`](https://github.com/finos/legend-studio/commit/a9ab9d11cb780b02853f1967393e8b387b33bcca) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support permissionScheme and usageRole in SnowflakeApp
+
 ## 31.10.12
 
 ## 31.10.11
