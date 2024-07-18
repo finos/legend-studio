@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '@finos/legend-application-studio';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { PanelFormTextField, PanelFormSection } from '@finos/legend-art';
 
 export const FormTextEditor = observer(() => {
@@ -29,11 +29,15 @@ export const FormTextEditor = observer(() => {
     formEditorState.setTitle(value ?? '');
   };
 
-  const handleDescriptionChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>,
-  ) => {
-    formEditorState.setDescription(e.target.value);
+  const handleDescriptionChange = (value: string | undefined) => {
+    formEditorState.setDescription(value ?? '');
   };
+
+  // const handleDescriptionChange = (
+  //   e: React.ChangeEvent<HTMLTextAreaElement>,
+  // ) => {
+  //   formEditorState.setDescription(e.target.value);
+  // };
 
   return (
     <div className="form-text-editor panel text-element-editor">
@@ -53,19 +57,19 @@ export const FormTextEditor = observer(() => {
                 />
               </div>
               <div>
-                {/* <PanelFormTextField
+                <PanelFormTextField
                   name="Description"
                   value={formElement.description ?? ''}
                   update={handleDescriptionChange}
                   placeholder="Enter description"
-                /> */}
-                <textarea
-                  className="panel__content__form__section__textarea service-editor__documentation__input"
+                />
+                {/* <textarea
+
                   spellCheck={false}
                   disabled={isReadOnly}
-                  value={formElement.title ?? ''}
+                  value={formElement.description ?? ''}
                   onChange={handleDescriptionChange}
-                />
+                /> */}
               </div>
             </PanelFormSection>
           </div>

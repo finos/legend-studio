@@ -8,7 +8,7 @@ import type { PackageableElement } from '@finos/legend-graph';
 import { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
 
 export class DataSpaceEditorState extends ElementEditorState {
-  dataSpace!: DataSpace;
+  dataSpace: DataSpace;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -35,12 +35,10 @@ export class DataSpaceEditorState extends ElementEditorState {
   }
 
   setTitle(title: string): void {
-    console.log(title);
     this.dataSpace.title = title;
   }
 
   setDescription(description: string): void {
-    console.log(description);
     this.dataSpace.description = description;
   }
 
