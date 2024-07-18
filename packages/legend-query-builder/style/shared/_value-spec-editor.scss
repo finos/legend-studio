@@ -84,6 +84,7 @@
     }
   }
 
+  &__enum-collection-selector--error,
   &__primitive-collection-selector--error {
     .selector-input--dark__input {
       color: var(--color-red-200);
