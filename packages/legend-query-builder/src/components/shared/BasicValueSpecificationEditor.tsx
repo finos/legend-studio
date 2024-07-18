@@ -95,6 +95,7 @@ import {
 import { evaluate } from 'mathjs';
 import { isUsedDateFunctionSupportedInFormMode } from '../../stores/QueryBuilderStateBuilder.js';
 import {
+  convertTextToEnum,
   convertTextToPrimitiveInstanceValue,
   getValueSpecificationStringValue,
 } from '../../stores/shared/ValueSpecificationEditorHelper.js';
@@ -1017,14 +1018,15 @@ const EnumCollectionInstanceValueEditor = observer(
     saveEdit: () => void;
   }) => {
     const { valueSpecification, observerContext, saveEdit } = props;
+
+    // local state and variables
     const applicationStore = useApplicationStore();
     const enumType = guaranteeType(
       valueSpecification.genericType?.value.rawType,
       Enumeration,
     );
-    const copyButtonName = `copy-${valueSpecification.hashCode}`;
-    const inputName = `input-${valueSpecification.hashCode}`;
-
+    const [inputValue, setInputValue] = useState('');
+    const [inputValueIsError, setInputValueIsError] = useState(false);
     const [selectedOptions, setSelectedOptions] = useState<
       { label: string; value: Enum }[]
     >(
@@ -1048,10 +1050,100 @@ const EnumCollectionInstanceValueEditor = observer(
         value: value,
       }));
 
+    const copyButtonName = `copy-${valueSpecification.hashCode}`;
+    const inputName = `input-${valueSpecification.hashCode}`;
+
+    // helper functions
+    const isValueAlreadySelected = (value: Enum): boolean =>
+      selectedOptions.map((option) => option.value).includes(value);
+
+    /**
+     * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
+     * we simply return null for values which are not valid or parsable. But perhaps, we can consider
+     * passing in logger or notifier to give the users some idea of what went wrong instead of ignoring
+     * their input.
+     */
+    const convertInputValueToEnum = (): Enum | null => {
+      const trimmedInputValue = inputValue.trim();
+
+      if (trimmedInputValue.length) {
+        const newEnum = convertTextToEnum(trimmedInputValue, enumType);
+
+        if (newEnum === undefined || isValueAlreadySelected(newEnum)) {
+          return null;
+        }
+
+        return newEnum;
+      }
+      return null;
+    };
+
+    const addInputValueToSelectedOptions = (): void => {
+      const newEnum = convertInputValueToEnum();
+
+      if (newEnum !== null) {
+        setSelectedOptions([
+          ...selectedOptions,
+          {
+            label: newEnum.name,
+            value: newEnum,
+          },
+        ]);
+        setInputValue('');
+      } else if (inputValue.trim().length) {
+        setInputValueIsError(true);
+      }
+    };
+
+    // event handlers
     const changeValue = (
       newSelectedOptions: { value: Enum; label: string }[],
+      actionChange: SelectActionData<{ value: Enum; label: string }>,
     ): void => {
       setSelectedOptions(newSelectedOptions);
+      if (actionChange.action === 'select-option') {
+        setInputValue('');
+      } else if (
+        actionChange.action === 'remove-value' &&
+        actionChange.removedValue.value.name === inputValue
+      ) {
+        setInputValueIsError(false);
+      }
+    };
+
+    const handleInputChange = (
+      newInputValue: string,
+      actionChange: InputActionData,
+    ): void => {
+      if (actionChange.action === 'input-change') {
+        setInputValue(newInputValue);
+        setInputValueIsError(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if ((event.key === 'Enter' || event.key === ',') && !event.shiftKey) {
+        addInputValueToSelectedOptions();
+        event.preventDefault();
+      }
+    };
+
+    const handlePaste = (event: React.ClipboardEvent<string>): void => {
+      const pastedText = event.clipboardData.getData('text');
+      const parsedData = parseCSVString(pastedText);
+      if (!parsedData) {
+        return;
+      }
+      const newValues = uniq(
+        uniq(parsedData)
+          .map((value) => convertTextToEnum(value, enumType))
+          .filter(isNonNullable),
+      ).filter((value) => !isValueAlreadySelected(value));
+      setSelectedOptions([
+        ...selectedOptions,
+        ...newValues.map((value) => ({ label: value.name, value })),
+      ]);
+      event.preventDefault();
     };
 
     const copyValueToClipboard = () => {
@@ -1092,22 +1184,24 @@ const EnumCollectionInstanceValueEditor = observer(
     return (
       <div className="value-spec-editor" onBlur={onBlur}>
         <CustomSelectorInput
-          className="value-spec-editor__enum-collection-selector"
+          className={clsx('value-spec-editor__enum-collection-selector', {
+            'value-spec-editor__enum-collection-selector--error':
+              inputValueIsError,
+          })}
           options={availableOptions}
+          inputValue={inputValue}
           isMulti={true}
+          autoFocus={true}
           onChange={changeValue}
-          onKeyDown={(event: KeyboardEvent): void => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-              updateValueSpecAndSaveEdit();
-            }
-          }}
+          onInputChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
           value={selectedOptions}
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
           placeholder={null}
           inputPlaceholder="Add"
-          autoFocus={true}
           menuIsOpen={true}
           inputName={inputName}
         />
