@@ -375,12 +375,31 @@
     }
   }
 
-  &__list-editor__save-button {
+  &__list-editor__copy-button {
     @include flexCenter;
 
     align-self: normal;
     width: 2.8rem;
     min-width: 2.8rem;
+    background: var(--color-dark-grey-200);
+
+    svg {
+      font-size: 1.2rem;
+      color: var(--color-light-grey-400);
+    }
+
+    &:hover svg {
+      color: var(--color-light-grey-200);
+    }
+  }
+
+  &__list-editor__save-button {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    align-self: normal;
+    width: 2.8rem;
+    border-radius: 0 50% 50% 0;
 
     svg {
       font-size: 1.2rem;
