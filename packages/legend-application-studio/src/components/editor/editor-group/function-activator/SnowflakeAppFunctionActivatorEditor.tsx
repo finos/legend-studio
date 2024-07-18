@@ -15,6 +15,7 @@
  */
 
 import {
+  type SelectComponent,
   Panel,
   PanelHeader,
   PanelContent,
@@ -26,7 +27,7 @@ import {
   PURE_ConnectionIcon,
   CustomSelectorInput,
   createFilter,
-  type SelectComponent,
+  DataAccessIcon,
 } from '@finos/legend-art';
 import {
   type PackageableConnection,
@@ -34,6 +35,7 @@ import {
   RelationalDatabaseConnection,
   DatabaseType,
   DeploymentOwner,
+  SnowflakePermissionScheme,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
@@ -42,8 +44,8 @@ import { SnowflakeAppFunctionActivatorEdtiorState } from '../../../../stores/edi
 import { flowResult } from 'mobx';
 import { useRef, useState } from 'react';
 import {
-  buildRelationalDatabaseConnectionOption,
   type RelationalDatabaseConnectionOption,
+  buildRelationalDatabaseConnectionOption,
 } from '../connection-editor/RelationalDatabaseConnectionEditor.js';
 import { activator_setDeploymentOwner } from '../../../../stores/graph-modifier/DSL_FunctionActivator_GraphModifierHelper.js';
 
@@ -71,6 +73,13 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
     )
     .map(buildRelationalDatabaseConnectionOption);
 
+  const permissionSchemeOptions = Object.values(SnowflakePermissionScheme).map(
+    (type) => ({
+      value: type,
+      label: type,
+    }),
+  );
+
   const initializeActivationConnection = (
     val: PackageableConnection | undefined,
   ): PackageableConnection | undefined => {
@@ -94,6 +103,15 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
       return;
     }
     editorState.updateConnection(val.value);
+  };
+  const changePermissionScheme = (val: {
+    value: SnowflakePermissionScheme;
+    label: SnowflakePermissionScheme;
+  }): void => {
+    if (!isReadOnly && val.value === activator.permissionScheme) {
+      return;
+    }
+    editorState.updatePermissionScopte(val.value);
   };
   const changeDescription: React.ChangeEventHandler<HTMLTextAreaElement> = (
     event,
@@ -250,6 +268,45 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
               placeholder="Specify the name of the UDTF for this activator..."
               update={(value: string | undefined): void =>
                 editorState.updateApplicationName(value ?? '')
+              }
+            />
+          </PanelForm>
+          <PanelForm>
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Permission Scheme
+              </div>
+            </div>
+            <div className="snowflake-app-function-activator-editor__configuration__items">
+              <div className="snowflake-app-function-activator-editor__configuration__item">
+                <div className="btn--sm snowflake-app-function-activator-editor__configuration__item__label snowflake-app-function-activator-editor__permission-scope__icon">
+                  <DataAccessIcon />
+                </div>
+                <CustomSelectorInput
+                  className="snowflake-app-function-activator-editor__config__connection-selector__input"
+                  options={permissionSchemeOptions}
+                  onChange={changePermissionScheme}
+                  value={{
+                    label: activator.permissionScheme,
+                    value: activator.permissionScheme,
+                  }}
+                  darkMode={
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
+                  placeholder="Choose a Permission Scheme"
+                />
+              </div>
+            </div>
+          </PanelForm>
+          <PanelForm>
+            <PanelFormTextField
+              value={activator.usageRole}
+              isReadOnly={isReadOnly}
+              name="Usage Role"
+              placeholder="Specify the usage role (optional)"
+              update={(value: string | undefined): void =>
+                editorState.updateUsageRole(value)
               }
             />
           </PanelForm>

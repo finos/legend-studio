@@ -170,6 +170,12 @@ class V1_PackageableElementTransformer
       }),
     );
     protocol.applicationName = element.applicationName;
+    if (element.usageRole) {
+      protocol.usageRole = element.usageRole;
+    }
+    if (element.permissionScheme) {
+      protocol.permissionScheme = element.permissionScheme;
+    }
     protocol.description = element.description;
     protocol.ownership = V1_transformDeployment(element.ownership);
     protocol.activationConfiguration =

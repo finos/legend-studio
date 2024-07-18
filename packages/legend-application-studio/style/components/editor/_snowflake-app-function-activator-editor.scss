@@ -142,4 +142,10 @@
       }
     }
   }
+
+  &__permission-scope {
+    &__icon {
+      color: var(--color-association);
+    }
+  }
 }

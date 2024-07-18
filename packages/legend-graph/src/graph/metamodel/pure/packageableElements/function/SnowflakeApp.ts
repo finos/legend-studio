@@ -20,9 +20,16 @@ import { FunctionActivator } from './FunctionActivator.js';
 import type { SnowflakeAppDeploymentConfiguration } from '../../functionActivator/SnowflakeAppDeploymentConfiguration.js';
 import type { DeploymentOwner } from './Ownership.js';
 
+export enum SnowflakePermissionScheme {
+  DEFAULT = 'DEFAULT',
+  SEQUESTERED = 'SEQUESTERED',
+}
+
 export class SnowflakeApp extends FunctionActivator {
   applicationName!: string;
   description: string | undefined;
+  permissionScheme?: SnowflakePermissionScheme;
+  usageRole?: string | undefined;
   declare ownership: DeploymentOwner;
   declare activationConfiguration: SnowflakeAppDeploymentConfiguration;
   accept_PackageableElementVisitor<T>(
@@ -36,6 +43,8 @@ export class SnowflakeApp extends FunctionActivator {
       CORE_HASH_STRUCTURE.SNOWFLAKE_APP,
       this.applicationName,
       this.description ?? '',
+      this.permissionScheme ?? '',
+      this.usageRole ?? '',
       this.ownership,
       this.activationConfiguration,
     ]);
