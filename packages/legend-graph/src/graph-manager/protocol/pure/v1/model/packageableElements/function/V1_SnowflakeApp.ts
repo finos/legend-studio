@@ -26,7 +26,7 @@ export class V1_SnowflakeApp extends V1_FunctionActivator {
   applicationName!: string;
   description: string | undefined;
   permissionScheme?: SnowflakePermissionScheme;
-  usageRole?: string;
+  usageRole?: string | undefined;
   declare ownership: V1_DeploymentOwner;
   declare activationConfiguration: V1_SnowflakeAppDeploymentConfiguration;
 

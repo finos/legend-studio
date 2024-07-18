@@ -29,7 +29,7 @@ export class SnowflakeApp extends FunctionActivator {
   applicationName!: string;
   description: string | undefined;
   permissionScheme?: SnowflakePermissionScheme;
-  usageRole?: string;
+  usageRole?: string | undefined;
   declare ownership: DeploymentOwner;
   declare activationConfiguration: SnowflakeAppDeploymentConfiguration;
   accept_PackageableElementVisitor<T>(

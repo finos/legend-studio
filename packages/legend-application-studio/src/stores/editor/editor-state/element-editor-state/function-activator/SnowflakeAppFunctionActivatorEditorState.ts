@@ -84,7 +84,7 @@ export class SnowflakeAppFunctionActivatorEdtiorState extends ElementEditorState
     this.activator.applicationName = val;
   }
 
-  updateUsageRole(val: string): void {
+  updateUsageRole(val: string | undefined): void {
     this.activator.usageRole = val;
   }
 

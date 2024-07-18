@@ -306,7 +306,7 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
               name="Usage Role"
               placeholder="Specify the usage role (optional)"
               update={(value: string | undefined): void =>
-                editorState.updateUsageRole(value ?? '')
+                editorState.updateUsageRole(value)
               }
             />
           </PanelForm>
