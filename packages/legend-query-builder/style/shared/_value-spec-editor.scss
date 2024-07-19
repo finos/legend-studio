@@ -380,8 +380,8 @@
     @include flexCenter;
 
     align-self: normal;
-    width: 2.8rem;
-    min-width: 2.8rem;
+    width: 2.7rem;
+    min-width: 2.7rem;
     background: var(--color-dark-grey-200);
 
     svg {
@@ -399,8 +399,8 @@
     @include flexConstantDimension;
 
     align-self: normal;
-    width: 2.8rem;
-    border-radius: 0 50% 50% 0;
+    width: 2.7rem;
+    border-radius: 0 0.9rem 0.9rem 0;
 
     svg {
       font-size: 1.2rem;
