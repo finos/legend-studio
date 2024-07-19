@@ -29,7 +29,7 @@ import { DataCubeEditorVerticalPivotsPanelState } from './DataCubeEditorVertical
 import { SingletonModeDisplayState } from '../../LayoutManagerState.js';
 import { DataCubeEditor } from '../../../components/dataCube/editor/DataCubeEditor.js';
 
-export enum DATA_CUBE_EDITOR_TAB {
+export enum DataCubeEditorTab {
   GENERAL_PROPERTIES = 'General Properties',
   COLUMN_PROPERTIES = 'Column Properties',
   FILTER = 'Filter',
@@ -50,7 +50,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
   readonly sorts: DataCubeEditorSortsPanelState;
   readonly code: DataCubeEditorCodePanelState;
 
-  currentTab = DATA_CUBE_EDITOR_TAB.GENERAL_PROPERTIES;
+  currentTab = DataCubeEditorTab.GENERAL_PROPERTIES;
 
   constructor(dataCube: DataCubeState) {
     super(dataCube);
@@ -77,7 +77,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     this.code = new DataCubeEditorCodePanelState(this);
   }
 
-  setCurrentTab(val: DATA_CUBE_EDITOR_TAB): void {
+  setCurrentTab(val: DataCubeEditorTab): void {
     this.currentTab = val;
   }
 

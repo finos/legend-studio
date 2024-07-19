@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export enum LEGEND_REPL_APP_EVENT {
+export enum ApplicationEvent {
   FETCH_TDS_FAILURE = 'repl.fetch-tds.failure',
   BUILD_TDS_EQUEST_FAILURE = 'repl.build-tds-request.failure',
 }

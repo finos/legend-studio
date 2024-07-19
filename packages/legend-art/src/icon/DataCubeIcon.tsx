@@ -66,7 +66,7 @@ import {
   TbChevronDown,
   TbCaretRightFilled,
 } from 'react-icons/tb';
-import { VscError, VscInfo } from 'react-icons/vsc';
+import { VscError, VscInfo, VscQuestion } from 'react-icons/vsc';
 
 export const DataCubeIcon = {
   AdvancedSettings: TbSettingsBolt,
@@ -80,6 +80,7 @@ export const DataCubeIcon = {
   Code: TbCode,
   Cube: TbCube,
   Documentation: TbBook,
+  DocumentationHint: VscQuestion,
   Error: VscError,
   FontBold: MdOutlineFormatBold,
   FontCase: RxLetterCaseCapitalize,

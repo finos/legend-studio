@@ -1,0 +1,499 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.markdown-content {
+  margin: 0;
+  word-wrap: break-word;
+  width: 100%;
+}
+
+/*
+.markdown-content--page {
+  padding: 4rem;
+}
+
+.markdown-content details,
+.markdown-content figcaption,
+.markdown-content figure {
+  display: block;
+}
+
+.markdown-content summary {
+  display: list-item;
+} */
+
+.markdown-content [hidden] {
+  display: none !important;
+}
+
+.markdown-content a {
+  background: transparent;
+  color: var(--tw-color-sky-500);
+  text-decoration: none;
+}
+
+.markdown-content a:active,
+.markdown-content a:hover {
+  outline-width: 0;
+}
+
+.markdown-content abbr[title] {
+  border-bottom: none;
+  text-decoration: underline dotted;
+}
+
+.markdown-content b,
+.markdown-content strong {
+  font-weight: 700;
+}
+
+.markdown-content dfn {
+  font-style: italic;
+}
+
+.markdown-content h1 {
+  margin: 20px 0 10px;
+  font-weight: 700;
+  padding-bottom: 2px;
+  font-size: 16px;
+  border-bottom: 1px solid var(--tw-color-neutral-200);
+}
+
+/*
+.markdown-content mark {
+  background: var(--color-dark-grey-280);
+}
+
+.markdown-content small {
+  font-size: 1.2rem;
+}
+
+.markdown-content sub,
+.markdown-content sup {
+  font-size: 1rem;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+.markdown-content sub {
+  bottom: -0.25rem;
+}
+
+.markdown-content sup {
+  top: -0.5rem;
+}
+
+.markdown-content img {
+  border-style: none;
+  max-width: 100%;
+  box-sizing: content-box;
+  background: var(--color-dark-grey-50);
+} */
+
+.markdown-content code,
+.markdown-content pre,
+.markdown-content samp {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+}
+
+/*
+.markdown-content figure {
+  margin: 1rem 4rem;
+}
+
+.markdown-content hr {
+  box-sizing: content-box;
+  overflow: hidden;
+  border-bottom: 0.1rem solid var(--color-dark-grey-250);
+  height: 0.25rem;
+  padding: 0;
+  margin: 2.4rem 0;
+  background: var(--color-dark-grey-50);
+  border: 0;
+}
+
+.markdown-content input {
+  font: inherit;
+  margin: 0;
+  overflow: visible;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.markdown-content a:hover {
+  text-decoration: underline;
+}
+
+.markdown-content hr::before {
+  display: table;
+  content: '';
+}
+
+.markdown-content hr::after {
+  display: table;
+  clear: both;
+  content: '';
+}
+
+.markdown-content table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow: auto;
+}
+
+.markdown-content td,
+.markdown-content th {
+  padding: 0;
+}
+
+.markdown-content details summary {
+  cursor: pointer;
+}
+
+.markdown-content details:not([open]) > *:not(summary) {
+  display: none !important;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  margin-top: 2.4rem;
+  margin-bottom: 1.6rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.markdown-content h2 {
+  font-weight: 700;
+  padding-bottom: 0.3rem;
+  font-size: 1.5rem;
+  border-bottom: 0.1rem solid var(--color-dark-grey-250);
+}
+
+.markdown-content h3 {
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+
+.markdown-content h4 {
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+
+.markdown-content h5 {
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.markdown-content h6 {
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.markdown-content p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.markdown-content blockquote {
+  margin: 0;
+  padding: 0 1rem;
+  color: var(--color-dark-grey-500);
+  border-left: 0.3rem solid var(--color-dark-grey-350);
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-left: 2rem;
+  list-style: disc;
+}
+
+.markdown-content ol ol,
+.markdown-content ul ol {
+  list-style-type: lower-roman;
+}
+
+.markdown-content ul ul ol,
+.markdown-content ul ol ol,
+.markdown-content ol ul ol,
+.markdown-content ol ol ol {
+  list-style-type: lower-alpha;
+}
+
+.markdown-content ul.contains-task-list,
+.markdown-content ol.contains-task-list {
+  list-style: none;
+}
+
+.markdown-content ul.contains-task-list li:not(.task-list-item) {
+  list-style: disc;
+}
+
+.markdown-content .task-list-item {
+  list-style-type: none;
+}
+
+.markdown-content .task-list-item label {
+  font-weight: 400;
+}
+
+.markdown-content .task-list-item.enabled label {
+  cursor: pointer;
+}
+
+.markdown-content .task-list-item + .task-list-item {
+  margin-top: 0.3rem;
+}
+
+.markdown-content .task-list-item .handle {
+  display: none;
+}
+
+.markdown-content .task-list-item-checkbox {
+  margin: 0 0.2em 0.25em -1.6em;
+  vertical-align: middle;
+}
+
+.markdown-content .contains-task-list:dir(rtl) .task-list-item-checkbox {
+  margin: 0 -1.6em 0.25em 0.2em;
+}
+
+.markdown-content ul.contains-task-list li.task-list-item > input {
+  margin-left: -1.6rem;
+}
+
+.markdown-content ::placeholder {
+  opacity: 1;
+}
+
+.markdown-content [data-catalyst] {
+  display: block;
+}
+
+.markdown-content::before {
+  display: table;
+  content: '';
+}
+
+.markdown-content::after {
+  display: table;
+  clear: both;
+  content: '';
+}
+
+.markdown-content > *:first-child {
+  margin-top: 0 !important;
+}
+
+.markdown-content > *:last-child {
+  margin-bottom: 0 !important;
+}
+
+.markdown-content a:not([href]) {
+  color: inherit;
+  text-decoration: none;
+}
+
+.markdown-content p,
+.markdown-content blockquote,
+.markdown-content ul,
+.markdown-content ol,
+.markdown-content dl,
+.markdown-content table,
+.markdown-content pre,
+.markdown-content details {
+  margin-top: 0;
+  margin-bottom: 1.6rem;
+}
+
+.markdown-content blockquote > :first-child {
+  margin-top: 0;
+}
+
+.markdown-content blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-content sup > a::before {
+  content: '[';
+}
+
+.markdown-content sup > a::after {
+  content: ']';
+}
+
+.markdown-content h1:hover .anchor,
+.markdown-content h2:hover .anchor,
+.markdown-content h3:hover .anchor,
+.markdown-content h4:hover .anchor,
+.markdown-content h5:hover .anchor,
+.markdown-content h6:hover .anchor {
+  text-decoration: none;
+}
+
+.markdown-content h1 code,
+.markdown-content h2 code,
+.markdown-content h3 code,
+.markdown-content h4 code,
+.markdown-content h5 code,
+.markdown-content h6 code {
+  padding: 0 0.2rem;
+  font-size: inherit;
+}
+
+.markdown-content ul.no-list,
+.markdown-content ol.no-list {
+  padding: 0;
+  list-style-type: none;
+}
+
+.markdown-content ol[type='1'] {
+  list-style-type: decimal;
+}
+
+.markdown-content ol[type='a'] {
+  list-style-type: lower-alpha;
+}
+
+.markdown-content ol[type='i'] {
+  list-style-type: lower-roman;
+}
+
+.markdown-content div > ol:not([type]) {
+  list-style-type: decimal;
+}
+
+.markdown-content ul ul,
+.markdown-content ul ol,
+.markdown-content ol ol,
+.markdown-content ol ul {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.markdown-content dd {
+  margin-left: 0;
+}
+
+.markdown-content li > p {
+  margin-top: 1.6rem;
+}
+
+.markdown-content li + li {
+  margin-top: 0.25rem;
+}
+
+.markdown-content dl {
+  padding: 0;
+}
+
+.markdown-content dl dt {
+  padding: 0;
+  margin-top: 1.6rem;
+  font-size: 1rem;
+  font-style: italic;
+  font-weight: 700;
+}
+
+.markdown-content dl dd {
+  padding: 0 1.6rem;
+  margin-bottom: 1.6rem;
+}
+
+.markdown-content table th {
+  font-weight: 700;
+}
+
+.markdown-content table th,
+.markdown-content table td {
+  padding: 0.6rem 1.3rem;
+  border: 0.1rem solid var(--color-dark-grey-350);
+}
+
+.markdown-content table img {
+  background: transparent;
+}
+
+.markdown-content img[align='right'] {
+  padding-left: 2rem;
+}
+
+.markdown-content img[align='left'] {
+  padding-right: 2rem;
+}
+*/
+
+.markdown-content code {
+  font-family: 'Roboto Mono', monospace;
+  padding: 2px 4px;
+  margin: 0;
+  font-size: 12px;
+  background: var(--tw-color-neutral-200);
+  border-radius: 2px;
+}
+
+.markdown-content code br {
+  display: none;
+}
+
+.markdown-content del code {
+  text-decoration: inherit;
+}
+
+.markdown-content pre > code {
+  padding: 0;
+  margin: 0;
+  word-break: normal;
+  white-space: pre;
+  background: transparent;
+  border: 0;
+}
+
+.markdown-content pre {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-family: 'Roboto Mono', monospace;
+  word-wrap: normal;
+  overflow: auto;
+  font-size: 12px;
+  line-height: 1.45;
+  background: var(--tw-color-neutral-100);
+  border-radius: 2px;
+}
+
+.markdown-content pre code {
+  display: inline;
+  max-width: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  line-height: inherit;
+  word-wrap: normal;
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+}

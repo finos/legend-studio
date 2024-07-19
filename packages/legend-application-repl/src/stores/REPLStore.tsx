@@ -35,16 +35,16 @@ import {
   WindowState,
 } from './LayoutManagerState.js';
 import { DataCubeEditor } from '../components/dataCube/editor/DataCubeEditor.js';
-import { REPLDocumentationService } from './REPLDocumentationService.js';
 import { ErrorAlert } from '../components/repl/Alert.js';
+import { DocumentationViewer } from '../components/repl/DocumentationViewer.js';
 
 export class REPLStore {
   readonly application: LegendREPLApplicationStore;
   readonly client: REPLServerClient;
   readonly layout: LayoutManagerState;
-  readonly documentationService: REPLDocumentationService;
   readonly initState = ActionState.create();
   readonly settingsDisplay: SingletonModeDisplayState;
+  readonly documentationDisplay: SingletonModeDisplayState;
 
   dataCubeEngine!: DataCubeEngine;
 
@@ -66,7 +66,6 @@ export class REPLStore {
       }),
     );
     this.layout = new LayoutManagerState(this.application);
-    this.documentationService = new REPLDocumentationService();
     this.dataCubeEngine = new DataCubeEngine(this);
     this.dataCube = new DataCubeState(this);
     this.settingsDisplay = new SingletonModeDisplayState(
@@ -74,6 +73,17 @@ export class REPLStore {
       'Settings',
       () => <DataCubeEditor />,
     );
+    this.documentationDisplay = new SingletonModeDisplayState(
+      this.layout,
+      'Documentation',
+      () => <DocumentationViewer />,
+    );
+    this.documentationDisplay.configuration.window = {
+      width: 400,
+      height: 400,
+      minWidth: 300,
+      minHeight: 200,
+    };
   }
 
   notifyError(error: Error, message: string, text?: string | undefined): void {

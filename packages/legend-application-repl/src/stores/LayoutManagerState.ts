@@ -16,7 +16,13 @@
 
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import { uuid } from '@finos/legend-shared';
-import { action, computed, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  makeObservable,
+  observable,
+  runInAction,
+} from 'mobx';
 
 export type WindowConfiguration = {
   x?: number | undefined;
@@ -144,7 +150,11 @@ export class SingletonModeDisplayState {
     if (this.window) {
       this.layoutManagerState.bringWindowFront(this.window);
     } else {
-      this.window = new WindowState(this.configuration);
+      this.window = new WindowState(this.configuration, () =>
+        runInAction(() => {
+          this.window = undefined;
+        }),
+      );
       this.layoutManagerState.newWindow(this.window);
     }
   }

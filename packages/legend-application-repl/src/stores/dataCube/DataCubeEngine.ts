@@ -39,7 +39,7 @@ export class DataCubeEngine {
   readonly application: LegendREPLApplicationStore;
   private readonly client: REPLServerClient;
 
-  enableDebugMode = true;
+  enableDebugMode = false;
   gridClientRowBuffer = 50;
   gridClientPurgeClosedRowNodes = false;
 

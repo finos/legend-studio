@@ -44,6 +44,8 @@ import {
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_URL_LABEL_QUERY_PARAM,
 } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
+import { DocumentationKey } from '../../../application/LegendREPLDocumentation.js';
+import { DocumentationViewerLink } from '../../repl/DocumentationViewer.js';
 
 export const DataCubeEditorColumnPropertiesPanel = observer(() => {
   const replStore = useREPLStore();
@@ -188,6 +190,10 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   </DataCubeEditorDropdownMenu>
                   <Advanced_Badge />
                   <WIP_Badge />
+                  <DocumentationViewerLink
+                    className="ml-1"
+                    documentationKey={DocumentationKey.DATA_CUBE_COLUMN_KINDS}
+                  />
                 </div>
               </>
             )}
@@ -349,6 +355,12 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   <div className="mt-2 flex h-5 w-full items-center">
                     <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                       Dislay as Link?
+                      <DocumentationViewerLink
+                        className="ml-1"
+                        documentationKey={
+                          DocumentationKey.DATA_CUBE_COLUMN_DISPLAY_AS_LINK
+                        }
+                      />
                     </div>
                     <DataCubeEditorCheckbox
                       checked={selectedColumn.displayAsLink}

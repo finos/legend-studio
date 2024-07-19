@@ -33,8 +33,8 @@ export const REPLStoreProvider = observer(
     const store = useLocalObservable(() => new REPLStore(applicationStore));
 
     useEffect(() => {
-      store.initialize();
-    }, [store]);
+      store.initialize().catch(applicationStore.logUnhandledError);
+    }, [store, applicationStore]);
 
     if (!store.initState.hasSucceeded) {
       return <></>;
