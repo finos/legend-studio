@@ -310,6 +310,13 @@ export const QueryBuilderParametersPanel = observer(
     const { queryBuilderState } = props;
     const isReadOnly = !queryBuilderState.isQuerySupported;
     const queryParameterState = queryBuilderState.parametersState;
+    const parametersFilteredOutMilestoning =
+      queryParameterState.parameterStates.filter(
+        (paramState) =>
+          !queryBuilderState.milestoningState.isMilestoningParameter(
+            paramState.parameter,
+          ),
+      );
     const seeDocumentation = (): void =>
       queryBuilderState.applicationStore.assistantService.openDocumentationEntry(
         QUERY_BUILDER_DOCUMENTATION_KEY.QUESTION_HOW_TO_ADD_PARAMETERS_TO_QUERY,
@@ -331,6 +338,7 @@ export const QueryBuilderParametersPanel = observer(
         parmaterState.mockParameterValue();
       }
     };
+
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS}
@@ -363,8 +371,8 @@ export const QueryBuilderParametersPanel = observer(
         <div className="panel__content query-builder__variables__content">
           {!queryBuilderState.isParameterSupportDisabled && (
             <>
-              {Boolean(queryParameterState.parameterStates.length) &&
-                queryParameterState.parameterStates.map((pState) => (
+              {Boolean(parametersFilteredOutMilestoning.length) &&
+                parametersFilteredOutMilestoning.map((pState) => (
                   <VariableViewer
                     key={pState.uuid}
                     variable={pState.parameter}
@@ -378,7 +386,7 @@ export const QueryBuilderParametersPanel = observer(
                     }}
                   />
                 ))}
-              {!queryParameterState.parameterStates.length && (
+              {!parametersFilteredOutMilestoning.length && (
                 <BlankPanelPlaceholder
                   text="Add a parameter"
                   disabled={isReadOnly}

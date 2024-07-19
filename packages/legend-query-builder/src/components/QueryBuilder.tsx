@@ -625,8 +625,12 @@ export const QueryBuilder = observer(
                           onClick={toggleShowParameterPanel}
                           disabled={
                             !queryBuilderState.isQuerySupported ||
-                            queryBuilderState.parametersState.parameterStates
-                              .length > 0
+                            queryBuilderState.parametersState.parameterStates.filter(
+                              (paramState) =>
+                                !queryBuilderState.milestoningState.isMilestoningParameter(
+                                  paramState.parameter,
+                                ),
+                            ).length > 0
                           }
                         >
                           <MenuContentItemIcon>

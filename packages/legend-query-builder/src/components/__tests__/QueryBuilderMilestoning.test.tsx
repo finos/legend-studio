@@ -17,6 +17,7 @@
 import { describe, test, expect } from '@jest/globals';
 import {
   act,
+  findByRole,
   fireEvent,
   getAllByText,
   getByText,
@@ -57,7 +58,6 @@ import type { Entity } from '@finos/legend-storage';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_Milestoning } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
-import { getParameterNameInput } from './QueryBuilderParametersPanel.test.js';
 
 type QueryComparisonTestCase = [
   string,
@@ -409,9 +409,8 @@ describe(
           expectedNumberOfPropertyParameterValues,
         );
 
-        // Check if we have parameter panel opened and able to run query
+        // Check if we have paramter panel hided when there are only milestoning parameters and able to run query
         if (expectedNumberOfParameterValues > 0) {
-          expect(queryBuilderState.showParametersPanel).toBe(true);
           await waitFor(() =>
             renderResult.getByTestId(
               QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
@@ -420,6 +419,9 @@ describe(
           await act(async () => {
             fireEvent.click(renderResult.getByText('Run Query'));
           });
+          expect(queryBuilderState.showParametersPanel).toBe(
+            hasNonMilestoningParams,
+          );
           if (!hasNonMilestoningParams) {
             expect(renderResult.queryByText('Set Parameter Values')).toBeNull();
           } else {
@@ -473,29 +475,36 @@ test(
     );
     expect(tdsStateOne.projectionColumns.length).toBe(2);
 
-    // Check if we have paramter panel opened and able to run query
-    expect(queryBuilderState.showParametersPanel).toBe(true);
+    // Check if we have paramter panel hided and able to run query
+    expect(queryBuilderState.showParametersPanel).toBe(false);
 
-    const parameterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
-    );
-    await waitFor(() => getByText(parameterPanel, 'businessDate'));
-    await waitFor(() => getByText(parameterPanel, 'milestoning'));
-    fireEvent.click(await waitFor(() => getByText(parameterPanel, 'Now')));
-    const ParameterDialog = await waitFor(() =>
-      renderResult.getByRole('dialog'),
-    );
-    expect(getByText(ParameterDialog, 'Update Parameter'));
-    expect(
-      getByText(
-        ParameterDialog,
-        'Choose a default value for this milestoning parameter',
+    const resultModifierPromptPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT,
       ),
     );
-    fireEvent.click(await waitFor(() => getByText(ParameterDialog, 'Now')));
+    await waitFor(() =>
+      getAllByText(resultModifierPromptPanel, 'Business Date'),
+    );
+    await waitFor(() => getAllByText(resultModifierPromptPanel, 'Now'));
+    const queryOptionsButton = await waitFor(() =>
+      renderResult.getByRole('button', { name: 'Query Options' }),
+    );
+    fireEvent.click(queryOptionsButton);
+    const queryOptionsDialog = await waitFor(() =>
+      renderResult.getByRole('dialog'),
+    );
+    fireEvent.click(
+      await waitFor(() => getByText(queryOptionsDialog, '"Now"')),
+    );
     fireEvent.click(await waitFor(() => renderResult.getByText('Today')));
-    fireEvent.click(await waitFor(() => getByText(ParameterDialog, 'Update')));
-    await waitFor(() => getByText(parameterPanel, 'Today'));
+    fireEvent.click(queryOptionsDialog);
+    await waitFor(async () =>
+      fireEvent.click(
+        await waitFor(() => getByText(queryOptionsDialog, 'Apply')),
+      ),
+    );
+    await waitFor(() => getAllByText(resultModifierPromptPanel, 'Today'));
     await waitFor(() =>
       renderResult.getByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
@@ -531,13 +540,6 @@ test(
     );
     await waitFor(() => getAllByText(queryBuilderSetup, 'Person'));
 
-    const parameterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
-    );
-    await waitFor(() => getByText(parameterPanel, 'businessDate'));
-    await waitFor(() => getByText(parameterPanel, 'milestoning'));
-    await waitFor(() => getByText(parameterPanel, 'Now'));
-
     const resultModifierPromptPanel = await waitFor(() =>
       renderResult.getByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT,
@@ -571,11 +573,6 @@ test(
     fireEvent.click(allVersionInRangeToggle);
     fireEvent.click(renderResult.getByRole('button', { name: 'Apply' }));
     await waitFor(() => getAllByText(resultModifierPromptPanel, '(Now - Now)'));
-    await waitFor(() => getByText(parameterPanel, 'startDate'));
-    await waitFor(() => getByText(parameterPanel, 'endDate'));
-    expect(
-      await waitFor(() => getAllByText(parameterPanel, 'Now')),
-    ).toHaveLength(2);
     fireEvent.click(queryOptionsButton);
     fireEvent.click(allVersionInRangeToggle);
     const cancelButton = (await renderResult.findByRole('button', {
@@ -607,29 +604,31 @@ test(
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
     await waitFor(() => getAllByText(queryBuilderSetup, 'Person'));
-
-    const parameterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
-    );
-
     const resultModifierPromptPanel = await waitFor(() =>
       renderResult.getByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT,
       ),
     );
-    await waitFor(() =>
-      getAllByText(resultModifierPromptPanel, 'Business Date'),
-    );
-    await waitFor(() => getAllByText(resultModifierPromptPanel, 'Now'));
-    fireEvent.click(getByText(parameterPanel, 'businessDate'));
-    const parameterNameInput = getParameterNameInput(renderResult);
-    fireEvent.change(parameterNameInput, {
-      target: { value: 'businessDateRenamed' },
-    });
-    const updateButton = (await renderResult.findByRole('button', {
-      name: 'Update',
-    })) as HTMLButtonElement;
-    fireEvent.click(updateButton);
+
+    // since we choose to hide milestoning parameters in the parameter panel,
+    // currently there is no UI for users to rename milestoning parameters
+
+    // const parameterPanel = await waitFor(() =>
+    //   renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    // );
+    // await waitFor(() =>
+    //   getAllByText(resultModifierPromptPanel, 'Business Date'),
+    // );
+    // await waitFor(() => getAllByText(resultModifierPromptPanel, 'Now'));
+    // fireEvent.click(getByText(parameterPanel, 'businessDate'));
+    // const parameterNameInput = getParameterNameInput(renderResult);
+    // fireEvent.change(parameterNameInput, {
+    //   target: { value: 'businessDateRenamed' },
+    // });
+    // const updateButton = (await renderResult.findByRole('button', {
+    //   name: 'Update',
+    // })) as HTMLButtonElement;
+    // fireEvent.click(updateButton);
     await waitFor(() => getAllByText(resultModifierPromptPanel, 'Now'));
     const queryOptionsButton = await waitFor(() =>
       renderResult.getByRole('button', { name: 'Query Options' }),
@@ -918,14 +917,8 @@ test(
     );
     expect(tdsStateOne.projectionColumns.length).toBe(1);
 
-    // Check if we have paramter panel opened and able to run query
-    expect(queryBuilderState.showParametersPanel).toBe(true);
-
-    const parameterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
-    );
-    await waitFor(() => getByText(parameterPanel, 'businessDate'));
-    await waitFor(() => getByText(parameterPanel, 'milestoning'));
+    // Check if we have paramter panel hided and able to run query
+    expect(queryBuilderState.showParametersPanel).toBe(false);
 
     const queryOptionsButton = await waitFor(() =>
       renderResult.getByRole('button', { name: 'Query Options' }),
@@ -1001,14 +994,8 @@ test(
     );
     expect(tdsStateOne.projectionColumns.length).toBe(1);
 
-    // Check if we have paramter panel opened and able to run query
-    expect(queryBuilderState.showParametersPanel).toBe(true);
-
-    const parameterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
-    );
-    await waitFor(() => getByText(parameterPanel, 'businessDate'));
-    await waitFor(() => getByText(parameterPanel, 'milestoning'));
+    // Check if we have paramter panel hided and able to run query
+    expect(queryBuilderState.showParametersPanel).toBe(false);
 
     const queryOptionsButton = await waitFor(() =>
       renderResult.getByRole('button', { name: 'Query Options' }),
@@ -1101,14 +1088,8 @@ test(
     );
     expect(tdsStateOne.projectionColumns.length).toBe(1);
 
-    // Check if we have paramter panel opened and able to run query
-    expect(queryBuilderState.showParametersPanel).toBe(true);
-
-    const parameterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
-    );
-    await waitFor(() => getByText(parameterPanel, 'businessDate'));
-    await waitFor(() => getByText(parameterPanel, 'processingDate'));
+    // Check if we have paramter panel hided and able to run query
+    expect(queryBuilderState.showParametersPanel).toBe(false);
 
     const queryOptionsButton = await waitFor(() =>
       renderResult.getByRole('button', { name: 'Query Options' }),
@@ -1206,13 +1187,8 @@ test(
     );
     expect(tdsStateOne.projectionColumns.length).toBe(2);
 
-    // Check if we have paramter panel opened and able to run query
-    expect(queryBuilderState.showParametersPanel).toBe(true);
-
-    const parameterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
-    );
-    await waitFor(() => getByText(parameterPanel, 'businessDate'));
+    // Check if we have paramter panel hided and able to run query
+    expect(queryBuilderState.showParametersPanel).toBe(false);
 
     const queryOptionsButton = await waitFor(() =>
       renderResult.getByRole('button', { name: 'Query Options' }),
