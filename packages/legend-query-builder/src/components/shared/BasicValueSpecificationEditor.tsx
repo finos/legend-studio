@@ -883,10 +883,12 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       }
     };
 
-    const copyValueToClipboard = async () => {
-      await navigator.clipboard.writeText(
-        selectedOptions.map((option) => option.value).join(','),
-      );
+    const copyValueToClipboard = (): void => {
+      (async () => {
+        await navigator.clipboard.writeText(
+          selectedOptions.map((option) => option.value).join(','),
+        );
+      })();
     };
 
     const updateValueSpecAndSaveEdit = (): void => {
@@ -1146,10 +1148,12 @@ const EnumCollectionInstanceValueEditor = observer(
       event.preventDefault();
     };
 
-    const copyValueToClipboard = async () => {
-      await navigator.clipboard.writeText(
-        selectedOptions.map((option) => option.value.name).join(','),
-      );
+    const copyValueToClipboard = (): void => {
+      (async () => {
+        await navigator.clipboard.writeText(
+          selectedOptions.map((option) => option.value.name).join(','),
+        );
+      })();
     };
 
     const updateValueSpecAndSaveEdit = (): void => {
