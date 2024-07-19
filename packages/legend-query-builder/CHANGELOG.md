@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.61
+
+### Patch Changes
+
+- [#3353](https://github.com/finos/legend-studio/pull/3353) [`c4b47d7`](https://github.com/finos/legend-studio/commit/c4b47d7508ba3bca6269ff98493c2e1b868f118b) ([@pragyasri-gs](https://github.com/pragyasri-gs)) - Adding Query Chat in QueryBuilderUnsupportedQueryEditor
+
 ## 4.14.60
 
 ## 4.14.59
