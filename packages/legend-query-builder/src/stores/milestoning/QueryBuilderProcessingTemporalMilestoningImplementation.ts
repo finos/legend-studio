@@ -51,8 +51,6 @@ export class QueryBuilderProcessingTemporalMilestoningImplementation extends Que
         ),
       );
     }
-    // Show the parameter panel because we populate paramaters state with milestoning parameters
-    this.milestoningState.queryBuilderState.setShowParametersPanel(true);
   }
 
   buildParameterStatesFromMilestoningParameters(): LambdaParameterState[] {

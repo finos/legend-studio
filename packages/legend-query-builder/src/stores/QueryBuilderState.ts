@@ -697,7 +697,12 @@ export abstract class QueryBuilderState implements CommandRegistrar {
           },
         );
       }
-      if (this.parametersState.parameterStates.length > 0) {
+      if (
+        this.parametersState.parameterStates.filter(
+          (paramState) =>
+            !this.milestoningState.isMilestoningParameter(paramState.parameter),
+        ).length > 0
+      ) {
         this.setShowParametersPanel(true);
       }
       this.fetchStructureState.initializeWithQuery();
