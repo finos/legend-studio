@@ -883,13 +883,10 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       }
     };
 
-    const copyValueToClipboard = (): void => {
-      (async () => {
-        await navigator.clipboard.writeText(
-          selectedOptions.map((option) => option.value).join(','),
-        );
-      })();
-    };
+    const copyValueToClipboard = async () =>
+      navigator.clipboard.writeText(
+        selectedOptions.map((option) => option.value).join(','),
+      );
 
     const updateValueSpecAndSaveEdit = (): void => {
       const newValueSpec = convertInputValueToValueSpec();
@@ -994,7 +991,8 @@ const PrimitiveCollectionInstanceValueEditor = observer(
         />
         <button
           className="value-spec-editor__list-editor__copy-button"
-          onClick={copyValueToClipboard}
+          // eslint-disable-next-line no-void
+          onClick={() => void copyValueToClipboard()}
           name={copyButtonName}
           title="Copy values to clipboard"
         >
@@ -1148,13 +1146,10 @@ const EnumCollectionInstanceValueEditor = observer(
       event.preventDefault();
     };
 
-    const copyValueToClipboard = (): void => {
-      (async () => {
-        await navigator.clipboard.writeText(
-          selectedOptions.map((option) => option.value.name).join(','),
-        );
-      })();
-    };
+    const copyValueToClipboard = async () =>
+      navigator.clipboard.writeText(
+        selectedOptions.map((option) => option.value.name).join(','),
+      );
 
     const updateValueSpecAndSaveEdit = (): void => {
       const result = selectedOptions
@@ -1211,7 +1206,8 @@ const EnumCollectionInstanceValueEditor = observer(
         />
         <button
           className="value-spec-editor__list-editor__copy-button"
-          onClick={copyValueToClipboard}
+          // eslint-disable-next-line no-void
+          onClick={() => void copyValueToClipboard()}
           name={copyButtonName}
           title="Copy values to clipboard"
         >
