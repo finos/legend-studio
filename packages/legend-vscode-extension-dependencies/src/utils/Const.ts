@@ -14,5 +14,6 @@
  * limitations under the License.
  */
 
-export * from './components/DiagramRenderer.js';
-export * from './graph-manager/index.js';
+// Event Types
+export const GET_PROJECT_ENTITIES = 'getProjectEntities';
+export const GET_PROJECT_ENTITIES_RESPONSE = 'getProjectEntitiesResponse';
