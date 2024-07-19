@@ -33,12 +33,6 @@ export const FormTextEditor = observer(() => {
     formEditorState.setDescription(value ?? '');
   };
 
-  // const handleDescriptionChange = (
-  //   e: React.ChangeEvent<HTMLTextAreaElement>,
-  // ) => {
-  //   formEditorState.setDescription(e.target.value);
-  // };
-
   return (
     <div className="form-text-editor panel text-element-editor">
       <div className="panel__header text-element-editor__header">
@@ -63,13 +57,6 @@ export const FormTextEditor = observer(() => {
                   update={handleDescriptionChange}
                   placeholder="Enter description"
                 />
-                {/* <textarea
-
-                  spellCheck={false}
-                  disabled={isReadOnly}
-                  value={formElement.description ?? ''}
-                  onChange={handleDescriptionChange}
-                /> */}
               </div>
             </PanelFormSection>
           </div>
