@@ -29,7 +29,6 @@ import {
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
   type PureGrammarParserElementSnippetSuggestionsGetter,
-  UnsupportedElementEditorState,
   LegendStudioApplicationPlugin,
   type ExplorerContextMenuItemRendererConfiguration,
   type EditorExtensionStateBuilder,
@@ -64,6 +63,8 @@ import {
   DataSpacePreviewAction,
   DataSpacePreviewDialog,
 } from './DataSpacePreviewAction.js';
+import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
+import { FormTextEditor } from './FormTextEditor.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -200,6 +201,19 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
     ];
   }
 
+  getExtraElementEditorRenderers(): ((
+    editorState: ElementEditorState,
+  ) => React.ReactNode)[] {
+    return [
+      (editorState: ElementEditorState): React.ReactNode | undefined => {
+        if (editorState instanceof DataSpaceEditorState) {
+          return <FormTextEditor key={editorState.uuid} />;
+        }
+        return undefined;
+      },
+    ];
+  }
+
   getExtraElementEditorStateCreators(): ElementEditorStateCreator[] {
     return [
       (
@@ -207,7 +221,7 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
         element: PackageableElement,
       ): ElementEditorState | undefined => {
         if (element instanceof DataSpace) {
-          return new UnsupportedElementEditorState(editorStore, element);
+          return new DataSpaceEditorState(editorStore, element);
         }
         return undefined;
       },
