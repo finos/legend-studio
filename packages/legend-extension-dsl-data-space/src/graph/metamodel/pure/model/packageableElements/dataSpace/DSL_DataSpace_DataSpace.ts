@@ -30,6 +30,7 @@ import {
 } from '@finos/legend-graph';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSL_DataSpace_HashUtils.js';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
+import { makeObservable, observable } from 'mobx';
 
 export class DataSpaceExecutionContext implements Hashable {
   name!: string;
@@ -182,6 +183,14 @@ export class DataSpace extends PackageableElement implements Hashable {
   executables?: DataSpaceExecutable[] | undefined;
   diagrams?: DataSpaceDiagram[] | undefined;
   supportInfo?: DataSpaceSupportInfo | undefined;
+
+  constructor(name: string) {
+    super(name);
+    makeObservable(this, {
+      title: observable,
+      description: observable,
+    });
+  }
 
   protected override get _elementHashCode(): string {
     return hashArray([
