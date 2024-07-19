@@ -883,8 +883,8 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       }
     };
 
-    const copyValueToClipboard = () => {
-      navigator.clipboard.writeText(
+    const copyValueToClipboard = async () => {
+      await navigator.clipboard.writeText(
         selectedOptions.map((option) => option.value).join(','),
       );
     };
@@ -1146,8 +1146,8 @@ const EnumCollectionInstanceValueEditor = observer(
       event.preventDefault();
     };
 
-    const copyValueToClipboard = () => {
-      navigator.clipboard.writeText(
+    const copyValueToClipboard = async () => {
+      await navigator.clipboard.writeText(
         selectedOptions.map((option) => option.value.name).join(','),
       );
     };
