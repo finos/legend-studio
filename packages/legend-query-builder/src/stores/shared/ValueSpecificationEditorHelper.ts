@@ -435,3 +435,9 @@ export const convertTextToPrimitiveInstanceValue = (
   }
   return result;
 };
+
+export const convertTextToEnum = (
+  value: string,
+  enumType: Enumeration,
+): Enum | undefined =>
+  enumType.values.find((enumValue) => enumValue.name === value);

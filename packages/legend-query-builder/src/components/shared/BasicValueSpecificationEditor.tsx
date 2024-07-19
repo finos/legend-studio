@@ -36,6 +36,7 @@ import {
   DragPreviewLayer,
   CalculateIcon,
   InputWithInlineValidation,
+  CopyIcon,
 } from '@finos/legend-art';
 import {
   type Enum,
@@ -94,6 +95,7 @@ import {
 import { evaluate } from 'mathjs';
 import { isUsedDateFunctionSupportedInFormMode } from '../../stores/QueryBuilderStateBuilder.js';
 import {
+  convertTextToEnum,
   convertTextToPrimitiveInstanceValue,
   getValueSpecificationStringValue,
 } from '../../stores/shared/ValueSpecificationEditorHelper.js';
@@ -775,6 +777,8 @@ const PrimitiveCollectionInstanceValueEditor = observer(
         : undefined;
     const noMatchMessage =
       isTypeaheadSearchEnabled && isLoading ? 'Loading...' : undefined;
+    const copyButtonName = `copy-${valueSpecification.hashCode}`;
+    const inputName = `input-${valueSpecification.hashCode}`;
 
     // helper functions
     const buildOptionForValueSpec = (
@@ -879,6 +883,11 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       }
     };
 
+    const copyValueToClipboard = async () =>
+      navigator.clipboard.writeText(
+        selectedOptions.map((option) => option.value).join(','),
+      );
+
     const updateValueSpecAndSaveEdit = (): void => {
       const newValueSpec = convertInputValueToValueSpec();
       const finalSelectedOptions =
@@ -936,8 +945,19 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       event.preventDefault();
     };
 
+    const onBlur = (
+      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+    ): void => {
+      if (
+        event.relatedTarget?.name !== copyButtonName &&
+        event.relatedTarget?.name !== inputName
+      ) {
+        updateValueSpecAndSaveEdit();
+      }
+    };
+
     return (
-      <>
+      <div className="value-spec-editor" onBlur={onBlur}>
         <CustomSelectorInput
           className={clsx('value-spec-editor__primitive-collection-selector', {
             'value-spec-editor__primitive-collection-selector--error':
@@ -954,7 +974,6 @@ const PrimitiveCollectionInstanceValueEditor = observer(
           inputRef={inputRef}
           onChange={changeValue}
           onInputChange={handleInputChange}
-          onBlur={() => updateValueSpecAndSaveEdit()}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           value={selectedOptions}
@@ -968,14 +987,26 @@ const PrimitiveCollectionInstanceValueEditor = observer(
           components={{
             DropdownIndicator: null,
           }}
+          inputName={inputName}
         />
         <button
+          className="value-spec-editor__list-editor__copy-button"
+          // eslint-disable-next-line no-void
+          onClick={() => void copyValueToClipboard()}
+          name={copyButtonName}
+          title="Copy values to clipboard"
+        >
+          <CopyIcon />
+        </button>
+        <button
           className="value-spec-editor__list-editor__save-button btn--dark"
+          name="Save"
+          title="Save"
           onClick={updateValueSpecAndSaveEdit}
         >
           <SaveIcon />
         </button>
-      </>
+      </div>
     );
   },
 );
@@ -987,12 +1018,15 @@ const EnumCollectionInstanceValueEditor = observer(
     saveEdit: () => void;
   }) => {
     const { valueSpecification, observerContext, saveEdit } = props;
+
+    // local state and variables
     const applicationStore = useApplicationStore();
     const enumType = guaranteeType(
       valueSpecification.genericType?.value.rawType,
       Enumeration,
     );
-
+    const [inputValue, setInputValue] = useState('');
+    const [inputValueIsError, setInputValueIsError] = useState(false);
     const [selectedOptions, setSelectedOptions] = useState<
       { label: string; value: Enum }[]
     >(
@@ -1016,11 +1050,106 @@ const EnumCollectionInstanceValueEditor = observer(
         value: value,
       }));
 
+    const copyButtonName = `copy-${valueSpecification.hashCode}`;
+    const inputName = `input-${valueSpecification.hashCode}`;
+
+    // helper functions
+    const isValueAlreadySelected = (value: Enum): boolean =>
+      selectedOptions.map((option) => option.value).includes(value);
+
+    /**
+     * NOTE: We attempt to be less disruptive here by not throwing errors left and right, instead
+     * we simply return null for values which are not valid or parsable. But perhaps, we can consider
+     * passing in logger or notifier to give the users some idea of what went wrong instead of ignoring
+     * their input.
+     */
+    const convertInputValueToEnum = (): Enum | null => {
+      const trimmedInputValue = inputValue.trim();
+
+      if (trimmedInputValue.length) {
+        const newEnum = convertTextToEnum(trimmedInputValue, enumType);
+
+        if (newEnum === undefined || isValueAlreadySelected(newEnum)) {
+          return null;
+        }
+
+        return newEnum;
+      }
+      return null;
+    };
+
+    const addInputValueToSelectedOptions = (): void => {
+      const newEnum = convertInputValueToEnum();
+
+      if (newEnum !== null) {
+        setSelectedOptions([
+          ...selectedOptions,
+          {
+            label: newEnum.name,
+            value: newEnum,
+          },
+        ]);
+        setInputValue('');
+      } else if (inputValue.trim().length) {
+        setInputValueIsError(true);
+      }
+    };
+
+    // event handlers
     const changeValue = (
       newSelectedOptions: { value: Enum; label: string }[],
+      actionChange: SelectActionData<{ value: Enum; label: string }>,
     ): void => {
       setSelectedOptions(newSelectedOptions);
+      if (actionChange.action === 'select-option') {
+        setInputValue('');
+      } else if (
+        actionChange.action === 'remove-value' &&
+        actionChange.removedValue.value.name === inputValue
+      ) {
+        setInputValueIsError(false);
+      }
     };
+
+    const handleInputChange = (
+      newInputValue: string,
+      actionChange: InputActionData,
+    ): void => {
+      if (actionChange.action === 'input-change') {
+        setInputValue(newInputValue);
+        setInputValueIsError(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if ((event.key === 'Enter' || event.key === ',') && !event.shiftKey) {
+        addInputValueToSelectedOptions();
+        event.preventDefault();
+      }
+    };
+
+    const handlePaste = (event: React.ClipboardEvent<string>): void => {
+      const pastedText = event.clipboardData.getData('text');
+      const parsedData = parseCSVString(pastedText);
+      if (!parsedData) {
+        return;
+      }
+      const newValues = uniq(
+        uniq(parsedData)
+          .map((value) => convertTextToEnum(value, enumType))
+          .filter(isNonNullable),
+      ).filter((value) => !isValueAlreadySelected(value));
+      setSelectedOptions([
+        ...selectedOptions,
+        ...newValues.map((value) => ({ label: value.name, value })),
+      ]);
+      event.preventDefault();
+    };
+
+    const copyValueToClipboard = async () =>
+      navigator.clipboard.writeText(
+        selectedOptions.map((option) => option.value.name).join(','),
+      );
 
     const updateValueSpecAndSaveEdit = (): void => {
       const result = selectedOptions
@@ -1040,35 +1169,59 @@ const EnumCollectionInstanceValueEditor = observer(
       saveEdit();
     };
 
+    const onBlur = (
+      event: React.FocusEvent<HTMLInputElement, HTMLButtonElement>,
+    ): void => {
+      if (
+        event.relatedTarget?.name !== copyButtonName &&
+        event.relatedTarget?.name !== inputName
+      ) {
+        updateValueSpecAndSaveEdit();
+      }
+    };
+
     return (
-      <>
+      <div className="value-spec-editor" onBlur={onBlur}>
         <CustomSelectorInput
-          className="value-spec-editor__enum-collection-selector"
+          className={clsx('value-spec-editor__enum-collection-selector', {
+            'value-spec-editor__enum-collection-selector--error':
+              inputValueIsError,
+          })}
           options={availableOptions}
+          inputValue={inputValue}
           isMulti={true}
+          autoFocus={true}
           onChange={changeValue}
-          onBlur={updateValueSpecAndSaveEdit}
-          onKeyDown={(event: KeyboardEvent): void => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-              updateValueSpecAndSaveEdit();
-            }
-          }}
+          onInputChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
           value={selectedOptions}
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
           placeholder={null}
           inputPlaceholder="Add"
-          autoFocus={true}
           menuIsOpen={true}
+          inputName={inputName}
         />
         <button
+          className="value-spec-editor__list-editor__copy-button"
+          // eslint-disable-next-line no-void
+          onClick={() => void copyValueToClipboard()}
+          name={copyButtonName}
+          title="Copy values to clipboard"
+        >
+          <CopyIcon />
+        </button>
+        <button
           className="value-spec-editor__list-editor__save-button btn--dark"
+          name="Save"
+          title="Save"
           onClick={updateValueSpecAndSaveEdit}
         >
           <SaveIcon />
         </button>
-      </>
+      </div>
     );
   },
 );
@@ -1081,7 +1234,6 @@ const CollectionValueInstanceValueEditor = observer(
     graph: PureModel;
     expectedType: Type;
     className?: string | undefined;
-    resetValue: () => void;
     setValueSpecification: (val: ValueSpecification) => void;
     selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
     observerContext: ObserverContext;
@@ -1090,7 +1242,6 @@ const CollectionValueInstanceValueEditor = observer(
       valueSpecification,
       expectedType,
       className,
-      resetValue,
       setValueSpecification,
       selectorConfig,
       observerContext,
@@ -1138,14 +1289,6 @@ const CollectionValueInstanceValueEditor = observer(
                 observerContext={observerContext}
               />
             )}
-            <button
-              className="value-spec-editor__reset-btn"
-              name="Reset"
-              title="Reset"
-              onClick={resetValue}
-            >
-              <RefreshIcon />
-            </button>
           </div>
         </>
       );
@@ -1358,7 +1501,6 @@ export const BasicValueSpecificationEditor = forwardRef<
         graph={graph}
         expectedType={typeCheckOption.expectedType}
         className={className}
-        resetValue={resetValue}
         setValueSpecification={setValueSpecification}
         selectorConfig={selectorConfig}
         observerContext={observerContext}

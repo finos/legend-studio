@@ -436,6 +436,18 @@
         color: var(--color-legacylight-dark-grey-200);
       }
     }
+
+    &__copy-button {
+      background: var(--color-legacylight-light-grey-100);
+
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+
+      &:hover svg {
+        color: var(--color-dark-grey-300);
+      }
+    }
   }
 
   .value-spec-editor__editable__display--content--error {
