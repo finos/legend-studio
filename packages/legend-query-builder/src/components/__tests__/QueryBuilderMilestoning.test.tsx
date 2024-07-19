@@ -17,7 +17,6 @@
 import { describe, test, expect } from '@jest/globals';
 import {
   act,
-  findByRole,
   fireEvent,
   getAllByText,
   getByText,
