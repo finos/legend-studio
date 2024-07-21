@@ -37,6 +37,7 @@ import {
   UnsupportedElementEditorState,
 } from '@finos/legend-application-studio';
 import {
+  ObserverContext,
   PackageableElementExplicitReference,
   stub_Mapping,
   stub_PackageableRuntime,
@@ -67,8 +68,9 @@ import {
   DataSpacePreviewDialog,
 } from './DataSpacePreviewAction.js';
 
-import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import { DataSpaceEditor } from './DataSpaceEditor.js';
+import { DataSpaceEditorState } from '../stores/FormEditorState.js';
+
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
