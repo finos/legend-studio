@@ -184,14 +184,6 @@ export class DataSpace extends PackageableElement implements Hashable {
   diagrams?: DataSpaceDiagram[] | undefined;
   supportInfo?: DataSpaceSupportInfo | undefined;
 
-  constructor(name: string) {
-    super(name);
-    makeObservable(this, {
-      title: observable,
-      description: observable,
-    });
-  }
-
   protected override get _elementHashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE,

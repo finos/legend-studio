@@ -16,21 +16,21 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '@finos/legend-application-studio';
-import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import { useRef, useEffect } from 'react';
 import { PanelFormTextField, PanelFormSection } from '@finos/legend-art';
+import { FormEditorState } from '../stores/FormEditorState.js';
 
 export const FormTextEditor = observer(() => {
   const editorStore = useEditorStore();
   const currentTabState = editorStore.tabManagerState.currentTab;
   const typeNameRef = useRef<HTMLInputElement>(null);
 
-  if (!(currentTabState instanceof DataSpaceEditorState)) {
+  if (!(currentTabState instanceof FormEditorState)) {
     return null;
   }
 
   const formEditorState =
-    editorStore.tabManagerState.getCurrentEditorState(DataSpaceEditorState);
+    editorStore.tabManagerState.getCurrentEditorState(FormEditorState);
 
   const formElement = formEditorState.dataSpace;
   const isReadOnly = formEditorState.isReadOnly;
@@ -42,11 +42,11 @@ export const FormTextEditor = observer(() => {
   }, [isReadOnly]);
 
   const handleTitleChange = (value: string | undefined) => {
-    formEditorState.setTitle(value ?? '');
+    formElement.title = value ?? '';
   };
 
   const handleDescriptionChange = (value: string | undefined) => {
-    formEditorState.setDescription(value ?? '');
+    formElement.description = value ?? '';
   };
 
   return (

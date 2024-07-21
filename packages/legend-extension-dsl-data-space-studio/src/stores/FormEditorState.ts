@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { guaranteeType } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
   type EditorStore,
@@ -22,49 +21,31 @@ import {
 } from '@finos/legend-application-studio';
 import type { PackageableElement } from '@finos/legend-graph';
 import { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
+import { guaranteeType } from '@finos/legend-shared';
 
-export class DataSpaceEditorState extends ElementEditorState {
-  dataSpace: DataSpace;
-
+export class FormEditorState extends ElementEditorState {
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
-    this.dataSpace = guaranteeType(
-      element,
-      DataSpace,
-      'Element inside DataSpaceEditorState must be a DataSpace',
-    );
 
     makeObservable(this, {
-      dataSpace: observable,
-      title: computed,
-      setTitle: action,
-      setDescription: action,
+      dataSpace: computed,
+      reprocess: action,
     });
   }
 
-  get title(): string {
-    return this.dataSpace.title ?? '';
-  }
-
-  override get description(): string {
-    return this.dataSpace.description ?? '';
-  }
-
-  setTitle(title: string): void {
-    this.dataSpace.title = title;
-  }
-
-  setDescription(description: string): void {
-    this.dataSpace.description = description;
+  get dataSpace(): DataSpace {
+    return guaranteeType(
+      this.element,
+      DataSpace,
+      'Element inside text element editor state must be a text element',
+    );
   }
 
   override reprocess(
     newElement: PackageableElement,
     editorStore: EditorStore,
   ): ElementEditorState {
-    const newState = new DataSpaceEditorState(editorStore, newElement);
-    newState.setTitle(this.title);
-    newState.setDescription(this.description);
+    const newState = new FormEditorState(editorStore, newElement);
     return newState;
   }
 }

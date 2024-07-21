@@ -36,9 +36,11 @@ import {
   PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY,
 } from '@finos/legend-application-studio';
 import {
+  ObserverContext,
   PackageableElementExplicitReference,
   stub_Mapping,
   stub_PackageableRuntime,
+  type ElementObserver,
   type PackageableElement,
 } from '@finos/legend-graph';
 import type {
@@ -49,6 +51,7 @@ import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 import {
   DataSpace,
   DataSpaceExecutionContext,
+  observe_DataSpace,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
 import { DataSpacePreviewState } from '../stores/DataSpacePreviewState.js';
@@ -63,8 +66,8 @@ import {
   DataSpacePreviewAction,
   DataSpacePreviewDialog,
 } from './DataSpacePreviewAction.js';
-import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import { FormTextEditor } from './FormTextEditor.js';
+import { FormEditorState } from '../stores/FormEditorState.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -206,7 +209,7 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
   ) => React.ReactNode)[] {
     return [
       (editorState: ElementEditorState): React.ReactNode | undefined => {
-        if (editorState instanceof DataSpaceEditorState) {
+        if (editorState instanceof FormEditorState) {
           return <FormTextEditor key={editorState.uuid} />;
         }
         return undefined;
@@ -221,7 +224,21 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
         element: PackageableElement,
       ): ElementEditorState | undefined => {
         if (element instanceof DataSpace) {
-          return new DataSpaceEditorState(editorStore, element);
+          return new FormEditorState(editorStore, element);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraElementObservers(): ElementObserver[] {
+    return [
+      (
+        element: PackageableElement,
+        context: ObserverContext,
+      ): PackageableElement | undefined => {
+        if (element instanceof DataSpace) {
+          return observe_DataSpace(element);
         }
         return undefined;
       },
