@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 12.4.0
+
+### Patch Changes
+
+- [#3360](https://github.com/finos/legend-studio/pull/3360) [`643756b`](https://github.com/finos/legend-studio/commit/643756bfb875156529f2967934926dcb89024aba) ([@travisstebbins](https://github.com/travisstebbins)) - Add button to copy filter list values
+
 ## 12.3.0
 
 ## 12.2.0
