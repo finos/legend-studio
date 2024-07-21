@@ -3,4 +3,4 @@
 '@finos/legend-extension-dsl-data-space': patch
 ---
 
-Added form and state management features to DataSpace and FormTextEditor components.
+Added form (FormTextEditor) and state management (FormEditorState) to DataSpace and plugin.
