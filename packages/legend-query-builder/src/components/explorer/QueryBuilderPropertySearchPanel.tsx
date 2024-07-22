@@ -115,6 +115,86 @@ const prettyPropertyNameForSubTypeClass = (name: string): string => {
   return propName;
 };
 
+const formatTextWithHighlightedMatches = (
+  displayText: string,
+  searchText: string,
+  className: string,
+): React.ReactNode => {
+  // Get ranges to highlight
+  const highlightRanges: [number, number][] = [];
+  searchText
+    .split(' ')
+    .filter((word) => word.trim().length > 0)
+    .forEach((word) => {
+      const regex = new RegExp(word, 'gi');
+      let match;
+      while ((match = regex.exec(displayText))) {
+        highlightRanges.push([match.index, match.index + word.length]);
+      }
+    });
+
+  // Combine any overlapping highlight ranges
+  const combinedHighlightRanges: [number, number][] = [];
+  highlightRanges.sort((a, b) => a[0] - b[0]);
+  highlightRanges.forEach((range) => {
+    if (!combinedHighlightRanges.length) {
+      combinedHighlightRanges.push(range);
+    } else {
+      const lastRange =
+        combinedHighlightRanges[combinedHighlightRanges.length - 1];
+      if (lastRange !== undefined && range[0] <= lastRange[1]) {
+        lastRange[1] = Math.max(lastRange[1], range[1]);
+      } else {
+        combinedHighlightRanges.push(range);
+      }
+    }
+  });
+
+  // Return the property name if there are no highlight ranges
+  if (!combinedHighlightRanges.length) {
+    return <>{displayText}</>;
+  }
+
+  // Create formatted node
+  const formattedNode: React.ReactNode[] = [];
+  formattedNode.push(
+    <>{displayText.substring(0, combinedHighlightRanges[0]![0])}</>,
+  );
+  combinedHighlightRanges.forEach((range, index) => {
+    formattedNode.push(
+      <span className={`${className} ${className}--highlight`}>
+        {displayText.substring(range[0], range[1])}
+      </span>,
+    );
+    if (
+      index < combinedHighlightRanges.length - 1 &&
+      range[1] < displayText.length
+    ) {
+      formattedNode.push(
+        <>
+          {displayText.substring(
+            range[1],
+            combinedHighlightRanges[index + 1]![0],
+          )}
+        </>,
+      );
+    }
+  });
+  if (
+    combinedHighlightRanges[combinedHighlightRanges.length - 1]![1] <
+    displayText.length
+  ) {
+    formattedNode.push(
+      <>
+        {displayText.substring(
+          combinedHighlightRanges[combinedHighlightRanges.length - 1]![1],
+        )}
+      </>,
+    );
+  }
+  return formattedNode;
+};
+
 const QueryBuilderTreeNodeViewer = observer(
   (props: {
     node: QueryBuilderExplorerTreeNodeData;
@@ -206,6 +286,24 @@ const QueryBuilderTreeNodeViewer = observer(
       <div />
     );
 
+    const docText: string | null =
+      node instanceof QueryBuilderExplorerTreePropertyNodeData
+        ? node.property.taggedValues.find(
+            (taggedValue) =>
+              taggedValue.tag.ownerReference.value.path ===
+                CORE_PURE_PATH.PROFILE_DOC &&
+              taggedValue.tag.value.value === PURE_DOC_TAG,
+          )?.value ?? null
+        : null;
+    const formattedDocText =
+      docText !== null
+        ? formatTextWithHighlightedMatches(
+            docText,
+            propertySearchState.searchText,
+            'query-builder-property-search-panel__node__doc',
+          )
+        : null;
+
     return (
       <div>
         <div
@@ -232,17 +330,14 @@ const QueryBuilderTreeNodeViewer = observer(
           </div>
           <div className="query-builder-property-search-panel__node__content">
             <div className="tree-view__node__label query-builder-property-search-panel__node__label">
-              {propertyName}
+              {formatTextWithHighlightedMatches(
+                propertyName,
+                propertySearchState.searchText,
+                'query-builder-property-search-panel__node__label',
+              )}
             </div>
             <div className="tree-view__node__label query-builder-property-search-panel__node__doc">
-              {node instanceof QueryBuilderExplorerTreePropertyNodeData
-                ? node.property.taggedValues.find(
-                    (taggedValue) =>
-                      taggedValue.tag.ownerReference.value.path ===
-                        CORE_PURE_PATH.PROFILE_DOC &&
-                      taggedValue.tag.value.value === PURE_DOC_TAG,
-                  )?.value ?? null
-                : null}
+              {formattedDocText}
             </div>
           </div>
           <div className="query-builder-property-search-panel__node__actions">

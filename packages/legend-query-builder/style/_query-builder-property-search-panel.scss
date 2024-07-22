@@ -96,6 +96,11 @@
     min-width: 0;
     color: var(--color-light-grey-400);
     user-select: none;
+
+    &--highlight {
+      color: var(--color-light-grey-100);
+      font-weight: bold;
+    }
   }
 
   &__node__doc {
@@ -107,6 +112,11 @@
     min-width: 0;
     color: var(--color-dark-grey-400);
     user-select: none;
+
+    &--highlight {
+      color: var(--color-dark-grey-500);
+      font-weight: bold;
+    }
   }
 
   &__node__label__multiple {
