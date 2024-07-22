@@ -31,6 +31,7 @@ import {
   PanelLoadingIndicator,
   BlankPanelContent,
   CogIcon,
+  Checkbox,
 } from '@finos/legend-art';
 import {
   Class,
@@ -264,15 +265,21 @@ const QueryBuilderPropertySearchAdditionalConfigMenu = observer(
     const { includeTaggedValues, handleToggleIncludeTaggedValues } = props;
     return (
       <div className="query-builder-property-search-panel__config__tagged-values">
-        <input
-          id="query-builder-property-search-panel__config__tagged-values"
-          type="checkbox"
-          onChange={handleToggleIncludeTaggedValues}
+        <Checkbox
           checked={includeTaggedValues}
+          disableRipple={true}
+          classes={{
+            root: 'query-builder-property-search-panel__config__tagged-values__checkbox',
+          }}
+          onChange={handleToggleIncludeTaggedValues}
         />
-        <label htmlFor="query-builder-property-search-panel__config__tagged-values">
+        <button
+          className="query-builder-property-search-panel__config__tagged-values__label"
+          onClick={handleToggleIncludeTaggedValues}
+          tabIndex={-1}
+        >
           Include tagged values
-        </label>
+        </button>
       </div>
     );
   },

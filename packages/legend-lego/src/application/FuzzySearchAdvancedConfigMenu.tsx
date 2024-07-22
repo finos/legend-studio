@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { BaseRadioGroup } from '@finos/legend-art';
+import { BaseRadioGroup, MenuContentDivider } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { DocumentationLink } from './DocumentationLink.js';
 import {
@@ -47,7 +47,7 @@ export const FuzzySearchAdvancedConfigMenu = observer(
             }
           />
         </div>
-        <div>
+        <div className="fuzzy-search__advanced-config__panel__body">
           <BaseRadioGroup
             className="text-search-advanced-config__options"
             value={configState.currentMode}
@@ -61,8 +61,13 @@ export const FuzzySearchAdvancedConfigMenu = observer(
             ]}
             size={1}
           />
+          {additionalMenuItems ? (
+            <>
+              <MenuContentDivider />
+              {additionalMenuItems}
+            </>
+          ) : null}
         </div>
-        {additionalMenuItems}
       </div>
     );
   },
