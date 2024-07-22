@@ -2498,7 +2498,6 @@ __metadata:
     "@jest/globals": "npm:29.7.0"
     "@types/react": "npm:18.3.3"
     "@types/react-dom": "npm:18.3.0"
-    antlr4: "npm:4.13.1-patch-1"
     cross-env: "npm:7.0.3"
     eslint: "npm:8.57.0"
     jest: "npm:29.7.0"
@@ -6099,13 +6098,6 @@ __metadata:
   version: 6.2.1
   resolution: "ansi-styles@npm:6.2.1"
   checksum: 10/70fdf883b704d17a5dfc9cde206e698c16bcd74e7f196ab821511651aee4f9f76c9514bdfa6ca3a27b5e49138b89cb222a28caf3afe4567570139577f991df32
-  languageName: node
-  linkType: hard
-
-"antlr4@npm:4.13.1-patch-1":
-  version: 4.13.1-patch-1
-  resolution: "antlr4@npm:4.13.1-patch-1"
-  checksum: 10/c8b8804be3e233d9c6321bf70a779a47c26b9216e5d9dbb7e8ef66d32038d9160549f3b2f3caf19afa4d1d0736f61237fcafc0311636a9a3a29d9b892d2804d7
   languageName: node
   linkType: hard
 

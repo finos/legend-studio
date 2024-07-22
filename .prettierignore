@@ -14,7 +14,6 @@
 .pnp.*
 
 # Exceptions
-/packages/legend-application-repl/grammar/parser/generated/*
 /packages/legend-dev-utils/__tests__/fixtures/testTsConfigWithTrailingCommas.json
 
 # Template config JSON with variable ($)

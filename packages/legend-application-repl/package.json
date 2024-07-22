@@ -22,8 +22,7 @@
   "type": "module",
   "exports": {
     ".": "./lib/index.js",
-    "./lib/index.css": "./lib/index.css",
-    "./lib/grammar/parser.js": "./lib/grammar/parser.js"
+    "./lib/index.css": "./lib/index.css"
   },
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -31,7 +30,6 @@
     "build": "yarn clean && yarn build:sass && yarn build:ts",
     "build:sass": "cross-env INIT_CWD=$INIT_CWD node ../../scripts/workflow/buildSass.js",
     "build:ts": "tsc --project ./tsconfig.build.json",
-    "build:grammar": "node ./grammar/generateGrammar.js",
     "clean": "npm-run-all clean:cache clean:lib",
     "clean:cache": "rimraf \"build\"",
     "clean:lib": "rimraf \"lib\"",
@@ -66,7 +64,6 @@
     "@finos/legend-shared": "workspace:*",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
-    "antlr4": "4.13.1-patch-1",
     "mobx": "6.13.0",
     "mobx-react-lite": "4.0.7",
     "monaco-editor": "0.50.0",
