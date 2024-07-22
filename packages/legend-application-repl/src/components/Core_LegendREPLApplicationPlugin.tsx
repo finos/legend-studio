@@ -31,8 +31,8 @@ export class Core_LegendREPLApplicationPlugin extends LegendREPLApplicationPlugi
 
   override getExtraApplicationSetups(): LegendApplicationSetup[] {
     return [
-      async (applicationStore) => {
-        await configureCodeEditorComponent(applicationStore);
+      async (application) => {
+        await configureCodeEditorComponent(application);
         setupPureLanguageService();
       },
     ];

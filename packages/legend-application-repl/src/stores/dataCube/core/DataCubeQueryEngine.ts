@@ -245,15 +245,14 @@ export function getDataType(type: string): DataCubeColumnDataType {
 export const DEFAULT_URL_LABEL_QUERY_PARAM = 'dataCube.linkLabel';
 
 export const DEFAULT_GRID_LINE_COLOR = TailwindCSSPalette.neutral[200];
-export const DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR =
-  TailwindCSSPalette.sky[100];
+export const DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR = '#d7e0eb';
 
 export const DEFAULT_COLUMN_WIDTH = 300;
 export const DEFAULT_COLUMN_MIN_WIDTH = 50;
 export const DEFAULT_COLUMN_MAX_WIDTH = undefined;
 
 export const DEFAULT_FONT_FAMILY = DataCubeFont.ROBOTO;
-export const DEFAULT_FONT_SIZE = 12;
+export const DEFAULT_FONT_SIZE = 11;
 export const DEFAULT_FONT_BOLD = false;
 export const DEFAULT_FONT_ITALIC = false;
 export const DEFAULT_FONT_CASE = undefined;

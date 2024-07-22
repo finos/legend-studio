@@ -102,8 +102,8 @@ function backgroundColorStyle(
 }
 
 export const DataCubeGridStyleController = observer(() => {
-  const replStore = useREPLStore();
-  const dataCube = replStore.dataCube;
+  const repl = useREPLStore();
+  const dataCube = repl.dataCube;
   const grid = dataCube.grid;
   const configuration = grid.queryConfiguration;
 
@@ -234,8 +234,8 @@ export const DataCubeGridStyleController = observer(() => {
 });
 
 const DataCubeGridScroller = observer(() => {
-  const replStore = useREPLStore();
-  const dataCube = replStore.dataCube;
+  const repl = useREPLStore();
+  const dataCube = repl.dataCube;
   const grid = dataCube.grid;
   const scrollHintText = grid.scrollHintText;
   const gridClientSideBarElement = document.querySelector(
@@ -265,8 +265,8 @@ const DataCubeGridScroller = observer(() => {
 });
 
 const DataCubeGridStatusBar = observer(() => {
-  const replStore = useREPLStore();
-  const dataCube = replStore.dataCube;
+  const repl = useREPLStore();
+  const dataCube = repl.dataCube;
   const grid = dataCube.grid;
 
   return (
@@ -336,8 +336,8 @@ const DataCubeGridStatusBar = observer(() => {
 });
 
 const DataCubeGridClient = observer(() => {
-  const replStore = useREPLStore();
-  const dataCube = replStore.dataCube;
+  const repl = useREPLStore();
+  const dataCube = repl.dataCube;
   const grid = dataCube.grid;
 
   return (
@@ -375,7 +375,7 @@ const DataCubeGridClient = observer(() => {
 });
 
 export const DataCubeGrid = observer(() => (
-  <div className="flex-1">
+  <div className="h-full w-full">
     <DataCubeGridStyleController />
     <DataCubeGridClient />
     <DataCubeGridStatusBar />

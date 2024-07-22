@@ -34,7 +34,7 @@ import {
 import { toNumber } from '@finos/legend-shared';
 import React, { forwardRef, useEffect, useState } from 'react';
 
-export function WIP_Badge() {
+export function FormBadge_WIP() {
   return (
     <div
       className="text-2xs ml-1 select-none rounded-md bg-sky-500 px-1 py-0.5 font-semibold text-white"
@@ -45,7 +45,7 @@ export function WIP_Badge() {
   );
 }
 
-export function Advanced_Badge() {
+export function FormBadge_Advanced() {
   return (
     <div
       className="text-2xs ml-1 select-none rounded-md bg-amber-500 px-1 py-0.5 font-semibold text-white"
@@ -56,7 +56,7 @@ export function Advanced_Badge() {
   );
 }
 
-export const DataCubeEditorNumberInput = forwardRef(
+export const FormNumberInput = forwardRef(
   function DataCubeEditorBaseNumberInput(
     props: React.InputHTMLAttributes<HTMLInputElement> & {
       min?: number | undefined;
@@ -146,7 +146,7 @@ export const DataCubeEditorNumberInput = forwardRef(
   },
 );
 
-export function DataCubeEditorTextInput(
+export function FormTextInput(
   props: React.InputHTMLAttributes<HTMLInputElement>,
 ) {
   const { className, ...otherProps } = props;
@@ -161,7 +161,7 @@ export function DataCubeEditorTextInput(
   );
 }
 
-export function DataCubeEditorCheckbox(
+export function FormCheckbox(
   props: CheckboxProps & {
     label?: React.ReactNode;
     onChange: () => void;
@@ -202,7 +202,7 @@ export function DataCubeEditorCheckbox(
   );
 }
 
-export function DataCubeEditorDropdownMenuTrigger(
+export function FormDropdownMenuTrigger(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>,
 ) {
   const { children, className, ...otherProps } = props;
@@ -224,7 +224,7 @@ export function DataCubeEditorDropdownMenuTrigger(
   );
 }
 
-export function DataCubeEditorDropdownMenu(props: DropdownMenuProps) {
+export function FormDropdownMenu(props: DropdownMenuProps) {
   const { className, ...otherProps } = props;
   return (
     <DropdownMenu
@@ -242,7 +242,7 @@ export function DataCubeEditorDropdownMenu(props: DropdownMenuProps) {
   );
 }
 
-export function DataCubeEditorDropdownMenuItem(props: DropdownMenuItemProps) {
+export function FormDropdownMenuItem(props: DropdownMenuItemProps) {
   const { className, ...otherProps } = props;
   return (
     <DropdownMenuItem
@@ -255,11 +255,11 @@ export function DataCubeEditorDropdownMenuItem(props: DropdownMenuItemProps) {
   );
 }
 
-export function DataCubeEditorDropdownMenuItemSeparator() {
+export function FormDropdownMenuItemSeparator() {
   return <div className="my-0.5 h-[1px] w-full bg-neutral-200" />;
 }
 
-function DataCubeEditorColorPicker(props: {
+function FormColorPicker(props: {
   color: string;
   onChange: (value: string) => void;
   onClose: () => void;
@@ -430,7 +430,7 @@ function DataCubeEditorColorPicker(props: {
   );
 }
 
-export function DataCubeEditorColorPickerButton(props: {
+export function FormColorPickerButton(props: {
   color: string;
   onChange: (value: string) => void;
   className?: string | undefined;
@@ -471,7 +471,7 @@ export function DataCubeEditorColorPickerButton(props: {
           transformOrigin={{ vertical: 'center', horizontal: 'left' }}
           onClose={() => setAnchorEl(null)}
         >
-          <DataCubeEditorColorPicker
+          <FormColorPicker
             color={color}
             onChange={onChange}
             onClose={() => setAnchorEl(null)}

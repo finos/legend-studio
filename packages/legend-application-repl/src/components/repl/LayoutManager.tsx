@@ -24,15 +24,15 @@ import {
   WINDOW_DEFAULT_WIDTH,
   type LayoutManagerState,
   type WindowState,
-} from '../stores/LayoutManagerState.js';
+} from '../../stores/LayoutManagerState.js';
 import { observer } from 'mobx-react-lite';
 
 export const Window = (props: {
-  containerRef: React.RefObject<HTMLDivElement>;
+  parent?: React.RefObject<HTMLElement> | undefined;
   layoutManagerState: LayoutManagerState;
   windowState: WindowState;
 }) => {
-  const { containerRef, layoutManagerState, windowState } = props;
+  const { parent, layoutManagerState, windowState } = props;
   const configuration = windowState.configuration.window;
   const [windowSpec, setWindowSpec] = useState(() => {
     const x = configuration.x ?? WINDOW_DEFAULT_OFFSET;
@@ -40,46 +40,42 @@ export const Window = (props: {
     const width = configuration.width ?? WINDOW_DEFAULT_WIDTH;
     const height = configuration.height ?? WINDOW_DEFAULT_HEIGHT;
 
-    if (containerRef.current) {
-      const { width: containerWidth, height: containerHeight } =
-        containerRef.current.getBoundingClientRect();
+    const parentElement = parent?.current ?? document.body;
 
-      if (configuration.center) {
-        const finalWidth =
-          width + WINDOW_DEFAULT_OFFSET * 2 > containerWidth
-            ? containerWidth - WINDOW_DEFAULT_OFFSET * 2
-            : width;
-        const finalHeight =
-          height + WINDOW_DEFAULT_OFFSET * 2 > containerHeight
-            ? containerHeight - WINDOW_DEFAULT_OFFSET * 2
-            : height;
-        return {
-          x: (containerWidth - finalWidth) / 2,
-          y: (containerHeight - finalHeight) / 2,
-          width: finalWidth,
-          height: finalHeight,
-        };
-      }
+    const { width: containerWidth, height: containerHeight } =
+      parentElement.getBoundingClientRect();
 
+    if (configuration.center) {
+      const finalWidth =
+        width + WINDOW_DEFAULT_OFFSET * 2 > containerWidth
+          ? containerWidth - WINDOW_DEFAULT_OFFSET * 2
+          : width;
+      const finalHeight =
+        height + WINDOW_DEFAULT_OFFSET * 2 > containerHeight
+          ? containerHeight - WINDOW_DEFAULT_OFFSET * 2
+          : height;
       return {
-        x,
-        y,
-        width:
-          width + x + WINDOW_DEFAULT_OFFSET > containerWidth
-            ? containerWidth - x - WINDOW_DEFAULT_OFFSET
-            : width,
-        height:
-          height + y + WINDOW_DEFAULT_OFFSET > containerHeight
-            ? containerHeight - y - WINDOW_DEFAULT_OFFSET
-            : height,
+        x: (containerWidth - finalWidth) / 2,
+        y: (containerHeight - finalHeight) / 2,
+        width: finalWidth,
+        height: finalHeight,
       };
     }
 
+    const finalWidth =
+      width + Math.abs(x) + WINDOW_DEFAULT_OFFSET > containerWidth
+        ? containerWidth - Math.abs(x) - WINDOW_DEFAULT_OFFSET
+        : width;
+    const finalHeight =
+      height + Math.abs(y) + WINDOW_DEFAULT_OFFSET > containerHeight
+        ? containerHeight - Math.abs(y) - WINDOW_DEFAULT_OFFSET
+        : height;
+
     return {
-      x,
-      y,
-      width,
-      height,
+      x: x < 0 ? containerWidth - Math.abs(x) - finalWidth : x,
+      y: y < 0 ? containerHeight - Math.abs(y) - finalHeight : y,
+      width: finalWidth,
+      height: finalHeight,
     };
   });
 
@@ -176,18 +172,14 @@ export const Window = (props: {
 };
 
 export const LayoutManager = observer(
-  (props: {
-    containerRef: React.RefObject<HTMLDivElement>;
-    layoutManagerState: LayoutManagerState;
-  }) => {
-    const { containerRef, layoutManagerState } = props;
+  (props: { layoutManagerState: LayoutManagerState }) => {
+    const { layoutManagerState } = props;
 
     return (
       <>
         {layoutManagerState.windows.map((windowState) => (
           <Window
             key={windowState.uuid}
-            containerRef={containerRef}
             layoutManagerState={layoutManagerState}
             windowState={windowState}
           />

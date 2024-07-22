@@ -66,7 +66,7 @@ export class LayoutManagerState {
   readonly application: GenericLegendApplicationStore;
   windows: WindowState[] = [];
 
-  constructor(applicationStore: GenericLegendApplicationStore) {
+  constructor(application: GenericLegendApplicationStore) {
     makeObservable(this, {
       windows: observable,
       newWindow: action,
@@ -74,7 +74,7 @@ export class LayoutManagerState {
       closeWindow: action,
     });
 
-    this.application = applicationStore;
+    this.application = application;
   }
 
   newWindow(window: WindowState): void {

@@ -18,13 +18,13 @@ import { DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
-import { DataCubeEditorCheckbox } from './DataCubeEditorShared.js';
+import { FormCheckbox } from '../../repl/Form.js';
 import { DataCubeEditorColumnsSelectorColumnsVisibility } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
 import { useEffect } from 'react';
 
 export const DataCubeEditorColumnsPanel = observer(() => {
-  const replStore = useREPLStore();
-  const panel = replStore.dataCube.editor.columns;
+  const repl = useREPLStore();
+  const panel = repl.dataCube.editor.columns;
 
   useEffect(() => () => panel.propagateColumnSelectionChanges(), [panel]);
 
@@ -40,7 +40,7 @@ export const DataCubeEditorColumnsPanel = observer(() => {
           </div>
         </div>
         <div className="flex h-full items-center pr-2">
-          <DataCubeEditorCheckbox
+          <FormCheckbox
             label="Show hidden columns?"
             checked={
               panel.selector.columnsVisibility !==

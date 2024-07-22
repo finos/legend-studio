@@ -53,10 +53,10 @@ export class LegendREPL extends LegendApplication {
   }
 
   async loadApplication(
-    applicationStore: LegendREPLApplicationStore,
+    application: LegendREPLApplicationStore,
   ): Promise<void> {
     createRoot(getApplicationRootElement()).render(
-      <ApplicationStoreProvider store={applicationStore}>
+      <ApplicationStoreProvider store={application}>
         <LegendREPLWebApplication baseUrl={this.baseAddress} />
       </ApplicationStoreProvider>,
     );

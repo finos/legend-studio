@@ -34,16 +34,20 @@ import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
 import type { REPLStore } from '../REPLStore.js';
 import { action, makeObservable, observable } from 'mobx';
 
+export const DEFAULT_ENABLE_DEBUG_MODE = false;
+export const DEFAULT_GRID_CLIENT_ROW_BUFFER = 50;
+export const DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES = false;
+
 export class DataCubeEngine {
-  readonly replStore: REPLStore;
+  readonly repl: REPLStore;
   readonly application: LegendREPLApplicationStore;
   private readonly client: REPLServerClient;
 
-  enableDebugMode = false;
-  gridClientRowBuffer = 50;
+  enableDebugMode = DEFAULT_ENABLE_DEBUG_MODE;
+  gridClientRowBuffer = DEFAULT_GRID_CLIENT_ROW_BUFFER;
   gridClientPurgeClosedRowNodes = false;
 
-  constructor(replStore: REPLStore) {
+  constructor(repl: REPLStore) {
     makeObservable(this, {
       enableDebugMode: observable,
       setEnableDebugMode: action,
@@ -55,9 +59,9 @@ export class DataCubeEngine {
       setGridClientPurgeClosedRowNodes: action,
     });
 
-    this.replStore = replStore;
-    this.application = replStore.application;
-    this.client = replStore.client;
+    this.repl = repl;
+    this.application = repl.application;
+    this.client = repl.client;
   }
 
   setEnableDebugMode(enableDebugMode: boolean): void {
@@ -78,7 +82,7 @@ export class DataCubeEngine {
   private applyChanges(): void {
     // When we support multi-view (i.e. multiple instances of DataCubes) we would need to traverse
     // through and update the configurations of all of their grid clients
-    this.replStore.dataCube.grid.client.updateGridOptions({
+    this.repl.dataCube.grid.client.updateGridOptions({
       rowBuffer: this.gridClientRowBuffer,
       purgeClosedRowNodes: this.gridClientPurgeClosedRowNodes,
     });

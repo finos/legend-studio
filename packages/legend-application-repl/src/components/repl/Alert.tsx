@@ -41,11 +41,11 @@ export function ErrorAlert(props: {
 
 const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
   const { info } = props;
-  const applicationStore = useApplicationStore();
   const { title, message, prompt, type, onClose, onEnter, actions } = info;
+  const application = useApplicationStore();
   const handleClose = (): void => {
     onClose?.();
-    applicationStore.alertService.setActionAlertInfo(undefined);
+    application.alertService.setActionAlertInfo(undefined);
   };
   const handleEnter = (): void => onEnter?.();
   const handleSubmit = (): void => {
@@ -55,7 +55,7 @@ const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
 
   return (
     <Dialog
-      open={Boolean(applicationStore.alertService.actionAlertInfo)}
+      open={Boolean(application.alertService.actionAlertInfo)}
       onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
       TransitionProps={{
         onEnter: handleEnter,
@@ -80,7 +80,7 @@ const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
           <div className="px-2">{title ?? ''}</div>
         </div>
         <form
-          className="w-full flex-1 overflow-auto p-4"
+          className="w-full overflow-auto p-4"
           onSubmit={(event) => {
             event.preventDefault();
             handleSubmit();
@@ -128,11 +128,11 @@ const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
 });
 
 export const ActionAlert = observer(() => {
-  const applicationStore = useApplicationStore();
-  const actionAlertInfo = applicationStore.alertService.actionAlertInfo;
+  const application = useApplicationStore();
+  const info = application.alertService.actionAlertInfo;
 
-  if (!actionAlertInfo) {
+  if (!info) {
     return null;
   }
-  return <ActionAlertContent info={actionAlertInfo} />;
+  return <ActionAlertContent info={info} />;
 });

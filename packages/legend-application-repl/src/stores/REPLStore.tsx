@@ -34,9 +34,9 @@ import {
   SingletonModeDisplayState,
   WindowState,
 } from './LayoutManagerState.js';
-import { DataCubeEditor } from '../components/dataCube/editor/DataCubeEditor.js';
 import { ErrorAlert } from '../components/repl/Alert.js';
-import { DocumentationViewer } from '../components/repl/DocumentationViewer.js';
+import { DocumentationPanel } from '../components/repl/DocumentationPanel.js';
+import { SettingsPanel } from '../components/repl/SettingsPanel.js';
 
 export class REPLStore {
   readonly application: LegendREPLApplicationStore;
@@ -51,12 +51,12 @@ export class REPLStore {
   // TODO: when we support multi-view, we would need to support multiple states
   dataCube!: DataCubeState;
 
-  constructor(applicationStore: LegendREPLApplicationStore) {
+  constructor(application: LegendREPLApplicationStore) {
     makeObservable(this, {
       dataCube: observable,
     });
 
-    this.application = applicationStore;
+    this.application = application;
     this.client = new REPLServerClient(
       new NetworkClient({
         baseUrl: this.application.config.useDynamicREPLServer
@@ -71,18 +71,30 @@ export class REPLStore {
     this.settingsDisplay = new SingletonModeDisplayState(
       this.layout,
       'Settings',
-      () => <DataCubeEditor />,
+      () => <SettingsPanel />,
     );
+    this.settingsDisplay.configuration.window = {
+      x: -50,
+      y: 50,
+      width: 600,
+      height: 400,
+      minWidth: 300,
+      minHeight: 200,
+      center: false,
+    };
     this.documentationDisplay = new SingletonModeDisplayState(
       this.layout,
       'Documentation',
-      () => <DocumentationViewer />,
+      () => <DocumentationPanel />,
     );
     this.documentationDisplay.configuration.window = {
+      x: -50,
+      y: -50,
       width: 400,
       height: 400,
       minWidth: 300,
       minHeight: 200,
+      center: false,
     };
   }
 

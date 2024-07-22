@@ -29,8 +29,8 @@ import { DataCubeEditorColumnPropertiesPanel } from './DataCubeEditorColumnPrope
 import { cn } from '@finos/legend-art';
 
 export const DataCubeEditor = observer(() => {
-  const replStore = useREPLStore();
-  const editor = replStore.dataCube.editor;
+  const repl = useREPLStore();
+  const editor = repl.dataCube.editor;
   const selectedTab = editor.currentTab;
   const tabs = [
     DataCubeEditorTab.GENERAL_PROPERTIES,
@@ -46,7 +46,7 @@ export const DataCubeEditor = observer(() => {
 
   return (
     <>
-      <div className="relative h-[calc(100%_-_40px)] flex-1 px-2 pt-8">
+      <div className="relative h-[calc(100%_-_40px)] w-full px-2 pt-8">
         <div className="absolute top-0 flex h-9 w-[calc(100%_-_16px)] min-w-[400px] overflow-auto pt-2">
           {tabs.map((tab) => (
             <button

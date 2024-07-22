@@ -20,8 +20,8 @@ import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
 
 export const DataCubeEditorVerticalPivotsPanel = observer(() => {
-  const replStore = useREPLStore();
-  const panel = replStore.dataCube.editor.verticalPivots;
+  const repl = useREPLStore();
+  const panel = repl.dataCube.editor.verticalPivots;
 
   return (
     <div className="h-full w-full select-none p-2">

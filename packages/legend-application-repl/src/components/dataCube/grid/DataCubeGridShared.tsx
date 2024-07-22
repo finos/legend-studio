@@ -18,7 +18,7 @@ import {
   useGridMenuItem,
   type CustomMenuItemProps,
 } from '@ag-grid-community/react';
-import { WIP_Badge } from '../editor/DataCubeEditorShared.js';
+import { FormBadge_WIP } from '../../repl/Form.js';
 
 export function WIP_GridMenuItem({
   name,
@@ -34,7 +34,7 @@ export function WIP_GridMenuItem({
       <span className="ag-menu-option-part ag-menu-option-icon"></span>
       <span className="ag-menu-option-part ag-menu-option-text !inline-flex items-center">
         <span className="opacity-50">{name}</span>
-        <WIP_Badge />
+        <FormBadge_WIP />
       </span>
       <span className="ag-menu-option-part ag-menu-option-shortcut"></span>
       <span className="ag-menu-option-part ag-menu-option-popup-pointer select-none">

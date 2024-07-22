@@ -23,7 +23,7 @@ import { isString } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { useREPLStore } from '../REPLStoreProvider.js';
 
-export const DocumentationViewerLink: React.FC<{
+export const DocumentationPanelLink: React.FC<{
   documentationKey: string;
   title?: string | undefined;
   className?: string | undefined;
@@ -67,7 +67,7 @@ export const DocumentationViewerLink: React.FC<{
   );
 };
 
-export const DocumentationViewer = observer(() => {
+export const DocumentationPanel = observer(() => {
   const application = useApplicationStore();
   const entry = application.assistantService.currentDocumentationEntry;
 

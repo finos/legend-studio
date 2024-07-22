@@ -26,15 +26,15 @@ const REPLStoreContext = createContext<REPLStore | undefined>(undefined);
 
 export const REPLStoreProvider = observer(
   ({ children }: { children: React.ReactNode }): React.ReactElement => {
-    const applicationStore = useApplicationStore<
+    const application = useApplicationStore<
       LegendREPLApplicationConfig,
       LegendREPLPluginManager
     >();
-    const store = useLocalObservable(() => new REPLStore(applicationStore));
+    const store = useLocalObservable(() => new REPLStore(application));
 
     useEffect(() => {
-      store.initialize().catch(applicationStore.logUnhandledError);
-    }, [store, applicationStore]);
+      store.initialize().catch(application.logUnhandledError);
+    }, [store, application]);
 
     if (!store.initState.hasSucceeded) {
       return <></>;

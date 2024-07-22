@@ -16,33 +16,33 @@
 
 import { observer } from 'mobx-react-lite';
 import { useREPLStore } from '../REPLStoreProvider.js';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { DataCubeGrid } from './grid/DataCubeGrid.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { DataCubeIcon, ProgressBar } from '@finos/legend-art';
-import { LayoutManager } from '../LayoutManager.js';
+import {
+  DataCubeIcon,
+  DropdownMenu,
+  DropdownMenuItem,
+  ProgressBar,
+  useDropdownMenu,
+} from '@finos/legend-art';
+import { LayoutManager } from '../repl/LayoutManager.js';
 
 const DataCubeStatusBar = observer(() => {
-  const dataCubeStore = useREPLStore();
-  const dataCube = dataCubeStore.dataCube;
+  const repl = useREPLStore();
+  const dataCube = repl.dataCube;
 
   return (
     <div className="flex h-5 w-full justify-between bg-neutral-100">
-      <div className="flex flex-1">
+      <div className="flex">
         <button
-          className="pl-2 text-sky-600 hover:text-sky-700"
-          title="See Documentation"
-        >
-          <DataCubeIcon.Documentation className="text-xl" />
-        </button>
-        <button
-          className="flex items-center px-3 text-sky-600 hover:text-sky-700"
+          className="flex items-center px-2 text-sky-600 hover:text-sky-700"
           onClick={(): void => dataCube.editor.display.open()}
         >
           <DataCubeIcon.Settings className="text-xl" />
           <div className="pl-0.5 underline">Properties</div>
         </button>
-        <div className="flex-1">
+        <div className="flex">
           <button className="flex items-center text-sky-600 hover:text-sky-700">
             <DataCubeIcon.TableFilter className="text-lg" />
             <div className="pl-0.5 underline">Filter</div>
@@ -68,39 +68,82 @@ const DataCubeStatusBar = observer(() => {
 });
 
 const DataCubeTitleBar = observer(() => {
-  const dataCubeStore = useREPLStore();
-  const dataCube = dataCubeStore.dataCube;
+  const application = useApplicationStore();
+  const repl = useREPLStore();
+  const dataCube = repl.dataCube;
+  const [openMenuDropdown, closeMenuDropdown, menuDropdownProps] =
+    useDropdownMenu();
 
   return (
     <div className="flex h-6 justify-between bg-neutral-100">
       <div className="flex select-none items-center pl-1 pr-2 text-lg font-medium">
         <DataCubeIcon.Cube className="mr-1 h-4 w-4" />
         <div>{dataCube.core.name}</div>
-        {/* TODO: @akphi - add menu icon */}
+      </div>
+      <div>
+        <button
+          className="flex h-6 w-6 flex-shrink-0 items-center justify-center text-lg"
+          onClick={openMenuDropdown}
+        >
+          <DataCubeIcon.Menu />
+        </button>
+        <DropdownMenu
+          {...menuDropdownProps}
+          menuProps={{
+            anchorOrigin: { vertical: 'top', horizontal: 'left' },
+            transformOrigin: { vertical: 'top', horizontal: 'right' },
+            classes: {
+              paper: 'rounded-none mt-[1px]',
+              list: 'w-36 p-0 rounded-none border border-neutral-400 bg-white max-h-40 overflow-y-auto py-0.5',
+            },
+          }}
+        >
+          <DropdownMenuItem
+            className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus-visible:bg-neutral-100"
+            onClick={() => {
+              if (application.documentationService.url) {
+                application.navigationService.navigator.visitAddress(
+                  application.documentationService.url,
+                );
+              }
+              closeMenuDropdown();
+            }}
+            // disabled={!application.documentationService.url}
+            disabled={true} // TODO: enable when we set up the documentation website
+          >
+            See Documentation
+          </DropdownMenuItem>
+          <div className="my-0.5 h-[1px] w-full bg-neutral-200" />
+          <DropdownMenuItem
+            className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus-visible:bg-neutral-100"
+            onClick={() => {
+              repl.settingsDisplay.open();
+              closeMenuDropdown();
+            }}
+          >
+            Settings...
+          </DropdownMenuItem>
+        </DropdownMenu>
       </div>
     </div>
   );
 });
 
 export const DataCube = observer(() => {
-  const replStore = useREPLStore();
-  const ref = useRef<HTMLDivElement>(null);
+  const repl = useREPLStore();
   const application = useApplicationStore();
-  const dataCube = replStore.dataCube;
+  const dataCube = repl.dataCube;
 
   useEffect(() => {
     dataCube.initialize().catch(application.logUnhandledError);
   }, [dataCube, application]);
 
   return (
-    <div
-      ref={ref}
-      className="data-cube relative flex h-full w-full flex-col bg-white"
-    >
+    <div className="data-cube relative flex h-full w-full flex-col bg-white">
       <DataCubeTitleBar />
       <DataCubeGrid />
       <DataCubeStatusBar />
-      <LayoutManager layoutManagerState={replStore.layout} containerRef={ref} />
+      <LayoutManager layoutManagerState={repl.layout} />
     </div>
   );
 });
