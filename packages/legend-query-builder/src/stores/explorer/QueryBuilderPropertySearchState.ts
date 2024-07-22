@@ -170,7 +170,6 @@ export class QueryBuilderPropertySearchState {
         limit: QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT + 1,
       },
     );
-    console.log('rawSearchResults:', rawSearchResults);
     const searchResults = Array.from(rawSearchResults.values()).map(
       (result) => result.item,
     );
@@ -282,7 +281,7 @@ export class QueryBuilderPropertySearchState {
       }
 
       // when we done processing one depth, we will do check on the depth and the total
-      // number of indexed nodes to figureo ut if we should proceed further
+      // number of indexed nodes to figure out if we should proceed further
       if (
         !currentLevelPropertyNodes.length &&
         this.indexedExplorerTreeNodes.length < NODE_LIMIT
