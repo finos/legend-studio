@@ -31,6 +31,7 @@ import {
   deleteEntry,
   guaranteeNonNullable,
   FuzzySearchAdvancedConfigState,
+  prettyCONSTName,
 } from '@finos/legend-shared';
 import {
   observable,
@@ -308,6 +309,7 @@ export class QueryBuilderPropertySearchState {
         {
           name: 'label',
           weight: 4,
+          getFn: (node) => prettyCONSTName(node.label),
         },
         {
           name: 'taggedValues',
