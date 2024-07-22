@@ -34,8 +34,10 @@ import {
   Checkbox,
 } from '@finos/legend-art';
 import {
+  CORE_PURE_PATH,
   Class,
   Enumeration,
+  PURE_DOC_TAG,
   getAllClassProperties,
   getAllOwnClassProperties,
 } from '@finos/legend-graph';
@@ -120,7 +122,7 @@ const QueryBuilderTreeNodeViewer = observer(
   }) => {
     const { node, queryBuilderState, explorerState, level, stepPaddingInRem } =
       props;
-    const [isExpandable, setIsExpandable] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
     const propertySearchState = explorerState.propertySearchState;
     const [, dragConnector, dragPreviewConnector] = useDrag<{
       node?: QueryBuilderExplorerTreePropertyNodeData;
@@ -199,7 +201,7 @@ const QueryBuilderTreeNodeViewer = observer(
             paddingLeft: `${(level - 1) * stepPaddingInRem + 0.5}rem`,
             display: 'flex',
           }}
-          onClick={(): void => setIsExpandable(!isExpandable)}
+          onClick={(): void => setIsExpanded(!isExpanded)}
           // Temporarily hide away the panel when we drag-and-drop the properties
           onDrag={(): void => propertySearchState.setIsSearchPanelHidden(true)}
           onDragEnd={(): void =>
@@ -211,8 +213,20 @@ const QueryBuilderTreeNodeViewer = observer(
               {renderPropertyTypeIcon(node.type)}
             </div>
           </div>
-          <div className="tree-view__node__label query-builder-property-search-panel__node__label query-builder-property-search-panel__node__label--with-action">
-            {propertyName}
+          <div className="query-builder-property-search-panel__node__content">
+            <div className="tree-view__node__label query-builder-property-search-panel__node__label">
+              {propertyName}
+            </div>
+            <div className="tree-view__node__label query-builder-property-search-panel__node__doc">
+              {node instanceof QueryBuilderExplorerTreePropertyNodeData
+                ? node.property.taggedValues.find(
+                    (taggedValue) =>
+                      taggedValue.tag.ownerReference.value.path ===
+                        CORE_PURE_PATH.PROFILE_DOC &&
+                      taggedValue.tag.value.value === PURE_DOC_TAG,
+                  )?.value ?? null
+                : null}
+            </div>
           </div>
           <div className="query-builder-property-search-panel__node__actions">
             {node instanceof QueryBuilderExplorerTreePropertyNodeData && (
@@ -241,7 +255,7 @@ const QueryBuilderTreeNodeViewer = observer(
             )}
           </div>
         </div>
-        {isExpandable &&
+        {isExpanded &&
           getChildrenNodes().map((childNode) => (
             <QueryBuilderTreeNodeViewer
               key={childNode.id}

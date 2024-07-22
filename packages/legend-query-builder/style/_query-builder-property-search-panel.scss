@@ -34,11 +34,16 @@
     }
   }
 
-  &__node__container:hover {
-    background: var(--color-dark-blue-shade-100);
+  &__node__container {
+    height: fit-content;
+    border: 1px solid var(--color-dark-blue-shade-100);
 
-    svg {
-      color: var(--color-light-grey-400);
+    &:hover {
+      background: var(--color-dark-blue-shade-100);
+
+      svg {
+        color: var(--color-light-grey-400);
+      }
     }
   }
 
@@ -66,18 +71,30 @@
     height: 1.4rem;
   }
 
+  &__node__content {
+    width: calc(100% - 2rem);
+  }
+
   &__node__label {
     @include ellipsisTextOverflow;
 
     height: 2rem;
+    padding-top: 0.25rem;
     line-height: 2rem;
     min-width: 0;
     color: var(--color-light-grey-400);
     user-select: none;
   }
 
-  &__node__label--with-action {
-    width: calc(100% - 2rem);
+  &__node__doc {
+    @include ellipsisTextOverflow;
+
+    height: 2rem;
+    line-height: 1.8rem;
+    font-size: 1.2rem;
+    min-width: 0;
+    color: var(--color-dark-grey-400);
+    user-select: none;
   }
 
   &__node__label__multiple {
@@ -303,8 +320,11 @@
   &__config,
   &__results {
     height: 100%;
-    padding: 1rem;
     overflow-y: auto;
+  }
+
+  &__config {
+    padding: 1rem;
   }
 
   &__result-placeholder {
