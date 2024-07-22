@@ -145,7 +145,7 @@ export const QueryBuilderClassSelector = observer(
             placeholder={
               classOptions.length
                 ? 'Choose an entity...'
-                : noMatchMessage ?? 'No entity found'
+                : (noMatchMessage ?? 'No entity found')
             }
             disabled={
               classOptions.length < 1 ||

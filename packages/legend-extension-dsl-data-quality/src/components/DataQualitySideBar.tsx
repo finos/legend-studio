@@ -113,7 +113,7 @@ export const DataQualityClassSelector = observer(
               placeholder={
                 classOptions.length
                   ? 'Choose a class...'
-                  : noMatchMessage ?? 'No class found'
+                  : (noMatchMessage ?? 'No class found')
               }
               disabled={
                 classOptions.length < 1 ||

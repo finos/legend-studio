@@ -384,9 +384,9 @@ export const EditorGroup = observer(() => {
         <div className="diff-tab">
           <div className="diff-tab__element-icon">
             {editorState.element ? (
-              getElementIcon(editorState.element, editorStore, {
+              (getElementIcon(editorState.element, editorStore, {
                 returnEmptyForUnknown: true,
-              }) ?? <GenericTextFileIcon />
+              }) ?? <GenericTextFileIcon />)
             ) : (
               <GenericTextFileIcon />
             )}
@@ -421,9 +421,9 @@ export const EditorGroup = observer(() => {
       <div className="editor-group__header__tab">
         <div className="editor-group__header__tab__icon">
           {editorState instanceof ElementEditorState ? (
-            getElementIcon(editorState.element, editorStore, {
+            (getElementIcon(editorState.element, editorStore, {
               returnEmptyForUnknown: true,
-            }) ?? <GenericTextFileIcon />
+            }) ?? <GenericTextFileIcon />)
           ) : (
             <GenericTextFileIcon />
           )}

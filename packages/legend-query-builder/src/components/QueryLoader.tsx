@@ -401,9 +401,9 @@ export const QueryLoader = observer(
               <>
                 <div className="query-loader__results__summary">
                   {queryLoaderState.showingDefaultQueries ? (
-                    queryLoaderState.generateDefaultQueriesSummaryText?.(
+                    (queryLoaderState.generateDefaultQueriesSummaryText?.(
                       results,
-                    ) ?? 'Refine your search to get better matches'
+                    ) ?? 'Refine your search to get better matches')
                   ) : !queryLoaderState.isCuratedTemplateToggled ? (
                     results.length >= QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT ? (
                       <>

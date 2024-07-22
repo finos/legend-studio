@@ -56,7 +56,7 @@ export class EnumerationMapping implements Hashable {
             isNonNullable(sourceValue.value),
           ).length,
       ).length
-        ? this.sourceType?.valueForSerialization ?? ''
+        ? (this.sourceType?.valueForSerialization ?? '')
         : '', // default source value when there is no element
       hashArray(
         this.enumValueMappings.filter(

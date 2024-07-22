@@ -152,8 +152,8 @@ export class ExplorerTreeState {
     }
     return this.selectedNode.packageableElement instanceof Package
       ? this.selectedNode.packageableElement
-      : this.selectedNode.packageableElement.package ??
-          this.editorStore.graphManagerState.graph.root;
+      : (this.selectedNode.packageableElement.package ??
+          this.editorStore.graphManagerState.graph.root);
   }
 
   setTreeData(data: TreeData<PackageTreeNodeData>): void {

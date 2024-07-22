@@ -977,7 +977,7 @@ const CustomDateInstanceValueEditor: React.FC<{
   ) => {
     const duration =
       event.target.value !== ''
-        ? returnUndefOnError(() => parseNumber(event.target.value)) ?? 0
+        ? (returnUndefOnError(() => parseNumber(event.target.value)) ?? 0)
         : 0;
     setDurationValue(duration);
     changeValue(duration, unitValue, directionValue, referenceMomentValue);

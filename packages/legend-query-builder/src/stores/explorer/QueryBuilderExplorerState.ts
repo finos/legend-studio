@@ -765,7 +765,7 @@ export class QueryBuilderExplorerState {
         }
         nodeToOpen =
           nodeToOpen instanceof QueryBuilderExplorerTreePropertyNodeData
-            ? this.treeData?.nodes.get(nodeToOpen.parentId) ?? null
+            ? (this.treeData?.nodes.get(nodeToOpen.parentId) ?? null)
             : null;
       }
       this.refreshTree();

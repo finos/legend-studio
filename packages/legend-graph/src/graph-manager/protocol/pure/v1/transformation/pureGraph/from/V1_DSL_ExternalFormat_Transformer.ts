@@ -23,13 +23,13 @@ export const V1_transformModelUnit = (metamodel: ModelUnit): V1_ModelUnit => {
   modelUnit.packageableElementExcludes =
     metamodel.packageableElementExcludes.map((path) =>
       path instanceof PackageableElementReference
-        ? path.valueForSerialization ?? ''
+        ? (path.valueForSerialization ?? '')
         : path,
     );
   modelUnit.packageableElementIncludes =
     metamodel.packageableElementIncludes.map((path) =>
       path instanceof PackageableElementReference
-        ? path.valueForSerialization ?? ''
+        ? (path.valueForSerialization ?? '')
         : path,
     );
   return modelUnit;

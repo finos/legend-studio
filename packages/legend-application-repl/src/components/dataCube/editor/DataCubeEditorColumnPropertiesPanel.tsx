@@ -674,7 +674,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <DataCubeIcon.FontItalic />
                   </button>
                   <button
-                    title={`Underline${selectedColumn.fontUnderline ?? gridConfiguration.fontUnderline ? ` (${selectedColumn.fontUnderline ?? gridConfiguration.fontUnderline})` : ''}`}
+                    title={`Underline${(selectedColumn.fontUnderline ?? gridConfiguration.fontUnderline) ? ` (${selectedColumn.fontUnderline ?? gridConfiguration.fontUnderline})` : ''}`}
                     className={cn(
                       'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                       {
@@ -788,7 +788,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <DataCubeIcon.FontStrikethrough />
                   </button>
                   <button
-                    title={`Case${selectedColumn.fontCase ?? gridConfiguration.fontCase ? ` (${selectedColumn.fontCase ?? gridConfiguration.fontCase})` : ''}`}
+                    title={`Case${(selectedColumn.fontCase ?? gridConfiguration.fontCase) ? ` (${selectedColumn.fontCase ?? gridConfiguration.fontCase})` : ''}`}
                     className={cn(
                       'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                       {

@@ -115,7 +115,7 @@ export const NotificationManager = observer(() => {
       // setting the auto-hide duration to null will stop it from hiding automatically
       autoHideDuration={
         notification
-          ? notification.autoHideDuration ?? null
+          ? (notification.autoHideDuration ?? null)
           : DEFAULT_NOTIFICATION_HIDE_TIME
       }
       onClose={onSnackbarAutoHideOrClickAway}

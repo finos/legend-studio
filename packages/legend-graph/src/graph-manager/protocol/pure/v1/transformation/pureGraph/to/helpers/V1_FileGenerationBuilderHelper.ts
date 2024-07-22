@@ -41,5 +41,5 @@ export const V1_buildScopeElement = (
   return _package
     ? // NOTE: this is always intended to be provided as full path by user and it's always explicit
       PackageableElementExplicitReference.create(_package)
-    : returnUndefOnError(() => context.resolveElement(path, false)) ?? path;
+    : (returnUndefOnError(() => context.resolveElement(path, false)) ?? path);
 };
