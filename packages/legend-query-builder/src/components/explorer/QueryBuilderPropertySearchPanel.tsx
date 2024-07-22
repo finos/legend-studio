@@ -256,6 +256,28 @@ const QueryBuilderTreeNodeViewer = observer(
   },
 );
 
+const QueryBuilderPropertySearchAdditionalConfigMenu = observer(
+  (props: {
+    includeTaggedValues: boolean;
+    handleToggleIncludeTaggedValues: () => void;
+  }) => {
+    const { includeTaggedValues, handleToggleIncludeTaggedValues } = props;
+    return (
+      <div className="query-builder-property-search-panel__config__tagged-values">
+        <input
+          id="query-builder-property-search-panel__config__tagged-values"
+          type="checkbox"
+          onChange={handleToggleIncludeTaggedValues}
+          checked={includeTaggedValues}
+        />
+        <label htmlFor="query-builder-property-search-panel__config__tagged-values">
+          Include tagged values
+        </label>
+      </div>
+    );
+  },
+);
+
 export const QueryBuilderPropertySearchPanel = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
@@ -388,6 +410,22 @@ export const QueryBuilderPropertySearchPanel = observer(
               >
                 <FuzzySearchAdvancedConfigMenu
                   configState={propertySearchState.searchConfigurationState}
+                  additionalMenuItems={
+                    <QueryBuilderPropertySearchAdditionalConfigMenu
+                      includeTaggedValues={
+                        propertySearchState.searchConfigurationState
+                          .includeTaggedValues
+                      }
+                      handleToggleIncludeTaggedValues={() => {
+                        propertySearchState.searchConfigurationState.setIncludeTaggedValues(
+                          !propertySearchState.searchConfigurationState
+                            .includeTaggedValues,
+                        );
+                        propertySearchState.initialize();
+                        propertySearchState.search();
+                      }}
+                    />
+                  }
                 />
               </BasePopover>
               {!propertySearchState.searchText ? (

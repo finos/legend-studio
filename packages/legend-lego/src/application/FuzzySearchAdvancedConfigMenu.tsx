@@ -24,8 +24,11 @@ import {
 import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '@finos/legend-application';
 
 export const FuzzySearchAdvancedConfigMenu = observer(
-  (props: { configState: FuzzySearchAdvancedConfigState }) => {
-    const { configState } = props;
+  (props: {
+    configState: FuzzySearchAdvancedConfigState;
+    additionalMenuItems?: React.ReactNode;
+  }) => {
+    const { configState, additionalMenuItems } = props;
 
     const handleSearchMode: React.ChangeEventHandler<HTMLInputElement> = (
       event,
@@ -59,6 +62,7 @@ export const FuzzySearchAdvancedConfigMenu = observer(
             size={1}
           />
         </div>
+        {additionalMenuItems}
       </div>
     );
   },

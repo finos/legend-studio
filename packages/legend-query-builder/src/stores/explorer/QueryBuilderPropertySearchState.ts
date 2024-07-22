@@ -30,7 +30,6 @@ import {
   addUniqueEntry,
   deleteEntry,
   guaranteeNonNullable,
-  FuzzySearchAdvancedConfigState,
   prettyCONSTName,
 } from '@finos/legend-shared';
 import {
@@ -54,6 +53,7 @@ import {
   QueryBuilderExplorerTreeSubTypeNodeData,
 } from './QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
+import { QueryBuilderFuzzySearchAdvancedConfigState } from './QueryBuilderFuzzySearchAdvancedConfigState.js';
 
 export class QueryBuilderPropertySearchState {
   queryBuilderState: QueryBuilderState;
@@ -73,7 +73,7 @@ export class QueryBuilderPropertySearchState {
 
   // search
   searchEngine: FuzzySearchEngine<QueryBuilderExplorerTreeNodeData>;
-  searchConfigurationState: FuzzySearchAdvancedConfigState;
+  searchConfigurationState: QueryBuilderFuzzySearchAdvancedConfigState;
   searchState = ActionState.create();
   searchText = '';
   searchResults: QueryBuilderExplorerTreeNodeData[] = [];
@@ -113,9 +113,8 @@ export class QueryBuilderPropertySearchState {
     });
 
     this.queryBuilderState = queryBuilderState;
-    this.searchConfigurationState = new FuzzySearchAdvancedConfigState(
-      (): void => this.search(),
-    );
+    this.searchConfigurationState =
+      new QueryBuilderFuzzySearchAdvancedConfigState((): void => this.search());
     this.searchEngine = new FuzzySearchEngine(this.indexedExplorerTreeNodes);
   }
 
@@ -311,23 +310,27 @@ export class QueryBuilderPropertySearchState {
           weight: 4,
           getFn: (node) => prettyCONSTName(node.label),
         },
-        {
-          name: 'taggedValues',
-          weight: 2,
-          // aggregate the property documentation, do not account for class documentation
-          getFn: (node: QueryBuilderExplorerTreeNodeData) =>
-            node instanceof QueryBuilderExplorerTreePropertyNodeData
-              ? node.property.taggedValues
-                  .filter(
-                    (taggedValue) =>
-                      taggedValue.tag.ownerReference.value.path ===
-                        CORE_PURE_PATH.PROFILE_DOC &&
-                      taggedValue.tag.value.value === PURE_DOC_TAG,
-                  )
-                  .map((taggedValue) => taggedValue.value)
-                  .join('\n')
-              : '',
-        },
+        ...(this.searchConfigurationState.includeTaggedValues
+          ? [
+              {
+                name: 'taggedValues',
+                weight: 2,
+                // aggregate the property documentation, do not account for class documentation
+                getFn: (node: QueryBuilderExplorerTreeNodeData) =>
+                  node instanceof QueryBuilderExplorerTreePropertyNodeData
+                    ? node.property.taggedValues
+                        .filter(
+                          (taggedValue) =>
+                            taggedValue.tag.ownerReference.value.path ===
+                              CORE_PURE_PATH.PROFILE_DOC &&
+                            taggedValue.tag.value.value === PURE_DOC_TAG,
+                        )
+                        .map((taggedValue) => taggedValue.value)
+                        .join('\n')
+                    : '',
+              },
+            ]
+          : []),
       ],
       // extended search allows for exact word match through single quote
       // See https://fusejs.io/examples.html#extended-search
