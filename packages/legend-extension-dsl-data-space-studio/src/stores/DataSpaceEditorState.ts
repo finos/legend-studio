@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, computed, makeObservable, observable } from 'mobx';
+import { action, computed, makeObservable } from 'mobx';
 import {
   type EditorStore,
   ElementEditorState,
@@ -23,7 +23,7 @@ import type { PackageableElement } from '@finos/legend-graph';
 import { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
 import { guaranteeType } from '@finos/legend-shared';
 
-export class FormEditorState extends ElementEditorState {
+export class DataSpaceEditorState extends ElementEditorState {
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
@@ -45,7 +45,7 @@ export class FormEditorState extends ElementEditorState {
     newElement: PackageableElement,
     editorStore: EditorStore,
   ): ElementEditorState {
-    const newState = new FormEditorState(editorStore, newElement);
+    const newState = new DataSpaceEditorState(editorStore, newElement);
     return newState;
   }
 }

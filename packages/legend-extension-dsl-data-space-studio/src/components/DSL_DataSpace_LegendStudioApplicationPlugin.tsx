@@ -66,8 +66,9 @@ import {
   DataSpacePreviewAction,
   DataSpacePreviewDialog,
 } from './DataSpacePreviewAction.js';
-import { FormTextEditor } from './FormTextEditor.js';
-import { FormEditorState } from '../stores/FormEditorState.js';
+
+import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
+import { DataSpaceEditor } from './DataSpaceEditor.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -209,8 +210,8 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
   ) => React.ReactNode)[] {
     return [
       (editorState: ElementEditorState): React.ReactNode | undefined => {
-        if (editorState instanceof FormEditorState) {
-          return <FormTextEditor key={editorState.uuid} />;
+        if (editorState instanceof DataSpaceEditorState) {
+          return <DataSpaceEditor key={editorState.uuid} />;
         }
         return undefined;
       },
@@ -224,7 +225,7 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
         element: PackageableElement,
       ): ElementEditorState | undefined => {
         if (element instanceof DataSpace) {
-          return new FormEditorState(editorStore, element);
+          return new DataSpaceEditorState(editorStore, element);
         }
         return undefined;
       },
