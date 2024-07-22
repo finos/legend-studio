@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-export enum LEGEND_APPLICATION_REPL_SETTING_KEY {
+export enum SettingsKey {
   PAGINATION = 'application.pagination.enabled',
 }

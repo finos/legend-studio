@@ -90,9 +90,9 @@ export class StorageService {
       applicationStore.config.applicationStorageKey,
     );
     this.data = data
-      ? returnUndefOnError(
+      ? (returnUndefOnError(
           () => JSON.parse(data) as Record<string, StorageStoreData>,
-        ) ?? {}
+        ) ?? {})
       : {};
   }
 

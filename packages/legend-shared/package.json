@@ -40,7 +40,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@braintree/sanitize-url": "7.0.4",
+    "@braintree/sanitize-url": "7.1.0",
     "@types/lodash-es": "4.17.12",
     "@types/object-hash": "3.0.6",
     "@types/pako": "2.0.3",
@@ -54,7 +54,7 @@
     "http-status-codes": "2.3.0",
     "lodash-es": "4.17.21",
     "lossless-json": "4.0.1",
-    "mobx": "6.13.0",
+    "mobx": "6.13.1",
     "object-hash": "3.0.0",
     "pako": "2.1.0",
     "papaparse": "5.4.1",

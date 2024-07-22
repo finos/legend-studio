@@ -33,7 +33,7 @@ import {
   matchFunctionName,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import type { DataCubeQuery } from '../../../server/models/DataCubeQuery.js';
+import type { DataCubeQuery } from '../../../server/DataCubeQuery.js';
 import {
   DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,

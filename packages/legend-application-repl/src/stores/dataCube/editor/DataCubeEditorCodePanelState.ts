@@ -106,7 +106,7 @@ export class DataCubeEditorCodePanelState {
     try {
       this.queryEditorState.setParserError(undefined);
       yield flowResult(
-        this.dataCube.replStore.client.parseQuery({
+        this.dataCube.repl.client.parseQuery({
           code: `|${this.queryEditorState.query}`,
         }),
       );

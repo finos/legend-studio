@@ -18,12 +18,12 @@ import { observer } from 'mobx-react-lite';
 import { DataCubeIcon } from '@finos/legend-art';
 import { useEffect } from 'react';
 import { useREPLStore } from '../../REPLStoreProvider.js';
-import { WIP_Badge } from './DataCubeEditorShared.js';
+import { FormBadge_WIP } from '../../repl/Form.js';
 
 // const DataCubeCodeEditor = observer(() => {
-//   const replStore = useREPLStore();
-//   const applicationStore = replStore.applicationStore;
-//   const dataCubeState = replStore.dataCubeState;
+//   const repl = userepl();
+//   const application = repl.application;
+//   const dataCubeState = repl.dataCubeState;
 //   const queryEditorState = dataCubeState.editor.codePanel.queryEditorState;
 //   const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
 //     undefined,
@@ -42,10 +42,10 @@ import { WIP_Badge } from './DataCubeEditorShared.js';
 //     () =>
 //       debounce((): void => {
 //         flowResult(dataCubeState.editor.codePanel.parseQuery()).catch(
-//           replStore.applicationStore.logUnhandledError,
+//           repl.application.logUnhandledError,
 //         );
 //       }, 1000),
-//     [dataCubeState, replStore.applicationStore.logUnhandledError],
+//     [dataCubeState, repl.application.logUnhandledError],
 //   );
 
 //   if (editor) {
@@ -111,7 +111,7 @@ import { WIP_Badge } from './DataCubeEditorShared.js';
 //       const _editor = monacoEditorAPI.create(element, {
 //         ...getBaseCodeEditorOptions(),
 //         language: CODE_EDITOR_LANGUAGE.PURE,
-//         theme: applicationStore.layoutService
+//         theme: application.layoutService
 //           .TEMPORARY__isLightColorThemeEnabled
 //           ? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
 //           : CODE_EDITOR_THEME.DEFAULT_DARK,
@@ -119,7 +119,7 @@ import { WIP_Badge } from './DataCubeEditorShared.js';
 //       setEditor(_editor);
 //     }
 //   }, [
-//     applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
+//     application.layoutService.TEMPORARY__isLightColorThemeEnabled,
 //     editor,
 //   ]);
 
@@ -143,12 +143,12 @@ import { WIP_Badge } from './DataCubeEditorShared.js';
 // });
 
 export const DataCubeEditorCodePanel = observer(() => {
-  const replStore = useREPLStore();
-  const panel = replStore.dataCube.editor.sorts;
+  const repl = useREPLStore();
+  const panel = repl.dataCube.editor.sorts;
   // const executeLambda = (): void => {
   //   // TODO: @akphi
   //   // flowResult(dataCubeState.executeLambda()).catch(
-  //   //   editorStore.applicationStore.logUnhandledError,
+  //   //   editorStore.application.logUnhandledError,
   //   // );
   // };
 
@@ -162,7 +162,7 @@ export const DataCubeEditorCodePanel = observer(() => {
         </div>
         <div className="ml-1 flex h-6 items-center text-xl font-medium">
           Code
-          <WIP_Badge />
+          <FormBadge_WIP />
         </div>
       </div>
       <div className="flex h-[calc(100%_-_24px)] w-full"></div>

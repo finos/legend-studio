@@ -27,7 +27,7 @@ import type { DataCubeEditorColumnsSelectorState } from '../../../stores/dataCub
 import type { DataCubeEditorSortColumnState } from '../../../stores/dataCube/editor/DataCubeEditorSortsPanelState.js';
 import { DataCubeQuerySortOperation } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 import { IllegalStateError } from '@finos/legend-shared';
-import { WIP_Badge } from './DataCubeEditorShared.js';
+import { FormBadge_WIP } from '../../repl/Form.js';
 
 function getSortDirectionLabel(operation: DataCubeQuerySortOperation) {
   switch (operation) {
@@ -89,7 +89,7 @@ const SortDirectionDropdown = observer(
             disabled={true}
           >
             {`Ascending (abs)`}
-            <WIP_Badge />
+            <FormBadge_WIP />
           </DropdownMenuItem>
           <DropdownMenuItem
             className="flex h-5 items-center px-2 text-sm hover:bg-neutral-100"
@@ -105,7 +105,7 @@ const SortDirectionDropdown = observer(
             disabled={true}
           >
             {`Descending (abs)`}
-            <WIP_Badge />
+            <FormBadge_WIP />
           </DropdownMenuItem>
         </DropdownMenu>
       </div>
@@ -114,8 +114,8 @@ const SortDirectionDropdown = observer(
 );
 
 export const DataCubeEditorSortsPanel = observer(() => {
-  const replStore = useREPLStore();
-  const panel = replStore.dataCube.editor.sorts;
+  const repl = useREPLStore();
+  const panel = repl.dataCube.editor.sorts;
 
   return (
     <div className="h-full w-full select-none p-2">

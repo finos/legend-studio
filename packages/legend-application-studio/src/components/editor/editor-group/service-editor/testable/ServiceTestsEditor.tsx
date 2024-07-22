@@ -155,7 +155,7 @@ const ServiceTestParameterEditor = observer(
       paramState.varExpression.multiplicity.lowerBound > 0;
     const type = contentTypeParamPair
       ? contentTypeParamPair.contentType
-      : paramState.varExpression.genericType?.value.rawType.name ?? 'unknown';
+      : (paramState.varExpression.genericType?.value.rawType.name ?? 'unknown');
     const paramValue =
       paramState.varExpression.genericType?.value.rawType === PrimitiveType.BYTE
         ? atob(

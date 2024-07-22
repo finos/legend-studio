@@ -89,7 +89,7 @@ export class NotificationService {
         actions ?? [],
         autoHideDuration === null
           ? undefined
-          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
+          : (autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME),
       ),
     );
   }
@@ -106,7 +106,7 @@ export class NotificationService {
         actions ?? [],
         autoHideDuration === null
           ? undefined
-          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
+          : (autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME),
       ),
     );
   }
@@ -123,7 +123,7 @@ export class NotificationService {
         actions ?? [],
         autoHideDuration === null
           ? undefined
-          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
+          : (autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME),
       ),
     );
   }
@@ -162,7 +162,7 @@ export class NotificationService {
         actions ?? [],
         autoHideDuration === null
           ? undefined
-          : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
+          : (autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME),
       ),
     );
   }

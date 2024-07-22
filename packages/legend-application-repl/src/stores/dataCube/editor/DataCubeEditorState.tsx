@@ -20,15 +20,16 @@ import { DataCubeEditorSortsPanelState } from './DataCubeEditorSortsPanelState.j
 import { DataCubeEditorCodePanelState } from './DataCubeEditorCodePanelState.js';
 import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
-import { guaranteeNonNullable, uuid } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGeneralPropertiesPanelState.js';
 import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumnPropertiesPanelState.js';
-import type { REPLWindowConfig } from '../../../components/REPLWindow.js';
 import { DataCubeEditorColumnsPanelState } from './DataCubeEditorColumnsPanelState.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeEditorVerticalPivotsPanelState } from './DataCubeEditorVerticalPivotsPanelState.js';
+import { SingletonModeDisplayState } from '../../LayoutManagerState.js';
+import { DataCubeEditor } from '../../../components/dataCube/editor/DataCubeEditor.js';
 
-export enum DATA_CUBE_EDITOR_TAB {
+export enum DataCubeEditorTab {
   GENERAL_PROPERTIES = 'General Properties',
   COLUMN_PROPERTIES = 'Column Properties',
   FILTER = 'Filter',
@@ -41,6 +42,7 @@ export enum DATA_CUBE_EDITOR_TAB {
 }
 
 export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
+  readonly display: SingletonModeDisplayState;
   readonly generalProperties: DataCubeEditorGeneralPropertiesPanelState;
   readonly columnProperties: DataCubeEditorColumnPropertiesPanelState;
   readonly columns: DataCubeEditorColumnsPanelState;
@@ -48,14 +50,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
   readonly sorts: DataCubeEditorSortsPanelState;
   readonly code: DataCubeEditorCodePanelState;
 
-  readonly window: REPLWindowConfig = {
-    uuid: uuid(),
-    title: 'Properties',
-    center: true,
-  };
-
-  isPanelOpen = false;
-  currentTab = DATA_CUBE_EDITOR_TAB.GENERAL_PROPERTIES;
+  currentTab = DataCubeEditorTab.GENERAL_PROPERTIES;
 
   constructor(dataCube: DataCubeState) {
     super(dataCube);
@@ -65,12 +60,13 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
 
       currentTab: observable,
       setCurrentTab: action,
-
-      isPanelOpen: observable,
-      openPanel: action,
-      closePanel: action,
     });
 
+    this.display = new SingletonModeDisplayState(
+      this.dataCube.repl.layout,
+      'Properties',
+      () => <DataCubeEditor />,
+    );
     this.generalProperties = new DataCubeEditorGeneralPropertiesPanelState(
       this,
     );
@@ -81,15 +77,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     this.code = new DataCubeEditorCodePanelState(this);
   }
 
-  openPanel(): void {
-    this.isPanelOpen = true;
-  }
-
-  closePanel(): void {
-    this.isPanelOpen = false;
-  }
-
-  setCurrentTab(val: DATA_CUBE_EDITOR_TAB): void {
+  setCurrentTab(val: DataCubeEditorTab): void {
     this.currentTab = val;
   }
 

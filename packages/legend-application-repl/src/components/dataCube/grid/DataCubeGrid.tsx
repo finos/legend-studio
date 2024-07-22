@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { LicenseManager } from '@ag-grid-enterprise/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { ServerSideRowModelModule } from '@ag-grid-enterprise/server-side-row-model';
 import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
@@ -26,7 +25,6 @@ import { ColumnsToolPanelModule } from '@ag-grid-enterprise/column-tool-panel';
 import { AgGridReact } from '@ag-grid-community/react';
 import { CsvExportModule } from '@ag-grid-community/csv-export';
 import { ExcelExportModule } from '@ag-grid-enterprise/excel-export';
-import { useEffect } from 'react';
 import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeIcon, Switch, cn, Global, css } from '@finos/legend-art';
 import {
@@ -37,7 +35,7 @@ import {
   generateFontUnderlineUtilityClassName,
   generateTextAlignUtilityClassName,
   generateTextColorUtilityClassName,
-  INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME,
+  INTERNAL__GridClientUtilityCssClassName,
 } from '../../../stores/dataCube/grid/DataCubeGridClientEngine.js';
 import { RangeSelectionModule } from '@ag-grid-enterprise/range-selection';
 import {
@@ -62,7 +60,7 @@ import { generateBaseGridOptions } from '../../../stores/dataCube/grid/DataCubeG
 const __INTERNAL__original_console_error = console.error; // eslint-disable-line no-console
 // eslint-disable-next-line no-console
 console.error = (message?: unknown, ...agrs: unknown[]): void => {
-  console.log(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
+  console.debug(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
 };
 
 function textColorStyle(
@@ -79,7 +77,7 @@ function textColorStyle(
   )
     .map(
       (color) =>
-        `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateTextColorUtilityClassName(color, key)}{color:${color};}`,
+        `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateTextColorUtilityClassName(color, key)}{color:${color};}`,
     )
     .join('\n')}`;
 }
@@ -98,21 +96,21 @@ function backgroundColorStyle(
   )
     .map(
       (color) =>
-        `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateBackgroundColorUtilityClassName(color, key)}{background-color:${color};}`,
+        `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateBackgroundColorUtilityClassName(color, key)}{background-color:${color};}`,
     )
     .join('\n')};`;
 }
 
 export const DataCubeGridStyleController = observer(() => {
-  const replStore = useREPLStore();
-  const dataCube = replStore.dataCube;
+  const repl = useREPLStore();
+  const dataCube = repl.dataCube;
   const grid = dataCube.grid;
   const configuration = grid.queryConfiguration;
 
   return (
     <Global
       styles={css`
-        .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} {
+        .${INTERNAL__GridClientUtilityCssClassName.ROOT} {
           --ag-odd-row-background-color: ${grid.queryConfiguration
             .alternateRowsStandardMode && !grid.queryConfiguration.alternateRows
             ? DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR
@@ -127,8 +125,8 @@ export const DataCubeGridStyleController = observer(() => {
             ? grid.queryConfiguration.gridLineColor
             : 'transparent'};
         }
-        .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT}
-          .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.HIGHLIGHT_ROW} {
+        .${INTERNAL__GridClientUtilityCssClassName.ROOT}
+          .${INTERNAL__GridClientUtilityCssClassName.HIGHLIGHT_ROW} {
           background-color: ${grid.queryConfiguration.alternateRows
             ? grid.queryConfiguration.alternateRowsColor
             : DEFAULT_ROW_BACKGROUND_COLOR};
@@ -140,7 +138,7 @@ export const DataCubeGridStyleController = observer(() => {
         ]
           .map(
             (fontFamily) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateFontFamilyUtilityClassName(fontFamily)}{font-family:${fontFamily},sans-serif;}`,
+              `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontFamilyUtilityClassName(fontFamily)}{font-family:${fontFamily},sans-serif;}`,
           )
           .join('\n')}
         ${[
@@ -150,7 +148,7 @@ export const DataCubeGridStyleController = observer(() => {
         ]
           .map(
             (fontFamily) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateFontFamilyUtilityClassName(fontFamily)}{font-family:${fontFamily},serif;}`,
+              `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontFamilyUtilityClassName(fontFamily)}{font-family:${fontFamily},serif;}`,
           )
           .join('\n')}
         ${[
@@ -160,10 +158,10 @@ export const DataCubeGridStyleController = observer(() => {
         ]
           .map(
             (fontFamily) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateFontFamilyUtilityClassName(fontFamily)}{font-family:${fontFamily},monospace;}`,
+              `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontFamilyUtilityClassName(fontFamily)}{font-family:${fontFamily},monospace;}`,
           )
           .join('\n')}
-          .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_BOLD} {
+          .${INTERNAL__GridClientUtilityCssClassName.FONT_BOLD} {
           font-weight: 700;
         }
         ${[
@@ -172,11 +170,11 @@ export const DataCubeGridStyleController = observer(() => {
         ]
           .map(
             (fontSize) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateFontSizeUtilityClassName(fontSize)}{font-size:${fontSize}px;}`,
+              `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontSizeUtilityClassName(fontSize)}{font-size:${fontSize}px;}`,
           )
           .join('\n')}
-        .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT}
-          .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_ITALIC} {
+        .${INTERNAL__GridClientUtilityCssClassName.ROOT}
+          .${INTERNAL__GridClientUtilityCssClassName.FONT_ITALIC} {
           font-style: italic;
         }
         ${[
@@ -188,10 +186,10 @@ export const DataCubeGridStyleController = observer(() => {
         ]
           .map(
             (variant) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateFontUnderlineUtilityClassName(variant)}{text-decoration:underline ${variant};}`,
+              `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontUnderlineUtilityClassName(variant)}{text-decoration:underline ${variant};}`,
           )
           .join('\n')}
-        .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_STRIKETHROUGH} {
+        .${INTERNAL__GridClientUtilityCssClassName.ROOT} .${INTERNAL__GridClientUtilityCssClassName.FONT_STRIKETHROUGH} {
           text-decoration: line-through;
         }
         ${[
@@ -201,7 +199,7 @@ export const DataCubeGridStyleController = observer(() => {
         ]
           .map(
             (fontCase) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateFontCaseUtilityClassName(fontCase)}{text-transform:${fontCase};}`,
+              `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontCaseUtilityClassName(fontCase)}{text-transform:${fontCase};}`,
           )
           .join('\n')}
         ${[
@@ -211,7 +209,7 @@ export const DataCubeGridStyleController = observer(() => {
         ]
           .map(
             (alignment) =>
-              `.${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT} .${generateTextAlignUtilityClassName(alignment)}{text-align:${alignment};}`,
+              `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateTextAlignUtilityClassName(alignment)}{text-align:${alignment};}`,
           )
           .join('\n')};
         ${backgroundColorStyle('normal', configuration)}
@@ -222,12 +220,12 @@ export const DataCubeGridStyleController = observer(() => {
         ${textColorStyle('zero', configuration)}
         ${textColorStyle('negative', configuration)}
         ${textColorStyle('error', configuration)}
-        .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT}
-          .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BLUR} {
+        .${INTERNAL__GridClientUtilityCssClassName.ROOT}
+          .${INTERNAL__GridClientUtilityCssClassName.BLUR} {
           filter: blur(3px);
         }
-        .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.ROOT}
-          .${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BLUR}:hover {
+        .${INTERNAL__GridClientUtilityCssClassName.ROOT}
+          .${INTERNAL__GridClientUtilityCssClassName.BLUR}:hover {
           filter: none;
         }
       `}
@@ -236,12 +234,15 @@ export const DataCubeGridStyleController = observer(() => {
 });
 
 const DataCubeGridScroller = observer(() => {
-  const replStore = useREPLStore();
-  const dataCube = replStore.dataCube;
+  const repl = useREPLStore();
+  const dataCube = repl.dataCube;
   const grid = dataCube.grid;
   const scrollHintText = grid.scrollHintText;
   const gridClientSideBarElement = document.querySelector(
     '.data-cube-grid .ag-side-bar',
+  );
+  const gridVerticalScrollbar = document.querySelector(
+    '.data-cube-grid  .ag-body-vertical-scroll',
   );
 
   return (
@@ -249,9 +250,12 @@ const DataCubeGridScroller = observer(() => {
       className="absolute -top-9 flex items-center rounded-sm border border-neutral-300 bg-neutral-100 p-1 pr-2 text-neutral-500 shadow-sm"
       style={{
         right:
-          gridClientSideBarElement !== null
+          (gridClientSideBarElement !== null
             ? gridClientSideBarElement.getBoundingClientRect().width + 12
-            : 16,
+            : 16) +
+          (gridVerticalScrollbar !== null
+            ? gridVerticalScrollbar.getBoundingClientRect().width
+            : 0),
       }}
     >
       <DataCubeIcon.TableScroll className="text-lg" />
@@ -261,8 +265,8 @@ const DataCubeGridScroller = observer(() => {
 });
 
 const DataCubeGridStatusBar = observer(() => {
-  const replStore = useREPLStore();
-  const dataCube = replStore.dataCube;
+  const repl = useREPLStore();
+  const dataCube = repl.dataCube;
   const grid = dataCube.grid;
 
   return (
@@ -332,8 +336,8 @@ const DataCubeGridStatusBar = observer(() => {
 });
 
 const DataCubeGridClient = observer(() => {
-  const replStore = useREPLStore();
-  const dataCube = replStore.dataCube;
+  const repl = useREPLStore();
+  const dataCube = repl.dataCube;
   const grid = dataCube.grid;
 
   return (
@@ -370,22 +374,10 @@ const DataCubeGridClient = observer(() => {
   );
 });
 
-export const DataCubeGrid = observer(() => {
-  const replStore = useREPLStore();
-  const dataCube = replStore.dataCube;
-  const grid = dataCube.grid;
-
-  useEffect(() => {
-    if (grid.clientLicenseKey) {
-      LicenseManager.setLicenseKey(grid.clientLicenseKey);
-    }
-  }, [grid.clientLicenseKey]);
-
-  return (
-    <div className="flex-1">
-      <DataCubeGridStyleController />
-      <DataCubeGridClient />
-      <DataCubeGridStatusBar />
-    </div>
-  );
-});
+export const DataCubeGrid = observer(() => (
+  <div className="h-full w-full">
+    <DataCubeGridStyleController />
+    <DataCubeGridClient />
+    <DataCubeGridStatusBar />
+  </div>
+));

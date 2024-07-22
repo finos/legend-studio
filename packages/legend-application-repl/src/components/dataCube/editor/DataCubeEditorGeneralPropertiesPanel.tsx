@@ -32,20 +32,20 @@ import {
   DEFAULT_ZERO_FOREGROUND_COLOR,
 } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 import {
-  DataCubeEditorCheckbox,
-  DataCubeEditorColorPickerButton,
-  DataCubeEditorDropdownMenu,
-  DataCubeEditorDropdownMenuItem,
-  DataCubeEditorDropdownMenuItemSeparator,
-  DataCubeEditorDropdownMenuTrigger,
-  DataCubeEditorTextInput,
-  DataCubeEditorNumberInput,
-  WIP_Badge,
-} from './DataCubeEditorShared.js';
+  FormCheckbox,
+  FormColorPickerButton,
+  FormDropdownMenu,
+  FormDropdownMenuItem,
+  FormDropdownMenuItemSeparator,
+  FormDropdownMenuTrigger,
+  FormTextInput,
+  FormNumberInput,
+  FormBadge_WIP,
+} from '../../repl/Form.js';
 
 export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
-  const replStore = useREPLStore();
-  const panel = replStore.dataCube.editor.generalProperties;
+  const repl = useREPLStore();
+  const panel = repl.dataCube.editor.generalProperties;
   const configuration = panel.configuration;
   const [
     openInitialExpandLevelDropdown,
@@ -91,7 +91,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Report Title:
             </div>
-            <DataCubeEditorTextInput
+            <FormTextInput
               className="h-6 w-96 text-lg font-semibold"
               value={panel.name}
               onChange={(event) => {
@@ -104,19 +104,19 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Initially Expand to Level:
             </div>
-            <DataCubeEditorDropdownMenuTrigger
+            <FormDropdownMenuTrigger
               className="w-14"
               onClick={openInitialExpandLevelDropdown}
               disabled={true}
             >
               {configuration.initialExpandLevel ?? '(None)'}
-            </DataCubeEditorDropdownMenuTrigger>
-            <DataCubeEditorDropdownMenu
+            </FormDropdownMenuTrigger>
+            <FormDropdownMenu
               className="w-14"
               {...initialExpandLevelDropdownProps}
             >
               {[undefined, 1, 2, 3, 4, 5, 6, 7, 8].map((level) => (
-                <DataCubeEditorDropdownMenuItem
+                <FormDropdownMenuItem
                   key={level ?? ''}
                   onClick={() => {
                     configuration.setInitialExpandLevel(level);
@@ -124,17 +124,17 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   }}
                 >
                   {level ?? '(None)'}
-                </DataCubeEditorDropdownMenuItem>
+                </FormDropdownMenuItem>
               ))}
-            </DataCubeEditorDropdownMenu>
-            <WIP_Badge />
+            </FormDropdownMenu>
+            <FormBadge_WIP />
           </div>
 
           <div className="mt-2 flex h-5 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Show Root Aggregation?
             </div>
-            <DataCubeEditorCheckbox
+            <FormCheckbox
               checked={configuration.showRootAggregation}
               onChange={() =>
                 configuration.setShowRootAggregation(
@@ -143,28 +143,28 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               }
               disabled={true}
             />
-            <WIP_Badge />
+            <FormBadge_WIP />
           </div>
 
           <div className="mt-2 flex h-5 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Show Leaf Count?
             </div>
-            <DataCubeEditorCheckbox
+            <FormCheckbox
               checked={configuration.showLeafCount}
               onChange={() =>
                 configuration.setShowLeafCount(!configuration.showLeafCount)
               }
               disabled={true}
             />
-            <WIP_Badge />
+            <FormBadge_WIP />
           </div>
 
           <div className="mt-2 flex h-5 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Show Lines?
             </div>
-            <DataCubeEditorCheckbox
+            <FormCheckbox
               label="Tree"
               checked={configuration.showTreeLines}
               onChange={() =>
@@ -172,8 +172,8 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               }
               disabled={true}
             />
-            <WIP_Badge />
-            <DataCubeEditorCheckbox
+            <FormBadge_WIP />
+            <FormCheckbox
               className="ml-2"
               label="Horizontal"
               checked={configuration.showHorizontalGridLines}
@@ -183,7 +183,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 )
               }
             />
-            <DataCubeEditorCheckbox
+            <FormCheckbox
               className="ml-2"
               label="Vertical"
               checked={configuration.showVerticalGridLines}
@@ -194,7 +194,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               }
             />
             <div className="ml-2 h-[1px] w-2 flex-shrink-0 bg-neutral-400" />
-            <DataCubeEditorColorPickerButton
+            <FormColorPickerButton
               className="ml-2"
               color={configuration.gridLineColor}
               defaultColor={DEFAULT_GRID_LINE_COLOR}
@@ -206,17 +206,14 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Show Selection Stats:
             </div>
-            <DataCubeEditorDropdownMenuTrigger
+            <FormDropdownMenuTrigger
               className="w-14"
               onClick={openSelectionStatDropdown}
               disabled={true}
             >
               {'(None)'}
-            </DataCubeEditorDropdownMenuTrigger>
-            <DataCubeEditorDropdownMenu
-              className="w-14"
-              {...selectionStatDropdownProps}
-            >
+            </FormDropdownMenuTrigger>
+            <FormDropdownMenu className="w-14" {...selectionStatDropdownProps}>
               {[
                 DataCubeSelectionStat.SUM,
                 DataCubeSelectionStat.AVERAGE,
@@ -224,7 +221,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 DataCubeSelectionStat.MIN,
                 DataCubeSelectionStat.MAX,
               ].map((operation) => (
-                <DataCubeEditorDropdownMenuItem
+                <FormDropdownMenuItem
                   key={operation}
                   onClick={() => {
                     // TODO
@@ -232,17 +229,17 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   }}
                 >
                   {operation}
-                </DataCubeEditorDropdownMenuItem>
+                </FormDropdownMenuItem>
               ))}
-            </DataCubeEditorDropdownMenu>
-            <WIP_Badge />
+            </FormDropdownMenu>
+            <FormBadge_WIP />
           </div>
 
           <div className="mt-2 flex h-5 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Row Limit:
             </div>
-            <DataCubeEditorNumberInput
+            <FormNumberInput
               className="w-14 text-sm"
               value={panel.limit}
               min={-1}
@@ -261,7 +258,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
 
           <div className="mt-2 flex h-5 w-full items-center">
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm" />
-            <DataCubeEditorCheckbox
+            <FormCheckbox
               label="Display warning when truncated"
               checked={configuration.showWarningForTruncatedResult}
               onChange={() =>
@@ -276,7 +273,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Hightlight Rows:
             </div>
-            <DataCubeEditorCheckbox
+            <FormCheckbox
               label="Standard mode"
               checked={configuration.alternateRowsStandardMode}
               onChange={() => {
@@ -288,7 +285,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 }
               }}
             />
-            <DataCubeEditorCheckbox
+            <FormCheckbox
               className="ml-3"
               label="Custom: Alternate color every"
               checked={configuration.alternateRows}
@@ -301,7 +298,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 }
               }}
             />
-            <DataCubeEditorNumberInput
+            <FormNumberInput
               className="ml-1.5 w-14 text-sm"
               disabled={!configuration.alternateRows}
               min={1}
@@ -314,7 +311,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               }
             />
             <div className="ml-1.5 flex-shrink-0 text-sm">{`row(s)`}</div>
-            <DataCubeEditorColorPickerButton
+            <FormColorPickerButton
               className="ml-[5px]"
               disabled={!configuration.alternateRows}
               color={configuration.alternateRowsColor}
@@ -329,22 +326,19 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Default Font:
             </div>
-            <DataCubeEditorDropdownMenuTrigger
+            <FormDropdownMenuTrigger
               className="w-28"
               onClick={openFontFamilyDropdown}
             >
               {configuration.fontFamily}
-            </DataCubeEditorDropdownMenuTrigger>
-            <DataCubeEditorDropdownMenu
-              className="w-28"
-              {...fontFamilyDropdownProps}
-            >
+            </FormDropdownMenuTrigger>
+            <FormDropdownMenu className="w-28" {...fontFamilyDropdownProps}>
               {[
                 DataCubeFont.ARIAL,
                 DataCubeFont.ROBOTO,
                 DataCubeFont.ROBOTO_CONDENSED,
               ].map((font) => (
-                <DataCubeEditorDropdownMenuItem
+                <FormDropdownMenuItem
                   key={font}
                   onClick={() => {
                     configuration.setFontFamily(font);
@@ -352,15 +346,15 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   }}
                 >
                   {font}
-                </DataCubeEditorDropdownMenuItem>
+                </FormDropdownMenuItem>
               ))}
-              <DataCubeEditorDropdownMenuItemSeparator />
+              <FormDropdownMenuItemSeparator />
               {[
                 DataCubeFont.GEORGIA,
                 DataCubeFont.ROBOTO_SERIF,
                 DataCubeFont.TIMES_NEW_ROMAN,
               ].map((font) => (
-                <DataCubeEditorDropdownMenuItem
+                <FormDropdownMenuItem
                   key={font}
                   onClick={() => {
                     configuration.setFontFamily(font);
@@ -368,15 +362,15 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   }}
                 >
                   {font}
-                </DataCubeEditorDropdownMenuItem>
+                </FormDropdownMenuItem>
               ))}
-              <DataCubeEditorDropdownMenuItemSeparator />
+              <FormDropdownMenuItemSeparator />
               {[
                 DataCubeFont.JERBRAINS_MONO,
                 DataCubeFont.ROBOTO_MONO,
                 DataCubeFont.UBUNTU_MONO,
               ].map((font) => (
-                <DataCubeEditorDropdownMenuItem
+                <FormDropdownMenuItem
                   key={font}
                   onClick={() => {
                     configuration.setFontFamily(font);
@@ -384,25 +378,22 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   }}
                 >
                   {font}
-                </DataCubeEditorDropdownMenuItem>
+                </FormDropdownMenuItem>
               ))}
-            </DataCubeEditorDropdownMenu>
+            </FormDropdownMenu>
 
-            <DataCubeEditorDropdownMenuTrigger
+            <FormDropdownMenuTrigger
               className="ml-1 w-10"
               onClick={openFontSizeDropdown}
             >
               {configuration.fontSize}
-            </DataCubeEditorDropdownMenuTrigger>
-            <DataCubeEditorDropdownMenu
-              className="w-10"
-              {...openFontSizeDropdownProps}
-            >
+            </FormDropdownMenuTrigger>
+            <FormDropdownMenu className="w-10" {...openFontSizeDropdownProps}>
               {[
                 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28,
                 32, 36, 48, 72,
               ].map((size) => (
-                <DataCubeEditorDropdownMenuItem
+                <FormDropdownMenuItem
                   key={size}
                   onClick={() => {
                     configuration.setFontSize(size);
@@ -410,9 +401,9 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   }}
                 >
                   {size}
-                </DataCubeEditorDropdownMenuItem>
+                </FormDropdownMenuItem>
               ))}
-            </DataCubeEditorDropdownMenu>
+            </FormDropdownMenu>
 
             <div className="relative ml-2 flex h-5">
               <button
@@ -475,7 +466,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 />
                 <DataCubeIcon.CaretDown />
               </button>
-              <DataCubeEditorDropdownMenu
+              <FormDropdownMenu
                 className="w-14"
                 {...fontFormatUnderlineVariantDropdownProps}
               >
@@ -486,7 +477,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   DataCubeFontFormatUnderlineVariant.DOUBLE,
                   DataCubeFontFormatUnderlineVariant.WAVY,
                 ].map((variant) => (
-                  <DataCubeEditorDropdownMenuItem
+                  <FormDropdownMenuItem
                     className="relative"
                     key={variant}
                     onClick={() => {
@@ -520,9 +511,9 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                     >
                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     </div>
-                  </DataCubeEditorDropdownMenuItem>
+                  </FormDropdownMenuItem>
                 ))}
-              </DataCubeEditorDropdownMenu>
+              </FormDropdownMenu>
               <button
                 title="Strikethrough"
                 className={cn(
@@ -571,16 +562,13 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                 />
                 <DataCubeIcon.CaretDown />
               </button>
-              <DataCubeEditorDropdownMenu
-                className="w-20"
-                {...fontCaseDropdownProps}
-              >
+              <FormDropdownMenu className="w-20" {...fontCaseDropdownProps}>
                 {[
                   DataCubeFontCase.LOWERCASE,
                   DataCubeFontCase.UPPERCASE,
                   DataCubeFontCase.CAPITALIZE,
                 ].map((fontCase) => (
-                  <DataCubeEditorDropdownMenuItem
+                  <FormDropdownMenuItem
                     className="relative"
                     key={fontCase}
                     onClick={() => {
@@ -598,9 +586,9 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                     >
                       {fontCase}
                     </div>
-                  </DataCubeEditorDropdownMenuItem>
+                  </FormDropdownMenuItem>
                 ))}
-              </DataCubeEditorDropdownMenu>
+              </FormDropdownMenu>
             </div>
 
             <div className="relative ml-2 flex h-5">
@@ -680,7 +668,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   Foreground:
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                  <DataCubeEditorColorPickerButton
+                  <FormColorPickerButton
                     color={configuration.normalForegroundColor}
                     defaultColor={DEFAULT_FOREGROUND_COLOR}
                     onChange={(value) =>
@@ -689,7 +677,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                  <DataCubeEditorColorPickerButton
+                  <FormColorPickerButton
                     color={configuration.negativeForegroundColor}
                     defaultColor={DEFAULT_NEGATIVE_FOREGROUND_COLOR}
                     onChange={(value) =>
@@ -698,7 +686,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                  <DataCubeEditorColorPickerButton
+                  <FormColorPickerButton
                     color={configuration.zeroForegroundColor}
                     defaultColor={DEFAULT_ZERO_FOREGROUND_COLOR}
                     onChange={(value) =>
@@ -707,7 +695,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                  <DataCubeEditorColorPickerButton
+                  <FormColorPickerButton
                     color={configuration.errorForegroundColor}
                     defaultColor={DEFAULT_ERROR_FOREGROUND_COLOR}
                     onChange={(value) =>
@@ -721,7 +709,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   Background:
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                  <DataCubeEditorColorPickerButton
+                  <FormColorPickerButton
                     color={configuration.normalBackgroundColor}
                     defaultColor={DEFAULT_BACKGROUND_COLOR}
                     onChange={(value) =>
@@ -730,7 +718,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                  <DataCubeEditorColorPickerButton
+                  <FormColorPickerButton
                     color={configuration.negativeBackgroundColor}
                     defaultColor={DEFAULT_BACKGROUND_COLOR}
                     onChange={(value) =>
@@ -739,7 +727,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                  <DataCubeEditorColorPickerButton
+                  <FormColorPickerButton
                     color={configuration.zeroBackgroundColor}
                     defaultColor={DEFAULT_BACKGROUND_COLOR}
                     onChange={(value) =>
@@ -748,7 +736,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
                   />
                 </div>
                 <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                  <DataCubeEditorColorPickerButton
+                  <FormColorPickerButton
                     color={configuration.errorBackgroundColor}
                     defaultColor={DEFAULT_BACKGROUND_COLOR}
                     onChange={(value) =>

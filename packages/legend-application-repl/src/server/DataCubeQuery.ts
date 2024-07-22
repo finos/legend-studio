@@ -49,7 +49,7 @@ export class DataCubeQueryColumn {
   );
 }
 
-enum DATA_CUBE_QUERY_SOURCE_TYPE {
+enum DataCubeQuerySourceType {
   REPL_EXECUTED_QUERY = 'REPLExecutedQuery',
 }
 
@@ -57,7 +57,7 @@ export class DataCubeQuerySourceREPLExecutedQuery extends DataCubeQuerySource {
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeQuerySourceREPLExecutedQuery, {
       _type: usingConstantValueSchema(
-        DATA_CUBE_QUERY_SOURCE_TYPE.REPL_EXECUTED_QUERY,
+        DataCubeQuerySourceType.REPL_EXECUTED_QUERY,
       ),
       columns: list(usingModelSchema(DataCubeQueryColumn.serialization.schema)),
       query: primitive(),
@@ -70,7 +70,7 @@ function deserializeQuerySource(
   json: PlainObject<DataCubeQuerySource>,
 ): DataCubeQuerySource {
   switch (json._type) {
-    case DATA_CUBE_QUERY_SOURCE_TYPE.REPL_EXECUTED_QUERY:
+    case DataCubeQuerySourceType.REPL_EXECUTED_QUERY:
       return deserialize(
         DataCubeQuerySourceREPLExecutedQuery.serialization.schema,
         json,

@@ -37,7 +37,7 @@ import {
   GridClientAggregateOperation,
   GridClientSortDirection,
   INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
-  INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME,
+  INTERNAL__GridClientUtilityCssClassName,
   generateFontFamilyUtilityClassName,
   generateFontSizeUtilityClassName,
   generateFontUnderlineUtilityClassName,
@@ -301,10 +301,9 @@ function _displaySpec(columnData: ColumnData) {
     cellClassRules: {
       [generateFontFamilyUtilityClassName(fontFamily)]: () => true,
       [generateFontSizeUtilityClassName(fontSize)]: () => true,
-      [INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_BOLD]: () => fontBold,
-      [INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_ITALIC]: () =>
-        fontItalic,
-      [INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_STRIKETHROUGH]: () =>
+      [INTERNAL__GridClientUtilityCssClassName.FONT_BOLD]: () => fontBold,
+      [INTERNAL__GridClientUtilityCssClassName.FONT_ITALIC]: () => fontItalic,
+      [INTERNAL__GridClientUtilityCssClassName.FONT_STRIKETHROUGH]: () =>
         fontStrikethrough,
       [generateFontUnderlineUtilityClassName(fontUnderline)]: () =>
         Boolean(fontUnderline),
@@ -346,7 +345,7 @@ function _displaySpec(columnData: ColumnData) {
       ) => params.node.failedLoad,
       [generateBackgroundColorUtilityClassName(errorBackgroundColor, 'error')]:
         (params) => params.node.failedLoad,
-      [INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BLUR]: () => column.blur,
+      [INTERNAL__GridClientUtilityCssClassName.BLUR]: () => column.blur,
     },
     cellRenderer: cellRenderer,
     pinned:
@@ -449,6 +448,7 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     groupDisplayType: 'custom', // keeps the column set stable even when row grouping is used
     suppressRowGroupHidesColumns: true, // keeps the column set stable even when row grouping is used
     suppressAggFuncInHeader: true, //  keeps the columns stable when aggregation is used
+    // purgeClosedRowNodes: true, // remove closed row nodes from the cache to allow reloading failed rows? - or should we have declarative action to retry?
     getChildCount: (data) =>
       data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID],
     // -------------------------------------- PIVOT --------------------------------------
@@ -510,7 +510,7 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     tooltipShowDelay: INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY,
     tooltipInteraction: true,
     // -------------------------------------- COLUMN MOVING --------------------------------------
-    // suppressDragLeaveHidesColumns: true,
+    suppressDragLeaveHidesColumns: true, // disable this since it's quite easy to accidentally hide columns while moving
     // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
     suppressScrollOnNewData: true,
     suppressServerSideFullWidthLoadingRow: true, // make sure each column has its own loading indicator instead of the whole row
@@ -537,7 +537,7 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
       ],
       position: 'right',
     },
-    // allowDragFromColumnsToolPanel: true,
+    allowDragFromColumnsToolPanel: true,
     // -------------------------------------- PERFORMANCE --------------------------------------
     animateRows: false, // improve performance
     suppressColumnMoveAnimation: true, // improve performance
@@ -560,9 +560,7 @@ export function generateGridOptionsFromSnapshot(
      */
     rowClassRules: configuration.alternateRows
       ? {
-          [INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.HIGHLIGHT_ROW]: (
-            params,
-          ) =>
+          [INTERNAL__GridClientUtilityCssClassName.HIGHLIGHT_ROW]: (params) =>
             params.rowIndex % (configuration.alternateRowsCount * 2) >=
             configuration.alternateRowsCount,
         }

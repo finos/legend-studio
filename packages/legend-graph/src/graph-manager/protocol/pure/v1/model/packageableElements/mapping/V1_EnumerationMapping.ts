@@ -46,7 +46,7 @@ export class V1_EnumerationMapping implements Hashable {
       // otherwise, we don't need to account for the source type in hash computation
       // If there is no enum value mapping, ignore the source type since it's synthetic and used by the editor
       this.enumValueMappings.length
-        ? getNullableFirstEntry(
+        ? (getNullableFirstEntry(
             Array.from(
               new Set(
                 this.enumValueMappings.flatMap((evm) =>
@@ -54,7 +54,7 @@ export class V1_EnumerationMapping implements Hashable {
                 ),
               ).values(),
             ),
-          ) ?? ''
+          ) ?? '')
         : '', // source type
       hashArray(this.enumValueMappings),
     ]);

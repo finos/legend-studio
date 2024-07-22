@@ -48,7 +48,7 @@ export enum DataCubeGridClientExportFormat {
   PDF = 'PDF',
 }
 
-export enum INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME {
+export enum INTERNAL__GridClientUtilityCssClassName {
   ROOT = 'data-cube-grid.ag-theme-balham',
   HIGHLIGHT_ROW = 'data-cube-grid__utility--highlight-row',
   SHOW_VERTICAL_GRID_LINES = 'data-cube-grid__utility--show-vertical-grid-lines',
@@ -68,29 +68,29 @@ export enum INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME {
   BACKGROUND_COLOR_PREFIX = 'data-cube-grid__utility--background-color-',
 }
 export const generateFontFamilyUtilityClassName = (fontFamily: string) =>
-  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_FAMILY_PREFIX}${fontFamily.replaceAll(' ', '-')}`;
+  `${INTERNAL__GridClientUtilityCssClassName.FONT_FAMILY_PREFIX}${fontFamily.replaceAll(' ', '-')}`;
 export const generateFontSizeUtilityClassName = (fontSize: number) =>
-  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_SIZE_PREFIX}${fontSize}`;
+  `${INTERNAL__GridClientUtilityCssClassName.FONT_SIZE_PREFIX}${fontSize}`;
 export const generateFontUnderlineUtilityClassName = (
   variant: string | undefined,
 ) =>
-  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_UNDERLINE_PREFIX}${variant ?? 'none'}`;
+  `${INTERNAL__GridClientUtilityCssClassName.FONT_UNDERLINE_PREFIX}${variant ?? 'none'}`;
 export const generateFontCaseUtilityClassName = (
   fontCase: string | undefined,
 ) =>
-  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.FONT_CASE_PREFIX}${fontCase ?? 'none'}`;
+  `${INTERNAL__GridClientUtilityCssClassName.FONT_CASE_PREFIX}${fontCase ?? 'none'}`;
 export const generateTextAlignUtilityClassName = (alignment: string) =>
-  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.TEXT_ALIGN_PREFIX}${alignment}`;
+  `${INTERNAL__GridClientUtilityCssClassName.TEXT_ALIGN_PREFIX}${alignment}`;
 export const generateTextColorUtilityClassName = (
   color: string,
   key: DataCubeConfigurationColorKey,
 ) =>
-  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.TEXT_COLOR_PREFIX}${key}-${color.substring(1)}`;
+  `${INTERNAL__GridClientUtilityCssClassName.TEXT_COLOR_PREFIX}${key}-${color.substring(1)}`;
 export const generateBackgroundColorUtilityClassName = (
   color: string,
   key: DataCubeConfigurationColorKey,
 ) =>
-  `${INTERNAL__GRID_CLIENT_UTILITY_CSS_CLASS_NAME.BACKGROUND_COLOR_PREFIX}${key}-${color.substring(1)}`;
+  `${INTERNAL__GridClientUtilityCssClassName.BACKGROUND_COLOR_PREFIX}${key}-${color.substring(1)}`;
 
 export const INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH = 200;
 export const INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH = 50;
@@ -224,9 +224,16 @@ export class DataCubeGridClientServerSideDataSource
       });
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
-      const result =
-        await this.grid.dataCube.infrastructure.engine.executeQuery(lambda);
-      const rowData = TDStoRowData(result.result);
+      const result = await this.grid.dataCube.engine.executeQuery(lambda);
+      const rowData = TDStoRowData(result.result.result);
+      if (this.grid.dataCube.engine.enableDebugMode) {
+        this.grid.dataCube.application.debugProcess(
+          `Execution`,
+          `\nConfig: pagination=${this.grid.isPaginationEnabled}`,
+          `\nStats: ${rowData.length} rows, ${result.result.result.columns.length} columns`,
+          `\nSQL: ${result.executedSQL}`,
+        );
+      }
       if (this.grid.isPaginationEnabled) {
         params.success({ rowData });
         // Only update row count when loading the top-level drilldown data
@@ -251,7 +258,11 @@ export class DataCubeGridClientServerSideDataSource
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.grid.dataCube.application.notificationService.notifyError(error);
+      this.grid.dataCube.repl.notifyError(
+        error,
+        `Data fetch failure: ${error.message}`,
+        error.stack,
+      );
       params.fail();
     } finally {
       this.grid.dataCube.endTask(task);

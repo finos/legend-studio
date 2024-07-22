@@ -189,7 +189,7 @@ export const V1_transformTableAliasToTablePointer = (
   const tablePtr = new V1_TablePtr();
   tablePtr.database = options?.TEMPORARY__resolveToFullPath
     ? tableAlias.relation.ownerReference.value.path
-    : tableAlias.relation.ownerReference.valueForSerialization ?? '';
+    : (tableAlias.relation.ownerReference.valueForSerialization ?? '');
   // NOTE: Sometimes, we interpret this, so to maintain roundtrip stability, we need to handle this differrently
   // See https://github.com/finos/legend-studio/issues/295
   tablePtr.mainTableDb = tablePtr.database;
@@ -274,7 +274,7 @@ export const V1_transformRelationalOperationElement = (
           const joinPtr = new V1_JoinPointer();
           joinPtr.db = options?.TEMPORARY__resolveToFullPath
             ? node.join.ownerReference.value.path
-            : node.join.ownerReference.valueForSerialization ?? '';
+            : (node.join.ownerReference.valueForSerialization ?? '');
           joinPtr.joinType = node.joinType;
           joinPtr.name = node.join.value.name;
           return joinPtr;

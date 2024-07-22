@@ -18,11 +18,11 @@ import { DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useREPLStore } from '../../REPLStoreProvider.js';
 import { useEffect } from 'react';
-import { WIP_Badge } from './DataCubeEditorShared.js';
+import { FormBadge_WIP } from '../../repl/Form.js';
 
 export const DataCubeEditorHorizontalPivotsPanel = observer(() => {
-  const replStore = useREPLStore();
-  const panel = replStore.dataCube.editor.sorts;
+  const repl = useREPLStore();
+  const panel = repl.dataCube.editor.sorts;
 
   useEffect(() => {}, [panel]); // TODO: @akphi - remove this dummy useEffect
 
@@ -34,7 +34,7 @@ export const DataCubeEditorHorizontalPivotsPanel = observer(() => {
         </div>
         <div className="ml-1 flex h-6 items-center text-xl font-medium">
           Horizontal Pivots
-          <WIP_Badge />
+          <FormBadge_WIP />
         </div>
       </div>
       <div className="flex h-[calc(100%_-_24px)] w-full"></div>

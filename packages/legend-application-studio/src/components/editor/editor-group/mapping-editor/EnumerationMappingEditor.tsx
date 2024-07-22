@@ -186,7 +186,7 @@ export const SourceValueInput = observer(
     const value =
       sourceValue.value instanceof Enum
         ? sourceValue.value.name
-        : sourceValue.value ?? '';
+        : (sourceValue.value ?? '');
     const onChange: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       updateSourceValue(event.target.value);
     const onBlur: React.ChangeEventHandler<HTMLInputElement> = (event) => {

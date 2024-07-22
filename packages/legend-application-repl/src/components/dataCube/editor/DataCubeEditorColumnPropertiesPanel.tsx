@@ -18,17 +18,17 @@ import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useREPLStore } from '../../REPLStoreProvider.js';
 import {
-  Advanced_Badge,
-  DataCubeEditorCheckbox,
-  DataCubeEditorColorPickerButton,
-  DataCubeEditorDropdownMenu,
-  DataCubeEditorDropdownMenuItem,
-  DataCubeEditorDropdownMenuItemSeparator,
-  DataCubeEditorDropdownMenuTrigger,
-  DataCubeEditorNumberInput,
-  DataCubeEditorTextInput,
-  WIP_Badge,
-} from './DataCubeEditorShared.js';
+  FormBadge_Advanced,
+  FormCheckbox,
+  FormColorPickerButton,
+  FormDropdownMenu,
+  FormDropdownMenuItem,
+  FormDropdownMenuItemSeparator,
+  FormDropdownMenuTrigger,
+  FormNumberInput,
+  FormTextInput,
+  FormBadge_WIP,
+} from '../../repl/Form.js';
 import {
   DataCubeAggregateFunction,
   DataCubeColumnDataType,
@@ -44,10 +44,12 @@ import {
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_URL_LABEL_QUERY_PARAM,
 } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
+import { DocumentationKey } from '../../../application/LegendREPLDocumentation.js';
+import { DocumentationPanelLink } from '../../repl/DocumentationPanel.js';
 
 export const DataCubeEditorColumnPropertiesPanel = observer(() => {
-  const replStore = useREPLStore();
-  const dataCube = replStore.dataCube;
+  const repl = useREPLStore();
+  const dataCube = repl.dataCube;
   const panel = dataCube.editor.columnProperties;
   const gridConfiguration = dataCube.editor.generalProperties.configuration;
   const selectedColumn = panel.selectedColumn;
@@ -101,14 +103,14 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
           </div>
         </div>
         <div className="flex h-full items-center pr-2">
-          <DataCubeEditorCheckbox
+          <FormCheckbox
             label="Show advanced settings?"
             checked={panel.showAdvancedSettings}
             onChange={() =>
               panel.setShowAdvancedSettings(!panel.showAdvancedSettings)
             }
           />
-          <Advanced_Badge />
+          <FormBadge_Advanced />
         </div>
       </div>
       <div className="flex h-[calc(100%_-_24px)] w-full">
@@ -117,7 +119,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
             <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
               Choose Column:
             </div>
-            <DataCubeEditorDropdownMenuTrigger
+            <FormDropdownMenuTrigger
               className="w-80"
               onClick={openColumnsDropdown}
             >
@@ -131,13 +133,10 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   </div>
                 )}
               </div>
-            </DataCubeEditorDropdownMenuTrigger>
-            <DataCubeEditorDropdownMenu
-              className="w-80"
-              {...columnsDropdownProps}
-            >
+            </FormDropdownMenuTrigger>
+            <FormDropdownMenu className="w-80" {...columnsDropdownProps}>
               {panel.configurableColumns.map((column) => (
-                <DataCubeEditorDropdownMenuItem
+                <FormDropdownMenuItem
                   key={column.name}
                   onClick={() => {
                     panel.setSelectedColumnName(column.name);
@@ -150,9 +149,9 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   <div className="ml-1.5 mr-0.5 flex h-3.5 w-12 flex-shrink-0 items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-xs font-medium uppercase text-neutral-600">
                     {column.dataType}
                   </div>
-                </DataCubeEditorDropdownMenuItem>
+                </FormDropdownMenuItem>
               ))}
-            </DataCubeEditorDropdownMenu>
+            </FormDropdownMenu>
             {panel.showAdvancedSettings && selectedColumn && (
               <>
                 <div className="mx-2 h-[1px] w-4 flex-shrink-0 bg-neutral-400" />
@@ -160,22 +159,19 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   <div className="flex h-full flex-shrink-0 items-center text-sm">
                     Kind:
                   </div>
-                  <DataCubeEditorDropdownMenuTrigger
+                  <FormDropdownMenuTrigger
                     className="ml-1 w-20"
                     onClick={openKindDropdown}
                     disabled={true}
                   >
                     {selectedColumn.kind}
-                  </DataCubeEditorDropdownMenuTrigger>
-                  <DataCubeEditorDropdownMenu
-                    className="w-20"
-                    {...kindDropdownProps}
-                  >
+                  </FormDropdownMenuTrigger>
+                  <FormDropdownMenu className="w-20" {...kindDropdownProps}>
                     {[
                       DataCubeColumnKind.DIMENSION,
                       DataCubeColumnKind.MEASURE,
                     ].map((kind) => (
-                      <DataCubeEditorDropdownMenuItem
+                      <FormDropdownMenuItem
                         key={kind}
                         onClick={() => {
                           selectedColumn.setKind(kind);
@@ -183,11 +179,15 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                         }}
                       >
                         {kind}
-                      </DataCubeEditorDropdownMenuItem>
+                      </FormDropdownMenuItem>
                     ))}
-                  </DataCubeEditorDropdownMenu>
-                  <Advanced_Badge />
-                  <WIP_Badge />
+                  </FormDropdownMenu>
+                  <FormBadge_Advanced />
+                  <FormBadge_WIP />
+                  <DocumentationPanelLink
+                    className="ml-1"
+                    documentationKey={DocumentationKey.DATA_CUBE_COLUMN_KINDS}
+                  />
                 </div>
               </>
             )}
@@ -201,7 +201,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                 <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                   Display Name:
                 </div>
-                <DataCubeEditorTextInput
+                <FormTextInput
                   className="w-80"
                   value={selectedColumn.displayName ?? ''}
                   onChange={(event) => {
@@ -219,7 +219,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                       Number Format:
                     </div>
-                    <DataCubeEditorNumberInput
+                    <FormNumberInput
                       className="w-10 text-sm"
                       min={0}
                       step={1}
@@ -231,7 +231,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <div className="ml-1 flex-shrink-0 text-sm">
                       Decimal places
                     </div>
-                    <DataCubeEditorCheckbox
+                    <FormCheckbox
                       className="ml-3"
                       label="Display commas"
                       checked={selectedColumn.displayCommas}
@@ -241,7 +241,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                         )
                       }
                     />
-                    <DataCubeEditorCheckbox
+                    <FormCheckbox
                       className="ml-3"
                       label="Negative number in parens"
                       checked={selectedColumn.negativeNumberInParens}
@@ -257,13 +257,13 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                       Number Scale:
                     </div>
-                    <DataCubeEditorDropdownMenuTrigger
+                    <FormDropdownMenuTrigger
                       className="w-32"
                       onClick={openNumberScaleDropdown}
                     >
                       {selectedColumn.numberScale ?? '(None)'}
-                    </DataCubeEditorDropdownMenuTrigger>
-                    <DataCubeEditorDropdownMenu
+                    </FormDropdownMenuTrigger>
+                    <FormDropdownMenu
                       className="w-32"
                       {...numberScaleDropdownProps}
                     >
@@ -277,7 +277,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                         DataCubeNumberScale.TRILLIONS,
                         DataCubeNumberScale.AUTO,
                       ].map((scale) => (
-                        <DataCubeEditorDropdownMenuItem
+                        <FormDropdownMenuItem
                           key={scale ?? ''}
                           onClick={() => {
                             selectedColumn.setNumberScale(scale);
@@ -285,23 +285,23 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                           }}
                         >
                           {scale ?? '(None)'}
-                        </DataCubeEditorDropdownMenuItem>
+                        </FormDropdownMenuItem>
                       ))}
-                    </DataCubeEditorDropdownMenu>
+                    </FormDropdownMenu>
                   </div>
 
                   <div className="mt-2 flex h-5 w-full items-center">
                     <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                       Aggregation Type:
                     </div>
-                    <DataCubeEditorDropdownMenuTrigger
+                    <FormDropdownMenuTrigger
                       className="w-32"
                       onClick={openAggregationTypeDropdown}
                       disabled={true}
                     >
                       {selectedColumn.aggregateFunction ?? '(None)'}
-                    </DataCubeEditorDropdownMenuTrigger>
-                    <DataCubeEditorDropdownMenu
+                    </FormDropdownMenuTrigger>
+                    <FormDropdownMenu
                       className="w-32"
                       {...aggregationTypeDropdownProps}
                     >
@@ -312,7 +312,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                         DataCubeAggregateFunction.MIN,
                         DataCubeAggregateFunction.MAX,
                       ].map((fn) => (
-                        <DataCubeEditorDropdownMenuItem
+                        <FormDropdownMenuItem
                           key={fn}
                           onClick={() => {
                             selectedColumn.setAggregateFunction(fn);
@@ -320,17 +320,17 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                           }}
                         >
                           {fn}
-                        </DataCubeEditorDropdownMenuItem>
+                        </FormDropdownMenuItem>
                       ))}
-                    </DataCubeEditorDropdownMenu>
-                    <WIP_Badge />
+                    </FormDropdownMenu>
+                    <FormBadge_WIP />
                   </div>
 
                   <div className="mt-2 flex h-5 w-full items-center">
                     <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                       Exclude from HPivot?
                     </div>
-                    <DataCubeEditorCheckbox
+                    <FormCheckbox
                       checked={selectedColumn.excludedFromHorizontalPivot}
                       onChange={() =>
                         selectedColumn.setExcludedFromHorizontalPivot(
@@ -339,7 +339,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       }
                       disabled={true}
                     />
-                    <WIP_Badge />
+                    <FormBadge_WIP />
                   </div>
                 </>
               )}
@@ -349,8 +349,14 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   <div className="mt-2 flex h-5 w-full items-center">
                     <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                       Dislay as Link?
+                      <DocumentationPanelLink
+                        className="ml-1"
+                        documentationKey={
+                          DocumentationKey.DATA_CUBE_COLUMN_DISPLAY_AS_LINK
+                        }
+                      />
                     </div>
-                    <DataCubeEditorCheckbox
+                    <FormCheckbox
                       checked={selectedColumn.displayAsLink}
                       onChange={() =>
                         selectedColumn.setDisplayAsLink(
@@ -362,7 +368,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <div className="ml-2 mr-1.5 flex h-full flex-shrink-0 items-center text-sm">
                       Use Parameter in Link as Label:
                     </div>
-                    <DataCubeEditorTextInput
+                    <FormTextInput
                       className="w-48"
                       placeholder={DEFAULT_URL_LABEL_QUERY_PARAM}
                       value={selectedColumn.linkLabelParameter ?? ''}
@@ -381,13 +387,13 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                 <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                   Visibility:
                 </div>
-                <DataCubeEditorCheckbox
+                <FormCheckbox
                   label="Blur content"
                   checked={selectedColumn.blur}
                   onChange={() => selectedColumn.setBlur(!selectedColumn.blur)}
                   disabled={selectedColumn.hideFromView}
                 />
-                <DataCubeEditorCheckbox
+                <FormCheckbox
                   className="ml-3"
                   label="Hide from view"
                   checked={selectedColumn.hideFromView}
@@ -401,22 +407,19 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                 <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                   Pin:
                 </div>
-                <DataCubeEditorDropdownMenuTrigger
+                <FormDropdownMenuTrigger
                   className="w-14"
                   onClick={openColumnPinDropdown}
                 >
                   {selectedColumn.pinned ?? '(None)'}
-                </DataCubeEditorDropdownMenuTrigger>
-                <DataCubeEditorDropdownMenu
-                  className="w-14"
-                  {...columnPinDropdownProps}
-                >
+                </FormDropdownMenuTrigger>
+                <FormDropdownMenu className="w-14" {...columnPinDropdownProps}>
                   {[
                     undefined,
                     DataCubeColumnPinPlacement.LEFT,
                     DataCubeColumnPinPlacement.RIGHT,
                   ].map((placement) => (
-                    <DataCubeEditorDropdownMenuItem
+                    <FormDropdownMenuItem
                       key={placement ?? ''}
                       onClick={() => {
                         selectedColumn.setPinned(placement);
@@ -424,16 +427,16 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       }}
                     >
                       {placement ?? '(None)'}
-                    </DataCubeEditorDropdownMenuItem>
+                    </FormDropdownMenuItem>
                   ))}
-                </DataCubeEditorDropdownMenu>
+                </FormDropdownMenu>
               </div>
 
               <div className="mt-1.5 flex h-6 w-full items-center">
                 <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                   Width:
                 </div>
-                <DataCubeEditorCheckbox
+                <FormCheckbox
                   label="(Any)"
                   checked={
                     selectedColumn.fixedWidth === undefined &&
@@ -457,7 +460,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   }}
                 />
 
-                <DataCubeEditorCheckbox
+                <FormCheckbox
                   className="ml-3"
                   label="Fixed"
                   checked={selectedColumn.fixedWidth !== undefined}
@@ -472,7 +475,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   }}
                 />
                 <div className="ml-1 h-[1px] w-2 flex-shrink-0 bg-neutral-400" />
-                <DataCubeEditorNumberInput
+                <FormNumberInput
                   className="ml-1 w-16 text-sm"
                   min={0}
                   step={50}
@@ -488,7 +491,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   }
                 />
 
-                <DataCubeEditorCheckbox
+                <FormCheckbox
                   className="ml-3"
                   label="In range"
                   checked={
@@ -511,7 +514,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   }}
                 />
                 <div className="ml-1 h-[1px] w-2 flex-shrink-0 bg-neutral-400" />
-                <DataCubeEditorNumberInput
+                <FormNumberInput
                   className="ml-1 w-16 text-sm"
                   min={0}
                   step={50}
@@ -524,7 +527,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   disabled={selectedColumn.fixedWidth !== undefined}
                 />
                 <div className="ml-1 h-[1px] w-1 flex-shrink-0 bg-neutral-400" />
-                <DataCubeEditorNumberInput
+                <FormNumberInput
                   className="ml-1 w-16 text-sm"
                   min={selectedColumn.minWidth ?? 0}
                   step={50}
@@ -547,22 +550,19 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                 <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                   Font:
                 </div>
-                <DataCubeEditorDropdownMenuTrigger
+                <FormDropdownMenuTrigger
                   className="w-28"
                   onClick={openFontFamilyDropdown}
                 >
                   {selectedColumn.fontFamily ?? gridConfiguration.fontFamily}
-                </DataCubeEditorDropdownMenuTrigger>
-                <DataCubeEditorDropdownMenu
-                  className="w-28"
-                  {...fontFamilyDropdownProps}
-                >
+                </FormDropdownMenuTrigger>
+                <FormDropdownMenu className="w-28" {...fontFamilyDropdownProps}>
                   {[
                     DataCubeFont.ARIAL,
                     DataCubeFont.ROBOTO,
                     DataCubeFont.ROBOTO_CONDENSED,
                   ].map((font) => (
-                    <DataCubeEditorDropdownMenuItem
+                    <FormDropdownMenuItem
                       key={font}
                       onClick={() => {
                         selectedColumn.setFontFamily(font);
@@ -570,15 +570,15 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       }}
                     >
                       {font}
-                    </DataCubeEditorDropdownMenuItem>
+                    </FormDropdownMenuItem>
                   ))}
-                  <DataCubeEditorDropdownMenuItemSeparator />
+                  <FormDropdownMenuItemSeparator />
                   {[
                     DataCubeFont.GEORGIA,
                     DataCubeFont.ROBOTO_SERIF,
                     DataCubeFont.TIMES_NEW_ROMAN,
                   ].map((font) => (
-                    <DataCubeEditorDropdownMenuItem
+                    <FormDropdownMenuItem
                       key={font}
                       onClick={() => {
                         selectedColumn.setFontFamily(font);
@@ -586,15 +586,15 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       }}
                     >
                       {font}
-                    </DataCubeEditorDropdownMenuItem>
+                    </FormDropdownMenuItem>
                   ))}
-                  <DataCubeEditorDropdownMenuItemSeparator />
+                  <FormDropdownMenuItemSeparator />
                   {[
                     DataCubeFont.JERBRAINS_MONO,
                     DataCubeFont.ROBOTO_MONO,
                     DataCubeFont.UBUNTU_MONO,
                   ].map((font) => (
-                    <DataCubeEditorDropdownMenuItem
+                    <FormDropdownMenuItem
                       key={font}
                       onClick={() => {
                         selectedColumn.setFontFamily(font);
@@ -602,17 +602,17 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       }}
                     >
                       {font}
-                    </DataCubeEditorDropdownMenuItem>
+                    </FormDropdownMenuItem>
                   ))}
-                </DataCubeEditorDropdownMenu>
+                </FormDropdownMenu>
 
-                <DataCubeEditorDropdownMenuTrigger
+                <FormDropdownMenuTrigger
                   className="ml-1 w-10"
                   onClick={openFontSizeDropdown}
                 >
                   {selectedColumn.fontSize ?? gridConfiguration.fontSize}
-                </DataCubeEditorDropdownMenuTrigger>
-                <DataCubeEditorDropdownMenu
+                </FormDropdownMenuTrigger>
+                <FormDropdownMenu
                   className="w-10"
                   {...openFontSizeDropdownProps}
                 >
@@ -620,7 +620,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26,
                     28, 32, 36, 48, 72,
                   ].map((size) => (
-                    <DataCubeEditorDropdownMenuItem
+                    <FormDropdownMenuItem
                       key={size}
                       onClick={() => {
                         selectedColumn.setFontSize(size);
@@ -628,9 +628,9 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       }}
                     >
                       {size}
-                    </DataCubeEditorDropdownMenuItem>
+                    </FormDropdownMenuItem>
                   ))}
-                </DataCubeEditorDropdownMenu>
+                </FormDropdownMenu>
 
                 <div className="relative ml-2 flex h-5">
                   <button
@@ -674,7 +674,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <DataCubeIcon.FontItalic />
                   </button>
                   <button
-                    title={`Underline${selectedColumn.fontUnderline ?? gridConfiguration.fontUnderline ? ` (${selectedColumn.fontUnderline ?? gridConfiguration.fontUnderline})` : ''}`}
+                    title={`Underline${(selectedColumn.fontUnderline ?? gridConfiguration.fontUnderline) ? ` (${selectedColumn.fontUnderline ?? gridConfiguration.fontUnderline})` : ''}`}
                     className={cn(
                       'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                       {
@@ -712,7 +712,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     />
                     <DataCubeIcon.CaretDown />
                   </button>
-                  <DataCubeEditorDropdownMenu
+                  <FormDropdownMenu
                     className="w-14"
                     {...fontFormatUnderlineVariantDropdownProps}
                   >
@@ -723,7 +723,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       DataCubeFontFormatUnderlineVariant.DOUBLE,
                       DataCubeFontFormatUnderlineVariant.WAVY,
                     ].map((variant) => (
-                      <DataCubeEditorDropdownMenuItem
+                      <FormDropdownMenuItem
                         className="relative"
                         key={variant}
                         onClick={() => {
@@ -760,9 +760,9 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                         >
                           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         </div>
-                      </DataCubeEditorDropdownMenuItem>
+                      </FormDropdownMenuItem>
                     ))}
-                  </DataCubeEditorDropdownMenu>
+                  </FormDropdownMenu>
                   <button
                     title="Strikethrough"
                     className={cn(
@@ -788,7 +788,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     <DataCubeIcon.FontStrikethrough />
                   </button>
                   <button
-                    title={`Case${selectedColumn.fontCase ?? gridConfiguration.fontCase ? ` (${selectedColumn.fontCase ?? gridConfiguration.fontCase})` : ''}`}
+                    title={`Case${(selectedColumn.fontCase ?? gridConfiguration.fontCase) ? ` (${selectedColumn.fontCase ?? gridConfiguration.fontCase})` : ''}`}
                     className={cn(
                       'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
                       {
@@ -823,16 +823,13 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                     />
                     <DataCubeIcon.CaretDown />
                   </button>
-                  <DataCubeEditorDropdownMenu
-                    className="w-20"
-                    {...fontCaseDropdownProps}
-                  >
+                  <FormDropdownMenu className="w-20" {...fontCaseDropdownProps}>
                     {[
                       DataCubeFontCase.LOWERCASE,
                       DataCubeFontCase.UPPERCASE,
                       DataCubeFontCase.CAPITALIZE,
                     ].map((fontCase) => (
-                      <DataCubeEditorDropdownMenuItem
+                      <FormDropdownMenuItem
                         className="relative"
                         key={fontCase}
                         onClick={() => {
@@ -854,9 +851,9 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                         >
                           {fontCase}
                         </div>
-                      </DataCubeEditorDropdownMenuItem>
+                      </FormDropdownMenuItem>
                     ))}
-                  </DataCubeEditorDropdownMenu>
+                  </FormDropdownMenu>
                 </div>
 
                 <div className="relative ml-2 flex h-5">
@@ -945,7 +942,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       Foreground:
                     </div>
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
+                      <FormColorPickerButton
                         color={
                           selectedColumn.normalForegroundColor ??
                           gridConfiguration.normalForegroundColor
@@ -957,7 +954,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       />
                     </div>
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
+                      <FormColorPickerButton
                         color={
                           selectedColumn.negativeForegroundColor ??
                           gridConfiguration.negativeForegroundColor
@@ -969,7 +966,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       />
                     </div>
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
+                      <FormColorPickerButton
                         color={
                           selectedColumn.zeroForegroundColor ??
                           gridConfiguration.zeroForegroundColor
@@ -981,7 +978,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       />
                     </div>
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
+                      <FormColorPickerButton
                         color={
                           selectedColumn.errorForegroundColor ??
                           gridConfiguration.errorForegroundColor
@@ -998,7 +995,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       Background:
                     </div>
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
+                      <FormColorPickerButton
                         color={
                           selectedColumn.normalBackgroundColor ??
                           gridConfiguration.normalBackgroundColor
@@ -1010,7 +1007,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       />
                     </div>
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
+                      <FormColorPickerButton
                         color={
                           selectedColumn.negativeBackgroundColor ??
                           gridConfiguration.negativeBackgroundColor
@@ -1022,7 +1019,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       />
                     </div>
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
+                      <FormColorPickerButton
                         color={
                           selectedColumn.zeroBackgroundColor ??
                           gridConfiguration.zeroBackgroundColor
@@ -1034,7 +1031,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       />
                     </div>
                     <div className="flex h-full w-12 flex-shrink-0 items-center justify-center">
-                      <DataCubeEditorColorPickerButton
+                      <FormColorPickerButton
                         color={
                           selectedColumn.errorBackgroundColor ??
                           gridConfiguration.errorBackgroundColor

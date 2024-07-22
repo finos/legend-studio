@@ -21,7 +21,6 @@
 
 # Mark generated content
 /.changeset                                   linguist-generated
-**/grammar/parser/generated/**                linguist-generated
 
 # Read more about Github blob languages detector `github/linguist`
 # https://github.com/github/linguist/blob/master/docs/overrides.md

@@ -187,7 +187,7 @@ export const V1_transformPropertyReference = (
     options?.isTransformingEmbeddedPropertyMapping ||
     options?.isTransformingLocalPropertyMapping
       ? undefined
-      : element.ownerReference.valueForSerialization ?? '';
+      : (element.ownerReference.valueForSerialization ?? '');
   property.property = element.value.name;
   return property;
 };
@@ -408,12 +408,12 @@ const transformMappingInclude = (
     mappingInclude.includedMapping =
       element.included.valueForSerialization ?? '';
     mappingInclude.sourceDatabasePath = element.storeSubstitutions.length
-      ? (element.storeSubstitutions[0] as SubstituteStore).original
-          .valueForSerialization ?? ''
+      ? ((element.storeSubstitutions[0] as SubstituteStore).original
+          .valueForSerialization ?? '')
       : undefined;
     mappingInclude.targetDatabasePath = element.storeSubstitutions.length
-      ? (element.storeSubstitutions[0] as SubstituteStore).substitute
-          .valueForSerialization ?? ''
+      ? ((element.storeSubstitutions[0] as SubstituteStore).substitute
+          .valueForSerialization ?? '')
       : undefined;
     return mappingInclude;
   }

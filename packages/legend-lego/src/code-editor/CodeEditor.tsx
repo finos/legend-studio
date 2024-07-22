@@ -99,7 +99,7 @@ export const CodeEditor: React.FC<{
         ...getBaseCodeEditorOptions(),
         theme: applicationStore.layoutService
           .TEMPORARY__isLightColorThemeEnabled
-          ? lightTheme ?? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT
+          ? (lightTheme ?? CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT)
           : CODE_EDITOR_THEME.DEFAULT_DARK,
 
         // layout

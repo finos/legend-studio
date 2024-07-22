@@ -24,11 +24,11 @@ export type LegendREPLApplicationStore = ApplicationStore<
 >;
 
 export class LegendREPLBaseStore {
-  readonly applicationStore: LegendREPLApplicationStore;
+  readonly application: LegendREPLApplicationStore;
   readonly pluginManager: LegendREPLPluginManager;
 
-  constructor(applicationStore: LegendREPLApplicationStore) {
-    this.applicationStore = applicationStore;
-    this.pluginManager = applicationStore.pluginManager;
+  constructor(application: LegendREPLApplicationStore) {
+    this.application = application;
+    this.pluginManager = application.pluginManager;
   }
 }

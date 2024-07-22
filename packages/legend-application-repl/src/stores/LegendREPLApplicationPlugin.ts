@@ -16,6 +16,7 @@
 
 import { LegendApplicationPlugin } from '@finos/legend-application';
 import type { LegendREPLPluginManager } from '../application/LegendREPLPluginManager.js';
+import { DocumentationKey } from '../application/LegendREPLDocumentation.js';
 
 export abstract class LegendREPLApplicationPlugin extends LegendApplicationPlugin {
   /**
@@ -26,5 +27,13 @@ export abstract class LegendREPLApplicationPlugin extends LegendApplicationPlugi
 
   install(pluginManager: LegendREPLPluginManager): void {
     pluginManager.registerApplicationPlugin(this);
+  }
+
+  override getExtraRequiredDocumentationKeys(): string[] {
+    return [
+      DocumentationKey.DATA_CUBE_EXTENDED_COLUMN_LEVELS,
+      DocumentationKey.DATA_CUBE_COLUMN_KINDS,
+      DocumentationKey.DATA_CUBE_COLUMN_DISPLAY_AS_LINK,
+    ];
   }
 }

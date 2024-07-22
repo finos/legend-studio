@@ -257,13 +257,13 @@ export class DSL_ExternalFormat_PureProtocolProcessorPlugin
           modelUnit.packageableElementExcludes =
             metamodel.modelUnit.packageableElementExcludes.map((path) =>
               path instanceof PackageableElementReference
-                ? path.valueForSerialization ?? ''
+                ? (path.valueForSerialization ?? '')
                 : path,
             );
           modelUnit.packageableElementIncludes =
             metamodel.modelUnit.packageableElementIncludes.map((path) =>
               path instanceof PackageableElementReference
-                ? path.valueForSerialization ?? ''
+                ? (path.valueForSerialization ?? '')
                 : path,
             );
           protocol.modelUnit = modelUnit;

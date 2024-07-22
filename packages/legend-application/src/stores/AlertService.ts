@@ -20,6 +20,7 @@ import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
   CAUTION = 'CAUTION',
+  ERROR = 'ERROR',
 }
 
 export enum ActionAlertActionType {

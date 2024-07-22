@@ -83,7 +83,7 @@ export const V1_transformFileGeneration = (
   );
   fileGeneration.scopeElements = element.scopeElements.map((path) =>
     path instanceof PackageableElementReference
-      ? path.valueForSerialization ?? ''
+      ? (path.valueForSerialization ?? '')
       : path,
   );
   fileGeneration.type = element.type;
