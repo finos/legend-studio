@@ -161,19 +161,19 @@ export class QueryBuilderPropertySearchState {
     // policy, e.g. limit length of search text, etc.
     //
     // See https://github.com/farzher/fuzzysort
-    const searchResults = Array.from(
-      this.searchEngine
-        .search(
-          this.searchConfigurationState.generateSearchText(
-            this.searchText.toLowerCase(),
-          ),
-          {
-            // NOTE: search for limit + 1 item so we can know if there are more search results
-            limit: QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT + 1,
-          },
-        )
-        .values(),
-    ).map((result) => result.item);
+    const rawSearchResults = this.searchEngine.search(
+      this.searchConfigurationState.generateSearchText(
+        this.searchText.toLowerCase(),
+      ),
+      {
+        // NOTE: search for limit + 1 item so we can know if there are more search results
+        limit: QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT + 1,
+      },
+    );
+    console.log('rawSearchResults:', rawSearchResults);
+    const searchResults = Array.from(rawSearchResults.values()).map(
+      (result) => result.item,
+    );
 
     // check if the search results exceed the limit
     if (searchResults.length > QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT) {
@@ -296,6 +296,7 @@ export class QueryBuilderPropertySearchState {
     // indexing
     this.searchEngine = new FuzzySearchEngine(this.indexedExplorerTreeNodes, {
       includeScore: true,
+      includeMatches: true,
       shouldSort: true,
       // Ignore location when computing the search score
       // See https://fusejs.io/concepts/scoring-theory.html
