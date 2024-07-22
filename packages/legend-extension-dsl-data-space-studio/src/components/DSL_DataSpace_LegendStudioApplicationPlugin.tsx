@@ -234,10 +234,7 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
 
   getExtraElementObservers(): ElementObserver[] {
     return [
-      (
-        element: PackageableElement,
-        context: ObserverContext,
-      ): PackageableElement | undefined => {
+      (element: PackageableElement): PackageableElement | undefined => {
         if (element instanceof DataSpace) {
           return observe_DataSpace(element);
         }
