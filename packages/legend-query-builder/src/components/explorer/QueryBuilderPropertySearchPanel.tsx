@@ -34,6 +34,7 @@ import {
   Checkbox,
   ChevronDownIcon,
   ChevronRightIcon,
+  Tooltip,
 } from '@finos/legend-art';
 import {
   CORE_PURE_PATH,
@@ -310,6 +311,24 @@ const QueryBuilderPropertySearchAdditionalConfigMenu = observer(
         >
           Include tagged values
         </button>
+        <Tooltip
+          TransitionProps={{
+            // disable transition
+            // NOTE: somehow, this is the only workaround we have, if for example
+            // we set `appear = true`, the tooltip will jump out of position
+            timeout: 0,
+          }}
+          enterDelay={200}
+          title={
+            <div>
+              Include &quot;doc&quot; type tagged values in search results
+            </div>
+          }
+        >
+          <div className="query-builder-property-search-panel__config__tagged-values__tooltip">
+            <InfoCircleIcon />
+          </div>
+        </Tooltip>
       </div>
     );
   },

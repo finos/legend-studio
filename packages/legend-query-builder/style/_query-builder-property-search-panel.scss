@@ -355,14 +355,28 @@
   }
 
   &__config__tagged-values {
+    @include flexVCenter;
+
+    padding: 1rem;
+
     &__checkbox {
       padding: 0;
-      margin: 0 0.5rem 0 1rem;
     }
 
     &__label {
+      margin-left: 0.5rem;
       font-size: 1.2rem;
       color: var(--color-light-grey-200);
+    }
+
+    &__tooltip {
+      margin-left: 0.5rem;
+      color: var(--color-dark-grey-500);
+      cursor: default;
+
+      &:hover {
+        color: var(--color-light-grey-400);
+      }
     }
   }
 }
