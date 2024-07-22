@@ -30,7 +30,6 @@ import {
 } from '@finos/legend-graph';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSL_DataSpace_HashUtils.js';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
-import { makeObservable, observable } from 'mobx';
 
 export class DataSpaceExecutionContext implements Hashable {
   name!: string;
