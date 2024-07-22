@@ -1,3 +1,3 @@
 # @finos/legend-application-repl
 
-Legend REPL
+Legend REPL Application
