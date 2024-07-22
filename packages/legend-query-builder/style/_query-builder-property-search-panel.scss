@@ -59,8 +59,20 @@
   }
 
   &__node__icon {
-    width: 4rem;
-    min-width: 4rem;
+    width: 5rem;
+    min-width: 5rem;
+  }
+
+  &__expand-icon {
+    @include flexCenter;
+
+    width: 1.7rem;
+    min-width: 1.7rem;
+    height: 1.4rem;
+
+    svg {
+      color: var(--color-light-grey-200);
+    }
   }
 
   &__type-icon {

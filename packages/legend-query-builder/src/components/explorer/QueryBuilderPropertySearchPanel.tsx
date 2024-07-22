@@ -32,6 +32,8 @@ import {
   BlankPanelContent,
   CogIcon,
   Checkbox,
+  ChevronDownIcon,
+  ChevronRightIcon,
 } from '@finos/legend-art';
 import {
   CORE_PURE_PATH,
@@ -122,6 +124,7 @@ const QueryBuilderTreeNodeViewer = observer(
   }) => {
     const { node, queryBuilderState, explorerState, level, stepPaddingInRem } =
       props;
+    const isExpandable = Boolean(node.childrenIds.length);
     const [isExpanded, setIsExpanded] = useState(false);
     const propertySearchState = explorerState.propertySearchState;
     const [, dragConnector, dragPreviewConnector] = useDrag<{
@@ -192,6 +195,16 @@ const QueryBuilderTreeNodeViewer = observer(
           ? prettyPropertyNameForSubTypeClass(node.id)
           : prettyPropertyNameFromNodeId(node.id);
 
+    const nodeExpandIcon = isExpandable ? (
+      isExpanded ? (
+        <ChevronDownIcon />
+      ) : (
+        <ChevronRightIcon />
+      )
+    ) : (
+      <div />
+    );
+
     return (
       <div>
         <div
@@ -209,6 +222,9 @@ const QueryBuilderTreeNodeViewer = observer(
           }
         >
           <div className="tree-view__node__icon query-builder-property-search-panel__node__icon">
+            <div className="query-builder-property-search-panel__expand-icon">
+              {nodeExpandIcon}
+            </div>
             <div className="query-builder-property-search-panel__type-icon">
               {renderPropertyTypeIcon(node.type)}
             </div>
@@ -261,7 +277,7 @@ const QueryBuilderTreeNodeViewer = observer(
               key={childNode.id}
               node={childNode}
               queryBuilderState={queryBuilderState}
-              level={1}
+              level={level + 1}
               stepPaddingInRem={2}
               explorerState={queryBuilderState.explorerState}
             />
