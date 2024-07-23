@@ -30,12 +30,15 @@ import {
 } from '@finos/legend-shared';
 import {
   FilterConditionState,
+  FilterPropertyExpressionStateConditionValueState,
+  FilterValueSpecConditionValueState,
   type QueryBuilderFilterState,
 } from '../QueryBuilderFilterState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import { simplifyValueExpression } from '../../QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderFilterOperator } from '../QueryBuilderFilterOperator.js';
 import { buildPropertyExpressionChain } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
+import { QueryBuilderPropertyExpressionState } from '../../QueryBuilderPropertyEditorState.js';
 
 export const buildFilterConditionExpression = (
   filterConditionState: FilterConditionState,
@@ -52,8 +55,28 @@ export const buildFilterConditionExpression = (
   );
   expression.parametersValues.push(guaranteeNonNullable(propertyExpression));
   // NOTE: there are simple operators which do not require any params (e.g. isEmpty)
-  if (filterConditionState.value) {
-    expression.parametersValues.push(filterConditionState.value);
+  if (
+    filterConditionState.rightConditionValue &&
+    filterConditionState.rightConditionValue instanceof
+      FilterValueSpecConditionValueState &&
+    filterConditionState.rightConditionValue.value !== undefined
+  ) {
+    expression.parametersValues.push(
+      filterConditionState.rightConditionValue.value,
+    );
+  } else if (
+    filterConditionState.rightConditionValue &&
+    filterConditionState.rightConditionValue instanceof
+      FilterPropertyExpressionStateConditionValueState
+  ) {
+    const rightConditionPropertyExpression = buildPropertyExpressionChain(
+      filterConditionState.rightConditionValue.propertyExpressionState
+        .propertyExpression,
+      filterConditionState.propertyExpressionState.queryBuilderState,
+      lambdaParameterName ??
+        filterConditionState.filterState.lambdaParameterName,
+    );
+    expression.parametersValues.push(rightConditionPropertyExpression);
   }
   return expression;
 };
@@ -155,18 +178,34 @@ export const buildFilterConditionState = (
     // value
     const value = mainExpressionWithOperator.parametersValues[1];
     if (hasNoValue || !value) {
-      filterConditionState.setValue(undefined);
+      filterConditionState.setRightConditionValue(undefined);
+    } else if (value instanceof AbstractPropertyExpression) {
+      filterConditionState.setRightConditionValue(
+        new FilterPropertyExpressionStateConditionValueState(
+          filterConditionState,
+          new QueryBuilderPropertyExpressionState(
+            filterState.queryBuilderState,
+            value,
+          ),
+        ),
+      );
     } else {
-      filterConditionState.setValue(
-        simplifyValueExpression(
-          value,
-          filterConditionState.filterState.queryBuilderState.observerContext,
+      filterConditionState.setRightConditionValue(
+        new FilterValueSpecConditionValueState(
+          filterConditionState,
+          simplifyValueExpression(
+            value,
+            filterConditionState.filterState.queryBuilderState.observerContext,
+          ),
         ),
       );
     }
     if (!operator.isCompatibleWithFilterConditionValue(filterConditionState)) {
-      filterConditionState.setValue(
-        operator.getDefaultFilterConditionValue(filterConditionState),
+      filterConditionState.setRightConditionValue(
+        new FilterValueSpecConditionValueState(
+          filterConditionState,
+          operator.getDefaultFilterConditionValue(filterConditionState),
+        ),
       );
     }
     return filterConditionState;

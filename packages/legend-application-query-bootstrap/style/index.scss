@@ -1571,6 +1571,45 @@
       }
     }
 
+    .query-builder-filter-property-expression-badge__content {
+      background: var(--color-light-grey-150);
+      color: var(--color-dark-grey-400);
+    }
+
+    .query-builder-filter-property-expression-badge__type {
+      &--class {
+        background: var(--color-purple-100);
+      }
+
+      &--enumeration {
+        background: var(--color-medium-green-450);
+      }
+
+      &--primitive {
+        background: var(--color-blue-50);
+      }
+    }
+
+    .query-builder-filter-property-expression-badge__property {
+      &__info:hover {
+        svg {
+          color: var(--color-dark-grey-350);
+        }
+      }
+
+      .query-builder__property__name__display__content {
+        color: var(--color-dark-grey-400);
+      }
+    }
+
+    .query-builder-filter-property-expression-badge__action {
+      &:hover {
+        svg {
+          color: var(--color-dark-grey-350);
+        }
+      }
+    }
+
     // ------------------------------------ Post-filter Panel ---------------------------------------
 
     .query-builder-post-filter-tree__node__children {
@@ -1607,6 +1646,14 @@
 
     .query-builder-column-badge__property {
       color: var(--color-dark-grey-400);
+    }
+
+    .query-builder-column-badge__action {
+      &:hover {
+        svg {
+          color: var(--color-dark-grey-350);
+        }
+      }
     }
 
     .query-builder-post-filter-tree__node__container--selected,

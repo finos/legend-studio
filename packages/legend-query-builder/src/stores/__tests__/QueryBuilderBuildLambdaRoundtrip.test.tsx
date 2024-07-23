@@ -363,6 +363,12 @@ const cases: RoundtripTestCase[] = [
     TEST_DATA__lambda_simpleSingleConditionFilterWithParameter,
     undefined,
   ],
+  [
+    'Filter with ProperyExpressionState as right condition',
+    relationalFilterCtx,
+    TEST_DATA__lambda_simpleSingleConditionFilter,
+    undefined,
+  ],
   // group condition
   [
     'Filter with group condition',

@@ -21,6 +21,9 @@ import {
   fireEvent,
   findByText,
   getByText,
+  getByDisplayValue,
+  findByDisplayValue,
+  getByRole,
 } from '@testing-library/react';
 import { LogService, guaranteeNonNullable } from '@finos/legend-shared';
 import { createSpy } from '@finos/legend-shared/test';
@@ -161,6 +164,28 @@ export const dragAndDrop = async (
   } else {
     fireEvent.dragOver(drop);
   }
+};
+
+export const setDerivedPropertyValue = async (
+  derivedPropertyButton: HTMLElement,
+  value: string,
+  renderResult: RenderResult,
+  options?: {
+    currentDisplayValue?: string;
+  },
+): Promise<void> => {
+  fireEvent.click(derivedPropertyButton);
+  const dpModal = await renderResult.findByRole('dialog');
+  await findByText(dpModal, 'Derived Property');
+  fireEvent.change(
+    getByDisplayValue(dpModal, options?.currentDisplayValue ?? ''),
+    {
+      target: { value },
+    },
+  );
+  await findByDisplayValue(dpModal, value);
+  fireEvent.click(getByRole(dpModal, 'button', { name: 'Done' }));
+  await waitFor(() => expect(renderResult.queryByRole('dialog')).toBeNull());
 };
 
 export const TEST__setUpQueryBuilder = async (

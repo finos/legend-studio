@@ -34,7 +34,6 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graph/QueryBuilderMetaModelConst.js';
 import {
   buildNotExpression,
-  getNonCollectionValueSpecificationType,
   isTypeCompatibleForAssignment,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
@@ -78,8 +77,9 @@ export class QueryBuilderFilterOperator_Equal
     filterConditionState: FilterConditionState,
   ): boolean {
     return isTypeCompatibleForAssignment(
-      filterConditionState.value
-        ? getNonCollectionValueSpecificationType(filterConditionState.value)
+      filterConditionState.rightConditionValue &&
+        !filterConditionState.rightConditionValue.isCollection
+        ? filterConditionState.rightConditionValue.type
         : undefined,
       filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType,
@@ -110,7 +110,7 @@ export class QueryBuilderFilterOperator_Equal
       filterConditionState,
       filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType.path === PRIMITIVE_TYPE.DATETIME &&
-        filterConditionState.value?.genericType?.value.rawType.path !==
+        filterConditionState.rightConditionValue?.type?.path !==
           PRIMITIVE_TYPE.DATETIME
         ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_ON_DAY
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.EQUAL,

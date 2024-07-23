@@ -26,7 +26,10 @@ import {
   TEST_DATA__simpleSingleConditionMilestoningFilter,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
 import { TEST_DATA__lambda_derivationPostFilter } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
-import { QueryBuilderFilterTreeConditionNodeData } from '../filter/QueryBuilderFilterState.js';
+import {
+  FilterValueSpecConditionValueState,
+  QueryBuilderFilterTreeConditionNodeData,
+} from '../filter/QueryBuilderFilterState.js';
 import {
   PostFilterValueSpecConditionValueState,
   QueryBuilderPostFilterTreeConditionNodeData,
@@ -96,12 +99,16 @@ describe(integrationTest('Query builder type ahead: filter'), () => {
         queryBuilderState.filterState.getRootNode(),
         QueryBuilderFilterTreeConditionNodeData,
       );
+      const filterNodeRightConditionValue = guaranteeType(
+        filterNode.condition.rightConditionValue,
+        FilterValueSpecConditionValueState,
+      );
       const jsonQuery =
         queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
           buildPropertyTypeaheadQuery(
             queryBuilderState,
             filterNode.condition.propertyExpressionState.propertyExpression,
-            filterNode.condition.value,
+            filterNodeRightConditionValue.value,
           ),
         );
       expect(expectedTypeaheadLambda).toEqual(jsonQuery);
