@@ -104,6 +104,7 @@ export class QueryBuilderPropertySearchState {
       filteredSearchResults: computed,
       search: action,
       resetSearch: action,
+      setSearchResults: action,
       setSearchText: action,
       setShowSearchConfigurationMenu: action,
       setIsSearchPanelOpen: action,
@@ -130,6 +131,10 @@ export class QueryBuilderPropertySearchState {
     this.showSearchConfigurationMenu = val;
   }
 
+  setSearchResults(val: QueryBuilderExplorerTreeNodeData[]): void {
+    this.searchResults = val;
+  }
+
   setSearchText(val: string): void {
     this.searchText = val;
   }
@@ -150,7 +155,7 @@ export class QueryBuilderPropertySearchState {
 
   search(): void {
     if (!this.searchText) {
-      this.searchResults = [];
+      this.setSearchResults([]);
       return;
     }
     this.searchState.inProgress();
@@ -177,13 +182,12 @@ export class QueryBuilderPropertySearchState {
     // check if the search results exceed the limit
     if (searchResults.length > QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT) {
       this.isOverSearchLimit = true;
-      this.searchResults = searchResults.slice(
-        0,
-        QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT,
+      this.setSearchResults(
+        searchResults.slice(0, QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT),
       );
     } else {
       this.isOverSearchLimit = false;
-      this.searchResults = searchResults;
+      this.setSearchResults(searchResults);
     }
 
     this.searchState.complete();
