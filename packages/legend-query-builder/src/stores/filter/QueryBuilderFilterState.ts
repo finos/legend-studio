@@ -252,8 +252,8 @@ export class FilterConditionState implements Hashable {
       setOperator: action,
       setRightConditionValue: action,
       addExistsLambdaParamNames: action,
-      buildFromValueSpec: action,
-      buildFromPropertyExpressionState: action,
+      buildRightConditionValueFromValueSpec: action,
+      buildRightConditionValueFromPropertyExpressionState: action,
       handleTypeaheadSearch: flow,
       operators: computed,
       hashCode: computed,
@@ -271,7 +271,9 @@ export class FilterConditionState implements Hashable {
       `Can't find an operator for property '${this.propertyExpressionState.path}': no operators registered`,
     );
     this.operator = this.operators[0] as QueryBuilderFilterOperator;
-    this.buildFromValueSpec(this.operator.getDefaultFilterConditionValue(this));
+    this.buildRightConditionValueFromValueSpec(
+      this.operator.getDefaultFilterConditionValue(this),
+    );
   }
 
   get operators(): QueryBuilderFilterOperator[] {
@@ -347,7 +349,7 @@ export class FilterConditionState implements Hashable {
       ) {
         defaultValue = this.rightConditionValue.value.values[0];
       }
-      this.buildFromValueSpec(defaultValue);
+      this.buildRightConditionValueFromValueSpec(defaultValue);
     }
   }
 
@@ -363,7 +365,9 @@ export class FilterConditionState implements Hashable {
     this.existsLambdaParamNames.push(val);
   }
 
-  buildFromValueSpec(val: ValueSpecification | undefined): void {
+  buildRightConditionValueFromValueSpec(
+    val: ValueSpecification | undefined,
+  ): void {
     if (
       this.rightConditionValue instanceof FilterValueSpecConditionValueState
     ) {
@@ -375,7 +379,7 @@ export class FilterConditionState implements Hashable {
     }
   }
 
-  buildFromPropertyExpressionState(
+  buildRightConditionValueFromPropertyExpressionState(
     propertyExpressionState: QueryBuilderPropertyExpressionState,
   ): void {
     if (

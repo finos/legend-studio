@@ -865,7 +865,7 @@ const QueryBuilderFilterConditionEditor = observer(
                     'Collection types are not supported for filter condition values.',
                   );
                 } else {
-                  node.condition.buildFromPropertyExpressionState(
+                  node.condition.buildRightConditionValueFromPropertyExpressionState(
                     new QueryBuilderPropertyExpressionState(
                       queryBuilderState,
                       cloneAbstractPropertyExpression(
@@ -901,14 +901,14 @@ const QueryBuilderFilterConditionEditor = observer(
                   'Collection types are not supported for filter condition values.',
                 );
               } else {
-                node.condition.buildFromPropertyExpressionState(
+                node.condition.buildRightConditionValueFromPropertyExpressionState(
                   propertyExpressionState,
                 );
               }
             } else if (type === QUERY_BUILDER_VARIABLE_DND_TYPE) {
               const variable = (item as QueryBuilderVariableDragSource)
                 .variable;
-              node.condition.buildFromValueSpec(variable);
+              node.condition.buildRightConditionValueFromValueSpec(variable);
             } else {
               applicationStore.notificationService.notifyWarning(
                 `Dragging and Dropping ${type} to filter panel is not supported.`,
@@ -978,7 +978,7 @@ const QueryBuilderFilterConditionEditor = observer(
       node.condition.changeOperator(val);
 
     const resetNode = (): void => {
-      node.condition.buildFromValueSpec(
+      node.condition.buildRightConditionValueFromValueSpec(
         node.condition.operator.getDefaultFilterConditionValue(node.condition),
       );
     };
@@ -988,7 +988,7 @@ const QueryBuilderFilterConditionEditor = observer(
     };
 
     const changeValueSpecification = (val: ValueSpecification): void => {
-      node.condition.buildFromValueSpec(val);
+      node.condition.buildRightConditionValueFromValueSpec(val);
     };
 
     const debouncedTypeaheadSearch = useMemo(
