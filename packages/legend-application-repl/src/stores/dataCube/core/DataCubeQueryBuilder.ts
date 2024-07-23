@@ -197,12 +197,10 @@ function _parameterValue(value: DataCubeOperationValue) {
     case PRIMITIVE_TYPE.STRICTTIME: {
       if (Array.isArray(value.value)) {
         return _collection(
-          value.value.map((val) =>
-            _primitiveValue(value.type as PRIMITIVE_TYPE, val),
-          ),
+          value.value.map((val) => _primitiveValue(value.type, val)),
         );
       }
-      return _primitiveValue(value.type as PRIMITIVE_TYPE, value.value);
+      return _primitiveValue(value.type, value.value);
     }
     default:
       throw new UnsupportedOperationError(
@@ -320,7 +318,7 @@ export function _filter(
     const property = _property(condition.name);
     const _cond = (fn: string, ...p: V1_ValueSpecification[]) =>
       _function(_name(fn), [property, ...p]);
-    const _val = () => _primitiveValue(condition.type, condition.value);
+    const _val = () => _parameterValue(guaranteeNonNullable(condition.value));
     const _not = (fn: V1_AppliedFunction) =>
       _function(_name(DataCubeFunction.NOT), [fn]);
     switch (condition.operation) {

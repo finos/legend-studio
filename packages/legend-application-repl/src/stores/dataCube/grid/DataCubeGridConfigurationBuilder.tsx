@@ -52,12 +52,14 @@ import {
   INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY,
   INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
   INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
+  INTERNAL__GRID_CLIENT_MISSING_VALUE,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
   getQueryParameters,
   getQueryParameterValue,
   isNonNullable,
+  isNullable,
   isNumber,
   isValidUrl,
 } from '@finos/legend-shared';
@@ -246,8 +248,12 @@ function _displaySpec(columnData: ColumnData) {
       dataType === DataCubeColumnDataType.NUMBER
         ? (params) => {
             const value = params.value as number | null | undefined;
-            if (value === null || value === undefined) {
-              return null;
+            if (
+              isNullable(value) ||
+              (value as unknown as string) ===
+                INTERNAL__GRID_CLIENT_MISSING_VALUE
+            ) {
+              return ''; // TODO: handle missing value
             }
             const showNegativeNumberInParens =
               column.negativeNumberInParens && value < 0;
@@ -275,7 +281,10 @@ function _displaySpec(columnData: ColumnData) {
               (scaledNumber.unit ? ` ${scaledNumber.unit}` : '')
             );
           }
-        : (params) => params.value,
+        : (params) =>
+            params.value === INTERNAL__GRID_CLIENT_MISSING_VALUE
+              ? ''
+              : params.value,
     loadingCellRenderer: DataCubeGridLoadingCellRenderer,
     cellClassRules: {
       [generateFontFamilyUtilityClassName(fontFamily)]: () => true,
@@ -334,7 +343,8 @@ function _displaySpec(columnData: ColumnData) {
           : GridClientPinnedAlignement.LEFT
         : null,
     tooltipValueGetter: (params) =>
-      isNonNullable(params.value)
+      isNonNullable(params.value) &&
+      params.value !== INTERNAL__GRID_CLIENT_MISSING_VALUE
         ? `Value = ${params.value === '' ? "''" : params.value === true ? 'TRUE' : params.value === false ? 'FALSE' : params.value}`
         : `Missing Value`,
   } as ColDef;

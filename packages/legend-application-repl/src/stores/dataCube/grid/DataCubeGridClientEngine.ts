@@ -26,6 +26,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   isBoolean,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { buildExecutableQuery } from '../core/DataCubeQueryBuilder.js';
 import { type TabularDataSet, V1_Lambda } from '@finos/legend-graph';
@@ -101,6 +102,7 @@ export const INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING = 10;
 export const INTERNAL__GRID_CLIENT_TREE_COLUMN_ID = 'INTERNAL__tree';
 export const INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID =
   'INTERNAL__count';
+export const INTERNAL__GRID_CLIENT_MISSING_VALUE = '__MISSING';
 
 export enum GridClientPinnedAlignement {
   LEFT = 'left',
@@ -151,7 +153,11 @@ function TDStoRowData(tds: TabularDataSet): GridClientRowData[] {
     _row.values.forEach((value, colIdx) => {
       // `ag-grid` shows `false` value as empty string so we have
       // call `.toString()` to avoid this behavior.
-      row[cols[colIdx] as string] = isBoolean(value) ? String(value) : value;
+      row[cols[colIdx] as string] = isBoolean(value)
+        ? String(value)
+        : isNonNullable(value)
+          ? value
+          : INTERNAL__GRID_CLIENT_MISSING_VALUE;
     });
     return row;
   });

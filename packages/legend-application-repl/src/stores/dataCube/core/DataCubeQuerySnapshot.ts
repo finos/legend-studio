@@ -35,8 +35,7 @@ import type {
 
 export type DataCubeQuerySnapshotFilterCondition =
   DataCubeQuerySnapshotColumn & {
-    // value: DataCubeQuerySnapshotValue | undefined;
-    value: unknown;
+    value: DataCubeOperationValue | undefined;
     operation: DataCubeQueryFilterOperation;
   };
 

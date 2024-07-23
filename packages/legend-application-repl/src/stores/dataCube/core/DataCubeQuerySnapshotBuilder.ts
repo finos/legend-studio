@@ -480,7 +480,7 @@ export function validateAndBuildQuerySnapshot(
       aggColumns: _colSpecArrayParam(funcMap.groupBy, 1).colSpecs.map(
         (colSpec) => _aggCol(colSpec, _col(colSpec)),
       ),
-      // TODO: verify agg columns agree with pivot agg columns and configuration
+      // TODO: verify agg columns agree with pivot agg columns
       // TODO: verify groupByExtend expression that all columns are accounted for
     };
   }
@@ -534,9 +534,14 @@ export function validateAndBuildQuerySnapshot(
   const configuration = baseQuery.configuration
     ? DataCubeConfiguration.serialization.fromJson(baseQuery.configuration)
     : buildDefaultConfiguration(baseQuery.source.columns);
-  // TODO: @akphi - implement the logic to reconcile the configuration with the query
   data.configuration =
     DataCubeConfiguration.serialization.toJson(configuration);
+  // TODO: @akphi - implement the logic to reconcile the configuration with the query
+  // - columns (missing/extra columns - remove or generate default column configuration)
+  // - column kind
+  // - column type
+  // - base off the type, check the settings
+  // - aggregation
 
   return snapshot.finalize();
 }

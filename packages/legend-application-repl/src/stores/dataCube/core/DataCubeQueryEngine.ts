@@ -160,7 +160,7 @@ export enum DataCubeOperationValueType {}
 
 export type DataCubeOperationValue = {
   value: unknown;
-  type: DataCubeOperationValueType | PRIMITIVE_TYPE;
+  type: string;
 };
 
 export enum DataCubeAggregateOperation {
