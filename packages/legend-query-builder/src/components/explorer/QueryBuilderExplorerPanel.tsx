@@ -64,8 +64,6 @@ import {
   QueryBuilderExplorerTreeRootNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
-  getQueryBuilderPropertyNodeData,
-  getQueryBuilderSubTypeNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
 import { useDrag } from 'react-dnd';
@@ -86,10 +84,7 @@ import {
   PRIMITIVE_TYPE,
   Enumeration,
   TYPE_CAST_TOKEN,
-  getAllClassDerivedProperties,
   getMultiplicityDescription,
-  getAllClassProperties,
-  getAllOwnClassProperties,
   isElementDeprecated,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
@@ -775,43 +770,9 @@ const QueryBuilderExplorerTree = observer(
     const treeData = explorerState.nonNullableTreeData;
     const onNodeSelect = (node: QueryBuilderExplorerTreeNodeData): void => {
       if (node.childrenIds.length) {
-        node.isOpen = !node.isOpen;
-        if (
-          node.isOpen &&
-          (node instanceof QueryBuilderExplorerTreePropertyNodeData ||
-            node instanceof QueryBuilderExplorerTreeSubTypeNodeData) &&
-          node.type instanceof Class
-        ) {
-          (node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-            ? getAllOwnClassProperties(node.type)
-            : getAllClassProperties(node.type).concat(
-                getAllClassDerivedProperties(node.type),
-              )
-          ).forEach((property) => {
-            const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
-              property,
-              node,
-              guaranteeNonNullable(
-                explorerState.mappingModelCoverageAnalysisResult,
-              ),
-            );
-            if (propertyTreeNodeData) {
-              treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
-            }
-          });
-          node.type._subclasses.forEach((subclass) => {
-            const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
-              subclass,
-              node,
-              guaranteeNonNullable(
-                explorerState.mappingModelCoverageAnalysisResult,
-              ),
-            );
-            treeData.nodes.set(subTypeTreeNodeData.id, subTypeTreeNodeData);
-          });
-        }
+        node.setIsOpen(!node.isOpen);
+        explorerState.generateOpenNodeChildren(node);
       }
-      explorerState.refreshTree();
     };
     const getChildNodes = (
       node: QueryBuilderExplorerTreeNodeData,
