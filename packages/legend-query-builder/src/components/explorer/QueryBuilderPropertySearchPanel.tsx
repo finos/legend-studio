@@ -35,6 +35,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   Tooltip,
+  ShareBoxIcon,
 } from '@finos/legend-art';
 import {
   CORE_PURE_PATH,
@@ -267,6 +268,12 @@ const QueryBuilderTreeNodeViewer = observer(
       return childNodes;
     };
 
+    const handleHighlightNode = (): void => {
+      explorerState.propertySearchState.setIsSearchPanelOpen(false);
+      explorerState.propertySearchState.resetSearch();
+      explorerState.highlightTreeNode(node.id);
+    };
+
     const parentNode = propertySearchState.indexedExplorerTreeNodes.find(
       (pn) =>
         node instanceof QueryBuilderExplorerTreePropertyNodeData &&
@@ -346,35 +353,49 @@ const QueryBuilderTreeNodeViewer = observer(
           </div>
           <div className="query-builder-property-search-panel__node__actions">
             {node instanceof QueryBuilderExplorerTreePropertyNodeData && (
-              <QueryBuilderPropertyInfoTooltip
-                title={propertyName}
-                property={node.property}
-                path={node.id}
-                isMapped={node.mappingData.mapped}
-              >
-                <div className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__info">
-                  <InfoCircleIcon />
+              <>
+                <QueryBuilderPropertyInfoTooltip
+                  title={propertyName}
+                  property={node.property}
+                  path={node.id}
+                  isMapped={node.mappingData.mapped}
+                >
+                  <div className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__info">
+                    <InfoCircleIcon />
+                  </div>
+                </QueryBuilderPropertyInfoTooltip>
+                <div className="query-builder__tooltip__item__action">
+                  <button onClick={handleHighlightNode} title="Show in tree">
+                    <ShareBoxIcon color="white" />
+                  </button>
                 </div>
-              </QueryBuilderPropertyInfoTooltip>
+              </>
             )}
             {node instanceof QueryBuilderExplorerTreeSubTypeNodeData && (
-              <QueryBuilderSubclassInfoTooltip
-                subclass={node.subclass}
-                path={node.id}
-                isMapped={node.mappingData.mapped}
-                multiplicity={node.multiplicity}
-              >
-                <div className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__info">
-                  <InfoCircleIcon />
+              <>
+                <QueryBuilderSubclassInfoTooltip
+                  subclass={node.subclass}
+                  path={node.id}
+                  isMapped={node.mappingData.mapped}
+                  multiplicity={node.multiplicity}
+                >
+                  <div className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__info">
+                    <InfoCircleIcon />
+                  </div>
+                </QueryBuilderSubclassInfoTooltip>
+                <div className="query-builder__tooltip__item__action">
+                  <button onClick={handleHighlightNode} title="Show in tree">
+                    <ShareBoxIcon color="white" />
+                  </button>
                 </div>
-              </QueryBuilderSubclassInfoTooltip>
+              </>
             )}
           </div>
         </div>
         {isExpanded &&
           getChildrenNodes().map((childNode) => (
             <QueryBuilderTreeNodeViewer
-              key={childNode.id}
+              key={`${node.id}>${childNode.id}`}
               node={childNode}
               queryBuilderState={queryBuilderState}
               level={level + 1}
