@@ -69,7 +69,7 @@ import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyI
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { FuzzySearchAdvancedConfigMenu } from '@finos/legend-lego/application';
 
-const prettyPropertyNameFromNodeId = (name: string): string => {
+export const prettyPropertyNameFromNodeId = (name: string): string => {
   let propNameArray = name.split('.');
   propNameArray = propNameArray.map(prettyCONSTName);
   let propName = '';
@@ -80,7 +80,7 @@ const prettyPropertyNameFromNodeId = (name: string): string => {
   return propName;
 };
 
-const prettyPropertyNameForSubType = (name: string): string => {
+export const prettyPropertyNameForSubType = (name: string): string => {
   let propNameArray = name.split('@');
   propNameArray = propNameArray
     .map((p) => p.replace(/.*::/, ''))
@@ -102,7 +102,7 @@ const prettyPropertyNameForSubType = (name: string): string => {
   return propName;
 };
 
-const prettyPropertyNameForSubTypeClass = (name: string): string => {
+export const prettyPropertyNameForSubTypeClass = (name: string): string => {
   let propNameArray = name.split('@');
   propNameArray = propNameArray
     .map((p) => p.replace(/.*::/, ''))

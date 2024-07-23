@@ -30,7 +30,6 @@ import {
   addUniqueEntry,
   deleteEntry,
   guaranteeNonNullable,
-  prettyCONSTName,
 } from '@finos/legend-shared';
 import {
   observable,
@@ -54,6 +53,11 @@ import {
 } from './QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { QueryBuilderFuzzySearchAdvancedConfigState } from './QueryBuilderFuzzySearchAdvancedConfigState.js';
+import {
+  prettyPropertyNameForSubType,
+  prettyPropertyNameForSubTypeClass,
+  prettyPropertyNameFromNodeId,
+} from '../../components/explorer/QueryBuilderPropertySearchPanel.js';
 
 export class QueryBuilderPropertySearchState {
   queryBuilderState: QueryBuilderState;
@@ -310,9 +314,24 @@ export class QueryBuilderPropertySearchState {
       threshold: 0.2,
       keys: [
         {
-          name: 'label',
+          name: 'path',
           weight: 4,
-          getFn: (node) => prettyCONSTName(node.label),
+          getFn: (node) => {
+            const parentNode = this.indexedExplorerTreeNodes.find(
+              (pn) =>
+                node instanceof QueryBuilderExplorerTreePropertyNodeData &&
+                node.parentId === pn.id,
+            );
+
+            const fullPath =
+              parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+                ? prettyPropertyNameForSubType(node.id)
+                : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+                  ? prettyPropertyNameForSubTypeClass(node.id)
+                  : prettyPropertyNameFromNodeId(node.id);
+
+            return fullPath;
+          },
         },
         ...(this.searchConfigurationState.includeTaggedValues
           ? [
