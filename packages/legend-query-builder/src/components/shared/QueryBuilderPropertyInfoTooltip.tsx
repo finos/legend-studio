@@ -174,7 +174,7 @@ const QueryBuilderBaseInfoTooltip: React.FC<{
         >
           <div
             onClick={(event: React.MouseEvent) => {
-              setIsOpen(true);
+              setIsOpen(!open);
               event.stopPropagation();
             }}
           >
