@@ -432,6 +432,8 @@ export const QueryBuilderPropertySearchPanel = observer(
         })}
         anchorEl={triggerElement}
         onClose={handleClose}
+        disableAutoFocus={true}
+        disableEnforceFocus={true}
         anchorOrigin={{
           vertical: 'bottom',
           horizontal: 'left',
