@@ -155,7 +155,15 @@ export enum DataCubeColumnKind {
   DIMENSION = 'Dimension',
 }
 
-export enum DataCubeAggregateFunction {
+// TODO: we could potentially support complex type like parameter/column in the future
+export enum DataCubeOperationValueType {}
+
+export type DataCubeOperationValue = {
+  value: unknown;
+  type: DataCubeOperationValueType | PRIMITIVE_TYPE;
+};
+
+export enum DataCubeAggregateOperation {
   SUM = 'sum',
   AVERAGE = 'avg',
   COUNT = 'count',
@@ -164,7 +172,7 @@ export enum DataCubeAggregateFunction {
   // UNIQUE = 'uniq',
   FIRST = 'first',
   LAST = 'last',
-  MEDIAN = 'median',
+  // MEDIAN = 'median',
   VAR_POP = 'var_samp',
   VAR_SAMP = 'var_pop',
   STDDEV_POP = 'stddev_pop',

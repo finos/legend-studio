@@ -153,7 +153,6 @@ function TDStoRowData(tds: TabularDataSet): GridClientRowData[] {
       // call `.toString()` to avoid this behavior.
       row[cols[colIdx] as string] = isBoolean(value) ? String(value) : value;
     });
-    row.rowNumber = rowIdx;
     return row;
   });
 }

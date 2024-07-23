@@ -26,7 +26,8 @@ import {
   type Writable,
 } from '@finos/legend-shared';
 import type {
-  DataCubeAggregateFunction,
+  DataCubeAggregateOperation,
+  DataCubeOperationValue,
   DataCubeQueryFilterGroupOperation,
   DataCubeQueryFilterOperation,
   DataCubeQuerySortOperation,
@@ -34,6 +35,7 @@ import type {
 
 export type DataCubeQuerySnapshotFilterCondition =
   DataCubeQuerySnapshotColumn & {
+    // value: DataCubeQuerySnapshotValue | undefined;
     value: unknown;
     operation: DataCubeQueryFilterOperation;
   };
@@ -63,7 +65,8 @@ export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {
 
 export type DataCubeQuerySnapshotAggregateColumn =
   DataCubeQuerySnapshotColumn & {
-    function: DataCubeAggregateFunction;
+    operation: DataCubeAggregateOperation;
+    parameters: DataCubeOperationValue[];
   };
 
 export type DataCubeQuerySnapshotGroupBy = {

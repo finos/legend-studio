@@ -22,6 +22,7 @@
  ***************************************************************************************/
 
 import {
+  PRIMITIVE_TYPE,
   V1_AppliedFunction,
   V1_CInteger,
   V1_ClassInstance,
@@ -36,6 +37,7 @@ import {
 import type { DataCubeQuery } from '../../../server/DataCubeQuery.js';
 import {
   DataCubeQuerySnapshot,
+  type DataCubeQuerySnapshotAggregateColumn,
   type DataCubeQuerySnapshotColumn,
 } from './DataCubeQuerySnapshot.js';
 import {
@@ -43,12 +45,14 @@ import {
   assertType,
   guaranteeNonNullable,
   guaranteeType,
+  UnsupportedOperationError,
   type Clazz,
 } from '@finos/legend-shared';
 import {
   DataCubeQuerySortOperation,
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
+  DataCubeAggregateOperation,
 } from './DataCubeQueryEngine.js';
 import { DataCubeConfiguration } from './DataCubeConfiguration.js';
 import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
@@ -71,7 +75,7 @@ function _param<T extends V1_ValueSpecification>(
   );
 }
 
-function _colSpecParam(func: V1_AppliedFunction, paramIdx: number): V1_ColSpec {
+function _colSpecParam(func: V1_AppliedFunction, paramIdx: number) {
   return guaranteeType(
     _param(func, paramIdx, V1_ClassInstance).value,
     V1_ColSpec,
@@ -79,10 +83,7 @@ function _colSpecParam(func: V1_AppliedFunction, paramIdx: number): V1_ColSpec {
   );
 }
 
-function _colSpecArrayParam(
-  func: V1_AppliedFunction,
-  paramIdx: number,
-): V1_ColSpecArray {
+function _colSpecArrayParam(func: V1_AppliedFunction, paramIdx: number) {
   return guaranteeType(
     _param(func, paramIdx, V1_ClassInstance).value,
     V1_ColSpecArray,
@@ -93,7 +94,7 @@ function _colSpecArrayParam(
 function _funcMatch(
   value: V1_ValueSpecification,
   functionNames: string | string[],
-): V1_AppliedFunction {
+) {
   assertType(
     value,
     V1_AppliedFunction,
@@ -107,6 +108,106 @@ function _funcMatch(
     `Can't process function: Expected function name to be one of [${Array.isArray(functionNames) ? functionNames.join(', ') : functionNames}]`,
   );
   return value;
+}
+
+export function _defaultAggCol(
+  name: string,
+  type: string,
+): DataCubeQuerySnapshotAggregateColumn | undefined {
+  switch (type) {
+    case PRIMITIVE_TYPE.NUMBER:
+    case PRIMITIVE_TYPE.INTEGER:
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.FLOAT: {
+      return {
+        name,
+        type,
+        operation: DataCubeAggregateOperation.SUM,
+        parameters: [],
+      };
+    }
+    default:
+      return undefined;
+  }
+}
+
+function _aggCol(colSpec: V1_ColSpec, column: DataCubeQuerySnapshotColumn) {
+  const func = _funcMatch(
+    guaranteeNonNullable(colSpec.function2),
+    Object.values(DataCubeFunction),
+  );
+  switch (func.function) {
+    case DataCubeFunction.COUNT:
+      return {
+        ...column,
+        operation: DataCubeAggregateOperation.COUNT,
+        parameters: [],
+      };
+    case DataCubeFunction.SUM:
+      return {
+        ...column,
+        operation: DataCubeAggregateOperation.SUM,
+        parameters: [],
+      };
+    case DataCubeFunction.AVERAGE:
+      return {
+        ...column,
+        operation: DataCubeAggregateOperation.AVERAGE,
+        parameters: [],
+      };
+    case DataCubeFunction.MIN:
+      return {
+        ...column,
+        operation: DataCubeAggregateOperation.MIN,
+        parameters: [],
+      };
+    case DataCubeFunction.MAX:
+      return {
+        ...column,
+        operation: DataCubeAggregateOperation.MAX,
+        parameters: [],
+      };
+    case DataCubeFunction.FIRST:
+      return {
+        ...column,
+        operation: DataCubeAggregateOperation.FIRST,
+        parameters: [],
+      };
+    case DataCubeFunction.LAST:
+      return {
+        ...column,
+        operation: DataCubeAggregateOperation.LAST,
+        parameters: [],
+      };
+    case DataCubeFunction.VAR_POP:
+      return {
+        ...column,
+        operation: DataCubeAggregateOperation.VAR_POP,
+        parameters: [],
+      };
+    case DataCubeFunction.VAR_SAMP:
+      return {
+        ...column,
+        operation: DataCubeAggregateOperation.VAR_SAMP,
+        parameters: [],
+      };
+    case DataCubeFunction.STDDEV_POP:
+      return {
+        ...column,
+        operation: DataCubeAggregateOperation.STDDEV_POP,
+        parameters: [],
+      };
+    case DataCubeFunction.STDDEV_SAMP:
+      return {
+        ...column,
+        operation: DataCubeAggregateOperation.STDDEV_SAMP,
+        parameters: [],
+      };
+    default:
+      throw new UnsupportedOperationError(
+        `Unsupported aggregate function '${func.function}'`,
+      );
+  }
 }
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
@@ -127,7 +228,7 @@ const _SUPPORTED_TOP_LEVEL_FUNCTIONS: {
 ];
 
 // NOTE: this corresponds to the sequence:
-// extend()->filter()->groupBy()->select()->pivot()->cast()->extend()->sort()->limit()
+// filter()->extend()->groupBy()->select()->pivot()->cast()->extend()->sort()->limit()
 // which represents the ONLY query shape that we currently support
 const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN: {
   func: string;
@@ -349,7 +450,14 @@ export function validateAndBuildQuerySnapshot(
   data.sourceColumns.map((col) => colsMap.set(col.name, col));
 
   // --------------------------------- FILTER ---------------------------------
-  // TODO: @akphi - implement this
+
+  if (funcMap.filter) {
+    // data.selectColumns = _colSpecArrayParam(funcMap.select, 0).colSpecs.map(
+    //   (colSpec) => ({
+    //     _col(colSpec),
+    //   }),
+    // );
+  }
 
   // --------------------------------- LEAF EXTEND ---------------------------------
   // TODO: @akphi - implement this
@@ -358,13 +466,24 @@ export function validateAndBuildQuerySnapshot(
 
   if (funcMap.select) {
     data.selectColumns = _colSpecArrayParam(funcMap.select, 0).colSpecs.map(
-      (colSpec) => ({
-        ..._col(colSpec),
-      }),
+      (colSpec) => _col(colSpec),
     );
   }
+
   // --------------------------------- GROUP BY ---------------------------------
-  // TODO: @akphi - implement this
+
+  if (funcMap.groupBy) {
+    data.groupBy = {
+      columns: _colSpecArrayParam(funcMap.groupBy, 0).colSpecs.map((colSpec) =>
+        _col(colSpec),
+      ),
+      aggColumns: _colSpecArrayParam(funcMap.groupBy, 1).colSpecs.map(
+        (colSpec) => _aggCol(colSpec, _col(colSpec)),
+      ),
+      // TODO: verify agg columns agree with pivot agg columns and configuration
+      // TODO: verify groupByExtend expression that all columns are accounted for
+    };
+  }
 
   // --------------------------------- PIVOT ---------------------------------
   // TODO: @akphi - implement this
@@ -415,7 +534,7 @@ export function validateAndBuildQuerySnapshot(
   const configuration = baseQuery.configuration
     ? DataCubeConfiguration.serialization.fromJson(baseQuery.configuration)
     : buildDefaultConfiguration(baseQuery.source.columns);
-  // TODO: @akphi - implement this
+  // TODO: @akphi - implement the logic to reconcile the configuration with the query
   data.configuration =
     DataCubeConfiguration.serialization.toJson(configuration);
 

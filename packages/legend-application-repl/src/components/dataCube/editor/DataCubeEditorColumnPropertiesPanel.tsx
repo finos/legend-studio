@@ -30,7 +30,7 @@ import {
   FormBadge_WIP,
 } from '../../repl/Form.js';
 import {
-  DataCubeAggregateFunction,
+  DataCubeAggregateOperation,
   DataCubeColumnDataType,
   DataCubeColumnKind,
   DataCubeColumnPinPlacement,
@@ -306,11 +306,11 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       {...aggregationTypeDropdownProps}
                     >
                       {[
-                        DataCubeAggregateFunction.SUM,
-                        DataCubeAggregateFunction.AVERAGE,
-                        DataCubeAggregateFunction.COUNT,
-                        DataCubeAggregateFunction.MIN,
-                        DataCubeAggregateFunction.MAX,
+                        DataCubeAggregateOperation.SUM,
+                        DataCubeAggregateOperation.AVERAGE,
+                        DataCubeAggregateOperation.COUNT,
+                        DataCubeAggregateOperation.MIN,
+                        DataCubeAggregateOperation.MAX,
                       ].map((fn) => (
                         <FormDropdownMenuItem
                           key={fn}

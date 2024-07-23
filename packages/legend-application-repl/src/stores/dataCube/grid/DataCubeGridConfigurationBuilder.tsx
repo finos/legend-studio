@@ -57,7 +57,6 @@ import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
   getQueryParameters,
   getQueryParameterValue,
-  IllegalStateError,
   isNonNullable,
   isNumber,
   isValidUrl,
@@ -67,7 +66,6 @@ import type {
   DataCubeConfiguration,
 } from '../core/DataCubeConfiguration.js';
 import {
-  DataCubeAggregateFunction,
   DataCubeColumnDataType,
   DataCubeColumnPinPlacement,
   DataCubeNumberScale,
@@ -121,25 +119,6 @@ function _allowedAggFuncs(column: DataCubeQuerySnapshotColumn) {
       ];
     default:
       return [];
-  }
-}
-
-function _aggFunc(
-  func: DataCubeAggregateFunction,
-): GridClientAggregateOperation {
-  switch (func) {
-    case DataCubeAggregateFunction.AVERAGE:
-      return GridClientAggregateOperation.AVERAGE;
-    case DataCubeAggregateFunction.COUNT:
-      return GridClientAggregateOperation.COUNT;
-    case DataCubeAggregateFunction.MAX:
-      return GridClientAggregateOperation.MAX;
-    case DataCubeAggregateFunction.MIN:
-      return GridClientAggregateOperation.MIN;
-    case DataCubeAggregateFunction.SUM:
-      return GridClientAggregateOperation.SUM;
-    default:
-      throw new IllegalStateError(`Unsupported aggregate function '${func}'`);
   }
 }
 
@@ -410,9 +389,15 @@ function _rowGroupSpec(columnData: ColumnData) {
     enableRowGroup: column.kind === DataCubeColumnKind.DIMENSION,
     enableValue: column.kind === DataCubeColumnKind.MEASURE,
     rowGroup: Boolean(groupByCol),
-    // TODO: @akphi - add this from configuration object
+    rowGroupIndex: groupByCol
+      ? (data.groupBy?.columns.indexOf(groupByCol) ?? null)
+      : null,
+    // NOTE: we don't quite care about populating these accurately
+    // since ag-grid aggregation does not support parameters, so
+    // its set of supported aggregators will never match that specified
+    // in the editor, so we just assign dummy values here
     aggFunc: aggCol
-      ? _aggFunc(aggCol.function)
+      ? aggCol.operation
       : rowGroupColumn
         ? (
             [
@@ -425,7 +410,6 @@ function _rowGroupSpec(columnData: ColumnData) {
           ? GridClientAggregateOperation.SUM
           : null
         : null,
-    // TODO: @akphi - add this from configuration object
     allowedAggFuncs: rowGroupColumn ? _allowedAggFuncs(rowGroupColumn) : [],
   } satisfies ColDef;
 }

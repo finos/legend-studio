@@ -27,7 +27,7 @@ import {
 } from '../core/DataCubeQueryEngine.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
-  _aggCols,
+  _groupByAggCols,
   _colSpec,
   _cols,
   _filter,
@@ -37,6 +37,7 @@ import {
   _var,
 } from '../core/DataCubeQueryBuilder.js';
 import { INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID } from './DataCubeGridClientEngine.js';
+import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
 /*****************************************************************************
  * [GRID]
@@ -66,6 +67,7 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
     snapshot: DataCubeQuerySnapshot,
     sequence: V1_AppliedFunction[],
     funcMap: DataCubeQueryFunctionMap,
+    configuration: DataCubeConfiguration,
   ) => {
     const _unprocess = (funcMapKey: keyof DataCubeQueryFunctionMap) => {
       const func = funcMap[funcMapKey];
@@ -113,7 +115,10 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
         );
         const groupByFunc = _function(_name(DataCubeFunction.GROUP_BY), [
           _cols(groupByColumns.map((col) => _colSpec(col.name))),
-          _cols([..._aggCols(groupBy.aggColumns), _rowGroupingCountCol()]),
+          _cols([
+            ..._groupByAggCols(groupBy.aggColumns),
+            _rowGroupingCountCol(),
+          ]),
         ]);
         sequence[groupByIdx] = groupByFunc;
         funcMap.groupBy = groupByFunc;

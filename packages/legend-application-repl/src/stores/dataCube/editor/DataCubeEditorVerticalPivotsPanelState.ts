@@ -99,7 +99,8 @@ export class DataCubeEditorVerticalPivotsPanelState
             .map((column) => ({
               name: column.name,
               type: column.type,
-              function: guaranteeNonNullable(column.aggregateFunction),
+              operation: guaranteeNonNullable(column.aggregateFunction),
+              parameters: column.aggregateFunctionParameters,
             })),
         }
       : undefined;

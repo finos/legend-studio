@@ -18,7 +18,8 @@ import {
   getDataType,
   type DataCubeColumnKind,
   type DataCubeFont,
-  type DataCubeAggregateFunction,
+  type DataCubeAggregateOperation,
+  type DataCubeOperationValue,
   type DataCubeNumberScale,
   type DataCubeSelectionStat,
   type DataCubeFontFormatUnderlineVariant,
@@ -49,6 +50,13 @@ import { buildDefaultColumnConfiguration } from '../core/DataCubeConfigurationBu
 
 export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfiguration {
   readonly dataType!: DataCubeColumnDataType;
+
+  // NOTE: these configurations are synthesized from the data query, and materialized here
+  // to make editing more convenient. They should not be part of the persistent configuration
+  // to avoid duplication of information with the data query.
+  aggregateFunction?: DataCubeAggregateOperation | undefined;
+  aggregateFunctionParameters: DataCubeOperationValue[] = [];
+  excludedFromHorizontalPivot = false;
 
   static create(
     json: PlainObject<DataCubeColumnConfiguration>,
@@ -136,12 +144,6 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       hideFromView: observable,
       setHideFromView: action,
 
-      aggregateFunction: observable,
-      setAggregateFunction: action,
-
-      excludedFromHorizontalPivot: observable,
-      setExcludedFromHorizontalPivot: action,
-
       fixedWidth: observable,
       setFixedWidth: action,
 
@@ -162,6 +164,15 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
 
       isUsingDefaultStyling: computed,
       useDefaultStyling: action,
+
+      aggregateFunction: observable,
+      setAggregateFunction: action,
+
+      aggregateFunctionParameters: observable,
+      setAggregateFunctionParameters: action,
+
+      excludedFromHorizontalPivot: observable,
+      setExcludedFromHorizontalPivot: action,
     });
 
     return configuration;
@@ -346,12 +357,16 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.linkLabelParameter = value;
   }
 
-  setAggregateFunction(value: DataCubeAggregateFunction | undefined): void {
+  setAggregateFunction(value: DataCubeAggregateOperation | undefined): void {
     this.aggregateFunction = value;
   }
 
   setExcludedFromHorizontalPivot(value: boolean): void {
     this.excludedFromHorizontalPivot = value;
+  }
+
+  setAggregateFunctionParameters(value: DataCubeOperationValue[]): void {
+    this.aggregateFunctionParameters = value;
   }
 }
 
