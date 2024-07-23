@@ -208,6 +208,7 @@ const QueryBuilderTreeNodeViewer = observer(
     const isExpandable = Boolean(node.childrenIds.length);
     const [isExpanded, setIsExpanded] = useState(false);
     const propertySearchState = explorerState.propertySearchState;
+
     const [, dragConnector, dragPreviewConnector] = useDrag<{
       node?: QueryBuilderExplorerTreePropertyNodeData;
     }>(
@@ -230,6 +231,7 @@ const QueryBuilderTreeNodeViewer = observer(
       }),
       [node],
     );
+
     useDragPreviewLayer(dragPreviewConnector);
 
     const getChildrenNodes = (): QueryBuilderExplorerTreeNodeData[] => {
@@ -264,11 +266,13 @@ const QueryBuilderTreeNodeViewer = observer(
       }
       return childNodes;
     };
+
     const parentNode = propertySearchState.indexedExplorerTreeNodes.find(
       (pn) =>
         node instanceof QueryBuilderExplorerTreePropertyNodeData &&
         node.parentId === pn.id,
     );
+
     const propertyName =
       parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
         ? prettyPropertyNameForSubType(node.id)
@@ -288,12 +292,12 @@ const QueryBuilderTreeNodeViewer = observer(
 
     const docText: string | null =
       node instanceof QueryBuilderExplorerTreePropertyNodeData
-        ? node.property.taggedValues.find(
+        ? (node.property.taggedValues.find(
             (taggedValue) =>
               taggedValue.tag.ownerReference.value.path ===
                 CORE_PURE_PATH.PROFILE_DOC &&
               taggedValue.tag.value.value === PURE_DOC_TAG,
-          )?.value ?? null
+          )?.value ?? null)
         : null;
     const formattedDocText =
       docText !== null
