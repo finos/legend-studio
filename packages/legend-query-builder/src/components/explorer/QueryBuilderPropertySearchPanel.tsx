@@ -364,11 +364,13 @@ const QueryBuilderTreeNodeViewer = observer(
                     <InfoCircleIcon />
                   </div>
                 </QueryBuilderPropertyInfoTooltip>
-                <div className="query-builder__tooltip__item__action">
-                  <button onClick={handleHighlightNode} title="Show in tree">
-                    <ShareBoxIcon color="white" />
-                  </button>
-                </div>
+                <button
+                  onClick={handleHighlightNode}
+                  title="Show in tree"
+                  className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__highlight"
+                >
+                  <ShareBoxIcon />
+                </button>
               </>
             )}
             {node instanceof QueryBuilderExplorerTreeSubTypeNodeData && (
@@ -383,11 +385,13 @@ const QueryBuilderTreeNodeViewer = observer(
                     <InfoCircleIcon />
                   </div>
                 </QueryBuilderSubclassInfoTooltip>
-                <div className="query-builder__tooltip__item__action">
-                  <button onClick={handleHighlightNode} title="Show in tree">
-                    <ShareBoxIcon color="white" />
-                  </button>
-                </div>
+                <button
+                  onClick={handleHighlightNode}
+                  title="Show in tree"
+                  className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__highlight"
+                >
+                  <ShareBoxIcon />
+                </button>
               </>
             )}
           </div>
