@@ -172,7 +172,14 @@ const QueryBuilderBaseInfoTooltip: React.FC<{
             </div>
           }
         >
-          <div onClick={() => setIsOpen(true)}>{children}</div>
+          <div
+            onClick={(event: React.MouseEvent) => {
+              setIsOpen(true);
+              event.stopPropagation();
+            }}
+          >
+            {children}
+          </div>
         </Tooltip>
       </div>
     </ClickAwayListener>
