@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useMemo, useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   clsx,
   CheckSquareIcon,
@@ -26,15 +26,11 @@ import {
   ResizablePanelSplitterLine,
   InfoCircleIcon,
   TimesIcon,
-  SearchIcon,
   useDragPreviewLayer,
   PanelLoadingIndicator,
   BlankPanelContent,
-  CogIcon,
-  Checkbox,
   ChevronDownIcon,
   ChevronRightIcon,
-  Tooltip,
   ShareBoxIcon,
 } from '@finos/legend-art';
 import {
@@ -45,11 +41,7 @@ import {
   getAllClassProperties,
   getAllOwnClassProperties,
 } from '@finos/legend-graph';
-import {
-  debounce,
-  guaranteeNonNullable,
-  prettyCONSTName,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { useDrag } from 'react-dnd';
 import { QUERY_BUILDER_PROPERTY_SEARCH_TYPE } from '../../stores/QueryBuilderConfig.js';
@@ -68,7 +60,6 @@ import {
 } from './QueryBuilderExplorerPanel.js';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import { FuzzySearchAdvancedConfigMenu } from '@finos/legend-lego/application';
 
 export const prettyPropertyNameFromNodeId = (name: string): string => {
   let propNameArray = name.split('.');
@@ -412,88 +403,16 @@ const QueryBuilderTreeNodeViewer = observer(
   },
 );
 
-const QueryBuilderPropertySearchAdditionalConfigMenu = observer(
-  (props: {
-    includeTaggedValues: boolean;
-    handleToggleIncludeTaggedValues: () => void;
-  }) => {
-    const { includeTaggedValues, handleToggleIncludeTaggedValues } = props;
-    return (
-      <div className="query-builder-property-search-panel__config__tagged-values">
-        <Checkbox
-          checked={includeTaggedValues}
-          disableRipple={true}
-          classes={{
-            root: 'query-builder-property-search-panel__config__tagged-values__checkbox',
-          }}
-          onChange={handleToggleIncludeTaggedValues}
-        />
-        <button
-          className="query-builder-property-search-panel__config__tagged-values__label"
-          onClick={handleToggleIncludeTaggedValues}
-          tabIndex={-1}
-        >
-          Include tagged values
-        </button>
-        <Tooltip
-          TransitionProps={{
-            // disable transition
-            // NOTE: somehow, this is the only workaround we have, if for example
-            // we set `appear = true`, the tooltip will jump out of position
-            timeout: 0,
-          }}
-          enterDelay={200}
-          title={
-            <div>
-              Include &quot;doc&quot; type tagged values in search results
-            </div>
-          }
-        >
-          <div className="query-builder-property-search-panel__config__tagged-values__tooltip">
-            <InfoCircleIcon />
-          </div>
-        </Tooltip>
-      </div>
-    );
-  },
-);
-
 export const QueryBuilderPropertySearchPanel = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
     triggerElement: HTMLElement | null;
+    clearSearch: () => void;
   }) => {
-    const { queryBuilderState, triggerElement } = props;
+    const { queryBuilderState, triggerElement, clearSearch } = props;
     const explorerState = queryBuilderState.explorerState;
     const propertySearchState = explorerState.propertySearchState;
-    const searchInputRef = useRef<HTMLInputElement>(null);
-    const searchConfigTriggerRef = useRef<HTMLButtonElement>(null);
 
-    // search text
-    const debouncedSearchProperty = useMemo(
-      () => debounce(() => propertySearchState.search(), 100),
-      [propertySearchState],
-    );
-    const onSearchPropertyTextChange: React.ChangeEventHandler<
-      HTMLInputElement
-    > = (event) => {
-      propertySearchState.setSearchText(event.target.value);
-      debouncedSearchProperty();
-    };
-
-    // search actions
-    const clearSearch = (): void => {
-      propertySearchState.resetSearch();
-    };
-    const toggleSearchConfigMenu = (): void =>
-      propertySearchState.setShowSearchConfigurationMenu(
-        !propertySearchState.showSearchConfigurationMenu,
-      );
-    const closeSearchConfigMenu = (): void =>
-      propertySearchState.setShowSearchConfigurationMenu(false);
-
-    // life-cycle
-    const handleEnter = (): void => searchInputRef.current?.focus();
     const handleClose = (): void => {
       clearSearch();
       propertySearchState.setIsSearchPanelOpen(false);
@@ -521,7 +440,6 @@ export const QueryBuilderPropertySearchPanel = observer(
           vertical: 'top',
           horizontal: 'center',
         }}
-        TransitionProps={{ onEnter: handleEnter }}
       >
         <div
           data-testid={
@@ -530,101 +448,6 @@ export const QueryBuilderPropertySearchPanel = observer(
           className="query-builder-property-search-panel"
         >
           <div className="query-builder-property-search-panel__header">
-            <div className="query-builder-property-search-panel__input__container">
-              <input
-                ref={searchInputRef}
-                className={clsx(
-                  'query-builder-property-search-panel__input input--dark',
-                  {
-                    'query-builder-property-search-panel__input--searching':
-                      propertySearchState.searchText,
-                  },
-                )}
-                spellCheck={false}
-                onChange={onSearchPropertyTextChange}
-                value={propertySearchState.searchText}
-                placeholder="Search for a property by name or documentation"
-              />
-              {propertySearchState.searchText && (
-                <div className="query-builder-property-search-panel__input__search__count">
-                  {propertySearchState.filteredSearchResults.length +
-                    (propertySearchState.isOverSearchLimit &&
-                    propertySearchState.filteredSearchResults.length !== 0
-                      ? '+'
-                      : '')}
-                </div>
-              )}
-              <button
-                ref={searchConfigTriggerRef}
-                className={clsx(
-                  'query-builder-property-search-panel__input__search__config__trigger',
-                  {
-                    'query-builder-property-search-panel__input__search__config__trigger--toggled':
-                      propertySearchState.showSearchConfigurationMenu,
-                    'query-builder-property-search-panel__input__search__config__trigger--active':
-                      propertySearchState.searchConfigurationState
-                        .isAdvancedSearchActive,
-                  },
-                )}
-                tabIndex={-1}
-                onClick={toggleSearchConfigMenu}
-                title="Click to toggle search config menu"
-              >
-                <CogIcon />
-              </button>
-              <BasePopover
-                open={Boolean(propertySearchState.showSearchConfigurationMenu)}
-                TransitionProps={{
-                  onEnter: handleEnter,
-                }}
-                anchorEl={searchConfigTriggerRef.current}
-                onClose={closeSearchConfigMenu}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'center',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'center',
-                }}
-              >
-                <FuzzySearchAdvancedConfigMenu
-                  configState={propertySearchState.searchConfigurationState}
-                  additionalMenuItems={
-                    <QueryBuilderPropertySearchAdditionalConfigMenu
-                      includeTaggedValues={
-                        propertySearchState.searchConfigurationState
-                          .includeTaggedValues
-                      }
-                      handleToggleIncludeTaggedValues={() => {
-                        propertySearchState.searchConfigurationState.setIncludeTaggedValues(
-                          !propertySearchState.searchConfigurationState
-                            .includeTaggedValues,
-                        );
-                        propertySearchState.initialize();
-                        propertySearchState.search();
-                      }}
-                    />
-                  }
-                />
-              </BasePopover>
-              {!propertySearchState.searchText ? (
-                <>
-                  <div className="query-builder-property-search-panel__input__search__icon">
-                    <SearchIcon />
-                  </div>
-                </>
-              ) : (
-                <button
-                  className="query-builder-property-search-panel__input__clear-btn"
-                  tabIndex={-1}
-                  onClick={clearSearch}
-                  title="Clear"
-                >
-                  <TimesIcon />
-                </button>
-              )}
-            </div>
             <button
               className="btn btn--dark query-builder-property-search-panel__close-btn"
               tabIndex={-1}
