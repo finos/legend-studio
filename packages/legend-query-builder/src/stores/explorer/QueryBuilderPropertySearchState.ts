@@ -30,6 +30,7 @@ import {
   addUniqueEntry,
   deleteEntry,
   guaranteeNonNullable,
+  isNonNullable,
 } from '@finos/legend-shared';
 import {
   observable,
@@ -211,16 +212,26 @@ export class QueryBuilderPropertySearchState {
     let currentLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
     let nextLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
 
+    // Get all the children of the root node(s)
     Array.from(
-      this.queryBuilderState.explorerState.nonNullableTreeData.nodes.values(),
-    )
-      .slice(1)
-      .forEach((node) => {
-        if (node.mappingData.mapped && !node.isPartOfDerivedPropertyBranch) {
-          currentLevelPropertyNodes.push(node);
-          this.indexedExplorerTreeNodes.push(node);
-        }
-      });
+      this.queryBuilderState.explorerState.nonNullableTreeData.rootIds
+        .map((rootId) =>
+          this.queryBuilderState.explorerState.nonNullableTreeData.nodes
+            .get(rootId)
+            ?.childrenIds.map((childId) =>
+              this.queryBuilderState.explorerState.nonNullableTreeData.nodes.get(
+                childId,
+              ),
+            ),
+        )
+        .flat()
+        .filter(isNonNullable),
+    ).forEach((node) => {
+      if (node.mappingData.mapped && !node.isPartOfDerivedPropertyBranch) {
+        currentLevelPropertyNodes.push(node);
+        this.indexedExplorerTreeNodes.push(node);
+      }
+    });
 
     // ensure we don't navigate more nodes than the limit so we could
     // keep the initialization/indexing time within acceptable range
