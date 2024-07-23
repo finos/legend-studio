@@ -133,7 +133,10 @@ const QueryBuilderBaseInfoTooltip: React.FC<{
   const [open, setIsOpen] = useState(false);
 
   return (
-    <ClickAwayListener onClickAway={() => setIsOpen(false)}>
+    <ClickAwayListener
+      onClickAway={() => setIsOpen(false)}
+      mouseEvent="onMouseDown"
+    >
       <div>
         <Tooltip
           arrow={true}
