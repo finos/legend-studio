@@ -144,6 +144,8 @@ export abstract class FilterConditionValueState implements Hashable {
   }
 }
 
+// This class is used to represent the value of a filter condition when the value is
+// a ValueSpecification.
 export class FilterValueSpecConditionValueState extends FilterConditionValueState {
   value?: ValueSpecification | undefined;
 
@@ -196,6 +198,9 @@ export class FilterValueSpecConditionValueState extends FilterConditionValueStat
   }
 }
 
+// This class is used to represent the value of a filter condition when the value is a
+// PropertyExpressionState (which comes from DND a property node from the explorer tree
+// or a column from the fetch structure panel).
 export class FilterPropertyExpressionStateConditionValueState extends FilterConditionValueState {
   propertyExpressionState: QueryBuilderPropertyExpressionState;
 
@@ -1143,7 +1148,16 @@ export class QueryBuilderFilterState
     );
   }
 
-  isInvalidFilterValue(node: QueryBuilderFilterTreeNodeData): boolean {
+  isInvalidFilterPropertyExpressionState(
+    node: QueryBuilderFilterTreeNodeData,
+  ): boolean {
+    return (
+      node instanceof QueryBuilderFilterTreeConditionNodeData &&
+      !node.condition.propertyExpressionState.isValid
+    );
+  }
+
+  isInvalidValueSpecFilterValue(node: QueryBuilderFilterTreeNodeData): boolean {
     return (
       node instanceof QueryBuilderFilterTreeConditionNodeData &&
       node.condition.rightConditionValue instanceof
@@ -1153,16 +1167,27 @@ export class QueryBuilderFilterState
     );
   }
 
+  isInvalidPropertyExpressionStateFilterValue(
+    node: QueryBuilderFilterTreeNodeData,
+  ): boolean {
+    return (
+      node instanceof QueryBuilderFilterTreeConditionNodeData &&
+      node.condition.rightConditionValue instanceof
+        FilterPropertyExpressionStateConditionValueState &&
+      !node.condition.rightConditionValue.propertyExpressionState.isValid
+    );
+  }
+
   get allValidationIssues(): string[] {
     const validationIssues: string[] = [];
     Array.from(this.nodes.values()).forEach((node) => {
       if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
-        if (this.isInvalidFilterValue(node)) {
+        if (this.isInvalidValueSpecFilterValue(node)) {
           validationIssues.push(
             `Filter value for ${node.condition.propertyExpressionState.title} is missing or invalid`,
           );
         }
-        if (!node.condition.propertyExpressionState.isValid) {
+        if (this.isInvalidFilterPropertyExpressionState(node)) {
           validationIssues.push(
             `Derived property parameter value for ${node.condition.propertyExpressionState.title} is missing or invalid`,
           );
@@ -1170,7 +1195,7 @@ export class QueryBuilderFilterState
         if (
           node.condition.rightConditionValue instanceof
             FilterPropertyExpressionStateConditionValueState &&
-          !node.condition.rightConditionValue.propertyExpressionState.isValid
+          this.isInvalidPropertyExpressionStateFilterValue(node)
         ) {
           validationIssues.push(
             `Derived property parameter value for ${node.condition.rightConditionValue.propertyExpressionState.title} is missing or invalid`,
@@ -1183,19 +1208,15 @@ export class QueryBuilderFilterState
 
   get hasInvalidFilterValues(): boolean {
     return Array.from(this.nodes.values()).some((node) =>
-      this.isInvalidFilterValue(node),
+      this.isInvalidValueSpecFilterValue(node),
     );
   }
 
   get hasInvalidDerivedPropertyParameters(): boolean {
     return Array.from(this.nodes.values()).some(
       (node) =>
-        node instanceof QueryBuilderFilterTreeConditionNodeData &&
-        (!node.condition.propertyExpressionState.isValid ||
-          (node.condition.rightConditionValue instanceof
-            FilterPropertyExpressionStateConditionValueState &&
-            !node.condition.rightConditionValue.propertyExpressionState
-              .isValid)),
+        this.isInvalidFilterPropertyExpressionState(node) ||
+        this.isInvalidPropertyExpressionStateFilterValue(node),
     );
   }
 
