@@ -78,9 +78,11 @@ import {
   QueryExplicitExecutionContext,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
-import type {
-  CommandRegistrar,
-  GenericLegendApplicationStore,
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  type CommandRegistrar,
+  type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import { QueryFunctionsExplorerState } from './explorer/QueryFunctionsExplorerState.js';
 import {
@@ -214,6 +216,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       isQuerySupported: computed,
       allValidationIssues: computed,
       canBuildQuery: computed,
+      isUnsavedQueryWithChanges: computed,
 
       setShowFunctionsExplorerPanel: action,
       setShowParametersPanel: action,
@@ -468,7 +471,9 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.resultState = resultState;
   }
 
-  resetQueryContent(): void {
+  resetQueryContent(options?: {
+    preserveChangeHistoryState?: boolean | undefined;
+  }): void {
     this.textEditorState = new QueryBuilderTextEditorState(this);
     this.unsupportedQueryState = new QueryBuilderUnsupportedQueryState(this);
     this.milestoningState = new QueryBuilderMilestoningState(this);
@@ -486,6 +491,9 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.watermarkState = new QueryBuilderWatermarkState(this);
     this.checkEntitlementsState = new QueryBuilderCheckEntitlementsState(this);
+    if (!options?.preserveChangeHistoryState) {
+      this.changeHistoryState = new QueryBuilderChangeHistoryState(this);
+    }
     this.isCalendarEnabled = false;
 
     const currentFetchStructureImplementationType =
@@ -672,7 +680,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
         previousStateParameterValues = paramValues;
       }
       this.resetQueryResult({ preserveResult: options?.preserveResult });
-      this.resetQueryContent();
+      this.resetQueryContent({ preserveChangeHistoryState: true });
 
       if (!isStubbed_RawLambda(query)) {
         const valueSpec = observe_ValueSpecification(
@@ -713,7 +721,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
         error,
       );
       this.resetQueryResult({ preserveResult: options?.preserveResult });
-      this.resetQueryContent();
+      this.resetQueryContent({ preserveChangeHistoryState: true });
       this.unsupportedQueryState.setLambdaError(error);
       this.unsupportedQueryState.setRawLambda(query);
       this.setClass(undefined);
@@ -831,6 +839,46 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       !this.fetchStructureState.implementation
         .hasInvalidDerivedPropertyParameters
     );
+  }
+
+  get isUnsavedQueryWithChanges(): boolean {
+    return (
+      this.changeDetectionState.hashCodeSnapshot === undefined &&
+      (this.changeHistoryState.canRedo ||
+        this.changeHistoryState.canUndo ||
+        !this.filterState.isEmpty ||
+        !this.fetchStructureState.implementation.isFilterEmpty ||
+        !this.constantState.isEmpty)
+    );
+  }
+
+  alertUnsavedChanges(onProceed: () => void): void {
+    if (
+      this.changeDetectionState.hasChanged ||
+      this.isUnsavedQueryWithChanges
+    ) {
+      this.applicationStore.alertService.setActionAlertInfo({
+        message:
+          'Unsaved changes will be lost if you continue. Do you still want to proceed?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: this.applicationStore.guardUnhandledError(async () =>
+              onProceed(),
+            ),
+          },
+          {
+            label: 'Abort',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    } else {
+      onProceed();
+    }
   }
 
   /**

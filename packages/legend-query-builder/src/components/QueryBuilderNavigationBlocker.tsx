@@ -30,7 +30,11 @@ export const QueryBuilderNavigationBlocker = observer(
 
     useEffect(() => {
       applicationStore.navigationService.navigator.blockNavigation(
-        [(): boolean => queryBuilderState.changeDetectionState.hasChanged],
+        [
+          (): boolean =>
+            queryBuilderState.changeDetectionState.hasChanged ||
+            queryBuilderState.isUnsavedQueryWithChanges,
+        ],
         (onProceed: () => void): void => {
           applicationStore.alertService.setActionAlertInfo({
             message:

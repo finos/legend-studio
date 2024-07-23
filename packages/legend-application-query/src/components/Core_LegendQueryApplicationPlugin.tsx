@@ -317,7 +317,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                 }
               };
 
-            queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
+            queryBuilderState.alertUnsavedChanges(() => {
               proceedCuratedTemplateQueryPromotion().catch(
                 editorStore.applicationStore.alertUnhandledError,
               );
@@ -537,10 +537,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                   }
                 }
               } else {
-                if (
-                  queryBuilderState.changeHistoryState.canUndo ||
-                  queryBuilderState.changeHistoryState.canRedo
-                ) {
+                if (queryBuilderState.isUnsavedQueryWithChanges) {
                   queryBuilderState.applicationStore.alertService.setActionAlertInfo(
                     {
                       message:

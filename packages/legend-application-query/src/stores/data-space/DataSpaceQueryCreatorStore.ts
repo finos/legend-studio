@@ -334,9 +334,11 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
           hasDataSpaceInfoBeenVisited(dataSpaceInfo, visitedDataSpaces),
       ),
       (dataSpaceInfo: DataSpaceInfo) => {
-        flowResult(this.changeDataSpace(dataSpaceInfo)).catch(
-          this.applicationStore.alertUnhandledError,
-        );
+        queryBuilderState.alertUnsavedChanges(() => {
+          flowResult(this.changeDataSpace(dataSpaceInfo)).catch(
+            this.applicationStore.alertUnhandledError,
+          );
+        });
       },
       dataSpaceAnalysisResult,
       (ec: DataSpaceExecutionContext) => {

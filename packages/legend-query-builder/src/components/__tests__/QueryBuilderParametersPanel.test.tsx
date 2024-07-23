@@ -43,6 +43,7 @@ import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   TEST__setUpQueryBuilder,
   getCustomSelectorInputValue,
+  selectFirstOptionFromCustomSelectorInput,
   selectFromCustomSelectorInput,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import {
@@ -868,5 +869,58 @@ test(
     executeDialog = await waitFor(() => renderResult.getByRole('dialog'));
     expect(getByText(executeDialog, 'Set Parameter Values'));
     expect(getByText(executeDialog, 'var_1')).toStrictEqual(parameterValue);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder warns about losing unsaved changes when parameter is created',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(undefined, TEST_DATA__simpleProjection.body),
+      );
+      // NOTE: Render result will not currently find the
+      // 'show parameter(s)' panel so we will directly force
+      // the panel to show for now
+      queryBuilderState.setShowParametersPanel(true);
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    const parametersPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+    );
+
+    // Create parameter
+    fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
+    await waitFor(() => renderResult.getByText('Create Parameter'));
+    const parameterNameInput = getParameterNameInput(renderResult);
+    fireEvent.change(parameterNameInput, { target: { value: 'var_1' } });
+    const createButton = renderResult.getByRole('button', { name: 'Create' });
+    fireEvent.click(createButton);
+
+    // change entity
+    const entityContainer = guaranteeNonNullable(
+      renderResult.getByText('Entity').parentElement,
+    );
+    selectFirstOptionFromCustomSelectorInput(entityContainer);
+
+    // check for modal
+    expect(
+      renderResult.getByText(
+        'Unsaved changes will be lost if you continue. Do you still want to proceed?',
+      ),
+    ).not.toBeNull();
   },
 );
