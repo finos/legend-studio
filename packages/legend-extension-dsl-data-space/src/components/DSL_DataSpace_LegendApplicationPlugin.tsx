@@ -32,9 +32,13 @@ import type {
 } from '@finos/legend-query-builder';
 import { DataSpaceQueryBuilderState } from '../stores/query-builder/DataSpaceQueryBuilderState.js';
 import { DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_CONFIG } from '../__lib__/DSL_DataSpace_LegendApplicationCommand.js';
-import type { QuerySearchSpecification } from '@finos/legend-graph';
+import { RawLambda, type QuerySearchSpecification } from '@finos/legend-graph';
 import { configureDataGridComponent } from '@finos/legend-lego/data-grid';
-import { DataSpaceExecutableTemplate } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import {
+  type DataSpaceTemplateExecutablePointer,
+  DataSpaceTemplateExecutable,
+  DataSpaceInlineTemplateExecutable,
+} from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { filterByType } from '@finos/legend-shared';
 import {
   createQueryClassTaggedValue,
@@ -155,7 +159,7 @@ export class DSL_DataSpace_LegendApplicationPlugin
           if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
             const executableTemplates =
               queryBuilderState.dataSpace.executables?.filter(
-                filterByType(DataSpaceExecutableTemplate),
+                filterByType(DataSpaceTemplateExecutable),
               );
             return executableTemplates
               ? executableTemplates.map(
@@ -164,7 +168,21 @@ export class DSL_DataSpace_LegendApplicationPlugin
                       id: e.id,
                       title: e.title,
                       description: e.description,
-                      query: e.query,
+                      query:
+                        e instanceof DataSpaceInlineTemplateExecutable
+                          ? e.query
+                          : new RawLambda(
+                              (
+                                e as DataSpaceTemplateExecutablePointer
+                              ).query.value.parameters.map((parameter) =>
+                                queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+                                  parameter,
+                                ),
+                              ),
+                              (
+                                e as DataSpaceTemplateExecutablePointer
+                              ).query.value.expressionSequence,
+                            ),
                       executionContextKey:
                         e.executionContextKey ??
                         queryBuilderState.dataSpace.defaultExecutionContext

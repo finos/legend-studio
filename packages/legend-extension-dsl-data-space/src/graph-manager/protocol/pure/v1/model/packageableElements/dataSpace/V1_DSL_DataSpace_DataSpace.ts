@@ -89,12 +89,11 @@ export class V1_DataSpacePackageableElementExecutable
   }
 }
 
-export class V1_DataSpaceTemplateExecutable
+export abstract class V1_DataSpaceTemplateExecutable
   extends V1_DataSpaceExecutable
   implements Hashable
 {
   id!: string;
-  query!: V1_RawLambda;
   executionContextKey?: string | undefined;
 
   override get hashCode(): string {
@@ -103,7 +102,42 @@ export class V1_DataSpaceTemplateExecutable
       this.id,
       this.title,
       this.description ?? '',
+      this.executionContextKey ?? '',
+    ]);
+  }
+}
+
+export class V1_DataSpaceInlineTemplateExecutable
+  extends V1_DataSpaceTemplateExecutable
+  implements Hashable
+{
+  query!: V1_RawLambda;
+
+  override get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_INLINE_TEMPLATE_EXECUTABLE,
+      this.id,
+      this.title,
+      this.description ?? '',
       this.query,
+      this.executionContextKey ?? '',
+    ]);
+  }
+}
+
+export class V1_DataSpaceTemplateExecutablePointer
+  extends V1_DataSpaceTemplateExecutable
+  implements Hashable
+{
+  query!: V1_PackageableElementPointer;
+
+  override get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_TEMPLATE_EXECUTABLE_POINTER,
+      this.id,
+      this.title,
+      this.description ?? '',
+      this.query.path,
       this.executionContextKey ?? '',
     ]);
   }

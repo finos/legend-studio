@@ -45,6 +45,7 @@ export class V1_SnowflakeApp extends V1_FunctionActivator {
       this.usageRole ?? '',
       this.ownership,
       this.activationConfiguration,
+      this.function.path,
     ]);
   }
 }

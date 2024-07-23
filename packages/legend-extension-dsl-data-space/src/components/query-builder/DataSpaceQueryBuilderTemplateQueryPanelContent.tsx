@@ -30,15 +30,20 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { DocumentationLink } from '@finos/legend-lego/application';
-import { DataSpaceExecutableTemplate } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import {
+  DataSpaceTemplateExecutable,
+  DataSpaceInlineTemplateExecutable,
+  DataSpaceTemplateExecutablePointer,
+} from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import type { DataSpaceQueryBuilderState } from '../../stores/query-builder/DataSpaceQueryBuilderState.js';
 import { DSL_DATA_SPACE_LEGEND_QUERY_DOCUMENTATION_KEY } from '../../__lib__/query/DSL_DataSpace_LegendQueryDocumentation.js';
+import { RawLambda, stub_RawLambda } from '@finos/legend-graph';
 
 const DataSpaceTemplateQueryDialog = observer(
   (props: {
     triggerElement: HTMLElement | null;
     queryBuilderState: DataSpaceQueryBuilderState;
-    templateQueries: DataSpaceExecutableTemplate[];
+    templateQueries: DataSpaceTemplateExecutable[];
   }) => {
     const { triggerElement, queryBuilderState, templateQueries } = props;
     const applicationStore = useApplicationStore();
@@ -46,11 +51,24 @@ const DataSpaceTemplateQueryDialog = observer(
       queryBuilderState.setTemplateQueryDialogOpen(false);
     };
 
-    const loadTemplateQuery = (template: DataSpaceExecutableTemplate): void => {
+    const loadTemplateQuery = (template: DataSpaceTemplateExecutable): void => {
       const executionContext =
         queryBuilderState.dataSpace.executionContexts.find(
           (c) => c.name === template.executionContextKey,
         );
+      let templateQuery: RawLambda = stub_RawLambda();
+      if (template instanceof DataSpaceTemplateExecutablePointer) {
+        templateQuery = new RawLambda(
+          template.query.value.parameters.map((parameter) =>
+            queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+              parameter,
+            ),
+          ),
+          template.query.value.expressionSequence,
+        );
+      } else if (template instanceof DataSpaceInlineTemplateExecutable) {
+        templateQuery = template.query;
+      }
       if (
         executionContext &&
         executionContext.hashCode !==
@@ -58,15 +76,15 @@ const DataSpaceTemplateQueryDialog = observer(
       ) {
         queryBuilderState.setExecutionContext(executionContext);
         queryBuilderState.propagateExecutionContextChange(executionContext);
-        queryBuilderState.initializeWithQuery(template.query);
+        queryBuilderState.initializeWithQuery(templateQuery);
         queryBuilderState.onExecutionContextChange?.(executionContext);
       } else {
-        queryBuilderState.initializeWithQuery(template.query);
+        queryBuilderState.initializeWithQuery(templateQuery);
       }
       handleClose();
     };
 
-    const loadQuery = (template: DataSpaceExecutableTemplate): void => {
+    const loadQuery = (template: DataSpaceTemplateExecutable): void => {
       if (queryBuilderState.changeDetectionState.hasChanged) {
         applicationStore.alertService.setActionAlertInfo({
           message:
@@ -91,7 +109,7 @@ const DataSpaceTemplateQueryDialog = observer(
     };
 
     const visitTemplateQuery = (
-      template: DataSpaceExecutableTemplate,
+      template: DataSpaceTemplateExecutable,
     ): void => {
       if (queryBuilderState.dataSpaceRepo.canVisitTemplateQuery) {
         queryBuilderState.dataSpaceRepo.visitTemplateQuery(
@@ -182,7 +200,7 @@ const DataSpaceQueryBuilderTemplateQueryPanel = observer(
     const { queryBuilderState } = props;
     const templateQueryButtonRef = useRef<HTMLButtonElement>(null);
     const templateQueries = queryBuilderState.dataSpace.executables?.filter(
-      (e) => e instanceof DataSpaceExecutableTemplate,
+      (e) => e instanceof DataSpaceTemplateExecutable,
     );
 
     const showTemplateQueries = (): void => {

@@ -15,11 +15,11 @@
  */
 
 import {
-  QueryProjectCoordinates,
-  extractElementNameFromPath,
   type Query,
-  type RawLambda,
   type QuerySearchSpecification,
+  QueryProjectCoordinates,
+  RawLambda,
+  extractElementNameFromPath,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
@@ -42,7 +42,9 @@ import {
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 import {
   DSL_DataSpace_getGraphManagerExtension,
-  DataSpaceExecutableTemplate,
+  DataSpaceTemplateExecutable,
+  DataSpaceInlineTemplateExecutable,
+  DataSpaceTemplateExecutablePointer,
   getDataSpace,
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
@@ -95,7 +97,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     );
     const dataSpaceExecutableTemplate = guaranteeNonNullable(
       dataSpace.executables
-        ?.filter(filterByType(DataSpaceExecutableTemplate))
+        ?.filter(filterByType(DataSpaceTemplateExecutable))
         .find((executable) => executable.id === this.templateQueryId),
       `Can't find template query with id '${this.templateQueryId}'`,
     );
@@ -160,7 +162,26 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     );
     queryBuilderState.setExecutionContext(executionContext);
     queryBuilderState.propagateExecutionContextChange(executionContext);
-    queryBuilderState.initializeWithQuery(dataSpaceExecutableTemplate.query);
+    if (
+      dataSpaceExecutableTemplate instanceof DataSpaceTemplateExecutablePointer
+    ) {
+      const queryFunction = dataSpaceExecutableTemplate.query.value;
+      queryBuilderState.initializeWithQuery(
+        new RawLambda(
+          queryFunction.parameters.map((parameter) =>
+            this.graphManagerState.graphManager.serializeRawValueSpecification(
+              parameter,
+            ),
+          ),
+          queryFunction.expressionSequence,
+        ),
+      );
+    } else if (
+      dataSpaceExecutableTemplate instanceof DataSpaceInlineTemplateExecutable
+    ) {
+      queryBuilderState.initializeWithQuery(dataSpaceExecutableTemplate.query);
+    }
+
     return queryBuilderState;
   }
 

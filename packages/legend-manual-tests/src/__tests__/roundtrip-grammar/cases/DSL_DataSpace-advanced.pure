@@ -1,11 +1,3 @@
-Class model::DummyClass
-{
-}
-
-Class domain::DummyDomain
-{
-}
-
 Enum model::DummyEnum
 {
 }
@@ -14,27 +6,24 @@ Enum model::target::_DummyEnum
 {
 }
 
+Class model::DummyClass
+{
+}
+
+Class domain::DummyDomain
+{
+}
+
+function model::DummyFunction(): meta::pure::tds::TabularDataSet[*]
+{
+  []
+}
+
 
 ###Mapping
 Mapping model::DummyMapping
 (
 )
-
-
-###Runtime
-Runtime model::DummyRuntime
-{
-  mappings:
-  [
-    model::DummyMapping
-  ];
-}
-
-
-###Diagram
-Diagram model::DummyDiagram
-{
-}
 
 
 ###Service
@@ -53,6 +42,22 @@ Service model::MyService
   [
 
   ]
+}
+
+
+###Runtime
+Runtime model::DummyRuntime
+{
+  mappings:
+  [
+    model::DummyMapping
+  ];
+}
+
+
+###Diagram
+Diagram model::DummyDiagram
+{
 }
 
 
@@ -106,6 +111,12 @@ DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} mod
       id: template_id;
       title: 'this is template';
       query: |'';
+      executionContextKey: 'Context 1';
+    },
+    {
+      id: template_id_1;
+      title: 'this is template with function pointer';
+      query: model::DummyFunction():TabularDataSet[*];
       executionContextKey: 'Context 1';
     }
   ];

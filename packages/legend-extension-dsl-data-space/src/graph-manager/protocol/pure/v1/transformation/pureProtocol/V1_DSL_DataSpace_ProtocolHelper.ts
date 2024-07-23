@@ -52,8 +52,9 @@ import {
   V1_DataSpaceSupportCombinedInfo,
   V1_DataSpaceDiagram,
   V1_DataSpaceElementPointer,
-  V1_DataSpaceTemplateExecutable,
   V1_DataSpacePackageableElementExecutable,
+  V1_DataSpaceInlineTemplateExecutable,
+  V1_DataSpaceTemplateExecutablePointer,
 } from '../../model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import { V1_MappingIncludeDataSpace } from '../../model/packageableElements/mapping/V1_DSL_DataSpace_MappingIncludeDataSpace.js';
 
@@ -63,6 +64,8 @@ const V1_DATA_SPACE_SUPPORT_COMBINED_INFO_TYPE = 'combined';
 const V1_DATA_SPACE_PACKAGEABLE_ELEMENT_EXECUTABLE =
   'dataSpacePackageableElementExecutable';
 const V1_DATA_SPACE_TEMPLATE_EXECUTABLE = 'dataSpaceTemplateExecutable';
+const V1_DATA_SPACE_TEMPLATE_EXECUTABLE_POINTER =
+  'dataSpaceTemplateExecutablePointer';
 
 const V1_dataSpaceExecutionContextModelSchema = createModelSchema(
   V1_DataSpaceExecutionContext,
@@ -150,8 +153,8 @@ const V1_dataSpacePackageableElementExecutableModelSchema = createModelSchema(
   },
 );
 
-const V1_dataSpaceTemplateExecutableModelSchema = createModelSchema(
-  V1_DataSpaceTemplateExecutable,
+const V1_dataSpaceInlineTemplateExecutableModelSchema = createModelSchema(
+  V1_DataSpaceInlineTemplateExecutable,
   {
     _type: usingConstantValueSchema(V1_DATA_SPACE_TEMPLATE_EXECUTABLE),
     description: optional(primitive()),
@@ -162,11 +165,28 @@ const V1_dataSpaceTemplateExecutableModelSchema = createModelSchema(
   },
 );
 
+const V1_dataSpaceTemplateExecutablePointerModelSchema = createModelSchema(
+  V1_DataSpaceTemplateExecutablePointer,
+  {
+    _type: usingConstantValueSchema(V1_DATA_SPACE_TEMPLATE_EXECUTABLE_POINTER),
+    description: optional(primitive()),
+    title: primitive(),
+    id: primitive(),
+    query: usingModelSchema(V1_packageableElementPointerModelSchema),
+    executionContextKey: optional(primitive()),
+  },
+);
+
 const V1_serializeDataspaceExecutable = (
   protocol: V1_DataSpaceExecutable,
 ): PlainObject<V1_DataSpaceExecutable> => {
-  if (protocol instanceof V1_DataSpaceTemplateExecutable) {
-    return serialize(V1_dataSpaceTemplateExecutableModelSchema, protocol);
+  if (protocol instanceof V1_DataSpaceTemplateExecutablePointer) {
+    return serialize(
+      V1_dataSpaceTemplateExecutablePointerModelSchema,
+      protocol,
+    );
+  } else if (protocol instanceof V1_DataSpaceInlineTemplateExecutable) {
+    return serialize(V1_dataSpaceInlineTemplateExecutableModelSchema, protocol);
   } else if (protocol instanceof V1_DataSpacePackageableElementExecutable) {
     return serialize(
       V1_dataSpacePackageableElementExecutableModelSchema,
@@ -184,7 +204,12 @@ export const V1_deserializeDataspaceExecutable = (
 ): V1_DataSpaceSupportInfo => {
   switch (json._type) {
     case V1_DATA_SPACE_TEMPLATE_EXECUTABLE:
-      return deserialize(V1_dataSpaceTemplateExecutableModelSchema, json);
+      return deserialize(V1_dataSpaceInlineTemplateExecutableModelSchema, json);
+    case V1_DATA_SPACE_TEMPLATE_EXECUTABLE_POINTER:
+      return deserialize(
+        V1_dataSpaceTemplateExecutablePointerModelSchema,
+        json,
+      );
     case V1_DATA_SPACE_PACKAGEABLE_ELEMENT_EXECUTABLE:
     default:
       return deserialize(

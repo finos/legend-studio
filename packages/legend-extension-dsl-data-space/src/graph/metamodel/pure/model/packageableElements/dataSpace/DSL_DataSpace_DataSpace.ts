@@ -24,9 +24,11 @@ import {
   type Enumeration,
   type Association,
   type Package,
-  type RawLambda,
   type DataElementReference,
+  type ConcreteFunctionDefinition,
+  type RawLambda,
   PackageableElement,
+  generateFunctionPrettyName,
 } from '@finos/legend-graph';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSL_DataSpace_HashUtils.js';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
@@ -96,17 +98,33 @@ export class DataSpacePackageableElementExecutable
   }
 }
 
-export class DataSpaceExecutableTemplate
+export abstract class DataSpaceTemplateExecutable
   extends DataSpaceExecutable
   implements Hashable
 {
   id!: string;
-  query!: RawLambda;
   executionContextKey?: string;
 
   override get hashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_TEMPLATE_EXECUTABLE,
+      this.id,
+      this.title,
+      this.description ?? '',
+      this.executionContextKey ?? '',
+    ]);
+  }
+}
+
+export class DataSpaceInlineTemplateExecutable
+  extends DataSpaceTemplateExecutable
+  implements Hashable
+{
+  query!: RawLambda;
+
+  override get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_INLINE_TEMPLATE_EXECUTABLE,
       this.id,
       this.title,
       this.description ?? '',
@@ -116,6 +134,29 @@ export class DataSpaceExecutableTemplate
   }
 }
 
+export class DataSpaceTemplateExecutablePointer
+  extends DataSpaceTemplateExecutable
+  implements Hashable
+{
+  query!: PackageableElementReference<ConcreteFunctionDefinition>;
+
+  override get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_TEMPLATE_EXECUTABLE_POINTER,
+      this.id,
+      this.title,
+      this.description ?? '',
+      this.query.valueForSerialization
+        ? generateFunctionPrettyName(this.query.value, {
+            fullPath: true,
+            spacing: false,
+            notIncludeParamName: true,
+          })
+        : '',
+      this.executionContextKey ?? '',
+    ]);
+  }
+}
 export class DataSpaceDiagram implements Hashable {
   title!: string;
   description?: string | undefined;

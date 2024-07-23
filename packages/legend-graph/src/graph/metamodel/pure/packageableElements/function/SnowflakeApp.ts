@@ -19,6 +19,7 @@ import type { PackageableElementVisitor } from '../PackageableElement.js';
 import { FunctionActivator } from './FunctionActivator.js';
 import type { SnowflakeAppDeploymentConfiguration } from '../../functionActivator/SnowflakeAppDeploymentConfiguration.js';
 import type { DeploymentOwner } from './Ownership.js';
+import { generateFunctionPrettyName } from '../../../../helpers/PureLanguageHelper.js';
 
 export enum SnowflakePermissionScheme {
   DEFAULT = 'DEFAULT',
@@ -47,6 +48,13 @@ export class SnowflakeApp extends FunctionActivator {
       this.usageRole ?? '',
       this.ownership,
       this.activationConfiguration,
+      this.function
+        ? generateFunctionPrettyName(this.function.value, {
+            fullPath: true,
+            spacing: false,
+            notIncludeParamName: true,
+          })
+        : '',
     ]);
   }
 }
