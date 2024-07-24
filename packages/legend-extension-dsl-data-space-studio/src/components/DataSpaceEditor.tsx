@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '@finos/legend-application-studio';
-import { PanelFormTextField, PanelFormSection } from '@finos/legend-art';
+import { PanelFormTextField } from '@finos/legend-art';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
   set_description,
@@ -35,10 +35,8 @@ export const DataSpaceEditor = observer(() => {
     set_title(formElement, value);
   };
 
-  const handleDescriptionChange: React.ChangeEventHandler<
-    HTMLTextAreaElement
-  > = (event) => {
-    set_description(formElement, event.target.value);
+  const handleDescriptionChange = (value: string | undefined): void => {
+    set_description(formElement, value);
   };
 
   return (
@@ -46,7 +44,7 @@ export const DataSpaceEditor = observer(() => {
       <div className="panel__content__form">
         <div className="panel__content__form__section">
           <PanelFormTextField
-            name="Title"
+            name="Data Space Title"
             value={formElement.title ?? ''}
             update={handleTitleChange}
             placeholder="Enter title"
@@ -55,15 +53,12 @@ export const DataSpaceEditor = observer(() => {
       </div>
       <div className="panel__content__form">
         <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Description
-          </div>
-          <textarea
-            className="panel__content__form__section__textarea"
-            title="Description"
-            spellCheck={false}
+          <PanelFormTextField
+            name="Data Space Description"
             value={formElement.description ?? ''}
-            onChange={handleDescriptionChange}
+            prompt="Data Space title is the user facing name for the Data Space. It used in downstream applications as the default identifier for this Data Space. When not provided, the DataSpace name property is used"
+            update={handleDescriptionChange}
+            placeholder="Enter Description"
           />
         </div>
       </div>
