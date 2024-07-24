@@ -25,7 +25,6 @@ import {
   ResizablePanel,
   ResizablePanelSplitterLine,
   InfoCircleIcon,
-  TimesIcon,
   useDragPreviewLayer,
   PanelLoadingIndicator,
   BlankPanelContent,
@@ -449,16 +448,6 @@ export const QueryBuilderPropertySearchPanel = observer(
           }
           className="query-builder-property-search-panel"
         >
-          <div className="query-builder-property-search-panel__header">
-            <button
-              className="btn btn--dark query-builder-property-search-panel__close-btn"
-              tabIndex={-1}
-              title="Close"
-              onClick={handleClose}
-            >
-              <TimesIcon />
-            </button>
-          </div>
           <div className="query-builder-property-search-panel__content">
             <ResizablePanelGroup orientation="vertical">
               <ResizablePanel size={150}>
