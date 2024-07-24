@@ -220,7 +220,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       Number Format:
                     </div>
                     <FormNumberInput
-                      className="w-10 text-sm"
+                      className="w-16 text-sm"
                       min={0}
                       step={1}
                       value={selectedColumn.decimals ?? 0}
@@ -394,7 +394,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   />
                 </div>
                 <FormTextInput
-                  className="w-80"
+                  className="w-16"
                   value={selectedColumn.missingValueDisplayText ?? ''}
                   onChange={(event) => {
                     const value = event.target.value.trim();
@@ -430,12 +430,12 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   Pin:
                 </div>
                 <FormDropdownMenuTrigger
-                  className="w-14"
+                  className="w-16"
                   onClick={openColumnPinDropdown}
                 >
                   {selectedColumn.pinned ?? '(None)'}
                 </FormDropdownMenuTrigger>
-                <FormDropdownMenu className="w-14" {...columnPinDropdownProps}>
+                <FormDropdownMenu className="w-16" {...columnPinDropdownProps}>
                   {[
                     undefined,
                     DataCubeColumnPinPlacement.LEFT,

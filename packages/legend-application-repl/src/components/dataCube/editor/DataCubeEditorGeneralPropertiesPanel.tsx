@@ -105,14 +105,14 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               Initially Expand to Level:
             </div>
             <FormDropdownMenuTrigger
-              className="w-14"
+              className="w-16"
               onClick={openInitialExpandLevelDropdown}
               disabled={true}
             >
               {configuration.initialExpandLevel ?? '(None)'}
             </FormDropdownMenuTrigger>
             <FormDropdownMenu
-              className="w-14"
+              className="w-16"
               {...initialExpandLevelDropdownProps}
             >
               {[undefined, 1, 2, 3, 4, 5, 6, 7, 8].map((level) => (
@@ -207,13 +207,13 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               Show Selection Stats:
             </div>
             <FormDropdownMenuTrigger
-              className="w-14"
+              className="w-16"
               onClick={openSelectionStatDropdown}
               disabled={true}
             >
               {'(None)'}
             </FormDropdownMenuTrigger>
-            <FormDropdownMenu className="w-14" {...selectionStatDropdownProps}>
+            <FormDropdownMenu className="w-16" {...selectionStatDropdownProps}>
               {[
                 DataCubeSelectionStat.SUM,
                 DataCubeSelectionStat.AVERAGE,
@@ -240,7 +240,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               Row Limit:
             </div>
             <FormNumberInput
-              className="w-14 text-sm"
+              className="w-16 text-sm"
               value={panel.limit}
               min={-1}
               step={1}
@@ -299,7 +299,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(() => {
               }}
             />
             <FormNumberInput
-              className="ml-1.5 w-14 text-sm"
+              className="ml-1.5 w-16 text-sm"
               disabled={!configuration.alternateRows}
               min={1}
               step={1}
