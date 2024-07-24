@@ -18,6 +18,10 @@ import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '@finos/legend-application-studio';
 import { PanelFormTextField, PanelFormSection } from '@finos/legend-art';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
+import {
+  set_description,
+  set_title,
+} from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
 
 export const DataSpaceEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -27,41 +31,40 @@ export const DataSpaceEditor = observer(() => {
 
   const formElement = formEditorState.dataSpace;
 
-  const handleTitleChange = (value: string | undefined) => {
-    formElement.title = value ?? '';
+  const handleTitleChange = (value: string | undefined): void => {
+    set_title(formElement, value);
   };
 
-  const handleDescriptionChange = (value: string | undefined) => {
-    formElement.description = value ?? '';
+  const handleDescriptionChange: React.ChangeEventHandler<
+    HTMLTextAreaElement
+  > = (event) => {
+    set_description(formElement, event.target.value);
   };
 
   return (
-    <div className="form-text-editor panel text-element-editor">
-      <div className="panel__header text-element-editor__header">
-        <div
-          className="text-element-editor__header__configs"
-          style={{ position: 'relative', top: '200px', height: '200px' }}
-        >
-          <div className="panel__content">
-            <PanelFormSection>
-              <div>
-                <PanelFormTextField
-                  name="Title"
-                  value={formElement.title ?? ''}
-                  update={handleTitleChange}
-                  placeholder="Enter title"
-                />
-              </div>
-              <div>
-                <PanelFormTextField
-                  name="Description"
-                  value={formElement.description ?? ''}
-                  update={handleDescriptionChange}
-                  placeholder="Enter description"
-                />
-              </div>
-            </PanelFormSection>
+    <div className="form-dataSpace-editor panel dataSpace-editor--dark">
+      <div className="panel__content__form">
+        <div className="panel__content__form__section">
+          <PanelFormTextField
+            name="Title"
+            value={formElement.title ?? ''}
+            update={handleTitleChange}
+            placeholder="Enter title"
+          />
+        </div>
+      </div>
+      <div className="panel__content__form">
+        <div className="panel__content__form__section">
+          <div className="panel__content__form__section__header__label">
+            Description
           </div>
+          <textarea
+            className="panel__content__form__section__textarea"
+            title="Description"
+            spellCheck={false}
+            value={formElement.description ?? ''}
+            onChange={handleDescriptionChange}
+          />
         </div>
       </div>
     </div>

@@ -36,7 +36,6 @@ import {
   PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY,
 } from '@finos/legend-application-studio';
 import {
-  ObserverContext,
   PackageableElementExplicitReference,
   stub_Mapping,
   stub_PackageableRuntime,

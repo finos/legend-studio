@@ -13,32 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@forward 'data-space-template-query-promotor';
 
-@use 'mixins' as *;
+import { action } from 'mobx';
+import type { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
 
-:root {
-  --color-text-element: var(--color-blue-50);
-}
+export const set_title = action(
+  (dataSpace: DataSpace, type: string | undefined): void => {
+    dataSpace.title = type ?? '';
+  },
+);
 
-.dataSpace-editor--dark {
-  &__header {
-    padding-left: 0;
-    background: var(--color-dark-grey-50);
-
-    &__configs {
-      display: flex;
-      width: 100%;
-    }
-
-    &__name {
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-300);
-      color: var(--color-light-grey-0);
-    }
-
-    &__name::placeholder {
-      color: var(--color-dark-grey-300);
-    }
-  }
-}
+export const set_description = action(
+  (dataSpace: DataSpace, content: string | undefined): void => {
+    dataSpace.description = content;
+  },
+);
