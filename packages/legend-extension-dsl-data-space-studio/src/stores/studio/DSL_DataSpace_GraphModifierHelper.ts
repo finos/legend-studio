@@ -19,7 +19,7 @@ import type { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
 
 export const set_title = action(
   (dataSpace: DataSpace, type: string | undefined): void => {
-    dataSpace.title = type ?? '';
+    dataSpace.title = type;
   },
 );
 

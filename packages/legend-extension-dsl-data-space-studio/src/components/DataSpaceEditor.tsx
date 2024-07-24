@@ -40,7 +40,7 @@ export const DataSpaceEditor = observer(() => {
   };
 
   return (
-    <div className="form-dataSpace-editor panel dataSpace-editor--dark">
+    <div className="dataSpace-editor panel dataSpace-editor--dark">
       <div className="panel__content__form">
         <div className="panel__content__form__section">
           <PanelFormTextField

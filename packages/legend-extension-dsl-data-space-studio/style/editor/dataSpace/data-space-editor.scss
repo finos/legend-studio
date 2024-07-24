@@ -13,5 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@forward 'data-space-template-query-promotor';
-@forward './editor/dataSpace/data-space-editor';
+
+@use 'mixins' as *;
+
+.dataSpace-editor--dark {
+  &__header {
+    padding-left: 0;
+    background: var(--color-dark-grey-50);
+
+    &__configs {
+      display: flex;
+      width: 100%;
+    }
+
+    &__name {
+      background: var(--color-dark-grey-100);
+      border: 0.1rem solid var(--color-dark-grey-300);
+      color: var(--color-light-grey-0);
+    }
+
+    &__name::placeholder {
+      color: var(--color-dark-grey-300);
+    }
+  }
+}
