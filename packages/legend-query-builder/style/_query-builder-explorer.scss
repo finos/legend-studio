@@ -22,6 +22,10 @@
     z-index: 101;
   }
 
+  .panel__header__title {
+    margin-right: 2rem;
+  }
+
   &__header__action--active.panel__header__action:hover,
   &__header__action--active.panel__header__action {
     svg {
@@ -79,18 +83,21 @@
 
       position: relative;
       height: 2.8rem;
-      width: 100%;
+      flex: 1;
+      margin-left: auto;
+      margin-right: 0.5rem;
+      max-width: 70%;
     }
 
     &--searching {
-      padding-right: 9rem; // account for the count badge
+      padding-right: 7rem; // account for the count badge
     }
 
     &__search__count {
       @include flexCenter;
 
       position: absolute;
-      right: 5.3rem;
+      right: 3rem;
       border-radius: 0.8rem;
       height: 1.6rem;
       padding: 0 0.5rem;

@@ -866,7 +866,7 @@ const QueryBuilderExplorerSearchInput = observer(
           spellCheck={false}
           onChange={onSearchPropertyTextChange}
           value={propertySearchState.searchText}
-          placeholder="Search for a property by name or documentation"
+          placeholder="One or more terms, ESC to clear"
         />
         {propertySearchState.searchText && (
           <div className="query-builder__explorer__property-search__input__search__count">
@@ -947,11 +947,11 @@ export const QueryBuilderExplorerPanel = observer(
         })}
       >
         <PanelHeader title="explorer">
+          <QueryBuilderExplorerSearchInput
+            propertySearchState={propertySearchPanelState}
+            ref={searchInputRef}
+          />
           <PanelHeaderActions>
-            <QueryBuilderExplorerSearchInput
-              propertySearchState={propertySearchPanelState}
-              ref={searchInputRef}
-            />
             <PanelHeaderActionItem onClick={collapseTree} title="Collapse Tree">
               <CompressIcon />
             </PanelHeaderActionItem>
