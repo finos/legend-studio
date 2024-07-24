@@ -36,7 +36,7 @@ export class DataCubeTask {
     this.name = name;
   }
 
-  end(): void {
+  end() {
     this.endTime = Date.now();
   }
 }
@@ -71,19 +71,19 @@ export class DataCubeState {
     this.grid = new DataCubeGridState(this);
   }
 
-  newTask(name: string): DataCubeTask {
+  newTask(name: string) {
     const task = new DataCubeTask(name);
     this.runningTasks.set(task.uuid, task);
     return task;
   }
 
-  endTask(task: DataCubeTask): DataCubeTask {
+  endTask(task: DataCubeTask) {
     task.end();
     this.runningTasks.delete(task.uuid);
     return task;
   }
 
-  async initialize(): Promise<void> {
+  async initialize() {
     const task = this.newTask('Initializing');
     try {
       await Promise.all(
@@ -106,6 +106,7 @@ export class DataCubeState {
       assertErrorThrown(error);
       this.repl.application.alertService.setActionAlertInfo({
         message: `Initialization failure: ${error.message}`,
+        prompt: `Resolve the issue and reload the application.`,
         type: ActionAlertType.ERROR,
         actions: [],
       });

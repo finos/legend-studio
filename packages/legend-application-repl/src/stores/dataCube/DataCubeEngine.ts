@@ -46,6 +46,7 @@ export class DataCubeEngine {
   enableDebugMode = DEFAULT_ENABLE_DEBUG_MODE;
   gridClientRowBuffer = DEFAULT_GRID_CLIENT_ROW_BUFFER;
   gridClientPurgeClosedRowNodes = false;
+  disableLargeDatasetWarning = false;
 
   constructor(repl: REPLStore) {
     makeObservable(this, {
@@ -57,6 +58,9 @@ export class DataCubeEngine {
 
       gridClientPurgeClosedRowNodes: observable,
       setGridClientPurgeClosedRowNodes: action,
+
+      disableLargeDatasetWarning: observable,
+      setDisableLargeDatasetWarning: action,
     });
 
     this.repl = repl;
@@ -64,22 +68,25 @@ export class DataCubeEngine {
     this.client = repl.client;
   }
 
-  setEnableDebugMode(enableDebugMode: boolean): void {
+  setEnableDebugMode(enableDebugMode: boolean) {
     this.enableDebugMode = enableDebugMode;
-    this.applyChanges();
   }
 
-  setGridClientRowBuffer(rowBuffer: number): void {
+  setGridClientRowBuffer(rowBuffer: number) {
     this.gridClientRowBuffer = rowBuffer;
-    this.applyChanges();
+    this.propagateGridOptionUpdates();
   }
 
-  setGridClientPurgeClosedRowNodes(purgeClosedRowNodes: boolean): void {
+  setGridClientPurgeClosedRowNodes(purgeClosedRowNodes: boolean) {
     this.gridClientPurgeClosedRowNodes = purgeClosedRowNodes;
-    this.applyChanges();
+    this.propagateGridOptionUpdates();
   }
 
-  private applyChanges(): void {
+  setDisableLargeDatasetWarning(disableLargeDatasetWarning: boolean) {
+    this.disableLargeDatasetWarning = disableLargeDatasetWarning;
+  }
+
+  private propagateGridOptionUpdates() {
     // When we support multi-view (i.e. multiple instances of DataCubes) we would need to traverse
     // through and update the configurations of all of their grid clients
     this.repl.dataCube.grid.client.updateGridOptions({

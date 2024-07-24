@@ -35,6 +35,8 @@ import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { generateRowGroupingDrilldownExecutableQueryPostProcessor } from './DataCubeGridQueryBuilder.js';
 import { makeObservable, observable, runInAction } from 'mobx';
 import type { DataCubeConfigurationColorKey } from '../core/DataCubeConfiguration.js';
+import { AlertType } from '../../../components/repl/Alert.js';
+import { DEFAULT_LARGE_ALERT_WINDOW_CONFIG } from '../../LayoutManagerState.js';
 
 type GridClientCellValue = string | number | boolean | null | undefined;
 type GridClientRowData = {
@@ -93,16 +95,24 @@ export const generateBackgroundColorUtilityClassName = (
 ) =>
   `${INTERNAL__GridClientUtilityCssClassName.BACKGROUND_COLOR_PREFIX}${key}-${color.substring(1)}`;
 
+// Indicates how many rows for each block in the cache, i.e. how many rows returned from the server at a time.
+// ag-grid will dedicte space in advanced to store these rows. In server-side row model, this is used as the page size.
+// See https://www.ag-grid.com/react-data-grid/server-side-model-configuration/#server-side-cache
+export const INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE = 100;
+// NOTE: The cache block size is used by ag-grid to pre-allocate memory for the grid
+// so the value set must be reasonable, or else it can crash the application!
+export const INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE = 1e5;
+
 export const INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH = 200;
 export const INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH = 50;
 export const INTERNAL__GRID_CLIENT_HEADER_HEIGHT = 24;
 export const INTERNAL__GRID_CLIENT_ROW_HEIGHT = 20;
 export const INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY = 1000;
 export const INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING = 10;
+export const INTERNAL__GRID_CLIENT_MISSING_VALUE = '__MISSING';
 export const INTERNAL__GRID_CLIENT_TREE_COLUMN_ID = 'INTERNAL__tree';
 export const INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID =
   'INTERNAL__count';
-export const INTERNAL__GRID_CLIENT_MISSING_VALUE = '__MISSING';
 
 export enum GridClientPinnedAlignement {
   LEFT = 'left',
@@ -177,9 +187,7 @@ export class DataCubeGridClientServerSideDataSource
     this.grid = grid;
   }
 
-  async fetchRows(
-    params: IServerSideGetRowsParams<unknown, unknown>,
-  ): Promise<void> {
+  async fetchRows(params: IServerSideGetRowsParams<unknown, unknown>) {
     const task = this.grid.dataCube.newTask('Fetching data');
 
     // ------------------------------ GRID OPTIONS ------------------------------
@@ -239,22 +247,69 @@ export class DataCubeGridClientServerSideDataSource
           `\nSQL: ${result.executedSQL}`,
         );
       }
+
       if (this.grid.isPaginationEnabled) {
         params.success({ rowData });
-        // Only update row count when loading the top-level drilldown data
+        // only update row count when loading the top-level drilldown data
         if (params.request.groupKeys.length === 0) {
           runInAction(() => {
             this.rowCount = (params.request.startRow ?? 0) + rowData.length;
           });
         }
       } else {
+        // NOTE: When pagination is disabled and the user currently scrolls to somewhere in the grid, as data is fetched
+        // and the operation does not force a scroll top (for example, grouping will always force scrolling to the
+        // top, while sorting will leave scroll position as is), the grid ends up showing the wrong data because
+        // the data being displayed does not take into account the scroll position, but by the start and end row
+        // which stay constant as pagination is disabled.
+        //
+        // In order to handle this, when pagination is disabled, we tune the start and end row by setting the cache block size
+        // to a high-enough value (100k-1m). However, ag-grid use cache block size to pre-allocate memory for the rows,
+        // which means we must cap/tune this value reasonably to prevent the app from crashing.
+        //
+        // When there are just too many rows (exceeding the maximum cache block size), we will fallback to a slightly less ideal
+        // behavior by forcing a scroll top for every data fetch and also reset the cache block size to the default value to save memory
+        if (rowData.length > INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE) {
+          if (
+            !this.grid.dataCube.repl.dataCubeEngine.disableLargeDatasetWarning
+          ) {
+            this.grid.dataCube.repl.alert({
+              message: `Large dataset (>${INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE} rows) detected!`,
+              text: `Overall app performance can be impacted by large dataset due to longer query execution time and increased memory usage. At its limit, the application can crash!\nTo boost performance, consider enabling pagination while working with large dataset.`,
+              type: AlertType.WARNING,
+              actions: [
+                {
+                  label: 'Enable Pagination',
+                  handler: () => {
+                    this.grid.setPaginationEnabled(true);
+                  },
+                },
+                {
+                  label: 'Dismiss Warning',
+                  handler: () => {
+                    // this.grid.setPaginationEnabled(true);
+                    this.grid.dataCube.repl.dataCubeEngine.setDisableLargeDatasetWarning(
+                      true,
+                    );
+                  },
+                },
+              ],
+              windowConfig: DEFAULT_LARGE_ALERT_WINDOW_CONFIG,
+            });
+          }
+
+          // NOTE: when drilldown occurs, we will scroll top until the drilldown row is reached
+          params.api.ensureIndexVisible(params.parentNode.rowIndex ?? 0, 'top');
+        }
+
         params.success({
           rowData,
-          // Setting row count to disable inifite-scrolling when pagination is disabled
-          // See https://www.ag-grid.com/javascript-data-grid/infinite-scrolling/#setting-last-row-index
+          // Setting row count to disable infinite-scrolling when pagination is disabled
+          // See https://www.ag-grid.com/react-data-grid/infinite-scrolling/#setting-last-row-index
           rowCount: rowData.length,
         });
-        // Only update row count when loading the top-level drilldown data
+
+        // only update row count when loading the top-level drilldown data
         if (params.request.groupKeys.length === 0) {
           runInAction(() => {
             this.rowCount = rowData.length;
@@ -263,18 +318,17 @@ export class DataCubeGridClientServerSideDataSource
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.grid.dataCube.repl.notifyError(
-        error,
-        `Data fetch failure: ${error.message}`,
-        error.stack,
-      );
+      this.grid.dataCube.repl.alertError(error, {
+        message: `Data fetch failure: ${error.message}`,
+        text: error.stack,
+      });
       params.fail();
     } finally {
       this.grid.dataCube.endTask(task);
     }
   }
 
-  getRows(params: IServerSideGetRowsParams<unknown, unknown>): void {
+  getRows(params: IServerSideGetRowsParams<unknown, unknown>) {
     this.fetchRows(params).catch((error: unknown) => {
       assertErrorThrown(error);
       this.grid.dataCube.application.logService.error(

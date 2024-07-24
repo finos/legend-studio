@@ -28,13 +28,18 @@ import { DataCubeEngine } from './dataCube/DataCubeEngine.js';
 import { LicenseManager } from '@ag-grid-enterprise/core';
 import { ActionAlertType, APPLICATION_EVENT } from '@finos/legend-application';
 import {
-  DEFAULT_ALERT_WINDOW_CONFIG,
+  DEFAULT_SMALL_ALERT_WINDOW_CONFIG,
   LayoutConfiguration,
   LayoutManagerState,
   SingletonModeDisplayState,
   WindowState,
+  type WindowConfiguration,
 } from './LayoutManagerState.js';
-import { ErrorAlert } from '../components/repl/Alert.js';
+import {
+  Alert,
+  AlertType,
+  type AlertAction,
+} from '../components/repl/Alert.js';
 import { DocumentationPanel } from '../components/repl/DocumentationPanel.js';
 import { SettingsPanel } from '../components/repl/SettingsPanel.js';
 
@@ -98,18 +103,59 @@ export class REPLStore {
     };
   }
 
-  notifyError(error: Error, message: string, text?: string | undefined): void {
+  alertError(
+    error: Error,
+    options: {
+      message: string;
+      text?: string | undefined;
+      actions?: AlertAction[] | undefined;
+      windowTitle?: string | undefined;
+      windowConfig?: WindowConfiguration | undefined;
+    },
+  ) {
+    const { message, text, actions, windowTitle, windowConfig } = options;
     this.application.notificationService.notifyError(error);
     const window = new WindowState(
-      new LayoutConfiguration('Error', () => (
-        <ErrorAlert message={message} text={text} />
+      new LayoutConfiguration(windowTitle ?? 'Error', () => (
+        <Alert
+          type={AlertType.ERROR}
+          message={message}
+          text={text}
+          actions={actions}
+        />
       )),
     );
-    window.configuration.window = DEFAULT_ALERT_WINDOW_CONFIG;
+    window.configuration.window =
+      windowConfig ?? DEFAULT_SMALL_ALERT_WINDOW_CONFIG;
     this.layout.newWindow(window);
   }
 
-  async initialize(): Promise<void> {
+  alert(options: {
+    message: string;
+    type: AlertType;
+    text?: string | undefined;
+    actions?: AlertAction[] | undefined;
+    windowTitle?: string | undefined;
+    windowConfig?: WindowConfiguration | undefined;
+  }) {
+    const { message, type, text, actions, windowTitle, windowConfig } = options;
+    const window = new WindowState(
+      new LayoutConfiguration(windowTitle ?? '', () => (
+        <Alert
+          type={type}
+          message={message}
+          text={text}
+          actions={actions}
+          onClose={() => this.layout.closeWindow(window)}
+        />
+      )),
+    );
+    window.configuration.window =
+      windowConfig ?? DEFAULT_SMALL_ALERT_WINDOW_CONFIG;
+    this.layout.newWindow(window);
+  }
+
+  async initialize() {
     if (!this.initState.isInInitialState) {
       // eslint-disable-next-line no-process-env
       if (process.env.NODE_ENV === 'production') {
@@ -136,6 +182,7 @@ export class REPLStore {
       assertErrorThrown(error);
       this.application.alertService.setActionAlertInfo({
         message: `Initialization failure: ${error.message}`,
+        prompt: `Resolve the issue and reload the application.`,
         type: ActionAlertType.ERROR,
         actions: [],
       });

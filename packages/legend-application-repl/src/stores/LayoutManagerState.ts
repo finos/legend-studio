@@ -77,11 +77,11 @@ export class LayoutManagerState {
     this.application = application;
   }
 
-  newWindow(window: WindowState): void {
+  newWindow(window: WindowState) {
     this.windows.push(window);
   }
 
-  bringWindowFront(window: WindowState): void {
+  bringWindowFront(window: WindowState) {
     const matchingWindow = this.windows.find((w) => w.uuid === window.uuid);
     if (matchingWindow) {
       this.windows = this.windows.filter((w) => w.uuid !== window.uuid);
@@ -89,7 +89,7 @@ export class LayoutManagerState {
     }
   }
 
-  closeWindow(window: WindowState): void {
+  closeWindow(window: WindowState) {
     const matchingWindow = this.windows.find((w) => w.uuid === window.uuid);
     if (matchingWindow) {
       this.windows = this.windows.filter((w) => w.uuid !== window.uuid);
@@ -112,11 +112,19 @@ export const DEFAULT_TOOL_PANEL_WINDOW_CONFIG: WindowConfiguration = {
   center: true,
 };
 
-export const DEFAULT_ALERT_WINDOW_CONFIG: WindowConfiguration = {
+export const DEFAULT_SMALL_ALERT_WINDOW_CONFIG: WindowConfiguration = {
   width: 500,
   height: 80,
   minWidth: 200,
   minHeight: 80,
+  center: true,
+};
+
+export const DEFAULT_LARGE_ALERT_WINDOW_CONFIG: WindowConfiguration = {
+  width: 600,
+  height: 200,
+  minWidth: 300,
+  minHeight: 150,
   center: true,
 };
 
