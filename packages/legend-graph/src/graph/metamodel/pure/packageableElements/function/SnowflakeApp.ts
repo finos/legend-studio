@@ -48,13 +48,11 @@ export class SnowflakeApp extends FunctionActivator {
       this.usageRole ?? '',
       this.ownership,
       this.activationConfiguration,
-      this.function
-        ? generateFunctionPrettyName(this.function.value, {
-            fullPath: true,
-            spacing: false,
-            notIncludeParamName: true,
-          })
-        : '',
+      generateFunctionPrettyName(this.function.value, {
+        fullPath: true,
+        spacing: false,
+        notIncludeParamName: true,
+      }),
     ]);
   }
 }

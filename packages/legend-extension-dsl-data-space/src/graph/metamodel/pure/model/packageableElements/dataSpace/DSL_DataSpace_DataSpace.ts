@@ -146,13 +146,11 @@ export class DataSpaceTemplateExecutablePointer
       this.id,
       this.title,
       this.description ?? '',
-      this.query.valueForSerialization
-        ? generateFunctionPrettyName(this.query.value, {
-            fullPath: true,
-            spacing: false,
-            notIncludeParamName: true,
-          })
-        : '',
+      generateFunctionPrettyName(this.query.value, {
+        fullPath: true,
+        spacing: false,
+        notIncludeParamName: true,
+      }),
       this.executionContextKey ?? '',
     ]);
   }
