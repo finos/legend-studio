@@ -28,6 +28,7 @@ import {
   FormNumberInput,
   FormTextInput,
   FormBadge_WIP,
+  FormDocumentation,
 } from '../../repl/Form.js';
 import {
   DataCubeAggregateOperation,
@@ -45,7 +46,6 @@ import {
   DEFAULT_URL_LABEL_QUERY_PARAM,
 } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 import { DocumentationKey } from '../../../application/LegendREPLDocumentation.js';
-import { DocumentationPanelLink } from '../../repl/DocumentationPanel.js';
 
 export const DataCubeEditorColumnPropertiesPanel = observer(() => {
   const repl = useREPLStore();
@@ -184,7 +184,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   </FormDropdownMenu>
                   <FormBadge_Advanced />
                   <FormBadge_WIP />
-                  <DocumentationPanelLink
+                  <FormDocumentation
                     className="ml-1"
                     documentationKey={DocumentationKey.DATA_CUBE_COLUMN_KINDS}
                   />
@@ -349,7 +349,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   <div className="mt-2 flex h-5 w-full items-center">
                     <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                       Dislay as Link?
-                      <DocumentationPanelLink
+                      <FormDocumentation
                         className="ml-1"
                         documentationKey={
                           DocumentationKey.DATA_CUBE_COLUMN_DISPLAY_AS_LINK
@@ -382,6 +382,28 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                   </div>
                 </>
               )}
+
+              <div className="mt-2 flex h-5 w-full items-center">
+                <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
+                  {`Missing Value Format:`}
+                  <FormDocumentation
+                    className="ml-1"
+                    documentationKey={
+                      DocumentationKey.DATA_CUBE_COLUMN_MISSING_VALUE_FORMAT
+                    }
+                  />
+                </div>
+                <FormTextInput
+                  className="w-80"
+                  value={selectedColumn.missingValueDisplayText ?? ''}
+                  onChange={(event) => {
+                    const value = event.target.value.trim();
+                    selectedColumn.setMissingValueDisplayText(
+                      value !== '' ? value : undefined,
+                    );
+                  }}
+                />
+              </div>
 
               <div className="mt-2 flex h-5 w-full items-center">
                 <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">

@@ -251,6 +251,7 @@ export function getDataType(type: string): DataCubeColumnDataType {
 }
 
 export const DEFAULT_URL_LABEL_QUERY_PARAM = 'dataCube.linkLabel';
+export const DEFAULT_MISSING_VALUE_DISPLAY_TEXT = '';
 
 export const DEFAULT_GRID_LINE_COLOR = TailwindCSSPalette.neutral[200];
 export const DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR = '#d7e0eb';

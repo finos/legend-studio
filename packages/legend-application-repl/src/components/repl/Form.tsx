@@ -15,6 +15,10 @@
  */
 
 import {
+  shouldDisplayVirtualAssistantDocumentationEntry,
+  useApplicationStore,
+} from '@finos/legend-application';
+import {
   BasePopover,
   Checkbox,
   cn,
@@ -33,6 +37,7 @@ import {
 } from '@finos/legend-art';
 import { toNumber } from '@finos/legend-shared';
 import React, { forwardRef, useEffect, useState } from 'react';
+import { useREPLStore } from '../REPLStoreProvider.js';
 
 export function FormBadge_WIP() {
   return (
@@ -482,3 +487,45 @@ export function FormColorPickerButton(props: {
     </>
   );
 }
+
+export const FormDocumentation: React.FC<{
+  documentationKey: string;
+  title?: string | undefined;
+  className?: string | undefined;
+}> = ({ documentationKey, title, className }) => {
+  const application = useApplicationStore();
+  const repl = useREPLStore();
+  const documentationEntry =
+    application.documentationService.getDocEntry(documentationKey);
+  const openDocLink: React.MouseEventHandler<HTMLDivElement> = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const entry =
+      application.documentationService.getDocEntry(documentationKey);
+    if (entry) {
+      if (shouldDisplayVirtualAssistantDocumentationEntry(entry)) {
+        application.assistantService.openDocumentationEntry(documentationKey);
+        repl.documentationDisplay.open();
+      } else if (entry.url) {
+        application.navigationService.navigator.visitAddress(entry.url);
+      }
+    }
+  };
+
+  if (
+    !documentationEntry ||
+    (!documentationEntry.url &&
+      !shouldDisplayVirtualAssistantDocumentationEntry(documentationEntry))
+  ) {
+    return null;
+  }
+  return (
+    <div
+      onClick={openDocLink}
+      title={title ?? documentationEntry.text ?? 'Click to see documentation'}
+      className={cn('cursor-pointer text-xl text-sky-500', className)}
+    >
+      <DataCubeIcon.DocumentationHint />
+    </div>
+  );
+};

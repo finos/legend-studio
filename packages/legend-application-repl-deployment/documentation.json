@@ -17,6 +17,10 @@
         "value": "Each value, if it is a valid URL, will be displayed as a hyperlink. The label of the hyperlink will be extracted from a configurable query parameter (`dataCube.linkLabel` by default), if no label value can be extracted, the whole link will be used as the label."
       },
       "title": "Display Column Value as Link"
+    },
+    "data-cube.column.missing-value-format": {
+      "text": "The missing value format is the text that will be displayed when the value of the cell is NULL.\nThe default value is the empty string ''.",
+      "title": "Missing Value Format"
     }
   }
 }

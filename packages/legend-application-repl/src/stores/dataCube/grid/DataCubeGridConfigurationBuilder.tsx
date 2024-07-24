@@ -76,6 +76,7 @@ import {
   getDataType,
   DataCubeQuerySortOperation,
   DataCubeColumnKind,
+  DEFAULT_MISSING_VALUE_DISPLAY_TEXT,
 } from '../core/DataCubeQueryEngine.js';
 import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
 import { DataCubeIcon } from '@finos/legend-art';
@@ -253,7 +254,10 @@ function _displaySpec(columnData: ColumnData) {
               (value as unknown as string) ===
                 INTERNAL__GRID_CLIENT_MISSING_VALUE
             ) {
-              return ''; // TODO: handle missing value
+              return (
+                column.missingValueDisplayText ??
+                DEFAULT_MISSING_VALUE_DISPLAY_TEXT
+              );
             }
             const showNegativeNumberInParens =
               column.negativeNumberInParens && value < 0;
@@ -283,7 +287,8 @@ function _displaySpec(columnData: ColumnData) {
           }
         : (params) =>
             params.value === INTERNAL__GRID_CLIENT_MISSING_VALUE
-              ? ''
+              ? (column.missingValueDisplayText ??
+                DEFAULT_MISSING_VALUE_DISPLAY_TEXT)
               : params.value,
     loadingCellRenderer: DataCubeGridLoadingCellRenderer,
     cellClassRules: {

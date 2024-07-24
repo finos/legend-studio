@@ -87,6 +87,9 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       numberScale: observable,
       setNumberScale: action,
 
+      missingValueDisplayText: observable,
+      setMissingValueDisplayText: action,
+
       hPivotSortFunction: observable,
       setHPivotSortFunction: action,
 
@@ -250,6 +253,10 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
 
   setNumberScale(value: DataCubeNumberScale | undefined) {
     this.numberScale = value;
+  }
+
+  setMissingValueDisplayText(value: string | undefined) {
+    this.missingValueDisplayText = value;
   }
 
   setHPivotSortFunction(value: string | undefined) {

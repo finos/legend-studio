@@ -59,6 +59,7 @@ export class DataCubeColumnConfiguration {
   displayCommas = false;
   negativeNumberInParens = false;
   numberScale?: DataCubeNumberScale | undefined;
+  missingValueDisplayText?: string | undefined;
 
   hPivotSortFunction?: string | undefined;
 
@@ -117,6 +118,7 @@ export class DataCubeColumnConfiguration {
       linkLabelParameter: optional(primitive()),
       maxWidth: optional(primitive()),
       minWidth: optional(primitive()),
+      missingValueDisplayText: optional(primitive()),
       name: primitive(),
       negativeBackgroundColor: optional(primitive()),
       negativeForegroundColor: optional(primitive()),
