@@ -40,7 +40,7 @@ import { FormBadge_WIP } from '../../repl/Form.js';
 
 //   const debouncedParseQuery = useMemo(
 //     () =>
-//       debounce((): void => {
+//       debounce(()=> {
 //         flowResult(dataCubeState.editor.codePanel.parseQuery()).catch(
 //           repl.application.logUnhandledError,
 //         );
@@ -125,7 +125,7 @@ import { FormBadge_WIP } from '../../repl/Form.js';
 
 //   // dispose editor
 //   useEffect(
-//     () => (): void => {
+//     () => ()=> {
 //       if (editor) {
 //         disposeCodeEditor(editor);
 
@@ -145,7 +145,7 @@ import { FormBadge_WIP } from '../../repl/Form.js';
 export const DataCubeEditorCodePanel = observer(() => {
   const repl = useREPLStore();
   const panel = repl.dataCube.editor.sorts;
-  // const executeLambda = (): void => {
+  // const executeLambda = ()=> {
   //   // TODO: @akphi
   //   // flowResult(dataCubeState.executeLambda()).catch(
   //   //   editorStore.application.logUnhandledError,

@@ -97,7 +97,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber
     this.applyChanges();
   }
 
-  showColumn(colName: string | undefined, isVisible: boolean): void {
+  showColumn(colName: string | undefined, isVisible: boolean) {
     const columnConfiguration = this.getColumnConfiguration(colName);
     if (columnConfiguration) {
       columnConfiguration.hideFromView = !isVisible;
@@ -185,7 +185,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber
     this.applyChanges();
   }
 
-  private applyChanges(): void {
+  private applyChanges() {
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const snapshot = baseSnapshot.clone();
 

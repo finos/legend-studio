@@ -68,7 +68,7 @@ export class DataCubeEditorVerticalPivotsPanelState
   applySnaphot(
     snapshot: DataCubeQuerySnapshot,
     configuration: DataCubeConfiguration,
-  ): void {
+  ) {
     this.selector.setSelectedColumns(
       (snapshot.data.groupBy?.columns ?? []).map(
         (col) =>
@@ -80,7 +80,7 @@ export class DataCubeEditorVerticalPivotsPanelState
   buildSnapshot(
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
-  ): void {
+  ) {
     newSnapshot.data.groupBy = this.selector.selectedColumns.length
       ? {
           columns: this.selector.selectedColumns.map((column) => ({

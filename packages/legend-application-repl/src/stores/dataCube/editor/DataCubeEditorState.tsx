@@ -77,11 +77,11 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     this.code = new DataCubeEditorCodePanelState(this);
   }
 
-  setCurrentTab(val: DataCubeEditorTab): void {
+  setCurrentTab(val: DataCubeEditorTab) {
     this.currentTab = val;
   }
 
-  applyChanges(): void {
+  applyChanges() {
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const snapshot = baseSnapshot.clone();
 
@@ -106,7 +106,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
   override async applySnapshot(
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,
-  ): Promise<void> {
+  ) {
     const configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
     );
@@ -119,7 +119,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     this.columnProperties.applySnaphot(snapshot, configuration);
   }
 
-  override async initialize(): Promise<void> {
+  override async initialize() {
     // do nothing
   }
 }

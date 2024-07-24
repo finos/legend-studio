@@ -65,11 +65,11 @@ export class DataCubeEditorColumnPropertiesPanelState
     this.dataCube = editor.dataCube;
   }
 
-  get hiddenColumns(): DataCubeMutableColumnConfiguration[] {
+  get hiddenColumns() {
     return this.columns.filter((column) => column.hideFromView);
   }
 
-  get configurableColumns(): DataCubeMutableColumnConfiguration[] {
+  get configurableColumns() {
     return this.columns
       .filter((column) =>
         this.editor.columns.selector.selectedColumns.find(
@@ -79,34 +79,32 @@ export class DataCubeEditorColumnPropertiesPanelState
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  getColumnConfiguration(
-    colName: string | undefined,
-  ): DataCubeMutableColumnConfiguration | undefined {
+  getColumnConfiguration(colName: string | undefined) {
     return this.columns.find((col) => col.name === colName);
   }
 
-  setColumns(val: DataCubeMutableColumnConfiguration[]): void {
+  setColumns(val: DataCubeMutableColumnConfiguration[]) {
     this.columns = val;
   }
 
-  setSelectedColumnName(val: string | undefined): void {
+  setSelectedColumnName(val: string | undefined) {
     this.selectedColumnName = val;
   }
 
-  get selectedColumn(): DataCubeMutableColumnConfiguration | undefined {
+  get selectedColumn() {
     return this.configurableColumns.find(
       (column) => column.name === this.selectedColumnName,
     );
   }
 
-  setShowAdvancedSettings(val: boolean): void {
+  setShowAdvancedSettings(val: boolean) {
     this.showAdvancedSettings = val;
   }
 
   applySnaphot(
     snapshot: DataCubeQuerySnapshot,
     configuration: DataCubeConfiguration,
-  ): void {
+  ) {
     this.setColumns(
       (snapshot.data.configuration as { columns: PlainObject[] }).columns.map(
         (column) => DataCubeMutableColumnConfiguration.create(column),
@@ -147,7 +145,7 @@ export class DataCubeEditorColumnPropertiesPanelState
   buildSnapshot(
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
-  ): void {
+  ) {
     newSnapshot.data.configuration = {
       ...newSnapshot.data.configuration,
       // NOTE: make sure the order of column configurations is consistent with the order of selected columns

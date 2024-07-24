@@ -59,7 +59,7 @@ export function _groupByAggCols(
 export function buildQuerySnapshot(
   request: IServerSideGetRowsRequest,
   baseSnapshot: DataCubeQuerySnapshot,
-): DataCubeQuerySnapshot {
+) {
   const configuration = DataCubeConfiguration.serialization.fromJson(
     baseSnapshot.data.configuration,
   );

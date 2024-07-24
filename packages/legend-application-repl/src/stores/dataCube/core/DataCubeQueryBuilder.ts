@@ -123,10 +123,7 @@ function _collection(values: V1_ValueSpecification[]) {
   return collection;
 }
 
-function _primitiveValue(
-  type: string,
-  value: unknown,
-): V1_PrimitiveValueSpecification {
+function _primitiveValue(type: string, value: unknown) {
   const _val = <T extends V1_PrimitiveValueSpecification & { value: unknown }>(
     primitiveValue: T,
     val: unknown,
@@ -274,7 +271,7 @@ export function _cols(colSpecs: V1_ColSpec[]) {
 
 export function _groupByAggCols(
   columns: DataCubeQuerySnapshotAggregateColumn[],
-): V1_ColSpec[] {
+) {
   const variable = _var();
   return columns.length
     ? columns.map((agg) =>
@@ -296,7 +293,7 @@ export function _groupByAggCols(
 
 export function _filter(
   filter: DataCubeQuerySnapshotFilter | DataCubeQuerySnapshotFilterCondition,
-): V1_ValueSpecification {
+) {
   if ('groupOperation' in filter) {
     const group = filter;
     const groupOperation =
@@ -393,7 +390,7 @@ export function buildExecutableQuery(
         }
       | undefined;
   },
-): V1_ValueSpecification {
+) {
   const data = snapshot.data;
   const sourceQuery = V1_deserializeValueSpecification(data.sourceQuery, []);
   const configuration = DataCubeConfiguration.serialization.fromJson(

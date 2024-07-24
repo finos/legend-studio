@@ -56,10 +56,10 @@ import { generateBaseGridOptions } from '../../../stores/dataCube/grid/DataCubeG
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
 // We MUST NEVER completely surpress this warning in production, else it's a violation of the ag-grid license!
-// See https://www.ag-grid.com/javascript-data-grid/licensing/
+// See https://www.ag-grid.com/react-data-grid/licensing/
 const __INTERNAL__original_console_error = console.error; // eslint-disable-line no-console
 // eslint-disable-next-line no-console
-console.error = (message?: unknown, ...agrs: unknown[]): void => {
+console.error = (message?: unknown, ...agrs: unknown[]) => {
   console.debug(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
 };
 
@@ -297,9 +297,7 @@ const DataCubeGridStatusBar = observer(() => {
         <div className="h-3 w-[1px] bg-neutral-200" />
         <button
           className="flex h-full items-center p-2"
-          onClick={(): void =>
-            grid.setPaginationEnabled(!grid.isPaginationEnabled)
-          }
+          onClick={() => grid.setPaginationEnabled(!grid.isPaginationEnabled)}
         >
           <Switch
             checked={grid.isPaginationEnabled}
@@ -349,7 +347,7 @@ const DataCubeGridClient = observer(() => {
         context={{
           dataCube,
         }}
-        onGridReady={(params): void => {
+        onGridReady={(params) => {
           grid.configureClient(params.api);
           // restore original error logging
           console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console

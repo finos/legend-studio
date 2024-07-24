@@ -41,18 +41,18 @@ export class DataCubeQuerySnapshotManager {
     this.dataCube = dataCube;
   }
 
-  get currentSnapshot(): DataCubeQuerySnapshot {
+  get currentSnapshot() {
     return guaranteeNonNullable(this.snapshots[this.snapshots.length - 1]);
   }
 
-  registerSubscriber(subscriber: DataCubeQuerySnapshotSubscriber): void {
+  registerSubscriber(subscriber: DataCubeQuerySnapshotSubscriber) {
     this.subscribers.push(subscriber);
   }
 
   initialize(
     initialSnapshot: DataCubeQuerySnapshot,
     initialQuery: DataCubeQuery,
-  ): void {
+  ) {
     if (this._initialSnapshot || this._initialQuery) {
       throw new IllegalStateError(
         `Snapshot manager has already been initialized`,
@@ -62,21 +62,21 @@ export class DataCubeQuerySnapshotManager {
     this._initialQuery = initialQuery;
   }
 
-  get initialSnapshot(): DataCubeQuerySnapshot {
+  get initialSnapshot() {
     return guaranteeNonNullable(
       this._initialSnapshot,
       `Snapshot manager has not been initialized`,
     );
   }
 
-  get initialQuery(): DataCubeQuery {
+  get initialQuery() {
     return guaranteeNonNullable(
       this._initialQuery,
       `Snapshot manager has not been initialized`,
     );
   }
 
-  broadcastSnapshot(snapshot: DataCubeQuerySnapshot): void {
+  broadcastSnapshot(snapshot: DataCubeQuerySnapshot) {
     if (!snapshot.isFinalized()) {
       this.dataCube.application.logService.error(
         LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),

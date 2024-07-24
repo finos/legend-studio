@@ -89,11 +89,11 @@ export class DataCubeGridClientExportEngine {
     this.grid = grid;
   }
 
-  private generateFileName(): string {
+  private generateFileName() {
     return `${this.dataCube.core.name} - ${formatDate(new Date(), 'EEE MMM dd yyyy HH_mm_ss')}`;
   }
 
-  exportFile(format: DataCubeGridClientExportFormat): void {
+  exportFile(format: DataCubeGridClientExportFormat) {
     const fileName = this.generateFileName();
     switch (format) {
       case DataCubeGridClientExportFormat.CSV: {

@@ -58,7 +58,7 @@ export class LegendREPLApplicationConfig extends LegendApplicationConfig {
     }
   }
 
-  override getDefaultApplicationStorageKey(): string {
+  override getDefaultApplicationStorageKey() {
     return 'legend-repl';
   }
 }

@@ -83,7 +83,7 @@ import type { DataCubeState } from '../DataCubeState.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
-// See https://www.ag-grid.com/javascript-data-grid/cell-data-types/
+// See https://www.ag-grid.com/react-data-grid/cell-data-types/
 function _cellDataType(column: DataCubeQuerySnapshotColumn) {
   switch (column.type) {
     case PRIMITIVE_TYPE.NUMBER:

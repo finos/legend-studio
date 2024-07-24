@@ -32,9 +32,7 @@ export const DocumentationPanelLink: React.FC<{
   const repl = useREPLStore();
   const documentationEntry =
     application.documentationService.getDocEntry(documentationKey);
-  const openDocLink: React.MouseEventHandler<HTMLDivElement> = (
-    event,
-  ): void => {
+  const openDocLink: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.preventDefault();
     event.stopPropagation();
     const entry =

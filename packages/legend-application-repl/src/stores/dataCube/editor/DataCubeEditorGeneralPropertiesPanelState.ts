@@ -48,22 +48,22 @@ export class DataCubeEditorGeneralPropertiesPanelState
     this.dataCube = editor.dataCube;
   }
 
-  setName(val: string): void {
+  setName(val: string) {
     this.name = val;
   }
 
-  setLimit(val: number): void {
+  setLimit(val: number) {
     this.limit = val;
   }
 
-  setConfiguration(val: DataCubeMutableConfiguration): void {
+  setConfiguration(val: DataCubeMutableConfiguration) {
     this.configuration = val;
   }
 
   applySnaphot(
     snapshot: DataCubeQuerySnapshot,
     configuration: DataCubeConfiguration,
-  ): void {
+  ) {
     this.setName(snapshot.data.name);
     this.setLimit(
       snapshot.data.limit !== undefined && snapshot.data.limit > 0
@@ -78,7 +78,7 @@ export class DataCubeEditorGeneralPropertiesPanelState
   buildSnapshot(
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
-  ): void {
+  ) {
     const data = newSnapshot.data;
     data.name = this.name;
     data.limit = this.limit <= 0 ? undefined : this.limit;

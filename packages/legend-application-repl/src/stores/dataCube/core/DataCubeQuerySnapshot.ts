@@ -143,7 +143,7 @@ export class DataCubeQuerySnapshot {
     return new DataCubeQuerySnapshot(name, runtime, sourceQuery, configuration);
   }
 
-  clone(): DataCubeQuerySnapshot {
+  clone() {
     const clone = new DataCubeQuerySnapshot('', '', {}, {});
     (clone.data as Writable<DataCubeQuerySnapshotData>) = JSON.parse(
       JSON.stringify(this.data),
@@ -154,7 +154,7 @@ export class DataCubeQuerySnapshot {
   /**
    * Get available columns at a certain stage of the query
    */
-  stageCols(stage: DataCubeQuerySnapshotStage): DataCubeQuerySnapshotColumn[] {
+  stageCols(stage: DataCubeQuerySnapshotStage) {
     switch (stage) {
       case 'filter':
       case 'leaf-extend':
@@ -173,11 +173,11 @@ export class DataCubeQuerySnapshot {
     }
   }
 
-  isFinalized(): boolean {
+  isFinalized() {
     return this._finalized;
   }
 
-  finalize(): DataCubeQuerySnapshot {
+  finalize() {
     if (this._finalized) {
       return this;
     }
@@ -186,7 +186,7 @@ export class DataCubeQuerySnapshot {
     return this;
   }
 
-  get hashCode(): string {
+  get hashCode() {
     if (!this._finalized || !this._hashCode) {
       throw new IllegalStateError('Snapshot is not finalized');
     }
@@ -201,7 +201,7 @@ export class DataCubeQuerySnapshot {
    * to properly prune the snapshot data object before hashing
    * else there would be mismatch
    */
-  private computeHashCode(): string {
+  private computeHashCode() {
     return hashObject(pruneObject(this.data));
   }
 }

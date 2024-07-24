@@ -178,10 +178,7 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     return configuration;
   }
 
-  static createDefault(column: {
-    name: string;
-    type: string;
-  }): DataCubeMutableColumnConfiguration {
+  static createDefault(column: { name: string; type: string }) {
     return DataCubeMutableColumnConfiguration.create(
       DataCubeColumnConfiguration.serialization.toJson(
         buildDefaultColumnConfiguration(column),
@@ -189,11 +186,11 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     );
   }
 
-  serialize(): PlainObject<DataCubeColumnConfiguration> {
+  serialize() {
     return DataCubeColumnConfiguration.serialization.toJson(this);
   }
 
-  get isUsingDefaultStyling(): boolean {
+  get isUsingDefaultStyling() {
     return (
       this.fontFamily === undefined &&
       this.fontSize === undefined &&
@@ -213,7 +210,7 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     );
   }
 
-  useDefaultStyling(): void {
+  useDefaultStyling() {
     this.fontFamily = undefined;
     this.fontSize = undefined;
     this.fontBold = undefined;
@@ -231,141 +228,139 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.errorBackgroundColor = undefined;
   }
 
-  setKind(value: DataCubeColumnKind): void {
+  setKind(value: DataCubeColumnKind) {
     this.kind = value;
   }
 
-  setDisplayName(value: string | undefined): void {
+  setDisplayName(value: string | undefined) {
     this.displayName = value;
   }
 
-  setDecimals(value: number | undefined): void {
+  setDecimals(value: number | undefined) {
     this.decimals = value;
   }
 
-  setDisplayCommas(value: boolean): void {
+  setDisplayCommas(value: boolean) {
     this.displayCommas = value;
   }
 
-  setNegativeNumberInParens(value: boolean): void {
+  setNegativeNumberInParens(value: boolean) {
     this.negativeNumberInParens = value;
   }
 
-  setNumberScale(value: DataCubeNumberScale | undefined): void {
+  setNumberScale(value: DataCubeNumberScale | undefined) {
     this.numberScale = value;
   }
 
-  setHPivotSortFunction(value: string | undefined): void {
+  setHPivotSortFunction(value: string | undefined) {
     this.hPivotSortFunction = value;
   }
 
-  setFontFamily(value: DataCubeFont | undefined): void {
+  setFontFamily(value: DataCubeFont | undefined) {
     this.fontFamily = value;
   }
 
-  setFontSize(value: number | undefined): void {
+  setFontSize(value: number | undefined) {
     this.fontSize = value;
   }
 
-  setFontBold(value: boolean | undefined): void {
+  setFontBold(value: boolean | undefined) {
     this.fontBold = value;
   }
 
-  setFontItalic(value: boolean | undefined): void {
+  setFontItalic(value: boolean | undefined) {
     this.fontItalic = value;
   }
 
-  setFontUnderline(
-    value: DataCubeFontFormatUnderlineVariant | undefined,
-  ): void {
+  setFontUnderline(value: DataCubeFontFormatUnderlineVariant | undefined) {
     this.fontUnderline = value;
   }
 
-  setFontStrikethrough(value: boolean | undefined): void {
+  setFontStrikethrough(value: boolean | undefined) {
     this.fontStrikethrough = value;
   }
 
-  setFontCase(value: DataCubeFontCase | undefined): void {
+  setFontCase(value: DataCubeFontCase | undefined) {
     this.fontCase = value;
   }
 
-  setTextAlign(value: DataCubeFontTextAlignment | undefined): void {
+  setTextAlign(value: DataCubeFontTextAlignment | undefined) {
     this.textAlign = value;
   }
 
-  setNormalForegroundColor(value: string | undefined): void {
+  setNormalForegroundColor(value: string | undefined) {
     this.normalForegroundColor = value;
   }
 
-  setNegativeForegroundColor(value: string | undefined): void {
+  setNegativeForegroundColor(value: string | undefined) {
     this.negativeForegroundColor = value;
   }
 
-  setZeroForegroundColor(value: string | undefined): void {
+  setZeroForegroundColor(value: string | undefined) {
     this.zeroForegroundColor = value;
   }
 
-  setErrorForegroundColor(value: string | undefined): void {
+  setErrorForegroundColor(value: string | undefined) {
     this.errorForegroundColor = value;
   }
 
-  setNormalBackgroundColor(value: string | undefined): void {
+  setNormalBackgroundColor(value: string | undefined) {
     this.normalBackgroundColor = value;
   }
 
-  setNegativeBackgroundColor(value: string | undefined): void {
+  setNegativeBackgroundColor(value: string | undefined) {
     this.negativeBackgroundColor = value;
   }
 
-  setZeroBackgroundColor(value: string | undefined): void {
+  setZeroBackgroundColor(value: string | undefined) {
     this.zeroBackgroundColor = value;
   }
 
-  setErrorBackgroundColor(value: string | undefined): void {
+  setErrorBackgroundColor(value: string | undefined) {
     this.errorBackgroundColor = value;
   }
 
-  setBlur(value: boolean): void {
+  setBlur(value: boolean) {
     this.blur = value;
   }
 
-  setHideFromView(value: boolean): void {
+  setHideFromView(value: boolean) {
     this.hideFromView = value;
   }
 
-  setFixedWidth(value: number | undefined): void {
+  setFixedWidth(value: number | undefined) {
     this.fixedWidth = value;
   }
 
-  setMinWidth(value: number | undefined): void {
+  setMinWidth(value: number | undefined) {
     this.minWidth = value;
   }
 
-  setMaxWidth(value: number | undefined): void {
+  setMaxWidth(value: number | undefined) {
     this.maxWidth = value;
   }
 
-  setPinned(value: DataCubeColumnPinPlacement | undefined): void {
+  setPinned(value: DataCubeColumnPinPlacement | undefined) {
     this.pinned = value;
   }
 
-  setDisplayAsLink(value: boolean): void {
+  setDisplayAsLink(value: boolean) {
     this.displayAsLink = value;
   }
 
-  setLinkLabelParameter(value: string | undefined): void {
+  setLinkLabelParameter(value: string | undefined) {
     this.linkLabelParameter = value;
   }
 
-  setAggregateFunction(value: DataCubeAggregateOperation | undefined): void {
+  setAggregateFunction(value: DataCubeAggregateOperation | undefined) {
     this.aggregateFunction = value;
   }
 
-  setExcludedFromHorizontalPivot(value: boolean): void {
+  setExcludedFromHorizontalPivot(value: boolean) {
     this.excludedFromHorizontalPivot = value;
   }
 
-  setAggregateFunctionParameters(value: DataCubeOperationValue[]): void {
+  setAggregateFunctionParameters(value: DataCubeOperationValue[]) {
     this.aggregateFunctionParameters = value;
   }
 }
@@ -487,7 +482,7 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
     return configuration;
   }
 
-  get isUsingDefaultStyling(): boolean {
+  get isUsingDefaultStyling() {
     return (
       this.fontFamily === DEFAULT_FONT_FAMILY &&
       this.fontSize === DEFAULT_FONT_SIZE &&
@@ -507,7 +502,7 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
     );
   }
 
-  useDefaultStyling(): void {
+  useDefaultStyling() {
     this.fontFamily = DEFAULT_FONT_FAMILY;
     this.fontSize = DEFAULT_FONT_SIZE;
     this.fontBold = DEFAULT_FONT_BOLD;
@@ -525,141 +520,139 @@ export class DataCubeMutableConfiguration extends DataCubeConfiguration {
     this.errorBackgroundColor = DEFAULT_BACKGROUND_COLOR;
   }
 
-  serialize(): PlainObject<DataCubeConfiguration> {
+  serialize() {
     return DataCubeConfiguration.serialization.toJson(this);
   }
 
-  setDescription(value: string | undefined): void {
+  setDescription(value: string | undefined) {
     this.description = value;
   }
 
-  setShowTreeLines(value: boolean): void {
+  setShowTreeLines(value: boolean) {
     this.showTreeLines = value;
   }
 
-  setShowHorizontalGridLines(value: boolean): void {
+  setShowHorizontalGridLines(value: boolean) {
     this.showHorizontalGridLines = value;
   }
 
-  setShowVerticalGridLines(value: boolean): void {
+  setShowVerticalGridLines(value: boolean) {
     this.showVerticalGridLines = value;
   }
 
-  setGridLineColor(value: string): void {
+  setGridLineColor(value: string) {
     this.gridLineColor = value;
   }
 
-  setFontFamily(value: DataCubeFont): void {
+  setFontFamily(value: DataCubeFont) {
     this.fontFamily = value;
   }
 
-  setFontSize(value: number): void {
+  setFontSize(value: number) {
     this.fontSize = value;
   }
 
-  setFontBold(value: boolean): void {
+  setFontBold(value: boolean) {
     this.fontBold = value;
   }
 
-  setFontItalic(value: boolean): void {
+  setFontItalic(value: boolean) {
     this.fontItalic = value;
   }
 
-  setFontUnderline(
-    value: DataCubeFontFormatUnderlineVariant | undefined,
-  ): void {
+  setFontUnderline(value: DataCubeFontFormatUnderlineVariant | undefined) {
     this.fontUnderline = value;
   }
 
-  setFontStrikethrough(value: boolean): void {
+  setFontStrikethrough(value: boolean) {
     this.fontStrikethrough = value;
   }
 
-  setFontCase(value: DataCubeFontCase | undefined): void {
+  setFontCase(value: DataCubeFontCase | undefined) {
     this.fontCase = value;
   }
 
-  setTextAlign(value: DataCubeFontTextAlignment): void {
+  setTextAlign(value: DataCubeFontTextAlignment) {
     this.textAlign = value;
   }
 
-  setNormalForegroundColor(value: string): void {
+  setNormalForegroundColor(value: string) {
     this.normalForegroundColor = value;
   }
 
-  setNegativeForegroundColor(value: string): void {
+  setNegativeForegroundColor(value: string) {
     this.negativeForegroundColor = value;
   }
 
-  setZeroForegroundColor(value: string): void {
+  setZeroForegroundColor(value: string) {
     this.zeroForegroundColor = value;
   }
 
-  setErrorForegroundColor(value: string): void {
+  setErrorForegroundColor(value: string) {
     this.errorForegroundColor = value;
   }
 
-  setNormalBackgroundColor(value: string): void {
+  setNormalBackgroundColor(value: string) {
     this.normalBackgroundColor = value;
   }
 
-  setNegativeBackgroundColor(value: string): void {
+  setNegativeBackgroundColor(value: string) {
     this.negativeBackgroundColor = value;
   }
 
-  setZeroBackgroundColor(value: string): void {
+  setZeroBackgroundColor(value: string) {
     this.zeroBackgroundColor = value;
   }
 
-  setErrorBackgroundColor(value: string): void {
+  setErrorBackgroundColor(value: string) {
     this.errorBackgroundColor = value;
   }
 
-  setAlternateRows(value: boolean): void {
+  setAlternateRows(value: boolean) {
     this.alternateRows = value;
   }
 
-  setAlternateRowsColor(value: string): void {
+  setAlternateRowsColor(value: string) {
     this.alternateRowsColor = value;
   }
 
-  setAlternateRowsCount(value: number): void {
+  setAlternateRowsCount(value: number) {
     this.alternateRowsCount = value;
   }
 
-  setAlternateRowsStandardMode(value: boolean): void {
+  setAlternateRowsStandardMode(value: boolean) {
     this.alternateRowsStandardMode = value;
   }
 
-  setSelectionStats(value: DataCubeSelectionStat[]): void {
+  setSelectionStats(value: DataCubeSelectionStat[]) {
     this.selectionStats = value;
   }
 
-  setShowWarningForTruncatedResult(value: boolean): void {
+  setShowWarningForTruncatedResult(value: boolean) {
     this.showWarningForTruncatedResult = value;
   }
 
-  setInitialExpandLevel(value: number | undefined): void {
+  setInitialExpandLevel(value: number | undefined) {
     this.initialExpandLevel = value;
   }
 
-  setShowRootAggregation(value: boolean): void {
+  setShowRootAggregation(value: boolean) {
     this.showRootAggregation = value;
   }
 
-  setShowLeafCount(value: boolean): void {
+  setShowLeafCount(value: boolean) {
     this.showLeafCount = value;
   }
 
-  setAddPivotTotalColumn(value: boolean): void {
+  setAddPivotTotalColumn(value: boolean) {
     this.addPivotTotalColumn = value;
   }
 
-  setAddPivotTotalColumnOnLeft(value: boolean): void {
+  setAddPivotTotalColumnOnLeft(value: boolean) {
     this.addPivotTotalColumnOnLeft = value;
   }
 
-  setTreeGroupSortFunction(value: string | undefined): void {
+  setTreeGroupSortFunction(value: string | undefined) {
     this.treeGroupSortFunction = value;
   }
 }

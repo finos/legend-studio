@@ -47,7 +47,7 @@ export const REPLStoreProvider = observer(
   },
 );
 
-export const useREPLStore = (): REPLStore =>
+export const useREPLStore = () =>
   guaranteeNonNullable(
     useContext(REPLStoreContext),
     `Can't find REPL store in context`,

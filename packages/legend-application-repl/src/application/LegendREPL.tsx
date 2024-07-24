@@ -16,7 +16,6 @@
 
 import { createRoot } from 'react-dom/client';
 import {
-  type LegendApplicationConfig,
   type LegendApplicationConfigurationInput,
   LegendApplication,
   ApplicationStoreProvider,
@@ -36,7 +35,7 @@ export class LegendREPL extends LegendApplication {
   declare config: LegendREPLApplicationConfig;
   declare pluginManager: LegendREPLPluginManager;
 
-  static create(): LegendREPL {
+  static create() {
     const application = new LegendREPL(LegendREPLPluginManager.create());
     application.withBasePlugins([
       new Core_LegendApplicationPlugin(),
@@ -48,13 +47,11 @@ export class LegendREPL extends LegendApplication {
 
   async configureApplication(
     input: LegendApplicationConfigurationInput<LegendREPLApplicationConfigData>,
-  ): Promise<LegendApplicationConfig> {
+  ) {
     return new LegendREPLApplicationConfig(input);
   }
 
-  async loadApplication(
-    application: LegendREPLApplicationStore,
-  ): Promise<void> {
+  async loadApplication(application: LegendREPLApplicationStore) {
     createRoot(getApplicationRootElement()).render(
       <ApplicationStoreProvider store={application}>
         <LegendREPLWebApplication baseUrl={this.baseAddress} />

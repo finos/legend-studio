@@ -44,15 +44,13 @@ export class DataCubeEditorSortColumnState extends DataCubeEditorColumnsSelector
     this.operation = direction;
   }
 
-  setOperation(val: DataCubeQuerySortOperation): void {
+  setOperation(val: DataCubeQuerySortOperation) {
     this.operation = val;
   }
 }
 
 export class DataCubeEditorSortColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorSortColumnState> {
-  override cloneColumn(
-    column: DataCubeEditorSortColumnState,
-  ): DataCubeEditorSortColumnState {
+  override cloneColumn(column: DataCubeEditorSortColumnState) {
     return new DataCubeEditorSortColumnState(
       column.name,
       column.type,
@@ -60,7 +58,7 @@ export class DataCubeEditorSortColumnsSelectorState extends DataCubeEditorColumn
     );
   }
 
-  override get availableColumns(): DataCubeEditorSortColumnState[] {
+  override get availableColumns() {
     return this.editor.columns.selector.selectedColumns.map(
       (col) =>
         new DataCubeEditorSortColumnState(
@@ -88,7 +86,7 @@ export class DataCubeEditorSortsPanelState
   applySnaphot(
     snapshot: DataCubeQuerySnapshot,
     configuration: DataCubeConfiguration,
-  ): void {
+  ) {
     this.selector.setSelectedColumns(
       snapshot.data.sortColumns.map((col) => {
         const column = this.selector.getColumn(col.name);
@@ -104,7 +102,7 @@ export class DataCubeEditorSortsPanelState
   buildSnapshot(
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
-  ): void {
+  ) {
     newSnapshot.data.sortColumns = this.selector.selectedColumns.map((col) => ({
       name: col.name,
       type: col.type,

@@ -22,12 +22,9 @@ import {
 } from '@finos/legend-application';
 import type { LegendREPLPluginManager } from '../application/LegendREPLPluginManager.js';
 import type { LegendREPLApplicationConfig } from '../application/LegendREPLApplicationConfig.js';
-import {
-  type LegendREPLApplicationStore,
-  LegendREPLBaseStore,
-} from '../stores/LegendREPLBaseStore.js';
+import { LegendREPLBaseStore } from '../stores/LegendREPLBaseStore.js';
 
-export const useLegendREPLApplicationStore = (): LegendREPLApplicationStore =>
+export const useLegendREPLApplicationStore = () =>
   useApplicationStore<LegendREPLApplicationConfig, LegendREPLPluginManager>();
 
 const LegendREPLBaseStoreContext = createContext<
