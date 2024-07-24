@@ -37,7 +37,6 @@ import {
   UnsupportedElementEditorState,
 } from '@finos/legend-application-studio';
 import {
-  ObserverContext,
   PackageableElementExplicitReference,
   stub_Mapping,
   stub_PackageableRuntime,
