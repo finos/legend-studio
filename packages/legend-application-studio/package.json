@@ -55,7 +55,7 @@
     "@finos/legend-server-showcase": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
-    "@testing-library/dom": "10.3.2",
+    "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.0.0",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
@@ -69,7 +69,7 @@
     "react-dnd": "16.0.1",
     "react-dom": "18.3.1",
     "serializr": "3.0.2",
-    "yaml": "2.4.5"
+    "yaml": "2.5.0"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
@@ -80,7 +80,7 @@
     "npm-run-all": "4.1.5",
     "rimraf": "6.0.1",
     "sass": "1.77.8",
-    "typescript": "5.5.3"
+    "typescript": "5.5.4"
   },
   "peerDependencies": {
     "react": "^18.0.0"
