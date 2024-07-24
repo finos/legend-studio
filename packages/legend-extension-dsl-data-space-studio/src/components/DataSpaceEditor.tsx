@@ -46,6 +46,7 @@ export const DataSpaceEditor = observer(() => {
           <PanelFormTextField
             name="Data Space Title"
             value={formElement.title ?? ''}
+            prompt="Data Space title is the user facing name for the Data Space. It used in downstream applications as the default identifier for this Data Space. When not provided, the DataSpace name property is used"
             update={handleTitleChange}
             placeholder="Enter title"
           />
@@ -56,7 +57,6 @@ export const DataSpaceEditor = observer(() => {
           <PanelFormTextField
             name="Data Space Description"
             value={formElement.description ?? ''}
-            prompt="Data Space title is the user facing name for the Data Space. It used in downstream applications as the default identifier for this Data Space. When not provided, the DataSpace name property is used"
             update={handleDescriptionChange}
             placeholder="Enter Description"
           />
