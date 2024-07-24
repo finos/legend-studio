@@ -31,6 +31,8 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   ShareBoxIcon,
+  Tooltip,
+  BaseRadioGroup,
 } from '@finos/legend-art';
 import {
   CORE_PURE_PATH,
@@ -40,7 +42,11 @@ import {
   getAllClassProperties,
   getAllOwnClassProperties,
 } from '@finos/legend-graph';
-import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
+import {
+  ADVANCED_FUZZY_SEARCH_MODE,
+  guaranteeNonNullable,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { useDrag } from 'react-dnd';
 import { QUERY_BUILDER_PROPERTY_SEARCH_TYPE } from '../../stores/QueryBuilderConfig.js';
@@ -59,6 +65,8 @@ import {
 } from './QueryBuilderExplorerPanel.js';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
+import { DocumentationLink } from '@finos/legend-lego/application';
+import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '@finos/legend-application';
 
 export const prettyPropertyNameFromNodeId = (name: string): string => {
   let propNameArray = name.split('.');
@@ -417,6 +425,21 @@ export const QueryBuilderPropertySearchPanel = observer(
       propertySearchState.setIsSearchPanelOpen(false);
     };
 
+    const handleSearchMode: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ): void => {
+      const searchMode = event.target.value as ADVANCED_FUZZY_SEARCH_MODE;
+      propertySearchState.searchConfigurationState.setCurrentMode(searchMode);
+    };
+
+    const handleToggleIncludeTaggedValues = () => {
+      propertySearchState.searchConfigurationState.setIncludeTaggedValues(
+        !propertySearchState.searchConfigurationState.includeTaggedValues,
+      );
+      propertySearchState.initialize();
+      propertySearchState.search();
+    };
+
     return (
       <BasePopover
         open={propertySearchState.isSearchPanelOpen}
@@ -450,8 +473,80 @@ export const QueryBuilderPropertySearchPanel = observer(
         >
           <div className="query-builder-property-search-panel__content">
             <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel size={150}>
+              <ResizablePanel size={175}>
                 <div className="query-builder-property-search-panel__config">
+                  <div className="query-builder-property-search-panel__form__section">
+                    <div className="query-builder-property-search-panel__form__section__header__label">
+                      Search Mode
+                      <DocumentationLink
+                        documentationKey={
+                          LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_USE_ADVANCED_SEARCH_SYNTAX
+                        }
+                      />
+                    </div>
+                    <div className="query-builder-property-search-panel__filter__element">
+                      <BaseRadioGroup
+                        className="query-builder-property-search-panel__search-mode__options"
+                        value={
+                          propertySearchState.searchConfigurationState
+                            .currentMode
+                        }
+                        onChange={handleSearchMode}
+                        row={false}
+                        options={[
+                          ADVANCED_FUZZY_SEARCH_MODE.STANDARD,
+                          ADVANCED_FUZZY_SEARCH_MODE.INCLUDE,
+                          ADVANCED_FUZZY_SEARCH_MODE.EXACT,
+                          ADVANCED_FUZZY_SEARCH_MODE.INVERSE,
+                        ]}
+                        size={1}
+                      />
+                    </div>
+                  </div>
+                  <div className="query-builder-property-search-panel__form__section">
+                    <div className="query-builder-property-search-panel__form__section__header__label">
+                      Tagged Values
+                      <Tooltip
+                        TransitionProps={{
+                          timeout: 0,
+                        }}
+                        title={
+                          <div>
+                            Include &quot;doc&quot; type tagged values in search
+                            results
+                          </div>
+                        }
+                      >
+                        <div className="query-builder-property-search-panel__tagged-values__tooltip">
+                          <InfoCircleIcon />
+                        </div>
+                      </Tooltip>
+                    </div>
+                    <div className="query-builder-property-search-panel__filter__element">
+                      <button
+                        className={clsx(
+                          'query-builder-property-search-panel__form__section__toggler__btn',
+                          {
+                            'query-builder-property-search-panel__form__section__toggler__btn--toggled':
+                              propertySearchState.searchConfigurationState
+                                .includeTaggedValues,
+                          },
+                        )}
+                        onClick={handleToggleIncludeTaggedValues}
+                        tabIndex={-1}
+                      >
+                        {propertySearchState.searchConfigurationState
+                          .includeTaggedValues ? (
+                          <CheckSquareIcon />
+                        ) : (
+                          <SquareIcon />
+                        )}
+                      </button>
+                      <div className="query-builder-property-search-panel__form__section__toggler__prompt">
+                        Include
+                      </div>
+                    </div>
+                  </div>
                   <div className="query-builder-property-search-panel__form__section">
                     <div className="query-builder-property-search-panel__form__section__header__label">
                       By type

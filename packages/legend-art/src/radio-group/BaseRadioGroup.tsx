@@ -60,7 +60,13 @@ export const BaseRadioGroup: React.FC<
                 key={op}
                 value={op}
                 control={
-                  <Radio className="mui-radio-group__group__item__radio-btn" />
+                  <Radio
+                    className="mui-radio-group__group__item__radio-btn"
+                    classes={{
+                      checked:
+                        'mui-radio-group__group__item__radio-btn--checked',
+                    }}
+                  />
                 }
                 label={
                   <div className="mui-radio-group__group__item__label">

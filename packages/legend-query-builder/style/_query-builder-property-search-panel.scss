@@ -48,7 +48,7 @@
   }
 
   &__content {
-    height: calc(100% - 4.4rem);
+    height: 100%;
     overflow-y: auto;
   }
 
@@ -176,99 +176,6 @@
     margin-left: 0.5rem;
   }
 
-  &__input {
-    font-size: 1.3rem;
-    height: 2.8rem;
-    padding-right: 2.8rem;
-    padding-left: 1rem;
-    width: 100%;
-    background: var(--color-dark-grey-85);
-    border-radius: 0.2rem;
-    border: 0.1rem solid var(--color-dark-grey-200);
-
-    &__container {
-      @include flexCenter;
-
-      position: relative;
-      height: 2.8rem;
-      width: 100%;
-    }
-
-    &--searching {
-      padding-right: 9rem; // account for the count badge
-    }
-
-    &__search__count {
-      @include flexCenter;
-
-      position: absolute;
-      right: 5.3rem;
-      border-radius: 0.8rem;
-      height: 1.6rem;
-      padding: 0 0.5rem;
-      font-size: 1.1rem;
-      font-weight: 700;
-      background: var(--color-yellow-100);
-      color: var(--color-dark-grey-280);
-      user-select: none;
-      cursor: default;
-    }
-
-    &__search__icon {
-      @include flexCenter;
-
-      position: absolute;
-      right: 0.3rem;
-      height: 2.8rem;
-      width: 2.8rem;
-
-      svg {
-        color: var(--color-light-shade-100);
-      }
-    }
-
-    &__search__config__trigger {
-      @include flexCenter;
-
-      position: absolute;
-      right: 3.1rem;
-      height: 2.8rem;
-      width: 1.8rem;
-      cursor: pointer;
-
-      svg {
-        color: var(--color-dark-grey-400);
-      }
-
-      &--toggled svg,
-      &:hover svg {
-        color: var(--color-dark-grey-500);
-      }
-
-      &--active svg,
-      &--active:hover svg {
-        color: var(--color-blue-150);
-      }
-    }
-
-    &__clear-btn {
-      @include flexCenter;
-
-      position: absolute;
-      right: 0.3rem;
-      height: 2.8rem;
-      width: 2.8rem;
-
-      svg {
-        color: var(--color-dark-grey-400);
-      }
-
-      &:hover svg {
-        color: var(--color-dark-grey-500);
-      }
-    }
-  }
-
   &__form {
     &__section {
       cursor: default;
@@ -349,6 +256,18 @@
     padding: 1rem;
   }
 
+  &__search-mode__options {
+    padding: 0;
+
+    .mui-radio-group__group {
+      height: fit-content;
+
+      .mui-radio-group__group__item__radio-btn--checked svg {
+        color: var(--color-blue-150);
+      }
+    }
+  }
+
   &__result-placeholder {
     cursor: default;
     user-select: none;
@@ -364,29 +283,14 @@
     }
   }
 
-  &__config__tagged-values {
-    @include flexVCenter;
+  &__tagged-values__tooltip {
+    display: inline-flex;
+    margin-left: 0.5rem;
+    color: var(--color-dark-grey-500);
+    cursor: default;
 
-    padding: 1rem;
-
-    &__checkbox {
-      padding: 0;
-    }
-
-    &__label {
-      margin-left: 0.5rem;
-      font-size: 1.2rem;
-      color: var(--color-light-grey-200);
-    }
-
-    &__tooltip {
-      margin-left: 0.5rem;
-      color: var(--color-dark-grey-500);
-      cursor: default;
-
-      &:hover {
-        color: var(--color-light-grey-400);
-      }
+    &:hover {
+      color: var(--color-light-grey-400);
     }
   }
 }
