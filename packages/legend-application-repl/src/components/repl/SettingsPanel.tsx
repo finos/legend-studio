@@ -19,6 +19,7 @@ import { DataCubeIcon } from '@finos/legend-art';
 import { useREPLStore } from '../REPLStoreProvider.js';
 import { FormCheckbox, FormNumberInput } from './Form.js';
 import {
+  DEFAULT_DISABLE_LARGE_DATASET_WARNING,
   DEFAULT_ENABLE_DEBUG_MODE,
   DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
   DEFAULT_GRID_CLIENT_ROW_BUFFER,
@@ -40,12 +41,17 @@ export const SettingsPanel = observer(() => {
   const [enableDebugMode, setEnableDebugMode] = useState(
     dataCubeEngine.enableDebugMode,
   );
+  const [disableLargeDatasetWarning, setDisableLargeDatasetWarning] = useState(
+    dataCubeEngine.disableLargeDatasetWarning,
+  );
+
   const save = () => {
     dataCubeEngine.setGridClientRowBuffer(gridClientRowBuffer);
     dataCubeEngine.setGridClientPurgeClosedRowNodes(
       gridClientPurgeClosedRowNodes,
     );
     dataCubeEngine.setEnableDebugMode(enableDebugMode);
+    dataCubeEngine.setDisableLargeDatasetWarning(disableLargeDatasetWarning);
   };
   const restoreDefaults = () => {
     setGridClientRowBuffer(DEFAULT_GRID_CLIENT_ROW_BUFFER);
@@ -53,6 +59,7 @@ export const SettingsPanel = observer(() => {
       DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
     );
     setEnableDebugMode(DEFAULT_ENABLE_DEBUG_MODE);
+    setDisableLargeDatasetWarning(DEFAULT_DISABLE_LARGE_DATASET_WARNING);
     save();
   };
 
@@ -70,11 +77,37 @@ export const SettingsPanel = observer(() => {
               </div>
             </div>
           </div>
-          <div className="my-1.5">
-            <div className="mb-0.5 font-medium">Refresh Group Node Data</div>
+          <div className="mt-1.5">
+            <div className="font-medium">Large Dataset Warning: Disabled</div>
             <div className="flex pr-2">
               <FormCheckbox
-                label="Force refresh data when group node is opened"
+                label="Suggests user to enable pagination when handling large datasets to improve performance."
+                checked={disableLargeDatasetWarning}
+                onChange={() =>
+                  setDisableLargeDatasetWarning(!disableLargeDatasetWarning)
+                }
+              />
+            </div>
+          </div>
+          <div className="my-2">
+            <div className="font-medium">Refresh Failed Data Fetch: Action</div>
+            <div className="mb-1.5 text-sm text-neutral-700">
+              {`Manually re-run all failed data fetches in the grid.`}
+            </div>
+            <div className="flex pr-2">
+              <button
+                className="ml-2 h-5 min-w-16 border border-neutral-400 bg-neutral-300 px-2 text-sm first-of-type:ml-0 hover:brightness-95"
+                onClick={() => dataCubeEngine.refreshFailedDataFetches()}
+              >
+                Run Action
+              </button>
+            </div>
+          </div>
+          <div className="my-2">
+            <div className="font-medium">Refresh Group Node Data: Enabled</div>
+            <div className="flex pr-2">
+              <FormCheckbox
+                label="Force refresh data when group node is opened."
                 checked={gridClientPurgeClosedRowNodes}
                 onChange={() =>
                   setGridClientPurgeClosedRowNodes(
@@ -84,14 +117,14 @@ export const SettingsPanel = observer(() => {
               />
             </div>
           </div>
-          <div className="my-1.5">
-            <div className="mb-0.5 font-medium">Row Buffer</div>
+          <div className="my-2">
+            <div className="font-medium">Row Buffer</div>
             <div className="mb-1.5 text-sm text-neutral-700">
               {`Sets the number of rows the grid renders outside of the viewable area. e.g. if the buffer is 10 and your grid is showing 50 rows (as that's all that fits on your screen without scrolling), then the grid will actually render 70 in total (10 extra above and 10 extra below). Then when you scroll, the grid will already have 10 rows ready and waiting to show, no redraw is needed. A low small buffer will make initial draws of the grid faster; whereas a big one will reduce the redraw visible vertically scrolling.`}
             </div>
             <div className="flex pr-2">
               <FormNumberInput
-                className="w-20 text-sm"
+                className="w-16 text-sm"
                 min={10}
                 step={10}
                 defaultValue={DEFAULT_GRID_CLIENT_ROW_BUFFER}
@@ -117,8 +150,9 @@ export const SettingsPanel = observer(() => {
               </div>
             </div>
           </div>
-          <div className="my-1.5">
-            <div className="mb-0.5 font-medium">Debug Mode: Enabled</div>
+
+          <div className="mt-1.5">
+            <div className="font-medium">Debug Mode: Enabled</div>
             <div className="flex pr-2">
               <FormCheckbox
                 label="Enable debug logging when running data queries, updating snapshots, etc."

@@ -37,6 +37,7 @@ import { action, makeObservable, observable } from 'mobx';
 export const DEFAULT_ENABLE_DEBUG_MODE = false;
 export const DEFAULT_GRID_CLIENT_ROW_BUFFER = 50;
 export const DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES = false;
+export const DEFAULT_DISABLE_LARGE_DATASET_WARNING = false;
 
 export class DataCubeEngine {
   readonly repl: REPLStore;
@@ -45,8 +46,8 @@ export class DataCubeEngine {
 
   enableDebugMode = DEFAULT_ENABLE_DEBUG_MODE;
   gridClientRowBuffer = DEFAULT_GRID_CLIENT_ROW_BUFFER;
-  gridClientPurgeClosedRowNodes = false;
-  disableLargeDatasetWarning = false;
+  gridClientPurgeClosedRowNodes = DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES;
+  disableLargeDatasetWarning = DEFAULT_DISABLE_LARGE_DATASET_WARNING;
 
   constructor(repl: REPLStore) {
     makeObservable(this, {
@@ -86,9 +87,15 @@ export class DataCubeEngine {
     this.disableLargeDatasetWarning = disableLargeDatasetWarning;
   }
 
+  refreshFailedDataFetches() {
+    // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
+    // to traverse through and update the configurations of all of their grid clients
+    this.repl.dataCube.grid.client.retryServerSideLoads();
+  }
+
   private propagateGridOptionUpdates() {
-    // When we support multi-view (i.e. multiple instances of DataCubes) we would need to traverse
-    // through and update the configurations of all of their grid clients
+    // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
+    // to traverse through and update the configurations of all of their grid clients
     this.repl.dataCube.grid.client.updateGridOptions({
       rowBuffer: this.gridClientRowBuffer,
       purgeClosedRowNodes: this.gridClientPurgeClosedRowNodes,

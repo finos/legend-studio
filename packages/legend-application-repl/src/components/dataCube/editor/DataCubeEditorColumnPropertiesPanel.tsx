@@ -402,6 +402,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(() => {
                       value !== '' ? value : undefined,
                     );
                   }}
+                  placeholder="(empty)"
                 />
               </div>
 
