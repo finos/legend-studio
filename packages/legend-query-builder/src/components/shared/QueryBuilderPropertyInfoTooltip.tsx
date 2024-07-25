@@ -214,7 +214,7 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
             onClick={() => explorerState.highlightTreeNode(path)}
             title="Show in tree"
           >
-            <ShareBoxIcon color="white" />
+            <ShareBoxIcon />
           </button>
         </div>
       ) : undefined,
