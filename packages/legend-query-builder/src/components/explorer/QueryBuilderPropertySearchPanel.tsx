@@ -457,7 +457,7 @@ export const QueryBuilderPropertySearchPanel = observer(
         disableAutoFocus={true}
         disableEnforceFocus={true}
         anchorOrigin={{
-          vertical: 'bottom',
+          vertical: 40,
           horizontal: 'left',
         }}
         transformOrigin={{
