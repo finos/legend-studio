@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 12.6.0
+
+### Patch Changes
+
+- [#3340](https://github.com/finos/legend-studio/pull/3340) [`de22308`](https://github.com/finos/legend-studio/commit/de22308b1a931e73aabf363b78b6ab3ce917fd47) ([@travisstebbins](https://github.com/travisstebbins)) - Fix styling for DND columns to filter values in light mode
+
 ## 12.5.0
 
 ## 12.4.0
