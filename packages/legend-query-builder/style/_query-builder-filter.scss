@@ -84,9 +84,21 @@ $group-node-width: 3.5rem;
       }
     }
 
+    &:hover {
+      .query-builder-property-expression-badge__action {
+        color: var(--color-dark-grey-50);
+        background: var(--color-dark-grey-500);
+      }
+    }
+
     &--selected,
     &--selected:hover {
       background: var(--color-blue-500);
+
+      .query-builder-property-expression-badge__action {
+        color: var(--color-dark-grey-50);
+        background: var(--color-dark-grey-500);
+      }
     }
 
     &--selected-from-context-menu {
