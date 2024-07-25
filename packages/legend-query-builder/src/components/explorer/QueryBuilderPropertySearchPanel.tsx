@@ -711,41 +711,43 @@ export const QueryBuilderPropertySearchPanel = observer(
                 {propertySearchState.searchState.isInProgress && (
                   <PanelLoadingIndicator isLoading={true} />
                 )}
-                <div className="query-builder-property-search-panel__results">
-                  {!propertySearchState.searchState.isInProgress && (
-                    <>
-                      {Boolean(
-                        propertySearchState.filteredSearchResults.length,
-                      ) &&
-                        propertySearchState.filteredSearchResults.map(
-                          (node) => (
-                            <QueryBuilderTreeNodeViewer
-                              key={node.id}
-                              node={node}
-                              queryBuilderState={queryBuilderState}
-                              level={1}
-                              stepPaddingInRem={0}
-                              explorerState={queryBuilderState.explorerState}
-                            />
-                          ),
-                        )}
-                      {!propertySearchState.filteredSearchResults.length &&
-                        propertySearchState.searchText && (
-                          <BlankPanelContent>
-                            <div className="query-builder-property-search-panel__result-placeholder__text">
-                              No result
-                            </div>
-                            <div className="query-builder-property-search-panel__result-placeholder__tips">
-                              Tips: Navigate deeper into the explorer tree to
-                              improve the scope and accuracy of the search
-                            </div>
-                          </BlankPanelContent>
-                        )}
-                    </>
-                  )}
-                  {propertySearchState.searchState.isInProgress && (
-                    <BlankPanelContent>Searching...</BlankPanelContent>
-                  )}
+                <div className="query-builder-property-search-panel__results__container">
+                  <div className="query-builder-property-search-panel__results__content">
+                    {!propertySearchState.searchState.isInProgress && (
+                      <>
+                        {Boolean(
+                          propertySearchState.filteredSearchResults.length,
+                        ) &&
+                          propertySearchState.filteredSearchResults.map(
+                            (node) => (
+                              <QueryBuilderTreeNodeViewer
+                                key={node.id}
+                                node={node}
+                                queryBuilderState={queryBuilderState}
+                                level={1}
+                                stepPaddingInRem={0}
+                                explorerState={queryBuilderState.explorerState}
+                              />
+                            ),
+                          )}
+                        {!propertySearchState.filteredSearchResults.length &&
+                          propertySearchState.searchText && (
+                            <BlankPanelContent>
+                              <div className="query-builder-property-search-panel__result-placeholder__text">
+                                No result
+                              </div>
+                              <div className="query-builder-property-search-panel__result-placeholder__tips">
+                                Tips: Navigate deeper into the explorer tree to
+                                improve the scope and accuracy of the search
+                              </div>
+                            </BlankPanelContent>
+                          )}
+                      </>
+                    )}
+                    {propertySearchState.searchState.isInProgress && (
+                      <BlankPanelContent>Searching...</BlankPanelContent>
+                    )}
+                  </div>
                 </div>
               </ResizablePanel>
             </ResizablePanelGroup>
