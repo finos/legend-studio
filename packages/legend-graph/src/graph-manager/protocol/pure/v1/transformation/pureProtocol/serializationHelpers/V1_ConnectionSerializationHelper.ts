@@ -228,6 +228,8 @@ const snowflakeDatasourceSpecificationModelSchema = createModelSchema(
     quotedIdentifiersIgnoreCase: optional(primitive()),
     enableQueryTags: optional(primitive()),
     region: primitive(),
+    tempTableDb: optional(primitive()),
+    tempTableSchema: optional(primitive()),
     role: optional(primitive()),
     warehouseName: primitive(),
   },
