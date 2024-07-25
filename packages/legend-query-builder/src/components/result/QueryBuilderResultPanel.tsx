@@ -144,7 +144,15 @@ export const QueryBuilderResultPanel = observer(
     const USER_ATTESTATION_MESSAGE =
       'I attest that I am aware of the sensitive data leakage risk when exporting queried data. The data I export will only be used by me.';
     const exportQueryResults = async (format: string): Promise<void> => {
-      if (queryBuilderState.parametersState.parameterStates.length) {
+      if (
+        queryParametersState.parameterStates.length &&
+        queryParametersState.parameterStates.find(
+          (param) =>
+            !queryBuilderState.milestoningState.isMilestoningParameter(
+              param.parameter,
+            ),
+        )
+      ) {
         queryParametersState.parameterValuesEditorState.open(
           (): Promise<void> =>
             flowResult(resultState.exportData(format)).catch(
