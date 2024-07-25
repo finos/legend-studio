@@ -141,6 +141,8 @@ export class SnowflakeDatasourceSpecification
   accountType?: string | undefined;
   role?: string | undefined;
   enableQueryTags?: boolean | undefined;
+  tempTableDb?: string | undefined;
+  tempTableSchema?: string | undefined;
 
   constructor(
     accountName: string,
@@ -171,6 +173,8 @@ export class SnowflakeDatasourceSpecification
       this.role ?? '',
       this.quotedIdentifiersIgnoreCase?.toString() ?? '',
       this.enableQueryTags?.toString() ?? '',
+      this.tempTableDb ?? '',
+      this.tempTableSchema ?? '',
     ]);
   }
 }

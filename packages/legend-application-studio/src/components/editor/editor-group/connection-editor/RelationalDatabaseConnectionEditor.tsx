@@ -163,6 +163,8 @@ import {
   middleTierUsernamePasswordAuthenticationStrategy_setVaultReference,
   relationalDatabaseConnection_addPostProcessor,
   relationalDatabaseConnection_deletePostProcessor,
+  snowflakeDatasourceSpec_setTempTableDb,
+  snowflakeDatasourceSpec_setTempTableSchema,
 } from '../../../../stores/graph-modifier/STO_Relational_GraphModifierHelper.js';
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
@@ -613,6 +615,28 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           name="role"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setRole(sourceSpec, value)
+          }
+        />
+        <PanelFormTextField
+          isReadOnly={isReadOnly}
+          value={sourceSpec.tempTableDb}
+          name="Temp Table DB"
+          update={(value: string | undefined): void =>
+            snowflakeDatasourceSpec_setTempTableDb(
+              sourceSpec,
+              value ?? undefined,
+            )
+          }
+        />
+        <PanelFormTextField
+          isReadOnly={isReadOnly}
+          value={sourceSpec.tempTableSchema}
+          name="Temp Table Schema"
+          update={(value: string | undefined): void =>
+            snowflakeDatasourceSpec_setTempTableSchema(
+              sourceSpec,
+              value ?? undefined,
+            )
           }
         />
         {/* TODO: we should reconsider adding this field, it's an optional boolean, should we default it to `undefined` when it's `false`?*/}

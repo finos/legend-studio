@@ -148,6 +148,8 @@ const transformSnowflakeDatasourceSpecification = (
   source.organization = metamodel.organization;
   source.accountType = metamodel.accountType;
   source.role = metamodel.role;
+  source.tempTableDb = metamodel.tempTableDb;
+  source.tempTableSchema = metamodel.tempTableSchema;
   return source;
 };
 

@@ -273,6 +273,18 @@ export const localH2DatasourceSpecification_setTestDataSetupCsv = action(
     v.testDataSetupCsv = val;
   },
 );
+export const snowflakeDatasourceSpec_setTempTableDb = action(
+  (spec: SnowflakeDatasourceSpecification, val: string | undefined): void => {
+    spec.tempTableDb = val;
+  },
+);
+
+export const snowflakeDatasourceSpec_setTempTableSchema = action(
+  (spec: SnowflakeDatasourceSpecification, val: string | undefined): void => {
+    spec.tempTableSchema = val;
+  },
+);
+
 export const snowflakeDatasourceSpec_setAccountName = action(
   (spec: SnowflakeDatasourceSpecification, val: string): void => {
     spec.accountName = val;

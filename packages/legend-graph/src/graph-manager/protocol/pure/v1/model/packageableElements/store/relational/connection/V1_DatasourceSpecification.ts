@@ -94,6 +94,8 @@ export class V1_SnowflakeDatasourceSpecification
   organization?: string | undefined;
   accountType?: string | undefined;
   role?: string | undefined;
+  tempTableDb?: string | undefined;
+  tempTableSchema?: string | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -111,6 +113,8 @@ export class V1_SnowflakeDatasourceSpecification
       this.role ?? '',
       this.quotedIdentifiersIgnoreCase?.toString() ?? '',
       this.enableQueryTags?.toString() ?? '',
+      this.tempTableDb ?? '',
+      this.tempTableSchema ?? '',
     ]);
   }
 }
