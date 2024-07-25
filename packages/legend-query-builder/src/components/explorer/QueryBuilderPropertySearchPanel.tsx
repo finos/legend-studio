@@ -314,7 +314,7 @@ const QueryBuilderTreeNodeViewer = observer(
         : null;
 
     return (
-      <div>
+      <>
         <div
           className="tree-view__node__container query-builder-property-search-panel__node__container"
           ref={dragConnector}
@@ -405,7 +405,7 @@ const QueryBuilderTreeNodeViewer = observer(
               explorerState={queryBuilderState.explorerState}
             />
           ))}
-      </div>
+      </>
     );
   },
 );
