@@ -829,6 +829,7 @@ const QueryBuilderExplorerSearchInput = observer(
       () => debounce(() => propertySearchState.search(), 100),
       [propertySearchState],
     );
+
     const onSearchPropertyTextChange: React.ChangeEventHandler<
       HTMLInputElement
     > = (event) => {
@@ -865,6 +866,12 @@ const QueryBuilderExplorerSearchInput = observer(
           )}
           spellCheck={false}
           onChange={onSearchPropertyTextChange}
+          onKeyDown={(event): void => {
+            if (event.key === 'Escape') {
+              clearSearch();
+              propertySearchState.setIsSearchPanelOpen(false);
+            }
+          }}
           value={propertySearchState.searchText}
           placeholder="One or more terms, ESC to clear"
         />
