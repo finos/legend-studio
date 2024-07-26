@@ -351,6 +351,23 @@ export class QueryBuilderPropertySearchState {
             ]
           : []),
       ],
+      sortFn: (a, b) => {
+        // If 2 items have similar scores, we should prefer the one that is
+        // less deeply nested.
+        const similarScores = Math.abs(a.score - b.score) <= 0.1;
+        if (similarScores) {
+          const aPathLength: number | undefined = (
+            (a.item[0] as any)?.v as string
+          )?.split('/')?.length;
+          const bPathLength: number | undefined = (
+            (b.item[0] as any)?.v as string
+          )?.split('/')?.length;
+          if (aPathLength !== undefined && bPathLength !== undefined) {
+            return aPathLength - bPathLength;
+          }
+        }
+        return a.score - b.score;
+      },
       // extended search allows for exact word match through single quote
       // See https://fusejs.io/examples.html#extended-search
       useExtendedSearch: true,
