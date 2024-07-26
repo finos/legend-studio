@@ -621,6 +621,16 @@
     &__node__highlight:hover svg {
       color: var(--color-legacylight-light-blue-400) !important;
     }
+
+    &__node__label,
+    &__node__label--highlight {
+      color: var(--color-legacylight-dark-grey-200);
+    }
+
+    &__node__doc,
+    &__node__doc--highlight {
+      color: var(--color-legacylight-light-grey-300);
+    }
   }
 
   // ---------------------------- Template Query -------------------------------
