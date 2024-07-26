@@ -35,33 +35,31 @@ export class LegendREPLPluginManager
     super();
   }
 
-  static create(): LegendREPLPluginManager {
+  static create() {
     return new LegendREPLPluginManager();
   }
 
-  registerPureProtocolProcessorPlugin(
-    plugin: PureProtocolProcessorPlugin,
-  ): void {
+  registerPureProtocolProcessorPlugin(plugin: PureProtocolProcessorPlugin) {
     this.pureProtocolProcessorPlugins.push(plugin);
   }
 
-  registerPureGraphManagerPlugin(plugin: PureGraphManagerPlugin): void {
+  registerPureGraphManagerPlugin(plugin: PureGraphManagerPlugin) {
     this.pureGraphManagerPlugins.push(plugin);
   }
 
-  registerPureGraphPlugin(plugin: PureGraphPlugin): void {
+  registerPureGraphPlugin(plugin: PureGraphPlugin) {
     this.pureGraphPlugins.push(plugin);
   }
 
-  getPureGraphManagerPlugins(): PureGraphManagerPlugin[] {
+  getPureGraphManagerPlugins() {
     return [...this.pureGraphManagerPlugins];
   }
 
-  getPureProtocolProcessorPlugins(): PureProtocolProcessorPlugin[] {
+  getPureProtocolProcessorPlugins() {
     return [...this.pureProtocolProcessorPlugins];
   }
 
-  getPureGraphPlugins(): PureGraphPlugin[] {
+  getPureGraphPlugins() {
     return [...this.pureGraphPlugins];
   }
 }

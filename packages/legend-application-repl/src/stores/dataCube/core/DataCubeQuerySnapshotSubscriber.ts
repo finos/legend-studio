@@ -36,13 +36,13 @@ export abstract class DataCubeQuerySnapshotSubscriber {
   ): Promise<void>;
   abstract initialize(): Promise<void>;
 
-  async receiveSnapshot(snapshot: DataCubeQuerySnapshot): Promise<void> {
+  async receiveSnapshot(snapshot: DataCubeQuerySnapshot) {
     const previousSnapshot = this.latestSnapshot;
     this.latestSnapshot = snapshot;
     await this.applySnapshot(snapshot, previousSnapshot);
   }
 
-  publishSnapshot(snapshot: DataCubeQuerySnapshot): void {
+  publishSnapshot(snapshot: DataCubeQuerySnapshot) {
     if (this.dataCube.engine.enableDebugMode) {
       this.application.debugProcess(
         `New Snapshot`,
@@ -56,7 +56,7 @@ export abstract class DataCubeQuerySnapshotSubscriber {
     this.dataCube.snapshotManager.broadcastSnapshot(snapshot);
   }
 
-  getLatestSnapshot(): DataCubeQuerySnapshot | undefined {
+  getLatestSnapshot() {
     return this.latestSnapshot;
   }
 }

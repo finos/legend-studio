@@ -90,7 +90,7 @@ export abstract class DataCubeEditorColumnsSelectorState<
 
   setColumnsVisibility(
     visibility: DataCubeEditorColumnsSelectorColumnsVisibility,
-  ): void {
+  ) {
     this.columnsVisibility = visibility;
   }
 
@@ -124,16 +124,16 @@ export abstract class DataCubeEditorColumnsSelectorState<
     );
   }
 
-  setSelectedColumns(val: T[]): void {
+  setSelectedColumns(val: T[]) {
     this.selectedColumns = val.map((col) => this.cloneColumn(col));
     this.onChange?.(this);
   }
 
-  setAvailableColumnsSearchText(val: string): void {
+  setAvailableColumnsSearchText(val: string) {
     this.availableColumnsSearchText = val;
   }
 
-  setSelectedColumnsSearchText(val: string): void {
+  setSelectedColumnsSearchText(val: string) {
     this.selectedColumnsSearchText = val;
   }
 

@@ -71,8 +71,11 @@ import {
   DataCubeQuerySortOperation,
   DataCubeQueryFilterOperation,
   DataCubeQueryFilterGroupOperation,
+  DataCubeAggregateOperation,
   type DataCubeQueryFunctionMap,
+  type DataCubeOperationValue,
 } from './DataCubeQueryEngine.js';
+import { DataCubeConfiguration } from './DataCubeConfiguration.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -120,10 +123,7 @@ function _collection(values: V1_ValueSpecification[]) {
   return collection;
 }
 
-export function _value(
-  type: string,
-  value: unknown,
-): V1_PrimitiveValueSpecification {
+function _primitiveValue(type: string, value: unknown) {
   const _val = <T extends V1_PrimitiveValueSpecification & { value: unknown }>(
     primitiveValue: T,
     val: unknown,
@@ -151,7 +151,7 @@ export function _value(
     case PRIMITIVE_TYPE.STRICTTIME:
       return _val(new V1_CStrictTime(), guaranteeIsString(value));
     default:
-      throw new UnsupportedOperationError(`Unsupported column type '${type}'`);
+      throw new UnsupportedOperationError(`Unsupported value type '${type}'`);
   }
 }
 
@@ -180,6 +180,74 @@ export function _colSpec(
   return colSpec;
 }
 
+function _parameterValue(value: DataCubeOperationValue) {
+  switch (value.type) {
+    case PRIMITIVE_TYPE.STRING:
+    case PRIMITIVE_TYPE.BOOLEAN:
+    case PRIMITIVE_TYPE.NUMBER:
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.INTEGER:
+    case PRIMITIVE_TYPE.FLOAT:
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.DATETIME:
+    case PRIMITIVE_TYPE.STRICTDATE:
+    case PRIMITIVE_TYPE.STRICTTIME: {
+      if (Array.isArray(value.value)) {
+        return _collection(
+          value.value.map((val) => _primitiveValue(value.type, val)),
+        );
+      }
+      return _primitiveValue(value.type, value.value);
+    }
+    default:
+      throw new UnsupportedOperationError(
+        `Unsupported value type '${value.type}'`,
+      );
+  }
+}
+
+function _aggFunctionName(operation: DataCubeAggregateOperation) {
+  switch (operation) {
+    case DataCubeAggregateOperation.SUM:
+      return DataCubeFunction.SUM;
+    case DataCubeAggregateOperation.AVERAGE:
+      return DataCubeFunction.AVERAGE;
+    case DataCubeAggregateOperation.COUNT:
+      return DataCubeFunction.COUNT;
+    case DataCubeAggregateOperation.MIN:
+      return DataCubeFunction.MIN;
+    case DataCubeAggregateOperation.MAX:
+      return DataCubeFunction.MAX;
+    case DataCubeAggregateOperation.FIRST:
+      return DataCubeFunction.FIRST;
+    case DataCubeAggregateOperation.LAST:
+      return DataCubeFunction.LAST;
+    case DataCubeAggregateOperation.VAR_POP:
+      return DataCubeFunction.VAR_POP;
+    case DataCubeAggregateOperation.VAR_SAMP:
+      return DataCubeFunction.VAR_SAMP;
+    case DataCubeAggregateOperation.STDDEV_POP:
+      return DataCubeFunction.STDDEV_POP;
+    case DataCubeAggregateOperation.STDDEV_SAMP:
+      return DataCubeFunction.STDDEV_SAMP;
+    default:
+      throw new UnsupportedOperationError(
+        `Unsupported aggregate operation '${operation}'`,
+      );
+  }
+}
+
+function _agg(
+  agg: DataCubeQuerySnapshotAggregateColumn,
+  variable?: V1_Variable | undefined,
+) {
+  const parameters = agg.parameters.map((param) => _parameterValue(param));
+  return _function(_aggFunctionName(agg.operation), [
+    variable ?? _var(),
+    ...parameters,
+  ]);
+}
+
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
 export function _col(
@@ -199,16 +267,16 @@ export function _cols(colSpecs: V1_ColSpec[]) {
   return _classInstance(V1_ClassInstanceType.COL_SPEC_ARRAY, colSpecArray);
 }
 
-export function _aggCols(
+export function _groupByAggCols(
   columns: DataCubeQuerySnapshotAggregateColumn[],
-): V1_ColSpec[] {
+) {
   const variable = _var();
   return columns.length
     ? columns.map((agg) =>
         _colSpec(
           agg.name,
           _lambda([variable], [_property(agg.name, variable)]),
-          _lambda([variable], [_function(agg.function, [variable])]),
+          _lambda([variable], [_agg(agg)]),
         ),
       )
     : // if no aggregates are specified, add a dummy count() aggregate to satisfy compiler
@@ -223,7 +291,7 @@ export function _aggCols(
 
 export function _filter(
   filter: DataCubeQuerySnapshotFilter | DataCubeQuerySnapshotFilterCondition,
-): V1_ValueSpecification {
+) {
   if ('groupOperation' in filter) {
     const group = filter;
     const groupOperation =
@@ -245,7 +313,7 @@ export function _filter(
     const property = _property(condition.name);
     const _cond = (fn: string, ...p: V1_ValueSpecification[]) =>
       _function(_name(fn), [property, ...p]);
-    const _val = () => _value(condition.type, condition.value);
+    const _val = () => _parameterValue(guaranteeNonNullable(condition.value));
     const _not = (fn: V1_AppliedFunction) =>
       _function(_name(DataCubeFunction.NOT), [fn]);
     switch (condition.operation) {
@@ -294,7 +362,7 @@ export function _groupByExtend(
           missingCols.map((col) =>
             _colSpec(
               col.name,
-              _lambda([_var()], [_value(PRIMITIVE_TYPE.STRING, '')]),
+              _lambda([_var()], [_primitiveValue(PRIMITIVE_TYPE.STRING, '')]),
             ),
           ),
         ),
@@ -311,6 +379,7 @@ export function buildExecutableQuery(
       snapshot: DataCubeQuerySnapshot,
       sequence: V1_AppliedFunction[],
       funcMap: DataCubeQueryFunctionMap,
+      configuration: DataCubeConfiguration,
     ) => void;
     pagination?:
       | {
@@ -319,9 +388,12 @@ export function buildExecutableQuery(
         }
       | undefined;
   },
-): V1_ValueSpecification {
+) {
   const data = snapshot.data;
   const sourceQuery = V1_deserializeValueSpecification(data.sourceQuery, []);
+  const configuration = DataCubeConfiguration.serialization.fromJson(
+    data.configuration,
+  );
   const sequence: V1_AppliedFunction[] = [];
   const funcMap: DataCubeQueryFunctionMap = {};
   const _process = (
@@ -377,7 +449,7 @@ export function buildExecutableQuery(
       'groupBy',
       _function(_name(DataCubeFunction.GROUP_BY), [
         _cols(groupBy.columns.map((col) => _colSpec(col.name))),
-        _cols(_aggCols(groupBy.aggColumns)),
+        _cols(_groupByAggCols(groupBy.aggColumns)),
       ]),
     );
 
@@ -437,7 +509,7 @@ export function buildExecutableQuery(
     _process(
       'limit',
       _function(_name(DataCubeFunction.LIMIT), [
-        _value(PRIMITIVE_TYPE.INTEGER, data.limit),
+        _primitiveValue(PRIMITIVE_TYPE.INTEGER, data.limit),
       ]),
     );
   }
@@ -447,8 +519,8 @@ export function buildExecutableQuery(
   if (options?.pagination) {
     sequence.push(
       _function(_name(DataCubeFunction.SLICE), [
-        _value(PRIMITIVE_TYPE.INTEGER, options.pagination.start),
-        _value(PRIMITIVE_TYPE.INTEGER, options.pagination.end),
+        _primitiveValue(PRIMITIVE_TYPE.INTEGER, options.pagination.start),
+        _primitiveValue(PRIMITIVE_TYPE.INTEGER, options.pagination.end),
       ]),
     );
   }
@@ -461,7 +533,7 @@ export function buildExecutableQuery(
 
   // --------------------------------- FINALIZE ---------------------------------
 
-  options?.postProcessor?.(snapshot, sequence, funcMap);
+  options?.postProcessor?.(snapshot, sequence, funcMap, configuration);
 
   if (!sequence.length) {
     return sourceQuery;

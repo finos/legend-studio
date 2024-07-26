@@ -31,16 +31,14 @@ import { type DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeMutableColumnConfiguration } from './DataCubeMutableConfiguration.js';
 
 export class DataCubeEditorBasicColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState> {
-  override cloneColumn(
-    column: DataCubeEditorColumnsSelectorColumnState,
-  ): DataCubeEditorColumnsSelectorColumnState {
+  override cloneColumn(column: DataCubeEditorColumnsSelectorColumnState) {
     return new DataCubeEditorColumnsSelectorColumnState(
       column.name,
       column.type,
     );
   }
 
-  override get availableColumns(): DataCubeEditorColumnsSelectorColumnState[] {
+  override get availableColumns() {
     return [
       ...this.editor.columns.sourceColumns,
       // TODO: add extended columns
@@ -100,7 +98,7 @@ export class DataCubeEditorColumnsPanelState
    * not propagate this change until user either leaves this panel or explicitly applies changes
    * (i.e. publishes a new snapshot)
    */
-  propagateColumnSelectionChanges(): void {
+  propagateColumnSelectionChanges() {
     // prune column properties
     this.editor.columnProperties.setColumns(
       this.editor.columnProperties.columns.filter((column) =>
@@ -125,14 +123,14 @@ export class DataCubeEditorColumnsPanelState
     // TODO: prune horizontal pivots columns
   }
 
-  setSourceColumns(columns: DataCubeQuerySnapshotColumn[]): void {
+  setSourceColumns(columns: DataCubeQuerySnapshotColumn[]) {
     this.sourceColumns = columns;
   }
 
   applySnaphot(
     snapshot: DataCubeQuerySnapshot,
     configuration: DataCubeConfiguration,
-  ): void {
+  ) {
     this.setSourceColumns(snapshot.data.sourceColumns);
     this.selector.setSelectedColumns(
       // extract selected columns from the configuration since the configuration specifies the order
@@ -150,7 +148,7 @@ export class DataCubeEditorColumnsPanelState
   buildSnapshot(
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
-  ): void {
+  ) {
     this.propagateColumnSelectionChanges();
     newSnapshot.data.selectColumns = this.selector.selectedColumns
       // TODO: filter by group extended columns

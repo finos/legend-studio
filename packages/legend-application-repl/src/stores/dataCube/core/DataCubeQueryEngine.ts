@@ -155,7 +155,15 @@ export enum DataCubeColumnKind {
   DIMENSION = 'Dimension',
 }
 
-export enum DataCubeAggregateFunction {
+// TODO: we could potentially support complex type like parameter/column in the future
+export enum DataCubeOperationValueType {}
+
+export type DataCubeOperationValue = {
+  value: unknown;
+  type: string;
+};
+
+export enum DataCubeAggregateOperation {
   SUM = 'sum',
   AVERAGE = 'avg',
   COUNT = 'count',
@@ -164,7 +172,7 @@ export enum DataCubeAggregateFunction {
   // UNIQUE = 'uniq',
   FIRST = 'first',
   LAST = 'last',
-  MEDIAN = 'median',
+  // MEDIAN = 'median',
   VAR_POP = 'var_samp',
   VAR_SAMP = 'var_pop',
   STDDEV_POP = 'stddev_pop',
@@ -243,6 +251,7 @@ export function getDataType(type: string): DataCubeColumnDataType {
 }
 
 export const DEFAULT_URL_LABEL_QUERY_PARAM = 'dataCube.linkLabel';
+export const DEFAULT_MISSING_VALUE_DISPLAY_TEXT = '';
 
 export const DEFAULT_GRID_LINE_COLOR = TailwindCSSPalette.neutral[200];
 export const DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR = '#d7e0eb';

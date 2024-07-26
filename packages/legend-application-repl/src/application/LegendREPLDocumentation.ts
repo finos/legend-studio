@@ -18,4 +18,5 @@ export enum DocumentationKey {
   DATA_CUBE_EXTENDED_COLUMN_LEVELS = 'data-cube.extended-column.levels',
   DATA_CUBE_COLUMN_KINDS = 'data-cube.column.kinds',
   DATA_CUBE_COLUMN_DISPLAY_AS_LINK = 'data-cube.column.display-as-link',
+  DATA_CUBE_COLUMN_MISSING_VALUE_FORMAT = 'data-cube.column.missing-value-format',
 }

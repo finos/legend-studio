@@ -51,7 +51,7 @@ export const DataCubeEditor = observer(() => {
           {tabs.map((tab) => (
             <button
               key={tab}
-              onClick={(): void => editor.setCurrentTab(tab)}
+              onClick={() => editor.setCurrentTab(tab)}
               className={cn(
                 'relative flex h-6 items-center justify-center whitespace-nowrap border border-b-0 border-l-0 border-neutral-300 px-2 first:border-l focus:z-10',
                 {
@@ -96,7 +96,7 @@ export const DataCubeEditor = observer(() => {
       <div className="flex h-10 items-center justify-end px-2">
         <button
           className="h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
-          onClick={(): void => {
+          onClick={() => {
             editor.applyChanges();
             editor.display.close();
           }}

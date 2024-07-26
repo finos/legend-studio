@@ -18,7 +18,11 @@ import { guaranteeNonNullable, hashArray } from '@finos/legend-shared';
 import { action, makeObservable, observable, runInAction } from 'mobx';
 import type { GridApi } from '@ag-grid-community/core';
 import type { DataCubeState } from '../DataCubeState.js';
-import { DataCubeGridClientServerSideDataSource } from './DataCubeGridClientEngine.js';
+import {
+  DataCubeGridClientServerSideDataSource,
+  INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE,
+  INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE,
+} from './DataCubeGridClientEngine.js';
 import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import { generateGridOptionsFromSnapshot } from './DataCubeGridConfigurationBuilder.js';
@@ -37,7 +41,7 @@ class DataCubeGridDatasourceConfiguration {
     this.limit = snapshot?.data.limit;
   }
 
-  get hashCode(): string {
+  get hashCode() {
     return hashArray([`limit: ${this.limit ?? ''}`]);
   }
 }
@@ -76,7 +80,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
   }
 
-  setPaginationEnabled(val: boolean): void {
+  setPaginationEnabled(val: boolean) {
     this.isPaginationEnabled = val;
 
     // hard reset the grid, this will force the grid to fetch data again
@@ -84,24 +88,31 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
     // for how many page that we loaded when pagination is off, the datasource
     // will fire that many data fetch operations which is expensive.
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
+    // NOTE: ag-grid uses the cache block size as page size, so it's important to set this
+    // in corresponding to the pagination setting, else it would cause unexpected scrolling behavior
+    this.client.updateGridOptions({
+      cacheBlockSize: val
+        ? INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE
+        : INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE,
+    });
   }
 
-  setScrollHintText(val: string | undefined): void {
+  setScrollHintText(val: string | undefined) {
     this.scrollHintText = val;
   }
 
-  get client(): GridApi {
+  get client() {
     return guaranteeNonNullable(this._client, 'Grid client is not configured');
   }
 
-  configureClient(val: GridApi | undefined): void {
+  configureClient(val: GridApi | undefined) {
     this._client = val;
   }
 
   override async applySnapshot(
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,
-  ): Promise<void> {
+  ) {
     const existingExtraConfiguration = this.datasourceConfiguration;
     const queryConfiguration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
@@ -130,10 +141,17 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
       queryConfiguration,
       this.dataCube,
     );
-    this.client.updateGridOptions(gridOptions);
+    this.client.updateGridOptions({
+      ...gridOptions,
+      // NOTE: ag-grid uses the cache block size as page size, so it's important to set this
+      // in corresponding to the pagination setting, else it would cause unexpected scrolling behavior
+      cacheBlockSize: this.isPaginationEnabled
+        ? INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE
+        : INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE,
+    });
   }
 
-  override async initialize(): Promise<void> {
+  override async initialize() {
     // do nothing
   }
 }

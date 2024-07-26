@@ -37,6 +37,7 @@ import { action, makeObservable, observable } from 'mobx';
 export const DEFAULT_ENABLE_DEBUG_MODE = false;
 export const DEFAULT_GRID_CLIENT_ROW_BUFFER = 50;
 export const DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES = false;
+export const DEFAULT_DISABLE_LARGE_DATASET_WARNING = false;
 
 export class DataCubeEngine {
   readonly repl: REPLStore;
@@ -45,7 +46,8 @@ export class DataCubeEngine {
 
   enableDebugMode = DEFAULT_ENABLE_DEBUG_MODE;
   gridClientRowBuffer = DEFAULT_GRID_CLIENT_ROW_BUFFER;
-  gridClientPurgeClosedRowNodes = false;
+  gridClientPurgeClosedRowNodes = DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES;
+  disableLargeDatasetWarning = DEFAULT_DISABLE_LARGE_DATASET_WARNING;
 
   constructor(repl: REPLStore) {
     makeObservable(this, {
@@ -57,6 +59,9 @@ export class DataCubeEngine {
 
       gridClientPurgeClosedRowNodes: observable,
       setGridClientPurgeClosedRowNodes: action,
+
+      disableLargeDatasetWarning: observable,
+      setDisableLargeDatasetWarning: action,
     });
 
     this.repl = repl;
@@ -64,24 +69,33 @@ export class DataCubeEngine {
     this.client = repl.client;
   }
 
-  setEnableDebugMode(enableDebugMode: boolean): void {
+  setEnableDebugMode(enableDebugMode: boolean) {
     this.enableDebugMode = enableDebugMode;
-    this.applyChanges();
   }
 
-  setGridClientRowBuffer(rowBuffer: number): void {
+  setGridClientRowBuffer(rowBuffer: number) {
     this.gridClientRowBuffer = rowBuffer;
-    this.applyChanges();
+    this.propagateGridOptionUpdates();
   }
 
-  setGridClientPurgeClosedRowNodes(purgeClosedRowNodes: boolean): void {
+  setGridClientPurgeClosedRowNodes(purgeClosedRowNodes: boolean) {
     this.gridClientPurgeClosedRowNodes = purgeClosedRowNodes;
-    this.applyChanges();
+    this.propagateGridOptionUpdates();
   }
 
-  private applyChanges(): void {
-    // When we support multi-view (i.e. multiple instances of DataCubes) we would need to traverse
-    // through and update the configurations of all of their grid clients
+  setDisableLargeDatasetWarning(disableLargeDatasetWarning: boolean) {
+    this.disableLargeDatasetWarning = disableLargeDatasetWarning;
+  }
+
+  refreshFailedDataFetches() {
+    // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
+    // to traverse through and update the configurations of all of their grid clients
+    this.repl.dataCube.grid.client.retryServerSideLoads();
+  }
+
+  private propagateGridOptionUpdates() {
+    // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
+    // to traverse through and update the configurations of all of their grid clients
     this.repl.dataCube.grid.client.updateGridOptions({
       rowBuffer: this.gridClientRowBuffer,
       purgeClosedRowNodes: this.gridClientPurgeClosedRowNodes,
@@ -118,9 +132,11 @@ export class DataCubeEngine {
     );
   }
 
-  async executeQuery(
-    query: V1_Lambda,
-  ): Promise<{ result: TDSExecutionResult; executedSQL: string }> {
+  async executeQuery(query: V1_Lambda): Promise<{
+    result: TDSExecutionResult;
+    executedQuery: string;
+    executedSQL: string;
+  }> {
     const result = await this.client.executeQuery({
       query: V1_serializeValueSpecification(query, []),
       debug: this.enableDebugMode,
@@ -132,6 +148,7 @@ export class DataCubeEngine {
         ),
         TDSExecutionResult,
       ),
+      executedQuery: result.executedQuery,
       executedSQL: result.executedSQL,
     };
   }

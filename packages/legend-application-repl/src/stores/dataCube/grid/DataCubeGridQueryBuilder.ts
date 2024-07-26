@@ -15,6 +15,7 @@
  */
 
 import {
+  PRIMITIVE_TYPE,
   type V1_AppliedFunction,
   extractElementNameFromPath as _name,
 } from '@finos/legend-graph';
@@ -25,9 +26,9 @@ import {
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
 } from '../core/DataCubeQueryEngine.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, isNullable } from '@finos/legend-shared';
 import {
-  _aggCols,
+  _groupByAggCols,
   _colSpec,
   _cols,
   _filter,
@@ -36,7 +37,11 @@ import {
   _lambda,
   _var,
 } from '../core/DataCubeQueryBuilder.js';
-import { INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID } from './DataCubeGridClientEngine.js';
+import {
+  INTERNAL__GRID_CLIENT_MISSING_VALUE,
+  INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
+} from './DataCubeGridClientEngine.js';
+import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
 /*****************************************************************************
  * [GRID]
@@ -60,12 +65,13 @@ function _rowGroupingCountCol() {
 // --------------------------------- MAIN ---------------------------------
 
 export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
-  drilldownValues: string[],
+  drilldownValues: (string | null | undefined)[],
 ) {
   return (
     snapshot: DataCubeQuerySnapshot,
     sequence: V1_AppliedFunction[],
     funcMap: DataCubeQueryFunctionMap,
+    configuration: DataCubeConfiguration,
   ) => {
     const _unprocess = (funcMapKey: keyof DataCubeQueryFunctionMap) => {
       const func = funcMap[funcMapKey];
@@ -91,11 +97,64 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
               [_var()],
               [
                 _filter({
-                  conditions: drilldownValues.map((drilldownValue, i) => ({
-                    ...guaranteeNonNullable(groupBy.columns[i]),
-                    operation: DataCubeQueryFilterOperation.EQUAL,
-                    value: drilldownValue,
-                  })),
+                  conditions: drilldownValues.map((value, i) => {
+                    const groupByColumn = guaranteeNonNullable(
+                      groupBy.columns[i],
+                    );
+                    if (
+                      isNullable(value) ||
+                      value === INTERNAL__GRID_CLIENT_MISSING_VALUE
+                    ) {
+                      return {
+                        ...groupByColumn,
+                        operation: DataCubeQueryFilterOperation.BLANK,
+                        value: undefined,
+                      };
+                    }
+                    const condition = {
+                      ...groupByColumn,
+                      operation: DataCubeQueryFilterOperation.EQUAL,
+                      value: undefined,
+                    };
+                    switch (groupByColumn.type) {
+                      case PRIMITIVE_TYPE.BOOLEAN:
+                        return {
+                          ...condition,
+                          value: {
+                            type: PRIMITIVE_TYPE.BOOLEAN,
+                            value: value === 'true',
+                          },
+                        };
+                      case PRIMITIVE_TYPE.INTEGER:
+                        return {
+                          ...condition,
+                          value: {
+                            type: groupByColumn.type,
+                            value: parseInt(value, 10),
+                          },
+                        };
+                      case PRIMITIVE_TYPE.NUMBER:
+                      case PRIMITIVE_TYPE.DECIMAL:
+                      case PRIMITIVE_TYPE.FLOAT:
+                        return {
+                          ...condition,
+                          value: {
+                            type: groupByColumn.type,
+                            value: parseFloat(value),
+                          },
+                        };
+                      case PRIMITIVE_TYPE.STRING:
+                      case PRIMITIVE_TYPE.DATE:
+                      case PRIMITIVE_TYPE.DATETIME:
+                      case PRIMITIVE_TYPE.STRICTDATE:
+                      case PRIMITIVE_TYPE.STRICTTIME:
+                      default:
+                        return {
+                          ...condition,
+                          value: { type: groupByColumn.type, value },
+                        };
+                    }
+                  }),
                   groupOperation: DataCubeQueryFilterGroupOperation.AND,
                 }),
               ],
@@ -113,7 +172,10 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
         );
         const groupByFunc = _function(_name(DataCubeFunction.GROUP_BY), [
           _cols(groupByColumns.map((col) => _colSpec(col.name))),
-          _cols([..._aggCols(groupBy.aggColumns), _rowGroupingCountCol()]),
+          _cols([
+            ..._groupByAggCols(groupBy.aggColumns),
+            _rowGroupingCountCol(),
+          ]),
         ]);
         sequence[groupByIdx] = groupByFunc;
         funcMap.groupBy = groupByFunc;

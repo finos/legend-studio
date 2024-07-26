@@ -25,11 +25,11 @@ export abstract class LegendREPLApplicationPlugin extends LegendApplicationPlugi
    */
   private readonly _$nominalTypeBrand!: 'LegendREPLApplicationPlugin';
 
-  install(pluginManager: LegendREPLPluginManager): void {
+  install(pluginManager: LegendREPLPluginManager) {
     pluginManager.registerApplicationPlugin(this);
   }
 
-  override getExtraRequiredDocumentationKeys(): string[] {
+  override getExtraRequiredDocumentationKeys() {
     return [
       DocumentationKey.DATA_CUBE_EXTENDED_COLUMN_LEVELS,
       DocumentationKey.DATA_CUBE_COLUMN_KINDS,

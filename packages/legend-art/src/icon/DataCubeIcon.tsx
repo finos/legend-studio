@@ -68,10 +68,13 @@ import {
   TbMenu2,
   TbBug,
 } from 'react-icons/tb';
-import { VscError, VscInfo, VscQuestion } from 'react-icons/vsc';
+import { VscError, VscInfo, VscQuestion, VscWarning } from 'react-icons/vsc';
 
 export const DataCubeIcon = {
   AdvancedSettings: TbSettingsBolt,
+  AlertError: VscError,
+  AlertInfo: VscInfo,
+  AlertWarning: VscWarning,
   CaretDown: TbCaretDownFilled,
   CaretRight: TbCaretRightFilled,
   Checkbox: GrCheckbox,
@@ -84,13 +87,11 @@ export const DataCubeIcon = {
   Debug: TbBug,
   Documentation: TbBook,
   DocumentationHint: VscQuestion,
-  Error: VscError,
   FontBold: MdOutlineFormatBold,
   FontCase: RxLetterCaseCapitalize,
   FontItalic: MdOutlineFormatItalic,
   FontUnderline: MdOutlineFormatUnderlined,
   FontStrikethrough: MdOutlineStrikethroughS,
-  Info: VscInfo,
   Loader: TbLoader2,
   Menu: TbMenu2,
   Note: TbNote,

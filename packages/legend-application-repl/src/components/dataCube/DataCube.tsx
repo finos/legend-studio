@@ -37,7 +37,7 @@ const DataCubeStatusBar = observer(() => {
       <div className="flex">
         <button
           className="flex items-center px-2 text-sky-600 hover:text-sky-700"
-          onClick={(): void => dataCube.editor.display.open()}
+          onClick={() => dataCube.editor.display.open()}
         >
           <DataCubeIcon.Settings className="text-xl" />
           <div className="pl-0.5 underline">Properties</div>

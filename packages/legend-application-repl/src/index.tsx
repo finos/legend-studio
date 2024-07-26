@@ -14,24 +14,20 @@
  * limitations under the License.
  */
 
-import {
-  WebConsole,
-  type AbstractPlugin,
-  type AbstractPreset,
-} from '@finos/legend-shared';
+import { WebConsole } from '@finos/legend-shared';
 import { LegendREPL } from './application/LegendREPL.js';
 import { Core_LegendREPLApplicationPlugin } from './components/Core_LegendREPLApplicationPlugin.js';
 
 export class LegendREPLWebApplication {
-  static getPresetCollection(): AbstractPreset[] {
+  static getPresetCollection() {
     return [];
   }
 
-  static getPluginCollection(): AbstractPlugin[] {
+  static getPluginCollection() {
     return [new Core_LegendREPLApplicationPlugin(), new WebConsole()];
   }
 
-  static run(baseUrl: string): void {
+  static run(baseUrl: string) {
     LegendREPL.create()
       .setup({ baseAddress: baseUrl })
       .withPresets(LegendREPLWebApplication.getPresetCollection())

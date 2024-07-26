@@ -34,6 +34,7 @@ import type {
 } from '@ag-grid-community/core';
 import type { DataCubeState } from '../DataCubeState.js';
 import { generateMenuBuilder } from './DataCubeGridMenuBuilder.js';
+import { _groupByAggCols } from './DataCubeGridQuerySnapshotBuilder.js';
 
 /**
  * This state is responsible for capturing edition to the data cube query
@@ -96,7 +97,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber
     this.applyChanges();
   }
 
-  showColumn(colName: string | undefined, isVisible: boolean): void {
+  showColumn(colName: string | undefined, isVisible: boolean) {
     const columnConfiguration = this.getColumnConfiguration(colName);
     if (columnConfiguration) {
       columnConfiguration.hideFromView = !isVisible;
@@ -184,7 +185,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber
     this.applyChanges();
   }
 
-  private applyChanges(): void {
+  private applyChanges() {
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const snapshot = baseSnapshot.clone();
 
@@ -197,20 +198,10 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber
     snapshot.data.groupBy = this.verticalPivotedColumns.length
       ? {
           columns: this.verticalPivotedColumns,
-          aggColumns: this.configuration.columns
-            .filter(
-              (column) =>
-                column.kind === DataCubeColumnKind.MEASURE &&
-                column.aggregateFunction !== undefined &&
-                !this.verticalPivotedColumns.find(
-                  (col) => col.name === column.name,
-                ),
-            )
-            .map((column) => ({
-              name: column.name,
-              type: column.type,
-              function: guaranteeNonNullable(column.aggregateFunction),
-            })),
+          aggColumns: _groupByAggCols(
+            baseSnapshot.data.groupBy,
+            this.configuration,
+          ),
         }
       : undefined;
 

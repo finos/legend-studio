@@ -24,41 +24,34 @@
 import type { IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import {
   type DataCubeQuerySnapshot,
+  type DataCubeQuerySnapshotGroupBy,
   _getCol,
 } from '../core/DataCubeQuerySnapshot.js';
+import { GridClientSortDirection } from './DataCubeGridClientEngine.js';
 import {
-  IllegalStateError,
-  guaranteeNonNullable,
-  isNonNullable,
-} from '@finos/legend-shared';
-import {
-  GridClientAggregateOperation,
-  GridClientSortDirection,
-} from './DataCubeGridClientEngine.js';
-import {
+  DataCubeColumnKind,
   DataCubeQuerySortOperation,
-  DataCubeAggregateFunction,
 } from '../core/DataCubeQueryEngine.js';
+import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
+import { _defaultAggCol } from '../core/DataCubeQuerySnapshotBuilder.js';
+import { isNonNullable } from '@finos/legend-shared';
 
-// --------------------------------- UTILITIES ---------------------------------
-
-function _aggFunc(
-  func: GridClientAggregateOperation,
-): DataCubeAggregateFunction {
-  switch (func) {
-    case GridClientAggregateOperation.AVERAGE:
-      return DataCubeAggregateFunction.AVERAGE;
-    case GridClientAggregateOperation.COUNT:
-      return DataCubeAggregateFunction.COUNT;
-    case GridClientAggregateOperation.MAX:
-      return DataCubeAggregateFunction.MAX;
-    case GridClientAggregateOperation.MIN:
-      return DataCubeAggregateFunction.MIN;
-    case GridClientAggregateOperation.SUM:
-      return DataCubeAggregateFunction.SUM;
-    default:
-      throw new IllegalStateError(`Unsupported aggregate function '${func}'`);
-  }
+export function _groupByAggCols(
+  groupBy: DataCubeQuerySnapshotGroupBy | undefined,
+  configuration: DataCubeConfiguration,
+) {
+  return configuration.columns
+    .filter(
+      (column) =>
+        column.kind === DataCubeColumnKind.MEASURE &&
+        !groupBy?.columns.find((col) => col.name === column.name),
+    )
+    .map(
+      (column) =>
+        groupBy?.aggColumns.find((col) => col.name === column.name) ??
+        _defaultAggCol(column.name, column.type),
+    )
+    .filter(isNonNullable);
 }
 
 // --------------------------------- MAIN ---------------------------------
@@ -66,7 +59,10 @@ function _aggFunc(
 export function buildQuerySnapshot(
   request: IServerSideGetRowsRequest,
   baseSnapshot: DataCubeQuerySnapshot,
-): DataCubeQuerySnapshot {
+) {
+  const configuration = DataCubeConfiguration.serialization.fromJson(
+    baseSnapshot.data.configuration,
+  );
   const snapshot = baseSnapshot.clone();
 
   // --------------------------------- GROUP BY ---------------------------------
@@ -78,13 +74,7 @@ export function buildQuerySnapshot(
         name: col.id,
         type: _getCol(availableCols, col.id).type,
       })),
-      aggColumns: request.valueCols
-        .filter((col) => isNonNullable(col.field) && isNonNullable(col.aggFunc))
-        .map((col) => ({
-          name: guaranteeNonNullable(col.field),
-          type: _getCol(availableCols, guaranteeNonNullable(col.field)).type,
-          function: _aggFunc(col.aggFunc as GridClientAggregateOperation),
-        })),
+      aggColumns: _groupByAggCols(baseSnapshot.data.groupBy, configuration),
     };
   } else {
     snapshot.data.groupBy = undefined;

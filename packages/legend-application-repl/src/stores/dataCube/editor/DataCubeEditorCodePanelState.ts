@@ -47,11 +47,11 @@ class DataCubeQueryEditorState {
     this.query = query;
   }
 
-  setQuery(val: string): void {
+  setQuery(val: string) {
     this.query = val;
   }
 
-  setParserError(parserError: ParserError | undefined): void {
+  setParserError(parserError: ParserError | undefined) {
     // account for the lambda prefix offset in source information
     if (parserError?.sourceInformation) {
       parserError.sourceInformation = this.processSourceInformation(
@@ -61,9 +61,7 @@ class DataCubeQueryEditorState {
     this.parserError = parserError;
   }
 
-  processSourceInformation(
-    sourceInformation: SourceInformation,
-  ): SourceInformation {
+  processSourceInformation(sourceInformation: SourceInformation) {
     const { sourceId, startLine, startColumn, endLine, endColumn } =
       sourceInformation;
     const lineOffset = 0;
@@ -98,7 +96,7 @@ export class DataCubeEditorCodePanelState {
     this.queryEditorState = new DataCubeQueryEditorState('');
   }
 
-  setCurrentSubQuery(val: string | undefined): void {
+  setCurrentSubQuery(val: string | undefined) {
     this.currentSubQuery = val;
   }
 

@@ -36,14 +36,14 @@ export class DataCubeCoreState extends DataCubeQuerySnapshotSubscriber {
     });
   }
 
-  setName(val: string): void {
+  setName(val: string) {
     this.name = val;
   }
 
   override async applySnapshot(
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,
-  ): Promise<void> {
+  ) {
     const data = snapshot.data;
     this.setName(data.name);
     if (!this.startTime) {
@@ -54,7 +54,7 @@ export class DataCubeCoreState extends DataCubeQuerySnapshotSubscriber {
     );
   }
 
-  override async initialize(): Promise<void> {
+  override async initialize() {
     // do nothing
   }
 }

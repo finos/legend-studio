@@ -16,7 +16,10 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
-import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
+import {
+  _findCol,
+  type DataCubeQuerySnapshot,
+} from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { DataCubeMutableColumnConfiguration } from './DataCubeMutableConfiguration.js';
@@ -26,6 +29,11 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
+import {
+  DataCubeAggregateOperation,
+  DataCubeColumnKind,
+} from '../core/DataCubeQueryEngine.js';
+import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 
 export class DataCubeEditorColumnPropertiesPanelState
   implements DataCubeQueryEditorPanelState
@@ -57,11 +65,11 @@ export class DataCubeEditorColumnPropertiesPanelState
     this.dataCube = editor.dataCube;
   }
 
-  get hiddenColumns(): DataCubeMutableColumnConfiguration[] {
+  get hiddenColumns() {
     return this.columns.filter((column) => column.hideFromView);
   }
 
-  get configurableColumns(): DataCubeMutableColumnConfiguration[] {
+  get configurableColumns() {
     return this.columns
       .filter((column) =>
         this.editor.columns.selector.selectedColumns.find(
@@ -71,39 +79,62 @@ export class DataCubeEditorColumnPropertiesPanelState
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  getColumnConfiguration(
-    colName: string | undefined,
-  ): DataCubeMutableColumnConfiguration | undefined {
+  getColumnConfiguration(colName: string | undefined) {
     return this.columns.find((col) => col.name === colName);
   }
 
-  setColumns(val: DataCubeMutableColumnConfiguration[]): void {
+  setColumns(val: DataCubeMutableColumnConfiguration[]) {
     this.columns = val;
   }
 
-  setSelectedColumnName(val: string | undefined): void {
+  setSelectedColumnName(val: string | undefined) {
     this.selectedColumnName = val;
   }
 
-  get selectedColumn(): DataCubeMutableColumnConfiguration | undefined {
+  get selectedColumn() {
     return this.configurableColumns.find(
       (column) => column.name === this.selectedColumnName,
     );
   }
 
-  setShowAdvancedSettings(val: boolean): void {
+  setShowAdvancedSettings(val: boolean) {
     this.showAdvancedSettings = val;
   }
 
   applySnaphot(
     snapshot: DataCubeQuerySnapshot,
     configuration: DataCubeConfiguration,
-  ): void {
+  ) {
     this.setColumns(
       (snapshot.data.configuration as { columns: PlainObject[] }).columns.map(
         (column) => DataCubeMutableColumnConfiguration.create(column),
       ),
     );
+    // derive the aggregation operation
+    this.columns.forEach((column) => {
+      if (column.kind === DataCubeColumnKind.MEASURE) {
+        const aggCol = _findCol(snapshot.data.groupBy?.aggColumns, column.name);
+        if (aggCol) {
+          column.setAggregateFunction(aggCol.operation);
+          column.setAggregateFunctionParameters(aggCol.parameters);
+        } else {
+          switch (column.type) {
+            case PRIMITIVE_TYPE.NUMBER:
+            case PRIMITIVE_TYPE.INTEGER:
+            case PRIMITIVE_TYPE.DECIMAL:
+            case PRIMITIVE_TYPE.FLOAT: {
+              column.setAggregateFunction(DataCubeAggregateOperation.SUM);
+              column.setAggregateFunctionParameters([]);
+              break;
+            }
+            default: {
+              break;
+            }
+          }
+        }
+      }
+    });
+
     if (!this.selectedColumn && this.columns.length) {
       this.setSelectedColumnName(
         getNonNullableEntry(this.configurableColumns, 0).name,
@@ -114,7 +145,7 @@ export class DataCubeEditorColumnPropertiesPanelState
   buildSnapshot(
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
-  ): void {
+  ) {
     newSnapshot.data.configuration = {
       ...newSnapshot.data.configuration,
       // NOTE: make sure the order of column configurations is consistent with the order of selected columns
