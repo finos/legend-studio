@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 12.9.0
+
+### Patch Changes
+
+- [#3380](https://github.com/finos/legend-studio/pull/3380) [`ff6cb60`](https://github.com/finos/legend-studio/commit/ff6cb60c2185d86779af066ebce269121edfd0e4) ([@travisstebbins](https://github.com/travisstebbins)) - Fix styling of derived property editor button in filter panel
+
 ## 12.8.0
 
 ## 12.7.0
