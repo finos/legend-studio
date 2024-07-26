@@ -583,10 +583,6 @@
   // ---------------------------- Property Search -------------------------------
 
   .query-builder-property-search-panel {
-    &__header {
-      border-color: var(--color-legacylight-light-grey-200);
-    }
-
     &__form__section__header__label,
     &__form__section__toggler__prompt {
       color: var(--color-legacylight-dark-grey-200);
@@ -604,10 +600,6 @@
       background: var(--color-legacylight-light-grey-200) !important;
     }
 
-    &__node__label--with-action {
-      color: var(--color-legacylight-dark-grey-200);
-    }
-
     &__node__container:hover {
       .query-builder-property-search-panel__type-icon svg {
         color: var(--color-primitive);
@@ -616,29 +608,18 @@
       .query-builder-property-search-panel__node__info svg {
         color: var(--color-legacylight-light-blue-100);
       }
+
+      .query-builder-property-search-panel__node__highlight svg {
+        color: var(--color-legacylight-light-blue-100);
+      }
     }
 
     &__node__info:hover svg {
       color: var(--color-legacylight-light-blue-400) !important;
     }
 
-    &__input {
-      background: var(--color-white);
-      border-color: var(--color-light-grey-200);
-      color: var(--color-legacylight-dark-grey-200);
-
-      &:focus {
-        border-color: var(--color-legacylight-light-blue-100);
-      }
-    }
-
-    &__input__search__icon svg {
-      color: var(--color-dark-grey-400);
-    }
-
-    &__input__search__count {
-      background: var(--color-legacylight-light-blue-100);
-      color: var(--color-white);
+    &__node__highlight:hover svg {
+      color: var(--color-legacylight-light-blue-400) !important;
     }
   }
 
@@ -1328,6 +1309,25 @@
     .query-builder-explorer-tree__node__action:hover {
       svg {
         color: var(--color-legacylight-light-blue-400) !important;
+      }
+    }
+
+    .query-builder__explorer__property-search__input {
+      background: var(--color-white);
+      border-color: var(--color-light-grey-200);
+      color: var(--color-legacylight-dark-grey-200);
+
+      &:focus {
+        border-color: var(--color-legacylight-light-blue-100);
+      }
+
+      &__search__icon svg {
+        color: var(--color-dark-grey-400);
+      }
+
+      &__search__count {
+        background: var(--color-legacylight-light-blue-100);
+        color: var(--color-white);
       }
     }
 
