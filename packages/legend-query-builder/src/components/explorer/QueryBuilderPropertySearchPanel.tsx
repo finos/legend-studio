@@ -446,6 +446,14 @@ export const QueryBuilderPropertySearchPanel = observer(
       propertySearchState.searchConfigurationState.setCurrentMode(searchMode);
     };
 
+    const handleToggleIncludeSubTypes = () => {
+      propertySearchState.searchConfigurationState.setIncludeSubTypes(
+        !propertySearchState.searchConfigurationState.includeSubTypes,
+      );
+      propertySearchState.initialize();
+      propertySearchState.search();
+    };
+
     const handleToggleIncludeTaggedValues = () => {
       propertySearchState.searchConfigurationState.setIncludeTaggedValues(
         !propertySearchState.searchConfigurationState.includeTaggedValues,
@@ -553,6 +561,35 @@ export const QueryBuilderPropertySearchPanel = observer(
                         >
                           {propertySearchState.searchConfigurationState
                             .includeTaggedValues ? (
+                            <CheckSquareIcon />
+                          ) : (
+                            <SquareIcon />
+                          )}
+                        </button>
+                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
+                          Include
+                        </div>
+                      </div>
+                    </div>
+                    <div className="query-builder-property-search-panel__form__section">
+                      <div className="query-builder-property-search-panel__form__section__header__label">
+                        Sub-types
+                      </div>
+                      <div className="query-builder-property-search-panel__filter__element">
+                        <button
+                          className={clsx(
+                            'query-builder-property-search-panel__form__section__toggler__btn',
+                            {
+                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
+                                propertySearchState.searchConfigurationState
+                                  .includeSubTypes,
+                            },
+                          )}
+                          onClick={handleToggleIncludeSubTypes}
+                          tabIndex={-1}
+                        >
+                          {propertySearchState.searchConfigurationState
+                            .includeSubTypes ? (
                             <CheckSquareIcon />
                           ) : (
                             <SquareIcon />

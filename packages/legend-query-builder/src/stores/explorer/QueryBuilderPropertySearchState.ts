@@ -225,7 +225,12 @@ export class QueryBuilderPropertySearchState {
             ),
         )
         .flat()
-        .filter(isNonNullable),
+        .filter(isNonNullable)
+        .filter((node) =>
+          this.searchConfigurationState.includeSubTypes
+            ? true
+            : node instanceof QueryBuilderExplorerTreePropertyNodeData,
+        ),
     ).forEach((node) => {
       if (node.mappingData.mapped && !node.isPartOfDerivedPropertyBranch) {
         currentLevelPropertyNodes.push(node);
@@ -258,7 +263,8 @@ export class QueryBuilderPropertySearchState {
         if (node.childrenIds.length) {
           if (
             (node instanceof QueryBuilderExplorerTreePropertyNodeData ||
-              node instanceof QueryBuilderExplorerTreeSubTypeNodeData) &&
+              (this.searchConfigurationState.includeSubTypes &&
+                node instanceof QueryBuilderExplorerTreeSubTypeNodeData)) &&
             node.type instanceof Class
           ) {
             (node instanceof QueryBuilderExplorerTreeSubTypeNodeData
@@ -283,18 +289,20 @@ export class QueryBuilderPropertySearchState {
                 addNode(propertyTreeNodeData);
               }
             });
-            node.type._subclasses.forEach((subclass) => {
-              const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
-                subclass,
-                node,
-                guaranteeNonNullable(
-                  this.queryBuilderState.explorerState
-                    .mappingModelCoverageAnalysisResult,
-                ),
-              );
-              nextLevelPropertyNodes.push(subTypeTreeNodeData);
-              addNode(subTypeTreeNodeData);
-            });
+            if (this.searchConfigurationState.includeSubTypes) {
+              node.type._subclasses.forEach((subclass) => {
+                const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
+                  subclass,
+                  node,
+                  guaranteeNonNullable(
+                    this.queryBuilderState.explorerState
+                      .mappingModelCoverageAnalysisResult,
+                  ),
+                );
+                nextLevelPropertyNodes.push(subTypeTreeNodeData);
+                addNode(subTypeTreeNodeData);
+              });
+            }
           }
         }
       }
