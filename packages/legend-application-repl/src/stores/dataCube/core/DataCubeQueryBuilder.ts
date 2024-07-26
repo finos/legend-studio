@@ -241,9 +241,7 @@ function _agg(
   agg: DataCubeQuerySnapshotAggregateColumn,
   variable?: V1_Variable | undefined,
 ) {
-  const parameters = (agg.parameters ?? []).map((param) =>
-    _parameterValue(param),
-  );
+  const parameters = agg.parameters.map((param) => _parameterValue(param));
   return _function(_aggFunctionName(agg.operation), [
     variable ?? _var(),
     ...parameters,

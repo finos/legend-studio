@@ -105,7 +105,7 @@ const BlockingActionAlertContent = observer(
 
     // set the width and height of the dialog to make sure content overflow works properly
     const handleEnter = () => {
-      if (ref.current && ref.current.parentElement) {
+      if (ref.current?.parentElement) {
         const { width, height } =
           ref.current.parentElement.getBoundingClientRect();
         ref.current.style.width = `${width}px`;
