@@ -17,3 +17,4 @@
 export * from './DSL_DataQuality_GraphManagerPreset.js';
 export * from './protocol/pure/v1/transformation/V1_ValueSpecificationBuilderHelper.js';
 export * from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
+export * from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
