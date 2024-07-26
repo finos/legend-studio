@@ -18,9 +18,8 @@
 
 .query-builder-property-search-panel {
   height: 50vh;
-  min-width: 40vw;
-  width: fit-content;
-  max-width: 70vw;
+  width: 50vw;
+  max-width: 1000px;
 
   // make sure we cancel the effect of the `pointer-events: none` set
   // on the container of the panel so we could interact with the panel
@@ -50,10 +49,7 @@
   }
 
   &__content {
-    @include flexVCenter;
-
     height: 100%;
-    width: 100%;
     overflow-y: auto;
   }
 
@@ -251,26 +247,21 @@
     }
   }
 
-  &__config {
-    padding: 1rem;
-    width: fit-content;
-    height: 100%;
-    overflow-y: auto;
-    border-right: 1px solid var(--color-dark-blue-shade-100);
-  }
-
   &__results {
     &__container {
       height: 100%;
-      width: 100%;
       overflow: auto;
     }
 
     &__content {
-      height: 100%;
-      min-width: 100%;
       width: fit-content;
     }
+  }
+
+  &__config {
+    padding: 1rem;
+    height: 100%;
+    overflow-y: auto;
   }
 
   &__search-mode__options {
