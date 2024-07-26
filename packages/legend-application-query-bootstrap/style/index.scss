@@ -586,6 +586,22 @@
     &__form__section__header__label,
     &__form__section__toggler__prompt {
       color: var(--color-legacylight-dark-grey-200);
+
+      .documentation-link {
+        color: var(--color-legacylight-light-blue-100);
+
+        &:hover {
+          color: var(--color-legacylight-light-blue-400);
+        }
+      }
+
+      .query-builder-property-search-panel__tagged-values__tooltip {
+        color: var(--color-legacylight-light-blue-100);
+
+        &:hover {
+          color: var(--color-legacylight-light-blue-400);
+        }
+      }
     }
 
     &__form__section__toggler__btn svg {
@@ -620,6 +636,10 @@
 
     &__node__highlight:hover svg {
       color: var(--color-legacylight-light-blue-400) !important;
+    }
+
+    &__expand-icon svg {
+      color: var(--color-legacylight-dark-grey-200);
     }
 
     &__node__label,
