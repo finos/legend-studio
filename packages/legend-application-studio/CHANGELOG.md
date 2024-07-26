@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.18.8
+
+## 28.18.7
+
+### Patch Changes
+
+- [#3371](https://github.com/finos/legend-studio/pull/3371) [`9c343c7`](https://github.com/finos/legend-studio/commit/9c343c780f117a258fa62ee820603941773816a9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for snowflake temp table and schema specification in relational connection.
+
 ## 28.18.6
 
 ## 28.18.5

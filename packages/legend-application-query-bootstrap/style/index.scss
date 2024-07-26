@@ -1525,6 +1525,15 @@
       background: var(--color-legacylight-light-blue-50);
     }
 
+    .query-builder-filter-tree__node__container:hover,
+    .query-builder-filter-tree__node__container--selected,
+    .query-builder-filter-tree__node__container--selected:hover {
+      .query-builder-property-expression-badge__action {
+        color: var(--color-light-grey-180);
+        background: var(--color-legacylight-light-blue-100);
+      }
+    }
+
     .query-builder-filter-tree__node__action {
       &:hover svg {
         color: var(--color-dark-grey-350);
@@ -1915,6 +1924,8 @@
       }
 
       &__action {
+        color: var(--color-light-grey-400);
+
         &:hover {
           color: var(--color-light-grey-180);
           background: var(--color-legacylight-light-blue-400) !important;

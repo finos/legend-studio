@@ -807,6 +807,8 @@ export const observe_SnowflakeDatasourceSpecification = skipObserved(
       nonProxyHosts: observable,
       organization: observable,
       accountType: observable,
+      tempTableDb: observable,
+      tempTableSchema: observable,
       role: observable,
       hashCode: computed,
     }),

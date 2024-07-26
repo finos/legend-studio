@@ -178,6 +178,8 @@ export const V1_buildDatasourceSpecification = (
     snowflakeSpec.organization = protocol.organization;
     snowflakeSpec.accountType = protocol.accountType;
     snowflakeSpec.role = protocol.role;
+    snowflakeSpec.tempTableDb = protocol.tempTableDb;
+    snowflakeSpec.tempTableSchema = protocol.tempTableSchema;
     return snowflakeSpec;
   } else if (protocol instanceof V1_BigQueryDatasourceSpecification) {
     assertIsString(
