@@ -34,6 +34,7 @@ import {
   type EditorExtensionStateBuilder,
   type EditorExtensionComponentRendererConfiguration,
   PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY,
+  UnsupportedElementEditorState,
 } from '@finos/legend-application-studio';
 import {
   PackageableElementExplicitReference,
@@ -224,7 +225,8 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
         element: PackageableElement,
       ): ElementEditorState | undefined => {
         if (element instanceof DataSpace) {
-          return new DataSpaceEditorState(editorStore, element);
+          return new UnsupportedElementEditorState(editorStore, element);
+          // return new DataSpaceEditorState(editorStore, element);
         }
         return undefined;
       },
