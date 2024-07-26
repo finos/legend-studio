@@ -132,9 +132,11 @@ export class DataCubeEngine {
     );
   }
 
-  async executeQuery(
-    query: V1_Lambda,
-  ): Promise<{ result: TDSExecutionResult; executedSQL: string }> {
+  async executeQuery(query: V1_Lambda): Promise<{
+    result: TDSExecutionResult;
+    executedQuery: string;
+    executedSQL: string;
+  }> {
     const result = await this.client.executeQuery({
       query: V1_serializeValueSpecification(query, []),
       debug: this.enableDebugMode,
@@ -146,6 +148,7 @@ export class DataCubeEngine {
         ),
         TDSExecutionResult,
       ),
+      executedQuery: result.executedQuery,
       executedSQL: result.executedSQL,
     };
   }

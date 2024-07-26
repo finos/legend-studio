@@ -29,6 +29,7 @@ import {
   V1_ColSpec,
   V1_ColSpecArray,
   V1_Collection,
+  V1_Lambda,
   V1_serializeValueSpecification,
   extractElementNameFromPath as _name,
   matchFunctionName,
@@ -92,7 +93,7 @@ function _colSpecArrayParam(func: V1_AppliedFunction, paramIdx: number) {
 }
 
 function _funcMatch(
-  value: V1_ValueSpecification,
+  value: V1_ValueSpecification | undefined,
   functionNames: string | string[],
 ) {
   assertType(
@@ -108,6 +109,18 @@ function _funcMatch(
     `Can't process function: Expected function name to be one of [${Array.isArray(functionNames) ? functionNames.join(', ') : functionNames}]`,
   );
   return value;
+}
+
+function _aggFuncMatch(
+  value: V1_ValueSpecification | undefined,
+  functionNames: string | string[],
+) {
+  assertType(
+    value,
+    V1_Lambda,
+    `Can't process aggregation: Found unexpected value specification type`,
+  );
+  return _funcMatch(value.body[0], functionNames);
 }
 
 export function _defaultAggCol(
@@ -132,81 +145,80 @@ export function _defaultAggCol(
 }
 
 function _aggCol(colSpec: V1_ColSpec, column: DataCubeQuerySnapshotColumn) {
-  const func = _funcMatch(
-    guaranteeNonNullable(colSpec.function2),
+  const func = _aggFuncMatch(
+    colSpec.function2,
     Object.values(DataCubeFunction),
   );
-  switch (func.function) {
-    case DataCubeFunction.COUNT:
-      return {
-        ...column,
-        operation: DataCubeAggregateOperation.COUNT,
-        parameters: [],
-      };
-    case DataCubeFunction.SUM:
-      return {
-        ...column,
-        operation: DataCubeAggregateOperation.SUM,
-        parameters: [],
-      };
-    case DataCubeFunction.AVERAGE:
-      return {
-        ...column,
-        operation: DataCubeAggregateOperation.AVERAGE,
-        parameters: [],
-      };
-    case DataCubeFunction.MIN:
-      return {
-        ...column,
-        operation: DataCubeAggregateOperation.MIN,
-        parameters: [],
-      };
-    case DataCubeFunction.MAX:
-      return {
-        ...column,
-        operation: DataCubeAggregateOperation.MAX,
-        parameters: [],
-      };
-    case DataCubeFunction.FIRST:
-      return {
-        ...column,
-        operation: DataCubeAggregateOperation.FIRST,
-        parameters: [],
-      };
-    case DataCubeFunction.LAST:
-      return {
-        ...column,
-        operation: DataCubeAggregateOperation.LAST,
-        parameters: [],
-      };
-    case DataCubeFunction.VAR_POP:
-      return {
-        ...column,
-        operation: DataCubeAggregateOperation.VAR_POP,
-        parameters: [],
-      };
-    case DataCubeFunction.VAR_SAMP:
-      return {
-        ...column,
-        operation: DataCubeAggregateOperation.VAR_SAMP,
-        parameters: [],
-      };
-    case DataCubeFunction.STDDEV_POP:
-      return {
-        ...column,
-        operation: DataCubeAggregateOperation.STDDEV_POP,
-        parameters: [],
-      };
-    case DataCubeFunction.STDDEV_SAMP:
-      return {
-        ...column,
-        operation: DataCubeAggregateOperation.STDDEV_SAMP,
-        parameters: [],
-      };
-    default:
-      throw new UnsupportedOperationError(
-        `Unsupported aggregate function '${func.function}'`,
-      );
+  if (matchFunctionName(func.function, DataCubeFunction.COUNT)) {
+    return {
+      ...column,
+      operation: DataCubeAggregateOperation.COUNT,
+      parameters: [],
+    };
+  } else if (matchFunctionName(func.function, DataCubeFunction.SUM)) {
+    return {
+      ...column,
+      operation: DataCubeAggregateOperation.SUM,
+      parameters: [],
+    };
+  } else if (matchFunctionName(func.function, DataCubeFunction.AVERAGE)) {
+    return {
+      ...column,
+      operation: DataCubeAggregateOperation.AVERAGE,
+      parameters: [],
+    };
+  } else if (matchFunctionName(func.function, DataCubeFunction.MIN)) {
+    return {
+      ...column,
+      operation: DataCubeAggregateOperation.MIN,
+      parameters: [],
+    };
+  } else if (matchFunctionName(func.function, DataCubeFunction.MAX)) {
+    return {
+      ...column,
+      operation: DataCubeAggregateOperation.MAX,
+      parameters: [],
+    };
+  } else if (matchFunctionName(func.function, DataCubeFunction.FIRST)) {
+    return {
+      ...column,
+      operation: DataCubeAggregateOperation.FIRST,
+      parameters: [],
+    };
+  } else if (matchFunctionName(func.function, DataCubeFunction.LAST)) {
+    return {
+      ...column,
+      operation: DataCubeAggregateOperation.LAST,
+      parameters: [],
+    };
+  } else if (matchFunctionName(func.function, DataCubeFunction.VAR_POP)) {
+    return {
+      ...column,
+      operation: DataCubeAggregateOperation.VAR_POP,
+      parameters: [],
+    };
+  } else if (matchFunctionName(func.function, DataCubeFunction.VAR_SAMP)) {
+    return {
+      ...column,
+      operation: DataCubeAggregateOperation.VAR_SAMP,
+      parameters: [],
+    };
+  } else if (matchFunctionName(func.function, DataCubeFunction.STDDEV_POP)) {
+    return {
+      ...column,
+      operation: DataCubeAggregateOperation.STDDEV_POP,
+      parameters: [],
+    };
+  } else if (matchFunctionName(func.function, DataCubeFunction.STDDEV_SAMP)) {
+    return {
+      ...column,
+      operation: DataCubeAggregateOperation.STDDEV_SAMP,
+      parameters: [],
+    };
+  } else {
+    throw new UnsupportedOperationError(
+      `Unsupported aggregate function '${func.function}'`,
+    );
   }
 }
 
@@ -434,7 +446,10 @@ export function validateAndBuildQuerySnapshot(
   const data = snapshot.data;
   const colsMap = new Map<string, DataCubeQuerySnapshotColumn>();
   const _col = (colSpec: V1_ColSpec) => {
-    const column = guaranteeNonNullable(colsMap.get(colSpec.name));
+    const column = guaranteeNonNullable(
+      colsMap.get(colSpec.name),
+      `Can't find column '${colSpec.name}'`,
+    );
     return {
       name: column.name,
       type: column.type,

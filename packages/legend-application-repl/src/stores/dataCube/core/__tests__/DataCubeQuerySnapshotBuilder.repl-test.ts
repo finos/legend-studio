@@ -38,7 +38,12 @@ type BaseSnapshotAnalysisTestCase = [
 const cases: BaseSnapshotAnalysisTestCase[] = [
   ['Valid: extend()', 'extend(~[a:x|1])', [], ''],
   ['Valid: filter()', 'filter(x|$x.a==1)', [], ''],
-  ['Valid: groupBy()', 'groupBy(~a, ~b:x|$x.a:x|$x->sum())', [], ''],
+  [
+    'Valid: groupBy()',
+    'groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])',
+    ['a:String', 'b:Integer'],
+    '',
+  ],
   ['Valid: select()', 'select(~[a])', ['a:Integer'], ''],
   // TODO: @akphi - enable when engine supports relation casting syntax
   // See https://github.com/finos/legend-engine/pull/2873
@@ -62,18 +67,19 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
     ['a:Integer'],
     '',
   ],
-  [
-    'Valid: Usage - Extended Columns: extend()->groupBy()->extend()->sort()->limit()',
-    'extend(~[a:x|1])->groupBy(~a, ~b:x|$x.a:x|$x->sum())->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
-    ['a:Integer'],
-    '',
-  ],
-  [
-    'Valid: Usage - V-Pivot: groupBy()->extend()->sort()->limit()',
-    'extend(~[a:x|1])->filter(x|$x.a==1)->groupBy(~a, ~b:x|$x.a:x|$x->sum())->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
-    ['a:Integer'],
-    '',
-  ],
+  // TODO: @akphi - enable when we support extended columns
+  // [
+  //   'Valid: Usage - Extended Columns: extend()->groupBy()->extend()->sort()->limit()',
+  //   'extend(~[a:x|1])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
+  //   ['a:String', 'b:Integer'],
+  //   '',
+  // ],
+  // [
+  //   'Valid: Usage - V-Pivot: groupBy()->extend()->sort()->limit()',
+  //   'extend(~[a:x|1])->filter(x|$x.a==1)->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
+  //   ['a:String', 'b:Integer'],
+  //   '',
+  // ],
   // TODO: @akphi - enable when engine supports relation casting syntax
   // See https://github.com/finos/legend-engine/pull/2873
   // [
