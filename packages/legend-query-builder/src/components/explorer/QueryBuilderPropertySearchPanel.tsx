@@ -68,18 +68,24 @@ import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { DocumentationLink } from '@finos/legend-lego/application';
 import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '@finos/legend-application';
 
-export const prettyPropertyNameFromNodeId = (name: string): string => {
+export const prettyPropertyNameFromNodeId = (
+  name: string,
+  spaceBetweenSlash?: boolean,
+): string => {
   let propNameArray = name.split('.');
   propNameArray = propNameArray.map(prettyCONSTName);
   let propName = '';
   propNameArray.forEach((p) => {
-    propName = `${propName + p}/`;
+    propName = `${propName + p}${spaceBetweenSlash ? ' / ' : '/'}`;
   });
-  propName = propName.slice(0, -1);
+  propName = propName.slice(0, spaceBetweenSlash ? -3 : -1);
   return propName;
 };
 
-export const prettyPropertyNameForSubType = (name: string): string => {
+export const prettyPropertyNameForSubType = (
+  name: string,
+  spaceBetweenSlash?: boolean,
+): string => {
   let propNameArray = name.split('@');
   propNameArray = propNameArray
     .map((p) => p.replace(/.*::/, ''))
@@ -87,17 +93,17 @@ export const prettyPropertyNameForSubType = (name: string): string => {
     .map((p) => prettyCONSTName(p));
   let propName = '';
   propNameArray.slice(0, -1).forEach((p) => {
-    propName = `${propName}(@${p})/`;
+    propName = `${propName}(@${p})${spaceBetweenSlash ? ' / ' : '/'}`;
   });
   propNameArray = guaranteeNonNullable(
     propNameArray[propNameArray.length - 1],
   ).split('.');
   propNameArray = propNameArray.map((p) => prettyCONSTName(p));
-  propName = `${propName}(@${propNameArray[0]})/`;
+  propName = `${propName}(@${propNameArray[0]})${spaceBetweenSlash ? ' / ' : '/'}`;
   propNameArray.slice(1).forEach((p) => {
-    propName = `${propName + p}/`;
+    propName = `${propName + p}${spaceBetweenSlash ? ' / ' : '/'}`;
   });
-  propName = propName.slice(0, -1);
+  propName = propName.slice(0, spaceBetweenSlash ? -3 : -1);
   return propName;
 };
 
@@ -122,7 +128,7 @@ const formatTextWithHighlightedMatches = (
   // Get ranges to highlight
   const highlightRanges: [number, number][] = [];
   searchText
-    .split(' ')
+    .split(/\/| /)
     .filter((word) => word.trim().length > 0)
     .forEach((word) => {
       const regex = new RegExp(word, 'gi');
@@ -280,10 +286,10 @@ const QueryBuilderTreeNodeViewer = observer(
 
     const propertyName =
       parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
-        ? prettyPropertyNameForSubType(node.id)
+        ? prettyPropertyNameForSubType(node.id, true)
         : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
           ? prettyPropertyNameForSubTypeClass(node.id)
-          : prettyPropertyNameFromNodeId(node.id);
+          : prettyPropertyNameFromNodeId(node.id, true);
 
     const nodeExpandIcon = isExpandable ? (
       isExpanded ? (

@@ -18,7 +18,7 @@
 
 .query-builder-property-search-panel {
   height: 50vh;
-  width: 50vw;
+  width: 40vw;
   max-width: 1000px;
 
   // make sure we cancel the effect of the `pointer-events: none` set
@@ -85,18 +85,17 @@
   }
 
   &__node__content {
-    width: calc(100% - 2rem);
+    width: calc(100% - 10rem);
   }
 
   &__node__label {
-    @include ellipsisTextOverflow;
-
-    height: 2rem;
+    height: fit-content;
     padding-top: 0.25rem;
-    line-height: 2rem;
+    line-height: 1.75rem;
     min-width: 0;
     color: var(--color-light-grey-400);
     user-select: none;
+    white-space: normal;
 
     &--highlight {
       color: var(--color-light-grey-100);
@@ -120,22 +119,12 @@
     }
   }
 
-  &__node__label__multiple {
-    display: inline-flex;
-    font-weight: 700;
-    font-size: 1.6rem;
-    font-family: 'Roboto Mono', monospace;
-    height: 2rem;
-    line-height: 2rem;
-    margin-left: 0.5rem;
-    color: var(--color-yellow-200);
-    vertical-align: text-top;
-  }
-
   &__node__actions {
     display: flex;
     height: 2rem;
     padding-right: 0.5rem;
+    width: 5rem;
+    min-width: 5rem;
   }
 
   &__node__action {
@@ -251,10 +240,6 @@
     &__container {
       height: 100%;
       overflow: auto;
-    }
-
-    &__content {
-      width: fit-content;
     }
   }
 
