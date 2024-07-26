@@ -327,7 +327,12 @@ export {
 export { V1_buildTaggedValue } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_DomainBuilderHelper.js';
 export { V1_PureModelContextData } from './graph-manager/protocol/pure/v1/model/context/V1_PureModelContextData.js';
 export { V1_PureModelContext } from './graph-manager/protocol/pure/v1/model/context/V1_PureModelContext.js';
-export { V1_LegendSDLC } from './graph-manager/protocol/pure/v1/model/context/V1_SDLC.js';
+export { V1_PureModelContextText } from './graph-manager/protocol/pure/v1/model/context/V1_PureModelContextText.js';
+export { V1_PureModelContextComposite } from './graph-manager/protocol/pure/v1/model/context/V1_PureModelContextComposite.js';
+export {
+  V1_SDLC,
+  V1_LegendSDLC,
+} from './graph-manager/protocol/pure/v1/model/context/V1_SDLC.js';
 export { V1_Protocol } from './graph-manager/protocol/pure/v1/model/V1_Protocol.js';
 export { V1_PureModelContextPointer } from './graph-manager/protocol/pure/v1/model/context/V1_PureModelContextPointer.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
@@ -358,6 +363,7 @@ export {
   V1_deserializePureModelContextData,
   V1_serializePureModelContextData,
   V1_legendSDLCSerializationModelSchema,
+  V1_serializePureModelContext,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
 export {
   V1_propertyPointerModelSchema,

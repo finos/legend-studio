@@ -129,6 +129,7 @@ export class DataQualityResultState {
     } catch (error) {
       if (this.queryRunPromise === promise) {
         assertErrorThrown(error);
+        this.setExecutionResult(undefined);
         this.dataQualityState.applicationStore.logService.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
           error,
