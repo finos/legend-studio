@@ -14,5 +14,12 @@
  * limitations under the License.
  */
 
-export * from './components/DiagramRenderer.js';
-export * from './graph-manager/index.js';
+interface Vscode {
+  postMessage(message: unknown): void;
+}
+
+declare const vscode: Vscode;
+
+export const postMessage = (message: unknown): void => {
+  vscode.postMessage(message);
+};

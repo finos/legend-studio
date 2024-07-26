@@ -20,7 +20,9 @@ import terser from '@rollup/plugin-terser';
 import json from '@rollup/plugin-json';
 import flow from 'rollup-plugin-flow';
 import commonjs from '@rollup/plugin-commonjs';
-import css from 'rollup-plugin-import-css';
+import postcss from 'rollup-plugin-postcss';
+import url from 'postcss-url';
+import path from 'path';
 
 const extensions = ['.js', '.ts', '.jsx', '.tsx'];
 
@@ -34,9 +36,27 @@ export default {
       sourcemap: false,
       inlineDynamicImports: true,
       plugins: [terser()],
+      globals: {
+        'react/jsx-runtime': 'jsxRuntime',
+        'react-dom/client': 'ReactDOM',
+        react: 'React',
+      },
     },
   ],
   plugins: [
+    postcss({
+      use: ['sass'],
+      extensions: ['.css', '.scss'],
+      extract: path.resolve('lib/bundles/style/bundle.css'),
+      minimize: true,
+      plugins: [
+        url({
+          url: 'inline',
+          fallback: 'copy',
+          maxSize: Infinity,
+        }),
+      ],
+    }),
     flow({ pretty: true }),
     resolve({ extensions }),
     commonjs(),
@@ -63,7 +83,7 @@ export default {
             loose: true,
           },
         ],
-        '@babel/preset-react',
+        ['@babel/preset-react', { runtime: 'automatic' }],
         [
           '@babel/typescript',
           {
@@ -75,6 +95,5 @@ export default {
       ],
     }),
     json(),
-    css(),
   ],
 };
