@@ -817,6 +817,9 @@ const QueryBuilderExplorerTree = observer(
   },
 );
 
+export const QUERY_BUILDER_EXPLORER_SEARCH_INPUT_NAME =
+  'query-builder-explorer-search-input';
+
 const QueryBuilderExplorerSearchInput = observer(
   forwardRef<
     HTMLInputElement,
@@ -857,6 +860,7 @@ const QueryBuilderExplorerSearchInput = observer(
       <div className="query-builder__explorer__property-search__input__container">
         <input
           ref={ref}
+          name={QUERY_BUILDER_EXPLORER_SEARCH_INPUT_NAME}
           className={clsx(
             'query-builder__explorer__property-search__input input--dark',
             {

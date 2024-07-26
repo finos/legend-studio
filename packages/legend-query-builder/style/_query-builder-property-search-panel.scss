@@ -26,6 +26,8 @@
   pointer-events: all;
 
   &__container {
+    pointer-events: none;
+
     &__root {
       border-radius: 0;
     }
