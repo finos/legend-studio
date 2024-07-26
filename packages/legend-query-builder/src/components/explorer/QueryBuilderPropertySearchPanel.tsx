@@ -157,17 +157,17 @@ const formatTextWithHighlightedMatches = (
 
   // Return the property name if there are no highlight ranges
   if (!combinedHighlightRanges.length) {
-    return <>{displayText}</>;
+    return <span>{displayText}</span>;
   }
 
   // Create formatted node
   const formattedNode: React.ReactNode[] = [];
   formattedNode.push(
-    <>{displayText.substring(0, combinedHighlightRanges[0]![0])}</>,
+    <span>{displayText.substring(0, combinedHighlightRanges[0]![0])}</span>,
   );
   combinedHighlightRanges.forEach((range, index) => {
     formattedNode.push(
-      <span className={`${className} ${className}--highlight`}>
+      <span className={`${className}--highlight`}>
         {displayText.substring(range[0], range[1])}
       </span>,
     );
@@ -176,12 +176,12 @@ const formatTextWithHighlightedMatches = (
       range[1] < displayText.length
     ) {
       formattedNode.push(
-        <>
+        <span>
           {displayText.substring(
             range[1],
             combinedHighlightRanges[index + 1]![0],
           )}
-        </>,
+        </span>,
       );
     }
   });
@@ -190,11 +190,11 @@ const formatTextWithHighlightedMatches = (
     displayText.length
   ) {
     formattedNode.push(
-      <>
+      <span>
         {displayText.substring(
           combinedHighlightRanges[combinedHighlightRanges.length - 1]![1],
         )}
-      </>,
+      </span>,
     );
   }
   return formattedNode;
@@ -717,43 +717,41 @@ export const QueryBuilderPropertySearchPanel = observer(
                 {propertySearchState.searchState.isInProgress && (
                   <PanelLoadingIndicator isLoading={true} />
                 )}
-                <div className="query-builder-property-search-panel__results__container">
-                  <div className="query-builder-property-search-panel__results__content">
-                    {!propertySearchState.searchState.isInProgress && (
-                      <>
-                        {Boolean(
-                          propertySearchState.filteredSearchResults.length,
-                        ) &&
-                          propertySearchState.filteredSearchResults.map(
-                            (node) => (
-                              <QueryBuilderTreeNodeViewer
-                                key={node.id}
-                                node={node}
-                                queryBuilderState={queryBuilderState}
-                                level={1}
-                                stepPaddingInRem={0}
-                                explorerState={queryBuilderState.explorerState}
-                              />
-                            ),
-                          )}
-                        {!propertySearchState.filteredSearchResults.length &&
-                          propertySearchState.searchText && (
-                            <BlankPanelContent>
-                              <div className="query-builder-property-search-panel__result-placeholder__text">
-                                No result
-                              </div>
-                              <div className="query-builder-property-search-panel__result-placeholder__tips">
-                                Tips: Navigate deeper into the explorer tree to
-                                improve the scope and accuracy of the search
-                              </div>
-                            </BlankPanelContent>
-                          )}
-                      </>
-                    )}
-                    {propertySearchState.searchState.isInProgress && (
-                      <BlankPanelContent>Searching...</BlankPanelContent>
-                    )}
-                  </div>
+                <div className="query-builder-property-search-panel__results">
+                  {!propertySearchState.searchState.isInProgress && (
+                    <>
+                      {Boolean(
+                        propertySearchState.filteredSearchResults.length,
+                      ) &&
+                        propertySearchState.filteredSearchResults.map(
+                          (node) => (
+                            <QueryBuilderTreeNodeViewer
+                              key={node.id}
+                              node={node}
+                              queryBuilderState={queryBuilderState}
+                              level={1}
+                              stepPaddingInRem={0}
+                              explorerState={queryBuilderState.explorerState}
+                            />
+                          ),
+                        )}
+                      {!propertySearchState.filteredSearchResults.length &&
+                        propertySearchState.searchText && (
+                          <BlankPanelContent>
+                            <div className="query-builder-property-search-panel__result-placeholder__text">
+                              No result
+                            </div>
+                            <div className="query-builder-property-search-panel__result-placeholder__tips">
+                              Tips: Navigate deeper into the explorer tree to
+                              improve the scope and accuracy of the search
+                            </div>
+                          </BlankPanelContent>
+                        )}
+                    </>
+                  )}
+                  {propertySearchState.searchState.isInProgress && (
+                    <BlankPanelContent>Searching...</BlankPanelContent>
+                  )}
                 </div>
               </ResizablePanel>
             </ResizablePanelGroup>

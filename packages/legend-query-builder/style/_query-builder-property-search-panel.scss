@@ -237,10 +237,8 @@
   }
 
   &__results {
-    &__container {
-      height: 100%;
-      overflow: auto;
-    }
+    height: 100%;
+    overflow-y: auto;
   }
 
   &__config {
