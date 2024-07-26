@@ -13,5 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@forward 'data-space-template-query-promotor';
-@forward './editor/dataSpace/data-space-editor';
+
+import { action } from 'mobx';
+import type { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
+
+export const set_title = action(
+  (dataSpace: DataSpace, type: string | undefined): void => {
+    dataSpace.title = type;
+  },
+);
+
+export const set_description = action(
+  (dataSpace: DataSpace, content: string | undefined): void => {
+    dataSpace.description = content;
+  },
+);

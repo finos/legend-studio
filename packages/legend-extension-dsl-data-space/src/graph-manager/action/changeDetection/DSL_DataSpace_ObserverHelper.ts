@@ -20,7 +20,7 @@ import {
   observe_TaggedValue,
   skipObserved,
 } from '@finos/legend-graph';
-import { makeObservable, override } from 'mobx';
+import { makeObservable, override, observable } from 'mobx';
 import type { DataSpace } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 
 export const observe_DataSpace = skipObserved(
@@ -28,6 +28,8 @@ export const observe_DataSpace = skipObserved(
     observe_Abstract_PackageableElement(metamodel);
 
     makeObservable<DataSpace, '_elementHashCode'>(metamodel, {
+      title: observable,
+      description: observable,
       _elementHashCode: override,
     });
 

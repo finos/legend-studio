@@ -29,17 +29,18 @@ import {
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
   type PureGrammarParserElementSnippetSuggestionsGetter,
-  UnsupportedElementEditorState,
   LegendStudioApplicationPlugin,
   type ExplorerContextMenuItemRendererConfiguration,
   type EditorExtensionStateBuilder,
   type EditorExtensionComponentRendererConfiguration,
   PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY,
+  UnsupportedElementEditorState,
 } from '@finos/legend-application-studio';
 import {
   PackageableElementExplicitReference,
   stub_Mapping,
   stub_PackageableRuntime,
+  type ElementObserver,
   type PackageableElement,
 } from '@finos/legend-graph';
 import type {
@@ -50,6 +51,7 @@ import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 import {
   DataSpace,
   DataSpaceExecutionContext,
+  observe_DataSpace,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
 import { DataSpacePreviewState } from '../stores/DataSpacePreviewState.js';
@@ -64,6 +66,9 @@ import {
   DataSpacePreviewAction,
   DataSpacePreviewDialog,
 } from './DataSpacePreviewAction.js';
+
+import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
+import { DataSpaceEditor } from './DataSpaceEditor.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -200,6 +205,19 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
     ];
   }
 
+  getExtraElementEditorRenderers(): ((
+    editorState: ElementEditorState,
+  ) => React.ReactNode)[] {
+    return [
+      (editorState: ElementEditorState): React.ReactNode | undefined => {
+        if (editorState instanceof DataSpaceEditorState) {
+          return <DataSpaceEditor key={editorState.uuid} />;
+        }
+        return undefined;
+      },
+    ];
+  }
+
   getExtraElementEditorStateCreators(): ElementEditorStateCreator[] {
     return [
       (
@@ -208,6 +226,18 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
       ): ElementEditorState | undefined => {
         if (element instanceof DataSpace) {
           return new UnsupportedElementEditorState(editorStore, element);
+          // return new DataSpaceEditorState(editorStore, element);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraElementObservers(): ElementObserver[] {
+    return [
+      (element: PackageableElement): PackageableElement | undefined => {
+        if (element instanceof DataSpace) {
+          return observe_DataSpace(element);
         }
         return undefined;
       },
