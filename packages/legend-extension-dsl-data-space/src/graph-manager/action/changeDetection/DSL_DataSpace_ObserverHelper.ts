@@ -30,6 +30,8 @@ export const observe_DataSpace = skipObserved(
     makeObservable<DataSpace, '_elementHashCode'>(metamodel, {
       title: observable,
       description: observable,
+      executionContexts: observable,
+      supportInfo: observable,
       _elementHashCode: override,
     });
 

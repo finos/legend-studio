@@ -37,6 +37,7 @@ import {
   UnsupportedElementEditorState,
 } from '@finos/legend-application-studio';
 import {
+  ObserverContext,
   PackageableElementExplicitReference,
   stub_Mapping,
   stub_PackageableRuntime,
@@ -236,8 +237,11 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
 
   getExtraElementObservers(): ElementObserver[] {
     return [
-      (element: PackageableElement): PackageableElement | undefined => {
-        if (element instanceof DataSpace) {
+      (
+        element: PackageableElement,
+        context: ObserverContext | undefined,
+      ): PackageableElement | undefined => {
+        if (context && element instanceof DataSpace) {
           return observe_DataSpace(element);
         }
         return undefined;
