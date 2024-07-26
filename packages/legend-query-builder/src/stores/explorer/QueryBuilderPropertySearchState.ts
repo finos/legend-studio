@@ -16,7 +16,6 @@
 
 import {
   Class,
-  getAllOwnClassProperties,
   getAllClassProperties,
   getAllClassDerivedProperties,
   PrimitiveType,
@@ -47,7 +46,6 @@ import {
 } from '../QueryBuilderConfig.js';
 import {
   getQueryBuilderPropertyNodeData,
-  getQueryBuilderSubTypeNodeData,
   type QueryBuilderExplorerTreeNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
@@ -225,7 +223,10 @@ export class QueryBuilderPropertySearchState {
             ),
         )
         .flat()
-        .filter(isNonNullable),
+        .filter(isNonNullable)
+        .filter(
+          (node) => node instanceof QueryBuilderExplorerTreePropertyNodeData,
+        ),
     ).forEach((node) => {
       if (node.mappingData.mapped && !node.isPartOfDerivedPropertyBranch) {
         currentLevelPropertyNodes.push(node);
@@ -257,44 +258,28 @@ export class QueryBuilderPropertySearchState {
       if (node) {
         if (node.childrenIds.length) {
           if (
-            (node instanceof QueryBuilderExplorerTreePropertyNodeData ||
-              node instanceof QueryBuilderExplorerTreeSubTypeNodeData) &&
+            node instanceof QueryBuilderExplorerTreePropertyNodeData &&
             node.type instanceof Class
           ) {
-            (node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-              ? getAllOwnClassProperties(node.type)
-              : getAllClassProperties(node.type).concat(
-                  getAllClassDerivedProperties(node.type),
-                )
-            ).forEach((property) => {
-              const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
-                property,
-                node,
-                guaranteeNonNullable(
-                  this.queryBuilderState.explorerState
-                    .mappingModelCoverageAnalysisResult,
-                ),
-              );
-              if (
-                propertyTreeNodeData?.mappingData.mapped &&
-                !propertyTreeNodeData.isPartOfDerivedPropertyBranch
-              ) {
-                nextLevelPropertyNodes.push(propertyTreeNodeData);
-                addNode(propertyTreeNodeData);
-              }
-            });
-            node.type._subclasses.forEach((subclass) => {
-              const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
-                subclass,
-                node,
-                guaranteeNonNullable(
-                  this.queryBuilderState.explorerState
-                    .mappingModelCoverageAnalysisResult,
-                ),
-              );
-              nextLevelPropertyNodes.push(subTypeTreeNodeData);
-              addNode(subTypeTreeNodeData);
-            });
+            getAllClassProperties(node.type)
+              .concat(getAllClassDerivedProperties(node.type))
+              .forEach((property) => {
+                const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
+                  property,
+                  node,
+                  guaranteeNonNullable(
+                    this.queryBuilderState.explorerState
+                      .mappingModelCoverageAnalysisResult,
+                  ),
+                );
+                if (
+                  propertyTreeNodeData?.mappingData.mapped &&
+                  !propertyTreeNodeData.isPartOfDerivedPropertyBranch
+                ) {
+                  nextLevelPropertyNodes.push(propertyTreeNodeData);
+                  addNode(propertyTreeNodeData);
+                }
+              });
           }
         }
       }
