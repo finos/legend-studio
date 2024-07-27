@@ -31,6 +31,7 @@ import {
   deleteEntry,
   guaranteeNonNullable,
   isNonNullable,
+  type FuzzySearchEngineSortFunctionArg,
 } from '@finos/legend-shared';
 import {
   observable,
@@ -374,17 +375,32 @@ export class QueryBuilderPropertySearchState {
             ]
           : []),
       ],
-      sortFn: (a, b) => {
+      sortFn: (
+        a: FuzzySearchEngineSortFunctionArg,
+        b: FuzzySearchEngineSortFunctionArg,
+      ) => {
         // If 2 items have similar scores, we should prefer the one that is
         // less deeply nested.
         const similarScores = Math.abs(a.score - b.score) <= 0.1;
         if (similarScores) {
-          const aPathLength: number | undefined = (
-            (a.item[0] as any)?.v as string
-          )?.split('/')?.length;
-          const bPathLength: number | undefined = (
-            (b.item[0] as any)?.v as string
-          )?.split('/')?.length;
+          const aPathLength: number | undefined =
+            a.item[0] && Object.hasOwn(a.item[0], 'v')
+              ? (
+                  a.item[0] as {
+                    n: number;
+                    v: string;
+                  }
+                )?.v?.split('/')?.length
+              : undefined;
+          const bPathLength: number | undefined =
+            b.item[0] && Object.hasOwn(b.item[0], 'v')
+              ? (
+                  b.item[0] as {
+                    n: number;
+                    v: string;
+                  }
+                )?.v?.split('/')?.length
+              : undefined;
           if (aPathLength !== undefined && bPathLength !== undefined) {
             return aPathLength - bPathLength;
           }

@@ -14,8 +14,21 @@
  * limitations under the License.
  */
 
-import Fuse from 'fuse.js';
+import Fuse, {
+  type FuseSortFunctionArg,
+  type FuseSortFunctionItem,
+} from 'fuse.js';
 
 export const FuzzySearchEngine = Fuse;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type FuzzySearchEngine<T> = Fuse<T>;
+export type FuzzySearchEngineSortFunctionArg = FuseSortFunctionArg & {
+  item:
+    | FuseSortFunctionItem
+    | {
+        [key: string | number]: {
+          n: number;
+          v: string;
+        };
+      };
+};
