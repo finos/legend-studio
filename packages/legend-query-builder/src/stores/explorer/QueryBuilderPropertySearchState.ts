@@ -57,7 +57,6 @@ import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { QueryBuilderFuzzySearchAdvancedConfigState } from './QueryBuilderFuzzySearchAdvancedConfigState.js';
 import {
   prettyPropertyNameForSubType,
-  prettyPropertyNameForSubTypeClass,
   prettyPropertyNameFromNodeId,
 } from '../../components/explorer/QueryBuilderPropertySearchPanel.js';
 
@@ -349,9 +348,7 @@ export class QueryBuilderPropertySearchState {
             const fullPath =
               parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
                 ? prettyPropertyNameForSubType(node.id)
-                : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-                  ? prettyPropertyNameForSubTypeClass(node.id)
-                  : prettyPropertyNameFromNodeId(node.id);
+                : prettyPropertyNameFromNodeId(node.id);
 
             return fullPath;
           },

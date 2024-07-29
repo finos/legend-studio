@@ -73,16 +73,18 @@ import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '@finos/legend-application'
 export const prettyPropertyNameFromNodeId = (
   name: string,
   spaceBetweenSlash?: boolean,
-): string => {
-  let propNameArray = name.split('.');
-  propNameArray = propNameArray.map(prettyCONSTName);
-  let propName = '';
-  propNameArray.forEach((p) => {
-    propName = `${propName + p}${spaceBetweenSlash ? ' / ' : '/'}`;
-  });
-  propName = propName.slice(0, spaceBetweenSlash ? -3 : -1);
-  return propName;
-};
+): string =>
+  name
+    .split('@')
+    .map((p) => p.replace(/.*::/, ''))
+    .filter((p) => p !== '')
+    .map((p) =>
+      p
+        .split('.')
+        .map(prettyCONSTName)
+        .join(spaceBetweenSlash ? ' / ' : '/'),
+    )
+    .join('@');
 
 export const prettyPropertyNameForSubType = (
   name: string,
@@ -91,12 +93,18 @@ export const prettyPropertyNameForSubType = (
   let propNameArray = name.split('@');
   propNameArray = propNameArray
     .map((p) => p.replace(/.*::/, ''))
-    .filter((p) => p !== '')
-    .map((p) => prettyCONSTName(p));
-  let propName = '';
-  propNameArray.slice(0, -1).forEach((p) => {
-    propName = `${propName}(@${p})${spaceBetweenSlash ? ' / ' : '/'}`;
-  });
+    .filter((p) => p !== '');
+  let propName = propNameArray
+    .slice(0, -1)
+    .map(
+      (p) =>
+        `(@${p
+          .split('.')
+          .map((sp) => prettyCONSTName(sp))
+          .join(spaceBetweenSlash ? ' / ' : '/')})`,
+    )
+    .join(spaceBetweenSlash ? ' / ' : '/');
+  propName += spaceBetweenSlash ? ' / ' : '/';
   propNameArray = guaranteeNonNullable(
     propNameArray[propNameArray.length - 1],
   ).split('.');
@@ -109,23 +117,11 @@ export const prettyPropertyNameForSubType = (
   return propName;
 };
 
-export const prettyPropertyNameForSubTypeClass = (name: string): string => {
-  let propNameArray = name.split('@');
-  propNameArray = propNameArray
-    .map((p) => p.replace(/.*::/, ''))
-    .filter((p) => p !== '')
-    .map((p) => prettyCONSTName(p));
-  let propName = '';
-  propNameArray.forEach((p) => {
-    propName = `${propName}@${p}`;
-  });
-  return propName;
-};
-
 const formatTextWithHighlightedMatches = (
   displayText: string,
   searchText: string,
   className: string,
+  id: string,
 ): React.ReactNode => {
   // Get ranges to highlight
   const highlightRanges: [number, number][] = [];
@@ -164,10 +160,10 @@ const formatTextWithHighlightedMatches = (
 
   // Create formatted node
   const formattedNode: React.ReactNode[] = [];
-  if (combinedHighlightRanges[0]![0] > 1) {
+  if (combinedHighlightRanges[0]![0] > 0) {
     formattedNode.push(
       <span
-        key={`${displayText}-${displayText.substring(0, combinedHighlightRanges[0]![0])}`}
+        key={`${id}-0-${displayText.substring(0, combinedHighlightRanges[0]![0])}`}
       >
         {displayText.substring(0, combinedHighlightRanges[0]![0])}
       </span>,
@@ -177,7 +173,7 @@ const formatTextWithHighlightedMatches = (
   combinedHighlightRanges.forEach((range, index) => {
     formattedNode.push(
       <span
-        key={`${displayText}-${displayText.substring(range[0], range[1])}`}
+        key={`${id}-${index * 2}-${displayText.substring(range[0], range[1])}`}
         className={`${className}--highlight`}
       >
         {displayText.substring(range[0], range[1])}
@@ -189,7 +185,7 @@ const formatTextWithHighlightedMatches = (
     ) {
       formattedNode.push(
         <span
-          key={`${displayText}-${displayText.substring(
+          key={`${id}-${index * 2 + 1}--${displayText.substring(
             range[1],
             combinedHighlightRanges[index + 1]![0],
           )}`}
@@ -208,7 +204,7 @@ const formatTextWithHighlightedMatches = (
   ) {
     formattedNode.push(
       <span
-        key={`${displayText}-${displayText.substring(
+        key={`${id}-${combinedHighlightRanges.length * 2 + 2}-${displayText.substring(
           combinedHighlightRanges[combinedHighlightRanges.length - 1]![1],
         )}`}
       >
@@ -308,9 +304,7 @@ const QueryBuilderTreeNodeViewer = observer(
     const propertyName =
       parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
         ? prettyPropertyNameForSubType(node.id, true)
-        : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-          ? prettyPropertyNameForSubTypeClass(node.id)
-          : prettyPropertyNameFromNodeId(node.id, true);
+        : prettyPropertyNameFromNodeId(node.id, true);
 
     const nodeExpandIcon = isExpandable ? (
       isExpanded ? (
@@ -337,6 +331,7 @@ const QueryBuilderTreeNodeViewer = observer(
             docText,
             propertySearchState.searchText,
             'query-builder-property-search-panel__node__doc',
+            `${node.id}_doc`,
           )
         : null;
 
@@ -370,6 +365,7 @@ const QueryBuilderTreeNodeViewer = observer(
                 propertyName,
                 propertySearchState.searchText,
                 'query-builder-property-search-panel__node__label',
+                node.id,
               )}
             </div>
             <div className="tree-view__node__label query-builder-property-search-panel__node__doc">
