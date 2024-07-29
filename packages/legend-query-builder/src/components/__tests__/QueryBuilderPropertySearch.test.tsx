@@ -18,10 +18,10 @@ import { test, expect } from '@jest/globals';
 import {
   fireEvent,
   getByTitle,
-  getByText,
   act,
-  getByDisplayValue,
-  waitFor,
+  findByDisplayValue,
+  getByPlaceholderText,
+  findByText,
 } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared/test';
 import TEST_DATA__QueryBuilder_Model_PropertySearch from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_PropertySearch.json' assert { type: 'json' };
@@ -49,25 +49,27 @@ test(
       );
     });
 
-    const queryBuilderSetupPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    const queryBuilderSetupPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP,
     );
-    await waitFor(() => getByText(queryBuilderSetupPanel, 'Firm'));
-    await waitFor(() => getByText(queryBuilderSetupPanel, 'map'));
-    await waitFor(() => getByText(queryBuilderSetupPanel, 'runtime'));
+    await findByText(queryBuilderSetupPanel, 'Firm');
+    await findByText(queryBuilderSetupPanel, 'map');
+    await findByText(queryBuilderSetupPanel, 'runtime');
 
-    const queryBuilder = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
+    const queryBuilder = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER,
     );
-    fireEvent.click(getByTitle(queryBuilder, 'Toggle property search'));
-    const searchPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL,
-      ),
+
+    // Type search term to open property search panel
+    const searchInput = getByPlaceholderText(
+      queryBuilder,
+      'One or more terms, ESC to clear',
     );
-    const searchInput = getByDisplayValue(searchPanel, '');
     fireEvent.change(searchInput, { target: { value: 'name' } });
-    await waitFor(() => getByDisplayValue(searchPanel, 'name'));
+    await findByDisplayValue(queryBuilder, 'name');
+    await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL,
+    );
     expect(queryBuilderState.explorerState.propertySearchState.searchText).toBe(
       'name',
     );
@@ -80,7 +82,7 @@ test(
     expect(
       queryBuilderState.explorerState.propertySearchState.searchResults.length,
     ).toBe(3);
-    fireEvent.click(getByTitle(searchPanel, 'Clear'));
+    fireEvent.click(getByTitle(queryBuilder, 'Clear'));
     expect(
       queryBuilderState.explorerState.propertySearchState.searchResults.length,
     ).toBe(0);
