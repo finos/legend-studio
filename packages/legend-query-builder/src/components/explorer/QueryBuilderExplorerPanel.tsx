@@ -820,6 +820,8 @@ const QueryBuilderExplorerTree = observer(
 export const QUERY_BUILDER_EXPLORER_SEARCH_INPUT_NAME =
   'query-builder-explorer-search-input';
 
+const QUERY_BUILDER_PROPERTY_SEARCH_MIN_SEARCH_LENGTH = 2;
+
 const QueryBuilderExplorerSearchInput = observer(
   forwardRef<
     HTMLInputElement,
@@ -837,7 +839,10 @@ const QueryBuilderExplorerSearchInput = observer(
       HTMLInputElement
     > = (event) => {
       propertySearchState.setSearchText(event.target.value);
-      if (event.target.value.length > 0) {
+      if (
+        event.target.value.length >=
+        QUERY_BUILDER_PROPERTY_SEARCH_MIN_SEARCH_LENGTH
+      ) {
         if (
           propertySearchState.queryBuilderState.explorerState.treeData &&
           !propertySearchState.isSearchPanelOpen
@@ -845,10 +850,10 @@ const QueryBuilderExplorerSearchInput = observer(
           propertySearchState.setIsSearchPanelOpen(true);
           propertySearchState.initialize();
         }
+        debouncedSearchProperty();
       } else {
         propertySearchState.setIsSearchPanelOpen(false);
       }
-      debouncedSearchProperty();
     };
 
     // search actions
@@ -879,7 +884,8 @@ const QueryBuilderExplorerSearchInput = observer(
           value={propertySearchState.searchText}
           placeholder="One or more terms, ESC to clear"
         />
-        {propertySearchState.searchText && (
+        {propertySearchState.searchText.length >=
+          QUERY_BUILDER_PROPERTY_SEARCH_MIN_SEARCH_LENGTH && (
           <div className="query-builder__explorer__property-search__input__search__count">
             {propertySearchState.filteredSearchResults.length +
               (propertySearchState.isOverSearchLimit &&
