@@ -164,12 +164,22 @@ const formatTextWithHighlightedMatches = (
 
   // Create formatted node
   const formattedNode: React.ReactNode[] = [];
-  formattedNode.push(
-    <span>{displayText.substring(0, combinedHighlightRanges[0]![0])}</span>,
-  );
+  if (combinedHighlightRanges[0]![0] > 1) {
+    formattedNode.push(
+      <span
+        key={`${displayText}-${displayText.substring(0, combinedHighlightRanges[0]![0])}`}
+      >
+        {displayText.substring(0, combinedHighlightRanges[0]![0])}
+      </span>,
+    );
+  }
+
   combinedHighlightRanges.forEach((range, index) => {
     formattedNode.push(
-      <span className={`${className}--highlight`}>
+      <span
+        key={`${displayText}-${displayText.substring(range[0], range[1])}`}
+        className={`${className}--highlight`}
+      >
         {displayText.substring(range[0], range[1])}
       </span>,
     );
@@ -178,7 +188,12 @@ const formatTextWithHighlightedMatches = (
       range[1] < displayText.length
     ) {
       formattedNode.push(
-        <span>
+        <span
+          key={`${displayText}-${displayText.substring(
+            range[1],
+            combinedHighlightRanges[index + 1]![0],
+          )}`}
+        >
           {displayText.substring(
             range[1],
             combinedHighlightRanges[index + 1]![0],
@@ -192,7 +207,11 @@ const formatTextWithHighlightedMatches = (
     displayText.length
   ) {
     formattedNode.push(
-      <span>
+      <span
+        key={`${displayText}-${displayText.substring(
+          combinedHighlightRanges[combinedHighlightRanges.length - 1]![1],
+        )}`}
+      >
         {displayText.substring(
           combinedHighlightRanges[combinedHighlightRanges.length - 1]![1],
         )}
