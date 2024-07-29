@@ -326,7 +326,6 @@ export class QueryBuilderPropertySearchState {
     // indexing
     this.searchEngine = new FuzzySearchEngine(this.indexedExplorerTreeNodes, {
       includeScore: true,
-      includeMatches: true,
       shouldSort: true,
       // Ignore location when computing the search score
       // See https://fusejs.io/concepts/scoring-theory.html
