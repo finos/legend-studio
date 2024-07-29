@@ -57,6 +57,7 @@ import {
   PanelHeaderActions,
   PanelHeader,
   TimesIcon,
+  ClickAwayListener,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -161,55 +162,81 @@ export const QueryBuilderSubclassInfoTooltip: React.FC<{
   multiplicity: Multiplicity;
 }> = (props) => {
   const { subclass, path, isMapped, children, placement, multiplicity } = props;
+
+  const [open, setIsOpen] = useState(false);
+
   return (
-    <Tooltip
-      arrow={true}
-      {...(placement !== undefined ? { placement } : {})}
-      classes={{
-        tooltip: 'query-builder__tooltip',
-        arrow: 'query-builder__tooltip__arrow',
-        tooltipPlacementRight: 'query-builder__tooltip--right',
-      }}
-      TransitionProps={{
-        // disable transition
-        // NOTE: somehow, this is the only workaround we have, if for example
-        // we set `appear = true`, the tooltip will jump out of position
-        timeout: 0,
-      }}
-      title={
-        <div className="query-builder__tooltip__content">
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">Type</div>
-            <div className="query-builder__tooltip__item__value">
-              {subclass.path}
-            </div>
-          </div>
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">Path</div>
-            <div className="query-builder__tooltip__item__value">{path}</div>
-          </div>
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">
-              Multiplicity
-            </div>
-            <div className="query-builder__tooltip__item__value">
-              {getMultiplicityDescription(multiplicity)}
-            </div>
-          </div>
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">Mapped</div>
-            <div className="query-builder__tooltip__item__value">
-              {isMapped ? 'Yes' : 'No'}
-            </div>
-          </div>
-          <QueryBuilderTaggedValueInfoTooltip
-            taggedValues={subclass.taggedValues}
-          />
-        </div>
-      }
+    <ClickAwayListener
+      onClickAway={() => setIsOpen(false)}
+      mouseEvent="onMouseDown"
     >
-      {children}
-    </Tooltip>
+      <div>
+        <Tooltip
+          arrow={true}
+          {...(placement !== undefined ? { placement } : {})}
+          classes={{
+            tooltip: 'query-builder__tooltip',
+            arrow: 'query-builder__tooltip__arrow',
+            tooltipPlacementRight: 'query-builder__tooltip--right',
+          }}
+          open={open}
+          onClose={() => setIsOpen(false)}
+          TransitionProps={{
+            // disable transition
+            // NOTE: somehow, this is the only workaround we have, if for example
+            // we set `appear = true`, the tooltip will jump out of position
+            timeout: 0,
+          }}
+          disableFocusListener={true}
+          disableHoverListener={true}
+          disableTouchListener={true}
+          title={
+            <div className="query-builder__tooltip__content">
+              <div className="query-builder__tooltip__item">
+                <div className="query-builder__tooltip__item__label">Type</div>
+                <div className="query-builder__tooltip__item__value">
+                  {subclass.path}
+                </div>
+              </div>
+              <div className="query-builder__tooltip__item">
+                <div className="query-builder__tooltip__item__label">Path</div>
+                <div className="query-builder__tooltip__item__value">
+                  {path}
+                </div>
+              </div>
+              <div className="query-builder__tooltip__item">
+                <div className="query-builder__tooltip__item__label">
+                  Multiplicity
+                </div>
+                <div className="query-builder__tooltip__item__value">
+                  {getMultiplicityDescription(multiplicity)}
+                </div>
+              </div>
+              <div className="query-builder__tooltip__item">
+                <div className="query-builder__tooltip__item__label">
+                  Mapped
+                </div>
+                <div className="query-builder__tooltip__item__value">
+                  {isMapped ? 'Yes' : 'No'}
+                </div>
+              </div>
+              <QueryBuilderTaggedValueInfoTooltip
+                taggedValues={subclass.taggedValues}
+              />
+            </div>
+          }
+        >
+          <div
+            onClick={(event: React.MouseEvent) => {
+              setIsOpen(!open);
+              event.stopPropagation();
+            }}
+          >
+            {children}
+          </div>
+        </Tooltip>
+      </div>
+    </ClickAwayListener>
   );
 };
 
