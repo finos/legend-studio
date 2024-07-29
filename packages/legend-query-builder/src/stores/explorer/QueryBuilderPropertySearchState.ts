@@ -261,53 +261,51 @@ export class QueryBuilderPropertySearchState {
       currentDepth <= QUERY_BUILDER_PROPERTY_SEARCH_MAX_DEPTH
     ) {
       const node = currentLevelPropertyNodes.shift();
-      if (node && node.mappingData.mapped) {
-        if (node.childrenIds.length) {
+      if (
+        node?.mappingData.mapped &&
+        node.childrenIds.length &&
+        (node instanceof QueryBuilderExplorerTreePropertyNodeData ||
+          (this.searchConfigurationState.includeSubTypes &&
+            node instanceof QueryBuilderExplorerTreeSubTypeNodeData)) &&
+        node.type instanceof Class
+      ) {
+        (node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+          ? getAllOwnClassProperties(node.type)
+          : getAllClassProperties(node.type).concat(
+              getAllClassDerivedProperties(node.type),
+            )
+        ).forEach((property) => {
+          const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
+            property,
+            node,
+            guaranteeNonNullable(
+              this.queryBuilderState.explorerState
+                .mappingModelCoverageAnalysisResult,
+            ),
+          );
           if (
-            (node instanceof QueryBuilderExplorerTreePropertyNodeData ||
-              (this.searchConfigurationState.includeSubTypes &&
-                node instanceof QueryBuilderExplorerTreeSubTypeNodeData)) &&
-            node.type instanceof Class
+            propertyTreeNodeData?.mappingData.mapped &&
+            !propertyTreeNodeData.isPartOfDerivedPropertyBranch
           ) {
-            (node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-              ? getAllOwnClassProperties(node.type)
-              : getAllClassProperties(node.type).concat(
-                  getAllClassDerivedProperties(node.type),
-                )
-            ).forEach((property) => {
-              const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
-                property,
-                node,
-                guaranteeNonNullable(
-                  this.queryBuilderState.explorerState
-                    .mappingModelCoverageAnalysisResult,
-                ),
-              );
-              if (
-                propertyTreeNodeData?.mappingData.mapped &&
-                !propertyTreeNodeData.isPartOfDerivedPropertyBranch
-              ) {
-                nextLevelPropertyNodes.push(propertyTreeNodeData);
-                addNode(propertyTreeNodeData);
-              }
-            });
-            if (this.searchConfigurationState.includeSubTypes) {
-              node.type._subclasses.forEach((subclass) => {
-                const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
-                  subclass,
-                  node,
-                  guaranteeNonNullable(
-                    this.queryBuilderState.explorerState
-                      .mappingModelCoverageAnalysisResult,
-                  ),
-                );
-                if (subTypeTreeNodeData.mappingData.mapped) {
-                  nextLevelPropertyNodes.push(subTypeTreeNodeData);
-                  addNode(subTypeTreeNodeData);
-                }
-              });
-            }
+            nextLevelPropertyNodes.push(propertyTreeNodeData);
+            addNode(propertyTreeNodeData);
           }
+        });
+        if (this.searchConfigurationState.includeSubTypes) {
+          node.type._subclasses.forEach((subclass) => {
+            const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
+              subclass,
+              node,
+              guaranteeNonNullable(
+                this.queryBuilderState.explorerState
+                  .mappingModelCoverageAnalysisResult,
+              ),
+            );
+            if (subTypeTreeNodeData.mappingData.mapped) {
+              nextLevelPropertyNodes.push(subTypeTreeNodeData);
+              addNode(subTypeTreeNodeData);
+            }
+          });
         }
       }
 

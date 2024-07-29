@@ -137,7 +137,7 @@ test(
       renderResult.queryByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL,
       ),
-    ).toBeNull;
+    ).toBeNull();
 
     // Type a second character
     fireEvent.change(searchInput, { target: { value: 'la' } });
@@ -164,7 +164,7 @@ test(
       renderResult.queryByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL,
       ),
-    ).toBeNull;
+    ).toBeNull();
     const explorerPanel = await renderResult.findByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
     );
@@ -181,15 +181,20 @@ test(
     ).not.toBeNull();
 
     // Check that escape key closes search panel
-    fireEvent.keyDown(renderResult.container, {
-      key: 'Escape',
-      code: 'Escape',
-    });
+    fireEvent.keyDown(
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL,
+      ),
+      {
+        key: 'Escape',
+        code: 'Escape',
+      },
+    );
     expect(
       renderResult.queryByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL,
       ),
-    ).toBeNull;
+    ).toBeNull();
   },
 );
 
