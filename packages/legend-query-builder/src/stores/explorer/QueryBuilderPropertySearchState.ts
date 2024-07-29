@@ -228,6 +228,7 @@ export class QueryBuilderPropertySearchState {
         .flat()
         .filter(isNonNullable)
         .filter((node) =>
+          node.mappingData.mapped &&
           this.searchConfigurationState.includeSubTypes
             ? true
             : node instanceof QueryBuilderExplorerTreePropertyNodeData,
@@ -260,7 +261,7 @@ export class QueryBuilderPropertySearchState {
       currentDepth <= QUERY_BUILDER_PROPERTY_SEARCH_MAX_DEPTH
     ) {
       const node = currentLevelPropertyNodes.shift();
-      if (node) {
+      if (node && node.mappingData.mapped) {
         if (node.childrenIds.length) {
           if (
             (node instanceof QueryBuilderExplorerTreePropertyNodeData ||
@@ -300,8 +301,10 @@ export class QueryBuilderPropertySearchState {
                       .mappingModelCoverageAnalysisResult,
                   ),
                 );
-                nextLevelPropertyNodes.push(subTypeTreeNodeData);
-                addNode(subTypeTreeNodeData);
+                if (subTypeTreeNodeData.mappingData.mapped) {
+                  nextLevelPropertyNodes.push(subTypeTreeNodeData);
+                  addNode(subTypeTreeNodeData);
+                }
               });
             }
           }
