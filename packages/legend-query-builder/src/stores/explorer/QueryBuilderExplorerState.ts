@@ -802,15 +802,21 @@ export class QueryBuilderExplorerState {
     // we need to open all the parent nodes of the node and
     // generate their children.
     if (this.nonNullableTreeData.nodes.get(nodeId) === undefined) {
-      const parentNodeIdElements = nodeId.split('.').slice(0, -1);
+      const parentNodeIdElements = nodeId
+        .split('@')
+        .map((subpath) => subpath.split('.'));
       let currentNodeId = '';
-      parentNodeIdElements.forEach((element) => {
-        currentNodeId += `${currentNodeId ? '.' : ''}${element}`;
-        const currentNode = this.nonNullableTreeData.nodes.get(currentNodeId);
-        if (currentNode) {
-          currentNode.setIsOpen(true);
-          this.generateOpenNodeChildren(currentNode);
-        }
+
+      parentNodeIdElements.forEach((subpath) => {
+        subpath.forEach((element, index) => {
+          currentNodeId += `${index > 0 ? '.' : ''}${element}`;
+          const currentNode = this.nonNullableTreeData.nodes.get(currentNodeId);
+          if (currentNode) {
+            currentNode.setIsOpen(true);
+            this.generateOpenNodeChildren(currentNode);
+          }
+        });
+        currentNodeId += '@';
       });
     }
 
@@ -820,7 +826,10 @@ export class QueryBuilderExplorerState {
     // If we didn't need to open and create the parent nodes above, we will
     // open the parent nodes here in case they are closed. Then, we will highlight
     // and scroll to the node.
-    if (nodeToHighlight instanceof QueryBuilderExplorerTreePropertyNodeData) {
+    if (
+      nodeToHighlight instanceof QueryBuilderExplorerTreePropertyNodeData ||
+      nodeToHighlight instanceof QueryBuilderExplorerTreeSubTypeNodeData
+    ) {
       let nodeToOpen: QueryBuilderExplorerTreeNodeData | null =
         this.nonNullableTreeData.nodes.get(nodeToHighlight.parentId) ?? null;
       while (nodeToOpen !== null) {
@@ -828,7 +837,8 @@ export class QueryBuilderExplorerState {
           nodeToOpen.setIsOpen(true);
         }
         nodeToOpen =
-          nodeToOpen instanceof QueryBuilderExplorerTreePropertyNodeData
+          nodeToOpen instanceof QueryBuilderExplorerTreePropertyNodeData ||
+          nodeToOpen instanceof QueryBuilderExplorerTreeSubTypeNodeData
             ? (this.treeData?.nodes.get(nodeToOpen.parentId) ?? null)
             : null;
       }
