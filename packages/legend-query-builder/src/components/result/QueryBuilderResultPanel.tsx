@@ -84,9 +84,10 @@ const PERMISSION_ERRORS = ['permission denied', 'invalid user id or password'];
 export const QueryBuilderExecutionErrorPanel = observer(
   (props: { resultState: QueryBuilderResultState }) => {
     const { resultState } = props;
+    const queryBuilderState = resultState.queryBuilderState;
     const error = resultState.executionError;
     const errorMessage = error
-      ? resultState.queryBuilderState.applicationStore.notificationService.getErrorMessage(
+      ? queryBuilderState.applicationStore.notificationService.getErrorMessage(
           error,
         )
       : '';
@@ -95,7 +96,7 @@ export const QueryBuilderExecutionErrorPanel = observer(
         PERMISSION_ERRORS.find((e) => errorMessage?.toLowerCase().includes(e)),
       );
     const openCheckEntitlmentsEditor = (): void => {
-      resultState.queryBuilderState.checkEntitlementsState.setShowCheckEntitlementsViewer(
+      queryBuilderState.checkEntitlementsState.setShowCheckEntitlementsViewer(
         true,
       );
     };
@@ -110,6 +111,14 @@ export const QueryBuilderExecutionErrorPanel = observer(
               </div>
               <button
                 className="query-builder__result__permission-error__button"
+                disabled={
+                  (queryBuilderState.isQuerySupported &&
+                    queryBuilderState.fetchStructureState
+                      .implementation instanceof QueryBuilderTDSState &&
+                    queryBuilderState.fetchStructureState.implementation
+                      .projectionColumns.length === 0) ||
+                  !queryBuilderState.canBuildQuery
+                }
                 onClick={openCheckEntitlmentsEditor}
               >
                 Click Here to Check Entitlements
