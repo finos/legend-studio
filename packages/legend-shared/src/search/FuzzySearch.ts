@@ -27,8 +27,8 @@ export type FuzzySearchEngineSortFunctionArg = FuseSortFunctionArg & {
     | FuseSortFunctionItem
     | {
         [key: string | number]: {
-          n: number;
-          v: string;
+          n?: number;
+          v?: string;
         };
       };
 };

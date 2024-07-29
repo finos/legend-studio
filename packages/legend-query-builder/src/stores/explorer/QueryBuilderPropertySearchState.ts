@@ -387,19 +387,17 @@ export class QueryBuilderPropertySearchState {
             a.item[0] && Object.hasOwn(a.item[0], 'v')
               ? (
                   a.item[0] as {
-                    n: number;
                     v: string;
                   }
-                )?.v?.split('/')?.length
+                ).v.split('/').length
               : undefined;
           const bPathLength: number | undefined =
             b.item[0] && Object.hasOwn(b.item[0], 'v')
               ? (
                   b.item[0] as {
-                    n: number;
                     v: string;
                   }
-                )?.v?.split('/')?.length
+                ).v.split('/').length
               : undefined;
           if (aPathLength !== undefined && bPathLength !== undefined) {
             return aPathLength - bPathLength;
