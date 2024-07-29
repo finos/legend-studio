@@ -117,7 +117,7 @@ export const prettyPropertyNameForSubType = (
   return propName;
 };
 
-const formatTextWithHighlightedMatches = (
+export const formatTextWithHighlightedMatches = (
   displayText: string,
   searchText: string,
   className: string,
