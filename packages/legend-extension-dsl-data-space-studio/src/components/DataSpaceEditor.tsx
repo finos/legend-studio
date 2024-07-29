@@ -20,50 +20,59 @@ import { PanelFormSection, PanelFormTextField } from '@finos/legend-art';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
   set_description,
-  set_executionContexts,
+  set_supportInfo,
+  // set_executionContexts,
   set_title,
 } from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
+import { DataSpaceSupportEmail } from '@finos/legend-extension-dsl-data-space/graph';
 
 export const DataSpaceEditor = observer(() => {
   const editorStore = useEditorStore();
 
-  const formEditorState =
+  const dataSpaceEditorState =
     editorStore.tabManagerState.getCurrentEditorState(DataSpaceEditorState);
 
-  const formElement = formEditorState.dataSpace;
+  const dataSpaceElement = dataSpaceEditorState.dataSpace;
 
   const handleTitleChange = (value: string | undefined): void => {
-    set_title(formElement, value);
+    set_title(dataSpaceElement, value);
   };
 
   const handleDescriptionChange = (value: string | undefined): void => {
-    set_description(formElement, value);
+    set_description(dataSpaceElement, value);
   };
 
-  const handleSupportInfoChange = (value: string | undefined): void => {
-    set_supportInfo(formElement, value);
+  const handleSupportInfoChange = (value: string | undefined) => {
+    const supportInfo = new DataSpaceSupportEmail();
+    supportInfo.address = value ?? '';
+    set_supportInfo(dataSpaceElement, supportInfo);
   };
 
-  const handleExecutionContextChange = (
-    index: number,
-    field: string,
-    value: string,
-  ) => {
-    const updatedContexts = [...formElement.executionContexts];
-    const context = updatedContexts[index];
-    if (!context) {
-      console.warn(`Execution context at index ${index} is undefined.`);
-      return;
-    }
-    if (field === 'name') {
-      context.name = value;
-    } else if (field === 'title') {
-      context.title = value;
-    } else if (field === 'description') {
-      context.description = value;
-    }
-    set_executionContexts(formElement, updatedContexts);
-  };
+  const supportEmail =
+    dataSpaceElement.supportInfo instanceof DataSpaceSupportEmail
+      ? dataSpaceElement.supportInfo.address
+      : '';
+
+  // const handleExecutionContextChange = (
+  //   index: number,
+  //   field: string,
+  //   value: string,
+  // ) => {
+  //   const updatedContexts = [...dataSpaceElement.executionContexts];
+  //   const context = updatedContexts[index];
+  //   if (!context) {
+  //     console.warn(`Execution context at index ${index} is undefined.`);
+  //     return;
+  //   }
+  //   if (field === 'name') {
+  //     context.name = value;
+  //   } else if (field === 'title') {
+  //     context.title = value;
+  //   } else if (field === 'description') {
+  //     context.description = value;
+  //   }
+  //   set_executionContexts(dataSpaceElement, updatedContexts);
+  // };
 
   return (
     <div className="dataSpace-editor panel dataSpace-editor--dark">
@@ -72,7 +81,7 @@ export const DataSpaceEditor = observer(() => {
           <div className="panel__content__form__section">
             <PanelFormTextField
               name="Data Space Title"
-              value={formElement.title ?? ''}
+              value={dataSpaceElement.title ?? ''}
               prompt="Data Space title is the user facing name for the Data Space. It used in downstream applications as the default identifier for this Data Space. When not provided, the DataSpace name property is used"
               update={handleTitleChange}
               placeholder="Enter title"
@@ -83,13 +92,21 @@ export const DataSpaceEditor = observer(() => {
           <div className="panel__content__form__section">
             <PanelFormTextField
               name="Data Space Description"
-              value={formElement.description ?? ''}
+              value={dataSpaceElement.description ?? ''}
               update={handleDescriptionChange}
               placeholder="Enter Description"
             />
           </div>
         </div>
-        {formElement.executionContexts.map((context, index) => (
+        <div>
+          <PanelFormTextField
+            name="Support Email"
+            value={supportEmail}
+            update={handleSupportInfoChange}
+            placeholder="Enter support email"
+          />
+        </div>
+        {/* {dataSpaceElement.executionContexts.map((context, index) => (
           <div key={index}>
             <PanelFormTextField
               name={`Execution Context ${index + 1} Name`}
@@ -124,7 +141,7 @@ export const DataSpaceEditor = observer(() => {
               placeholder="Enter support info "
             />
           </div>
-        ))}
+        ))} */}
       </PanelFormSection>
     </div>
   );

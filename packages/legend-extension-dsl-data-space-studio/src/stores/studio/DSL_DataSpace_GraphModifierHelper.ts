@@ -15,7 +15,10 @@
  */
 
 import { action } from 'mobx';
-import type { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
+import type {
+  DataSpace,
+  DataSpaceSupportInfo,
+} from '@finos/legend-extension-dsl-data-space/graph';
 
 export const set_title = action(
   (dataSpace: DataSpace, type: string | undefined): void => {
@@ -26,5 +29,14 @@ export const set_title = action(
 export const set_description = action(
   (dataSpace: DataSpace, content: string | undefined): void => {
     dataSpace.description = content;
+  },
+);
+
+export const set_supportInfo = action(
+  (
+    dataSpace: DataSpace,
+    supportInfo: DataSpaceSupportInfo | undefined,
+  ): void => {
+    dataSpace.supportInfo = supportInfo;
   },
 );
