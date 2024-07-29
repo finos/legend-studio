@@ -129,15 +129,7 @@ export class NotificationService {
   }
 
   notifyError(content: Error | string, actions?: NotificationAction[]): void {
-    let message: string | undefined;
-    if (content instanceof ApplicationError) {
-      message = content.detail;
-    } else if (content instanceof Error) {
-      message = content.message;
-    } else {
-      assertTrue(isString(content), `Can't display error`);
-      message = content;
-    }
+    const message = this.getErrorMessage(content);
     if (message) {
       this.setNotification(
         new Notification(
@@ -148,6 +140,19 @@ export class NotificationService {
         ),
       );
     }
+  }
+
+  getErrorMessage(content: Error | string): string | undefined {
+    let message: string | undefined;
+    if (content instanceof ApplicationError) {
+      message = content.detail;
+    } else if (content instanceof Error) {
+      message = content.message;
+    } else {
+      assertTrue(isString(content), `Can't display error`);
+      message = content;
+    }
+    return message;
   }
 
   notifyIllegalState(
