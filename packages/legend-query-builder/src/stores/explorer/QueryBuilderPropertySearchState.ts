@@ -111,6 +111,7 @@ export class QueryBuilderPropertySearchState {
       search: action,
       resetSearch: action,
       setSearchResults: action,
+      setIsOverSearchLimit: action,
       setSearchText: action,
       setShowSearchConfigurationMenu: action,
       setIsSearchPanelOpen: action,
@@ -142,6 +143,10 @@ export class QueryBuilderPropertySearchState {
 
   setSearchResults(val: QueryBuilderExplorerTreeNodeData[]): void {
     this.searchResults = val;
+  }
+
+  setIsOverSearchLimit(val: boolean): void {
+    this.isOverSearchLimit = val;
   }
 
   setSearchText(val: string): void {
@@ -227,12 +232,12 @@ export class QueryBuilderPropertySearchState {
         if (
           searchResults.length > QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT
         ) {
-          this.isOverSearchLimit = true;
+          this.setIsOverSearchLimit(true);
           this.setSearchResults(
             searchResults.slice(0, QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT),
           );
         } else {
-          this.isOverSearchLimit = false;
+          this.setIsOverSearchLimit(false);
           this.setSearchResults(searchResults);
         }
 
