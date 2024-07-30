@@ -805,9 +805,17 @@ export class QueryBuilderExplorerState {
     // we need to open all the parent nodes of the node and
     // generate their children.
     if (this.nonNullableTreeData.nodes.get(nodeId) === undefined) {
-      const parentNodeIdElements = nodeId
+      const parentNodeIdElements: string[][] = nodeId
         .split('@')
         .map((subpath) => subpath.split('.'));
+      // remove last element of final subpath, as it is the node id and not a parent
+      if (
+        parentNodeIdElements.length > 0 &&
+        parentNodeIdElements[parentNodeIdElements.length - 1] !== undefined
+      ) {
+        parentNodeIdElements[parentNodeIdElements.length - 1]!.pop();
+      }
+
       let currentNodeId = '';
 
       parentNodeIdElements.forEach((subpath) => {
