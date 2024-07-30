@@ -379,7 +379,10 @@ const QueryBuilderTreeNodeViewer = observer(
                   path={node.id}
                   isMapped={node.mappingData.mapped}
                 >
-                  <div className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__info">
+                  <div
+                    title="Property info"
+                    className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__info"
+                  >
                     <InfoCircleIcon />
                   </div>
                 </QueryBuilderPropertyInfoTooltip>
@@ -400,7 +403,10 @@ const QueryBuilderTreeNodeViewer = observer(
                   isMapped={node.mappingData.mapped}
                   multiplicity={node.multiplicity}
                 >
-                  <div className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__info">
+                  <div
+                    title="Property info"
+                    className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__info"
+                  >
                     <InfoCircleIcon />
                   </div>
                 </QueryBuilderSubclassInfoTooltip>
