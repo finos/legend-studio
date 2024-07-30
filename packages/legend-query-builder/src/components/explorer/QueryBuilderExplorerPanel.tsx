@@ -967,9 +967,10 @@ export const QueryBuilderExplorerPanel = observer(
     const collapseTree = (): void => {
       if (explorerState.treeData) {
         Array.from(explorerState.treeData.nodes.values()).forEach((node) => {
-          node.isOpen = false;
+          if (!(node instanceof QueryBuilderExplorerTreeRootNodeData)) {
+            node.setIsOpen(false);
+          }
         });
-        explorerState.refreshTree();
       }
     };
     const toggleShowUnmappedProperties = (): void => {
