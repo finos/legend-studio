@@ -95,6 +95,7 @@ import {
   debounce,
   filterByType,
   guaranteeNonNullable,
+  isNonNullable,
   prettyCONSTName,
 } from '@finos/legend-shared';
 import { QueryBuilderPropertySearchPanel } from './QueryBuilderPropertySearchPanel.js';
@@ -860,11 +861,18 @@ const QueryBuilderExplorerSearchInput = observer(
     useEffect(() => {
       if (
         !propertySearchState.initializationState.hasSucceeded &&
-        !propertySearchState.initializationState.isInProgress
+        !propertySearchState.initializationState.isInProgress &&
+        isNonNullable(
+          propertySearchState.queryBuilderState.explorerState.treeData,
+        )
       ) {
         propertySearchState.initialize();
       }
-    }, [propertySearchState]);
+    }, [
+      propertySearchState,
+      propertySearchState.initializationState,
+      propertySearchState.queryBuilderState.explorerState.treeData,
+    ]);
 
     // search text
     const debouncedSearchProperty = useMemo(
