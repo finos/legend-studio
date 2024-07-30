@@ -856,6 +856,13 @@ const QueryBuilderExplorerSearchInput = observer(
   >(function QueryBuilderExplorerSearchInput(props, ref) {
     const { propertySearchState } = props;
 
+    // initialize search state on mount
+    useEffect(() => {
+      if (!propertySearchState.initializationState.hasSucceeded) {
+        propertySearchState.initialize();
+      }
+    }, [propertySearchState]);
+
     // search text
     const debouncedSearchProperty = useMemo(
       () => debounce(() => propertySearchState.search(), 100),
@@ -875,7 +882,9 @@ const QueryBuilderExplorerSearchInput = observer(
           !propertySearchState.isSearchPanelOpen
         ) {
           propertySearchState.setIsSearchPanelOpen(true);
-          propertySearchState.initialize();
+          if (!propertySearchState.initializationState.hasSucceeded) {
+            propertySearchState.initialize();
+          }
         }
         debouncedSearchProperty();
       } else {

@@ -79,6 +79,7 @@ export class QueryBuilderPropertySearchState {
   // search
   searchEngine: FuzzySearchEngine<QueryBuilderExplorerTreeNodeData>;
   searchConfigurationState: QueryBuilderFuzzySearchAdvancedConfigState;
+  initializationState = ActionState.create();
   searchState = ActionState.create();
   searchText = '';
   searchResults: QueryBuilderExplorerTreeNodeData[] = [];
@@ -208,6 +209,8 @@ export class QueryBuilderPropertySearchState {
    * asynchronous and block the UI while waiting.
    */
   initialize(): void {
+    this.initializationState.inProgress();
+
     this.indexedExplorerTreeNodes = [];
 
     let currentLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
@@ -407,6 +410,8 @@ export class QueryBuilderPropertySearchState {
       // See https://fusejs.io/examples.html#extended-search
       useExtendedSearch: true,
     });
+
+    this.initializationState.complete();
   }
 
   get filteredSearchResults(): QueryBuilderExplorerTreeNodeData[] {
