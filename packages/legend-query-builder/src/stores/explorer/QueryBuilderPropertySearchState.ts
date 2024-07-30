@@ -221,8 +221,6 @@ export class QueryBuilderPropertySearchState {
               } else if (classNodes.has(node.parentId)) {
                 classNodes.get(node.parentId)?.setIsOpen(true);
                 return false;
-              } else {
-                return true;
               }
             }
             return true;
