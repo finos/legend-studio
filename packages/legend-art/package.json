@@ -58,7 +58,7 @@
     "@fontsource/roboto-mono": "5.0.18",
     "@fontsource/roboto-serif": "5.0.13",
     "@fontsource/ubuntu-mono": "5.0.20",
-    "@mui/material": "5.16.4",
+    "@mui/material": "5.16.5",
     "@types/react": "18.3.3",
     "@types/react-select": "4.0.18",
     "@types/react-window": "1.8.8",
