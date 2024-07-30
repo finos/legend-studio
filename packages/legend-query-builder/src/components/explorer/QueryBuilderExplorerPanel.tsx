@@ -858,7 +858,10 @@ const QueryBuilderExplorerSearchInput = observer(
 
     // initialize search state on mount
     useEffect(() => {
-      if (!propertySearchState.initializationState.hasSucceeded) {
+      if (
+        !propertySearchState.initializationState.hasSucceeded &&
+        !propertySearchState.initializationState.isInProgress
+      ) {
         propertySearchState.initialize();
       }
     }, [propertySearchState]);
@@ -871,7 +874,7 @@ const QueryBuilderExplorerSearchInput = observer(
 
     const onSearchPropertyTextChange: React.ChangeEventHandler<
       HTMLInputElement
-    > = (event) => {
+    > = async (event) => {
       propertySearchState.setSearchText(event.target.value);
       if (
         event.target.value.length >=
@@ -882,8 +885,11 @@ const QueryBuilderExplorerSearchInput = observer(
           !propertySearchState.isSearchPanelOpen
         ) {
           propertySearchState.setIsSearchPanelOpen(true);
-          if (!propertySearchState.initializationState.hasSucceeded) {
-            propertySearchState.initialize();
+          if (
+            !propertySearchState.initializationState.hasSucceeded &&
+            !propertySearchState.initializationState.isInProgress
+          ) {
+            await propertySearchState.initialize();
           }
         }
         debouncedSearchProperty();

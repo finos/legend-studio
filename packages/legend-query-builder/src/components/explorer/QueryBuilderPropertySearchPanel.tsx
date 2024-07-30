@@ -461,20 +461,20 @@ export const QueryBuilderPropertySearchPanel = observer(
       propertySearchState.searchConfigurationState.setCurrentMode(searchMode);
     };
 
-    const handleToggleIncludeSubTypes = () => {
+    const handleToggleIncludeSubTypes = async () => {
       propertySearchState.searchConfigurationState.setIncludeSubTypes(
         !propertySearchState.searchConfigurationState.includeSubTypes,
       );
-      propertySearchState.initialize();
-      propertySearchState.search();
+      await propertySearchState.initialize();
+      await propertySearchState.search();
     };
 
-    const handleToggleIncludeTaggedValues = () => {
+    const handleToggleIncludeTaggedValues = async () => {
       propertySearchState.searchConfigurationState.setIncludeTaggedValues(
         !propertySearchState.searchConfigurationState.includeTaggedValues,
       );
-      propertySearchState.initialize();
-      propertySearchState.search();
+      await propertySearchState.initialize();
+      await propertySearchState.search();
     };
 
     return (
@@ -776,40 +776,48 @@ export const QueryBuilderPropertySearchPanel = observer(
                   <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
                 </ResizablePanelSplitter>
                 <ResizablePanel>
-                  {propertySearchState.searchState.isInProgress && (
+                  {(propertySearchState.initializationState.isInProgress ||
+                    propertySearchState.searchState.isInProgress) && (
                     <PanelLoadingIndicator isLoading={true} />
                   )}
                   <div className="query-builder-property-search-panel__results">
-                    {!propertySearchState.searchState.isInProgress && (
-                      <>
-                        {Boolean(
-                          propertySearchState.filteredSearchResults.length,
-                        ) &&
-                          propertySearchState.filteredSearchResults.map(
-                            (node) => (
-                              <QueryBuilderTreeNodeViewer
-                                key={node.id}
-                                node={node}
-                                queryBuilderState={queryBuilderState}
-                                level={1}
-                                stepPaddingInRem={0}
-                                explorerState={queryBuilderState.explorerState}
-                              />
-                            ),
-                          )}
-                        {!propertySearchState.filteredSearchResults.length &&
-                          propertySearchState.searchText && (
-                            <BlankPanelContent>
-                              <div className="query-builder-property-search-panel__result-placeholder__text">
-                                No result
-                              </div>
-                              <div className="query-builder-property-search-panel__result-placeholder__tips">
-                                Tips: Navigate deeper into the explorer tree to
-                                improve the scope and accuracy of the search
-                              </div>
-                            </BlankPanelContent>
-                          )}
-                      </>
+                    {!propertySearchState.initializationState.isInProgress &&
+                      !propertySearchState.searchState.isInProgress && (
+                        <>
+                          {Boolean(
+                            propertySearchState.filteredSearchResults.length,
+                          ) &&
+                            propertySearchState.filteredSearchResults.map(
+                              (node) => (
+                                <QueryBuilderTreeNodeViewer
+                                  key={node.id}
+                                  node={node}
+                                  queryBuilderState={queryBuilderState}
+                                  level={1}
+                                  stepPaddingInRem={0}
+                                  explorerState={
+                                    queryBuilderState.explorerState
+                                  }
+                                />
+                              ),
+                            )}
+                          {!propertySearchState.filteredSearchResults.length &&
+                            propertySearchState.searchText && (
+                              <BlankPanelContent>
+                                <div className="query-builder-property-search-panel__result-placeholder__text">
+                                  No result
+                                </div>
+                                <div className="query-builder-property-search-panel__result-placeholder__tips">
+                                  Tips: Navigate deeper into the explorer tree
+                                  to improve the scope and accuracy of the
+                                  search
+                                </div>
+                              </BlankPanelContent>
+                            )}
+                        </>
+                      )}
+                    {propertySearchState.initializationState.isInProgress && (
+                      <BlankPanelContent>Initializing...</BlankPanelContent>
                     )}
                     {propertySearchState.searchState.isInProgress && (
                       <BlankPanelContent>Searching...</BlankPanelContent>
