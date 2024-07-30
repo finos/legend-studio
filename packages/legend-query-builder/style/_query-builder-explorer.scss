@@ -23,7 +23,8 @@
   }
 
   .panel__header__title {
-    margin-right: 2rem;
+    width: 8rem;
+    margin-right: 1rem;
   }
 
   &__header__action--active.panel__header__action:hover,
@@ -84,9 +85,7 @@
       position: relative;
       height: 2.8rem;
       flex: 1;
-      margin-left: auto;
       margin-right: 0.5rem;
-      max-width: 70%;
     }
 
     &--searching {
