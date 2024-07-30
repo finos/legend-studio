@@ -22,6 +22,8 @@ import { QueryBuilderClassSelector } from '@finos/legend-query-builder';
 import {
   CustomSelectorInput,
   PanelHeader,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
   SearchIcon,
   compareLabelFn,
   type SelectComponent,
@@ -33,6 +35,9 @@ import {
   formatDataSpaceOptionLabel,
   type DataSpaceOption,
 } from '@finos/legend-extension-dsl-data-space/application-query';
+import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { DataSpaceQueryCreatorStore } from '../../stores/data-space/DataSpaceQueryCreatorStore.js';
 
 /**
  * This setup panel supports cascading in order: Data-space -> Execution context (-> Runtime) -> Class
@@ -52,7 +57,7 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
     const dataSpaceOptions = queryBuilderState.dataSpaces
       .map(buildDataSpaceOption)
       .sort(compareLabelFn);
-    const selectedDataSpaceOption = null;
+    const selectedDataSpaceOption: DataSpaceOption | null = null;
     const onDataSpaceOptionChange = (option: DataSpaceOption): void => {
       queryBuilderState.onDataSpaceChange(option.value);
     };
@@ -68,9 +73,34 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
 
     useEffect(() => dataSpaceSearchRef.current?.focus());
 
+    const copyDataSpaceLinkToClipboard = (): void => {
+      const editorStore = guaranteeType(
+        queryBuilderState.editorStore,
+        DataSpaceQueryCreatorStore,
+      );
+      const dataSpace = guaranteeNonNullable(editorStore.queryableDataSpace);
+      const route = generateDataSpaceQueryCreatorRoute(
+        dataSpace.groupId,
+        dataSpace.artifactId,
+        dataSpace.versionId,
+        dataSpace.dataSpacePath,
+        dataSpace.executionContext,
+        dataSpace.runtimePath,
+        dataSpace.classPath,
+      );
+
+      navigator.clipboard.writeText(route);
+    };
+
     return (
       <div className="query-builder__setup__config-group">
-        <PanelHeader title="properties" />
+        <PanelHeader title="properties">
+          <PanelHeaderActions>
+            <PanelHeaderActionItem title="Copy link">
+              <button onClick={copyDataSpaceLinkToClipboard}>link</button>
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
         <div className="query-builder__setup__config-group__content">
           <div className="query-builder__setup__config-group__item">
             <label
