@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
 import {
   clsx,
   CheckSquareIcon,
@@ -228,7 +227,6 @@ const QueryBuilderTreeNodeViewer = observer(
     const { node, queryBuilderState, explorerState, level, stepPaddingInRem } =
       props;
     const isExpandable = Boolean(node.childrenIds.length);
-    const [isExpanded, setIsExpanded] = useState(false);
     const propertySearchState = explorerState.propertySearchState;
 
     const [, dragConnector, dragPreviewConnector] = useDrag<{
@@ -307,7 +305,7 @@ const QueryBuilderTreeNodeViewer = observer(
         : prettyPropertyNameFromNodeId(node.id, true);
 
     const nodeExpandIcon = isExpandable ? (
-      isExpanded ? (
+      node.isOpen ? (
         <ChevronDownIcon />
       ) : (
         <ChevronRightIcon />
@@ -344,7 +342,7 @@ const QueryBuilderTreeNodeViewer = observer(
             paddingLeft: `${(level - 1) * stepPaddingInRem + 0.5}rem`,
             display: 'flex',
           }}
-          onClick={(): void => setIsExpanded(!isExpanded)}
+          onClick={(): void => node.setIsOpen(!node.isOpen)}
           // Temporarily hide away the panel when we drag-and-drop the properties
           onDrag={(): void => propertySearchState.setIsSearchPanelHidden(true)}
           onDragEnd={(): void =>
@@ -417,7 +415,7 @@ const QueryBuilderTreeNodeViewer = observer(
             )}
           </div>
         </div>
-        {isExpanded &&
+        {node.isOpen &&
           getChildrenNodes().map((childNode) => (
             <QueryBuilderTreeNodeViewer
               key={`${node.id}>${childNode.id}`}
