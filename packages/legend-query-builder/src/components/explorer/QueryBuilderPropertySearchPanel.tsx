@@ -469,9 +469,9 @@ export const QueryBuilderPropertySearchPanel = observer(
       await propertySearchState.search();
     };
 
-    const handleToggleIncludeTaggedValues = async () => {
-      propertySearchState.searchConfigurationState.setIncludeTaggedValues(
-        !propertySearchState.searchConfigurationState.includeTaggedValues,
+    const handleToggleIncludeDocumentation = async () => {
+      propertySearchState.searchConfigurationState.setIncludeDocumentation(
+        !propertySearchState.searchConfigurationState.includeDocumentation,
       );
       await propertySearchState.initialize();
       await propertySearchState.search();
@@ -544,7 +544,7 @@ export const QueryBuilderPropertySearchPanel = observer(
                     </div>
                     <div className="query-builder-property-search-panel__form__section">
                       <div className="query-builder-property-search-panel__form__section__header__label">
-                        Tagged Values
+                        Documentation
                         <Tooltip
                           TransitionProps={{
                             timeout: 0,
@@ -568,14 +568,14 @@ export const QueryBuilderPropertySearchPanel = observer(
                             {
                               'query-builder-property-search-panel__form__section__toggler__btn--toggled':
                                 propertySearchState.searchConfigurationState
-                                  .includeTaggedValues,
+                                  .includeDocumentation,
                             },
                           )}
-                          onClick={handleToggleIncludeTaggedValues}
+                          onClick={handleToggleIncludeDocumentation}
                           tabIndex={-1}
                         >
                           {propertySearchState.searchConfigurationState
-                            .includeTaggedValues ? (
+                            .includeDocumentation ? (
                             <CheckSquareIcon />
                           ) : (
                             <SquareIcon />

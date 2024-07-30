@@ -374,7 +374,7 @@ export class QueryBuilderPropertySearchState {
                   return fullPath;
                 },
               },
-              ...(this.searchConfigurationState.includeTaggedValues
+              ...(this.searchConfigurationState.includeDocumentation
                 ? [
                     {
                       name: 'taggedValues',

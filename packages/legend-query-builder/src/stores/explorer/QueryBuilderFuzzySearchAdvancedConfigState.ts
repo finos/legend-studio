@@ -19,15 +19,15 @@ import { action, makeObservable, observable } from 'mobx';
 
 export class QueryBuilderFuzzySearchAdvancedConfigState extends FuzzySearchAdvancedConfigState {
   includeSubTypes = false;
-  includeTaggedValues = false;
+  includeDocumentation = false;
 
   constructor(onSearchModeChange: () => void) {
     super(onSearchModeChange);
     makeObservable(this, {
       includeSubTypes: observable,
-      includeTaggedValues: observable,
+      includeDocumentation: observable,
       setIncludeSubTypes: action,
-      setIncludeTaggedValues: action,
+      setIncludeDocumentation: action,
     });
   }
 
@@ -35,7 +35,7 @@ export class QueryBuilderFuzzySearchAdvancedConfigState extends FuzzySearchAdvan
     this.includeSubTypes = val;
   }
 
-  setIncludeTaggedValues(val: boolean): void {
-    this.includeTaggedValues = val;
+  setIncludeDocumentation(val: boolean): void {
+    this.includeDocumentation = val;
   }
 }
