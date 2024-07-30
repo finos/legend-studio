@@ -16,7 +16,6 @@
 
 import {
   PanelHeader,
-  FilterIcon,
   BasePopover,
   ClickAwayListener,
   ShareIcon,
@@ -193,28 +192,23 @@ const DataSpaceQueryBuilderTemplateQueryPanel = observer(
       <>
         {!templateQueries || templateQueries.length === 0 ? (
           <PanelHeader className="query-builder__data-space__template-query">
-            <div className="query-builder__data-space__template-query__title">
-              <FilterIcon />
-            </div>
             <button
               className="query-builder__data-space__template-query__btn"
               ref={templateQueryButtonRef}
               onClick={showTemplateQueries}
+              disabled={true}
             >
-              Template ( 0 )
+              Templates ( 0 )
             </button>
           </PanelHeader>
         ) : (
           <PanelHeader className="query-builder__data-space__template-query">
-            <div className="query-builder__data-space__template-query__title">
-              <FilterIcon />
-            </div>
             <button
               className="query-builder__data-space__template-query__btn"
               ref={templateQueryButtonRef}
               onClick={showTemplateQueries}
             >
-              Template ( {templateQueries.length} )
+              Templates ( {templateQueries.length} )
             </button>
             {queryBuilderState.isTemplateQueryDialogOpen && (
               <DataSpaceTemplateQueryDialog
