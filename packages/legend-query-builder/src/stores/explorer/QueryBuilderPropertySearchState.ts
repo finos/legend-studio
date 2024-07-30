@@ -123,6 +123,7 @@ export class QueryBuilderPropertySearchState {
     this.searchConfigurationState =
       new QueryBuilderFuzzySearchAdvancedConfigState(
         async (): Promise<void> => this.search(),
+        this.queryBuilderState.applicationStore.alertUnhandledError,
       );
     this.searchEngine = new FuzzySearchEngine(this.indexedExplorerTreeNodes);
   }

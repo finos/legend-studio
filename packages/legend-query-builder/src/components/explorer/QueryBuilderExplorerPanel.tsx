@@ -866,7 +866,12 @@ const QueryBuilderExplorerSearchInput = observer(
           propertySearchState.queryBuilderState.explorerState.treeData,
         )
       ) {
-        propertySearchState.initialize();
+        propertySearchState
+          .initialize()
+          .catch(
+            propertySearchState.queryBuilderState.applicationStore
+              .alertUnhandledError,
+          );
       }
     }, [
       propertySearchState,
@@ -882,28 +887,33 @@ const QueryBuilderExplorerSearchInput = observer(
 
     const onSearchPropertyTextChange: React.ChangeEventHandler<
       HTMLInputElement
-    > = async (event) => {
-      propertySearchState.setSearchText(event.target.value);
-      if (
-        event.target.value.length >=
-        QUERY_BUILDER_PROPERTY_SEARCH_MIN_SEARCH_LENGTH
-      ) {
+    > = (event) => {
+      (async () => {
+        propertySearchState.setSearchText(event.target.value);
         if (
-          propertySearchState.queryBuilderState.explorerState.treeData &&
-          !propertySearchState.isSearchPanelOpen
+          event.target.value.length >=
+          QUERY_BUILDER_PROPERTY_SEARCH_MIN_SEARCH_LENGTH
         ) {
-          propertySearchState.setIsSearchPanelOpen(true);
           if (
-            !propertySearchState.initializationState.hasSucceeded &&
-            !propertySearchState.initializationState.isInProgress
+            propertySearchState.queryBuilderState.explorerState.treeData &&
+            !propertySearchState.isSearchPanelOpen
           ) {
-            await propertySearchState.initialize();
+            propertySearchState.setIsSearchPanelOpen(true);
+            if (
+              !propertySearchState.initializationState.hasSucceeded &&
+              !propertySearchState.initializationState.isInProgress
+            ) {
+              await propertySearchState.initialize();
+            }
           }
+          await debouncedSearchProperty();
+        } else {
+          propertySearchState.setIsSearchPanelOpen(false);
         }
-        debouncedSearchProperty();
-      } else {
-        propertySearchState.setIsSearchPanelOpen(false);
-      }
+      })().catch(
+        propertySearchState.queryBuilderState.applicationStore
+          .alertUnhandledError,
+      );
     };
 
     // search actions

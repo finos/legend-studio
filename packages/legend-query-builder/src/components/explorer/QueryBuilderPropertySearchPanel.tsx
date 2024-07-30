@@ -459,20 +459,30 @@ export const QueryBuilderPropertySearchPanel = observer(
       propertySearchState.searchConfigurationState.setCurrentMode(searchMode);
     };
 
-    const handleToggleIncludeSubTypes = async () => {
-      propertySearchState.searchConfigurationState.setIncludeSubTypes(
-        !propertySearchState.searchConfigurationState.includeSubTypes,
+    const handleToggleIncludeSubTypes = () => {
+      (async () => {
+        propertySearchState.searchConfigurationState.setIncludeSubTypes(
+          !propertySearchState.searchConfigurationState.includeSubTypes,
+        );
+        await propertySearchState.initialize();
+        await propertySearchState.search();
+      })().catch(
+        propertySearchState.queryBuilderState.applicationStore
+          .alertUnhandledError,
       );
-      await propertySearchState.initialize();
-      await propertySearchState.search();
     };
 
-    const handleToggleIncludeDocumentation = async () => {
-      propertySearchState.searchConfigurationState.setIncludeDocumentation(
-        !propertySearchState.searchConfigurationState.includeDocumentation,
+    const handleToggleIncludeDocumentation = () => {
+      (async () => {
+        propertySearchState.searchConfigurationState.setIncludeDocumentation(
+          !propertySearchState.searchConfigurationState.includeDocumentation,
+        );
+        await propertySearchState.initialize();
+        await propertySearchState.search();
+      })().catch(
+        propertySearchState.queryBuilderState.applicationStore
+          .alertUnhandledError,
       );
-      await propertySearchState.initialize();
-      await propertySearchState.search();
     };
 
     return (

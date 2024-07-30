@@ -83,7 +83,7 @@ test(
 
     await act(async () => {
       queryBuilderState.explorerState.propertySearchState.setSearchText('Name');
-      queryBuilderState.explorerState.propertySearchState.search();
+      await queryBuilderState.explorerState.propertySearchState.search();
     });
 
     expect(

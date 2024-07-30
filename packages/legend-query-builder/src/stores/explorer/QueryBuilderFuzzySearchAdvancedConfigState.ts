@@ -21,8 +21,13 @@ export class QueryBuilderFuzzySearchAdvancedConfigState extends FuzzySearchAdvan
   includeSubTypes = false;
   includeDocumentation = false;
 
-  constructor(onSearchModeChange: () => void) {
-    super(onSearchModeChange);
+  constructor(
+    onSearchModeChange: () => Promise<void>,
+    onSearchModeChangeError: (error: Error) => void,
+  ) {
+    super(() => {
+      onSearchModeChange().catch(onSearchModeChangeError);
+    });
     makeObservable(this, {
       includeSubTypes: observable,
       includeDocumentation: observable,
