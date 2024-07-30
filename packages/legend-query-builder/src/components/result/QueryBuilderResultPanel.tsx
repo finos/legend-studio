@@ -141,6 +141,44 @@ export const QueryBuilderExecutionErrorPanel = observer(
   },
 );
 
+export const QueryBuilderEmptyExecutionResultPanel = observer(
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+
+    const openCheckEntitlmentsEditor = (): void => {
+      queryBuilderState.checkEntitlementsState.setShowCheckEntitlementsViewer(
+        true,
+      );
+    };
+
+    return (
+      <div className="query-builder__result__empty-result-warning">
+        <div className="query-builder__result__empty-result-warning__header">
+          Query returned no data
+        </div>
+        <div className="query-builder__result__empty-result-warning__body">
+          if you believe the query should return data, please
+          <button
+            className="query-builder__result__permission-error__button"
+            disabled={
+              (queryBuilderState.isQuerySupported &&
+                queryBuilderState.fetchStructureState.implementation instanceof
+                  QueryBuilderTDSState &&
+                queryBuilderState.fetchStructureState.implementation
+                  .projectionColumns.length === 0) ||
+              !queryBuilderState.canBuildQuery
+            }
+            onClick={openCheckEntitlmentsEditor}
+          >
+            Click Here to Check Entitlements
+          </button>
+          or See Help menu for more options
+        </div>
+      </div>
+    );
+  },
+);
+
 export const QueryBuilderResultValues = observer(
   (props: {
     executionResult: ExecutionResult;
@@ -148,20 +186,28 @@ export const QueryBuilderResultValues = observer(
   }) => {
     const { executionResult, queryBuilderState } = props;
     if (executionResult instanceof TDSExecutionResult) {
-      if (queryBuilderState.config?.TEMPORARY__enableGridEnterpriseMode) {
+      if (executionResult.result.rows.length === 0) {
         return (
-          <QueryBuilderTDSGridResult
+          <QueryBuilderEmptyExecutionResultPanel
             queryBuilderState={queryBuilderState}
-            executionResult={executionResult}
           />
         );
       } else {
-        return (
-          <QueryBuilderTDSSimpleGridResult
-            queryBuilderState={queryBuilderState}
-            executionResult={executionResult}
-          />
-        );
+        if (queryBuilderState.config?.TEMPORARY__enableGridEnterpriseMode) {
+          return (
+            <QueryBuilderTDSGridResult
+              queryBuilderState={queryBuilderState}
+              executionResult={executionResult}
+            />
+          );
+        } else {
+          return (
+            <QueryBuilderTDSSimpleGridResult
+              queryBuilderState={queryBuilderState}
+              executionResult={executionResult}
+            />
+          );
+        }
       }
     } else if (executionResult instanceof RawExecutionResult) {
       const inputValue =

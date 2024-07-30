@@ -1673,6 +1673,27 @@
     }
   }
 
+  &__empty-result-warning {
+    height: 20%;
+
+    &__header {
+      display: flex;
+      justify-content: center;
+      color: var(--color-orange-50);
+      font-weight: bold;
+      font-size: 2rem;
+      padding: 2rem;
+    }
+
+    &__body {
+      display: flex;
+      justify-content: center;
+      color: var(--color-orange-50);
+      font-size: 2rem;
+      padding: 2rem;
+    }
+  }
+
   &__permission-error {
     @include flexCenter;
 
@@ -1689,6 +1710,7 @@
       font-weight: bold;
       font-size: 2.1rem;
       margin-left: 1rem;
+      margin-right: 1rem;
     }
   }
 
