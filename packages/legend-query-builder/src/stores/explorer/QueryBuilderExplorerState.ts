@@ -779,7 +779,7 @@ export class QueryBuilderExplorerState {
           guaranteeNonNullable(this.mappingModelCoverageAnalysisResult),
         );
         if (propertyTreeNodeData) {
-          this.treeData?.nodes.set(
+          this.nonNullableTreeData.nodes.set(
             propertyTreeNodeData.id,
             propertyTreeNodeData,
           );
@@ -791,7 +791,10 @@ export class QueryBuilderExplorerState {
           node,
           guaranteeNonNullable(this.mappingModelCoverageAnalysisResult),
         );
-        this.treeData?.nodes.set(subTypeTreeNodeData.id, subTypeTreeNodeData);
+        this.nonNullableTreeData.nodes.set(
+          subTypeTreeNodeData.id,
+          subTypeTreeNodeData,
+        );
       });
       this.refreshTree();
     }
@@ -839,7 +842,7 @@ export class QueryBuilderExplorerState {
         nodeToOpen =
           nodeToOpen instanceof QueryBuilderExplorerTreePropertyNodeData ||
           nodeToOpen instanceof QueryBuilderExplorerTreeSubTypeNodeData
-            ? (this.treeData?.nodes.get(nodeToOpen.parentId) ?? null)
+            ? (this.nonNullableTreeData.nodes.get(nodeToOpen.parentId) ?? null)
             : null;
       }
       nodeToHighlight.setIsHighlighting(true);
