@@ -179,6 +179,10 @@ export class QueryBuilderPropertySearchState {
         // policy, e.g. limit length of search text, etc.
         //
         // See https://github.com/farzher/fuzzysort
+
+        const classNodes: Map<string, QueryBuilderExplorerTreeNodeData> =
+          new Map();
+
         const searchResults = Array.from(
           this.searchEngine
             .search(
@@ -191,7 +195,32 @@ export class QueryBuilderPropertySearchState {
               },
             )
             .values(),
-        ).map((result) => result.item);
+        )
+          .map((result) => result.item)
+          .map((node) => {
+            if (node.type instanceof Class) {
+              classNodes.set(node.id, node);
+            }
+            return node;
+          })
+          .filter((node) => {
+            // Filter out property nodes if their parent class node is already in the results.
+            if (node.type instanceof Class) {
+              return true;
+            } else if (
+              node instanceof QueryBuilderExplorerTreePropertyNodeData
+            ) {
+              if (this.searchText.toLowerCase() === node.label.toLowerCase()) {
+                return true;
+              } else if (classNodes.has(node.parentId)) {
+                classNodes.get(node.parentId)?.setIsOpen(true);
+                return false;
+              } else {
+                return true;
+              }
+            }
+            return true;
+          });
 
         // check if the search results exceed the limit
         if (
