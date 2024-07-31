@@ -933,7 +933,6 @@ export class QueryBuilderExplorerState {
             TDSExecutionResult,
             `Unexpected preview data format`,
           );
-          this.previewDataState.setPreviewDataAbortController(undefined);
           this.previewDataState.setPreviewData(
             previewResult.result as QueryBuilderPreviewData,
           );
@@ -955,6 +954,7 @@ export class QueryBuilderExplorerState {
       this.previewDataState.setPreviewData(undefined);
     } finally {
       this.previewDataState.setIsGeneratingPreviewData(false);
+      this.previewDataState.setPreviewDataAbortController(undefined);
     }
   }
 }
