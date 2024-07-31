@@ -254,7 +254,13 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
           ),
         );
 
-      navigator.clipboard.writeText(route);
+      navigator.clipboard
+        .writeText(route)
+        .catch(() =>
+          applicationStore.notificationService.notifyError(
+            'Error copying data space link to clipboard',
+          ),
+        );
 
       applicationStore.notificationService.notifySuccess(
         'Copied data space link to clipboard',
