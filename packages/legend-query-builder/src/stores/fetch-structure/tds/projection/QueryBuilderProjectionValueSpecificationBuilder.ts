@@ -128,8 +128,12 @@ const appendResultSetModifier = (
           );
           limit.values = [
             Math.min(
-              resultModifierState.limit ?? Number.MAX_SAFE_INTEGER,
-              options?.overridingLimit ?? Number.MAX_SAFE_INTEGER,
+              resultModifierState.limit
+                ? resultModifierState.limit + 1
+                : Number.MAX_SAFE_INTEGER,
+              options?.overridingLimit
+                ? options.overridingLimit + 1
+                : Number.MAX_SAFE_INTEGER,
             ),
           ];
           const takeFunction = new SimpleFunctionExpression(

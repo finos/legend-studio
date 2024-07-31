@@ -94,6 +94,9 @@ export type QueryBuilderPreviewData = {
 export const buildNumericPreviewDataQuery = (
   queryBuilderState: QueryBuilderState,
   propertyExpression: AbstractPropertyExpression,
+  options?: {
+    skipLimitOverfitting: boolean;
+  },
 ): RawLambda => {
   // Build the following query
   //
@@ -125,6 +128,14 @@ export const buildNumericPreviewDataQuery = (
     builderState.fetchStructureState.implementation,
     QueryBuilderTDSState,
   );
+  // result set
+  if (options?.skipLimitOverfitting) {
+    // To check if data incompleteness, we execute query with ->take(limit + 1)
+    // Therefore, to make sure roundtrip tests will pass, we have to set the limit to be (its value - 1)
+    builderState.resultState.setPreviewLimit(
+      queryBuilderState.resultState.previewLimit - 1,
+    );
+  }
   const aggregationState = tdsState.aggregationState;
   NUMERIC_AGG_FUNC_TO_AGG_OP.forEach((val) => {
     const colState = createSimpleProjectionColumn(
@@ -147,6 +158,9 @@ export const buildNumericPreviewDataQuery = (
 export const buildNonNumericPreviewDataQuery = (
   queryBuilderState: QueryBuilderState,
   propertyExpression: AbstractPropertyExpression,
+  options?: {
+    skipLimitOverfitting: boolean;
+  },
 ): RawLambda => {
   // Build the following query
   //
@@ -192,7 +206,14 @@ export const buildNonNumericPreviewDataQuery = (
     true,
   );
   // result set
-  tdsState.resultSetModifierState.limit = PREVIEW_DATA_TAKE_LIMIT;
+  if (options?.skipLimitOverfitting) {
+    // To check if data incompleteness, we execute query with ->take(limit + 1)
+    // Therefore, to make sure roundtrip tests will pass, we have to set the limit to be (its value - 1)
+    tdsState.resultSetModifierState.limit = PREVIEW_DATA_TAKE_LIMIT - 1;
+  } else {
+    tdsState.resultSetModifierState.limit = PREVIEW_DATA_TAKE_LIMIT;
+  }
+
   const sortValueCount = new SortColumnState(valueCountProjectionState);
   sortValueCount.sortType = COLUMN_SORT_TYPE.DESC;
   tdsState.resultSetModifierState.sortColumns = [

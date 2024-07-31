@@ -156,6 +156,7 @@ import {
 } from './TEST_DATA__QueryBuilder_Milestoning.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
 import { QueryBuilderAdvancedWorkflowState } from '../query-workflow/QueryBuilderWorkFlowState.js';
+import { QueryBuilderTDSState } from '../fetch-structure/tds/QueryBuilderTDSState.js';
 
 type RoundtripTestCase = [
   string,
@@ -814,6 +815,18 @@ describe(
         queryBuilderState.initializeWithQuery(
           new RawLambda(rawLambda.parameters, rawLambda.body),
         );
+        // To check if data incompleteness, we execute query with ->take(limit + 1)
+        // Therefore, to make sure roundtrip tests will pass, we have to set the limit to be (its value - 1)
+        const fetchStructureImpl =
+          queryBuilderState.fetchStructureState.implementation;
+        if (
+          fetchStructureImpl instanceof QueryBuilderTDSState &&
+          fetchStructureImpl.resultSetModifierState.limit
+        ) {
+          fetchStructureImpl.resultSetModifierState.setLimit(
+            fetchStructureImpl.resultSetModifierState.limit - 1,
+          );
+        }
         expect(queryBuilderState.isQuerySupported).toBe(true);
         const jsonQuery =
           graphManagerState.graphManager.serializeRawValueSpecification(
@@ -852,7 +865,10 @@ test(
       QueryBuilderAdvancedWorkflowState.INSTANCE,
       undefined,
     );
-    queryBuilderState.resultState.setPreviewLimit(DEFAULT_LIMIT);
+
+    // To check if data incompleteness, we execute query with ->take(limit + 1)
+    // Therefore, to make sure roundtrip tests will pass, we have to set the limit to be (its value - 1)
+    queryBuilderState.resultState.setPreviewLimit(DEFAULT_LIMIT - 1);
     const rawLambda = TEST_DATA__simpleProjectionWithOutPreviewLimit;
 
     // do the check using input and output lambda

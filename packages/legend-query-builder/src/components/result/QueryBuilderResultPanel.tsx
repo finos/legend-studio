@@ -44,6 +44,7 @@ import {
   ReportIcon,
   CubesLoadingIndicatorIcon,
   CubesLoadingIndicator,
+  InfoCircleIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -60,7 +61,7 @@ import {
   DEFAULT_TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
-import { prettyDuration } from '@finos/legend-shared';
+import { deepClone, prettyDuration } from '@finos/legend-shared';
 import { useRef, useState } from 'react';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { PARAMETER_SUBMIT_ACTION } from '../../stores/shared/LambdaParameterState.js';
@@ -157,7 +158,7 @@ export const QueryBuilderEmptyExecutionResultPanel = observer(
           Query returned no data
         </div>
         <div className="query-builder__result__empty-result-warning__body">
-          if you believe the query should return data, please
+          If you believe the query should return data, please
           <button
             className="query-builder__result__permission-error__button"
             disabled={
@@ -379,6 +380,32 @@ export const QueryBuilderResultPanel = observer(
       resultState.isGeneratingPlan ||
       resultState.pressedRunQuery.isInProgress;
 
+    const resultLimit = Math.min(
+      queryBuilderState.fetchStructureState.implementation instanceof
+        QueryBuilderTDSState &&
+        queryBuilderState.fetchStructureState.implementation
+          .resultSetModifierState.limit
+        ? queryBuilderState.fetchStructureState.implementation
+            .resultSetModifierState.limit
+        : Number.MAX_SAFE_INTEGER,
+      resultState.previewLimit,
+    );
+
+    const truncateExecutionResultIfExceed = (
+      execResult: ExecutionResult,
+    ): ExecutionResult => {
+      if (
+        execResult instanceof TDSExecutionResult &&
+        execResult.result.rows.length > resultLimit
+      ) {
+        const truncatedExecutionResult = deepClone(execResult);
+        truncatedExecutionResult.result.rows =
+          truncatedExecutionResult.result.rows.slice(0, resultLimit);
+        return truncatedExecutionResult;
+      }
+      return execResult;
+    };
+
     const getResultSetDescription = (
       _executionResult: ExecutionResult,
     ): string | undefined => {
@@ -389,7 +416,9 @@ export const QueryBuilderResultPanel = observer(
         : undefined;
       if (_executionResult instanceof TDSExecutionResult) {
         const rowLength = _executionResult.result.rows.length;
-        return `${rowLength} row(s)${
+        const truncatedRowLength =
+          rowLength > resultLimit ? resultLimit : rowLength;
+        return `${truncatedRowLength} row(s)${
           queryDuration ? ` in ${queryDuration}` : ''
         }`;
       }
@@ -546,6 +575,25 @@ export const QueryBuilderResultPanel = observer(
                 </div>
               </div>
             )}
+            {executionResult &&
+              executionResult instanceof TDSExecutionResult &&
+              executionResult.result.rows.length > resultLimit && (
+                <div className="query-builder__result__stale-status">
+                  <div className="query-builder__result__stale-status__icon">
+                    <ExclamationTriangleIcon />
+                  </div>
+                  <div className="query-builder__result__stale-status__label">
+                    Data below is not complete - query produces more rows than
+                    the set grid preview limit
+                  </div>
+                  <div
+                    className="query-builder__result__stale-status__icon"
+                    title={`The preview limit is set to ${resultLimit}. The results in the grid below are being limited by this limit and running query with a higher limit would produce more rows. Export will not apply this limit.`}
+                  >
+                    <InfoCircleIcon />
+                  </div>
+                </div>
+              )}
           </div>
           <div className="panel__header__actions query-builder__result__header__actions">
             {resultState.exportState.isInProgress && (
@@ -759,7 +807,9 @@ export const QueryBuilderResultPanel = observer(
           {executionResult && !isLoading && !resultState.executionError && (
             <div className="query-builder__result__values">
               <QueryBuilderResultValues
-                executionResult={executionResult}
+                executionResult={truncateExecutionResultIfExceed(
+                  executionResult,
+                )}
                 queryBuilderState={queryBuilderState}
               />
             </div>
