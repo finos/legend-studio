@@ -61,6 +61,7 @@ import {
   Dialog,
   CustomSelectorInput,
 } from '@finos/legend-art';
+import { getFloatGridColumnCustomHeader } from './QueryBuilderTDSSimpleGridResult.js';
 
 export const enum QueryBuilderDataGridCustomAggregationFunction {
   wavg = 'wavg',
@@ -90,10 +91,17 @@ const getAggregationTDSColumnCustomizations = (
     case PRIMITIVE_TYPE.DECIMAL:
     case PRIMITIVE_TYPE.NUMBER:
     case PRIMITIVE_TYPE.INTEGER:
+      return {
+        filter: 'agNumberColumnFilter',
+        allowedAggFuncs: ['count', 'sum', 'max', 'min', 'avg', 'wavg'],
+      };
     case PRIMITIVE_TYPE.FLOAT:
       return {
         filter: 'agNumberColumnFilter',
         allowedAggFuncs: ['count', 'sum', 'max', 'min', 'avg', 'wavg'],
+        headerComponentParams: {
+          template: getFloatGridColumnCustomHeader(columnName),
+        },
       };
     default:
       return {
@@ -207,10 +215,16 @@ const getFilterTDSColumnCustomizations = (
       };
     case PRIMITIVE_TYPE.DECIMAL:
     case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.FLOAT:
     case PRIMITIVE_TYPE.NUMBER:
       return {
         filter: 'agNumberColumnFilter',
+      };
+    case PRIMITIVE_TYPE.FLOAT:
+      return {
+        filter: 'agNumberColumnFilter',
+        headerComponentParams: {
+          template: getFloatGridColumnCustomHeader(columnName),
+        },
       };
     default:
       // we default all other columns to use filter true which defaults to set filters
