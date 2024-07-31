@@ -29,6 +29,7 @@ import {
   MoreVerticalIcon,
   compareLabelFn,
   PanelHeaderActionItem,
+  AnchorLinkIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
@@ -264,8 +265,11 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       <div className="query-builder__setup__config-group">
         <PanelHeader title="properties">
           <PanelHeaderActions>
-            <PanelHeaderActionItem title="copy to clipboard">
-              <button onClick={copyDataSpaceLinkToClipboard}>link</button>
+            <PanelHeaderActionItem
+              title="copy data space link to clipboard"
+              onClick={copyDataSpaceLinkToClipboard}
+            >
+              <AnchorLinkIcon />
             </PanelHeaderActionItem>
             <ControlledDropdownMenu
               className="panel__header__action query-builder__setup__config-group__header__dropdown-trigger"
