@@ -35,8 +35,8 @@ export const DataCubeEditor = observer(() => {
   const tabs = [
     DataCubeEditorTab.GENERAL_PROPERTIES,
     DataCubeEditorTab.COLUMN_PROPERTIES,
-    DataCubeEditorTab.FILTER,
     DataCubeEditorTab.EXTENDED_COLUMNS,
+    DataCubeEditorTab.FILTER,
     DataCubeEditorTab.COLUMNS,
     DataCubeEditorTab.VERTICAL_PIVOTS,
     DataCubeEditorTab.HORIZONTAL_PIVOTS,

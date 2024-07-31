@@ -37,6 +37,7 @@ export type DataCubeQuerySnapshotFilterCondition =
   DataCubeQuerySnapshotColumn & {
     value: DataCubeOperationValue | undefined;
     operation: DataCubeQueryFilterOperation;
+    not?: boolean | undefined;
   };
 
 export type DataCubeQuerySnapshotFilter = {
@@ -45,6 +46,7 @@ export type DataCubeQuerySnapshotFilter = {
     | DataCubeQuerySnapshotFilterCondition
     | DataCubeQuerySnapshotFilter
   )[];
+  not?: boolean | undefined;
 };
 
 export type DataCubeQuerySnapshotColumn = {
@@ -156,9 +158,9 @@ export class DataCubeQuerySnapshot {
    */
   stageCols(stage: DataCubeQuerySnapshotStage) {
     switch (stage) {
-      case 'filter':
       case 'leaf-extend':
         return [...this.data.sourceColumns];
+      case 'filter':
       case 'select':
         return [...this.data.sourceColumns, ...this.data.leafExtendedColumns];
       case 'aggregation':

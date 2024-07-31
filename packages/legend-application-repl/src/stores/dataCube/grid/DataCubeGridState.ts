@@ -21,6 +21,7 @@ import type { DataCubeState } from '../DataCubeState.js';
 import {
   DataCubeGridClientServerSideDataSource,
   INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE,
+  INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID,
   INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE,
 } from './DataCubeGridClientEngine.js';
 import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
@@ -148,6 +149,13 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
       cacheBlockSize: this.isPaginationEnabled
         ? INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE
         : INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE,
+    });
+    // NOTE: change the value to the hashcode of the filter to trigger data fetch when filter is modified
+    this.client.setFilterModel({
+      [INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID]: {
+        type: 'equals',
+        filter: '__TODO_SET_THIS_TO_THE_HASHCODE_OF_FILTER_TREE__',
+      },
     });
   }
 

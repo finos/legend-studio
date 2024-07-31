@@ -404,17 +404,6 @@ export function buildExecutableQuery(
     funcMap[funcMapKey] = func;
   };
 
-  // --------------------------------- FILTER ---------------------------------
-
-  if (data.filter) {
-    _process(
-      'filter',
-      _function(_name(DataCubeFunction.FILTER), [
-        _lambda([_var()], [_filter(data.filter)]),
-      ]),
-    );
-  }
-
   // --------------------------------- LEAF EXTEND ---------------------------------
 
   if (data.leafExtendedColumns.length) {
@@ -426,6 +415,17 @@ export function buildExecutableQuery(
             _colSpec(col.name, _deserializeToLambda(col.lambda)),
           ),
         ),
+      ]),
+    );
+  }
+
+  // --------------------------------- FILTER ---------------------------------
+
+  if (data.filter) {
+    _process(
+      'filter',
+      _function(_name(DataCubeFunction.FILTER), [
+        _lambda([_var()], [_filter(data.filter)]),
       ]),
     );
   }
