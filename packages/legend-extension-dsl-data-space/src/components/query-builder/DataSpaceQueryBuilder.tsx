@@ -228,7 +228,10 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     }, [queryBuilderState, applicationStore]);
 
     const copyDataSpaceLinkToClipboard = (): void => {
-      const nonNullableProject = guaranteeNonNullable(project);
+      const nonNullableProject = guaranteeNonNullable(
+        project,
+        'Unable to copy data space link to clipboard because project is null',
+      );
       const dataSpace = queryBuilderState.dataSpace;
       const executionContext = queryBuilderState.executionContext;
       const runtimePath =
@@ -251,6 +254,10 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
         );
 
       navigator.clipboard.writeText(route);
+
+      applicationStore.notificationService.notifySuccess(
+        'Copied data space link to clipboard',
+      );
     };
 
     return (
