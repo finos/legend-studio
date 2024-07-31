@@ -650,15 +650,18 @@ export class QueryBuilderExplorerPreviewDataState {
   isGeneratingPreviewData = false;
   propertyName = '(unknown)';
   previewData?: QueryBuilderPreviewData | undefined;
+  previewDataAbortController?: AbortController | undefined;
 
   constructor() {
     makeObservable(this, {
       previewData: observable.ref,
       isGeneratingPreviewData: observable,
       propertyName: observable,
+      previewDataAbortController: observable,
       setPropertyName: action,
       setIsGeneratingPreviewData: action,
       setPreviewData: action,
+      setPreviewDataAbortController: action,
     });
   }
 
@@ -672,6 +675,10 @@ export class QueryBuilderExplorerPreviewDataState {
 
   setPreviewData(val: QueryBuilderPreviewData | undefined): void {
     this.previewData = val;
+  }
+
+  setPreviewDataAbortController(val: AbortController | undefined): void {
+    this.previewDataAbortController = val;
   }
 }
 
@@ -859,6 +866,7 @@ export class QueryBuilderExplorerState {
       this,
     );
     const propertyType = node.property.genericType.value.rawType;
+    this.previewDataState.setPreviewDataAbortController(new AbortController());
     try {
       switch (propertyType.path) {
         case PRIMITIVE_TYPE.NUMBER:
@@ -874,6 +882,10 @@ export class QueryBuilderExplorerState {
               this.queryBuilderState.executionContextState.mapping,
               runtime,
               this.queryBuilderState.graphManagerState.graph,
+              {
+                abortController:
+                  this.previewDataState.previewDataAbortController,
+              },
             )) as ExecutionResult;
           assertType(
             previewResult,
@@ -911,12 +923,17 @@ export class QueryBuilderExplorerState {
               this.queryBuilderState.executionContextState.mapping,
               runtime,
               this.queryBuilderState.graphManagerState.graph,
+              {
+                abortController:
+                  this.previewDataState.previewDataAbortController,
+              },
             )) as ExecutionResult;
           assertType(
             previewResult,
             TDSExecutionResult,
             `Unexpected preview data format`,
           );
+          this.previewDataState.setPreviewDataAbortController(undefined);
           this.previewDataState.setPreviewData(
             previewResult.result as QueryBuilderPreviewData,
           );
@@ -929,6 +946,9 @@ export class QueryBuilderExplorerState {
       }
     } catch (error) {
       assertErrorThrown(error);
+      if (error.name === 'AbortError') {
+        return;
+      }
       this.queryBuilderState.applicationStore.notificationService.notifyWarning(
         `Can't preview data for property '${node.property.name}'. Error: ${error.message}`,
       );

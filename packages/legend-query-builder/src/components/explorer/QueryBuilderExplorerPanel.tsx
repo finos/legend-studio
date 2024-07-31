@@ -220,7 +220,14 @@ const QueryBuilderExplorerPreviewDataModal = observer(
     const { queryBuilderState } = props;
     const applicationStore = queryBuilderState.applicationStore;
     const previewDataState = queryBuilderState.explorerState.previewDataState;
-    const close = (): void => previewDataState.setPreviewData(undefined);
+    const close = (): void => {
+      if (previewDataState.previewDataAbortController) {
+        previewDataState.previewDataAbortController.abort();
+        previewDataState.setPreviewDataAbortController(undefined);
+      }
+      previewDataState.setIsGeneratingPreviewData(false);
+      previewDataState.setPreviewData(undefined);
+    };
 
     return (
       <Dialog

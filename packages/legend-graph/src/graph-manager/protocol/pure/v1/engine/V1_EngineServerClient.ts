@@ -652,13 +652,16 @@ export class V1_EngineServerClient extends AbstractServerClient {
     options?: {
       returnAsResponse?: boolean;
       serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
+      abortController?: AbortController | undefined;
     },
   ): Promise<PlainObject<V1_ExecutionResult> | Response> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.EXECUTE),
       `${this._execution()}/execute`,
       this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.EXECUTE),
-      {},
+      {
+        signal: options?.abortController?.signal ?? null,
+      },
       undefined,
       {
         serializationFormat: options?.serializationFormat

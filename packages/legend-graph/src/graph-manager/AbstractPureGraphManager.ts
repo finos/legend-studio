@@ -155,6 +155,7 @@ export interface ExecutionOptions {
   convertUnsafeNumbersToString?: boolean | undefined;
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
   parameterValues?: ParameterValue[];
+  abortController?: AbortController | undefined;
 }
 
 export interface ServiceRegistrationOptions {
