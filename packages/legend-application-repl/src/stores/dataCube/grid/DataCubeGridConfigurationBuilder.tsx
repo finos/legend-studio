@@ -53,6 +53,7 @@ import {
   INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
   INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
+  INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
@@ -640,6 +641,16 @@ export function generateGridOptionsFromSnapshot(
         loadingCellRenderer: DataCubeGridLoadingCellRenderer,
         sortable: false, // TODO: @akphi - we can support this in the configuration
       } satisfies ColDef,
+      // NOTE: Internal column used for programatically trigger data fetch when filter is modified
+      {
+        colId: INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID,
+        hide: true,
+        enableValue: false,
+        enablePivot: false,
+        enableRowGroup: false,
+        filter: 'agTextColumnFilter',
+        suppressColumnsToolPanel: true,
+      },
       // TODO: handle pivot and column grouping
       ...configuration.columns.map((column) => {
         const columnData = {

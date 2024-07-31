@@ -228,27 +228,26 @@ const _SUPPORTED_TOP_LEVEL_FUNCTIONS: {
   func: string;
   parameters: number;
 }[] = [
-  { func: DataCubeFunction.FILTER, parameters: 1 },
   { func: DataCubeFunction.EXTEND, parameters: 1 },
+  { func: DataCubeFunction.FILTER, parameters: 1 },
   { func: DataCubeFunction.SELECT, parameters: 1 },
   { func: DataCubeFunction.GROUP_BY, parameters: 3 },
-  { func: DataCubeFunction.LIMIT, parameters: 1 },
   { func: DataCubeFunction.PIVOT, parameters: 3 },
-  { func: DataCubeFunction.SORT, parameters: 1 },
-
   { func: DataCubeFunction.CAST, parameters: 1 },
+  { func: DataCubeFunction.SORT, parameters: 1 },
+  { func: DataCubeFunction.LIMIT, parameters: 1 },
 ];
 
 // NOTE: this corresponds to the sequence:
-// filter()->extend()->groupBy()->select()->pivot()->cast()->extend()->sort()->limit()
+// extend()->filter()->groupBy()->select()->pivot()->cast()->extend()->sort()->limit()
 // which represents the ONLY query shape that we currently support
 const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN: {
   func: string;
   repeat?: boolean | undefined;
   required?: boolean | undefined;
 }[] = [
-  { func: DataCubeFunction.FILTER },
   { func: DataCubeFunction.EXTEND },
+  { func: DataCubeFunction.FILTER },
   { func: DataCubeFunction.SELECT },
   { func: DataCubeFunction.GROUP_BY },
   { func: DataCubeFunction.PIVOT },
@@ -464,6 +463,9 @@ export function validateAndBuildQuerySnapshot(
   }));
   data.sourceColumns.map((col) => colsMap.set(col.name, col));
 
+  // --------------------------------- LEAF EXTEND ---------------------------------
+  // TODO: @akphi - implement this
+
   // --------------------------------- FILTER ---------------------------------
 
   if (funcMap.filter) {
@@ -473,9 +475,6 @@ export function validateAndBuildQuerySnapshot(
     //   }),
     // );
   }
-
-  // --------------------------------- LEAF EXTEND ---------------------------------
-  // TODO: @akphi - implement this
 
   // --------------------------------- SELECT ---------------------------------
 

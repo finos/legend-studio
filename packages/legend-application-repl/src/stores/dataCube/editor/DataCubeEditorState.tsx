@@ -32,8 +32,8 @@ import { DataCubeEditor } from '../../../components/dataCube/editor/DataCubeEdit
 export enum DataCubeEditorTab {
   GENERAL_PROPERTIES = 'General Properties',
   COLUMN_PROPERTIES = 'Column Properties',
-  FILTER = 'Filter',
   EXTENDED_COLUMNS = 'Extended Columns',
+  FILTER = 'Filter',
   COLUMNS = 'Columns',
   VERTICAL_PIVOTS = 'Vertical Pivots',
   HORIZONTAL_PIVOTS = 'Horizontal Pivots',
