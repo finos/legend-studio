@@ -231,11 +231,11 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       const nonNullableProject = guaranteeNonNullable(project);
       const dataSpace = queryBuilderState.dataSpace;
       const executionContext = queryBuilderState.executionContext;
-      const runtime =
+      const runtimePath =
         queryBuilderState.executionContextState.runtimeValue instanceof
         RuntimePointer
           ? queryBuilderState.executionContextState.runtimeValue
-              .packageableRuntime.value.name
+              .packageableRuntime.value.path
           : undefined;
       const route =
         applicationStore.navigationService.navigator.generateAddress(
@@ -245,8 +245,8 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
             nonNullableProject.versionId,
             dataSpace.path,
             executionContext.name,
-            runtime,
-            queryBuilderState.class?.name,
+            runtimePath,
+            queryBuilderState.class?.path,
           ),
         );
 
