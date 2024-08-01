@@ -102,42 +102,6 @@ const getAggregationTDSColumnCustomizations = (
   }
 };
 
-const getLocalColDefs = (
-  executionResult: TDSExecutionResult,
-  resultState: QueryBuilderResultState,
-): DataGridColumnDefinition<
-  QueryBuilderTDSRowDataType,
-  QueryBuilderTDSResultCellDataType
->[] =>
-  executionResult.result.columns.map((colName) => {
-    const col = {
-      minWidth: 50,
-      sortable: true,
-      resizable: true,
-      field: colName,
-      flex: 1,
-      enablePivot: true,
-      enableRowGroup: true,
-      enableValue: true,
-      ...getAggregationTDSColumnCustomizations(executionResult, colName),
-    } as DataGridColumnDefinition;
-    const persistedColumn = resultState.gridConfig?.columns.find(
-      (c) => c.colId === colName,
-    );
-    if (persistedColumn) {
-      if (persistedColumn.width) {
-        col.width = persistedColumn.width;
-      }
-      col.pinned = persistedColumn.pinned ?? null;
-      col.rowGroup = persistedColumn.rowGroup ?? false;
-      col.rowGroupIndex = persistedColumn.rowGroupIndex ?? null;
-      col.aggFunc = persistedColumn.aggFunc ?? null;
-      col.pivot = persistedColumn.pivot ?? false;
-      col.hide = persistedColumn.hide ?? false;
-    }
-    return col;
-  });
-
 const QueryResultCellRenderer = observer(
   (params: IQueryRendererParamsWithGridType) => {
     const resultState = params.resultState;
@@ -185,6 +149,47 @@ const QueryResultCellRenderer = observer(
     );
   },
 );
+
+const getLocalColDefs = (
+  executionResult: TDSExecutionResult,
+  resultState: QueryBuilderResultState,
+): DataGridColumnDefinition<
+  QueryBuilderTDSRowDataType,
+  QueryBuilderTDSResultCellDataType
+>[] =>
+  executionResult.result.columns.map((colName) => {
+    const col = {
+      minWidth: 50,
+      sortable: true,
+      resizable: true,
+      field: colName,
+      flex: 1,
+      enablePivot: true,
+      enableRowGroup: true,
+      enableValue: true,
+      cellRenderer: QueryResultCellRenderer,
+      cellRendererParams: {
+        resultState: resultState,
+        tdsExecutionResult: executionResult,
+      },
+      ...getAggregationTDSColumnCustomizations(executionResult, colName),
+    } as DataGridColumnDefinition;
+    const persistedColumn = resultState.gridConfig?.columns.find(
+      (c) => c.colId === colName,
+    );
+    if (persistedColumn) {
+      if (persistedColumn.width) {
+        col.width = persistedColumn.width;
+      }
+      col.pinned = persistedColumn.pinned ?? null;
+      col.rowGroup = persistedColumn.rowGroup ?? false;
+      col.rowGroupIndex = persistedColumn.rowGroupIndex ?? null;
+      col.aggFunc = persistedColumn.aggFunc ?? null;
+      col.pivot = persistedColumn.pivot ?? false;
+      col.hide = persistedColumn.hide ?? false;
+    }
+    return col;
+  });
 
 const getFilterTDSColumnCustomizations = (
   result: TDSExecutionResult,
