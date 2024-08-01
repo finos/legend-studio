@@ -136,7 +136,6 @@ button:focus-visible {
 .data-cube-grid .ag-theme-quartz {
   --ag-card-radius: 0;
   --ag-active-color: var(--tw-color-sky-600);
-  --ag-input-focus-border-color: var(--tw-color-sky-600);
   --ag-range-selection-border-color: var(--tw-color-sky-600);
   --ag-range-selection-highlight-color: var(
     --tw-color-sky-50
@@ -158,6 +157,9 @@ button:focus-visible {
   --ag-background-color: var(--tw-color-white);
   --ag-menu-background-color: var(--tw-color-white);
   --ag-menu-border-color: var(--tw-color-neutral-300);
+  --ag-border-radius: 0;
+  --ag-input-focus-box-shadow: none;
+  --ag-input-focus-border-color: var(--tw-color-sky-600);
 
   // tooltip
   --ag-tooltip-background-color: var(--tw-color-white);
@@ -259,6 +261,7 @@ button:focus-visible {
     height: 16px;
     display: flex;
     align-items: center;
+    border-radius: 3px;
 
     .ag-column-drop-cell-text {
       height: 16px;
@@ -272,8 +275,13 @@ button:focus-visible {
   }
 
   .ag-column-panel {
+    .ag-column-select-header-filter-wrapper .ag-input-wrapper::before {
+      margin-left: 3px;
+    }
+
     .ag-input-field-input.ag-text-field-input {
-      padding: 0 3px;
+      padding: 2px 2px 2px 18px;
+      font-size: 10px;
     }
   }
 
