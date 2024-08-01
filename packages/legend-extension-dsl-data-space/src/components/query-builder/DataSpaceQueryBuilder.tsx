@@ -28,6 +28,8 @@ import {
   PanelHeader,
   MoreVerticalIcon,
   compareLabelFn,
+  PanelHeaderActionItem,
+  AnchorLinkIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
@@ -50,10 +52,11 @@ import {
 import type { DataSpaceInfo } from '../../stores/shared/DataSpaceInfo.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { useEffect } from 'react';
-import { guaranteeType } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { type DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DataSpaceAdvancedSearchModal } from './DataSpaceAdvancedSearchModal.js';
+import { generateDataSpaceQueryCreatorRoute } from '../../__lib__/to-delete/DSL_DataSpace_LegendQueryNavigation_to_delete.js';
 
 export type DataSpaceOption = {
   label: string;
@@ -225,10 +228,55 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       );
     }, [queryBuilderState, applicationStore]);
 
+    const copyDataSpaceLinkToClipboard = (): void => {
+      const nonNullableProject = guaranteeNonNullable(
+        project,
+        'Unable to copy data space query set up link to clipboard because project is null',
+      );
+      const dataSpace = queryBuilderState.dataSpace;
+      const executionContext = queryBuilderState.executionContext;
+      const runtimePath =
+        queryBuilderState.executionContextState.runtimeValue instanceof
+        RuntimePointer
+          ? queryBuilderState.executionContextState.runtimeValue
+              .packageableRuntime.value.path
+          : undefined;
+      const route =
+        applicationStore.navigationService.navigator.generateAddress(
+          generateDataSpaceQueryCreatorRoute(
+            nonNullableProject.groupId,
+            nonNullableProject.artifactId,
+            nonNullableProject.versionId,
+            dataSpace.path,
+            executionContext.name,
+            runtimePath,
+            queryBuilderState.class?.path,
+          ),
+        );
+
+      navigator.clipboard
+        .writeText(route)
+        .catch(() =>
+          applicationStore.notificationService.notifyError(
+            'Error copying data space query set up link to clipboard',
+          ),
+        );
+
+      applicationStore.notificationService.notifySuccess(
+        'Copied data space query set up link to clipboard',
+      );
+    };
+
     return (
       <div className="query-builder__setup__config-group">
         <PanelHeader title="properties">
           <PanelHeaderActions>
+            <PanelHeaderActionItem
+              title="copy data space query set up link to clipboard"
+              onClick={copyDataSpaceLinkToClipboard}
+            >
+              <AnchorLinkIcon />
+            </PanelHeaderActionItem>
             <ControlledDropdownMenu
               className="panel__header__action query-builder__setup__config-group__header__dropdown-trigger"
               title="Show Settings..."
