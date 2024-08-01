@@ -274,7 +274,6 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
             <PanelHeaderActionItem
               title="copy data space query set up link to clipboard"
               onClick={copyDataSpaceLinkToClipboard}
-              disabled={queryBuilderState.dataSpace === undefined}
             >
               <AnchorLinkIcon />
             </PanelHeaderActionItem>
