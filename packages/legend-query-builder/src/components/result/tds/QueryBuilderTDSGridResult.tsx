@@ -119,6 +119,11 @@ const getLocalColDefs = (
       enablePivot: true,
       enableRowGroup: true,
       enableValue: true,
+      cellRenderer: QueryResultCellRenderer,
+      cellRendererParams: {
+        resultState: resultState,
+        tdsExecutionResult: executionResult,
+      },
       ...getAggregationTDSColumnCustomizations(executionResult, colName),
     } as DataGridColumnDefinition;
     const persistedColumn = resultState.gridConfig?.columns.find(
