@@ -247,12 +247,12 @@ const DataCubeGridScroller = observer(() => {
 
   return (
     <div
-      className="absolute -top-9 flex items-center rounded-sm border border-neutral-300 bg-neutral-100 p-1 pr-2 text-neutral-500 shadow-sm"
+      className="absolute -top-10 flex items-center rounded-sm border border-neutral-300 bg-neutral-100 p-1 pr-2 text-neutral-500 shadow-sm"
       style={{
         right:
           (gridClientSideBarElement !== null
-            ? gridClientSideBarElement.getBoundingClientRect().width + 12
-            : 16) +
+            ? gridClientSideBarElement.getBoundingClientRect().width + 6
+            : 10) +
           (gridVerticalScrollbar !== null
             ? gridVerticalScrollbar.getBoundingClientRect().width
             : 0),

@@ -22,12 +22,18 @@
 html {
   box-sizing: border-box;
   font-family: Roboto, sans-serif;
+  overscroll-behavior: none;
 }
 
 body {
   // default font size is 12px everywhere to make the app more compact
   font-size: 12px;
 }
+
+// ---------------------------------------- SCROLLBAR ----------------------------------------
+// Make sure to configure the scrollbar to be consistent across browsers
+// and to make sure OS-native auto-hide scrollbar behavior is suppressed
+// See https://stackoverflow.com/questions/38557671/how-to-prevent-scrollbars-from-hiding-on-os-x-without-impacting-windows-users
 
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -38,21 +44,30 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #00000010;
-  border: 0.2rem solid transparent;
+  background: var(--tw-color-neutral-400);
+  border: 3.5px solid transparent;
   background-clip: content-box;
-  border-radius: 0.4rem;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #00000020;
-  border: 0.2rem solid transparent;
+  background: var(--tw-color-neutral-500);
+  border: 3.5px solid transparent;
   background-clip: content-box;
-  border-radius: 0.4rem;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:window-inactive {
-  background: #00000005;
+  background: var(--tw-color-neutral-200);
+  border: 3.5px solid transparent;
+  background-clip: content-box;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar {
+  appearance: none;
+  width: 10px;
+  height: 10px;
 }
 
 // ---------------------------------------- RESET ----------------------------------------
@@ -157,6 +172,7 @@ button:focus-visible {
   --ag-list-item-height: 18px;
   --ag-widget-horizontal-spacing: 4px;
   --ag-widget-vertical-spacing: 4px;
+  --ag-wrapper-border-radius: 0;
 
   // --------------------------------- Pinning ---------------------------------
   // Improve visibility of pinned columns

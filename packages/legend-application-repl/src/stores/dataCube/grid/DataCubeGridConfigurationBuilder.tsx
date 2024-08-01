@@ -493,6 +493,7 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
       event.api.hidePopupMenu(); // hide context-menu while scrolling
     },
     onBodyScrollEnd: () => grid.setScrollHintText(undefined),
+    scrollbarWidth: 10,
     // -------------------------------------- CONTEXT MENU --------------------------------------
     preventDefaultOnContextMenu: true, // prevent showing the browser's context menu
     columnMenu: 'new', // ensure context menu works on header
