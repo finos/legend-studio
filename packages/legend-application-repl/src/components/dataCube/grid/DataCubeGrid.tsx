@@ -341,7 +341,7 @@ const DataCubeGridClient = observer(() => {
   return (
     <div className="relative h-[calc(100%_-_20px)] w-full">
       <AgGridReact
-        className="data-cube-grid ag-theme-balham"
+        className="data-cube-grid ag-theme-quartz"
         rowModelType="serverSide"
         serverSideDatasource={grid.clientDataSource}
         context={{

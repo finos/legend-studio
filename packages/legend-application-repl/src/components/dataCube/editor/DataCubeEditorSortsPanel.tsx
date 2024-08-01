@@ -50,11 +50,11 @@ const SortDirectionDropdown = observer(
 
     return (
       <div className="group relative flex h-full items-center">
-        <div className="flex h-[18px] w-32 items-center border border-transparent px-2 text-sm text-neutral-500 group-hover:invisible">
+        <div className="flex h-[18px] w-32 items-center border border-transparent px-2 text-sm text-neutral-400 group-hover:invisible">
           {getSortDirectionLabel(column.operation)}
         </div>
         <button
-          className="invisible absolute right-0 z-10 flex h-[18px] w-32 items-center justify-between border border-neutral-500 pl-2 pr-0.5 text-sm text-neutral-700 group-hover:visible"
+          className="invisible absolute right-0 z-10 flex h-[18px] w-32 items-center justify-between border border-neutral-400 pl-2 pr-0.5 text-sm text-neutral-700 group-hover:visible"
           /**
            * ag-grid row select event listener is at a deeper layer than this dropdown trigger
            * so in order to prevent selecting the row while opening the dropdown, we need to stop
@@ -72,7 +72,12 @@ const SortDirectionDropdown = observer(
           </div>
         </button>
         <DropdownMenu
-          className="w-32 select-none border border-neutral-300 bg-white"
+          menuProps={{
+            classes: {
+              paper: 'rounded-none mt-[1px]',
+              list: 'w-32 p-0 rounded-none border border-neutral-400 bg-white max-h-40 overflow-y-auto py-0.5',
+            },
+          }}
           {...menuProps}
         >
           <DropdownMenuItem

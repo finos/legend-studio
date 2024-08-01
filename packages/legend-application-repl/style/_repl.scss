@@ -15,7 +15,7 @@
  */
 
 @import url('@ag-grid-community/styles/ag-grid.css');
-@import url('@ag-grid-community/styles/ag-theme-balham.css');
+@import url('@ag-grid-community/styles/ag-theme-quartz.css');
 
 // ---------------------------------------- NORMALIZE ----------------------------------------
 
@@ -117,10 +117,11 @@ button:focus-visible {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100' %3E%3Cpath d='M0 100 L100 0' stroke-width='7' stroke='%23ef4444' /%3E%3C/svg%3E");
 }
 
-.data-cube-grid.ag-theme-balham,
-.data-cube-grid .ag-theme-balham {
+.data-cube-grid.ag-theme-quartz,
+.data-cube-grid .ag-theme-quartz {
+  --ag-card-radius: 0;
+  --ag-active-color: var(--tw-color-sky-600);
   --ag-input-focus-border-color: var(--tw-color-sky-600);
-  --ag-balham-active-color: var(--tw-color-sky-600);
   --ag-range-selection-border-color: var(--tw-color-sky-600);
   --ag-range-selection-highlight-color: var(
     --tw-color-sky-50
@@ -138,6 +139,10 @@ button:focus-visible {
   --ag-header-foreground-color: var(--tw-color-black);
   --ag-row-hover-color: #d4d4d415; // from tailwind neutral 300
   --ag-popup-shadow: 2px 2px 5px rgb(0 0 0 / 20%);
+  --ag-header-column-resize-handle-width: 1px;
+  --ag-background-color: var(--tw-color-white);
+  --ag-menu-background-color: var(--tw-color-white);
+  --ag-menu-border-color: var(--tw-color-neutral-300);
 
   // tooltip
   --ag-tooltip-background-color: var(--tw-color-white);
@@ -198,6 +203,11 @@ button:focus-visible {
     font-weight: 500;
   }
 
+  .ag-header-cell-menu-button:hover {
+    background-color: transparent;
+    box-shadow: none;
+  }
+
   // --------------------------------- Context Menu ---------------------------------
   .ag-menu {
     // Gives more spacing to the menu compared to the grid where we favors compactness
@@ -206,6 +216,15 @@ button:focus-visible {
 
   .ag-menu-list {
     min-width: 120px;
+  }
+
+  .ag-menu-option {
+    cursor: default;
+    font-weight: initial;
+  }
+
+  .ag-menu-option-active {
+    background-color: var(--tw-color-neutral-100);
   }
 
   // --------------------------------- Side Bar + Drop Zone (for pivoting) ---------------------------------
@@ -312,11 +331,11 @@ button:focus-visible {
   // ---------------------------------------------------------------------------
 }
 
-.data-cube-column-selector .ag-theme-balham {
-  --ag-balham-active-color: var(--tw-color-sky-600);
+.data-cube-column-selector .ag-theme-quartz {
+  --ag-active-color: var(--tw-color-sky-600);
   --ag-input-focus-border-color: var(--tw-color-sky-600);
   --ag-range-selection-border-color: var(--tw-color-sky-600);
-  --ag-selected-row-background-color: var(--tw-color-sky-200);
+  --ag-selected-row-background-color: var(--tw-color-sky-100);
   --ag-border-color: var(--tw-color-white);
   --ag-header-background-color: var(--tw-color-white);
   --ag-header-height: 20px;
