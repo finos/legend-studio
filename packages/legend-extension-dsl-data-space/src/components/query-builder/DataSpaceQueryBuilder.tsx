@@ -231,7 +231,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     const copyDataSpaceLinkToClipboard = (): void => {
       const nonNullableProject = guaranteeNonNullable(
         project,
-        'Unable to copy data space link to clipboard because project is null',
+        'Unable to copy data space query set up link to clipboard because project is null',
       );
       const dataSpace = queryBuilderState.dataSpace;
       const executionContext = queryBuilderState.executionContext;
@@ -258,12 +258,12 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
         .writeText(route)
         .catch(() =>
           applicationStore.notificationService.notifyError(
-            'Error copying data space link to clipboard',
+            'Error copying data space query set up link to clipboard',
           ),
         );
 
       applicationStore.notificationService.notifySuccess(
-        'Copied data space link to clipboard',
+        'Copied data space query set up link to clipboard',
       );
     };
 
@@ -272,7 +272,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
         <PanelHeader title="properties">
           <PanelHeaderActions>
             <PanelHeaderActionItem
-              title="copy data space link to clipboard"
+              title="copy data space query set up link to clipboard"
               onClick={copyDataSpaceLinkToClipboard}
             >
               <AnchorLinkIcon />
