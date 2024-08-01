@@ -21,7 +21,31 @@ import {
   skipObserved,
 } from '@finos/legend-graph';
 import { makeObservable, override, observable } from 'mobx';
-import type { DataSpace } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import {
+  DataSpaceSupportCombinedInfo,
+  DataSpaceSupportEmail,
+  DataSpaceSupportInfo,
+  type DataSpace,
+} from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+
+export const observe_DataSpaceSupportInfo = (
+  supportInfo: DataSpaceSupportInfo,
+) => {
+  if (supportInfo instanceof DataSpaceSupportEmail) {
+    makeObservable(supportInfo, {
+      address: observable,
+      documentationUrl: observable,
+    });
+  } else if (supportInfo instanceof DataSpaceSupportCombinedInfo) {
+    makeObservable(supportInfo, {
+      emails: observable,
+      website: observable,
+      faqUrl: observable,
+      supportUrl: observable,
+      documentationUrl: observable,
+    });
+  }
+};
 
 export const observe_DataSpace = skipObserved(
   (metamodel: DataSpace): DataSpace => {
@@ -30,7 +54,6 @@ export const observe_DataSpace = skipObserved(
     makeObservable<DataSpace, '_elementHashCode'>(metamodel, {
       title: observable,
       description: observable,
-      executionContexts: observable,
       supportInfo: observable,
       _elementHashCode: override,
     });
@@ -38,9 +61,9 @@ export const observe_DataSpace = skipObserved(
     // TODO
     // metamodel.executionContexts.forEach(observe_DataSpaceExecutionContext);
     // observe_DataSpaceExecutionContext(metamodel.defaultExecutionContext);
-    // if (metamodel.supportInfo) {
-    //   observe_DataSpaceSupportInfo(metamodel.supportInfo);
-    // }
+    if (metamodel.supportInfo) {
+      observe_DataSpaceSupportInfo(metamodel.supportInfo);
+    }
     metamodel.stereotypes.forEach(observe_StereotypeReference);
     metamodel.taggedValues.forEach(observe_TaggedValue);
 

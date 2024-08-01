@@ -15,9 +15,11 @@
  */
 
 import { action } from 'mobx';
-import type {
-  DataSpace,
-  DataSpaceSupportInfo,
+import {
+  DataSpaceSupportEmail,
+  type DataSpace,
+  DataSpaceSupportCombinedInfo,
+  type DataSpaceSupportInfo,
 } from '@finos/legend-extension-dsl-data-space/graph';
 
 export const set_title = action(
@@ -32,11 +34,48 @@ export const set_description = action(
   },
 );
 
-export const set_supportInfo = action(
-  (
-    dataSpace: DataSpace,
-    supportInfo: DataSpaceSupportInfo | undefined,
-  ): void => {
-    dataSpace.supportInfo = supportInfo;
+export const set_email = action(
+  (supportInfo: DataSpaceSupportEmail, email: string): void => {
+    supportInfo.address = email;
+  },
+);
+
+export const set_documentationUrl = action(
+  (supportInfo: DataSpaceSupportInfo, url: string) => {
+    supportInfo.documentationUrl = url;
+  },
+);
+
+export const set_emails = action(
+  (supportInfo: DataSpaceSupportCombinedInfo, emails: string[]) => {
+    supportInfo.emails = emails.length ? emails : undefined;
+  },
+);
+
+export const set_website = action(
+  (supportInfo: DataSpaceSupportCombinedInfo, website: string) => {
+    supportInfo.website = website;
+  },
+);
+
+export const set_supportUrl = action(
+  (supportInfo: DataSpaceSupportCombinedInfo, supportUrl: string) => {
+    supportInfo.supportUrl = supportUrl;
+  },
+);
+
+export const set_faqUrl = action(
+  (supportInfo: DataSpaceSupportCombinedInfo, faqUrl: string) => {
+    supportInfo.faqUrl = faqUrl;
+  },
+);
+
+export const set_supportInfotype = action(
+  (dataSpace: DataSpace, type: string) => {
+    if (type === 'Email') {
+      dataSpace.supportInfo = new DataSpaceSupportEmail();
+    } else if (type === 'CombinedInfo') {
+      dataSpace.supportInfo = new DataSpaceSupportCombinedInfo();
+    }
   },
 );

@@ -69,8 +69,7 @@ import {
 } from './DataSpacePreviewAction.js';
 
 import { DataSpaceEditor } from './DataSpaceEditor.js';
-import { DataSpaceEditorState } from '../stores/FormEditorState.js';
-
+import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
