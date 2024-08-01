@@ -52,7 +52,7 @@ export enum DataCubeGridClientExportFormat {
 }
 
 export enum INTERNAL__GridClientUtilityCssClassName {
-  ROOT = 'data-cube-grid.ag-theme-balham',
+  ROOT = 'data-cube-grid.ag-theme-quartz',
   HIGHLIGHT_ROW = 'data-cube-grid__utility--highlight-row',
   SHOW_VERTICAL_GRID_LINES = 'data-cube-grid__utility--show-vertical-grid-lines',
   SHOW_HORIZONTAL_GRID_LINES = 'data-cube-grid__utility--show-horizontal-grid-lines',
