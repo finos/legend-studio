@@ -38,6 +38,9 @@ import { ElementEditorState } from './ElementEditorState.js';
 import {
   type CompilationError,
   type PackageableElement,
+  type ExecutionResult,
+  type RawExecutionPlan,
+  type ExecutionResultWithMetadata,
   GRAPH_MANAGER_EVENT,
   LAMBDA_PIPE,
   ParserError,
@@ -45,8 +48,6 @@ import {
   RawLambda,
   buildSourceInformationSourceId,
   isStubbed_PackageableElement,
-  type ExecutionResult,
-  type RawExecutionPlan,
   reportGraphAnalytics,
   buildLambdaVariableExpressions,
   VariableExpression,
@@ -255,7 +256,7 @@ export class FunctionEditorState extends ElementEditorState {
   executionResult?: ExecutionResult | undefined; // NOTE: stored as lossless JSON string
   executionPlanState: ExecutionPlanState;
   parametersState: FunctionParametersState;
-  funcRunPromise: Promise<ExecutionResult> | undefined = undefined;
+  funcRunPromise: Promise<ExecutionResultWithMetadata> | undefined = undefined;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -388,7 +389,9 @@ export class FunctionEditorState extends ElementEditorState {
     this.executionResult = executionResult;
   };
 
-  setFuncRunPromise = (promise: Promise<ExecutionResult> | undefined): void => {
+  setFuncRunPromise = (
+    promise: Promise<ExecutionResultWithMetadata> | undefined,
+  ): void => {
     this.funcRunPromise = promise;
   };
 
@@ -536,9 +539,9 @@ export class FunctionEditorState extends ElementEditorState {
         report,
       );
       this.setFuncRunPromise(promise);
-      const result = (yield promise) as ExecutionResult;
+      const result = (yield promise) as ExecutionResultWithMetadata;
       if (this.funcRunPromise === promise) {
-        this.setExecutionResult(result);
+        this.setExecutionResult(result.executionResult);
         this.parametersState.setParameters([]);
         // report
         report.timings =

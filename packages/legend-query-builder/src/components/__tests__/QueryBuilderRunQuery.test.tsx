@@ -33,6 +33,7 @@ import { createSpy, integrationTest } from '@finos/legend-shared/test';
 import {
   create_RawLambda,
   stub_RawLambda,
+  V1_EXECUTION_RESULT,
   V1_PureGraphManager,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
@@ -71,8 +72,10 @@ test(
     const param = renderResult.getByRole('dialog');
     const graphManager = queryBuilderState.graphManagerState.graphManager;
     const pureManager = guaranteeType(graphManager, V1_PureGraphManager);
-    createSpy(pureManager.engine, 'runQueryAndReturnString').mockResolvedValue(
-      mocked,
+    const executionResultMap = new Map<string, string>();
+    executionResultMap.set(V1_EXECUTION_RESULT, mocked);
+    createSpy(pureManager.engine, 'runQueryAndReturnMap').mockResolvedValue(
+      executionResultMap,
     );
     // await
     await act(async () => {

@@ -110,9 +110,11 @@ test(integrationTest('test query execution with parameters'), async () => {
   createSpy(
     queryBuilderState.graphManagerState.graphManager,
     'runQuery',
-  ).mockResolvedValue(
-    V1_buildExecutionResult(V1_serializeExecutionResult(executionResult)),
-  );
+  ).mockResolvedValue({
+    executionResult: V1_buildExecutionResult(
+      V1_serializeExecutionResult(executionResult),
+    ),
+  });
   const queryBuilderResultPanel = await waitFor(() =>
     renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL),
   );
@@ -172,9 +174,11 @@ test(integrationTest('test query execution with parameters'), async () => {
   createSpy(
     queryBuilderState.graphManagerState.graphManager,
     'runQuery',
-  ).mockResolvedValue(
-    V1_buildExecutionResult(V1_serializeExecutionResult(executionResult1)),
-  );
+  ).mockResolvedValue({
+    executionResult: V1_buildExecutionResult(
+      V1_serializeExecutionResult(executionResult1),
+    ),
+  });
   await act(async () => {
     fireEvent.click(getByText(queryBuilderResultPanel1, 'Run Query'));
   });

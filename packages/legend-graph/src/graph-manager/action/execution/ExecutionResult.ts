@@ -74,6 +74,11 @@ export abstract class ExecutionResult {
   activities: ExecutionActivities[] | undefined;
 }
 
+export type ExecutionResultWithMetadata = {
+  executionResult: ExecutionResult;
+  executionTraceId?: string;
+};
+
 // ------------------------------------------ Model -----------------------------------------------
 export class JsonBuilder {
   _type = BuilderType.JSON_BUILDER;

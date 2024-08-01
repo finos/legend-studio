@@ -48,7 +48,10 @@ import {
   type DEPRECATED__InputData,
   type DEPRECATED__MappingTestAssert,
   type Mapping,
+  type RawExecutionPlan,
+  type DEPRECATED__MappingTest,
   type ExecutionResult,
+  type ExecutionResultWithMetadata,
   extractExecutionResultValues,
   GRAPH_MANAGER_EVENT,
   LAMBDA_PIPE,
@@ -71,12 +74,10 @@ import {
   DefaultH2AuthenticationStrategy,
   buildSourceInformationSourceId,
   TableAlias,
-  type RawExecutionPlan,
   isStubbed_RawLambda,
   stub_Class,
   generateIdentifiedConnectionId,
   DEPRECATED__validate_MappingTest,
-  type DEPRECATED__MappingTest,
   ModelStore,
   reportGraphAnalytics,
 } from '@finos/legend-graph';
@@ -422,7 +423,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
   assertionState: MappingTestAssertionState;
   isGeneratingPlan = false;
   executionPlanState: ExecutionPlanState;
-  testRunPromise: Promise<ExecutionResult> | undefined = undefined;
+  testRunPromise: Promise<ExecutionResultWithMetadata> | undefined = undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -491,7 +492,9 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
     this.selectedTab = val;
   }
 
-  setTestRunPromise(promise: Promise<ExecutionResult> | undefined): void {
+  setTestRunPromise(
+    promise: Promise<ExecutionResultWithMetadata> | undefined,
+  ): void {
     this.testRunPromise = promise;
   }
 
@@ -734,7 +737,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
 
   handleError(
     error: Error,
-    promise: Promise<ExecutionResult> | undefined,
+    promise: Promise<ExecutionResultWithMetadata> | undefined,
   ): void {
     assertErrorThrown(error);
     this.editorStore.applicationStore.logService.error(
@@ -808,9 +811,9 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
         },
       );
       this.setTestRunPromise(promise);
-      const result = (yield promise) as ExecutionResult;
+      const result = (yield promise) as ExecutionResultWithMetadata;
       if (this.testRunPromise === promise) {
-        this.handleResult(result);
+        this.handleResult(result.executionResult);
       }
     } catch (error) {
       // When user cancels the query by calling the cancelQuery api, it will throw an execution failure error.

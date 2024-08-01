@@ -45,6 +45,7 @@ import {
   CubesLoadingIndicatorIcon,
   CubesLoadingIndicator,
   InfoCircleIcon,
+  ShareBoxIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -179,6 +180,7 @@ export const QueryBuilderEmptyExecutionResultPanel = observer(
     );
   },
 );
+import { QueryBuilderBaseInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 
 export const QueryBuilderResultValues = observer(
   (props: {
@@ -530,13 +532,62 @@ export const QueryBuilderResultPanel = observer(
                 Running Query...
               </div>
             )}
-
-            <div
-              data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_ANALYTICS}
-              className="query-builder__result__analytics"
-            >
-              {resultDescription ?? ''}
-            </div>
+            {resultDescription && resultState.executionTraceId && (
+              <div
+                data-testid={
+                  QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_ANALYTICS
+                }
+                className="query-builder__result__analytics"
+              >
+                <QueryBuilderBaseInfoTooltip
+                  title="Execution Result Analytics"
+                  data={[
+                    {
+                      label: 'Trace',
+                      value: 'available here',
+                      actionButton: (
+                        <div className="query-builder__tooltip__item__action">
+                          <button
+                            disabled={
+                              !queryBuilderState.config?.zipkinTraceBaseURL
+                            }
+                            title={
+                              queryBuilderState.config?.zipkinTraceBaseURL
+                                ? ''
+                                : 'No zipkin trace URL configured'
+                            }
+                            onClick={() => {
+                              if (
+                                queryBuilderState.config?.zipkinTraceBaseURL
+                              ) {
+                                applicationStore.navigationService.navigator.visitAddress(
+                                  queryBuilderState.config.zipkinTraceBaseURL +
+                                    resultState.executionTraceId,
+                                );
+                              }
+                            }}
+                          >
+                            <ShareBoxIcon />
+                          </button>
+                        </div>
+                      ),
+                    },
+                  ]}
+                >
+                  <div className="editable-value">{resultDescription}</div>
+                </QueryBuilderBaseInfoTooltip>
+              </div>
+            )}
+            {resultDescription && !resultState.executionTraceId && (
+              <div
+                data-testid={
+                  QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_ANALYTICS
+                }
+                className="query-builder__result__analytics"
+              >
+                {resultDescription}
+              </div>
+            )}
             {executionResult && resultState.checkForStaleResults && (
               <div className="query-builder__result__stale-status">
                 <div className="query-builder__result__stale-status__icon">
