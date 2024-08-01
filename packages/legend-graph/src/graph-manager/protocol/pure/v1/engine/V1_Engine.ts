@@ -759,6 +759,7 @@ export class V1_Engine {
         {
           returnAsResponse: true,
           serializationFormat: options?.serializationFormat,
+          abortController: options?.abortController,
         },
       )) as Response
     ).text();
