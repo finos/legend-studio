@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.5.26
+
+### Patch Changes
+
+- [#3394](https://github.com/finos/legend-studio/pull/3394) [`3e857e6`](https://github.com/finos/legend-studio/commit/3e857e6f483822bbf4047f25a4f7357b452fc1c6) ([@travisstebbins](https://github.com/travisstebbins)) - Add link button to share data space
+
 ## 13.5.25
 
 ## 13.5.24

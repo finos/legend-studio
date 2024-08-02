@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 1.0.13
+
+### Patch Changes
+
+- [#3398](https://github.com/finos/legend-studio/pull/3398) [`35d659f`](https://github.com/finos/legend-studio/commit/35d659f9a4f5f9b4e1f3799ca30a1ee3bc224d62) ([@viju4076](https://github.com/viju4076)) - warning message addition on nested constraints selection in data quality class validation
+
 ## 1.0.12
 
 ## 1.0.11

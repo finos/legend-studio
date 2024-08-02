@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 4.14.69
+
+### Patch Changes
+
+- [#3395](https://github.com/finos/legend-studio/pull/3395) [`ecb65ab`](https://github.com/finos/legend-studio/commit/ecb65abf6446eeecef7d5824b59ccec49fb9698a) ([@travisstebbins](https://github.com/travisstebbins)) - Allow user to close "Preview data" button before request completes
+
+- [#3399](https://github.com/finos/legend-studio/pull/3399) [`69998e3`](https://github.com/finos/legend-studio/commit/69998e30e103aeec858bc3a376e014f580fa9bcb) ([@travisstebbins](https://github.com/travisstebbins)) - Add option to getValueSpecificationStringValue to wrap string in double quotes
+
+- [#3396](https://github.com/finos/legend-studio/pull/3396) [`ff0f895`](https://github.com/finos/legend-studio/commit/ff0f89576b31eb1a3566df042f8ed0f1566056f9) ([@travisstebbins](https://github.com/travisstebbins)) - Format number values with commas in grid local mode
+
 ## 4.14.68
 
 ## 4.14.67
