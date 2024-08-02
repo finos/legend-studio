@@ -1092,9 +1092,29 @@
 .data-quality-validation-graph-fetch-constraints-selection {
   width: 100%;
 
+  &__validation {
+    display: flex;
+    align-items: center;
+
+    &__msg {
+      line-height: 2rem;
+      color: var(--color-yellow-200);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.2rem;
+      user-select: none;
+    }
+
+    &__icon {
+      margin-right: 0.5rem;
+      color: var(--color-yellow-200);
+    }
+  }
+
   &__structural-attributes {
     display: flex;
-    justify-content: right;
+    justify-content: space-between;
+    margin-left: 1rem;
+    margin-right: 1rem;
   }
 
   &__config-group {

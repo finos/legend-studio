@@ -22,6 +22,7 @@ import {
   type RootGraphFetchTree,
   type PackageableElement,
   type Class,
+  type GraphFetchTree,
   buildRawLambdaFromLambdaFunction,
   CORE_PURE_PATH,
   FunctionType,
@@ -41,7 +42,10 @@ import {
 } from '@finos/legend-application-studio';
 import type { DataSpaceExecutionContext } from '@finos/legend-extension-dsl-data-space/graph';
 import { DataQualityGraphFetchTreeState } from './DataQualityGraphFetchTreeState.js';
-import { DataQualityRootGraphFetchTree } from '../../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
+import {
+  DataQualityPropertyGraphFetchTree,
+  DataQualityRootGraphFetchTree,
+} from '../../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
 import { buildGraphFetchTreeData } from '../utils/DataQualityGraphFetchTreeUtil.js';
 import {
   type GeneratorFn,
@@ -50,6 +54,7 @@ import {
   guaranteeType,
   hashArray,
   isNonNullable,
+  assertType,
 } from '@finos/legend-shared';
 import { type GenericLegendApplicationStore } from '@finos/legend-application';
 import { DataQualityResultState } from './DataQualityResultState.js';
@@ -130,8 +135,10 @@ export abstract class DataQualityState extends ElementEditorState {
       initializeStructuralValidationsGraphFetchTreeState: action,
       setShowStructuralValidations: action,
       updateElementOnClassChange: action,
+      checkConstraintsSelectedAtNode: action,
       fetchStructuralValidations: flow,
       tabsToShow: computed,
+      areNestedConstraintsSelected: computed,
       hashCode: computed,
     });
     this.applicationStore = this.editorStore.applicationStore;
@@ -231,6 +238,34 @@ export abstract class DataQualityState extends ElementEditorState {
       true,
       false,
     );
+  }
+
+  get areNestedConstraintsSelected(): boolean {
+    const treeData = this.dataQualityGraphFetchTreeState.treeData;
+    if (!treeData) {
+      return false;
+    }
+    let constraintSelectedAtChildLevel = false;
+    treeData.tree.subTrees.forEach((subtree) => {
+      constraintSelectedAtChildLevel =
+        constraintSelectedAtChildLevel ||
+        this.checkConstraintsSelectedAtNode(subtree);
+    });
+    return constraintSelectedAtChildLevel;
+  }
+
+  checkConstraintsSelectedAtNode(tree: GraphFetchTree): boolean {
+    assertType(tree, DataQualityPropertyGraphFetchTree);
+    if (tree.constraints.length > 0) {
+      return true;
+    }
+    let constraintSelectedAtChildLevel = false;
+    tree.subTrees.forEach((subtree) => {
+      constraintSelectedAtChildLevel =
+        constraintSelectedAtChildLevel ||
+        this.checkConstraintsSelectedAtNode(subtree);
+    });
+    return constraintSelectedAtChildLevel;
   }
 
   updateFilterElement = (): void => {
