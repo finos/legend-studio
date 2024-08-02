@@ -14,23 +14,39 @@
  * limitations under the License.
  */
 
-import { action, computed, makeObservable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import {
   type EditorStore,
   ElementEditorState,
 } from '@finos/legend-application-studio';
 import type { PackageableElement } from '@finos/legend-graph';
-import { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  DataSpace,
+  DataSpaceSupportEmail,
+} from '@finos/legend-extension-dsl-data-space/graph';
 import { guaranteeType } from '@finos/legend-shared';
 
+export enum SUPPORT_INFO_TYPE {
+  EMAIL = 'Email',
+  COMBINED_INFO = 'CombinedInfo',
+}
 export class DataSpaceEditorState extends ElementEditorState {
+  selectedSupportInfoType?: SUPPORT_INFO_TYPE;
+
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
     makeObservable(this, {
       dataSpace: computed,
+      selectedSupportInfoType: observable,
+      setSelectedSupportInfoType: action,
       reprocess: action,
     });
+
+    this.selectedSupportInfoType =
+      this.dataSpace.supportInfo instanceof DataSpaceSupportEmail
+        ? SUPPORT_INFO_TYPE.EMAIL
+        : SUPPORT_INFO_TYPE.COMBINED_INFO;
   }
 
   get dataSpace(): DataSpace {
@@ -39,6 +55,10 @@ export class DataSpaceEditorState extends ElementEditorState {
       DataSpace,
       'Element inside text element editor state must be a text element',
     );
+  }
+
+  setSelectedSupportInfoType(type: SUPPORT_INFO_TYPE) {
+    this.selectedSupportInfoType = type;
   }
 
   override reprocess(

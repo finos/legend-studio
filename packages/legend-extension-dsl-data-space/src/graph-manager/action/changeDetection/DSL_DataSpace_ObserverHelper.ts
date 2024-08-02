@@ -24,7 +24,7 @@ import { makeObservable, override, observable } from 'mobx';
 import {
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
-  DataSpaceSupportInfo,
+  type DataSpaceSupportInfo,
   type DataSpace,
 } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 
@@ -61,6 +61,7 @@ export const observe_DataSpace = skipObserved(
     // TODO
     // metamodel.executionContexts.forEach(observe_DataSpaceExecutionContext);
     // observe_DataSpaceExecutionContext(metamodel.defaultExecutionContext);
+
     if (metamodel.supportInfo) {
       observe_DataSpaceSupportInfo(metamodel.supportInfo);
     }

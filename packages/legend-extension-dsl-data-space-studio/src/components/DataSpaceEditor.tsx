@@ -16,8 +16,19 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '@finos/legend-application-studio';
-import { PanelFormSection, PanelFormTextField } from '@finos/legend-art';
-import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
+import {
+  CustomSelectorInput,
+  ErrorIcon,
+  PanelFormListItems,
+  PanelFormSection,
+  PanelFormTextField,
+  PencilIcon,
+  TimesIcon,
+} from '@finos/legend-art';
+import {
+  DataSpaceEditorState,
+  SUPPORT_INFO_TYPE,
+} from '../stores/DataSpaceEditorState.js';
 import {
   set_description,
   set_documentationUrl,
@@ -33,15 +44,15 @@ import {
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const SUPPORT_INFO_TYPE_OPTIONS = [
-  { label: 'Support Email', value: 'Email' },
-  { label: 'Combined Info', value: 'CombinedInfo' },
+  { label: 'Support Email', value: SUPPORT_INFO_TYPE.EMAIL },
+  { label: 'Combined Info', value: SUPPORT_INFO_TYPE.COMBINED_INFO },
 ];
 
 interface Option {
-  value: string;
+  value: SUPPORT_INFO_TYPE;
   label: string;
 }
 
@@ -52,6 +63,10 @@ export const DataSpaceEditor = observer(() => {
     editorStore.tabManagerState.getCurrentEditorState(DataSpaceEditorState);
   const isReadOnly = dataSpaceEditorState.isReadOnly;
   const dataSpaceElement = dataSpaceEditorState.dataSpace;
+  const [emailsInputValue, setEmailsInputValue] = useState<string>('');
+  const [showEmailsEditInput, setShowEmailsEditInput] = useState<
+    boolean | number
+  >(false);
 
   useEffect(() => {
     if (!isReadOnly) {
@@ -68,22 +83,13 @@ export const DataSpaceEditor = observer(() => {
   };
 
   const handleSupportEmailChange = (value: string | undefined) => {
-    dataSpaceElement.supportInfo instanceof DataSpaceSupportEmail
-      ? set_email(dataSpaceElement.supportInfo, value ?? '')
-      : undefined;
+    if (dataSpaceElement.supportInfo instanceof DataSpaceSupportEmail) {
+      set_email(dataSpaceElement.supportInfo, value ?? '');
+    }
   };
 
-  const handleEmailsChange = (
-    index: number,
-    emailsProp: string | undefined,
-  ) => {
+  const handleEmailsChange = (emails: string[]) => {
     if (dataSpaceElement.supportInfo instanceof DataSpaceSupportCombinedInfo) {
-      const emails = dataSpaceElement.supportInfo.emails ?? [];
-      if (emailsProp === undefined) {
-        emails.splice(index, 1);
-      } else {
-        emails[index] = emailsProp;
-      }
       set_emails(dataSpaceElement.supportInfo, emails);
     }
   };
@@ -118,13 +124,11 @@ export const DataSpaceEditor = observer(() => {
   };
 
   const handleSupportInfoTypeChange = (option: Option) => {
+    dataSpaceEditorState.setSelectedSupportInfoType(option.value);
     set_supportInfotype(dataSpaceElement, option.value);
   };
 
-  const selectedSupportInfoType =
-    dataSpaceElement.supportInfo instanceof DataSpaceSupportEmail
-      ? 'Email'
-      : 'CombinedInfo';
+  const selectedSupportInfoType = dataSpaceEditorState.selectedSupportInfoType;
 
   const emails =
     dataSpaceElement.supportInfo instanceof DataSpaceSupportCombinedInfo
@@ -149,6 +153,46 @@ export const DataSpaceEditor = observer(() => {
     dataSpaceElement.supportInfo instanceof DataSpaceSupportCombinedInfo
       ? (dataSpaceElement.supportInfo.supportUrl ?? '')
       : '';
+
+  // const showAddEmailInput = (): void => setShowEmailsEditInput(true);
+  const hideAddOrEditEmailInput = (): void => {
+    setShowEmailsEditInput(false);
+    setEmailsInputValue('');
+  };
+
+  const changeEmailInputValue: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => setEmailsInputValue(event.target.value);
+
+  const addEmail = (): void => {
+    if (emailsInputValue && !isReadOnly && !emails.includes(emailsInputValue)) {
+      handleEmailsChange([...emails, emailsInputValue]);
+    }
+    hideAddOrEditEmailInput();
+  };
+
+  const updateEmail =
+    (index: number): (() => void) =>
+    (): void => {
+      if (
+        emailsInputValue &&
+        !isReadOnly &&
+        !emails.includes(emailsInputValue)
+      ) {
+        const updatedEmails = [...emails];
+        updatedEmails[index] = emailsInputValue;
+        handleEmailsChange(updatedEmails);
+      }
+    };
+
+  const deleteEmail =
+    (index: number): (() => void) =>
+    (): void => {
+      if (!isReadOnly) {
+        const updatedEmails = emails.filter((_, idx) => idx !== index);
+        handleEmailsChange(updatedEmails);
+      }
+    };
 
   return (
     <div className="dataSpace-editor panel dataSpace-editor--dark">
@@ -186,7 +230,7 @@ export const DataSpaceEditor = observer(() => {
               )}
               disabled={isReadOnly}
             />
-            {selectedSupportInfoType === 'Email' && (
+            {selectedSupportInfoType === SUPPORT_INFO_TYPE.EMAIL && (
               <>
                 <PanelFormTextField
                   name="Support Email"
@@ -202,25 +246,122 @@ export const DataSpaceEditor = observer(() => {
                 />
               </>
             )}
-            {selectedSupportInfoType === 'CombinedInfo' && (
+            {selectedSupportInfoType === SUPPORT_INFO_TYPE.COMBINED_INFO && (
               <>
                 <PanelFormListItems title="Support Emails">
                   {emails.map((email, index) => (
-                    <PanelFormTextField
-                      key={index}
-                      name={`Support Email ${index + 1}`}
-                      value={email}
-                      update={(value) => handleEmailsChange(index, value)}
-                      placeholder="Enter support email"
-                    />
+                    <div
+                      key={email}
+                      className={
+                        showEmailsEditInput === index
+                          ? 'panel__content__form__section__list__new-item'
+                          : 'panel__content__form__section__list__item'
+                      }
+                    >
+                      {showEmailsEditInput === index ? (
+                        <>
+                          <input
+                            title="emai Input"
+                            className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
+                            spellCheck={false}
+                            disabled={isReadOnly}
+                            value={emailsInputValue}
+                            onChange={changeEmailInputValue}
+                          />
+                          <div className="panel__content__form__section__list__new-item__actions">
+                            <button
+                              title="savebtn"
+                              className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                              disabled={
+                                isReadOnly || emails.includes(emailsInputValue)
+                              }
+                              onClick={updateEmail(index)}
+                              tabIndex={-1}
+                            >
+                              Save
+                            </button>
+                            <button
+                              title="cancelbtn"
+                              className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
+                              disabled={isReadOnly}
+                              onClick={hideAddOrEditEmailInput}
+                              tabIndex={-1}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="panel__content__form__section__list__item__value">
+                            {email}
+                          </div>
+                          <div className="panel__content__form__section__list__item__actions">
+                            <button
+                              title="showbtn"
+                              className="panel__content__form__section__list__item__edit-btn"
+                              disabled={isReadOnly}
+                              onClick={() => setShowEmailsEditInput(index)}
+                              tabIndex={-1}
+                            >
+                              <PencilIcon />
+                            </button>
+                            <button
+                              title="deletebtn"
+                              className="panel__content__form__section__list__item__remove-btn"
+                              disabled={isReadOnly}
+                              onClick={deleteEmail(index)}
+                              tabIndex={-1}
+                            >
+                              <TimesIcon />
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   ))}
-                  <button
-                    type="button"
-                    onClick={() => handleEmailsChange(emails.length, '')}
-                    disabled={isReadOnly}
-                  >
-                    Add Email
-                  </button>
+                  {showEmailsEditInput === true && (
+                    <div className="panel__content__form__section__list__new-item">
+                      <input
+                        title="email input"
+                        className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
+                        spellCheck={false}
+                        disabled={isReadOnly}
+                        value={emailsInputValue}
+                        onChange={changeEmailInputValue}
+                      />
+                      <div className="panel__content__form__section__list__new-item__actions">
+                        <button
+                          title="addbtn"
+                          className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                          disabled={
+                            isReadOnly || emails.includes(emailsInputValue)
+                          }
+                          onClick={addEmail}
+                          tabIndex={-1}
+                        >
+                          Add
+                        </button>
+                        <button
+                          title="deletebtn"
+                          className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
+                          disabled={isReadOnly}
+                          onClick={hideAddOrEditEmailInput}
+                          tabIndex={-1}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {emails.length === 0 && showEmailsEditInput !== true && (
+                    <div className="service-editor__owner__validation">
+                      <ErrorIcon />
+                      <div className="service-editor__owner__validation-label">
+                        Add at least one email
+                      </div>
+                    </div>
+                  )}
                 </PanelFormListItems>
                 <PanelFormTextField
                   name="Website URL"
