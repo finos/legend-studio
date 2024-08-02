@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.3.47
+
+### Patch Changes
+
+- [#3394](https://github.com/finos/legend-studio/pull/3394) [`3e857e6`](https://github.com/finos/legend-studio/commit/3e857e6f483822bbf4047f25a4f7357b452fc1c6) ([@travisstebbins](https://github.com/travisstebbins)) - Add link button to share data space
+
+- [#3391](https://github.com/finos/legend-studio/pull/3391) [`2a99947`](https://github.com/finos/legend-studio/commit/2a99947be1988d64099fd203ae6d23da4b01a6fe) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Make templates(0) disable and remove funnel icon
+
 ## 10.3.46
 
 ### Patch Changes

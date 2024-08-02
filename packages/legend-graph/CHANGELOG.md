@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.10.19
+
+### Patch Changes
+
+- [#3395](https://github.com/finos/legend-studio/pull/3395) [`ecb65ab`](https://github.com/finos/legend-studio/commit/ecb65abf6446eeecef7d5824b59ccec49fb9698a) ([@travisstebbins](https://github.com/travisstebbins)) - Allow passing abortController to runQuery function
+
 ## 31.10.18
 
 ## 31.10.17
