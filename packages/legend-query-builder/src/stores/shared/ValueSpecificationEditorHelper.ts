@@ -335,6 +335,7 @@ export const getValueSpecificationStringValue = (
   >,
   options?: {
     omitEnumOwnerName?: boolean;
+    wrapStringInDoubleQuotes?: boolean;
   },
 ): string | undefined => {
   if (valueSpecification instanceof PrimitiveInstanceValue) {
@@ -345,6 +346,13 @@ export const getValueSpecificationStringValue = (
       )
     ) {
       return buildDatePickerOption(valueSpecification, applicationStore).label;
+    }
+    if (
+      valueSpecification.genericType.value.rawType.path ===
+        PRIMITIVE_TYPE.STRING &&
+      options?.wrapStringInDoubleQuotes
+    ) {
+      return `"${valueSpecification.values[0]?.toString()}"`;
     }
     return valueSpecification.values[0]?.toString();
   } else if (valueSpecification instanceof EnumValueInstanceValue) {
