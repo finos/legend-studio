@@ -335,6 +335,7 @@ export const getValueSpecificationStringValue = (
   >,
   options?: {
     omitEnumOwnerName?: boolean;
+    wrapStringInDoubleQuotes?: boolean;
   },
 ): string | undefined => {
   if (valueSpecification instanceof PrimitiveInstanceValue) {
@@ -345,6 +346,12 @@ export const getValueSpecificationStringValue = (
       )
     ) {
       return buildDatePickerOption(valueSpecification, applicationStore).label;
+    }
+    if (
+      valueSpecification.genericType.value.rawType === PrimitiveType.STRING &&
+      options?.wrapStringInDoubleQuotes
+    ) {
+      return `"${valueSpecification.values[0]?.toString()}"`;
     }
     return valueSpecification.values[0]?.toString();
   } else if (valueSpecification instanceof EnumValueInstanceValue) {
@@ -359,6 +366,7 @@ export const getValueSpecificationStringValue = (
     return getValueSpecificationStringValue(
       valueSpecification.getValue(),
       applicationStore,
+      options,
     );
   } else if (valueSpecification instanceof SimpleFunctionExpression) {
     if (
@@ -374,7 +382,7 @@ export const getValueSpecificationStringValue = (
   } else if (valueSpecification instanceof CollectionInstanceValue) {
     return valueSpecification.values
       .map((valueSpec) =>
-        getValueSpecificationStringValue(valueSpec, applicationStore),
+        getValueSpecificationStringValue(valueSpec, applicationStore, options),
       )
       .join(',');
   }
