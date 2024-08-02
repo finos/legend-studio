@@ -348,8 +348,7 @@ export const getValueSpecificationStringValue = (
       return buildDatePickerOption(valueSpecification, applicationStore).label;
     }
     if (
-      valueSpecification.genericType.value.rawType.path ===
-        PRIMITIVE_TYPE.STRING &&
+      valueSpecification.genericType.value.rawType === PrimitiveType.STRING &&
       options?.wrapStringInDoubleQuotes
     ) {
       return `"${valueSpecification.values[0]?.toString()}"`;
