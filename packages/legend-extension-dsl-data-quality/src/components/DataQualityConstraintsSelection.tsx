@@ -38,6 +38,7 @@ import {
   SquareIcon,
   TimesIcon,
   TreeView,
+  ExclamationTriangleIcon,
 } from '@finos/legend-art';
 import { dataQualityClassValidation_setDataQualityGraphFetchTree } from '../graph-manager/DSL_DataQuality_GraphModifierHelper.js';
 import type { DataQualityClassValidationsConfiguration } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
@@ -261,6 +262,18 @@ export const ConstraintsSelectionExplorer = observer(
     return (
       <div className="data-quality-validation-graph-fetch-constraints-selection__config-group__content">
         <div className="data-quality-validation-graph-fetch-constraints-selection__structural-attributes">
+          <div>
+            {dataQualityState.areNestedConstraintsSelected && (
+              <div className="data-quality-validation-graph-fetch-constraints-selection__validation">
+                <div className="data-quality-validation-graph-fetch-constraints-selection__validation__icon">
+                  <ExclamationTriangleIcon />
+                </div>
+                <div className="data-quality-validation-graph-fetch-constraints-selection__validation__msg">
+                  Nested constraints execution is not yet supported
+                </div>
+              </div>
+            )}
+          </div>
           <button
             className="btn--dark structure-validations-btn"
             onClick={showStructuralValidations}
