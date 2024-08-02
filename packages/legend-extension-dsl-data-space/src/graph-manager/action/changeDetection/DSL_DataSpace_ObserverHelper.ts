@@ -26,6 +26,7 @@ import {
   DataSpaceSupportEmail,
   type DataSpaceSupportInfo,
   type DataSpace,
+  DataSpaceExecutionContext,
 } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 
 export const observe_DataSpaceSupportInfo = (
@@ -47,6 +48,19 @@ export const observe_DataSpaceSupportInfo = (
   }
 };
 
+// export const observe_DataSpaceExecutionContext = (
+//   executionContext: DataSpaceExecutionContext,
+// ) => {
+//   makeObservable(executionContext, {
+//     // name: observable,
+//     title: observable,
+//     description: observable,
+//     mapping: observable,
+//     defaultRuntime: observable,
+//     testData: observable,
+//   });
+// };
+
 export const observe_DataSpace = skipObserved(
   (metamodel: DataSpace): DataSpace => {
     observe_Abstract_PackageableElement(metamodel);
@@ -55,12 +69,15 @@ export const observe_DataSpace = skipObserved(
       title: observable,
       description: observable,
       supportInfo: observable,
+      executionContexts: observable,
+      defaultExecutionContext: observable,
       _elementHashCode: override,
     });
 
-    // TODO
     // metamodel.executionContexts.forEach(observe_DataSpaceExecutionContext);
-    // observe_DataSpaceExecutionContext(metamodel.defaultExecutionContext);
+    // if (metamodel.defaultExecutionContext) {
+    //   observe_DataSpaceExecutionContext(metamodel.defaultExecutionContext);
+    // }
 
     if (metamodel.supportInfo) {
       observe_DataSpaceSupportInfo(metamodel.supportInfo);

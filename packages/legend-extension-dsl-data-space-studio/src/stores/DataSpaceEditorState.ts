@@ -22,6 +22,7 @@ import {
 import type { PackageableElement } from '@finos/legend-graph';
 import {
   DataSpace,
+  DataSpaceExecutionContext,
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { guaranteeType } from '@finos/legend-shared';
@@ -40,6 +41,7 @@ export class DataSpaceEditorState extends ElementEditorState {
       dataSpace: computed,
       selectedSupportInfoType: observable,
       setSelectedSupportInfoType: action,
+      setDefaultExecutionContext: action,
       reprocess: action,
     });
 
@@ -59,6 +61,10 @@ export class DataSpaceEditorState extends ElementEditorState {
 
   setSelectedSupportInfoType(type: SUPPORT_INFO_TYPE) {
     this.selectedSupportInfoType = type;
+  }
+
+  setDefaultExecutionContext(context: DataSpaceExecutionContext): void {
+    this.dataSpace.defaultExecutionContext = context;
   }
 
   override reprocess(

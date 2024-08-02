@@ -20,6 +20,9 @@ import {
   type DataSpace,
   DataSpaceSupportCombinedInfo,
   type DataSpaceSupportInfo,
+  DataSpaceExecutionContext,
+  observe_DataSpaceSupportInfo,
+  observe_DataSpace,
 } from '@finos/legend-extension-dsl-data-space/graph';
 
 export const set_title = action(
@@ -74,8 +77,24 @@ export const set_supportInfotype = action(
   (dataSpace: DataSpace, type: string) => {
     if (type === 'Email') {
       dataSpace.supportInfo = new DataSpaceSupportEmail();
+      observe_DataSpaceSupportInfo(dataSpace.supportInfo);
     } else if (type === 'CombinedInfo') {
       dataSpace.supportInfo = new DataSpaceSupportCombinedInfo();
+      observe_DataSpaceSupportInfo(dataSpace.supportInfo);
     }
+  },
+);
+
+export const set_executionContexts = action(
+  (dataSpace: DataSpace, contexts: DataSpaceExecutionContext[]): void => {
+    dataSpace.executionContexts = contexts;
+    console.log('executioncontext set');
+  },
+);
+
+export const set_defaultExecutionContext = action(
+  (dataSpace: DataSpace, context: DataSpaceExecutionContext): void => {
+    dataSpace.defaultExecutionContext = context;
+    console.log('default executioncontext set');
   },
 );

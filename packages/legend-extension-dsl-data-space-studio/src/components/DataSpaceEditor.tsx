@@ -30,6 +30,7 @@ import {
   SUPPORT_INFO_TYPE,
 } from '../stores/DataSpaceEditorState.js';
 import {
+  set_defaultExecutionContext,
   set_description,
   set_documentationUrl,
   set_email,
@@ -41,6 +42,7 @@ import {
   set_website,
 } from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
 import {
+  DataSpaceExecutionContext,
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
@@ -128,7 +130,18 @@ export const DataSpaceEditor = observer(() => {
     set_supportInfotype(dataSpaceElement, option.value);
   };
 
+  const handleExecutionContextChange = (context: DataSpaceExecutionContext) => {
+    set_defaultExecutionContext(dataSpaceElement, context);
+    console.log(context);
+  };
+
   const selectedSupportInfoType = dataSpaceEditorState.selectedSupportInfoType;
+  const executionContextOptions = dataSpaceElement.executionContexts.map(
+    (context) => ({
+      label: context.name,
+      value: context,
+    }),
+  );
 
   const emails =
     dataSpaceElement.supportInfo instanceof DataSpaceSupportCombinedInfo
@@ -154,7 +167,7 @@ export const DataSpaceEditor = observer(() => {
       ? (dataSpaceElement.supportInfo.supportUrl ?? '')
       : '';
 
-  // const showAddEmailInput = (): void => setShowEmailsEditInput(true);
+  const showAddEmailInput = (): void => setShowEmailsEditInput(true);
   const hideAddOrEditEmailInput = (): void => {
     setShowEmailsEditInput(false);
     setEmailsInputValue('');
@@ -390,6 +403,17 @@ export const DataSpaceEditor = observer(() => {
               </>
             )}
           </PanelFormListItems>
+          <CustomSelectorInput
+            options={executionContextOptions}
+            onChange={handleExecutionContextChange}
+            value={executionContextOptions.find(
+              (option) =>
+                option.value === dataSpaceElement.defaultExecutionContext,
+            )}
+            disabled={isReadOnly}
+            title="Select Execution Context"
+            placeholder="Select Execution Context"
+          />
         </div>
       </PanelFormSection>
     </div>
