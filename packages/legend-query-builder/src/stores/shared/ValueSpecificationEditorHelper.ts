@@ -366,6 +366,7 @@ export const getValueSpecificationStringValue = (
     return getValueSpecificationStringValue(
       valueSpecification.getValue(),
       applicationStore,
+      options,
     );
   } else if (valueSpecification instanceof SimpleFunctionExpression) {
     if (
@@ -381,7 +382,7 @@ export const getValueSpecificationStringValue = (
   } else if (valueSpecification instanceof CollectionInstanceValue) {
     return valueSpecification.values
       .map((valueSpec) =>
-        getValueSpecificationStringValue(valueSpec, applicationStore),
+        getValueSpecificationStringValue(valueSpec, applicationStore, options),
       )
       .join(',');
   }
