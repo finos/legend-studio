@@ -48,18 +48,18 @@ export const observe_DataSpaceSupportInfo = (
   }
 };
 
-// export const observe_DataSpaceExecutionContext = (
-//   executionContext: DataSpaceExecutionContext,
-// ) => {
-//   makeObservable(executionContext, {
-//     // name: observable,
-//     title: observable,
-//     description: observable,
-//     mapping: observable,
-//     defaultRuntime: observable,
-//     testData: observable,
-//   });
-// };
+export const observe_DataSpaceExecutionContext = (
+  executionContext: DataSpaceExecutionContext,
+) => {
+  makeObservable(executionContext, {
+    name: override,
+    title: override,
+    description: override,
+    mapping: observable.ref,
+    defaultRuntime: observable.ref,
+    testData: observable.ref,
+  });
+};
 
 export const observe_DataSpace = skipObserved(
   (metamodel: DataSpace): DataSpace => {
@@ -74,10 +74,8 @@ export const observe_DataSpace = skipObserved(
       _elementHashCode: override,
     });
 
-    // metamodel.executionContexts.forEach(observe_DataSpaceExecutionContext);
-    // if (metamodel.defaultExecutionContext) {
-    //   observe_DataSpaceExecutionContext(metamodel.defaultExecutionContext);
-    // }
+    metamodel.executionContexts.forEach(observe_DataSpaceExecutionContext);
+    observe_DataSpaceExecutionContext(metamodel.defaultExecutionContext);
 
     if (metamodel.supportInfo) {
       observe_DataSpaceSupportInfo(metamodel.supportInfo);

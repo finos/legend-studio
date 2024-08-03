@@ -26,6 +26,7 @@ import {
   TimesIcon,
 } from '@finos/legend-art';
 import {
+  DATASPACE_TAB,
   DataSpaceEditorState,
   SUPPORT_INFO_TYPE,
 } from '../stores/DataSpaceEditorState.js';
@@ -53,8 +54,17 @@ const SUPPORT_INFO_TYPE_OPTIONS = [
   { label: 'Combined Info', value: SUPPORT_INFO_TYPE.COMBINED_INFO },
 ];
 
+const TAB_OPTIONS = [
+  { label: 'General', value: DATASPACE_TAB.GENERAL },
+  { label: 'Execution Context', value: DATASPACE_TAB.EXECUTION_CONTEXT },
+];
+
 interface Option {
-  value: SUPPORT_INFO_TYPE;
+  value: SUPPORT_INFO_TYPE | DATASPACE_TAB;
+  label: string;
+}
+interface ExecutionContextOption {
+  value: DataSpaceExecutionContext;
   label: string;
 }
 
@@ -75,6 +85,10 @@ export const DataSpaceEditor = observer(() => {
       typeNameRef.current?.focus();
     }
   }, [isReadOnly]);
+
+  const handleTabChange = (option: Option) => {
+    dataSpaceEditorState.setSelectedTab(option.value as DATASPACE_TAB);
+  };
 
   const handleTitleChange = (value: string | undefined): void => {
     set_title(dataSpaceElement, value);
@@ -126,34 +140,31 @@ export const DataSpaceEditor = observer(() => {
   };
 
   const handleSupportInfoTypeChange = (option: Option) => {
-    dataSpaceEditorState.setSelectedSupportInfoType(option.value);
+    dataSpaceEditorState.setSelectedSupportInfoType(
+      option.value as SUPPORT_INFO_TYPE,
+    );
     set_supportInfotype(dataSpaceElement, option.value);
   };
 
-  const handleExecutionContextChange = (context: DataSpaceExecutionContext) => {
-    set_defaultExecutionContext(dataSpaceElement, context);
-    console.log(context);
-  };
+  // const handleExecutionContextChange = (context: DataSpaceExecutionContext) => {
+  //   set_defaultExecutionContext(dataSpaceElement, context);
+  //   console.log(context);
+  // };
 
+  const selectedTab = dataSpaceEditorState.selectedTab;
   const selectedSupportInfoType = dataSpaceEditorState.selectedSupportInfoType;
-  const executionContextOptions = dataSpaceElement.executionContexts.map(
-    (context) => ({
-      label: context.name,
-      value: context,
-    }),
-  );
+
+  const documentationUrl = dataSpaceElement.supportInfo?.documentationUrl ?? '';
+  const supportEmail =
+    dataSpaceElement.supportInfo instanceof DataSpaceSupportEmail
+      ? dataSpaceElement.supportInfo.address
+      : '';
 
   const emails =
     dataSpaceElement.supportInfo instanceof DataSpaceSupportCombinedInfo
       ? (dataSpaceElement.supportInfo.emails ?? [])
       : [];
 
-  const supportEmail =
-    dataSpaceElement.supportInfo instanceof DataSpaceSupportEmail
-      ? dataSpaceElement.supportInfo.address
-      : '';
-
-  const documentationUrl = dataSpaceElement.supportInfo?.documentationUrl ?? '';
   const websiteUrl =
     dataSpaceElement.supportInfo instanceof DataSpaceSupportCombinedInfo
       ? (dataSpaceElement.supportInfo.website ?? '')
@@ -167,7 +178,19 @@ export const DataSpaceEditor = observer(() => {
       ? (dataSpaceElement.supportInfo.supportUrl ?? '')
       : '';
 
-  const showAddEmailInput = (): void => setShowEmailsEditInput(true);
+  const executionContextOptions = dataSpaceElement.executionContexts.map(
+    (context) => ({
+      label: context.name,
+      value: context,
+    }),
+  );
+
+  const handleExecutionContextChange = (option: ExecutionContextOption) => {
+    const context = option.value;
+    dataSpaceEditorState.setDefaultExecutionContext(context);
+  };
+
+  // const showAddEmailInput = (): void => setShowEmailsEditInput(true);
   const hideAddOrEditEmailInput = (): void => {
     setShowEmailsEditInput(false);
     setEmailsInputValue('');
@@ -209,29 +232,38 @@ export const DataSpaceEditor = observer(() => {
 
   return (
     <div className="dataSpace-editor panel dataSpace-editor--dark">
-      <PanelFormSection>
-        <div className="panel__content__form">
-          <div className="panel__content__form__section">
-            <PanelFormTextField
-              name="Data Space Title"
-              value={dataSpaceElement.title ?? ''}
-              prompt="Data Space title is the user facing name for the Data Space. It's used in downstream applications as the default identifier for this Data Space. When not provided, the DataSpace name property is used."
-              update={handleTitleChange}
-              placeholder="Enter title"
-            />
+      <CustomSelectorInput
+        options={TAB_OPTIONS}
+        onChange={handleTabChange}
+        value={TAB_OPTIONS.find((option) => option.value === selectedTab)}
+        disabled={isReadOnly}
+      />
+      {selectedTab === DATASPACE_TAB.GENERAL && (
+        <PanelFormSection>
+          <div className="panel__content__form">
+            <div className="panel__content__form__section">
+              <PanelFormTextField
+                name="Data Space Title"
+                value={dataSpaceElement.title ?? ''}
+                prompt="Data Space title is the user facing name for the Data Space. It's used in downstream applications as the default identifier for this Data Space. When not provided, the DataSpace name property is used."
+                update={handleTitleChange}
+                placeholder="Enter title"
+              />
+            </div>
           </div>
-        </div>
-        <div className="panel__content__form">
-          <div className="panel__content__form__section">
-            <PanelFormTextField
-              name="Data Space Description"
-              value={dataSpaceElement.description ?? ''}
-              update={handleDescriptionChange}
-              placeholder="Enter Description"
-            />
+          <div className="panel__content__form">
+            <div className="panel__content__form__section">
+              <PanelFormTextField
+                name="Data Space Description"
+                value={dataSpaceElement.description ?? ''}
+                update={handleDescriptionChange}
+                placeholder="Enter Description"
+              />
+            </div>
           </div>
-        </div>
-      </PanelFormSection>
+        </PanelFormSection>
+      )}
+
       <PanelFormSection>
         <div className="panel__content__form">
           <PanelFormListItems title="Support Information">
@@ -416,6 +448,23 @@ export const DataSpaceEditor = observer(() => {
           />
         </div>
       </PanelFormSection>
+      {selectedTab === DATASPACE_TAB.EXECUTION_CONTEXT && (
+        <PanelFormSection>
+          <div className="panel__content__form">
+            <CustomSelectorInput
+              options={executionContextOptions}
+              onChange={handleExecutionContextChange}
+              value={executionContextOptions.find(
+                (option) =>
+                  option.value === dataSpaceElement.defaultExecutionContext,
+              )}
+              disabled={isReadOnly}
+              title="Select Execution Context"
+              placeholder="Select Execution Context"
+            />
+          </div>
+        </PanelFormSection>
+      )}
     </div>
   );
 });

@@ -22,7 +22,7 @@ import {
   type DataSpaceSupportInfo,
   DataSpaceExecutionContext,
   observe_DataSpaceSupportInfo,
-  observe_DataSpace,
+  observe_DataSpaceExecutionContext,
 } from '@finos/legend-extension-dsl-data-space/graph';
 
 export const set_title = action(
@@ -88,13 +88,13 @@ export const set_supportInfotype = action(
 export const set_executionContexts = action(
   (dataSpace: DataSpace, contexts: DataSpaceExecutionContext[]): void => {
     dataSpace.executionContexts = contexts;
-    console.log('executioncontext set');
+    contexts.forEach((context) => observe_DataSpaceExecutionContext(context));
   },
 );
 
 export const set_defaultExecutionContext = action(
   (dataSpace: DataSpace, context: DataSpaceExecutionContext): void => {
     dataSpace.defaultExecutionContext = context;
-    console.log('default executioncontext set');
+    observe_DataSpaceExecutionContext(context);
   },
 );

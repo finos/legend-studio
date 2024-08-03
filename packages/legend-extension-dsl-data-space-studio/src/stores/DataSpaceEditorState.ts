@@ -31,8 +31,15 @@ export enum SUPPORT_INFO_TYPE {
   EMAIL = 'Email',
   COMBINED_INFO = 'CombinedInfo',
 }
+
+export enum DATASPACE_TAB {
+  GENERAL = 'GENERAL',
+  EXECUTION_CONTEXT = 'EXECUTION_CONTEXT',
+}
 export class DataSpaceEditorState extends ElementEditorState {
   selectedSupportInfoType?: SUPPORT_INFO_TYPE;
+  selectedTab: DATASPACE_TAB = DATASPACE_TAB.GENERAL;
+  selectedExecutionContext?: DataSpaceExecutionContext;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -41,6 +48,9 @@ export class DataSpaceEditorState extends ElementEditorState {
       dataSpace: computed,
       selectedSupportInfoType: observable,
       setSelectedSupportInfoType: action,
+      setSelectedTab: observable,
+      selectedExecutionContext: observable,
+      setSelectedExecutionContext: action,
       setDefaultExecutionContext: action,
       reprocess: action,
     });
@@ -63,8 +73,16 @@ export class DataSpaceEditorState extends ElementEditorState {
     this.selectedSupportInfoType = type;
   }
 
+  setSelectedTab(tab: DATASPACE_TAB): void {
+    this.selectedTab = tab;
+  }
+
+  setSelectedExecutionContext(context: DataSpaceExecutionContext): void {
+    this.selectedExecutionContext = context;
+  }
+
   setDefaultExecutionContext(context: DataSpaceExecutionContext): void {
-    this.dataSpace.defaultExecutionContext = context;
+    set_defaultExecutionContext(this.dataSpace, context);
   }
 
   override reprocess(
@@ -74,4 +92,17 @@ export class DataSpaceEditorState extends ElementEditorState {
     const newState = new DataSpaceEditorState(editorStore, newElement);
     return newState;
   }
+}
+function set_executionContexts(
+  dataSpace: DataSpace,
+  contexts: DataSpaceExecutionContext[],
+) {
+  throw new Error('Function not implemented.');
+}
+
+function set_defaultExecutionContext(
+  dataSpace: DataSpace,
+  context: DataSpaceExecutionContext,
+) {
+  throw new Error('Function not implemented.');
 }
