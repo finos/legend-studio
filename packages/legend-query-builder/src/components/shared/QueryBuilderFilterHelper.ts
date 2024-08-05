@@ -28,6 +28,10 @@ import {
   QUERY_BUILDER_VARIABLE_DND_TYPE,
   type QueryBuilderVariableDragSource,
 } from './BasicValueSpecificationEditor.js';
+import {
+  QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE,
+  type QueryBuilderWindowColumnDragSource,
+} from '../../stores/fetch-structure/tds/window/QueryBuilderWindowState.js';
 
 export const getDNDItemType = (
   item: QueryBuilderFilterValueDropTarget,
@@ -45,6 +49,10 @@ export const getDNDItemType = (
     case QUERY_BUILDER_VARIABLE_DND_TYPE:
       return (item as QueryBuilderVariableDragSource).variable.genericType
         ?.value.rawType;
+    case QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE:
+      return (
+        item as QueryBuilderWindowColumnDragSource
+      ).columnState.getColumnType();
     default:
       return undefined;
   }

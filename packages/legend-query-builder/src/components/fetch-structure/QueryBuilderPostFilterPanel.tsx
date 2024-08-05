@@ -317,7 +317,10 @@ const QueryBuilderPostFilterConditionEditor = observer(
         const conditionValueType =
           node.condition.leftConditionValue.getColumnType();
         if (canDropTypeOntoNodeValue(itemType, node.condition)) {
-          if (type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE) {
+          if (
+            type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
+            type === QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE
+          ) {
             const columnState = (item as QueryBuilderProjectionColumnDragSource)
               .columnState;
             node.condition.setRightConditionVal(
