@@ -17,6 +17,16 @@
 @use 'mixins' as *;
 
 .query-builder__olap {
+  &__free-drop-zone {
+    height: 100%;
+
+    &__container {
+      min-height: 3.8rem;
+      height: 100%;
+      padding: 0.5rem;
+    }
+  }
+
   &__columns {
     padding: 0.5rem 0;
   }

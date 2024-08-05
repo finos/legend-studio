@@ -1050,7 +1050,7 @@ const QueryBuilderPostFilterPanelContent = observer(
       [applicationStore, handleDrop],
     );
 
-    const addPostFilterRef = useRef<HTMLInputElement>(null);
+    const addPostFilterRef = useRef<HTMLDivElement>(null);
     dropTargetConnector(addPostFilterRef);
 
     return (
