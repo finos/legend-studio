@@ -1091,6 +1091,7 @@
 
 .data-quality-validation-graph-fetch-constraints-selection {
   width: 100%;
+  height: 100%;
 
   &__structural-attributes {
     display: flex;
@@ -1136,13 +1137,12 @@
       flex-direction: column;
       width: 100%;
       padding: 0.5rem 0 0 0.5rem;
-      border-left: 0.5rem solid var(--color-dark-grey-280);
     }
 
     &__item {
-      @include flexVCenter;
-
+      height: 100%;
       width: 100%;
+      overflow-y: scroll;
     }
 
     &__item__label {

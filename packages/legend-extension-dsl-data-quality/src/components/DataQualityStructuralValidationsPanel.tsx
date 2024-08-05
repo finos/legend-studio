@@ -76,19 +76,21 @@ export const DataQualityStructuralValidationsPanel = observer(
         <Modal className="data-quality-editor-modal" darkMode={isDarkMode}>
           <ModalHeader title="Structural Attributes" />
           <ModalBody>
-            <div className="data-quality-validation-graph-fetch-constraints-selection__config-group__item">
-              <TreeView
-                components={{
-                  TreeNodeContainer: DataQualityConstraintsTreeNodeContainer,
-                }}
-                className="data-quality-validation-graph-fetch-tree__container__tree"
-                treeData={structureValidationsTree}
-                getChildNodes={getChildNodes}
-                innerProps={{
-                  dataQualityState,
-                  isReadOnly: true,
-                }}
-              />
+            <div className="data-quality-validation-graph-fetch-constraints-selection">
+              <div className="data-quality-validation-graph-fetch-constraints-selection__config-group__item">
+                <TreeView
+                  components={{
+                    TreeNodeContainer: DataQualityConstraintsTreeNodeContainer,
+                  }}
+                  className="data-quality-validation-graph-fetch-tree__container__tree"
+                  treeData={structureValidationsTree}
+                  getChildNodes={getChildNodes}
+                  innerProps={{
+                    dataQualityState,
+                    isReadOnly: true,
+                  }}
+                />
+              </div>
             </div>
           </ModalBody>
           <ModalFooter>
