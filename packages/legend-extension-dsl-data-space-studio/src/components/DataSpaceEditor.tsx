@@ -48,6 +48,7 @@ import {
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { useEffect, useRef, useState } from 'react';
+import { DataSpaceExecutionContextTab } from './DataSpaceExecutionContextTab.js';
 
 const SUPPORT_INFO_TYPE_OPTIONS = [
   { label: 'Support Email', value: SUPPORT_INFO_TYPE.EMAIL },
@@ -86,16 +87,16 @@ export const DataSpaceEditor = observer(() => {
     }
   }, [isReadOnly]);
 
-  const handleTabChange = (option: Option) => {
-    dataSpaceEditorState.setSelectedTab(option.value as DATASPACE_TAB);
-  };
-
   const handleTitleChange = (value: string | undefined): void => {
     set_title(dataSpaceElement, value);
   };
 
   const handleDescriptionChange = (value: string | undefined): void => {
     set_description(dataSpaceElement, value);
+  };
+
+  const handleTabChange = (option: Option) => {
+    dataSpaceEditorState.setSelectedTab(option.value as DATASPACE_TAB);
   };
 
   const handleSupportEmailChange = (value: string | undefined) => {
@@ -146,10 +147,14 @@ export const DataSpaceEditor = observer(() => {
     set_supportInfotype(dataSpaceElement, option.value);
   };
 
-  // const handleExecutionContextChange = (context: DataSpaceExecutionContext) => {
-  //   set_defaultExecutionContext(dataSpaceElement, context);
-  //   console.log(context);
-  // };
+  const handleExecutionContextChange = (option: ExecutionContextOption) => {
+    const context = option.value;
+    if (context) {
+      dataSpaceEditorState.setDefaultExecutionContext(context);
+      dataSpaceEditorState.setSelectedExecutionContext(context);
+      dataSpaceEditorState.setSelectedTab(DATASPACE_TAB.EXECUTION_CONTEXT);
+    }
+  };
 
   const selectedTab = dataSpaceEditorState.selectedTab;
   const selectedSupportInfoType = dataSpaceEditorState.selectedSupportInfoType;
@@ -184,11 +189,6 @@ export const DataSpaceEditor = observer(() => {
       value: context,
     }),
   );
-
-  const handleExecutionContextChange = (option: ExecutionContextOption) => {
-    const context = option.value;
-    dataSpaceEditorState.setDefaultExecutionContext(context);
-  };
 
   // const showAddEmailInput = (): void => setShowEmailsEditInput(true);
   const hideAddOrEditEmailInput = (): void => {
@@ -435,6 +435,7 @@ export const DataSpaceEditor = observer(() => {
               </>
             )}
           </PanelFormListItems>
+          {/* <PanelFormListItems> */}
           <CustomSelectorInput
             options={executionContextOptions}
             onChange={handleExecutionContextChange}
@@ -448,22 +449,24 @@ export const DataSpaceEditor = observer(() => {
           />
         </div>
       </PanelFormSection>
-      {selectedTab === DATASPACE_TAB.EXECUTION_CONTEXT && (
-        <PanelFormSection>
-          <div className="panel__content__form">
-            <CustomSelectorInput
-              options={executionContextOptions}
-              onChange={handleExecutionContextChange}
-              value={executionContextOptions.find(
-                (option) =>
-                  option.value === dataSpaceElement.defaultExecutionContext,
-              )}
-              disabled={isReadOnly}
-              title="Select Execution Context"
-              placeholder="Select Execution Context"
-            />
-          </div>
-        </PanelFormSection>
+      <div className="dataSpace-editor panel dataSpace-editor--dark">
+        <CustomSelectorInput
+          options={executionContextOptions}
+          onChange={handleExecutionContextChange}
+          value={executionContextOptions.find(
+            (option) =>
+              option.value === dataSpaceElement.defaultExecutionContext,
+          )}
+          disabled={isReadOnly}
+          title="Select Execution Context"
+          placeholder="Select Execution Context"
+        />
+      </div>
+
+      {dataSpaceEditorState.selectedTab === DATASPACE_TAB.EXECUTION_CONTEXT && (
+        <DataSpaceExecutionContextTab
+          dataSpaceEditorState={dataSpaceEditorState}
+        />
       )}
     </div>
   );

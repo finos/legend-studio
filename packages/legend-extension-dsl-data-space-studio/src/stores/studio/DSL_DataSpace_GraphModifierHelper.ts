@@ -20,10 +20,14 @@ import {
   type DataSpace,
   DataSpaceSupportCombinedInfo,
   type DataSpaceSupportInfo,
-  DataSpaceExecutionContext,
+  type DataSpaceExecutionContext,
   observe_DataSpaceSupportInfo,
   observe_DataSpaceExecutionContext,
 } from '@finos/legend-extension-dsl-data-space/graph';
+// import type { PackageableElementReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
+// import type { Mapping } from '../../../../legend-graph/src/graph/metamodel/pure/packageableElements/mapping/Mapping.js';
+// import type { PackageableRuntime } from '../../../../legend-graph/src/graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
+// import type { DataElementReference } from '../../../../legend-graph/src/graph/metamodel/pure/data/EmbeddedData.js';
 
 export const set_title = action(
   (dataSpace: DataSpace, type: string | undefined): void => {
@@ -98,3 +102,54 @@ export const set_defaultExecutionContext = action(
     observe_DataSpaceExecutionContext(context);
   },
 );
+
+export const set_executionContextName = action(
+  (executionContext: DataSpaceExecutionContext, name: string): void => {
+    executionContext.name = name;
+  },
+);
+
+export const set_executionContextTitle = action(
+  (
+    executionContext: DataSpaceExecutionContext,
+    title: string | undefined,
+  ): void => {
+    executionContext.title = title;
+  },
+);
+
+export const set_executionContextDescription = action(
+  (
+    executionContext: DataSpaceExecutionContext,
+    description: string | undefined,
+  ): void => {
+    executionContext.description = description;
+  },
+);
+
+// export const set_executionContextMapping = action(
+//   (
+//     executionContext: DataSpaceExecutionContext,
+//     mapping: PackageableElementReference<Mapping>,
+//   ): void => {
+//     executionContext.mapping = mapping;
+//   },
+// );
+
+// export const set_executionContextDefaultRuntime = action(
+//   (
+//     executionContext: DataSpaceExecutionContext,
+//     defaultRuntime: PackageableElementReference<PackageableRuntime>,
+//   ): void => {
+//     executionContext.defaultRuntime = defaultRuntime;
+//   },
+// );
+
+// export const set_executionContextTestData = action(
+//   (
+//     executionContext: DataSpaceExecutionContext,
+//     testData: DataElementReference | undefined,
+//   ): void => {
+//     executionContext.testData = testData;
+//   },
+// );

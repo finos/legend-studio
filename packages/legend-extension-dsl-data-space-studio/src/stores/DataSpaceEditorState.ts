@@ -24,6 +24,7 @@ import {
   DataSpace,
   DataSpaceExecutionContext,
   DataSpaceSupportEmail,
+  observe_DataSpaceExecutionContext,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { guaranteeType } from '@finos/legend-shared';
 
@@ -47,9 +48,10 @@ export class DataSpaceEditorState extends ElementEditorState {
     makeObservable(this, {
       dataSpace: computed,
       selectedSupportInfoType: observable,
-      setSelectedSupportInfoType: action,
-      setSelectedTab: observable,
+      selectedTab: observable,
       selectedExecutionContext: observable,
+      setSelectedSupportInfoType: action,
+      setSelectedTab: action,
       setSelectedExecutionContext: action,
       setDefaultExecutionContext: action,
       reprocess: action,
@@ -77,12 +79,24 @@ export class DataSpaceEditorState extends ElementEditorState {
     this.selectedTab = tab;
   }
 
+  // setSelectedExecutionContext(context: DataSpaceExecutionContext): void {
+  //   console.log('setSelectedExecutioncontext');
+  //   this.selectedExecutionContext = context;
+  // }
+
+  // setDefaultExecutionContext(context: DataSpaceExecutionContext): void {
+  //   console.log('setDefaultExecution');
+  //   this.dataSpace.defaultExecutionContext = context;
+  //   this.selectedExecutionContext = context;
+  //   observe_DataSpaceExecutionContext(context);
+  // }
   setSelectedExecutionContext(context: DataSpaceExecutionContext): void {
     this.selectedExecutionContext = context;
   }
 
   setDefaultExecutionContext(context: DataSpaceExecutionContext): void {
-    set_defaultExecutionContext(this.dataSpace, context);
+    this.dataSpace.defaultExecutionContext = context;
+    this.setSelectedExecutionContext(context);
   }
 
   override reprocess(
@@ -92,17 +106,4 @@ export class DataSpaceEditorState extends ElementEditorState {
     const newState = new DataSpaceEditorState(editorStore, newElement);
     return newState;
   }
-}
-function set_executionContexts(
-  dataSpace: DataSpace,
-  contexts: DataSpaceExecutionContext[],
-) {
-  throw new Error('Function not implemented.');
-}
-
-function set_defaultExecutionContext(
-  dataSpace: DataSpace,
-  context: DataSpaceExecutionContext,
-) {
-  throw new Error('Function not implemented.');
 }

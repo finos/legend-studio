@@ -27,6 +27,7 @@ import {
   type DataSpaceSupportInfo,
   type DataSpace,
   DataSpaceExecutionContext,
+  // type DataSpaceExecutionContext,
 } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 
 export const observe_DataSpaceSupportInfo = (
@@ -52,9 +53,9 @@ export const observe_DataSpaceExecutionContext = (
   executionContext: DataSpaceExecutionContext,
 ) => {
   makeObservable(executionContext, {
-    name: override,
-    title: override,
-    description: override,
+    name: observable,
+    title: observable,
+    description: observable,
     mapping: observable.ref,
     defaultRuntime: observable.ref,
     testData: observable.ref,
