@@ -48,6 +48,7 @@ import {
   PanelHeader,
   PanelHeaderActions,
   Panel,
+  DragPreviewLayer,
 } from '@finos/legend-art';
 import {
   assertErrorThrown,
@@ -1311,17 +1312,29 @@ export const QueryBuilderTDSWindowPanel = observer(
                 />
               )}
               {!tdsWindowState.isEmpty && (
-                <div
-                  data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS}
-                  className="query-builder__olap__columns"
-                >
-                  {tdsWindowState.windowColumns.map((col) => (
-                    <QueryBuilderWindowColumnEditor
-                      windowColumnState={col}
-                      key={col.uuid}
-                    />
-                  ))}
-                </div>
+                <>
+                  <DragPreviewLayer
+                    labelGetter={(
+                      item: QueryBuilderWindowColumnDragSource,
+                    ): string =>
+                      item.columnState.columnName === ''
+                        ? '(unknown)'
+                        : item.columnState.columnName
+                    }
+                    types={[QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE]}
+                  />
+                  <div
+                    data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS}
+                    className="query-builder__olap__columns"
+                  >
+                    {tdsWindowState.windowColumns.map((col) => (
+                      <QueryBuilderWindowColumnEditor
+                        windowColumnState={col}
+                        key={col.uuid}
+                      />
+                    ))}
+                  </div>
+                </>
               )}
             </PanelDropZone>
           </PanelContent>
