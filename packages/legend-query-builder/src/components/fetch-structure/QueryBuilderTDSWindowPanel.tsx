@@ -972,6 +972,10 @@ const QueryBuilderWindowColumnEditor = observer(
         ref={ref}
         className="query-builder__olap__column"
         showPlaceholder={isBeingDragged}
+        placeholder={
+          <div className="query-builder__olap__column__placeholder" />
+        }
+        placeholderContainerClassName="query-builder__olap__column__placeholder__container"
       >
         <ContextMenu
           content={

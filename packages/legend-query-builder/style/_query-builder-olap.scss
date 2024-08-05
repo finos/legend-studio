@@ -40,6 +40,15 @@
     &:hover {
       background: var(--color-dark-blue-shade-100);
     }
+
+    &__placeholder {
+      height: 100%;
+      border-top: 0.2rem dashed var(--color-light-grey-300);
+
+      &__container {
+        left: -0.25rem;
+      }
+    }
   }
 
   &__column__context-menu {
