@@ -21,19 +21,19 @@ import {
   DropdownMenuItem,
   DropdownMenu,
 } from '@finos/legend-art';
-import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
 import type { DataCubeEditorColumnsSelectorState } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeEditorSortColumnState } from '../../../stores/dataCube/editor/DataCubeEditorSortsPanelState.js';
-import { DataCubeQuerySortOperation } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
+import { DataCubeQuerySortOperator } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 import { IllegalStateError } from '@finos/legend-shared';
 import { FormBadge_WIP } from '../../repl/Form.js';
+import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
 
-function getSortDirectionLabel(operation: DataCubeQuerySortOperation) {
+function getSortDirectionLabel(operation: DataCubeQuerySortOperator) {
   switch (operation) {
-    case DataCubeQuerySortOperation.ASCENDING:
+    case DataCubeQuerySortOperator.ASCENDING:
       return 'Ascending';
-    case DataCubeQuerySortOperation.DESCENDING:
+    case DataCubeQuerySortOperator.DESCENDING:
       return 'Descending';
     default:
       throw new IllegalStateError(`Unsupported sort operation '${operation}'`);
@@ -83,7 +83,7 @@ const SortDirectionDropdown = observer(
           <DropdownMenuItem
             className="flex h-5 items-center px-2 text-sm hover:bg-neutral-100"
             onClick={() => {
-              column.setOperation(DataCubeQuerySortOperation.ASCENDING);
+              column.setOperation(DataCubeQuerySortOperator.ASCENDING);
               closeMenu();
             }}
           >
@@ -99,7 +99,7 @@ const SortDirectionDropdown = observer(
           <DropdownMenuItem
             className="flex h-5 items-center px-2 text-sm hover:bg-neutral-100"
             onClick={() => {
-              column.setOperation(DataCubeQuerySortOperation.DESCENDING);
+              column.setOperation(DataCubeQuerySortOperator.DESCENDING);
               closeMenu();
             }}
           >
@@ -118,26 +118,28 @@ const SortDirectionDropdown = observer(
   },
 );
 
-export const DataCubeEditorSortsPanel = observer(() => {
-  const repl = useREPLStore();
-  const panel = repl.dataCube.editor.sorts;
+export const DataCubeEditorSortsPanel = observer(
+  (props: { dataCube: DataCubeState }) => {
+    const { dataCube } = props;
+    const panel = dataCube.editor.sorts;
 
-  return (
-    <div className="h-full w-full select-none p-2">
-      <div className="flex h-6">
-        <div className="flex h-6 items-center text-xl font-medium">
-          <DataCubeIcon.TableSort />
+    return (
+      <div className="h-full w-full select-none p-2">
+        <div className="flex h-6">
+          <div className="flex h-6 items-center text-xl font-medium">
+            <DataCubeIcon.TableSort />
+          </div>
+          <div className="ml-1 flex h-6 items-center text-xl font-medium">
+            Sorts
+          </div>
         </div>
-        <div className="ml-1 flex h-6 items-center text-xl font-medium">
-          Sorts
+        <div className="flex h-[calc(100%_-_24px)] w-full">
+          <DataCubeEditorColumnsSelector
+            selector={panel.selector}
+            extraColumnComponent={(p) => <SortDirectionDropdown {...p} />}
+          />
         </div>
       </div>
-      <div className="flex h-[calc(100%_-_24px)] w-full">
-        <DataCubeEditorColumnsSelector
-          selector={panel.selector}
-          extraColumnComponent={(props) => <SortDirectionDropdown {...props} />}
-        />
-      </div>
-    </div>
-  );
-});
+    );
+  },
+);

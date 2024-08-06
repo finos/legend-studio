@@ -25,7 +25,6 @@ import { ColumnsToolPanelModule } from '@ag-grid-enterprise/column-tool-panel';
 import { AgGridReact } from '@ag-grid-community/react';
 import { CsvExportModule } from '@ag-grid-community/csv-export';
 import { ExcelExportModule } from '@ag-grid-enterprise/excel-export';
-import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeIcon, Switch, cn, Global, css } from '@finos/legend-art';
 import {
   generateBackgroundColorUtilityClassName,
@@ -52,6 +51,7 @@ import type {
   DataCubeConfigurationColorKey,
 } from '../../../stores/dataCube/core/DataCubeConfiguration.js';
 import { generateBaseGridOptions } from '../../../stores/dataCube/grid/DataCubeGridConfigurationBuilder.js';
+import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
@@ -101,119 +101,120 @@ function backgroundColorStyle(
     .join('\n')};`;
 }
 
-export const DataCubeGridStyleController = observer(() => {
-  const repl = useREPLStore();
-  const dataCube = repl.dataCube;
-  const grid = dataCube.grid;
-  const configuration = grid.queryConfiguration;
+export const DataCubeGridStyleController = observer(
+  (props: { dataCube: DataCubeState }) => {
+    const { dataCube } = props;
+    const grid = dataCube.grid;
+    const configuration = grid.queryConfiguration;
 
-  return (
-    <Global
-      styles={css`
-        .${INTERNAL__GridClientUtilityCssClassName.ROOT} {
-          --ag-odd-row-background-color: ${grid.queryConfiguration
-            .alternateRowsStandardMode && !grid.queryConfiguration.alternateRows
-            ? DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR
-            : DEFAULT_ROW_BACKGROUND_COLOR};
-          --ag-cell-horizontal-border: ${grid.queryConfiguration
-            .showVerticalGridLines
-            ? `1px solid
+    return (
+      <Global
+        styles={css`
+          .${INTERNAL__GridClientUtilityCssClassName.ROOT} {
+            --ag-odd-row-background-color: ${grid.queryConfiguration
+              .alternateRowsStandardMode &&
+            !grid.queryConfiguration.alternateRows
+              ? DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR
+              : DEFAULT_ROW_BACKGROUND_COLOR};
+            --ag-cell-horizontal-border: ${grid.queryConfiguration
+              .showVerticalGridLines
+              ? `1px solid
             ${grid.queryConfiguration.gridLineColor}`
-            : 'none'};
-          --ag-row-border-color: ${grid.queryConfiguration
-            .showHorizontalGridLines
-            ? grid.queryConfiguration.gridLineColor
-            : 'transparent'};
-        }
-        .${INTERNAL__GridClientUtilityCssClassName.ROOT}
-          .${INTERNAL__GridClientUtilityCssClassName.HIGHLIGHT_ROW} {
-          background-color: ${grid.queryConfiguration.alternateRows
-            ? grid.queryConfiguration.alternateRowsColor
-            : DEFAULT_ROW_BACKGROUND_COLOR};
-        }
+              : 'none'};
+            --ag-row-border-color: ${grid.queryConfiguration
+              .showHorizontalGridLines
+              ? grid.queryConfiguration.gridLineColor
+              : 'transparent'};
+          }
+          .${INTERNAL__GridClientUtilityCssClassName.ROOT}
+            .${INTERNAL__GridClientUtilityCssClassName.HIGHLIGHT_ROW} {
+            background-color: ${grid.queryConfiguration.alternateRows
+              ? grid.queryConfiguration.alternateRowsColor
+              : DEFAULT_ROW_BACKGROUND_COLOR};
+          }
+          ${[
+            DataCubeFont.ARIAL,
+            DataCubeFont.ROBOTO,
+            DataCubeFont.ROBOTO_CONDENSED,
+          ]
+            .map(
+              (fontFamily) =>
+                `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontFamilyUtilityClassName(fontFamily)}{font-family:${fontFamily},sans-serif;}`,
+            )
+            .join('\n')}
+          ${[
+            DataCubeFont.GEORGIA,
+            DataCubeFont.ROBOTO_SERIF,
+            DataCubeFont.TIMES_NEW_ROMAN,
+          ]
+            .map(
+              (fontFamily) =>
+                `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontFamilyUtilityClassName(fontFamily)}{font-family:${fontFamily},serif;}`,
+            )
+            .join('\n')}
         ${[
-          DataCubeFont.ARIAL,
-          DataCubeFont.ROBOTO,
-          DataCubeFont.ROBOTO_CONDENSED,
-        ]
-          .map(
-            (fontFamily) =>
-              `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontFamilyUtilityClassName(fontFamily)}{font-family:${fontFamily},sans-serif;}`,
-          )
-          .join('\n')}
-        ${[
-          DataCubeFont.GEORGIA,
-          DataCubeFont.ROBOTO_SERIF,
-          DataCubeFont.TIMES_NEW_ROMAN,
-        ]
-          .map(
-            (fontFamily) =>
-              `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontFamilyUtilityClassName(fontFamily)}{font-family:${fontFamily},serif;}`,
-          )
-          .join('\n')}
-        ${[
-          DataCubeFont.JERBRAINS_MONO,
-          DataCubeFont.ROBOTO_MONO,
-          DataCubeFont.UBUNTU_MONO,
-        ]
-          .map(
-            (fontFamily) =>
-              `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontFamilyUtilityClassName(fontFamily)}{font-family:${fontFamily},monospace;}`,
-          )
-          .join('\n')}
+            DataCubeFont.JERBRAINS_MONO,
+            DataCubeFont.ROBOTO_MONO,
+            DataCubeFont.UBUNTU_MONO,
+          ]
+            .map(
+              (fontFamily) =>
+                `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontFamilyUtilityClassName(fontFamily)}{font-family:${fontFamily},monospace;}`,
+            )
+            .join('\n')}
           .${INTERNAL__GridClientUtilityCssClassName.FONT_BOLD} {
-          font-weight: 700;
-        }
-        ${[
-          4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 32, 36,
-          48, 72,
-        ]
-          .map(
-            (fontSize) =>
-              `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontSizeUtilityClassName(fontSize)}{font-size:${fontSize}px;}`,
-          )
-          .join('\n')}
-        .${INTERNAL__GridClientUtilityCssClassName.ROOT}
+            font-weight: 700;
+          }
+          ${[
+            4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 32,
+            36, 48, 72,
+          ]
+            .map(
+              (fontSize) =>
+                `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontSizeUtilityClassName(fontSize)}{font-size:${fontSize}px;}`,
+            )
+            .join('\n')}
+          .${INTERNAL__GridClientUtilityCssClassName.ROOT}
           .${INTERNAL__GridClientUtilityCssClassName.FONT_ITALIC} {
-          font-style: italic;
-        }
-        ${[
-          DataCubeFontFormatUnderlineVariant.SOLID,
-          DataCubeFontFormatUnderlineVariant.DASHED,
-          DataCubeFontFormatUnderlineVariant.DOTTED,
-          DataCubeFontFormatUnderlineVariant.DOUBLE,
-          DataCubeFontFormatUnderlineVariant.WAVY,
-        ]
-          .map(
-            (variant) =>
-              `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontUnderlineUtilityClassName(variant)}{text-decoration:underline ${variant};}`,
-          )
-          .join('\n')}
-        .${INTERNAL__GridClientUtilityCssClassName.ROOT} .${INTERNAL__GridClientUtilityCssClassName.FONT_STRIKETHROUGH} {
-          text-decoration: line-through;
-        }
-        ${[
-          DataCubeFontCase.LOWERCASE,
-          DataCubeFontCase.UPPERCASE,
-          DataCubeFontCase.CAPITALIZE,
-        ]
-          .map(
-            (fontCase) =>
-              `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontCaseUtilityClassName(fontCase)}{text-transform:${fontCase};}`,
-          )
-          .join('\n')}
-        ${[
-          DataCubeFontTextAlignment.LEFT,
-          DataCubeFontTextAlignment.CENTER,
-          DataCubeFontTextAlignment.RIGHT,
-        ]
-          .map(
-            (alignment) =>
-              `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateTextAlignUtilityClassName(alignment)}{text-align:${alignment};}`,
-          )
-          .join('\n')};
-        ${backgroundColorStyle('normal', configuration)}
-        ${backgroundColorStyle('zero', configuration)}
+            font-style: italic;
+          }
+          ${[
+            DataCubeFontFormatUnderlineVariant.SOLID,
+            DataCubeFontFormatUnderlineVariant.DASHED,
+            DataCubeFontFormatUnderlineVariant.DOTTED,
+            DataCubeFontFormatUnderlineVariant.DOUBLE,
+            DataCubeFontFormatUnderlineVariant.WAVY,
+          ]
+            .map(
+              (variant) =>
+                `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontUnderlineUtilityClassName(variant)}{text-decoration:underline ${variant};}`,
+            )
+            .join('\n')}
+          .${INTERNAL__GridClientUtilityCssClassName.ROOT} .${INTERNAL__GridClientUtilityCssClassName.FONT_STRIKETHROUGH} {
+            text-decoration: line-through;
+          }
+          ${[
+            DataCubeFontCase.LOWERCASE,
+            DataCubeFontCase.UPPERCASE,
+            DataCubeFontCase.CAPITALIZE,
+          ]
+            .map(
+              (fontCase) =>
+                `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateFontCaseUtilityClassName(fontCase)}{text-transform:${fontCase};}`,
+            )
+            .join('\n')}
+          ${[
+            DataCubeFontTextAlignment.LEFT,
+            DataCubeFontTextAlignment.CENTER,
+            DataCubeFontTextAlignment.RIGHT,
+          ]
+            .map(
+              (alignment) =>
+                `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .${generateTextAlignUtilityClassName(alignment)}{text-align:${alignment};}`,
+            )
+            .join('\n')};
+          ${backgroundColorStyle('normal', configuration)}
+          ${backgroundColorStyle('zero', configuration)}
         ${backgroundColorStyle('negative', configuration)}
         ${backgroundColorStyle('error', configuration)}
         ${textColorStyle('normal', configuration)}
@@ -222,20 +223,20 @@ export const DataCubeGridStyleController = observer(() => {
         ${textColorStyle('error', configuration)}
         .${INTERNAL__GridClientUtilityCssClassName.ROOT}
           .${INTERNAL__GridClientUtilityCssClassName.BLUR} {
-          filter: blur(3px);
-        }
-        .${INTERNAL__GridClientUtilityCssClassName.ROOT}
-          .${INTERNAL__GridClientUtilityCssClassName.BLUR}:hover {
-          filter: none;
-        }
-      `}
-    />
-  );
-});
+            filter: blur(3px);
+          }
+          .${INTERNAL__GridClientUtilityCssClassName.ROOT}
+            .${INTERNAL__GridClientUtilityCssClassName.BLUR}:hover {
+            filter: none;
+          }
+        `}
+      />
+    );
+  },
+);
 
-const DataCubeGridScroller = observer(() => {
-  const repl = useREPLStore();
-  const dataCube = repl.dataCube;
+const DataCubeGridScroller = observer((props: { dataCube: DataCubeState }) => {
+  const { dataCube } = props;
   const grid = dataCube.grid;
   const scrollHintText = grid.scrollHintText;
   const gridClientSideBarElement = document.querySelector(
@@ -264,14 +265,15 @@ const DataCubeGridScroller = observer(() => {
   );
 });
 
-const DataCubeGridStatusBar = observer(() => {
-  const repl = useREPLStore();
-  const dataCube = repl.dataCube;
+const DataCubeGridStatusBar = observer((props: { dataCube: DataCubeState }) => {
+  const { dataCube } = props;
   const grid = dataCube.grid;
 
   return (
     <div className="relative flex h-5 w-full select-none justify-between border-b border-neutral-200 bg-neutral-100">
-      {Boolean(grid.scrollHintText) && <DataCubeGridScroller />}
+      {Boolean(grid.scrollHintText) && (
+        <DataCubeGridScroller dataCube={dataCube} />
+      )}
       <div />
       <div className="flex h-full items-center">
         <div className="flex h-full items-center px-2 font-mono text-sm text-neutral-500">
@@ -333,9 +335,8 @@ const DataCubeGridStatusBar = observer(() => {
   );
 });
 
-const DataCubeGridClient = observer(() => {
-  const repl = useREPLStore();
-  const dataCube = repl.dataCube;
+const DataCubeGridClient = observer((props: { dataCube: DataCubeState }) => {
+  const { dataCube } = props;
   const grid = dataCube.grid;
 
   return (
@@ -372,10 +373,13 @@ const DataCubeGridClient = observer(() => {
   );
 });
 
-export const DataCubeGrid = observer(() => (
-  <div className="h-full w-full">
-    <DataCubeGridStyleController />
-    <DataCubeGridClient />
-    <DataCubeGridStatusBar />
-  </div>
-));
+export const DataCubeGrid = observer((props: { dataCube: DataCubeState }) => {
+  const { dataCube } = props;
+  return (
+    <div className="h-full w-full">
+      <DataCubeGridStyleController dataCube={dataCube} />
+      <DataCubeGridClient dataCube={dataCube} />
+      <DataCubeGridStatusBar dataCube={dataCube} />
+    </div>
+  );
+});

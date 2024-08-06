@@ -50,10 +50,10 @@ import {
   type Clazz,
 } from '@finos/legend-shared';
 import {
-  DataCubeQuerySortOperation,
+  DataCubeQuerySortOperator,
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
-  DataCubeAggregateOperation,
+  DataCubeAggregateOperator,
 } from './DataCubeQueryEngine.js';
 import { DataCubeConfiguration } from './DataCubeConfiguration.js';
 import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
@@ -111,6 +111,8 @@ function _funcMatch(
   return value;
 }
 
+// TODO: move these functions out into aggregator utils when we make agg operator handling systematic
+// similar to what we did with filter
 function _aggFuncMatch(
   value: V1_ValueSpecification | undefined,
   functionNames: string | string[],
@@ -135,7 +137,7 @@ export function _defaultAggCol(
       return {
         name,
         type,
-        operation: DataCubeAggregateOperation.SUM,
+        operation: DataCubeAggregateOperator.SUM,
         parameters: [],
       };
     }
@@ -152,67 +154,67 @@ function _aggCol(colSpec: V1_ColSpec, column: DataCubeQuerySnapshotColumn) {
   if (matchFunctionName(func.function, DataCubeFunction.COUNT)) {
     return {
       ...column,
-      operation: DataCubeAggregateOperation.COUNT,
+      operation: DataCubeAggregateOperator.COUNT,
       parameters: [],
     };
   } else if (matchFunctionName(func.function, DataCubeFunction.SUM)) {
     return {
       ...column,
-      operation: DataCubeAggregateOperation.SUM,
+      operation: DataCubeAggregateOperator.SUM,
       parameters: [],
     };
   } else if (matchFunctionName(func.function, DataCubeFunction.AVERAGE)) {
     return {
       ...column,
-      operation: DataCubeAggregateOperation.AVERAGE,
+      operation: DataCubeAggregateOperator.AVERAGE,
       parameters: [],
     };
   } else if (matchFunctionName(func.function, DataCubeFunction.MIN)) {
     return {
       ...column,
-      operation: DataCubeAggregateOperation.MIN,
+      operation: DataCubeAggregateOperator.MIN,
       parameters: [],
     };
   } else if (matchFunctionName(func.function, DataCubeFunction.MAX)) {
     return {
       ...column,
-      operation: DataCubeAggregateOperation.MAX,
+      operation: DataCubeAggregateOperator.MAX,
       parameters: [],
     };
   } else if (matchFunctionName(func.function, DataCubeFunction.FIRST)) {
     return {
       ...column,
-      operation: DataCubeAggregateOperation.FIRST,
+      operation: DataCubeAggregateOperator.FIRST,
       parameters: [],
     };
   } else if (matchFunctionName(func.function, DataCubeFunction.LAST)) {
     return {
       ...column,
-      operation: DataCubeAggregateOperation.LAST,
+      operation: DataCubeAggregateOperator.LAST,
       parameters: [],
     };
   } else if (matchFunctionName(func.function, DataCubeFunction.VAR_POP)) {
     return {
       ...column,
-      operation: DataCubeAggregateOperation.VAR_POP,
+      operation: DataCubeAggregateOperator.VAR_POP,
       parameters: [],
     };
   } else if (matchFunctionName(func.function, DataCubeFunction.VAR_SAMP)) {
     return {
       ...column,
-      operation: DataCubeAggregateOperation.VAR_SAMP,
+      operation: DataCubeAggregateOperator.VAR_SAMP,
       parameters: [],
     };
   } else if (matchFunctionName(func.function, DataCubeFunction.STDDEV_POP)) {
     return {
       ...column,
-      operation: DataCubeAggregateOperation.STDDEV_POP,
+      operation: DataCubeAggregateOperator.STDDEV_POP,
       parameters: [],
     };
   } else if (matchFunctionName(func.function, DataCubeFunction.STDDEV_SAMP)) {
     return {
       ...column,
-      operation: DataCubeAggregateOperation.STDDEV_SAMP,
+      operation: DataCubeAggregateOperator.STDDEV_SAMP,
       parameters: [],
     };
   } else {
@@ -521,8 +523,8 @@ export function validateAndBuildQuerySnapshot(
           ..._col(_colSpecParam(sortColFunc, 0)),
           operation:
             _name(sortColFunc.function) === DataCubeFunction.ASC
-              ? DataCubeQuerySortOperation.ASCENDING
-              : DataCubeQuerySortOperation.DESCENDING,
+              ? DataCubeQuerySortOperator.ASCENDING
+              : DataCubeQuerySortOperator.DESCENDING,
         };
       },
     );

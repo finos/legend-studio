@@ -33,6 +33,7 @@ import { guaranteeType } from '@finos/legend-shared';
 import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
 import type { REPLStore } from '../REPLStore.js';
 import { action, makeObservable, observable } from 'mobx';
+import { DataCubeQueryFilterOperation__Equals } from './core/filter/DataCubeQueryFilterOperation__Equals.js';
 
 export const DEFAULT_ENABLE_DEBUG_MODE = false;
 export const DEFAULT_GRID_CLIENT_ROW_BUFFER = 50;
@@ -43,6 +44,8 @@ export class DataCubeEngine {
   readonly repl: REPLStore;
   readonly application: LegendREPLApplicationStore;
   private readonly client: REPLServerClient;
+
+  readonly filterOperations = [new DataCubeQueryFilterOperation__Equals()];
 
   enableDebugMode = DEFAULT_ENABLE_DEBUG_MODE;
   gridClientRowBuffer = DEFAULT_GRID_CLIENT_ROW_BUFFER;
