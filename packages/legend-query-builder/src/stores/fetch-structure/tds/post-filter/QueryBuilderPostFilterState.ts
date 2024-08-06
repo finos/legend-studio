@@ -668,7 +668,14 @@ export class QueryBuilderPostFilterState
     return uniq(
       Array.from(this.nodes.values())
         .filter(filterByType(QueryBuilderPostFilterTreeConditionNodeData))
-        .map((n) => n.condition.leftConditionValue),
+        .map((n) => [
+          n.condition.leftConditionValue,
+          ...(n.condition.rightConditionValue instanceof
+          PostFilterTDSColumnValueConditionValueState
+            ? [n.condition.rightConditionValue.tdsColumn]
+            : []),
+        ])
+        .flat(),
     );
   }
 

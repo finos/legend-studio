@@ -1004,6 +1004,11 @@ test(
     await findByText(windowFunctionPanel, 'Age');
     await findByDisplayValue(windowFunctionPanel, 'sum of Age');
 
+    // Verify that window function column can be removed
+    expect(
+      getByTitle(windowFunctionPanel, 'Remove').hasAttribute('disabled'),
+    ).toBe(false);
+
     // DND sum of Age from window function panel to post-filter condition value
     const sumOfAgeDragSource = await findByTitle(
       windowFunctionPanel,
@@ -1017,9 +1022,22 @@ test(
     );
     await findByText(postFilterPanel, 'sum of Age');
 
-    // Click remote button to reset the right-side value
+    // Verify that window function column can not be removed
+    expect(
+      getByTitle(
+        windowFunctionPanel,
+        "This column is used in the post filter and can't be removed",
+      ).hasAttribute('disabled'),
+    ).toBe(true);
+
+    // Click reset button to reset the right-side value
     fireEvent.click(getByTitle(postFilterPanel, 'Reset'));
     expect(queryByText(postFilterPanel, 'sum of Age')).toBeNull();
+
+    // Verify that window function column can be removed
+    expect(
+      getByTitle(windowFunctionPanel, 'Remove').hasAttribute('disabled'),
+    ).toBe(false);
   },
 );
 
