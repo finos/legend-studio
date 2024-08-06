@@ -44,6 +44,7 @@ import {
   ReportIcon,
   CubesLoadingIndicatorIcon,
   CubesLoadingIndicator,
+  InfoCircleIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -243,6 +244,7 @@ export const QueryBuilderResultPanel = observer(
     const resultState = queryBuilderState.resultState;
     const queryParametersState = queryBuilderState.parametersState;
     const executionResult = resultState.executionResult;
+    const resultLimit = resultState.getExecutionResultLimit();
     const [showSqlModal, setShowSqlModal] = useState(false);
     const executedSql = executionResult
       ? getExecutedSqlFromExecutionResult(executionResult, true)
@@ -389,7 +391,9 @@ export const QueryBuilderResultPanel = observer(
         : undefined;
       if (_executionResult instanceof TDSExecutionResult) {
         const rowLength = _executionResult.result.rows.length;
-        return `${rowLength} row(s)${
+        const truncatedRowLength =
+          rowLength > resultLimit ? resultLimit : rowLength;
+        return `${truncatedRowLength} row(s)${
           queryDuration ? ` in ${queryDuration}` : ''
         }`;
       }
@@ -546,6 +550,25 @@ export const QueryBuilderResultPanel = observer(
                 </div>
               </div>
             )}
+            {executionResult &&
+              executionResult instanceof TDSExecutionResult &&
+              executionResult.result.rows.length > resultLimit && (
+                <div className="query-builder__result__stale-status">
+                  <div className="query-builder__result__stale-status__icon">
+                    <ExclamationTriangleIcon />
+                  </div>
+                  <div className="query-builder__result__stale-status__label">
+                    Data below is not complete - query produces more rows than
+                    the set grid preview limit
+                  </div>
+                  <div
+                    className="query-builder__result__stale-status__icon"
+                    title={`The preview limit is set to ${resultLimit}. The results in the grid below are being limited by this limit and running query with a higher limit would produce more rows. Export will not apply this limit.`}
+                  >
+                    <InfoCircleIcon />
+                  </div>
+                </div>
+              )}
           </div>
           <div className="panel__header__actions query-builder__result__header__actions">
             {resultState.exportState.isInProgress && (
@@ -762,7 +785,9 @@ export const QueryBuilderResultPanel = observer(
           {executionResult && !isLoading && !resultState.executionError && (
             <div className="query-builder__result__values">
               <QueryBuilderResultValues
-                executionResult={executionResult}
+                executionResult={resultState.getTruncatedExecutionResultIfExceed(
+                  executionResult,
+                )}
                 queryBuilderState={queryBuilderState}
               />
             </div>

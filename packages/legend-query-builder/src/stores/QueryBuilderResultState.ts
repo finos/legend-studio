@@ -17,13 +17,14 @@
 import { action, flow, makeObservable, observable } from 'mobx';
 import {
   type GeneratorFn,
+  type ContentType,
   assertErrorThrown,
   LogEvent,
   guaranteeNonNullable,
-  type ContentType,
   ActionState,
   StopWatch,
   getContentTypeFileExtension,
+  deepClone,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
@@ -35,6 +36,7 @@ import {
   GRAPH_MANAGER_EVENT,
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
+  TDSExecutionResult,
 } from '@finos/legend-graph';
 
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
@@ -49,6 +51,7 @@ import { ExecutionPlanState } from './execution-plan/ExecutionPlanState.js';
 import type { DataGridColumnState } from '@finos/legend-lego/data-grid';
 import { downloadStream } from '@finos/legend-application';
 import { QueryBuilderDataGridCustomAggregationFunction } from '../components/result/tds/QueryBuilderTDSGridResult.js';
+import { QueryBuilderTDSState } from './fetch-structure/tds/QueryBuilderTDSState.js';
 
 export const DEFAULT_LIMIT = 1000;
 
@@ -245,6 +248,34 @@ export class QueryBuilderResultState {
     }
   }
 
+  getExecutionResultLimit = (): number =>
+    Math.min(
+      this.queryBuilderState.fetchStructureState.implementation instanceof
+        QueryBuilderTDSState &&
+        this.queryBuilderState.fetchStructureState.implementation
+          .resultSetModifierState.limit
+        ? this.queryBuilderState.fetchStructureState.implementation
+            .resultSetModifierState.limit
+        : Number.MAX_SAFE_INTEGER,
+      this.previewLimit,
+    );
+
+  getTruncatedExecutionResultIfExceed = (
+    executionResult: ExecutionResult,
+  ): ExecutionResult => {
+    const resultLimit = this.getExecutionResultLimit();
+    if (
+      executionResult instanceof TDSExecutionResult &&
+      executionResult.result.rows.length > resultLimit
+    ) {
+      const truncatedExecutionResult = deepClone(executionResult);
+      truncatedExecutionResult.result.rows =
+        truncatedExecutionResult.result.rows.slice(0, resultLimit);
+      return truncatedExecutionResult;
+    }
+    return executionResult;
+  };
+
   processWeightedColumnPairsMap(
     config: QueryGridConfig,
   ): Map<string, string> | undefined {
@@ -428,7 +459,9 @@ export class QueryBuilderResultState {
         this.queryBuilderState.executionContextState.runtimeValue,
         `Runtime is required to execute query`,
       );
-      const query = this.buildExecutionRawLambda();
+      const query = this.buildExecutionRawLambda({
+        isQueryOverflowExecuting: true,
+      });
       const parameterValues = buildExecutionParameterValues(
         this.queryBuilderState.parametersState.parameterStates,
         this.queryBuilderState.graphManagerState,

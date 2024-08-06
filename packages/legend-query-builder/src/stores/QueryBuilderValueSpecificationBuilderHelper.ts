@@ -210,4 +210,9 @@ export type LambdaFunctionBuilderOption = {
    * typed in engine. This is still an experimental feature, hence we should only enable this flag when user wants to enable this directly.
    */
   useTypedRelationFunctions?: boolean | undefined;
+
+  /**
+   * Set this flag to `true` when you want to execute a query that exceeds the limit to check for additional data in the database.
+   */
+  isQueryOverflowExecuting?: boolean | undefined;
 };
