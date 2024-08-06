@@ -60,6 +60,7 @@ import {
   TEST_DATA__lambda_simpleSingleConditionFilter,
   TEST_DATA_lambda_dateTimeCapabilityFilterWithYesterday,
   TEST_DATA__lambda_isOperatorFilterForDate,
+  TEST_DATA__lambda_filterWithRightSidePropertyExpression,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
 import {
   TEST_DATA__lambda_input_filterWithExists,
@@ -366,7 +367,7 @@ const cases: RoundtripTestCase[] = [
   [
     'Filter with ProperyExpressionState as right condition',
     relationalFilterCtx,
-    TEST_DATA__lambda_simpleSingleConditionFilter,
+    TEST_DATA__lambda_filterWithRightSidePropertyExpression,
     undefined,
   ],
   // group condition
