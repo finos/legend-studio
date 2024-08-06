@@ -157,7 +157,7 @@ export const QueryBuilderEmptyExecutionResultPanel = observer(
           Query returned no data
         </div>
         <div className="query-builder__result__empty-result-warning__body">
-          if you believe the query should return data, please
+          If you believe the query should return data, please
           <button
             className="query-builder__result__permission-error__button"
             disabled={

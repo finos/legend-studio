@@ -1797,6 +1797,7 @@ export const TEST_DATA__ModelCoverageAnalysisResult_QueryExecution_Entities = {
         { _type: 'MappedProperty', name: 'isApple' },
         { _type: 'MappedProperty', name: 'legalName' },
         { _type: 'MappedProperty', name: 'employeeSizes' },
+        { _type: 'MappedProperty', name: 'averageAge' },
       ],
     },
     {
