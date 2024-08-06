@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
+import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
   DataCubeQueryFilterGroupOperator,
@@ -23,6 +23,7 @@ import {
 import {
   DataCubeEditorFilterConditionGroupNode,
   DataCubeEditorFilterConditionNode,
+  type DataCubeEditorFilterNode,
 } from '../../../stores/dataCube/editor/DataCubeEditorFilterPanelState.js';
 import {
   FormDropdownMenu,
@@ -31,20 +32,115 @@ import {
 } from '../../repl/Form.js';
 import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
 import { forwardRef } from 'react';
+import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 
-const DataCubeEditorFilterConditionNodeValueEditor = forwardRef<
-  HTMLInputElement,
-  {
-    value: DataCubeOperationValue;
-    updateValue: (value: DataCubeOperationValue) => void;
-  }
->(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
-  const { value } = props;
-  switch (value.type) {
-    default:
-      return <div>unsupported</div>;
-  }
-});
+const FILTER_TREE_LEFT_PADDING = 4;
+const FILTER_TREE_INDENTATION_SPACE = 10;
+
+const DataCubeEditorFilterConditionNodeValueEditor = observer(
+  forwardRef<
+    HTMLInputElement,
+    {
+      value: DataCubeOperationValue;
+      updateValue: (value: unknown) => void;
+    }
+  >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
+    const { value, updateValue } = props;
+    // WIP: support collection/column
+    switch (value.type) {
+      case PRIMITIVE_TYPE.STRING: {
+        return (
+          <input
+            className="h-5 flex-shrink-0 border border-neutral-400 px-1.5 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300"
+            value={value.value as string}
+            onChange={(event) => updateValue(event.target.value)}
+          />
+        );
+      }
+      default:
+        return null;
+    }
+  }),
+);
+
+function DataCubeEditorFilterNotLabel() {
+  return (
+    <div className="relative flex pl-2.5">
+      <div className="absolute -left-2 h-0 w-0 border-[9px] border-neutral-600 border-b-transparent border-l-transparent border-t-transparent" />
+      <div
+        className="mr-1 flex h-[18px] w-10 flex-shrink-0 items-center bg-neutral-600 pl-2 text-sm font-medium text-white"
+        title="Filter is inverted: select all but what matches."
+      >
+        NOT
+      </div>
+    </div>
+  );
+}
+
+const DataCubeEditorFilterConditionNodeController = observer(
+  (props: {
+    className?: string | undefined;
+    node: DataCubeEditorFilterNode;
+    dataCube: DataCubeState;
+  }) => {
+    const { className, node } = props;
+    return (
+      <div
+        className={cn(
+          'flex h-3.5 w-14 flex-shrink-0 bg-neutral-100',
+          className,
+        )}
+      >
+        <button
+          className="flex h-3.5 w-3.5 items-center justify-center rounded-bl-sm rounded-tl-sm border border-neutral-400 hover:bg-neutral-200"
+          onClick={() => {
+            // do nothing
+          }}
+          title="Insert a new column filter, just after this filter."
+        >
+          <DataCubeIcon.FilterAddOperator className="stroke-[2.5] text-sm" />
+        </button>
+        <button
+          className="flex h-3.5 w-3.5 items-center justify-center border border-l-0 border-neutral-400 hover:bg-neutral-200"
+          onClick={() => {
+            // do nothing
+          }}
+          title="Remove this filter"
+        >
+          <DataCubeIcon.FilterRemoveOperator className="stroke-[2.5] text-sm" />
+        </button>
+        <button
+          className="flex h-3.5 w-3.5 items-center justify-center border border-l-0 border-neutral-400 hover:bg-neutral-200"
+          onClick={() => {
+            // do nothing
+          }}
+          title="Put this filter in its own sub-group (and combine it with other filters)."
+        >
+          <DataCubeIcon.FilterGroupOperator className="stroke-[2.5] text-sm" />
+        </button>
+        <button
+          className={cn(
+            'flex h-3.5 w-3.5 items-center justify-center rounded-br-sm rounded-tr-sm border border-l-0 border-neutral-400 hover:bg-neutral-200',
+            {
+              'bg-neutral-600': node.not,
+              'border-neutral-600': node.not,
+              'text-white': node.not,
+              'hover:bg-neutral-600': node.not,
+            },
+          )}
+          onClick={() => node.setNot(!node.not)}
+          title={
+            node.not
+              ? 'Turn off the NOT operator on this filter to select only what matches.'
+              : 'Turn on the NOT operator on this filter to select all but what matches.'
+          }
+        >
+          <DataCubeIcon.FilterNotOperator className="stroke-[3] text-xs" />
+        </button>
+      </div>
+    );
+  },
+);
 
 const DataCubeEditorFilterConditionNodeDisplay = observer(
   (props: {
@@ -70,9 +166,17 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
     return (
       <div className="flex h-6 items-center">
         <div
-          style={{ paddingLeft: `${level * 10 + 4}px` }}
+          style={{
+            paddingLeft: `${level * FILTER_TREE_INDENTATION_SPACE + FILTER_TREE_LEFT_PADDING}px`,
+          }}
           className="flex-shrink-0"
         />
+        <DataCubeEditorFilterConditionNodeController
+          className="mr-1"
+          node={node}
+          dataCube={dataCube}
+        />
+        {node.not && <DataCubeEditorFilterNotLabel />}
         <FormDropdownMenuTrigger
           className="mr-1 w-32"
           onClick={openColumnsDropdown}
@@ -121,7 +225,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
           {node.value && (
             <DataCubeEditorFilterConditionNodeValueEditor
               value={node.value}
-              updateValue={node.setValue}
+              updateValue={(val) => node.updateValue(val)}
             />
           )}
         </div>
@@ -136,7 +240,7 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
     level: number;
     dataCube: DataCubeState;
   }) => {
-    const { node, level } = props;
+    const { node, level, dataCube } = props;
     const [
       openOperatorsDropdown,
       closeOperatorsDropdown,
@@ -147,9 +251,21 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
     return (
       <div className="flex h-6 items-center">
         <div
-          style={{ paddingLeft: `${level * 10 + 4}px` }}
+          style={{
+            paddingLeft: `${level * FILTER_TREE_INDENTATION_SPACE + FILTER_TREE_LEFT_PADDING}px`,
+          }}
           className="flex-shrink-0"
         />
+        {level !== 0 && (
+          <>
+            <DataCubeEditorFilterConditionNodeController
+              className="mr-1"
+              node={node}
+              dataCube={dataCube}
+            />
+            <DataCubeEditorFilterNotLabel />
+          </>
+        )}
         <FormDropdownMenuTrigger
           className="w-14"
           onClick={openOperatorsDropdown}

@@ -82,11 +82,12 @@ export class DataCubeEditorFilterConditionNode extends DataCubeEditorFilterNode 
 
       value: observable.ref,
       setValue: action,
+      updateValue: action,
     });
 
     this.column = column;
-    this.value = value;
     this.operation = operation;
+    this.setValue(value);
   }
 
   setColumn(col: DataCubeQuerySnapshotColumn) {
@@ -98,7 +99,15 @@ export class DataCubeEditorFilterConditionNode extends DataCubeEditorFilterNode 
   }
 
   setValue(value: DataCubeOperationValue | undefined) {
-    this.value = value;
+    this.value = value
+      ? makeObservable(value, { value: observable })
+      : undefined;
+  }
+
+  updateValue(value: unknown) {
+    if (this.value) {
+      this.value.value = value;
+    }
   }
 }
 
