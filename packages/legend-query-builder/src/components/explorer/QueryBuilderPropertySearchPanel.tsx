@@ -223,6 +223,11 @@ export const formatTextWithHighlightedMatches = (
   return formattedNode;
 };
 
+const QUERY_BUILDER_PROPERTY_SEARCH_LABEL_TEXT_CLASS =
+  'query-builder-property-search-panel__node__label';
+const QUERY_BUILDER_PROPERTY_SEARCH_DOC_TEXT_CLASS =
+  'query-builder-property-search-panel__node__doc';
+
 const QueryBuilderTreeNodeViewer = observer(
   (props: {
     node: QueryBuilderExplorerTreeNodeData;
@@ -335,7 +340,7 @@ const QueryBuilderTreeNodeViewer = observer(
         ? formatTextWithHighlightedMatches(
             docText,
             propertySearchState.searchText,
-            'query-builder-property-search-panel__node__doc',
+            QUERY_BUILDER_PROPERTY_SEARCH_DOC_TEXT_CLASS,
             `${node.id}_doc`,
           )
         : null;
@@ -369,7 +374,7 @@ const QueryBuilderTreeNodeViewer = observer(
               {formatTextWithHighlightedMatches(
                 propertyName,
                 propertySearchState.searchText,
-                'query-builder-property-search-panel__node__label',
+                QUERY_BUILDER_PROPERTY_SEARCH_LABEL_TEXT_CLASS,
                 node.id,
               )}
             </div>
