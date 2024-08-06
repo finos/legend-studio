@@ -16,7 +16,6 @@
 
 import { test, expect, describe } from '@jest/globals';
 import {
-  waitFor,
   act,
   getByText,
   queryAllByTestId,
@@ -27,12 +26,12 @@ import {
   getByTitle,
   queryAllByTitle,
   getByTestId,
-  getAllByTestId,
   getByRole,
-  getAllByText,
   findByDisplayValue,
   findByText,
   findByTitle,
+  findAllByTestId,
+  findAllByText,
 } from '@testing-library/react';
 import {
   TEST_DATA__lambda_WithDerivedProjectColumnsUsingConstAndParams,
@@ -115,16 +114,12 @@ test(
         ),
       );
     });
-    const queryBuilderFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const queryBuilderFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
 
     expect(
-      await waitFor(() =>
-        getByText(queryBuilderFilterPanel, '"2023-09-09T16:06:10"'),
-      ),
+      await findByText(queryBuilderFilterPanel, '"2023-09-09T16:06:10"'),
     ).not.toBeNull();
   },
 );
@@ -152,10 +147,8 @@ test(
     });
 
     // gather all nodes
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
     let nodeContainers = queryAllByTestId(
       postFilterPanel,
@@ -244,11 +237,11 @@ test(
       nodeContainers,
       { shouldHaveResetButton: false },
     );
-    const constantPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+    const constantPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
     );
-    const parameterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    const parameterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
     );
     // dnd const `integerConst` -> Age Value
     const intConst = getByText(constantPanel, 'integerConst');
@@ -346,10 +339,8 @@ test(
     expect(getByText(strictDateNode, 'dateParam')).not.toBeNull();
 
     // remove all filter nodes
-    const filterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
-      ),
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
     );
     const filterNodes = queryAllByTestId(
       filterPanel,
@@ -381,8 +372,8 @@ test(
     ).toBe(0);
     expect(queryByText(filterPanel, 'Add a filter condition')).not.toBeNull();
 
-    const tdsPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
+    const tdsPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS,
     );
     const removeCols = queryAllByTitle(
       tdsPanel,
@@ -512,19 +503,15 @@ test(
     });
 
     // gather all nodes
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
 
-    const filterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
-      ),
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
     );
-    const tdsPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
+    const tdsPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS,
     );
 
     // remove all filter nodes
@@ -699,10 +686,8 @@ test(
     });
 
     // gather all nodes
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
 
     const node = getByTestId(
@@ -739,29 +724,28 @@ test(
       tdsState.setShowPostFilterPanel(true);
     });
 
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
-    const tdsProjectionPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-      ),
+    const tdsProjectionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
     );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
     );
 
     // DND from explorer to projection panel
-    const firstNameExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'First Name'),
+    const firstNameExplorerDragSource = await findByText(
+      explorerPanel,
+      'First Name',
     );
-    const lastNameExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Last Name'),
+    const lastNameExplorerDragSource = await findByText(
+      explorerPanel,
+      'Last Name',
     );
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
+    const tdsProjectionDropZone = await findByText(
+      tdsProjectionPanel,
+      'Add a projection column',
     );
     await dragAndDrop(
       firstNameExplorerDragSource,
@@ -777,11 +761,13 @@ test(
     );
 
     // DND First Name from projection panel to post-filter panel
-    const firstNameTDSDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'First Name'),
+    const firstNameTDSDragSource = await findByText(
+      tdsProjectionPanel,
+      'First Name',
     );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
     );
     await dragAndDrop(
       firstNameTDSDragSource,
@@ -789,19 +775,18 @@ test(
       postFilterPanel,
       'Add a post-filter condition',
     );
-    await waitFor(() => getByText(postFilterPanel, 'First Name'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
-    let contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    await findByText(postFilterPanel, 'First Name');
+    await findByText(postFilterPanel, 'is');
+    let contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(1);
 
     // DND Last Name from projection panel to First Name right-side value
-    const lastNameTDSDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Last Name'),
+    const lastNameTDSDragSource = await findByText(
+      tdsProjectionPanel,
+      'Last Name',
     );
     await dragAndDrop(
       lastNameTDSDragSource,
@@ -809,12 +794,10 @@ test(
       postFilterPanel,
       'Change Filter Value',
     );
-    await waitFor(() => getByText(postFilterPanel, 'Last Name'));
-    contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    await findByText(postFilterPanel, 'Last Name');
+    contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(1);
 
@@ -825,20 +808,16 @@ test(
       postFilterPanel,
       'Change Filter Value',
     );
-    await waitFor(() =>
-      expect(getAllByText(postFilterPanel, 'First Name')).toHaveLength(2),
-    );
-    contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    expect(await findAllByText(postFilterPanel, 'First Name')).toHaveLength(2);
+    contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(1);
 
     // Click remote button to reset the right-side value
     fireEvent.click(getByTitle(postFilterPanel, 'Reset'));
-    await waitFor(() => getByText(postFilterPanel, 'First Name'));
+    await findByText(postFilterPanel, 'First Name');
   },
 );
 
@@ -866,29 +845,25 @@ test(
       tdsState.setShowPostFilterPanel(true);
     });
 
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
-    const tdsProjectionPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-      ),
+    const tdsProjectionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
     );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
     );
 
     // DND from explorer to projection panel
-    const firstNameExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'First Name'),
+    const firstNameExplorerDragSource = await findByText(
+      explorerPanel,
+      'First Name',
     );
-    const ageExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Age'),
-    );
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
+    const ageExplorerDragSource = await findByText(explorerPanel, 'Age');
+    const tdsProjectionDropZone = await findByText(
+      tdsProjectionPanel,
+      'Add a projection column',
     );
     await dragAndDrop(
       firstNameExplorerDragSource,
@@ -904,11 +879,13 @@ test(
     );
 
     // DND First Name from projection panel to post-filter panel
-    const firstNameTDSDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'First Name'),
+    const firstNameTDSDragSource = await findByText(
+      tdsProjectionPanel,
+      'First Name',
     );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
     );
     await dragAndDrop(
       firstNameTDSDragSource,
@@ -916,20 +893,16 @@ test(
       postFilterPanel,
       'Add a post-filter condition',
     );
-    await waitFor(() => getByText(postFilterPanel, 'First Name'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
-    const contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    await findByText(postFilterPanel, 'First Name');
+    await findByText(postFilterPanel, 'is');
+    const contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(1);
 
     // Check that DND Age from projection panel doesn't allow dropping on First Name right-side value
-    const ageTDSDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Age'),
-    );
+    const ageTDSDragSource = await findByText(tdsProjectionPanel, 'Age');
     fireEvent.dragStart(ageTDSDragSource);
     expect(queryByText(postFilterPanel, 'Change Filter Value')).toBeNull();
 
@@ -990,11 +963,10 @@ test(
     );
 
     // DND from explorer to projection panel
-    const ageExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Age'),
-    );
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
+    const ageExplorerDragSource = await findByText(explorerPanel, 'Age');
+    const tdsProjectionDropZone = await findByText(
+      tdsProjectionPanel,
+      'Add a projection column',
     );
     await dragAndDrop(
       ageExplorerDragSource,
@@ -1090,11 +1062,13 @@ test(
     );
 
     // DND from explorer to projection panel
-    const firstNameExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'First Name'),
+    const firstNameExplorerDragSource = await findByText(
+      explorerPanel,
+      'First Name',
     );
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
+    const tdsProjectionDropZone = await findByText(
+      tdsProjectionPanel,
+      'Add a projection column',
     );
     await dragAndDrop(
       firstNameExplorerDragSource,
@@ -1104,11 +1078,13 @@ test(
     );
 
     // DND First Name from projection panel to post-filter panel
-    const firstNameTDSDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'First Name'),
+    const firstNameTDSDragSource = await findByText(
+      tdsProjectionPanel,
+      'First Name',
     );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
     );
     await dragAndDrop(
       firstNameTDSDragSource,
@@ -1116,8 +1092,8 @@ test(
       postFilterPanel,
       'Add a post-filter condition',
     );
-    await waitFor(() => getByText(postFilterPanel, 'First Name'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
+    await findByText(postFilterPanel, 'First Name');
+    await findByText(postFilterPanel, 'is');
 
     // DND First Name from projection panel to window function panel
     const windowFunctionDropZone = await findByText(
@@ -1171,29 +1147,28 @@ test(
       tdsState.setShowPostFilterPanel(true);
     });
 
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
-    const tdsProjectionPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-      ),
+    const tdsProjectionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
     );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
     );
 
     // DND from explorer to projection panel
-    const firstNameExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'First Name'),
+    const firstNameExplorerDragSource = await findByText(
+      explorerPanel,
+      'First Name',
     );
-    const lastNameExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Last Name'),
+    const lastNameExplorerDragSource = await findByText(
+      explorerPanel,
+      'Last Name',
     );
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
+    const tdsProjectionDropZone = await findByText(
+      tdsProjectionPanel,
+      'Add a projection column',
     );
     await dragAndDrop(
       firstNameExplorerDragSource,
@@ -1209,11 +1184,13 @@ test(
     );
 
     // DND First Name from projection panel to post-filter panel
-    const firstNameTDSDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'First Name'),
+    const firstNameTDSDragSource = await findByText(
+      tdsProjectionPanel,
+      'First Name',
     );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
     );
     await dragAndDrop(
       firstNameTDSDragSource,
@@ -1221,19 +1198,18 @@ test(
       postFilterPanel,
       'Add a post-filter condition',
     );
-    await waitFor(() => getByText(postFilterPanel, 'First Name'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
-    let contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    await findByText(postFilterPanel, 'First Name');
+    await findByText(postFilterPanel, 'is');
+    let contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(1);
 
     // DND Last Name from projection panel to First Name left-side badge
-    const lastNameTDSDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Last Name'),
+    const lastNameTDSDragSource = await findByText(
+      tdsProjectionPanel,
+      'Last Name',
     );
     await dragAndDrop(
       lastNameTDSDragSource,
@@ -1241,16 +1217,12 @@ test(
       postFilterPanel,
       'First Name',
     );
-    await waitFor(() => getByText(postFilterPanel, 'Last Name'));
-    await waitFor(() =>
-      expect(getAllByText(postFilterPanel, 'is')).toHaveLength(2),
-    );
-    await waitFor(() => getByText(postFilterPanel, 'and'));
-    contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    await findByText(postFilterPanel, 'Last Name');
+    expect(await findAllByText(postFilterPanel, 'is')).toHaveLength(2);
+    await findByText(postFilterPanel, 'and');
+    contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(3);
   },
@@ -1279,41 +1251,34 @@ test(
       );
       tdsState.setShowPostFilterPanel(true);
     });
-    const filterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
-      ),
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
     );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
     );
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
-    const fetchStructurePanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
-      ),
+    const fetchStructurePanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
     );
 
     // Drag and drop from explorer to filter
-    const filterDropZone = await waitFor(() =>
-      getByText(filterPanel, 'Add a filter condition'),
+    const filterDropZone = await findByText(
+      filterPanel,
+      'Add a filter condition',
     );
-    const explorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Legal Name'),
-    );
+    const explorerDragSource = await findByText(explorerPanel, 'Legal Name');
     await dragAndDrop(
       explorerDragSource,
       filterDropZone,
       filterPanel,
       'Add a filter condition',
     );
-    await waitFor(() => getByText(filterPanel, 'Legal Name'));
-    await waitFor(() => getByText(filterPanel, 'is'));
-    await waitFor(() => getByDisplayValue(filterPanel, ''));
+    await findByText(filterPanel, 'Legal Name');
+    await findByText(filterPanel, 'is');
+    await findByDisplayValue(filterPanel, '');
 
     // Drag and drop from explorer to fetch structure
     const tdsDropZone = await findByText(
@@ -1576,26 +1541,21 @@ describe(integrationTest('Post-filter default values are properly set'), () => {
         tdsState.setShowPostFilterPanel(true);
       });
 
-      const postFilterPanel = await waitFor(() =>
-        renderResult.getByTestId(
-          QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-        ),
+      const postFilterPanel = await renderResult.findByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
       );
-      const tdsProjectionPanel = await waitFor(() =>
-        renderResult.getByTestId(
-          QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-        ),
+      const tdsProjectionPanel = await renderResult.findByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
       );
-      const explorerPanel = await waitFor(() =>
-        renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+      const explorerPanel = await renderResult.findByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
       );
 
       // Drag and drop property to fetch structure panel and post-filter panel
-      const explorerDragSource = await waitFor(() =>
-        getByText(explorerPanel, property),
-      );
-      const tdsProjectionDropZone = await waitFor(() =>
-        getByText(tdsProjectionPanel, 'Add a projection column'),
+      const explorerDragSource = await findByText(explorerPanel, property);
+      const tdsProjectionDropZone = await findByText(
+        tdsProjectionPanel,
+        'Add a projection column',
       );
       await dragAndDrop(
         explorerDragSource,
@@ -1612,14 +1572,13 @@ describe(integrationTest('Post-filter default values are properly set'), () => {
       }
 
       // Drag and drop proerty to post-filter panel
-      const tdsDragSource = await waitFor(() =>
-        getByText(
-          tdsProjectionPanel,
-          `${property}${aggregate ? ` (${aggregate})` : ''}`,
-        ),
+      const tdsDragSource = await findByText(
+        tdsProjectionPanel,
+        `${property}${aggregate ? ` (${aggregate})` : ''}`,
       );
-      const postFilterDropZone = await waitFor(() =>
-        getByText(postFilterPanel, 'Add a post-filter condition'),
+      const postFilterDropZone = await findByText(
+        postFilterPanel,
+        'Add a post-filter condition',
       );
       await dragAndDrop(
         tdsDragSource,
@@ -1627,30 +1586,24 @@ describe(integrationTest('Post-filter default values are properly set'), () => {
         postFilterPanel,
         'Add a post-filter condition',
       );
-      await waitFor(() =>
-        getByText(
-          postFilterPanel,
-          `${property}${aggregate ? ` (${aggregate})` : ''}`,
-        ),
+      await findByText(
+        postFilterPanel,
+        `${property}${aggregate ? ` (${aggregate})` : ''}`,
       );
-      await waitFor(() => getByText(postFilterPanel, 'is'));
+      await findByText(postFilterPanel, 'is');
       if (propertyType === PrimitiveType.DATE) {
-        await waitFor(() =>
-          getByTitle(
-            postFilterPanel,
-            'Click to edit and pick from more date options',
-          ),
+        await findByTitle(
+          postFilterPanel,
+          'Click to edit and pick from more date options',
         );
       } else if (propertyType === Enumeration.prototype) {
-        await waitFor(() => getByText(postFilterPanel, 'Select value'));
+        await findByText(postFilterPanel, 'Select value');
       } else {
-        await waitFor(() => getByDisplayValue(postFilterPanel, ''));
+        await findByDisplayValue(postFilterPanel, '');
       }
-      const contentNodes = await waitFor(() =>
-        getAllByTestId(
-          postFilterPanel,
-          QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-        ),
+      const contentNodes = await findAllByTestId(
+        postFilterPanel,
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
       );
       expect(contentNodes.length).toBe(1);
 
@@ -1692,7 +1645,7 @@ describe(integrationTest('Post-filter default values are properly set'), () => {
         fireEvent.change(filterValueInput, {
           target: { value: valueToSet },
         });
-        await waitFor(() => getByDisplayValue(postFilterPanel, valueToSet));
+        await findByDisplayValue(postFilterPanel, valueToSet);
       }
 
       // Verify no validation issue
@@ -1705,7 +1658,7 @@ describe(integrationTest('Post-filter default values are properly set'), () => {
         // Delete value to set it to empty string
         const filterValueInput = getByRole(postFilterPanel, 'textbox');
         fireEvent.change(filterValueInput, { target: { value: '' } });
-        await waitFor(() => getByDisplayValue(postFilterPanel, ''));
+        await findByDisplayValue(postFilterPanel, '');
 
         // Verify no validation issue
         expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
@@ -1724,9 +1677,9 @@ describe(integrationTest('Post-filter default values are properly set'), () => {
 
         // Verify value is reset
         if (propertyType === Enumeration.prototype) {
-          await waitFor(() => getByText(postFilterPanel, 'Select value'));
+          await findByText(postFilterPanel, 'Select value');
         } else {
-          await waitFor(() => getByDisplayValue(postFilterPanel, ''));
+          await findByDisplayValue(postFilterPanel, '');
         }
 
         // Verify validation issue
@@ -1763,52 +1716,44 @@ test(
       tdsState.setShowPostFilterPanel(true);
     });
 
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
-    const tdsProjectionPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-      ),
+    const tdsProjectionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
     );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
     );
 
     // Drag and drop
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
+    const tdsProjectionDropZone = await findByText(
+      tdsProjectionPanel,
+      'Add a projection column',
     );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
     );
-    const explorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Is Active'),
-    );
+    const explorerDragSource = await findByText(explorerPanel, 'Is Active');
     await dragAndDrop(
       explorerDragSource,
       tdsProjectionDropZone,
       tdsProjectionPanel,
       'Add a projection column',
     );
-    const tdsDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Is Active'),
-    );
+    const tdsDragSource = await findByText(tdsProjectionPanel, 'Is Active');
     await dragAndDrop(
       tdsDragSource,
       postFilterDropZone,
       postFilterPanel,
       'Add a post-filter condition',
     );
-    await waitFor(() => getByText(postFilterPanel, 'Is Active'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
-    const contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    await findByText(postFilterPanel, 'Is Active');
+    await findByText(postFilterPanel, 'is');
+    const contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(1);
 
@@ -1844,53 +1789,45 @@ test(
       tdsState.setShowPostFilterPanel(true);
     });
 
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
-    const tdsProjectionPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-      ),
+    const tdsProjectionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
     );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
     );
 
     // Drag and drop
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
+    const tdsProjectionDropZone = await findByText(
+      tdsProjectionPanel,
+      'Add a projection column',
     );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
     );
-    const explorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Legal Name'),
-    );
+    const explorerDragSource = await findByText(explorerPanel, 'Legal Name');
     await dragAndDrop(
       explorerDragSource,
       tdsProjectionDropZone,
       tdsProjectionPanel,
       'Add a projection column',
     );
-    const tdsDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Legal Name'),
-    );
+    const tdsDragSource = await findByText(tdsProjectionPanel, 'Legal Name');
     await dragAndDrop(
       tdsDragSource,
       postFilterDropZone,
       postFilterPanel,
       'Add a post-filter condition',
     );
-    await waitFor(() => getByText(postFilterPanel, 'Legal Name'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
-    await waitFor(() => getByDisplayValue(postFilterPanel, ''));
-    const contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    await findByText(postFilterPanel, 'Legal Name');
+    await findByText(postFilterPanel, 'is');
+    await findByDisplayValue(postFilterPanel, '');
+    const contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(1);
 
