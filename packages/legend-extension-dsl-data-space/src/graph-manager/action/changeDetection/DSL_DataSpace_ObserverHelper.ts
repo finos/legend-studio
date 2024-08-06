@@ -76,7 +76,7 @@ export const observe_DataSpace = skipObserved(
     });
 
     metamodel.executionContexts.forEach(observe_DataSpaceExecutionContext);
-    observe_DataSpaceExecutionContext(metamodel.defaultExecutionContext);
+    // observe_DataSpaceExecutionContext(metamodel.defaultExecutionContext);
 
     if (metamodel.supportInfo) {
       observe_DataSpaceSupportInfo(metamodel.supportInfo);

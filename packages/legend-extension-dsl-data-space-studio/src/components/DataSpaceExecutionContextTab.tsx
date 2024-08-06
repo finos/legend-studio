@@ -21,6 +21,7 @@ interface ExecutionContextTabProps {
 export const DataSpaceExecutionContextTab: React.FC<ExecutionContextTabProps> =
   observer(({ dataSpaceEditorState }) => {
     const executionContext = dataSpaceEditorState.selectedExecutionContext;
+
     if (!executionContext) {
       return <div>Select an execution context to view details.</div>;
     }
