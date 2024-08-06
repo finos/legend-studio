@@ -16,7 +16,6 @@
 
 import { test, expect } from '@jest/globals';
 import {
-  waitFor,
   fireEvent,
   getByTitle,
   act,
@@ -81,14 +80,14 @@ test(
     );
 
     // DND from explorer to projection panel
-    const ageExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Age'),
+    const ageExplorerDragSource = await findByText(explorerPanel, 'Age');
+    const firstNameExplorerDragSource = await findByText(
+      explorerPanel,
+      'First Name',
     );
-    const firstNameExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'First Name'),
-    );
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
+    const tdsProjectionDropZone = await findByText(
+      tdsProjectionPanel,
+      'Add a projection column',
     );
     await dragAndDrop(
       ageExplorerDragSource,
@@ -160,10 +159,8 @@ test(
       tdsState.setShowWindowFuncPanel(true);
     });
 
-    await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
-      ),
+    await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
     );
     const windowFunctionPanel = renderResult.getByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
@@ -173,9 +170,7 @@ test(
     fireEvent.click(
       getByTitle(windowFunctionPanel, 'Create Window Function Column'),
     );
-    await waitFor(() =>
-      renderResult.getByText('Create Window Function Column'),
-    );
+    await renderResult.findByText('Create Window Function Column');
     const createButton = renderResult.getByRole('button', { name: 'Create' });
     fireEvent.click(createButton);
 
@@ -189,15 +184,11 @@ test(
     });
 
     // Check for validation error
-    expect(
-      await waitFor(() => getByText(windowFunctionPanel, '1 issue')),
-    ).not.toBeNull();
+    expect(await findByText(windowFunctionPanel, '1 issue')).not.toBeNull();
     const fetchStructurePanel = renderResult.getByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
     );
-    expect(
-      await waitFor(() => getByText(fetchStructurePanel, '1 issue')),
-    ).not.toBeNull();
+    expect(await findByText(fetchStructurePanel, '1 issue')).not.toBeNull();
     expect(
       renderResult
         .getByRole('button', { name: 'Run Query' })
@@ -232,10 +223,8 @@ test(
       tdsState.setShowWindowFuncPanel(true);
     });
 
-    await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
-      ),
+    await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
     );
     const windowFunctionPanel = renderResult.getByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
@@ -245,18 +234,14 @@ test(
     fireEvent.click(
       getByTitle(windowFunctionPanel, 'Create Window Function Column'),
     );
-    await waitFor(() =>
-      renderResult.getByText('Create Window Function Column'),
-    );
+    await renderResult.findByText('Create Window Function Column');
     fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
 
     // Create second window function (change name so we can click Create button)
     fireEvent.click(
       getByTitle(windowFunctionPanel, 'Create Window Function Column'),
     );
-    await waitFor(() =>
-      renderResult.getByText('Create Window Function Column'),
-    );
+    await renderResult.findByText('Create Window Function Column');
     const columnNameContainer = guaranteeNonNullable(
       renderResult.getByText('Window Function Column Name').parentElement,
     );
@@ -279,9 +264,7 @@ test(
     });
 
     // Check for validation error
-    expect(
-      await waitFor(() => renderResult.getByText('1 issue')),
-    ).not.toBeNull();
+    expect(await renderResult.findByText('1 issue')).not.toBeNull();
     expect(
       renderResult
         .getByRole('button', { name: 'Run Query' })
@@ -316,10 +299,8 @@ test(
       tdsState.setShowWindowFuncPanel(true);
     });
 
-    await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
-      ),
+    await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
     );
     const windowFunctionPanel = renderResult.getByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
@@ -329,9 +310,7 @@ test(
     fireEvent.click(
       getByTitle(windowFunctionPanel, 'Create Window Function Column'),
     );
-    await waitFor(() =>
-      renderResult.getByText('Create Window Function Column'),
-    );
+    await renderResult.findByText('Create Window Function Column');
     const windowFunctionNameInput = renderResult.getByDisplayValue(
       'sum of Edited First Name',
     );
@@ -374,10 +353,8 @@ test(
       tdsState.setShowWindowFuncPanel(true);
     });
 
-    await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
-      ),
+    await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
     );
     const windowFunctionPanel = renderResult.getByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
@@ -387,18 +364,14 @@ test(
     fireEvent.click(
       getByTitle(windowFunctionPanel, 'Create Window Function Column'),
     );
-    await waitFor(() =>
-      renderResult.getByText('Create Window Function Column'),
-    );
+    await renderResult.findByText('Create Window Function Column');
     fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
 
     // Create another window function (should have same name by default)
     fireEvent.click(
       getByTitle(windowFunctionPanel, 'Create Window Function Column'),
     );
-    await waitFor(() =>
-      renderResult.getByText('Create Window Function Column'),
-    );
+    await renderResult.findByText('Create Window Function Column');
 
     // Check for validation error
     expect(
@@ -488,10 +461,8 @@ test(
       tdsState.setShowWindowFuncPanel(true);
     });
 
-    await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
-      ),
+    await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
     );
     const windowFunctionPanel = renderResult.getByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
@@ -501,9 +472,7 @@ test(
     fireEvent.click(
       getByTitle(windowFunctionPanel, 'Create Window Function Column'),
     );
-    await waitFor(() =>
-      renderResult.getByText('Create Window Function Column'),
-    );
+    await renderResult.findByText('Create Window Function Column');
     const addValueButton = renderResult.getByRole('button', {
       name: 'Add Value',
     });
@@ -533,9 +502,7 @@ test(
         .parentElement?.parentElement?.nextElementSibling?.firstElementChild,
     );
     fireEvent.click(editButton);
-    await waitFor(() =>
-      renderResult.getByText('Update Window Function Column'),
-    );
+    await renderResult.findByText('Update Window Function Column');
     // Change operator
     const windowOperatorContainer = guaranteeNonNullable(
       renderResult.getByText('Window Operator').parentElement,
@@ -612,10 +579,8 @@ test(
       tdsState.setShowWindowFuncPanel(true);
     });
 
-    await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
-      ),
+    await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
     );
     const windowFunctionPanel = renderResult.getByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
@@ -625,9 +590,7 @@ test(
     fireEvent.click(
       getByTitle(windowFunctionPanel, 'Create Window Function Column'),
     );
-    await waitFor(() =>
-      renderResult.getByText('Create Window Function Column'),
-    );
+    await renderResult.findByText('Create Window Function Column');
     let windowOperatorContainer = guaranteeNonNullable(
       renderResult.getByText('Window Operator').parentElement,
     );
@@ -673,9 +636,7 @@ test(
         .parentElement?.parentElement?.nextElementSibling?.firstElementChild,
     );
     fireEvent.click(editButton);
-    await waitFor(() =>
-      renderResult.getByText('Update Window Function Column'),
-    );
+    await renderResult.findByText('Update Window Function Column');
     // Change operator
     windowOperatorContainer = guaranteeNonNullable(
       renderResult.getByText('Window Operator').parentElement,
