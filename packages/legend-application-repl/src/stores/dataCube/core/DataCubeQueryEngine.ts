@@ -155,15 +155,17 @@ export enum DataCubeColumnKind {
   DIMENSION = 'Dimension',
 }
 
-// TODO: we could potentially support complex type like parameter/column in the future
-export enum DataCubeOperationValueType {}
+export enum DataCubeOperationAdvancedValueType {
+  COLUMN = 'COLUMN',
+  // PARAMETER
+}
 
 export type DataCubeOperationValue = {
   value: unknown;
   type: string;
 };
 
-export enum DataCubeAggregateOperation {
+export enum DataCubeAggregateOperator {
   SUM = 'sum',
   AVERAGE = 'avg',
   COUNT = 'count',
@@ -197,27 +199,49 @@ export enum DataCubeAggregateOperation {
   // custom
 }
 
-export enum DataCubeQueryFilterOperation {
-  EQUAL = 'equal',
-  NOT_EQUAL = 'notEqual',
-  GREATER_THAN = 'greaterThan',
-  GREATER_THAN_OR_EQUAL = 'greaterThanOrEqual',
-  LESS_THAN = 'lessThan',
-  LESS_THAN_OR_EQUAL = 'lessThanOrEqual',
-  BLANK = 'isEmpty',
-  NOT_BLANK = 'isNotEmpty',
+export enum DataCubeQueryFilterOperator {
+  LESS_THAN = '<',
+  LESS_THAN_OR_EQUAL = '<=',
+  EQUAL = '=',
+  NOT_EQUAL = '!=',
+  GREATER_THAN = '>',
+  GREATER_THAN_OR_EQUAL = '>=',
+  IN = 'in',
+  NOT_IN = 'not in',
+  IS_NULL = 'is null',
+  IS_NOT_NULL = 'is not null',
+  // string ONLY
+  EQUAL_CASE_INSENSITIVE = '= (case-insensitive)',
+  NOT_EQUAL_CASE_INSENSITIVE = '!= (case-insensitive)',
+  IN_CASE_INSENSITIVE = 'in (case-insensitive)',
+  NOT_IN_CASE_INSENSITIVE = 'not in (case-insensitive)',
   CONTAINS = 'contains',
-  NOT_CONTAINS = 'notContains',
-  STARTS_WITH = 'startsWith',
-  ENDS_WITH = 'endsWith',
+  CONTAINS_CASE_INSENSITIVE = 'contains (case-insensitive)',
+  NOT_CONTAINS = 'does not contain',
+  STARTS_WITH = 'starts with',
+  STARTS_WITH_CASE_INSENSITIVE = 'starts with (case-insensitive)',
+  DOES_NOT_START_WITH = 'does not start with',
+  ENDS_WITH = 'ends with',
+  ENDS_WITH_CASE_INSENSITIVE = 'ends with (case-insensitive)',
+  DOES_NOT_END_WITH = 'does not end with',
+  // column
+  LESS_THAN_COLUMN = '< value in column',
+  LESS_THAN_OR_EQUAL_COLUMN = '<= value in column',
+  EQUAL_COLUMN = '= value in column',
+  EQUAL_CASE_INSENSITIVE_COLUMN = '= (case-insensitive) value in column',
+  NOT_EQUAL_COLUMN = '!= value in column',
+  NOT_EQUAL_CASE_INSENSITIVE_COLUMN = '!= (case-insensitive) value in column',
+  GREATER_THAN_COLUMN = '> value in column',
+  GREATER_THAN_OR_EQUAL_COLUMN = '>= value in column',
+  // TODO?: having, having in aggregate, between
 }
 
-export enum DataCubeQueryFilterGroupOperation {
+export enum DataCubeQueryFilterGroupOperator {
   AND = 'and',
   OR = 'or',
 }
 
-export enum DataCubeQuerySortOperation {
+export enum DataCubeQuerySortOperator {
   ASCENDING = 'ascending',
   DESCENDING = 'descending',
 }

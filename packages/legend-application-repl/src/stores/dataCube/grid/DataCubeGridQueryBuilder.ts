@@ -21,8 +21,8 @@ import {
 } from '@finos/legend-graph';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import {
-  DataCubeQueryFilterGroupOperation,
-  DataCubeQueryFilterOperation,
+  DataCubeQueryFilterGroupOperator,
+  DataCubeQueryFilterOperator,
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
 } from '../core/DataCubeQueryEngine.js';
@@ -107,13 +107,13 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
                     ) {
                       return {
                         ...groupByColumn,
-                        operation: DataCubeQueryFilterOperation.BLANK,
+                        operation: DataCubeQueryFilterOperator.IS_NULL,
                         value: undefined,
                       };
                     }
                     const condition = {
                       ...groupByColumn,
-                      operation: DataCubeQueryFilterOperation.EQUAL,
+                      operation: DataCubeQueryFilterOperator.EQUAL,
                       value: undefined,
                     };
                     switch (groupByColumn.type) {
@@ -155,7 +155,7 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
                         };
                     }
                   }),
-                  groupOperation: DataCubeQueryFilterGroupOperation.AND,
+                  groupOperator: DataCubeQueryFilterGroupOperator.AND,
                 }),
               ],
             ),

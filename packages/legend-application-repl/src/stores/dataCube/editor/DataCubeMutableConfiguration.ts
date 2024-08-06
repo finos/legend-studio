@@ -18,7 +18,7 @@ import {
   getDataType,
   type DataCubeColumnKind,
   type DataCubeFont,
-  type DataCubeAggregateOperation,
+  type DataCubeAggregateOperator,
   type DataCubeOperationValue,
   type DataCubeNumberScale,
   type DataCubeSelectionStat,
@@ -54,7 +54,7 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
   // NOTE: these configurations are synthesized from the data query, and materialized here
   // to make editing more convenient. They should not be part of the persistent configuration
   // to avoid duplication of information with the data query.
-  aggregateFunction?: DataCubeAggregateOperation | undefined;
+  aggregateFunction?: DataCubeAggregateOperator | undefined;
   aggregateFunctionParameters: DataCubeOperationValue[] = [];
   excludedFromHorizontalPivot = false;
 
@@ -359,7 +359,7 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.linkLabelParameter = value;
   }
 
-  setAggregateFunction(value: DataCubeAggregateOperation | undefined) {
+  setAggregateFunction(value: DataCubeAggregateOperator | undefined) {
     this.aggregateFunction = value;
   }
 

@@ -306,6 +306,7 @@ button:focus-visible {
 
   .ag-column-drop-empty-message.ag-column-drop-horizontal-empty-message {
     font-size: 0;
+    color: var(--ag-disabled-foreground-color);
   }
 
   .ag-column-drop-list.ag-column-drop-horizontal-list[aria-label='Row Groups']

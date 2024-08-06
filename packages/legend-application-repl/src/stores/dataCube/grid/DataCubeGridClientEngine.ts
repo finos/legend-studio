@@ -126,14 +126,6 @@ export enum GridClientSortDirection {
   DESCENDING = 'desc',
 }
 
-export enum GridClientAggregateOperation {
-  COUNT = 'count',
-  SUM = 'sum',
-  MAX = 'max',
-  MIN = 'min',
-  AVERAGE = 'avg',
-}
-
 export function getDataForAllNodes<T>(client: GridApi<T>): T[] {
   const rows: T[] = [];
   client.forEachNode((node: IRowNode<T>) => {

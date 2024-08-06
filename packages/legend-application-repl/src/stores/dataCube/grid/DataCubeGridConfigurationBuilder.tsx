@@ -34,7 +34,6 @@ import type {
 } from '@ag-grid-community/core';
 import {
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
-  GridClientAggregateOperation,
   GridClientSortDirection,
   INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
   INTERNAL__GridClientUtilityCssClassName,
@@ -75,7 +74,7 @@ import {
   DEFAULT_ROW_BUFFER,
   DEFAULT_URL_LABEL_QUERY_PARAM,
   getDataType,
-  DataCubeQuerySortOperation,
+  DataCubeQuerySortOperator,
   DataCubeColumnKind,
   DEFAULT_MISSING_VALUE_DISPLAY_TEXT,
 } from '../core/DataCubeQueryEngine.js';
@@ -100,29 +99,6 @@ function _cellDataType(column: DataCubeQuerySnapshotColumn) {
     case PRIMITIVE_TYPE.STRING:
     default:
       return 'text';
-  }
-}
-
-function _allowedAggFuncs(column: DataCubeQuerySnapshotColumn) {
-  switch (column.type) {
-    case PRIMITIVE_TYPE.STRING:
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME:
-    case PRIMITIVE_TYPE.STRICTDATE:
-      return [];
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.FLOAT:
-      return [
-        GridClientAggregateOperation.AVERAGE,
-        GridClientAggregateOperation.COUNT,
-        GridClientAggregateOperation.SUM,
-        GridClientAggregateOperation.MAX,
-        GridClientAggregateOperation.MIN,
-      ];
-    default:
-      return [];
   }
 }
 
@@ -386,7 +362,7 @@ function _sortSpec(columnData: ColumnData) {
   return {
     sortable: true, // if this is pivot column, no sorting is allowed
     sort: sortCol
-      ? sortCol.operation === DataCubeQuerySortOperation.ASCENDING
+      ? sortCol.operation === DataCubeQuerySortOperator.ASCENDING
         ? GridClientSortDirection.ASCENDING
         : GridClientSortDirection.DESCENDING
       : null,
@@ -397,8 +373,6 @@ function _sortSpec(columnData: ColumnData) {
 function _rowGroupSpec(columnData: ColumnData) {
   const { snapshot, column } = columnData;
   const data = snapshot.data;
-  const columns = snapshot.stageCols('aggregation');
-  const rowGroupColumn = _findCol(columns, column.name);
   const groupByCol = _findCol(data.groupBy?.columns, column.name);
   const aggCol = _findCol(data.groupBy?.aggColumns, column.name);
   return {
@@ -412,21 +386,8 @@ function _rowGroupSpec(columnData: ColumnData) {
     // since ag-grid aggregation does not support parameters, so
     // its set of supported aggregators will never match that specified
     // in the editor, so we just assign dummy values here
-    aggFunc: aggCol
-      ? aggCol.operation
-      : rowGroupColumn
-        ? (
-            [
-              PRIMITIVE_TYPE.NUMBER,
-              PRIMITIVE_TYPE.DECIMAL,
-              PRIMITIVE_TYPE.FLOAT,
-              PRIMITIVE_TYPE.INTEGER,
-            ] as string[]
-          ).includes(rowGroupColumn.type)
-          ? GridClientAggregateOperation.SUM
-          : null
-        : null,
-    allowedAggFuncs: rowGroupColumn ? _allowedAggFuncs(rowGroupColumn) : [],
+    aggFunc: aggCol ? aggCol.operation : null,
+    allowedAggFuncs: [],
   } satisfies ColDef;
 }
 

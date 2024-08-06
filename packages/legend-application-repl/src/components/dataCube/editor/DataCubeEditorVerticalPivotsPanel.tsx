@@ -16,26 +16,28 @@
 
 import { DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
+import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
 
-export const DataCubeEditorVerticalPivotsPanel = observer(() => {
-  const repl = useREPLStore();
-  const panel = repl.dataCube.editor.verticalPivots;
+export const DataCubeEditorVerticalPivotsPanel = observer(
+  (props: { dataCube: DataCubeState }) => {
+    const { dataCube } = props;
+    const panel = dataCube.editor.verticalPivots;
 
-  return (
-    <div className="h-full w-full select-none p-2">
-      <div className="flex h-6">
-        <div className="flex h-6 items-center text-xl font-medium">
-          <DataCubeIcon.TableGroupBy />
+    return (
+      <div className="h-full w-full select-none p-2">
+        <div className="flex h-6">
+          <div className="flex h-6 items-center text-xl font-medium">
+            <DataCubeIcon.TableGroupBy />
+          </div>
+          <div className="ml-1 flex h-6 items-center text-xl font-medium">
+            Vertical Pivots
+          </div>
         </div>
-        <div className="ml-1 flex h-6 items-center text-xl font-medium">
-          Vertical Pivots
+        <div className="flex h-[calc(100%_-_24px)] w-full">
+          <DataCubeEditorColumnsSelector selector={panel.selector} />
         </div>
       </div>
-      <div className="flex h-[calc(100%_-_24px)] w-full">
-        <DataCubeEditorColumnsSelector selector={panel.selector} />
-      </div>
-    </div>
-  );
-});
+    );
+  },
+);

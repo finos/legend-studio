@@ -27,10 +27,11 @@ import {
   useDropdownMenu,
 } from '@finos/legend-art';
 import { LayoutManager } from '../repl/LayoutManager.js';
+import { DataCubeEditorTab } from '../../stores/dataCube/editor/DataCubeEditorState.js';
+import type { DataCubeState } from '../../stores/dataCube/DataCubeState.js';
 
-const DataCubeStatusBar = observer(() => {
-  const repl = useREPLStore();
-  const dataCube = repl.dataCube;
+const DataCubeStatusBar = observer((props: { dataCube: DataCubeState }) => {
+  const { dataCube } = props;
 
   return (
     <div className="flex h-5 w-full justify-between bg-neutral-100">
@@ -43,7 +44,13 @@ const DataCubeStatusBar = observer(() => {
           <div className="pl-0.5 underline">Properties</div>
         </button>
         <div className="flex">
-          <button className="flex items-center text-sky-600 hover:text-sky-700">
+          <button
+            className="flex items-center text-sky-600 hover:text-sky-700"
+            onClick={() => {
+              dataCube.editor.setCurrentTab(DataCubeEditorTab.FILTER);
+              dataCube.editor.display.open();
+            }}
+          >
             <DataCubeIcon.TableFilter className="text-lg" />
             <div className="pl-0.5 underline">Filter</div>
           </button>
@@ -67,10 +74,10 @@ const DataCubeStatusBar = observer(() => {
   );
 });
 
-const DataCubeTitleBar = observer(() => {
-  const application = useApplicationStore();
+const DataCubeTitleBar = observer((props: { dataCube: DataCubeState }) => {
+  const { dataCube } = props;
   const repl = useREPLStore();
-  const dataCube = repl.dataCube;
+  const application = useApplicationStore();
   const [openMenuDropdown, closeMenuDropdown, menuDropdownProps] =
     useDropdownMenu();
 
@@ -140,9 +147,9 @@ export const DataCube = observer(() => {
 
   return (
     <div className="data-cube relative flex h-full w-full flex-col bg-white">
-      <DataCubeTitleBar />
-      <DataCubeGrid />
-      <DataCubeStatusBar />
+      <DataCubeTitleBar dataCube={dataCube} />
+      <DataCubeGrid dataCube={dataCube} />
+      <DataCubeStatusBar dataCube={dataCube} />
       <LayoutManager layoutManagerState={repl.layout} />
     </div>
   );

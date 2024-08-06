@@ -68,10 +68,10 @@ import {
   DataCubeFunction,
   DEFAULT_LAMBDA_VARIABLE_NAME,
   INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME,
-  DataCubeQuerySortOperation,
-  DataCubeQueryFilterOperation,
-  DataCubeQueryFilterGroupOperation,
-  DataCubeAggregateOperation,
+  DataCubeQuerySortOperator,
+  DataCubeQueryFilterOperator,
+  DataCubeQueryFilterGroupOperator,
+  DataCubeAggregateOperator,
   type DataCubeQueryFunctionMap,
   type DataCubeOperationValue,
 } from './DataCubeQueryEngine.js';
@@ -206,29 +206,29 @@ function _parameterValue(value: DataCubeOperationValue) {
   }
 }
 
-function _aggFunctionName(operation: DataCubeAggregateOperation) {
+function _aggFunctionName(operation: DataCubeAggregateOperator) {
   switch (operation) {
-    case DataCubeAggregateOperation.SUM:
+    case DataCubeAggregateOperator.SUM:
       return DataCubeFunction.SUM;
-    case DataCubeAggregateOperation.AVERAGE:
+    case DataCubeAggregateOperator.AVERAGE:
       return DataCubeFunction.AVERAGE;
-    case DataCubeAggregateOperation.COUNT:
+    case DataCubeAggregateOperator.COUNT:
       return DataCubeFunction.COUNT;
-    case DataCubeAggregateOperation.MIN:
+    case DataCubeAggregateOperator.MIN:
       return DataCubeFunction.MIN;
-    case DataCubeAggregateOperation.MAX:
+    case DataCubeAggregateOperator.MAX:
       return DataCubeFunction.MAX;
-    case DataCubeAggregateOperation.FIRST:
+    case DataCubeAggregateOperator.FIRST:
       return DataCubeFunction.FIRST;
-    case DataCubeAggregateOperation.LAST:
+    case DataCubeAggregateOperator.LAST:
       return DataCubeFunction.LAST;
-    case DataCubeAggregateOperation.VAR_POP:
+    case DataCubeAggregateOperator.VAR_POP:
       return DataCubeFunction.VAR_POP;
-    case DataCubeAggregateOperation.VAR_SAMP:
+    case DataCubeAggregateOperator.VAR_SAMP:
       return DataCubeFunction.VAR_SAMP;
-    case DataCubeAggregateOperation.STDDEV_POP:
+    case DataCubeAggregateOperator.STDDEV_POP:
       return DataCubeFunction.STDDEV_POP;
-    case DataCubeAggregateOperation.STDDEV_SAMP:
+    case DataCubeAggregateOperator.STDDEV_SAMP:
       return DataCubeFunction.STDDEV_SAMP;
     default:
       throw new UnsupportedOperationError(
@@ -292,10 +292,10 @@ export function _groupByAggCols(
 export function _filter(
   filter: DataCubeQuerySnapshotFilter | DataCubeQuerySnapshotFilterCondition,
 ) {
-  if ('groupOperation' in filter) {
+  if ('groupOperator' in filter) {
     const group = filter;
     const groupOperation =
-      group.groupOperation === DataCubeQueryFilterGroupOperation.AND
+      group.groupOperator === DataCubeQueryFilterGroupOperator.AND
         ? DataCubeFunction.AND
         : DataCubeFunction.OR;
     let conditions: V1_ValueSpecification[] = [];
@@ -317,29 +317,29 @@ export function _filter(
     const _not = (fn: V1_AppliedFunction) =>
       _function(_name(DataCubeFunction.NOT), [fn]);
     switch (condition.operation) {
-      case DataCubeQueryFilterOperation.EQUAL:
+      case DataCubeQueryFilterOperator.EQUAL:
         return _cond(DataCubeFunction.EQUAL, _val());
-      case DataCubeQueryFilterOperation.GREATER_THAN:
+      case DataCubeQueryFilterOperator.GREATER_THAN:
         return _cond(DataCubeFunction.GREATER_THAN, _val());
-      case DataCubeQueryFilterOperation.GREATER_THAN_OR_EQUAL:
+      case DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL:
         return _cond(DataCubeFunction.GREATER_THAN_EQUAL, _val());
-      case DataCubeQueryFilterOperation.LESS_THAN:
+      case DataCubeQueryFilterOperator.LESS_THAN:
         return _cond(DataCubeFunction.LESS_THAN, _val());
-      case DataCubeQueryFilterOperation.LESS_THAN_OR_EQUAL:
+      case DataCubeQueryFilterOperator.LESS_THAN_OR_EQUAL:
         return _cond(DataCubeFunction.LESS_THAN_EQUAL, _val());
-      case DataCubeQueryFilterOperation.CONTAINS:
+      case DataCubeQueryFilterOperator.CONTAINS:
         return _cond(DataCubeFunction.CONTAINS, _val());
-      case DataCubeQueryFilterOperation.ENDS_WITH:
+      case DataCubeQueryFilterOperator.ENDS_WITH:
         return _cond(DataCubeFunction.ENDS_WITH, _val());
-      case DataCubeQueryFilterOperation.STARTS_WITH:
+      case DataCubeQueryFilterOperator.STARTS_WITH:
         return _cond(DataCubeFunction.STARTS_WITH, _val());
-      case DataCubeQueryFilterOperation.BLANK:
+      case DataCubeQueryFilterOperator.IS_NULL:
         return _cond(DataCubeFunction.IS_EMPTY);
-      case DataCubeQueryFilterOperation.NOT_EQUAL:
+      case DataCubeQueryFilterOperator.NOT_EQUAL:
         return _not(_cond(DataCubeFunction.EQUAL, _val()));
-      case DataCubeQueryFilterOperation.NOT_BLANK:
+      case DataCubeQueryFilterOperator.IS_NOT_NULL:
         return _not(_cond(DataCubeFunction.IS_EMPTY));
-      case DataCubeQueryFilterOperation.NOT_CONTAINS:
+      case DataCubeQueryFilterOperator.NOT_CONTAINS:
         return _not(_cond(DataCubeFunction.CONTAINS, _val()));
       default:
         throw new UnsupportedOperationError(
@@ -491,7 +491,7 @@ export function buildExecutableQuery(
           data.sortColumns.map((col) =>
             _function(
               _name(
-                col.operation === DataCubeQuerySortOperation.ASCENDING
+                col.operation === DataCubeQuerySortOperator.ASCENDING
                   ? DataCubeFunction.ASC
                   : DataCubeFunction.DESC,
               ),

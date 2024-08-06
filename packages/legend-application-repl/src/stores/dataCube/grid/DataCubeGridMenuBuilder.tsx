@@ -21,7 +21,7 @@ import type {
 } from '@ag-grid-community/core';
 import { WIP_GridMenuItem } from '../../../components/dataCube/grid/DataCubeGridShared.js';
 import {
-  DataCubeQuerySortOperation,
+  DataCubeQuerySortOperator,
   DataCubeColumnPinPlacement,
   DEFAULT_COLUMN_MIN_WIDTH,
   DataCubeColumnKind,
@@ -55,7 +55,7 @@ export function generateMenuBuilder(
                   action: () =>
                     controller.setSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperation.ASCENDING,
+                      DataCubeQuerySortOperator.ASCENDING,
                     ),
                 },
                 {
@@ -69,7 +69,7 @@ export function generateMenuBuilder(
                   action: () =>
                     controller.setSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperation.DESCENDING,
+                      DataCubeQuerySortOperator.DESCENDING,
                     ),
                 },
                 {
@@ -92,13 +92,13 @@ export function generateMenuBuilder(
                     controller.sortColumns.find(
                       (col) =>
                         col.name === columnName &&
-                        col.operation === DataCubeQuerySortOperation.ASCENDING,
+                        col.operation === DataCubeQuerySortOperator.ASCENDING,
                     ),
                   ),
                   action: () =>
                     controller.addSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperation.ASCENDING,
+                      DataCubeQuerySortOperator.ASCENDING,
                     ),
                 },
                 {
@@ -113,13 +113,13 @@ export function generateMenuBuilder(
                     controller.sortColumns.find(
                       (col) =>
                         col.name === columnName &&
-                        col.operation === DataCubeQuerySortOperation.DESCENDING,
+                        col.operation === DataCubeQuerySortOperator.DESCENDING,
                     ),
                   ),
                   action: () =>
                     controller.addSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperation.DESCENDING,
+                      DataCubeQuerySortOperator.DESCENDING,
                     ),
                 },
                 {

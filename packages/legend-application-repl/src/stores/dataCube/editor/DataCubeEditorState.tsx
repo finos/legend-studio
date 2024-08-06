@@ -28,6 +28,7 @@ import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeEditorVerticalPivotsPanelState } from './DataCubeEditorVerticalPivotsPanelState.js';
 import { SingletonModeDisplayState } from '../../LayoutManagerState.js';
 import { DataCubeEditor } from '../../../components/dataCube/editor/DataCubeEditor.js';
+import { DataCubeEditorFilterPanelState } from './DataCubeEditorFilterPanelState.js';
 
 export enum DataCubeEditorTab {
   GENERAL_PROPERTIES = 'General Properties',
@@ -45,6 +46,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
   readonly display: SingletonModeDisplayState;
   readonly generalProperties: DataCubeEditorGeneralPropertiesPanelState;
   readonly columnProperties: DataCubeEditorColumnPropertiesPanelState;
+  readonly filter: DataCubeEditorFilterPanelState;
   readonly columns: DataCubeEditorColumnsPanelState;
   readonly verticalPivots: DataCubeEditorVerticalPivotsPanelState;
   readonly sorts: DataCubeEditorSortsPanelState;
@@ -65,12 +67,13 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     this.display = new SingletonModeDisplayState(
       this.dataCube.repl.layout,
       'Properties',
-      () => <DataCubeEditor />,
+      () => <DataCubeEditor dataCube={this.dataCube} />,
     );
     this.generalProperties = new DataCubeEditorGeneralPropertiesPanelState(
       this,
     );
     this.columnProperties = new DataCubeEditorColumnPropertiesPanelState(this);
+    this.filter = new DataCubeEditorFilterPanelState(this);
     this.columns = new DataCubeEditorColumnsPanelState(this);
     this.verticalPivots = new DataCubeEditorVerticalPivotsPanelState(this);
     this.sorts = new DataCubeEditorSortsPanelState(this);

@@ -71,6 +71,7 @@ import {
   TbCornerDownRight,
   TbX,
   TbPlus,
+  TbLetterCase,
 } from 'react-icons/tb';
 import { VscError, VscInfo, VscQuestion, VscWarning } from 'react-icons/vsc';
 
@@ -100,6 +101,7 @@ export const DataCubeIcon = {
   FontItalic: MdOutlineFormatItalic,
   FontUnderline: MdOutlineFormatUnderlined,
   FontStrikethrough: MdOutlineStrikethroughS,
+  LetterCase: TbLetterCase,
   Loader: TbLoader2,
   Menu: TbMenu2,
   Note: TbNote,

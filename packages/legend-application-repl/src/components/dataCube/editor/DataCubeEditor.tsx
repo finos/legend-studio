@@ -16,7 +16,6 @@
 
 import { observer } from 'mobx-react-lite';
 import { DataCubeEditorTab } from '../../../stores/dataCube/editor/DataCubeEditorState.js';
-import { useREPLStore } from '../../REPLStoreProvider.js';
 import { DataCubeEditorSortsPanel } from './DataCubeEditorSortsPanel.js';
 import { DataCubeEditorGeneralPropertiesPanel } from './DataCubeEditorGeneralPropertiesPanel.js';
 import { DataCubeEditorColumnsPanel } from './DataCubeEditorColumnsPanel.js';
@@ -27,10 +26,11 @@ import { DataCubeEditorExtendedColumnsPanel } from './DataCubeEditorExtendedColu
 import { DataCubeEditorCodePanel } from './DataCubeEditorCodePanel.js';
 import { DataCubeEditorColumnPropertiesPanel } from './DataCubeEditorColumnPropertiesPanel.js';
 import { cn } from '@finos/legend-art';
+import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
 
-export const DataCubeEditor = observer(() => {
-  const repl = useREPLStore();
-  const editor = repl.dataCube.editor;
+export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
+  const { dataCube } = props;
+  const editor = dataCube.editor;
   const selectedTab = editor.currentTab;
   const tabs = [
     DataCubeEditorTab.GENERAL_PROPERTIES,
@@ -47,7 +47,7 @@ export const DataCubeEditor = observer(() => {
   return (
     <>
       <div className="relative h-[calc(100%_-_40px)] w-full px-2 pt-8">
-        <div className="absolute top-0 flex h-9 w-[calc(100%_-_16px)] min-w-[400px] overflow-auto pt-2">
+        <div className="absolute top-0 flex h-9 w-[calc(100%_-_16px)] overflow-y-hidden pt-2">
           {tabs.map((tab) => (
             <button
               key={tab}
@@ -65,31 +65,31 @@ export const DataCubeEditor = observer(() => {
         </div>
         <div className="h-full w-full overflow-auto border border-neutral-300 bg-white">
           {selectedTab === DataCubeEditorTab.GENERAL_PROPERTIES && (
-            <DataCubeEditorGeneralPropertiesPanel />
+            <DataCubeEditorGeneralPropertiesPanel dataCube={dataCube} />
           )}
           {selectedTab === DataCubeEditorTab.COLUMN_PROPERTIES && (
-            <DataCubeEditorColumnPropertiesPanel />
+            <DataCubeEditorColumnPropertiesPanel dataCube={dataCube} />
           )}
           {selectedTab === DataCubeEditorTab.FILTER && (
-            <DataCubeEditorFilterPanel />
+            <DataCubeEditorFilterPanel dataCube={dataCube} />
           )}
           {selectedTab === DataCubeEditorTab.EXTENDED_COLUMNS && (
-            <DataCubeEditorExtendedColumnsPanel />
+            <DataCubeEditorExtendedColumnsPanel dataCube={dataCube} />
           )}
           {selectedTab === DataCubeEditorTab.COLUMNS && (
-            <DataCubeEditorColumnsPanel />
+            <DataCubeEditorColumnsPanel dataCube={dataCube} />
           )}
           {selectedTab === DataCubeEditorTab.SORTS && (
-            <DataCubeEditorSortsPanel />
+            <DataCubeEditorSortsPanel dataCube={dataCube} />
           )}
           {selectedTab === DataCubeEditorTab.VERTICAL_PIVOTS && (
-            <DataCubeEditorVerticalPivotsPanel />
+            <DataCubeEditorVerticalPivotsPanel dataCube={dataCube} />
           )}
           {selectedTab === DataCubeEditorTab.HORIZONTAL_PIVOTS && (
-            <DataCubeEditorHorizontalPivotsPanel />
+            <DataCubeEditorHorizontalPivotsPanel dataCube={dataCube} />
           )}
           {selectedTab === DataCubeEditorTab.CODE && (
-            <DataCubeEditorCodePanel />
+            <DataCubeEditorCodePanel dataCube={dataCube} />
           )}
         </div>
       </div>
