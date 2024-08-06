@@ -15,18 +15,17 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  DataCubeIcon,
-  useDropdownMenu,
-  DropdownMenuItem,
-  DropdownMenu,
-} from '@finos/legend-art';
+import { DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
 import type { DataCubeEditorColumnsSelectorState } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeEditorSortColumnState } from '../../../stores/dataCube/editor/DataCubeEditorSortsPanelState.js';
 import { DataCubeQuerySortOperator } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 import { IllegalStateError } from '@finos/legend-shared';
-import { FormBadge_WIP } from '../../repl/Form.js';
+import {
+  FormBadge_WIP,
+  FormDropdownMenu,
+  FormDropdownMenuItem,
+} from '../../repl/Form.js';
 import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
 
 function getSortDirectionLabel(operation: DataCubeQuerySortOperator) {
@@ -46,13 +45,28 @@ const SortDirectionDropdown = observer(
     column: DataCubeEditorSortColumnState;
   }) => {
     const { column } = props;
-    const [openMenu, closeMenu, menuProps] = useDropdownMenu();
+    const [
+      openOpertionsDropdown,
+      closeOperationsDropdown,
+      operationsDropdownProps,
+      operationsDropdownPropsOpen,
+    ] = useDropdownMenu();
 
     return (
       <div className="group relative flex h-full items-center">
-        <div className="flex h-[18px] w-32 items-center border border-transparent px-2 text-sm text-neutral-400 group-hover:invisible">
-          {getSortDirectionLabel(column.operation)}
-        </div>
+        {!operationsDropdownPropsOpen && (
+          <div className="flex h-[18px] w-32 items-center border border-transparent px-2 text-sm text-neutral-400 group-hover:invisible">
+            {getSortDirectionLabel(column.operation)}
+          </div>
+        )}
+        {operationsDropdownPropsOpen && (
+          <div className="flex h-[18px] w-32 items-center justify-between border border-sky-600 bg-sky-50 pl-2 pr-0.5 text-sm">
+            <div>{getSortDirectionLabel(column.operation)}</div>
+            <div>
+              <DataCubeIcon.CaretDown />
+            </div>
+          </div>
+        )}
         <button
           className="invisible absolute right-0 z-10 flex h-[18px] w-32 items-center justify-between border border-neutral-400 pl-2 pr-0.5 text-sm text-neutral-700 group-hover:visible"
           /**
@@ -62,7 +76,7 @@ const SortDirectionDropdown = observer(
            */
           onClickCapture={(event) => {
             event.stopPropagation();
-            openMenu(event);
+            openOpertionsDropdown(event);
           }}
           onClick={(event) => event.stopPropagation()}
         >
@@ -71,48 +85,36 @@ const SortDirectionDropdown = observer(
             <DataCubeIcon.CaretDown />
           </div>
         </button>
-        <DropdownMenu
-          menuProps={{
-            classes: {
-              paper: 'rounded-none mt-[1px]',
-              list: 'w-32 p-0 rounded-none border border-neutral-400 bg-white max-h-40 overflow-y-auto py-0.5',
-            },
-          }}
-          {...menuProps}
-        >
-          <DropdownMenuItem
-            className="flex h-5 items-center px-2 text-sm hover:bg-neutral-100"
+        <FormDropdownMenu className="w-32" {...operationsDropdownProps}>
+          <FormDropdownMenuItem
             onClick={() => {
               column.setOperation(DataCubeQuerySortOperator.ASCENDING);
-              closeMenu();
+              closeOperationsDropdown();
             }}
+            autoFocus={column.operation === DataCubeQuerySortOperator.ASCENDING}
           >
             Ascending
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="flex h-5 items-center px-2 text-sm text-neutral-400"
-            disabled={true}
-          >
+          </FormDropdownMenuItem>
+          <FormDropdownMenuItem disabled={true} autoFocus={false}>
             {`Ascending (abs)`}
             <FormBadge_WIP />
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="flex h-5 items-center px-2 text-sm hover:bg-neutral-100"
+          </FormDropdownMenuItem>
+          <FormDropdownMenuItem
             onClick={() => {
               column.setOperation(DataCubeQuerySortOperator.DESCENDING);
-              closeMenu();
+              closeOperationsDropdown();
             }}
+            autoFocus={
+              column.operation === DataCubeQuerySortOperator.DESCENDING
+            }
           >
             Descending
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="flex h-5 items-center px-2 text-sm text-neutral-400"
-            disabled={true}
-          >
+          </FormDropdownMenuItem>
+          <FormDropdownMenuItem disabled={true} autoFocus={false}>
             {`Descending (abs)`}
             <FormBadge_WIP />
-          </DropdownMenuItem>
-        </DropdownMenu>
+          </FormDropdownMenuItem>
+        </FormDropdownMenu>
       </div>
     );
   },

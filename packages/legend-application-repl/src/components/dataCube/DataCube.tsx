@@ -106,7 +106,7 @@ const DataCubeTitleBar = observer((props: { dataCube: DataCubeState }) => {
           }}
         >
           <DropdownMenuItem
-            className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus-visible:bg-neutral-100"
+            className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
             onClick={() => {
               if (application.documentationService.url) {
                 application.navigationService.navigator.visitAddress(
@@ -122,7 +122,7 @@ const DataCubeTitleBar = observer((props: { dataCube: DataCubeState }) => {
           </DropdownMenuItem>
           <div className="my-0.5 h-[1px] w-full bg-neutral-200" />
           <DropdownMenuItem
-            className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus-visible:bg-neutral-100"
+            className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
             onClick={() => {
               repl.settingsDisplay.open();
               closeMenuDropdown();
