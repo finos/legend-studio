@@ -5,12 +5,8 @@
       "_type": "profile",
       "name": "MyExtension",
       "package": "model",
-      "stereotypes": [
-        "important"
-      ],
-      "tags": [
-        "doc"
-      ]
+      "stereotypes": ["important"],
+      "tags": ["doc"]
     },
     "classifierPath": "meta::pure::metamodel::extension::Profile"
   },
@@ -136,9 +132,7 @@
           "value": "important"
         }
       ],
-      "superTypes": [
-        "model::LegalEntity"
-      ],
+      "superTypes": ["model::LegalEntity"],
       "taggedValues": [
         {
           "tag": {
@@ -342,9 +336,7 @@
                 }
               ],
               "name": "FirmTable",
-              "primaryKey": [
-                "id"
-              ]
+              "primaryKey": ["id"]
             },
             {
               "columns": [
@@ -387,9 +379,7 @@
                 }
               ],
               "name": "PersonTable",
-              "primaryKey": [
-                "id"
-              ]
+              "primaryKey": ["id"]
             }
           ],
           "views": []
