@@ -37,8 +37,11 @@ import {
 import {
   CORE_PURE_PATH,
   Class,
+  ELEMENT_PATH_DELIMITER,
   Enumeration,
+  PROPERTY_ACCESSOR,
   PURE_DOC_TAG,
+  TYPE_CAST_TOKEN,
   getAllClassProperties,
   getAllOwnClassProperties,
 } from '@finos/legend-graph';
@@ -74,31 +77,35 @@ export const prettyPropertyNameFromNodeId = (
   spaceBetweenSlash?: boolean,
 ): string =>
   name
-    .split('@')
-    .map((p) => p.replace(/.*::/, ''))
+    .split(TYPE_CAST_TOKEN)
+    .map((p) =>
+      p.replace(new RegExp(String.raw`.*${ELEMENT_PATH_DELIMITER}`), ''),
+    )
     .filter((p) => p !== '')
     .map((p) =>
       p
-        .split('.')
+        .split(PROPERTY_ACCESSOR)
         .map(prettyCONSTName)
         .join(spaceBetweenSlash ? ' / ' : '/'),
     )
-    .join('@');
+    .join(TYPE_CAST_TOKEN);
 
 export const prettyPropertyNameForSubType = (
   name: string,
   spaceBetweenSlash?: boolean,
 ): string => {
-  let propNameArray = name.split('@');
+  let propNameArray = name.split(TYPE_CAST_TOKEN);
   propNameArray = propNameArray
-    .map((p) => p.replace(/.*::/, ''))
+    .map((p) =>
+      p.replace(new RegExp(String.raw`.*${ELEMENT_PATH_DELIMITER}`), ''),
+    )
     .filter((p) => p !== '');
   let propName = propNameArray
     .slice(0, -1)
     .map(
       (p) =>
-        `(@${p
-          .split('.')
+        `(${TYPE_CAST_TOKEN}${p
+          .split(PROPERTY_ACCESSOR)
           .map((sp) => prettyCONSTName(sp))
           .join(spaceBetweenSlash ? ' / ' : '/')})`,
     )
@@ -106,9 +113,9 @@ export const prettyPropertyNameForSubType = (
   propName += spaceBetweenSlash ? ' / ' : '/';
   propNameArray = guaranteeNonNullable(
     propNameArray[propNameArray.length - 1],
-  ).split('.');
+  ).split(PROPERTY_ACCESSOR);
   propNameArray = propNameArray.map((p) => prettyCONSTName(p));
-  propName = `${propName}(@${propNameArray[0]})${spaceBetweenSlash ? ' / ' : '/'}`;
+  propName = `${propName}(${TYPE_CAST_TOKEN}${propNameArray[0]})${spaceBetweenSlash ? ' / ' : '/'}`;
   propNameArray.slice(1).forEach((p) => {
     propName = `${propName + p}${spaceBetweenSlash ? ' / ' : '/'}`;
   });
