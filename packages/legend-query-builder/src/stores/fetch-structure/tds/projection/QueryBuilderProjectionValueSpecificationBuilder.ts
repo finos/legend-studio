@@ -513,7 +513,7 @@ export const appendProjection = (
         : undefined,
     isQueryOverflowExecuting:
       options?.isBuildingExecutionQuery && !options.isExportingResult
-        ? options?.isQueryOverflowExecuting
+        ? options.isQueryOverflowExecuting
         : undefined,
   });
 };
