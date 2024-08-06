@@ -23,23 +23,116 @@ import {
   getByDisplayValue,
   getByText,
   getAllByText,
+  findByText,
+  findByDisplayValue,
 } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
   TEST_DATA_projectionWithWindowFunction,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
-import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
+import {
+  TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+  TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+} from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
+import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import { integrationTest } from '@finos/legend-shared/test';
 import { create_RawLambda, stub_RawLambda } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
   TEST__setUpQueryBuilder,
+  dragAndDrop,
   selectFirstOptionFromCustomSelectorInput,
   selectFromCustomSelectorInput,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+
+test(
+  integrationTest('Window column editor shows correct placeholder text'),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+      const tdsState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      tdsState.setShowWindowFuncPanel(true);
+    });
+
+    const windowFunctionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+    );
+    const tdsProjectionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+    );
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+
+    // DND from explorer to projection panel
+    const ageExplorerDragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Age'),
+    );
+    const firstNameExplorerDragSource = await waitFor(() =>
+      getByText(explorerPanel, 'First Name'),
+    );
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    await dragAndDrop(
+      ageExplorerDragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      firstNameExplorerDragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    const ageTDSDragSource = await findByText(tdsProjectionPanel, 'Age');
+    const firstNameTDSDragSource = await findByText(
+      tdsProjectionPanel,
+      'First Name',
+    );
+
+    // DND Age from projection panel to window function panel
+    const windowFunctionDropZone = await findByText(
+      windowFunctionPanel,
+      'Add Window Function Column',
+    );
+    await dragAndDrop(
+      ageTDSDragSource,
+      windowFunctionDropZone,
+      windowFunctionPanel,
+      'Add Window Function Column',
+    );
+    await findByText(windowFunctionPanel, 'Age');
+    await findByDisplayValue(windowFunctionPanel, 'sum of Age');
+
+    // DND First Name from projection panel to window function panel
+    await dragAndDrop(
+      firstNameTDSDragSource,
+      windowFunctionDropZone,
+      windowFunctionPanel,
+      'Add new window function column',
+    );
+    await findByText(windowFunctionPanel, 'First Name');
+    await findByDisplayValue(windowFunctionPanel, 'sum of First Name');
+  },
+);
 
 test(
   integrationTest(
