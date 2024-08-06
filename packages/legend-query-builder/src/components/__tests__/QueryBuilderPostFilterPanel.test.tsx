@@ -32,6 +32,7 @@ import {
   getAllByText,
   findByDisplayValue,
   findByText,
+  findByTitle,
 } from '@testing-library/react';
 import {
   TEST_DATA__lambda_WithDerivedProjectColumnsUsingConstAndParams,
@@ -942,6 +943,202 @@ test(
     // Check that DND Age from projection panel still doesn't allow dropping on First Name right-side value
     fireEvent.dragStart(ageTDSDragSource);
     expect(queryByText(postFilterPanel, 'Change Filter Value')).toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder allows DND window function column to right side value of compatible post-filter condition',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+      const tdsState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      tdsState.setShowPostFilterPanel(true);
+      tdsState.setShowWindowFuncPanel(true);
+    });
+
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
+    );
+    const windowFunctionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+    );
+    const tdsProjectionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+    );
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+
+    // DND from explorer to projection panel
+    const ageExplorerDragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Age'),
+    );
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    await dragAndDrop(
+      ageExplorerDragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+
+    // DND Age from projection panel to post-filter panel
+    const ageTDSDragSource = await findByText(tdsProjectionPanel, 'Age');
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
+    );
+    await dragAndDrop(
+      ageTDSDragSource,
+      postFilterDropZone,
+      postFilterPanel,
+      'Add a post-filter condition',
+    );
+    await findByText(postFilterPanel, 'Age');
+    await findByText(postFilterPanel, 'is');
+
+    // DND Age from projection panel to window function panel
+    const windowFunctionDropZone = await findByText(
+      windowFunctionPanel,
+      'Add Window Function Column',
+    );
+    await dragAndDrop(
+      ageTDSDragSource,
+      windowFunctionDropZone,
+      windowFunctionPanel,
+      'Add Window Function Column',
+    );
+    await findByText(windowFunctionPanel, 'Age');
+    await findByDisplayValue(windowFunctionPanel, 'sum of Age');
+
+    // DND sum of Age from window function panel to post-filter condition value
+    const sumOfAgeDragSource = await findByTitle(
+      windowFunctionPanel,
+      'Drag Element',
+    );
+    await dragAndDrop(
+      sumOfAgeDragSource,
+      postFilterPanel,
+      postFilterPanel,
+      'Change Filter Value',
+    );
+    await findByText(postFilterPanel, 'sum of Age');
+
+    // Click remote button to reset the right-side value
+    fireEvent.click(getByTitle(postFilterPanel, 'Reset'));
+    expect(queryByText(postFilterPanel, 'sum of Age')).toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    "Query builder doesn't allow DND window function column to right side value when types are incompatible",
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+      const tdsState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      tdsState.setShowPostFilterPanel(true);
+      tdsState.setShowWindowFuncPanel(true);
+    });
+
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
+    );
+    const windowFunctionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+    );
+    const tdsProjectionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+    );
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+
+    // DND from explorer to projection panel
+    const firstNameExplorerDragSource = await waitFor(() =>
+      getByText(explorerPanel, 'First Name'),
+    );
+    const tdsProjectionDropZone = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'Add a projection column'),
+    );
+    await dragAndDrop(
+      firstNameExplorerDragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+
+    // DND First Name from projection panel to post-filter panel
+    const firstNameTDSDragSource = await waitFor(() =>
+      getByText(tdsProjectionPanel, 'First Name'),
+    );
+    const postFilterDropZone = await waitFor(() =>
+      getByText(postFilterPanel, 'Add a post-filter condition'),
+    );
+    await dragAndDrop(
+      firstNameTDSDragSource,
+      postFilterDropZone,
+      postFilterPanel,
+      'Add a post-filter condition',
+    );
+    await waitFor(() => getByText(postFilterPanel, 'First Name'));
+    await waitFor(() => getByText(postFilterPanel, 'is'));
+
+    // DND First Name from projection panel to window function panel
+    const windowFunctionDropZone = await findByText(
+      windowFunctionPanel,
+      'Add Window Function Column',
+    );
+    await dragAndDrop(
+      firstNameTDSDragSource,
+      windowFunctionDropZone,
+      windowFunctionPanel,
+      'Add Window Function Column',
+    );
+    await findByText(windowFunctionPanel, 'First Name');
+    await findByDisplayValue(windowFunctionPanel, 'sum of First Name');
+
+    // Check that DND sum of First Name from window function panel doesn't allow dropping on First Name right-side value
+    const sumOfFirstNameDragSource = await findByTitle(
+      windowFunctionPanel,
+      'Drag Element',
+    );
+    fireEvent.dragStart(sumOfFirstNameDragSource);
+    expect(queryByText(postFilterPanel, 'Change Filter Value')).toBeNull();
+
+    // Check that DND First Name from projection panel does show correct placeholder text
+    fireEvent.dragStart(firstNameTDSDragSource);
+    expect(getByText(postFilterPanel, 'Change Filter Value')).not.toBeNull();
   },
 );
 
