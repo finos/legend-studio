@@ -129,13 +129,10 @@ describe(integrationTest('Query builder preview data'), () => {
           queryBuilderState.explorerState,
         );
       const rawLambda = numeric
-        ? buildNumericPreviewDataQuery(queryBuilderState, propertyExpression, {
-            skipLimitOverfitting: true,
-          })
+        ? buildNumericPreviewDataQuery(queryBuilderState, propertyExpression)
         : buildNonNumericPreviewDataQuery(
             queryBuilderState,
             propertyExpression,
-            { skipLimitOverfitting: true },
           );
 
       const jsonQuery =
