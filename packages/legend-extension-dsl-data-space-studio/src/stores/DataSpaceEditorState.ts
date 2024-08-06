@@ -22,9 +22,8 @@ import {
 import type { PackageableElement } from '@finos/legend-graph';
 import {
   DataSpace,
-  DataSpaceExecutionContext,
+  type DataSpaceExecutionContext,
   DataSpaceSupportEmail,
-  observe_DataSpaceExecutionContext,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { guaranteeType } from '@finos/legend-shared';
 
@@ -79,17 +78,6 @@ export class DataSpaceEditorState extends ElementEditorState {
     this.selectedTab = tab;
   }
 
-  // setSelectedExecutionContext(context: DataSpaceExecutionContext): void {
-  //   console.log('setSelectedExecutioncontext');
-  //   this.selectedExecutionContext = context;
-  // }
-
-  // setDefaultExecutionContext(context: DataSpaceExecutionContext): void {
-  //   console.log('setDefaultExecution');
-  //   this.dataSpace.defaultExecutionContext = context;
-  //   this.selectedExecutionContext = context;
-  //   observe_DataSpaceExecutionContext(context);
-  // }
   setSelectedExecutionContext(context: DataSpaceExecutionContext): void {
     this.selectedExecutionContext = context;
   }

@@ -24,6 +24,12 @@ import {
   observe_DataSpaceSupportInfo,
   observe_DataSpaceExecutionContext,
 } from '@finos/legend-extension-dsl-data-space/graph';
+import type {
+  DataElementReference,
+  Mapping,
+  PackageableElementReference,
+  PackageableRuntime,
+} from '@finos/legend-graph';
 // import type { PackageableElementReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 // import type { Mapping } from '../../../../legend-graph/src/graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 // import type { PackageableRuntime } from '../../../../legend-graph/src/graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
@@ -127,29 +133,29 @@ export const set_executionContextDescription = action(
   },
 );
 
-// export const set_executionContextMapping = action(
-//   (
-//     executionContext: DataSpaceExecutionContext,
-//     mapping: PackageableElementReference<Mapping>,
-//   ): void => {
-//     executionContext.mapping = mapping;
-//   },
-// );
+export const set_runtime = action(
+  (
+    executionContext: DataSpaceExecutionContext,
+    runtime: PackageableElementReference<PackageableRuntime>,
+  ) => {
+    executionContext.defaultRuntime = runtime;
+  },
+);
 
-// export const set_executionContextDefaultRuntime = action(
-//   (
-//     executionContext: DataSpaceExecutionContext,
-//     defaultRuntime: PackageableElementReference<PackageableRuntime>,
-//   ): void => {
-//     executionContext.defaultRuntime = defaultRuntime;
-//   },
-// );
+export const set_mapping = action(
+  (
+    executionContext: DataSpaceExecutionContext,
+    mapping: PackageableElementReference<Mapping>,
+  ) => {
+    executionContext.mapping = mapping;
+  },
+);
 
-// export const set_executionContextTestData = action(
-//   (
-//     executionContext: DataSpaceExecutionContext,
-//     testData: DataElementReference | undefined,
-//   ): void => {
-//     executionContext.testData = testData;
-//   },
-// );
+export const set_testData = action(
+  (
+    executionContext: DataSpaceExecutionContext,
+    testData: DataElementReference,
+  ) => {
+    executionContext.testData = testData;
+  },
+);

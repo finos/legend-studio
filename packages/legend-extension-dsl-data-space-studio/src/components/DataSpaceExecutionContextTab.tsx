@@ -4,18 +4,35 @@ import { CustomSelectorInput, PanelFormTextField } from '@finos/legend-art';
 import {
   set_executionContextDescription,
   set_executionContextName,
-  set_executionContexts,
   set_executionContextTitle,
+  set_mapping,
+  set_runtime,
+  set_testData,
 } from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
 import type { DataSpaceExecutionContext } from '@finos/legend-extension-dsl-data-space/graph';
 import type { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
+import {
+  PackageableElementReference,
+  type DataElementReference,
+  type Mapping,
+  type PackageableRuntime,
+} from '@finos/legend-graph';
 
 interface ExecutionContextTabProps {
-  executionContext: DataSpaceExecutionContext;
-  isReadOnly: boolean;
-}
-interface ExecutionContextTabProps {
   dataSpaceEditorState: DataSpaceEditorState;
+}
+
+interface MappingOption {
+  value: Mapping;
+  label: string;
+}
+interface RuntimeOption {
+  value: PackageableRuntime;
+  label: string;
+}
+interface TestDataOption {
+  value: string;
+  label: string;
 }
 
 export const DataSpaceExecutionContextTab: React.FC<ExecutionContextTabProps> =
@@ -23,35 +40,56 @@ export const DataSpaceExecutionContextTab: React.FC<ExecutionContextTabProps> =
     const executionContext = dataSpaceEditorState.selectedExecutionContext;
 
     if (!executionContext) {
-      return <div>Select an execution context to view details.</div>;
+      return (
+        <div className="dataSpace-editor__emailSupport__validation-label">
+          Select an execution context to view details.
+        </div>
+      );
     }
 
     const handleTitleChange = (value: string | undefined): void => {
-      console.log('titlechange');
       set_executionContextTitle(executionContext, value);
     };
 
     const handleDescriptionChange = (value: string | undefined): void => {
-      console.log('descriptionChange', value);
       set_executionContextDescription(executionContext, value);
     };
 
     const handleNameChange = (value: string | undefined) => {
-      console.log('name changed', value);
       set_executionContextName(executionContext, value ?? '');
     };
 
-    const handleMappingChange = (value: any) => {
-      console.log('mapping', value);
+    const handleMappingChange = (
+      option: PackageableElementReference<Mapping>,
+    ): void => {
+      set_mapping(executionContext, option);
     };
 
-    const handleRuntimeChange = (value: any) => {
-      console.log('runtime', value);
+    const handleRuntimeChange = (
+      option: PackageableElementReference<PackageableRuntime>,
+    ): void => {
+      set_runtime(executionContext, option);
     };
 
-    const handleTestDataChange = (value: any) => {
-      console.log('testData', value);
+    const handleTestDataChange = (option: DataElementReference): void => {
+      set_testData(executionContext, option);
     };
+
+    const mappingOptions =
+      dataSpaceEditorState.editorStore.graphManagerState.usableMappings.map(
+        (mapping) => ({
+          label: mapping.path,
+          value: mapping,
+        }),
+      );
+
+    const runtimeOptions =
+      dataSpaceEditorState.editorStore.graphManagerState.usableRuntimes.map(
+        (runtime) => ({
+          label: runtime.path,
+          value: runtime,
+        }),
+      );
 
     return (
       <div className="execution-context-tab">
@@ -81,22 +119,26 @@ export const DataSpaceExecutionContextTab: React.FC<ExecutionContextTabProps> =
         </div>
 
         <CustomSelectorInput
-          options={[]}
+          options={[mappingOptions]}
           onChange={handleMappingChange}
-          value={undefined}
+          value={mappingOptions.find(
+            (option) => option.value === executionContext.mapping.value,
+          )}
           placeholder="Select Mapping"
         />
         <CustomSelectorInput
-          options={[]}
+          options={[runtimeOptions]}
           onChange={handleRuntimeChange}
-          value={undefined}
+          value={runtimeOptions.find(
+            (option) => option.value === executionContext.defaultRuntime.value,
+          )}
           placeholder="Select Runtime"
         />
-        <CustomSelectorInput
-          options={[]}
-          onChange={handleTestDataChange}
-          value={undefined}
-          placeholder="Select Test Data"
+        <PanelFormTextField
+          name="Execution Context Test Data"
+          value={executionContext.testData}
+          update={handleTestDataChange}
+          placeholder="Enter test data"
         />
       </div>
     );
