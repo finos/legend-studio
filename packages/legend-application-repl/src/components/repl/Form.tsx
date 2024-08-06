@@ -208,13 +208,19 @@ export function FormCheckbox(
 }
 
 export function FormDropdownMenuTrigger(
-  props: React.ButtonHTMLAttributes<HTMLButtonElement>,
+  props: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    open?: boolean | undefined;
+  },
 ) {
-  const { children, className, ...otherProps } = props;
+  const { children, className, open, ...otherProps } = props;
   return (
     <button
       className={cn(
         'group flex h-5 flex-shrink-0 items-center justify-between border border-neutral-400 pl-1.5 text-sm disabled:select-none disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
+        {
+          'border-sky-600': Boolean(open),
+          'bg-sky-50': Boolean(open),
+        },
         className,
       )}
       {...otherProps}
@@ -252,7 +258,7 @@ export function FormDropdownMenuItem(props: DropdownMenuItemProps) {
   return (
     <DropdownMenuItem
       className={cn(
-        'flex h-5 w-full items-center px-1.5 text-sm hover:bg-neutral-100 focus-visible:bg-neutral-100',
+        'flex h-5 w-full items-center px-1.5 text-sm hover:bg-neutral-100 focus:bg-sky-600 focus:text-white',
         className,
       )}
       {...otherProps}

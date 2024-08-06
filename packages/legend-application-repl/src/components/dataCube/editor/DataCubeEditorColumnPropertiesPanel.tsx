@@ -53,39 +53,52 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
     const panel = dataCube.editor.columnProperties;
     const gridConfiguration = dataCube.editor.generalProperties.configuration;
     const selectedColumn = panel.selectedColumn;
-    const [openColumnsDropdown, closeColumnsDropdown, columnsDropdownProps] =
-      useDropdownMenu();
-    const [openKindDropdown, closeKindDropdown, kindDropdownProps] =
-      useDropdownMenu();
+    const [
+      openColumnsDropdown,
+      closeColumnsDropdown,
+      columnsDropdownProps,
+      columnsDropPropsOpen,
+    ] = useDropdownMenu();
+    const [
+      openKindDropdown,
+      closeKindDropdown,
+      kindDropdownProps,
+      kindDropdownPropsOpen,
+    ] = useDropdownMenu();
     const [
       openAggregationTypeDropdown,
       closeAggregationTypeDropdown,
       aggregationTypeDropdownProps,
+      aggregationTypeDropdownPropsOpen,
     ] = useDropdownMenu();
     const [
       openNumberScaleDropdown,
       closeNumberScaleDropdown,
       numberScaleDropdownProps,
-    ] = useDropdownMenu();
-    const [
-      openFontFamilyDropdown,
-      closeFontFamilyDropdown,
-      fontFamilyDropdownProps,
-    ] = useDropdownMenu();
-    const [
-      openFontSizeDropdown,
-      closeFontSizeDropdown,
-      openFontSizeDropdownProps,
-    ] = useDropdownMenu();
-    const [
-      openFontFormatUnderlineVariantDropdown,
-      closeFontFormatUnderlineVariantDropdown,
-      fontFormatUnderlineVariantDropdownProps,
+      numberScaleDropdownPropsOpen,
     ] = useDropdownMenu();
     const [
       openColumnPinDropdown,
       closeColumnPinDropdown,
       columnPinDropdownProps,
+      columnPinDropdownPropsOpen,
+    ] = useDropdownMenu();
+    const [
+      openFontFamilyDropdown,
+      closeFontFamilyDropdown,
+      fontFamilyDropdownProps,
+      fontFamilyDropdownPropsOpen,
+    ] = useDropdownMenu();
+    const [
+      openFontSizeDropdown,
+      closeFontSizeDropdown,
+      openFontSizeDropdownProps,
+      openFontSizeDropdownPropsOpen,
+    ] = useDropdownMenu();
+    const [
+      openFontFormatUnderlineVariantDropdown,
+      closeFontFormatUnderlineVariantDropdown,
+      fontFormatUnderlineVariantDropdownProps,
     ] = useDropdownMenu();
     const [openFontCaseDropdown, closeFontCaseDropdown, fontCaseDropdownProps] =
       useDropdownMenu();
@@ -122,6 +135,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
               <FormDropdownMenuTrigger
                 className="w-80"
                 onClick={openColumnsDropdown}
+                open={columnsDropPropsOpen}
               >
                 <div className="flex h-full w-full items-center">
                   <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">
@@ -142,6 +156,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       panel.setSelectedColumnName(column.name);
                       closeColumnsDropdown();
                     }}
+                    autoFocus={column.name === selectedColumn?.name}
                   >
                     <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">
                       {column.name}
@@ -162,6 +177,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     <FormDropdownMenuTrigger
                       className="ml-1 w-20"
                       onClick={openKindDropdown}
+                      open={kindDropdownPropsOpen}
                       disabled={true}
                     >
                       {selectedColumn.kind}
@@ -177,6 +193,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                             selectedColumn.setKind(kind);
                             closeKindDropdown();
                           }}
+                          autoFocus={kind === selectedColumn.kind}
                         >
                           {kind}
                         </FormDropdownMenuItem>
@@ -260,6 +277,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       <FormDropdownMenuTrigger
                         className="w-32"
                         onClick={openNumberScaleDropdown}
+                        open={numberScaleDropdownPropsOpen}
                       >
                         {selectedColumn.numberScale ?? '(None)'}
                       </FormDropdownMenuTrigger>
@@ -283,6 +301,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                               selectedColumn.setNumberScale(scale);
                               closeNumberScaleDropdown();
                             }}
+                            autoFocus={scale === selectedColumn.numberScale}
                           >
                             {scale ?? '(None)'}
                           </FormDropdownMenuItem>
@@ -298,6 +317,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         className="w-32"
                         onClick={openAggregationTypeDropdown}
                         disabled={true}
+                        open={aggregationTypeDropdownPropsOpen}
                       >
                         {selectedColumn.aggregateFunction ?? '(None)'}
                       </FormDropdownMenuTrigger>
@@ -311,15 +331,16 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                           DataCubeAggregateOperator.COUNT,
                           DataCubeAggregateOperator.MIN,
                           DataCubeAggregateOperator.MAX,
-                        ].map((fn) => (
+                        ].map((op) => (
                           <FormDropdownMenuItem
-                            key={fn}
+                            key={op}
                             onClick={() => {
-                              selectedColumn.setAggregateFunction(fn);
+                              selectedColumn.setAggregateFunction(op);
                               closeAggregationTypeDropdown();
                             }}
+                            autoFocus={op === selectedColumn.aggregateFunction}
                           >
-                            {fn}
+                            {op}
                           </FormDropdownMenuItem>
                         ))}
                       </FormDropdownMenu>
@@ -437,6 +458,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                   <FormDropdownMenuTrigger
                     className="w-16"
                     onClick={openColumnPinDropdown}
+                    open={columnPinDropdownPropsOpen}
                   >
                     {selectedColumn.pinned ?? '(None)'}
                   </FormDropdownMenuTrigger>
@@ -455,6 +477,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                           selectedColumn.setPinned(placement);
                           closeColumnPinDropdown();
                         }}
+                        autoFocus={placement === selectedColumn.pinned}
                       >
                         {placement ?? '(None)'}
                       </FormDropdownMenuItem>
@@ -583,6 +606,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                   <FormDropdownMenuTrigger
                     className="w-28"
                     onClick={openFontFamilyDropdown}
+                    open={fontFamilyDropdownPropsOpen}
                   >
                     {selectedColumn.fontFamily ?? gridConfiguration.fontFamily}
                   </FormDropdownMenuTrigger>
@@ -601,6 +625,11 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                           selectedColumn.setFontFamily(font);
                           closeFontFamilyDropdown();
                         }}
+                        autoFocus={
+                          font ===
+                          (selectedColumn.fontFamily ??
+                            gridConfiguration.fontFamily)
+                        }
                       >
                         {font}
                       </FormDropdownMenuItem>
@@ -617,6 +646,11 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                           selectedColumn.setFontFamily(font);
                           closeFontFamilyDropdown();
                         }}
+                        autoFocus={
+                          font ===
+                          (selectedColumn.fontFamily ??
+                            gridConfiguration.fontFamily)
+                        }
                       >
                         {font}
                       </FormDropdownMenuItem>
@@ -633,6 +667,11 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                           selectedColumn.setFontFamily(font);
                           closeFontFamilyDropdown();
                         }}
+                        autoFocus={
+                          font ===
+                          (selectedColumn.fontFamily ??
+                            gridConfiguration.fontFamily)
+                        }
                       >
                         {font}
                       </FormDropdownMenuItem>
@@ -642,6 +681,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                   <FormDropdownMenuTrigger
                     className="ml-1 w-10"
                     onClick={openFontSizeDropdown}
+                    open={openFontSizeDropdownPropsOpen}
                   >
                     {selectedColumn.fontSize ?? gridConfiguration.fontSize}
                   </FormDropdownMenuTrigger>
@@ -659,6 +699,11 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                           selectedColumn.setFontSize(size);
                           closeFontSizeDropdown();
                         }}
+                        autoFocus={
+                          size ===
+                          (selectedColumn.fontSize ??
+                            gridConfiguration.fontSize)
+                        }
                       >
                         {size}
                       </FormDropdownMenuItem>
@@ -669,7 +714,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     <button
                       title="Bold"
                       className={cn(
-                        'relative flex h-5 w-5 items-center justify-center rounded-bl-sm rounded-tl-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                        'relative flex h-5 w-5 items-center justify-center rounded-bl-sm rounded-tl-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus:z-[1]',
                         {
                           'bg-neutral-200':
                             selectedColumn.fontBold ??
@@ -690,7 +735,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     <button
                       title="Italic"
                       className={cn(
-                        'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                        'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus:z-[1]',
                         {
                           'bg-neutral-200':
                             selectedColumn.fontItalic ??
@@ -711,7 +756,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     <button
                       title={`Underline${(selectedColumn.fontUnderline ?? gridConfiguration.fontUnderline) ? ` (${selectedColumn.fontUnderline ?? gridConfiguration.fontUnderline})` : ''}`}
                       className={cn(
-                        'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                        'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus:z-[1]',
                         {
                           'bg-neutral-200':
                             (selectedColumn.fontUnderline ??
@@ -735,7 +780,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       <DataCubeIcon.FontUnderline />
                     </button>
                     <button
-                      className="text-2xs relative -ml-[1px] flex h-5 w-2.5 items-center justify-center border border-l-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-600 focus-visible:z-[1]"
+                      className="text-2xs relative -ml-[1px] flex h-5 w-2.5 items-center justify-center border border-l-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-600 focus:z-[1]"
                       onClick={openFontFormatUnderlineVariantDropdown}
                     >
                       <div
@@ -766,6 +811,11 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                             selectedColumn.setFontStrikethrough(false);
                             closeFontFormatUnderlineVariantDropdown();
                           }}
+                          autoFocus={
+                            variant ===
+                            (selectedColumn.fontUnderline ??
+                              gridConfiguration.fontUnderline)
+                          }
                         >
                           <div
                             className={cn(
@@ -786,10 +836,6 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                                 '!hover:decoration-wavy !decoration-wavy':
                                   variant ===
                                   DataCubeFontFormatUnderlineVariant.WAVY,
-                                'text-sky-600':
-                                  variant ===
-                                  (selectedColumn.fontUnderline ??
-                                    gridConfiguration.fontUnderline),
                               },
                             )}
                           >
@@ -801,7 +847,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     <button
                       title="Strikethrough"
                       className={cn(
-                        'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                        'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus:z-[1]',
                         {
                           'bg-neutral-200':
                             selectedColumn.fontStrikethrough ??
@@ -825,7 +871,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     <button
                       title={`Case${(selectedColumn.fontCase ?? gridConfiguration.fontCase) ? ` (${selectedColumn.fontCase ?? gridConfiguration.fontCase})` : ''}`}
                       className={cn(
-                        'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                        'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-r-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus:z-[1]',
                         {
                           'bg-neutral-200':
                             (selectedColumn.fontCase ??
@@ -848,7 +894,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       <DataCubeIcon.FontCase className="stroke-[0.5px]" />
                     </button>
                     <button
-                      className="text-2xs relative -ml-[1px] flex h-5 w-2.5 items-center justify-center rounded-br-sm rounded-tr-sm border border-l-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-600 focus-visible:z-[1]"
+                      className="text-2xs relative -ml-[1px] flex h-5 w-2.5 items-center justify-center rounded-br-sm rounded-tr-sm border border-l-0 border-neutral-400 bg-neutral-50 p-0 text-neutral-600 focus:z-[1]"
                       onClick={openFontCaseDropdown}
                     >
                       <div
@@ -870,12 +916,16 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         DataCubeFontCase.CAPITALIZE,
                       ].map((fontCase) => (
                         <FormDropdownMenuItem
-                          className="relative"
                           key={fontCase}
                           onClick={() => {
                             selectedColumn.setFontCase(fontCase);
                             closeFontCaseDropdown();
                           }}
+                          autoFocus={
+                            fontCase ===
+                            (selectedColumn.fontCase ??
+                              gridConfiguration.fontCase)
+                          }
                         >
                           <div
                             className={cn({
@@ -885,10 +935,6 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                                 fontCase === DataCubeFontCase.UPPERCASE,
                               capitalize:
                                 fontCase === DataCubeFontCase.CAPITALIZE,
-                              'text-sky-600':
-                                fontCase ===
-                                (selectedColumn.fontCase ??
-                                  gridConfiguration.fontCase),
                             })}
                           >
                             {fontCase}
@@ -902,7 +948,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     <button
                       title="Align Left"
                       className={cn(
-                        'relative flex h-5 w-5 items-center justify-center rounded-bl-sm rounded-tl-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                        'relative flex h-5 w-5 items-center justify-center rounded-bl-sm rounded-tl-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus:z-[1]',
                         {
                           'bg-neutral-200':
                             (selectedColumn.textAlign ??
@@ -921,7 +967,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     <button
                       title="Align Center"
                       className={cn(
-                        'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                        'relative -ml-[1px] flex h-5 w-5 items-center justify-center border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus:z-[1]',
                         {
                           'bg-neutral-200':
                             (selectedColumn.textAlign ??
@@ -940,7 +986,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     <button
                       title="Align Right"
                       className={cn(
-                        'relative -ml-[1px] flex h-5 w-5 items-center justify-center rounded-br-sm rounded-tr-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus-visible:z-[1]',
+                        'relative -ml-[1px] flex h-5 w-5 items-center justify-center rounded-br-sm rounded-tr-sm border border-neutral-400 bg-neutral-50 p-0 text-neutral-700 focus:z-[1]',
                         {
                           'bg-neutral-200':
                             (selectedColumn.textAlign ??

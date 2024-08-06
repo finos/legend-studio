@@ -127,6 +127,7 @@ export function useDropdownMenu() {
       anchorEl,
       onClose: () => setAnchorEl(null),
     },
+    Boolean(anchorEl),
   ] as const;
 }
 
