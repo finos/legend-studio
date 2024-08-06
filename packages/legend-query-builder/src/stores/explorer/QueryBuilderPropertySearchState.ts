@@ -30,7 +30,8 @@ import {
   addUniqueEntry,
   deleteEntry,
   guaranteeNonNullable,
-  FuzzySearchAdvancedConfigState,
+  isNonNullable,
+  type FuzzySearchEngineSortFunctionArg,
 } from '@finos/legend-shared';
 import {
   observable,
@@ -53,6 +54,11 @@ import {
   QueryBuilderExplorerTreeSubTypeNodeData,
 } from './QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
+import { QueryBuilderFuzzySearchAdvancedConfigState } from './QueryBuilderFuzzySearchAdvancedConfigState.js';
+import {
+  prettyPropertyNameForSubType,
+  prettyPropertyNameFromNodeId,
+} from '../../components/explorer/QueryBuilderPropertySearchPanel.js';
 
 export class QueryBuilderPropertySearchState {
   queryBuilderState: QueryBuilderState;
@@ -72,7 +78,8 @@ export class QueryBuilderPropertySearchState {
 
   // search
   searchEngine: FuzzySearchEngine<QueryBuilderExplorerTreeNodeData>;
-  searchConfigurationState: FuzzySearchAdvancedConfigState;
+  searchConfigurationState: QueryBuilderFuzzySearchAdvancedConfigState;
+  initializationState = ActionState.create();
   searchState = ActionState.create();
   searchText = '';
   searchResults: QueryBuilderExplorerTreeNodeData[] = [];
@@ -103,6 +110,8 @@ export class QueryBuilderPropertySearchState {
       filteredSearchResults: computed,
       search: action,
       resetSearch: action,
+      setSearchResults: action,
+      setIsOverSearchLimit: action,
       setSearchText: action,
       setShowSearchConfigurationMenu: action,
       setIsSearchPanelOpen: action,
@@ -112,9 +121,11 @@ export class QueryBuilderPropertySearchState {
     });
 
     this.queryBuilderState = queryBuilderState;
-    this.searchConfigurationState = new FuzzySearchAdvancedConfigState(
-      (): void => this.search(),
-    );
+    this.searchConfigurationState =
+      new QueryBuilderFuzzySearchAdvancedConfigState(
+        async (): Promise<void> => this.search(),
+        this.queryBuilderState.applicationStore.alertUnhandledError,
+      );
     this.searchEngine = new FuzzySearchEngine(this.indexedExplorerTreeNodes);
   }
 
@@ -128,6 +139,14 @@ export class QueryBuilderPropertySearchState {
 
   setShowSearchConfigurationMenu(val: boolean): void {
     this.showSearchConfigurationMenu = val;
+  }
+
+  setSearchResults(val: QueryBuilderExplorerTreeNodeData[]): void {
+    this.searchResults = val;
+  }
+
+  setIsOverSearchLimit(val: boolean): void {
+    this.isOverSearchLimit = val;
   }
 
   setSearchText(val: string): void {
@@ -148,46 +167,82 @@ export class QueryBuilderPropertySearchState {
     }
   }
 
-  search(): void {
+  async search(): Promise<void> {
     if (!this.searchText) {
-      this.searchResults = [];
-      return;
+      this.setSearchResults([]);
+      return Promise.resolve();
     }
+
     this.searchState.inProgress();
 
-    // NOTE: performanced of fuzzy search is impacted by the number of indexed entries and the length
-    // of the search pattern, so to a certain extent this could become laggy. If this becomes too inconvenient
-    // for the users, we might need to use another fuzzy-search implementation, or have appropriate search
-    // policy, e.g. limit length of search text, etc.
-    //
-    // See https://github.com/farzher/fuzzysort
-    const searchResults = Array.from(
-      this.searchEngine
-        .search(
-          this.searchConfigurationState.generateSearchText(
-            this.searchText.toLowerCase(),
-          ),
-          {
-            // NOTE: search for limit + 1 item so we can know if there are more search results
-            limit: QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT + 1,
-          },
+    // Perform the search in a setTimeout so we can execute it asynchronously and
+    // show the loading indicator while search is in progress.
+    return new Promise((resolve) =>
+      setTimeout(() => {
+        // NOTE: performanced of fuzzy search is impacted by the number of indexed entries and the length
+        // of the search pattern, so to a certain extent this could become laggy. If this becomes too inconvenient
+        // for the users, we might need to use another fuzzy-search implementation, or have appropriate search
+        // policy, e.g. limit length of search text, etc.
+        //
+        // See https://github.com/farzher/fuzzysort
+
+        const classNodes: Map<string, QueryBuilderExplorerTreeNodeData> =
+          new Map();
+
+        const searchResults = Array.from(
+          this.searchEngine
+            .search(
+              this.searchConfigurationState.generateSearchText(
+                this.searchText.toLowerCase(),
+              ),
+              {
+                // NOTE: search for limit + 1 item so we can know if there are more search results
+                limit: QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT + 1,
+              },
+            )
+            .values(),
         )
-        .values(),
-    ).map((result) => result.item);
+          .map((result) => result.item)
+          .map((node) => {
+            if (node.type instanceof Class) {
+              classNodes.set(node.id, node);
+            }
+            return node;
+          })
+          .filter((node) => {
+            // Filter out property nodes if their parent class node is already in the results.
+            if (node.type instanceof Class) {
+              return true;
+            } else if (
+              node instanceof QueryBuilderExplorerTreePropertyNodeData
+            ) {
+              if (this.searchText.toLowerCase() === node.label.toLowerCase()) {
+                return true;
+              } else if (classNodes.has(node.parentId)) {
+                classNodes.get(node.parentId)?.setIsOpen(true);
+                return false;
+              }
+            }
+            return true;
+          });
 
-    // check if the search results exceed the limit
-    if (searchResults.length > QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT) {
-      this.isOverSearchLimit = true;
-      this.searchResults = searchResults.slice(
-        0,
-        QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT,
-      );
-    } else {
-      this.isOverSearchLimit = false;
-      this.searchResults = searchResults;
-    }
+        // check if the search results exceed the limit
+        if (
+          searchResults.length > QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT
+        ) {
+          this.setIsOverSearchLimit(true);
+          this.setSearchResults(
+            searchResults.slice(0, QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT),
+          );
+        } else {
+          this.setIsOverSearchLimit(false);
+          this.setSearchResults(searchResults);
+        }
 
-    this.searchState.complete();
+        this.searchState.complete();
+        resolve();
+      }, 0),
+    );
   }
 
   /**
@@ -198,49 +253,72 @@ export class QueryBuilderPropertySearchState {
    * this process is often not the performance bottleneck, else, we would need to make this
    * asynchronous and block the UI while waiting.
    */
-  initialize(): void {
-    this.indexedExplorerTreeNodes = [];
+  async initialize(): Promise<void> {
+    this.initializationState.inProgress();
 
-    let currentLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
-    let nextLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
+    // Perform the initialization in a setTimeout so we can execute it asynchronously and
+    // show the loading indicator while initialization is in progress.
+    return new Promise((resolve) =>
+      setTimeout(() => {
+        this.indexedExplorerTreeNodes = [];
 
-    Array.from(
-      this.queryBuilderState.explorerState.nonNullableTreeData.nodes.values(),
-    )
-      .slice(1)
-      .forEach((node) => {
-        if (node.mappingData.mapped && !node.isPartOfDerivedPropertyBranch) {
-          currentLevelPropertyNodes.push(node);
-          this.indexedExplorerTreeNodes.push(node);
-        }
-      });
+        let currentLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
+        let nextLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
 
-    // ensure we don't navigate more nodes than the limit so we could
-    // keep the initialization/indexing time within acceptable range
-    const NODE_LIMIT =
-      this.indexedExplorerTreeNodes.length +
-      QUERY_BUILDER_PROPERTY_SEARCH_MAX_NODES;
-    const addNode = (node: QueryBuilderExplorerTreeNodeData): void =>
-      runInAction(() => {
-        if (this.indexedExplorerTreeNodes.length > NODE_LIMIT) {
-          return;
-        }
-        this.indexedExplorerTreeNodes.push(node);
-      });
+        // Get all the children of the root node(s)
+        Array.from(
+          this.queryBuilderState.explorerState.nonNullableTreeData.rootIds
+            .map((rootId) =>
+              this.queryBuilderState.explorerState.nonNullableTreeData.nodes
+                .get(rootId)
+                ?.childrenIds.map((childId) =>
+                  this.queryBuilderState.explorerState.nonNullableTreeData.nodes.get(
+                    childId,
+                  ),
+                ),
+            )
+            .flat()
+            .filter(isNonNullable)
+            .filter((node) =>
+              node.mappingData.mapped &&
+              this.searchConfigurationState.includeSubTypes
+                ? true
+                : node instanceof QueryBuilderExplorerTreePropertyNodeData,
+            ),
+        ).forEach((node) => {
+          if (node.mappingData.mapped && !node.isPartOfDerivedPropertyBranch) {
+            currentLevelPropertyNodes.push(node);
+            this.indexedExplorerTreeNodes.push(node);
+          }
+        });
 
-    // limit the depth of navigation to keep the initialization/indexing
-    // time within acceptable range
-    let currentDepth = 1;
-    while (
-      currentLevelPropertyNodes.length &&
-      currentDepth <= QUERY_BUILDER_PROPERTY_SEARCH_MAX_DEPTH
-    ) {
-      const node = currentLevelPropertyNodes.shift();
-      if (node) {
-        if (node.childrenIds.length) {
+        // ensure we don't navigate more nodes than the limit so we could
+        // keep the initialization/indexing time within acceptable range
+        const NODE_LIMIT =
+          this.indexedExplorerTreeNodes.length +
+          QUERY_BUILDER_PROPERTY_SEARCH_MAX_NODES;
+        const addNode = (node: QueryBuilderExplorerTreeNodeData): void =>
+          runInAction(() => {
+            if (this.indexedExplorerTreeNodes.length > NODE_LIMIT) {
+              return;
+            }
+            this.indexedExplorerTreeNodes.push(node);
+          });
+
+        // limit the depth of navigation to keep the initialization/indexing
+        // time within acceptable range
+        let currentDepth = 1;
+        while (
+          currentLevelPropertyNodes.length &&
+          currentDepth <= QUERY_BUILDER_PROPERTY_SEARCH_MAX_DEPTH
+        ) {
+          const node = currentLevelPropertyNodes.shift();
           if (
+            node?.mappingData.mapped &&
+            node.childrenIds.length &&
             (node instanceof QueryBuilderExplorerTreePropertyNodeData ||
-              node instanceof QueryBuilderExplorerTreeSubTypeNodeData) &&
+              (this.searchConfigurationState.includeSubTypes &&
+                node instanceof QueryBuilderExplorerTreeSubTypeNodeData)) &&
             node.type instanceof Class
           ) {
             (node instanceof QueryBuilderExplorerTreeSubTypeNodeData
@@ -265,72 +343,132 @@ export class QueryBuilderPropertySearchState {
                 addNode(propertyTreeNodeData);
               }
             });
-            node.type._subclasses.forEach((subclass) => {
-              const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
-                subclass,
-                node,
-                guaranteeNonNullable(
-                  this.queryBuilderState.explorerState
-                    .mappingModelCoverageAnalysisResult,
-                ),
-              );
-              nextLevelPropertyNodes.push(subTypeTreeNodeData);
-              addNode(subTypeTreeNodeData);
-            });
+            if (this.searchConfigurationState.includeSubTypes) {
+              node.type._subclasses.forEach((subclass) => {
+                const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
+                  subclass,
+                  node,
+                  guaranteeNonNullable(
+                    this.queryBuilderState.explorerState
+                      .mappingModelCoverageAnalysisResult,
+                  ),
+                );
+                if (subTypeTreeNodeData.mappingData.mapped) {
+                  nextLevelPropertyNodes.push(subTypeTreeNodeData);
+                  addNode(subTypeTreeNodeData);
+                }
+              });
+            }
+          }
+
+          // when we done processing one depth, we will do check on the depth and the total
+          // number of indexed nodes to figure out if we should proceed further
+          if (
+            !currentLevelPropertyNodes.length &&
+            this.indexedExplorerTreeNodes.length < NODE_LIMIT
+          ) {
+            currentLevelPropertyNodes = nextLevelPropertyNodes;
+            nextLevelPropertyNodes = [];
+            currentDepth++;
           }
         }
-      }
 
-      // when we done processing one depth, we will do check on the depth and the total
-      // number of indexed nodes to figureo ut if we should proceed further
-      if (
-        !currentLevelPropertyNodes.length &&
-        this.indexedExplorerTreeNodes.length < NODE_LIMIT
-      ) {
-        currentLevelPropertyNodes = nextLevelPropertyNodes;
-        nextLevelPropertyNodes = [];
-        currentDepth++;
-      }
-    }
+        // indexing
+        this.searchEngine = new FuzzySearchEngine(
+          this.indexedExplorerTreeNodes,
+          {
+            includeScore: true,
+            shouldSort: true,
+            // Ignore location when computing the search score
+            // See https://fusejs.io/concepts/scoring-theory.html
+            ignoreLocation: true,
+            // This specifies the point the search gives up
+            // `0.0` means exact match where `1.0` would match anything
+            // We set a relatively low threshold to filter out irrelevant results
+            threshold: 0.2,
+            keys: [
+              {
+                name: 'path',
+                weight: 4,
+                getFn: (node) => {
+                  const parentNode = this.indexedExplorerTreeNodes.find(
+                    (pn) =>
+                      node instanceof
+                        QueryBuilderExplorerTreePropertyNodeData &&
+                      node.parentId === pn.id,
+                  );
 
-    // indexing
-    this.searchEngine = new FuzzySearchEngine(this.indexedExplorerTreeNodes, {
-      includeScore: true,
-      shouldSort: true,
-      // Ignore location when computing the search score
-      // See https://fusejs.io/concepts/scoring-theory.html
-      ignoreLocation: true,
-      // This specifies the point the search gives up
-      // `0.0` means exact match where `1.0` would match anything
-      // We set a relatively low threshold to filter out irrelevant results
-      threshold: 0.2,
-      keys: [
-        {
-          name: 'label',
-          weight: 4,
-        },
-        {
-          name: 'taggedValues',
-          weight: 2,
-          // aggregate the property documentation, do not account for class documentation
-          getFn: (node: QueryBuilderExplorerTreeNodeData) =>
-            node instanceof QueryBuilderExplorerTreePropertyNodeData
-              ? node.property.taggedValues
-                  .filter(
-                    (taggedValue) =>
-                      taggedValue.tag.ownerReference.value.path ===
-                        CORE_PURE_PATH.PROFILE_DOC &&
-                      taggedValue.tag.value.value === PURE_DOC_TAG,
-                  )
-                  .map((taggedValue) => taggedValue.value)
-                  .join('\n')
-              : '',
-        },
-      ],
-      // extended search allows for exact word match through single quote
-      // See https://fusejs.io/examples.html#extended-search
-      useExtendedSearch: true,
-    });
+                  const fullPath =
+                    parentNode instanceof
+                    QueryBuilderExplorerTreeSubTypeNodeData
+                      ? prettyPropertyNameForSubType(node.id)
+                      : prettyPropertyNameFromNodeId(node.id);
+
+                  return fullPath;
+                },
+              },
+              ...(this.searchConfigurationState.includeDocumentation
+                ? [
+                    {
+                      name: 'taggedValues',
+                      weight: 2,
+                      // aggregate the property documentation, do not account for class documentation
+                      getFn: (node: QueryBuilderExplorerTreeNodeData) =>
+                        node instanceof QueryBuilderExplorerTreePropertyNodeData
+                          ? node.property.taggedValues
+                              .filter(
+                                (taggedValue) =>
+                                  taggedValue.tag.ownerReference.value.path ===
+                                    CORE_PURE_PATH.PROFILE_DOC &&
+                                  taggedValue.tag.value.value === PURE_DOC_TAG,
+                              )
+                              .map((taggedValue) => taggedValue.value)
+                              .join('\n')
+                          : '',
+                    },
+                  ]
+                : []),
+            ],
+            sortFn: (
+              a: FuzzySearchEngineSortFunctionArg,
+              b: FuzzySearchEngineSortFunctionArg,
+            ) => {
+              // If 2 items have similar scores, we should prefer the one that is
+              // less deeply nested.
+              const similarScores = Math.abs(a.score - b.score) <= 0.1;
+              if (similarScores) {
+                const aPathLength: number | undefined =
+                  a.item[0] && Object.hasOwn(a.item[0], 'v')
+                    ? (
+                        a.item[0] as {
+                          v: string;
+                        }
+                      ).v.split('/').length
+                    : undefined;
+                const bPathLength: number | undefined =
+                  b.item[0] && Object.hasOwn(b.item[0], 'v')
+                    ? (
+                        b.item[0] as {
+                          v: string;
+                        }
+                      ).v.split('/').length
+                    : undefined;
+                if (aPathLength !== undefined && bPathLength !== undefined) {
+                  return aPathLength - bPathLength;
+                }
+              }
+              return a.score - b.score;
+            },
+            // extended search allows for exact word match through single quote
+            // See https://fusejs.io/examples.html#extended-search
+            useExtendedSearch: true,
+          },
+        );
+
+        this.initializationState.complete();
+        resolve();
+      }, 0),
+    );
   }
 
   get filteredSearchResults(): QueryBuilderExplorerTreeNodeData[] {

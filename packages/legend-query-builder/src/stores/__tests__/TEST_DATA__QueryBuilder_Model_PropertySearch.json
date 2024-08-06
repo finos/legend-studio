@@ -20,6 +20,15 @@
             "upperBound": 1
           },
           "name": "id",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "test doc tagged value"
+            }
+          ],
           "type": "Integer"
         },
         {

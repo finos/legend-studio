@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { useMemo, useRef, useState } from 'react';
 import {
   clsx,
   CheckSquareIcon,
@@ -25,21 +24,29 @@ import {
   ResizablePanel,
   ResizablePanelSplitterLine,
   InfoCircleIcon,
-  TimesIcon,
-  SearchIcon,
   useDragPreviewLayer,
   PanelLoadingIndicator,
   BlankPanelContent,
-  CogIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  ShareBoxIcon,
+  Tooltip,
+  BaseRadioGroup,
+  ClickAwayListener,
 } from '@finos/legend-art';
 import {
+  CORE_PURE_PATH,
   Class,
+  ELEMENT_PATH_DELIMITER,
   Enumeration,
+  PROPERTY_ACCESSOR,
+  PURE_DOC_TAG,
+  TYPE_CAST_TOKEN,
   getAllClassProperties,
   getAllOwnClassProperties,
 } from '@finos/legend-graph';
 import {
-  debounce,
+  ADVANCED_FUZZY_SEARCH_MODE,
   guaranteeNonNullable,
   prettyCONSTName,
 } from '@finos/legend-shared';
@@ -56,58 +63,170 @@ import {
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import {
+  QUERY_BUILDER_EXPLORER_SEARCH_INPUT_NAME,
   QueryBuilderSubclassInfoTooltip,
   renderPropertyTypeIcon,
 } from './QueryBuilderExplorerPanel.js';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import { FuzzySearchAdvancedConfigMenu } from '@finos/legend-lego/application';
+import { DocumentationLink } from '@finos/legend-lego/application';
+import { LEGEND_APPLICATION_DOCUMENTATION_KEY } from '@finos/legend-application';
 
-const prettyPropertyNameFromNodeId = (name: string): string => {
-  let propNameArray = name.split('.');
-  propNameArray = propNameArray.map(prettyCONSTName);
-  let propName = '';
-  propNameArray.forEach((p) => {
-    propName = `${propName + p}/`;
-  });
-  propName = propName.slice(0, -1);
-  return propName;
-};
-
-const prettyPropertyNameForSubType = (name: string): string => {
-  let propNameArray = name.split('@');
-  propNameArray = propNameArray
-    .map((p) => p.replace(/.*::/, ''))
+export const prettyPropertyNameFromNodeId = (
+  name: string,
+  spaceBetweenSlash?: boolean,
+): string =>
+  name
+    .split(TYPE_CAST_TOKEN)
+    .map((p) =>
+      p.replace(new RegExp(String.raw`.*${ELEMENT_PATH_DELIMITER}`), ''),
+    )
     .filter((p) => p !== '')
-    .map((p) => prettyCONSTName(p));
-  let propName = '';
-  propNameArray.slice(0, -1).forEach((p) => {
-    propName = `${propName}(@${p})/`;
-  });
+    .map((p) =>
+      p
+        .split(PROPERTY_ACCESSOR)
+        .map(prettyCONSTName)
+        .join(spaceBetweenSlash ? ' / ' : '/'),
+    )
+    .join(TYPE_CAST_TOKEN);
+
+export const prettyPropertyNameForSubType = (
+  name: string,
+  spaceBetweenSlash?: boolean,
+): string => {
+  let propNameArray = name.split(TYPE_CAST_TOKEN);
+  propNameArray = propNameArray
+    .map((p) =>
+      p.replace(new RegExp(String.raw`.*${ELEMENT_PATH_DELIMITER}`), ''),
+    )
+    .filter((p) => p !== '');
+  let propName = propNameArray
+    .slice(0, -1)
+    .map(
+      (p) =>
+        `(${TYPE_CAST_TOKEN}${p
+          .split(PROPERTY_ACCESSOR)
+          .map((sp) => prettyCONSTName(sp))
+          .join(spaceBetweenSlash ? ' / ' : '/')})`,
+    )
+    .join(spaceBetweenSlash ? ' / ' : '/');
+  propName += spaceBetweenSlash ? ' / ' : '/';
   propNameArray = guaranteeNonNullable(
     propNameArray[propNameArray.length - 1],
-  ).split('.');
+  ).split(PROPERTY_ACCESSOR);
   propNameArray = propNameArray.map((p) => prettyCONSTName(p));
-  propName = `${propName}(@${propNameArray[0]})/`;
+  propName = `${propName}(${TYPE_CAST_TOKEN}${propNameArray[0]})${spaceBetweenSlash ? ' / ' : '/'}`;
   propNameArray.slice(1).forEach((p) => {
-    propName = `${propName + p}/`;
+    propName = `${propName + p}${spaceBetweenSlash ? ' / ' : '/'}`;
   });
-  propName = propName.slice(0, -1);
+  propName = propName.slice(0, spaceBetweenSlash ? -3 : -1);
   return propName;
 };
 
-const prettyPropertyNameForSubTypeClass = (name: string): string => {
-  let propNameArray = name.split('@');
-  propNameArray = propNameArray
-    .map((p) => p.replace(/.*::/, ''))
-    .filter((p) => p !== '')
-    .map((p) => prettyCONSTName(p));
-  let propName = '';
-  propNameArray.forEach((p) => {
-    propName = `${propName}@${p}`;
+export const formatTextWithHighlightedMatches = (
+  displayText: string,
+  searchText: string,
+  className: string,
+  id: string,
+): React.ReactNode => {
+  // Get ranges to highlight
+  const highlightRanges: [number, number][] = [];
+  searchText
+    .split(/\/| /)
+    .filter((word) => word.trim().length > 0)
+    .forEach((word) => {
+      const regex = new RegExp(word, 'gi');
+      let match;
+      while ((match = regex.exec(displayText))) {
+        highlightRanges.push([match.index, match.index + word.length]);
+      }
+    });
+
+  // Combine any overlapping highlight ranges
+  const combinedHighlightRanges: [number, number][] = [];
+  highlightRanges.sort((a, b) => a[0] - b[0]);
+  highlightRanges.forEach((range) => {
+    if (!combinedHighlightRanges.length) {
+      combinedHighlightRanges.push(range);
+    } else {
+      const lastRange =
+        combinedHighlightRanges[combinedHighlightRanges.length - 1];
+      if (lastRange !== undefined && range[0] <= lastRange[1]) {
+        lastRange[1] = Math.max(lastRange[1], range[1]);
+      } else {
+        combinedHighlightRanges.push(range);
+      }
+    }
   });
-  return propName;
+
+  // Return the property name if there are no highlight ranges
+  if (!combinedHighlightRanges.length) {
+    return <span>{displayText}</span>;
+  }
+
+  // Create formatted node
+  const formattedNode: React.ReactNode[] = [];
+  if (combinedHighlightRanges[0]![0] > 0) {
+    formattedNode.push(
+      <span
+        key={`${id}-0-${displayText.substring(0, combinedHighlightRanges[0]![0])}`}
+      >
+        {displayText.substring(0, combinedHighlightRanges[0]![0])}
+      </span>,
+    );
+  }
+
+  combinedHighlightRanges.forEach((range, index) => {
+    formattedNode.push(
+      <span
+        key={`${id}-${index * 2}-${displayText.substring(range[0], range[1])}`}
+        className={`${className}--highlight`}
+      >
+        {displayText.substring(range[0], range[1])}
+      </span>,
+    );
+    if (
+      index < combinedHighlightRanges.length - 1 &&
+      range[1] < displayText.length
+    ) {
+      formattedNode.push(
+        <span
+          key={`${id}-${index * 2 + 1}--${displayText.substring(
+            range[1],
+            combinedHighlightRanges[index + 1]![0],
+          )}`}
+        >
+          {displayText.substring(
+            range[1],
+            combinedHighlightRanges[index + 1]![0],
+          )}
+        </span>,
+      );
+    }
+  });
+  if (
+    combinedHighlightRanges[combinedHighlightRanges.length - 1]![1] <
+    displayText.length
+  ) {
+    formattedNode.push(
+      <span
+        key={`${id}-${combinedHighlightRanges.length * 2 + 2}-${displayText.substring(
+          combinedHighlightRanges[combinedHighlightRanges.length - 1]![1],
+        )}`}
+      >
+        {displayText.substring(
+          combinedHighlightRanges[combinedHighlightRanges.length - 1]![1],
+        )}
+      </span>,
+    );
+  }
+  return formattedNode;
 };
+
+const QUERY_BUILDER_PROPERTY_SEARCH_LABEL_TEXT_CLASS =
+  'query-builder-property-search-panel__node__label';
+const QUERY_BUILDER_PROPERTY_SEARCH_DOC_TEXT_CLASS =
+  'query-builder-property-search-panel__node__doc';
 
 const QueryBuilderTreeNodeViewer = observer(
   (props: {
@@ -119,8 +238,9 @@ const QueryBuilderTreeNodeViewer = observer(
   }) => {
     const { node, queryBuilderState, explorerState, level, stepPaddingInRem } =
       props;
-    const [isExpandable, setIsExpandable] = useState(false);
+    const isExpandable = Boolean(node.childrenIds.length);
     const propertySearchState = explorerState.propertySearchState;
+
     const [, dragConnector, dragPreviewConnector] = useDrag<{
       node?: QueryBuilderExplorerTreePropertyNodeData;
     }>(
@@ -143,6 +263,7 @@ const QueryBuilderTreeNodeViewer = observer(
       }),
       [node],
     );
+
     useDragPreviewLayer(dragPreviewConnector);
 
     const getChildrenNodes = (): QueryBuilderExplorerTreeNodeData[] => {
@@ -177,20 +298,55 @@ const QueryBuilderTreeNodeViewer = observer(
       }
       return childNodes;
     };
+
+    const handleHighlightNode = (): void => {
+      explorerState.propertySearchState.setIsSearchPanelOpen(false);
+      explorerState.propertySearchState.resetSearch();
+      explorerState.highlightTreeNode(node.id);
+    };
+
     const parentNode = propertySearchState.indexedExplorerTreeNodes.find(
       (pn) =>
         node instanceof QueryBuilderExplorerTreePropertyNodeData &&
         node.parentId === pn.id,
     );
+
     const propertyName =
       parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
-        ? prettyPropertyNameForSubType(node.id)
-        : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-          ? prettyPropertyNameForSubTypeClass(node.id)
-          : prettyPropertyNameFromNodeId(node.id);
+        ? prettyPropertyNameForSubType(node.id, true)
+        : prettyPropertyNameFromNodeId(node.id, true);
+
+    const nodeExpandIcon = isExpandable ? (
+      node.isOpen ? (
+        <ChevronDownIcon />
+      ) : (
+        <ChevronRightIcon />
+      )
+    ) : (
+      <div />
+    );
+
+    const docText: string | null =
+      node instanceof QueryBuilderExplorerTreePropertyNodeData
+        ? (node.property.taggedValues.find(
+            (taggedValue) =>
+              taggedValue.tag.ownerReference.value.path ===
+                CORE_PURE_PATH.PROFILE_DOC &&
+              taggedValue.tag.value.value === PURE_DOC_TAG,
+          )?.value ?? null)
+        : null;
+    const formattedDocText =
+      docText !== null
+        ? formatTextWithHighlightedMatches(
+            docText,
+            propertySearchState.searchText,
+            QUERY_BUILDER_PROPERTY_SEARCH_DOC_TEXT_CLASS,
+            `${node.id}_doc`,
+          )
+        : null;
 
     return (
-      <div>
+      <>
         <div
           className="tree-view__node__container query-builder-property-search-panel__node__container"
           ref={dragConnector}
@@ -198,7 +354,7 @@ const QueryBuilderTreeNodeViewer = observer(
             paddingLeft: `${(level - 1) * stepPaddingInRem + 0.5}rem`,
             display: 'flex',
           }}
-          onClick={(): void => setIsExpandable(!isExpandable)}
+          onClick={(): void => node.setIsOpen(!node.isOpen)}
           // Temporarily hide away the panel when we drag-and-drop the properties
           onDrag={(): void => propertySearchState.setIsSearchPanelHidden(true)}
           onDragEnd={(): void =>
@@ -206,52 +362,89 @@ const QueryBuilderTreeNodeViewer = observer(
           }
         >
           <div className="tree-view__node__icon query-builder-property-search-panel__node__icon">
+            <div className="query-builder-property-search-panel__expand-icon">
+              {nodeExpandIcon}
+            </div>
             <div className="query-builder-property-search-panel__type-icon">
               {renderPropertyTypeIcon(node.type)}
             </div>
           </div>
-          <div className="tree-view__node__label query-builder-property-search-panel__node__label query-builder-property-search-panel__node__label--with-action">
-            {propertyName}
+          <div className="query-builder-property-search-panel__node__content">
+            <div className="tree-view__node__label query-builder-property-search-panel__node__label">
+              {formatTextWithHighlightedMatches(
+                propertyName,
+                propertySearchState.searchText,
+                QUERY_BUILDER_PROPERTY_SEARCH_LABEL_TEXT_CLASS,
+                node.id,
+              )}
+            </div>
+            <div className="tree-view__node__label query-builder-property-search-panel__node__doc">
+              {formattedDocText}
+            </div>
           </div>
           <div className="query-builder-property-search-panel__node__actions">
             {node instanceof QueryBuilderExplorerTreePropertyNodeData && (
-              <QueryBuilderPropertyInfoTooltip
-                title={propertyName}
-                property={node.property}
-                path={node.id}
-                isMapped={node.mappingData.mapped}
-              >
-                <div className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__info">
-                  <InfoCircleIcon />
-                </div>
-              </QueryBuilderPropertyInfoTooltip>
+              <>
+                <QueryBuilderPropertyInfoTooltip
+                  title={propertyName}
+                  property={node.property}
+                  path={node.id}
+                  isMapped={node.mappingData.mapped}
+                >
+                  <div
+                    title="Property info"
+                    className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__info"
+                  >
+                    <InfoCircleIcon />
+                  </div>
+                </QueryBuilderPropertyInfoTooltip>
+                <button
+                  onClick={handleHighlightNode}
+                  title="Show in tree"
+                  className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__highlight"
+                >
+                  <ShareBoxIcon />
+                </button>
+              </>
             )}
             {node instanceof QueryBuilderExplorerTreeSubTypeNodeData && (
-              <QueryBuilderSubclassInfoTooltip
-                subclass={node.subclass}
-                path={node.id}
-                isMapped={node.mappingData.mapped}
-                multiplicity={node.multiplicity}
-              >
-                <div className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__info">
-                  <InfoCircleIcon />
-                </div>
-              </QueryBuilderSubclassInfoTooltip>
+              <>
+                <QueryBuilderSubclassInfoTooltip
+                  subclass={node.subclass}
+                  path={node.id}
+                  isMapped={node.mappingData.mapped}
+                  multiplicity={node.multiplicity}
+                >
+                  <div
+                    title="Property info"
+                    className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__info"
+                  >
+                    <InfoCircleIcon />
+                  </div>
+                </QueryBuilderSubclassInfoTooltip>
+                <button
+                  onClick={handleHighlightNode}
+                  title="Show in tree"
+                  className="query-builder-property-search-panel__node__action query-builder-property-search-panel__node__highlight"
+                >
+                  <ShareBoxIcon />
+                </button>
+              </>
             )}
           </div>
         </div>
-        {isExpandable &&
+        {node.isOpen &&
           getChildrenNodes().map((childNode) => (
             <QueryBuilderTreeNodeViewer
-              key={childNode.id}
+              key={`${node.id}>${childNode.id}`}
               node={childNode}
               queryBuilderState={queryBuilderState}
-              level={1}
+              level={level + 1}
               stepPaddingInRem={2}
               explorerState={queryBuilderState.explorerState}
             />
           ))}
-      </div>
+      </>
     );
   },
 );
@@ -260,41 +453,54 @@ export const QueryBuilderPropertySearchPanel = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
     triggerElement: HTMLElement | null;
+    clearSearch: () => void;
   }) => {
-    const { queryBuilderState, triggerElement } = props;
+    const { queryBuilderState, triggerElement, clearSearch } = props;
     const explorerState = queryBuilderState.explorerState;
     const propertySearchState = explorerState.propertySearchState;
-    const searchInputRef = useRef<HTMLInputElement>(null);
-    const searchConfigTriggerRef = useRef<HTMLButtonElement>(null);
 
-    // search text
-    const debouncedSearchProperty = useMemo(
-      () => debounce(() => propertySearchState.search(), 100),
-      [propertySearchState],
-    );
-    const onSearchPropertyTextChange: React.ChangeEventHandler<
-      HTMLInputElement
-    > = (event) => {
-      propertySearchState.setSearchText(event.target.value);
-      debouncedSearchProperty();
-    };
-
-    // search actions
-    const clearSearch = (): void => {
-      propertySearchState.resetSearch();
-    };
-    const toggleSearchConfigMenu = (): void =>
-      propertySearchState.setShowSearchConfigurationMenu(
-        !propertySearchState.showSearchConfigurationMenu,
-      );
-    const closeSearchConfigMenu = (): void =>
-      propertySearchState.setShowSearchConfigurationMenu(false);
-
-    // life-cycle
-    const handleEnter = (): void => searchInputRef.current?.focus();
-    const handleClose = (): void => {
+    const handleClose = (event: MouseEvent | TouchEvent): void => {
+      if (
+        event.target instanceof HTMLInputElement &&
+        event.target.name === QUERY_BUILDER_EXPLORER_SEARCH_INPUT_NAME
+      ) {
+        return;
+      }
       clearSearch();
       propertySearchState.setIsSearchPanelOpen(false);
+    };
+
+    const handleSearchMode: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ): void => {
+      const searchMode = event.target.value as ADVANCED_FUZZY_SEARCH_MODE;
+      propertySearchState.searchConfigurationState.setCurrentMode(searchMode);
+    };
+
+    const handleToggleIncludeSubTypes = () => {
+      (async () => {
+        propertySearchState.searchConfigurationState.setIncludeSubTypes(
+          !propertySearchState.searchConfigurationState.includeSubTypes,
+        );
+        await propertySearchState.initialize();
+        await propertySearchState.search();
+      })().catch(
+        propertySearchState.queryBuilderState.applicationStore
+          .alertUnhandledError,
+      );
+    };
+
+    const handleToggleIncludeDocumentation = () => {
+      (async () => {
+        propertySearchState.searchConfigurationState.setIncludeDocumentation(
+          !propertySearchState.searchConfigurationState.includeDocumentation,
+        );
+        await propertySearchState.initialize();
+        await propertySearchState.search();
+      })().catch(
+        propertySearchState.queryBuilderState.applicationStore
+          .alertUnhandledError,
+      );
     };
 
     return (
@@ -311,319 +517,343 @@ export const QueryBuilderPropertySearchPanel = observer(
         })}
         anchorEl={triggerElement}
         onClose={handleClose}
+        hideBackdrop={true}
+        disableAutoFocus={true}
+        disableEnforceFocus={true}
         anchorOrigin={{
-          vertical: 'bottom',
+          vertical: 40,
           horizontal: 'left',
         }}
         transformOrigin={{
           vertical: 'top',
           horizontal: 'center',
         }}
-        TransitionProps={{ onEnter: handleEnter }}
       >
-        <div
-          data-testid={
-            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL
-          }
-          className="query-builder-property-search-panel"
-        >
-          <div className="query-builder-property-search-panel__header">
-            <div className="query-builder-property-search-panel__input__container">
-              <input
-                ref={searchInputRef}
-                className={clsx(
-                  'query-builder-property-search-panel__input input--dark',
-                  {
-                    'query-builder-property-search-panel__input--searching':
-                      propertySearchState.searchText,
-                  },
-                )}
-                spellCheck={false}
-                onChange={onSearchPropertyTextChange}
-                value={propertySearchState.searchText}
-                placeholder="Search for a property by name or documentation"
-              />
-              {propertySearchState.searchText && (
-                <div className="query-builder-property-search-panel__input__search__count">
-                  {propertySearchState.filteredSearchResults.length +
-                    (propertySearchState.isOverSearchLimit &&
-                    propertySearchState.filteredSearchResults.length !== 0
-                      ? '+'
-                      : '')}
-                </div>
-              )}
-              <button
-                ref={searchConfigTriggerRef}
-                className={clsx(
-                  'query-builder-property-search-panel__input__search__config__trigger',
-                  {
-                    'query-builder-property-search-panel__input__search__config__trigger--toggled':
-                      propertySearchState.showSearchConfigurationMenu,
-                    'query-builder-property-search-panel__input__search__config__trigger--active':
-                      propertySearchState.searchConfigurationState
-                        .isAdvancedSearchActive,
-                  },
-                )}
-                tabIndex={-1}
-                onClick={toggleSearchConfigMenu}
-                title="Click to toggle search config menu"
-              >
-                <CogIcon />
-              </button>
-              <BasePopover
-                open={Boolean(propertySearchState.showSearchConfigurationMenu)}
-                TransitionProps={{
-                  onEnter: handleEnter,
-                }}
-                anchorEl={searchConfigTriggerRef.current}
-                onClose={closeSearchConfigMenu}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'center',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'center',
-                }}
-              >
-                <FuzzySearchAdvancedConfigMenu
-                  configState={propertySearchState.searchConfigurationState}
-                />
-              </BasePopover>
-              {!propertySearchState.searchText ? (
-                <>
-                  <div className="query-builder-property-search-panel__input__search__icon">
-                    <SearchIcon />
-                  </div>
-                </>
-              ) : (
-                <button
-                  className="query-builder-property-search-panel__input__clear-btn"
-                  tabIndex={-1}
-                  onClick={clearSearch}
-                  title="Clear"
-                >
-                  <TimesIcon />
-                </button>
-              )}
-            </div>
-            <button
-              className="btn btn--dark query-builder-property-search-panel__close-btn"
-              tabIndex={-1}
-              title="Close"
-              onClick={handleClose}
-            >
-              <TimesIcon />
-            </button>
-          </div>
-          <div className="query-builder-property-search-panel__content">
-            <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel size={150}>
-                <div className="query-builder-property-search-panel__config">
-                  <div className="query-builder-property-search-panel__form__section">
-                    <div className="query-builder-property-search-panel__form__section__header__label">
-                      By type
+        <ClickAwayListener onClickAway={handleClose}>
+          <div
+            data-testid={
+              QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL
+            }
+            className="query-builder-property-search-panel"
+          >
+            <div className="query-builder-property-search-panel__content">
+              <ResizablePanelGroup orientation="vertical">
+                <ResizablePanel size={175}>
+                  <div className="query-builder-property-search-panel__config">
+                    <div className="query-builder-property-search-panel__form__section">
+                      <div className="query-builder-property-search-panel__form__section__header__label">
+                        Search Mode
+                        <DocumentationLink
+                          documentationKey={
+                            LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_USE_ADVANCED_SEARCH_SYNTAX
+                          }
+                        />
+                      </div>
+                      <div className="query-builder-property-search-panel__filter__element">
+                        <BaseRadioGroup
+                          className="query-builder-property-search-panel__search-mode__options"
+                          value={
+                            propertySearchState.searchConfigurationState
+                              .currentMode
+                          }
+                          onChange={handleSearchMode}
+                          row={false}
+                          options={[
+                            ADVANCED_FUZZY_SEARCH_MODE.STANDARD,
+                            ADVANCED_FUZZY_SEARCH_MODE.INCLUDE,
+                            ADVANCED_FUZZY_SEARCH_MODE.EXACT,
+                            ADVANCED_FUZZY_SEARCH_MODE.INVERSE,
+                          ]}
+                          size={1}
+                        />
+                      </div>
                     </div>
-                    <div className="query-builder-property-search-panel__filter__element">
-                      <button
-                        className={clsx(
-                          'query-builder-property-search-panel__form__section__toggler__btn',
-                          {
-                            'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                              propertySearchState.typeFilters.includes(
-                                QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
-                              ),
-                          },
-                        )}
-                        onClick={(): void => {
-                          propertySearchState.toggleFilterForType(
+                    <div className="query-builder-property-search-panel__form__section">
+                      <div className="query-builder-property-search-panel__form__section__header__label">
+                        Documentation
+                        <Tooltip
+                          TransitionProps={{
+                            timeout: 0,
+                          }}
+                          title={
+                            <div>
+                              Include &quot;doc&quot; type tagged values in
+                              search results
+                            </div>
+                          }
+                        >
+                          <div className="query-builder-property-search-panel__tagged-values__tooltip">
+                            <InfoCircleIcon />
+                          </div>
+                        </Tooltip>
+                      </div>
+                      <div className="query-builder-property-search-panel__filter__element">
+                        <button
+                          className={clsx(
+                            'query-builder-property-search-panel__form__section__toggler__btn',
+                            {
+                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
+                                propertySearchState.searchConfigurationState
+                                  .includeDocumentation,
+                            },
+                          )}
+                          onClick={handleToggleIncludeDocumentation}
+                          tabIndex={-1}
+                        >
+                          {propertySearchState.searchConfigurationState
+                            .includeDocumentation ? (
+                            <CheckSquareIcon />
+                          ) : (
+                            <SquareIcon />
+                          )}
+                        </button>
+                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
+                          Include
+                        </div>
+                      </div>
+                    </div>
+                    <div className="query-builder-property-search-panel__form__section">
+                      <div className="query-builder-property-search-panel__form__section__header__label">
+                        Sub-types
+                      </div>
+                      <div className="query-builder-property-search-panel__filter__element">
+                        <button
+                          className={clsx(
+                            'query-builder-property-search-panel__form__section__toggler__btn',
+                            {
+                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
+                                propertySearchState.searchConfigurationState
+                                  .includeSubTypes,
+                            },
+                          )}
+                          onClick={handleToggleIncludeSubTypes}
+                          tabIndex={-1}
+                        >
+                          {propertySearchState.searchConfigurationState
+                            .includeSubTypes ? (
+                            <CheckSquareIcon />
+                          ) : (
+                            <SquareIcon />
+                          )}
+                        </button>
+                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
+                          Include
+                        </div>
+                      </div>
+                    </div>
+                    <div className="query-builder-property-search-panel__form__section">
+                      <div className="query-builder-property-search-panel__form__section__header__label">
+                        By type
+                      </div>
+                      <div className="query-builder-property-search-panel__filter__element">
+                        <button
+                          className={clsx(
+                            'query-builder-property-search-panel__form__section__toggler__btn',
+                            {
+                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
+                                propertySearchState.typeFilters.includes(
+                                  QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
+                                ),
+                            },
+                          )}
+                          onClick={(): void => {
+                            propertySearchState.toggleFilterForType(
+                              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
+                            );
+                          }}
+                          tabIndex={-1}
+                        >
+                          {propertySearchState.typeFilters.includes(
                             QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
-                          );
-                        }}
-                        tabIndex={-1}
-                      >
-                        {propertySearchState.typeFilters.includes(
-                          QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
-                        ) ? (
-                          <CheckSquareIcon />
-                        ) : (
-                          <SquareIcon />
-                        )}
-                      </button>
-                      <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-                        Class
+                          ) ? (
+                            <CheckSquareIcon />
+                          ) : (
+                            <SquareIcon />
+                          )}
+                        </button>
+                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
+                          Class
+                        </div>
                       </div>
-                    </div>
-                    <div className="query-builder-property-search-panel__filter__element">
-                      <button
-                        className={clsx(
-                          'query-builder-property-search-panel__form__section__toggler__btn',
-                          {
-                            'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                              propertySearchState.typeFilters.includes(
-                                QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
-                              ),
-                          },
-                        )}
-                        onClick={(): void => {
-                          propertySearchState.toggleFilterForType(
+                      <div className="query-builder-property-search-panel__filter__element">
+                        <button
+                          className={clsx(
+                            'query-builder-property-search-panel__form__section__toggler__btn',
+                            {
+                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
+                                propertySearchState.typeFilters.includes(
+                                  QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
+                                ),
+                            },
+                          )}
+                          onClick={(): void => {
+                            propertySearchState.toggleFilterForType(
+                              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
+                            );
+                          }}
+                          tabIndex={-1}
+                        >
+                          {propertySearchState.typeFilters.includes(
                             QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
-                          );
-                        }}
-                        tabIndex={-1}
-                      >
-                        {propertySearchState.typeFilters.includes(
-                          QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
-                        ) ? (
-                          <CheckSquareIcon />
-                        ) : (
-                          <SquareIcon />
-                        )}
-                      </button>
-                      <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-                        String
+                          ) ? (
+                            <CheckSquareIcon />
+                          ) : (
+                            <SquareIcon />
+                          )}
+                        </button>
+                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
+                          String
+                        </div>
                       </div>
-                    </div>
-                    <div className="query-builder-property-search-panel__filter__element">
-                      <button
-                        className={clsx(
-                          'query-builder-property-search-panel__form__section__toggler__btn',
-                          {
-                            'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                              propertySearchState.typeFilters.includes(
-                                QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
-                              ),
-                          },
-                        )}
-                        onClick={(): void => {
-                          propertySearchState.toggleFilterForType(
+                      <div className="query-builder-property-search-panel__filter__element">
+                        <button
+                          className={clsx(
+                            'query-builder-property-search-panel__form__section__toggler__btn',
+                            {
+                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
+                                propertySearchState.typeFilters.includes(
+                                  QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
+                                ),
+                            },
+                          )}
+                          onClick={(): void => {
+                            propertySearchState.toggleFilterForType(
+                              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
+                            );
+                          }}
+                          tabIndex={-1}
+                        >
+                          {propertySearchState.typeFilters.includes(
                             QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
-                          );
-                        }}
-                        tabIndex={-1}
-                      >
-                        {propertySearchState.typeFilters.includes(
-                          QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
-                        ) ? (
-                          <CheckSquareIcon />
-                        ) : (
-                          <SquareIcon />
-                        )}
-                      </button>
-                      <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-                        Boolean
+                          ) ? (
+                            <CheckSquareIcon />
+                          ) : (
+                            <SquareIcon />
+                          )}
+                        </button>
+                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
+                          Boolean
+                        </div>
                       </div>
-                    </div>
-                    <div className="query-builder-property-search-panel__filter__element">
-                      <button
-                        className={clsx(
-                          'query-builder-property-search-panel__form__section__toggler__btn',
-                          {
-                            'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                              propertySearchState.typeFilters.includes(
-                                QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
-                              ),
-                          },
-                        )}
-                        onClick={(): void => {
-                          propertySearchState.toggleFilterForType(
+                      <div className="query-builder-property-search-panel__filter__element">
+                        <button
+                          className={clsx(
+                            'query-builder-property-search-panel__form__section__toggler__btn',
+                            {
+                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
+                                propertySearchState.typeFilters.includes(
+                                  QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
+                                ),
+                            },
+                          )}
+                          onClick={(): void => {
+                            propertySearchState.toggleFilterForType(
+                              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
+                            );
+                          }}
+                          tabIndex={-1}
+                        >
+                          {propertySearchState.typeFilters.includes(
                             QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
-                          );
-                        }}
-                        tabIndex={-1}
-                      >
-                        {propertySearchState.typeFilters.includes(
-                          QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
-                        ) ? (
-                          <CheckSquareIcon />
-                        ) : (
-                          <SquareIcon />
-                        )}
-                      </button>
-                      <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-                        Number
+                          ) ? (
+                            <CheckSquareIcon />
+                          ) : (
+                            <SquareIcon />
+                          )}
+                        </button>
+                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
+                          Number
+                        </div>
                       </div>
-                    </div>
-                    <div className="query-builder-property-search-panel__filter__element">
-                      <button
-                        className={clsx(
-                          'query-builder-property-search-panel__form__section__toggler__btn',
-                          {
-                            'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                              propertySearchState.typeFilters.includes(
-                                QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
-                              ),
-                          },
-                        )}
-                        onClick={(): void => {
-                          propertySearchState.toggleFilterForType(
+                      <div className="query-builder-property-search-panel__filter__element">
+                        <button
+                          className={clsx(
+                            'query-builder-property-search-panel__form__section__toggler__btn',
+                            {
+                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
+                                propertySearchState.typeFilters.includes(
+                                  QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
+                                ),
+                            },
+                          )}
+                          onClick={(): void => {
+                            propertySearchState.toggleFilterForType(
+                              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
+                            );
+                          }}
+                          tabIndex={-1}
+                        >
+                          {propertySearchState.typeFilters.includes(
                             QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
-                          );
-                        }}
-                        tabIndex={-1}
-                      >
-                        {propertySearchState.typeFilters.includes(
-                          QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
-                        ) ? (
-                          <CheckSquareIcon />
-                        ) : (
-                          <SquareIcon />
-                        )}
-                      </button>
-                      <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-                        Date
+                          ) ? (
+                            <CheckSquareIcon />
+                          ) : (
+                            <SquareIcon />
+                          )}
+                        </button>
+                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
+                          Date
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </ResizablePanel>
-              <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-              </ResizablePanelSplitter>
-              <ResizablePanel>
-                {propertySearchState.searchState.isInProgress && (
-                  <PanelLoadingIndicator isLoading={true} />
-                )}
-                <div className="query-builder-property-search-panel__results">
-                  {!propertySearchState.searchState.isInProgress && (
-                    <>
-                      {Boolean(
-                        propertySearchState.filteredSearchResults.length,
-                      ) &&
-                        propertySearchState.filteredSearchResults.map(
-                          (node) => (
-                            <QueryBuilderTreeNodeViewer
-                              key={node.id}
-                              node={node}
-                              queryBuilderState={queryBuilderState}
-                              level={1}
-                              stepPaddingInRem={0}
-                              explorerState={queryBuilderState.explorerState}
-                            />
-                          ),
-                        )}
-                      {!propertySearchState.filteredSearchResults.length &&
-                        propertySearchState.searchText && (
-                          <BlankPanelContent>
-                            <div className="query-builder-property-search-panel__result-placeholder__text">
-                              No result
-                            </div>
-                            <div className="query-builder-property-search-panel__result-placeholder__tips">
-                              Tips: Navigate deeper into the explorer tree to
-                              improve the scope and accuracy of the search
-                            </div>
-                          </BlankPanelContent>
-                        )}
-                    </>
+                </ResizablePanel>
+                <ResizablePanelSplitter>
+                  <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                </ResizablePanelSplitter>
+                <ResizablePanel>
+                  {(propertySearchState.initializationState.isInProgress ||
+                    propertySearchState.searchState.isInProgress) && (
+                    <PanelLoadingIndicator isLoading={true} />
                   )}
-                  {propertySearchState.searchState.isInProgress && (
-                    <BlankPanelContent>Searching...</BlankPanelContent>
-                  )}
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
+                  <div className="query-builder-property-search-panel__results">
+                    {!propertySearchState.initializationState.isInProgress &&
+                      !propertySearchState.searchState.isInProgress && (
+                        <>
+                          {Boolean(
+                            propertySearchState.filteredSearchResults.length,
+                          ) &&
+                            propertySearchState.filteredSearchResults.map(
+                              (node) => (
+                                <QueryBuilderTreeNodeViewer
+                                  key={node.id}
+                                  node={node}
+                                  queryBuilderState={queryBuilderState}
+                                  level={1}
+                                  stepPaddingInRem={0}
+                                  explorerState={
+                                    queryBuilderState.explorerState
+                                  }
+                                />
+                              ),
+                            )}
+                          {!propertySearchState.filteredSearchResults.length &&
+                            propertySearchState.searchText && (
+                              <BlankPanelContent>
+                                <div className="query-builder-property-search-panel__result-placeholder__text">
+                                  No result
+                                </div>
+                                <div className="query-builder-property-search-panel__result-placeholder__tips">
+                                  Tips: Navigate deeper into the explorer tree
+                                  to improve the scope and accuracy of the
+                                  search
+                                </div>
+                              </BlankPanelContent>
+                            )}
+                        </>
+                      )}
+                    {propertySearchState.initializationState.isInProgress && (
+                      <BlankPanelContent>Initializing...</BlankPanelContent>
+                    )}
+                    {propertySearchState.searchState.isInProgress && (
+                      <BlankPanelContent>Searching...</BlankPanelContent>
+                    )}
+                  </div>
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </div>
           </div>
-        </div>
+        </ClickAwayListener>
       </BasePopover>
     );
   },

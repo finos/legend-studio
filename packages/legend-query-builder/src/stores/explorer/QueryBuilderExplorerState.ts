@@ -118,8 +118,10 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
   ) {
     makeObservable(this, {
       isHighlighting: observable,
+      isOpen: observable,
       isSelected: observable,
       setIsHighlighting: action,
+      setIsOpen: action,
       setIsSelected: action,
     });
 
@@ -134,6 +136,10 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
 
   setIsSelected(val: boolean | undefined): void {
     this.isSelected = val;
+  }
+
+  setIsOpen(val: boolean | undefined): void {
+    this.isOpen = val;
   }
 
   setIsHighlighting(val: boolean | undefined): void {
@@ -761,21 +767,99 @@ export class QueryBuilderExplorerState {
     );
   }
 
-  highlightTreeNode(key: string): void {
-    const nodeToHighlight = this.treeData?.nodes.get(key);
-    if (nodeToHighlight instanceof QueryBuilderExplorerTreePropertyNodeData) {
+  generateOpenNodeChildren(node: QueryBuilderExplorerTreeNodeData): void {
+    if (
+      node.isOpen &&
+      (node instanceof QueryBuilderExplorerTreePropertyNodeData ||
+        node instanceof QueryBuilderExplorerTreeSubTypeNodeData) &&
+      node.type instanceof Class
+    ) {
+      (node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+        ? getAllOwnClassProperties(node.type)
+        : getAllClassProperties(node.type).concat(
+            getAllClassDerivedProperties(node.type),
+          )
+      ).forEach((property) => {
+        const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
+          property,
+          node,
+          guaranteeNonNullable(this.mappingModelCoverageAnalysisResult),
+        );
+        if (propertyTreeNodeData) {
+          this.nonNullableTreeData.nodes.set(
+            propertyTreeNodeData.id,
+            propertyTreeNodeData,
+          );
+        }
+      });
+      node.type._subclasses.forEach((subclass) => {
+        const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
+          subclass,
+          node,
+          guaranteeNonNullable(this.mappingModelCoverageAnalysisResult),
+        );
+        this.nonNullableTreeData.nodes.set(
+          subTypeTreeNodeData.id,
+          subTypeTreeNodeData,
+        );
+      });
+      this.refreshTree();
+    }
+  }
+
+  highlightTreeNode(nodeId: string): void {
+    // If the node doesn't yet exist in the explorer tree,
+    // we need to open all the parent nodes of the node and
+    // generate their children.
+    if (this.nonNullableTreeData.nodes.get(nodeId) === undefined) {
+      const parentNodeIdElements: string[][] = nodeId
+        .split('@')
+        .map((subpath) => subpath.split('.'));
+      // remove last element of final subpath, as it is the node id and not a parent
+      if (
+        parentNodeIdElements.length > 0 &&
+        parentNodeIdElements[parentNodeIdElements.length - 1] !== undefined
+      ) {
+        parentNodeIdElements[parentNodeIdElements.length - 1]!.pop();
+      }
+
+      let currentNodeId = '';
+
+      parentNodeIdElements.forEach((subpath) => {
+        subpath.forEach((element, index) => {
+          currentNodeId += `${index > 0 ? '.' : ''}${element}`;
+          const currentNode = this.nonNullableTreeData.nodes.get(currentNodeId);
+          if (currentNode) {
+            currentNode.setIsOpen(true);
+            this.generateOpenNodeChildren(currentNode);
+          }
+        });
+        currentNodeId += '@';
+      });
+    }
+
+    // All parent nodes should be created now, so we can get the node to highlight.
+    const nodeToHighlight = this.nonNullableTreeData.nodes.get(nodeId);
+
+    // If we didn't need to open and create the parent nodes above, we will
+    // open the parent nodes here in case they are closed. Then, we will highlight
+    // and scroll to the node.
+    if (
+      nodeToHighlight instanceof QueryBuilderExplorerTreePropertyNodeData ||
+      nodeToHighlight instanceof QueryBuilderExplorerTreeSubTypeNodeData
+    ) {
       let nodeToOpen: QueryBuilderExplorerTreeNodeData | null =
-        this.treeData?.nodes.get(nodeToHighlight.parentId) ?? null;
+        this.nonNullableTreeData.nodes.get(nodeToHighlight.parentId) ?? null;
       while (nodeToOpen !== null) {
         if (!nodeToOpen.isOpen) {
-          nodeToOpen.isOpen = true;
+          nodeToOpen.setIsOpen(true);
         }
         nodeToOpen =
-          nodeToOpen instanceof QueryBuilderExplorerTreePropertyNodeData
-            ? (this.treeData?.nodes.get(nodeToOpen.parentId) ?? null)
+          nodeToOpen instanceof QueryBuilderExplorerTreePropertyNodeData ||
+          nodeToOpen instanceof QueryBuilderExplorerTreeSubTypeNodeData
+            ? (this.nonNullableTreeData.nodes.get(nodeToOpen.parentId) ?? null)
             : null;
       }
-      this.refreshTree();
       nodeToHighlight.setIsHighlighting(true);
       // scrollIntoView must be called in a setTimeout because it must happen after
       // the tree nodes are recursively opened and the tree is refreshed.

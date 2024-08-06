@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { forwardRef, useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
@@ -56,6 +56,8 @@ import {
   PanelHeaderActionItem,
   PanelHeaderActions,
   PanelHeader,
+  TimesIcon,
+  ClickAwayListener,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -64,8 +66,6 @@ import {
   QueryBuilderExplorerTreeRootNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
-  getQueryBuilderPropertyNodeData,
-  getQueryBuilderSubTypeNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
 import { useDrag } from 'react-dnd';
@@ -86,17 +86,16 @@ import {
   PRIMITIVE_TYPE,
   Enumeration,
   TYPE_CAST_TOKEN,
-  getAllClassDerivedProperties,
   getMultiplicityDescription,
-  getAllClassProperties,
-  getAllOwnClassProperties,
   isElementDeprecated,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
+  debounce,
   filterByType,
   guaranteeNonNullable,
+  isNonNullable,
   prettyCONSTName,
 } from '@finos/legend-shared';
 import { QueryBuilderPropertySearchPanel } from './QueryBuilderPropertySearchPanel.js';
@@ -105,6 +104,7 @@ import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-stru
 import { getClassPropertyIcon } from '@finos/legend-lego/graph-editor';
 import { QueryBuilderRootClassInfoTooltip } from '../shared/QueryBuilderRootClassInfoTooltip.js';
 import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
+import type { QueryBuilderPropertySearchState } from '../../stores/explorer/QueryBuilderPropertySearchState.js';
 
 export const checkForDeprecatedNode = (
   node: QueryBuilderExplorerTreeNodeData,
@@ -163,55 +163,81 @@ export const QueryBuilderSubclassInfoTooltip: React.FC<{
   multiplicity: Multiplicity;
 }> = (props) => {
   const { subclass, path, isMapped, children, placement, multiplicity } = props;
+
+  const [open, setIsOpen] = useState(false);
+
   return (
-    <Tooltip
-      arrow={true}
-      {...(placement !== undefined ? { placement } : {})}
-      classes={{
-        tooltip: 'query-builder__tooltip',
-        arrow: 'query-builder__tooltip__arrow',
-        tooltipPlacementRight: 'query-builder__tooltip--right',
-      }}
-      TransitionProps={{
-        // disable transition
-        // NOTE: somehow, this is the only workaround we have, if for example
-        // we set `appear = true`, the tooltip will jump out of position
-        timeout: 0,
-      }}
-      title={
-        <div className="query-builder__tooltip__content">
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">Type</div>
-            <div className="query-builder__tooltip__item__value">
-              {subclass.path}
-            </div>
-          </div>
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">Path</div>
-            <div className="query-builder__tooltip__item__value">{path}</div>
-          </div>
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">
-              Multiplicity
-            </div>
-            <div className="query-builder__tooltip__item__value">
-              {getMultiplicityDescription(multiplicity)}
-            </div>
-          </div>
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">Mapped</div>
-            <div className="query-builder__tooltip__item__value">
-              {isMapped ? 'Yes' : 'No'}
-            </div>
-          </div>
-          <QueryBuilderTaggedValueInfoTooltip
-            taggedValues={subclass.taggedValues}
-          />
-        </div>
-      }
+    <ClickAwayListener
+      onClickAway={() => setIsOpen(false)}
+      mouseEvent="onMouseDown"
     >
-      {children}
-    </Tooltip>
+      <div>
+        <Tooltip
+          arrow={true}
+          {...(placement !== undefined ? { placement } : {})}
+          classes={{
+            tooltip: 'query-builder__tooltip',
+            arrow: 'query-builder__tooltip__arrow',
+            tooltipPlacementRight: 'query-builder__tooltip--right',
+          }}
+          open={open}
+          onClose={() => setIsOpen(false)}
+          TransitionProps={{
+            // disable transition
+            // NOTE: somehow, this is the only workaround we have, if for example
+            // we set `appear = true`, the tooltip will jump out of position
+            timeout: 0,
+          }}
+          disableFocusListener={true}
+          disableHoverListener={true}
+          disableTouchListener={true}
+          title={
+            <div className="query-builder__tooltip__content">
+              <div className="query-builder__tooltip__item">
+                <div className="query-builder__tooltip__item__label">Type</div>
+                <div className="query-builder__tooltip__item__value">
+                  {subclass.path}
+                </div>
+              </div>
+              <div className="query-builder__tooltip__item">
+                <div className="query-builder__tooltip__item__label">Path</div>
+                <div className="query-builder__tooltip__item__value">
+                  {path}
+                </div>
+              </div>
+              <div className="query-builder__tooltip__item">
+                <div className="query-builder__tooltip__item__label">
+                  Multiplicity
+                </div>
+                <div className="query-builder__tooltip__item__value">
+                  {getMultiplicityDescription(multiplicity)}
+                </div>
+              </div>
+              <div className="query-builder__tooltip__item">
+                <div className="query-builder__tooltip__item__label">
+                  Mapped
+                </div>
+                <div className="query-builder__tooltip__item__value">
+                  {isMapped ? 'Yes' : 'No'}
+                </div>
+              </div>
+              <QueryBuilderTaggedValueInfoTooltip
+                taggedValues={subclass.taggedValues}
+              />
+            </div>
+          }
+        >
+          <div
+            onClick={(event: React.MouseEvent) => {
+              setIsOpen(!open);
+              event.stopPropagation();
+            }}
+          >
+            {children}
+          </div>
+        </Tooltip>
+      </div>
+    </ClickAwayListener>
   );
 };
 
@@ -782,43 +808,9 @@ const QueryBuilderExplorerTree = observer(
     const treeData = explorerState.nonNullableTreeData;
     const onNodeSelect = (node: QueryBuilderExplorerTreeNodeData): void => {
       if (node.childrenIds.length) {
-        node.isOpen = !node.isOpen;
-        if (
-          node.isOpen &&
-          (node instanceof QueryBuilderExplorerTreePropertyNodeData ||
-            node instanceof QueryBuilderExplorerTreeSubTypeNodeData) &&
-          node.type instanceof Class
-        ) {
-          (node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-            ? getAllOwnClassProperties(node.type)
-            : getAllClassProperties(node.type).concat(
-                getAllClassDerivedProperties(node.type),
-              )
-          ).forEach((property) => {
-            const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
-              property,
-              node,
-              guaranteeNonNullable(
-                explorerState.mappingModelCoverageAnalysisResult,
-              ),
-            );
-            if (propertyTreeNodeData) {
-              treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
-            }
-          });
-          node.type._subclasses.forEach((subclass) => {
-            const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
-              subclass,
-              node,
-              guaranteeNonNullable(
-                explorerState.mappingModelCoverageAnalysisResult,
-              ),
-            );
-            treeData.nodes.set(subTypeTreeNodeData.id, subTypeTreeNodeData);
-          });
-        }
+        node.setIsOpen(!node.isOpen);
+        explorerState.generateOpenNodeChildren(node);
       }
-      explorerState.refreshTree();
     };
     const getChildNodes = (
       node: QueryBuilderExplorerTreeNodeData,
@@ -860,19 +852,150 @@ const QueryBuilderExplorerTree = observer(
   },
 );
 
+export const QUERY_BUILDER_EXPLORER_SEARCH_INPUT_NAME =
+  'query-builder-explorer-search-input';
+
+const QUERY_BUILDER_PROPERTY_SEARCH_MIN_SEARCH_LENGTH = 2;
+
+const QueryBuilderExplorerSearchInput = observer(
+  forwardRef<
+    HTMLInputElement,
+    { propertySearchState: QueryBuilderPropertySearchState }
+  >(function QueryBuilderExplorerSearchInput(props, ref) {
+    const { propertySearchState } = props;
+
+    // initialize search state on mount
+    useEffect(() => {
+      if (
+        !propertySearchState.initializationState.hasSucceeded &&
+        !propertySearchState.initializationState.isInProgress &&
+        isNonNullable(
+          propertySearchState.queryBuilderState.explorerState.treeData,
+        )
+      ) {
+        propertySearchState
+          .initialize()
+          .catch(
+            propertySearchState.queryBuilderState.applicationStore
+              .alertUnhandledError,
+          );
+      }
+    }, [
+      propertySearchState,
+      propertySearchState.initializationState,
+      propertySearchState.queryBuilderState.explorerState.treeData,
+    ]);
+
+    // search text
+    const debouncedSearchProperty = useMemo(
+      () => debounce(() => propertySearchState.search(), 100),
+      [propertySearchState],
+    );
+
+    const onSearchPropertyTextChange: React.ChangeEventHandler<
+      HTMLInputElement
+    > = (event) => {
+      (async () => {
+        propertySearchState.setSearchText(event.target.value);
+        if (
+          event.target.value.length >=
+          QUERY_BUILDER_PROPERTY_SEARCH_MIN_SEARCH_LENGTH
+        ) {
+          if (
+            propertySearchState.queryBuilderState.explorerState.treeData &&
+            !propertySearchState.isSearchPanelOpen
+          ) {
+            propertySearchState.setIsSearchPanelOpen(true);
+            if (
+              !propertySearchState.initializationState.hasSucceeded &&
+              !propertySearchState.initializationState.isInProgress
+            ) {
+              await propertySearchState.initialize();
+            }
+          }
+          await debouncedSearchProperty();
+        } else {
+          propertySearchState.setIsSearchPanelOpen(false);
+        }
+      })().catch(
+        propertySearchState.queryBuilderState.applicationStore
+          .alertUnhandledError,
+      );
+    };
+
+    // search actions
+    const clearSearch = (): void => {
+      propertySearchState.resetSearch();
+    };
+
+    return (
+      <div className="query-builder__explorer__property-search__input__container">
+        <input
+          ref={ref}
+          name={QUERY_BUILDER_EXPLORER_SEARCH_INPUT_NAME}
+          className={clsx(
+            'query-builder__explorer__property-search__input input--dark',
+            {
+              'query-builder__explorer__property-search__input--searching':
+                propertySearchState.searchText,
+            },
+          )}
+          spellCheck={false}
+          onChange={onSearchPropertyTextChange}
+          onKeyDown={(event): void => {
+            if (event.key === 'Escape') {
+              clearSearch();
+              propertySearchState.setIsSearchPanelOpen(false);
+            }
+          }}
+          value={propertySearchState.searchText}
+          placeholder="One or more terms, ESC to clear"
+        />
+        {propertySearchState.searchText.length >=
+          QUERY_BUILDER_PROPERTY_SEARCH_MIN_SEARCH_LENGTH && (
+          <div className="query-builder__explorer__property-search__input__search__count">
+            {propertySearchState.filteredSearchResults.length +
+              (propertySearchState.isOverSearchLimit &&
+              propertySearchState.filteredSearchResults.length !== 0
+                ? '+'
+                : '')}
+          </div>
+        )}
+        {!propertySearchState.searchText ? (
+          <>
+            <div className="query-builder__explorer__property-search__input__search__icon">
+              <SearchIcon />
+            </div>
+          </>
+        ) : (
+          <button
+            className="query-builder__explorer__property-search__input__clear-btn"
+            tabIndex={-1}
+            onClick={clearSearch}
+            title="Clear"
+          >
+            <TimesIcon />
+          </button>
+        )}
+      </div>
+    );
+  }),
+);
+
 export const QueryBuilderExplorerPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const searchButtonRef = useRef<HTMLButtonElement>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
     const explorerState = queryBuilderState.explorerState;
     const propertySearchPanelState = explorerState.propertySearchState;
     const applicationStore = useApplicationStore();
     const collapseTree = (): void => {
       if (explorerState.treeData) {
         Array.from(explorerState.treeData.nodes.values()).forEach((node) => {
-          node.isOpen = false;
+          if (!(node instanceof QueryBuilderExplorerTreeRootNodeData)) {
+            node.setIsOpen(false);
+          }
         });
-        explorerState.refreshTree();
       }
     };
     const toggleShowUnmappedProperties = (): void => {
@@ -891,16 +1014,6 @@ export const QueryBuilderExplorerPanel = observer(
       explorerState.setHighlightUsedProperties(
         !explorerState.highlightUsedProperties,
       );
-    const togglePropertySearch = (): void => {
-      if (explorerState.treeData) {
-        if (!propertySearchPanelState.isSearchPanelOpen) {
-          propertySearchPanelState.setIsSearchPanelOpen(true);
-          propertySearchPanelState.initialize();
-        } else {
-          propertySearchPanelState.setIsSearchPanelOpen(false);
-        }
-      }
-    };
 
     useEffect(() => {
       flowResult(explorerState.analyzeMappingModelCoverage()).catch(
@@ -919,19 +1032,11 @@ export const QueryBuilderExplorerPanel = observer(
         })}
       >
         <PanelHeader title="explorer">
+          <QueryBuilderExplorerSearchInput
+            propertySearchState={propertySearchPanelState}
+            ref={searchInputRef}
+          />
           <PanelHeaderActions>
-            <button
-              ref={searchButtonRef}
-              className={clsx('panel__header__action', {
-                'query-builder__explorer__header__action--active':
-                  propertySearchPanelState.isSearchPanelOpen,
-              })}
-              onClick={togglePropertySearch}
-              tabIndex={-1}
-              title="Toggle property search"
-            >
-              <SearchIcon />
-            </button>
             <PanelHeaderActionItem onClick={collapseTree} title="Collapse Tree">
               <CompressIcon />
             </PanelHeaderActionItem>
@@ -984,7 +1089,8 @@ export const QueryBuilderExplorerPanel = observer(
           {propertySearchPanelState.isSearchPanelOpen && (
             <QueryBuilderPropertySearchPanel
               queryBuilderState={queryBuilderState}
-              triggerElement={searchButtonRef.current}
+              triggerElement={searchInputRef.current}
+              clearSearch={() => propertySearchPanelState.resetSearch()}
             />
           )}
         </PanelHeader>
