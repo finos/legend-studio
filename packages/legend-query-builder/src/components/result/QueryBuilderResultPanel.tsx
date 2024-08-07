@@ -82,13 +82,15 @@ import type { QueryBuilderResultState } from '../../stores/QueryBuilderResultSta
 const PERMISSION_ERRORS = ['permission denied', 'invalid user id or password'];
 
 export const QueryBuilderExecutionErrorPanel = observer(
-  (props: { resultState: QueryBuilderResultState }) => {
-    const { resultState } = props;
+  (props: {
+    resultState: QueryBuilderResultState;
+    executionError: string | Error;
+  }) => {
+    const { resultState, executionError } = props;
     const queryBuilderState = resultState.queryBuilderState;
-    const error = resultState.executionError;
-    const errorMessage = error
+    const errorMessage = executionError
       ? queryBuilderState.applicationStore.notificationService.getErrorMessage(
-          error,
+          executionError,
         )
       : '';
     const isPermissionDeniedError = () =>
@@ -102,41 +104,39 @@ export const QueryBuilderExecutionErrorPanel = observer(
     };
 
     return (
-      error && (
-        <>
-          {isPermissionDeniedError() && (
-            <div className="query-builder__result__permission-error">
-              <div className="query-builder__result__permission-error__header">
-                Entitlement / Authorization error - Please
-              </div>
-              <button
-                className="query-builder__result__permission-error__button"
-                disabled={
-                  (queryBuilderState.isQuerySupported &&
-                    queryBuilderState.fetchStructureState
-                      .implementation instanceof QueryBuilderTDSState &&
-                    queryBuilderState.fetchStructureState.implementation
-                      .projectionColumns.length === 0) ||
-                  !queryBuilderState.canBuildQuery
-                }
-                onClick={openCheckEntitlmentsEditor}
-              >
-                Click Here to Check Entitlements
-              </button>
+      <>
+        {isPermissionDeniedError() && (
+          <div className="query-builder__result__permission-error">
+            <div className="query-builder__result__permission-error__header">
+              Entitlement / Authorization error - Please
             </div>
-          )}
-          <div className="query-builder__result__execution-error">
-            <div className="query-builder__result__execution-error__header">
-              <span style={{ fontWeight: 'bold' }}>Error Execution Query</span>.
-              Please try again later or review options in application`s
-              <span style={{ fontWeight: 'bold' }}> Help</span> menu.
-            </div>
-            <div className="query-builder__result__execution-error__body">
-              {errorMessage}
-            </div>
+            <button
+              className="query-builder__result__permission-error__button"
+              disabled={
+                (queryBuilderState.isQuerySupported &&
+                  queryBuilderState.fetchStructureState
+                    .implementation instanceof QueryBuilderTDSState &&
+                  queryBuilderState.fetchStructureState.implementation
+                    .projectionColumns.length === 0) ||
+                !queryBuilderState.canBuildQuery
+              }
+              onClick={openCheckEntitlmentsEditor}
+            >
+              Click Here to Check Entitlements
+            </button>
           </div>
-        </>
-      )
+        )}
+        <div className="query-builder__result__execution-error">
+          <div className="query-builder__result__execution-error__header">
+            <span style={{ fontWeight: 'bold' }}>Error Execution Query</span>.
+            Please try again later or review options in application`s
+            <span style={{ fontWeight: 'bold' }}> Help</span> menu.
+          </div>
+          <div className="query-builder__result__execution-error__body">
+            {errorMessage}
+          </div>
+        </div>
+      </>
     );
   },
 );
@@ -753,8 +753,11 @@ export const QueryBuilderResultPanel = observer(
               Build or load a valid query first
             </BlankPanelContent>
           )}
-          {!isLoading && (
-            <QueryBuilderExecutionErrorPanel resultState={resultState} />
+          {!isLoading && resultState.executionError && (
+            <QueryBuilderExecutionErrorPanel
+              resultState={resultState}
+              executionError={resultState.executionError}
+            />
           )}
           {executionResult && !isLoading && !resultState.executionError && (
             <div className="query-builder__result__values">
