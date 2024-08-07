@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, computed, makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import {
   DataCubeQueryFilterGroupOperator,
   DataCubeQueryFilterOperator,
@@ -26,6 +26,8 @@ import type {
 } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
 import {
+  deepClone,
+  deleteEntry,
   getNonNullableEntry,
   guaranteeNonNullable,
   uuid,
@@ -37,25 +39,31 @@ import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
 export abstract class DataCubeEditorFilterNode {
   uuid = uuid();
-  parentNode: DataCubeEditorFilterConditionGroupNode | undefined;
+  parent: DataCubeEditorFilterConditionGroupNode | undefined;
   not = false;
 
   constructor(
-    parentNode: DataCubeEditorFilterConditionGroupNode | undefined,
+    parent: DataCubeEditorFilterConditionGroupNode | undefined,
     not: boolean | undefined,
   ) {
     makeObservable(this, {
-      parentNode: observable,
+      parent: observable,
+      setParent: action,
+
       not: observable,
       setNot: action,
     });
 
-    this.parentNode = parentNode;
+    this.parent = parent;
     this.not = Boolean(not);
   }
 
   setNot(not: boolean) {
     this.not = not;
+  }
+
+  setParent(parent: DataCubeEditorFilterConditionGroupNode | undefined) {
+    this.parent = parent;
   }
 }
 
@@ -65,13 +73,13 @@ export class DataCubeEditorFilterConditionNode extends DataCubeEditorFilterNode 
   value: DataCubeOperationValue | undefined;
 
   constructor(
-    parentNode: DataCubeEditorFilterConditionGroupNode | undefined,
+    parent: DataCubeEditorFilterConditionGroupNode | undefined,
     column: DataCubeQuerySnapshotColumn,
     operation: DataCubeQueryFilterOperation,
     value: DataCubeOperationValue | undefined,
     not: boolean | undefined,
   ) {
-    super(parentNode, not);
+    super(parent, not);
 
     makeObservable(this, {
       column: observable,
@@ -116,16 +124,16 @@ export class DataCubeEditorFilterConditionGroupNode extends DataCubeEditorFilter
   operation = DataCubeQueryFilterGroupOperator.AND;
 
   constructor(
-    parentNode: DataCubeEditorFilterConditionGroupNode | undefined,
+    parent: DataCubeEditorFilterConditionGroupNode | undefined,
     operation: DataCubeQueryFilterGroupOperator,
     not: boolean | undefined,
   ) {
-    super(parentNode, not);
+    super(parent, not);
 
     makeObservable(this, {
       children: observable,
-      setChildren: action,
-      childrenIds: computed,
+      removeChild: action,
+      addChild: action,
 
       operation: observable,
       setOperation: action,
@@ -134,16 +142,27 @@ export class DataCubeEditorFilterConditionGroupNode extends DataCubeEditorFilter
     this.operation = operation;
   }
 
-  get childrenIds(): string[] {
-    return this.children.map((child) => child.uuid);
-  }
-
-  setChildren(children: DataCubeEditorFilterNode[]) {
-    this.children = children;
-  }
-
   setOperation(operation: DataCubeQueryFilterGroupOperator) {
     this.operation = operation;
+  }
+
+  removeChild(node: DataCubeEditorFilterNode): void {
+    const found = deleteEntry(this.children, node);
+    if (found) {
+      node.setParent(undefined);
+    }
+  }
+
+  addChild(node: DataCubeEditorFilterNode, idx?: number | undefined): void {
+    if (!this.children.includes(node)) {
+      if (idx !== undefined) {
+        idx = Math.max(0, Math.min(idx, this.children.length - 1));
+        this.children.splice(idx, 0, node);
+      } else {
+        this.children.push(node);
+      }
+      node.setParent(this);
+    }
   }
 }
 
@@ -160,12 +179,19 @@ export class DataCubeEditorFilterPanelState
   readonly operations: DataCubeQueryFilterOperation[];
 
   tree: DataCubeFilterTree;
+  selectedNode?: DataCubeEditorFilterNode | undefined;
 
   constructor(editor: DataCubeEditorState) {
     makeObservable(this, {
       tree: observable.ref,
       initializeTree: action,
       refreshTree: action,
+
+      selectedNode: observable,
+      setSelectedNode: action,
+      addFilterNode: action,
+      removeFilterNode: action,
+      layerFilterNode: action,
     });
 
     this.dataCube = editor.dataCube;
@@ -196,6 +222,33 @@ export class DataCubeEditorFilterPanelState
       );
       this.tree.nodes.set(root.uuid, root);
       this.tree.root = root;
+      const condition = this.generateNewFilterNode(root);
+      if (condition) {
+        root.addChild(condition);
+        this.tree.nodes.set(condition.uuid, condition);
+      }
+      this.refreshTree();
+    }
+  }
+
+  refreshTree() {
+    this.tree = { ...this.tree };
+  }
+
+  setSelectedNode(node: DataCubeEditorFilterNode | undefined) {
+    this.selectedNode = node;
+  }
+
+  private generateNewFilterNode(baseNode: DataCubeEditorFilterNode) {
+    if (baseNode instanceof DataCubeEditorFilterConditionNode) {
+      return new DataCubeEditorFilterConditionNode(
+        undefined,
+        baseNode.column,
+        baseNode.operation,
+        deepClone(baseNode.value),
+        baseNode.not,
+      );
+    } else if (baseNode instanceof DataCubeEditorFilterConditionGroupNode) {
       if (this.editor.columnProperties.columns.length !== 0) {
         const columnConfig = getNonNullableEntry(
           this.editor.columnProperties.columns,
@@ -206,22 +259,141 @@ export class DataCubeEditorFilterPanelState
           type: columnConfig.type,
         };
         const operation = this.getOperation(DataCubeQueryFilterOperator.EQUAL);
-        const condition = new DataCubeEditorFilterConditionNode(
-          root,
+        return new DataCubeEditorFilterConditionNode(
+          undefined,
           column,
           operation,
           operation.generateDefaultValue(column),
           undefined,
         );
-        root.children.push(condition);
-        this.tree.nodes.set(condition.uuid, condition);
       }
-      this.refreshTree();
+    }
+    return undefined;
+  }
+
+  /**
+   * Add a new filter condition node just after the specified filter node.
+   * The added node is a clone of the specified node to make the filter's overall match unaffected,
+   * except if the specified node is a group node, then a new (default) condition will be added.
+   */
+  addFilterNode(baseNode: DataCubeEditorFilterNode) {
+    if (this.tree.root) {
+      const node = this.generateNewFilterNode(baseNode);
+      const parentNode = baseNode.parent;
+      if (parentNode && node) {
+        parentNode.addChild(
+          node,
+          baseNode instanceof DataCubeEditorFilterConditionNode
+            ? parentNode.children.indexOf(baseNode)
+            : undefined,
+        );
+
+        this.tree.nodes.set(node.uuid, node);
+        this.refreshTree();
+      }
     }
   }
 
-  refreshTree() {
-    this.tree = { ...this.tree };
+  /**
+   * Remove the specified filter node.
+   * If its parent node has just one child, then flatten the parent node if:
+   * 1. parent node is not the root node and has exactly one child left
+   * 2. OR parent node is the root node and has no child left, in this case,
+   *    flattening means completely remove the filter tree
+   */
+  removeFilterNode(nodeToRemove: DataCubeEditorFilterNode) {
+    if (this.tree.root) {
+      const parentNode = nodeToRemove.parent;
+      // skip root node
+      if (nodeToRemove !== this.tree.root && parentNode) {
+        // remove all nodes in the subtree
+        let childNodesToRemove = [nodeToRemove];
+        while (childNodesToRemove.length) {
+          childNodesToRemove.forEach((node) => {
+            if (node instanceof DataCubeEditorFilterConditionGroupNode) {
+              node.children.forEach((child) => {
+                child.setParent(undefined);
+              });
+            }
+            this.tree.nodes.delete(node.uuid);
+          });
+          childNodesToRemove = Array.from(this.tree.nodes.values()).filter(
+            (node) => node !== this.tree.root && !node.parent,
+          );
+        }
+
+        // remove node from parent
+        parentNode.removeChild(nodeToRemove);
+        this.tree.nodes.delete(nodeToRemove.uuid);
+
+        // flatten parent node if
+        // 1. parent node is not the root node and has exactly one child left
+        // 2. OR parent node is the root node and has no child left, in this case,
+        // flattening means completely remove the filter tree
+        if (parentNode.children.length === 1) {
+          if (parentNode !== this.tree.root) {
+            const childNode = getNonNullableEntry(parentNode.children, 0);
+            const grandParentNode = guaranteeNonNullable(parentNode.parent);
+
+            parentNode.removeChild(childNode);
+
+            const parentNodeIndex =
+              grandParentNode.children.indexOf(parentNode);
+            grandParentNode.removeChild(parentNode);
+            this.tree.nodes.delete(parentNode.uuid);
+
+            grandParentNode.addChild(childNode, parentNodeIndex);
+          }
+        } else if (parentNode.children.length === 0) {
+          if (parentNode === this.tree.root) {
+            this.tree.root = undefined;
+            this.tree.nodes.delete(parentNode.uuid);
+          }
+        }
+
+        this.refreshTree();
+
+        if (this.selectedNode === nodeToRemove) {
+          this.setSelectedNode(undefined);
+        }
+      }
+    }
+  }
+
+  /**
+   * Replace the specified filter node with a group which contains
+   * the specified node and a new condition node.
+   * The added node is a clone of the specified node to make the filter's overall match unaffected,
+   * except if the specified node is a group node, then a new (default) condition will be added.
+   */
+  layerFilterNode(baseNode: DataCubeEditorFilterNode) {
+    if (this.tree.root) {
+      const node = this.generateNewFilterNode(baseNode);
+      const parentNode = baseNode.parent;
+      if (parentNode && node) {
+        const baseNodeIndex = parentNode.children.indexOf(baseNode);
+        parentNode.removeChild(baseNode);
+
+        const subGroupNode = new DataCubeEditorFilterConditionGroupNode(
+          undefined,
+          // Use OR condition when we create sub-group to relax filtering
+          DataCubeQueryFilterGroupOperator.OR,
+          undefined,
+        );
+
+        subGroupNode.addChild(baseNode);
+        subGroupNode.addChild(node);
+        parentNode.addChild(subGroupNode, baseNodeIndex);
+
+        this.tree.nodes.set(subGroupNode.uuid, subGroupNode);
+        this.tree.nodes.set(node.uuid, node);
+        this.refreshTree();
+
+        if (this.selectedNode === baseNode) {
+          this.setSelectedNode(subGroupNode);
+        }
+      }
+    }
   }
 
   applySnaphot(

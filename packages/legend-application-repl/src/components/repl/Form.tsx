@@ -216,10 +216,10 @@ export function FormDropdownMenuTrigger(
   return (
     <button
       className={cn(
-        'group flex h-5 flex-shrink-0 items-center justify-between border border-neutral-400 pl-1.5 text-sm disabled:select-none disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
+        'group flex h-5 flex-shrink-0 items-center justify-between border border-neutral-400 bg-white pl-1.5 text-sm disabled:select-none disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
         {
           'border-sky-600': Boolean(open),
-          'bg-sky-50': Boolean(open),
+          'bg-sky-100': Boolean(open),
         },
         className,
       )}
