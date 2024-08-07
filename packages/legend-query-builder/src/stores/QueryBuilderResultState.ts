@@ -129,6 +129,7 @@ export class QueryBuilderResultState {
   latestRunHashCode?: string | undefined;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
   isQueryUsageViewerOpened = false;
+  executionError: Error | string | undefined;
 
   selectedCells: QueryBuilderTDSResultCellData[];
   mousedOverCell: QueryBuilderTDSResultCellData | null = null;
@@ -152,6 +153,7 @@ export class QueryBuilderResultState {
       isQueryUsageViewerOpened: observable,
       gridConfig: observable,
       wavgAggregationState: observable,
+      executionError: observable,
       setGridConfig: action,
       setWavgAggregationState: action,
       setIsSelectingCells: action,
@@ -166,6 +168,7 @@ export class QueryBuilderResultState {
       setIsQueryUsageViewerOpened: action,
       handlePreConfiguredGridConfig: action,
       updatePreviewLimitInConfig: action,
+      setExecutionError: action,
       exportData: flow,
       runQuery: flow,
       cancelQuery: flow,
@@ -230,6 +233,10 @@ export class QueryBuilderResultState {
 
   setIsQueryUsageViewerOpened(val: boolean): void {
     this.isQueryUsageViewerOpened = val;
+  }
+
+  setExecutionError(val: Error | string | undefined): void {
+    this.executionError = val;
   }
 
   updatePreviewLimitInConfig(): void {
@@ -479,9 +486,7 @@ export class QueryBuilderResultState {
           LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
           error,
         );
-        this.queryBuilderState.applicationStore.notificationService.notifyError(
-          error,
-        );
+        this.setExecutionError(error);
       }
     } finally {
       this.setIsRunningQuery(false);

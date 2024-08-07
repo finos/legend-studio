@@ -28,25 +28,6 @@
     "classifierPath": "meta::pure::metamodel::type::Enumeration"
   },
   {
-    "path": "model::LegalEntity",
-    "content": {
-      "_type": "class",
-      "name": "LegalEntity",
-      "package": "model",
-      "properties": [
-        {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "legalName",
-          "type": "String"
-        }
-      ]
-    },
-    "classifierPath": "meta::pure::metamodel::type::Class"
-  },
-  {
     "path": "model::Firm",
     "content": {
       "_type": "class",
@@ -71,11 +52,7 @@
                   },
                   {
                     "_type": "string",
-                    "multiplicity": {
-                      "lowerBound": 1,
-                      "upperBound": 1
-                    },
-                    "values": ["_"]
+                    "value": "_"
                   }
                 ]
               }
@@ -110,6 +87,14 @@
           },
           "name": "isApple",
           "type": "Boolean"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "averageAge",
+          "type": "Float"
         }
       ],
       "qualifiedProperties": [
@@ -252,6 +237,25 @@
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
   {
+    "path": "model::LegalEntity",
+    "content": {
+      "_type": "class",
+      "name": "LegalEntity",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "legalName",
+          "type": "String"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
     "path": "model::MyDatabase",
     "content": {
       "_type": "relational",
@@ -313,6 +317,13 @@
                   "type": {
                     "_type": "Varchar",
                     "size": 200
+                  }
+                },
+                {
+                  "name": "Average_age",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Float"
                   }
                 },
                 {
@@ -516,6 +527,26 @@
                 },
                 "tableAlias": "FirmTable"
               }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Firm",
+                "property": "averageAge"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "Average_age",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::MyDatabase",
+                  "mainTableDb": "model::MyDatabase",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              },
+              "source": "model_Firm"
             }
           ],
           "root": true
@@ -744,11 +775,7 @@
                   "values": [
                     {
                       "_type": "string",
-                      "multiplicity": {
-                        "lowerBound": 1,
-                        "upperBound": 1
-                      },
-                      "values": ["Age"]
+                      "value": "Age"
                     }
                   ]
                 }
@@ -787,6 +814,7 @@
       "package": "model",
       "runtimeValue": {
         "_type": "engineRuntime",
+        "connectionStores": [],
         "connections": [
           {
             "store": {
@@ -827,7 +855,7 @@
         "datasourceSpecification": {
           "_type": "h2Local",
           "testDataSetupSqls": [
-            "Drop table if exists FirmTable;\nDrop table if exists PersonTable;\nCreate Table FirmTable(id INT, Legal_Name VARCHAR(200), Inc VARCHAR(200));\nCreate Table PersonTable(id INT, firm_id INT, lastName VARCHAR(200), firstName VARCHAR(200), age INT);\nInsert into FirmTable (id, Legal_Name, Inc) values (1, 'Finos', 'CORP');\nInsert into FirmTable (id, Legal_Name, Inc) values (2, 'Apple', 'Corp');\nInsert into FirmTable (id, Legal_Name, Inc) values (3, 'GS', 'Corp');\nInsert into FirmTable (id, Legal_Name, Inc) values (4, 'Google', 'Corp');\nInsert into FirmTable (id, Legal_Name, Inc) values (5, 'Alphabet', 'LLC');\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (1, 3, 'X1', 'Mauricio', 10);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (2, 3, 'X2', 'An', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (3, 3, 'X3', 'Anne', 30);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (4, 3, 'X4', 'Gayathri', 40);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (5, 3, 'X5', 'Yannan', 50);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (6, 3, 'X6', 'Dave', 60);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (7, 3, 'X7', 'Mo', 70);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (8, 3, 'X9', 'Teddy', 80);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (9, 2, 'X8', 'Teddy', 90);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (10, 2, 'X8', 'Teddy', 100);\n\n"
+            "Drop table if exists FirmTable;\nDrop table if exists PersonTable;\nCreate Table FirmTable(id INT, Legal_Name VARCHAR(200), Inc VARCHAR(200), Average_Age FLOAT);\nCreate Table PersonTable(id INT, firm_id INT, lastName VARCHAR(200), firstName VARCHAR(200), age INT);\nInsert into FirmTable (id, Legal_Name, Inc, Average_Age) values (1, 'Finos', 'CORP', 20.1234);\nInsert into FirmTable (id, Legal_Name, Inc, Average_Age) values (2, 'Apple', 'Corp', 21.12);\nInsert into FirmTable (id, Legal_Name, Inc, Average_Age) values (3, 'GS', 'Corp', 21.445677);\nInsert into FirmTable (id, Legal_Name, Inc, Average_Age) values (4, 'Google', 'Corp', 20.123);\nInsert into FirmTable (id, Legal_Name, Inc, Average_Age) values (5, 'Alphabet', 'LLC', 20.98877);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (1, 3, 'X1', 'Mauricio', 10);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (2, 3, 'X2', 'An', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (3, 3, 'X3', 'Anne', 30);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (4, 3, 'X4', 'Gayathri', 40);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (5, 3, 'X5', 'Yannan', 50);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (6, 3, 'X6', 'Dave', 60);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (7, 3, 'X7', 'Mo', 70);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (8, 3, 'X9', 'Teddy', 80);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (9, 2, 'X8', 'Teddy', 90);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (10, 2, 'X8', 'Teddy', 100);\n\n"
           ]
         },
         "element": "model::MyDatabase",

@@ -46,6 +46,101 @@ export const TEST_DATA__result = {
   },
 };
 
+export const TEST_DATA__NoReturnData__result = {
+  builder: {
+    _type: 'tdsBuilder',
+    columns: [
+      {
+        name: 'Employees/First Name',
+        type: 'String',
+        relationalType: 'VARCHAR(200)',
+      },
+      {
+        name: 'Employees/Last Name',
+        type: 'String',
+        relationalType: 'VARCHAR(200)',
+      },
+      { name: 'Legal Name', type: 'String', relationalType: 'VARCHAR(200)' },
+    ],
+  },
+  activities: [
+    {
+      _type: 'relational',
+      sql: 'select top 1000 "persontable_0".firstName as "Employees/First Name", "persontable_0".lastName as "Employees/Last Name", "root".legal_name as "Legal Name" from FirmTable as "root" left outer join PersonTable as "persontable_0" on ("persontable_0".firm_id = "root".id)',
+    },
+  ],
+  result: {
+    columns: ['Employees/First Name', 'Employees/Last Name', 'Legal Name'],
+    rows: [],
+  },
+};
+
+export const TEST_DATA__RoundingData__result = {
+  builder: {
+    _type: 'tdsBuilder',
+    columns: [
+      {
+        name: 'Average Age',
+        type: 'Float',
+        relationalType: 'FLOAT',
+      },
+      {
+        name: 'Employee Size',
+        type: 'Number',
+        relationalType: 'FLOAT',
+      },
+      {
+        name: 'Inc Type',
+        type: 'model::IncType',
+        relationalType: 'VARCHAR(200)',
+      },
+      {
+        name: 'Is Apple',
+        type: 'Boolean',
+        relationalType: 'VARCHAR(5)',
+      },
+      {
+        name: 'Legal Name',
+        type: 'String',
+        relationalType: 'VARCHAR(204)',
+      },
+    ],
+  },
+  activities: [
+    {
+      _type: 'relational',
+      comment: '-- "executionTraceID" : "035e0700-0453-433d-a13a-99dbc071dc11"',
+      sql: 'select top 1000 "root".Average_age as "Average Age", "firmtable_1".aggCol as "Employee Size", "root".Inc as "Inc Type", cast(case when "root".Legal_name = \'Apple\' then \'true\' else \'false\' end as boolean) as "Is Apple", concat("root".Legal_name, \'_LTD\') as "Legal Name" from FirmTable as "root" left outer join (select "firmtable_2".id as id, count(*) as aggCol from FirmTable as "firmtable_2" left outer join PersonTable as "persontable_0" on ("persontable_0".firm_id = "firmtable_2".id) group by "firmtable_2".id) as "firmtable_1" on ("root".id = "firmtable_1".id)',
+    },
+  ],
+  result: {
+    columns: [
+      'Average Age',
+      'Employee Size',
+      'Inc Type',
+      'Is Apple',
+      'Legal Name',
+    ],
+    rows: [
+      {
+        values: [20.1234, 1, 'Corp', false, 'Finos_LTD'],
+      },
+      {
+        values: [21.12, 2, 'Corp', true, 'Apple_LTD'],
+      },
+      {
+        values: [21.445677, 8, 'Corp', false, 'GS_LTD'],
+      },
+      {
+        values: [20.123, 1, 'Corp', false, 'Google_LTD'],
+      },
+      {
+        values: [20.98877, 1, 'LLC', false, 'Alphabet_LTD'],
+      },
+    ],
+  },
+};
+
 export const TEST_DATA__simpleProjectionQuery = {
   _type: 'lambda',
   body: [

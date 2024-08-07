@@ -59,6 +59,7 @@ export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER_TDS_RESULT_MODIFIER_PROMPT = 'query-builder__tds__result-modifier-prompt',
   QUERY_BUILDER_RESULT_PANEL = 'query__builder__result__panel',
   QUERY_BUILDER_RESULT_ANALYTICS = 'query__builder__result__analytics',
+  QUERY_BUILDER_RESULT_GRID_CUSTOM_HEADER = 'query__builder__result__grid__custom-header',
   // result modifier panel
   QUERY_BUILDER_RESULT_MODIFIER_PANEL = 'query__builder__result__modifier__panel',
   QUERY_BUILDER_RESULT_MODIFIER_PANEL_SORT_REMOVE_BTN = 'query__builder__projection__options__sort__remove-btn',

@@ -77,6 +77,107 @@ import { QueryBuilderTDSSimpleGridResult } from './tds/QueryBuilderTDSSimpleGrid
 import { getExecutedSqlFromExecutionResult } from './tds/QueryBuilderTDSResultShared.js';
 import { QueryBuilderTDSGridResult } from './tds/QueryBuilderTDSGridResult.js';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
+import type { QueryBuilderResultState } from '../../stores/QueryBuilderResultState.js';
+
+const PERMISSION_ERRORS = ['permission denied', 'invalid user id or password'];
+
+export const QueryBuilderExecutionErrorPanel = observer(
+  (props: {
+    resultState: QueryBuilderResultState;
+    executionError: string | Error;
+  }) => {
+    const { resultState, executionError } = props;
+    const queryBuilderState = resultState.queryBuilderState;
+    const errorMessage = executionError
+      ? queryBuilderState.applicationStore.notificationService.getErrorMessage(
+          executionError,
+        )
+      : '';
+    const isPermissionDeniedError = () =>
+      Boolean(
+        PERMISSION_ERRORS.find((e) => errorMessage?.toLowerCase().includes(e)),
+      );
+    const openCheckEntitlmentsEditor = (): void => {
+      queryBuilderState.checkEntitlementsState.setShowCheckEntitlementsViewer(
+        true,
+      );
+    };
+
+    return (
+      <>
+        {isPermissionDeniedError() && (
+          <div className="query-builder__result__permission-error">
+            <div className="query-builder__result__permission-error__header">
+              Entitlement / Authorization error - Please
+            </div>
+            <button
+              className="query-builder__result__permission-error__button"
+              disabled={
+                (queryBuilderState.isQuerySupported &&
+                  queryBuilderState.fetchStructureState
+                    .implementation instanceof QueryBuilderTDSState &&
+                  queryBuilderState.fetchStructureState.implementation
+                    .projectionColumns.length === 0) ||
+                !queryBuilderState.canBuildQuery
+              }
+              onClick={openCheckEntitlmentsEditor}
+            >
+              Click Here to Check Entitlements
+            </button>
+          </div>
+        )}
+        <div className="query-builder__result__execution-error">
+          <div className="query-builder__result__execution-error__header">
+            <span style={{ fontWeight: 'bold' }}>Error Execution Query</span>.
+            Please try again later or review options in application`s
+            <span style={{ fontWeight: 'bold' }}> Help</span> menu.
+          </div>
+          <div className="query-builder__result__execution-error__body">
+            {errorMessage}
+          </div>
+        </div>
+      </>
+    );
+  },
+);
+
+export const QueryBuilderEmptyExecutionResultPanel = observer(
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+
+    const openCheckEntitlmentsEditor = (): void => {
+      queryBuilderState.checkEntitlementsState.setShowCheckEntitlementsViewer(
+        true,
+      );
+    };
+
+    return (
+      <div className="query-builder__result__empty-result-warning">
+        <div className="query-builder__result__empty-result-warning__header">
+          Query returned no data
+        </div>
+        <div className="query-builder__result__empty-result-warning__body">
+          If you believe the query should return data, please
+          <button
+            className="query-builder__result__permission-error__button"
+            disabled={
+              (queryBuilderState.isQuerySupported &&
+                queryBuilderState.fetchStructureState.implementation instanceof
+                  QueryBuilderTDSState &&
+                queryBuilderState.fetchStructureState.implementation
+                  .projectionColumns.length === 0) ||
+              !queryBuilderState.canBuildQuery
+            }
+            onClick={openCheckEntitlmentsEditor}
+          >
+            Click Here to Check Entitlements
+          </button>
+          or See Help menu for more options
+        </div>
+      </div>
+    );
+  },
+);
 
 export const QueryBuilderResultValues = observer(
   (props: {
@@ -85,20 +186,28 @@ export const QueryBuilderResultValues = observer(
   }) => {
     const { executionResult, queryBuilderState } = props;
     if (executionResult instanceof TDSExecutionResult) {
-      if (queryBuilderState.config?.TEMPORARY__enableGridEnterpriseMode) {
+      if (executionResult.result.rows.length === 0) {
         return (
-          <QueryBuilderTDSGridResult
+          <QueryBuilderEmptyExecutionResultPanel
             queryBuilderState={queryBuilderState}
-            executionResult={executionResult}
           />
         );
       } else {
-        return (
-          <QueryBuilderTDSSimpleGridResult
-            queryBuilderState={queryBuilderState}
-            executionResult={executionResult}
-          />
-        );
+        if (queryBuilderState.config?.TEMPORARY__enableGridEnterpriseMode) {
+          return (
+            <QueryBuilderTDSGridResult
+              queryBuilderState={queryBuilderState}
+              executionResult={executionResult}
+            />
+          );
+        } else {
+          return (
+            <QueryBuilderTDSSimpleGridResult
+              queryBuilderState={queryBuilderState}
+              executionResult={executionResult}
+            />
+          );
+        }
       }
     } else if (executionResult instanceof RawExecutionResult) {
       const inputValue =
@@ -211,6 +320,7 @@ export const QueryBuilderResultPanel = observer(
 
     const runQuery = (): void => {
       resultState.setSelectedCells([]);
+      resultState.setExecutionError(undefined);
       resultState.pressedRunQuery.inProgress();
       if (
         queryParametersState.parameterStates.length &&
@@ -638,12 +748,18 @@ export const QueryBuilderResultPanel = observer(
           <CubesLoadingIndicator isLoading={isLoading}>
             <CubesLoadingIndicatorIcon />
           </CubesLoadingIndicator>
-          {!executionResult && !isLoading && (
+          {!executionResult && !isLoading && !resultState.executionError && (
             <BlankPanelContent>
               Build or load a valid query first
             </BlankPanelContent>
           )}
-          {executionResult && !isLoading && (
+          {!isLoading && resultState.executionError && (
+            <QueryBuilderExecutionErrorPanel
+              resultState={resultState}
+              executionError={resultState.executionError}
+            />
+          )}
+          {executionResult && !isLoading && !resultState.executionError && (
             <div className="query-builder__result__values">
               <QueryBuilderResultValues
                 executionResult={executionResult}
