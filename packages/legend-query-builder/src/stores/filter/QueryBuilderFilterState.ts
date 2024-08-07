@@ -571,6 +571,19 @@ export class QueryBuilderFilterTreeExistsNodeData
   }
 }
 
+export const getNearestExistsNodeParent = (
+  node: QueryBuilderFilterTreeConditionNodeData,
+): QueryBuilderFilterTreeExistsNodeData | undefined => {
+  let parentNode = node.condition.filterState.getParentNode(node);
+  while (parentNode) {
+    if (parentNode instanceof QueryBuilderFilterTreeExistsNodeData) {
+      return parentNode;
+    }
+    parentNode = node.condition.filterState.getParentNode(parentNode);
+  }
+  return undefined;
+};
+
 export class QueryBuilderFilterTreeConditionNodeData
   extends QueryBuilderFilterTreeNodeData
   implements Hashable

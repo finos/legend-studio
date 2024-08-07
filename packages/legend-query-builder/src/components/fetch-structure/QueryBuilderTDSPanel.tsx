@@ -106,7 +106,7 @@ import {
   instanceValue_setValues,
   propertyExpression_setFunc,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import {
   getPropertyChainName,
   getPropertyPath,
@@ -120,11 +120,14 @@ import {
 import { getNameOfValueSpecification } from '../shared/QueryBuilderVariableSelector.js';
 import { QueryBuilderAggregateOperator_Percentile } from '../../stores/fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_Percentile.js';
 import {
+  getNearestExistsNodeParent,
   QUERY_BUILDER_FILTER_DND_TYPE,
   QueryBuilderFilterTreeConditionNodeData,
+  QueryBuilderFilterTreeExistsNodeData,
   type QueryBuilderFilterConditionDragSource,
 } from '../../stores/filter/QueryBuilderFilterState.js';
 import { cloneAbstractPropertyExpression } from '../../stores/shared/ValueSpecificationEditorHelper.js';
+import { buildPropertyExpressionFromExistsNode } from '../filter/QueryBuilderFilterPanel.js';
 
 const QueryBuilderProjectionColumnContextMenu = observer(
   forwardRef<
@@ -1276,14 +1279,24 @@ export const QueryBuilderTDSPanel = observer(
             break;
           case QUERY_BUILDER_FILTER_DND_TYPE.CONDITION:
             if (item.node instanceof QueryBuilderFilterTreeConditionNodeData) {
-              tdsState.addColumn(
-                new QueryBuilderSimpleProjectionColumnState(
-                  tdsState,
-                  cloneAbstractPropertyExpression(
+              const propertyExpression = item.node.isExistsNodeChild
+                ? buildPropertyExpressionFromExistsNode(
+                    tdsState.queryBuilderState.filterState,
+                    guaranteeType(
+                      getNearestExistsNodeParent(item.node),
+                      QueryBuilderFilterTreeExistsNodeData,
+                    ),
+                    item.node,
+                  )
+                : cloneAbstractPropertyExpression(
                     (item.node as QueryBuilderFilterTreeConditionNodeData)
                       .condition.propertyExpressionState.propertyExpression,
                     tdsState.queryBuilderState.observerContext,
-                  ),
+                  );
+              tdsState.addColumn(
+                new QueryBuilderSimpleProjectionColumnState(
+                  tdsState,
+                  propertyExpression,
                   tdsState.queryBuilderState.explorerState.humanizePropertyName,
                 ),
               );
