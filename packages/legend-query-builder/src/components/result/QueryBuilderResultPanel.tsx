@@ -390,10 +390,7 @@ export const QueryBuilderResultPanel = observer(
           })
         : undefined;
       if (_executionResult instanceof TDSExecutionResult) {
-        const rowLength = _executionResult.result.rows.length;
-        const truncatedRowLength =
-          rowLength > resultLimit ? resultLimit : rowLength;
-        return `${truncatedRowLength} row(s)${
+        return `${_executionResult.result.rows.length} row(s)${
           queryDuration ? ` in ${queryDuration}` : ''
         }`;
       }

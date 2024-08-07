@@ -294,10 +294,7 @@ test(
       queryBuilderState.resultState.setExecutionResult(executionResult);
     });
     await act(async () => {
-      queryBuilderState.resultState.processExecutionResult(
-        queryBuilderState.resultState.queryRunPromise,
-        executionResult,
-      );
+      queryBuilderState.resultState.processExecutionResult(executionResult);
     });
     const resultPanel = renderResult.getByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,

@@ -265,22 +265,16 @@ export class QueryBuilderResultState {
       this.previewLimit,
     );
 
-  processExecutionResult = (
-    promise: Promise<ExecutionResult> | undefined,
-    result: ExecutionResult,
-  ): void => {
-    if (this.queryRunPromise === promise) {
+  processExecutionResult = (result: ExecutionResult): void => {
+    this.setIsExecutionResultOverflowing(false);
+    if (result instanceof TDSExecutionResult) {
       const resultLimit = this.getExecutionResultLimit();
-      this.setIsExecutionResultOverflowing(false);
-      if (
-        result instanceof TDSExecutionResult &&
-        result.result.rows.length > resultLimit
-      ) {
+      if (result.result.rows.length > resultLimit) {
         this.setIsExecutionResultOverflowing(true);
         result.result.rows = result.result.rows.slice(0, resultLimit);
       }
-      this.setExecutionResult(result);
     }
+    this.setExecutionResult(result);
   };
 
   processWeightedColumnPairsMap(
@@ -497,7 +491,7 @@ export class QueryBuilderResultState {
       this.setQueryRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
       if (this.queryRunPromise === promise) {
-        this.processExecutionResult(promise, result);
+        this.processExecutionResult(result);
         this.latestRunHashCode = currentHashCode;
         this.setExecutionDuration(stopWatch.elapsed);
 
