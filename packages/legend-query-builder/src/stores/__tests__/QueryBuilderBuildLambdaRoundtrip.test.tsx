@@ -60,6 +60,7 @@ import {
   TEST_DATA__lambda_simpleSingleConditionFilter,
   TEST_DATA_lambda_dateTimeCapabilityFilterWithYesterday,
   TEST_DATA__lambda_isOperatorFilterForDate,
+  TEST_DATA__lambda_filterWithRightSidePropertyExpression,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
 import {
   TEST_DATA__lambda_input_filterWithExists,
@@ -93,6 +94,7 @@ import {
   TEST_DATA_lambda__dateTimeCapabilityPostFilterWithToday,
   TEST_DATA__lambda_postFilterWithRightValAsColEnums,
   TEST_DATA_lambda__postFilterOnAggregatedColWithDerivation,
+  TEST_DATA__lambda_postFilterWithRightValAsWindowFunctionCol,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
 import { INTERNAL__BasicQueryBuilderState } from '../QueryBuilderState.js';
 import {
@@ -366,7 +368,7 @@ const cases: RoundtripTestCase[] = [
   [
     'Filter with ProperyExpressionState as right condition',
     relationalFilterCtx,
-    TEST_DATA__lambda_simpleSingleConditionFilter,
+    TEST_DATA__lambda_filterWithRightSidePropertyExpression,
     undefined,
   ],
   // group condition
@@ -499,6 +501,12 @@ const cases: RoundtripTestCase[] = [
     'Post-filter with left and right val as tds cols with enums',
     postFilterCtx,
     TEST_DATA__lambda_postFilterWithRightValAsColEnums,
+    undefined,
+  ],
+  [
+    'Post-filter with right condition as window function col',
+    postFilterCtx,
+    TEST_DATA__lambda_postFilterWithRightValAsWindowFunctionCol,
     undefined,
   ],
   // date compabilty, today(), yesterday() etc

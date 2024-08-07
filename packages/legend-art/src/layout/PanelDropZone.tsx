@@ -68,13 +68,25 @@ export const PanelDnDEntry = observer(
       className?: string;
       placeholder?: React.ReactNode;
       showPlaceholder: boolean;
+      placeholderContainerClassName?: string;
     }
   >(function PanelDnDEntry(props, ref) {
-    const { children, placeholder, showPlaceholder, className } = props;
+    const {
+      children,
+      placeholder,
+      showPlaceholder,
+      className,
+      placeholderContainerClassName,
+    } = props;
     return (
       <div ref={ref} className={clsx('dnd__entry__container', className)}>
         {showPlaceholder && (
-          <div className="dnd__entry__placeholder">
+          <div
+            className={clsx(
+              'dnd__entry__placeholder',
+              placeholderContainerClassName,
+            )}
+          >
             {placeholder ? (
               <>{placeholder}</>
             ) : (

@@ -48,6 +48,7 @@ import {
   PanelHeader,
   PanelHeaderActions,
   Panel,
+  DragPreviewLayer,
 } from '@finos/legend-art';
 import {
   assertErrorThrown,
@@ -57,7 +58,12 @@ import {
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useCallback, useRef, useState } from 'react';
-import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
+import {
+  type DropTargetMonitor,
+  useDrag,
+  useDragLayer,
+  useDrop,
+} from 'react-dnd';
 import type { QueryBuilderTDS_WindowOperator } from '../../stores/fetch-structure/tds/window/operators/QueryBuilderTDS_WindowOperator.js';
 import {
   type QueryBuilderWindowState,
@@ -75,6 +81,7 @@ import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/Quer
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
 import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
+import { CAN_DROP_MAIN_GROUP_DND_TYPES } from './QueryBuilderPostFilterPanel.js';
 
 // helpers
 const createWindowColumnState = (
@@ -965,6 +972,10 @@ const QueryBuilderWindowColumnEditor = observer(
         ref={ref}
         className="query-builder__olap__column"
         showPlaceholder={isBeingDragged}
+        placeholder={
+          <div className="query-builder__olap__column__placeholder" />
+        }
+        placeholderContainerClassName="query-builder__olap__column__placeholder__container"
       >
         <ContextMenu
           content={
@@ -1236,6 +1247,7 @@ export const QueryBuilderTDSWindowPanel = observer(
         tdsWindowState.setEditColumn(newWindowState);
       }
     };
+
     // Drag and Drop
     const handleDrop = useCallback(
       async (item: QueryBuilderWindowDropTarget): Promise<void> => {
@@ -1253,6 +1265,7 @@ export const QueryBuilderTDSWindowPanel = observer(
       },
       [applicationStore, tdsWindowState],
     );
+
     const [{ isDragOver }, dropTargetConnector] = useDrop<
       QueryBuilderWindowDropTarget,
       void,
@@ -1274,6 +1287,18 @@ export const QueryBuilderTDSWindowPanel = observer(
       }),
       [applicationStore, handleDrop],
     );
+
+    const { isDroppable } = useDragLayer((monitor) => ({
+      isDroppable:
+        monitor.isDragging() &&
+        CAN_DROP_MAIN_GROUP_DND_TYPES.includes(
+          monitor.getItemType()?.toString() ?? '',
+        ),
+    }));
+
+    const addWindowColumnRef = useRef<HTMLDivElement>(null);
+    dropTargetConnector(addWindowColumnRef);
+
     return (
       <Panel>
         <div
@@ -1301,7 +1326,8 @@ export const QueryBuilderTDSWindowPanel = observer(
           </PanelHeader>
           <PanelContent>
             <PanelDropZone
-              isDragOver={isDragOver}
+              isDragOver={isDragOver && tdsWindowState.isEmpty}
+              isDroppable={isDroppable && tdsWindowState.isEmpty}
               dropTargetConnector={dropTargetConnector}
             >
               {tdsWindowState.isEmpty && (
@@ -1311,16 +1337,43 @@ export const QueryBuilderTDSWindowPanel = observer(
                 />
               )}
               {!tdsWindowState.isEmpty && (
+                <>
+                  <DragPreviewLayer
+                    labelGetter={(
+                      item: QueryBuilderWindowColumnDragSource,
+                    ): string =>
+                      item.columnState.columnName === ''
+                        ? '(unknown)'
+                        : item.columnState.columnName
+                    }
+                    types={[QUERY_BUILDER_WINDOW_COLUMN_DND_TYPE]}
+                  />
+                  <div
+                    data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS}
+                    className="query-builder__olap__columns"
+                  >
+                    {tdsWindowState.windowColumns.map((col) => (
+                      <QueryBuilderWindowColumnEditor
+                        windowColumnState={col}
+                        key={col.uuid}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+              {isDroppable && !tdsWindowState.isEmpty && (
                 <div
-                  data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS}
-                  className="query-builder__olap__columns"
+                  ref={addWindowColumnRef}
+                  className="query-builder__olap__free-drop-zone__container"
                 >
-                  {tdsWindowState.windowColumns.map((col) => (
-                    <QueryBuilderWindowColumnEditor
-                      windowColumnState={col}
-                      key={col.uuid}
-                    />
-                  ))}
+                  <PanelEntryDropZonePlaceholder
+                    isDragOver={isDragOver}
+                    isDroppable={isDroppable}
+                    className="query-builder__olap__free-drop-zone"
+                    label="Add new window function column"
+                  >
+                    <></>
+                  </PanelEntryDropZonePlaceholder>
                 </div>
               )}
             </PanelDropZone>

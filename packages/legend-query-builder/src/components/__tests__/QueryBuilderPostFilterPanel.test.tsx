@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { test, expect } from '@jest/globals';
+import { test, expect, describe } from '@jest/globals';
 import {
-  waitFor,
   act,
   getByText,
   queryAllByTestId,
@@ -27,11 +26,12 @@ import {
   getByTitle,
   queryAllByTitle,
   getByTestId,
-  getAllByTestId,
   getByRole,
-  getAllByText,
   findByDisplayValue,
   findByText,
+  findByTitle,
+  findAllByTestId,
+  findAllByText,
 } from '@testing-library/react';
 import {
   TEST_DATA__lambda_WithDerivedProjectColumnsUsingConstAndParams,
@@ -54,8 +54,12 @@ import {
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import { integrationTest } from '@finos/legend-shared/test';
 import {
+  type DataType,
+  type RawMappingModelCoverageAnalysisResult,
   Core_GraphManagerPreset,
+  Enumeration,
   PRIMITIVE_TYPE,
+  PrimitiveType,
   RawLambda,
   create_RawLambda,
   stub_RawLambda,
@@ -90,6 +94,7 @@ import {
 import { INTERNAL__BasicQueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { QueryBuilderAdvancedWorkflowState } from '../../stores/query-workflow/QueryBuilderWorkFlowState.js';
 import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
+import type { Entity } from '@finos/legend-storage';
 
 test(
   integrationTest('Query builder loads simple post-filter with DateTime value'),
@@ -109,16 +114,12 @@ test(
         ),
       );
     });
-    const queryBuilderFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const queryBuilderFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
 
     expect(
-      await waitFor(() =>
-        getByText(queryBuilderFilterPanel, '"2023-09-09T16:06:10"'),
-      ),
+      await findByText(queryBuilderFilterPanel, '"2023-09-09T16:06:10"'),
     ).not.toBeNull();
   },
 );
@@ -146,10 +147,8 @@ test(
     });
 
     // gather all nodes
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
     let nodeContainers = queryAllByTestId(
       postFilterPanel,
@@ -238,11 +237,11 @@ test(
       nodeContainers,
       { shouldHaveResetButton: false },
     );
-    const constantPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS),
+    const constantPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
     );
-    const parameterPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    const parameterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
     );
     // dnd const `integerConst` -> Age Value
     const intConst = getByText(constantPanel, 'integerConst');
@@ -340,10 +339,8 @@ test(
     expect(getByText(strictDateNode, 'dateParam')).not.toBeNull();
 
     // remove all filter nodes
-    const filterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
-      ),
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
     );
     const filterNodes = queryAllByTestId(
       filterPanel,
@@ -375,8 +372,8 @@ test(
     ).toBe(0);
     expect(queryByText(filterPanel, 'Add a filter condition')).not.toBeNull();
 
-    const tdsPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
+    const tdsPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS,
     );
     const removeCols = queryAllByTitle(
       tdsPanel,
@@ -506,19 +503,15 @@ test(
     });
 
     // gather all nodes
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
 
-    const filterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
-      ),
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
     );
-    const tdsPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
+    const tdsPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS,
     );
 
     // remove all filter nodes
@@ -693,10 +686,8 @@ test(
     });
 
     // gather all nodes
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
 
     const node = getByTestId(
@@ -733,29 +724,28 @@ test(
       tdsState.setShowPostFilterPanel(true);
     });
 
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
-    const tdsProjectionPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-      ),
+    const tdsProjectionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
     );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
     );
 
     // DND from explorer to projection panel
-    const firstNameExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'First Name'),
+    const firstNameExplorerDragSource = await findByText(
+      explorerPanel,
+      'First Name',
     );
-    const lastNameExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Last Name'),
+    const lastNameExplorerDragSource = await findByText(
+      explorerPanel,
+      'Last Name',
     );
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
+    const tdsProjectionDropZone = await findByText(
+      tdsProjectionPanel,
+      'Add a projection column',
     );
     await dragAndDrop(
       firstNameExplorerDragSource,
@@ -771,11 +761,13 @@ test(
     );
 
     // DND First Name from projection panel to post-filter panel
-    const firstNameTDSDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'First Name'),
+    const firstNameTDSDragSource = await findByText(
+      tdsProjectionPanel,
+      'First Name',
     );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
     );
     await dragAndDrop(
       firstNameTDSDragSource,
@@ -783,19 +775,18 @@ test(
       postFilterPanel,
       'Add a post-filter condition',
     );
-    await waitFor(() => getByText(postFilterPanel, 'First Name'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
-    let contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    await findByText(postFilterPanel, 'First Name');
+    await findByText(postFilterPanel, 'is');
+    let contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(1);
 
     // DND Last Name from projection panel to First Name right-side value
-    const lastNameTDSDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Last Name'),
+    const lastNameTDSDragSource = await findByText(
+      tdsProjectionPanel,
+      'Last Name',
     );
     await dragAndDrop(
       lastNameTDSDragSource,
@@ -803,12 +794,10 @@ test(
       postFilterPanel,
       'Change Filter Value',
     );
-    await waitFor(() => getByText(postFilterPanel, 'Last Name'));
-    contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    await findByText(postFilterPanel, 'Last Name');
+    contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(1);
 
@@ -819,20 +808,16 @@ test(
       postFilterPanel,
       'Change Filter Value',
     );
-    await waitFor(() =>
-      expect(getAllByText(postFilterPanel, 'First Name')).toHaveLength(2),
-    );
-    contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    expect(await findAllByText(postFilterPanel, 'First Name')).toHaveLength(2);
+    contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(1);
 
     // Click remote button to reset the right-side value
     fireEvent.click(getByTitle(postFilterPanel, 'Reset'));
-    await waitFor(() => getByText(postFilterPanel, 'First Name'));
+    await findByText(postFilterPanel, 'First Name');
   },
 );
 
@@ -860,29 +845,25 @@ test(
       tdsState.setShowPostFilterPanel(true);
     });
 
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
-    const tdsProjectionPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-      ),
+    const tdsProjectionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
     );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
     );
 
     // DND from explorer to projection panel
-    const firstNameExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'First Name'),
+    const firstNameExplorerDragSource = await findByText(
+      explorerPanel,
+      'First Name',
     );
-    const ageExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Age'),
-    );
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
+    const ageExplorerDragSource = await findByText(explorerPanel, 'Age');
+    const tdsProjectionDropZone = await findByText(
+      tdsProjectionPanel,
+      'Add a projection column',
     );
     await dragAndDrop(
       firstNameExplorerDragSource,
@@ -898,11 +879,13 @@ test(
     );
 
     // DND First Name from projection panel to post-filter panel
-    const firstNameTDSDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'First Name'),
+    const firstNameTDSDragSource = await findByText(
+      tdsProjectionPanel,
+      'First Name',
     );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
     );
     await dragAndDrop(
       firstNameTDSDragSource,
@@ -910,20 +893,16 @@ test(
       postFilterPanel,
       'Add a post-filter condition',
     );
-    await waitFor(() => getByText(postFilterPanel, 'First Name'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
-    const contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    await findByText(postFilterPanel, 'First Name');
+    await findByText(postFilterPanel, 'is');
+    const contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(1);
 
     // Check that DND Age from projection panel doesn't allow dropping on First Name right-side value
-    const ageTDSDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Age'),
-    );
+    const ageTDSDragSource = await findByText(tdsProjectionPanel, 'Age');
     fireEvent.dragStart(ageTDSDragSource);
     expect(queryByText(postFilterPanel, 'Change Filter Value')).toBeNull();
 
@@ -942,6 +921,223 @@ test(
     // Check that DND Age from projection panel still doesn't allow dropping on First Name right-side value
     fireEvent.dragStart(ageTDSDragSource);
     expect(queryByText(postFilterPanel, 'Change Filter Value')).toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder allows DND window function column to right side value of compatible post-filter condition',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+      const tdsState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      tdsState.setShowPostFilterPanel(true);
+      tdsState.setShowWindowFuncPanel(true);
+    });
+
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
+    );
+    const windowFunctionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+    );
+    const tdsProjectionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+    );
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+
+    // DND from explorer to projection panel
+    const ageExplorerDragSource = await findByText(explorerPanel, 'Age');
+    const tdsProjectionDropZone = await findByText(
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      ageExplorerDragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+
+    // DND Age from projection panel to post-filter panel
+    const ageTDSDragSource = await findByText(tdsProjectionPanel, 'Age');
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
+    );
+    await dragAndDrop(
+      ageTDSDragSource,
+      postFilterDropZone,
+      postFilterPanel,
+      'Add a post-filter condition',
+    );
+    await findByText(postFilterPanel, 'Age');
+    await findByText(postFilterPanel, 'is');
+
+    // DND Age from projection panel to window function panel
+    const windowFunctionDropZone = await findByText(
+      windowFunctionPanel,
+      'Add Window Function Column',
+    );
+    await dragAndDrop(
+      ageTDSDragSource,
+      windowFunctionDropZone,
+      windowFunctionPanel,
+      'Add Window Function Column',
+    );
+    await findByText(windowFunctionPanel, 'Age');
+    await findByDisplayValue(windowFunctionPanel, 'sum of Age');
+
+    // Verify that window function column can be removed
+    expect(
+      getByTitle(windowFunctionPanel, 'Remove').hasAttribute('disabled'),
+    ).toBe(false);
+
+    // DND sum of Age from window function panel to post-filter condition value
+    const sumOfAgeDragSource = await findByTitle(
+      windowFunctionPanel,
+      'Drag Element',
+    );
+    await dragAndDrop(
+      sumOfAgeDragSource,
+      postFilterPanel,
+      postFilterPanel,
+      'Change Filter Value',
+    );
+    await findByText(postFilterPanel, 'sum of Age');
+
+    // Verify that window function column can not be removed
+    expect(
+      getByTitle(
+        windowFunctionPanel,
+        "This column is used in the post filter and can't be removed",
+      ).hasAttribute('disabled'),
+    ).toBe(true);
+
+    // Click reset button to reset the right-side value
+    fireEvent.click(getByTitle(postFilterPanel, 'Reset'));
+    expect(queryByText(postFilterPanel, 'sum of Age')).toBeNull();
+
+    // Verify that window function column can be removed
+    expect(
+      getByTitle(windowFunctionPanel, 'Remove').hasAttribute('disabled'),
+    ).toBe(false);
+  },
+);
+
+test(
+  integrationTest(
+    "Query builder doesn't allow DND window function column to right side value when types are incompatible",
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+      const tdsState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      tdsState.setShowPostFilterPanel(true);
+      tdsState.setShowWindowFuncPanel(true);
+    });
+
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
+    );
+    const windowFunctionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WINDOW_GROUPBY,
+    );
+    const tdsProjectionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+    );
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+
+    // DND from explorer to projection panel
+    const firstNameExplorerDragSource = await findByText(
+      explorerPanel,
+      'First Name',
+    );
+    const tdsProjectionDropZone = await findByText(
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      firstNameExplorerDragSource,
+      tdsProjectionDropZone,
+      tdsProjectionPanel,
+      'Add a projection column',
+    );
+
+    // DND First Name from projection panel to post-filter panel
+    const firstNameTDSDragSource = await findByText(
+      tdsProjectionPanel,
+      'First Name',
+    );
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
+    );
+    await dragAndDrop(
+      firstNameTDSDragSource,
+      postFilterDropZone,
+      postFilterPanel,
+      'Add a post-filter condition',
+    );
+    await findByText(postFilterPanel, 'First Name');
+    await findByText(postFilterPanel, 'is');
+
+    // DND First Name from projection panel to window function panel
+    const windowFunctionDropZone = await findByText(
+      windowFunctionPanel,
+      'Add Window Function Column',
+    );
+    await dragAndDrop(
+      firstNameTDSDragSource,
+      windowFunctionDropZone,
+      windowFunctionPanel,
+      'Add Window Function Column',
+    );
+    await findByText(windowFunctionPanel, 'First Name');
+    await findByDisplayValue(windowFunctionPanel, 'sum of First Name');
+
+    // Check that DND sum of First Name from window function panel doesn't allow dropping on First Name right-side value
+    const sumOfFirstNameDragSource = await findByTitle(
+      windowFunctionPanel,
+      'Drag Element',
+    );
+    fireEvent.dragStart(sumOfFirstNameDragSource);
+    expect(queryByText(postFilterPanel, 'Change Filter Value')).toBeNull();
+
+    // Check that DND First Name from projection panel does show correct placeholder text
+    fireEvent.dragStart(firstNameTDSDragSource);
+    expect(getByText(postFilterPanel, 'Change Filter Value')).not.toBeNull();
   },
 );
 
@@ -969,29 +1165,28 @@ test(
       tdsState.setShowPostFilterPanel(true);
     });
 
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
-    const tdsProjectionPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-      ),
+    const tdsProjectionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
     );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
     );
 
     // DND from explorer to projection panel
-    const firstNameExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'First Name'),
+    const firstNameExplorerDragSource = await findByText(
+      explorerPanel,
+      'First Name',
     );
-    const lastNameExplorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Last Name'),
+    const lastNameExplorerDragSource = await findByText(
+      explorerPanel,
+      'Last Name',
     );
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
+    const tdsProjectionDropZone = await findByText(
+      tdsProjectionPanel,
+      'Add a projection column',
     );
     await dragAndDrop(
       firstNameExplorerDragSource,
@@ -1007,11 +1202,13 @@ test(
     );
 
     // DND First Name from projection panel to post-filter panel
-    const firstNameTDSDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'First Name'),
+    const firstNameTDSDragSource = await findByText(
+      tdsProjectionPanel,
+      'First Name',
     );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
     );
     await dragAndDrop(
       firstNameTDSDragSource,
@@ -1019,19 +1216,18 @@ test(
       postFilterPanel,
       'Add a post-filter condition',
     );
-    await waitFor(() => getByText(postFilterPanel, 'First Name'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
-    let contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    await findByText(postFilterPanel, 'First Name');
+    await findByText(postFilterPanel, 'is');
+    let contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(1);
 
     // DND Last Name from projection panel to First Name left-side badge
-    const lastNameTDSDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Last Name'),
+    const lastNameTDSDragSource = await findByText(
+      tdsProjectionPanel,
+      'Last Name',
     );
     await dragAndDrop(
       lastNameTDSDragSource,
@@ -1039,16 +1235,12 @@ test(
       postFilterPanel,
       'First Name',
     );
-    await waitFor(() => getByText(postFilterPanel, 'Last Name'));
-    await waitFor(() =>
-      expect(getAllByText(postFilterPanel, 'is')).toHaveLength(2),
-    );
-    await waitFor(() => getByText(postFilterPanel, 'and'));
-    contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    await findByText(postFilterPanel, 'Last Name');
+    expect(await findAllByText(postFilterPanel, 'is')).toHaveLength(2);
+    await findByText(postFilterPanel, 'and');
+    contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(3);
   },
@@ -1077,41 +1269,34 @@ test(
       );
       tdsState.setShowPostFilterPanel(true);
     });
-    const filterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
-      ),
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
     );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
     );
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
-    const fetchStructurePanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
-      ),
+    const fetchStructurePanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
     );
 
     // Drag and drop from explorer to filter
-    const filterDropZone = await waitFor(() =>
-      getByText(filterPanel, 'Add a filter condition'),
+    const filterDropZone = await findByText(
+      filterPanel,
+      'Add a filter condition',
     );
-    const explorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Legal Name'),
-    );
+    const explorerDragSource = await findByText(explorerPanel, 'Legal Name');
     await dragAndDrop(
       explorerDragSource,
       filterDropZone,
       filterPanel,
       'Add a filter condition',
     );
-    await waitFor(() => getByText(filterPanel, 'Legal Name'));
-    await waitFor(() => getByText(filterPanel, 'is'));
-    await waitFor(() => getByDisplayValue(filterPanel, ''));
+    await findByText(filterPanel, 'Legal Name');
+    await findByText(filterPanel, 'is');
+    await findByDisplayValue(filterPanel, '');
 
     // Drag and drop from explorer to fetch structure
     const tdsDropZone = await findByText(
@@ -1249,120 +1434,281 @@ test(
   },
 );
 
-test(
-  integrationTest(
-    `Query builder uses null as default value for string post-filter and shows validation error`,
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__QueryBuilder_Model_SimpleRelational,
-      stub_RawLambda(),
-      'execution::RelationalMapping',
-      'execution::Runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
-    );
+type PostFilterPanelDefaultValueTestCase = {
+  testName: string;
+  querySetup: {
+    entities: Entity[];
+    modelCoverageAnalysisResult: RawMappingModelCoverageAnalysisResult;
+    mapping: string;
+    runtime: string;
+  };
+  testClass: string;
+  property: string;
+  propertyType: DataType;
+  valueToSet: string | CUSTOM_DATE_PICKER_OPTION;
+  allowEmptyValue?: boolean;
+  aggregate?: string;
+};
 
-    const _firmClass =
-      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
-    await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
-      const tdsState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
+const POST_FILTER_PANEL_DEFAULT_VALUE_TEST_CASES: PostFilterPanelDefaultValueTestCase[] =
+  [
+    {
+      testName: `Query builder uses null as default value for string post-filter and shows validation error`,
+      querySetup: {
+        entities: TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+        modelCoverageAnalysisResult:
+          TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+        mapping: 'model::RelationalMapping',
+        runtime: 'model::Runtime',
+      },
+      testClass: 'model::Person',
+      property: 'First Name',
+      propertyType: PrimitiveType.STRING,
+      valueToSet: 'test',
+      allowEmptyValue: true,
+    },
+    {
+      testName: `Query builder uses null as default value for numerical post-filter and shows validation error`,
+      querySetup: {
+        entities: TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+        modelCoverageAnalysisResult:
+          TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+        mapping: 'model::RelationalMapping',
+        runtime: 'model::Runtime',
+      },
+      testClass: 'model::Person',
+      property: 'Age',
+      propertyType: PrimitiveType.INTEGER,
+      valueToSet: '123',
+    },
+    {
+      testName: `Query builder uses null as default value for numerical post-filter on aggregate projection column and shows validation error`,
+      querySetup: {
+        entities: TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+        modelCoverageAnalysisResult:
+          TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+        mapping: 'model::RelationalMapping',
+        runtime: 'model::Runtime',
+      },
+      testClass: 'model::Person',
+      property: 'Age',
+      propertyType: PrimitiveType.INTEGER,
+      valueToSet: '123',
+      aggregate: 'count',
+    },
+    {
+      testName: `Query builder uses null as default value for date post-filter and shows validation error`,
+      querySetup: {
+        entities: TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+        modelCoverageAnalysisResult:
+          TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+        mapping: 'model::RelationalMapping',
+        runtime: 'model::Runtime',
+      },
+      testClass: 'model::Person',
+      property: 'Dob Date',
+      propertyType: PrimitiveType.DATE,
+      valueToSet: CUSTOM_DATE_PICKER_OPTION.TODAY,
+    },
+    {
+      testName: `Query builder uses null as default value for enum post-filter and shows validation error`,
+      querySetup: {
+        entities: TEST_DATA_QueryBuilder_QueryExecution_Entities,
+        modelCoverageAnalysisResult:
+          TEST_DATA__ModelCoverageAnalysisResult_QueryExecution_Entities,
+        mapping: 'model::RelationalMapping',
+        runtime: 'model::Runtime',
+      },
+      testClass: 'model::Firm',
+      property: 'Inc Type',
+      propertyType: Enumeration.prototype,
+      valueToSet: 'Corp',
+    },
+  ];
+
+describe(integrationTest('Post-filter default values are properly set'), () => {
+  test.each(POST_FILTER_PANEL_DEFAULT_VALUE_TEST_CASES)(
+    '$testName',
+    async (testCase: PostFilterPanelDefaultValueTestCase) => {
+      const {
+        testClass,
+        querySetup: { entities, mapping, runtime, modelCoverageAnalysisResult },
+        property,
+        propertyType,
+        valueToSet,
+        allowEmptyValue,
+        aggregate,
+      } = testCase;
+      const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+        entities,
+        stub_RawLambda(),
+        mapping,
+        runtime,
+        modelCoverageAnalysisResult,
       );
-      tdsState.setShowPostFilterPanel(true);
-    });
 
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
+      // Set up the query builder
+      const _class =
+        queryBuilderState.graphManagerState.graph.getClass(testClass);
+      await act(async () => {
+        queryBuilderState.changeClass(_class);
+        const tdsState = guaranteeType(
+          queryBuilderState.fetchStructureState.implementation,
+          QueryBuilderTDSState,
+        );
+        tdsState.setShowPostFilterPanel(true);
+      });
+
+      const postFilterPanel = await renderResult.findByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
-    );
-    const tdsProjectionPanel = await waitFor(() =>
-      renderResult.getByTestId(
+      );
+      const tdsProjectionPanel = await renderResult.findByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-      ),
-    );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
-    );
+      );
+      const explorerPanel = await renderResult.findByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+      );
 
-    // Drag and drop
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
-    );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
-    );
-    const explorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Legal Name'),
-    );
-    await dragAndDrop(
-      explorerDragSource,
-      tdsProjectionDropZone,
-      tdsProjectionPanel,
-      'Add a projection column',
-    );
-    const tdsDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Legal Name'),
-    );
-    await dragAndDrop(
-      tdsDragSource,
-      postFilterDropZone,
-      postFilterPanel,
-      'Add a post-filter condition',
-    );
-    await waitFor(() => getByText(postFilterPanel, 'Legal Name'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
-    await waitFor(() => getByDisplayValue(postFilterPanel, ''));
-    const contentNodes = await waitFor(() =>
-      getAllByTestId(
+      // Drag and drop property to fetch structure panel and post-filter panel
+      const explorerDragSource = await findByText(explorerPanel, property);
+      const tdsProjectionDropZone = await findByText(
+        tdsProjectionPanel,
+        'Add a projection column',
+      );
+      await dragAndDrop(
+        explorerDragSource,
+        tdsProjectionDropZone,
+        tdsProjectionPanel,
+        'Add a projection column',
+      );
+
+      if (aggregate) {
+        fireEvent.click(
+          getByTitle(tdsProjectionPanel, 'Choose Aggregate Operator...'),
+        );
+        fireEvent.click(renderResult.getByText(aggregate));
+      }
+
+      // Drag and drop proerty to post-filter panel
+      const tdsDragSource = await findByText(
+        tdsProjectionPanel,
+        `${property}${aggregate ? ` (${aggregate})` : ''}`,
+      );
+      const postFilterDropZone = await findByText(
+        postFilterPanel,
+        'Add a post-filter condition',
+      );
+      await dragAndDrop(
+        tdsDragSource,
+        postFilterDropZone,
+        postFilterPanel,
+        'Add a post-filter condition',
+      );
+      await findByText(
+        postFilterPanel,
+        `${property}${aggregate ? ` (${aggregate})` : ''}`,
+      );
+      await findByText(postFilterPanel, 'is');
+      if (propertyType === PrimitiveType.DATE) {
+        await findByTitle(
+          postFilterPanel,
+          'Click to edit and pick from more date options',
+        );
+      } else if (propertyType === Enumeration.prototype) {
+        await findByText(postFilterPanel, 'Select value');
+      } else {
+        await findByDisplayValue(postFilterPanel, '');
+      }
+      const contentNodes = await findAllByTestId(
         postFilterPanel,
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
-    );
-    expect(contentNodes.length).toBe(1);
+      );
+      expect(contentNodes.length).toBe(1);
 
-    // Verify validation issue
-    expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', true);
+      // Verify validation issue
+      expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
+      expect(
+        renderResult.getByRole('button', { name: 'Run Query' }),
+      ).toHaveProperty('disabled', true);
 
-    // Enter value
-    const filterValueInput = getByRole(postFilterPanel, 'textbox');
-    fireEvent.change(filterValueInput, { target: { value: 'test' } });
-    await waitFor(() => getByDisplayValue(postFilterPanel, 'test'));
+      // Enter value
+      if (propertyType === PrimitiveType.DATE) {
+        const filterValueButton = getByTitle(
+          postFilterPanel,
+          'Click to edit and pick from more date options',
+        );
+        fireEvent.click(filterValueButton);
+        fireEvent.click(renderResult.getByText(valueToSet));
+        fireEvent.keyDown(
+          renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE),
+          {
+            key: 'Escape',
+            code: 'Escape',
+          },
+        );
+        expect(getByText(postFilterPanel, `"${valueToSet}"`)).not.toBeNull();
+      } else if (propertyType === Enumeration.prototype) {
+        const filterValueDropdown = guaranteeNonNullable(
+          getByText(postFilterPanel, 'Select value').parentElement
+            ?.parentElement,
+        );
+        selectFirstOptionFromCustomSelectorInput(
+          filterValueDropdown,
+          false,
+          false,
+        );
+        expect(getByText(postFilterPanel, `"${valueToSet}"`)).not.toBeNull();
+      } else {
+        const filterValueInput = getByRole(postFilterPanel, 'textbox');
+        fireEvent.change(filterValueInput, {
+          target: { value: valueToSet },
+        });
+        await findByDisplayValue(postFilterPanel, valueToSet);
+      }
 
-    // Verify no validation issue
-    expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', false);
+      // Verify no validation issue
+      expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
+      expect(
+        renderResult.getByRole('button', { name: 'Run Query' }),
+      ).toHaveProperty('disabled', false);
 
-    // Delete value to set it to empty string
-    fireEvent.change(filterValueInput, { target: { value: '' } });
-    await waitFor(() => getByDisplayValue(postFilterPanel, ''));
+      if (allowEmptyValue) {
+        // Delete value to set it to empty string
+        const filterValueInput = getByRole(postFilterPanel, 'textbox');
+        fireEvent.change(filterValueInput, { target: { value: '' } });
+        await findByDisplayValue(postFilterPanel, '');
 
-    // Verify no validation issue
-    expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', false);
+        // Verify no validation issue
+        expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
+        expect(
+          renderResult.getByRole('button', { name: 'Run Query' }),
+        ).toHaveProperty('disabled', false);
+      }
 
-    // Click reset button
-    fireEvent.click(getByTitle(postFilterPanel, 'Reset'));
+      if (propertyType !== PrimitiveType.DATE) {
+        if (propertyType === Enumeration.prototype) {
+          fireEvent.click(getByText(postFilterPanel, `"${valueToSet}"`));
+        }
 
-    // Verify value is reset
-    await waitFor(() => getByDisplayValue(postFilterPanel, ''));
+        // Click reset button
+        fireEvent.click(getByTitle(postFilterPanel, 'Reset'));
 
-    // Verify validation issue
-    expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', true);
-  },
-);
+        // Verify value is reset
+        if (propertyType === Enumeration.prototype) {
+          await findByText(postFilterPanel, 'Select value');
+        } else {
+          await findByDisplayValue(postFilterPanel, '');
+        }
+
+        // Verify validation issue
+        expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
+        expect(
+          renderResult.getByRole('button', { name: 'Run Query' }),
+        ).toHaveProperty('disabled', true);
+      }
+    },
+  );
+});
 
 test(
   integrationTest(
@@ -1388,52 +1734,44 @@ test(
       tdsState.setShowPostFilterPanel(true);
     });
 
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
-    const tdsProjectionPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-      ),
+    const tdsProjectionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
     );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
     );
 
     // Drag and drop
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
+    const tdsProjectionDropZone = await findByText(
+      tdsProjectionPanel,
+      'Add a projection column',
     );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
     );
-    const explorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Is Active'),
-    );
+    const explorerDragSource = await findByText(explorerPanel, 'Is Active');
     await dragAndDrop(
       explorerDragSource,
       tdsProjectionDropZone,
       tdsProjectionPanel,
       'Add a projection column',
     );
-    const tdsDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Is Active'),
-    );
+    const tdsDragSource = await findByText(tdsProjectionPanel, 'Is Active');
     await dragAndDrop(
       tdsDragSource,
       postFilterDropZone,
       postFilterPanel,
       'Add a post-filter condition',
     );
-    await waitFor(() => getByText(postFilterPanel, 'Is Active'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
-    const contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    await findByText(postFilterPanel, 'Is Active');
+    await findByText(postFilterPanel, 'is');
+    const contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(1);
 
@@ -1442,439 +1780,6 @@ test(
     expect(
       renderResult.getByRole('button', { name: 'Run Query' }),
     ).toHaveProperty('disabled', false);
-  },
-);
-
-test(
-  integrationTest(
-    `Query builder uses null as default value for numerical post-filter and shows validation error`,
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__QueryBuilder_Model_SimpleRelational,
-      stub_RawLambda(),
-      'execution::RelationalMapping',
-      'execution::Runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
-    );
-
-    const _firmClass =
-      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
-    await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
-      const tdsState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      );
-      tdsState.setShowPostFilterPanel(true);
-    });
-
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
-    );
-    const tdsProjectionPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-      ),
-    );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
-    );
-
-    // Drag and drop
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
-    );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
-    );
-    const explorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Id'),
-    );
-    await dragAndDrop(
-      explorerDragSource,
-      tdsProjectionDropZone,
-      tdsProjectionPanel,
-      'Add a projection column',
-    );
-    const tdsDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Id'),
-    );
-    await dragAndDrop(
-      tdsDragSource,
-      postFilterDropZone,
-      postFilterPanel,
-      'Add a post-filter condition',
-    );
-    await waitFor(() => getByText(postFilterPanel, 'Id'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
-    await waitFor(() => getByDisplayValue(postFilterPanel, ''));
-    const contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
-    );
-    expect(contentNodes.length).toBe(1);
-
-    // Verify validation issue
-    expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', true);
-
-    // Enter value
-    const filterValueInput = getByRole(postFilterPanel, 'textbox');
-    fireEvent.change(filterValueInput, { target: { value: '123' } });
-
-    // Verify no validation issues
-    expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', false);
-
-    // Click reset button
-    fireEvent.click(getByTitle(postFilterPanel, 'Reset'));
-
-    // Verify value is reset
-    await waitFor(() => getByDisplayValue(postFilterPanel, ''));
-
-    // Verify validation issue
-    expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', true);
-  },
-);
-
-test(
-  integrationTest(
-    `Query builder uses null as default value for numerical post-filter on aggregate projection column and shows validation error`,
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__QueryBuilder_Model_SimpleRelational,
-      stub_RawLambda(),
-      'execution::RelationalMapping',
-      'execution::Runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
-    );
-
-    const _firmClass =
-      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
-    await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
-      const tdsState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      );
-      tdsState.setShowPostFilterPanel(true);
-    });
-
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
-    );
-    const tdsProjectionPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-      ),
-    );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
-    );
-
-    // Drag and drop
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
-    );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
-    );
-    const explorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Id'),
-    );
-    await dragAndDrop(
-      explorerDragSource,
-      tdsProjectionDropZone,
-      tdsProjectionPanel,
-      'Add a projection column',
-    );
-
-    fireEvent.click(
-      getByTitle(tdsProjectionPanel, 'Choose Aggregate Operator...'),
-    );
-    fireEvent.click(renderResult.getByText('count'));
-    const tdsDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Id (count)'),
-    );
-    await dragAndDrop(
-      tdsDragSource,
-      postFilterDropZone,
-      postFilterPanel,
-      'Add a post-filter condition',
-    );
-    expect(queryBuilderState.canBuildQuery).toBe(false);
-
-    await waitFor(() => getByText(postFilterPanel, 'Id (count)'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
-    await waitFor(() => getByDisplayValue(postFilterPanel, ''));
-    const contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
-    );
-    expect(contentNodes.length).toBe(1);
-
-    // Verify validation issue
-    expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', true);
-
-    // Enter value
-    const filterValueInput = getByRole(postFilterPanel, 'textbox');
-    fireEvent.change(filterValueInput, { target: { value: '123' } });
-
-    // Verify no validation issues
-    expect(queryBuilderState.canBuildQuery).toBe(true);
-    expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', false);
-
-    // Click reset button
-    fireEvent.click(getByTitle(postFilterPanel, 'Reset'));
-
-    // Verify value is reset
-    await waitFor(() => getByDisplayValue(postFilterPanel, ''));
-
-    // Verify validation issue
-    expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', true);
-  },
-);
-
-test(
-  integrationTest(
-    `Query builder uses null as default value for date post-filter and shows validation error`,
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
-      stub_RawLambda(),
-      'model::RelationalMapping',
-      'model::Runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
-    );
-
-    const _personClass =
-      queryBuilderState.graphManagerState.graph.getClass('model::Person');
-    await act(async () => {
-      queryBuilderState.changeClass(_personClass);
-      const tdsState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      );
-      tdsState.setShowPostFilterPanel(true);
-    });
-
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
-    );
-    const tdsProjectionPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-      ),
-    );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
-    );
-
-    // Drag and drop
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
-    );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
-    );
-    const explorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Dob Date'),
-    );
-    await dragAndDrop(
-      explorerDragSource,
-      tdsProjectionDropZone,
-      tdsProjectionPanel,
-      'Add a projection column',
-    );
-    const tdsDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Dob Date'),
-    );
-    await dragAndDrop(
-      tdsDragSource,
-      postFilterDropZone,
-      postFilterPanel,
-      'Add a post-filter condition',
-    );
-    await waitFor(() => getByText(postFilterPanel, 'Dob Date'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
-    await waitFor(() =>
-      getByTitle(
-        postFilterPanel,
-        'Click to edit and pick from more date options',
-      ),
-    );
-    const contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
-    );
-    expect(contentNodes.length).toBe(1);
-
-    // Verify validation issue
-    expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', true);
-
-    // Select value
-    const filterValueButton = getByTitle(
-      postFilterPanel,
-      'Click to edit and pick from more date options',
-    );
-    fireEvent.click(filterValueButton);
-    fireEvent.click(renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.TODAY));
-    fireEvent.keyDown(
-      renderResult.getByText(CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE),
-      {
-        key: 'Escape',
-        code: 'Escape',
-      },
-    );
-
-    // Verify no validation issues
-    expect(getByText(postFilterPanel, '"Today"')).not.toBeNull();
-    expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', false);
-  },
-);
-
-test(
-  integrationTest(
-    `Query builder uses null as default value for enum post-filter and shows validation error`,
-  ),
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA_QueryBuilder_QueryExecution_Entities,
-      stub_RawLambda(),
-      'model::RelationalMapping',
-      'model::Runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_QueryExecution_Entities,
-    );
-
-    const _firmClass =
-      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
-    await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
-      const tdsState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      );
-      tdsState.setShowPostFilterPanel(true);
-    });
-
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
-    );
-    const tdsProjectionPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-      ),
-    );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
-    );
-
-    // Drag and drop
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
-    );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
-    );
-    const explorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Inc Type'),
-    );
-    await dragAndDrop(
-      explorerDragSource,
-      tdsProjectionDropZone,
-      tdsProjectionPanel,
-      'Add a projection column',
-    );
-    const tdsDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Inc Type'),
-    );
-    await dragAndDrop(
-      tdsDragSource,
-      postFilterDropZone,
-      postFilterPanel,
-      'Add a post-filter condition',
-    );
-    await waitFor(() => getByText(postFilterPanel, 'Inc Type'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
-    await waitFor(() => getByText(postFilterPanel, 'Select value'));
-    const contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
-    );
-    expect(contentNodes.length).toBe(1);
-
-    // Verify validation issue
-    expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', true);
-
-    // Select value
-    const filterValueDropdown = guaranteeNonNullable(
-      getByText(postFilterPanel, 'Select value').parentElement?.parentElement,
-    );
-    selectFirstOptionFromCustomSelectorInput(filterValueDropdown, false, false);
-
-    // Verify no validation issues
-    expect(getByText(postFilterPanel, '"Corp"')).not.toBeNull();
-    expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', false);
-
-    // Click reset button
-    fireEvent.click(getByText(postFilterPanel, '"Corp"'));
-    fireEvent.click(getByTitle(postFilterPanel, 'Reset'));
-
-    // Verify value is reset
-    await waitFor(() => getByText(postFilterPanel, 'Select value'));
-
-    // Verify validation issue
-    expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', true);
   },
 );
 
@@ -1902,53 +1807,45 @@ test(
       tdsState.setShowPostFilterPanel(true);
     });
 
-    const postFilterPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-      ),
+    const postFilterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
-    const tdsProjectionPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
-      ),
+    const tdsProjectionPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
     );
-    const explorerPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
     );
 
     // Drag and drop
-    const tdsProjectionDropZone = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Add a projection column'),
+    const tdsProjectionDropZone = await findByText(
+      tdsProjectionPanel,
+      'Add a projection column',
     );
-    const postFilterDropZone = await waitFor(() =>
-      getByText(postFilterPanel, 'Add a post-filter condition'),
+    const postFilterDropZone = await findByText(
+      postFilterPanel,
+      'Add a post-filter condition',
     );
-    const explorerDragSource = await waitFor(() =>
-      getByText(explorerPanel, 'Legal Name'),
-    );
+    const explorerDragSource = await findByText(explorerPanel, 'Legal Name');
     await dragAndDrop(
       explorerDragSource,
       tdsProjectionDropZone,
       tdsProjectionPanel,
       'Add a projection column',
     );
-    const tdsDragSource = await waitFor(() =>
-      getByText(tdsProjectionPanel, 'Legal Name'),
-    );
+    const tdsDragSource = await findByText(tdsProjectionPanel, 'Legal Name');
     await dragAndDrop(
       tdsDragSource,
       postFilterDropZone,
       postFilterPanel,
       'Add a post-filter condition',
     );
-    await waitFor(() => getByText(postFilterPanel, 'Legal Name'));
-    await waitFor(() => getByText(postFilterPanel, 'is'));
-    await waitFor(() => getByDisplayValue(postFilterPanel, ''));
-    const contentNodes = await waitFor(() =>
-      getAllByTestId(
-        postFilterPanel,
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
-      ),
+    await findByText(postFilterPanel, 'Legal Name');
+    await findByText(postFilterPanel, 'is');
+    await findByDisplayValue(postFilterPanel, '');
+    const contentNodes = await findAllByTestId(
+      postFilterPanel,
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_TREE_NODE_CONTENT,
     );
     expect(contentNodes.length).toBe(1);
 

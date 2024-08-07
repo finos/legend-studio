@@ -1052,6 +1052,172 @@ export const TEST_DATA__lambda_postFilterWithRightValAsColEnums = {
   parameters: [],
 };
 
+export const TEST_DATA__lambda_postFilterWithRightValAsWindowFunctionCol = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'olapGroupBy',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'project',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'getAll',
+                  parameters: [
+                    {
+                      _type: 'packageableElementPtr',
+                      fullPath: 'model::postFilter::Person',
+                    },
+                  ],
+                },
+                {
+                  _type: 'collection',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: [
+                    {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'age',
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  _type: 'collection',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: [
+                    {
+                      _type: 'string',
+                      value: 'Age',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 0,
+                upperBound: 0,
+              },
+              values: [],
+            },
+            {
+              _type: 'func',
+              function: 'func',
+              parameters: [
+                {
+                  _type: 'string',
+                  value: 'Age',
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'sum',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'string',
+              value: 'sum of Age',
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'row',
+                    },
+                    {
+                      _type: 'string',
+                      value: 'Age',
+                    },
+                  ],
+                  property: 'getInteger',
+                },
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'row',
+                    },
+                    {
+                      _type: 'string',
+                      value: 'sum of Age',
+                    },
+                  ],
+                  property: 'getNumber',
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'row',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__lambda_postFilterWithResultSetModifier = {
   _type: 'lambda',
   body: [
