@@ -2149,5 +2149,45 @@ test(
     expect(
       await findByText(fetchStructurePanel, 'Employees/Last Name'),
     ).not.toBeNull();
+
+    // Drag and drop nested exploded property from explorer panel to filter panel
+    fireEvent.click(await findByText(explorerPanel, 'Hobbies'));
+
+    const explorerPanelHobbyNameDragSource = await findByText(
+      explorerPanel,
+      'Name',
+    );
+    await dragAndDrop(
+      explorerPanelHobbyNameDragSource,
+      filterPanelDropZone,
+      filterPanel,
+      'Add filter to main group',
+    );
+
+    fireEvent.click(
+      await renderResult.findByRole('button', { name: 'Proceed' }),
+    );
+    await findByText(filterPanel, 'Name');
+    expect(await findAllByText(filterPanel, 'exists')).toHaveLength(3);
+    expect(await findAllByText(filterPanel, 'is')).toHaveLength(3);
+    await findByDisplayValue(filterPanel, '');
+    fireEvent.blur(getByDisplayValue(filterPanel, ''));
+    expect(await findAllByText(filterPanel, '""')).toHaveLength(3);
+
+    // Drag and drop nested exploded property from filter panel to fetch structure panel
+    const filterPanelHobbyNameDragSource = await findByText(
+      filterPanel,
+      'Name',
+    );
+    await dragAndDrop(
+      filterPanelHobbyNameDragSource,
+      fetchStructurePanelDropZone,
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+
+    expect(
+      await findByText(fetchStructurePanel, 'Employees/Hobbies/Name'),
+    ).not.toBeNull();
   },
 );
