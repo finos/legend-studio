@@ -24,11 +24,11 @@ import {
   observe_DataSpaceSupportInfo,
   observe_DataSpaceExecutionContext,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import type {
+import {
   DataElementReference,
-  Mapping,
-  PackageableElementReference,
-  PackageableRuntime,
+  type Mapping,
+  type PackageableElementReference,
+  type PackageableRuntime,
 } from '@finos/legend-graph';
 // import type { PackageableElementReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 // import type { Mapping } from '../../../../legend-graph/src/graph/metamodel/pure/packageableElements/mapping/Mapping.js';
@@ -151,11 +151,11 @@ export const set_mapping = action(
   },
 );
 
-export const set_testData = action(
-  (
-    executionContext: DataSpaceExecutionContext,
-    testData: DataElementReference,
-  ) => {
-    executionContext.testData = testData;
-  },
-);
+// export const set_testData = action(
+//   (
+//     executionContext: DataSpaceExecutionContext,
+//     testData: string | undefined,
+//   ) => {
+//     executionContext.testData = testData;
+//   },
+// );

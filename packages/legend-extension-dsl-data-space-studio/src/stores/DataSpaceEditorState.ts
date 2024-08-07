@@ -19,11 +19,17 @@ import {
   type EditorStore,
   ElementEditorState,
 } from '@finos/legend-application-studio';
-import type { PackageableElement } from '@finos/legend-graph';
+import type {
+  Mapping,
+  PackageableElement,
+  PackageableElementReference,
+  PackageableRuntime,
+} from '@finos/legend-graph';
 import {
   DataSpace,
-  type DataSpaceExecutionContext,
+  DataSpaceExecutionContext,
   DataSpaceSupportEmail,
+  observe_DataSpaceExecutionContext,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { guaranteeType } from '@finos/legend-shared';
 
@@ -40,6 +46,7 @@ export class DataSpaceEditorState extends ElementEditorState {
   selectedSupportInfoType?: SUPPORT_INFO_TYPE;
   selectedTab: DATASPACE_TAB = DATASPACE_TAB.GENERAL;
   selectedExecutionContext?: DataSpaceExecutionContext;
+  newExecutionContextName = '';
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -49,10 +56,13 @@ export class DataSpaceEditorState extends ElementEditorState {
       selectedSupportInfoType: observable,
       selectedTab: observable,
       selectedExecutionContext: observable,
+      newExecutionContextName: observable,
       setSelectedSupportInfoType: action,
       setSelectedTab: action,
       setSelectedExecutionContext: action,
       setDefaultExecutionContext: action,
+      setNewExecutionContextName: action,
+      addExecutionContext: action,
       reprocess: action,
     });
 
@@ -84,7 +94,26 @@ export class DataSpaceEditorState extends ElementEditorState {
 
   setDefaultExecutionContext(context: DataSpaceExecutionContext): void {
     this.dataSpace.defaultExecutionContext = context;
-    this.setSelectedExecutionContext(context);
+  }
+
+  setNewExecutionContextName(name: string): void {
+    this.newExecutionContextName = name;
+  }
+
+  addExecutionContext(
+    name: string,
+    mapping: PackageableElementReference<Mapping>,
+    defaultRuntime: PackageableElementReference<PackageableRuntime>,
+  ): void {
+    const newContext = new DataSpaceExecutionContext();
+    newContext.name = name;
+    newContext.description = `Description for ${name}`;
+    newContext.mapping = mapping;
+    newContext.defaultRuntime = defaultRuntime;
+    this.dataSpace.executionContexts.push(newContext);
+    this.setSelectedExecutionContext(newContext);
+    this.setDefaultExecutionContext(newContext);
+    this.setSelectedTab(DATASPACE_TAB.EXECUTION_CONTEXT);
   }
 
   override reprocess(
