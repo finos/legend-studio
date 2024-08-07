@@ -119,6 +119,12 @@ import {
 } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import { getNameOfValueSpecification } from '../shared/QueryBuilderVariableSelector.js';
 import { QueryBuilderAggregateOperator_Percentile } from '../../stores/fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_Percentile.js';
+import {
+  QUERY_BUILDER_FILTER_DND_TYPE,
+  QueryBuilderFilterTreeConditionNodeData,
+  type QueryBuilderFilterConditionDragSource,
+} from '../../stores/filter/QueryBuilderFilterState.js';
+import { cloneAbstractPropertyExpression } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 
 const QueryBuilderProjectionColumnContextMenu = observer(
   forwardRef<
@@ -1233,7 +1239,8 @@ export const QueryBuilderTDSPanel = observer(
       (
         item:
           | QueryBuilderExplorerTreeDragSource
-          | QueryBuilderFunctionsExplorerDragSource,
+          | QueryBuilderFunctionsExplorerDragSource
+          | QueryBuilderFilterConditionDragSource,
         type: string,
       ): void => {
         switch (type) {
@@ -1267,6 +1274,21 @@ export const QueryBuilderTDSPanel = observer(
               ),
             );
             break;
+          case QUERY_BUILDER_FILTER_DND_TYPE.CONDITION:
+            if (item.node instanceof QueryBuilderFilterTreeConditionNodeData) {
+              tdsState.addColumn(
+                new QueryBuilderSimpleProjectionColumnState(
+                  tdsState,
+                  cloneAbstractPropertyExpression(
+                    (item.node as QueryBuilderFilterTreeConditionNodeData)
+                      .condition.propertyExpressionState.propertyExpression,
+                    tdsState.queryBuilderState.observerContext,
+                  ),
+                  tdsState.queryBuilderState.explorerState.humanizePropertyName,
+                ),
+              );
+            }
+            break;
           default:
             break;
         }
@@ -1284,6 +1306,7 @@ export const QueryBuilderTDSPanel = observer(
         accept: [
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+          QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
           QUERY_BUILDER_FUNCTION_DND_TYPE,
         ],
         drop: (item, monitor): void => {
@@ -1318,6 +1341,7 @@ export const QueryBuilderTDSPanel = observer(
         [
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+          QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
           QUERY_BUILDER_FUNCTION_DND_TYPE,
         ].includes(monitor.getItemType()?.toString() ?? ''),
     }));
