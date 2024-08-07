@@ -24,7 +24,6 @@ import {
   ActionState,
   StopWatch,
   getContentTypeFileExtension,
-  deepClone,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
@@ -38,7 +37,6 @@ import {
   reportGraphAnalytics,
   TDSExecutionResult,
 } from '@finos/legend-graph';
-
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import {
   buildExecutionParameterValues,
@@ -171,6 +169,7 @@ export class QueryBuilderResultState {
       setMouseOverCell: action,
       setQueryRunPromise: action,
       setIsQueryUsageViewerOpened: action,
+      setIsExecutionResultOverflowing: action,
       handlePreConfiguredGridConfig: action,
       updatePreviewLimitInConfig: action,
       setExecutionError: action,
@@ -265,6 +264,24 @@ export class QueryBuilderResultState {
         : Number.MAX_SAFE_INTEGER,
       this.previewLimit,
     );
+
+  processExecutionResult = (
+    promise: Promise<ExecutionResult> | undefined,
+    result: ExecutionResult,
+  ): void => {
+    if (this.queryRunPromise === promise) {
+      const resultLimit = this.getExecutionResultLimit();
+      this.setIsExecutionResultOverflowing(false);
+      if (
+        result instanceof TDSExecutionResult &&
+        result.result.rows.length > resultLimit
+      ) {
+        this.setIsExecutionResultOverflowing(true);
+        result.result.rows = result.result.rows.slice(0, resultLimit);
+      }
+      this.setExecutionResult(result);
+    }
+  };
 
   processWeightedColumnPairsMap(
     config: QueryGridConfig,
@@ -480,19 +497,7 @@ export class QueryBuilderResultState {
       this.setQueryRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
       if (this.queryRunPromise === promise) {
-        const resultLimit = this.getExecutionResultLimit();
-        const truncatedExecutionResult = result;
-        if (
-          result instanceof TDSExecutionResult &&
-          result.result.rows.length > resultLimit
-        ) {
-          this.setIsExecutionResultOverflowing(true);
-          (truncatedExecutionResult as TDSExecutionResult).result.rows =
-            result.result.rows.slice(0, resultLimit);
-        } else {
-          this.setIsExecutionResultOverflowing(false);
-        }
-        this.setExecutionResult(result);
+        this.processExecutionResult(promise, result);
         this.latestRunHashCode = currentHashCode;
         this.setExecutionDuration(stopWatch.elapsed);
 

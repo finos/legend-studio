@@ -276,6 +276,7 @@ const testQueryBuilderStateSetup = async (): Promise<{
   });
   return { renderResult, queryBuilderState };
 };
+
 test(
   integrationTest('Query Builder Execution Data Incompleteness Warning'),
   async () => {
@@ -291,6 +292,12 @@ test(
     );
     await act(async () => {
       queryBuilderState.resultState.setExecutionResult(executionResult);
+    });
+    await act(async () => {
+      queryBuilderState.resultState.processExecutionResult(
+        queryBuilderState.resultState.queryRunPromise,
+        executionResult,
+      );
     });
     const resultPanel = renderResult.getByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
