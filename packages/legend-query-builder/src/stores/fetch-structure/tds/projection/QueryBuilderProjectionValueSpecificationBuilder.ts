@@ -69,6 +69,7 @@ const appendResultSetModifier = (
   options?:
     | {
         overridingLimit?: number | undefined;
+        withDataOverflowCheck?: boolean | undefined;
       }
     | undefined,
 ): LambdaFunction => {
@@ -128,8 +129,16 @@ const appendResultSetModifier = (
           );
           limit.values = [
             Math.min(
-              resultModifierState.limit ?? Number.MAX_SAFE_INTEGER,
-              options?.overridingLimit ?? Number.MAX_SAFE_INTEGER,
+              resultModifierState.limit
+                ? options?.withDataOverflowCheck
+                  ? resultModifierState.limit + 1
+                  : resultModifierState.limit
+                : Number.MAX_SAFE_INTEGER,
+              options?.overridingLimit
+                ? options.withDataOverflowCheck
+                  ? options.overridingLimit + 1
+                  : options.overridingLimit
+                : Number.MAX_SAFE_INTEGER,
             ),
           ];
           const takeFunction = new SimpleFunctionExpression(
@@ -501,6 +510,10 @@ export const appendProjection = (
     overridingLimit:
       options?.isBuildingExecutionQuery && !options.isExportingResult
         ? queryBuilderState.resultState.previewLimit
+        : undefined,
+    withDataOverflowCheck:
+      options?.isBuildingExecutionQuery && !options.isExportingResult
+        ? options.withDataOverflowCheck
         : undefined,
   });
 };

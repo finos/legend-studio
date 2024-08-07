@@ -17,10 +17,10 @@
 import { action, flow, makeObservable, observable } from 'mobx';
 import {
   type GeneratorFn,
+  type ContentType,
   assertErrorThrown,
   LogEvent,
   guaranteeNonNullable,
-  type ContentType,
   ActionState,
   StopWatch,
   getContentTypeFileExtension,
@@ -35,8 +35,8 @@ import {
   GRAPH_MANAGER_EVENT,
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
+  TDSExecutionResult,
 } from '@finos/legend-graph';
-
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import {
   buildExecutionParameterValues,
@@ -49,6 +49,7 @@ import { ExecutionPlanState } from './execution-plan/ExecutionPlanState.js';
 import type { DataGridColumnState } from '@finos/legend-lego/data-grid';
 import { downloadStream } from '@finos/legend-application';
 import { QueryBuilderDataGridCustomAggregationFunction } from '../components/result/tds/QueryBuilderTDSGridResult.js';
+import { QueryBuilderTDSState } from './fetch-structure/tds/QueryBuilderTDSState.js';
 
 export const DEFAULT_LIMIT = 1000;
 
@@ -125,6 +126,7 @@ export class QueryBuilderResultState {
   isRunningQuery = false;
   isGeneratingPlan = false;
   executionResult?: ExecutionResult | undefined;
+  isExecutionResultOverflowing = false;
   executionDuration?: number | undefined;
   latestRunHashCode?: string | undefined;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
@@ -151,6 +153,7 @@ export class QueryBuilderResultState {
       isRunningQuery: observable,
       isSelectingCells: observable,
       isQueryUsageViewerOpened: observable,
+      isExecutionResultOverflowing: observable,
       gridConfig: observable,
       wavgAggregationState: observable,
       executionError: observable,
@@ -166,6 +169,7 @@ export class QueryBuilderResultState {
       setMouseOverCell: action,
       setQueryRunPromise: action,
       setIsQueryUsageViewerOpened: action,
+      setIsExecutionResultOverflowing: action,
       handlePreConfiguredGridConfig: action,
       updatePreviewLimitInConfig: action,
       setExecutionError: action,
@@ -239,11 +243,39 @@ export class QueryBuilderResultState {
     this.executionError = val;
   }
 
+  setIsExecutionResultOverflowing(val: boolean): void {
+    this.isExecutionResultOverflowing = val;
+  }
+
   updatePreviewLimitInConfig(): void {
     if (this.gridConfig) {
       this.gridConfig.previewLimit = this.previewLimit;
     }
   }
+
+  getExecutionResultLimit = (): number =>
+    Math.min(
+      this.queryBuilderState.fetchStructureState.implementation instanceof
+        QueryBuilderTDSState &&
+        this.queryBuilderState.fetchStructureState.implementation
+          .resultSetModifierState.limit
+        ? this.queryBuilderState.fetchStructureState.implementation
+            .resultSetModifierState.limit
+        : Number.MAX_SAFE_INTEGER,
+      this.previewLimit,
+    );
+
+  processExecutionResult = (result: ExecutionResult): void => {
+    this.setIsExecutionResultOverflowing(false);
+    if (result instanceof TDSExecutionResult) {
+      const resultLimit = this.getExecutionResultLimit();
+      if (result.result.rows.length > resultLimit) {
+        this.setIsExecutionResultOverflowing(true);
+        result.result.rows = result.result.rows.slice(0, resultLimit);
+      }
+    }
+    this.setExecutionResult(result);
+  };
 
   processWeightedColumnPairsMap(
     config: QueryGridConfig,
@@ -428,7 +460,9 @@ export class QueryBuilderResultState {
         this.queryBuilderState.executionContextState.runtimeValue,
         `Runtime is required to execute query`,
       );
-      const query = this.buildExecutionRawLambda();
+      const query = this.buildExecutionRawLambda({
+        withDataOverflowCheck: true,
+      });
       const parameterValues = buildExecutionParameterValues(
         this.queryBuilderState.parametersState.parameterStates,
         this.queryBuilderState.graphManagerState,
@@ -457,7 +491,7 @@ export class QueryBuilderResultState {
       this.setQueryRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
       if (this.queryRunPromise === promise) {
-        this.setExecutionResult(result);
+        this.processExecutionResult(result);
         this.latestRunHashCode = currentHashCode;
         this.setExecutionDuration(stopWatch.elapsed);
 

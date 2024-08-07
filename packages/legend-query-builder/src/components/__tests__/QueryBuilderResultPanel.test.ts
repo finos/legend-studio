@@ -18,9 +18,9 @@ import { test, describe, expect } from '@jest/globals';
 import { createMock, integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
+  type RawMappingModelCoverageAnalysisResult,
   create_RawLambda,
   extractElementNameFromPath,
-  type RawMappingModelCoverageAnalysisResult,
   stub_RawLambda,
   V1_buildExecutionResult,
   V1_serializeExecutionResult,
@@ -276,6 +276,37 @@ const testQueryBuilderStateSetup = async (): Promise<{
   });
   return { renderResult, queryBuilderState };
 };
+
+test(
+  integrationTest('Query Builder Execution Data Incompleteness Warning'),
+  async () => {
+    const { renderResult, queryBuilderState } =
+      await testQueryBuilderStateSetup();
+
+    await act(async () => {
+      queryBuilderState.resultState.setPreviewLimit(1);
+    });
+
+    const executionResult = V1_buildExecutionResult(
+      V1_serializeExecutionResult(TEST_DATA__result),
+    );
+    await act(async () => {
+      queryBuilderState.resultState.setExecutionResult(executionResult);
+    });
+    await act(async () => {
+      queryBuilderState.resultState.processExecutionResult(executionResult);
+    });
+    const resultPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
+    );
+    expect(
+      queryByText(
+        resultPanel,
+        'Data below is not complete - query produces more rows than the set grid preview limit',
+      ),
+    ).not.toBeNull();
+  },
+);
 
 describe(integrationTest('Query builder export button'), () => {
   test('Check that "Others..." button is disabled if no plugins with extraQueryUsageConfigurations are present', async () => {
