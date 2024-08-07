@@ -106,7 +106,7 @@ import {
   instanceValue_setValues,
   propertyExpression_setFunc,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
-import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   getPropertyChainName,
   getPropertyPath,
@@ -124,7 +124,6 @@ import {
   isExistsNodeChild,
   QUERY_BUILDER_FILTER_DND_TYPE,
   QueryBuilderFilterTreeConditionNodeData,
-  QueryBuilderFilterTreeExistsNodeData,
   type QueryBuilderFilterConditionDragSource,
 } from '../../stores/filter/QueryBuilderFilterState.js';
 import { cloneAbstractPropertyExpression } from '../../stores/shared/ValueSpecificationEditorHelper.js';
@@ -1290,9 +1289,8 @@ export const QueryBuilderTDSPanel = observer(
               const propertyExpression = isExistsNodeChild(item.node)
                 ? buildPropertyExpressionFromExistsNode(
                     tdsState.queryBuilderState.filterState,
-                    guaranteeType(
+                    guaranteeNonNullable(
                       getFurthestExistsNodeParent(item.node),
-                      QueryBuilderFilterTreeExistsNodeData,
                     ),
                     item.node,
                   )
