@@ -571,6 +571,19 @@ export class QueryBuilderFilterTreeExistsNodeData
   }
 }
 
+export const isExistsNodeChild = (
+  node: QueryBuilderFilterTreeConditionNodeData,
+): boolean => {
+  let parentNode = node.condition.filterState.getParentNode(node);
+  while (parentNode !== undefined) {
+    if (parentNode instanceof QueryBuilderFilterTreeExistsNodeData) {
+      return true;
+    }
+    parentNode = node.condition.filterState.getParentNode(parentNode);
+  }
+  return false;
+};
+
 export const getNearestExistsNodeParent = (
   node: QueryBuilderFilterTreeConditionNodeData,
 ): QueryBuilderFilterTreeExistsNodeData | undefined => {
@@ -607,17 +620,6 @@ export class QueryBuilderFilterTreeConditionNodeData
 
   setIsNewlyAdded(val: boolean): void {
     this.isNewlyAdded = val;
-  }
-
-  get isExistsNodeChild(): boolean {
-    let parentNode = this.condition.filterState.getParentNode(this);
-    while (parentNode !== undefined) {
-      if (parentNode instanceof QueryBuilderFilterTreeExistsNodeData) {
-        return true;
-      }
-      parentNode = this.condition.filterState.getParentNode(parentNode);
-    }
-    return false;
   }
 
   get dragPreviewLabel(): string {

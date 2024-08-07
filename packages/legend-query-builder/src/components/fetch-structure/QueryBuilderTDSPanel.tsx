@@ -121,6 +121,7 @@ import { getNameOfValueSpecification } from '../shared/QueryBuilderVariableSelec
 import { QueryBuilderAggregateOperator_Percentile } from '../../stores/fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_Percentile.js';
 import {
   getNearestExistsNodeParent,
+  isExistsNodeChild,
   QUERY_BUILDER_FILTER_DND_TYPE,
   QueryBuilderFilterTreeConditionNodeData,
   QueryBuilderFilterTreeExistsNodeData,
@@ -1279,7 +1280,7 @@ export const QueryBuilderTDSPanel = observer(
             break;
           case QUERY_BUILDER_FILTER_DND_TYPE.CONDITION:
             if (item.node instanceof QueryBuilderFilterTreeConditionNodeData) {
-              const propertyExpression = item.node.isExistsNodeChild
+              const propertyExpression = isExistsNodeChild(item.node)
                 ? buildPropertyExpressionFromExistsNode(
                     tdsState.queryBuilderState.filterState,
                     guaranteeType(
