@@ -128,6 +128,7 @@ export class QueryBuilderResultState {
   isRunningQuery = false;
   isGeneratingPlan = false;
   executionResult?: ExecutionResult | undefined;
+  isExecutionResultOverflowing = false;
   executionDuration?: number | undefined;
   latestRunHashCode?: string | undefined;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
@@ -154,6 +155,7 @@ export class QueryBuilderResultState {
       isRunningQuery: observable,
       isSelectingCells: observable,
       isQueryUsageViewerOpened: observable,
+      isExecutionResultOverflowing: observable,
       gridConfig: observable,
       wavgAggregationState: observable,
       executionError: observable,
@@ -242,6 +244,10 @@ export class QueryBuilderResultState {
     this.executionError = val;
   }
 
+  setIsExecutionResultOverflowing(val: boolean): void {
+    this.isExecutionResultOverflowing = val;
+  }
+
   updatePreviewLimitInConfig(): void {
     if (this.gridConfig) {
       this.gridConfig.previewLimit = this.previewLimit;
@@ -259,22 +265,6 @@ export class QueryBuilderResultState {
         : Number.MAX_SAFE_INTEGER,
       this.previewLimit,
     );
-
-  getTruncatedExecutionResultIfExceed = (
-    executionResult: ExecutionResult,
-  ): ExecutionResult => {
-    const resultLimit = this.getExecutionResultLimit();
-    if (
-      executionResult instanceof TDSExecutionResult &&
-      executionResult.result.rows.length > resultLimit
-    ) {
-      const truncatedExecutionResult = deepClone(executionResult);
-      truncatedExecutionResult.result.rows =
-        truncatedExecutionResult.result.rows.slice(0, resultLimit);
-      return truncatedExecutionResult;
-    }
-    return executionResult;
-  };
 
   processWeightedColumnPairsMap(
     config: QueryGridConfig,
@@ -460,7 +450,7 @@ export class QueryBuilderResultState {
         `Runtime is required to execute query`,
       );
       const query = this.buildExecutionRawLambda({
-        isQueryOverflowExecuting: true,
+        withDataOverflowCheck: true,
       });
       const parameterValues = buildExecutionParameterValues(
         this.queryBuilderState.parametersState.parameterStates,
@@ -490,6 +480,18 @@ export class QueryBuilderResultState {
       this.setQueryRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
       if (this.queryRunPromise === promise) {
+        const resultLimit = this.getExecutionResultLimit();
+        const truncatedExecutionResult = result;
+        if (
+          result instanceof TDSExecutionResult &&
+          result.result.rows.length > resultLimit
+        ) {
+          this.setIsExecutionResultOverflowing(true);
+          (truncatedExecutionResult as TDSExecutionResult).result.rows =
+            result.result.rows.slice(0, resultLimit);
+        } else {
+          this.setIsExecutionResultOverflowing(false);
+        }
         this.setExecutionResult(result);
         this.latestRunHashCode = currentHashCode;
         this.setExecutionDuration(stopWatch.elapsed);

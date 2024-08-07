@@ -214,5 +214,5 @@ export type LambdaFunctionBuilderOption = {
   /**
    * Set this flag to `true` when you want to execute a query that exceeds the limit to check for additional data in the database.
    */
-  isQueryOverflowExecuting?: boolean | undefined;
+  withDataOverflowCheck?: boolean | undefined;
 };

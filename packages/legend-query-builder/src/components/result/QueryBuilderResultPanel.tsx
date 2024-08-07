@@ -552,7 +552,7 @@ export const QueryBuilderResultPanel = observer(
             )}
             {executionResult &&
               executionResult instanceof TDSExecutionResult &&
-              executionResult.result.rows.length > resultLimit && (
+              resultState.isExecutionResultOverflowing && (
                 <div className="query-builder__result__stale-status">
                   <div className="query-builder__result__stale-status__icon">
                     <ExclamationTriangleIcon />
@@ -785,9 +785,7 @@ export const QueryBuilderResultPanel = observer(
           {executionResult && !isLoading && !resultState.executionError && (
             <div className="query-builder__result__values">
               <QueryBuilderResultValues
-                executionResult={resultState.getTruncatedExecutionResultIfExceed(
-                  executionResult,
-                )}
+                executionResult={executionResult}
                 queryBuilderState={queryBuilderState}
               />
             </div>

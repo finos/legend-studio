@@ -69,7 +69,7 @@ const appendResultSetModifier = (
   options?:
     | {
         overridingLimit?: number | undefined;
-        isQueryOverflowExecuting?: boolean | undefined;
+        withDataOverflowCheck?: boolean | undefined;
       }
     | undefined,
 ): LambdaFunction => {
@@ -130,12 +130,12 @@ const appendResultSetModifier = (
           limit.values = [
             Math.min(
               resultModifierState.limit
-                ? options?.isQueryOverflowExecuting
+                ? options?.withDataOverflowCheck
                   ? resultModifierState.limit + 1
                   : resultModifierState.limit
                 : Number.MAX_SAFE_INTEGER,
               options?.overridingLimit
-                ? options.isQueryOverflowExecuting
+                ? options.withDataOverflowCheck
                   ? options.overridingLimit + 1
                   : options.overridingLimit
                 : Number.MAX_SAFE_INTEGER,
@@ -511,9 +511,9 @@ export const appendProjection = (
       options?.isBuildingExecutionQuery && !options.isExportingResult
         ? queryBuilderState.resultState.previewLimit
         : undefined,
-    isQueryOverflowExecuting:
+    withDataOverflowCheck:
       options?.isBuildingExecutionQuery && !options.isExportingResult
-        ? options.isQueryOverflowExecuting
+        ? options.withDataOverflowCheck
         : undefined,
   });
 };
