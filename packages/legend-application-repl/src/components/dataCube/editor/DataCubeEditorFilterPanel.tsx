@@ -31,7 +31,7 @@ import {
   FormDropdownMenuTrigger,
 } from '../../repl/Form.js';
 import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
-import { forwardRef } from 'react';
+import { forwardRef, useEffect } from 'react';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 
 const FILTER_TREE_LEFT_PADDING = 4;
@@ -83,7 +83,9 @@ const DataCubeEditorFilterConditionNodeController = observer(
     node: DataCubeEditorFilterNode;
     dataCube: DataCubeState;
   }) => {
-    const { className, node } = props;
+    const { className, node, dataCube } = props;
+    const panel = dataCube.editor.filter;
+
     return (
       <div
         className={cn(
@@ -93,27 +95,21 @@ const DataCubeEditorFilterConditionNodeController = observer(
       >
         <button
           className="flex h-3.5 w-3.5 items-center justify-center rounded-bl-sm rounded-tl-sm border border-neutral-400 hover:bg-neutral-200"
-          onClick={() => {
-            // do nothing
-          }}
+          onClick={() => panel.addFilterNode(node)}
           title="Insert a new column filter, just after this filter."
         >
           <DataCubeIcon.FilterAddOperator className="stroke-[2.5] text-sm" />
         </button>
         <button
           className="flex h-3.5 w-3.5 items-center justify-center border border-l-0 border-neutral-400 hover:bg-neutral-200"
-          onClick={() => {
-            // do nothing
-          }}
+          onClick={() => panel.removeFilterNode(node)}
           title="Remove this filter"
         >
           <DataCubeIcon.FilterRemoveOperator className="stroke-[2.5] text-sm" />
         </button>
         <button
           className="flex h-3.5 w-3.5 items-center justify-center border border-l-0 border-neutral-400 hover:bg-neutral-200"
-          onClick={() => {
-            // do nothing
-          }}
+          onClick={() => panel.layerFilterNode(node)}
           title="Put this filter in its own sub-group (and combine it with other filters)."
         >
           <DataCubeIcon.FilterGroupOperator className="stroke-[2.5] text-sm" />
@@ -164,21 +160,28 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
     ] = useDropdownMenu();
 
     return (
-      <div className="flex h-6 items-center">
+      <div className="group flex h-6 items-center">
+        <div
+          className={cn('absolute h-6 w-full group-hover:bg-neutral-100', {
+            'bg-sky-100': node === panel.selectedNode,
+            'group-hover:bg-sky-100': node === panel.selectedNode,
+          })}
+          onClick={() => panel.setSelectedNode(node)}
+        />
         <div
           style={{
             paddingLeft: `${level * FILTER_TREE_INDENTATION_SPACE + FILTER_TREE_LEFT_PADDING}px`,
           }}
-          className="flex-shrink-0"
+          className="relative flex-shrink-0"
         />
         <DataCubeEditorFilterConditionNodeController
-          className="mr-1"
+          className="relative mr-1"
           node={node}
           dataCube={dataCube}
         />
         {node.not && <DataCubeEditorFilterNotLabel />}
         <FormDropdownMenuTrigger
-          className="mr-1 w-32"
+          className="relative mr-1 w-32"
           onClick={openColumnsDropdown}
           open={columnsDropdownPropsOpen}
         >
@@ -200,7 +203,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
           ))}
         </FormDropdownMenu>
         <FormDropdownMenuTrigger
-          className="mr-1 w-24"
+          className="relative mr-1 w-24"
           onClick={openOperatorsDropdown}
           open={operatorsDropdownPropsOpen}
         >
@@ -221,7 +224,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
             </FormDropdownMenuItem>
           ))}
         </FormDropdownMenu>
-        <div className="flex-shrink-0">
+        <div className="relative flex-shrink-0">
           {node.value && (
             <DataCubeEditorFilterConditionNodeValueEditor
               value={node.value}
@@ -241,6 +244,7 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
     dataCube: DataCubeState;
   }) => {
     const { node, level, dataCube } = props;
+    const panel = dataCube.editor.filter;
     const [
       openOperatorsDropdown,
       closeOperatorsDropdown,
@@ -249,17 +253,31 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
     ] = useDropdownMenu();
 
     return (
-      <div className="flex h-6 items-center">
+      <div className="group flex h-6 items-center">
+        <div
+          className={cn('absolute h-6 w-full group-hover:bg-neutral-100', {
+            'bg-sky-100': node === panel.selectedNode,
+            'group-hover:bg-sky-100': node === panel.selectedNode,
+          })}
+          onClick={() => panel.setSelectedNode(node)}
+        />
         <div
           style={{
             paddingLeft: `${level * FILTER_TREE_INDENTATION_SPACE + FILTER_TREE_LEFT_PADDING}px`,
           }}
-          className="flex-shrink-0"
+          className="relative flex-shrink-0"
         />
         {level !== 0 && (
+          <DataCubeEditorFilterConditionNodeController
+            className="relative mr-1"
+            node={node}
+            dataCube={dataCube}
+          />
+        )}
+        {level !== 0 && node.not && (
           <>
             <DataCubeEditorFilterConditionNodeController
-              className="mr-1"
+              className="relative mr-1"
               node={node}
               dataCube={dataCube}
             />
@@ -267,7 +285,7 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
           </>
         )}
         <FormDropdownMenuTrigger
-          className="w-14"
+          className="relative w-14"
           onClick={openOperatorsDropdown}
           open={operatorsDropdownPropsOpen}
         >
@@ -320,7 +338,7 @@ const DataCubeEditorFilterGroupDisplay = observer(
             if (childNode instanceof DataCubeEditorFilterConditionNode) {
               return (
                 <DataCubeEditorFilterConditionNodeDisplay
-                  key={node.uuid}
+                  key={childNode.uuid}
                   level={level + 1}
                   node={childNode}
                   dataCube={dataCube}
@@ -331,7 +349,7 @@ const DataCubeEditorFilterGroupDisplay = observer(
             ) {
               return (
                 <DataCubeEditorFilterGroupDisplay
-                  key={node.uuid}
+                  key={childNode.uuid}
                   level={level + 1}
                   node={childNode}
                   dataCube={dataCube}
@@ -351,6 +369,10 @@ export const DataCubeEditorFilterPanel = observer(
     const { dataCube } = props;
     const panel = dataCube.editor.filter;
 
+    useEffect(() => {
+      panel.setSelectedNode(undefined);
+    }, [panel]);
+
     return (
       <div className="h-full w-full select-none p-2">
         <div className="flex h-6">
@@ -363,7 +385,10 @@ export const DataCubeEditorFilterPanel = observer(
         </div>
         <div className="flex h-[calc(100%_-_24px)] w-full">
           <div className="flex h-full w-full pt-1">
-            <div className="relative h-full w-full overflow-auto rounded-sm border border-neutral-200">
+            <div
+              className="relative h-full w-full overflow-auto rounded-sm border border-neutral-200"
+              onClick={() => panel.setSelectedNode(undefined)}
+            >
               {!panel.tree.root && (
                 <div className="h-full w-full p-3">
                   <div>
@@ -380,11 +405,21 @@ export const DataCubeEditorFilterPanel = observer(
                 </div>
               )}
               {panel.tree.root && (
-                <div className="py-1">
+                <div
+                  className="py-1"
+                  // prevent click event of filter tree from propagating to the
+                  // container which when clicked, will clear node selection
+                  onClick={(event) => event.stopPropagation()}
+                >
                   <DataCubeEditorFilterGroupDisplay
                     node={panel.tree.root}
                     level={0}
                     dataCube={dataCube}
+                  />
+                  <div
+                    // add a padding so there will always be a clickable area to clear node selection
+                    className="min-h-6 w-full flex-1"
+                    onClick={() => panel.setSelectedNode(undefined)}
                   />
                 </div>
               )}
