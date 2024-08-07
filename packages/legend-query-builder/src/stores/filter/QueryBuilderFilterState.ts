@@ -584,17 +584,25 @@ export const isExistsNodeChild = (
   return false;
 };
 
-export const getNearestExistsNodeParent = (
+/**
+ *
+ * @param node the node from which to start searching
+ * @returns the furthest away parent node that is an exists node, or
+ *          undefined if none exists.
+ */
+export const getFurthestExistsNodeParent = (
   node: QueryBuilderFilterTreeConditionNodeData,
 ): QueryBuilderFilterTreeExistsNodeData | undefined => {
+  let furthestExistsNode: QueryBuilderFilterTreeExistsNodeData | undefined =
+    undefined;
   let parentNode = node.condition.filterState.getParentNode(node);
   while (parentNode) {
     if (parentNode instanceof QueryBuilderFilterTreeExistsNodeData) {
-      return parentNode;
+      furthestExistsNode = parentNode;
     }
     parentNode = node.condition.filterState.getParentNode(parentNode);
   }
-  return undefined;
+  return furthestExistsNode;
 };
 
 export class QueryBuilderFilterTreeConditionNodeData
