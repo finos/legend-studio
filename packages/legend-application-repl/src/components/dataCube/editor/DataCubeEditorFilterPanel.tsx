@@ -31,11 +31,37 @@ import {
   FormDropdownMenuTrigger,
 } from '../../repl/Form.js';
 import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
-import { forwardRef, useEffect } from 'react';
+import { forwardRef, useEffect, useRef } from 'react';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
+import { getNullableFirstEntry } from '@finos/legend-shared';
 
-const FILTER_TREE_LEFT_PADDING = 4;
-const FILTER_TREE_INDENTATION_SPACE = 10;
+const FILTER_TREE_OFFSET = 10;
+const FILTER_TREE_INDENTATION_SPACE = 36;
+const FILTER_TREE_HORIZONTAL_GUTTER_LINE_PADDING = 8;
+const FILTER_TREE_VERTICAL_GUTTER_LINE_OFFSET = 6;
+const FILTER_TREE_CONTROLLER_OFFSET = 60;
+const FILTER_TREE_GROUP_HIGHLIGHT_PADDING = 2;
+
+const DataCubeEditorFilterConditionNodeStringValueEditor = observer(
+  forwardRef<
+    HTMLInputElement,
+    {
+      value: string;
+      updateValue: (value: string) => void;
+    }
+  >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
+    const { value, updateValue } = props;
+
+    return (
+      <input
+        ref={ref}
+        className="h-5 w-full flex-shrink-0 border border-neutral-400 px-1 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300"
+        value={value}
+        onChange={(event) => updateValue(event.target.value)}
+      />
+    );
+  }),
+);
 
 const DataCubeEditorFilterConditionNodeValueEditor = observer(
   forwardRef<
@@ -46,17 +72,15 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
     }
   >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
     const { value, updateValue } = props;
-    // WIP: support collection/column
+    // WIP: support numeric/date/collection/column
     switch (value.type) {
-      case PRIMITIVE_TYPE.STRING: {
+      case PRIMITIVE_TYPE.STRING:
         return (
-          <input
-            className="h-5 flex-shrink-0 border border-neutral-400 px-1.5 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300"
+          <DataCubeEditorFilterConditionNodeStringValueEditor
             value={value.value as string}
-            onChange={(event) => updateValue(event.target.value)}
+            updateValue={(val) => updateValue(val)}
           />
         );
-      }
       default:
         return null;
     }
@@ -66,7 +90,7 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
 function DataCubeEditorFilterNotLabel() {
   return (
     <div className="relative flex pl-2.5">
-      <div className="absolute -left-2 h-0 w-0 border-[9px] border-neutral-600 border-b-transparent border-l-transparent border-t-transparent" />
+      <div className="pointer-events-none absolute -left-2 h-0 w-0 border-[9px] border-neutral-600 border-b-transparent border-l-transparent border-t-transparent" />
       <div
         className="mr-1 flex h-[18px] w-10 flex-shrink-0 items-center bg-neutral-600 pl-2 text-sm font-medium text-white"
         title="Filter is inverted: select all but what matches."
@@ -146,9 +170,12 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
   }) => {
     const { node, level, dataCube } = props;
     const panel = dataCube.editor.filter;
+    const parentNode = node.parent;
+    const nodeIdx = parentNode ? parentNode.children.indexOf(node) : undefined;
+    const ref = useRef<HTMLInputElement>(null);
     const [
       openColumnsDropdown,
-      closeColumnssDropdown,
+      closeColumnsDropdown,
       columnsDropdownProps,
       columnsDropdownPropsOpen,
     ] = useDropdownMenu();
@@ -162,18 +189,58 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
     return (
       <div className="group flex h-6 items-center">
         <div
-          className={cn('absolute h-6 w-full group-hover:bg-neutral-100', {
-            'bg-sky-100': node === panel.selectedNode,
-            'group-hover:bg-sky-100': node === panel.selectedNode,
-          })}
+          className={cn(
+            'z-1 absolute h-6 w-full bg-opacity-50 group-hover:bg-neutral-50 group-hover:bg-opacity-50',
+            {
+              'bg-sky-50': node === panel.selectedNode,
+              'border-[0.5px] border-l-2 border-sky-200 border-l-sky-600':
+                node === panel.selectedNode,
+              'group-hover:bg-sky-50': node === panel.selectedNode,
+            },
+          )}
           onClick={() => panel.setSelectedNode(node)}
         />
         <div
           style={{
-            paddingLeft: `${level * FILTER_TREE_INDENTATION_SPACE + FILTER_TREE_LEFT_PADDING}px`,
+            paddingLeft: `${level * FILTER_TREE_INDENTATION_SPACE + FILTER_TREE_OFFSET + (level - 1) * FILTER_TREE_CONTROLLER_OFFSET}px`,
           }}
-          className="relative flex-shrink-0"
-        />
+          className="relative h-6 flex-shrink-0"
+          onClick={() => panel.setSelectedNode(node)}
+        >
+          {parentNode && (
+            <div
+              className="absolute top-0 flex h-6 items-center justify-end"
+              style={{
+                width: `${FILTER_TREE_INDENTATION_SPACE - FILTER_TREE_HORIZONTAL_GUTTER_LINE_PADDING - FILTER_TREE_VERTICAL_GUTTER_LINE_OFFSET}px`,
+                right: `${FILTER_TREE_HORIZONTAL_GUTTER_LINE_PADDING}px`,
+              }}
+            >
+              <div
+                className={cn('h-[1px] w-full flex-1 bg-neutral-200', {
+                  'bg-sky-600':
+                    parentNode !== undefined &&
+                    parentNode === panel.selectedGroupNode,
+                })}
+              />
+              {nodeIdx !== undefined && nodeIdx > 0 && (
+                <div
+                  className={cn(
+                    'flex h-6 items-center justify-center pl-1 text-xs text-neutral-600',
+                    {
+                      'text-sky-600':
+                        parentNode !== undefined &&
+                        parentNode === panel.selectedGroupNode,
+                    },
+                  )}
+                >
+                  {parentNode.operation === DataCubeQueryFilterGroupOperator.AND
+                    ? 'and'
+                    : 'or'}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         <DataCubeEditorFilterConditionNodeController
           className="relative mr-1"
           node={node}
@@ -192,9 +259,21 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
             <FormDropdownMenuItem
               key={column.name}
               onClick={() => {
-                node.setColumn(column);
-                // WIP: need to make all the changes to the operator/value here potentially
-                closeColumnssDropdown();
+                if (column !== node.column) {
+                  const newOp = node.operation.isCompatibleWithColumn(column)
+                    ? node.operation
+                    : getNullableFirstEntry(
+                        panel.operations.filter((op) =>
+                          op.isCompatibleWithColumn(column),
+                        ),
+                      );
+                  if (newOp) {
+                    node.setColumn(column);
+                    node.setOperation(newOp);
+                    node.setValue(newOp.generateDefaultValue(column));
+                  }
+                }
+                closeColumnsDropdown();
               }}
               autoFocus={node.column.name === column.name}
             >
@@ -210,23 +289,30 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
           {node.operation.label}
         </FormDropdownMenuTrigger>
         <FormDropdownMenu className="w-24" {...operatorsDropdownProps}>
-          {panel.operations.map((op) => (
-            <FormDropdownMenuItem
-              key={op.operator}
-              onClick={() => {
-                node.setOperation(op);
-                // WIP: need to make all the changes to the value/column here potentially
-                closeOperatorsDropdown();
-              }}
-              autoFocus={node.operation.operator === op.operator}
-            >
-              {op.label}
-            </FormDropdownMenuItem>
-          ))}
+          {panel.operations
+            .filter((op) => op.isCompatibleWithColumn(node.column))
+            .map((op) => (
+              <FormDropdownMenuItem
+                key={op.operator}
+                onClick={() => {
+                  if (op !== node.operation) {
+                    if (op.isCompatibleWithColumn(node.column)) {
+                      node.setOperation(op);
+                      node.setValue(op.generateDefaultValue(node.column));
+                    }
+                  }
+                  closeOperatorsDropdown();
+                }}
+                autoFocus={node.operation.operator === op.operator}
+              >
+                {op.label}
+              </FormDropdownMenuItem>
+            ))}
         </FormDropdownMenu>
-        <div className="relative flex-shrink-0">
+        <div className="relative w-32 flex-shrink-0">
           {node.value && (
             <DataCubeEditorFilterConditionNodeValueEditor
+              ref={ref}
               value={node.value}
               updateValue={(val) => node.updateValue(val)}
             />
@@ -245,6 +331,8 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
   }) => {
     const { node, level, dataCube } = props;
     const panel = dataCube.editor.filter;
+    const parentNode = node.parent;
+    const nodeIdx = parentNode ? parentNode.children.indexOf(node) : undefined;
     const [
       openOperatorsDropdown,
       closeOperatorsDropdown,
@@ -255,33 +343,66 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
     return (
       <div className="group flex h-6 items-center">
         <div
-          className={cn('absolute h-6 w-full group-hover:bg-neutral-100', {
-            'bg-sky-100': node === panel.selectedNode,
-            'group-hover:bg-sky-100': node === panel.selectedNode,
-          })}
+          className={cn(
+            'z-1 absolute h-6 w-full bg-opacity-50 group-hover:bg-neutral-50 group-hover:bg-opacity-50',
+            {
+              'bg-sky-50': node === panel.selectedNode,
+              'border-[0.5px] border-l-2 border-sky-200 border-l-sky-600':
+                node === panel.selectedNode,
+              'group-hover:bg-sky-50': node === panel.selectedNode,
+            },
+          )}
           onClick={() => panel.setSelectedNode(node)}
         />
         <div
           style={{
-            paddingLeft: `${level * FILTER_TREE_INDENTATION_SPACE + FILTER_TREE_LEFT_PADDING}px`,
+            paddingLeft: `${level * FILTER_TREE_INDENTATION_SPACE + FILTER_TREE_OFFSET + (level !== 0 ? (level - 1) * FILTER_TREE_CONTROLLER_OFFSET : 0)}px`,
           }}
-          className="relative flex-shrink-0"
-        />
+          className="relative h-6 flex-shrink-0"
+          onClick={() => panel.setSelectedNode(node)}
+        >
+          {level !== 0 && parentNode && (
+            <div
+              className="absolute top-0 flex h-6 items-center justify-end"
+              style={{
+                width: `${FILTER_TREE_INDENTATION_SPACE - FILTER_TREE_HORIZONTAL_GUTTER_LINE_PADDING - FILTER_TREE_VERTICAL_GUTTER_LINE_OFFSET}px`,
+                right: `${FILTER_TREE_HORIZONTAL_GUTTER_LINE_PADDING}px`,
+              }}
+            >
+              <div
+                className={cn('h-[1px] w-full flex-1 bg-neutral-200', {
+                  'bg-sky-600':
+                    parentNode !== undefined &&
+                    parentNode === panel.selectedGroupNode,
+                })}
+              />
+              {nodeIdx !== undefined && nodeIdx > 0 && (
+                <div
+                  className={cn(
+                    'flex h-6 items-center justify-center pl-1 text-xs text-neutral-600',
+                    {
+                      'text-sky-600':
+                        parentNode !== undefined &&
+                        parentNode === panel.selectedGroupNode,
+                    },
+                  )}
+                >
+                  {parentNode.operation === DataCubeQueryFilterGroupOperator.AND
+                    ? 'and'
+                    : 'or'}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         {level !== 0 && (
-          <DataCubeEditorFilterConditionNodeController
-            className="relative mr-1"
-            node={node}
-            dataCube={dataCube}
-          />
-        )}
-        {level !== 0 && node.not && (
           <>
             <DataCubeEditorFilterConditionNodeController
               className="relative mr-1"
               node={node}
               dataCube={dataCube}
             />
-            <DataCubeEditorFilterNotLabel />
+            {node.not && <DataCubeEditorFilterNotLabel />}
           </>
         )}
         <FormDropdownMenuTrigger
@@ -318,6 +439,13 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
   },
 );
 
+// NOTE: This particular rendering of the filter tree leans on tree data structure used to organize the nodes
+// and thus, though simpler to implement, makes it harder to implement certain features which favors flat
+// structure like list, such as drag and drop, multi-select, etc.
+// If those needs come up we could shift the implementation or look out for a library that already works well
+// out of the box such as:
+// See https://mui.com/x/react-tree-view/
+// See https://github.com/lukasbach/react-complex-tree
 const DataCubeEditorFilterGroupDisplay = observer(
   (props: {
     node: DataCubeEditorFilterConditionGroupNode;
@@ -325,15 +453,39 @@ const DataCubeEditorFilterGroupDisplay = observer(
     dataCube: DataCubeState;
   }) => {
     const { node, level, dataCube } = props;
+    const panel = dataCube.editor.filter;
 
     return (
-      <div className="">
+      <div className="relative w-full">
+        <div
+          className={cn('pointer-events-none absolute h-full', {
+            'border-[0.5px] border-sky-200 bg-sky-50':
+              node === panel.selectedGroupNode,
+          })}
+          style={{
+            marginLeft: `${level * FILTER_TREE_INDENTATION_SPACE + FILTER_TREE_OFFSET + level * FILTER_TREE_CONTROLLER_OFFSET - FILTER_TREE_GROUP_HIGHLIGHT_PADDING}px`,
+            width: `calc(100% - ${level * FILTER_TREE_INDENTATION_SPACE + FILTER_TREE_OFFSET + level * FILTER_TREE_CONTROLLER_OFFSET - 2 * FILTER_TREE_GROUP_HIGHLIGHT_PADDING}px)`,
+          }}
+        />
         <DataCubeEditorFilterGroupNodeDisplay
           node={node}
           level={level}
           dataCube={dataCube}
         />
-        <div className="">
+        <div className="relative">
+          <div
+            className={cn(
+              'pointer-events-none absolute z-10 h-[calc(100%_-_12px)] border-l border-neutral-200',
+              {
+                'border-sky-600': node === panel.selectedGroupNode,
+                // 'bg-sky-50': node === panel.selectedGroupNode,
+              },
+            )}
+            style={{
+              marginLeft: `${level * FILTER_TREE_INDENTATION_SPACE + FILTER_TREE_OFFSET + FILTER_TREE_VERTICAL_GUTTER_LINE_OFFSET + level * FILTER_TREE_CONTROLLER_OFFSET}px`,
+              width: `0px`,
+            }}
+          />
           {node.children.map((childNode) => {
             if (childNode instanceof DataCubeEditorFilterConditionNode) {
               return (
@@ -386,7 +538,7 @@ export const DataCubeEditorFilterPanel = observer(
         <div className="flex h-[calc(100%_-_24px)] w-full">
           <div className="flex h-full w-full pt-1">
             <div
-              className="relative h-full w-full overflow-auto rounded-sm border border-neutral-200"
+              className="relative flex h-full w-full overflow-auto rounded-sm border border-neutral-200"
               onClick={() => panel.setSelectedNode(undefined)}
             >
               {!panel.tree.root && (
@@ -406,7 +558,7 @@ export const DataCubeEditorFilterPanel = observer(
               )}
               {panel.tree.root && (
                 <div
-                  className="py-1"
+                  className="flex py-1"
                   // prevent click event of filter tree from propagating to the
                   // container which when clicked, will clear node selection
                   onClick={(event) => event.stopPropagation()}

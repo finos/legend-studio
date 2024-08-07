@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import {
   DataCubeQueryFilterGroupOperator,
   DataCubeQueryFilterOperator,
@@ -188,6 +188,7 @@ export class DataCubeEditorFilterPanelState
       refreshTree: action,
 
       selectedNode: observable,
+      selectedGroupNode: computed,
       setSelectedNode: action,
       addFilterNode: action,
       removeFilterNode: action,
@@ -233,6 +234,12 @@ export class DataCubeEditorFilterPanelState
 
   refreshTree() {
     this.tree = { ...this.tree };
+  }
+
+  get selectedGroupNode(): DataCubeEditorFilterConditionGroupNode | undefined {
+    return this.selectedNode instanceof DataCubeEditorFilterConditionGroupNode
+      ? this.selectedNode
+      : this.selectedNode?.parent;
   }
 
   setSelectedNode(node: DataCubeEditorFilterNode | undefined) {
