@@ -1295,8 +1295,8 @@ export const QueryBuilderTDSPanel = observer(
                     item.node,
                   )
                 : cloneAbstractPropertyExpression(
-                    (item.node as QueryBuilderFilterTreeConditionNodeData)
-                      .condition.propertyExpressionState.propertyExpression,
+                    item.node.condition.propertyExpressionState
+                      .propertyExpression,
                     tdsState.queryBuilderState.observerContext,
                   );
               tdsState.addColumn(
