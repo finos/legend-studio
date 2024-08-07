@@ -30,6 +30,7 @@ import {
   fireEvent,
   getAllByText,
   getByText,
+  getByTitle,
   queryByText,
   waitFor,
   type RenderResult,
@@ -349,17 +350,15 @@ test(
     await act(async () => {
       queryBuilderState.resultState.setExecutionResult(executionResult);
     });
-    const resultPanel = await waitFor(() =>
-      renderResult.getByTestId(
-        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
-      ),
+    const customHeader = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_GRID_CUSTOM_HEADER,
     );
-    const customHeader = resultPanel.getElementsByClassName(
-      'query-builder__result__values__table__custom-header',
-    )[0];
     expect(customHeader).toBeDefined();
-    expect(customHeader?.innerHTML).toContain(
-      'some values have been rounded using en-us format in this preview grid (defaults to max 4 decimal places)',
-    );
+    expect(
+      getByTitle(
+        customHeader,
+        'some values have been rounded using en-us format in this preview grid (defaults to max 4 decimal places)',
+      ),
+    ).not.toBeNull();
   },
 );

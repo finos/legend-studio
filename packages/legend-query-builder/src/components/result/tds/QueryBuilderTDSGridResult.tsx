@@ -88,13 +88,13 @@ const getAggregationTDSColumnCustomizations = (
         filter: 'agDateColumnFilter',
         allowedAggFuncs: ['count'],
       };
-    case PRIMITIVE_TYPE.DECIMAL:
     case PRIMITIVE_TYPE.NUMBER:
     case PRIMITIVE_TYPE.INTEGER:
       return {
         filter: 'agNumberColumnFilter',
         allowedAggFuncs: ['count', 'sum', 'max', 'min', 'avg', 'wavg'],
       };
+    case PRIMITIVE_TYPE.DECIMAL:
     case PRIMITIVE_TYPE.FLOAT:
       return {
         filter: 'agNumberColumnFilter',

@@ -50,7 +50,7 @@ import { QUERY_BUILDER_TEST_ID } from '../../../__lib__/QueryBuilderTesting.js';
 
 export const getFloatGridColumnCustomHeader = (
   columnName: string,
-): string => ` <div class="query-builder__result__values__table__custom-header">
+): string => ` <div data-testid="query__builder__result__grid__custom-header" class="query-builder__result__values__table__custom-header">
               <div>${columnName}</div>
               <div
                 class="query-builder__result__stale-status__icon"
