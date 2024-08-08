@@ -527,9 +527,13 @@
 
   &__item__action {
     margin-left: 0.5rem;
+    display: flex;
+    justify-content: center;
 
     svg {
       color: var(--color-light-grey-150);
+      display: flex;
+      justify-content: center;
 
       &:hover {
         color: white;

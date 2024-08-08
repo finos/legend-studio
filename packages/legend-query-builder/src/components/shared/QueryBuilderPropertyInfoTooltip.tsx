@@ -117,7 +117,7 @@ export const QueryBuilderTaggedValueInfoTooltip: React.FC<{
   );
 };
 
-const QueryBuilderBaseInfoTooltip: React.FC<{
+export const QueryBuilderBaseInfoTooltip: React.FC<{
   title: string;
   data: {
     label: string;

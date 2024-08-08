@@ -54,7 +54,6 @@ import {
   type DEPRECATED__InputData,
   type Mapping,
   type Connection,
-  type ExecutionResult,
   type SetImplementation,
   type Table,
   type View,
@@ -62,6 +61,7 @@ import {
   type RawExecutionPlan,
   type EmbeddedData,
   type TestAssertion,
+  type ExecutionResultWithMetadata,
   DEFAULT_TEST_ASSERTION_PREFIX,
   DEFAULT_TEST_PREFIX,
   EqualToJson,
@@ -499,7 +499,8 @@ export class MappingExecutionState extends MappingEditorTabState {
   isGeneratingPlan = false;
   executionPlanState: ExecutionPlanState;
   planGenerationDebugText?: string | undefined;
-  executionRunPromise: Promise<ExecutionResult> | undefined = undefined;
+  executionRunPromise: Promise<ExecutionResultWithMetadata> | undefined =
+    undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -556,7 +557,9 @@ export class MappingExecutionState extends MappingEditorTabState {
     return this.name;
   }
 
-  setExecutionRunPromise(promise: Promise<ExecutionResult> | undefined): void {
+  setExecutionRunPromise(
+    promise: Promise<ExecutionResultWithMetadata> | undefined,
+  ): void {
     this.executionRunPromise = promise;
   }
 
@@ -817,10 +820,14 @@ export class MappingExecutionState extends MappingEditorTabState {
           report,
         );
         this.setExecutionRunPromise(promise);
-        const result = (yield promise) as ExecutionResult;
+        const result = (yield promise) as ExecutionResultWithMetadata;
         if (this.executionRunPromise === promise) {
           this.setExecutionResultText(
-            stringifyLosslessJSON(result, undefined, DEFAULT_TAB_SIZE),
+            stringifyLosslessJSON(
+              result.executionResult,
+              undefined,
+              DEFAULT_TAB_SIZE,
+            ),
           );
           // report
           report.timings =

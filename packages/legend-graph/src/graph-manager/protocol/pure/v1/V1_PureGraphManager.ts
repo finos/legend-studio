@@ -321,7 +321,10 @@ import {
 import { V1_transformTablePointer } from './transformation/pureGraph/from/V1_DatabaseTransformer.js';
 import { EngineError } from '../../../action/EngineError.js';
 import { V1_SnowflakeApp } from './model/packageableElements/function/V1_SnowflakeApp.js';
-import type { ExecutionResult } from '../../../action/execution/ExecutionResult.js';
+import type {
+  ExecutionResult,
+  ExecutionResultWithMetadata,
+} from '../../../action/execution/ExecutionResult.js';
 import { V1_INTERNAL__UnknownElement } from './model/packageableElements/V1_INTERNAL__UnknownElement.js';
 import { V1_HostedService } from './model/packageableElements/function/V1_HostedService.js';
 import type { PostValidationAssertionResult } from '../../../../DSL_Service_Exports.js';
@@ -2613,7 +2616,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph: PureModel,
     options?: ExecutionOptions,
     _report?: GraphManagerOperationReport,
-  ): Promise<ExecutionResult> {
+  ): Promise<ExecutionResultWithMetadata> {
     const report = _report ?? createGraphManagerOperationReport();
     const stopWatch = new StopWatch();
 
@@ -2629,9 +2632,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
 
-    const result = V1_buildExecutionResult(
-      await this.engine.runQuery(input, options),
-    );
+    const result = await this.engine.runQuery(input, options);
     stopWatch.record(
       GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,
     );
@@ -2640,7 +2641,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ...Object.fromEntries(stopWatch.records),
       total: stopWatch.elapsed,
     };
-    return result;
+    if (result.executionTraceId) {
+      return {
+        executionResult: V1_buildExecutionResult(result.executionResult),
+        executionTraceId: result.executionTraceId,
+      };
+    } else {
+      return {
+        executionResult: V1_buildExecutionResult(result.executionResult),
+      };
+    }
   }
 
   async exportData(
@@ -2734,7 +2744,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         options?.parameterValues,
       );
       const result = V1_buildExecutionResult(
-        await this.engine.runQuery(input, options),
+        (await this.engine.runQuery(input, options)).executionResult,
       );
       stopWatch.record(
         GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,

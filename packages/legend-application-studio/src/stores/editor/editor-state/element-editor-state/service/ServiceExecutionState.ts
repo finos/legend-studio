@@ -35,11 +35,12 @@ import {
   type PureExecution,
   type Mapping,
   type Runtime,
-  type ExecutionResult,
   type PackageableRuntime,
   type RawExecutionPlan,
   type PackageableElementReference,
   type QueryInfo,
+  type LightQuery,
+  type ExecutionResultWithMetadata,
   PureSingleExecution,
   PureMultiExecution,
   KeyedExecutionParameter,
@@ -56,7 +57,6 @@ import {
   stub_PackageableRuntime,
   stub_Mapping,
   reportGraphAnalytics,
-  type LightQuery,
   QuerySearchSpecification,
 } from '@finos/legend-graph';
 import { parseGACoordinates } from '@finos/legend-storage';
@@ -439,7 +439,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   executionResultText?: string | undefined; // NOTE: stored as lossless JSON string
   executionPlanState: ExecutionPlanState;
   readonly parametersState: ServiceExecutionParametersState;
-  queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
+  queryRunPromise: Promise<ExecutionResultWithMetadata> | undefined = undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -490,7 +490,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   };
 
   setQueryRunPromise = (
-    promise: Promise<ExecutionResult> | undefined,
+    promise: Promise<ExecutionResultWithMetadata> | undefined,
   ): void => {
     this.queryRunPromise = promise;
   };
@@ -628,10 +628,14 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         report,
       );
       this.setQueryRunPromise(promise);
-      const result = (yield promise) as ExecutionResult;
+      const result = (yield promise) as ExecutionResultWithMetadata;
       if (this.queryRunPromise === promise) {
         this.setExecutionResultText(
-          stringifyLosslessJSON(result, undefined, DEFAULT_TAB_SIZE),
+          stringifyLosslessJSON(
+            result.executionResult,
+            undefined,
+            DEFAULT_TAB_SIZE,
+          ),
         );
         this.parametersState.setParameters([]);
         // report

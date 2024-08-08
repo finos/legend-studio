@@ -32,10 +32,12 @@ import {
   type RawLambda,
   type EXECUTION_SERIALIZATION_FORMAT,
   type QueryGridConfig,
+  type ExecutionResultWithMetadata,
   GRAPH_MANAGER_EVENT,
   buildRawLambdaFromLambdaFunction,
   reportGraphAnalytics,
   TDSExecutionResult,
+  V1_ZIPKIN_TRACE_HEADER,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import {
@@ -128,8 +130,9 @@ export class QueryBuilderResultState {
   executionResult?: ExecutionResult | undefined;
   isExecutionResultOverflowing = false;
   executionDuration?: number | undefined;
+  executionTraceId?: string;
   latestRunHashCode?: string | undefined;
-  queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
+  queryRunPromise: Promise<ExecutionResultWithMetadata> | undefined = undefined;
   isQueryUsageViewerOpened = false;
   executionError: Error | string | undefined;
 
@@ -143,6 +146,7 @@ export class QueryBuilderResultState {
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
       executionResult: observable,
+      executionTraceId: observable,
       previewLimit: observable,
       executionDuration: observable,
       latestRunHashCode: observable,
@@ -162,6 +166,7 @@ export class QueryBuilderResultState {
       setIsSelectingCells: action,
       setIsRunningQuery: action,
       setExecutionResult: action,
+      setExecutionTraceId: action,
       setExecutionDuration: action,
       setPreviewLimit: action,
       addSelectedCell: action,
@@ -211,6 +216,10 @@ export class QueryBuilderResultState {
     this.executionResult = val;
   }
 
+  setExecutionTraceId(val: string): void {
+    this.executionTraceId = val;
+  }
+
   setExecutionDuration(val: number | undefined): void {
     this.executionDuration = val;
   }
@@ -231,7 +240,9 @@ export class QueryBuilderResultState {
     this.mousedOverCell = val;
   }
 
-  setQueryRunPromise(promise: Promise<ExecutionResult> | undefined): void {
+  setQueryRunPromise(
+    promise: Promise<ExecutionResultWithMetadata> | undefined,
+  ): void {
     this.queryRunPromise = promise;
   }
 
@@ -485,13 +496,17 @@ export class QueryBuilderResultState {
         {
           parameterValues,
           convertUnsafeNumbersToString: true,
+          preservedResponseHeadersList: [V1_ZIPKIN_TRACE_HEADER],
         },
       );
 
       this.setQueryRunPromise(promise);
-      const result = (yield promise) as ExecutionResult;
+      const result = (yield promise) as ExecutionResultWithMetadata;
       if (this.queryRunPromise === promise) {
-        this.processExecutionResult(result);
+        this.processExecutionResult(result.executionResult);
+        if (result.executionTraceId) {
+          this.setExecutionTraceId(result.executionTraceId);
+        }
         this.latestRunHashCode = currentHashCode;
         this.setExecutionDuration(stopWatch.elapsed);
 

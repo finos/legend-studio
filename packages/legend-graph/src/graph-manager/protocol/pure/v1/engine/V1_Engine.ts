@@ -80,7 +80,11 @@ import {
   V1_TestDataGenerationExecutionWithSeedInput,
 } from './execution/V1_ExecuteInput.js';
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan.js';
-import { type V1_ExecutionResult } from './execution/V1_ExecutionResult.js';
+import {
+  V1_EXECUTION_RESULT,
+  V1_ZIPKIN_TRACE_HEADER,
+  type V1_ExecutionResult,
+} from './execution/V1_ExecutionResult.js';
 import { V1_ServiceStorage } from './service/V1_ServiceStorage.js';
 import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext.js';
@@ -698,17 +702,27 @@ export class V1_Engine {
   async runQuery(
     input: V1_ExecuteInput,
     options?: ExecutionOptions,
-  ): Promise<V1_ExecutionResult> {
+  ): Promise<{
+    executionResult: V1_ExecutionResult;
+    executionTraceId?: string;
+  }> {
     try {
-      const executionResultInText = await this.runQueryAndReturnString(
+      const executionResultMap = await this.runQueryAndReturnMap(
         input,
         options,
       );
+      const executionResultInText =
+        executionResultMap.get(V1_EXECUTION_RESULT) ?? '';
       const rawExecutionResult =
         returnUndefOnError(() =>
           this.parseExecutionResults(executionResultInText, options),
         ) ?? executionResultInText;
-      return V1_serializeExecutionResult(rawExecutionResult);
+      const executionResult = V1_serializeExecutionResult(rawExecutionResult);
+      const executionTraceId = executionResultMap.get(V1_ZIPKIN_TRACE_HEADER);
+      if (executionTraceId) {
+        return { executionResult, executionTraceId };
+      }
+      return { executionResult };
     } catch (error) {
       assertErrorThrown(error);
       if (error instanceof NetworkClientError) {
@@ -749,20 +763,28 @@ export class V1_Engine {
     }
   }
 
-  async runQueryAndReturnString(
+  async runQueryAndReturnMap(
     input: V1_ExecuteInput,
     options?: ExecutionOptions,
-  ): Promise<string> {
-    return (
-      (await this.engineServerClient.runQuery(
-        V1_ExecuteInput.serialization.toJson(input),
-        {
-          returnAsResponse: true,
-          serializationFormat: options?.serializationFormat,
-          abortController: options?.abortController,
-        },
-      )) as Response
-    ).text();
+  ): Promise<Map<string, string>> {
+    const result = new Map<string, string>();
+    const response = (await this.engineServerClient.runQuery(
+      V1_ExecuteInput.serialization.toJson(input),
+      {
+        returnAsResponse: true,
+        serializationFormat: options?.serializationFormat,
+        abortController: options?.abortController,
+      },
+    )) as Response;
+    result.set(V1_EXECUTION_RESULT, await response.text());
+    if (options?.preservedResponseHeadersList) {
+      response.headers.forEach((value, name) => {
+        if (options.preservedResponseHeadersList?.includes(name)) {
+          result.set(name, value);
+        }
+      });
+    }
+    return result;
   }
 
   /**

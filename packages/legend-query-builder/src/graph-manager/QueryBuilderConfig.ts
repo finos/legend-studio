@@ -33,11 +33,17 @@ export class QueryBuilderConfig {
    */
   legendAIServiceURL = '';
 
+  /**
+   * This is the URL of the zipkin trace
+   */
+  zipkinTraceBaseURL = '';
+
   static readonly serialization = new SerializationFactory(
     createModelSchema(QueryBuilderConfig, {
       TEMPORARY__disableQueryBuilderChat: optional(primitive()),
       TEMPORARY__enableGridEnterpriseMode: optional(primitive()),
       legendAIServiceURL: optional(primitive()),
+      zipkinTraceBaseURL: optional(primitive()),
     }),
   );
 }

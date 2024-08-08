@@ -17,6 +17,7 @@
 import type {
   ExecutionResult,
   EXECUTION_SERIALIZATION_FORMAT,
+  ExecutionResultWithMetadata,
 } from './action/execution/ExecutionResult.js';
 import type {
   ServiceRegistrationResult,
@@ -156,6 +157,7 @@ export interface ExecutionOptions {
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
   parameterValues?: ParameterValue[];
   abortController?: AbortController | undefined;
+  preservedResponseHeadersList?: string[];
 }
 
 export interface ServiceRegistrationOptions {
@@ -503,7 +505,7 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
     options?: ExecutionOptions,
     report?: GraphManagerOperationReport,
-  ): Promise<ExecutionResult>;
+  ): Promise<ExecutionResultWithMetadata>;
 
   abstract exportData(
     lambda: RawLambda,
