@@ -1020,6 +1020,8 @@ const QueryBuilderFilterConditionEditor = observer(
         rightConditionValue instanceof FilterValueSpecConditionValueState &&
         rightConditionValue.value
       ) {
+        const isInvalid =
+          node.condition.filterState.isInvalidValueSpecFilterValue(node);
         return (
           <div
             ref={dropConnector}
@@ -1049,6 +1051,10 @@ const QueryBuilderFilterConditionEditor = observer(
                   rightConditionValue.value,
                 )}
                 initializeAsEditable={node.isNewlyAdded}
+                className={clsx({
+                  'query-builder-filter-tree__condition-node__value--error':
+                    isInvalid,
+                })}
               />
             </PanelEntryDropZonePlaceholder>
           </div>

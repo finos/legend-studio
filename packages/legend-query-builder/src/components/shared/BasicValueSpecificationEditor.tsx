@@ -1604,6 +1604,7 @@ export const EditableBasicValueSpecificationEditor = observer(
     selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
     isConstant?: boolean;
     initializeAsEditable?: boolean;
+    className?: string;
   }) => {
     const {
       valueSpecification,
@@ -1615,6 +1616,7 @@ export const EditableBasicValueSpecificationEditor = observer(
       selectorConfig,
       isConstant,
       initializeAsEditable,
+      className,
     } = props;
     const applicationStore = useApplicationStore();
 
@@ -1667,6 +1669,7 @@ export const EditableBasicValueSpecificationEditor = observer(
           }
         }}
         displayDateEditorAsEditableValue={true}
+        className={className}
       />
     ) : (
       <div className="value-spec-editor__editable__display">
