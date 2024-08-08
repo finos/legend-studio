@@ -26,6 +26,10 @@ import {
   getByRole,
   getAllByPlaceholderText,
   waitForElementToBeRemoved,
+  findByText,
+  getByDisplayValue,
+  findByDisplayValue,
+  findAllByText,
 } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
@@ -44,11 +48,13 @@ import {
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+  TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
 } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
 import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexM2M.json' assert { type: 'json' };
 import TEST_DATA_SimpleSubtypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json' assert { type: 'json' };
+import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { createMock, integrationTest } from '@finos/legend-shared/test';
 import {
@@ -71,6 +77,7 @@ import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/gr
 import {
   TEST__setUpQueryBuilder,
   dragAndDrop,
+  setDerivedPropertyValue,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
 import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
@@ -1912,5 +1919,275 @@ test(
       }),
     );
     await waitFor(() => getByText(projectionPanel, '50'));
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder allows DND filter panel node to TDS fetch structure panel and keeps derived parameters independent',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    await waitFor(() =>
+      getByText(queryBuilderSetup, 'simpleRelationalMapping'),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
+
+    // Drag and drop derived property from explorer to filter panel
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+    );
+    const explorerPanelDragSource = await findByText(
+      explorerPanel,
+      'Name With Title',
+    );
+    const filterPanelDropZone = await findByText(
+      filterPanel,
+      'Add a filter condition',
+    );
+    await dragAndDrop(
+      explorerPanelDragSource,
+      filterPanelDropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    expect(await findByText(filterPanel, 'Name With Title')).not.toBeNull();
+
+    // Check for 2 errors in filter panel
+    expect(getByText(filterPanel, '2 issues')).not.toBeNull();
+
+    // Drag and drop derived property from filter panel to fetch structure panel
+    const fetchStructurePanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
+      ),
+    );
+    const filterPanelDragSource = await findByText(
+      filterPanel,
+      'Name With Title',
+    );
+    const fetchStructurePanelDropZone = await findByText(
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      filterPanelDragSource,
+      fetchStructurePanelDropZone,
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+    expect(
+      await findByText(fetchStructurePanel, 'Name With Title'),
+    ).not.toBeNull();
+
+    // Check for 1 error in fetch structure panel
+    expect(getByText(fetchStructurePanel, '1 issue')).not.toBeNull();
+
+    // Set filter condition node derived property value
+    await setDerivedPropertyValue(
+      getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
+      'test1',
+      renderResult,
+    );
+
+    // Check for 1 error in filter panel
+    expect(await findByText(filterPanel, '1 issue')).not.toBeNull();
+
+    // Set fetch structure column derived property value
+    await setDerivedPropertyValue(
+      getByTitle(fetchStructurePanel, 'Set Derived Property Argument(s)...'),
+      'test2',
+      renderResult,
+    );
+
+    // Check for no errors in fetch structure panel
+    expect(queryByText(fetchStructurePanel, '1 issue')).toBeNull();
+
+    // Verify filter condition node derived property value is unchanged
+    fireEvent.click(
+      getByTitle(filterPanel, 'Set Derived Property Argument(s)...'),
+    );
+    const dpModal = await renderResult.findByRole('dialog');
+    await findByText(dpModal, 'Derived Property');
+    expect(getByDisplayValue(dpModal, 'test1')).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder allows DND filter panel exists node to TDS fetch structure`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+    });
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+    );
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+
+    // Expand explorer tree node
+    fireEvent.click(await findByText(explorerPanel, 'Employees'));
+
+    // Drag and drop exploded property from explorer panel to filter panel
+    const filterPanelDropZone = await findByText(
+      filterPanel,
+      'Add a filter condition',
+    );
+    const explorerPanelFirstNameDragSource = await findByText(
+      explorerPanel,
+      'First Name',
+    );
+    await dragAndDrop(
+      explorerPanelFirstNameDragSource,
+      filterPanelDropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+
+    fireEvent.click(
+      await renderResult.findByRole('button', { name: 'Proceed' }),
+    );
+    await findByText(filterPanel, 'First Name');
+    await findByText(filterPanel, 'exists');
+    await findByText(filterPanel, 'is');
+    await findByDisplayValue(filterPanel, '');
+    fireEvent.blur(getByDisplayValue(filterPanel, ''));
+    await findByText(filterPanel, '""');
+
+    // Drag and drop exploded property from filter panel to fetch structure panel
+    const fetchStructurePanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
+    );
+    const fetchStructurePanelDropZone = await findByText(
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+    const filterPanelFirstNameDragSource = await findByText(
+      filterPanel,
+      'First Name',
+    );
+    await dragAndDrop(
+      filterPanelFirstNameDragSource,
+      fetchStructurePanelDropZone,
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+
+    expect(
+      await findByText(fetchStructurePanel, 'Employees/First Name'),
+    ).not.toBeNull();
+
+    // Drag and drop another exploded property from explorer panel to filter panel
+    const explorerPanelLastNameDragSource = await findByText(
+      explorerPanel,
+      'Last Name',
+    );
+    await dragAndDrop(
+      explorerPanelLastNameDragSource,
+      filterPanelDropZone,
+      filterPanel,
+      'Add to Exists Group',
+    );
+
+    fireEvent.click(
+      await renderResult.findByRole('button', { name: 'Proceed' }),
+    );
+    await findByText(filterPanel, 'Last Name');
+    await findByText(filterPanel, 'exists');
+    expect(await findAllByText(filterPanel, 'is')).toHaveLength(2);
+    await findByDisplayValue(filterPanel, '');
+    fireEvent.blur(getByDisplayValue(filterPanel, ''));
+    expect(await findAllByText(filterPanel, '""')).toHaveLength(2);
+    expect(await findByText(filterPanel, 'and')).not.toBeNull();
+
+    // Drag and drop second exploded property from filter panel to fetch structure panel
+    const filterPanelLastNameDragSource = await findByText(
+      filterPanel,
+      'Last Name',
+    );
+    await dragAndDrop(
+      filterPanelLastNameDragSource,
+      fetchStructurePanelDropZone,
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+
+    expect(
+      await findByText(fetchStructurePanel, 'Employees/Last Name'),
+    ).not.toBeNull();
+
+    // Drag and drop nested exploded property from explorer panel to filter panel
+    fireEvent.click(await findByText(explorerPanel, 'Hobbies'));
+
+    const explorerPanelHobbyNameDragSource = await findByText(
+      explorerPanel,
+      'Name',
+    );
+    await dragAndDrop(
+      explorerPanelHobbyNameDragSource,
+      filterPanelDropZone,
+      filterPanel,
+      'Add filter to main group',
+    );
+
+    fireEvent.click(
+      await renderResult.findByRole('button', { name: 'Proceed' }),
+    );
+    await findByText(filterPanel, 'Name');
+    expect(await findAllByText(filterPanel, 'exists')).toHaveLength(3);
+    expect(await findAllByText(filterPanel, 'is')).toHaveLength(3);
+    await findByDisplayValue(filterPanel, '');
+    fireEvent.blur(getByDisplayValue(filterPanel, ''));
+    expect(await findAllByText(filterPanel, '""')).toHaveLength(3);
+
+    // Drag and drop nested exploded property from filter panel to fetch structure panel
+    const filterPanelHobbyNameDragSource = await findByText(
+      filterPanel,
+      'Name',
+    );
+    await dragAndDrop(
+      filterPanelHobbyNameDragSource,
+      fetchStructurePanelDropZone,
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+
+    expect(
+      await findByText(fetchStructurePanel, 'Employees/Hobbies/Name'),
+    ).not.toBeNull();
   },
 );

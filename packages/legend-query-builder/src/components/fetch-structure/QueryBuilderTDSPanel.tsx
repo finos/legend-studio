@@ -119,6 +119,41 @@ import {
 } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import { getNameOfValueSpecification } from '../shared/QueryBuilderVariableSelector.js';
 import { QueryBuilderAggregateOperator_Percentile } from '../../stores/fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_Percentile.js';
+import {
+  getFurthestExistsNodeParent,
+  isExistsNodeChild,
+  QUERY_BUILDER_FILTER_DND_TYPE,
+  QueryBuilderFilterTreeConditionNodeData,
+  type QueryBuilderFilterConditionDragSource,
+} from '../../stores/filter/QueryBuilderFilterState.js';
+import { cloneAbstractPropertyExpression } from '../../stores/shared/ValueSpecificationEditorHelper.js';
+import { buildPropertyExpressionFromExistsNode } from '../filter/QueryBuilderFilterPanel.js';
+
+const CAN_DROP_MAIN_GROUP_DND_TYPES = [
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+  QUERY_BUILDER_FILTER_DND_TYPE.CONDITION,
+  QUERY_BUILDER_FUNCTION_DND_TYPE,
+];
+
+const CAN_DROP_DERIVATION_PROJECTION_COLUMN_DND_TYPES = [
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ROOT,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+  QUERY_BUILDER_VARIABLE_DND_TYPE,
+  QUERY_BUILDER_FUNCTION_DND_TYPE,
+];
+
+type QueryBuilderTDSPanelDropTarget =
+  | QueryBuilderExplorerTreeDragSource
+  | QueryBuilderFunctionsExplorerDragSource
+  | QueryBuilderFilterConditionDragSource;
+
+type QueryBuilderDerivationProjectionColumnDropTarget =
+  | QueryBuilderExplorerTreeDragSource
+  | QueryBuilderVariableDragSource
+  | QueryBuilderFunctionsExplorerDragSource;
 
 const QueryBuilderProjectionColumnContextMenu = observer(
   forwardRef<
@@ -192,10 +227,7 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
     };
     const handleDrop = useCallback(
       (
-        item:
-          | QueryBuilderExplorerTreeDragSource
-          | QueryBuilderVariableDragSource
-          | QueryBuilderFunctionsExplorerDragSource,
+        item: QueryBuilderDerivationProjectionColumnDropTarget,
         type: string,
       ): void => {
         if (type === QUERY_BUILDER_VARIABLE_DND_TYPE) {
@@ -224,28 +256,18 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
       },
       [projectionColumnState],
     );
-    const [, dropConnector] = useDrop<
-      | QueryBuilderExplorerTreeDragSource
-      | QueryBuilderVariableDragSource
-      | QueryBuilderFunctionsExplorerDragSource
-    >(
-      () => ({
-        accept: [
-          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ROOT,
-          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY,
-          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-          QUERY_BUILDER_VARIABLE_DND_TYPE,
-          QUERY_BUILDER_FUNCTION_DND_TYPE,
-        ],
-        drop: (item, monitor): void => {
-          if (!monitor.didDrop()) {
-            handleDrop(item, monitor.getItemType() as string);
-          } // prevent drop event propagation to accomondate for nested DnD
-        },
-      }),
-      [handleDrop],
-    );
+    const [, dropConnector] =
+      useDrop<QueryBuilderDerivationProjectionColumnDropTarget>(
+        () => ({
+          accept: CAN_DROP_DERIVATION_PROJECTION_COLUMN_DND_TYPES,
+          drop: (item, monitor): void => {
+            if (!monitor.didDrop()) {
+              handleDrop(item, monitor.getItemType() as string);
+            } // prevent drop event propagation to accomondate for nested DnD
+          },
+        }),
+        [handleDrop],
+      );
 
     return (
       <div
@@ -1230,12 +1252,7 @@ export const QueryBuilderTDSPanel = observer(
 
     // Drag and Drop
     const handleDrop = useCallback(
-      (
-        item:
-          | QueryBuilderExplorerTreeDragSource
-          | QueryBuilderFunctionsExplorerDragSource,
-        type: string,
-      ): void => {
+      (item: QueryBuilderTDSPanelDropTarget, type: string): void => {
         switch (type) {
           case QUERY_BUILDER_FUNCTION_DND_TYPE: {
             const derivationProjectionColumn =
@@ -1267,6 +1284,30 @@ export const QueryBuilderTDSPanel = observer(
               ),
             );
             break;
+          case QUERY_BUILDER_FILTER_DND_TYPE.CONDITION:
+            if (item.node instanceof QueryBuilderFilterTreeConditionNodeData) {
+              const propertyExpression = isExistsNodeChild(item.node)
+                ? buildPropertyExpressionFromExistsNode(
+                    tdsState.queryBuilderState.filterState,
+                    guaranteeNonNullable(
+                      getFurthestExistsNodeParent(item.node),
+                    ),
+                    item.node,
+                  )
+                : cloneAbstractPropertyExpression(
+                    item.node.condition.propertyExpressionState
+                      .propertyExpression,
+                    tdsState.queryBuilderState.observerContext,
+                  );
+              tdsState.addColumn(
+                new QueryBuilderSimpleProjectionColumnState(
+                  tdsState,
+                  propertyExpression,
+                  tdsState.queryBuilderState.explorerState.humanizePropertyName,
+                ),
+              );
+            }
+            break;
           default:
             break;
         }
@@ -1275,17 +1316,12 @@ export const QueryBuilderTDSPanel = observer(
     );
 
     const [{ isDragOver }, dropTargetConnector] = useDrop<
-      | QueryBuilderExplorerTreeDragSource
-      | QueryBuilderFunctionsExplorerDragSource,
+      QueryBuilderTDSPanelDropTarget,
       void,
       { isDragOver: boolean }
     >(
       () => ({
-        accept: [
-          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-          QUERY_BUILDER_FUNCTION_DND_TYPE,
-        ],
+        accept: CAN_DROP_MAIN_GROUP_DND_TYPES,
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item, monitor.getItemType() as string);
@@ -1315,11 +1351,9 @@ export const QueryBuilderTDSPanel = observer(
     const { isDroppable } = useDragLayer((monitor) => ({
       isDroppable:
         monitor.isDragging() &&
-        [
-          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-          QUERY_BUILDER_FUNCTION_DND_TYPE,
-        ].includes(monitor.getItemType()?.toString() ?? ''),
+        CAN_DROP_MAIN_GROUP_DND_TYPES.includes(
+          monitor.getItemType()?.toString() ?? '',
+        ),
     }));
 
     useEffect(() => {
