@@ -398,8 +398,18 @@ export class QueryBuilderConstantsState implements Hashable {
 export const cloneQueryBuilderConstantLambdaEditorState = (
   state: QueryBuilderConstantLambdaEditorState,
 ): QueryBuilderConstantLambdaEditorState => {
+  const clonedCalculatedState =
+    new QueryBuilderCalculatedConstantExpressionState(
+      state.calculatedState.queryBuilderState,
+      new VariableExpression(
+        state.calculatedState.variable.name,
+        state.calculatedState.variable.multiplicity,
+        state.calculatedState.variable.genericType,
+      ),
+      deepClone(state.calculatedState.value),
+    );
   const clonedState = new QueryBuilderConstantLambdaEditorState(
-    deepClone(state.calculatedState),
+    clonedCalculatedState,
   );
   clonedState.lambdaString = state.lambdaString;
   clonedState.parserError = deepClone(state.parserError);
