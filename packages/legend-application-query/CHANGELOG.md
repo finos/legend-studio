@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.5.27
+
+### Patch Changes
+
+- [#3407](https://github.com/finos/legend-studio/pull/3407) [`ee89917`](https://github.com/finos/legend-studio/commit/ee89917bcc334ac868f3d2711cd71253072ff965) ([@pragyasri-gs](https://github.com/pragyasri-gs)) - Adding Legend AI button at the top bar.
+
 ## 13.5.26
 
 ### Patch Changes

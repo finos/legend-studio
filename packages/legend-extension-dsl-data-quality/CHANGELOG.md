@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 1.0.14
+
+### Patch Changes
+
+- [#3400](https://github.com/finos/legend-studio/pull/3400) [`f7fa59c`](https://github.com/finos/legend-studio/commit/f7fa59c5b69fcbc488a5023bb9e6fe092bfb6cd3) ([@viju4076](https://github.com/viju4076)) - scroll fix for constraints selection and structural validations
+
 ## 1.0.13
 
 ### Patch Changes

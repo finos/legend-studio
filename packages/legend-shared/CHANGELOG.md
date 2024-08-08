@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 10.0.51
+
+### Patch Changes
+
+- [#3389](https://github.com/finos/legend-studio/pull/3389) [`496be89`](https://github.com/finos/legend-studio/commit/496be891d1716f3e016c09012e07fa116fd9e0ae) ([@travisstebbins](https://github.com/travisstebbins)) - Export new FuzzySearchEngineSortFunctionArg type
+
 ## 10.0.50
 
 ## 10.0.49

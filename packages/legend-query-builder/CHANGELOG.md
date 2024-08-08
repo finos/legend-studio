@@ -1,5 +1,21 @@
 # @finos/legend-query-builder
 
+## 4.14.70
+
+### Patch Changes
+
+- [#3405](https://github.com/finos/legend-studio/pull/3405) [`b71a3bb`](https://github.com/finos/legend-studio/commit/b71a3bb3357d6383b1661b16563f6e75ad48ebea) ([@travisstebbins](https://github.com/travisstebbins)) - Allow DND filter node to fetch structure panel
+
+- [#3393](https://github.com/finos/legend-studio/pull/3393) [`03a118e`](https://github.com/finos/legend-studio/commit/03a118ef9f934a07bee05a7342a6fcd6154e6c27) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Show zipkin trace id for query execution
+
+- [#3404](https://github.com/finos/legend-studio/pull/3404) [`9a191d7`](https://github.com/finos/legend-studio/commit/9a191d7c2b6cfac9820792650aef6ad36c7c2459) ([@travisstebbins](https://github.com/travisstebbins)) - Allow DND window function column to post-filter panel value
+
+- [#3389](https://github.com/finos/legend-studio/pull/3389) [`496be89`](https://github.com/finos/legend-studio/commit/496be891d1716f3e016c09012e07fa116fd9e0ae) ([@travisstebbins](https://github.com/travisstebbins)) - Improve property search
+
+- [#3403](https://github.com/finos/legend-studio/pull/3403) [`f3a8062`](https://github.com/finos/legend-studio/commit/f3a80622d4a8005fdb44bd5d7211172b255479e9) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add data incomplete warning
+
+- [#3377](https://github.com/finos/legend-studio/pull/3377) [`9195bbf`](https://github.com/finos/legend-studio/commit/9195bbfe76afbd806eccea19a854748ba0144351) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Move query execution error message into query builder result panel, highlight entitlement errors, show no data warning, show data incompleteness warning and show data rounding warning
+
 ## 4.14.69
 
 ### Patch Changes
