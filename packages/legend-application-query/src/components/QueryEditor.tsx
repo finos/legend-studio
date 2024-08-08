@@ -56,6 +56,7 @@ import {
   generateExistingQueryEditorRoute,
 } from '../__lib__/LegendQueryNavigation.js';
 import { ExistingQueryEditorStore } from '../stores/QueryEditorStore.js';
+import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 import {
   LEGEND_APPLICATION_COLOR_THEME,
   ReleaseLogManager,
@@ -610,6 +611,16 @@ export const QueryEditor = observer(() => {
     );
   };
 
+  //open legend ai query chat
+  const openQueryChat = (): void => {
+    if (!editorStore.queryBuilderState?.isQueryChatOpened) {
+      LegendQueryTelemetryHelper.logEvent_QueryChatOpened(
+        applicationStore.telemetryService,
+      );
+      editorStore.queryBuilderState?.setIsQueryChatOpened(true);
+    }
+  };
+
   useEffect(() => {
     flowResult(editorStore.initialize()).catch(
       applicationStore.alertUnhandledError,
@@ -672,22 +683,47 @@ export const QueryEditor = observer(() => {
             Legend Query
           </div>
         </div>
-        <button
-          title="Toggle light/dark mode"
-          onClick={TEMPORARY__toggleLightDarkMode}
-          className="query-editor__header__action query-editor__header__action__theme-toggler"
-        >
-          {applicationStore.layoutService
-            .TEMPORARY__isLightColorThemeEnabled ? (
-            <>
-              <SunIcon className="query-editor__header__action__icon--bulb--light" />
-            </>
-          ) : (
-            <>
-              <MoonIcon className="query-editor__header__action__icon--bulb--dark" />
-            </>
-          )}
-        </button>
+        <div className="query-editor__header__action__content">
+          {!isLoadingEditor &&
+            !editorStore.queryBuilderState?.config
+              ?.TEMPORARY__disableQueryBuilderChat &&
+            editorStore.queryBuilderState instanceof
+              DataSpaceQueryBuilderState &&
+            editorStore.queryBuilderState.canBuildQuery && (
+              <button
+                title="Open Query Chat."
+                onClick={() => openQueryChat()}
+                className="query-editor__header__action query-editor__header__action__theme-toggler"
+              >
+                <div
+                  className={
+                    applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                      ? 'query-editor__header__action__chat__label--light'
+                      : 'query-editor__header__action__chat__label--dark'
+                  }
+                >
+                  Legend AI
+                </div>
+              </button>
+            )}
+          <button
+            title="Toggle light/dark mode"
+            onClick={TEMPORARY__toggleLightDarkMode}
+            className="query-editor__header__action query-editor__header__action__theme-toggler"
+          >
+            {applicationStore.layoutService
+              .TEMPORARY__isLightColorThemeEnabled ? (
+              <>
+                <SunIcon className="query-editor__header__action__icon--bulb--light" />
+              </>
+            ) : (
+              <>
+                <MoonIcon className="query-editor__header__action__icon--bulb--dark" />
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="query-editor__content">

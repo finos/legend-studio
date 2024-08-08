@@ -161,6 +161,11 @@
         color: var(--color-light-grey-100);
       }
 
+      &__content {
+        display: flex;
+        justify-content: flex-end;
+      }
+
       &__label {
         margin-left: 0.5rem;
         font-size: 1.2rem;
@@ -196,6 +201,21 @@
 
         &--productionize {
           font-size: 1.3rem;
+        }
+      }
+
+      &__chat__label {
+        &--light {
+          color: var(--color-yellow-100) !important;
+        }
+
+        &--light:hover,
+        &--dark:hover {
+          color: var(--color-yellow-200) !important;
+        }
+
+        &--dark {
+          color: var(--color-light-grey-50) !important;
         }
       }
 
