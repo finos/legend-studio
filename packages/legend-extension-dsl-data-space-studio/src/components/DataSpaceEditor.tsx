@@ -35,6 +35,7 @@ import {
   SUPPORT_INFO_TYPE,
 } from '../stores/DataSpaceEditorState.js';
 import {
+  dataSpace_addExecutionContext,
   set_description,
   set_documentationUrl,
   set_email,
@@ -52,7 +53,11 @@ import {
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { useEffect, useRef, useState } from 'react';
 import { DataSpaceExecutionContextTab } from './DataSpaceExecutionContextTab.js';
-import type { Mapping, PackageableRuntime } from '@finos/legend-graph';
+import type {
+  Mapping,
+  PackageableElementReference,
+  PackageableRuntime,
+} from '@finos/legend-graph';
 
 const SUPPORT_INFO_TYPE_OPTIONS = [
   { label: 'Support Email', value: SUPPORT_INFO_TYPE.EMAIL },
@@ -86,6 +91,10 @@ export const DataSpaceEditor = observer(() => {
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newExecutionContextName, setNewExecutionContextName] = useState('');
+  const [selectedMapping, setSelectedMapping] =
+    useState<PackageableElementReference<Mapping> | null>(null);
+  const [selectedRuntime, setSelectedRuntime] =
+    useState<PackageableElementReference<PackageableRuntime> | null>(null);
 
   useEffect(() => {
     if (!isReadOnly) {
@@ -153,17 +162,6 @@ export const DataSpaceEditor = observer(() => {
     set_supportInfotype(dataSpaceElement, option.value);
   };
 
-  const handleExecutionContextChange = (option: ExecutionContextOption) => {
-    const context = option.value;
-    // if (context) {
-    dataSpaceEditorState.setDefaultExecutionContext(context);
-    dataSpaceEditorState.setSelectedExecutionContext(context);
-    dataSpaceEditorState.setSelectedTab(DATASPACE_TAB.EXECUTION_CONTEXT);
-
-    editorStore.tabManagerState.openTab(dataSpaceEditorState);
-    // }
-  };
-
   const selectedTab = dataSpaceEditorState.selectedTab;
   const selectedSupportInfoType = dataSpaceEditorState.selectedSupportInfoType;
 
@@ -190,13 +188,6 @@ export const DataSpaceEditor = observer(() => {
     dataSpaceElement.supportInfo instanceof DataSpaceSupportCombinedInfo
       ? (dataSpaceElement.supportInfo.supportUrl ?? '')
       : '';
-
-  const executionContextOptions = dataSpaceElement.executionContexts.map(
-    (context) => ({
-      label: context.name,
-      value: context,
-    }),
-  );
 
   // const showAddEmailInput = (): void => setShowEmailsEditInput(true);
   const hideAddOrEditEmailInput = (): void => {
@@ -239,6 +230,7 @@ export const DataSpaceEditor = observer(() => {
     };
 
   const openModal = () => {
+    console.log('clicked');
     setIsModalOpen(true);
   };
 
@@ -246,17 +238,12 @@ export const DataSpaceEditor = observer(() => {
     setIsModalOpen(false);
   };
 
-  const addExecutionContext = () => {
-    if (newExecutionContextName) {
-      const newContext = new DataSpaceExecutionContext();
-      newContext.name = newExecutionContextName;
-      newContext.description = `Description for ${newExecutionContextName}`;
-      dataSpaceElement.executionContexts.push(newContext);
-      dataSpaceEditorState.setSelectedExecutionContext(newContext);
-      dataSpaceEditorState.setDefaultExecutionContext(newContext);
-      setNewExecutionContextName('');
-      closeModal();
-    }
+  const addExecutionContext = (
+    name: string,
+    mapping: PackageableElementReference<Mapping>,
+    defaultRuntime: PackageableElementReference<PackageableRuntime>,
+  ) => {
+    dataSpaceEditorState.addExecutionContext(name, mapping, defaultRuntime);
   };
 
   const renderTabContent = (): React.ReactNode => {
@@ -285,65 +272,6 @@ export const DataSpaceEditor = observer(() => {
                 />
               </div>
             </div>
-          </PanelFormSection>
-        );
-      case DATASPACE_TAB.EXECUTION_CONTEXT:
-        return (
-          <DataSpaceExecutionContextTab
-            dataSpaceEditorState={dataSpaceEditorState}
-            isModalOpen={isModalOpen}
-            newExecutionContextName={newExecutionContextName}
-            setNewExecutionContextName={setNewExecutionContextName}
-            openModal={openModal}
-            closeModal={closeModal}
-            addExecutionContext={addExecutionContext}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="dataSpace-editor panel dataSpace-editor--dark">
-      <div className="panel__header">
-        <div className="panel__header__title">
-          <div className="panel__header__title__label">Data Space</div>
-          <div className="panel__header__title__content">
-            {dataSpaceElement.name}
-          </div>
-        </div>
-      </div>
-      <div className="panel__header panel__header--dark">
-        <div className="panel__header__tabs">
-          {TAB_OPTIONS.map((tab) => (
-            <div
-              key={tab.value}
-              onClick={() => handleTabChange(tab)}
-              className={clsx('dataSpace-editor__tab', {
-                'dataSpace-editor__tab--active': tab.value === selectedTab,
-              })}
-            >
-              {tab.label}
-            </div>
-          ))}
-        </div>
-        {selectedTab === DATASPACE_TAB.EXECUTION_CONTEXT && (
-          <button
-            onClick={openModal}
-            className="dataSpace-editor__add-context-button dataSpace-editor__emailSupport__validation-label"
-          >
-            <PlusIcon />
-            Add Execution Context
-          </button>
-        )}
-      </div>
-      <PanelContentLists className="dataSpace-editor__general">
-        <PanelForm>{renderTabContent()}</PanelForm>
-      </PanelContentLists>
-      {selectedTab === DATASPACE_TAB.GENERAL && (
-        <PanelFormSection>
-          <div className="panel__content__form">
             <PanelFormListItems title="Support Information">
               <CustomSelectorInput
                 options={SUPPORT_INFO_TYPE_OPTIONS}
@@ -354,104 +282,105 @@ export const DataSpaceEditor = observer(() => {
                 disabled={isReadOnly}
                 darkMode={true}
               />
-              {selectedSupportInfoType === SUPPORT_INFO_TYPE.EMAIL && (
-                <div>
-                  <PanelFormTextField
-                    name="Support Email"
-                    value={supportEmail}
-                    update={handleSupportEmailChange}
-                    placeholder="Enter support email"
-                  />
-                  <PanelFormTextField
-                    name="Documentation URL"
-                    value={documentationUrl}
-                    update={handleDocumentationUrlChange}
-                    placeholder="Enter documentation URL"
-                  />
-                </div>
-              )}
-              {selectedSupportInfoType === SUPPORT_INFO_TYPE.COMBINED_INFO && (
-                <>
-                  <PanelFormListItems title="Support Emails">
-                    {emails.map((email: string, index: number) => (
-                      <div
-                        key={email}
-                        className={
-                          showEmailsEditInput === index
-                            ? 'panel__content__form__section__list__new-item'
-                            : 'panel__content__form__section__list__item'
-                        }
-                      >
-                        {showEmailsEditInput === index ? (
-                          <>
-                            <PanelFormTextField
-                              className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
-                              value={emailsInputValue}
-                              update={(value) =>
-                                changeEmailInputValue({
-                                  target: { value } as EventTarget &
-                                    HTMLInputElement,
-                                } as React.ChangeEvent<HTMLInputElement>)
+            </PanelFormListItems>
+            {selectedSupportInfoType === SUPPORT_INFO_TYPE.EMAIL && (
+              <div>
+                <PanelFormTextField
+                  name="Support Email"
+                  value={supportEmail}
+                  update={handleSupportEmailChange}
+                  placeholder="Enter support email"
+                />
+                <PanelFormTextField
+                  name="Documentation URL"
+                  value={documentationUrl}
+                  update={handleDocumentationUrlChange}
+                  placeholder="Enter documentation URL"
+                />
+              </div>
+            )}
+            {selectedSupportInfoType === SUPPORT_INFO_TYPE.COMBINED_INFO && (
+              <>
+                <PanelFormListItems>
+                  {emails.map((email: string, index: number) => (
+                    <div
+                      key={email}
+                      className={
+                        showEmailsEditInput === index
+                          ? 'panel__content__form__section__list__new-item'
+                          : 'panel__content__form__section__list__item'
+                      }
+                    >
+                      {showEmailsEditInput === index ? (
+                        <>
+                          <PanelFormTextField
+                            name="Edit Email"
+                            className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
+                            value={emailsInputValue}
+                            update={(value) =>
+                              changeEmailInputValue({
+                                target: { value } as EventTarget &
+                                  HTMLInputElement,
+                              } as React.ChangeEvent<HTMLInputElement>)
+                            }
+                          />
+                          <div className="panel__content__form__section__list__new-item__actions">
+                            <button
+                              title="savebtn"
+                              className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                              disabled={
+                                isReadOnly || emails.includes(emailsInputValue)
                               }
-                              name="Email"
-                            />
-                            <div className="panel__content__form__section__list__new-item__actions">
-                              <button
-                                title="savebtn"
-                                className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                                disabled={
-                                  isReadOnly ||
-                                  emails.includes(emailsInputValue)
-                                }
-                                onClick={updateEmail(index)}
-                                tabIndex={-1}
-                              >
-                                Save
-                              </button>
-                              <button
-                                title="cancelbtn"
-                                className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
-                                disabled={isReadOnly}
-                                onClick={hideAddOrEditEmailInput}
-                                tabIndex={-1}
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </>
-                        ) : (
-                          <PanelFormSection>
-                            <div className="panel__content__form__section__list__item__value">
-                              {email}
-                            </div>
-                            <div className="panel__content__form__section__list__item__actions">
-                              <button
-                                title="showbtn"
-                                className="panel__content__form__section__list__item__edit-btn"
-                                disabled={isReadOnly}
-                                onClick={() => setShowEmailsEditInput(index)}
-                                tabIndex={-1}
-                              >
-                                <PencilIcon />
-                              </button>
-                              <button
-                                title="deletebtn"
-                                className="panel__content__form__section__list__item__remove-btn"
-                                disabled={isReadOnly}
-                                onClick={deleteEmail(index)}
-                                tabIndex={-1}
-                              >
-                                <TimesIcon />
-                              </button>
-                            </div>
-                          </PanelFormSection>
-                        )}
-                      </div>
-                    ))}
-                    {showEmailsEditInput === null && (
-                      <div className="panel__content__form__section__list__new-item">
+                              onClick={updateEmail(index)}
+                              tabIndex={-1}
+                            >
+                              Save
+                            </button>
+                            <button
+                              title="cancelbtn"
+                              className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
+                              disabled={isReadOnly}
+                              onClick={hideAddOrEditEmailInput}
+                              tabIndex={-1}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <PanelFormSection>
+                          <div className="panel__content__form__section__list__item__value">
+                            {email}
+                          </div>
+                          <div className="panel__content__form__section__list__item__actions">
+                            <button
+                              title="showbtn"
+                              className="panel__content__form__section__list__item__edit-btn"
+                              disabled={isReadOnly}
+                              onClick={() => setShowEmailsEditInput(index)}
+                              tabIndex={-1}
+                            >
+                              <PencilIcon />
+                            </button>
+                            <button
+                              title="deletebtn"
+                              className="panel__content__form__section__list__item__remove-btn"
+                              disabled={isReadOnly}
+                              onClick={deleteEmail(index)}
+                              tabIndex={-1}
+                            >
+                              <TimesIcon />
+                            </button>
+                          </div>
+                        </PanelFormSection>
+                      )}
+                    </div>
+                  ))}
+                  {showEmailsEditInput === null && (
+                    <div className="panel__content__form__section__list__new-item">
+                      <PanelFormSection>
                         <PanelFormTextField
-                          name="Email"
+                          name="New Email"
                           className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
                           value={emailsInputValue}
                           update={(value) =>
@@ -483,63 +412,105 @@ export const DataSpaceEditor = observer(() => {
                             Cancel
                           </button>
                         </div>
+                      </PanelFormSection>
+                    </div>
+                  )}
+                  {emails.length === 0 && showEmailsEditInput === null && (
+                    <div className="dataSpace-editor__emailSupport__validation">
+                      <ErrorIcon />
+                      <div className="dataSpace-editor__emailSupport__validation-label">
+                        Add at least one email
                       </div>
-                    )}
-                    {emails.length === 0 && showEmailsEditInput === null && (
-                      <div className="dataSpace-editor__emailSupport__validation">
-                        <ErrorIcon />
-                        <div className="dataSpace-editor__emailSupport__validation-label">
-                          Add at least one email
-                        </div>
-                      </div>
-                    )}
-                  </PanelFormListItems>
-                  <PanelFormTextField
-                    name="Website URL"
-                    value={websiteUrl}
-                    update={handleWebsiteUrlChange}
-                    placeholder="Enter website URL"
-                  />
-                  <PanelFormTextField
-                    name="FAQ URL"
-                    value={faqUrl}
-                    update={handleFaqUrlChange}
-                    placeholder="Enter FAQ URL"
-                  />
-                  <PanelFormTextField
-                    name="Support URL"
-                    value={supportUrl}
-                    update={handleSupportUrlChange}
-                    placeholder="Enter support URL"
-                  />
-                  <PanelFormTextField
-                    name="Documentation URL"
-                    value={documentationUrl}
-                    update={handleDocumentationUrlChange}
-                    placeholder="Enter documentation URL"
-                  />
-                </>
-              )}
-            </PanelFormListItems>
-          </div>
-        </PanelFormSection>
-      )}
-      {selectedTab === DATASPACE_TAB.EXECUTION_CONTEXT && (
-        <div className="dataSpace-editor panel dataSpace-editor--dark">
-          <CustomSelectorInput
-            options={executionContextOptions}
-            onChange={handleExecutionContextChange}
-            value={executionContextOptions.find(
-              (option: ExecutionContextOption) =>
-                option.value === dataSpaceElement.defaultExecutionContext,
+                    </div>
+                  )}
+                </PanelFormListItems>
+                <PanelFormTextField
+                  name="Website URL"
+                  value={websiteUrl}
+                  update={handleWebsiteUrlChange}
+                  placeholder="Enter website URL"
+                />
+                <PanelFormTextField
+                  name="FAQ URL"
+                  value={faqUrl}
+                  update={handleFaqUrlChange}
+                  placeholder="Enter FAQ URL"
+                />
+                <PanelFormTextField
+                  name="Support URL"
+                  value={supportUrl}
+                  update={handleSupportUrlChange}
+                  placeholder="Enter support URL"
+                />
+                <PanelFormTextField
+                  name="Documentation URL"
+                  value={documentationUrl}
+                  update={handleDocumentationUrlChange}
+                  placeholder="Enter documentation URL"
+                />
+              </>
             )}
-            disabled={isReadOnly}
-            title="Select Execution Context"
-            placeholder="Select Execution Context"
-            darkMode={true}
+          </PanelFormSection>
+        );
+      case DATASPACE_TAB.EXECUTION_CONTEXT:
+        return (
+          <DataSpaceExecutionContextTab
+            dataSpaceEditorState={dataSpaceEditorState}
+            isModalOpen={isModalOpen}
+            newExecutionContextName={newExecutionContextName}
+            setNewExecutionContextName={setNewExecutionContextName}
+            openModal={openModal}
+            closeModal={closeModal}
+            addExecutionContext={addExecutionContext}
+            selectedMapping={selectedMapping}
+            setSelectedMapping={setSelectedMapping}
+            selectedRuntime={selectedRuntime}
+            setSelectedRuntime={setSelectedRuntime}
           />
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="dataSpace-editor panel dataSpace-editor--dark">
+      <div className="panel__header">
+        <div className="panel__header__title">
+          <div className="panel__header__title__label">Data Space</div>
+          <div className="panel__header__title__content">
+            {dataSpaceElement.name}
+          </div>
         </div>
-      )}
+      </div>
+      <div className="panel__header panel__header--dark">
+        <div className="panel__header__tabs">
+          {TAB_OPTIONS.map((tab) => (
+            <div
+              key={tab.value}
+              onClick={() => handleTabChange(tab)}
+              className={clsx('dataSpace-editor__tab', {
+                'dataSpace-editor__tab--active':
+                  tab.value === dataSpaceEditorState.selectedTab,
+              })}
+            >
+              {tab.label}
+            </div>
+          ))}
+        </div>
+        {/*{selectedTab === DATASPACE_TAB.EXECUTION_CONTEXT && (
+          <button
+            onClick={openModal}
+            className="dataSpace-editor__add-context-button dataSpace-editor__emailSupport__validation-label"
+          >
+            <PlusIcon />
+            Add Execution Context
+          </button>
+        )} */}
+      </div>
+      <PanelContentLists className="dataSpace-editor__general">
+        <PanelForm>{renderTabContent()}</PanelForm>
+      </PanelContentLists>
     </div>
   );
 });

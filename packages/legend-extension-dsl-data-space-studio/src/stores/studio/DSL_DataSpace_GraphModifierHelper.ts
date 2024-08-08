@@ -30,6 +30,7 @@ import {
   type PackageableElementReference,
   type PackageableRuntime,
 } from '@finos/legend-graph';
+import { addUniqueEntry } from '@finos/legend-shared';
 // import type { PackageableElementReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 // import type { Mapping } from '../../../../legend-graph/src/graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 // import type { PackageableRuntime } from '../../../../legend-graph/src/graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
@@ -94,7 +95,6 @@ export const set_supportInfotype = action(
     }
   },
 );
-
 export const set_executionContexts = action(
   (dataSpace: DataSpace, contexts: DataSpaceExecutionContext[]): void => {
     dataSpace.executionContexts = contexts;
@@ -151,11 +151,9 @@ export const set_mapping = action(
   },
 );
 
-// export const set_testData = action(
-//   (
-//     executionContext: DataSpaceExecutionContext,
-//     testData: string | undefined,
-//   ) => {
-//     executionContext.testData = testData;
-//   },
-// );
+export const dataSpace_addExecutionContext = action(
+  (dataSpace: DataSpace, executionContext: DataSpaceExecutionContext): void => {
+    const observedContext = observe_DataSpaceExecutionContext(executionContext);
+    dataSpace.executionContexts.push(observedContext);
+  },
+);

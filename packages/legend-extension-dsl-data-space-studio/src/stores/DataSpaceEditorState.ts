@@ -47,6 +47,9 @@ export class DataSpaceEditorState extends ElementEditorState {
   selectedTab: DATASPACE_TAB = DATASPACE_TAB.GENERAL;
   selectedExecutionContext?: DataSpaceExecutionContext;
   newExecutionContextName = '';
+  selectedMapping: PackageableElementReference<Mapping> | null = null;
+  selectedRuntime: PackageableElementReference<PackageableRuntime> | null =
+    null;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -57,11 +60,15 @@ export class DataSpaceEditorState extends ElementEditorState {
       selectedTab: observable,
       selectedExecutionContext: observable,
       newExecutionContextName: observable,
+      selectedMapping: observable,
+      selectedRuntime: observable,
       setSelectedSupportInfoType: action,
       setSelectedTab: action,
       setSelectedExecutionContext: action,
       setDefaultExecutionContext: action,
       setNewExecutionContextName: action,
+      setSelectedMapping: action,
+      setSelectedRuntime: action,
       addExecutionContext: action,
       reprocess: action,
     });
@@ -89,6 +96,7 @@ export class DataSpaceEditorState extends ElementEditorState {
   }
 
   setSelectedExecutionContext(context: DataSpaceExecutionContext): void {
+    console.log(context);
     this.selectedExecutionContext = context;
   }
 
@@ -98,6 +106,18 @@ export class DataSpaceEditorState extends ElementEditorState {
 
   setNewExecutionContextName(name: string): void {
     this.newExecutionContextName = name;
+  }
+
+  setSelectedMapping(
+    mapping: PackageableElementReference<Mapping> | null,
+  ): void {
+    this.selectedMapping = mapping;
+  }
+
+  setSelectedRuntime(
+    runtime: PackageableElementReference<PackageableRuntime> | null,
+  ): void {
+    this.selectedRuntime = runtime;
   }
 
   addExecutionContext(

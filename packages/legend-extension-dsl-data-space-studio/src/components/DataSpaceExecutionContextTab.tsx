@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import { forwardRef } from 'react';
 import {
+  clsx,
+  ContextMenu,
   CustomSelectorInput,
+  MenuContent,
+  MenuContentItem,
+  PanelFormListItems,
   PanelFormTextField,
   PlusIcon,
 } from '@finos/legend-art';
 import {
+  dataSpace_addExecutionContext,
   set_executionContextDescription,
   set_executionContextName,
   set_executionContextTitle,
@@ -16,7 +23,7 @@ import { DataSpaceExecutionContext } from '@finos/legend-extension-dsl-data-spac
 import type { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
   PackageableElementExplicitReference,
-  PackageableElementReference,
+  type PackageableElementReference,
   type Mapping,
   type PackageableRuntime,
 } from '@finos/legend-graph';
@@ -28,23 +35,44 @@ interface ExecutionContextTabProps {
   setNewExecutionContextName: (name: string) => void;
   openModal: () => void;
   closeModal: () => void;
-  addExecutionContext: () => void;
+  addExecutionContext: (
+    name: string,
+    mapping: PackageableElementReference<Mapping>,
+    defaultRuntime: PackageableElementReference<PackageableRuntime>,
+  ) => void;
+  selectedMapping: PackageableElementReference<Mapping> | null;
+  setSelectedMapping: (
+    mapping: PackageableElementReference<Mapping> | null,
+  ) => void;
+  selectedRuntime: PackageableElementReference<PackageableRuntime> | null;
+  setSelectedRuntime: (
+    runtime: PackageableElementReference<PackageableRuntime> | null,
+  ) => void;
 }
-
 interface MappingOption {
-  value: Mapping;
+  value: PackageableElementReference<Mapping>;
   label: string;
 }
 interface RuntimeOption {
-  value: PackageableRuntime;
+  value: PackageableElementReference<PackageableRuntime>;
   label: string;
 }
 
-// TODO: ;
-// interface TestDataOption {
-//   value: string;
-//   label: string;
-// }
+const ExecutionContextMenu = observer(
+  forwardRef<
+    HTMLDivElement,
+    {
+      add: () => void;
+    }
+  >(function ExecutionContextMenu(props, ref) {
+    const { add } = props;
+    return (
+      <MenuContent ref={ref}>
+        <MenuContentItem onClick={add}>Add Execution Context</MenuContentItem>
+      </MenuContent>
+    );
+  }),
+);
 
 export const DataSpaceExecutionContextTab: React.FC<ExecutionContextTabProps> =
   observer(
@@ -56,70 +84,65 @@ export const DataSpaceExecutionContextTab: React.FC<ExecutionContextTabProps> =
       openModal,
       closeModal,
       addExecutionContext,
+      selectedMapping,
+      setSelectedMapping,
+      selectedRuntime,
+      setSelectedRuntime,
     }) => {
-      // const [isModalOpen, setIsModalOpen] = useState(false);
-      // const [newExecutionContextName, setNewExecutionContextName] = useState('');
-      const [selectedMapping, setSelectedMapping] =
-        useState<PackageableElementReference<Mapping> | null>(null);
-      const [selectedRuntime, setSelectedRuntime] =
-        useState<PackageableElementReference<PackageableRuntime> | null>(null);
-      // const [selectedTestData, setSelectedTestData] = useState('');
       const executionContext = dataSpaceEditorState.selectedExecutionContext;
-
-      if (!executionContext) {
-        return (
-          <div className="dataSpace-editor__emailSupport__validation-label">
-            Select an execution context to view details.
-          </div>
-        );
-      }
+      const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+        useState(false);
 
       const handleTitleChange = (value: string | undefined): void => {
-        set_executionContextTitle(executionContext, value);
+        if (executionContext) {
+          set_executionContextTitle(executionContext, value);
+          dataSpaceEditorState.setSelectedExecutionContext(executionContext);
+        } else {
+          console.error('Execution context is undefined.');
+        }
       };
 
       const handleDescriptionChange = (value: string | undefined): void => {
-        set_executionContextDescription(executionContext, value);
+        if (executionContext) {
+          set_executionContextDescription(executionContext, value ?? '');
+          dataSpaceEditorState.setSelectedExecutionContext(executionContext);
+        } else {
+          console.error('Execution context is undefined.');
+        }
       };
 
       const handleNameChange = (value: string | undefined) => {
-        set_executionContextName(executionContext, value ?? '');
+        if (executionContext) {
+          set_executionContextName(executionContext, value ?? '');
+          dataSpaceEditorState.setSelectedExecutionContext(executionContext);
+        } else {
+          console.error('Execution context is undefined.');
+        }
       };
 
-      const handleMappingChange = (option: { value: Mapping }): void => {
-        set_mapping(
-          executionContext,
-          PackageableElementExplicitReference.create(option.value),
-        );
+      const handleMappingChange = (option: MappingOption) => {
+        if (executionContext) {
+          set_mapping(executionContext, option.value);
+          dataSpaceEditorState.setSelectedExecutionContext(executionContext);
+        } else {
+          console.error('Execution context is undefined.');
+        }
       };
 
-      const handleRuntimeChange = (option: {
-        value: PackageableRuntime;
-      }): void => {
-        set_runtime(
-          executionContext,
-          PackageableElementExplicitReference.create(option.value),
-        );
+      const handleRuntimeChange = (option: RuntimeOption) => {
+        if (executionContext) {
+          set_runtime(executionContext, option.value);
+          dataSpaceEditorState.setSelectedExecutionContext(executionContext);
+        } else {
+          console.error('Execution context is undefined.');
+        }
       };
-
-      // TODO: ;
-      // const handleTestDataChange = (option: string | undefined): void => {
-      //   set_testData(executionContext, option);
-      // };
-
-      // const openModal = () => {
-      //   setIsModalOpen(true);
-      // };
-
-      // const closeModal = () => {
-      //   setIsModalOpen(false);
-      // };
 
       const mappingOptions =
         dataSpaceEditorState.editorStore.graphManagerState.usableMappings.map(
           (mapping) => ({
             label: mapping.path,
-            value: mapping,
+            value: PackageableElementExplicitReference.create(mapping),
           }),
         );
 
@@ -127,122 +150,198 @@ export const DataSpaceExecutionContextTab: React.FC<ExecutionContextTabProps> =
         dataSpaceEditorState.editorStore.graphManagerState.usableRuntimes.map(
           (runtime) => ({
             label: runtime.path,
-            value: runtime,
+            value: PackageableElementExplicitReference.create(runtime),
           }),
         );
 
-      // const addExecutionContext = () => {
-      //   if (newExecutionContextName && selectedMapping && selectedRuntime) {
-      //     dataSpaceEditorState.addExecutionContext(
-      //       newExecutionContextName,
-      //       selectedMapping,
-      //       selectedRuntime,
-      //     );
-      //     closeModal();
-      //   }
-      // };
+      const handleAddExecutionContext = () => {
+        if (newExecutionContextName && selectedMapping && selectedRuntime) {
+          addExecutionContext(
+            newExecutionContextName,
+            selectedMapping,
+            selectedRuntime,
+          );
+          setNewExecutionContextName('');
+          setSelectedMapping(null);
+          setSelectedRuntime(null);
+          closeModal();
+        } else {
+          console.error(
+            'Missing required fields for creating execution context',
+          );
+        }
+      };
+
+      const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
+      const onContextMenuClose = (): void =>
+        setIsSelectedFromContextMenu(false);
+
+      const handleNewExecutionContextNameChange = (
+        value: string | undefined,
+      ) => {
+        setNewExecutionContextName(value ?? '');
+      };
 
       return (
         <div className="execution-context-tab">
-          <div>
-            <PanelFormTextField
-              name="Execution Context Name"
-              value={executionContext.name}
-              update={handleNameChange}
-              placeholder="Enter name"
-            />
-          </div>
-          <div>
-            <PanelFormTextField
-              name="Execution Context Title"
-              value={executionContext.title ?? ''}
-              update={handleTitleChange}
-              placeholder="Enter title"
-            />
-          </div>
-          <div>
-            <PanelFormTextField
-              name="Execution Context Description"
-              value={executionContext.description ?? ''}
-              update={handleDescriptionChange}
-              placeholder="Enter description"
-            />
-          </div>
-
           <CustomSelectorInput
-            options={mappingOptions}
-            onChange={handleMappingChange}
-            value={mappingOptions.find(
-              (option) => option.value === executionContext.mapping.value,
+            options={dataSpaceEditorState.dataSpace.executionContexts.map(
+              (context) => ({
+                label: context.name,
+                value: context,
+              }),
             )}
-            placeholder="Select Mapping"
-          />
-          <CustomSelectorInput
-            options={runtimeOptions}
-            onChange={handleRuntimeChange}
-            value={runtimeOptions.find(
-              (option) =>
-                option.value === executionContext.defaultRuntime.value,
+            onChange={(option: { value: DataSpaceExecutionContext }) =>
+              dataSpaceEditorState.setDefaultExecutionContext(option.value)
+            }
+            value={dataSpaceEditorState.dataSpace.executionContexts.find(
+              (context) =>
+                context ===
+                dataSpaceEditorState.dataSpace.defaultExecutionContext,
             )}
-            placeholder="Select Runtime"
+            placeholder="Select Default Execution Context"
+            darkMode="true"
           />
-          {/* ###TODO: */}
-          {/* <PanelFormTextField
-          name="Execution Context Test Data"
-          value={executionContext.testData}
-          update={handleTestDataChange}
-          placeholder="Enter test data"
-        /> */}
 
-          <button
-            className="dataSpace-editor__emailSupport__validation-label"
-            onClick={openModal}
+          <ContextMenu
+            className={clsx('dataSpace-editor__context-menu', {
+              'dataSpace-editor__context-menu--selected-from-context-menu':
+                isSelectedFromContextMenu,
+            })}
+            content={<ExecutionContextMenu add={openModal} />}
+            menuProps={{ elevation: 7 }}
+            onOpen={onContextMenuOpen}
+            onClose={onContextMenuClose}
           >
-            <PlusIcon />
-            Add New Execution Context
-          </button>
+            <button
+              onClick={openModal}
+              className="dataSpace-editor__add-context-button dataSpace-editor__emailSupport__validation-label"
+            >
+              <PlusIcon />
+              Add Execution Context
+            </button>
+          </ContextMenu>
           {isModalOpen && (
             <div className="modal">
-              <h2>Add New Execution Context</h2>
-              <label>
-                Name:
-                <input
-                  type="text"
+              <div>
+                <PanelFormTextField
+                  name="Execution Context Name"
                   value={newExecutionContextName}
-                  onChange={(e) => setNewExecutionContextName(e.target.value)}
+                  update={(value) => setNewExecutionContextName(value ?? '')}
+                  placeholder="Enter name"
                 />
-              </label>
-              <label>
-                Mapping:
+              </div>
+              <PanelFormListItems title="Mapping">
+                <div>
+                  <CustomSelectorInput
+                    options={mappingOptions}
+                    onChange={(option: MappingOption) =>
+                      setSelectedMapping(option.value)
+                    }
+                    value={
+                      selectedMapping
+                        ? {
+                            label: selectedMapping.value.path,
+                            value: selectedMapping,
+                          }
+                        : null
+                    }
+                    placeholder="Select Mapping"
+                    darkMode="true"
+                  />
+                </div>
+              </PanelFormListItems>
+              <div>
+                <PanelFormListItems title="Default runtime">
+                  <CustomSelectorInput
+                    options={runtimeOptions}
+                    onChange={(option: RuntimeOption) =>
+                      setSelectedRuntime(option.value)
+                    }
+                    value={
+                      selectedRuntime
+                        ? {
+                            label: selectedRuntime.value.path,
+                            value: selectedRuntime,
+                          }
+                        : null
+                    }
+                    placeholder="Select Runtime"
+                    darkMode="true"
+                  />
+                </PanelFormListItems>
+              </div>
+              <div>
+                <button
+                  className="dataSpace-editor__emailSupport__validation-label"
+                  onClick={handleAddExecutionContext}
+                >
+                  <PlusIcon /> Add
+                </button>
+              </div>
+              <div>
+                <button
+                  className="dataSpace-editor__emailSupport__validation-label"
+                  onClick={closeModal}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+          {executionContext && (
+            <>
+              <div>
+                <PanelFormTextField
+                  name="Execution Context Name"
+                  value={executionContext.name}
+                  update={handleNameChange}
+                  placeholder="Enter name"
+                />
+              </div>
+              <div>
+                <PanelFormTextField
+                  name="Execution Context Title"
+                  value={executionContext.title ?? ''}
+                  update={handleTitleChange}
+                  placeholder="Enter title"
+                />
+              </div>
+              <div>
+                <PanelFormTextField
+                  name="Execution Context Description"
+                  value={executionContext.description ?? ''}
+                  update={handleDescriptionChange}
+                  placeholder="Enter description"
+                />
+              </div>
+              <PanelFormListItems title="Mapping">
                 <CustomSelectorInput
                   options={mappingOptions}
-                  onChange={selectedMapping}
-                  value={selectedMapping}
+                  onChange={(option: MappingOption) =>
+                    handleMappingChange(option)
+                  }
+                  value={mappingOptions.find(
+                    (option) => option.value === selectedMapping,
+                  )}
                   placeholder="Select Mapping"
+                  darkMode="true"
                 />
-              </label>
-              <label>
-                Default Runtime:
+              </PanelFormListItems>
+              <PanelFormListItems title="Default Runtime">
                 <CustomSelectorInput
                   options={runtimeOptions}
-                  onChange={selectedRuntime}
-                  value={selectedRuntime}
+                  onChange={(option: RuntimeOption) =>
+                    handleRuntimeChange(option)
+                  }
+                  value={runtimeOptions.find(
+                    (option) => option.value === selectedRuntime,
+                  )}
                   placeholder="Select Runtime"
+                  darkMode="true"
                 />
-              </label>
-              <button
-                className="dataSpace-editor__emailSupport__validation-label"
-                onClick={addExecutionContext}
-              >
-                <PlusIcon /> Add
-              </button>
-              <button
-                className="dataSpace-editor__emailSupport__validation-label"
-                onClick={closeModal}
-              >
-                Cancel
-              </button>
-            </div>
+              </PanelFormListItems>
+            </>
           )}
         </div>
       );

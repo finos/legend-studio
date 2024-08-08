@@ -51,15 +51,16 @@ export const observe_DataSpaceSupportInfo = (
 
 export const observe_DataSpaceExecutionContext = (
   executionContext: DataSpaceExecutionContext,
-) => {
+): DataSpaceExecutionContext => {
   makeObservable(executionContext, {
     name: observable,
     title: observable,
     description: observable,
-    mapping: observable.ref,
-    defaultRuntime: observable.ref,
-    testData: observable.ref,
+    mapping: observable,
+    defaultRuntime: observable,
+    testData: observable, // TODO: add support for test data
   });
+  return executionContext;
 };
 
 export const observe_DataSpace = skipObserved(
@@ -76,7 +77,6 @@ export const observe_DataSpace = skipObserved(
     });
 
     metamodel.executionContexts.forEach(observe_DataSpaceExecutionContext);
-
     if (metamodel.supportInfo) {
       observe_DataSpaceSupportInfo(metamodel.supportInfo);
     }
