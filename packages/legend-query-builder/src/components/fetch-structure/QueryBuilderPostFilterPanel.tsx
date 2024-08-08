@@ -52,6 +52,7 @@ import {
   Class,
   Enumeration,
   PrimitiveType,
+  VariableExpression,
 } from '@finos/legend-graph';
 import {
   assertErrorThrown,
@@ -422,7 +423,8 @@ const QueryBuilderPostFilterConditionEditor = observer(
         rightConditionValue instanceof PostFilterValueSpecConditionValueState &&
         rightConditionValue.value
       ) {
-        const isInvalid =
+        const isInvalidVariable =
+          rightConditionValue.value instanceof VariableExpression &&
           node.condition.postFilterState.isInvalidValueSpecPostFilterValue(
             node,
           );
@@ -453,8 +455,8 @@ const QueryBuilderPostFilterConditionEditor = observer(
                 )}
                 initializeAsEditable={node.isNewlyAdded}
                 className={clsx({
-                  'query-builder-post-filter-tree__condition-node__value--error':
-                    isInvalid,
+                  'query-builder-post-filter-tree__condition-node__value--variable--error':
+                    isInvalidVariable,
                 })}
               />
             </PanelEntryDropZonePlaceholder>
