@@ -1,5 +1,13 @@
 # @finos/legend-art
 
+## 7.1.50
+
+### Patch Changes
+
+- [#3404](https://github.com/finos/legend-studio/pull/3404) [`9a191d7`](https://github.com/finos/legend-studio/commit/9a191d7c2b6cfac9820792650aef6ad36c7c2459) ([@travisstebbins](https://github.com/travisstebbins)) - Allow setting custom placeholder container class name in PanelDnDEntry
+
+- [#3389](https://github.com/finos/legend-studio/pull/3389) [`496be89`](https://github.com/finos/legend-studio/commit/496be891d1716f3e016c09012e07fa116fd9e0ae) ([@travisstebbins](https://github.com/travisstebbins)) - Add checked class to BaseRadioGroup
+
 ## 7.1.49
 
 ## 7.1.48
