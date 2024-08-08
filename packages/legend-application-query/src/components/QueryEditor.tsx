@@ -689,7 +689,6 @@ export const QueryEditor = observer(() => {
               ?.TEMPORARY__disableQueryBuilderChat &&
             editorStore.queryBuilderState instanceof
               DataSpaceQueryBuilderState &&
-            editorStore.queryBuilderState.dataSpace &&
             editorStore.queryBuilderState.canBuildQuery && (
               <button
                 title="Open Query Chat."
