@@ -288,6 +288,7 @@ export class QueryBuilderCalculatedConstantExpressionState
       variable: observable,
       lambdaState: observable,
       value: observable,
+      setLambdaState: action,
       setValue: action,
     });
     this.value = value;
@@ -296,6 +297,10 @@ export class QueryBuilderCalculatedConstantExpressionState
       variable,
       this.queryBuilderState.observerContext,
     );
+  }
+
+  setLambdaState(val: QueryBuilderConstantLambdaEditorState): void {
+    this.lambdaState = val;
   }
 
   setValue(val: PlainObject): void {

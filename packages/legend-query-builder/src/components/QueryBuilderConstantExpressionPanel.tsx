@@ -330,7 +330,7 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
 
     const handleApply = (): void => {
       variableExpression_setName(constantState.variable, name);
-      constantState.lambdaState = lambdaStateCopy;
+      constantState.setLambdaState(lambdaStateCopy);
       handleCancel();
     };
 
