@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.14.71
+
+### Patch Changes
+
+- [#3408](https://github.com/finos/legend-studio/pull/3408) [`da47022`](https://github.com/finos/legend-studio/commit/da47022fd906aa442539745bb68d4706371e418d) ([@travisstebbins](https://github.com/travisstebbins)) - Fix bug with calculated constant modal
+
+- [#3411](https://github.com/finos/legend-studio/pull/3411) [`09e6525`](https://github.com/finos/legend-studio/commit/09e6525b5916b0de7afea363d8d5a0dd2b8420ea) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Revert display data rounding warning
+
 ## 4.14.70
 
 ### Patch Changes
