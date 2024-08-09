@@ -34,7 +34,6 @@ import type {
 } from '@ag-grid-community/core';
 import {
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
-  GridClientAggregateOperation,
   GridClientSortDirection,
   INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
   INTERNAL__GridClientUtilityCssClassName,
@@ -53,6 +52,7 @@ import {
   INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
   INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
+  INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
@@ -74,7 +74,7 @@ import {
   DEFAULT_ROW_BUFFER,
   DEFAULT_URL_LABEL_QUERY_PARAM,
   getDataType,
-  DataCubeQuerySortOperation,
+  DataCubeQuerySortOperator,
   DataCubeColumnKind,
   DEFAULT_MISSING_VALUE_DISPLAY_TEXT,
 } from '../core/DataCubeQueryEngine.js';
@@ -99,29 +99,6 @@ function _cellDataType(column: DataCubeQuerySnapshotColumn) {
     case PRIMITIVE_TYPE.STRING:
     default:
       return 'text';
-  }
-}
-
-function _allowedAggFuncs(column: DataCubeQuerySnapshotColumn) {
-  switch (column.type) {
-    case PRIMITIVE_TYPE.STRING:
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME:
-    case PRIMITIVE_TYPE.STRICTDATE:
-      return [];
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.FLOAT:
-      return [
-        GridClientAggregateOperation.AVERAGE,
-        GridClientAggregateOperation.COUNT,
-        GridClientAggregateOperation.SUM,
-        GridClientAggregateOperation.MAX,
-        GridClientAggregateOperation.MIN,
-      ];
-    default:
-      return [];
   }
 }
 
@@ -385,7 +362,7 @@ function _sortSpec(columnData: ColumnData) {
   return {
     sortable: true, // if this is pivot column, no sorting is allowed
     sort: sortCol
-      ? sortCol.operation === DataCubeQuerySortOperation.ASCENDING
+      ? sortCol.operation === DataCubeQuerySortOperator.ASCENDING
         ? GridClientSortDirection.ASCENDING
         : GridClientSortDirection.DESCENDING
       : null,
@@ -396,8 +373,6 @@ function _sortSpec(columnData: ColumnData) {
 function _rowGroupSpec(columnData: ColumnData) {
   const { snapshot, column } = columnData;
   const data = snapshot.data;
-  const columns = snapshot.stageCols('aggregation');
-  const rowGroupColumn = _findCol(columns, column.name);
   const groupByCol = _findCol(data.groupBy?.columns, column.name);
   const aggCol = _findCol(data.groupBy?.aggColumns, column.name);
   return {
@@ -411,21 +386,8 @@ function _rowGroupSpec(columnData: ColumnData) {
     // since ag-grid aggregation does not support parameters, so
     // its set of supported aggregators will never match that specified
     // in the editor, so we just assign dummy values here
-    aggFunc: aggCol
-      ? aggCol.operation
-      : rowGroupColumn
-        ? (
-            [
-              PRIMITIVE_TYPE.NUMBER,
-              PRIMITIVE_TYPE.DECIMAL,
-              PRIMITIVE_TYPE.FLOAT,
-              PRIMITIVE_TYPE.INTEGER,
-            ] as string[]
-          ).includes(rowGroupColumn.type)
-          ? GridClientAggregateOperation.SUM
-          : null
-        : null,
-    allowedAggFuncs: rowGroupColumn ? _allowedAggFuncs(rowGroupColumn) : [],
+    aggFunc: aggCol ? aggCol.operation : null,
+    allowedAggFuncs: [],
   } satisfies ColDef;
 }
 
@@ -492,6 +454,7 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
       event.api.hidePopupMenu(); // hide context-menu while scrolling
     },
     onBodyScrollEnd: () => grid.setScrollHintText(undefined),
+    scrollbarWidth: 10,
     // -------------------------------------- CONTEXT MENU --------------------------------------
     preventDefaultOnContextMenu: true, // prevent showing the browser's context menu
     columnMenu: 'new', // ensure context menu works on header
@@ -640,6 +603,16 @@ export function generateGridOptionsFromSnapshot(
         loadingCellRenderer: DataCubeGridLoadingCellRenderer,
         sortable: false, // TODO: @akphi - we can support this in the configuration
       } satisfies ColDef,
+      // NOTE: Internal column used for programatically trigger data fetch when filter is modified
+      {
+        colId: INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID,
+        hide: true,
+        enableValue: false,
+        enablePivot: false,
+        enableRowGroup: false,
+        filter: 'agTextColumnFilter',
+        suppressColumnsToolPanel: true,
+      },
       // TODO: handle pivot and column grouping
       ...configuration.columns.map((column) => {
         const columnData = {

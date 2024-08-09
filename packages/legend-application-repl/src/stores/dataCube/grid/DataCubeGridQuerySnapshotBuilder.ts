@@ -30,7 +30,7 @@ import {
 import { GridClientSortDirection } from './DataCubeGridClientEngine.js';
 import {
   DataCubeColumnKind,
-  DataCubeQuerySortOperation,
+  DataCubeQuerySortOperator,
 } from '../core/DataCubeQueryEngine.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { _defaultAggCol } from '../core/DataCubeQuerySnapshotBuilder.js';
@@ -86,8 +86,8 @@ export function buildQuerySnapshot(
     ..._getCol(baseSnapshot.stageCols('sort'), item.colId),
     operation:
       item.sort === GridClientSortDirection.ASCENDING
-        ? DataCubeQuerySortOperation.ASCENDING
-        : DataCubeQuerySortOperation.DESCENDING,
+        ? DataCubeQuerySortOperator.ASCENDING
+        : DataCubeQuerySortOperator.DESCENDING,
   }));
 
   // --------------------------------- FINALIZE ---------------------------------

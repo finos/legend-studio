@@ -16,28 +16,30 @@
 
 import { DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { useREPLStore } from '../../REPLStoreProvider.js';
 import { useEffect } from 'react';
 import { FormBadge_WIP } from '../../repl/Form.js';
+import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
 
-export const DataCubeEditorHorizontalPivotsPanel = observer(() => {
-  const repl = useREPLStore();
-  const panel = repl.dataCube.editor.sorts;
+export const DataCubeEditorHorizontalPivotsPanel = observer(
+  (props: { dataCube: DataCubeState }) => {
+    const { dataCube } = props;
+    const panel = dataCube.editor.sorts;
 
-  useEffect(() => {}, [panel]); // TODO: @akphi - remove this dummy useEffect
+    useEffect(() => {}, [panel]); // TODO: @akphi - remove this dummy useEffect
 
-  return (
-    <div className="h-full w-full select-none p-2">
-      <div className="flex h-6">
-        <div className="flex h-6 items-center text-xl font-medium">
-          <DataCubeIcon.TablePivot />
+    return (
+      <div className="h-full w-full select-none p-2">
+        <div className="flex h-6">
+          <div className="flex h-6 items-center text-xl font-medium">
+            <DataCubeIcon.TablePivot />
+          </div>
+          <div className="ml-1 flex h-6 items-center text-xl font-medium">
+            Horizontal Pivots
+            <FormBadge_WIP />
+          </div>
         </div>
-        <div className="ml-1 flex h-6 items-center text-xl font-medium">
-          Horizontal Pivots
-          <FormBadge_WIP />
-        </div>
+        <div className="flex h-[calc(100%_-_24px)] w-full"></div>
       </div>
-      <div className="flex h-[calc(100%_-_24px)] w-full"></div>
-    </div>
-  );
-});
+    );
+  },
+);

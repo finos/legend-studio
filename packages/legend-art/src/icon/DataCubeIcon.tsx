@@ -67,6 +67,11 @@ import {
   TbCaretRightFilled,
   TbMenu2,
   TbBug,
+  TbBorderCornerSquare,
+  TbCornerDownRight,
+  TbX,
+  TbPlus,
+  TbLetterCase,
 } from 'react-icons/tb';
 import { VscError, VscInfo, VscQuestion, VscWarning } from 'react-icons/vsc';
 
@@ -87,11 +92,16 @@ export const DataCubeIcon = {
   Debug: TbBug,
   Documentation: TbBook,
   DocumentationHint: VscQuestion,
+  FilterAddOperator: TbPlus,
+  FilterRemoveOperator: TbX,
+  FilterGroupOperator: TbCornerDownRight,
+  FilterNotOperator: TbBorderCornerSquare,
   FontBold: MdOutlineFormatBold,
   FontCase: RxLetterCaseCapitalize,
   FontItalic: MdOutlineFormatItalic,
   FontUnderline: MdOutlineFormatUnderlined,
   FontStrikethrough: MdOutlineStrikethroughS,
+  LetterCase: TbLetterCase,
   Loader: TbLoader2,
   Menu: TbMenu2,
   Note: TbNote,

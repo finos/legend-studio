@@ -52,7 +52,7 @@ export enum DataCubeGridClientExportFormat {
 }
 
 export enum INTERNAL__GridClientUtilityCssClassName {
-  ROOT = 'data-cube-grid.ag-theme-balham',
+  ROOT = 'data-cube-grid.ag-theme-quartz',
   HIGHLIGHT_ROW = 'data-cube-grid__utility--highlight-row',
   SHOW_VERTICAL_GRID_LINES = 'data-cube-grid__utility--show-vertical-grid-lines',
   SHOW_HORIZONTAL_GRID_LINES = 'data-cube-grid__utility--show-horizontal-grid-lines',
@@ -111,6 +111,8 @@ export const INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY = 1000;
 export const INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING = 10;
 export const INTERNAL__GRID_CLIENT_MISSING_VALUE = '__MISSING';
 export const INTERNAL__GRID_CLIENT_TREE_COLUMN_ID = 'INTERNAL__tree';
+export const INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID =
+  'INTERNAL__filterTrigger';
 export const INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID =
   'INTERNAL__count';
 
@@ -122,14 +124,6 @@ export enum GridClientPinnedAlignement {
 export enum GridClientSortDirection {
   ASCENDING = 'asc',
   DESCENDING = 'desc',
-}
-
-export enum GridClientAggregateOperation {
-  COUNT = 'count',
-  SUM = 'sum',
-  MAX = 'max',
-  MIN = 'min',
-  AVERAGE = 'avg',
 }
 
 export function getDataForAllNodes<T>(client: GridApi<T>): T[] {

@@ -26,25 +26,27 @@ import {
   type Writable,
 } from '@finos/legend-shared';
 import type {
-  DataCubeAggregateOperation,
+  DataCubeAggregateOperator,
   DataCubeOperationValue,
-  DataCubeQueryFilterGroupOperation,
-  DataCubeQueryFilterOperation,
-  DataCubeQuerySortOperation,
+  DataCubeQueryFilterGroupOperator,
+  DataCubeQueryFilterOperator,
+  DataCubeQuerySortOperator,
 } from './DataCubeQueryEngine.js';
 
 export type DataCubeQuerySnapshotFilterCondition =
   DataCubeQuerySnapshotColumn & {
     value: DataCubeOperationValue | undefined;
-    operation: DataCubeQueryFilterOperation;
+    operation: DataCubeQueryFilterOperator;
+    not?: boolean | undefined;
   };
 
 export type DataCubeQuerySnapshotFilter = {
-  groupOperation: DataCubeQueryFilterGroupOperation;
+  groupOperator: DataCubeQueryFilterGroupOperator;
   conditions: (
     | DataCubeQuerySnapshotFilterCondition
     | DataCubeQuerySnapshotFilter
   )[];
+  not?: boolean | undefined;
 };
 
 export type DataCubeQuerySnapshotColumn = {
@@ -59,12 +61,12 @@ export type DataCubeQuerySnapshotExtendedColumn =
   };
 
 export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {
-  operation: DataCubeQuerySortOperation;
+  operation: DataCubeQuerySortOperator;
 };
 
 export type DataCubeQuerySnapshotAggregateColumn =
   DataCubeQuerySnapshotColumn & {
-    operation: DataCubeAggregateOperation;
+    operation: DataCubeAggregateOperator;
     parameters: DataCubeOperationValue[];
   };
 
@@ -156,9 +158,9 @@ export class DataCubeQuerySnapshot {
    */
   stageCols(stage: DataCubeQuerySnapshotStage) {
     switch (stage) {
-      case 'filter':
       case 'leaf-extend':
         return [...this.data.sourceColumns];
+      case 'filter':
       case 'select':
         return [...this.data.sourceColumns, ...this.data.leafExtendedColumns];
       case 'aggregation':

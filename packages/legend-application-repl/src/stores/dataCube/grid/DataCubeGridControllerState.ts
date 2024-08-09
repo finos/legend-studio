@@ -23,7 +23,7 @@ import type {
 } from '../core/DataCubeQuerySnapshot.js';
 import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
 import {
-  type DataCubeQuerySortOperation,
+  type DataCubeQuerySortOperator,
   type DataCubeColumnPinPlacement,
   DataCubeColumnKind,
 } from '../core/DataCubeQueryEngine.js';
@@ -139,7 +139,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber
 
   getActionableSortColumn(
     colName: string,
-    operation: DataCubeQuerySortOperation,
+    operation: DataCubeQuerySortOperator,
   ) {
     const column = this.sortableColumns.find((col) => col.name === colName);
     if (!column) {
@@ -155,7 +155,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber
     return undefined;
   }
 
-  setSortByColumn(colName: string, operation: DataCubeQuerySortOperation) {
+  setSortByColumn(colName: string, operation: DataCubeQuerySortOperator) {
     const column = this.getActionableSortColumn(colName, operation);
     if (!column) {
       return;
@@ -165,7 +165,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber
     this.applyChanges();
   }
 
-  addSortByColumn(colName: string, operation: DataCubeQuerySortOperation) {
+  addSortByColumn(colName: string, operation: DataCubeQuerySortOperator) {
     const column = this.getActionableSortColumn(colName, operation);
     if (!column) {
       return;
