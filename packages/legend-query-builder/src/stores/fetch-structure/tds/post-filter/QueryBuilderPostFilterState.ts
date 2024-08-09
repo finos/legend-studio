@@ -80,6 +80,7 @@ import {
 } from '../../../QueryBuilderValueSpecificationHelper.js';
 import { buildtdsPropertyExpressionFromColState } from './operators/QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { TDS_COLUMN_GETTER } from '../../../../graph/QueryBuilderMetaModelConst.js';
+import type { QueryBuilderFilterTreeNodeData } from '../../../filter/QueryBuilderFilterState.js';
 
 export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
   GROUP_CONDITION = 'QUERY_BUILDER_POST_FILTER_DND_TYPE.GROUP_CONDITION',
@@ -1030,11 +1031,28 @@ export class QueryBuilderPostFilterState
     );
   }
 
+  isInvalidTDSColumnPostFilterValue(
+    node: QueryBuilderFilterTreeNodeData,
+  ): boolean {
+    return (
+      node instanceof QueryBuilderPostFilterTreeConditionNodeData &&
+      node.condition.rightConditionValue instanceof
+        PostFilterTDSColumnValueConditionValueState &&
+      !isTypeCompatibleForAssignment(
+        node.condition.leftConditionValue.getColumnType(),
+        node.condition.rightConditionValue.type,
+      )
+    );
+  }
+
   get allValidationIssues(): string[] {
     const validationIssues: string[] = [];
     Array.from(this.nodes.values()).forEach((node) => {
       if (node instanceof QueryBuilderPostFilterTreeConditionNodeData) {
-        if (this.isInvalidValueSpecPostFilterValue(node)) {
+        if (
+          this.isInvalidValueSpecPostFilterValue(node) ||
+          this.isInvalidTDSColumnPostFilterValue(node)
+        ) {
           validationIssues.push(
             `Filter value for ${node.condition.leftConditionValue.columnName} is missing or invalid`,
           );
@@ -1054,8 +1072,10 @@ export class QueryBuilderPostFilterState
   }
 
   get hasInvalidFilterValues(): boolean {
-    return Array.from(this.nodes.values()).some((node) =>
-      this.isInvalidValueSpecPostFilterValue(node),
+    return Array.from(this.nodes.values()).some(
+      (node) =>
+        this.isInvalidValueSpecPostFilterValue(node) ||
+        this.isInvalidTDSColumnPostFilterValue(node),
     );
   }
 
