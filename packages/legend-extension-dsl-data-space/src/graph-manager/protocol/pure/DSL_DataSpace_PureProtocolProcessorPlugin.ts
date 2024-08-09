@@ -21,10 +21,11 @@ import {
   V1_DataSpaceDiagram,
   V1_DataSpaceElementPointer,
   V1_DataSpaceExecutionContext,
+  V1_DataSpaceInlineTemplateExecutable,
   V1_DataSpacePackageableElementExecutable,
   V1_DataSpaceSupportCombinedInfo,
   V1_DataSpaceSupportEmail,
-  V1_DataSpaceTemplateExecutable,
+  V1_DataSpaceTemplateExecutablePointer,
 } from './v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import {
   type PlainObject,
@@ -55,8 +56,9 @@ import {
   DataSpaceSupportEmail,
   DataSpaceDiagram,
   DataSpaceElementPointer,
-  DataSpaceExecutableTemplate,
   DataSpacePackageableElementExecutable,
+  DataSpaceInlineTemplateExecutable,
+  DataSpaceTemplateExecutablePointer,
 } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import {
   type PackageableElement,
@@ -71,7 +73,6 @@ import {
   type V1_TaggedValue,
   type Mapping,
   type MappingInclude,
-  type PackageableElementReference,
   type V1_MappingInclude,
   type DSL_Mapping_PureProtocolProcessorPlugin_Extension,
   type V1_MappingIncludeBuilder,
@@ -83,6 +84,7 @@ import {
   type V1_SavedQueryExecutionBuilder,
   type V1_ElementPointerType,
   type V1_RawLambda,
+  type PackageableElementReference,
   V1_taggedValueModelSchema,
   PackageableElementExplicitReference,
   V1_PackageableElementPointer,
@@ -105,6 +107,7 @@ import {
   DataElementReference,
   V1_DataElementReference,
   QueryDataSpaceExecutionContextInfo,
+  generateFunctionPrettyName,
 } from '@finos/legend-graph';
 import { V1_resolveDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { V1_MappingIncludeDataSpace } from './v1/model/packageableElements/mapping/V1_DSL_DataSpace_MappingIncludeDataSpace.js';
@@ -231,9 +234,10 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
             element.executables = elementProtocol.executables.map(
               (executableProtocol) => {
                 if (
-                  executableProtocol instanceof V1_DataSpaceTemplateExecutable
+                  executableProtocol instanceof
+                  V1_DataSpaceInlineTemplateExecutable
                 ) {
-                  const executable = new DataSpaceExecutableTemplate();
+                  const executable = new DataSpaceInlineTemplateExecutable();
                   executable.id = executableProtocol.id;
                   executable.title = executableProtocol.title;
                   executable.description = executableProtocol.description;
@@ -241,6 +245,32 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                     executableProtocol.query.parameters,
                     executableProtocol.query.body,
                     context,
+                  );
+                  if (executableProtocol.executionContextKey) {
+                    executable.executionContextKey =
+                      executableProtocol.executionContextKey;
+                  }
+                  return executable;
+                } else if (
+                  executableProtocol instanceof
+                  V1_DataSpaceTemplateExecutablePointer
+                ) {
+                  const executable = new DataSpaceTemplateExecutablePointer();
+                  executable.id = executableProtocol.id;
+                  executable.title = executableProtocol.title;
+                  executable.description = executableProtocol.description;
+                  executable.query = PackageableElementExplicitReference.create(
+                    guaranteeNonNullable(
+                      context.graph.functions.find(
+                        (fn) =>
+                          generateFunctionPrettyName(fn, {
+                            fullPath: true,
+                            spacing: false,
+                            notIncludeParamName: true,
+                          }) ===
+                          executableProtocol.query.path.replaceAll(/\s*/gu, ''),
+                      ),
+                    ),
                   );
                   if (executableProtocol.executionContextKey) {
                     executable.executionContextKey =
@@ -422,8 +452,9 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
             return elementPointer;
           });
           protocol.executables = metamodel.executables?.map((executable) => {
-            if (executable instanceof DataSpaceExecutableTemplate) {
-              const executableProtocol = new V1_DataSpaceTemplateExecutable();
+            if (executable instanceof DataSpaceInlineTemplateExecutable) {
+              const executableProtocol =
+                new V1_DataSpaceInlineTemplateExecutable();
               executableProtocol.id = executable.id;
               executableProtocol.title = executable.title;
               executableProtocol.description = executable.description;
@@ -435,6 +466,27 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                 executable.query.accept_RawValueSpecificationVisitor(
                   new V1_RawValueSpecificationTransformer(context),
                 ) as V1_RawLambda;
+              return executableProtocol;
+            } else if (
+              executable instanceof DataSpaceTemplateExecutablePointer
+            ) {
+              const executableProtocol =
+                new V1_DataSpaceTemplateExecutablePointer();
+              executableProtocol.id = executable.id;
+              executableProtocol.title = executable.title;
+              executableProtocol.description = executable.description;
+              if (executable.executionContextKey) {
+                executableProtocol.executionContextKey =
+                  executable.executionContextKey;
+              }
+              executableProtocol.query = new V1_PackageableElementPointer(
+                PackageableElementPointerType.FUNCTION,
+                generateFunctionPrettyName(executable.query.value, {
+                  fullPath: true,
+                  spacing: false,
+                  notIncludeParamName: true,
+                }),
+              );
               return executableProtocol;
             } else if (
               executable instanceof DataSpacePackageableElementExecutable

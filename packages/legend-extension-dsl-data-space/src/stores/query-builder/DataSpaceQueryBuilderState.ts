@@ -53,7 +53,7 @@ import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/q
 import {
   DataSpace,
   type DataSpaceExecutionContext,
-  type DataSpaceExecutableTemplate,
+  type DataSpaceTemplateExecutable,
 } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceAdvancedSearchState } from '../query/DataSpaceAdvancedSearchState.js';
@@ -119,7 +119,7 @@ export abstract class DataSpacesBuilderRepoistory {
   abstract loadDataSpaces(): GeneratorFn<void>;
   abstract visitTemplateQuery(
     dataSpace: DataSpace,
-    template: DataSpaceExecutableTemplate,
+    template: DataSpaceTemplateExecutable,
   ): void;
 
   configureDataSpaceOptions(val: DataSpaceInfo[]): void {
@@ -160,7 +160,7 @@ export class DataSpacesGraphRepoistory extends DataSpacesBuilderRepoistory {
 
   override visitTemplateQuery(
     dataSpace: DataSpace,
-    template: DataSpaceExecutableTemplate,
+    template: DataSpaceTemplateExecutable,
   ): void {
     throw new Error('Method not implemented.');
   }
@@ -226,7 +226,7 @@ export class DataSpacesDepotRepository extends DataSpacesBuilderRepoistory {
 
   override visitTemplateQuery(
     dataSpace: DataSpace,
-    template: DataSpaceExecutableTemplate,
+    template: DataSpaceTemplateExecutable,
   ): void {
     this.applicationStore.navigationService.navigator.visitAddress(
       this.applicationStore.navigationService.navigator.generateAddress(

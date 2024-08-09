@@ -54,6 +54,7 @@ import {
 } from '../../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import {
   V1_DataSpace,
+  V1_DataSpaceInlineTemplateExecutable,
   V1_DataSpaceSupportCombinedInfo,
   V1_DataSpaceSupportEmail,
   V1_DataSpaceTemplateExecutable,
@@ -140,7 +141,8 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       await this.graphManager.engine.transformCodeToLambda(content);
     const dataSpaceProtocol =
       this.getDataSpaceProtocolFromEntity(dataSpaceEntity);
-    const dataSpaceTemplateExecutable = new V1_DataSpaceTemplateExecutable();
+    const dataSpaceTemplateExecutable =
+      new V1_DataSpaceInlineTemplateExecutable();
     dataSpaceTemplateExecutable.id = executable.id;
     dataSpaceTemplateExecutable.title = executable.title;
     dataSpaceTemplateExecutable.description = executable.description;
