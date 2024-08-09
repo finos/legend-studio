@@ -29,7 +29,6 @@ import {
   ControlledDropdownMenu,
   MenuContent,
   MenuContentItem,
-  BlankPanelContent,
   PanelLoadingIndicator,
   ModalHeader,
   ModalBody,
@@ -41,6 +40,8 @@ import {
   ThinChevronRightIcon,
   InfoCircleIcon,
   CustomSelectorInput,
+  CubesLoadingIndicator,
+  CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
 import type { LightQuery, RawLambda } from '@finos/legend-graph';
 import {
@@ -128,34 +129,6 @@ export const QueryLoader = observer(
         .flat(),
     ].sort((a, b) => a.title.localeCompare(b.title));
 
-    const applySortBy = (queries: LightQuery[], sortBy: string): void => {
-      switch (sortBy) {
-        case SORT_BY_OPTIONS.SORT_BY_CREATE:
-          queries.sort((a, b): number => {
-            const aCreateAt = a.createdAt ?? 0;
-            const bCreateAt = b.createdAt ?? 0;
-            return aCreateAt > bCreateAt ? -1 : 1;
-          });
-          return;
-        case SORT_BY_OPTIONS.SORT_BY_UPDATE:
-          queries.sort((a, b): number => {
-            const aUpdateAt = a.lastUpdatedAt ?? 0;
-            const bUpdateAt = b.lastUpdatedAt ?? 0;
-            return aUpdateAt > bUpdateAt ? -1 : 1;
-          });
-          return;
-        case SORT_BY_OPTIONS.SORT_BY_VIEW:
-          queries.sort((a, b): number => {
-            const aOpenAt = a.lastOpenAt ?? 0;
-            const bOpenAt = b.lastOpenAt ?? 0;
-            return aOpenAt > bOpenAt ? -1 : 1;
-          });
-          return;
-        default:
-          return;
-      }
-    };
-
     const loadCuratedTemplateQuery =
       queryLoaderState.curatedTemplateQuerySepcifications
         // already using an arrow function suggested by @typescript-eslint/unbound-method
@@ -215,6 +188,11 @@ export const QueryLoader = observer(
         !queryLoaderState.showCurrentUserQueriesOnly,
       );
       setIsMineOnly(!isMineOnly);
+      debouncedLoadQueries.cancel();
+      debouncedLoadQueries(queryLoaderState.searchText);
+    };
+    const applySortByAlgorithm = (option: SortByOption): void => {
+      queryLoaderState.setSortBy(option.value);
       debouncedLoadQueries.cancel();
       debouncedLoadQueries(queryLoaderState.searchText);
     };
@@ -290,10 +268,6 @@ export const QueryLoader = observer(
       ).catch(applicationStore.alertUnhandledError);
       queryLoaderState.setShowPreviewViewer(true);
     };
-
-    useEffect(() => {
-      applySortBy(results, queryLoaderState.sortBy);
-    }, [queryLoaderState.sortBy, results]);
 
     return (
       <div className="query-loader">
@@ -432,26 +406,31 @@ export const QueryLoader = observer(
                       'matches',
                     )}`
                   )}
-                  <div className="query-loader__results__sort-by">
-                    <div className="query-loader__results__sort-by__name">
-                      Sort By
-                    </div>
-                    <CustomSelectorInput
-                      className="query-loader__results__sort-by__selector"
-                      options={sortByOptions}
-                      onChange={(option: SortByOption) =>
-                        queryLoaderState.setSortBy(option.value)
-                      }
-                      value={{
-                        label: queryLoaderState.sortBy,
-                        value: queryLoaderState.sortBy,
-                      }}
-                      darkMode={
-                        !applicationStore.layoutService
-                          .TEMPORARY__isLightColorThemeEnabled
-                      }
-                    />
-                  </div>
+                  {queryLoaderState.canPerformAdvancedSearch(
+                    queryLoaderState.searchText,
+                  ) &&
+                    !queryLoaderState.isCuratedTemplateToggled && (
+                      <div className="query-loader__results__sort-by">
+                        <div className="query-loader__results__sort-by__name">
+                          Sort By
+                        </div>
+                        <CustomSelectorInput
+                          className="query-loader__results__sort-by__selector"
+                          options={sortByOptions}
+                          onChange={(option: SortByOption) => {
+                            applySortByAlgorithm(option);
+                          }}
+                          value={{
+                            label: queryLoaderState.sortBy,
+                            value: queryLoaderState.sortBy,
+                          }}
+                          darkMode={
+                            !applicationStore.layoutService
+                              .TEMPORARY__isLightColorThemeEnabled
+                          }
+                        />
+                      </div>
+                    )}
                 </div>
                 {!queryLoaderState.isCuratedTemplateToggled &&
                   results
@@ -654,7 +633,11 @@ export const QueryLoader = observer(
               </>
             )}
             {!queryLoaderState.searchQueriesState.hasCompleted && (
-              <BlankPanelContent>Loading queries...</BlankPanelContent>
+              <CubesLoadingIndicator
+                isLoading={!queryLoaderState.searchQueriesState.hasCompleted}
+              >
+                <CubesLoadingIndicatorIcon />
+              </CubesLoadingIndicator>
             )}
           </div>
           {queryLoaderState.showPreviewViewer &&

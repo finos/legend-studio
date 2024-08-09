@@ -19,17 +19,18 @@ import {
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import {
-  QuerySearchSpecification,
-  GRAPH_MANAGER_EVENT,
   type QueryInfo,
   type LightQuery,
   type BasicGraphManagerState,
   type Query,
   type RawLambda,
+  QuerySearchSpecification,
+  GRAPH_MANAGER_EVENT,
+  QuerySearchSortBy,
 } from '@finos/legend-graph';
 import {
-  ActionState,
   type GeneratorFn,
+  ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
   LogEvent,
@@ -51,7 +52,7 @@ export enum SORT_BY_OPTIONS {
   SORT_BY_UPDATE = 'Last Updated',
 }
 
-export type SortByOption = { label: string; value: string };
+export type SortByOption = { label: SORT_BY_OPTIONS; value: SORT_BY_OPTIONS };
 
 export class QueryLoaderState {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -92,7 +93,7 @@ export class QueryLoaderState {
   showingDefaultQueries = true;
   showPreviewViewer = false;
   queryPreviewContent?: QueryInfo | { name: string; content: string };
-  sortBy = '';
+  sortBy = SORT_BY_OPTIONS.SORT_BY_VIEW;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -158,8 +159,21 @@ export class QueryLoaderState {
     this.isCuratedTemplateToggled = val;
   }
 
-  setSortBy(val: string): void {
+  setSortBy(val: SORT_BY_OPTIONS): void {
     this.sortBy = val;
+  }
+
+  getQuerySearchSortBy(sortByValue: string): QuerySearchSortBy | undefined {
+    switch (sortByValue) {
+      case SORT_BY_OPTIONS.SORT_BY_CREATE:
+        return QuerySearchSortBy.SORT_BY_CREATE;
+      case SORT_BY_OPTIONS.SORT_BY_UPDATE:
+        return QuerySearchSortBy.SORT_BY_UPDATE;
+      case SORT_BY_OPTIONS.SORT_BY_VIEW:
+        return QuerySearchSortBy.SORT_BY_VIEW;
+      default:
+        return undefined;
+    }
   }
 
   setSearchText(val: string): void {
@@ -171,7 +185,16 @@ export class QueryLoaderState {
   }
 
   setQueries(val: LightQuery[]): void {
-    this.queries = val.sort((a, b) => a.name.localeCompare(b.name));
+    this.queries = val;
+  }
+
+  // search query using search specification
+  canPerformAdvancedSearch(searchText: string): boolean {
+    return !(
+      searchText.length < DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH &&
+      !this.showCurrentUserQueriesOnly &&
+      Array.from(this.extraFilters.values()).every((value) => value === false)
+    );
   }
 
   setShowPreviewViewer(val: boolean): void {
@@ -226,11 +249,7 @@ export class QueryLoaderState {
   }
 
   *searchQueries(searchText: string): GeneratorFn<void> {
-    if (
-      searchText.length < DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH &&
-      !this.showCurrentUserQueriesOnly &&
-      Array.from(this.extraFilters.values()).every((value) => value === false)
-    ) {
+    if (!this.canPerformAdvancedSearch(searchText)) {
       // if no search text is specified, use fetch the default queries
       if (!searchText) {
         this.showingDefaultQueries = true;
@@ -268,6 +287,10 @@ export class QueryLoaderState {
       searchSpecification.limit = QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT + 1;
       searchSpecification.showCurrentUserQueriesOnly =
         this.showCurrentUserQueriesOnly;
+      const querySearchSortBy = this.getQuerySearchSortBy(this.sortBy);
+      if (querySearchSortBy) {
+        searchSpecification.sortByOption = querySearchSortBy;
+      }
       if (this.queryBuilderState) {
         Array.from(this.extraFilters.entries()).forEach(([key, value]) => {
           if (value) {
@@ -288,11 +311,14 @@ export class QueryLoaderState {
       searchSpecification =
         this.decorateSearchSpecification?.(searchSpecification) ??
         searchSpecification;
-      this.queries = (
-        (yield this.graphManagerState.graphManager.searchQueries(
-          searchSpecification,
-        )) as LightQuery[]
-      ).sort((a, b) => a.name.localeCompare(b.name));
+      this.queries = (yield this.graphManagerState.graphManager.searchQueries(
+        searchSpecification,
+      )) as LightQuery[];
+      if (!querySearchSortBy) {
+        this.queries = this.queries.sort((a, b) =>
+          a.name.localeCompare(b.name),
+        );
+      }
       this.searchQueriesState.pass();
     } catch (error) {
       assertErrorThrown(error);
