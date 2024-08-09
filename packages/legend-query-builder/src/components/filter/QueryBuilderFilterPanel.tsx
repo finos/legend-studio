@@ -1029,7 +1029,13 @@ const QueryBuilderFilterConditionEditor = observer(
             data-testid={
               QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_VALUE
             }
-            className="query-builder-filter-tree__condition-node__value"
+            className={clsx(
+              'query-builder-filter-tree__condition-node__value',
+              {
+                'query-builder-filter-tree__condition-node__value--error':
+                  isInvalidVariable,
+              },
+            )}
           >
             <PanelEntryDropZonePlaceholder
               isDragOver={isFilterValueDragOver}
@@ -1052,10 +1058,6 @@ const QueryBuilderFilterConditionEditor = observer(
                   rightConditionValue.value,
                 )}
                 initializeAsEditable={node.isNewlyAdded}
-                className={clsx({
-                  'query-builder-filter-tree__condition-node__value--variable--error':
-                    isInvalidVariable,
-                })}
               />
             </PanelEntryDropZonePlaceholder>
           </div>

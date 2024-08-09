@@ -378,8 +378,10 @@ $group-node-width: 3.5rem;
       font-size: 1.2rem;
       font-weight: 500;
 
-      &--variable--error {
-        background: var(--color-red-200);
+      &--error {
+        .value-spec-editor__variable {
+          background: var(--color-red-200);
+        }
       }
 
       .value-spec-editor {

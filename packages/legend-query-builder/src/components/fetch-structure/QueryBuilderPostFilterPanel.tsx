@@ -431,7 +431,13 @@ const QueryBuilderPostFilterConditionEditor = observer(
         return (
           <div
             ref={dropConnector}
-            className="query-builder-post-filter-tree__condition-node__value"
+            className={clsx(
+              'query-builder-post-filter-tree__condition-node__value',
+              {
+                'query-builder-post-filter-tree__condition-node__value--error':
+                  isInvalidVariable,
+              },
+            )}
           >
             <PanelEntryDropZonePlaceholder
               isDragOver={isFilterValueDragOver}
@@ -454,10 +460,6 @@ const QueryBuilderPostFilterConditionEditor = observer(
                   rightConditionValue.value,
                 )}
                 initializeAsEditable={node.isNewlyAdded}
-                className={clsx({
-                  'query-builder-post-filter-tree__condition-node__value--variable--error':
-                    isInvalidVariable,
-                })}
               />
             </PanelEntryDropZonePlaceholder>
           </div>
@@ -466,10 +468,20 @@ const QueryBuilderPostFilterConditionEditor = observer(
         rightConditionValue instanceof
         PostFilterTDSColumnValueConditionValueState
       ) {
+        const isInvalidTDSColumn =
+          node.condition.postFilterState.isInvalidTDSColumnPostFilterValue(
+            node,
+          );
         return (
           <div
             ref={dropConnector}
-            className="query-builder-post-filter-tree__condition-node__value"
+            className={clsx(
+              'query-builder-post-filter-tree__condition-node__value',
+              {
+                'query-builder-post-filter-tree__condition-node__value--error':
+                  isInvalidTDSColumn,
+              },
+            )}
           >
             <PanelEntryDropZonePlaceholder
               isDragOver={isFilterValueDragOver}
