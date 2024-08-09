@@ -288,6 +288,7 @@ export class QueryBuilderCalculatedConstantExpressionState
       variable: observable,
       lambdaState: observable,
       value: observable,
+      setLambdaState: action,
       setValue: action,
     });
     this.value = value;
@@ -296,6 +297,10 @@ export class QueryBuilderCalculatedConstantExpressionState
       variable,
       this.queryBuilderState.observerContext,
     );
+  }
+
+  setLambdaState(val: QueryBuilderConstantLambdaEditorState): void {
+    this.lambdaState = val;
   }
 
   setValue(val: PlainObject): void {
@@ -393,8 +398,18 @@ export class QueryBuilderConstantsState implements Hashable {
 export const cloneQueryBuilderConstantLambdaEditorState = (
   state: QueryBuilderConstantLambdaEditorState,
 ): QueryBuilderConstantLambdaEditorState => {
+  const clonedCalculatedState =
+    new QueryBuilderCalculatedConstantExpressionState(
+      state.calculatedState.queryBuilderState,
+      new VariableExpression(
+        state.calculatedState.variable.name,
+        state.calculatedState.variable.multiplicity,
+        state.calculatedState.variable.genericType,
+      ),
+      deepClone(state.calculatedState.value),
+    );
   const clonedState = new QueryBuilderConstantLambdaEditorState(
-    deepClone(state.calculatedState),
+    clonedCalculatedState,
   );
   clonedState.lambdaString = state.lambdaString;
   clonedState.parserError = deepClone(state.parserError);

@@ -324,12 +324,13 @@ const QuerryBuilderCalculatedConstantExpressionEditor = observer(
 
     // Modal lifecycle actions
     const handleCancel = (): void => {
+      applicationStore.layoutService.setShowBackdrop(false);
       queryBuilderState.constantState.setSelectedConstant(undefined);
     };
 
     const handleApply = (): void => {
       variableExpression_setName(constantState.variable, name);
-      constantState.lambdaState = lambdaStateCopy;
+      constantState.setLambdaState(lambdaStateCopy);
       handleCancel();
     };
 
