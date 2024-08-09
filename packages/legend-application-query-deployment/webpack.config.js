@@ -17,6 +17,7 @@
 import { resolve, dirname } from 'path';
 import webpack from 'webpack';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
+import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin';
 import appConfig from './query.config.js';
 import {
   getEnvInfo,
@@ -42,6 +43,45 @@ export default (env, arg) => {
       import: resolve(__dirname, './ServiceWorker.js'),
     },
   });
+
+  const customizedMonacoPlugin = new MonacoWebpackPlugin({
+    // Only include what we need to lessen the bundle loads
+    // See https://github.com/microsoft/monaco-editor-webpack-plugin
+    languages: ['json', 'java', 'markdown', 'sql'],
+    // Exclude/include features
+    // NOTE: the downside to this is that sometimes `monaco-editor` changes their
+    // bundling or list of features and we could end up with features suddenly not
+    // working as expected
+    features: [
+      'linesOperations',
+      'bracketMatching',
+      'clipboard',
+      'contextmenu',
+      'codelens',
+      'coreCommands',
+      'comment',
+      'find',
+      'folding',
+      'gotoLine',
+      'hover',
+      'links',
+      'smartSelect',
+      'multicursor',
+      'snippet',
+      'snippetController2',
+      'suggest',
+      'wordHighlighter',
+      'gotoSymbol',
+    ],
+  });
+
+  const queryCustomizedPlugins = baseConfig.plugins.map((plugin) => {
+    if (plugin instanceof MonacoWebpackPlugin) {
+      return customizedMonacoPlugin;
+    }
+    return plugin;
+  });
+
   const config = {
     ...baseConfig,
     devServer: {
@@ -49,7 +89,7 @@ export default (env, arg) => {
       ...appConfig.devServerOptions,
     },
     plugins: [
-      ...baseConfig.plugins,
+      ...queryCustomizedPlugins,
       new DefinePlugin({
         AG_GRID_LICENSE: null,
       }),
