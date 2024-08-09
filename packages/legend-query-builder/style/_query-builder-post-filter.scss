@@ -308,6 +308,18 @@
         .value-spec-editor__variable {
           background: var(--color-red-200);
         }
+
+        .query-builder-column-badge__content {
+          background: var(--color-red-200);
+
+          .query-builder-column-badge__type {
+            background: var(--color-dark-shade-100);
+
+            .query-builder-column-badge__icon {
+              color: var(--color-light-grey-200);
+            }
+          }
+        }
       }
 
       .value-spec-editor {
