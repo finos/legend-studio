@@ -19,11 +19,9 @@ import {
   type EditorStore,
   ElementEditorState,
 } from '@finos/legend-application-studio';
-import type {
-  Mapping,
-  PackageableElement,
-  PackageableElementReference,
-  PackageableRuntime,
+import {
+  PackageableElementExplicitReference,
+  type PackageableElement,
 } from '@finos/legend-graph';
 import {
   DataSpace,
@@ -45,11 +43,17 @@ export enum DATASPACE_TAB {
 export class DataSpaceEditorState extends ElementEditorState {
   selectedSupportInfoType?: SUPPORT_INFO_TYPE;
   selectedTab: DATASPACE_TAB = DATASPACE_TAB.GENERAL;
+<<<<<<< HEAD
   selectedExecutionContext?: DataSpaceExecutionContext;
   newExecutionContextName = '';
   selectedMapping: PackageableElementReference<Mapping> | null = null;
   selectedRuntime: PackageableElementReference<PackageableRuntime> | null =
     null;
+=======
+  selectedExecutionContext?: DataSpaceExecutionContext | null = null;
+  diagrams: DataSpaceDiagram[] = [];
+  selectedDiagram?: DataSpaceDiagram;
+>>>>>>> executionContext is finished
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -59,17 +63,26 @@ export class DataSpaceEditorState extends ElementEditorState {
       selectedSupportInfoType: observable,
       selectedTab: observable,
       selectedExecutionContext: observable,
+<<<<<<< HEAD
       newExecutionContextName: observable,
       selectedMapping: observable,
       selectedRuntime: observable,
+=======
+      selectedDiagram: observable,
+      setDiagrams: action,
+      selectDiagram: action,
+>>>>>>> executionContext is finished
       setSelectedSupportInfoType: action,
       setSelectedTab: action,
       setSelectedExecutionContext: action,
       setDefaultExecutionContext: action,
+<<<<<<< HEAD
       setNewExecutionContextName: action,
       setSelectedMapping: action,
       setSelectedRuntime: action,
       addExecutionContext: action,
+=======
+>>>>>>> executionContext is finished
       reprocess: action,
     });
 
@@ -104,6 +117,7 @@ export class DataSpaceEditorState extends ElementEditorState {
     this.dataSpace.defaultExecutionContext = context;
   }
 
+<<<<<<< HEAD
   setNewExecutionContextName(name: string): void {
     this.newExecutionContextName = name;
   }
@@ -130,6 +144,31 @@ export class DataSpaceEditorState extends ElementEditorState {
     newContext.description = `Description for ${name}`;
     newContext.mapping = mapping;
     newContext.defaultRuntime = defaultRuntime;
+=======
+  addExecutionContext(): void {
+    // Check if a default mapping and runtime are available
+    const defaultMapping = this.editorStore.graphManagerState.usableMappings[0];
+    const defaultRuntime = this.editorStore.graphManagerState.usableRuntimes[0];
+
+    if (!defaultMapping || !defaultRuntime) {
+      console.error('Default Mapping and Runtime are required.');
+      return;
+    }
+
+    // Create a new execution context with default values
+    const newContext = new DataSpaceExecutionContext();
+    newContext.name = `ExecutionContext ${this.dataSpace.executionContexts.length + 1}`;
+    newContext.title = `Title for ${newContext.name}`;
+    newContext.description = `Description for ${newContext.name}`;
+    newContext.mapping =
+      PackageableElementExplicitReference.create(defaultMapping);
+    newContext.defaultRuntime =
+      PackageableElementExplicitReference.create(defaultRuntime);
+
+    observe_DataSpaceExecutionContext(newContext);
+
+    // Add the new context to the dataSpace and select it
+>>>>>>> executionContext is finished
     this.dataSpace.executionContexts.push(newContext);
     this.setSelectedExecutionContext(newContext);
     this.setDefaultExecutionContext(newContext);

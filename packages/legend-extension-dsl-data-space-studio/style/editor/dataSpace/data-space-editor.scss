@@ -16,44 +16,139 @@
 
 @use 'mixins' as *;
 
+// .dataSpace-editor--dark {
+//   &__header {
+//     background: var(--color-dark-grey-50);
+//     display: flex;
+//     align-items: center;
+//     padding: 0.5rem 1rem;
+//     background-color: #1e1e1e;
+//     border-bottom: 1px solid #444;
+
+//     &--with-tabs {
+//       justify-content: space-between;
+//     }
+
+//     .uml-element-editor__header__lock {
+//       margin-right: 0.5rem;
+//     }
+//   }
+
+//   &__configs {
+//     display: flex;
+//     width: 100%;
+//   }
+
+//   &__name {
+//     background: var(--color-dark-grey-100);
+//     border: 0.1rem solid var(--color-dark-grey-300);
+//     color: var(--color-light-grey-0);
+//   }
+
+//   &__name::placeholder {
+//     color: var(--color-dark-grey-300);
+//   }
+// }
+
+// .dataSpace-editor {
+//   &__general {
+//     .panel__content__lists {
+//       padding-left: 2rem;
+//     }
+//   }
+
+//   &__tab {
+//     padding: 0.5rem 1rem;
+//     cursor: pointer;
+//     margin-left: 15px;
+
+//     &--active {
+//       background-color: #444;
+//       font-weight: bold;
+//     }
+//   }
+
+//   &__header {
+//     background: var(--color-dark-grey-50);
+//     display: flex;
+//     align-items: center;
+//     padding: 0.5rem 1rem;
+//     background-color: #1e1e1e;
+//     border-bottom: 1px solid #444;
+
+//     &__title {
+//       display: flex;
+//       align-items: center;
+
+//       &__label {
+//         margin-right: 0.5rem;
+//         font-weight: bold;
+//         margin-top: 15px;
+//       }
+
+//       &__content {
+//         font-weight: normal;
+
+//         &__form {
+//           margin-top: 15px;
+//         }
+//       }
+//     }
+//   }
+
+//   &__emailSupport__validation {
+//     display: flex;
+//     align-items: center;
+//     cursor: help;
+//   }
+
+//   &__emailSupport__validation svg {
+//     color: var(--color-red-100);
+//     stroke-width: 0.4;
+//     stroke: var(--color-red-100);
+//   }
+
+//   &__emailSupport__validation-label {
+//     color: var(--color-red-100);
+//     margin-left: 0.5rem;
+//   }
+// }
+
+// .dataSpace-execution-context {
+//   .custom-selector-input {
+//     margin-bottom: 1rem;
+//   }
+
+//   .uml-element-editor__tabs {
+//     height: 2.8rem;
+//     z-index: 1;
+//     display: flex;
+//     overflow-x: overlay;
+//     overflow-y: hidden;
+//   }
+// }
+
 .dataSpace-editor--dark {
+  background: var(--color-dark-grey-50);
+}
+
+.dataSpace-editor {
+  background: var(--color-dark-grey-50);
+
   &__header {
     background: var(--color-dark-grey-50);
     display: flex;
     align-items: center;
     padding: 0.5rem 1rem;
-    background-color: #1e1e1e;
+    background-color: var(--color-dark-grey-50);
     border-bottom: 1px solid #444;
 
-    &--with-tabs {
-      justify-content: space-between;
+    &__title__label {
+      color: var(--color-light-grey-50);
     }
 
-    .uml-element-editor__header__lock {
-      margin-right: 0.5rem;
-    }
-  }
-
-  &__configs {
-    display: flex;
-    width: 100%;
-  }
-
-  &__name {
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-300);
-    color: var(--color-light-grey-0);
-  }
-
-  &__name::placeholder {
-    color: var(--color-dark-grey-300);
-  }
-}
-
-.dataSpace-editor {
-  &__general {
-    .panel__content__lists {
-      padding-left: 2rem;
+    &__content__form {
+      color: var(--color-light-grey-50);
     }
   }
 
@@ -61,6 +156,8 @@
     padding: 0.5rem 1rem;
     cursor: pointer;
     margin-left: 15px;
+    background: var(--color-dark-grey-50);
+    color: var(--color-light-grey-50);
 
     &--active {
       background-color: #444;
@@ -68,53 +165,16 @@
     }
   }
 
-  &__header {
-    background: var(--color-dark-grey-50);
-    display: flex;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    background-color: #1e1e1e;
-    border-bottom: 1px solid #444;
-
-    &__title {
-      display: flex;
-      align-items: center;
-
-      &__label {
-        margin-right: 0.5rem;
-        font-weight: bold;
-        margin-top: 15px;
-      }
-
-      &__content {
-        font-weight: normal;
-
-        &__form {
-          margin-top: 15px;
-        }
-      }
+  &__general {
+    .panel__content__lists {
+      padding-left: 2rem;
     }
-  }
-
-  &__emailSupport__validation {
-    display: flex;
-    align-items: center;
-    cursor: help;
-  }
-
-  &__emailSupport__validation svg {
-    color: var(--color-red-100);
-    stroke-width: 0.4;
-    stroke: var(--color-red-100);
-  }
-
-  &__emailSupport__validation-label {
-    color: var(--color-red-100);
-    margin-left: 0.5rem;
   }
 }
 
 .dataSpace-execution-context {
+  background: var(--color-dark-grey-50);
+
   .custom-selector-input {
     margin-bottom: 1rem;
   }

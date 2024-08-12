@@ -1,25 +1,44 @@
-import React, { useState } from 'react';
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { forwardRef } from 'react';
 import {
   clsx,
   ContextMenu,
   CustomSelectorInput,
+<<<<<<< HEAD
   MenuContent,
   MenuContentItem,
+=======
+  Panel,
+  PanelContent,
+>>>>>>> executionContext is finished
   PanelFormListItems,
   PanelFormTextField,
   PlusIcon,
 } from '@finos/legend-art';
 import {
-  dataSpace_addExecutionContext,
   set_executionContextDescription,
   set_executionContextName,
   set_executionContextTitle,
   set_mapping,
   set_runtime,
 } from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
-import { DataSpaceExecutionContext } from '@finos/legend-extension-dsl-data-space/graph';
+import type { DataSpaceExecutionContext } from '@finos/legend-extension-dsl-data-space/graph';
 import type { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
   PackageableElementExplicitReference,
@@ -30,6 +49,7 @@ import {
 
 interface ExecutionContextTabProps {
   dataSpaceEditorState: DataSpaceEditorState;
+<<<<<<< HEAD
   isModalOpen: boolean;
   newExecutionContextName: string;
   setNewExecutionContextName: (name: string) => void;
@@ -70,11 +90,99 @@ const ExecutionContextMenu = observer(
       <MenuContent ref={ref}>
         <MenuContentItem onClick={add}>Add Execution Context</MenuContentItem>
       </MenuContent>
+=======
+}
+
+interface ExecutionContextItemProps {
+  executionContext: DataSpaceExecutionContext; // The execution context to display
+  dataSpaceEditorState: DataSpaceEditorState; // The state of the data space, which includes all execution contexts is it right?
+  idx: number; // The index of this execution context in the list
+}
+
+const ExecutionContextItem: React.FC<ExecutionContextItemProps> = observer(
+  (props) => {
+    const { executionContext, dataSpaceEditorState, idx } = props;
+    const applicationStore = useApplicationStore();
+
+    //Determine if it exists
+    const isActive =
+      dataSpaceEditorState.selectedExecutionContext === executionContext;
+
+    //open and display on the right side
+    const openContext = (): void => {
+      dataSpaceEditorState.setSelectedExecutionContext(executionContext);
+    };
+
+    // remove the selected
+    const deleteContext = (): void => {
+      const index = dataSpaceEditorState.dataSpace.executionContexts.findIndex(
+        (ctx) => ctx === executionContext,
+      );
+      if (index > -1) {
+        dataSpaceEditorState.dataSpace.executionContexts.splice(index, 1);
+
+        //if selected and removed jsut clear the window
+        if (
+          isActive ||
+          dataSpaceEditorState.dataSpace.executionContexts.length === 0
+        ) {
+          dataSpaceEditorState.setSelectedExecutionContext(null);
+        }
+      }
+    };
+
+    //display the selected on the right window
+    const runContext = (): void => {
+      openContext();
+      flowResult(
+        applicationStore.alertUnhandledError(
+          new Error('Execution Context selected'),
+        ),
+      );
+    };
+
+    return (
+      <div
+        className={clsx('execution-context-item', {
+          'execution-context-item--active': isActive,
+        })}
+        onClick={openContext}
+      >
+        <button
+          className={clsx('execution-context-item__label')}
+          onClick={openContext}
+          tabIndex={-1}
+        >
+          <div className="execution-context-item__label__text">
+            {executionContext.name || `ExecutionContext ${idx + 1}`}
+          </div>
+        </button>
+        <div className="execution-context-item__actions">
+          <button
+            className="execution-context-item__action execution-context-run-btn"
+            onClick={runContext}
+            tabIndex={-1}
+            title={`Run ${executionContext.name || `ExecutionContext ${idx + 1}`}`}
+          >
+            <PlayIcon />
+          </button>
+          <button
+            className="execution-context-item__action execution-context-delete-btn"
+            onClick={deleteContext}
+            tabIndex={-1}
+            title={`Delete ${executionContext.name || `ExecutionContext ${idx + 1}`}`}
+          >
+            <TrashIcon />
+          </button>
+        </div>
+      </div>
+>>>>>>> executionContext is finished
     );
   }),
 );
 
 export const DataSpaceExecutionContextTab: React.FC<ExecutionContextTabProps> =
+<<<<<<< HEAD
   observer(
     ({
       dataSpaceEditorState,
@@ -101,59 +209,73 @@ export const DataSpaceExecutionContextTab: React.FC<ExecutionContextTabProps> =
           console.error('Execution context is undefined.');
         }
       };
+=======
+  observer(({ dataSpaceEditorState }) => {
+    const { selectedExecutionContext } = dataSpaceEditorState;
+>>>>>>> executionContext is finished
 
-      const handleDescriptionChange = (value: string | undefined): void => {
-        if (executionContext) {
-          set_executionContextDescription(executionContext, value ?? '');
-          dataSpaceEditorState.setSelectedExecutionContext(executionContext);
-        } else {
-          console.error('Execution context is undefined.');
-        }
-      };
-
-      const handleNameChange = (value: string | undefined) => {
-        if (executionContext) {
-          set_executionContextName(executionContext, value ?? '');
-          dataSpaceEditorState.setSelectedExecutionContext(executionContext);
-        } else {
-          console.error('Execution context is undefined.');
-        }
-      };
-
-      const handleMappingChange = (option: MappingOption) => {
-        if (executionContext) {
-          set_mapping(executionContext, option.value);
-          dataSpaceEditorState.setSelectedExecutionContext(executionContext);
-        } else {
-          console.error('Execution context is undefined.');
-        }
-      };
-
-      const handleRuntimeChange = (option: RuntimeOption) => {
-        if (executionContext) {
-          set_runtime(executionContext, option.value);
-          dataSpaceEditorState.setSelectedExecutionContext(executionContext);
-        } else {
-          console.error('Execution context is undefined.');
-        }
-      };
-
-      const mappingOptions =
-        dataSpaceEditorState.editorStore.graphManagerState.usableMappings.map(
-          (mapping) => ({
-            label: mapping.path,
-            value: PackageableElementExplicitReference.create(mapping),
-          }),
+    const handleTitleChange = (value: string | undefined): void => {
+      if (selectedExecutionContext) {
+        set_executionContextTitle(selectedExecutionContext, value);
+        dataSpaceEditorState.setSelectedExecutionContext(
+          selectedExecutionContext,
         );
+      } else {
+        return;
+      }
+    };
 
-      const runtimeOptions =
-        dataSpaceEditorState.editorStore.graphManagerState.usableRuntimes.map(
-          (runtime) => ({
-            label: runtime.path,
-            value: PackageableElementExplicitReference.create(runtime),
-          }),
+    const handleDescriptionChange = (value: string | undefined): void => {
+      if (selectedExecutionContext) {
+        set_executionContextDescription(selectedExecutionContext, value ?? '');
+        dataSpaceEditorState.setSelectedExecutionContext(
+          selectedExecutionContext,
         );
+      } else {
+        return;
+      }
+    };
 
+    const handleNameChange = (value: string | undefined) => {
+      if (selectedExecutionContext) {
+        set_executionContextName(selectedExecutionContext, value ?? '');
+        dataSpaceEditorState.setSelectedExecutionContext(
+          selectedExecutionContext,
+        );
+      } else {
+        return;
+      }
+    };
+
+    const handleMappingChange = (option: {
+      value: PackageableElementReference<Mapping>;
+    }) => {
+      if (selectedExecutionContext) {
+        set_mapping(selectedExecutionContext, option.value);
+      } else {
+        return;
+      }
+    };
+
+    const handleRuntimeChange = (option: {
+      value: PackageableElementReference<PackageableRuntime>;
+    }) => {
+      if (selectedExecutionContext) {
+        set_runtime(selectedExecutionContext, option.value);
+      } else {
+        return;
+      }
+    };
+
+    const mappingOptions =
+      dataSpaceEditorState.editorStore.graphManagerState.usableMappings.map(
+        (mapping) => ({
+          label: mapping.path,
+          value: PackageableElementExplicitReference.create(mapping),
+        }),
+      );
+
+<<<<<<< HEAD
       const handleAddExecutionContext = () => {
         if (newExecutionContextName && selectedMapping && selectedRuntime) {
           addExecutionContext(
@@ -343,7 +465,127 @@ export const DataSpaceExecutionContextTab: React.FC<ExecutionContextTabProps> =
               </PanelFormListItems>
             </>
           )}
-        </div>
+=======
+    const runtimeOptions =
+      dataSpaceEditorState.editorStore.graphManagerState.usableRuntimes.map(
+        (runtime) => ({
+          label: runtime.path,
+          value: PackageableElementExplicitReference.create(runtime),
+        }),
       );
-    },
-  );
+
+    const handleAddExecutionContext = (): void => {
+      dataSpaceEditorState.addExecutionContext();
+    };
+
+    return (
+      <div className="data-space-execution-context-editor">
+        <PanelHeader
+          title="Execution Contexts"
+          className="half-width-panel-header"
+        >
+          <PanelHeaderActions>
+            <PanelHeaderActionItem
+              onClick={handleAddExecutionContext}
+              title="Add Execution Context"
+              className="data-space-execution-context-editor execution-context-item__action"
+            >
+              <PlusIcon />
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
+        <div className="data-space-execution-context__content">
+          <ResizablePanelGroup orientation="vertical">
+            <ResizablePanel minSize={100} size={300}>
+              <PanelContent>
+                {dataSpaceEditorState.dataSpace.executionContexts.map(
+                  (context, index) => (
+                    <ExecutionContextItem
+                      key={context.hashCode}
+                      executionContext={context}
+                      dataSpaceEditorState={dataSpaceEditorState}
+                      idx={index}
+                    />
+                  ),
+                )}
+                {!dataSpaceEditorState.dataSpace.executionContexts.length && (
+                  <BlankPanelPlaceholder
+                    text="Add Execution Context"
+                    onClick={handleAddExecutionContext}
+                    clickActionType="add"
+                    tooltipText="Click to add execution context"
+                  />
+                )}
+              </PanelContent>
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel>
+              <Panel className="data-space-execution-context-details">
+                {dataSpaceEditorState.dataSpace.executionContexts.length ? (
+                  <>
+                    <div>
+                      <PanelFormTextField
+                        name="Execution Context Name"
+                        value={selectedExecutionContext?.name}
+                        update={handleNameChange}
+                        placeholder="Enter name"
+                      />
+                    </div>
+                    <div>
+                      <PanelFormTextField
+                        name="Execution Context Title"
+                        value={selectedExecutionContext?.title}
+                        update={handleTitleChange}
+                        placeholder="Enter title"
+                      />
+                    </div>
+                    <div>
+                      <PanelFormTextField
+                        name="Execution Context Description"
+                        value={selectedExecutionContext?.description}
+                        update={handleDescriptionChange}
+                        placeholder="Enter description"
+                      />
+                    </div>
+                    <PanelFormListItems title="Mapping">
+                      <CustomSelectorInput
+                        options={mappingOptions}
+                        onChange={handleMappingChange}
+                        value={mappingOptions.find(
+                          (option) =>
+                            option.value === selectedExecutionContext?.mapping,
+                        )}
+                        placeholder="Select Mapping"
+                        darkMode="true"
+                      />
+                    </PanelFormListItems>
+                    <PanelFormListItems title="Default Runtime">
+                      <CustomSelectorInput
+                        options={runtimeOptions}
+                        onChange={handleRuntimeChange}
+                        value={runtimeOptions.find(
+                          (option) =>
+                            option.value ===
+                            selectedExecutionContext?.defaultRuntime,
+                        )}
+                        placeholder="Select Runtime"
+                        darkMode="true"
+                      />
+                    </PanelFormListItems>
+                  </>
+                ) : (
+                  <BlankPanelPlaceholder
+                    text="Select an Execution Context to view details"
+                    tooltipText="Select an execution context"
+                  />
+                )}
+              </Panel>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+>>>>>>> executionContext is finished
+        </div>
+      </div>
+    );
+  });

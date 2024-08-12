@@ -26,7 +26,6 @@ import {
   PanelFormSection,
   PanelFormTextField,
   PencilIcon,
-  PlusIcon,
   TimesIcon,
 } from '@finos/legend-art';
 import {
@@ -35,7 +34,6 @@ import {
   SUPPORT_INFO_TYPE,
 } from '../stores/DataSpaceEditorState.js';
 import {
-  dataSpace_addExecutionContext,
   set_description,
   set_documentationUrl,
   set_email,
@@ -47,17 +45,13 @@ import {
   set_website,
 } from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
 import {
-  DataSpaceExecutionContext,
+  type DataSpaceExecutionContext,
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { useEffect, useRef, useState } from 'react';
 import { DataSpaceExecutionContextTab } from './DataSpaceExecutionContextTab.js';
-import type {
-  Mapping,
-  PackageableElementReference,
-  PackageableRuntime,
-} from '@finos/legend-graph';
+import { DataSpaceDigramTab } from './DataSpaceDiagramTab.js';
 
 const SUPPORT_INFO_TYPE_OPTIONS = [
   { label: 'Support Email', value: SUPPORT_INFO_TYPE.EMAIL },
@@ -67,14 +61,11 @@ const SUPPORT_INFO_TYPE_OPTIONS = [
 const TAB_OPTIONS = [
   { label: 'General', value: DATASPACE_TAB.GENERAL },
   { label: 'Execution Context', value: DATASPACE_TAB.EXECUTION_CONTEXT },
+  { label: 'Diagram', value: DATASPACE_TAB.DIAGRAM },
 ];
 
 interface Option {
   value: SUPPORT_INFO_TYPE | DATASPACE_TAB;
-  label: string;
-}
-interface ExecutionContextOption {
-  value: DataSpaceExecutionContext;
   label: string;
 }
 
@@ -89,13 +80,6 @@ export const DataSpaceEditor = observer(() => {
   const [showEmailsEditInput, setShowEmailsEditInput] = useState<number | null>(
     null,
   );
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newExecutionContextName, setNewExecutionContextName] = useState('');
-  const [selectedMapping, setSelectedMapping] =
-    useState<PackageableElementReference<Mapping> | null>(null);
-  const [selectedRuntime, setSelectedRuntime] =
-    useState<PackageableElementReference<PackageableRuntime> | null>(null);
-
   useEffect(() => {
     if (!isReadOnly) {
       typeNameRef.current?.focus();
@@ -189,7 +173,6 @@ export const DataSpaceEditor = observer(() => {
       ? (dataSpaceElement.supportInfo.supportUrl ?? '')
       : '';
 
-  // const showAddEmailInput = (): void => setShowEmailsEditInput(true);
   const hideAddOrEditEmailInput = (): void => {
     setShowEmailsEditInput(null);
     setEmailsInputValue('');
@@ -228,23 +211,6 @@ export const DataSpaceEditor = observer(() => {
         handleEmailsChange(updatedEmails);
       }
     };
-
-  const openModal = () => {
-    console.log('clicked');
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const addExecutionContext = (
-    name: string,
-    mapping: PackageableElementReference<Mapping>,
-    defaultRuntime: PackageableElementReference<PackageableRuntime>,
-  ) => {
-    dataSpaceEditorState.addExecutionContext(name, mapping, defaultRuntime);
-  };
 
   const renderTabContent = (): React.ReactNode => {
     switch (selectedTab) {
@@ -450,23 +416,47 @@ export const DataSpaceEditor = observer(() => {
                 />
               </>
             )}
+            <div>
+              <PanelFormListItems>
+                <h2>Default execution context</h2>
+                <CustomSelectorInput
+                  options={dataSpaceElement.executionContexts.map(
+                    (context) => ({
+                      label: context.name,
+                      value: context,
+                    }),
+                  )}
+                  onChange={(option: { value: DataSpaceExecutionContext }) => {
+                    dataSpaceEditorState.setDefaultExecutionContext(
+                      option.value,
+                    );
+                    dataSpaceEditorState.setSelectedTab(
+                      DATASPACE_TAB.EXECUTION_CONTEXT,
+                    );
+                    dataSpaceEditorState.setSelectedExecutionContext(
+                      option.value,
+                    );
+                  }}
+                  value={dataSpaceElement.executionContexts.find(
+                    (context) =>
+                      context === dataSpaceElement.defaultExecutionContext,
+                  )}
+                  placeholder="Select Default Execution Context"
+                  darkMode="true"
+                />
+              </PanelFormListItems>
+            </div>
           </PanelFormSection>
         );
       case DATASPACE_TAB.EXECUTION_CONTEXT:
         return (
           <DataSpaceExecutionContextTab
             dataSpaceEditorState={dataSpaceEditorState}
-            isModalOpen={isModalOpen}
-            newExecutionContextName={newExecutionContextName}
-            setNewExecutionContextName={setNewExecutionContextName}
-            openModal={openModal}
-            closeModal={closeModal}
-            addExecutionContext={addExecutionContext}
-            selectedMapping={selectedMapping}
-            setSelectedMapping={setSelectedMapping}
-            selectedRuntime={selectedRuntime}
-            setSelectedRuntime={setSelectedRuntime}
           />
+        );
+      case DATASPACE_TAB.DIAGRAM:
+        return (
+          <DataSpaceDigramTab dataSpaceEditorState={dataSpaceEditorState} />
         );
       default:
         return null;
@@ -498,15 +488,6 @@ export const DataSpaceEditor = observer(() => {
             </div>
           ))}
         </div>
-        {/*{selectedTab === DATASPACE_TAB.EXECUTION_CONTEXT && (
-          <button
-            onClick={openModal}
-            className="dataSpace-editor__add-context-button dataSpace-editor__emailSupport__validation-label"
-          >
-            <PlusIcon />
-            Add Execution Context
-          </button>
-        )} */}
       </div>
       <PanelContentLists className="dataSpace-editor__general">
         <PanelForm>{renderTabContent()}</PanelForm>
@@ -514,4 +495,3 @@ export const DataSpaceEditor = observer(() => {
     </div>
   );
 });
-//Add and treat it as a new execution context without the default value and add button if user want to add more execution Context
