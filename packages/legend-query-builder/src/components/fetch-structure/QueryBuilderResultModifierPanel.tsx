@@ -746,7 +746,8 @@ export const QueryResultModifierModal = observer(
         classes={{
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
-          paper: 'editor-modal__content',
+          paper:
+            'editor-modal__content query-builder__projection__modal__content',
         }}
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_MODIFIER_PANEL}
       >
@@ -756,7 +757,10 @@ export const QueryResultModifierModal = observer(
           }
           className="editor-modal query-builder__projection__modal"
         >
-          <ModalHeader title="Query Options" />
+          <ModalHeader
+            className="query-builder__projection__modal__header"
+            title="Query Options"
+          />
           <ModalBody className="query-builder__projection__modal__body">
             <div className="query-builder__projection__options">
               {tdsState.queryBuilderState.milestoningState

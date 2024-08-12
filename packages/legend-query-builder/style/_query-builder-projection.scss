@@ -392,10 +392,18 @@
   &__modal {
     display: flex;
     flex-direction: column;
-    min-height: 700px;
     height: fit-content;
     width: fit-content;
-    overflow: auto;
+
+    &__content {
+      align-self: start;
+      margin-top: 15rem;
+      max-height: calc(100% - 20rem);
+    }
+
+    &__header {
+      flex: none;
+    }
 
     &__body {
       overflow: auto;
