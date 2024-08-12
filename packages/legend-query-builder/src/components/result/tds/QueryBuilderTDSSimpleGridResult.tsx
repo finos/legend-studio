@@ -48,7 +48,9 @@ import type {
 } from '../../../stores/QueryBuilderResultState.js';
 import { QUERY_BUILDER_TEST_ID } from '../../../__lib__/QueryBuilderTesting.js';
 
-export const getFloatGridColumnCustomHeader = (columnName: string): string =>
+export const MAXIMUM_FRACTION_DIGITS = 4;
+
+export const getFloatGridColumnCustomHeader = (): string =>
   `<div class="ag-cell-label-container" role="presentation">
     <span
       data-ref="eMenu"
@@ -109,24 +111,44 @@ export const getFloatGridColumnCustomHeader = (columnName: string): string =>
     </div>
   </div>`;
 
-const getTDSColumnCustomizations = (
+export const getTDSColumnCustomizations = (
   result: TDSExecutionResult,
   columnName: string,
 ): object => {
-  const columnType = result.builder.columns.find(
+  const index = result.builder.columns.findIndex(
     (col) => col.name === columnName,
-  )?.type;
-  switch (columnType) {
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.FLOAT:
-      return {
-        headerComponentParams: {
-          template: getFloatGridColumnCustomHeader(columnName),
-        },
-      };
-    default:
-      return {};
+  );
+  if (index >= 0) {
+    const columnType = result.builder.columns[index]?.type;
+    const colValues = result.result.rows.map((r) => r.values[index]);
+    const isTruncated = (
+      vals: (string | number | boolean | null | undefined)[],
+    ): boolean =>
+      Boolean(
+        vals.some((val) => {
+          if (val) {
+            const decimalPart = val.toString().split('.')[1];
+            return decimalPart && decimalPart.length > MAXIMUM_FRACTION_DIGITS;
+          }
+          return false;
+        }),
+      );
+    switch (columnType) {
+      case PRIMITIVE_TYPE.NUMBER:
+      case PRIMITIVE_TYPE.DECIMAL:
+      case PRIMITIVE_TYPE.FLOAT:
+        return isTruncated(colValues)
+          ? {
+              headerComponentParams: {
+                template: getFloatGridColumnCustomHeader(),
+              },
+            }
+          : {};
+      default:
+        return {};
+    }
   }
+  return {};
 };
 
 const QueryResultCellRenderer = observer(
@@ -144,7 +166,7 @@ const QueryResultCellRenderer = observer(
     const formattedCellValue = (): QueryBuilderTDSResultCellDataType => {
       if (isNumber(cellValue)) {
         return Intl.NumberFormat(DEFAULT_LOCALE, {
-          maximumFractionDigits: 4,
+          maximumFractionDigits: MAXIMUM_FRACTION_DIGITS,
         }).format(Number(cellValue));
       } else if (isBoolean(cellValue)) {
         return String(cellValue);

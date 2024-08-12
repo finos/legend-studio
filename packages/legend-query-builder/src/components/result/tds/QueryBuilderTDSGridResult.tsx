@@ -61,7 +61,10 @@ import {
   Dialog,
   CustomSelectorInput,
 } from '@finos/legend-art';
-import { getFloatGridColumnCustomHeader } from './QueryBuilderTDSSimpleGridResult.js';
+import {
+  getTDSColumnCustomizations,
+  MAXIMUM_FRACTION_DIGITS,
+} from './QueryBuilderTDSSimpleGridResult.js';
 
 export const enum QueryBuilderDataGridCustomAggregationFunction {
   wavg = 'wavg',
@@ -88,20 +91,13 @@ const getAggregationTDSColumnCustomizations = (
         filter: 'agDateColumnFilter',
         allowedAggFuncs: ['count'],
       };
+    case PRIMITIVE_TYPE.DECIMAL:
     case PRIMITIVE_TYPE.NUMBER:
     case PRIMITIVE_TYPE.INTEGER:
-      return {
-        filter: 'agNumberColumnFilter',
-        allowedAggFuncs: ['count', 'sum', 'max', 'min', 'avg', 'wavg'],
-      };
-    case PRIMITIVE_TYPE.DECIMAL:
     case PRIMITIVE_TYPE.FLOAT:
       return {
         filter: 'agNumberColumnFilter',
         allowedAggFuncs: ['count', 'sum', 'max', 'min', 'avg', 'wavg'],
-        headerComponentParams: {
-          template: getFloatGridColumnCustomHeader(columnName),
-        },
       };
     default:
       return {
@@ -117,7 +113,7 @@ const QueryResultCellRenderer = observer(
     const formattedCellValue = (): QueryBuilderTDSResultCellDataType => {
       if (isNumber(cellValue)) {
         return Intl.NumberFormat(DEFAULT_LOCALE, {
-          maximumFractionDigits: 4,
+          maximumFractionDigits: MAXIMUM_FRACTION_DIGITS,
         }).format(Number(cellValue));
       } else if (isBoolean(cellValue)) {
         return String(cellValue);
@@ -181,6 +177,7 @@ const getLocalColDefs = (
         tdsExecutionResult: executionResult,
       },
       ...getAggregationTDSColumnCustomizations(executionResult, colName),
+      ...getTDSColumnCustomizations(executionResult, colName),
     } as DataGridColumnDefinition;
     const persistedColumn = resultState.gridConfig?.columns.find(
       (c) => c.colId === colName,
@@ -216,15 +213,9 @@ const getFilterTDSColumnCustomizations = (
     case PRIMITIVE_TYPE.DECIMAL:
     case PRIMITIVE_TYPE.INTEGER:
     case PRIMITIVE_TYPE.NUMBER:
-      return {
-        filter: 'agNumberColumnFilter',
-      };
     case PRIMITIVE_TYPE.FLOAT:
       return {
         filter: 'agNumberColumnFilter',
-        headerComponentParams: {
-          template: getFloatGridColumnCustomHeader(columnName),
-        },
       };
     default:
       // we default all other columns to use filter true which defaults to set filters
@@ -255,6 +246,7 @@ const getColDefs = (
           tdsExecutionResult: executionResult,
         },
         ...getFilterTDSColumnCustomizations(executionResult, colName),
+        ...getTDSColumnCustomizations(executionResult, colName),
       }) as DataGridColumnDefinition,
   );
 
