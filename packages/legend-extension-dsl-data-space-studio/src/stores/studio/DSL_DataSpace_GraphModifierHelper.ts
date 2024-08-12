@@ -23,6 +23,12 @@ import {
   type DataSpaceExecutionContext,
   observe_DataSpaceSupportInfo,
   observe_DataSpaceExecutionContext,
+  observe_DataSpaceDiagram,
+  observe_DataSpaceElementPointer,
+  type DataSpaceDiagram,
+  type DataSpaceElementPointer,
+  DataSpaceExecutable,
+  observe_DataSpaceExecutable,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   DataElementReference,
@@ -155,5 +161,26 @@ export const dataSpace_addExecutionContext = action(
   (dataSpace: DataSpace, executionContext: DataSpaceExecutionContext): void => {
     const observedContext = observe_DataSpaceExecutionContext(executionContext);
     dataSpace.executionContexts.push(observedContext);
+  },
+);
+
+export const set_dataSpaceDiagram = action(
+  (dataSpace: DataSpace, contexts: DataSpaceDiagram[]): void => {
+    dataSpace.diagrams = contexts;
+    contexts.forEach((context) => observe_DataSpaceDiagram(context));
+  },
+);
+
+export const set_dataSpaceElements = action(
+  (dataSpace: DataSpace, elements: DataSpaceElementPointer[]): void => {
+    dataSpace.elements = elements;
+    elements.forEach(observe_DataSpaceElementPointer);
+  },
+);
+
+export const set_dataSpaceExecutables = action(
+  (dataSpace: DataSpace, executables: DataSpaceExecutable[]): void => {
+    dataSpace.executables = executables;
+    executables.forEach(observe_DataSpaceExecutable);
   },
 );

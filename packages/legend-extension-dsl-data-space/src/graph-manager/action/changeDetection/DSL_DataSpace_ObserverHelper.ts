@@ -26,8 +26,17 @@ import {
   DataSpaceSupportEmail,
   type DataSpaceSupportInfo,
   type DataSpace,
+<<<<<<< HEAD
   DataSpaceExecutionContext,
   // type DataSpaceExecutionContext,
+=======
+  type DataSpaceExecutionContext,
+  type DataSpaceDiagram,
+  type DataSpaceElementPointer,
+  type DataSpaceExecutable,
+  DataSpaceExecutableTemplate,
+  DataSpacePackageableElementExecutable,
+>>>>>>> elements and executable finished
 } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 
 export const observe_DataSpaceSupportInfo = (
@@ -63,6 +72,53 @@ export const observe_DataSpaceExecutionContext = (
   return executionContext;
 };
 
+<<<<<<< HEAD
+=======
+export const observe_DataSpaceDiagram = (
+  dataSpaceDiagram: DataSpaceDiagram,
+): DataSpaceDiagram => {
+  makeObservable(dataSpaceDiagram, {
+    title: observable,
+    description: observable,
+    diagram: observable,
+  });
+  return dataSpaceDiagram;
+};
+
+export const observe_DataSpaceElementPointer = (
+  elementPointer: DataSpaceElementPointer,
+): DataSpaceElementPointer => {
+  makeObservable(elementPointer, {
+    element: observable,
+    exclude: observable,
+  });
+  return elementPointer;
+};
+
+export const observe_DataSpaceExecutable = (
+  executable: DataSpaceExecutable,
+): DataSpaceExecutable => {
+  makeObservable(executable, {
+    title: observable,
+    description: observable,
+  });
+
+  if (executable instanceof DataSpacePackageableElementExecutable) {
+    makeObservable(executable, {
+      executable: observable,
+    });
+  } else if (executable instanceof DataSpaceExecutableTemplate) {
+    makeObservable(executable, {
+      id: observable,
+      query: observable,
+      executionContextKey: observable,
+    });
+  }
+
+  return executable;
+};
+
+>>>>>>> elements and executable finished
 export const observe_DataSpace = skipObserved(
   (metamodel: DataSpace): DataSpace => {
     observe_Abstract_PackageableElement(metamodel);
@@ -73,10 +129,26 @@ export const observe_DataSpace = skipObserved(
       supportInfo: observable,
       executionContexts: observable,
       defaultExecutionContext: observable,
+<<<<<<< HEAD
+=======
+      diagrams: observable,
+      elements: observable,
+      executables: observable,
+>>>>>>> elements and executable finished
       _elementHashCode: override,
     });
 
     metamodel.executionContexts.forEach(observe_DataSpaceExecutionContext);
+<<<<<<< HEAD
+=======
+
+    metamodel.diagrams?.forEach(observe_DataSpaceDiagram);
+
+    metamodel.elements?.forEach(observe_DataSpaceElementPointer);
+
+    metamodel.executables?.forEach(observe_DataSpaceExecutable);
+
+>>>>>>> elements and executable finished
     if (metamodel.supportInfo) {
       observe_DataSpaceSupportInfo(metamodel.supportInfo);
     }

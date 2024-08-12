@@ -28,6 +28,14 @@ import {
   DataSpaceExecutionContext,
   DataSpaceSupportEmail,
   observe_DataSpaceExecutionContext,
+<<<<<<< HEAD
+=======
+  observe_DataSpaceDiagram,
+  type DataSpaceElementPointer,
+  observe_DataSpaceElementPointer,
+  type DataSpaceExecutable,
+  observe_DataSpaceExecutable,
+>>>>>>> elements and executable finished
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { guaranteeType } from '@finos/legend-shared';
 
@@ -39,6 +47,12 @@ export enum SUPPORT_INFO_TYPE {
 export enum DATASPACE_TAB {
   GENERAL = 'GENERAL',
   EXECUTION_CONTEXT = 'EXECUTION_CONTEXT',
+<<<<<<< HEAD
+=======
+  DIAGRAM = 'DIAGRAM',
+  ELEMENTS = 'ELEMENTS',
+  EXECUTABLES = 'EXECUTABLES',
+>>>>>>> elements and executable finished
 }
 export class DataSpaceEditorState extends ElementEditorState {
   selectedSupportInfoType?: SUPPORT_INFO_TYPE;
@@ -53,7 +67,13 @@ export class DataSpaceEditorState extends ElementEditorState {
   selectedExecutionContext?: DataSpaceExecutionContext | null = null;
   diagrams: DataSpaceDiagram[] = [];
   selectedDiagram?: DataSpaceDiagram;
+<<<<<<< HEAD
 >>>>>>> executionContext is finished
+=======
+  elements: DataSpaceElementPointer[] = [];
+  selectedElementPointer?: DataSpaceElementPointer | null = null;
+  selectedExecutable?: DataSpaceExecutable | null = null;
+>>>>>>> elements and executable finished
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -69,6 +89,9 @@ export class DataSpaceEditorState extends ElementEditorState {
       selectedRuntime: observable,
 =======
       selectedDiagram: observable,
+      elements: observable,
+      selectedElementPointer: observable,
+      selectedExecutable: observable,
       setDiagrams: action,
       selectDiagram: action,
 >>>>>>> executionContext is finished
@@ -77,12 +100,18 @@ export class DataSpaceEditorState extends ElementEditorState {
       setSelectedExecutionContext: action,
       setDefaultExecutionContext: action,
 <<<<<<< HEAD
+<<<<<<< HEAD
       setNewExecutionContextName: action,
       setSelectedMapping: action,
       setSelectedRuntime: action,
       addExecutionContext: action,
 =======
 >>>>>>> executionContext is finished
+=======
+      setElements: action,
+      selectElementPointer: action,
+      addExecutable: action,
+>>>>>>> elements and executable finished
       reprocess: action,
     });
 
@@ -175,6 +204,47 @@ export class DataSpaceEditorState extends ElementEditorState {
     this.setSelectedTab(DATASPACE_TAB.EXECUTION_CONTEXT);
   }
 
+<<<<<<< HEAD
+=======
+  setDiagrams(diagrams: DataSpaceDiagram[]): void {
+    this.diagrams = diagrams;
+    this.diagrams.forEach(observe_DataSpaceDiagram);
+  }
+
+  selectDiagram(diagram: DataSpaceDiagram): void {
+    this.selectedDiagram = diagram;
+  }
+
+  setElements(elements: DataSpaceElementPointer[]): void {
+    this.elements = elements;
+    this.elements.forEach(observe_DataSpaceElementPointer);
+  }
+
+  selectElementPointer(elementPointer: DataSpaceElementPointer): void {
+    this.selectedElementPointer = elementPointer;
+  }
+
+  setExcludeForElementPointer(
+    elementPointer: DataSpaceElementPointer,
+    exclude: boolean,
+  ): void {
+    elementPointer.exclude = exclude;
+  }
+
+  setExecutables(executables: DataSpaceExecutable[]): void {
+    this.dataSpace.executables = executables;
+    executables.forEach(observe_DataSpaceExecutable);
+  }
+
+  addExecutable(executable: DataSpaceExecutable): void {
+    if (!this.dataSpace.executables) {
+      this.dataSpace.executables = [];
+    }
+    this.dataSpace.executables.push(observe_DataSpaceExecutable(executable));
+  }
+
+  // Reprocess the state when the underlying element is replaced
+>>>>>>> elements and executable finished
   override reprocess(
     newElement: PackageableElement,
     editorStore: EditorStore,

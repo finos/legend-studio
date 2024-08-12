@@ -34,10 +34,9 @@ import {
   type EditorExtensionStateBuilder,
   type EditorExtensionComponentRendererConfiguration,
   PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY,
-  UnsupportedElementEditorState,
 } from '@finos/legend-application-studio';
 import {
-  ObserverContext,
+  type ObserverContext,
   PackageableElementExplicitReference,
   stub_Mapping,
   stub_PackageableRuntime,
