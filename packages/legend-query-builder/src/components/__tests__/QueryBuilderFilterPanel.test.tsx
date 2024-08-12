@@ -2834,7 +2834,7 @@ test(
     });
 
     // DND property from explorer panel to filter panel
-    const explorerPanel = await renderResult.getByTestId(
+    const explorerPanel = await renderResult.findByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
     );
     const filterPanel = await renderResult.findByTestId(
