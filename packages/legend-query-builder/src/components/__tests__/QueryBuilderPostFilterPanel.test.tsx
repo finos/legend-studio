@@ -1467,21 +1467,41 @@ test(
       tdsState.setShowPostFilterPanel(true);
     });
 
-    // DND property from explorer panel to post-filter panel
+    // DND property from explorer panel to fetch structure panel
     const explorerPanel = await renderResult.findByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+    const fetchStructurePanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
+    );
+    const explorerDragSource = await findByText(explorerPanel, 'Legal Name');
+    const fetchStructureDropZone = await findByText(
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+    await dragAndDrop(
+      explorerDragSource,
+      fetchStructureDropZone,
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+    await findByText(fetchStructurePanel, 'Legal Name');
+
+    // DND property from fetch structure panel to post-filter panel
+    const fetchStructureDragSource = await findByText(
+      fetchStructurePanel,
+      'Legal Name',
     );
     const postFilterPanel = await renderResult.findByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
     );
-    const explorerDragSource = await findByText(explorerPanel, 'Legal Name');
-    const filterDropZone = await findByText(
+    const postFilterDropZone = await findByText(
       postFilterPanel,
       'Add a post-filter condition',
     );
     await dragAndDrop(
-      explorerDragSource,
-      filterDropZone,
+      fetchStructureDragSource,
+      postFilterDropZone,
       postFilterPanel,
       'Add a post-filter condition',
     );
@@ -1510,6 +1530,9 @@ test(
 
     // Verify no validation error
     expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', false);
 
     // Change constant type
     fireEvent.click(getByText(constantsPanel, 'c_var_1'));
@@ -1530,6 +1553,9 @@ test(
         { exact: false },
       ),
     ).not.toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
 
     // Create parameter of type string
     const parametersPanel = renderResult.getByTestId(
@@ -1551,6 +1577,9 @@ test(
 
     // Verify no validation error
     expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', false);
 
     // Change parameter type
     fireEvent.click(getByText(parametersPanel, 'p_var_1'));
@@ -1569,6 +1598,9 @@ test(
         { exact: false },
       ),
     ).not.toBeNull();
+    expect(
+      renderResult.getByRole('button', { name: 'Run Query' }),
+    ).toHaveProperty('disabled', true);
   },
 );
 
