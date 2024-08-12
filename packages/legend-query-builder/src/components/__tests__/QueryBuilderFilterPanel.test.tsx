@@ -75,6 +75,7 @@ import {
   TEST__setUpQueryBuilder,
   dragAndDrop,
   selectFirstOptionFromCustomSelectorInput,
+  selectFromCustomSelectorInput,
   setDerivedPropertyValue,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
@@ -116,6 +117,11 @@ import {
 } from '../../stores/filter/QueryBuilderFilterState.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
+import {
+  getConstantNameInput,
+  getConstantValueInput,
+} from './QueryBuilderConstantsPanel.test.js';
+import { getParameterNameInput } from './QueryBuilderParametersPanel.test.js';
 
 test(
   integrationTest(
@@ -2802,6 +2808,133 @@ test(
     dpModal = await renderResult.findByRole('dialog');
     await findByText(dpModal, 'Derived Property');
     expect(getByDisplayValue(dpModal, 'test2')).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder shows error when constant and parameter types become invalid',
+  ),
+  async () => {
+    // Set up query
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.setShowParametersPanel(true);
+      queryBuilderState.constantState.setShowConstantPanel(true);
+    });
+
+    // DND property from explorer panel to filter panel
+    const explorerPanel = await renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+    const filterPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+    );
+    const explorerDragSource = await findByText(explorerPanel, 'Legal Name');
+    const filterDropZone = await findByText(
+      filterPanel,
+      'Add a filter condition',
+    );
+    await dragAndDrop(
+      explorerDragSource,
+      filterDropZone,
+      filterPanel,
+      'Add a filter condition',
+    );
+    await findByText(filterPanel, 'Legal Name');
+    await findByText(filterPanel, 'is');
+
+    // Create constant of type string
+    const constantsPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
+    );
+    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
+    const constantNameInput = getConstantNameInput(renderResult);
+    let constantValueInput = getConstantValueInput(renderResult);
+    fireEvent.change(constantNameInput, { target: { value: 'c_var_1' } });
+    fireEvent.change(constantValueInput, { target: { value: 'test' } });
+    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
+
+    // Drag and drop constant to filter panel value
+    const constantDragSource = await findByText(constantsPanel, 'c_var_1');
+    await dragAndDrop(
+      constantDragSource,
+      filterPanel,
+      filterPanel,
+      'Change Filter Value',
+    );
+
+    // Verify no validation error
+    expect(queryByText(filterPanel, '1 issue')).toBeNull();
+
+    // Change constant type
+    fireEvent.click(getByText(constantsPanel, 'c_var_1'));
+    let typeContainer = guaranteeNonNullable(
+      renderResult.getByText('Type').parentElement,
+    );
+    selectFromCustomSelectorInput(typeContainer, 'Number');
+    constantValueInput = getConstantValueInput(renderResult);
+    fireEvent.change(constantValueInput, { target: { value: '5' } });
+    fireEvent.click(renderResult.getByRole('button', { name: 'Apply' }));
+
+    // Verify 1 validation error
+    expect(getByText(filterPanel, '1 issue')).not.toBeNull();
+    expect(
+      getByTitle(
+        filterPanel,
+        'Filter value for Legal Name is missing or invalid',
+        { exact: false },
+      ),
+    ).not.toBeNull();
+
+    // Create parameter of type string
+    const parametersPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+    );
+    fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
+    const parameterNameInput = getParameterNameInput(renderResult);
+    fireEvent.change(parameterNameInput, { target: { value: 'p_var_1' } });
+    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
+
+    // Drag and drop parameter to filter panel value
+    const parameterDragSource = await findByText(parametersPanel, 'p_var_1');
+    await dragAndDrop(
+      parameterDragSource,
+      filterPanel,
+      filterPanel,
+      'Change Filter Value',
+    );
+
+    // Verify no validation error
+    expect(queryByText(filterPanel, '1 issue')).toBeNull();
+
+    // Change parameter type
+    fireEvent.click(getByText(parametersPanel, 'p_var_1'));
+    typeContainer = guaranteeNonNullable(
+      renderResult.getByText('Type').parentElement,
+    );
+    selectFromCustomSelectorInput(typeContainer, 'Number');
+    fireEvent.click(renderResult.getByRole('button', { name: 'Update' }));
+
+    // Verify 1 validation error
+    expect(getByText(filterPanel, '1 issue')).not.toBeNull();
+    expect(
+      getByTitle(
+        filterPanel,
+        'Filter value for Legal Name is missing or invalid',
+        { exact: false },
+      ),
+    ).not.toBeNull();
   },
 );
 
