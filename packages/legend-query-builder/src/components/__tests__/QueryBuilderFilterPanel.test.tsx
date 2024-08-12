@@ -3092,7 +3092,7 @@ describe(integrationTest('Filter default values are properly set'), () => {
       const tdsProjectionPanel = await renderResult.findByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
       );
-      const explorerPanel = await renderResult.getByTestId(
+      const explorerPanel = await renderResult.findByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
       );
 
