@@ -390,11 +390,16 @@
   }
 
   &__modal {
-    height: 80vh;
-    width: 50vw;
+    display: flex;
+    flex-direction: column;
+    min-height: 700px;
+    height: fit-content;
+    width: fit-content;
+    overflow: auto;
 
     &__body {
       overflow: auto;
+      flex: 1;
     }
   }
 
