@@ -24,6 +24,7 @@ import {
   CORE_PURE_PATH,
   PURE_DOC_TAG,
   Enumeration,
+  // Multiplicity,
 } from '@finos/legend-graph';
 import {
   type FuzzySearchEngineSortFunctionArg,
@@ -54,6 +55,7 @@ import {
   QueryBuilderExplorerTreePropertyNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
   cloneQueryBuilderExplorerTreeNodeData,
+  QueryBuilderExplorerTreeRootNodeData,
 } from './QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { QueryBuilderFuzzySearchAdvancedConfigState } from './QueryBuilderFuzzySearchAdvancedConfigState.js';
@@ -76,7 +78,8 @@ export class QueryBuilderPropertySearchState {
    * is that we could interact with the searched nodes, i.e. drag them to
    * various panels to create filter, fetch-structure, etc.
    */
-  indexedExplorerTreeNodes: QueryBuilderExplorerTreeNodeData[] = [];
+  indexedExplorerTreeNodeMap: Map<string, QueryBuilderExplorerTreeNodeData> =
+    new Map();
 
   // search
   searchEngine: FuzzySearchEngine<QueryBuilderExplorerTreeNodeData>;
@@ -102,7 +105,7 @@ export class QueryBuilderPropertySearchState {
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
-      indexedExplorerTreeNodes: observable,
+      indexedExplorerTreeNodeMap: observable,
       searchText: observable,
       searchResults: observable,
       isOverSearchLimit: observable,
@@ -110,6 +113,7 @@ export class QueryBuilderPropertySearchState {
       isSearchPanelHidden: observable,
       showSearchConfigurationMenu: observable,
       typeFilters: observable,
+      indexedExplorerTreeNodes: computed,
       filteredSearchResults: computed,
       search: action,
       resetSearch: action,
@@ -159,7 +163,11 @@ export class QueryBuilderPropertySearchState {
   resetSearch(): void {
     this.searchText = '';
     this.searchResults = [];
-    this.indexedExplorerTreeNodes.forEach((node) => node.setIsOpen(false));
+    this.indexedExplorerTreeNodes.forEach((node) => {
+      if (!(node instanceof QueryBuilderExplorerTreeRootNodeData)) {
+        node.setIsOpen(false);
+      }
+    });
     this.searchState.complete();
   }
 
@@ -261,16 +269,13 @@ export class QueryBuilderPropertySearchState {
       setTimeout(() => {
         const treeData =
           this.queryBuilderState.explorerState.nonNullableTreeData;
-        this.indexedExplorerTreeNodes = [];
-        const indexedExplorerTreeNodeMap: Map<
-          string,
-          QueryBuilderExplorerTreeNodeData
-        > = new Map(
+        const rootNodeMap = new Map(
           treeData.rootIds
             .map((rootId) => treeData.nodes.get(rootId))
             .filter(isNonNullable)
             .map((rootNode) => [rootNode.id, rootNode]),
         );
+        this.indexedExplorerTreeNodeMap = new Map();
 
         let currentLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
         let nextLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
@@ -295,24 +300,22 @@ export class QueryBuilderPropertySearchState {
           if (node.mappingData.mapped && !node.isPartOfDerivedPropertyBranch) {
             const clonedNode = cloneQueryBuilderExplorerTreeNodeData(node);
             currentLevelPropertyNodes.push(clonedNode);
-            this.indexedExplorerTreeNodes.push(clonedNode);
-            indexedExplorerTreeNodeMap.set(clonedNode.id, clonedNode);
+            this.indexedExplorerTreeNodeMap.set(clonedNode.id, clonedNode);
           }
         });
 
         // ensure we don't navigate more nodes than the limit so we could
         // keep the initialization/indexing time within acceptable range
         const NODE_LIMIT =
-          this.indexedExplorerTreeNodes.length +
+          this.indexedExplorerTreeNodeMap.size +
           QUERY_BUILDER_PROPERTY_SEARCH_MAX_NODES;
         const addNode = (node: QueryBuilderExplorerTreeNodeData): void =>
           runInAction(() => {
-            if (this.indexedExplorerTreeNodes.length > NODE_LIMIT) {
+            if (this.indexedExplorerTreeNodeMap.size > NODE_LIMIT) {
               return;
             }
             const clonedNode = cloneQueryBuilderExplorerTreeNodeData(node);
-            this.indexedExplorerTreeNodes.push(clonedNode);
-            indexedExplorerTreeNodeMap.set(clonedNode.id, clonedNode);
+            this.indexedExplorerTreeNodeMap.set(clonedNode.id, clonedNode);
           });
 
         // helper function to check if a node has the same type as one of its
@@ -325,7 +328,9 @@ export class QueryBuilderPropertySearchState {
             node instanceof QueryBuilderExplorerTreePropertyNodeData ||
             node instanceof QueryBuilderExplorerTreeSubTypeNodeData
           ) {
-            let ancestor = indexedExplorerTreeNodeMap.get(node.parentId);
+            let ancestor =
+              this.indexedExplorerTreeNodeMap.get(node.parentId) ??
+              rootNodeMap.get(node.parentId);
             while (ancestor) {
               if (node.type === ancestor.type) {
                 return true;
@@ -333,7 +338,8 @@ export class QueryBuilderPropertySearchState {
               ancestor =
                 ancestor instanceof QueryBuilderExplorerTreePropertyNodeData ||
                 ancestor instanceof QueryBuilderExplorerTreeSubTypeNodeData
-                  ? indexedExplorerTreeNodeMap.get(ancestor.parentId)
+                  ? (this.indexedExplorerTreeNodeMap.get(ancestor.parentId) ??
+                    rootNodeMap.get(ancestor.parentId))
                   : undefined;
             }
           }
@@ -405,7 +411,7 @@ export class QueryBuilderPropertySearchState {
           // number of indexed nodes to figure out if we should proceed further
           if (
             !currentLevelPropertyNodes.length &&
-            this.indexedExplorerTreeNodes.length < NODE_LIMIT
+            this.indexedExplorerTreeNodeMap.size < NODE_LIMIT
           ) {
             currentLevelPropertyNodes = nextLevelPropertyNodes;
             nextLevelPropertyNodes = [];
@@ -435,18 +441,18 @@ export class QueryBuilderPropertySearchState {
                 name: 'path',
                 weight: 2,
                 getFn: (node) => {
-                  const parentNode = this.indexedExplorerTreeNodes.find(
-                    (pn) =>
-                      node instanceof
-                        QueryBuilderExplorerTreePropertyNodeData &&
-                      node.parentId === pn.id,
-                  );
+                  const parentNode =
+                    node instanceof QueryBuilderExplorerTreePropertyNodeData ||
+                    node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+                      ? this.indexedExplorerTreeNodeMap.get(node.parentId)
+                      : undefined;
 
-                  const fullPath =
-                    parentNode instanceof
-                    QueryBuilderExplorerTreeSubTypeNodeData
+                  const fullPath = parentNode
+                    ? parentNode instanceof
+                      QueryBuilderExplorerTreeSubTypeNodeData
                       ? prettyPropertyNameForSubType(node.id)
-                      : prettyPropertyNameFromNodeId(node.id);
+                      : prettyPropertyNameFromNodeId(node.id)
+                    : '';
 
                   return fullPath;
                 },
@@ -515,8 +521,33 @@ export class QueryBuilderPropertySearchState {
     );
   }
 
+  get indexedExplorerTreeNodes(): QueryBuilderExplorerTreeNodeData[] {
+    return Array.from(this.indexedExplorerTreeNodeMap.values());
+  }
+
   get filteredSearchResults(): QueryBuilderExplorerTreeNodeData[] {
     return this.searchResults.filter((node) => {
+      // if (!this.searchConfigurationState.includeOneMany) {
+      //   // Check if node or any ancestors are one-many nodes.
+      //   let currNode: QueryBuilderExplorerTreeNodeData | undefined = node;
+      //   while (currNode) {
+      //     if (
+      //       (node instanceof QueryBuilderExplorerTreeSubTypeNodeData &&
+      //         (node.multiplicity === Multiplicity.ZERO_MANY ||
+      //           node.multiplicity === Multiplicity.ONE_MANY)) ||
+      //       (node instanceof QueryBuilderExplorerTreePropertyNodeData &&
+      //         (node.property.multiplicity === Multiplicity.ZERO_MANY ||
+      //           node.property.multiplicity === Multiplicity.ONE_MANY))
+      //     ) {
+      //       return false;
+      //     }
+      //     currNode =
+      //       currNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
+      //       currNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+      //         ? this.indexedExplorerTreeNodeMap.get(currNode.parentId)
+      //         : undefined;
+      //   }
+      // }
       if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS)) {
         if (node.type instanceof Class) {
           return true;
