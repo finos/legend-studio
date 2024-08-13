@@ -781,15 +781,6 @@ export class QueryBuilderExplorerState {
     );
   }
 
-  getParentNode(
-    node: QueryBuilderExplorerTreeNodeData | undefined,
-  ): QueryBuilderExplorerTreeNodeData | undefined {
-    return node instanceof QueryBuilderExplorerTreePropertyNodeData ||
-      node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-      ? this.treeData?.nodes.get(node.parentId)
-      : undefined;
-  }
-
   setTreeData(
     val: TreeData<QueryBuilderExplorerTreeNodeData> | undefined,
   ): void {
