@@ -1504,6 +1504,12 @@
       &__custom-header {
         display: flex;
         align-items: center;
+
+        &__icon {
+          display: flex;
+          color: var(--color-yellow-200);
+          margin-right: 0.5rem;
+        }
       }
 
       .ag-cell {
