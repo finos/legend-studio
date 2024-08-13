@@ -1,5 +1,17 @@
 # @finos/legend-query-builder
 
+## 4.14.72
+
+### Patch Changes
+
+- [#3409](https://github.com/finos/legend-studio/pull/3409) [`eae9ead`](https://github.com/finos/legend-studio/commit/eae9ead488b2b5f84cc1f75bffaf0ec42eb93464) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Move query loader search sort-by to mongodb
+
+- [#3414](https://github.com/finos/legend-studio/pull/3414) [`ca421ff`](https://github.com/finos/legend-studio/commit/ca421ff1b2484762a2443446dfe8aa70973c48ef) ([@travisstebbins](https://github.com/travisstebbins)) - Improve handling of changing const/param/derivation types
+
+- [#3413](https://github.com/finos/legend-studio/pull/3413) [`8a0e517`](https://github.com/finos/legend-studio/commit/8a0e5170d0f5f81efd788384e759ff4e38585d8a) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Display data rounding warning next to column name in Result Grid
+
+- [#3417](https://github.com/finos/legend-studio/pull/3417) [`2231e0a`](https://github.com/finos/legend-studio/commit/2231e0a654fd1f3bbb12f90b2e23a1ff2ed2fef0) ([@travisstebbins](https://github.com/travisstebbins)) - Resize query options modal
+
 ## 4.14.71
 
 ### Patch Changes
