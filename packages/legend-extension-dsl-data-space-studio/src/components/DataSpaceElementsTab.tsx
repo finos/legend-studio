@@ -19,8 +19,10 @@ import { observer } from 'mobx-react-lite';
 import type { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
   CustomSelectorInput,
+  PanelFormBooleanField,
   PanelFormSection,
   PanelFormTextField,
+  TrashIcon,
 } from '@finos/legend-art';
 import {
   Association,
@@ -36,7 +38,7 @@ interface ElementsTabProps {
   dataSpaceEditorState: DataSpaceEditorState;
 }
 
-interface CustomSelectorOption {
+interface ElementOption {
   label: string;
   value: PackageableElementReference<DataSpaceElement>;
 }
@@ -45,63 +47,73 @@ export const DataSpaceElementsTab: React.FC<ElementsTabProps> = observer(
   ({ dataSpaceEditorState }) => {
     const handleElementChange = (
       index: number,
-      option: { value: PackageableElementReference<DataSpaceElement> },
+      element: PackageableElementReference<DataSpaceElement>,
     ) => {
-      const elementPointer = dataSpaceEditorState.dataSpace.elements?.[index];
-      if (elementPointer) {
-        elementPointer.element = option.value;
+      const updatedElements = [...dataSpaceEditorState.elements];
+      if (updatedElements[index]) {
+        updatedElements[index].element = element;
       }
     };
 
-    const handleExcludeChange = (index: number, exclude: boolean) => {
-      const elementPointer = dataSpaceEditorState.dataSpace.elements?.[index];
-      if (elementPointer) {
-        elementPointer.exclude = exclude;
-      }
-    };
+    // const handleExcludeChange = (index: number, exclude: boolean) => {
+    //   const updatedElements = [...dataSpaceEditorState.elements];
+    //   if (updatedElements[index]) {
+    //     dataSpaceEditorState.setExcludeForElement(
+    //       updatedElements[index],
+    //       exclude,
+    //     );
+    //   }
+    // };
 
-    const elementOptions =
-      dataSpaceEditorState.editorStore.graphManagerState.graph.allElements
-        .filter(
-          (el) =>
-            el instanceof Package ||
-            el instanceof Class ||
-            el instanceof Enumeration ||
-            el instanceof Association,
-        )
-        .map((el) => ({
-          label: el.path,
-          value: PackageableElementExplicitReference.create(
-            el as DataSpaceElement,
-          ),
-        }));
+    // const elementOptions: ElementOption[] = dataSpaceEditorState.editorStore.graphManagerState.graph.ownElements
+    //   .filter(
+    //     (el) => el instanceof Class || el instanceof Enumeration || el instanceof Association || el instanceof Package,
+    //   )
+    //   .map((el) => ({
+    //     label: el.path,
+    //     value: PackageableElementExplicitReference.create(el as DataSpaceElement),
+    //   }));
+
+    // const handleExcludeChange = (index: number, exclude: boolean) => {
+    //   const elementPointer = dataSpaceEditorState.dataSpace.elements?.[index];
+    //   if (elementPointer) {
+    //     elementPointer.exclude = exclude;
+    //   }
+    // };
+
+    // const elementOptions =
+    //   dataSpaceEditorState.editorStore.graphManagerState.graph.allElements
+    //     .filter(
+    //       (el) =>
+    //         el instanceof Package ||
+    //         el instanceof Class ||
+    //         el instanceof Enumeration ||
+    //         el instanceof Association,
+    //     )
+    //     .map((el) => ({
+    //       label: el.path,
+    //       value: PackageableElementExplicitReference.create(
+    //         el as DataSpaceElement,
+    //       ),
+    //     }));
 
     return (
       <div className="data-space-elements-tab">
-        {dataSpaceEditorState.dataSpace.elements?.map(
-          (elementPointer, index) => (
-            <PanelFormSection key={elementPointer.hashCode}>
-              <CustomSelectorInput
-                name={`Element ${index + 1}`}
-                options={elementOptions}
-                onChange={(option: CustomSelectorOption) =>
-                  handleElementChange(index, option)
-                }
-                value={elementOptions.find(
-                  (option) => option.value === elementPointer.element,
-                )}
-                placeholder="Select an element"
-                darkMode={true}
-              />
-              <PanelFormTextField
-                name="Exclude"
-                value={elementPointer.exclude?.toString()}
-                update={(value) => handleExcludeChange(index, value === 'true')}
-                placeholder="Enter true or false"
-              />
-            </PanelFormSection>
-          ),
-        )}
+        {dataSpaceEditorState.elements.map((elementPointer, index) => (
+          <PanelFormSection key={elementPointer.element.value.hashCode}>
+            <CustomSelectorInput
+              options={dataSpaceEditorState.elementOptions}
+              onChange={(option: ElementOption) =>
+                handleElementChange(index, option.value)
+              }
+              value={{
+                label: elementPointer.element.value.path,
+                value: elementPointer.element,
+              }}
+            />
+            {/* Add additional controls for `exclude` or other properties */}
+          </PanelFormSection>
+        ))}
       </div>
     );
   },

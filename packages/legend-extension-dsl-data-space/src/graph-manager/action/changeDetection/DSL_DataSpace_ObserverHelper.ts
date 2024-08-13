@@ -95,6 +95,27 @@ export const observe_DataSpaceElementPointer = (
   return elementPointer;
 };
 
+// export const observe_DataSpaceExecutable = (
+//   executable: DataSpaceExecutable,
+// ): DataSpaceExecutable => {
+//   if (executable instanceof DataSpacePackageableElementExecutable) {
+//     makeObservable(executable, {
+//       title: observable,
+//       description: observable,
+//       executable: observable,
+//     });
+//   } else if (executable instanceof DataSpaceExecutableTemplate) {
+//     makeObservable(executable, {
+//       title: observable,
+//       description: observable,
+//       id: observable,
+//       query: observable,
+//       executionContextKey: observable,
+//     });
+//   }
+//   return executable;
+// };
+
 export const observe_DataSpaceExecutable = (
   executable: DataSpaceExecutable,
 ): DataSpaceExecutable => {
@@ -102,19 +123,6 @@ export const observe_DataSpaceExecutable = (
     title: observable,
     description: observable,
   });
-
-  if (executable instanceof DataSpacePackageableElementExecutable) {
-    makeObservable(executable, {
-      executable: observable,
-    });
-  } else if (executable instanceof DataSpaceExecutableTemplate) {
-    makeObservable(executable, {
-      id: observable,
-      query: observable,
-      executionContextKey: observable,
-    });
-  }
-
   return executable;
 };
 
