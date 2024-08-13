@@ -455,10 +455,17 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
           query.groupId = queryableDataSpace.groupId;
           query.artifactId = queryableDataSpace.artifactId;
           query.versionId = queryableDataSpace.versionId;
-          if (this.queryBuilderState?.class) {
+          if (this.queryBuilderState) {
             query.taggedValues = [
-              createQueryClassTaggedValue(this.queryBuilderState.class.path),
+              createQueryDataSpaceTaggedValue(
+                this.queryBuilderState.dataSpace.path,
+              ),
             ];
+            if (this.queryBuilderState.class) {
+              query.taggedValues = query.taggedValues.concat([
+                createQueryClassTaggedValue(this.queryBuilderState.class.path),
+              ]);
+            }
           }
         },
       };

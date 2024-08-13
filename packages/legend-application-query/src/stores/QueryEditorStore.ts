@@ -115,6 +115,8 @@ import {
 import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 import {
+  createQueryClassTaggedValue,
+  createQueryDataSpaceTaggedValue,
   DataSpaceQueryBuilderState,
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
@@ -1553,6 +1555,18 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         query.groupId = this.lightQuery.groupId;
         query.artifactId = this.lightQuery.artifactId;
         query.versionId = this.lightQuery.versionId;
+        if (this.queryBuilderState instanceof DataSpaceQueryBuilderState) {
+          query.taggedValues = [
+            createQueryDataSpaceTaggedValue(
+              this.queryBuilderState.dataSpace.path,
+            ),
+          ];
+          if (this.queryBuilderState.class) {
+            query.taggedValues = query.taggedValues.concat([
+              createQueryClassTaggedValue(this.queryBuilderState.class.path),
+            ]);
+          }
+        }
       },
       onQueryUpdate: (query: Query): void => {
         this.setLightQuery(toLightQuery(query));
