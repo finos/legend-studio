@@ -418,6 +418,9 @@ export const V1_transformQuerySearchSpecification = (
   });
   protocol.combineTaggedValuesCondition =
     metamodel.combineTaggedValuesCondition;
+  if (metamodel.sortByOption) {
+    protocol.sortByOption = metamodel.sortByOption;
+  }
   return protocol;
 };
 

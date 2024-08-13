@@ -22,6 +22,7 @@ import {
   V1_stereotypePtrModelSchema,
   V1_taggedValueModelSchema,
 } from '../../transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
+import type { QuerySearchSortBy } from '../../../../../action/query/QuerySearchSpecification.js';
 
 export class V1_QueryProjectCoordinates {
   groupId!: string;
@@ -60,6 +61,7 @@ export class V1_QuerySearchSpecification {
   limit?: number | undefined;
   showCurrentUserQueriesOnly?: boolean | undefined;
   combineTaggedValuesCondition?: boolean | undefined;
+  sortByOption?: QuerySearchSortBy;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_QuerySearchSpecification, {
@@ -76,6 +78,7 @@ export class V1_QuerySearchSpecification {
         list(usingModelSchema(V1_stereotypePtrModelSchema)),
       ),
       taggedValues: optional(list(usingModelSchema(V1_taggedValueModelSchema))),
+      sortByOption: optional(primitive()),
     }),
     {
       deserializeNullAsUndefined: true,

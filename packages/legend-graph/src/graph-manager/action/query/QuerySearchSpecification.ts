@@ -31,6 +31,12 @@ export class QuerySearchTermSpecification {
   }
 }
 
+export enum QuerySearchSortBy {
+  SORT_BY_CREATE = 'SORT_BY_CREATE',
+  SORT_BY_VIEW = 'SORT_BY_VIEW',
+  SORT_BY_UPDATE = 'SORT_BY_UPDATE',
+}
+
 export class QuerySearchSpecification {
   searchTermSpecification: QuerySearchTermSpecification | undefined;
   projectCoordinates?: QueryProjectCoordinates[] | undefined;
@@ -39,6 +45,7 @@ export class QuerySearchSpecification {
   limit?: number | undefined;
   showCurrentUserQueriesOnly?: boolean | undefined;
   combineTaggedValuesCondition?: boolean | undefined;
+  sortByOption?: QuerySearchSortBy;
 
   static createDefault(
     searchTerm: string | undefined,
