@@ -260,6 +260,8 @@ export class QueryBuilderPropertySearchState {
     // show the loading indicator while initialization is in progress.
     return new Promise((resolve) =>
       setTimeout(() => {
+        const treeData =
+          this.queryBuilderState.explorerState.nonNullableTreeData;
         this.indexedExplorerTreeNodes = [];
 
         let currentLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
@@ -267,15 +269,11 @@ export class QueryBuilderPropertySearchState {
 
         // Get all the children of the root node(s)
         Array.from(
-          this.queryBuilderState.explorerState.nonNullableTreeData.rootIds
+          treeData.rootIds
             .map((rootId) =>
-              this.queryBuilderState.explorerState.nonNullableTreeData.nodes
+              treeData.nodes
                 .get(rootId)
-                ?.childrenIds.map((childId) =>
-                  this.queryBuilderState.explorerState.nonNullableTreeData.nodes.get(
-                    childId,
-                  ),
-                ),
+                ?.childrenIds.map((childId) => treeData.nodes.get(childId)),
             )
             .flat()
             .filter(isNonNullable)
@@ -335,9 +333,16 @@ export class QueryBuilderPropertySearchState {
                     .mappingModelCoverageAnalysisResult,
                 ),
               );
+              const grandParentType =
+                this.queryBuilderState.explorerState.getParentNode(
+                  this.queryBuilderState.explorerState.getParentNode(
+                    propertyTreeNodeData,
+                  ),
+                )?.type;
               if (
                 propertyTreeNodeData?.mappingData.mapped &&
-                !propertyTreeNodeData.isPartOfDerivedPropertyBranch
+                !propertyTreeNodeData.isPartOfDerivedPropertyBranch &&
+                propertyTreeNodeData.type !== grandParentType
               ) {
                 nextLevelPropertyNodes.push(propertyTreeNodeData);
                 addNode(propertyTreeNodeData);
