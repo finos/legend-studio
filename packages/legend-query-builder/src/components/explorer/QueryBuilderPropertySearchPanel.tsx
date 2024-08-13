@@ -348,6 +348,8 @@ const QueryBuilderTreeNodeViewer = observer(
           )
         : null;
 
+    const isMultiple = propertySearchState.isNodeMultiple(node);
+
     return (
       <>
         <div
@@ -379,6 +381,14 @@ const QueryBuilderTreeNodeViewer = observer(
                 propertySearchState.searchText,
                 QUERY_BUILDER_PROPERTY_SEARCH_LABEL_TEXT_CLASS,
                 node.id,
+              )}
+              {isMultiple && (
+                <div
+                  className="query-builder-explorer-tree__node__label__multiple"
+                  title="Multiple values of this property can cause row explosion"
+                >
+                  *
+                </div>
               )}
             </div>
             <div className="tree-view__node__label query-builder-property-search-panel__node__doc">

@@ -178,6 +178,29 @@ export class QueryBuilderPropertySearchState {
     }
   }
 
+  isNodeMultiple(node: QueryBuilderExplorerTreeNodeData): boolean {
+    // Check if node or any ancestors are one-many nodes.
+    let currNode: QueryBuilderExplorerTreeNodeData | undefined = node;
+    while (currNode) {
+      if (
+        (currNode instanceof QueryBuilderExplorerTreeSubTypeNodeData &&
+          (currNode.multiplicity.upperBound === undefined ||
+            currNode.multiplicity.upperBound > 1)) ||
+        (currNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
+          (currNode.property.multiplicity.upperBound === undefined ||
+            currNode.property.multiplicity.upperBound > 1))
+      ) {
+        return true;
+      }
+      currNode =
+        currNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
+        currNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+          ? this.indexedExplorerTreeNodeMap.get(currNode.parentId)
+          : undefined;
+    }
+    return false;
+  }
+
   async search(): Promise<void> {
     if (!this.searchText) {
       this.setSearchResults([]);
@@ -526,26 +549,11 @@ export class QueryBuilderPropertySearchState {
 
   get filteredSearchResults(): QueryBuilderExplorerTreeNodeData[] {
     return this.searchResults.filter((node) => {
-      if (!this.searchConfigurationState.includeOneMany) {
-        // Check if node or any ancestors are one-many nodes.
-        let currNode: QueryBuilderExplorerTreeNodeData | undefined = node;
-        while (currNode) {
-          if (
-            (currNode instanceof QueryBuilderExplorerTreeSubTypeNodeData &&
-              (currNode.multiplicity.upperBound === undefined ||
-                currNode.multiplicity.upperBound > 1)) ||
-            (currNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
-              (currNode.property.multiplicity.upperBound === undefined ||
-                currNode.property.multiplicity.upperBound > 1))
-          ) {
-            return false;
-          }
-          currNode =
-            currNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
-            currNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
-              ? this.indexedExplorerTreeNodeMap.get(currNode.parentId)
-              : undefined;
-        }
+      if (
+        !this.searchConfigurationState.includeOneMany &&
+        this.isNodeMultiple(node)
+      ) {
+        return false;
       }
       if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS)) {
         if (node.type instanceof Class) {
