@@ -23,6 +23,7 @@ import {
   PRIMITIVE_TYPE,
   CORE_PURE_PATH,
   PURE_DOC_TAG,
+  Enumeration,
 } from '@finos/legend-graph';
 import {
   type FuzzySearchEngineSortFunctionArg,
@@ -91,6 +92,7 @@ export class QueryBuilderPropertySearchState {
   // filter
   typeFilters = [
     QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
+    QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION,
     QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
     QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
     QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
@@ -514,6 +516,15 @@ export class QueryBuilderPropertySearchState {
     return this.searchResults.filter((node) => {
       if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS)) {
         if (node.type instanceof Class) {
+          return true;
+        }
+      }
+      if (
+        this.typeFilters.includes(
+          QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION,
+        )
+      ) {
+        if (node.type instanceof Enumeration) {
           return true;
         }
       }

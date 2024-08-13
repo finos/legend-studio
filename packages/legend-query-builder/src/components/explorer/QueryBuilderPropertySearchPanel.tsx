@@ -687,6 +687,36 @@ export const QueryBuilderPropertySearchPanel = observer(
                             {
                               'query-builder-property-search-panel__form__section__toggler__btn--toggled':
                                 propertySearchState.typeFilters.includes(
+                                  QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION,
+                                ),
+                            },
+                          )}
+                          onClick={(): void => {
+                            propertySearchState.toggleFilterForType(
+                              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION,
+                            );
+                          }}
+                          tabIndex={-1}
+                        >
+                          {propertySearchState.typeFilters.includes(
+                            QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION,
+                          ) ? (
+                            <CheckSquareIcon />
+                          ) : (
+                            <SquareIcon />
+                          )}
+                        </button>
+                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
+                          Enumeration
+                        </div>
+                      </div>
+                      <div className="query-builder-property-search-panel__filter__element">
+                        <button
+                          className={clsx(
+                            'query-builder-property-search-panel__form__section__toggler__btn',
+                            {
+                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
+                                propertySearchState.typeFilters.includes(
                                   QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
                                 ),
                             },
