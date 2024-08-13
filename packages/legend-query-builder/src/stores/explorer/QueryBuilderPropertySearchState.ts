@@ -53,6 +53,7 @@ import {
   getQueryBuilderSubTypeNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
+  cloneQueryBuilderExplorerTreeNodeData,
 } from './QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { QueryBuilderFuzzySearchAdvancedConfigState } from './QueryBuilderFuzzySearchAdvancedConfigState.js';
@@ -292,9 +293,10 @@ export class QueryBuilderPropertySearchState {
             ),
         ).forEach((node) => {
           if (node.mappingData.mapped && !node.isPartOfDerivedPropertyBranch) {
-            currentLevelPropertyNodes.push(node);
-            this.indexedExplorerTreeNodes.push(node);
-            indexedExplorerTreeNodeMap.set(node.id, node);
+            const clonedNode = cloneQueryBuilderExplorerTreeNodeData(node);
+            currentLevelPropertyNodes.push(clonedNode);
+            this.indexedExplorerTreeNodes.push(clonedNode);
+            indexedExplorerTreeNodeMap.set(clonedNode.id, clonedNode);
           }
         });
 
@@ -308,8 +310,9 @@ export class QueryBuilderPropertySearchState {
             if (this.indexedExplorerTreeNodes.length > NODE_LIMIT) {
               return;
             }
-            this.indexedExplorerTreeNodes.push(node);
-            indexedExplorerTreeNodeMap.set(node.id, node);
+            const clonedNode = cloneQueryBuilderExplorerTreeNodeData(node);
+            this.indexedExplorerTreeNodes.push(clonedNode);
+            indexedExplorerTreeNodeMap.set(clonedNode.id, clonedNode);
           });
 
         // helper function to check if a node has the same type as one of its

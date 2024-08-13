@@ -115,6 +115,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
     isPartOfDerivedPropertyBranch: boolean,
     type: Type,
     mappingData: QueryBuilderExplorerTreeNodeMappingData,
+    childrenIds?: string[] | undefined,
   ) {
     makeObservable(this, {
       isHighlighting: observable,
@@ -131,6 +132,9 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
     this.isPartOfDerivedPropertyBranch = isPartOfDerivedPropertyBranch;
     this.type = type;
     this.mappingData = mappingData;
+    if (childrenIds) {
+      this.childrenIds = childrenIds;
+    }
     this.elementRef = createRef();
   }
 
@@ -169,6 +173,7 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
     isPartOfDerivedPropertyBranch: boolean,
     mappingData: QueryBuilderExplorerTreeNodeMappingData,
     type?: Type | undefined,
+    childrenIds?: string[],
   ) {
     super(
       id,
@@ -177,6 +182,7 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
       isPartOfDerivedPropertyBranch,
       type ?? property.genericType.value.rawType,
       mappingData,
+      childrenIds,
     );
     this.property = property;
     this.parentId = parentId;
@@ -197,6 +203,7 @@ export class QueryBuilderExplorerTreeSubTypeNodeData extends QueryBuilderExplore
     isPartOfDerivedPropertyBranch: boolean,
     mappingData: QueryBuilderExplorerTreeNodeMappingData,
     multiplicity: Multiplicity,
+    childrenIds?: string[],
   ) {
     super(
       id,
@@ -205,6 +212,7 @@ export class QueryBuilderExplorerTreeSubTypeNodeData extends QueryBuilderExplore
       isPartOfDerivedPropertyBranch,
       subclass,
       mappingData,
+      childrenIds,
     );
     this.subclass = subclass;
     this.parentId = parentId;
@@ -650,6 +658,49 @@ const getQueryBuilderTreeData = (
     nodes.set(subTypeTreeNodeData.id, subTypeTreeNodeData);
   });
   return { rootIds, nodes };
+};
+
+export const cloneQueryBuilderExplorerTreeNodeData = (
+  node: QueryBuilderExplorerTreeNodeData,
+): QueryBuilderExplorerTreeNodeData => {
+  if (node instanceof QueryBuilderExplorerTreeRootNodeData) {
+    return new QueryBuilderExplorerTreeRootNodeData(
+      node.id,
+      node.label,
+      node.dndText,
+      node.isPartOfDerivedPropertyBranch,
+      node.type,
+      node.mappingData,
+      node.childrenIds,
+    );
+  } else if (node instanceof QueryBuilderExplorerTreePropertyNodeData) {
+    return new QueryBuilderExplorerTreePropertyNodeData(
+      node.id,
+      node.label,
+      node.dndText,
+      node.property,
+      node.parentId,
+      node.isPartOfDerivedPropertyBranch,
+      node.mappingData,
+      node.type,
+      node.childrenIds,
+    );
+  } else if (node instanceof QueryBuilderExplorerTreeSubTypeNodeData) {
+    return new QueryBuilderExplorerTreeSubTypeNodeData(
+      node.id,
+      node.label,
+      node.dndText,
+      node.subclass,
+      node.parentId,
+      node.isPartOfDerivedPropertyBranch,
+      node.mappingData,
+      node.multiplicity,
+      node.childrenIds,
+    );
+  }
+  throw new UnsupportedOperationError(
+    `Unable to clone node of type ${node.constructor.name}`,
+  );
 };
 
 export class QueryBuilderExplorerPreviewDataState {
