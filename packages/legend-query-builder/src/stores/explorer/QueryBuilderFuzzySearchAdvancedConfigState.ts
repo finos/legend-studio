@@ -18,6 +18,7 @@ import { FuzzySearchAdvancedConfigState } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 
 export class QueryBuilderFuzzySearchAdvancedConfigState extends FuzzySearchAdvancedConfigState {
+  includeOneMany = false;
   includeSubTypes = false;
   includeDocumentation = false;
 
@@ -29,11 +30,17 @@ export class QueryBuilderFuzzySearchAdvancedConfigState extends FuzzySearchAdvan
       onSearchModeChange().catch(onSearchModeChangeError);
     });
     makeObservable(this, {
+      includeOneMany: observable,
       includeSubTypes: observable,
       includeDocumentation: observable,
+      setIncludeOneMany: action,
       setIncludeSubTypes: action,
       setIncludeDocumentation: action,
     });
+  }
+
+  setIncludeOneMany(val: boolean): void {
+    this.includeOneMany = val;
   }
 
   setIncludeSubTypes(val: boolean): void {

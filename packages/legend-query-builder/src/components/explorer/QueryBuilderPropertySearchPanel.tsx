@@ -575,6 +575,40 @@ export const QueryBuilderPropertySearchPanel = observer(
                     </div>
                     <div className="query-builder-property-search-panel__form__section">
                       <div className="query-builder-property-search-panel__form__section__header__label">
+                        One-Many rows
+                      </div>
+                      <div className="query-builder-property-search-panel__filter__element">
+                        <button
+                          className={clsx(
+                            'query-builder-property-search-panel__form__section__toggler__btn',
+                            {
+                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
+                                propertySearchState.searchConfigurationState
+                                  .includeOneMany,
+                            },
+                          )}
+                          onClick={() =>
+                            propertySearchState.searchConfigurationState.setIncludeOneMany(
+                              !propertySearchState.searchConfigurationState
+                                .includeOneMany,
+                            )
+                          }
+                          tabIndex={-1}
+                        >
+                          {propertySearchState.searchConfigurationState
+                            .includeOneMany ? (
+                            <CheckSquareIcon />
+                          ) : (
+                            <SquareIcon />
+                          )}
+                        </button>
+                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
+                          Include
+                        </div>
+                      </div>
+                    </div>
+                    <div className="query-builder-property-search-panel__form__section">
+                      <div className="query-builder-property-search-panel__form__section__header__label">
                         Documentation
                         <Tooltip
                           TransitionProps={{

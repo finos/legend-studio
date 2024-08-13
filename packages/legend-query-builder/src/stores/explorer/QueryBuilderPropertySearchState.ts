@@ -24,7 +24,6 @@ import {
   CORE_PURE_PATH,
   PURE_DOC_TAG,
   Enumeration,
-  // Multiplicity,
 } from '@finos/legend-graph';
 import {
   type FuzzySearchEngineSortFunctionArg,
@@ -527,27 +526,27 @@ export class QueryBuilderPropertySearchState {
 
   get filteredSearchResults(): QueryBuilderExplorerTreeNodeData[] {
     return this.searchResults.filter((node) => {
-      // if (!this.searchConfigurationState.includeOneMany) {
-      //   // Check if node or any ancestors are one-many nodes.
-      //   let currNode: QueryBuilderExplorerTreeNodeData | undefined = node;
-      //   while (currNode) {
-      //     if (
-      //       (node instanceof QueryBuilderExplorerTreeSubTypeNodeData &&
-      //         (node.multiplicity === Multiplicity.ZERO_MANY ||
-      //           node.multiplicity === Multiplicity.ONE_MANY)) ||
-      //       (node instanceof QueryBuilderExplorerTreePropertyNodeData &&
-      //         (node.property.multiplicity === Multiplicity.ZERO_MANY ||
-      //           node.property.multiplicity === Multiplicity.ONE_MANY))
-      //     ) {
-      //       return false;
-      //     }
-      //     currNode =
-      //       currNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
-      //       currNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
-      //         ? this.indexedExplorerTreeNodeMap.get(currNode.parentId)
-      //         : undefined;
-      //   }
-      // }
+      if (!this.searchConfigurationState.includeOneMany) {
+        // Check if node or any ancestors are one-many nodes.
+        let currNode: QueryBuilderExplorerTreeNodeData | undefined = node;
+        while (currNode) {
+          if (
+            (currNode instanceof QueryBuilderExplorerTreeSubTypeNodeData &&
+              (currNode.multiplicity.upperBound === undefined ||
+                currNode.multiplicity.upperBound > 1)) ||
+            (currNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
+              (currNode.property.multiplicity.upperBound === undefined ||
+                currNode.property.multiplicity.upperBound > 1))
+          ) {
+            return false;
+          }
+          currNode =
+            currNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
+            currNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+              ? this.indexedExplorerTreeNodeMap.get(currNode.parentId)
+              : undefined;
+        }
+      }
       if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS)) {
         if (node.type instanceof Class) {
           return true;
