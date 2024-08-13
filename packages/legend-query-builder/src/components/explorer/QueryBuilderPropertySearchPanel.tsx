@@ -436,16 +436,18 @@ const QueryBuilderTreeNodeViewer = observer(
           </div>
         </div>
         {node.isOpen &&
-          getChildrenNodes().map((childNode) => (
-            <QueryBuilderTreeNodeViewer
-              key={`${node.id}>${childNode.id}`}
-              node={childNode}
-              queryBuilderState={queryBuilderState}
-              level={level + 1}
-              stepPaddingInRem={2}
-              explorerState={queryBuilderState.explorerState}
-            />
-          ))}
+          getChildrenNodes()
+            .sort((nodeA, nodeB) => nodeA.label.localeCompare(nodeB.label))
+            .map((childNode) => (
+              <QueryBuilderTreeNodeViewer
+                key={`${node.id}>${childNode.id}`}
+                node={childNode}
+                queryBuilderState={queryBuilderState}
+                level={level + 1}
+                stepPaddingInRem={2}
+                explorerState={queryBuilderState.explorerState}
+              />
+            ))}
       </>
     );
   },
