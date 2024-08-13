@@ -312,9 +312,11 @@ const QueryBuilderTreeNodeViewer = observer(
     );
 
     const propertyName =
-      parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
-        ? prettyPropertyNameForSubType(node.id, true)
-        : prettyPropertyNameFromNodeId(node.id, true);
+      parentNode?.type instanceof Class && level > 1
+        ? prettyCONSTName(node.label)
+        : parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+          ? prettyPropertyNameForSubType(node.id, true)
+          : prettyPropertyNameFromNodeId(node.id, true);
 
     const nodeExpandIcon = isExpandable ? (
       node.isOpen ? (
