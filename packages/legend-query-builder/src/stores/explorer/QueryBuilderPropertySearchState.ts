@@ -210,18 +210,13 @@ export class QueryBuilderPropertySearchState {
             return node;
           })
           .filter((node) => {
-            // Filter out property nodes if their parent class node is already in the results.
-            if (node.type instanceof Class) {
-              return true;
-            } else if (
-              node instanceof QueryBuilderExplorerTreePropertyNodeData
+            // Filter out nodes if their parent class node is already in the results.
+            if (
+              (node instanceof QueryBuilderExplorerTreePropertyNodeData ||
+                node instanceof QueryBuilderExplorerTreeSubTypeNodeData) &&
+              classNodes.has(node.parentId)
             ) {
-              if (this.searchText.toLowerCase() === node.label.toLowerCase()) {
-                return true;
-              } else if (classNodes.has(node.parentId)) {
-                classNodes.get(node.parentId)?.setIsOpen(true);
-                return false;
-              }
+              return false;
             }
             return true;
           });
