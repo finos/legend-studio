@@ -156,6 +156,7 @@ export class QueryBuilderPropertySearchState {
   resetSearch(): void {
     this.searchText = '';
     this.searchResults = [];
+    this.indexedExplorerTreeNodes.forEach((node) => node.setIsOpen(false));
     this.searchState.complete();
   }
 
