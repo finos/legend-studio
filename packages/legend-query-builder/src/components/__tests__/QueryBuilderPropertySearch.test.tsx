@@ -299,6 +299,138 @@ test(
 
 test(
   integrationTest(
+    'Query builder property search panel filters by type in returned properties',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_PropertySearch,
+      stub_RawLambda(),
+      'my::map',
+      'my::runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_CircularDependency,
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(
+        queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
+      );
+    });
+
+    const queryBuilderSetupPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP,
+    );
+    await findByText(queryBuilderSetupPanel, 'Firm');
+    await findByText(queryBuilderSetupPanel, 'map');
+    await findByText(queryBuilderSetupPanel, 'runtime');
+
+    const queryBuilder = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER,
+    );
+
+    // Type characters to open property search panel
+    const searchInput = getByPlaceholderText(
+      queryBuilder,
+      'One or more terms, ESC to clear',
+    );
+    fireEvent.change(searchInput, { target: { value: 'legal name' } });
+    await findByDisplayValue(queryBuilder, 'legal name');
+
+    // Verify that the property search panel is open
+    const searchPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL,
+    );
+    expect(searchPanel).not.toBeNull();
+
+    // Verify that result is shown
+    expect(await findByText(searchPanel, 'Legal')).not.toBeNull();
+    expect(await findByText(searchPanel, 'Name')).not.toBeNull();
+
+    // Turn off include strings
+    fireEvent.click(getByText(searchPanel, 'String'));
+
+    // Verify that no results are shown
+    expect(await findByText(searchPanel, 'No result')).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder property search panel filters by type in properties nested under class',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_PropertySearch,
+      stub_RawLambda(),
+      'my::map',
+      'my::runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_CircularDependency,
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(
+        queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
+      );
+    });
+
+    const queryBuilderSetupPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP,
+    );
+    await findByText(queryBuilderSetupPanel, 'Firm');
+    await findByText(queryBuilderSetupPanel, 'map');
+    await findByText(queryBuilderSetupPanel, 'runtime');
+
+    const queryBuilder = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER,
+    );
+
+    // Type characters to open property search panel
+    const searchInput = getByPlaceholderText(
+      queryBuilder,
+      'One or more terms, ESC to clear',
+    );
+    fireEvent.change(searchInput, { target: { value: 'employees' } });
+    await findByDisplayValue(queryBuilder, 'employees');
+
+    // Verify that the property search panel is open
+    const searchPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL,
+    );
+    expect(searchPanel).not.toBeNull();
+
+    // Toggle on include one-many rows
+    fireEvent.click(
+      getByText(
+        guaranteeType(
+          getByText(searchPanel, 'One-Many rows').nextElementSibling,
+          HTMLElement,
+        ),
+        'Include',
+      ),
+    );
+    expect(await findByText(searchPanel, 'Employees')).not.toBeNull();
+
+    // Click class name
+    fireEvent.click(getByText(searchPanel, 'Employees'));
+
+    // Veify that the class node is expanded
+    expect(await findByText(searchPanel, 'Age')).not.toBeNull();
+    expect(await findByText(searchPanel, 'Firm ID')).not.toBeNull();
+    expect(await findByText(searchPanel, 'First Name')).not.toBeNull();
+    expect(await findByText(searchPanel, 'Last Name')).not.toBeNull();
+
+    // Filter out string type
+    fireEvent.click(getByText(searchPanel, 'String'));
+
+    // Verify that string nodes are not shown
+    expect(await findByText(searchPanel, 'Age')).not.toBeNull();
+    expect(await findByText(searchPanel, 'Firm ID')).not.toBeNull();
+    expect(queryByText(searchPanel, 'First Name')).toBeNull();
+    expect(queryByText(searchPanel, 'Last Name')).toBeNull();
+  },
+);
+
+test(
+  integrationTest(
     'Query builder property search panel filters documentation tagged values',
   ),
   async () => {
