@@ -488,6 +488,85 @@ test(
   },
 );
 
+test(
+  integrationTest(
+    'Query builder property search panel filters out circular dependencies',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_PropertySearch,
+      stub_RawLambda(),
+      'my::map',
+      'my::runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational,
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(
+        queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
+      );
+    });
+
+    const queryBuilderSetupPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP,
+    );
+    await findByText(queryBuilderSetupPanel, 'Firm');
+    await findByText(queryBuilderSetupPanel, 'map');
+    await findByText(queryBuilderSetupPanel, 'runtime');
+
+    const queryBuilder = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER,
+    );
+
+    // Search for class that contains circular dependency
+    const searchInput = getByPlaceholderText(
+      queryBuilder,
+      'One or more terms, ESC to clear',
+    );
+    fireEvent.change(searchInput, { target: { value: 'employees' } });
+    await findByDisplayValue(queryBuilder, 'employees');
+
+    // Verify that the property search panel is open
+    const searchPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL,
+    );
+    expect(searchPanel).not.toBeNull();
+
+    // Toggle on include one-many rows
+    fireEvent.click(
+      getByText(
+        guaranteeType(
+          getByText(searchPanel, 'One-Many rows').nextElementSibling,
+          HTMLElement,
+        ),
+        'Include',
+      ),
+    );
+
+    // Verify expected result is shown
+    expect(await findByText(searchPanel, 'Employees')).not.toBeNull();
+
+    // Search for property in class that contains circular dependency
+    fireEvent.change(searchInput, { target: { value: 'first name' } });
+    await findByDisplayValue(queryBuilder, 'first name');
+
+    // Verify expected result is shown
+    expect(
+      await findByText(searchPanel, 'Employees / ', { trim: false }),
+    ).not.toBeNull();
+    expect(await findByText(searchPanel, 'First')).not.toBeNull();
+    expect(await findByText(searchPanel, 'Name')).not.toBeNull();
+
+    // Search for property in class is depended on
+    fireEvent.change(searchInput, { target: { value: 'legal name' } });
+    await findByDisplayValue(queryBuilder, 'legal name');
+
+    // Verify expected result is shown
+    expect(await findByText(searchPanel, 'Legal')).not.toBeNull();
+    expect(await findByText(searchPanel, 'Name')).not.toBeNull();
+  },
+);
+
 const highlightingCases = [
   {
     testName: 'Simple match',
