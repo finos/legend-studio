@@ -87,6 +87,14 @@
           },
           "name": "firmID",
           "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "employer",
+          "type": "my::Firm"
         }
       ]
     },
@@ -323,6 +331,23 @@
                 },
                 "tableAlias": "PersonTable"
               }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "my::Person",
+                "property": "employer"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "my::db",
+                    "name": "Firm_Person"
+                  }
+                ]
+              },
+              "target": "my_Firm"
             }
           ],
           "root": true
