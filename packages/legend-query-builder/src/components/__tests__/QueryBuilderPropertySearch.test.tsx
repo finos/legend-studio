@@ -24,8 +24,6 @@ import {
   findByText,
   findByTitle,
   render,
-  findAllByText,
-  getAllByText,
   queryByText,
   getByText,
 } from '@testing-library/react';
@@ -40,7 +38,7 @@ import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { formatTextWithHighlightedMatches } from '../explorer/QueryBuilderPropertySearchPanel.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 
 test(
   integrationTest(
@@ -155,6 +153,19 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL,
     );
     expect(searchPanel).not.toBeNull();
+
+    // Toggle on include one-many rows
+    fireEvent.click(
+      getByText(
+        guaranteeType(
+          getByText(searchPanel, 'One-Many rows').nextElementSibling,
+          HTMLElement,
+        ),
+        'Include',
+      ),
+    );
+
+    // Verify that expected result is shown
     expect(
       await findByText(searchPanel, 'Employees / ', {
         trim: false,
@@ -248,28 +259,35 @@ test(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL,
     );
     expect(searchPanel).not.toBeNull();
-    expect(await findAllByText(searchPanel, 'Employees')).toHaveLength(6);
-    expect(await findByText(searchPanel, '/ First Name')).not.toBeNull();
-    expect(await findByText(searchPanel, '/ Last Name')).not.toBeNull();
-    expect(await findByText(searchPanel, '/ Age')).not.toBeNull();
-    expect(await findByText(searchPanel, '/ Hobbies')).not.toBeNull();
-    expect(await findByText(searchPanel, '/ Firm ID')).not.toBeNull();
 
-    // Click class name
+    // Toggle on include one-many rows
     fireEvent.click(
-      guaranteeNonNullable(getAllByText(searchPanel, 'Employees')[0]),
+      getByText(
+        guaranteeType(
+          getByText(searchPanel, 'One-Many rows').nextElementSibling,
+          HTMLElement,
+        ),
+        'Include',
+      ),
     );
-
-    // Veify that the class node is collapsed
     expect(await findByText(searchPanel, 'Employees')).not.toBeNull();
-    expect(queryByText(searchPanel, '/ First Name')).toBeNull();
 
     // Click class node tooltip icon
     fireEvent.click(getByTitle(searchPanel, 'Property info'));
 
     // Verify that the class node is still collapsed
     expect(getByText(searchPanel, 'Employees')).not.toBeNull();
-    expect(queryByText(searchPanel, '/ First Name')).toBeNull();
+    expect(queryByText(searchPanel, 'First Name')).toBeNull();
+
+    // Click class name
+    fireEvent.click(getByText(searchPanel, 'Employees'));
+
+    // Veify that the class node is expanded
+    expect(await findByText(searchPanel, 'First Name')).not.toBeNull();
+    expect(await findByText(searchPanel, 'Last Name')).not.toBeNull();
+    expect(await findByText(searchPanel, 'Age')).not.toBeNull();
+    expect(await findByText(searchPanel, 'Hobbies')).not.toBeNull();
+    expect(await findByText(searchPanel, 'Firm ID')).not.toBeNull();
   },
 );
 
