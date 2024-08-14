@@ -36,10 +36,7 @@ import {
 import TEST_DATA__QueryBuilder_Model_PropertySearch from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_PropertySearch.json' assert { type: 'json' };
 import { stub_RawLambda } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import {
-  TEST_DATA__ModelCoverageAnalysisResult_CircularDependency,
-  TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational,
-} from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
+import { TEST_DATA__ModelCoverageAnalysisResult_CircularDependency } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { formatTextWithHighlightedMatches } from '../explorer/QueryBuilderPropertySearchPanel.js';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
@@ -54,7 +51,7 @@ test(
       stub_RawLambda(),
       'my::map',
       'my::runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational,
+      TEST_DATA__ModelCoverageAnalysisResult_CircularDependency,
     );
 
     await act(async () => {
@@ -95,7 +92,7 @@ test(
 
     expect(
       queryBuilderState.explorerState.propertySearchState.searchResults.length,
-    ).toBe(3);
+    ).toBe(4);
     fireEvent.click(getByTitle(queryBuilder, 'Clear'));
     expect(
       queryBuilderState.explorerState.propertySearchState.searchResults.length,
@@ -113,7 +110,7 @@ test(
       stub_RawLambda(),
       'my::map',
       'my::runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational,
+      TEST_DATA__ModelCoverageAnalysisResult_CircularDependency,
     );
 
     await act(async () => {
@@ -236,7 +233,7 @@ test(
       stub_RawLambda(),
       'my::map',
       'my::runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational,
+      TEST_DATA__ModelCoverageAnalysisResult_CircularDependency,
     );
 
     await act(async () => {
@@ -310,7 +307,7 @@ test(
       stub_RawLambda(),
       'my::map',
       'my::runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational,
+      TEST_DATA__ModelCoverageAnalysisResult_CircularDependency,
     );
 
     await act(async () => {
@@ -372,7 +369,7 @@ test(
       stub_RawLambda(),
       'my::map',
       'my::runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational,
+      TEST_DATA__ModelCoverageAnalysisResult_CircularDependency,
     );
 
     await act(async () => {
@@ -437,7 +434,7 @@ test(
       stub_RawLambda(),
       'my::map',
       'my::runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational,
+      TEST_DATA__ModelCoverageAnalysisResult_CircularDependency,
     );
 
     await act(async () => {
@@ -493,6 +490,69 @@ test(
 
 test(
   integrationTest(
+    'Query builder property search searches across node label and node path',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_PropertySearch,
+      stub_RawLambda(),
+      'my::map',
+      'my::runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_CircularDependency,
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(
+        queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
+      );
+    });
+
+    const queryBuilderSetupPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP,
+    );
+    await findByText(queryBuilderSetupPanel, 'Firm');
+    await findByText(queryBuilderSetupPanel, 'map');
+    await findByText(queryBuilderSetupPanel, 'runtime');
+
+    const queryBuilder = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER,
+    );
+
+    // Type characters to open property search panel
+    const searchInput = getByPlaceholderText(
+      queryBuilder,
+      'One or more terms, ESC to clear',
+    );
+    fireEvent.change(searchInput, { target: { value: 'hobby name' } });
+    await findByDisplayValue(queryBuilder, 'hobby name');
+
+    // Verify that the property search panel is open
+    const searchPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL,
+    );
+    expect(searchPanel).not.toBeNull();
+
+    // Toggle on include one-many rows
+    fireEvent.click(
+      getByText(
+        guaranteeType(
+          getByText(searchPanel, 'One-Many rows').nextElementSibling,
+          HTMLElement,
+        ),
+        'Include',
+      ),
+    );
+
+    // Verify expected result is shown
+    expect(
+      await findByText(searchPanel, 'Employees / Hobbies / ', { trim: false }),
+    ).not.toBeNull();
+    expect(await findByText(searchPanel, 'Name')).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
     'Query builder property search panel filters out circular dependencies',
   ),
   async () => {
@@ -501,7 +561,7 @@ test(
       stub_RawLambda(),
       'my::map',
       'my::runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational,
+      TEST_DATA__ModelCoverageAnalysisResult_CircularDependency,
     );
 
     await act(async () => {
