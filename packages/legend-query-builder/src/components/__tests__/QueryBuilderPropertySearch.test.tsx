@@ -26,6 +26,7 @@ import {
   render,
   queryByText,
   getByText,
+  findAllByText,
 } from '@testing-library/react';
 import {
   createMock,
@@ -35,7 +36,10 @@ import {
 import TEST_DATA__QueryBuilder_Model_PropertySearch from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_PropertySearch.json' assert { type: 'json' };
 import { stub_RawLambda } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import { TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
+import {
+  TEST_DATA__ModelCoverageAnalysisResult_CircularDependency,
+  TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational,
+} from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { formatTextWithHighlightedMatches } from '../explorer/QueryBuilderPropertySearchPanel.js';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
@@ -289,11 +293,10 @@ test(
     fireEvent.click(getByText(searchPanel, 'Employees'));
 
     // Veify that the class node is expanded
+    expect(await findByText(searchPanel, 'Age')).not.toBeNull();
+    expect(await findByText(searchPanel, 'Firm ID')).not.toBeNull();
     expect(await findByText(searchPanel, 'First Name')).not.toBeNull();
     expect(await findByText(searchPanel, 'Last Name')).not.toBeNull();
-    expect(await findByText(searchPanel, 'Age')).not.toBeNull();
-    expect(await findByText(searchPanel, 'Hobbies')).not.toBeNull();
-    expect(await findByText(searchPanel, 'Firm ID')).not.toBeNull();
   },
 );
 
@@ -564,6 +567,96 @@ test(
     // Verify expected result is shown
     expect(await findByText(searchPanel, 'Legal')).not.toBeNull();
     expect(await findByText(searchPanel, 'Name')).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder property search panel only shows nested classes and properties when searched directly',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_PropertySearch,
+      stub_RawLambda(),
+      'my::map',
+      'my::runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_CircularDependency,
+    );
+
+    await act(async () => {
+      queryBuilderState.changeClass(
+        queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
+      );
+    });
+
+    const queryBuilderSetupPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP,
+    );
+    await findByText(queryBuilderSetupPanel, 'Firm');
+    await findByText(queryBuilderSetupPanel, 'map');
+    await findByText(queryBuilderSetupPanel, 'runtime');
+
+    const queryBuilder = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER,
+    );
+
+    // Search for parent class
+    const searchInput = getByPlaceholderText(
+      queryBuilder,
+      'One or more terms, ESC to clear',
+    );
+    fireEvent.change(searchInput, { target: { value: 'employees' } });
+    await findByDisplayValue(queryBuilder, 'employees');
+
+    // Verify that the property search panel is open
+    const searchPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL,
+    );
+    expect(searchPanel).not.toBeNull();
+
+    // Toggle on include one-many rows
+    fireEvent.click(
+      getByText(
+        guaranteeType(
+          getByText(searchPanel, 'One-Many rows').nextElementSibling,
+          HTMLElement,
+        ),
+        'Include',
+      ),
+    );
+
+    // Verify expected result is shown
+    expect(await findByText(searchPanel, 'Employees')).not.toBeNull();
+    expect(queryByText(searchPanel, 'Hobbies')).toBeNull();
+
+    // Search direclty for child class
+    fireEvent.change(searchInput, { target: { value: 'hobbies' } });
+    await findByDisplayValue(queryBuilder, 'hobbies');
+
+    // Verify expected result is shown
+    expect(
+      await findByText(searchPanel, 'Employees / ', { trim: false }),
+    ).not.toBeNull();
+    expect(await findByText(searchPanel, 'Hobbies')).not.toBeNull();
+
+    // Search direclty for child properties
+    fireEvent.change(searchInput, { target: { value: 'name' } });
+    await findByDisplayValue(queryBuilder, 'name');
+
+    // Verify expected result is shown
+    expect(
+      await findByText(searchPanel, 'Legal ', { trim: false }),
+    ).not.toBeNull();
+    expect(
+      await findByText(searchPanel, 'Employees / First ', { trim: false }),
+    ).not.toBeNull();
+    expect(
+      await findByText(searchPanel, 'Employees / Last ', { trim: false }),
+    ).not.toBeNull();
+    expect(
+      await findByText(searchPanel, 'Employees / Hobbies / ', { trim: false }),
+    ).not.toBeNull();
+    expect(await findAllByText(searchPanel, 'Name')).toHaveLength(4);
   },
 );
 
