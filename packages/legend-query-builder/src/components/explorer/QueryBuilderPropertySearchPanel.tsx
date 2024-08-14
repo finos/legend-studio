@@ -258,7 +258,7 @@ const QueryBuilderTreeNodeViewer = observer(
           node instanceof QueryBuilderExplorerTreePropertyNodeData
             ? { node }
             : {},
-        canDrag: () => !(node?.type instanceof Class),
+        canDrag: () => !(node.type instanceof Class),
         collect: (monitor) => ({
           isDragging: monitor.isDragging(),
         }),
