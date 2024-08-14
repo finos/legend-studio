@@ -403,7 +403,9 @@ export const QueryBuilderResultPanel = observer(
     };
     const resultDescription = executionResult
       ? getResultSetDescription(executionResult)
-      : undefined;
+      : resultState.executionError
+        ? 'fail to execute'
+        : undefined;
 
     const [previewLimitValue, setPreviewLimitValue] = useState(
       resultState.previewLimit,

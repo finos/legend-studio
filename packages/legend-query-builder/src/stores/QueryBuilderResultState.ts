@@ -38,6 +38,7 @@ import {
   reportGraphAnalytics,
   TDSExecutionResult,
   V1_ZIPKIN_TRACE_HEADER,
+  ExecutionError,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import {
@@ -536,6 +537,9 @@ export class QueryBuilderResultState {
           error,
         );
         this.setExecutionError(error);
+        if (error instanceof ExecutionError && error.executionTraceId) {
+          this.setExecutionTraceId(error.executionTraceId);
+        }
       }
     } finally {
       this.setIsRunningQuery(false);

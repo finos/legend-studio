@@ -726,11 +726,18 @@ export class V1_Engine {
     } catch (error) {
       assertErrorThrown(error);
       if (error instanceof NetworkClientError) {
-        throw V1_buildExecutionError(
+        const executionTraceId = error.response.headers.get(
+          V1_ZIPKIN_TRACE_HEADER,
+        );
+        const exexcutionError = V1_buildExecutionError(
           V1_ExecutionError.serialization.fromJson(
             error.payload as PlainObject<V1_ExecutionError>,
           ),
         );
+        if (executionTraceId) {
+          exexcutionError.executionTraceId = executionTraceId;
+        }
+        throw exexcutionError;
       }
       throw error;
     }
