@@ -449,6 +449,9 @@ const QueryBuilderTreeNodeViewer = observer(
         </div>
         {node.isOpen &&
           getChildrenNodes()
+            .filter((childNode) =>
+              propertySearchState.isNodeIncludedInFilter(childNode),
+            )
             .sort((nodeA, nodeB) => nodeA.label.localeCompare(nodeB.label))
             .map((childNode) => (
               <QueryBuilderTreeNodeViewer

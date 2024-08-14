@@ -565,73 +565,69 @@ export class QueryBuilderPropertySearchState {
     return Array.from(this.indexedExplorerTreeNodeMap.values());
   }
 
-  get filteredSearchResults(): QueryBuilderExplorerTreeNodeData[] {
-    return this.searchResults.filter((node) => {
-      if (!this.includeOneMany && this.isNodeMultiple(node)) {
-        return false;
-      }
-      if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS)) {
-        if (node.type instanceof Class) {
-          return true;
-        }
-      }
-      if (
-        this.typeFilters.includes(
-          QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION,
-        )
-      ) {
-        if (node.type instanceof Enumeration) {
-          return true;
-        }
-      }
-      if (
-        this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING)
-      ) {
-        if (node.type === PrimitiveType.STRING) {
-          return true;
-        }
-      }
-      if (
-        this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER)
-      ) {
-        if (
-          node.type instanceof PrimitiveType &&
-          (
-            [
-              PRIMITIVE_TYPE.NUMBER,
-              PRIMITIVE_TYPE.DECIMAL,
-              PRIMITIVE_TYPE.INTEGER,
-              PRIMITIVE_TYPE.FLOAT,
-            ] as string[]
-          ).includes(node.type.name)
-        ) {
-          return true;
-        }
-      }
-      if (
-        this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN)
-      ) {
-        if (node.type === PrimitiveType.BOOLEAN) {
-          return true;
-        }
-      }
-      if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE)) {
-        if (
-          node.type instanceof PrimitiveType &&
-          (
-            [
-              PRIMITIVE_TYPE.DATE,
-              PRIMITIVE_TYPE.DATETIME,
-              PRIMITIVE_TYPE.STRICTDATE,
-              PRIMITIVE_TYPE.STRICTTIME,
-              PRIMITIVE_TYPE.LATESTDATE,
-            ] as string[]
-          ).includes(node.type.name)
-        ) {
-          return true;
-        }
-      }
+  isNodeIncludedInFilter(node: QueryBuilderExplorerTreeNodeData): boolean {
+    if (!this.includeOneMany && this.isNodeMultiple(node)) {
       return false;
-    });
+    }
+    if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS)) {
+      if (node.type instanceof Class) {
+        return true;
+      }
+    }
+    if (
+      this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION)
+    ) {
+      if (node.type instanceof Enumeration) {
+        return true;
+      }
+    }
+    if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING)) {
+      if (node.type === PrimitiveType.STRING) {
+        return true;
+      }
+    }
+    if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER)) {
+      if (
+        node.type instanceof PrimitiveType &&
+        (
+          [
+            PRIMITIVE_TYPE.NUMBER,
+            PRIMITIVE_TYPE.DECIMAL,
+            PRIMITIVE_TYPE.INTEGER,
+            PRIMITIVE_TYPE.FLOAT,
+          ] as string[]
+        ).includes(node.type.name)
+      ) {
+        return true;
+      }
+    }
+    if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN)) {
+      if (node.type === PrimitiveType.BOOLEAN) {
+        return true;
+      }
+    }
+    if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE)) {
+      if (
+        node.type instanceof PrimitiveType &&
+        (
+          [
+            PRIMITIVE_TYPE.DATE,
+            PRIMITIVE_TYPE.DATETIME,
+            PRIMITIVE_TYPE.STRICTDATE,
+            PRIMITIVE_TYPE.STRICTTIME,
+            PRIMITIVE_TYPE.LATESTDATE,
+          ] as string[]
+        ).includes(node.type.name)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  get filteredSearchResults(): QueryBuilderExplorerTreeNodeData[] {
+    return this.searchResults.filter((node) =>
+      this.isNodeIncludedInFilter(node),
+    );
   }
 }
