@@ -303,12 +303,6 @@ export class QueryBuilderPropertySearchState {
       setTimeout(() => {
         const treeData =
           this.queryBuilderState.explorerState.nonNullableTreeData;
-        const rootNodeMap = new Map(
-          treeData.rootIds
-            .map((rootId) => treeData.nodes.get(rootId))
-            .filter(isNonNullable)
-            .map((rootNode) => [rootNode.id, rootNode]),
-        );
         this.indexedExplorerTreeNodeMap = new Map();
 
         let currentLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
@@ -352,34 +346,6 @@ export class QueryBuilderPropertySearchState {
             this.indexedExplorerTreeNodeMap.set(clonedNode.id, clonedNode);
           });
 
-        // helper function to check if a node has the same type as one of its
-        // ancestor nodes. This allows us to avoid including circular dependencies
-        // in the indexed nodes list.
-        const nodeHasSameTypeAsAncestor = (
-          node: QueryBuilderExplorerTreeNodeData,
-        ): boolean => {
-          if (
-            node instanceof QueryBuilderExplorerTreePropertyNodeData ||
-            node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-          ) {
-            let ancestor =
-              this.indexedExplorerTreeNodeMap.get(node.parentId) ??
-              rootNodeMap.get(node.parentId);
-            while (ancestor) {
-              if (node.type === ancestor.type) {
-                return true;
-              }
-              ancestor =
-                ancestor instanceof QueryBuilderExplorerTreePropertyNodeData ||
-                ancestor instanceof QueryBuilderExplorerTreeSubTypeNodeData
-                  ? (this.indexedExplorerTreeNodeMap.get(ancestor.parentId) ??
-                    rootNodeMap.get(ancestor.parentId))
-                  : undefined;
-            }
-          }
-          return false;
-        };
-
         // limit the depth of navigation to keep the initialization/indexing
         // time within acceptable range
         let currentDepth = 1;
@@ -413,8 +379,7 @@ export class QueryBuilderPropertySearchState {
               if (
                 propertyTreeNodeData &&
                 propertyTreeNodeData.mappingData.mapped &&
-                !propertyTreeNodeData.isPartOfDerivedPropertyBranch &&
-                !nodeHasSameTypeAsAncestor(propertyTreeNodeData)
+                !propertyTreeNodeData.isPartOfDerivedPropertyBranch
               ) {
                 nextLevelPropertyNodes.push(propertyTreeNodeData);
                 addNode(propertyTreeNodeData);
@@ -430,10 +395,7 @@ export class QueryBuilderPropertySearchState {
                       .mappingModelCoverageAnalysisResult,
                   ),
                 );
-                if (
-                  subTypeTreeNodeData.mappingData.mapped &&
-                  !nodeHasSameTypeAsAncestor(subTypeTreeNodeData)
-                ) {
+                if (subTypeTreeNodeData.mappingData.mapped) {
                   nextLevelPropertyNodes.push(subTypeTreeNodeData);
                   addNode(subTypeTreeNodeData);
                 }
