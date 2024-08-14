@@ -93,6 +93,7 @@ export class QueryBuilderPropertySearchState {
   showSearchConfigurationMenu = false;
 
   // filter
+  includeOneMany = false;
   typeFilters = [
     QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
     QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION,
@@ -111,6 +112,7 @@ export class QueryBuilderPropertySearchState {
       isSearchPanelOpen: observable,
       isSearchPanelHidden: observable,
       showSearchConfigurationMenu: observable,
+      includeOneMany: observable,
       typeFilters: observable,
       indexedExplorerTreeNodes: computed,
       filteredSearchResults: computed,
@@ -122,6 +124,7 @@ export class QueryBuilderPropertySearchState {
       setShowSearchConfigurationMenu: action,
       setIsSearchPanelOpen: action,
       setIsSearchPanelHidden: action,
+      setIncludeOneMany: action,
       toggleFilterForType: action,
       initialize: action,
     });
@@ -168,6 +171,10 @@ export class QueryBuilderPropertySearchState {
       }
     });
     this.searchState.complete();
+  }
+
+  setIncludeOneMany(val: boolean): void {
+    this.includeOneMany = val;
   }
 
   toggleFilterForType(val: QUERY_BUILDER_PROPERTY_SEARCH_TYPE): void {
@@ -549,10 +556,7 @@ export class QueryBuilderPropertySearchState {
 
   get filteredSearchResults(): QueryBuilderExplorerTreeNodeData[] {
     return this.searchResults.filter((node) => {
-      if (
-        !this.searchConfigurationState.includeOneMany &&
-        this.isNodeMultiple(node)
-      ) {
+      if (!this.includeOneMany && this.isNodeMultiple(node)) {
         return false;
       }
       if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS)) {

@@ -641,13 +641,10 @@ export const QueryBuilderPropertySearchPanel = observer(
                       buttons={[
                         {
                           label: 'Include',
-                          enabled:
-                            propertySearchState.searchConfigurationState
-                              .includeOneMany,
+                          enabled: propertySearchState.includeOneMany,
                           onClick: () =>
-                            propertySearchState.searchConfigurationState.setIncludeOneMany(
-                              !propertySearchState.searchConfigurationState
-                                .includeOneMany,
+                            propertySearchState.setIncludeOneMany(
+                              !propertySearchState.includeOneMany,
                             ),
                         },
                       ]}
