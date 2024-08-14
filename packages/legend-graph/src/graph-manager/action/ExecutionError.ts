@@ -18,6 +18,7 @@ import { EngineError } from './EngineError.js';
 
 export class ExecutionError extends EngineError {
   declare stack: string;
+  executionTraceId?: string;
 
   override get detail(): string {
     return `${this.message}\n\n${this.stack}`;
