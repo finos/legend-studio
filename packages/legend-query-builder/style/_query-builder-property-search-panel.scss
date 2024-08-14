@@ -182,7 +182,6 @@
       @include flexVCenter;
 
       align-self: flex-start;
-      padding-top: 0.4rem;
 
       svg {
         font-size: 2rem;
@@ -198,6 +197,13 @@
       &[disabled]:hover svg {
         cursor: not-allowed;
         color: var(--color-dark-grey-250);
+      }
+
+      &__container {
+        @include flexVCenter;
+
+        padding-top: 0.4rem;
+        justify-content: space-between;
       }
     }
 
@@ -226,6 +232,17 @@
       height: 2.2rem;
       line-height: 2.4rem;
       cursor: pointer;
+    }
+
+    &__section__toggler__only-btn {
+      color: var(--color-blue-40);
+      font-size: 1.2rem;
+      height: 2.2rem;
+      line-height: 2.2rem;
+
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 

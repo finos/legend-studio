@@ -125,6 +125,7 @@ export class QueryBuilderPropertySearchState {
       setIsSearchPanelOpen: action,
       setIsSearchPanelHidden: action,
       setIncludeOneMany: action,
+      setFilterOnlyType: action,
       toggleFilterForType: action,
       initialize: action,
     });
@@ -175,6 +176,10 @@ export class QueryBuilderPropertySearchState {
 
   setIncludeOneMany(val: boolean): void {
     this.includeOneMany = val;
+  }
+
+  setFilterOnlyType(val: QUERY_BUILDER_PROPERTY_SEARCH_TYPE): void {
+    this.typeFilters = [val];
   }
 
   toggleFilterForType(val: QUERY_BUILDER_PROPERTY_SEARCH_TYPE): void {

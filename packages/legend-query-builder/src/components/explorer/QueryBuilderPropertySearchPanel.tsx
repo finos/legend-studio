@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useState } from 'react';
 import {
   clsx,
   CheckSquareIcon,
@@ -464,7 +465,55 @@ const QueryBuilderTreeNodeViewer = observer(
   },
 );
 
-const QueryBuilderSearchConfigToggleButtons = observer(
+const QueryBuilderSearchConfigToggleButton = observer(
+  (props: {
+    label: string;
+    enabled: boolean;
+    onClick: () => void;
+    showOnlyButton?: boolean;
+    onOnlyButtonClick?: (() => void) | undefined;
+  }) => {
+    const { label, enabled, onClick, showOnlyButton, onOnlyButtonClick } =
+      props;
+
+    const [isMouseOver, setIsMouseOver] = useState(false);
+
+    return (
+      <div
+        className="query-builder-property-search-panel__form__section__toggler__btn__container"
+        onMouseEnter={() => setIsMouseOver(true)}
+        onMouseLeave={() => setIsMouseOver(false)}
+      >
+        <button
+          className={clsx(
+            'query-builder-property-search-panel__form__section__toggler__btn',
+            {
+              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
+                enabled,
+            },
+          )}
+          onClick={onClick}
+          tabIndex={-1}
+        >
+          {enabled ? <CheckSquareIcon /> : <SquareIcon />}
+          <div className="query-builder-property-search-panel__form__section__toggler__prompt">
+            {label}
+          </div>
+        </button>
+        {showOnlyButton && isMouseOver && (
+          <button
+            className="query-builder-property-search-panel__form__section__toggler__only-btn"
+            onClick={onOnlyButtonClick}
+          >
+            only
+          </button>
+        )}
+      </div>
+    );
+  },
+);
+
+const QueryBuilderSearchConfigToggleButtonGroup = observer(
   (props: {
     header: string;
     headerTooltipText?: string;
@@ -472,6 +521,7 @@ const QueryBuilderSearchConfigToggleButtons = observer(
       label: string;
       enabled: boolean;
       onClick: () => void;
+      onOnlyButtonClick?: () => void;
     }[];
   }) => {
     const { header, headerTooltipText, buttons } = props;
@@ -493,24 +543,15 @@ const QueryBuilderSearchConfigToggleButtons = observer(
             </Tooltip>
           )}
         </div>
-        {buttons.map(({ label, enabled, onClick }) => (
-          <button
+        {buttons.map(({ label, enabled, onClick, onOnlyButtonClick }) => (
+          <QueryBuilderSearchConfigToggleButton
             key={label}
-            className={clsx(
-              'query-builder-property-search-panel__form__section__toggler__btn',
-              {
-                'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                  enabled,
-              },
-            )}
+            label={label}
+            enabled={enabled}
             onClick={onClick}
-            tabIndex={-1}
-          >
-            {enabled ? <CheckSquareIcon /> : <SquareIcon />}
-            <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-              {label}
-            </div>
-          </button>
+            showOnlyButton={buttons.length > 1}
+            onOnlyButtonClick={onOnlyButtonClick}
+          />
         ))}
       </div>
     );
@@ -636,7 +677,7 @@ export const QueryBuilderPropertySearchPanel = observer(
                         />
                       </div>
                     </div>
-                    <QueryBuilderSearchConfigToggleButtons
+                    <QueryBuilderSearchConfigToggleButtonGroup
                       header="One-Many rows"
                       buttons={[
                         {
@@ -649,7 +690,7 @@ export const QueryBuilderPropertySearchPanel = observer(
                         },
                       ]}
                     />
-                    <QueryBuilderSearchConfigToggleButtons
+                    <QueryBuilderSearchConfigToggleButtonGroup
                       header="Documentation"
                       headerTooltipText={`Include "doc" type tagged values in search results`}
                       buttons={[
@@ -662,7 +703,7 @@ export const QueryBuilderPropertySearchPanel = observer(
                         },
                       ]}
                     />
-                    <QueryBuilderSearchConfigToggleButtons
+                    <QueryBuilderSearchConfigToggleButtonGroup
                       header="Sub-types"
                       buttons={[
                         {
@@ -674,7 +715,7 @@ export const QueryBuilderPropertySearchPanel = observer(
                         },
                       ]}
                     />
-                    <QueryBuilderSearchConfigToggleButtons
+                    <QueryBuilderSearchConfigToggleButtonGroup
                       header="By type"
                       buttons={[
                         {
@@ -684,6 +725,11 @@ export const QueryBuilderPropertySearchPanel = observer(
                           ),
                           onClick: () => {
                             propertySearchState.toggleFilterForType(
+                              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
+                            );
+                          },
+                          onOnlyButtonClick: () => {
+                            propertySearchState.setFilterOnlyType(
                               QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
                             );
                           },
@@ -698,6 +744,11 @@ export const QueryBuilderPropertySearchPanel = observer(
                               QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION,
                             );
                           },
+                          onOnlyButtonClick: () => {
+                            propertySearchState.setFilterOnlyType(
+                              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION,
+                            );
+                          },
                         },
                         {
                           label: 'String',
@@ -706,6 +757,11 @@ export const QueryBuilderPropertySearchPanel = observer(
                           ),
                           onClick: () => {
                             propertySearchState.toggleFilterForType(
+                              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
+                            );
+                          },
+                          onOnlyButtonClick: () => {
+                            propertySearchState.setFilterOnlyType(
                               QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
                             );
                           },
@@ -720,6 +776,11 @@ export const QueryBuilderPropertySearchPanel = observer(
                               QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
                             );
                           },
+                          onOnlyButtonClick: () => {
+                            propertySearchState.setFilterOnlyType(
+                              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
+                            );
+                          },
                         },
                         {
                           label: 'Number',
@@ -731,6 +792,11 @@ export const QueryBuilderPropertySearchPanel = observer(
                               QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
                             );
                           },
+                          onOnlyButtonClick: () => {
+                            propertySearchState.setFilterOnlyType(
+                              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
+                            );
+                          },
                         },
                         {
                           label: 'Date',
@@ -739,6 +805,11 @@ export const QueryBuilderPropertySearchPanel = observer(
                           ),
                           onClick: () => {
                             propertySearchState.toggleFilterForType(
+                              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
+                            );
+                          },
+                          onOnlyButtonClick: () => {
+                            propertySearchState.setFilterOnlyType(
                               QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
                             );
                           },
