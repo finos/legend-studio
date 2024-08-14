@@ -221,6 +221,12 @@ export class QueryBuilderPropertySearchState {
 
     this.searchState.inProgress();
 
+    this.indexedExplorerTreeNodes.forEach((node) => {
+      if (!(node instanceof QueryBuilderExplorerTreeRootNodeData)) {
+        node.setIsOpen(false);
+      }
+    });
+
     // Perform the search in a setTimeout so we can execute it asynchronously and
     // show the loading indicator while search is in progress.
     return new Promise((resolve) =>
