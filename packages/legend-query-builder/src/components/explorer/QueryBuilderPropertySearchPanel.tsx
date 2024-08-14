@@ -464,6 +464,59 @@ const QueryBuilderTreeNodeViewer = observer(
   },
 );
 
+const QueryBuilderSearchConfigToggleButtons = observer(
+  (props: {
+    header: string;
+    headerTooltipText?: string;
+    buttons: {
+      label: string;
+      enabled: boolean;
+      onClick: () => void;
+    }[];
+  }) => {
+    const { header, headerTooltipText, buttons } = props;
+
+    return (
+      <div className="query-builder-property-search-panel__form__section">
+        <div className="query-builder-property-search-panel__form__section__header__label">
+          {header}
+          {headerTooltipText && (
+            <Tooltip
+              TransitionProps={{
+                timeout: 0,
+              }}
+              title={<div>{headerTooltipText}</div>}
+            >
+              <div className="query-builder-property-search-panel__tagged-values__tooltip">
+                <InfoCircleIcon />
+              </div>
+            </Tooltip>
+          )}
+        </div>
+        {buttons.map(({ label, enabled, onClick }) => (
+          <button
+            key={label}
+            className={clsx(
+              'query-builder-property-search-panel__form__section__toggler__btn',
+              {
+                'query-builder-property-search-panel__form__section__toggler__btn--toggled':
+                  enabled,
+              },
+            )}
+            onClick={onClick}
+            tabIndex={-1}
+          >
+            {enabled ? <CheckSquareIcon /> : <SquareIcon />}
+            <div className="query-builder-property-search-panel__form__section__toggler__prompt">
+              {label}
+            </div>
+          </button>
+        ))}
+      </div>
+    );
+  },
+);
+
 export const QueryBuilderPropertySearchPanel = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
@@ -583,298 +636,118 @@ export const QueryBuilderPropertySearchPanel = observer(
                         />
                       </div>
                     </div>
-                    <div className="query-builder-property-search-panel__form__section">
-                      <div className="query-builder-property-search-panel__form__section__header__label">
-                        One-Many rows
-                      </div>
-                      <div className="query-builder-property-search-panel__filter__element">
-                        <button
-                          className={clsx(
-                            'query-builder-property-search-panel__form__section__toggler__btn',
-                            {
-                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                                propertySearchState.searchConfigurationState
-                                  .includeOneMany,
-                            },
-                          )}
-                          onClick={() =>
+                    <QueryBuilderSearchConfigToggleButtons
+                      header="One-Many rows"
+                      buttons={[
+                        {
+                          label: 'Include',
+                          enabled:
+                            propertySearchState.searchConfigurationState
+                              .includeOneMany,
+                          onClick: () =>
                             propertySearchState.searchConfigurationState.setIncludeOneMany(
                               !propertySearchState.searchConfigurationState
                                 .includeOneMany,
-                            )
-                          }
-                          tabIndex={-1}
-                        >
-                          {propertySearchState.searchConfigurationState
-                            .includeOneMany ? (
-                            <CheckSquareIcon />
-                          ) : (
-                            <SquareIcon />
-                          )}
-                        </button>
-                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-                          Include
-                        </div>
-                      </div>
-                    </div>
-                    <div className="query-builder-property-search-panel__form__section">
-                      <div className="query-builder-property-search-panel__form__section__header__label">
-                        Documentation
-                        <Tooltip
-                          TransitionProps={{
-                            timeout: 0,
-                          }}
-                          title={
-                            <div>
-                              Include &quot;doc&quot; type tagged values in
-                              search results
-                            </div>
-                          }
-                        >
-                          <div className="query-builder-property-search-panel__tagged-values__tooltip">
-                            <InfoCircleIcon />
-                          </div>
-                        </Tooltip>
-                      </div>
-                      <div className="query-builder-property-search-panel__filter__element">
-                        <button
-                          className={clsx(
-                            'query-builder-property-search-panel__form__section__toggler__btn',
-                            {
-                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                                propertySearchState.searchConfigurationState
-                                  .includeDocumentation,
-                            },
-                          )}
-                          onClick={handleToggleIncludeDocumentation}
-                          tabIndex={-1}
-                        >
-                          {propertySearchState.searchConfigurationState
-                            .includeDocumentation ? (
-                            <CheckSquareIcon />
-                          ) : (
-                            <SquareIcon />
-                          )}
-                        </button>
-                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-                          Include
-                        </div>
-                      </div>
-                    </div>
-                    <div className="query-builder-property-search-panel__form__section">
-                      <div className="query-builder-property-search-panel__form__section__header__label">
-                        Sub-types
-                      </div>
-                      <div className="query-builder-property-search-panel__filter__element">
-                        <button
-                          className={clsx(
-                            'query-builder-property-search-panel__form__section__toggler__btn',
-                            {
-                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                                propertySearchState.searchConfigurationState
-                                  .includeSubTypes,
-                            },
-                          )}
-                          onClick={handleToggleIncludeSubTypes}
-                          tabIndex={-1}
-                        >
-                          {propertySearchState.searchConfigurationState
-                            .includeSubTypes ? (
-                            <CheckSquareIcon />
-                          ) : (
-                            <SquareIcon />
-                          )}
-                        </button>
-                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-                          Include
-                        </div>
-                      </div>
-                    </div>
-                    <div className="query-builder-property-search-panel__form__section">
-                      <div className="query-builder-property-search-panel__form__section__header__label">
-                        By type
-                      </div>
-                      <div className="query-builder-property-search-panel__filter__element">
-                        <button
-                          className={clsx(
-                            'query-builder-property-search-panel__form__section__toggler__btn',
-                            {
-                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                                propertySearchState.typeFilters.includes(
-                                  QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
-                                ),
-                            },
-                          )}
-                          onClick={(): void => {
+                            ),
+                        },
+                      ]}
+                    />
+                    <QueryBuilderSearchConfigToggleButtons
+                      header="Documentation"
+                      headerTooltipText={`Include "doc" type tagged values in search results`}
+                      buttons={[
+                        {
+                          label: 'Include',
+                          enabled:
+                            propertySearchState.searchConfigurationState
+                              .includeDocumentation,
+                          onClick: handleToggleIncludeDocumentation,
+                        },
+                      ]}
+                    />
+                    <QueryBuilderSearchConfigToggleButtons
+                      header="Sub-types"
+                      buttons={[
+                        {
+                          label: 'Include',
+                          enabled:
+                            propertySearchState.searchConfigurationState
+                              .includeSubTypes,
+                          onClick: handleToggleIncludeSubTypes,
+                        },
+                      ]}
+                    />
+                    <QueryBuilderSearchConfigToggleButtons
+                      header="By type"
+                      buttons={[
+                        {
+                          label: 'Class',
+                          enabled: propertySearchState.typeFilters.includes(
+                            QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
+                          ),
+                          onClick: () => {
                             propertySearchState.toggleFilterForType(
                               QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
                             );
-                          }}
-                          tabIndex={-1}
-                        >
-                          {propertySearchState.typeFilters.includes(
-                            QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
-                          ) ? (
-                            <CheckSquareIcon />
-                          ) : (
-                            <SquareIcon />
-                          )}
-                        </button>
-                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-                          Class
-                        </div>
-                      </div>
-                      <div className="query-builder-property-search-panel__filter__element">
-                        <button
-                          className={clsx(
-                            'query-builder-property-search-panel__form__section__toggler__btn',
-                            {
-                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                                propertySearchState.typeFilters.includes(
-                                  QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION,
-                                ),
-                            },
-                          )}
-                          onClick={(): void => {
+                          },
+                        },
+                        {
+                          label: 'Enumeration',
+                          enabled: propertySearchState.typeFilters.includes(
+                            QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION,
+                          ),
+                          onClick: () => {
                             propertySearchState.toggleFilterForType(
                               QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION,
                             );
-                          }}
-                          tabIndex={-1}
-                        >
-                          {propertySearchState.typeFilters.includes(
-                            QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION,
-                          ) ? (
-                            <CheckSquareIcon />
-                          ) : (
-                            <SquareIcon />
-                          )}
-                        </button>
-                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-                          Enumeration
-                        </div>
-                      </div>
-                      <div className="query-builder-property-search-panel__filter__element">
-                        <button
-                          className={clsx(
-                            'query-builder-property-search-panel__form__section__toggler__btn',
-                            {
-                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                                propertySearchState.typeFilters.includes(
-                                  QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
-                                ),
-                            },
-                          )}
-                          onClick={(): void => {
+                          },
+                        },
+                        {
+                          label: 'String',
+                          enabled: propertySearchState.typeFilters.includes(
+                            QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
+                          ),
+                          onClick: () => {
                             propertySearchState.toggleFilterForType(
                               QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
                             );
-                          }}
-                          tabIndex={-1}
-                        >
-                          {propertySearchState.typeFilters.includes(
-                            QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
-                          ) ? (
-                            <CheckSquareIcon />
-                          ) : (
-                            <SquareIcon />
-                          )}
-                        </button>
-                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-                          String
-                        </div>
-                      </div>
-                      <div className="query-builder-property-search-panel__filter__element">
-                        <button
-                          className={clsx(
-                            'query-builder-property-search-panel__form__section__toggler__btn',
-                            {
-                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                                propertySearchState.typeFilters.includes(
-                                  QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
-                                ),
-                            },
-                          )}
-                          onClick={(): void => {
+                          },
+                        },
+                        {
+                          label: 'Boolean',
+                          enabled: propertySearchState.typeFilters.includes(
+                            QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
+                          ),
+                          onClick: () => {
                             propertySearchState.toggleFilterForType(
                               QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
                             );
-                          }}
-                          tabIndex={-1}
-                        >
-                          {propertySearchState.typeFilters.includes(
-                            QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
-                          ) ? (
-                            <CheckSquareIcon />
-                          ) : (
-                            <SquareIcon />
-                          )}
-                        </button>
-                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-                          Boolean
-                        </div>
-                      </div>
-                      <div className="query-builder-property-search-panel__filter__element">
-                        <button
-                          className={clsx(
-                            'query-builder-property-search-panel__form__section__toggler__btn',
-                            {
-                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                                propertySearchState.typeFilters.includes(
-                                  QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
-                                ),
-                            },
-                          )}
-                          onClick={(): void => {
+                          },
+                        },
+                        {
+                          label: 'Number',
+                          enabled: propertySearchState.typeFilters.includes(
+                            QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
+                          ),
+                          onClick: () => {
                             propertySearchState.toggleFilterForType(
                               QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
                             );
-                          }}
-                          tabIndex={-1}
-                        >
-                          {propertySearchState.typeFilters.includes(
-                            QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
-                          ) ? (
-                            <CheckSquareIcon />
-                          ) : (
-                            <SquareIcon />
-                          )}
-                        </button>
-                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-                          Number
-                        </div>
-                      </div>
-                      <div className="query-builder-property-search-panel__filter__element">
-                        <button
-                          className={clsx(
-                            'query-builder-property-search-panel__form__section__toggler__btn',
-                            {
-                              'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                                propertySearchState.typeFilters.includes(
-                                  QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
-                                ),
-                            },
-                          )}
-                          onClick={(): void => {
+                          },
+                        },
+                        {
+                          label: 'Date',
+                          enabled: propertySearchState.typeFilters.includes(
+                            QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
+                          ),
+                          onClick: () => {
                             propertySearchState.toggleFilterForType(
                               QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
                             );
-                          }}
-                          tabIndex={-1}
-                        >
-                          {propertySearchState.typeFilters.includes(
-                            QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
-                          ) ? (
-                            <CheckSquareIcon />
-                          ) : (
-                            <SquareIcon />
-                          )}
-                        </button>
-                        <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-                          Date
-                        </div>
-                      </div>
-                    </div>
+                          },
+                        },
+                      ]}
+                    />
                   </div>
                 </ResizablePanel>
                 <ResizablePanelSplitter>
