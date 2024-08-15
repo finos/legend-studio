@@ -517,7 +517,7 @@ export const DataSpaceExecutionContextTab: React.FC<ExecutionContextTabProps> =
               <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
             </ResizablePanelSplitter>
             <ResizablePanel>
-              <Panel className="data-space-execution-context-details">
+              <PanelContent className="data-space-execution-context-details">
                 {dataSpaceEditorState.dataSpace.executionContexts.length ? (
                   <>
                     <div>
@@ -576,7 +576,7 @@ export const DataSpaceExecutionContextTab: React.FC<ExecutionContextTabProps> =
                     tooltipText="Select an execution context"
                   />
                 )}
-              </Panel>
+              </PanelContent>
             </ResizablePanel>
           </ResizablePanelGroup>
 >>>>>>> executionContext is finished

@@ -140,7 +140,7 @@
     display: flex;
     align-items: center;
     padding: 0.5rem 1rem;
-    background-color: var(--color-dark-grey-50);
+    // background-color: var(--color-dark-grey-50);
     border-bottom: 1px solid #444;
 
     &__title__label {
@@ -172,6 +172,35 @@
   }
 }
 
+.support-info__item__action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  cursor: pointer;
+  background: var(--color-dark-grey-50);
+
+  &:hover {
+    background: var(--color-dark-grey-100);
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &:hover {
+      color: var(--color-light-grey-400);
+    }
+  }
+
+  &__label {
+    flex-grow: 1;
+    padding-left: 1rem;
+    color: var(--color-light-grey-50);
+  }
+}
+
 .dataSpace-execution-context {
   background: var(--color-dark-grey-50);
 
@@ -186,4 +215,42 @@
     overflow-x: overlay;
     overflow-y: hidden;
   }
+}
+
+.support-info-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  cursor: pointer;
+  background: var(--color-dark-grey-50);
+}
+
+.support-info-item--active {
+  background: var(--color-light-blue-450);
+  color: var(--color-light-grey-50);
+}
+
+.support-info-item:hover {
+  background: var(--color-dark-grey-100);
+}
+
+.support-info-item__label {
+  flex-grow: 1;
+  padding-left: 1rem;
+  color: var(--color-light-grey-50);
+}
+
+.support-info-item__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.support-info-item__action {
+  color: var(--color-light-grey-50);
+}
+
+.support-info-item__action:hover {
+  color: var(--color-light-grey-400);
 }
