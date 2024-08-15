@@ -55,6 +55,7 @@ import {
   extractExecutionResultValues,
   TDSExecutionResult,
   RawExecutionResult,
+  ExecutionError,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -80,8 +81,13 @@ import { getExecutedSqlFromExecutionResult } from './tds/QueryBuilderTDSResultSh
 import { QueryBuilderTDSGridResult } from './tds/QueryBuilderTDSGridResult.js';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
 import type { QueryBuilderResultState } from '../../stores/QueryBuilderResultState.js';
+import { QueryBuilderBaseInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 
-const PERMISSION_ERRORS = ['permission denied', 'invalid user id or password'];
+const PERMISSION_ERRORS = [
+  'permission denied',
+  'invalid user id or password',
+  'Incorrect username or password',
+];
 
 export const QueryBuilderExecutionErrorPanel = observer(
   (props: {
@@ -90,24 +96,38 @@ export const QueryBuilderExecutionErrorPanel = observer(
   }) => {
     const { resultState, executionError } = props;
     const queryBuilderState = resultState.queryBuilderState;
-    const errorMessage = executionError
-      ? queryBuilderState.applicationStore.notificationService.getErrorMessage(
-          executionError,
-        )
-      : '';
-    const isPermissionDeniedError = () =>
-      Boolean(
-        PERMISSION_ERRORS.find((e) => errorMessage?.toLowerCase().includes(e)),
-      );
+    const errorMessage =
+      executionError instanceof Error ? executionError.message : executionError;
+    const errorStackTrace =
+      executionError instanceof ExecutionError ? executionError.stack : '';
+    const isPermissionDeniedError = Boolean(
+      PERMISSION_ERRORS.find((e) =>
+        queryBuilderState.applicationStore.notificationService
+          .getErrorMessage(executionError)
+          ?.toLowerCase()
+          .includes(e),
+      ),
+    );
     const openCheckEntitlmentsEditor = (): void => {
       queryBuilderState.checkEntitlementsState.setShowCheckEntitlementsViewer(
         true,
       );
     };
+    const frequentlyAskedQuestionEntry =
+      queryBuilderState.applicationStore.documentationService.getDocEntry(
+        QUERY_BUILDER_DOCUMENTATION_KEY.FREQUENTLY_ASKED_QUESTIONS,
+      );
+    const openFrequentlyAskedQuestions = (): void => {
+      if (frequentlyAskedQuestionEntry?.url) {
+        queryBuilderState.applicationStore.navigationService.navigator.visitAddress(
+          frequentlyAskedQuestionEntry.url,
+        );
+      }
+    };
 
     return (
       <>
-        {isPermissionDeniedError() && (
+        {isPermissionDeniedError && (
           <div className="query-builder__result__permission-error">
             <div className="query-builder__result__permission-error__header">
               Entitlement / Authorization error - Please
@@ -128,14 +148,54 @@ export const QueryBuilderExecutionErrorPanel = observer(
             </button>
           </div>
         )}
-        <div className="query-builder__result__execution-error">
+        <div
+          className={clsx('query-builder__result__execution-error', {
+            'query-builder__result__execution-error--max':
+              !isPermissionDeniedError,
+          })}
+        >
           <div className="query-builder__result__execution-error__header">
             <span style={{ fontWeight: 'bold' }}>Error Execution Query</span>.
-            Please try again later or review options in application`s
-            <span style={{ fontWeight: 'bold' }}> Help</span> menu.
+            Please try again later or review options in application`s{' '}
+            <span
+              style={{ fontWeight: 'bold' }}
+              onClick={openFrequentlyAskedQuestions}
+            >
+              Help
+            </span>{' '}
+            menu.
           </div>
           <div className="query-builder__result__execution-error__body">
-            {errorMessage}
+            <div className="query-builder__result__execution-error__body__entry">
+              {errorMessage}
+            </div>
+            {resultState.executionTraceId && queryBuilderState.config && (
+              <div className="query-builder__result__execution-error__body__entry">
+                <span style={{ fontWeight: 'bold' }}> ### trace: </span>
+                {resultState.executionTraceId} |{' '}
+                <button
+                  className="query-builder__result__execution-error__body__entry__btn"
+                  disabled={!queryBuilderState.config.zipkinTraceBaseURL}
+                  onClick={() => {
+                    if (queryBuilderState.config?.zipkinTraceBaseURL) {
+                      queryBuilderState.applicationStore.navigationService.navigator.visitAddress(
+                        queryBuilderState.config.zipkinTraceBaseURL +
+                          resultState.executionTraceId,
+                      );
+                    }
+                  }}
+                >
+                  {queryBuilderState.config.zipkinTraceBaseURL +
+                    resultState.executionTraceId}{' '}
+                </button>
+              </div>
+            )}
+            {errorStackTrace && (
+              <div className="query-builder__result__execution-error__body__entry">
+                <span style={{ fontWeight: 'bold' }}>### stack trace: </span>
+                {errorStackTrace}
+              </div>
+            )}
           </div>
         </div>
       </>
@@ -180,7 +240,6 @@ export const QueryBuilderEmptyExecutionResultPanel = observer(
     );
   },
 );
-import { QueryBuilderBaseInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 
 export const QueryBuilderResultValues = observer(
   (props: {
@@ -403,9 +462,7 @@ export const QueryBuilderResultPanel = observer(
     };
     const resultDescription = executionResult
       ? getResultSetDescription(executionResult)
-      : resultState.executionError
-        ? 'fail to execute'
-        : undefined;
+      : undefined;
 
     const [previewLimitValue, setPreviewLimitValue] = useState(
       resultState.previewLimit,
