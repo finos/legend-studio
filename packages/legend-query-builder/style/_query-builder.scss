@@ -2308,8 +2308,9 @@
 .query-builder__usage-viewer {
   &__modal {
     padding: 0;
-    height: 30vh;
+    height: 50vh;
     width: 50vw;
+    min-height: 500px;
     overflow: hidden;
   }
 
