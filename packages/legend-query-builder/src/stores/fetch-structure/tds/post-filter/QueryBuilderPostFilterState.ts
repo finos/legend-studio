@@ -19,8 +19,8 @@ import {
   type PureModel,
   type Type,
   type ValueSpecification,
-  type ExecutionResult,
   type SimpleFunctionExpression,
+  type ExecutionResultWithMetadata,
   observe_ValueSpecification,
   PrimitiveType,
   CollectionInstanceValue,
@@ -490,7 +490,7 @@ export class PostFilterConditionState implements Hashable {
       );
       const value = searchValue ?? rightConditionValue.value;
       if (performTypeahead(value)) {
-        const result =
+        const result = (
           (yield this.postFilterState.tdsState.queryBuilderState.graphManagerState.graphManager.runQuery(
             buildProjectionColumnTypeaheadQuery(
               this.postFilterState.tdsState.queryBuilderState,
@@ -507,7 +507,8 @@ export class PostFilterConditionState implements Hashable {
             ),
             this.postFilterState.tdsState.queryBuilderState.graphManagerState
               .graph,
-          )) as ExecutionResult;
+          )) as ExecutionResultWithMetadata
+        ).executionResult;
         this.typeaheadSearchResults = buildTypeaheadOptions(result);
       }
       this.typeaheadSearchState.pass();

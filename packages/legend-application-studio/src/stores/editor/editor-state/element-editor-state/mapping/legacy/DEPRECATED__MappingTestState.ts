@@ -669,7 +669,7 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
       this.isExecutingTest = true;
-      const result =
+      const result = (
         (yield this.editorStore.graphManagerState.graphManager.runQuery(
           query,
           this.mappingEditorState.mapping,
@@ -678,7 +678,8 @@ export class DEPRECATED__MappingTestState extends MappingEditorTabState {
           {
             useLosslessParse: true,
           },
-        )) as ExecutionResult;
+        )) as ExecutionResultWithMetadata
+      ).executionResult;
       if (
         this.assertionState instanceof MappingTestExpectedOutputAssertionState
       ) {
