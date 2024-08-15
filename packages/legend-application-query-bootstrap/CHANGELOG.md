@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 12.16.0
+
+### Patch Changes
+
+- [#3419](https://github.com/finos/legend-studio/pull/3419) [`d4c6052`](https://github.com/finos/legend-studio/commit/d4c6052eb96a7f0548f673702d272752bd0153f4) ([@travisstebbins](https://github.com/travisstebbins)) - Improve property search panel
+
 ## 12.15.0
 
 ## 12.14.0

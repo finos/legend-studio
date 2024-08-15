@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.15
+
+### Patch Changes
+
+- [#3425](https://github.com/finos/legend-studio/pull/3425) [`66b7195`](https://github.com/finos/legend-studio/commit/66b71959d2a314405bd857a137a24c268486817e) ([@travisstebbins](https://github.com/travisstebbins)) - Fix bug with unwrapping executionResult from ExecutionResultWithMetadata
+
 ## 28.18.14
 
 ## 28.18.13
