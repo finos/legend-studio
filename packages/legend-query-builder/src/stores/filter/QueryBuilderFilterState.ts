@@ -37,10 +37,10 @@ import type { QueryBuilderExplorerTreeDragSource } from '../explorer/QueryBuilde
 import { QueryBuilderPropertyExpressionState } from '../QueryBuilderPropertyEditorState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import {
-  type ExecutionResult,
-  AbstractPropertyExpression,
   type ValueSpecification,
   type Type,
+  type ExecutionResultWithMetadata,
+  AbstractPropertyExpression,
   observe_ValueSpecification,
   CollectionInstanceValue,
   InstanceValue,
@@ -300,7 +300,7 @@ export class FilterConditionState implements Hashable {
       );
       const value = searchValue ?? rightConditionValue.value;
       if (performTypeahead(value)) {
-        const result =
+        const result = (
           (yield this.filterState.queryBuilderState.graphManagerState.graphManager.runQuery(
             buildPropertyTypeaheadQuery(
               this.filterState.queryBuilderState,
@@ -315,7 +315,8 @@ export class FilterConditionState implements Hashable {
                 .runtimeValue,
             ),
             this.filterState.queryBuilderState.graphManagerState.graph,
-          )) as ExecutionResult;
+          )) as ExecutionResultWithMetadata
+        ).executionResult;
         this.typeaheadSearchResults = buildTypeaheadOptions(result);
       }
       this.typeaheadSearchState.pass();

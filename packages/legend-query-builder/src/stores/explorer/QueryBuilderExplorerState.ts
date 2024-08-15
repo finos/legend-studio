@@ -31,6 +31,7 @@ import {
   type MappingModelCoverageAnalysisResult,
   type EnumMappedProperty,
   type MappedEntity,
+  type ExecutionResultWithMetadata,
   AbstractPropertyExpression,
   Class,
   VariableExpression,
@@ -55,7 +56,6 @@ import {
   Association,
   PRIMITIVE_TYPE,
   TDSExecutionResult,
-  type ExecutionResult,
   getAllSubclasses,
   PropertyExplicitReference,
   reportGraphAnalytics,
@@ -1008,7 +1008,7 @@ export class QueryBuilderExplorerState {
         case PRIMITIVE_TYPE.INTEGER:
         case PRIMITIVE_TYPE.DECIMAL:
         case PRIMITIVE_TYPE.FLOAT: {
-          const previewResult =
+          const previewResult = (
             (yield this.queryBuilderState.graphManagerState.graphManager.runQuery(
               buildNumericPreviewDataQuery(
                 this.queryBuilderState,
@@ -1021,7 +1021,8 @@ export class QueryBuilderExplorerState {
                 abortController:
                   this.previewDataState.previewDataAbortController,
               },
-            )) as ExecutionResult;
+            )) as ExecutionResultWithMetadata
+          ).executionResult;
           assertType(
             previewResult,
             TDSExecutionResult,
@@ -1049,7 +1050,7 @@ export class QueryBuilderExplorerState {
         case PRIMITIVE_TYPE.DATE:
         case PRIMITIVE_TYPE.STRICTDATE:
         case PRIMITIVE_TYPE.DATETIME: {
-          const previewResult =
+          const previewResult = (
             (yield this.queryBuilderState.graphManagerState.graphManager.runQuery(
               buildNonNumericPreviewDataQuery(
                 this.queryBuilderState,
@@ -1062,7 +1063,8 @@ export class QueryBuilderExplorerState {
                 abortController:
                   this.previewDataState.previewDataAbortController,
               },
-            )) as ExecutionResult;
+            )) as ExecutionResultWithMetadata
+          ).executionResult;
           assertType(
             previewResult,
             TDSExecutionResult,

@@ -46,7 +46,7 @@ import {
   type RawLambda,
   type PureModel,
   type Runtime,
-  type ExecutionResult,
+  type ExecutionResultWithMetadata,
   TDSExecutionResult,
   getColumn,
   PrimitiveType,
@@ -715,13 +715,14 @@ export class DatabaseSchemaExplorerState {
         this.connection,
         generatedDb,
       );
-      const execPlan =
+      const execPlan = (
         (yield this.editorStore.graphManagerState.graphManager.runQuery(
           rawLambda,
           mapping,
           runtime,
           emptyGraph,
-        )) as ExecutionResult;
+        )) as ExecutionResultWithMetadata
+      ).executionResult;
       let tdsResult = guaranteeType(
         execPlan,
         TDSExecutionResult,
