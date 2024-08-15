@@ -647,16 +647,18 @@ export const QueryBuilderResultPanel = observer(
                 {resultDescription}
               </div>
             )}
-            {executionResult && resultState.checkForStaleResults && (
-              <div className="query-builder__result__stale-status">
-                <div className="query-builder__result__stale-status__icon">
-                  <ExclamationTriangleIcon />
+            {executionResult &&
+              resultState.checkForStaleResults &&
+              !resultState.isRunningQuery && (
+                <div className="query-builder__result__stale-status">
+                  <div className="query-builder__result__stale-status__icon">
+                    <ExclamationTriangleIcon />
+                  </div>
+                  <div className="query-builder__result__stale-status__label">
+                    Preview data might be stale
+                  </div>
                 </div>
-                <div className="query-builder__result__stale-status__label">
-                  Preview data might be stale
-                </div>
-              </div>
-            )}
+              )}
             {executionResult &&
               executionResult instanceof TDSExecutionResult &&
               resultState.isExecutionResultOverflowing && (
