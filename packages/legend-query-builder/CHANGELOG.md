@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.74
+
+### Patch Changes
+
+- [#3423](https://github.com/finos/legend-studio/pull/3423) [`70dbd48`](https://github.com/finos/legend-studio/commit/70dbd483fe1a5fba14bffc3cb02c0e93f2de7fd3) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Enhance the display of error messages in the result grid
+
 ## 4.14.73
 
 ### Patch Changes
