@@ -1132,6 +1132,37 @@ export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational = {
   ],
 };
 
+export const TEST_DATA__ModelCoverageAnalysisResult_CircularDependency = {
+  mappedEntities: [
+    {
+      path: 'my::Firm',
+      properties: [
+        { _type: 'MappedProperty', name: 'legalName' },
+        { _type: 'entity', entityPath: 'my::Person', name: 'employees' },
+        { _type: 'MappedProperty', name: 'id' },
+      ],
+    },
+    {
+      path: 'my::Person',
+      properties: [
+        { _type: 'MappedProperty', name: 'age' },
+        { _type: 'entity', entityPath: 'my::Firm', name: 'employer' },
+        { _type: 'MappedProperty', name: 'firmID' },
+        { _type: 'MappedProperty', name: 'firstName' },
+        { _type: 'entity', entityPath: 'my::Hobby', name: 'hobbies' },
+        { _type: 'MappedProperty', name: 'lastName' },
+      ],
+    },
+    {
+      path: 'my::Hobby',
+      properties: [
+        { _type: 'MappedProperty', name: 'id' },
+        { _type: 'MappedProperty', name: 'name' },
+      ],
+    },
+  ],
+};
+
 export const TEST_DATA__ModelCoverageAnalysisResult_HighlightProperties = {
   mappedEntities: [
     {

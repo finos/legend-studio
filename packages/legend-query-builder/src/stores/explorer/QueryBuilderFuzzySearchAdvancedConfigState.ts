@@ -18,7 +18,7 @@ import { FuzzySearchAdvancedConfigState } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 
 export class QueryBuilderFuzzySearchAdvancedConfigState extends FuzzySearchAdvancedConfigState {
-  includeSubTypes = false;
+  includeSubTypes = true;
   includeDocumentation = false;
 
   constructor(

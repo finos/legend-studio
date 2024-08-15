@@ -78,7 +78,7 @@
             "lowerBound": 0
           },
           "name": "hobbies",
-          "type": "String"
+          "type": "my::Hobby"
         },
         {
           "multiplicity": {
@@ -87,6 +87,41 @@
           },
           "name": "firmID",
           "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "employer",
+          "type": "my::Firm"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "my::Hobby",
+    "content": {
+      "_type": "class",
+      "name": "Hobby",
+      "package": "my",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "id",
+          "type": "String"
         }
       ]
     },
@@ -128,6 +163,39 @@
                   "table": "FirmTable"
                 },
                 "tableAlias": "FirmTable"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Hobby_Person",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "PERSONID",
+                "table": {
+                  "_type": "Table",
+                  "database": "my::db",
+                  "mainTableDb": "my::db",
+                  "schema": "default",
+                  "table": "HobbyTable"
+                },
+                "tableAlias": "HobbyTable"
+              },
+              {
+                "_type": "column",
+                "column": "ID",
+                "table": {
+                  "_type": "Table",
+                  "database": "my::db",
+                  "mainTableDb": "my::db",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
               }
             ]
           }
@@ -173,6 +241,13 @@
                   }
                 },
                 {
+                  "name": "ID",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
                   "name": "FIRMID",
                   "nullable": true,
                   "type": {
@@ -202,6 +277,34 @@
                 }
               ],
               "name": "FirmTable",
+              "primaryKey": []
+            },
+            {
+              "columns": [
+                {
+                  "name": "NAME",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Char",
+                    "size": 200
+                  }
+                },
+                {
+                  "name": "ID",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "PERSONID",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                }
+              ],
+              "name": "HobbyTable",
               "primaryKey": []
             }
           ],
@@ -312,17 +415,31 @@
                 "property": "hobbies"
               },
               "relationalOperation": {
-                "_type": "column",
-                "column": "HOBBIES",
-                "table": {
-                  "_type": "Table",
-                  "database": "my::db",
-                  "mainTableDb": "my::db",
-                  "schema": "default",
-                  "table": "PersonTable"
-                },
-                "tableAlias": "PersonTable"
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "my::db",
+                    "name": "Hobby_Person"
+                  }
+                ]
               }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "my::Person",
+                "property": "employer"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "my::db",
+                    "name": "Firm_Person"
+                  }
+                ]
+              },
+              "target": "my_Firm"
             }
           ],
           "root": true
@@ -393,6 +510,60 @@
                   "table": "FirmTable"
                 },
                 "tableAlias": "FirmTable"
+              }
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "relational",
+          "class": "my::Hobby",
+          "distinct": false,
+          "mainTable": {
+            "_type": "Table",
+            "database": "my::db",
+            "mainTableDb": "my::db",
+            "schema": "default",
+            "table": "HobbyTable"
+          },
+          "primaryKey": [],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "my::Hobby",
+                "property": "name"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "NAME",
+                "table": {
+                  "_type": "Table",
+                  "database": "my::db",
+                  "mainTableDb": "my::db",
+                  "schema": "default",
+                  "table": "HobbyTable"
+                },
+                "tableAlias": "HobbyTable"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "my::Hobby",
+                "property": "id"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "ID",
+                "table": {
+                  "_type": "Table",
+                  "database": "my::db",
+                  "mainTableDb": "my::db",
+                  "schema": "default",
+                  "table": "HobbyTable"
+                },
+                "tableAlias": "HobbyTable"
               }
             }
           ],

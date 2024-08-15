@@ -23,15 +23,16 @@ import {
   PRIMITIVE_TYPE,
   CORE_PURE_PATH,
   PURE_DOC_TAG,
+  Enumeration,
 } from '@finos/legend-graph';
 import {
+  type FuzzySearchEngineSortFunctionArg,
   ActionState,
   FuzzySearchEngine,
   addUniqueEntry,
   deleteEntry,
   guaranteeNonNullable,
   isNonNullable,
-  type FuzzySearchEngineSortFunctionArg,
 } from '@finos/legend-shared';
 import {
   observable,
@@ -47,11 +48,13 @@ import {
   QUERY_BUILDER_PROPERTY_SEARCH_MAX_NODES,
 } from '../QueryBuilderConfig.js';
 import {
+  type QueryBuilderExplorerTreeNodeData,
   getQueryBuilderPropertyNodeData,
   getQueryBuilderSubTypeNodeData,
-  type QueryBuilderExplorerTreeNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
+  cloneQueryBuilderExplorerTreeNodeData,
+  QueryBuilderExplorerTreeRootNodeData,
 } from './QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { QueryBuilderFuzzySearchAdvancedConfigState } from './QueryBuilderFuzzySearchAdvancedConfigState.js';
@@ -74,7 +77,8 @@ export class QueryBuilderPropertySearchState {
    * is that we could interact with the searched nodes, i.e. drag them to
    * various panels to create filter, fetch-structure, etc.
    */
-  indexedExplorerTreeNodes: QueryBuilderExplorerTreeNodeData[] = [];
+  indexedExplorerTreeNodeMap: Map<string, QueryBuilderExplorerTreeNodeData> =
+    new Map();
 
   // search
   searchEngine: FuzzySearchEngine<QueryBuilderExplorerTreeNodeData>;
@@ -89,8 +93,10 @@ export class QueryBuilderPropertySearchState {
   showSearchConfigurationMenu = false;
 
   // filter
+  includeOneMany = false;
   typeFilters = [
     QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
+    QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION,
     QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
     QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
     QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
@@ -99,14 +105,16 @@ export class QueryBuilderPropertySearchState {
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
-      indexedExplorerTreeNodes: observable,
+      indexedExplorerTreeNodeMap: observable,
       searchText: observable,
       searchResults: observable,
       isOverSearchLimit: observable,
       isSearchPanelOpen: observable,
       isSearchPanelHidden: observable,
       showSearchConfigurationMenu: observable,
+      includeOneMany: observable,
       typeFilters: observable,
+      indexedExplorerTreeNodes: computed,
       filteredSearchResults: computed,
       search: action,
       resetSearch: action,
@@ -116,6 +124,8 @@ export class QueryBuilderPropertySearchState {
       setShowSearchConfigurationMenu: action,
       setIsSearchPanelOpen: action,
       setIsSearchPanelHidden: action,
+      setIncludeOneMany: action,
+      setFilterOnlyType: action,
       toggleFilterForType: action,
       initialize: action,
     });
@@ -156,7 +166,20 @@ export class QueryBuilderPropertySearchState {
   resetSearch(): void {
     this.searchText = '';
     this.searchResults = [];
+    this.indexedExplorerTreeNodes.forEach((node) => {
+      if (!(node instanceof QueryBuilderExplorerTreeRootNodeData)) {
+        node.setIsOpen(false);
+      }
+    });
     this.searchState.complete();
+  }
+
+  setIncludeOneMany(val: boolean): void {
+    this.includeOneMany = val;
+  }
+
+  setFilterOnlyType(val: QUERY_BUILDER_PROPERTY_SEARCH_TYPE): void {
+    this.typeFilters = [val];
   }
 
   toggleFilterForType(val: QUERY_BUILDER_PROPERTY_SEARCH_TYPE): void {
@@ -167,6 +190,29 @@ export class QueryBuilderPropertySearchState {
     }
   }
 
+  isNodeMultiple(node: QueryBuilderExplorerTreeNodeData): boolean {
+    // Check if node or any ancestors are one-many nodes.
+    let currNode: QueryBuilderExplorerTreeNodeData | undefined = node;
+    while (currNode) {
+      if (
+        (currNode instanceof QueryBuilderExplorerTreeSubTypeNodeData &&
+          (currNode.multiplicity.upperBound === undefined ||
+            currNode.multiplicity.upperBound > 1)) ||
+        (currNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
+          (currNode.property.multiplicity.upperBound === undefined ||
+            currNode.property.multiplicity.upperBound > 1))
+      ) {
+        return true;
+      }
+      currNode =
+        currNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
+        currNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+          ? this.indexedExplorerTreeNodeMap.get(currNode.parentId)
+          : undefined;
+    }
+    return false;
+  }
+
   async search(): Promise<void> {
     if (!this.searchText) {
       this.setSearchResults([]);
@@ -174,6 +220,12 @@ export class QueryBuilderPropertySearchState {
     }
 
     this.searchState.inProgress();
+
+    this.indexedExplorerTreeNodes.forEach((node) => {
+      if (!(node instanceof QueryBuilderExplorerTreeRootNodeData)) {
+        node.setIsOpen(false);
+      }
+    });
 
     // Perform the search in a setTimeout so we can execute it asynchronously and
     // show the loading indicator while search is in progress.
@@ -210,18 +262,13 @@ export class QueryBuilderPropertySearchState {
             return node;
           })
           .filter((node) => {
-            // Filter out property nodes if their parent class node is already in the results.
-            if (node.type instanceof Class) {
-              return true;
-            } else if (
-              node instanceof QueryBuilderExplorerTreePropertyNodeData
+            // Filter out nodes if their parent class node is already in the results.
+            if (
+              (node instanceof QueryBuilderExplorerTreePropertyNodeData ||
+                node instanceof QueryBuilderExplorerTreeSubTypeNodeData) &&
+              classNodes.has(node.parentId)
             ) {
-              if (this.searchText.toLowerCase() === node.label.toLowerCase()) {
-                return true;
-              } else if (classNodes.has(node.parentId)) {
-                classNodes.get(node.parentId)?.setIsOpen(true);
-                return false;
-              }
+              return false;
             }
             return true;
           });
@@ -260,22 +307,26 @@ export class QueryBuilderPropertySearchState {
     // show the loading indicator while initialization is in progress.
     return new Promise((resolve) =>
       setTimeout(() => {
-        this.indexedExplorerTreeNodes = [];
+        const treeData =
+          this.queryBuilderState.explorerState.nonNullableTreeData;
+        const rootNodeMap = new Map(
+          treeData.rootIds
+            .map((rootId) => treeData.nodes.get(rootId))
+            .filter(isNonNullable)
+            .map((rootNode) => [rootNode.id, rootNode]),
+        );
+        this.indexedExplorerTreeNodeMap = new Map();
 
         let currentLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
         let nextLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
 
         // Get all the children of the root node(s)
         Array.from(
-          this.queryBuilderState.explorerState.nonNullableTreeData.rootIds
+          treeData.rootIds
             .map((rootId) =>
-              this.queryBuilderState.explorerState.nonNullableTreeData.nodes
+              treeData.nodes
                 .get(rootId)
-                ?.childrenIds.map((childId) =>
-                  this.queryBuilderState.explorerState.nonNullableTreeData.nodes.get(
-                    childId,
-                  ),
-                ),
+                ?.childrenIds.map((childId) => treeData.nodes.get(childId)),
             )
             .flat()
             .filter(isNonNullable)
@@ -287,23 +338,53 @@ export class QueryBuilderPropertySearchState {
             ),
         ).forEach((node) => {
           if (node.mappingData.mapped && !node.isPartOfDerivedPropertyBranch) {
-            currentLevelPropertyNodes.push(node);
-            this.indexedExplorerTreeNodes.push(node);
+            const clonedNode = cloneQueryBuilderExplorerTreeNodeData(node);
+            currentLevelPropertyNodes.push(clonedNode);
+            this.indexedExplorerTreeNodeMap.set(clonedNode.id, clonedNode);
           }
         });
 
         // ensure we don't navigate more nodes than the limit so we could
         // keep the initialization/indexing time within acceptable range
         const NODE_LIMIT =
-          this.indexedExplorerTreeNodes.length +
+          this.indexedExplorerTreeNodeMap.size +
           QUERY_BUILDER_PROPERTY_SEARCH_MAX_NODES;
         const addNode = (node: QueryBuilderExplorerTreeNodeData): void =>
           runInAction(() => {
-            if (this.indexedExplorerTreeNodes.length > NODE_LIMIT) {
+            if (this.indexedExplorerTreeNodeMap.size > NODE_LIMIT) {
               return;
             }
-            this.indexedExplorerTreeNodes.push(node);
+            const clonedNode = cloneQueryBuilderExplorerTreeNodeData(node);
+            this.indexedExplorerTreeNodeMap.set(clonedNode.id, clonedNode);
           });
+
+        // helper function to check if a node has the same type as one of its
+        // ancestor nodes. This allows us to avoid including circular dependencies
+        // in the indexed nodes list.
+        const nodeHasSameTypeAsAncestor = (
+          node: QueryBuilderExplorerTreeNodeData,
+        ): boolean => {
+          if (
+            node instanceof QueryBuilderExplorerTreePropertyNodeData ||
+            node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+          ) {
+            let ancestor =
+              this.indexedExplorerTreeNodeMap.get(node.parentId) ??
+              rootNodeMap.get(node.parentId);
+            while (ancestor) {
+              if (node.type === ancestor.type) {
+                return true;
+              }
+              ancestor =
+                ancestor instanceof QueryBuilderExplorerTreePropertyNodeData ||
+                ancestor instanceof QueryBuilderExplorerTreeSubTypeNodeData
+                  ? (this.indexedExplorerTreeNodeMap.get(ancestor.parentId) ??
+                    rootNodeMap.get(ancestor.parentId))
+                  : undefined;
+            }
+          }
+          return false;
+        };
 
         // limit the depth of navigation to keep the initialization/indexing
         // time within acceptable range
@@ -336,8 +417,10 @@ export class QueryBuilderPropertySearchState {
                 ),
               );
               if (
-                propertyTreeNodeData?.mappingData.mapped &&
-                !propertyTreeNodeData.isPartOfDerivedPropertyBranch
+                propertyTreeNodeData &&
+                propertyTreeNodeData.mappingData.mapped &&
+                !propertyTreeNodeData.isPartOfDerivedPropertyBranch &&
+                !nodeHasSameTypeAsAncestor(propertyTreeNodeData)
               ) {
                 nextLevelPropertyNodes.push(propertyTreeNodeData);
                 addNode(propertyTreeNodeData);
@@ -353,7 +436,10 @@ export class QueryBuilderPropertySearchState {
                       .mappingModelCoverageAnalysisResult,
                   ),
                 );
-                if (subTypeTreeNodeData.mappingData.mapped) {
+                if (
+                  subTypeTreeNodeData.mappingData.mapped &&
+                  !nodeHasSameTypeAsAncestor(subTypeTreeNodeData)
+                ) {
                   nextLevelPropertyNodes.push(subTypeTreeNodeData);
                   addNode(subTypeTreeNodeData);
                 }
@@ -365,7 +451,7 @@ export class QueryBuilderPropertySearchState {
           // number of indexed nodes to figure out if we should proceed further
           if (
             !currentLevelPropertyNodes.length &&
-            this.indexedExplorerTreeNodes.length < NODE_LIMIT
+            this.indexedExplorerTreeNodeMap.size < NODE_LIMIT
           ) {
             currentLevelPropertyNodes = nextLevelPropertyNodes;
             nextLevelPropertyNodes = [];
@@ -388,21 +474,25 @@ export class QueryBuilderPropertySearchState {
             threshold: 0.2,
             keys: [
               {
-                name: 'path',
+                name: 'label',
                 weight: 4,
+              },
+              {
+                name: 'path',
+                weight: 2,
                 getFn: (node) => {
-                  const parentNode = this.indexedExplorerTreeNodes.find(
-                    (pn) =>
-                      node instanceof
-                        QueryBuilderExplorerTreePropertyNodeData &&
-                      node.parentId === pn.id,
-                  );
+                  const parentNode =
+                    node instanceof QueryBuilderExplorerTreePropertyNodeData ||
+                    node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+                      ? this.indexedExplorerTreeNodeMap.get(node.parentId)
+                      : undefined;
 
-                  const fullPath =
-                    parentNode instanceof
-                    QueryBuilderExplorerTreeSubTypeNodeData
+                  const fullPath = parentNode
+                    ? parentNode instanceof
+                      QueryBuilderExplorerTreeSubTypeNodeData
                       ? prettyPropertyNameForSubType(node.id)
-                      : prettyPropertyNameFromNodeId(node.id);
+                      : prettyPropertyNameFromNodeId(node.id)
+                    : '';
 
                   return fullPath;
                 },
@@ -471,61 +561,73 @@ export class QueryBuilderPropertySearchState {
     );
   }
 
-  get filteredSearchResults(): QueryBuilderExplorerTreeNodeData[] {
-    return this.searchResults.filter((node) => {
-      if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS)) {
-        if (node.type instanceof Class) {
-          return true;
-        }
-      }
-      if (
-        this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING)
-      ) {
-        if (node.type === PrimitiveType.STRING) {
-          return true;
-        }
-      }
-      if (
-        this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER)
-      ) {
-        if (
-          node.type instanceof PrimitiveType &&
-          (
-            [
-              PRIMITIVE_TYPE.NUMBER,
-              PRIMITIVE_TYPE.DECIMAL,
-              PRIMITIVE_TYPE.INTEGER,
-              PRIMITIVE_TYPE.FLOAT,
-            ] as string[]
-          ).includes(node.type.name)
-        ) {
-          return true;
-        }
-      }
-      if (
-        this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN)
-      ) {
-        if (node.type === PrimitiveType.BOOLEAN) {
-          return true;
-        }
-      }
-      if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE)) {
-        if (
-          node.type instanceof PrimitiveType &&
-          (
-            [
-              PRIMITIVE_TYPE.DATE,
-              PRIMITIVE_TYPE.DATETIME,
-              PRIMITIVE_TYPE.STRICTDATE,
-              PRIMITIVE_TYPE.STRICTTIME,
-              PRIMITIVE_TYPE.LATESTDATE,
-            ] as string[]
-          ).includes(node.type.name)
-        ) {
-          return true;
-        }
-      }
+  get indexedExplorerTreeNodes(): QueryBuilderExplorerTreeNodeData[] {
+    return Array.from(this.indexedExplorerTreeNodeMap.values());
+  }
+
+  isNodeIncludedInFilter(node: QueryBuilderExplorerTreeNodeData): boolean {
+    if (!this.includeOneMany && this.isNodeMultiple(node)) {
       return false;
-    });
+    }
+    if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS)) {
+      if (node.type instanceof Class) {
+        return true;
+      }
+    }
+    if (
+      this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.ENUMERATION)
+    ) {
+      if (node.type instanceof Enumeration) {
+        return true;
+      }
+    }
+    if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING)) {
+      if (node.type === PrimitiveType.STRING) {
+        return true;
+      }
+    }
+    if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER)) {
+      if (
+        node.type instanceof PrimitiveType &&
+        (
+          [
+            PRIMITIVE_TYPE.NUMBER,
+            PRIMITIVE_TYPE.DECIMAL,
+            PRIMITIVE_TYPE.INTEGER,
+            PRIMITIVE_TYPE.FLOAT,
+          ] as string[]
+        ).includes(node.type.name)
+      ) {
+        return true;
+      }
+    }
+    if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN)) {
+      if (node.type === PrimitiveType.BOOLEAN) {
+        return true;
+      }
+    }
+    if (this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE)) {
+      if (
+        node.type instanceof PrimitiveType &&
+        (
+          [
+            PRIMITIVE_TYPE.DATE,
+            PRIMITIVE_TYPE.DATETIME,
+            PRIMITIVE_TYPE.STRICTDATE,
+            PRIMITIVE_TYPE.STRICTTIME,
+            PRIMITIVE_TYPE.LATESTDATE,
+          ] as string[]
+        ).includes(node.type.name)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  get filteredSearchResults(): QueryBuilderExplorerTreeNodeData[] {
+    return this.searchResults.filter((node) =>
+      this.isNodeIncludedInFilter(node),
+    );
   }
 }

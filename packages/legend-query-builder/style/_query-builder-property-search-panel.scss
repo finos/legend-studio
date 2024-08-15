@@ -55,12 +55,6 @@
     overflow-y: auto;
   }
 
-  &__filter__element {
-    @include flexVCenter;
-
-    cursor: pointer;
-  }
-
   &__node__icon {
     width: 5rem;
     min-width: 5rem;
@@ -184,15 +178,10 @@
       cursor: default;
     }
 
-    &__section__toggler {
+    &__section__toggler__btn {
       @include flexVCenter;
 
-      cursor: pointer;
-    }
-
-    &__section__toggler__btn {
       align-self: flex-start;
-      padding-top: 0.2rem;
 
       svg {
         font-size: 2rem;
@@ -208,6 +197,13 @@
       &[disabled]:hover svg {
         cursor: not-allowed;
         color: var(--color-dark-grey-250);
+      }
+
+      &__container {
+        @include flexVCenter;
+
+        padding-top: 0.4rem;
+        justify-content: space-between;
       }
     }
 
@@ -233,8 +229,20 @@
       word-break: break-word;
       margin-left: 0.8rem;
       color: var(--color-light-grey-400);
-      line-height: 2rem;
+      height: 2.2rem;
+      line-height: 2.4rem;
       cursor: pointer;
+    }
+
+    &__section__toggler__only-btn {
+      color: var(--color-blue-40);
+      font-size: 1.2rem;
+      height: 2.2rem;
+      line-height: 2.2rem;
+
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 
