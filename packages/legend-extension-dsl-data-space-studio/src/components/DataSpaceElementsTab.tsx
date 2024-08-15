@@ -20,100 +20,99 @@ import type { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
   CustomSelectorInput,
   PanelFormBooleanField,
-  PanelFormSection,
   PanelFormTextField,
-  TrashIcon,
 } from '@finos/legend-art';
 import {
   Association,
   Class,
   Enumeration,
   Package,
-  PackageableElementExplicitReference,
   type PackageableElementReference,
 } from '@finos/legend-graph';
-import type { DataSpaceElement } from '@finos/legend-extension-dsl-data-space/graph';
+import { type DataSpaceElement } from '@finos/legend-extension-dsl-data-space/graph';
 
-interface ElementsTabProps {
-  dataSpaceEditorState: DataSpaceEditorState;
-}
-
-interface ElementOption {
-  label: string;
-  value: PackageableElementReference<DataSpaceElement>;
-}
-
-export const DataSpaceElementsTab: React.FC<ElementsTabProps> = observer(
-  ({ dataSpaceEditorState }) => {
-    const handleElementChange = (
-      index: number,
-      element: PackageableElementReference<DataSpaceElement>,
-    ) => {
-      const updatedElements = [...dataSpaceEditorState.elements];
-      if (updatedElements[index]) {
-        updatedElements[index].element = element;
+export const DataSpaceElementsTab = observer(
+  ({
+    dataSpaceEditorState,
+  }: {
+    dataSpaceEditorState: DataSpaceEditorState;
+  }) => {
+    const handleElementChange = (option: {
+      value: PackageableElementReference<DataSpaceElement>;
+    }): void => {
+      if (dataSpaceEditorState.selectedElementPointer) {
+        dataSpaceEditorState.selectedElementPointer.element = option.value;
+      }
+      if (dataSpaceEditorState.selectedElementPointer) {
+        dataSpaceEditorState.setSelectedElementPointer(
+          dataSpaceEditorState.selectedElementPointer,
+        );
       }
     };
 
-    // const handleExcludeChange = (index: number, exclude: boolean) => {
-    //   const updatedElements = [...dataSpaceEditorState.elements];
-    //   if (updatedElements[index]) {
-    //     dataSpaceEditorState.setExcludeForElement(
-    //       updatedElements[index],
-    //       exclude,
-    //     );
-    //   }
-    // };
+    const handleNameChange = (value: string | undefined): void => {
+      if (value !== undefined) {
+        const elementPointer = dataSpaceEditorState.selectedElementPointer;
+        if (elementPointer) {
+          elementPointer.element.value.name = value;
+        }
+      }
+    };
 
-    // const elementOptions: ElementOption[] = dataSpaceEditorState.editorStore.graphManagerState.graph.ownElements
-    //   .filter(
-    //     (el) => el instanceof Class || el instanceof Enumeration || el instanceof Association || el instanceof Package,
-    //   )
-    //   .map((el) => ({
-    //     label: el.path,
-    //     value: PackageableElementExplicitReference.create(el as DataSpaceElement),
-    //   }));
+    const handleExcludeChange = (value: boolean | undefined): void => {
+      if (dataSpaceEditorState.selectedElementPointer && value !== undefined) {
+        dataSpaceEditorState.updateElementExclude(
+          dataSpaceEditorState.selectedElementPointer,
+          value,
+        );
+      }
+    };
 
-    // const handleExcludeChange = (index: number, exclude: boolean) => {
-    //   const elementPointer = dataSpaceEditorState.dataSpace.elements?.[index];
-    //   if (elementPointer) {
-    //     elementPointer.exclude = exclude;
-    //   }
-    // };
-
-    // const elementOptions =
-    //   dataSpaceEditorState.editorStore.graphManagerState.graph.allElements
-    //     .filter(
-    //       (el) =>
-    //         el instanceof Package ||
-    //         el instanceof Class ||
-    //         el instanceof Enumeration ||
-    //         el instanceof Association,
-    //     )
-    //     .map((el) => ({
-    //       label: el.path,
-    //       value: PackageableElementExplicitReference.create(
-    //         el as DataSpaceElement,
-    //       ),
-    //     }));
+    const elementOptions =
+      dataSpaceEditorState.editorStore.graphManagerState.usableElements
+        .filter(
+          (element) =>
+            element instanceof Class ||
+            element instanceof Package ||
+            element instanceof Enumeration ||
+            element instanceof Association,
+        )
+        .map((element) => ({
+          label: element.path,
+          value: element,
+        }));
 
     return (
-      <div className="data-space-elements-tab">
-        {dataSpaceEditorState.elements.map((elementPointer, index) => (
-          <PanelFormSection key={elementPointer.element.value.hashCode}>
-            <CustomSelectorInput
-              options={dataSpaceEditorState.elementOptions}
-              onChange={(option: ElementOption) =>
-                handleElementChange(index, option.value)
-              }
-              value={{
-                label: elementPointer.element.value.path,
-                value: elementPointer.element,
-              }}
-            />
-            {/* Add additional controls for `exclude` or other properties */}
-          </PanelFormSection>
-        ))}
+      <div>
+        <CustomSelectorInput
+          options={elementOptions}
+          onChange={handleElementChange}
+          value={{
+            label:
+              dataSpaceEditorState.selectedElementPointer?.element.value.name ??
+              'Select an element',
+            value: dataSpaceEditorState.selectedElementPointer?.element,
+          }}
+          placeholder="Select Element"
+        />
+        {dataSpaceEditorState.selectedElementPointer && (
+          <PanelFormTextField
+            name="Element Name"
+            value={
+              dataSpaceEditorState.selectedElementPointer.element.value.name
+            }
+            update={handleNameChange}
+            placeholder="Enter element name"
+          />
+        )}
+        {dataSpaceEditorState.selectedElementPointer && (
+          <PanelFormBooleanField
+            name="Exclude Element"
+            value={!!dataSpaceEditorState.selectedElementPointer.exclude}
+            update={handleExcludeChange}
+            isReadOnly={true}
+          />
+        )}
       </div>
     );
   },

@@ -74,17 +74,17 @@ export const DataSpaceEditor = observer(() => {
   const typeNameRef = useRef<HTMLInputElement>(null);
   const dataSpaceEditorState =
     editorStore.tabManagerState.getCurrentEditorState(DataSpaceEditorState);
-  const isReadOnly = dataSpaceEditorState.isReadOnly;
+  // const isReadOnly = dataSpaceEditorState.isReadOnly;
   const dataSpaceElement = dataSpaceEditorState.dataSpace;
   const [emailsInputValue, setEmailsInputValue] = useState<string>('');
   const [showEmailsEditInput, setShowEmailsEditInput] = useState<number | null>(
     null,
   );
-  useEffect(() => {
-    if (!isReadOnly) {
-      typeNameRef.current?.focus();
-    }
-  }, [isReadOnly]);
+  // useEffect(() => {
+  //   if (!isReadOnly) {
+  //     typeNameRef.current?.focus();
+  //   }
+  // }, [isReadOnly]);
 
   const handleTitleChange = (value: string | undefined): void => {
     set_title(dataSpaceElement, value);
@@ -140,11 +140,21 @@ export const DataSpaceEditor = observer(() => {
   };
 
   const handleSupportInfoTypeChange = (option: Option) => {
-    dataSpaceEditorState.setSelectedSupportInfoType(
-      option.value as SUPPORT_INFO_TYPE,
-    );
-    set_supportInfotype(dataSpaceElement, option.value);
+    const value = option.value;
+    if (Object.values(SUPPORT_INFO_TYPE).includes(value as SUPPORT_INFO_TYPE)) {
+      dataSpaceEditorState.setSelectedSupportInfoType(
+        value as SUPPORT_INFO_TYPE,
+      );
+      set_supportInfotype(dataSpaceElement, value as SUPPORT_INFO_TYPE);
+    }
   };
+
+  // const handleSupportInfoTypeChange = (option: Option) => {
+  //   dataSpaceEditorState.setSelectedSupportInfoType(
+  //     option.value as SUPPORT_INFO_TYPE,
+  //   );
+  //   set_supportInfotype(dataSpaceElement, option.value);
+  // };
 
   const selectedTab = dataSpaceEditorState.selectedTab;
   const selectedSupportInfoType = dataSpaceEditorState.selectedSupportInfoType;
@@ -183,7 +193,7 @@ export const DataSpaceEditor = observer(() => {
   ) => setEmailsInputValue(event.target.value);
 
   const addEmail = (): void => {
-    if (emailsInputValue && !isReadOnly && !emails.includes(emailsInputValue)) {
+    if (emailsInputValue && !emails.includes(emailsInputValue)) {
       handleEmailsChange([...emails, emailsInputValue]);
     }
     hideAddOrEditEmailInput();
@@ -192,11 +202,7 @@ export const DataSpaceEditor = observer(() => {
   const updateEmail =
     (index: number): (() => void) =>
     (): void => {
-      if (
-        emailsInputValue &&
-        !isReadOnly &&
-        !emails.includes(emailsInputValue)
-      ) {
+      if (emailsInputValue && !emails.includes(emailsInputValue)) {
         const updatedEmails = [...emails];
         updatedEmails[index] = emailsInputValue;
         handleEmailsChange(updatedEmails);
@@ -206,10 +212,8 @@ export const DataSpaceEditor = observer(() => {
   const deleteEmail =
     (index: number): (() => void) =>
     (): void => {
-      if (!isReadOnly) {
-        const updatedEmails = emails.filter((_, idx) => idx !== index);
-        handleEmailsChange(updatedEmails);
-      }
+      const updatedEmails = emails.filter((_, idx) => idx !== index);
+      handleEmailsChange(updatedEmails);
     };
 
   const renderTabContent = (): React.ReactNode => {
@@ -245,7 +249,7 @@ export const DataSpaceEditor = observer(() => {
                 value={SUPPORT_INFO_TYPE_OPTIONS.find(
                   (option) => option.value === selectedSupportInfoType,
                 )}
-                disabled={isReadOnly}
+                // disabled={isReadOnly}
                 darkMode={true}
               />
             </PanelFormListItems>
@@ -294,9 +298,7 @@ export const DataSpaceEditor = observer(() => {
                             <button
                               title="savebtn"
                               className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                              disabled={
-                                isReadOnly || emails.includes(emailsInputValue)
-                              }
+                              disabled={emails.includes(emailsInputValue)}
                               onClick={updateEmail(index)}
                               tabIndex={-1}
                             >
@@ -305,7 +307,6 @@ export const DataSpaceEditor = observer(() => {
                             <button
                               title="cancelbtn"
                               className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
-                              disabled={isReadOnly}
                               onClick={hideAddOrEditEmailInput}
                               tabIndex={-1}
                             >
@@ -322,7 +323,6 @@ export const DataSpaceEditor = observer(() => {
                             <button
                               title="showbtn"
                               className="panel__content__form__section__list__item__edit-btn"
-                              disabled={isReadOnly}
                               onClick={() => setShowEmailsEditInput(index)}
                               tabIndex={-1}
                             >
@@ -331,7 +331,6 @@ export const DataSpaceEditor = observer(() => {
                             <button
                               title="deletebtn"
                               className="panel__content__form__section__list__item__remove-btn"
-                              disabled={isReadOnly}
                               onClick={deleteEmail(index)}
                               tabIndex={-1}
                             >
@@ -360,9 +359,7 @@ export const DataSpaceEditor = observer(() => {
                           <button
                             title="addbtn"
                             className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                            disabled={
-                              isReadOnly || emails.includes(emailsInputValue)
-                            }
+                            disabled={emails.includes(emailsInputValue)}
                             onClick={addEmail}
                             tabIndex={-1}
                           >
@@ -371,7 +368,6 @@ export const DataSpaceEditor = observer(() => {
                           <button
                             title="deletebtn"
                             className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
-                            disabled={isReadOnly}
                             onClick={hideAddOrEditEmailInput}
                             tabIndex={-1}
                           >

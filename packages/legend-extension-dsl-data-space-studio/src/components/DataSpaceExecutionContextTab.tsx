@@ -94,9 +94,9 @@ const ExecutionContextMenu = observer(
 }
 
 interface ExecutionContextItemProps {
-  executionContext: DataSpaceExecutionContext; // The execution context to display
-  dataSpaceEditorState: DataSpaceEditorState; // The state of the data space, which includes all execution contexts is it right?
-  idx: number; // The index of this execution context in the list
+  executionContext: DataSpaceExecutionContext;
+  dataSpaceEditorState: DataSpaceEditorState;
+  idx: number;
 }
 
 const ExecutionContextItem: React.FC<ExecutionContextItemProps> = observer(
@@ -104,16 +104,13 @@ const ExecutionContextItem: React.FC<ExecutionContextItemProps> = observer(
     const { executionContext, dataSpaceEditorState, idx } = props;
     const applicationStore = useApplicationStore();
 
-    //Determine if it exists
     const isActive =
       dataSpaceEditorState.selectedExecutionContext === executionContext;
 
-    //open and display on the right side
     const openContext = (): void => {
       dataSpaceEditorState.setSelectedExecutionContext(executionContext);
     };
 
-    // remove the selected
     const deleteContext = (): void => {
       const index = dataSpaceEditorState.dataSpace.executionContexts.findIndex(
         (ctx) => ctx === executionContext,
@@ -121,7 +118,6 @@ const ExecutionContextItem: React.FC<ExecutionContextItemProps> = observer(
       if (index > -1) {
         dataSpaceEditorState.dataSpace.executionContexts.splice(index, 1);
 
-        //if selected and removed jsut clear the window
         if (
           isActive ||
           dataSpaceEditorState.dataSpace.executionContexts.length === 0

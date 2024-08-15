@@ -1,0 +1,89 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.data-space-diagram-editor {
+  background: var(--color-dark-grey-50);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .half-width-panel-header {
+    background: var(--color-dark-grey-50);
+    width: 50%;
+  }
+
+  .data-space-diagram__content {
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden;
+  }
+
+  .data-space-diagram-details {
+    padding: 1rem;
+    background: var(--color-dark-grey-75);
+  }
+}
+
+.diagram-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  cursor: pointer;
+  background: var(--color-dark-grey-50);
+  border-bottom: 1px solid var(--color-dark-grey-100);
+
+  &--active {
+    background: var(--color-light-blue-450);
+    color: var(--color-light-grey-50);
+  }
+
+  &:hover {
+    background: var(--color-dark-grey-100);
+  }
+
+  &__label {
+    flex-grow: 1;
+    padding-left: 1rem;
+    color: var(--color-light-grey-50);
+
+    &__text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__action {
+    color: var(--color-light-grey-50);
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-light-grey-400);
+    }
+  }
+}

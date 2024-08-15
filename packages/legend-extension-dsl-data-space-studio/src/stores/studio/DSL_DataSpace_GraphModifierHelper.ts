@@ -37,11 +37,16 @@ import {
   type PackageableElementReference,
   type PackageableRuntime,
 } from '@finos/legend-graph';
+<<<<<<< HEAD
 import { addUniqueEntry } from '@finos/legend-shared';
 // import type { PackageableElementReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 // import type { Mapping } from '../../../../legend-graph/src/graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 // import type { PackageableRuntime } from '../../../../legend-graph/src/graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 // import type { DataElementReference } from '../../../../legend-graph/src/graph/metamodel/pure/data/EmbeddedData.js';
+=======
+import type { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
+import { SUPPORT_INFO_TYPE } from '../DataSpaceEditorState.js';
+>>>>>>> elements finished
 
 export const set_title = action(
   (dataSpace: DataSpace, type: string | undefined): void => {
@@ -91,17 +96,35 @@ export const set_faqUrl = action(
   },
 );
 
+// export const set_supportInfotype = action(
+//   (dataSpace: DataSpace, type: string) => {
+//     if (type === 'Email') {
+//       dataSpace.supportInfo = new DataSpaceSupportEmail();
+//       observe_DataSpaceSupportInfo(dataSpace.supportInfo);
+//     } else if (type === 'CombinedInfo') {
+//       dataSpace.supportInfo = new DataSpaceSupportCombinedInfo();
+//       observe_DataSpaceSupportInfo(dataSpace.supportInfo);
+//     }
+//   },
+// );
+
 export const set_supportInfotype = action(
-  (dataSpace: DataSpace, type: string) => {
-    if (type === 'Email') {
-      dataSpace.supportInfo = new DataSpaceSupportEmail();
-      observe_DataSpaceSupportInfo(dataSpace.supportInfo);
-    } else if (type === 'CombinedInfo') {
-      dataSpace.supportInfo = new DataSpaceSupportCombinedInfo();
-      observe_DataSpaceSupportInfo(dataSpace.supportInfo);
+  (dataSpace: DataSpace, type: SUPPORT_INFO_TYPE) => {
+    switch (type) {
+      case SUPPORT_INFO_TYPE.EMAIL:
+        dataSpace.supportInfo = new DataSpaceSupportEmail();
+        break;
+      case SUPPORT_INFO_TYPE.COMBINED_INFO:
+        dataSpace.supportInfo = new DataSpaceSupportCombinedInfo();
+        break;
+      default:
+        dataSpace.supportInfo = new DataSpaceSupportEmail();
+        break;
     }
+    observe_DataSpaceSupportInfo(dataSpace.supportInfo);
   },
 );
+
 export const set_executionContexts = action(
   (dataSpace: DataSpace, contexts: DataSpaceExecutionContext[]): void => {
     dataSpace.executionContexts = contexts;
@@ -166,9 +189,39 @@ export const dataSpace_addExecutionContext = action(
 );
 
 export const set_dataSpaceDiagram = action(
-  (dataSpace: DataSpace, contexts: DataSpaceDiagram[]): void => {
-    dataSpace.diagrams = contexts;
-    contexts.forEach((context) => observe_DataSpaceDiagram(context));
+  (
+    dataSpaceDiagram: DataSpaceDiagram,
+    diagram: PackageableElementReference<Diagram>,
+  ): void => {
+    if (!diagram) {
+      throw new Error('Invalid diagram reference');
+    }
+    dataSpaceDiagram.diagram = diagram;
+  },
+);
+
+export const set_dataSpaceDiagramDescription = action(
+  (dataSpaceDiagram: DataSpaceDiagram, description: string): void => {
+    dataSpaceDiagram.description = description;
+  },
+);
+
+export const set_dataSpaceDiagramTitle = action(
+  (dataSpaceDiagram: DataSpaceDiagram, title: string): void => {
+    dataSpaceDiagram.title = title;
+  },
+);
+
+export const addDataSpaceDiagram = action(
+  (dataSpace: DataSpace, diagram: DataSpaceDiagram): void => {
+    dataSpace.diagrams = dataSpace.diagrams ?? [];
+    dataSpace.diagrams.push(observe_DataSpaceDiagram(diagram));
+  },
+);
+
+export const removeDataSpaceDiagram = action(
+  (dataSpace: DataSpace, diagram: DataSpaceDiagram): void => {
+    dataSpace.diagrams = dataSpace.diagrams?.filter((d) => d !== diagram);
   },
 );
 
@@ -179,30 +232,15 @@ export const set_dataSpaceElements = action(
   },
 );
 
+export const setElementExclude = action(
+  (element: DataSpaceElementPointer, exclude: boolean): void => {
+    element.exclude = exclude;
+  },
+);
+
 export const set_dataSpaceExecutables = action(
   (dataSpace: DataSpace, executables: DataSpaceExecutable[]): void => {
     dataSpace.executables = executables;
     executables.forEach(observe_DataSpaceExecutable);
   },
 );
-
-// export const set_dataSpaceElements = action(
-//   (dataSpace: DataSpace, elements: DataSpaceElementPointer[]): void => {
-//     dataSpace.elements = elements;
-//     elements.forEach(observe_DataSpaceElementPointer);
-//   },
-// );
-
-// export const set_dataSpaceExecutables = action(
-//   (dataSpace: DataSpace, executables: DataSpaceExecutable[]): void => {
-//     dataSpace.executables = executables;
-//     executables.forEach(observe_DataSpaceExecutable);
-//   },
-// );
-
-// export const set_dataSpaceExecutables = action(
-//   (dataSpace: DataSpace, executables: DataSpacePackageableElementExecutable[]): void => {
-//     dataSpace.executables = executables;
-//     executables.forEach(observe_DataSpaceExecutable);
-//   },
-// );

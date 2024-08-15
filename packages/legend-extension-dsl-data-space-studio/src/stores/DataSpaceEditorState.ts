@@ -30,6 +30,10 @@ import {
 } from '@finos/legend-graph';
 import {
   DataSpace,
+<<<<<<< HEAD
+=======
+  DataSpaceDiagram,
+>>>>>>> elements finished
   DataSpaceExecutionContext,
   DataSpaceSupportEmail,
   observe_DataSpaceExecutionContext,
@@ -43,8 +47,16 @@ import {
   DataSpacePackageableElementExecutable,
   type DataSpaceElement,
   DataSpaceSupportCombinedInfo,
+  observe_DataSpaceSupportInfo,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { guaranteeType } from '@finos/legend-shared';
+import {
+  addDataSpaceDiagram,
+  removeDataSpaceDiagram,
+  set_dataSpaceElements,
+  setElementExclude,
+} from './studio/DSL_DataSpace_GraphModifierHelper.js';
+import { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
 
 export enum SUPPORT_INFO_TYPE {
   EMAIL = 'Email',
@@ -62,10 +74,7 @@ export enum DATASPACE_TAB {
 >>>>>>> elements and executable finished
 }
 export class DataSpaceEditorState extends ElementEditorState {
-  // removeExecutable(executable: DataSpacePackageableElementExecutable) {
-  //   throw new Error('Method not implemented.');
-  // }
-  selectedSupportInfoType?: SUPPORT_INFO_TYPE;
+  selectedSupportInfoType: SUPPORT_INFO_TYPE;
   selectedTab: DATASPACE_TAB = DATASPACE_TAB.GENERAL;
 <<<<<<< HEAD
   selectedExecutionContext?: DataSpaceExecutionContext;
@@ -76,13 +85,18 @@ export class DataSpaceEditorState extends ElementEditorState {
 =======
   selectedExecutionContext?: DataSpaceExecutionContext | null = null;
   diagrams: DataSpaceDiagram[] = [];
+<<<<<<< HEAD
   selectedDiagram?: DataSpaceDiagram;
 <<<<<<< HEAD
 >>>>>>> executionContext is finished
 =======
+=======
+  selectedDiagram?: DataSpaceDiagram | null = null;
+>>>>>>> elements finished
   elements: DataSpaceElementPointer[] = [];
   selectedElementPointer?: DataSpaceElementPointer;
   executables: DataSpaceExecutable[] = [];
+  // elementOptions: any;
   // selectedExecutable?: DataSpaceExecutable;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
@@ -90,23 +104,33 @@ export class DataSpaceEditorState extends ElementEditorState {
 
     makeObservable(this, {
       dataSpace: computed,
-      elementOptions: computed,
+      // elementOptions: computed,
       selectedSupportInfoType: observable,
       selectedTab: observable,
       selectedExecutionContext: observable,
+<<<<<<< HEAD
 <<<<<<< HEAD
       newExecutionContextName: observable,
       selectedMapping: observable,
       selectedRuntime: observable,
 =======
       selectedDiagram: observable,
+=======
+      // selectedDiagram: observable,
+>>>>>>> elements finished
       elements: observable,
       executables: observable,
       selectedElementPointer: observable,
       // selectedExecutable: observable,
       setDiagrams: action,
+<<<<<<< HEAD
       selectDiagram: action,
 >>>>>>> executionContext is finished
+=======
+      setSelectedDiagram: action,
+      addDiagram: action,
+      removeDiagram: action,
+>>>>>>> elements finished
       setSelectedSupportInfoType: action,
       setSelectedTab: action,
       setSelectedExecutionContext: action,
@@ -122,23 +146,22 @@ export class DataSpaceEditorState extends ElementEditorState {
 =======
       setElements: action,
       selectElementPointer: action,
+      setSelectedElementPointer: action,
       setExecutables: action,
-      // selectExecutable: action,
-      // addExecutable: action,
-      // removeExecutable: action,
       reprocess: action,
     });
 
     if (!this.dataSpace.supportInfo) {
-      this.dataSpace.supportInfo = new DataSpaceSupportCombinedInfo();
+      this.dataSpace.supportInfo = new DataSpaceSupportEmail();
+      observe_DataSpaceSupportInfo(this.dataSpace.supportInfo);
     }
+    this.selectedSupportInfoType = SUPPORT_INFO_TYPE.EMAIL;
 
-    this.selectedSupportInfoType =
-      this.dataSpace.supportInfo instanceof DataSpaceSupportEmail
-        ? SUPPORT_INFO_TYPE.EMAIL
-        : SUPPORT_INFO_TYPE.COMBINED_INFO;
+    // this.selectedSupportInfoType =
+    //   this.dataSpace.supportInfo instanceof DataSpaceSupportEmail
+    //     ? SUPPORT_INFO_TYPE.EMAIL
+    //     : SUPPORT_INFO_TYPE.COMBINED_INFO;
 
-    this.diagrams = this.dataSpace.diagrams ?? [];
     this.elements = this.dataSpace.elements ?? [];
     this.executables = this.dataSpace.executables ?? [];
   }
@@ -149,40 +172,6 @@ export class DataSpaceEditorState extends ElementEditorState {
       DataSpace,
       'Element inside text element editor state must be a DataSpace',
     );
-  }
-
-  // get elementOptions(): {
-  //   label: string;
-  //   value: PackageableElementReference<DataSpaceElement>;
-  // }[] {
-  //   return this.editorStore.graphManagerState.graph.allOwnElements
-  //     .filter(
-  //       (elements) =>
-  //         elements instanceof Package ||
-  //         elements instanceof Class ||
-  //         elements instanceof Enumeration ||
-  //         elements instanceof Association,
-  //     )
-  //     .map((elements) => ({
-  //       label: elements.path,
-  //       value: PackageableElementExplicitReference.create(
-  //         elements as DataSpaceElement,
-  //       ),
-  //     }));
-  // }
-
-  get elementOptions(): {
-    label: string;
-    value: PackageableElementReference<DataSpaceElement>;
-  }[] {
-    return this.editorStore.graphManagerState.graph.allOwnElements
-      .filter((el) => el instanceof Class || el instanceof Association)
-      .map((el) => ({
-        label: el.path,
-        value: PackageableElementExplicitReference.create(
-          el as DataSpaceElement,
-        ),
-      }));
   }
 
   // Actions to modify state
@@ -232,7 +221,6 @@ export class DataSpaceEditorState extends ElementEditorState {
     newContext.defaultRuntime = defaultRuntime;
 =======
   addExecutionContext(): void {
-    // Check if a default mapping and runtime are available
     const defaultMapping = this.editorStore.graphManagerState.usableMappings[0];
     const defaultRuntime = this.editorStore.graphManagerState.usableRuntimes[0];
 
@@ -240,8 +228,6 @@ export class DataSpaceEditorState extends ElementEditorState {
       console.error('Default Mapping and Runtime are required.');
       return;
     }
-
-    // Create a new execution context with default values
     const newContext = new DataSpaceExecutionContext();
     newContext.name = `ExecutionContext ${this.dataSpace.executionContexts.length + 1}`;
     newContext.title = `Title for ${newContext.name}`;
@@ -250,11 +236,13 @@ export class DataSpaceEditorState extends ElementEditorState {
       PackageableElementExplicitReference.create(defaultMapping);
     newContext.defaultRuntime =
       PackageableElementExplicitReference.create(defaultRuntime);
-
     observe_DataSpaceExecutionContext(newContext);
+<<<<<<< HEAD
 
     // Add the new context to the dataSpace and select it
 >>>>>>> executionContext is finished
+=======
+>>>>>>> elements finished
     this.dataSpace.executionContexts.push(newContext);
     this.setSelectedExecutionContext(newContext);
     this.setDefaultExecutionContext(newContext);
@@ -265,45 +253,72 @@ export class DataSpaceEditorState extends ElementEditorState {
 =======
   setDiagrams(diagrams: DataSpaceDiagram[]): void {
     this.diagrams = diagrams;
-    this.diagrams.forEach(observe_DataSpaceDiagram);
   }
 
-  selectDiagram(diagram: DataSpaceDiagram): void {
+  addDiagram(): void {
+    const defaultDiagram =
+      this.editorStore.graphManagerState.graph.allElements.find(
+        (element) => element instanceof Diagram,
+      ) as Diagram | undefined;
+
+    if (!defaultDiagram) {
+      console.error('Default Diagram is required.');
+      return;
+    }
+    const newDiagram = new DataSpaceDiagram();
+
+    const diagramCount = this.dataSpace.diagrams?.length ?? 0;
+    newDiagram.title = `Diagram ${diagramCount + 1}`;
+    newDiagram.description = `Description for ${newDiagram.title}`;
+    newDiagram.diagram =
+      PackageableElementExplicitReference.create(defaultDiagram);
+    observe_DataSpaceDiagram(newDiagram);
+    this.dataSpace.diagrams = this.dataSpace.diagrams ?? [];
+    this.dataSpace.diagrams.push(newDiagram);
+    this.setSelectedDiagram(null);
+    this.setSelectedDiagram(newDiagram);
+    this.setSelectedTab(DATASPACE_TAB.DIAGRAM);
+  }
+
+  setSelectedDiagram(diagram: DataSpaceDiagram | null): void {
     this.selectedDiagram = diagram;
   }
 
+  removeDiagram(diagram: DataSpaceDiagram): void {
+    removeDataSpaceDiagram(this.dataSpace, diagram);
+    this.setDiagrams(this.dataSpace.diagrams ?? []);
+    if (this.selectedDiagram === diagram) {
+      this.setSelectedDiagram(null);
+    }
+  }
+
   setElements(elements: DataSpaceElementPointer[]): void {
-    this.elements = elements;
-    // this.elements.forEach(observe_DataSpaceElementPointer);
+    elements.forEach(observe_DataSpaceElementPointer);
+    set_dataSpaceElements(this.dataSpace, elements);
+    this.elements = this.dataSpace.elements ?? [];
   }
 
-  selectElementPointer(elementPointer: DataSpaceElementPointer): void {
-    this.selectedElementPointer = elementPointer;
+  setSelectedElementPointer(element: DataSpaceElementPointer): void {
+    this.selectedElementPointer = element;
+    observe_DataSpaceElementPointer(element);
   }
 
-  // setExcludeForElementPointer(
-  //   elementPointer: DataSpaceElementPointer,
-  //   exclude: boolean,
-  // ): void {
-  //   elementPointer.exclude = exclude;
-  // }
+  updateElementExclude(
+    element: DataSpaceElementPointer,
+    exclude: boolean,
+  ): void {
+    setElementExclude(element, exclude);
+  }
 
-  // setExcludeForElement(
-  //   elementPointer: DataSpaceElementPointer,
-  //   exclude: boolean,
-  // ): void {
-  //   const index = this.elements.findIndex((el) => el === elementPointer);
-  //   if (index !== -1) {
-  //     this.elements[index].exclude = exclude;
-  //   }
-  // }
+  selectElementPointer(element: DataSpaceElementPointer): void {
+    this.selectedElementPointer = element;
+  }
 
-  // removeElement(elementPointer: DataSpaceElementPointer): void {
-  //   const index = this.elements.findIndex((el) => el === elementPointer);
-  //   if (index !== -1) {
-  //     this.elements.splice(index, 1);
-  //   }
-  // }
+  updateSelectedElementPointer(
+    newElementPointer: DataSpaceElementPointer,
+  ): void {
+    this.selectedElementPointer = newElementPointer;
+  }
 
   setExecutables(executables: DataSpaceExecutable[]): void {
     this.executables = executables;

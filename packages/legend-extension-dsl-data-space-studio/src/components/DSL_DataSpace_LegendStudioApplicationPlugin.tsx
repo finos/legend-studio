@@ -51,7 +51,9 @@ import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 import {
   DataSpace,
   DataSpaceExecutionContext,
+  DataSpaceSupportEmail,
   observe_DataSpace,
+  observe_DataSpaceSupportInfo,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
 import { DataSpacePreviewState } from '../stores/DataSpacePreviewState.js';
@@ -188,6 +190,7 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
       ): PackageableElement | undefined => {
         if (type === DATA_SPACE_ELEMENT_TYPE) {
           const dataSpace = new DataSpace(name);
+
           const dataSpaceExecutionContext = new DataSpaceExecutionContext();
           dataSpaceExecutionContext.name = 'dummyContext';
           dataSpaceExecutionContext.mapping =
