@@ -20,12 +20,7 @@ import {
   ElementEditorState,
 } from '@finos/legend-application-studio';
 import {
-  Association,
-  Class,
-  Enumeration,
-  Package,
   PackageableElementExplicitReference,
-  type PackageableElementReference,
   type PackageableElement,
 } from '@finos/legend-graph';
 import {
@@ -43,15 +38,10 @@ import {
   type DataSpaceElementPointer,
   observe_DataSpaceElementPointer,
   type DataSpaceExecutable,
-  observe_DataSpaceExecutable,
-  DataSpacePackageableElementExecutable,
-  type DataSpaceElement,
-  DataSpaceSupportCombinedInfo,
   observe_DataSpaceSupportInfo,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { guaranteeType } from '@finos/legend-shared';
 import {
-  addDataSpaceDiagram,
   removeDataSpaceDiagram,
   set_dataSpaceElements,
   setElementExclude,
@@ -96,17 +86,15 @@ export class DataSpaceEditorState extends ElementEditorState {
   elements: DataSpaceElementPointer[] = [];
   selectedElementPointer?: DataSpaceElementPointer;
   executables: DataSpaceExecutable[] = [];
-  // elementOptions: any;
-  // selectedExecutable?: DataSpaceExecutable;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
     makeObservable(this, {
       dataSpace: computed,
-      // elementOptions: computed,
       selectedSupportInfoType: observable,
       selectedTab: observable,
+<<<<<<< HEAD
       selectedExecutionContext: observable,
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -118,10 +106,11 @@ export class DataSpaceEditorState extends ElementEditorState {
 =======
       // selectedDiagram: observable,
 >>>>>>> elements finished
+=======
+>>>>>>> clean up
       elements: observable,
       executables: observable,
       selectedElementPointer: observable,
-      // selectedExecutable: observable,
       setDiagrams: action,
 <<<<<<< HEAD
       selectDiagram: action,
@@ -156,11 +145,6 @@ export class DataSpaceEditorState extends ElementEditorState {
       observe_DataSpaceSupportInfo(this.dataSpace.supportInfo);
     }
     this.selectedSupportInfoType = SUPPORT_INFO_TYPE.EMAIL;
-
-    // this.selectedSupportInfoType =
-    //   this.dataSpace.supportInfo instanceof DataSpaceSupportEmail
-    //     ? SUPPORT_INFO_TYPE.EMAIL
-    //     : SUPPORT_INFO_TYPE.COMBINED_INFO;
 
     this.elements = this.dataSpace.elements ?? [];
     this.executables = this.dataSpace.executables ?? [];
@@ -325,6 +309,7 @@ export class DataSpaceEditorState extends ElementEditorState {
     this.dataSpace.executables = executables;
   }
 
+<<<<<<< HEAD
   // selectExecutable(executable: DataSpaceExecutable): void {
   //   this.selectedExecutable = executable;
   // }
@@ -347,6 +332,8 @@ export class DataSpaceEditorState extends ElementEditorState {
 
   // Reprocess the state when the underlying element is replaced
 >>>>>>> elements and executable finished
+=======
+>>>>>>> clean up
   override reprocess(
     newElement: PackageableElement,
     editorStore: EditorStore,

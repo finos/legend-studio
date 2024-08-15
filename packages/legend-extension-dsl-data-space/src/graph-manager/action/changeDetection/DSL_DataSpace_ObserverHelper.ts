@@ -34,9 +34,6 @@ import {
   type DataSpaceDiagram,
   type DataSpaceElementPointer,
   type DataSpaceExecutable,
-  DataSpaceExecutableTemplate,
-  DataSpacePackageableElementExecutable,
->>>>>>> elements and executable finished
 } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 
 export const observe_DataSpaceSupportInfo = (
@@ -94,27 +91,6 @@ export const observe_DataSpaceElementPointer = (
   });
   return elementPointer;
 };
-
-// export const observe_DataSpaceExecutable = (
-//   executable: DataSpaceExecutable,
-// ): DataSpaceExecutable => {
-//   if (executable instanceof DataSpacePackageableElementExecutable) {
-//     makeObservable(executable, {
-//       title: observable,
-//       description: observable,
-//       executable: observable,
-//     });
-//   } else if (executable instanceof DataSpaceExecutableTemplate) {
-//     makeObservable(executable, {
-//       title: observable,
-//       description: observable,
-//       id: observable,
-//       query: observable,
-//       executionContextKey: observable,
-//     });
-//   }
-//   return executable;
-// };
 
 export const observe_DataSpaceExecutable = (
   executable: DataSpaceExecutable,

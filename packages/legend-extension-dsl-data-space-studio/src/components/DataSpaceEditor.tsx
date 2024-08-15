@@ -49,7 +49,7 @@ import {
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { DataSpaceExecutionContextTab } from './DataSpaceExecutionContextTab.js';
 import { DataSpaceDigramTab } from './DataSpaceDiagramTab.js';
 
@@ -71,20 +71,13 @@ interface Option {
 
 export const DataSpaceEditor = observer(() => {
   const editorStore = useEditorStore();
-  const typeNameRef = useRef<HTMLInputElement>(null);
   const dataSpaceEditorState =
     editorStore.tabManagerState.getCurrentEditorState(DataSpaceEditorState);
-  // const isReadOnly = dataSpaceEditorState.isReadOnly;
   const dataSpaceElement = dataSpaceEditorState.dataSpace;
   const [emailsInputValue, setEmailsInputValue] = useState<string>('');
   const [showEmailsEditInput, setShowEmailsEditInput] = useState<number | null>(
     null,
   );
-  // useEffect(() => {
-  //   if (!isReadOnly) {
-  //     typeNameRef.current?.focus();
-  //   }
-  // }, [isReadOnly]);
 
   const handleTitleChange = (value: string | undefined): void => {
     set_title(dataSpaceElement, value);
@@ -148,13 +141,6 @@ export const DataSpaceEditor = observer(() => {
       set_supportInfotype(dataSpaceElement, value as SUPPORT_INFO_TYPE);
     }
   };
-
-  // const handleSupportInfoTypeChange = (option: Option) => {
-  //   dataSpaceEditorState.setSelectedSupportInfoType(
-  //     option.value as SUPPORT_INFO_TYPE,
-  //   );
-  //   set_supportInfotype(dataSpaceElement, option.value);
-  // };
 
   const selectedTab = dataSpaceEditorState.selectedTab;
   const selectedSupportInfoType = dataSpaceEditorState.selectedSupportInfoType;
@@ -249,7 +235,6 @@ export const DataSpaceEditor = observer(() => {
                 value={SUPPORT_INFO_TYPE_OPTIONS.find(
                   (option) => option.value === selectedSupportInfoType,
                 )}
-                // disabled={isReadOnly}
                 darkMode={true}
               />
             </PanelFormListItems>

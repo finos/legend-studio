@@ -127,7 +127,6 @@ const ExecutionContextItem: React.FC<ExecutionContextItemProps> = observer(
       }
     };
 
-    //display the selected on the right window
     const runContext = (): void => {
       openContext();
       flowResult(
