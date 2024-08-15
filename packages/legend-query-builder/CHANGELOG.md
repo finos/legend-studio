@@ -1,5 +1,17 @@
 # @finos/legend-query-builder
 
+## 4.14.73
+
+### Patch Changes
+
+- [#3424](https://github.com/finos/legend-studio/pull/3424) [`0aa0921`](https://github.com/finos/legend-studio/commit/0aa092149bbffa8174ea9c7f7290935a86894a02) ([@travisstebbins](https://github.com/travisstebbins)) - Increase height of export to others modal
+
+- [#3425](https://github.com/finos/legend-studio/pull/3425) [`66b7195`](https://github.com/finos/legend-studio/commit/66b71959d2a314405bd857a137a24c268486817e) ([@travisstebbins](https://github.com/travisstebbins)) - Fix bug with unwrapping executionResult from ExecutionResultWithMetadata
+
+- [#3420](https://github.com/finos/legend-studio/pull/3420) [`3669618`](https://github.com/finos/legend-studio/commit/36696182dfc751563f9d37fd15830c67558d2383) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - resolve an issue where the execution trace ID is not displayed when a query fails to execute
+
+- [#3419](https://github.com/finos/legend-studio/pull/3419) [`d4c6052`](https://github.com/finos/legend-studio/commit/d4c6052eb96a7f0548f673702d272752bd0153f4) ([@travisstebbins](https://github.com/travisstebbins)) - Improve property search panel
+
 ## 4.14.72
 
 ### Patch Changes

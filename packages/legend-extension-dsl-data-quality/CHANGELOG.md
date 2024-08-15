@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 1.0.17
+
+### Patch Changes
+
+- [#3425](https://github.com/finos/legend-studio/pull/3425) [`66b7195`](https://github.com/finos/legend-studio/commit/66b71959d2a314405bd857a137a24c268486817e) ([@travisstebbins](https://github.com/travisstebbins)) - Fix bug with unwrapping executionResult from ExecutionResultWithMetadata
+
 ## 1.0.16
 
 ## 1.0.15
