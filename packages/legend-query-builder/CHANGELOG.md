@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.75
+
+### Patch Changes
+
+- [#3433](https://github.com/finos/legend-studio/pull/3433) [`3656ab6`](https://github.com/finos/legend-studio/commit/3656ab6450185bdaf06f3861d7834a09ecfd8dc6) ([@travisstebbins](https://github.com/travisstebbins)) - Revert "Improve handling of changing const/param/derivation types"
+
 ## 4.14.74
 
 ### Patch Changes
