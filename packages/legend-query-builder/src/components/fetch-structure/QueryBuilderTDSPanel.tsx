@@ -272,11 +272,6 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
         [handleDrop],
       );
 
-    // Calculate derivation return type on mount
-    useEffect(() => {
-      onEditorBlur();
-    }, [onEditorBlur]);
-
     return (
       <div
         ref={dropConnector}
