@@ -213,7 +213,7 @@ export const isPropertyExpressionChainOptional = (
 
 export const isTypeCompatibleForAssignment = (
   type: Type | undefined,
-  assignmentType: Type | undefined,
+  assignmentType: Type,
 ): boolean => {
   const NUMERIC_PRIMITIVE_TYPES = [
     PRIMITIVE_TYPE.NUMBER,
@@ -231,7 +231,6 @@ export const isTypeCompatibleForAssignment = (
   // When changing the return type for LHS, the RHS value should be adjusted accordingly.
   return (
     type !== undefined &&
-    assignmentType !== undefined &&
     // Numeric value is handled loosely because of autoboxing
     // e.g. LHS (integer) = RHS (float) is acceptable
     ((NUMERIC_PRIMITIVE_TYPES.includes(type.path) &&
