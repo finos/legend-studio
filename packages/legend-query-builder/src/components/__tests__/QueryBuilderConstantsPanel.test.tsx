@@ -47,13 +47,17 @@ import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 
-const getConstantNameInput = (renderResult: RenderResult): HTMLInputElement =>
+export const getConstantNameInput = (
+  renderResult: RenderResult,
+): HTMLInputElement =>
   getByRole(
     guaranteeNonNullable(renderResult.getByText('Constant Name').parentElement),
     'textbox',
   );
 
-const getConstantValueInput = (renderResult: RenderResult): HTMLInputElement =>
+export const getConstantValueInput = (
+  renderResult: RenderResult,
+): HTMLInputElement =>
   getByRole(
     guaranteeNonNullable(renderResult.getByText('Value').parentElement),
     'textbox',
