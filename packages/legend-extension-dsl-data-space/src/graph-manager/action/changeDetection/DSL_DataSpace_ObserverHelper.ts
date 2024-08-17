@@ -94,16 +94,6 @@ export const observe_DataSpaceElementPointer = (
   return elementPointer;
 };
 
-// export const observe_DataSpaceExecutable = (
-//   executable: DataSpaceExecutable,
-// ): DataSpaceExecutable => {
-//   makeObservable(executable, {
-//     title: observable,
-//     description: observable,
-//   });
-//   return executable;
-// };
-
 export const observe_DataSpaceExecutable = (
   executable: DataSpaceExecutable,
 ): DataSpaceExecutable => {
