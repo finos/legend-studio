@@ -140,40 +140,46 @@ export const DataSpaceExecutablesTab: React.FC<DataSpaceExecutablesTabProps> =
 
     return (
       <div className="data-space-executables-editor">
-        <PanelHeader title="Executables" className="half-width-panel-header">
-          <PanelHeaderActions>
-            <PanelHeaderActionItem
-              onClick={handleAddExecutable}
-              title="Add Executable"
-              className="data-space-executables-editor executable-item__action"
-            >
-              <PlusIcon />
-            </PanelHeaderActionItem>
-          </PanelHeaderActions>
-        </PanelHeader>
         <div className="data-space-executables__content">
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel minSize={100} size={300}>
-              <PanelContent>
-                {dataSpaceEditorState.dataSpace.executables?.map(
-                  (executable, index) => (
-                    <ExecutableItem
-                      key={executable.hashCode}
-                      executable={executable}
-                      dataSpaceEditorState={dataSpaceEditorState}
-                      idx={index}
+              <div className="data-space-executable__left_content">
+                <PanelHeader
+                  title="Executables"
+                  className="half-width-panel-header"
+                >
+                  <PanelHeaderActions>
+                    <PanelHeaderActionItem
+                      onClick={handleAddExecutable}
+                      title="Add Executable"
+                      className="data-space-executables-editor executable-item__action"
+                    >
+                      <PlusIcon />
+                    </PanelHeaderActionItem>
+                  </PanelHeaderActions>
+                </PanelHeader>
+
+                <PanelContent>
+                  {dataSpaceEditorState.dataSpace.executables?.map(
+                    (executable, index) => (
+                      <ExecutableItem
+                        key={executable.hashCode}
+                        executable={executable}
+                        dataSpaceEditorState={dataSpaceEditorState}
+                        idx={index}
+                      />
+                    ),
+                  )}
+                  {!dataSpaceEditorState.dataSpace.executables?.length && (
+                    <BlankPanelPlaceholder
+                      text="Add Executable"
+                      onClick={handleAddExecutable}
+                      clickActionType="add"
+                      tooltipText="Click to add executable"
                     />
-                  ),
-                )}
-                {!dataSpaceEditorState.dataSpace.executables?.length && (
-                  <BlankPanelPlaceholder
-                    text="Add Executable"
-                    onClick={handleAddExecutable}
-                    clickActionType="add"
-                    tooltipText="Click to add executable"
-                  />
-                )}
-              </PanelContent>
+                  )}
+                </PanelContent>
+              </div>
             </ResizablePanel>
             <ResizablePanelSplitter>
               <ResizablePanelSplitterLine color="var(--color-dark-grey-400)" />

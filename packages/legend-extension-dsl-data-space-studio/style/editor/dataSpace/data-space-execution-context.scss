@@ -16,6 +16,41 @@
 
 @use 'mixins' as *;
 
+data-space-diagram-editor .half-width-panel-header {
+  background: var(--color-dark-grey-50);
+}
+
+.data-space-diagram-editor {
+  background: var(--color-dark-grey-50);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .half-width-panel-header {
+    background: var(--color-dark-grey-50);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 1rem;
+  }
+
+  .data-space-execution-context__left_content {
+    width: 100%;
+  }
+
+  .data-space-diagram__content {
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden;
+  }
+
+  .data-space-diagram-details {
+    padding: 1rem;
+    background: var(--color-dark-grey-75);
+  }
+}
+
 .execution-context-item {
   display: flex;
   align-items: center;
@@ -23,15 +58,6 @@
   padding: 0.5rem;
   cursor: pointer;
   background: var(--color-dark-grey-50);
-
-  .half-width-panel-header {
-    background: var(--color-dark-grey-50);
-    width: 50%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-right: 1rem;
-  }
 
   &--active {
     background: var(--color-light-blue-450);

@@ -17,7 +17,7 @@
 @use 'mixins' as *;
 
 .data-space-diagram-editor {
-  background: var(--color-dark-grey-50);
+  // background: var(--color-dark-grey-50);
   width: 100%;
   height: 100%;
   display: flex;
@@ -25,11 +25,14 @@
 
   .half-width-panel-header {
     background: var(--color-dark-grey-50);
-    width: 50%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding-right: 1rem;
+  }
+
+  .data-space-diagram__left_content {
+    width: 100%;
   }
 
   .data-space-diagram__content {
@@ -90,11 +93,4 @@
       color: var(--color-light-grey-400);
     }
   }
-}
-
-.data-space-diagram-editor .diagram-item__action {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  padding-bottom: 5px;
 }

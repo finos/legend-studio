@@ -467,43 +467,46 @@ export const DataSpaceExecutionContextTab: React.FC<ExecutionContextTabProps> =
 
     return (
       <div className="data-space-execution-context-editor">
-        <PanelHeader
-          title="Execution Contexts"
-          className="half-width-panel-header"
-        >
-          <PanelHeaderActions>
-            <PanelHeaderActionItem
-              onClick={handleAddExecutionContext}
-              title="Add Execution Context"
-              className="data-space-execution-context-editor execution-context-item__action"
-            >
-              <PlusIcon />
-            </PanelHeaderActionItem>
-          </PanelHeaderActions>
-        </PanelHeader>
         <div className="data-space-execution-context__content">
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel minSize={100} size={300}>
-              <PanelContent>
-                {dataSpaceEditorState.dataSpace.executionContexts.map(
-                  (context, index) => (
-                    <ExecutionContextItem
-                      key={context.hashCode}
-                      executionContext={context}
-                      dataSpaceEditorState={dataSpaceEditorState}
-                      idx={index}
+              <div className="data-space-execution-context__left_content">
+                <PanelHeader
+                  title="Execution Contexts"
+                  className="half-width-panel-header"
+                >
+                  <PanelHeaderActions>
+                    <PanelHeaderActionItem
+                      onClick={handleAddExecutionContext}
+                      title="Add Execution Context"
+                      className="data-space-execution-context-editor execution-context-item__action"
+                    >
+                      <PlusIcon />
+                    </PanelHeaderActionItem>
+                  </PanelHeaderActions>
+                </PanelHeader>
+
+                <PanelContent>
+                  {dataSpaceEditorState.dataSpace.executionContexts.map(
+                    (context, index) => (
+                      <ExecutionContextItem
+                        key={context.hashCode}
+                        executionContext={context}
+                        dataSpaceEditorState={dataSpaceEditorState}
+                        idx={index}
+                      />
+                    ),
+                  )}
+                  {!dataSpaceEditorState.dataSpace.executionContexts.length && (
+                    <BlankPanelPlaceholder
+                      text="Add Execution Context"
+                      onClick={handleAddExecutionContext}
+                      clickActionType="add"
+                      tooltipText="Click to add execution context"
                     />
-                  ),
-                )}
-                {!dataSpaceEditorState.dataSpace.executionContexts.length && (
-                  <BlankPanelPlaceholder
-                    text="Add Execution Context"
-                    onClick={handleAddExecutionContext}
-                    clickActionType="add"
-                    tooltipText="Click to add execution context"
-                  />
-                )}
-              </PanelContent>
+                  )}
+                </PanelContent>
+              </div>
             </ResizablePanel>
             <ResizablePanelSplitter>
               <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />

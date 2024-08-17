@@ -143,40 +143,46 @@ export const DataSpaceDigramTab: React.FC<DiagramProps> = observer(
 
     return (
       <div className="data-space-diagram-editor">
-        <PanelHeader title="Diagrams" className="half-width-panel-header">
-          <PanelHeaderActions>
-            <PanelHeaderActionItem
-              onClick={handleAddDiagram}
-              title="Add Diagram"
-              className="data-space-diagram-editor diagram-item__action"
-            >
-              <PlusIcon />
-            </PanelHeaderActionItem>
-          </PanelHeaderActions>
-        </PanelHeader>
         <div className="data-space-diagram__content">
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel minSize={100} size={300}>
-              <PanelContent>
-                {dataSpaceEditorState.dataSpace.diagrams?.map(
-                  (diagram, index) => (
-                    <DiagramItem
-                      key={diagram.hashCode}
-                      diagram={diagram}
-                      dataSpaceEditorState={dataSpaceEditorState}
-                      idx={index}
+              <div className="data-space-diagram__left_content">
+                <PanelHeader
+                  title="Diagrams"
+                  className="half-width-panel-header"
+                >
+                  <PanelHeaderActions>
+                    <PanelHeaderActionItem
+                      onClick={handleAddDiagram}
+                      title="Add Diagram"
+                      className="data-space-diagram-editor diagram-item__action"
+                    >
+                      <PlusIcon />
+                    </PanelHeaderActionItem>
+                  </PanelHeaderActions>
+                </PanelHeader>
+
+                <PanelContent>
+                  {dataSpaceEditorState.dataSpace.diagrams?.map(
+                    (diagram, index) => (
+                      <DiagramItem
+                        key={diagram.hashCode}
+                        diagram={diagram}
+                        dataSpaceEditorState={dataSpaceEditorState}
+                        idx={index}
+                      />
+                    ),
+                  )}
+                  {!dataSpaceEditorState.dataSpace.diagrams?.length && (
+                    <BlankPanelPlaceholder
+                      text="Add Diagram"
+                      onClick={handleAddDiagram}
+                      clickActionType="add"
+                      tooltipText="Click to add diagram"
                     />
-                  ),
-                )}
-                {!dataSpaceEditorState.dataSpace.diagrams?.length && (
-                  <BlankPanelPlaceholder
-                    text="Add Diagram"
-                    onClick={handleAddDiagram}
-                    clickActionType="add"
-                    tooltipText="Click to add diagram"
-                  />
-                )}
-              </PanelContent>
+                  )}
+                </PanelContent>
+              </div>
             </ResizablePanel>
             <ResizablePanelSplitter>
               <ResizablePanelSplitterLine color="var(--color-dark-grey-400)" />
