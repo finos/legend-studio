@@ -26,10 +26,6 @@ import {
   DataSpaceSupportEmail,
   type DataSpaceSupportInfo,
   type DataSpace,
-<<<<<<< HEAD
-  DataSpaceExecutionContext,
-  // type DataSpaceExecutionContext,
-=======
   type DataSpaceExecutionContext,
   type DataSpaceDiagram,
   type DataSpaceElementPointer,
@@ -71,8 +67,6 @@ export const observe_DataSpaceExecutionContext = (
   return executionContext;
 };
 
-<<<<<<< HEAD
-=======
 export const observe_DataSpaceDiagram = (
   dataSpaceDiagram: DataSpaceDiagram,
 ): DataSpaceDiagram => {
@@ -120,7 +114,6 @@ export const observe_DataSpaceExecutable = (
   return executable;
 };
 
->>>>>>> elements and executable finished
 export const observe_DataSpace = skipObserved(
   (metamodel: DataSpace): DataSpace => {
     observe_Abstract_PackageableElement(metamodel);
@@ -131,18 +124,13 @@ export const observe_DataSpace = skipObserved(
       supportInfo: observable,
       executionContexts: observable,
       defaultExecutionContext: observable,
-<<<<<<< HEAD
-=======
       diagrams: observable,
       elements: observable,
       executables: observable,
->>>>>>> elements and executable finished
       _elementHashCode: override,
     });
 
     metamodel.executionContexts.forEach(observe_DataSpaceExecutionContext);
-<<<<<<< HEAD
-=======
 
     metamodel.diagrams?.forEach(observe_DataSpaceDiagram);
 
@@ -150,7 +138,6 @@ export const observe_DataSpace = skipObserved(
 
     metamodel.executables?.forEach(observe_DataSpaceExecutable);
 
->>>>>>> elements and executable finished
     if (metamodel.supportInfo) {
       observe_DataSpaceSupportInfo(metamodel.supportInfo);
     }

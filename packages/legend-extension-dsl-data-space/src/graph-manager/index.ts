@@ -40,10 +40,7 @@ export {
   observe_DataSpace,
   observe_DataSpaceSupportInfo,
   observe_DataSpaceExecutionContext,
-<<<<<<< HEAD
-=======
   observe_DataSpaceDiagram,
   observe_DataSpaceElementPointer,
   observe_DataSpaceExecutable,
->>>>>>> elements and executable finished
 } from '../graph-manager/action/changeDetection/DSL_DataSpace_ObserverHelper.js';
