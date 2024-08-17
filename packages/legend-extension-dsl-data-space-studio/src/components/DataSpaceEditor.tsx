@@ -160,20 +160,20 @@ export const DataSpaceEditor = observer(() => {
 
   const emails =
     dataSpaceElement.supportInfo instanceof DataSpaceSupportCombinedInfo
-      ? (dataSpaceElement.supportInfo.emails ?? [])
+      ? dataSpaceElement.supportInfo.emails ?? []
       : [];
 
   const websiteUrl =
     dataSpaceElement.supportInfo instanceof DataSpaceSupportCombinedInfo
-      ? (dataSpaceElement.supportInfo.website ?? '')
+      ? dataSpaceElement.supportInfo.website ?? ''
       : '';
   const faqUrl =
     dataSpaceElement.supportInfo instanceof DataSpaceSupportCombinedInfo
-      ? (dataSpaceElement.supportInfo.faqUrl ?? '')
+      ? dataSpaceElement.supportInfo.faqUrl ?? ''
       : '';
   const supportUrl =
     dataSpaceElement.supportInfo instanceof DataSpaceSupportCombinedInfo
-      ? (dataSpaceElement.supportInfo.supportUrl ?? '')
+      ? dataSpaceElement.supportInfo.supportUrl ?? ''
       : '';
 
   const hideAddOrEditEmailInput = (): void => {
