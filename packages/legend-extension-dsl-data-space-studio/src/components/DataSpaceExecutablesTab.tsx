@@ -17,9 +17,22 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import {
+  BlankPanelPlaceholder,
+  clsx,
   CustomSelectorInput,
-  PanelFormSection,
+  Panel,
+  PanelContent,
+  PanelFormListItems,
   PanelFormTextField,
+  PanelHeader,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
+  PlusIcon,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
+  TrashIcon,
 } from '@finos/legend-art';
 import type { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
@@ -27,16 +40,65 @@ import {
   type PackageableElement,
   type PackageableElementReference,
 } from '@finos/legend-graph';
-import type { DataSpacePackageableElementExecutable } from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  DataSpacePackageableElementExecutable,
+  type DataSpaceExecutable,
+} from '@finos/legend-extension-dsl-data-space/graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 interface DataSpaceExecutablesTabProps {
   dataSpaceEditorState: DataSpaceEditorState;
 }
 
-type OptionType = {
-  label: string;
-  value: PackageableElementReference<PackageableElement>;
-};
+interface ExecutableItemProps {
+  executable: DataSpaceExecutable;
+  dataSpaceEditorState: DataSpaceEditorState;
+  idx: number;
+}
+
+const ExecutableItem: React.FC<ExecutableItemProps> = observer((props) => {
+  const { executable, dataSpaceEditorState, idx } = props;
+  // const applicationStore = useApplicationStore();
+
+  const isActive = dataSpaceEditorState.selectedExecutable === executable;
+
+  const openExecutable = (): void => {
+    dataSpaceEditorState.setSelectedExecutable(executable);
+  };
+
+  const deleteExecutable = (): void => {
+    dataSpaceEditorState.removeExecutable(executable);
+  };
+
+  return (
+    <div
+      className={clsx('executable-item', {
+        'executable-item--active': isActive,
+      })}
+      onClick={openExecutable}
+    >
+      <button
+        className={clsx('executable-item__label')}
+        onClick={openExecutable}
+        tabIndex={-1}
+      >
+        <div className="executable-item__label__text">
+          {executable.title || `Executable ${idx + 1}`}
+        </div>
+      </button>
+      <div className="executable-item__actions">
+        <button
+          className="executable-item__action executable-item-delete-btn"
+          onClick={deleteExecutable}
+          tabIndex={-1}
+          title={`Delete ${executable.title || `Executable ${idx + 1}`}`}
+        >
+          <TrashIcon />
+        </button>
+      </div>
+    </div>
+  );
+});
 
 export const DataSpaceExecutablesTab: React.FC<DataSpaceExecutablesTabProps> =
   observer(({ dataSpaceEditorState }) => {
@@ -48,63 +110,128 @@ export const DataSpaceExecutablesTab: React.FC<DataSpaceExecutablesTabProps> =
         }),
       );
 
-    const handleExecutableChange = (
-      index: number,
-      option: { value: PackageableElementReference<PackageableElement> },
-    ) => {
-      const updatedExecutables = [...dataSpaceEditorState.executables];
-      (
-        updatedExecutables[index] as DataSpacePackageableElementExecutable
-      ).executable = option.value;
-      dataSpaceEditorState.setExecutables(updatedExecutables);
+    const handleExecutableChange = (option: {
+      value: PackageableElementReference<PackageableElement>;
+    }) => {
+      const selectedExecutable = dataSpaceEditorState.selectedExecutable;
+
+      if (selectedExecutable instanceof DataSpacePackageableElementExecutable) {
+        selectedExecutable.executable = option.value;
+
+        dataSpaceEditorState.setSelectedExecutable(selectedExecutable);
+      }
+    };
+
+    const handleAddExecutable = (): void => {
+      dataSpaceEditorState.addExecutable();
+    };
+
+    const handleTitleChange = (value: string | undefined): void => {
+      if (dataSpaceEditorState.selectedExecutable) {
+        dataSpaceEditorState.selectedExecutable.title = value ?? '';
+      }
+    };
+
+    const handleDescriptionChange = (value: string | undefined): void => {
+      if (dataSpaceEditorState.selectedExecutable) {
+        dataSpaceEditorState.selectedExecutable.description = value ?? '';
+      }
     };
 
     return (
-      <div className="data-space-executables-tab">
-        {dataSpaceEditorState.executables.map((executable, index) => (
-          <PanelFormSection key={executable.hashCode}>
-            <PanelFormTextField
-              name="Title"
-              value={executable.title}
-              update={(value) => {
-                const updatedExecutables = [
-                  ...dataSpaceEditorState.executables,
-                ];
-                if (updatedExecutables[index]) {
-                  updatedExecutables[index].title = value ?? '';
-                  dataSpaceEditorState.setExecutables(updatedExecutables);
-                }
-              }}
-              placeholder="Enter title"
-            />
-            <PanelFormTextField
-              name="Description"
-              value={executable.description}
-              update={(value) => {
-                const updatedExecutables = [
-                  ...dataSpaceEditorState.executables,
-                ];
-                if (updatedExecutables[index]) {
-                  updatedExecutables[index].description = value ?? '';
-                  dataSpaceEditorState.setExecutables(updatedExecutables);
-                }
-              }}
-              placeholder="Enter description"
-            />
-            <CustomSelectorInput
-              options={executableOptions}
-              onChange={(option: OptionType) =>
-                handleExecutableChange(index, option)
-              }
-              value={{
-                label: (executable as DataSpacePackageableElementExecutable)
-                  .executable.value.path,
-                value: (executable as DataSpacePackageableElementExecutable)
-                  .executable,
-              }}
-            />
-          </PanelFormSection>
-        ))}
+      <div className="data-space-executables-editor">
+        <PanelHeader title="Executables" className="half-width-panel-header">
+          <PanelHeaderActions>
+            <PanelHeaderActionItem
+              onClick={handleAddExecutable}
+              title="Add Executable"
+              className="data-space-executables-editor executable-item__action"
+            >
+              <PlusIcon />
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
+        <div className="data-space-executables__content">
+          <ResizablePanelGroup orientation="vertical">
+            <ResizablePanel minSize={100} size={300}>
+              <PanelContent>
+                {dataSpaceEditorState.dataSpace.executables?.map(
+                  (executable, index) => (
+                    <ExecutableItem
+                      key={executable.hashCode}
+                      executable={executable}
+                      dataSpaceEditorState={dataSpaceEditorState}
+                      idx={index}
+                    />
+                  ),
+                )}
+                {!dataSpaceEditorState.dataSpace.executables?.length && (
+                  <BlankPanelPlaceholder
+                    text="Add Executable"
+                    onClick={handleAddExecutable}
+                    clickActionType="add"
+                    tooltipText="Click to add executable"
+                  />
+                )}
+              </PanelContent>
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-400)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel>
+              <Panel className="data-space-executable-details">
+                {dataSpaceEditorState.dataSpace.executables?.length ? (
+                  <>
+                    <div>
+                      <PanelFormTextField
+                        name="Executable Title"
+                        value={dataSpaceEditorState.selectedExecutable?.title}
+                        update={handleTitleChange}
+                        placeholder="Enter title"
+                      />
+                    </div>
+                    <div>
+                      <PanelFormTextField
+                        name="Executable Description"
+                        value={
+                          dataSpaceEditorState.selectedExecutable?.description
+                        }
+                        update={handleDescriptionChange}
+                        placeholder="Enter description"
+                      />
+                    </div>
+                    <PanelFormListItems title="Executable">
+                      <CustomSelectorInput
+                        options={executableOptions}
+                        onChange={handleExecutableChange}
+                        value={{
+                          label:
+                            dataSpaceEditorState.selectedExecutable instanceof
+                            DataSpacePackageableElementExecutable
+                              ? dataSpaceEditorState.selectedExecutable
+                                  .executable.value.path
+                              : '',
+                          value:
+                            dataSpaceEditorState.selectedExecutable instanceof
+                            DataSpacePackageableElementExecutable
+                              ? dataSpaceEditorState.selectedExecutable
+                                  .executable
+                              : undefined,
+                        }}
+                        placeholder="Select Executable"
+                      />
+                    </PanelFormListItems>
+                  </>
+                ) : (
+                  <BlankPanelPlaceholder
+                    text="Select an Executable to view details"
+                    tooltipText="Select an executable"
+                  />
+                )}
+              </Panel>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
       </div>
     );
   });

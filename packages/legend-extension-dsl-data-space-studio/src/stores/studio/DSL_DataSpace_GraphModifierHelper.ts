@@ -29,13 +29,21 @@ import {
   type DataSpaceElementPointer,
   type DataSpaceExecutable,
   observe_DataSpaceExecutable,
-  DataSpacePackageableElementExecutable,
+  type DataSpacePackageableElementExecutable,
 } from '@finos/legend-extension-dsl-data-space/graph';
+<<<<<<< HEAD
 import {
   DataElementReference,
   type Mapping,
   type PackageableElementReference,
   type PackageableRuntime,
+=======
+import type {
+  PackageableElement,
+  Mapping,
+  PackageableElementReference,
+  PackageableRuntime,
+>>>>>>> styling WIP, form created
 } from '@finos/legend-graph';
 <<<<<<< HEAD
 import { addUniqueEntry } from '@finos/legend-shared';
@@ -47,6 +55,8 @@ import { addUniqueEntry } from '@finos/legend-shared';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { SUPPORT_INFO_TYPE } from '../DataSpaceEditorState.js';
 >>>>>>> elements finished
+
+// DATASPACE
 
 export const set_title = action(
   (dataSpace: DataSpace, type: string | undefined): void => {
@@ -60,6 +70,7 @@ export const set_description = action(
   },
 );
 
+// SUPPORT INFO
 export const set_email = action(
   (supportInfo: DataSpaceSupportEmail, email: string): void => {
     supportInfo.address = email;
@@ -96,18 +107,6 @@ export const set_faqUrl = action(
   },
 );
 
-// export const set_supportInfotype = action(
-//   (dataSpace: DataSpace, type: string) => {
-//     if (type === 'Email') {
-//       dataSpace.supportInfo = new DataSpaceSupportEmail();
-//       observe_DataSpaceSupportInfo(dataSpace.supportInfo);
-//     } else if (type === 'CombinedInfo') {
-//       dataSpace.supportInfo = new DataSpaceSupportCombinedInfo();
-//       observe_DataSpaceSupportInfo(dataSpace.supportInfo);
-//     }
-//   },
-// );
-
 export const set_supportInfotype = action(
   (dataSpace: DataSpace, type: SUPPORT_INFO_TYPE) => {
     switch (type) {
@@ -124,6 +123,8 @@ export const set_supportInfotype = action(
     observe_DataSpaceSupportInfo(dataSpace.supportInfo);
   },
 );
+
+// EXECUTION CONTEXT
 
 export const set_executionContexts = action(
   (dataSpace: DataSpace, contexts: DataSpaceExecutionContext[]): void => {
@@ -188,14 +189,13 @@ export const dataSpace_addExecutionContext = action(
   },
 );
 
+// DIAGRAMS
+
 export const set_dataSpaceDiagram = action(
   (
     dataSpaceDiagram: DataSpaceDiagram,
     diagram: PackageableElementReference<Diagram>,
   ): void => {
-    if (!diagram) {
-      throw new Error('Invalid diagram reference');
-    }
     dataSpaceDiagram.diagram = diagram;
   },
 );
@@ -225,12 +225,7 @@ export const removeDataSpaceDiagram = action(
   },
 );
 
-export const set_dataSpaceElements = action(
-  (dataSpace: DataSpace, elements: DataSpaceElementPointer[]): void => {
-    dataSpace.elements = elements;
-    elements.forEach(observe_DataSpaceElementPointer);
-  },
-);
+// ELEMENTS
 
 export const setElementExclude = action(
   (element: DataSpaceElementPointer, exclude: boolean): void => {
@@ -238,9 +233,37 @@ export const setElementExclude = action(
   },
 );
 
-export const set_dataSpaceExecutables = action(
-  (dataSpace: DataSpace, executables: DataSpaceExecutable[]): void => {
-    dataSpace.executables = executables;
-    executables.forEach(observe_DataSpaceExecutable);
+export const set_dataSpaceElements = action(
+  (dataSpace: DataSpace, elements: DataSpaceElementPointer[]): void => {
+    dataSpace.elements = elements;
+    elements.forEach(observe_DataSpaceElementPointer);
+  },
+);
+
+// EXECUTABLES
+
+export const set_dataSpaceExecutable = action(
+  (
+    executable: DataSpacePackageableElementExecutable,
+    newExecutable: PackageableElementReference<PackageableElement>,
+  ): void => {
+    executable.executable = newExecutable;
+  },
+);
+
+export const add_dataSpaceExecutable = action(
+  (dataSpace: DataSpace, executable: DataSpaceExecutable): void => {
+    dataSpace.executables = dataSpace.executables ?? [];
+    dataSpace.executables.push(observe_DataSpaceExecutable(executable));
+  },
+);
+
+export const remove_dataSpaceExecutable = action(
+  (dataSpace: DataSpace, executable: DataSpaceExecutable): void => {
+    if (dataSpace.executables) {
+      dataSpace.executables = dataSpace.executables.filter(
+        (ex) => ex !== executable,
+      );
+    }
   },
 );

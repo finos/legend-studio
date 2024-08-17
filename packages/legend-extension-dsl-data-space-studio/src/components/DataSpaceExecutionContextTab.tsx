@@ -29,6 +29,12 @@ import {
 >>>>>>> executionContext is finished
   PanelFormListItems,
   PanelFormTextField,
+<<<<<<< HEAD
+=======
+  PanelHeader,
+  PanelHeaderActionItem,
+  PanelHeaderActions,
+>>>>>>> styling WIP, form created
   PlusIcon,
 } from '@finos/legend-art';
 import {
@@ -46,6 +52,10 @@ import {
   type Mapping,
   type PackageableRuntime,
 } from '@finos/legend-graph';
+<<<<<<< HEAD
+=======
+import { useApplicationStore } from '@finos/legend-application';
+>>>>>>> styling WIP, form created
 
 interface ExecutionContextTabProps {
   dataSpaceEditorState: DataSpaceEditorState;
@@ -92,7 +102,6 @@ const ExecutionContextMenu = observer(
       </MenuContent>
 =======
 }
-
 interface ExecutionContextItemProps {
   executionContext: DataSpaceExecutionContext;
   dataSpaceEditorState: DataSpaceEditorState;
@@ -127,15 +136,6 @@ const ExecutionContextItem: React.FC<ExecutionContextItemProps> = observer(
       }
     };
 
-    const runContext = (): void => {
-      openContext();
-      flowResult(
-        applicationStore.alertUnhandledError(
-          new Error('Execution Context selected'),
-        ),
-      );
-    };
-
     return (
       <div
         className={clsx('execution-context-item', {
@@ -153,14 +153,6 @@ const ExecutionContextItem: React.FC<ExecutionContextItemProps> = observer(
           </div>
         </button>
         <div className="execution-context-item__actions">
-          <button
-            className="execution-context-item__action execution-context-run-btn"
-            onClick={runContext}
-            tabIndex={-1}
-            title={`Run ${executionContext.name || `ExecutionContext ${idx + 1}`}`}
-          >
-            <PlayIcon />
-          </button>
           <button
             className="execution-context-item__action execution-context-delete-btn"
             onClick={deleteContext}
@@ -517,7 +509,7 @@ export const DataSpaceExecutionContextTab: React.FC<ExecutionContextTabProps> =
               <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
             </ResizablePanelSplitter>
             <ResizablePanel>
-              <PanelContent className="data-space-execution-context-details">
+              <Panel className="data-space-execution-context-details">
                 {dataSpaceEditorState.dataSpace.executionContexts.length ? (
                   <>
                     <div>
@@ -576,7 +568,7 @@ export const DataSpaceExecutionContextTab: React.FC<ExecutionContextTabProps> =
                     tooltipText="Select an execution context"
                   />
                 )}
-              </PanelContent>
+              </Panel>
             </ResizablePanel>
           </ResizablePanelGroup>
 >>>>>>> executionContext is finished

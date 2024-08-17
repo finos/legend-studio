@@ -55,7 +55,7 @@ export class DataSpaceExecutionContext implements Hashable {
 export type DataSpaceElement = Package | Class | Enumeration | Association;
 
 export class DataSpaceElementPointer implements Hashable {
-  element!: PackageableElementReference<DataSpaceElement>;
+  element!: PackageableElementReference<PackageableElement>;
   exclude?: boolean | undefined;
 
   get hashCode(): string {

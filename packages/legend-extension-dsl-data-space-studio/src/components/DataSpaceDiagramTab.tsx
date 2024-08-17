@@ -17,7 +17,6 @@
 import { observer } from 'mobx-react-lite';
 import type { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
-  PanelFormSection,
   CustomSelectorInput,
   PanelFormTextField,
   BlankPanelPlaceholder,
@@ -28,7 +27,6 @@ import {
   PanelHeader,
   PanelHeaderActionItem,
   PanelHeaderActions,
-  PlayIcon,
   PlusIcon,
   ResizablePanel,
   ResizablePanelGroup,
@@ -47,17 +45,10 @@ import {
   set_dataSpaceDiagramDescription,
   set_dataSpaceDiagram,
 } from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
-import { flowResult } from 'mobx';
-import { useApplicationStore } from '@finos/legend-application';
 
 interface DiagramProps {
   dataSpaceEditorState: DataSpaceEditorState;
 }
-
-interface DiagramTabProps {
-  dataSpaceEditorState: DataSpaceEditorState;
-}
-
 interface DiagrmaItemProps {
   diagram: DataSpaceDiagram;
   dataSpaceEditorState: DataSpaceEditorState;
@@ -66,7 +57,6 @@ interface DiagrmaItemProps {
 
 const DiagramItem: React.FC<DiagrmaItemProps> = observer((props) => {
   const { diagram, dataSpaceEditorState, idx } = props;
-  const applicationStore = useApplicationStore();
   const isActive = dataSpaceEditorState.selectedDiagram === diagram;
 
   const openDiagram = (): void => {
@@ -78,13 +68,6 @@ const DiagramItem: React.FC<DiagrmaItemProps> = observer((props) => {
     if (isActive || dataSpaceEditorState.dataSpace.diagrams?.length === 0) {
       dataSpaceEditorState.setSelectedDiagram(null);
     }
-  };
-
-  const runDiagram = (): void => {
-    openDiagram();
-    flowResult(
-      applicationStore.alertUnhandledError(new Error('Diagram selected')),
-    );
   };
 
   return (
@@ -105,14 +88,6 @@ const DiagramItem: React.FC<DiagrmaItemProps> = observer((props) => {
       </button>
       <div className="diagram-item__actions">
         <button
-          className="diagram-item__action diagram-item-run-btn"
-          onClick={runDiagram}
-          tabIndex={-1}
-          title={`Run ${diagram.title || `Diagram ${idx + 1}`}`}
-        >
-          <PlayIcon />
-        </button>
-        <button
           className="diagram-item__action diagram-item-delete-btn"
           onClick={deleteDiagram}
           tabIndex={-1}
@@ -127,8 +102,6 @@ const DiagramItem: React.FC<DiagrmaItemProps> = observer((props) => {
 
 export const DataSpaceDigramTab: React.FC<DiagramProps> = observer(
   ({ dataSpaceEditorState }) => {
-    const { diagrams } = dataSpaceEditorState;
-
     const handleTitleChange = (value: string | undefined): void => {
       if (dataSpaceEditorState.selectedDiagram) {
         set_dataSpaceDiagramTitle(
@@ -150,11 +123,9 @@ export const DataSpaceDigramTab: React.FC<DiagramProps> = observer(
     const handleDiagramChange = (option: {
       value: PackageableElementReference<Diagram>;
     }) => {
-      if (dataSpaceEditorState.selectedDiagram) {
-        set_dataSpaceDiagram(
-          dataSpaceEditorState.selectedDiagram,
-          option.value,
-        );
+      const selectedDiagram = dataSpaceEditorState.selectedDiagram;
+      if (selectedDiagram) {
+        set_dataSpaceDiagram(selectedDiagram, option.value);
       }
     };
 

@@ -20,22 +20,14 @@ import {
   clsx,
   CustomSelectorInput,
   ErrorIcon,
-  Panel,
-  PanelContent,
   PanelContentLists,
   PanelForm,
-  PanelFormActions,
   PanelFormListItems,
   PanelFormSection,
   PanelFormTextField,
   PencilIcon,
   PlusIcon,
-  ResizablePanel,
-  ResizablePanelGroup,
-  ResizablePanelSplitter,
-  ResizablePanelSplitterLine,
   SaveIcon,
-  TimesIcon,
   TrashIcon,
   UndoIcon,
 } from '@finos/legend-art';
@@ -79,46 +71,6 @@ interface Option {
   value: SUPPORT_INFO_TYPE | DATASPACE_TAB;
   label: string;
 }
-
-// const DataSpaceEditorEmailItem = observer()=>{
-
-//   return (
-//     <div
-//       className={clsx('execution-context-item', {
-//         'execution-context-item--active': isActive,
-//       })}
-//       onClick={openContext}
-//     >
-//       <button
-//         className={clsx('execution-context-item__label')}
-//         onClick={openContext}
-//         tabIndex={-1}
-//       >
-//         <div className="execution-context-item__label__text">
-//           {email || `ExecutionContext ${idx + 1}`}
-//         </div>
-//       </button>
-//       <div className="execution-context-item__actions">
-//         <button
-//           className="execution-context-item__action execution-context-run-btn"
-//           onClick={runContext}
-//           tabIndex={-1}
-//           title={`Run ${executionContext.name || `ExecutionContext ${idx + 1}`}`}
-//         >
-//           <PlayIcon />
-//         </button>
-//         <button
-//           className="execution-context-item__action execution-context-delete-btn"
-//           onClick={deleteContext}
-//           tabIndex={-1}
-//           title={`Delete ${executionContext.name || `ExecutionContext ${idx + 1}`}`}
-//         >
-//           <TrashIcon />
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
 
 export const DataSpaceEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -328,26 +280,20 @@ export const DataSpaceEditor = observer(() => {
                       })}
                     >
                       {showEmailsEditInput === index ? (
-                        <div>
-                          <button
-                            title="Item_Action"
-                            className={clsx('support-info-item__label')}
-                            tabIndex={-1}
-                          >
-                            <PanelFormTextField
-                              name="Edit Email"
-                              value={emailsInputValue}
-                              update={(value) =>
-                                changeEmailInputValue({
-                                  target: { value } as EventTarget &
-                                    HTMLInputElement,
-                                } as React.ChangeEvent<HTMLInputElement>)
-                              }
-                            />
-                          </button>
-                          <div className="support-info-item__actions">
+                        <div className="support-info-item__input-wrapper">
+                          <input
+                            className="support-info-item__input"
+                            type="text"
+                            value={emailsInputValue}
+                            onChange={(e) =>
+                              changeEmailInputValue({
+                                target: e.target,
+                              } as React.ChangeEvent<HTMLInputElement>)
+                            }
+                          />
+                          <div className="support-info-item__icons">
                             <button
-                              className="support-info-item__action support-info-run-btn"
+                              className="support-info-item__action support-info-save-btn"
                               disabled={emails.includes(emailsInputValue)}
                               onClick={updateEmail(index)}
                               tabIndex={-1}
@@ -356,7 +302,7 @@ export const DataSpaceEditor = observer(() => {
                               <SaveIcon />
                             </button>
                             <button
-                              className="support-info-item__action support-info-delete-btn"
+                              className="support-info-item__action support-info-cancel-btn"
                               onClick={hideAddOrEditEmailInput}
                               tabIndex={-1}
                               title="Cancel"
@@ -366,19 +312,17 @@ export const DataSpaceEditor = observer(() => {
                           </div>
                         </div>
                       ) : (
-                        <div>
-                          <button
-                            className={clsx('support-info-item__label')}
+                        <div className="support-info-item__input-wrapper">
+                          <input
+                            className="support-info-item__input"
+                            type="text"
+                            value={email}
+                            title="Email"
                             onClick={() => setShowEmailsEditInput(index)}
-                            tabIndex={-1}
-                          >
-                            <div className="support-info-item__label__text">
-                              {email}
-                            </div>
-                          </button>
-                          <div className="support-info-item__actions">
+                          />
+                          <div className="support-info-item__icons">
                             <button
-                              className="support-info-item__action support-info-run-btn"
+                              className="support-info-item__action support-info-edit-btn"
                               onClick={() => setShowEmailsEditInput(index)}
                               tabIndex={-1}
                               title="Edit"
@@ -399,26 +343,21 @@ export const DataSpaceEditor = observer(() => {
                     </div>
                   ))}
                   {showEmailsEditInput === null && (
-                    <div className="support-info-item">
-                      <button
-                        title="Item_Action"
-                        className={clsx('support-info-item__label')}
-                        tabIndex={-1}
-                      >
-                        <PanelFormTextField
-                          name="New Email"
-                          value={emailsInputValue}
-                          update={(value) =>
-                            changeEmailInputValue({
-                              target: { value } as EventTarget &
-                                HTMLInputElement,
-                            } as React.ChangeEvent<HTMLInputElement>)
-                          }
-                        />
-                      </button>
-                      <div className="support-info-item__actions">
+                    <div className="support-info-item__input-wrapper">
+                      <input
+                        className="support-info-item__input"
+                        type="text"
+                        value={emailsInputValue}
+                        onChange={(e) =>
+                          changeEmailInputValue({
+                            target: e.target,
+                          } as React.ChangeEvent<HTMLInputElement>)
+                        }
+                        placeholder="New Email"
+                      />
+                      <div className="support-info-item__icons">
                         <button
-                          className="support-info-item__action support-info-run-btn"
+                          className="support-info-item__action support-info-add-btn"
                           disabled={emails.includes(emailsInputValue)}
                           onClick={addEmail}
                           tabIndex={-1}
@@ -427,7 +366,7 @@ export const DataSpaceEditor = observer(() => {
                           <PlusIcon />
                         </button>
                         <button
-                          className="support-info-item__action support-info-delete-btn"
+                          className="support-info-item__action support-info-cancel-btn"
                           onClick={hideAddOrEditEmailInput}
                           tabIndex={-1}
                           title="Cancel"
@@ -438,122 +377,13 @@ export const DataSpaceEditor = observer(() => {
                     </div>
                   )}
                 </div>
-
-                {/* {emails.map((email: string, index: number) => (
-                    <div
-                      key={email}
-                      className={
-                        showEmailsEditInput === index
-                          ? 'support-info-item__item'
-                          : 'support-info-item'
-                      }
-                    >
-                      {showEmailsEditInput === index ? (
-                        <>
-                        <div>
-                          <button className={clsx('support-info-item__label')} tabIndex={-1}>
-                          <PanelFormTextField
-                            name="Edit Email"
-                            value={emailsInputValue}
-                            update={(value) =>
-                              changeEmailInputValue({
-                                target: { value } as EventTarget &
-                                  HTMLInputElement,
-                              } as React.ChangeEvent<HTMLInputElement>)
-                            }
-                          />
-                          </button>
-                          <div className="support-info-item__actions">
-                            <button
-                              title="Save"
-className="support-info-item__action support-info-item-update-btn"
-                              disabled={emails.includes(emailsInputValue)}
-                              onClick={updateEmail(index)}
-                              tabIndex={-1}
-                            >
-                              <SaveIcon />
-                            </button>
-                            <button
-                              title="Cancel"
-className="support-info-item__action support-info-item-delete-btn"
-                              onClick={hideAddOrEditEmailInput}
-                              tabIndex={-1}
-                            >
-                              <UndoIcon/>
-                            </button>
-                          </div>
-                          </div>
-                        </>
-                      ) : (
-<div><button className="support-info-item__label" onClick={clsx('support-info-item__label')} onClick={()=>setShowEmailsEditInput(index)} tabIndex={-1}>
-                            <div className="support-info-item__label__text">
-                              {email}
-</div>
-</button>
-                            <div className="support-info-item__actions">
-                              <button
-                                title="Edit"
-className="support-info-item__action support-info-item-update-btn"
-                                onClick={() => setShowEmailsEditInput(index)}
-                                tabIndex={-1}
-                              >
-                                <PencilIcon />
-                              </button>
-                              <button
-                                title="Delete"
-className="support-info-item__action support-info-item-delete-btn"
-                                onClick={deleteEmail(index)}
-                                tabIndex={-1}
-                              >
-                                <TimesIcon />
-                              </button>
-                            </div>
-                            </div>
-
-                      )}
-                    </div>
-                  ))}
-                  {showEmailsEditInput === null && (
-                    <div className="support-info-item">
-                      <button className={clsx('support-info-item__label')} tabIndex={-1}>
-                        <PanelFormTextField
-                          name="New Email"
-                          value={emailsInputValue}
-                          update={(value) =>
-                            changeEmailInputValue({
-                              target: { value } as EventTarget &
-                                HTMLInputElement,
-                            } as React.ChangeEvent<HTMLInputElement>)
-                          }
-                        />
-                        </button>
-                        <div className="support-info-item__actions">
-                          <button
-                            title="Add"
-                            className="support-info-item__action support-info-item-update-btn"
-                            disabled={emails.includes(emailsInputValue)}
-                            onClick={addEmail}
-                            tabIndex={-1}
-                          >
-                            <PlusIcon />
-                          </button>
-                          <button
-                            title="Cancel"
-                            className="support-info-item__action support-info-item-delete-btn"
-                            onClick={hideAddOrEditEmailInput}
-                            tabIndex={-1}
-                          >
-                            <UndoIcon />
-                          </button>
-                        </div>
-                    </div>
-                  )}
-                  </div> */}
                 {emails.length === 0 && showEmailsEditInput === null && (
-                  <div className="dataSpace-editor__emailSupport__validation">
-                    <ErrorIcon />
-                    <div className="dataSpace-editor__emailSupport__validation-label">
-                      Add at least one email
+                  <div className="support-info-item__input-wrapper">
+                    <div className="dataSpace-editor__emailSupport__validation">
+                      <ErrorIcon />
+                      <span className="dataSpace-editor__emailSupport__validation-label">
+                        Add at least one email
+                      </span>
                     </div>
                   </div>
                 )}

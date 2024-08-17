@@ -16,7 +16,13 @@
 @forward 'data-space-template-query-promotor';
 @forward './editor/dataSpace/data-space-editor';
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 @forward './editor/dataSpace/execution-context';
 @forward './editor/dataSpace/data-space-diagram.scss';
 >>>>>>> elements finished
+=======
+@forward './editor/dataSpace/data-space-execution-context';
+@forward './editor/dataSpace/data-space-diagram';
+@forward './editor/dataSpace/data-space-executables';
+>>>>>>> styling WIP, form created

@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
+import { CustomSelectorInput } from '@finos/legend-art';
 import {
-  CustomSelectorInput,
-  PanelFormBooleanField,
-  PanelFormTextField,
-} from '@finos/legend-art';
-import {
-  Association,
-  Class,
-  Enumeration,
-  Package,
+  PackageableElementExplicitReference,
   type PackageableElementReference,
+  type PackageableElement,
 } from '@finos/legend-graph';
-import { type DataSpaceElement } from '@finos/legend-extension-dsl-data-space/graph';
+import { useEditorStore } from '@finos/legend-application-studio';
+
+type OptionType = {
+  label: string;
+  value: PackageableElementReference<PackageableElement>;
+};
 
 export const DataSpaceElementsTab = observer(
   ({
@@ -37,82 +36,70 @@ export const DataSpaceElementsTab = observer(
   }: {
     dataSpaceEditorState: DataSpaceEditorState;
   }) => {
-    const handleElementChange = (option: {
-      value: PackageableElementReference<DataSpaceElement>;
-    }): void => {
-      if (dataSpaceEditorState.selectedElementPointer) {
-        dataSpaceEditorState.selectedElementPointer.element = option.value;
-      }
-      if (dataSpaceEditorState.selectedElementPointer) {
-        dataSpaceEditorState.setSelectedElementPointer(
-          dataSpaceEditorState.selectedElementPointer,
-        );
+    const editorStore = useEditorStore();
+    const [selectedElements, setSelectedElements] = useState<
+      (PackageableElementReference<PackageableElement> | null)[]
+    >([null]);
+
+    const elementOptions = Array.from(
+      editorStore.explorerTreeState.getTreeData().nodes.values(),
+    )
+      .map((node) => ({
+        label: node.packageableElement.name,
+        value: PackageableElementExplicitReference.create(
+          node.packageableElement,
+        ),
+      }))
+      .filter(
+        (option) =>
+          !selectedElements.some(
+            (selected) => selected?.value === option.value.value,
+          ),
+      );
+    const handleElementChange = (option: OptionType, index: number): void => {
+      const updatedSelectedElements = [...selectedElements];
+      updatedSelectedElements[index] = option.value;
+
+      // setSelectedElements(updatedSelectedElements);
+      if (
+        index === selectedElements.length - 1 &&
+        elementOptions.length > selectedElements.length
+      ) {
+        setSelectedElements([...updatedSelectedElements, null]);
+      } else {
+        setSelectedElements(updatedSelectedElements);
       }
     };
-
-    const handleNameChange = (value: string | undefined): void => {
-      if (value !== undefined) {
-        const elementPointer = dataSpaceEditorState.selectedElementPointer;
-        if (elementPointer) {
-          elementPointer.element.value.name = value;
-        }
-      }
-    };
-
-    const handleExcludeChange = (value: boolean | undefined): void => {
-      if (dataSpaceEditorState.selectedElementPointer && value !== undefined) {
-        dataSpaceEditorState.updateElementExclude(
-          dataSpaceEditorState.selectedElementPointer,
-          value,
-        );
-      }
-    };
-
-    const elementOptions =
-      dataSpaceEditorState.editorStore.graphManagerState.usableElements
-        .filter(
-          (element) =>
-            element instanceof Class ||
-            element instanceof Package ||
-            element instanceof Enumeration ||
-            element instanceof Association,
-        )
-        .map((element) => ({
-          label: element.path,
-          value: element,
-        }));
-
     return (
       <div>
-        <CustomSelectorInput
-          options={elementOptions}
-          onChange={handleElementChange}
-          value={{
-            label:
-              dataSpaceEditorState.selectedElementPointer?.element.value.name ??
-              'Select an element',
-            value: dataSpaceEditorState.selectedElementPointer?.element,
-          }}
-          placeholder="Select Element"
-        />
-        {dataSpaceEditorState.selectedElementPointer && (
-          <PanelFormTextField
-            name="Element Name"
-            value={
-              dataSpaceEditorState.selectedElementPointer.element.value.name
-            }
-            update={handleNameChange}
-            placeholder="Enter element name"
-          />
-        )}
-        {dataSpaceEditorState.selectedElementPointer && (
-          <PanelFormBooleanField
-            name="Exclude Element"
-            value={!!dataSpaceEditorState.selectedElementPointer.exclude}
-            update={handleExcludeChange}
-            isReadOnly={true}
-          />
-        )}
+        {selectedElements.map((selected, index) => {
+          const availableOptions = elementOptions.filter(
+            (opt) =>
+              !selectedElements.some(
+                (selected) => selected?.value.path === opt.value.value.path,
+              ),
+          );
+
+          return (
+            <div key={index}>
+              <CustomSelectorInput
+                options={availableOptions}
+                onChange={(option: OptionType) =>
+                  handleElementChange(option, index)
+                }
+                value={
+                  selected
+                    ? {
+                        label: selected.value.name,
+                        value: selected,
+                      }
+                    : undefined
+                }
+                placeholder="Select Element"
+              />
+            </div>
+          );
+        })}
       </div>
     );
   },

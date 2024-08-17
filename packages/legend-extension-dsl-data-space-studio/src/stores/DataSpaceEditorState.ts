@@ -31,17 +31,25 @@ import {
 >>>>>>> elements finished
   DataSpaceExecutionContext,
   DataSpaceSupportEmail,
+<<<<<<< HEAD
   observe_DataSpaceExecutionContext,
 <<<<<<< HEAD
 =======
   observe_DataSpaceDiagram,
+=======
+>>>>>>> styling WIP, form created
   type DataSpaceElementPointer,
   observe_DataSpaceElementPointer,
   type DataSpaceExecutable,
   observe_DataSpaceSupportInfo,
+  DataSpacePackageableElementExecutable,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { guaranteeType } from '@finos/legend-shared';
 import {
+  add_dataSpaceExecutable,
+  addDataSpaceDiagram,
+  dataSpace_addExecutionContext,
+  remove_dataSpaceExecutable,
   removeDataSpaceDiagram,
   set_dataSpaceElements,
   setElementExclude,
@@ -86,6 +94,7 @@ export class DataSpaceEditorState extends ElementEditorState {
   elements: DataSpaceElementPointer[] = [];
   selectedElementPointer?: DataSpaceElementPointer;
   executables: DataSpaceExecutable[] = [];
+  selectedExecutable: DataSpaceExecutable | null = null;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -137,6 +146,8 @@ export class DataSpaceEditorState extends ElementEditorState {
       selectElementPointer: action,
       setSelectedElementPointer: action,
       setExecutables: action,
+      selectedExecutable: observable,
+      setSelectedExecutable: action,
       reprocess: action,
     });
 
@@ -158,17 +169,24 @@ export class DataSpaceEditorState extends ElementEditorState {
     );
   }
 
-  // Actions to modify state
+  //SUPPORTINFO
   setSelectedSupportInfoType(type: SUPPORT_INFO_TYPE): void {
     this.selectedSupportInfoType = type;
   }
 
+  // TAB
   setSelectedTab(tab: DATASPACE_TAB): void {
     this.selectedTab = tab;
   }
 
+<<<<<<< HEAD
   setSelectedExecutionContext(context: DataSpaceExecutionContext): void {
     console.log(context);
+=======
+  // EXECUTIONCONTEXT
+
+  setSelectedExecutionContext(context: DataSpaceExecutionContext | null): void {
+>>>>>>> styling WIP, form created
     this.selectedExecutionContext = context;
   }
 
@@ -220,6 +238,7 @@ export class DataSpaceEditorState extends ElementEditorState {
       PackageableElementExplicitReference.create(defaultMapping);
     newContext.defaultRuntime =
       PackageableElementExplicitReference.create(defaultRuntime);
+<<<<<<< HEAD
     observe_DataSpaceExecutionContext(newContext);
 <<<<<<< HEAD
 
@@ -228,38 +247,45 @@ export class DataSpaceEditorState extends ElementEditorState {
 =======
 >>>>>>> elements finished
     this.dataSpace.executionContexts.push(newContext);
+=======
+    dataSpace_addExecutionContext(this.dataSpace, newContext);
+>>>>>>> styling WIP, form created
     this.setSelectedExecutionContext(newContext);
     this.setDefaultExecutionContext(newContext);
     this.setSelectedTab(DATASPACE_TAB.EXECUTION_CONTEXT);
   }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+  // DIAGRAMS
+
+>>>>>>> styling WIP, form created
   setDiagrams(diagrams: DataSpaceDiagram[]): void {
     this.diagrams = diagrams;
+    this.dataSpace.diagrams = diagrams;
   }
 
   addDiagram(): void {
     const defaultDiagram =
       this.editorStore.graphManagerState.graph.allElements.find(
         (element) => element instanceof Diagram,
-      ) as Diagram | undefined;
+      );
 
     if (!defaultDiagram) {
       console.error('Default Diagram is required.');
       return;
     }
-    const newDiagram = new DataSpaceDiagram();
 
+    const newDiagram = new DataSpaceDiagram();
     const diagramCount = this.dataSpace.diagrams?.length ?? 0;
     newDiagram.title = `Diagram ${diagramCount + 1}`;
     newDiagram.description = `Description for ${newDiagram.title}`;
     newDiagram.diagram =
       PackageableElementExplicitReference.create(defaultDiagram);
-    observe_DataSpaceDiagram(newDiagram);
+    addDataSpaceDiagram(this.dataSpace, newDiagram);
     this.dataSpace.diagrams = this.dataSpace.diagrams ?? [];
-    this.dataSpace.diagrams.push(newDiagram);
-    this.setSelectedDiagram(null);
     this.setSelectedDiagram(newDiagram);
     this.setSelectedTab(DATASPACE_TAB.DIAGRAM);
   }
@@ -276,6 +302,7 @@ export class DataSpaceEditorState extends ElementEditorState {
     }
   }
 
+  // ELEMENTS
   setElements(elements: DataSpaceElementPointer[]): void {
     elements.forEach(observe_DataSpaceElementPointer);
     set_dataSpaceElements(this.dataSpace, elements);
@@ -304,11 +331,13 @@ export class DataSpaceEditorState extends ElementEditorState {
     this.selectedElementPointer = newElementPointer;
   }
 
+  // EXECUTABLES
   setExecutables(executables: DataSpaceExecutable[]): void {
     this.executables = executables;
     this.dataSpace.executables = executables;
   }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
   // selectExecutable(executable: DataSpaceExecutable): void {
   //   this.selectedExecutable = executable;
@@ -334,6 +363,39 @@ export class DataSpaceEditorState extends ElementEditorState {
 >>>>>>> elements and executable finished
 =======
 >>>>>>> clean up
+=======
+  setSelectedExecutable(executable: DataSpaceExecutable | null): void {
+    this.selectedExecutable = executable;
+  }
+
+  addExecutable(): void {
+    const defaultService = this.editorStore.graphManagerState.usableServices[0];
+
+    if (!defaultService) {
+      return;
+    }
+    const newExecutable = new DataSpacePackageableElementExecutable();
+    newExecutable.title = `Executable ${this.dataSpace.executables?.length ?? 0 + 1}`;
+    newExecutable.executable =
+      PackageableElementExplicitReference.create(defaultService);
+    add_dataSpaceExecutable(this.dataSpace, newExecutable);
+    // observe_DataSpaceExecutable(newExecutable);
+    this.dataSpace.executables = this.dataSpace.executables ?? [];
+    // this.dataSpace.executables.push(newExecutable);
+    this.setSelectedExecutable(newExecutable);
+    this.setSelectedTab(DATASPACE_TAB.EXECUTABLES);
+  }
+
+  removeExecutable(executable: DataSpaceExecutable): void {
+    remove_dataSpaceExecutable(this.dataSpace, executable);
+    this.setDiagrams(this.dataSpace.diagrams ?? []);
+    if (this.selectedExecutable === executable) {
+      this.setSelectedExecutable(null);
+    }
+  }
+
+  // REPROCESSING;
+>>>>>>> styling WIP, form created
   override reprocess(
     newElement: PackageableElement,
     editorStore: EditorStore,

@@ -16,118 +16,6 @@
 
 @use 'mixins' as *;
 
-// .dataSpace-editor--dark {
-//   &__header {
-//     background: var(--color-dark-grey-50);
-//     display: flex;
-//     align-items: center;
-//     padding: 0.5rem 1rem;
-//     background-color: #1e1e1e;
-//     border-bottom: 1px solid #444;
-
-//     &--with-tabs {
-//       justify-content: space-between;
-//     }
-
-//     .uml-element-editor__header__lock {
-//       margin-right: 0.5rem;
-//     }
-//   }
-
-//   &__configs {
-//     display: flex;
-//     width: 100%;
-//   }
-
-//   &__name {
-//     background: var(--color-dark-grey-100);
-//     border: 0.1rem solid var(--color-dark-grey-300);
-//     color: var(--color-light-grey-0);
-//   }
-
-//   &__name::placeholder {
-//     color: var(--color-dark-grey-300);
-//   }
-// }
-
-// .dataSpace-editor {
-//   &__general {
-//     .panel__content__lists {
-//       padding-left: 2rem;
-//     }
-//   }
-
-//   &__tab {
-//     padding: 0.5rem 1rem;
-//     cursor: pointer;
-//     margin-left: 15px;
-
-//     &--active {
-//       background-color: #444;
-//       font-weight: bold;
-//     }
-//   }
-
-//   &__header {
-//     background: var(--color-dark-grey-50);
-//     display: flex;
-//     align-items: center;
-//     padding: 0.5rem 1rem;
-//     background-color: #1e1e1e;
-//     border-bottom: 1px solid #444;
-
-//     &__title {
-//       display: flex;
-//       align-items: center;
-
-//       &__label {
-//         margin-right: 0.5rem;
-//         font-weight: bold;
-//         margin-top: 15px;
-//       }
-
-//       &__content {
-//         font-weight: normal;
-
-//         &__form {
-//           margin-top: 15px;
-//         }
-//       }
-//     }
-//   }
-
-//   &__emailSupport__validation {
-//     display: flex;
-//     align-items: center;
-//     cursor: help;
-//   }
-
-//   &__emailSupport__validation svg {
-//     color: var(--color-red-100);
-//     stroke-width: 0.4;
-//     stroke: var(--color-red-100);
-//   }
-
-//   &__emailSupport__validation-label {
-//     color: var(--color-red-100);
-//     margin-left: 0.5rem;
-//   }
-// }
-
-// .dataSpace-execution-context {
-//   .custom-selector-input {
-//     margin-bottom: 1rem;
-//   }
-
-//   .uml-element-editor__tabs {
-//     height: 2.8rem;
-//     z-index: 1;
-//     display: flex;
-//     overflow-x: overlay;
-//     overflow-y: hidden;
-//   }
-// }
-
 .dataSpace-editor--dark {
   background: var(--color-dark-grey-50);
 }
@@ -140,7 +28,6 @@
     display: flex;
     align-items: center;
     padding: 0.5rem 1rem;
-    // background-color: var(--color-dark-grey-50);
     border-bottom: 1px solid #444;
 
     &__title__label {
@@ -169,6 +56,18 @@
     .panel__content__lists {
       padding-left: 2rem;
     }
+  }
+
+  &__form-section {
+    padding: 1rem 0;
+  }
+
+  &__form-list-items {
+    margin-bottom: 1rem;
+  }
+
+  .custom-selector-input {
+    margin-top: 0.5rem;
   }
 }
 
@@ -203,6 +102,7 @@
 
 .dataSpace-execution-context {
   background: var(--color-dark-grey-50);
+  padding: 5px;
 
   .custom-selector-input {
     margin-bottom: 1rem;
@@ -217,40 +117,53 @@
   }
 }
 
-.support-info-item {
+.support-info-item__input-wrapper {
+  position: relative;
+  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.support-info-item__input {
+  width: calc(100% - 80px);
   padding: 0.5rem;
-  cursor: pointer;
+  padding-right: 80px;
+  border: 1px solid var(--color-dark-grey-100);
+  border-radius: 4px;
   background: var(--color-dark-grey-50);
-}
-
-.support-info-item--active {
-  background: var(--color-light-blue-450);
   color: var(--color-light-grey-50);
 }
 
-.support-info-item:hover {
-  background: var(--color-dark-grey-100);
-}
-
-.support-info-item__label {
-  flex-grow: 1;
-  padding-left: 1rem;
-  color: var(--color-light-grey-50);
-}
-
-.support-info-item__actions {
+.support-info-item__icons {
+  position: absolute;
+  right: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  padding-right: 0.5rem;
 }
 
 .support-info-item__action {
+  background: none;
+  border: none;
   color: var(--color-light-grey-50);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-light-grey-400);
+  }
 }
 
-.support-info-item__action:hover {
-  color: var(--color-light-grey-400);
+.dataSpace-editor__emailSupport__validation {
+  display: flex;
+  align-items: center;
+  margin-top: 0.25rem;
+  color: var(--color-red-500);
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.dataSpace-editor__emailSupport__validation-label {
+  margin-left: 0.5rem;
 }

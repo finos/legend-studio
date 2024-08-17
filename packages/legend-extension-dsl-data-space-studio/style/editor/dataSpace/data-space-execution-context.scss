@@ -16,12 +16,13 @@
 
 @use 'mixins' as *;
 
-.data-space-diagram-editor {
-  background: var(--color-dark-grey-50);
-  width: 100%;
-  height: 100%;
+.execution-context-item {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  cursor: pointer;
+  background: var(--color-dark-grey-50);
 
   .half-width-panel-header {
     background: var(--color-dark-grey-50);
@@ -31,27 +32,6 @@
     align-items: center;
     padding-right: 1rem;
   }
-
-  .data-space-diagram__content {
-    display: flex;
-    flex-grow: 1;
-    overflow: hidden;
-  }
-
-  .data-space-diagram-details {
-    padding: 1rem;
-    background: var(--color-dark-grey-75);
-  }
-}
-
-.diagram-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem;
-  cursor: pointer;
-  background: var(--color-dark-grey-50);
-  border-bottom: 1px solid var(--color-dark-grey-100);
 
   &--active {
     background: var(--color-light-blue-450);
@@ -66,12 +46,6 @@
     flex-grow: 1;
     padding-left: 1rem;
     color: var(--color-light-grey-50);
-
-    &__text {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
   }
 
   &__actions {
@@ -82,19 +56,9 @@
 
   &__action {
     color: var(--color-light-grey-50);
-    background: none;
-    border: none;
-    cursor: pointer;
 
     &:hover {
       color: var(--color-light-grey-400);
     }
   }
-}
-
-.data-space-diagram-editor .diagram-item__action {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  padding-bottom: 5px;
 }
