@@ -18,7 +18,7 @@ import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import { DataCubeEditorSortsPanelState } from './DataCubeEditorSortsPanelState.js';
 import { DataCubeEditorCodePanelState } from './DataCubeEditorCodePanelState.js';
-import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
+import { DataCubeQuerySnapshotController } from '../core/DataCubeQuerySnapshotManager.js';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGeneralPropertiesPanelState.js';
@@ -42,7 +42,7 @@ export enum DataCubeEditorTab {
   CODE = 'Code',
 }
 
-export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
+export class DataCubeEditorState extends DataCubeQuerySnapshotController {
   readonly display: SingletonModeDisplayState;
   readonly generalProperties: DataCubeEditorGeneralPropertiesPanelState;
   readonly columnProperties: DataCubeEditorColumnPropertiesPanelState;
@@ -120,9 +120,5 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
 
     this.generalProperties.applySnaphot(snapshot, configuration);
     this.columnProperties.applySnaphot(snapshot, configuration);
-  }
-
-  override async initialize() {
-    // do nothing
   }
 }

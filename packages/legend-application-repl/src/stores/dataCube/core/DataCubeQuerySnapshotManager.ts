@@ -17,17 +17,66 @@
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
-import type { DataCubeQuerySnapshotSubscriber } from './DataCubeQuerySnapshotSubscriber.js';
 import {
   IllegalStateError,
   LogEvent,
   assertErrorThrown,
+  deepDiff,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { DataCubeQuery } from '../../../server/DataCubeQuery.js';
+import type { LegendREPLApplicationStore } from '../../LegendREPLBaseStore.js';
 
 // TODO: set a stack depth when we implement undo/redo
 // const DATA_CUBE_MAX_SNAPSHOT_COUNT = 100;
+
+interface DataCubeQuerySnapshotSubscriber {
+  getLatestSnapshot(): DataCubeQuerySnapshot | undefined;
+  receiveSnapshot(snapshot: DataCubeQuerySnapshot): Promise<void>;
+}
+
+export abstract class DataCubeQuerySnapshotController
+  implements DataCubeQuerySnapshotSubscriber
+{
+  readonly dataCube!: DataCubeState;
+  readonly application!: LegendREPLApplicationStore;
+
+  private latestSnapshot: DataCubeQuerySnapshot | undefined;
+
+  constructor(dataCube: DataCubeState) {
+    this.dataCube = dataCube;
+    this.application = dataCube.application;
+  }
+
+  abstract applySnapshot(
+    snapshot: DataCubeQuerySnapshot,
+    previousSnapshot: DataCubeQuerySnapshot | undefined,
+  ): Promise<void>;
+
+  async receiveSnapshot(snapshot: DataCubeQuerySnapshot) {
+    const previousSnapshot = this.latestSnapshot;
+    this.latestSnapshot = snapshot;
+    await this.applySnapshot(snapshot, previousSnapshot);
+  }
+
+  publishSnapshot(snapshot: DataCubeQuerySnapshot) {
+    if (this.dataCube.engine.enableDebugMode) {
+      this.application.debugProcess(
+        `New Snapshot`,
+        '\nSnapshot',
+        snapshot,
+        '\nDiff',
+        deepDiff(snapshot, this.latestSnapshot ?? {}),
+      );
+    }
+    this.latestSnapshot = snapshot;
+    this.dataCube.snapshotManager.broadcastSnapshot(snapshot);
+  }
+
+  getLatestSnapshot() {
+    return this.latestSnapshot;
+  }
+}
 
 export class DataCubeQuerySnapshotManager {
   private readonly dataCube: DataCubeState;

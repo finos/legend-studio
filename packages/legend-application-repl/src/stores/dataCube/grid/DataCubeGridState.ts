@@ -24,7 +24,7 @@ import {
   INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID,
   INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE,
 } from './DataCubeGridClientEngine.js';
-import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
+import { DataCubeQuerySnapshotController } from '../core/DataCubeQuerySnapshotManager.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import { generateGridOptionsFromSnapshot } from './DataCubeGridConfigurationBuilder.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
@@ -47,7 +47,7 @@ class DataCubeGridDatasourceConfiguration {
   }
 }
 
-export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
+export class DataCubeGridState extends DataCubeQuerySnapshotController {
   readonly controller!: DataCubeGridControllerState;
   readonly exportEngine!: DataCubeGridClientExportEngine;
   private _client?: GridApi | undefined;
@@ -157,9 +157,5 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
         filter: '__TODO_SET_THIS_TO_THE_HASHCODE_OF_FILTER_TREE__',
       },
     });
-  }
-
-  override async initialize() {
-    // do nothing
   }
 }

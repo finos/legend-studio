@@ -16,13 +16,13 @@
 
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
-import { DataCubeQuerySnapshotSubscriber } from './DataCubeQuerySnapshotSubscriber.js';
+import { DataCubeQuerySnapshotController } from './DataCubeQuerySnapshotManager.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import type { DataCubeQuery } from '../../../server/DataCubeQuery.js';
 import { formatDate } from '@finos/legend-shared';
 import { DEFAULT_REPORT_NAME } from './DataCubeQueryEngine.js';
 
-export class DataCubeCoreState extends DataCubeQuerySnapshotSubscriber {
+export class DataCubeStaticContentDisplayState extends DataCubeQuerySnapshotController {
   baseQuery!: DataCubeQuery;
   name = DEFAULT_REPORT_NAME;
   private startTime?: number | undefined;
@@ -52,9 +52,5 @@ export class DataCubeCoreState extends DataCubeQuerySnapshotSubscriber {
     this.application.layoutService.setWindowTitle(
       `\u229E ${data.name}${this.startTime ? ` - ${formatDate(new Date(this.startTime), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
     );
-  }
-
-  override async initialize() {
-    // do nothing
   }
 }

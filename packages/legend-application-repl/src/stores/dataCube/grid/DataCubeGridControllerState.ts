@@ -21,7 +21,7 @@ import type {
   DataCubeQuerySnapshotColumn,
   DataCubeQuerySnapshotSortColumn,
 } from '../core/DataCubeQuerySnapshot.js';
-import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
+import { DataCubeQuerySnapshotController } from '../core/DataCubeQuerySnapshotManager.js';
 import {
   type DataCubeQuerySortOperator,
   type DataCubeColumnPinPlacement,
@@ -45,7 +45,7 @@ import { _groupByAggCols } from './DataCubeGridQuerySnapshotBuilder.js';
  * we MUST NEVER use the editor here, as it could potentially create illegal state
  * while the editor is still in the middle of a modification that has not been applied.
  */
-export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber {
+export class DataCubeGridControllerState extends DataCubeQuerySnapshotController {
   configuration = new DataCubeConfiguration();
 
   selectableColumns: DataCubeQuerySnapshotColumn[] = [];
@@ -237,9 +237,5 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotSubscriber
     this.verticalPivotedColumns = newSnapshot.data.groupBy?.columns ?? [];
 
     this.menuBuilder = generateMenuBuilder(this);
-  }
-
-  override async initialize() {
-    // do nothing
   }
 }
