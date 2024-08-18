@@ -213,14 +213,9 @@ export const RegisterService = observer(
     const applicationStore = editorStore.applicationStore;
     const services = editorStore.graphManagerState.graph.ownServices;
     const toggleSelectAllServices = (): void => {
-      editorStore.globalBulkServiceRegistrationState.selectAllServices
-        ? editorStore.globalBulkServiceRegistrationState.toggleSelectAllServices(
-            false,
-          )
-        : editorStore.globalBulkServiceRegistrationState.toggleSelectAllServices(
-            true,
-          );
-
+      editorStore.globalBulkServiceRegistrationState.toggleSelectAllServices(
+        !editorStore.globalBulkServiceRegistrationState.selectAllServices,
+      );
       editorStore.globalBulkServiceRegistrationState.setSelectAll(
         editorStore.globalBulkServiceRegistrationState.selectAllServices,
       );
@@ -230,18 +225,13 @@ export const RegisterService = observer(
       serviceState: BulkServiceRegistrationState,
     ): void => {
       serviceState.toggleIsSelected();
-
-      editorStore.globalBulkServiceRegistrationState.bulkServiceRegistrationStates.filter(
-        (bulkServiceState) => bulkServiceState.isSelected,
-      ).length ===
-      editorStore.globalBulkServiceRegistrationState
-        .bulkServiceRegistrationStates.length
-        ? editorStore.globalBulkServiceRegistrationState.toggleSelectAllServices(
-            true,
-          )
-        : editorStore.globalBulkServiceRegistrationState.toggleSelectAllServices(
-            false,
-          );
+      editorStore.globalBulkServiceRegistrationState.toggleSelectAllServices(
+        editorStore.globalBulkServiceRegistrationState.bulkServiceRegistrationStates.filter(
+          (bulkServiceState) => bulkServiceState.isSelected,
+        ).length ===
+          editorStore.globalBulkServiceRegistrationState
+            .bulkServiceRegistrationStates.length,
+      );
     };
 
     useEffect(() => {

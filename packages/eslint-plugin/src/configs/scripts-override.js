@@ -31,6 +31,7 @@ const config = {
         'no-process-env': OFF,
         'no-process-exit': OFF,
         'import/no-default-export': OFF, // export default from script so we can use `require()` syntax
+        '@typescript-eslint/no-require-imports': OFF,
         ...[
           ...Object.keys(RECOMMENDED_RULES.react),
           ...Object.keys(RECOMMENDED_RULES.studio),

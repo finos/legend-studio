@@ -161,7 +161,7 @@ export const TEST__provideMockedEditorStore = (customization?: {
         serverUrl: applicationStore.config.depotServerUrl,
       }),
     );
-  const MOCK__EditorStoreProvider = require('../EditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MOCK__EditorStoreProvider = require('../EditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
   MOCK__EditorStoreProvider.useEditorStore = createMock();
   MOCK__EditorStoreProvider.useEditorStore.mockReturnValue(value);
   return value;

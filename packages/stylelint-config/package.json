@@ -29,10 +29,10 @@
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
-    "postcss": "8.4.40",
+    "postcss": "8.4.41",
     "postcss-scss": "4.0.9",
     "stylelint-config-standard": "36.0.1",
-    "stylelint-scss": "6.4.1"
+    "stylelint-scss": "6.5.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",

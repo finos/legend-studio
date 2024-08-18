@@ -93,9 +93,11 @@ export const getDescendantsOfPackage = (
 ): Set<PackageableElement> => {
   const descendants: Set<PackageableElement> = new Set<PackageableElement>();
   parent.children.forEach((c) => {
-    c instanceof Package
-      ? getDescendantsOfPackage(c).forEach((e) => descendants.add(e))
-      : descendants.add(c);
+    if (c instanceof Package) {
+      getDescendantsOfPackage(c).forEach((e) => descendants.add(e));
+    } else {
+      descendants.add(c);
+    }
   });
   return descendants;
 };

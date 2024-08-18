@@ -138,7 +138,6 @@ const IMPORT_RULES = {
 };
 
 const TYPESCRIPT_RULES = {
-  '@typescript-eslint/ban-types': WARN,
   '@typescript-eslint/consistent-type-imports': WARN,
   '@typescript-eslint/no-inferrable-types': [WARN, { ignoreParameters: true }],
   '@typescript-eslint/no-redeclare': [ERROR, { ignoreDeclarationMerge: true }],
@@ -148,8 +147,7 @@ const TYPESCRIPT_RULES = {
     { args: 'none', ignoreRestSiblings: true },
   ],
 
-  // NOTE: the following rules are stylisticc only
-  '@typescript-eslint/no-extra-semi': WARN,
+  // NOTE: the following rules are stylistic only
   '@typescript-eslint/no-shadow': WARN,
   // NOTE: since functions are hoisted in ES6, it is then advisable to enable this rule so that we can have functions that depend on each other and not causing
   // circular module dependency. It is also said to be safe to use

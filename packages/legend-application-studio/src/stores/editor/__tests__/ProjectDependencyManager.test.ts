@@ -331,40 +331,6 @@ test(
   async () => {
     const expectedError =
       'Depending on multiple versions of a project is not supported. Found conflicts:\n';
-    'project: com.company0:artifact0\n' +
-      'versions:[2.0.0,3.0.0]\n' +
-      'project: com.company0:artifact11\n' +
-      'versions:[65.0.0,66.0.0]\n' +
-      'project: com.company0:artifact33\n' +
-      'versions:[20.0.0,21.0.0]\n' +
-      'project: com.company6:artifact44\n' +
-      'versions:[62.0.0,63.0.0]\n' +
-      'project: com.company3:artifact8\n' +
-      'versions:[5.0.0,6.0.0]\n' +
-      'project: com.company6:artifact43\n' +
-      'versions:[58.0.0,59.0.0]\n' +
-      'project: com.company9:artifact41\n' +
-      'versions:[65.0.0,66.0.0]\n' +
-      'project: com.company6:artifact47\n' +
-      'versions:[72.0.0,73.0.0]\n' +
-      'project: com.company0:artifact57\n' +
-      'versions:[19.0.0,20.0.0]\n' +
-      'project: com.company1:artifact18\n' +
-      'versions:[5.0.0,6.0.0]\n' +
-      'project: com.company0:artifact4\n' +
-      'versions:[2.0.0,3.0.0]\n' +
-      'project: com.company5:artifact14\n' +
-      'versions:[40.0.0,41.0.0]\n' +
-      'project: com.company0:artifact27\n' +
-      'versions:[84.0.0,85.0.0]\n' +
-      'project: com.company3:artifact36\n' +
-      'versions:[2.0.0,3.0.0]\n' +
-      'project: com.company7:artifact25\n' +
-      'versions:[64.0.0,65.0.0]\n' +
-      'project: com.company0:artifact16\n' +
-      'versions:[3.0.0,4.0.0]\n' +
-      'project: com.company0:artifact13\n' +
-      'versions:[14.0.0,15.0.0]';
     await expect(
       testDependencyElements(
         [] as Entity[],

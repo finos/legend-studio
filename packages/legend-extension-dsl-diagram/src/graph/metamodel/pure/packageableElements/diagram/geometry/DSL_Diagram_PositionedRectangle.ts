@@ -70,6 +70,7 @@ export class PositionedRectangle implements Hashable {
   }
 
   get hashCode(): string {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     this._dummyObservable; // manually trigger class-view hash code recomputation
     return hashArray([
       DIAGRAM_HASH_STRUCTURE.POSITIONED_RECTANGLE,

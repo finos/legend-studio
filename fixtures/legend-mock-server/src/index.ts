@@ -32,7 +32,6 @@ const server = fastify({
   logger: true,
 });
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
 server.register(fastifyCors, {
   methods: ['OPTIONS'],
   origin: [/localhost/],

@@ -86,7 +86,6 @@ export class SimpleFunctionExpression
    *
    * @discrepancy model
    */
-  // eslint-disable-next-line @typescript-eslint/ban-types
   declare func?: PackageableElementReference<Function> | undefined;
 
   override get hashCode(): string {

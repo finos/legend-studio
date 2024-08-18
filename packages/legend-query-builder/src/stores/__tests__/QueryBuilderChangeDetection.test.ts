@@ -31,62 +31,60 @@ import { TEST_DATA__ModelCoverageAnalysisResult_ChangeDetection } from './TEST_D
 import TEST_DATA__ChangeDetectionModel from './TEST_DATA__QueryBuilder_Model_ChangeDetection.json' assert { type: 'json' };
 import { TEST_DATA__TestChangeDetectionWithSimpleProject } from './TEST_DATA__QueryBuilder_TestChangeDetection.js';
 
-test(integrationTest('Test change detection'), () => {
-  async () => {
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__ChangeDetectionModel as Entity[],
-      stub_RawLambda(),
-      'my::map',
-      'my::runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_ChangeDetection,
-    );
+test(integrationTest('Test change detection'), async () => {
+  const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+    TEST_DATA__ChangeDetectionModel as Entity[],
+    stub_RawLambda(),
+    'my::map',
+    'my::runtime',
+    TEST_DATA__ModelCoverageAnalysisResult_ChangeDetection,
+  );
 
-    await act(async () => {
-      queryBuilderState.changeClass(
-        queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
-      );
-    });
-    const setupPanel = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+  await act(async () => {
+    queryBuilderState.changeClass(
+      queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
     );
-    await waitFor(() =>
-      getByText(setupPanel, extractElementNameFromPath('my::Firm')),
+  });
+  const setupPanel = await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+  );
+  await waitFor(() =>
+    getByText(setupPanel, extractElementNameFromPath('my::Firm')),
+  );
+  await waitFor(() =>
+    getByText(setupPanel, extractElementNameFromPath('my::map')),
+  );
+  await waitFor(() =>
+    getByText(setupPanel, extractElementNameFromPath('my::runtime')),
+  );
+  await act(async () => {
+    queryBuilderState.initializeWithQuery(
+      create_RawLambda(
+        TEST_DATA__TestChangeDetectionWithSimpleProject.parameters,
+        TEST_DATA__TestChangeDetectionWithSimpleProject.body,
+      ),
     );
-    await waitFor(() =>
-      getByText(setupPanel, extractElementNameFromPath('my::map')),
-    );
-    await waitFor(() =>
-      getByText(setupPanel, extractElementNameFromPath('my::runtime')),
-    );
-    await act(async () => {
-      queryBuilderState.initializeWithQuery(
-        create_RawLambda(
-          TEST_DATA__TestChangeDetectionWithSimpleProject.parameters,
-          TEST_DATA__TestChangeDetectionWithSimpleProject.body,
-        ),
-      );
-    });
-    const projectionCols = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
-    );
-    await waitFor(() => getByText(projectionCols, 'Legal Name'));
-    guaranteeNonNullable(
-      guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      ).projectionColumns[0],
-    ).setColumnName('Name');
-    await waitFor(() => getByText(projectionCols, 'Name'));
-    expect(queryBuilderState.changeDetectionState.hasChanged).toBeTruthy();
-    guaranteeNonNullable(
-      guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      ).projectionColumns[0],
-    ).setColumnName('Legal Name');
-    await waitFor(() => getByText(projectionCols, 'Legal Name'));
-    expect(queryBuilderState.hashCode).toBe(
-      queryBuilderState.changeDetectionState.hashCodeSnapshot,
-    );
-  };
+  });
+  const projectionCols = await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
+  );
+  await waitFor(() => getByText(projectionCols, 'Legal Name'));
+  guaranteeNonNullable(
+    guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    ).projectionColumns[0],
+  ).setColumnName('Name');
+  await waitFor(() => getByText(projectionCols, 'Name'));
+  expect(queryBuilderState.changeDetectionState.hasChanged).toBeTruthy();
+  guaranteeNonNullable(
+    guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    ).projectionColumns[0],
+  ).setColumnName('Legal Name');
+  await waitFor(() => getByText(projectionCols, 'Legal Name'));
+  expect(queryBuilderState.hashCode).toBe(
+    queryBuilderState.changeDetectionState.hashCodeSnapshot,
+  );
 });

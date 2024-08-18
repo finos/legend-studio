@@ -165,6 +165,7 @@ export abstract class PackageableElement
      * See https://mobx.js.org/computeds.html#keepalive
      */
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       this.hashCode;
     } catch {
       /* do nothing */

@@ -73,7 +73,7 @@ export const TEST__provideMockedQueryEditorStore = (customization?: {
       TEST_QUERY_ID,
       undefined,
     );
-  const MOCK__QueryEditorStoreProvider = require('../QueryEditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MOCK__QueryEditorStoreProvider = require('../QueryEditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
   MOCK__QueryEditorStoreProvider.useQueryEditorStore = createMock();
   MOCK__QueryEditorStoreProvider.useQueryEditorStore.mockReturnValue(value);
   return value;

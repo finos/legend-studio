@@ -56,7 +56,7 @@ export const TEST__provideMockedBrowserPlatform = (
     new BrowserPlatform(applicationStore, {
       historyAPI: customization?.historyAPI ?? createMemoryHistory(),
     });
-  const MOCK__BrowserPlatform = require('../ApplicationPlatformProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MOCK__BrowserPlatform = require('../ApplicationPlatformProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
   MOCK__BrowserPlatform.useApplicationPlatform = createMock();
   MOCK__BrowserPlatform.useApplicationPlatform.mockReturnValue(value);
   return value;

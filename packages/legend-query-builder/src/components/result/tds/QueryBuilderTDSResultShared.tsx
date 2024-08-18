@@ -384,22 +384,24 @@ const filterByOrOutValue = (
     tdsState.postFilterState,
     tdsColState,
   );
-  existingPostFilterNode === undefined
-    ? generateNewPostFilterConditionNodeData(
-        applicationStore,
-        operator,
-        _cellData,
-        tdsState,
-        tdsColState,
-      ).catch(applicationStore.alertUnhandledError)
-    : updateExistingPostFilterConditionNodeData(
-        existingPostFilterNode,
-        isFilterBy,
-        _cellData,
-        operator,
-        data,
-        tdsState,
-      );
+  if (existingPostFilterNode) {
+    updateExistingPostFilterConditionNodeData(
+      existingPostFilterNode,
+      isFilterBy,
+      _cellData,
+      operator,
+      data,
+      tdsState,
+    );
+  } else {
+    generateNewPostFilterConditionNodeData(
+      applicationStore,
+      operator,
+      _cellData,
+      tdsState,
+      tdsColState,
+    ).catch(applicationStore.alertUnhandledError);
+  }
 };
 
 export const filterByOrOutValues = (

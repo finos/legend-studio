@@ -824,7 +824,7 @@ export class V1_Engine {
         undefined,
         customNumParser,
       ) as PlainObject<V1_ExecutionResult>;
-    } catch (error) {
+    } catch {
       // fall back to regular parse if any issue with the custom number parsing
       return JSON.parse(executionResultTxt);
     }

@@ -43,7 +43,7 @@ const TYPESCRIPT_RULES = {
   '@typescript-eslint/prefer-optional-chain': ERROR,
   '@typescript-eslint/no-unnecessary-condition': ERROR,
   '@typescript-eslint/no-unnecessary-type-assertion': ERROR,
-  '@typescript-eslint/no-throw-literal': ERROR,
+  '@typescript-eslint/only-throw-error': ERROR,
   '@typescript-eslint/no-unsafe-assignment': ERROR,
   '@typescript-eslint/no-floating-promises': ERROR,
   '@typescript-eslint/no-misused-promises': ERROR,

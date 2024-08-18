@@ -168,7 +168,7 @@ const extractMessage = (payload: Payload): string => {
  * should be optional and configurable.
  */
 export const autoReAuthenticate = (url: string): Promise<void> =>
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   new Promise((resolve: Function): void => {
     const id = 'AUTO_AUTHENTICATION_IFRAME';
     const previous = document.getElementById(id);
