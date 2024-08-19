@@ -41,6 +41,7 @@ import { entityDiffSorter } from '../../../stores/editor/EditorSDLCState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioFrameworkProvider.js';
 import { formatDistanceToNow } from '@finos/legend-shared';
+import { STUDIO_SDLC_USER_ERRORS } from '../../shared/StudioSDLCErrors.js';
 
 export const WorkspaceReviewDiffs = observer(() => {
   const editorStore = useEditorStore();
@@ -138,7 +139,7 @@ export const WorkspaceReview = observer(() => {
     workspaceContainsSnapshotDependencies ||
     !workspaceReviewState.canMergeReview;
   const commitReviewTitle = workspaceContainsSnapshotDependencies
-    ? `Can't commit review: workspace has snapshot dependencies`
+    ? STUDIO_SDLC_USER_ERRORS.COMMIT_WORKSPACE_WITH_SNAPSHOT
     : workspaceReviewState.sdlcState.isActiveProjectSandbox
       ? `Can't commit review: reviews are not allowed on sandbox projects`
       : !workspaceReviewState.canMergeReview
@@ -165,7 +166,7 @@ export const WorkspaceReview = observer(() => {
     !workspaceReviewState.canCreateReview ||
     workspaceReviewState.sdlcState.isActiveProjectSandbox;
   const createReviewTitle = workspaceContainsSnapshotDependencies
-    ? `Can't create review: workspace has snapshot dependencies`
+    ? STUDIO_SDLC_USER_ERRORS.COMMIT_WORKSPACE_WITH_SNAPSHOT
     : workspaceReviewState.sdlcState.isActiveProjectSandbox
       ? `Can't create review: reviews are not allowed on sandbox projects`
       : !workspaceReviewState.canCreateReview

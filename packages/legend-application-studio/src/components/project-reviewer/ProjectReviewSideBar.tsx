@@ -43,6 +43,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import { formatDistanceToNow } from '@finos/legend-shared';
 import { SPECIAL_REVISION_ALIAS } from '../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import { ProjectConfigurationDiffEditorState } from '../../stores/editor/editor-state/diff-viewer-state/ProjectConfigurationDiffEditorState.js';
+import { STUDIO_SDLC_USER_ERRORS } from '../shared/StudioSDLCErrors.js';
 
 export const ProjectReviewerSideBar = observer(() => {
   const reviewStore = useProjectReviewerStore();
@@ -239,7 +240,7 @@ export const ProjectReviewerSideBar = observer(() => {
                   title={
                     !workspaceContainsSnapshotDependencies
                       ? 'Commit review'
-                      : `Can't commit review: workspace has snapshot dependencies`
+                      : STUDIO_SDLC_USER_ERRORS.COMMIT_WORKSPACE_WITH_SNAPSHOT
                   }
                 >
                   <TruncatedGitMergeIcon />
