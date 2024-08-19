@@ -59,8 +59,8 @@ export const LegendQueryInfo: React.FC<{
   };
 
   const goToReleaseLog = (): void => {
-    closeModal();
     applicationStore.releaseNotesService.setReleaseLog(true);
+    closeModal();
   };
 
   return (
