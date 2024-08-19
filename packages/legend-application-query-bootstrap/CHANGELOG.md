@@ -1,5 +1,11 @@
 # @finos/legend-application-query-bootstrap
 
+## 12.20.0
+
+### Patch Changes
+
+- [#3444](https://github.com/finos/legend-studio/pull/3444) [`4cb48d7`](https://github.com/finos/legend-studio/commit/4cb48d7509aeb5f99641c782b4798acc8aac40a1) ([@travisstebbins](https://github.com/travisstebbins)) - Revert "[Fix] Improve handling of changing const/param/derivation types"
+
 ## 12.19.0
 
 ### Patch Changes
