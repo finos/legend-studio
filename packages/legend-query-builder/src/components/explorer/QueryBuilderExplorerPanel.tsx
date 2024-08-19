@@ -268,54 +268,67 @@ const QueryBuilderExplorerPreviewDataModal = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <Modal
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-          className="editor-modal query-builder__explorer__preview-data-modal"
+        <div
+          data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PREVIEW_DATA_MODAL}
         >
-          <ModalHeader title={prettyCONSTName(previewDataState.propertyName)} />
-          <PanelLoadingIndicator
-            isLoading={previewDataState.isGeneratingPreviewData}
-          />
-          <ModalBody className="query-builder__explorer__preview-data-modal__body">
-            {previewDataState.isGeneratingPreviewData && (
-              <div className="query-builder__explorer__preview-data-modal__placeholder">
-                Loading preview data...
-              </div>
-            )}
-            {previewDataState.previewData && (
-              <table className="table">
-                <thead>
-                  <tr>
-                    {previewDataState.previewData.columns.map((column, idx) => (
-                      // eslint-disable-next-line react/no-array-index-key
-                      <th key={idx} className="table__cell--left">
-                        {column}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {previewDataState.previewData.rows.map((row, rowIdx) => (
-                    // eslint-disable-next-line react/no-array-index-key
-                    <tr key={rowIdx}>
-                      {row.values.map((value, idx) => (
-                        // eslint-disable-next-line react/no-array-index-key
-                        <td key={idx} className="table__cell--left">
-                          {value}
-                        </td>
-                      ))}
+          <Modal
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
+            className="editor-modal query-builder__explorer__preview-data-modal"
+          >
+            <ModalHeader
+              title={prettyCONSTName(previewDataState.propertyName)}
+            />
+            <PanelLoadingIndicator
+              isLoading={previewDataState.isGeneratingPreviewData}
+            />
+            <ModalBody className="query-builder__explorer__preview-data-modal__body">
+              {previewDataState.isGeneratingPreviewData && (
+                <div className="query-builder__explorer__preview-data-modal__placeholder">
+                  Loading preview data...
+                </div>
+              )}
+              {previewDataState.previewData && (
+                <table className="table">
+                  <thead>
+                    <tr>
+                      {previewDataState.previewData.columns.map(
+                        (column, idx) => (
+                          // eslint-disable-next-line react/no-array-index-key
+                          <th key={idx} className="table__cell--left">
+                            {column}
+                          </th>
+                        ),
+                      )}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <ModalFooterButton text="Close" onClick={close} type="secondary" />
-          </ModalFooter>
-        </Modal>
+                  </thead>
+                  <tbody>
+                    {previewDataState.previewData.rows.map((row, rowIdx) => (
+                      // eslint-disable-next-line react/no-array-index-key
+                      <tr key={rowIdx}>
+                        {row.values.map((value, idx) => (
+                          // eslint-disable-next-line react/no-array-index-key
+                          <td key={idx} className="table__cell--left">
+                            {value}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <ModalFooterButton
+                text="Close"
+                onClick={close}
+                type="secondary"
+              />
+            </ModalFooter>
+          </Modal>
+        </div>
       </Dialog>
     );
   },

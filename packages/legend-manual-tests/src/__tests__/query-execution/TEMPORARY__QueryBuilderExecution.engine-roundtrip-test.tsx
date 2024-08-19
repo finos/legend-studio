@@ -21,8 +21,10 @@ import {
   findByText,
   act,
   waitFor,
+  getByTitle,
 } from '@testing-library/react';
 import {
+  TEST_DATA_PreviewDataQueryExecution_ExecutionInput,
   TEST_DATA_QueryExecution_ExecutionInput,
   TEST_DATA_QueryExecution_MappingAnalysisResult,
 } from './TEST_DATA_QueryBuilder_Query_Execution.js';
@@ -207,4 +209,66 @@ test(integrationTest('test query execution with parameters'), async () => {
       queryBuilderResultPanel1.getElementsByClassName('ag-cell'),
     ).filter((el) => el.getAttribute('col-id') === 'Last Name')[0]?.innerHTML,
   ).toContain('');
+});
+
+test(integrationTest('test preivew-data query execution'), async () => {
+  const { mappingPath, runtimePath, entities, rawLambda } = {
+    mappingPath: TEST_DATA_QueryExecution_ExecutionInput.mapping,
+    runtimePath: TEST_DATA_QueryExecution_ExecutionInput.runtime.runtime,
+    entities: TEST_DATA_QueryBuilder_QueryExecution_Entities,
+    rawLambda: TEST_DATA_PreviewDataQueryExecution_ExecutionInput.function,
+  };
+  const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+    entities,
+    stub_RawLambda(),
+    mappingPath,
+    runtimePath,
+    TEST_DATA_QueryExecution_MappingAnalysisResult,
+  );
+  await act(async () => {
+    queryBuilderState.initializeWithQuery(
+      create_RawLambda(rawLambda.parameters, rawLambda.body),
+    );
+  });
+  const executionInput = (
+    queryBuilderState.graphManagerState.graphManager as V1_PureGraphManager
+  ).createExecutionInput(
+    queryBuilderState.graphManagerState.graph,
+    guaranteeNonNullable(queryBuilderState.executionContextState.mapping),
+    queryBuilderState.resultState.buildExecutionRawLambda(),
+    guaranteeNonNullable(queryBuilderState.executionContextState.runtimeValue),
+    V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+  );
+  const executionResult = await ENGINE_TEST_SUPPORT__execute(executionInput);
+  createSpy(
+    queryBuilderState.graphManagerState.graphManager,
+    'runQuery',
+  ).mockResolvedValue({
+    executionResult: V1_buildExecutionResult(
+      V1_serializeExecutionResult(executionResult),
+    ),
+  });
+  const explorerPanel = await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+  );
+  const ageRow = await waitFor(() => findByText(explorerPanel, 'Age'));
+  if (ageRow.parentElement) {
+    expect(ageRow.parentElement).not.toBeNull();
+    expect(ageRow.parentElement.parentElement).not.toBeNull();
+    await waitFor(() =>
+      fireEvent.click(
+        getByTitle(
+          guaranteeNonNullable(
+            guaranteeNonNullable(ageRow.parentElement).parentElement,
+          ),
+          'Preview Data',
+        ),
+      ),
+    );
+    await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PREVIEW_DATA_MODAL,
+      ),
+    );
+  }
 });
