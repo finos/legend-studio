@@ -50,6 +50,12 @@ export const getBaseJestConfig = (isGlobal) => {
       // color-parse
       'color-parse',
       'color-name',
+
+      // MUI
+      // TODO: we might be able to remove this when the following issue is resolved
+      // See https://github.com/mui/mui-x/issues/11568
+      '@mui/x-date-pickers',
+      '@babel/runtime',
     ],
   });
 
