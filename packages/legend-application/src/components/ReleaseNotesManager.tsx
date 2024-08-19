@@ -184,7 +184,7 @@ export const ReleaseLogManager = observer(() => {
     return null;
   }
   const releaseNotes = releaseService.releaseNotes ?? [];
-  const isOpen = releaseService.showCurrentReleaseModal;
+  const isOpen = releaseService.showReleaseLog;
   const closeModal = (): void => {
     releaseService.setReleaseLog(false);
     releaseService.updateViewedVersion();
