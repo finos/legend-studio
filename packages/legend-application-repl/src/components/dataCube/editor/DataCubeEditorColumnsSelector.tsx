@@ -83,9 +83,11 @@ function getBaseGridProps<
     // Show no rows overlay when there are no search results
     // See https://stackoverflow.com/a/72637410
     onModelUpdated: (event: ModelUpdatedEvent<T>) => {
-      event.api.getDisplayedRowCount() === 0
-        ? event.api.showNoRowsOverlay()
-        : event.api.hideOverlay();
+      if (event.api.getDisplayedRowCount() === 0) {
+        event.api.showNoRowsOverlay();
+      } else {
+        event.api.hideOverlay();
+      }
     },
   };
 }

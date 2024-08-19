@@ -48,7 +48,7 @@
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "@jest/globals": "29.7.0",
-    "axios": "1.7.2",
+    "axios": "1.7.4",
     "cross-env": "7.0.3",
     "eslint": "8.57.0",
     "jest": "29.7.0",

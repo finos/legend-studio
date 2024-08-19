@@ -642,7 +642,7 @@ export const V1_buildGenericLetFunctionExpression = (
       compileContext,
       processingContext,
     );
-  } catch (error) {
+  } catch {
     // let statement
     assertTrue(
       matchFunctionName(functionName, SUPPORTED_FUNCTIONS.LET),

@@ -27,7 +27,7 @@ import { GraphCompilationOutcome } from '../../stores/editor/EditorGraphState.js
 import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import { queryClass } from '../editor/editor-group/uml-editor/ClassQueryBuilder.js';
 import { extractElementNameFromPath } from '@finos/legend-graph';
-import TEST_DATA__ClassQueryBuilder from './TEST_DATA__ClassQueryBuilderModel.json' assert { type: 'json' };
+import TEST_DATA__ClassQueryBuilder from './TEST_DATA__ClassQueryBuilderModel.json' with { type: 'json' };
 import { TEST__buildQueryBuilderMockedEditorStore } from '../__test-utils__/EmbeddedQueryBuilderTestUtils.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import packageJson from '../../../../package.json' assert { type: 'json' };
-import V1_SYSTEM_MODELS from './v1/V1_DSL_DataSpace_SystemModels.json' assert { type: 'json' };
+import packageJson from '../../../../package.json' with { type: 'json' };
+import V1_SYSTEM_MODELS from './v1/V1_DSL_DataSpace_SystemModels.json' with { type: 'json' };
 import {
   V1_DataSpace,
   V1_DataSpaceDiagram,

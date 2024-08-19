@@ -15,14 +15,14 @@
  */
 
 import { test, expect, describe } from '@jest/globals';
-import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json' assert { type: 'json' };
-import TEST_DATA__SimpleRelationalInheritanceModel from './TEST_DATA__QueryBuilder_Model_SimpleRelationalInheritanceModel.json' assert { type: 'json' };
-import TEST_DATA__NestedSubTypeModel from './TEST_DATA__QueryBuilder_Model_NestedSubType.json' assert { type: 'json' };
-import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json' assert { type: 'json' };
-import TEST_DATA__AssociationMappingModel from './TEST_DATA__QueryBuilder_Model_AssociationMappingModel.json' assert { type: 'json' };
-import TEST_DATA__M2MAutoMapped from './TEST_DATA__QueryBuilder_Model_M2MAutoMapped.json' assert { type: 'json' };
+import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json' with { type: 'json' };
+import TEST_DATA__SimpleRelationalInheritanceModel from './TEST_DATA__QueryBuilder_Model_SimpleRelationalInheritanceModel.json' with { type: 'json' };
+import TEST_DATA__NestedSubTypeModel from './TEST_DATA__QueryBuilder_Model_NestedSubType.json' with { type: 'json' };
+import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json' with { type: 'json' };
+import TEST_DATA__AssociationMappingModel from './TEST_DATA__QueryBuilder_Model_AssociationMappingModel.json' with { type: 'json' };
+import TEST_DATA__M2MAutoMapped from './TEST_DATA__QueryBuilder_Model_M2MAutoMapped.json' with { type: 'json' };
 import TEST_DATA__RelationalInline from './TEST_DATA__QueryBuilder_Model_RelationalInline.json';
-import TEST_DATA__QueryBuilder_Model_MultiClassNestedSubType from './TEST_DATA__QueryBuilder_Model_MultiClassNestedSubType.json' assert { type: 'json' };
+import TEST_DATA__QueryBuilder_Model_MultiClassNestedSubType from './TEST_DATA__QueryBuilder_Model_MultiClassNestedSubType.json' with { type: 'json' };
 import { type PlainObject } from '@finos/legend-shared';
 import {
   integrationTest,
@@ -69,7 +69,7 @@ import {
   TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
 } from './TEST_DATA__ModelCoverageAnalysisResult.js';
 import { TEST__LegendApplicationPluginManager } from '../__test-utils__/QueryBuilderStateTestUtils.js';
-import TEST_DATA_SimpleSubtypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json' assert { type: 'json' };
+import TEST_DATA_SimpleSubtypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json' with { type: 'json' };
 
 interface NodeMappingData {
   name: string;

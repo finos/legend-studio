@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../../package.json' assert { type: 'json' };
+import packageJson from '../../../package.json' with { type: 'json' };
 import type { Clazz } from '@finos/legend-shared';
 import type { PackageableElement } from '../metamodel/pure/packageableElements/PackageableElement.js';
 import { PureGraphPlugin } from '../PureGraphPlugin.js';

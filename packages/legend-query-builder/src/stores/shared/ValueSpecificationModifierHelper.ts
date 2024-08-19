@@ -55,7 +55,6 @@ export const valueSpecification_setMultiplicity = action(
 export const simpleFunctionExpression_setFunc = action(
   (
     target: SimpleFunctionExpression,
-    // eslint-disable-next-line @typescript-eslint/ban-types
     val: PackageableElementReference<Function> | undefined,
   ): void => {
     target.func = val ? observe_PackageableElementReference(val) : undefined;

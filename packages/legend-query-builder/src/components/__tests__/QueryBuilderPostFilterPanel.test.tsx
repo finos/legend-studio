@@ -51,7 +51,7 @@ import {
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
 } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
-import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' assert { type: 'json' };
+import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' with { type: 'json' };
 import { integrationTest } from '@finos/legend-shared/test';
 import {
   type DataType,
@@ -70,9 +70,9 @@ import {
   dragAndDrop,
   selectFirstOptionFromCustomSelectorInput,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
-import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json' assert { type: 'json' };
-import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' assert { type: 'json' };
-import TEST_DATA_QueryBuilder_QueryExecution_Entities from './TEST_DATA_QueryBuilder_QueryExecution_Entities.json' assert { type: 'json' };
+import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json' with { type: 'json' };
+import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' with { type: 'json' };
+import TEST_DATA_QueryBuilder_QueryExecution_Entities from './TEST_DATA_QueryBuilder_QueryExecution_Entities.json' with { type: 'json' };
 
 import {
   filterByType,

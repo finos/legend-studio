@@ -133,6 +133,7 @@ class FileTextEditorState {
         selection: Selection | undefined;
       }
     | undefined {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     this._dummyCursorObservable; // manually trigger cursor observer
     return this.editor
       ? {

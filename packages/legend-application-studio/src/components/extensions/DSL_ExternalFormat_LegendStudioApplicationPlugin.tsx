@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../../package.json' assert { type: 'json' };
+import packageJson from '../../../package.json' with { type: 'json' };
 import { BufferIcon, SitemapIcon } from '@finos/legend-art';
 import { SchemaSetEditor } from '../editor/editor-group/external-format-editor/DSL_ExternalFormat_SchemaSetElementEditor.js';
 import {

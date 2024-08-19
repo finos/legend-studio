@@ -50,8 +50,10 @@
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
+    "@types/react": "18.3.3",
     "mobx": "6.13.1",
-    "mobx-react-lite": "4.0.7"
+    "mobx-react-lite": "4.0.7",
+    "react": "18.3.1"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

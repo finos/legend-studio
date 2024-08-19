@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../package.json' assert { type: 'json' };
+import packageJson from '../package.json' with { type: 'json' };
 import { AbstractPreset } from '@finos/legend-shared';
 import { DSL_ExternalFormat_PureGraphManagerPlugin } from './graph-manager/extensions/DSL_ExternalFormat_PureGraphManagerPlugin.js';
 import { DSL_ExternalFormat_PureProtocolProcessorPlugin } from './graph-manager/protocol/pure/extensions/DSL_ExternalFormat_PureProtocolProcessorPlugin.js';

@@ -21,7 +21,7 @@ import {
   TEST_DATA__simpleDebuggingCase,
   TEST_DATA__AutoImportsWithAny,
 } from './roundtripTestData/TEST_DATA__GenericRoundtrip.js';
-import TEST_DATA__m2mGraphEntities from './buildGraph/TEST_DATA__M2MGraphEntities.json' assert { type: 'json' };
+import TEST_DATA__m2mGraphEntities from './buildGraph/TEST_DATA__M2MGraphEntities.json' with { type: 'json' };
 import {
   TEST_DATA__ClassRoundtrip,
   TEST_DATA__EnumerationRoundtrip,

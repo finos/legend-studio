@@ -35,7 +35,7 @@ export const TEST__provideMockedLegendStudioBaseStore = (customization?: {
     );
   const value =
     customization?.mock ?? new LegendStudioBaseStore(applicationStore);
-  const MOCK__BaseStoreProvider = require('../LegendStudioFrameworkProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MOCK__BaseStoreProvider = require('../LegendStudioFrameworkProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
   MOCK__BaseStoreProvider.useLegendStudioBaseStore = createMock();
   MOCK__BaseStoreProvider.useLegendStudioBaseStore.mockReturnValue(value);
   return value;

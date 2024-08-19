@@ -102,7 +102,7 @@ const QueryBuilderGridResult = observer(
             rowData={rowData}
             gridOptions={{
               suppressScrollOnNewData: true,
-              getRowId: (data) => data.data.rowNumber,
+              getRowId: (data) => `${data.data.rowNumber}`,
             }}
             // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
             // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com

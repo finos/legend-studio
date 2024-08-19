@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json' assert { type: 'json' };
+import packageJson from '../../package.json' with { type: 'json' };
 import { AbstractPreset } from '@finos/legend-shared';
 import { FMT_GraphQL_PureGraphManagerPlugin } from './FMT_GraphQL_PureGraphManagerPlugin.js';
 import { FMT_GraphQL_PureProtocolProcessorPlugin } from './protocol/pure/FMT_GraphQL_PureProtocolProcessorPlugin.js';

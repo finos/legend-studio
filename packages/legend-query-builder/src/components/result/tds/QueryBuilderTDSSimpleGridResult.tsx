@@ -496,7 +496,7 @@ export const QueryBuilderTDSSimpleGridResult = observer(
             rowData={getRowDataFromExecutionResult(executionResult)}
             gridOptions={{
               suppressScrollOnNewData: true,
-              getRowId: (data) => data.data.rowNumber,
+              getRowId: (data) => `${data.data.rowNumber}`,
               rowSelection: 'multiple',
             }}
             // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated

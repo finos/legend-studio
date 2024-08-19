@@ -1320,21 +1320,23 @@ export const CustomDatePicker: React.FC<{
       const theReservedCustomDateOption = reservedCustomDateOptions.filter(
         (d) => d.value === chosenDatePickerOption.value,
       );
-      theReservedCustomDateOption.length > 0
-        ? setValueSpecification(
-            buildPureAdjustDateFunction(
-              guaranteeNonNullable(theReservedCustomDateOption[0]),
-              graph,
-              observerContext,
-            ),
-          )
-        : setValueSpecification(
-            buildPureDateFunctionExpression(
-              chosenDatePickerOption,
-              graph,
-              observerContext,
-            ),
-          );
+      if (theReservedCustomDateOption.length > 0) {
+        setValueSpecification(
+          buildPureAdjustDateFunction(
+            guaranteeNonNullable(theReservedCustomDateOption[0]),
+            graph,
+            observerContext,
+          ),
+        );
+      } else {
+        setValueSpecification(
+          buildPureDateFunctionExpression(
+            chosenDatePickerOption,
+            graph,
+            observerContext,
+          ),
+        );
+      }
     }
     setDatePickerOption(chosenDatePickerOption);
   };

@@ -25,7 +25,7 @@ import {
   TEST_DATA__AutoImportsWithAny,
   TEST_DATA__AutoImportsWithSystemProfiles,
 } from '../roundtripTestData/TEST_DATA__GenericRoundtrip.js';
-import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json' assert { type: 'json' };
+import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json' with { type: 'json' };
 import { TEST_DATA__SimpleGraph } from './TEST_DATA__Core.js';
 import type { Entity } from '@finos/legend-storage';
 import {

@@ -85,7 +85,7 @@ export type Clazz<T> = { new (...args: any[]): T };
  * we will use `Function` in this case, this is a very loose check and will lose some benefit of type checking
  * during compile time, so refrain from using it extensively
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-function-type
 export type GenericClazz<T> = { new (...args: any[]): T } | Function;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SuperGenericFunction = (...args: any) => any;
@@ -100,7 +100,7 @@ export const getSuperclass = <V>(
       `Cannot get superclass for non user-defined classes`,
     );
   }
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const superclass = Object.getPrototypeOf(_class) as Function | null;
   /**
    * When it comes to inheritance, JavaScript only has one construct: objects.

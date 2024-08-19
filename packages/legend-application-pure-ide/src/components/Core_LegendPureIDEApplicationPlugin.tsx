@@ -19,7 +19,7 @@ import {
   type KeyedCommandConfigEntry,
   type LegendApplicationSetup,
 } from '@finos/legend-application';
-import packageJson from '../../package.json' assert { type: 'json' };
+import packageJson from '../../package.json' with { type: 'json' };
 import { LegendPureIDEApplicationPlugin } from '../stores/LegendPureIDEApplicationPlugin.js';
 import {
   LEGEND_PURE_IDE_COMMAND_CONFIG,

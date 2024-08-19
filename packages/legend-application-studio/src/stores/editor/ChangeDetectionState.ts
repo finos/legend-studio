@@ -934,6 +934,7 @@ export class ChangeDetectionState {
               disposers.push(keepAlive(element, 'hashCode'));
             }
             // manually trigger hash code computation
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             element.hashCode;
           }),
         ),

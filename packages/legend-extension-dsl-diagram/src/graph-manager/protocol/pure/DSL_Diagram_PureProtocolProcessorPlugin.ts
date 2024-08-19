@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../../../package.json' assert { type: 'json' };
+import packageJson from '../../../../package.json' with { type: 'json' };
 import { V1_Diagram } from './v1/model/packageableElements/diagram/V1_DSL_Diagram_Diagram.js';
 import { type PlainObject, assertType } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';

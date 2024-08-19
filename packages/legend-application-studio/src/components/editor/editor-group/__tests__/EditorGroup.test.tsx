@@ -25,7 +25,7 @@ import {
   getByTitle,
   getAllByTestId,
 } from '@testing-library/react';
-import TEST_DATA__m2mGraphEntities from '../../../../stores/editor/__tests__/TEST_DATA__M2MGraphEntities.json' assert { type: 'json' };
+import TEST_DATA__m2mGraphEntities from '../../../../stores/editor/__tests__/TEST_DATA__M2MGraphEntities.json' with { type: 'json' };
 import { integrationTest } from '@finos/legend-shared/test';
 import {
   TEST__openElementFromExplorerTree,

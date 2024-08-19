@@ -23,7 +23,7 @@ import {
   getByText,
   fireEvent,
 } from '@testing-library/react';
-import TEST_DATA__enumerationMappingEntities from './TEST_DATA__EnumerationMapping.json' assert { type: 'json' };
+import TEST_DATA__enumerationMappingEntities from './TEST_DATA__EnumerationMapping.json' with { type: 'json' };
 import { integrationTest } from '@finos/legend-shared/test';
 import {
   TEST__openElementFromExplorerTree,

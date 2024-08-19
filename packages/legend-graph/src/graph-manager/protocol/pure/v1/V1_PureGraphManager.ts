@@ -85,7 +85,7 @@ import {
   V1_serializeValueSpecification,
   V1_deserializeValueSpecification,
 } from './transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
-import V1_CORE_SYSTEM_MODELS from './V1_Core_SystemModels.json' assert { type: 'json' };
+import V1_CORE_SYSTEM_MODELS from './V1_Core_SystemModels.json' with { type: 'json' };
 import { V1_serializePackageableElement } from './transformation/pureProtocol/V1_PackageableElementSerialization.js';
 import {
   V1_entitiesToPureModelContextData,

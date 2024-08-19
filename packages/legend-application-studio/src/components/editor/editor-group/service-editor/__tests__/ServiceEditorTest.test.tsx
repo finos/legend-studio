@@ -34,7 +34,7 @@ import {
   TEST_DATA__multiEXecutionService,
   TEST_DATA__serviceEntities,
 } from './TEST_DATA__ServiceEditor.js';
-import TEST_DATA__ExternalFormatServiceEntities from './TEST_DATA__ExternalFormatServiceEntities.json' assert { type: 'json' };
+import TEST_DATA__ExternalFormatServiceEntities from './TEST_DATA__ExternalFormatServiceEntities.json' with { type: 'json' };
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../../__lib__/LegendStudioTesting.js';
 import { ServiceEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';

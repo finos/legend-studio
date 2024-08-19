@@ -102,6 +102,7 @@ const buildAppExtensionInfoTreeData = (
 const AppExtensionInfoTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
     AppExtensionInfoTreeNodeData,
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     {
       // empty
     }

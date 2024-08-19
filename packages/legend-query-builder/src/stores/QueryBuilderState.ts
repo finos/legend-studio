@@ -111,6 +111,7 @@ import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { QueryBuilderChangeHistoryState } from './QueryBuilderChangeHistoryState.js';
 import { type QueryBuilderWorkflowState } from './query-workflow/QueryBuilderWorkFlowState.js';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface QueryableSourceInfo {}
 
 export type QueryableClassMappingRuntimeInfo = QueryableSourceInfo & {

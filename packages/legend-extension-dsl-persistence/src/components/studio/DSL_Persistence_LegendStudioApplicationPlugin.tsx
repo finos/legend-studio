@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../../package.json' assert { type: 'json' };
+import packageJson from '../../../package.json' with { type: 'json' };
 import type { DocumentationEntry } from '@finos/legend-application';
 import { MeteorIcon, PuzzlePieceIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';

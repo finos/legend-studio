@@ -16,7 +16,7 @@
 
 import { test, expect, beforeEach } from '@jest/globals';
 import { type RenderResult, getByText } from '@testing-library/react';
-import TEST_DATA__m2mGraphEntities from '../../../../stores/editor/__tests__/TEST_DATA__M2MGraphEntities.json' assert { type: 'json' };
+import TEST_DATA__m2mGraphEntities from '../../../../stores/editor/__tests__/TEST_DATA__M2MGraphEntities.json' with { type: 'json' };
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import {

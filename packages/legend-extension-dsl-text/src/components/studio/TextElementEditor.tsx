@@ -68,7 +68,9 @@ export const TextElementEditor = observer(() => {
   const changeType =
     (val: TEXT_TYPE): (() => void) =>
     (): void => {
-      !isReadOnly && text_setType(textElement, val);
+      if (!isReadOnly) {
+        text_setType(textElement, val);
+      }
     };
   const changeContent = (val: string): void =>
     text_setContent(textElement, val);

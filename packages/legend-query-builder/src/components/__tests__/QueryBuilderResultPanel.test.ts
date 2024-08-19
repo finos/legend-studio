@@ -44,7 +44,7 @@ import {
   TEST_DATA__NoReturnData__result,
   TEST_DATA__RoundingData__result,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_ResultStateTest.js';
-import TEST_DATA_QueryBuilder_QueryExecution_Entities from './TEST_DATA_QueryBuilder_QueryExecution_Entities.json' assert { type: 'json' };
+import TEST_DATA_QueryBuilder_QueryExecution_Entities from './TEST_DATA_QueryBuilder_QueryExecution_Entities.json' with { type: 'json' };
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {

@@ -47,7 +47,7 @@ import {
   TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessTemporalTarget,
   TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndProcessingTemporalTarget,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Milestoning.js';
-import TEST_MilestoningModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Milestoning.json' assert { type: 'json' };
+import TEST_MilestoningModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Milestoning.json' with { type: 'json' };
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import { stub_RawLambda, create_RawLambda } from '@finos/legend-graph';
