@@ -156,7 +156,7 @@ export class DataCubeEditorFilterConditionGroupNode extends DataCubeEditorFilter
   addChild(node: DataCubeEditorFilterNode, idx?: number | undefined): void {
     if (!this.children.includes(node)) {
       if (idx !== undefined) {
-        idx = Math.max(0, Math.min(idx, this.children.length - 1));
+        idx = Math.max(0, Math.min(idx, this.children.length));
         this.children.splice(idx, 0, node);
       } else {
         this.children.push(node);

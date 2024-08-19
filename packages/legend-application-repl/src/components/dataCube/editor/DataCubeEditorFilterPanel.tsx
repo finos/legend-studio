@@ -190,12 +190,11 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
       <div className="group flex h-6 items-center">
         <div
           className={cn(
-            'z-1 absolute h-6 w-full bg-opacity-50 group-hover:bg-neutral-50 group-hover:bg-opacity-50',
+            'z-1 absolute h-6 w-full bg-opacity-50 group-hover:bg-sky-100 group-hover:bg-opacity-50',
             {
               'bg-sky-50': node === panel.selectedNode,
               'border-[0.5px] border-l-2 border-sky-200 border-l-sky-600':
                 node === panel.selectedNode,
-              'group-hover:bg-sky-50': node === panel.selectedNode,
             },
           )}
           onClick={() => panel.setSelectedNode(node)}
@@ -344,12 +343,11 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
       <div className="group flex h-6 items-center">
         <div
           className={cn(
-            'z-1 absolute h-6 w-full bg-opacity-50 group-hover:bg-neutral-50 group-hover:bg-opacity-50',
+            'z-1 absolute h-6 w-full bg-opacity-50 group-hover:bg-sky-100 group-hover:bg-opacity-50',
             {
               'bg-sky-50': node === panel.selectedNode,
               'border-[0.5px] border-l-2 border-sky-200 border-l-sky-600':
                 node === panel.selectedNode,
-              'group-hover:bg-sky-50': node === panel.selectedNode,
             },
           )}
           onClick={() => panel.setSelectedNode(node)}
@@ -475,15 +473,13 @@ const DataCubeEditorFilterGroupDisplay = observer(
         <div className="relative">
           <div
             className={cn(
-              'pointer-events-none absolute z-10 h-[calc(100%_-_12px)] border-l border-neutral-200',
+              'pointer-events-none absolute z-10 h-[calc(100%_-_12px)] w-0 border-l border-neutral-200',
               {
                 'border-sky-600': node === panel.selectedGroupNode,
-                // 'bg-sky-50': node === panel.selectedGroupNode,
               },
             )}
             style={{
               marginLeft: `${level * FILTER_TREE_INDENTATION_SPACE + FILTER_TREE_OFFSET + FILTER_TREE_VERTICAL_GUTTER_LINE_OFFSET + level * FILTER_TREE_CONTROLLER_OFFSET}px`,
-              width: `0px`,
             }}
           />
           {node.children.map((childNode) => {
@@ -558,7 +554,7 @@ export const DataCubeEditorFilterPanel = observer(
               )}
               {panel.tree.root && (
                 <div
-                  className="flex py-1"
+                  className="flex flex-col py-1"
                   // prevent click event of filter tree from propagating to the
                   // container which when clicked, will clear node selection
                   onClick={(event) => event.stopPropagation()}
