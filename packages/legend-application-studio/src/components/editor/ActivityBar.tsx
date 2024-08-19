@@ -45,8 +45,12 @@ import {
   ReadMeIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider.js';
-import { forwardRef, useState } from 'react';
-import { VIRTUAL_ASSISTANT_TAB } from '@finos/legend-application';
+import { forwardRef, useEffect, useState } from 'react';
+import {
+  ReleaseLogManager,
+  ReleaseNotesManager,
+  VIRTUAL_ASSISTANT_TAB,
+} from '@finos/legend-application';
 import { LegendStudioAppInfo } from '../LegendStudioAppInfo.js';
 import { generateSetupRoute } from '../../__lib__/LegendStudioNavigation.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvider.js';
@@ -112,6 +116,11 @@ export const ActivityBarMenu: React.FC = () => {
   // showcases
   const showcaseManagerState =
     ShowcaseManagerState.retrieveNullableState(applicationStore);
+  // release notification
+  useEffect(() => {
+    applicationStore.releaseNotesService.updateViewedVersion();
+  }, [applicationStore]);
+
   return (
     <>
       <div className="activity-bar__menu">
@@ -158,6 +167,8 @@ export const ActivityBarMenu: React.FC = () => {
         </ControlledDropdownMenu>
       </div>
       <LegendStudioAppInfo open={openAppInfo} closeModal={hideAppInfo} />
+      <ReleaseLogManager />
+      <ReleaseNotesManager />
     </>
   );
 };

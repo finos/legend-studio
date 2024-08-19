@@ -201,7 +201,10 @@ export const LegendStudioAppInfo: React.FC<{
       ?.map((id) => appExtensionInfoTreeData.nodes.get(id))
       .filter(isNonNullable) ?? [];
   const isAppExtensionInfoEmpty = !appExtensionInfoTreeData.nodes.size;
-
+  const goToReleaseLog = (): void => {
+    applicationStore.releaseNotesService.setReleaseLog(true);
+    closeModal();
+  };
   return (
     <Dialog onClose={closeModal} open={open}>
       <Modal
@@ -249,6 +252,14 @@ export const LegendStudioAppInfo: React.FC<{
             <div className="app__info__entry__title">Build Time:</div>
             <div className="app__info__entry__value">
               {config.appVersionBuildTime}
+            </div>
+          </div>
+          <div className="app__info__entry">
+            <div
+              onClick={goToReleaseLog}
+              className="app__info__entry__value app__info__entry__value__action"
+            >
+              Details of Released Versions
             </div>
           </div>
           <div className="app__info__group">
