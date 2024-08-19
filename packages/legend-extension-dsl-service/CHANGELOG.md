@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-service
 
+## 1.0.211
+
+### Patch Changes
+
+- [#3435](https://github.com/finos/legend-studio/pull/3435) [`fa6a2f2`](https://github.com/finos/legend-studio/commit/fa6a2f287c06740748c87a7d056ad6da8c0469a2) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix project search dropdown in the query-to-service productionization flow
+
 ## 1.0.210
 
 ## 1.0.209
