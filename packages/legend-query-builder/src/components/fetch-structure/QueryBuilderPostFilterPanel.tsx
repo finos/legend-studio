@@ -52,7 +52,6 @@ import {
   Class,
   Enumeration,
   PrimitiveType,
-  VariableExpression,
 } from '@finos/legend-graph';
 import {
   assertErrorThrown,
@@ -423,21 +422,10 @@ const QueryBuilderPostFilterConditionEditor = observer(
         rightConditionValue instanceof PostFilterValueSpecConditionValueState &&
         rightConditionValue.value
       ) {
-        const isInvalidVariable =
-          rightConditionValue.value instanceof VariableExpression &&
-          node.condition.postFilterState.isInvalidValueSpecPostFilterValue(
-            node,
-          );
         return (
           <div
             ref={dropConnector}
-            className={clsx(
-              'query-builder-post-filter-tree__condition-node__value',
-              {
-                'query-builder-post-filter-tree__condition-node__value--error':
-                  isInvalidVariable,
-              },
-            )}
+            className="query-builder-post-filter-tree__condition-node__value"
           >
             <PanelEntryDropZonePlaceholder
               isDragOver={isFilterValueDragOver}
@@ -468,20 +456,10 @@ const QueryBuilderPostFilterConditionEditor = observer(
         rightConditionValue instanceof
         PostFilterTDSColumnValueConditionValueState
       ) {
-        const isInvalidTDSColumn =
-          node.condition.postFilterState.isInvalidTDSColumnPostFilterValue(
-            node,
-          );
         return (
           <div
             ref={dropConnector}
-            className={clsx(
-              'query-builder-post-filter-tree__condition-node__value',
-              {
-                'query-builder-post-filter-tree__condition-node__value--error':
-                  isInvalidTDSColumn,
-              },
-            )}
+            className="query-builder-post-filter-tree__condition-node__value"
           >
             <PanelEntryDropZonePlaceholder
               isDragOver={isFilterValueDragOver}

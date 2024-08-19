@@ -38,6 +38,7 @@ import { QueryBuilderPropertyExpressionState } from '../QueryBuilderPropertyEdit
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import {
   type ValueSpecification,
+  type VariableExpression,
   type Type,
   type ExecutionResultWithMetadata,
   AbstractPropertyExpression,
@@ -45,7 +46,6 @@ import {
   CollectionInstanceValue,
   InstanceValue,
   SimpleFunctionExpression,
-  VariableExpression,
   matchFunctionName,
 } from '@finos/legend-graph';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilderConfig.js';
@@ -61,7 +61,6 @@ import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../QueryBuilderStateHashUtil
 import {
   getCollectionValueSpecificationType,
   getNonCollectionValueSpecificationType,
-  isTypeCompatibleForAssignment,
   isValidInstanceValue,
   isValueExpressionReferencedInValue,
 } from '../QueryBuilderValueSpecificationHelper.js';
@@ -1187,15 +1186,8 @@ export class QueryBuilderFilterState
       node instanceof QueryBuilderFilterTreeConditionNodeData &&
       node.condition.rightConditionValue instanceof
         FilterValueSpecConditionValueState &&
-      ((node.condition.rightConditionValue.value instanceof InstanceValue &&
-        !isValidInstanceValue(node.condition.rightConditionValue.value)) ||
-        (node.condition.rightConditionValue.value instanceof
-          VariableExpression &&
-          !isTypeCompatibleForAssignment(
-            node.condition.propertyExpressionState.propertyExpression.func.value
-              .genericType.value.rawType,
-            node.condition.rightConditionValue.value.genericType?.value.rawType,
-          )))
+      node.condition.rightConditionValue.value instanceof InstanceValue &&
+      !isValidInstanceValue(node.condition.rightConditionValue.value)
     );
   }
 

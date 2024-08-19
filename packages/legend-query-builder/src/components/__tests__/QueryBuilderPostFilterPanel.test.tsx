@@ -69,7 +69,6 @@ import {
   TEST__setUpQueryBuilder,
   dragAndDrop,
   selectFirstOptionFromCustomSelectorInput,
-  selectFromCustomSelectorInput,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json' with { type: 'json' };
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' with { type: 'json' };
@@ -96,11 +95,6 @@ import { INTERNAL__BasicQueryBuilderState } from '../../stores/QueryBuilderState
 import { QueryBuilderAdvancedWorkflowState } from '../../stores/query-workflow/QueryBuilderWorkFlowState.js';
 import { CUSTOM_DATE_PICKER_OPTION } from '../shared/CustomDatePicker.js';
 import type { Entity } from '@finos/legend-storage';
-import {
-  getConstantNameInput,
-  getConstantValueInput,
-} from './QueryBuilderConstantsPanel.test.js';
-import { getParameterNameInput } from './QueryBuilderParametersPanel.test.js';
 
 test(
   integrationTest('Query builder loads simple post-filter with DateTime value'),
@@ -1437,170 +1431,6 @@ test(
         );
       expect(expectedLambda).toEqual(jsonQuery);
     });
-  },
-);
-
-test(
-  integrationTest(
-    'Query builder shows error when constant and parameter types become invalid',
-  ),
-  async () => {
-    // Set up query
-    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
-      TEST_DATA__QueryBuilder_Model_SimpleRelational,
-      stub_RawLambda(),
-      'execution::RelationalMapping',
-      'execution::Runtime',
-      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
-    );
-
-    const _firmClass =
-      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
-    await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
-      queryBuilderState.setShowParametersPanel(true);
-      queryBuilderState.constantState.setShowConstantPanel(true);
-      const tdsState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderTDSState,
-      );
-      tdsState.setShowPostFilterPanel(true);
-    });
-
-    // DND property from explorer panel to fetch structure panel
-    const explorerPanel = await renderResult.findByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
-    );
-    const fetchStructurePanel = await renderResult.findByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
-    );
-    const explorerDragSource = await findByText(explorerPanel, 'Legal Name');
-    const fetchStructureDropZone = await findByText(
-      fetchStructurePanel,
-      'Add a projection column',
-    );
-    await dragAndDrop(
-      explorerDragSource,
-      fetchStructureDropZone,
-      fetchStructurePanel,
-      'Add a projection column',
-    );
-    await findByText(fetchStructurePanel, 'Legal Name');
-
-    // DND property from fetch structure panel to post-filter panel
-    const fetchStructureDragSource = await findByText(
-      fetchStructurePanel,
-      'Legal Name',
-    );
-    const postFilterPanel = await renderResult.findByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
-    );
-    const postFilterDropZone = await findByText(
-      postFilterPanel,
-      'Add a post-filter condition',
-    );
-    await dragAndDrop(
-      fetchStructureDragSource,
-      postFilterDropZone,
-      postFilterPanel,
-      'Add a post-filter condition',
-    );
-    await findByText(postFilterPanel, 'Legal Name');
-    await findByText(postFilterPanel, 'is');
-
-    // Create constant of type string
-    const constantsPanel = renderResult.getByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_CONSTANTS,
-    );
-    fireEvent.click(getByTitle(constantsPanel, 'Add Constant'));
-    const constantNameInput = getConstantNameInput(renderResult);
-    let constantValueInput = getConstantValueInput(renderResult);
-    fireEvent.change(constantNameInput, { target: { value: 'c_var_1' } });
-    fireEvent.change(constantValueInput, { target: { value: 'test' } });
-    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
-
-    // Drag and drop constant to post-filter panel value
-    const constantDragSource = await findByText(constantsPanel, 'c_var_1');
-    await dragAndDrop(
-      constantDragSource,
-      postFilterPanel,
-      postFilterPanel,
-      'Change Filter Value',
-    );
-
-    // Verify no validation error
-    expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', false);
-
-    // Change constant type
-    fireEvent.click(getByText(constantsPanel, 'c_var_1'));
-    let typeContainer = guaranteeNonNullable(
-      renderResult.getByText('Type').parentElement,
-    );
-    selectFromCustomSelectorInput(typeContainer, 'Number');
-    constantValueInput = getConstantValueInput(renderResult);
-    fireEvent.change(constantValueInput, { target: { value: '5' } });
-    fireEvent.click(renderResult.getByRole('button', { name: 'Apply' }));
-
-    // Verify 1 validation error
-    expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
-    expect(
-      getByTitle(
-        postFilterPanel,
-        'Filter value for Legal Name is missing or invalid',
-        { exact: false },
-      ),
-    ).not.toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', true);
-
-    // Create parameter of type string
-    const parametersPanel = renderResult.getByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
-    );
-    fireEvent.click(getByTitle(parametersPanel, 'Add Parameter'));
-    const parameterNameInput = getParameterNameInput(renderResult);
-    fireEvent.change(parameterNameInput, { target: { value: 'p_var_1' } });
-    fireEvent.click(renderResult.getByRole('button', { name: 'Create' }));
-
-    // Drag and drop parameter to post-filter panel value
-    const parameterDragSource = await findByText(parametersPanel, 'p_var_1');
-    await dragAndDrop(
-      parameterDragSource,
-      postFilterPanel,
-      postFilterPanel,
-      'Change Filter Value',
-    );
-
-    // Verify no validation error
-    expect(queryByText(postFilterPanel, '1 issue')).toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', false);
-
-    // Change parameter type
-    fireEvent.click(getByText(parametersPanel, 'p_var_1'));
-    typeContainer = guaranteeNonNullable(
-      renderResult.getByText('Type').parentElement,
-    );
-    selectFromCustomSelectorInput(typeContainer, 'Number');
-    fireEvent.click(renderResult.getByRole('button', { name: 'Update' }));
-
-    // Verify 1 validation error
-    expect(getByText(postFilterPanel, '1 issue')).not.toBeNull();
-    expect(
-      getByTitle(
-        postFilterPanel,
-        'Filter value for Legal Name is missing or invalid',
-        { exact: false },
-      ),
-    ).not.toBeNull();
-    expect(
-      renderResult.getByRole('button', { name: 'Run Query' }),
-    ).toHaveProperty('disabled', true);
   },
 );
 
