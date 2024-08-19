@@ -1,5 +1,12 @@
 # @finos/legend-application-studio
 
+## 28.18.19
+
+### Patch Changes
+
+- [#3445](https://github.com/finos/legend-studio/pull/3445) [`ffdcd1b`](https://github.com/finos/legend-studio/commit/ffdcd1b1826eab8e6891fb82548818aa6680996b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add Release Log/Notification to studio.
+  Improve error message for commiting with snapshot dependencies.
+
 ## 28.18.18
 
 ## 28.18.17
