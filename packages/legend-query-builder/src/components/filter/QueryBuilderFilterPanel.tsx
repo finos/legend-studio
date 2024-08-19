@@ -1020,13 +1020,22 @@ const QueryBuilderFilterConditionEditor = observer(
         rightConditionValue instanceof FilterValueSpecConditionValueState &&
         rightConditionValue.value
       ) {
+        const isInvalidVariable =
+          rightConditionValue.value instanceof VariableExpression &&
+          node.condition.filterState.isInvalidValueSpecFilterValue(node);
         return (
           <div
             ref={dropConnector}
             data-testid={
               QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_VALUE
             }
-            className="query-builder-filter-tree__condition-node__value"
+            className={clsx(
+              'query-builder-filter-tree__condition-node__value',
+              {
+                'query-builder-filter-tree__condition-node__value--error':
+                  isInvalidVariable,
+              },
+            )}
           >
             <PanelEntryDropZonePlaceholder
               isDragOver={isFilterValueDragOver}

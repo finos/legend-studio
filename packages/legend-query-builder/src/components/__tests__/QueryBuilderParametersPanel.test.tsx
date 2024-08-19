@@ -50,6 +50,10 @@ import {
   MockedMonacoEditorAPI,
 } from '@finos/legend-lego/code-editor/test';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  getConstantNameInput,
+  getConstantValueInput,
+} from './QueryBuilderConstantsPanel.test.js';
 
 export const getParameterNameInput = (
   renderResult: RenderResult,
@@ -58,18 +62,6 @@ export const getParameterNameInput = (
     guaranteeNonNullable(
       renderResult.getByText('Parameter Name').parentElement,
     ),
-    'textbox',
-  );
-
-const getConstantNameInput = (renderResult: RenderResult): HTMLInputElement =>
-  getByRole(
-    guaranteeNonNullable(renderResult.getByText('Constant Name').parentElement),
-    'textbox',
-  );
-
-const getConstantValueInput = (renderResult: RenderResult): HTMLInputElement =>
-  getByRole(
-    guaranteeNonNullable(renderResult.getByText('Value').parentElement),
     'textbox',
   );
 

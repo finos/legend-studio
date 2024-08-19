@@ -1718,6 +1718,33 @@
       background: var(--color-blue-200);
     }
 
+    .query-builder-post-filter-tree__condition-node__value--error {
+      .query-builder-column-badge__content {
+        background: var(--color-red-200);
+        color: var(--color-light-grey-150);
+
+        .query-builder-column-badge__type {
+          background: var(--color-dark-shade-100);
+
+          .query-builder-column-badge__icon {
+            color: var(--color-light-grey-150);
+          }
+        }
+
+        .query-builder-column-badge__property {
+          color: var(--color-light-grey-150);
+
+          &__info svg {
+            color: var(--color-light-grey-200);
+          }
+        }
+
+        .query-builder-column-badge__action svg {
+          color: var(--color-light-grey-200);
+        }
+      }
+    }
+
     .query-builder-post-filter-tree__node__container--selected
       .query-builder-post-filter-tree__blank-node,
     .query-builder-post-filter-tree__node__container--selected:hover
