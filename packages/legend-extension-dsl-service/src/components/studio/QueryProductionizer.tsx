@@ -432,10 +432,7 @@ const QueryProductionizerContent = observer(() => {
                   <CustomSelectorInput
                     className="query-productionizer__input__selector"
                     options={projectOptions}
-                    disabled={
-                      !productionizerStore.currentQuery ||
-                      productionizerStore.loadProjectsState.isInProgress
-                    }
+                    disabled={!productionizerStore.currentQuery}
                     isLoading={
                       productionizerStore.loadProjectsState.isInProgress
                     }
