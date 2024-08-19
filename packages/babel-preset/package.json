@@ -30,6 +30,7 @@
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
+    "@babel/core": "7.25.2",
     "@babel/helper-plugin-utils": "7.24.8",
     "@babel/plugin-syntax-import-attributes": "7.24.7",
     "@babel/preset-env": "7.25.3",

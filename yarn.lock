@@ -2251,6 +2251,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/babel-preset-legend-studio@workspace:packages/babel-preset"
   dependencies:
+    "@babel/core": "npm:7.25.2"
     "@babel/helper-plugin-utils": "npm:7.24.8"
     "@babel/plugin-syntax-import-attributes": "npm:7.24.7"
     "@babel/preset-env": "npm:7.25.3"
@@ -2276,6 +2277,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:8.1.0"
     "@typescript-eslint/parser": "npm:8.1.0"
     cross-env: "npm:7.0.3"
+    eslint: "npm:8.57.0"
     eslint-config-prettier: "npm:9.1.0"
     eslint-plugin-import: "npm:2.29.1"
     eslint-plugin-prettier: "npm:5.2.1"
@@ -2284,6 +2286,7 @@ __metadata:
     micromatch: "npm:4.0.7"
     prettier: "npm:3.3.3"
     rimraf: "npm:6.0.1"
+    typescript: "npm:5.5.4"
   peerDependencies:
     eslint: ^8.0.0
     prettier: ^3.0.0
@@ -2299,10 +2302,12 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-lego": "workspace:*"
+    "@types/react": "npm:18.3.3"
     copy-webpack-plugin: "npm:12.0.2"
     cross-env: "npm:7.0.3"
     eslint: "npm:8.57.0"
     npm-run-all: "npm:4.1.5"
+    react: "npm:18.3.1"
     rimraf: "npm:6.0.1"
     typescript: "npm:5.5.4"
     webpack: "npm:5.93.0"
@@ -2439,10 +2444,12 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-lego": "workspace:*"
+    "@types/react": "npm:18.3.3"
     copy-webpack-plugin: "npm:12.0.2"
     cross-env: "npm:7.0.3"
     eslint: "npm:8.57.0"
     npm-run-all: "npm:4.1.5"
+    react: "npm:18.3.1"
     rimraf: "npm:6.0.1"
     tailwindcss: "npm:3.4.10"
     typescript: "npm:5.5.4"
@@ -2812,12 +2819,14 @@ __metadata:
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": "npm:29.7.0"
+    "@types/react": "npm:18.3.3"
     cross-env: "npm:7.0.3"
     eslint: "npm:8.57.0"
     jest: "npm:29.7.0"
     mobx: "npm:6.13.1"
     mobx-react-lite: "npm:4.0.7"
     npm-run-all: "npm:4.1.5"
+    react: "npm:18.3.1"
     rimraf: "npm:6.0.1"
     sass: "npm:1.77.8"
     typescript: "npm:5.5.4"
@@ -3208,6 +3217,7 @@ __metadata:
     "@jest/globals": "npm:29.7.0"
     "@testing-library/dom": "npm:10.4.0"
     "@testing-library/react": "npm:16.0.0"
+    "@types/react": "npm:18.3.3"
     cross-env: "npm:7.0.3"
     eslint: "npm:8.57.0"
     jest: "npm:29.7.0"
@@ -3411,10 +3421,12 @@ __metadata:
     "@rollup/plugin-json": "npm:6.1.0"
     "@rollup/plugin-node-resolve": "npm:15.2.3"
     "@rollup/plugin-terser": "npm:0.4.4"
+    "@types/react": "npm:18.3.3"
     "@types/vscode": "npm:1.92.0"
     cross-env: "npm:7.0.3"
     eslint: "npm:8.57.0"
     npm-run-all: "npm:4.1.5"
+    postcss: "npm:8.4.41"
     postcss-url: "npm:10.1.3"
     react: "npm:18.3.1"
     rimraf: "npm:6.0.1"
@@ -3435,6 +3447,7 @@ __metadata:
     postcss: "npm:8.4.41"
     postcss-scss: "npm:4.0.9"
     rimraf: "npm:6.0.1"
+    stylelint: "npm:16.8.2"
     stylelint-config-standard: "npm:36.0.1"
     stylelint-scss: "npm:6.5.0"
   peerDependencies:
@@ -5152,12 +5165,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:22.4.0, @types/node@npm:^22.1.0":
+"@types/node@npm:*, @types/node@npm:^22.1.0":
   version: 22.4.0
   resolution: "@types/node@npm:22.4.0"
   dependencies:
     undici-types: "npm:~6.19.2"
   checksum: 10/0b6ccc86856b8473f4d536491edc2ba21386d194219ee84024ef2b2ab054296f0b37a4f52719af797227132853cff065977992e353754a195cd86aea2e128cc7
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:22.4.1":
+  version: 22.4.1
+  resolution: "@types/node@npm:22.4.1"
+  dependencies:
+    undici-types: "npm:~6.19.2"
+  checksum: 10/cce9221aea24688bccc3d7c25afd26d95c1bdab73a32ee5c43bb456e070116abf6ba537a9ff19c728bc06fe054e69a2c7ec8e5d818e34a3bf9567eae2cb20059
   languageName: node
   linkType: hard
 
@@ -12323,7 +12345,7 @@ __metadata:
     "@finos/eslint-plugin-legend-studio": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/stylelint-config-legend-studio": "workspace:*"
-    "@types/node": "npm:22.4.0"
+    "@types/node": "npm:22.4.1"
     chalk: "npm:5.3.0"
     cross-env: "npm:7.0.3"
     envinfo: "npm:7.13.0"
@@ -18941,11 +18963,11 @@ __metadata:
 
 "typescript@patch:typescript@npm%3A5.5.4#optional!builtin<compat/typescript>":
   version: 5.5.4
-  resolution: "typescript@patch:typescript@npm%3A5.5.4#optional!builtin<compat/typescript>::version=5.5.4&hash=b45daf"
+  resolution: "typescript@patch:typescript@npm%3A5.5.4#optional!builtin<compat/typescript>::version=5.5.4&hash=379a07"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10/2c065f0ef81855eac25c9b658a3c9da65ffc005260c12854c2286f40f3667e1b1ecf8bdbdd37b59aa0397920378ce7900bff8cb32e0f1c7af6fd86efc676718c
+  checksum: 10/746fdd0865c5ce4f15e494c57ede03a9e12ede59cfdb40da3a281807853fe63b00ef1c912d7222143499aa82f18b8b472baa1830df8804746d09b55f6cf5b1cc
   languageName: node
   linkType: hard
 
