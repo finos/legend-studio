@@ -31,7 +31,7 @@ import {
   PackageableElementReference,
   getClassProperty,
 } from '@finos/legend-graph';
-import TEST_DATA__M2MGraphEntities from './TEST_DATA__M2MGraphEntities.json' assert { type: 'json' };
+import TEST_DATA__M2MGraphEntities from './TEST_DATA__M2MGraphEntities.json' with { type: 'json' };
 import { TEST_DATA__ProjectDependencyReportWithConflict } from '../../../components/editor/editor-group/__tests__/TEST_DATA__ProjectDependencyReport.js';
 import type { EditorStore } from '../EditorStore.js';
 import {

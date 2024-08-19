@@ -15,7 +15,7 @@
  */
 
 import { test, expect, beforeAll, describe, jest } from '@jest/globals';
-import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json' assert { type: 'json' };
+import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json' with { type: 'json' };
 import {
   AbstractServerClient,
   guaranteeNonNullable,

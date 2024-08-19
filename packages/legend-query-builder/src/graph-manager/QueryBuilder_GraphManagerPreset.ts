@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json' assert { type: 'json' };
+import packageJson from '../../package.json' with { type: 'json' };
 import { AbstractPreset } from '@finos/legend-shared';
 import { QueryBuilder_PureProtocolProcessorPlugin } from './protocol/pure/QueryBuilder_PureProtocolProcessorPlugin.js';
 import { QueryBuilder_PureGraphManagerPlugin } from './QueryBuilder_PureGraphManagerPlugin.js';

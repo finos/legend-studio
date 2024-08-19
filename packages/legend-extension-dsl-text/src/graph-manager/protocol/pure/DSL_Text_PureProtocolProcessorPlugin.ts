@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../../../package.json' assert { type: 'json' };
+import packageJson from '../../../../package.json' with { type: 'json' };
 import { V1_Text } from './v1/model/packageableElements/text/V1_DSL_Text_Text.js';
 import {
   type PlainObject,

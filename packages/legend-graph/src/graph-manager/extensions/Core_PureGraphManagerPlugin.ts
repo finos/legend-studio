@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../../package.json' assert { type: 'json' };
+import packageJson from '../../../package.json' with { type: 'json' };
 import { PureGraphManagerPlugin } from '../PureGraphManagerPlugin.js';
 import { CORE_PURE_PATH } from '../../graph/MetaModelConst.js';
 

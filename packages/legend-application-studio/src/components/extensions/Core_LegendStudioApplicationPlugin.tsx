@@ -25,7 +25,7 @@ import {
   type VirtualAssistantViewConfiguration,
   type ApplicationExtensionStateBuilder,
 } from '@finos/legend-application';
-import packageJson from '../../../package.json' assert { type: 'json' };
+import packageJson from '../../../package.json' with { type: 'json' };
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/LegendStudioApplicationNavigationContext.js';
 import {
   CORE_CONTEXTUAL_DOCUMENTATION_CONFIG,

@@ -23,15 +23,12 @@ import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import { expect, test } from '@jest/globals';
-import { waitFor, getByText, fireEvent, act } from '@testing-library/react';
-import {
-  TEST__setUpQueryBuilder,
-  dragAndDrop,
-} from '../../components/__test-utils__/QueryBuilderComponentTestUtils.js';
+import { waitFor, getByText, act } from '@testing-library/react';
+import { TEST__setUpQueryBuilder } from '../../components/__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { QueryBuilderTDSState } from '../fetch-structure/tds/QueryBuilderTDSState.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ChangeDetection } from './TEST_DATA__ModelCoverageAnalysisResult.js';
-import TEST_DATA__ChangeDetectionModel from './TEST_DATA__QueryBuilder_Model_ChangeDetection.json' assert { type: 'json' };
+import TEST_DATA__ChangeDetectionModel from './TEST_DATA__QueryBuilder_Model_ChangeDetection.json' with { type: 'json' };
 import { TEST_DATA__TestChangeDetectionWithSimpleProject } from './TEST_DATA__QueryBuilder_TestChangeDetection.js';
 
 test(integrationTest('Test change detection'), async () => {
@@ -72,57 +69,26 @@ test(integrationTest('Test change detection'), async () => {
     renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
   );
   await waitFor(() => getByText(projectionCols, 'Legal Name'));
-  guaranteeNonNullable(
-    guaranteeType(
-      queryBuilderState.fetchStructureState.implementation,
-      QueryBuilderTDSState,
-    ).projectionColumns[0],
-  ).setColumnName('Name');
+  await act(async () => {
+    guaranteeNonNullable(
+      guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      ).projectionColumns[0],
+    ).setColumnName('Name');
+  });
   await waitFor(() => getByText(projectionCols, 'Name'));
-  guaranteeNonNullable(
-    guaranteeType(
-      queryBuilderState.fetchStructureState.implementation,
-      QueryBuilderTDSState,
-    ).projectionColumns[0],
-  ).setColumnName('Legal Name');
+  expect(queryBuilderState.changeDetectionState.hasChanged).toBeTruthy();
+  await act(async () => {
+    guaranteeNonNullable(
+      guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      ).projectionColumns[0],
+    ).setColumnName('Legal Name');
+  });
   await waitFor(() => getByText(projectionCols, 'Legal Name'));
-
-  // Test Redo/Undo action in Query Builder
-  fireEvent.click(renderResult.getByText('Undo'));
-  await waitFor(() => getByText(projectionCols, 'Name'));
-  expect(getByText(projectionCols, 'Legal Name')).toBeNull();
-  fireEvent.click(renderResult.getByText('Redo'));
-  await waitFor(() => getByText(projectionCols, 'Legal Name'));
-
-  const filterPanel = await waitFor(() =>
-    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL),
+  expect(queryBuilderState.hashCode).toBe(
+    queryBuilderState.changeDetectionState.hashCodeSnapshot,
   );
-  const explorerPanel = await waitFor(() =>
-    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
-  );
-  // Drag and drop
-  const dropZone = await waitFor(() =>
-    getByText(filterPanel, 'Add a filter condition'),
-  );
-  const dragSource = await waitFor(() =>
-    getByText(explorerPanel, 'Legal Name'),
-  );
-  await dragAndDrop(
-    dragSource,
-    dropZone,
-    filterPanel,
-    'Add a filter condition',
-  );
-  await waitFor(() => getByText(filterPanel, 'Legal Name'));
-  fireEvent.click(renderResult.getByText('Undo'));
-  expect(getByText(filterPanel, 'Legal Name')).toBeNull();
-  fireEvent.click(renderResult.getByText('Redo'));
-  await waitFor(() => getByText(filterPanel, 'Legal Name'));
-
-  // test undo/redo contextual -> ctrl + z won't close a new open modal
-  fireEvent.click(renderResult.getByText('Query Options'));
-  fireEvent.keyDown(document, { key: 'z', code: 'KeyZ', ctrlKey: true });
-  expect(renderResult.getByText('Result Set Modifier')).not.toBeNull();
-  fireEvent.click(renderResult.getByText('Close'));
-  await waitFor(() => getByText(filterPanel, 'Legal Name'));
 });

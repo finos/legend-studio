@@ -23,7 +23,7 @@ import {
   type LegendApplicationPluginManager,
   type LegendApplicationSetup,
 } from '@finos/legend-application';
-import packageJson from '../../package.json' assert { type: 'json' };
+import packageJson from '../../package.json' with { type: 'json' };
 import { QUERY_BUILDER_SETTING_CONFIG } from '../__lib__/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMMAND_CONFIG } from '../stores/QueryBuilderCommand.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';

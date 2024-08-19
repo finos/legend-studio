@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json' assert { type: 'json' };
+import packageJson from '../../package.json' with { type: 'json' };
 import { AbstractPreset } from '@finos/legend-shared';
 import { STO_ServiceStore_PureGraphManagerPlugin } from './STO_ServiceStore_PureGraphManagerPlugin.js';
 import { STO_ServiceStore_PureProtocolProcessorPlugin } from './protocol/pure/STO_ServiceStore_PureProtocolProcessorPlugin.js';

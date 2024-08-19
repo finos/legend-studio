@@ -15,8 +15,8 @@
  */
 
 import { describe, test, expect } from '@jest/globals';
-import TEST_DATA__SimpleSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json' assert { type: 'json' };
-import TEST_DATA__NestedSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_NestedSubType.json' assert { type: 'json' };
+import TEST_DATA__SimpleSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json' with { type: 'json' };
+import TEST_DATA__NestedSubTypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_NestedSubType.json' with { type: 'json' };
 import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import {
@@ -29,7 +29,7 @@ import {
   TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
 } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
-import TEST_DATA__QueryBuilder_Model_HighlightProperties from './TEST_DATA__QueryBuilder_Model_HiglightProperties.json' assert { type: 'json' };
+import TEST_DATA__QueryBuilder_Model_HighlightProperties from './TEST_DATA__QueryBuilder_Model_HiglightProperties.json' with { type: 'json' };
 import {
   TEST_DATA__simpleProjection,
   TEST_DATA__projectionWithNestedSubtype,

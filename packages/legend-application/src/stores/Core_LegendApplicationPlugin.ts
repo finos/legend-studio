@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json' assert { type: 'json' };
+import packageJson from '../../package.json' with { type: 'json' };
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 import { LEGEND_APPLICATION_SETTING_CONFIG } from '../__lib__/LegendApplicationSetting.js';
 import {

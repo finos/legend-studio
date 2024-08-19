@@ -26,7 +26,7 @@ import {
   getByRole,
   act,
 } from '@testing-library/react';
-import TEST_DATA__QueryBuilder_Model_SimpleRelational from './TEST_DATA__QueryBuilder_Model_SimpleRelational.json' assert { type: 'json' };
+import TEST_DATA__QueryBuilder_Model_SimpleRelational from './TEST_DATA__QueryBuilder_Model_SimpleRelational.json' with { type: 'json' };
 import { TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalResult } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {

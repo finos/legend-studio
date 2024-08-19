@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../../../package.json' assert { type: 'json' };
+import packageJson from '../../../../package.json' with { type: 'json' };
 import { V1_ServiceStore } from './v1/model/packageableElements/store/serviceStore/model/V1_STO_ServiceStore_ServiceStore.js';
 import {
   type PlainObject,

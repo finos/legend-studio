@@ -15,7 +15,7 @@
  */
 
 import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
-import packageJson from '../../../package.json' assert { type: 'json' };
+import packageJson from '../../../package.json' with { type: 'json' };
 import {
   LegendStudioApplicationPlugin,
   type DSL_LegendStudioApplicationPlugin_Extension,

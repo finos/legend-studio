@@ -26,7 +26,7 @@ import {
   TEST_DATA_QueryExecution_ExecutionInput,
   TEST_DATA_QueryExecution_MappingAnalysisResult,
 } from './TEST_DATA_QueryBuilder_Query_Execution.js';
-import TEST_DATA_QueryBuilder_QueryExecution_Entities from './TEST_DATA_QueryBuilder_QueryExecution_Entities.json' assert { type: 'json' };
+import TEST_DATA_QueryBuilder_QueryExecution_Entities from './TEST_DATA_QueryBuilder_QueryExecution_Entities.json' with { type: 'json' };
 import {
   stub_RawLambda,
   create_RawLambda,

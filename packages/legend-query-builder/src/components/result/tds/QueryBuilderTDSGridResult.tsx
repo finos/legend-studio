@@ -500,7 +500,7 @@ export const QueryBuilderTDSGridResult = observer(
               }}
               gridOptions={{
                 suppressScrollOnNewData: true,
-                getRowId: (data) => data.data.rowNumber as string,
+                getRowId: (data) => `${data.data.rowNumber}`,
                 rowSelection: 'multiple',
                 pivotPanelShow: 'always',
                 rowGroupPanelShow: 'always',
@@ -532,7 +532,7 @@ export const QueryBuilderTDSGridResult = observer(
               rowData={getRowDataFromExecutionResult(executionResult)}
               gridOptions={{
                 suppressScrollOnNewData: true,
-                getRowId: (data) => data.data.rowNumber as string,
+                getRowId: (data) => `${data.data.rowNumber}`,
                 rowSelection: 'multiple',
                 enableRangeSelection: true,
               }}

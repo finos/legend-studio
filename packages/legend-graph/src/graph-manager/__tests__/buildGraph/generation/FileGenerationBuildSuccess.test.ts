@@ -15,7 +15,7 @@
  */
 
 import { test, expect, beforeEach } from '@jest/globals';
-import TEST_DATA__fileGeneration from './TEST_DATA__FileGeneration.json' assert { type: 'json' };
+import TEST_DATA__fileGeneration from './TEST_DATA__FileGeneration.json' with { type: 'json' };
 import { guaranteeType } from '@finos/legend-shared';
 import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';

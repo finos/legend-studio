@@ -27,7 +27,7 @@ import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../__test-utils__/EditorComponentTestUtils.js';
-import TEST_DATA__SimpleRelationalModel from './TEST_DATA__SimpleRelationalEntities.json' assert { type: 'json' };
+import TEST_DATA__SimpleRelationalModel from './TEST_DATA__SimpleRelationalEntities.json' with { type: 'json' };
 import { LEGEND_STUDIO_TEST_ID } from '../../../../../__lib__/LegendStudioTesting.js';
 import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';

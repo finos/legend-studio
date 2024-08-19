@@ -15,7 +15,7 @@
  */
 
 import { test, expect, beforeAll } from '@jest/globals';
-import TEST_DATA__completeGraphEntities from './TEST_DATA__MockDataGeneration.json' assert { type: 'json' };
+import TEST_DATA__completeGraphEntities from './TEST_DATA__MockDataGeneration.json' with { type: 'json' };
 import { createMockClassInstance } from '../MockDataUtils.js';
 import { type PlainObject } from '@finos/legend-shared';
 import {

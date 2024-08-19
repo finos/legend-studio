@@ -17,13 +17,13 @@
 import { PURE_GRAMMAR_TOKEN } from './PureLanguage.js';
 import type { editor as monacoEditorAPI } from 'monaco-editor';
 import { buildCodeEditorTheme } from './themes/MonacoEditorThemeUtils.js';
-import SOLARIZED_DARK_THEME_DATA from './themes/solarized-dark-color-theme.json' assert { type: 'json' };
-import GITHUB_DARK_THEME_DATA from './themes/Github-Theme-dark.json' assert { type: 'json' };
-import GITHUB_DARK_DIMMED_THEME_DATA from './themes/Github-Theme-dark-dimmed.json' assert { type: 'json' };
-import MATERIAL_DEFAULT_THEME_DATA from './themes/Material-Theme-Default.json' assert { type: 'json' };
-import MATERIAL_DARKER_THEME_DATA from './themes/Material-Theme-Darker.json' assert { type: 'json' };
-import ONE_DARK_PRO_THEME_DATA from './themes/OneDark-Pro.json' assert { type: 'json' };
-import ONE_DARK_PRO_DARKER_THEME_DATA from './themes/OneDark-Pro-darker.json' assert { type: 'json' };
+import SOLARIZED_DARK_THEME_DATA from './themes/solarized-dark-color-theme.json' with { type: 'json' };
+import GITHUB_DARK_THEME_DATA from './themes/Github-Theme-dark.json' with { type: 'json' };
+import GITHUB_DARK_DIMMED_THEME_DATA from './themes/Github-Theme-dark-dimmed.json' with { type: 'json' };
+import MATERIAL_DEFAULT_THEME_DATA from './themes/Material-Theme-Default.json' with { type: 'json' };
+import MATERIAL_DARKER_THEME_DATA from './themes/Material-Theme-Darker.json' with { type: 'json' };
+import ONE_DARK_PRO_THEME_DATA from './themes/OneDark-Pro.json' with { type: 'json' };
+import ONE_DARK_PRO_DARKER_THEME_DATA from './themes/OneDark-Pro-darker.json' with { type: 'json' };
 
 const BASE_PURE_LANGUAGE_COLOR_TOKENS: monacoEditorAPI.ITokenThemeRule[] = [
   // NOTE: `monaco-editor` only accepts HEX values, not CSS variables

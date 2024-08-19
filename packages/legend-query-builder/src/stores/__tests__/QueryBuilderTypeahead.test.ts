@@ -17,9 +17,9 @@
 import { expect, test, describe } from '@jest/globals';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
-import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json' assert { type: 'json' };
-import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json' assert { type: 'json' };
-import TEST_DATA__MilestoningSimpleModel from './TEST_DATA__QueryBuilder_Model_SimpleMilestoning.json' assert { type: 'json' };
+import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json' with { type: 'json' };
+import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json' with { type: 'json' };
+import TEST_DATA__MilestoningSimpleModel from './TEST_DATA__QueryBuilder_Model_SimpleMilestoning.json' with { type: 'json' };
 import { RawLambda } from '@finos/legend-graph';
 import {
   TEST_DATA__lambda_simpleSingleConditionFilter,
