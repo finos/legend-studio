@@ -19,6 +19,8 @@ import {
   StyledEngineProvider,
   ThemeProvider,
 } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3/index.js';
 
 const LegendCustomMUITheme = createTheme({
   transitions: {
@@ -26,6 +28,13 @@ const LegendCustomMUITheme = createTheme({
     // NOTE: this is a catch-all way to remove all transitions
     // We technically don't need this because we can configure transition props for each component
     create: (): string => 'none',
+  },
+  components: {
+    MuiButtonBase: {
+      defaultProps: {
+        disableRipple: true,
+      },
+    },
   },
 });
 
@@ -39,7 +48,11 @@ export const LegendStyleProvider: React.FC<{
     // this ensures our styling code can override MUI styles
     // See https://mui.com/guides/interoperability/#css-injection-order-3
     <StyledEngineProvider injectFirst={true}>
-      <ThemeProvider theme={LegendCustomMUITheme}>{children}</ThemeProvider>
+      <ThemeProvider theme={LegendCustomMUITheme}>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          {children}
+        </LocalizationProvider>
+      </ThemeProvider>
     </StyledEngineProvider>
   );
 };

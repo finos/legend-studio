@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
+import {
+  BasePopover,
+  cn,
+  DataCubeIcon,
+  DateCalendar,
+  DatePicker,
+  DatePickerField,
+  useDropdownMenu,
+  useForkRef,
+} from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
   DataCubeQueryFilterGroupOperator,
@@ -31,9 +40,15 @@ import {
   FormDropdownMenuTrigger,
 } from '../../repl/Form.js';
 import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
-import { forwardRef, useEffect, useRef } from 'react';
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
-import { getNullableFirstEntry } from '@finos/legend-shared';
+import { forwardRef, useEffect, useRef, useState } from 'react';
+import { DATE_FORMAT, PRIMITIVE_TYPE } from '@finos/legend-graph';
+import {
+  formatDate,
+  getNullableFirstEntry,
+  guaranteeIsNumber,
+  parseISO,
+} from '@finos/legend-shared';
+import { evaluate } from 'mathjs';
 
 const FILTER_TREE_OFFSET = 10;
 const FILTER_TREE_INDENTATION_SPACE = 36;
@@ -42,7 +57,190 @@ const FILTER_TREE_VERTICAL_GUTTER_LINE_OFFSET = 6;
 const FILTER_TREE_CONTROLLER_OFFSET = 60;
 const FILTER_TREE_GROUP_HIGHLIGHT_PADDING = 2;
 
-const DataCubeEditorFilterConditionNodeStringValueEditor = observer(
+const DataCubeEditorFilterConditionNodeTextValueEditor = observer(
+  forwardRef<
+    HTMLInputElement,
+    {
+      value: string;
+      updateValue: (value: string) => void;
+    }
+  >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
+    const { value, updateValue } = props;
+    const inputRef = useRef<HTMLInputElement>(null);
+    const handleRef = useForkRef(inputRef, ref);
+
+    return (
+      <input
+        ref={handleRef}
+        className="h-5 w-full flex-shrink-0 border border-neutral-400 px-1 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300"
+        value={value}
+        onKeyDown={(event) => {
+          if (event.code === 'Escape') {
+            inputRef.current?.select();
+          }
+        }}
+        onChange={(event) => updateValue(event.target.value)}
+      />
+    );
+  }),
+);
+
+const EVLUATION_ERROR_LABEL = '#ERR';
+const DataCubeEditorFilterConditionNodeNumberValueEditor = observer(
+  forwardRef<
+    HTMLInputElement,
+    {
+      value: number;
+      updateValue: (value: number) => void;
+      defaultValue?: number | undefined;
+      step?: number | undefined;
+    }
+  >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
+    const { value, updateValue, defaultValue = 0, step = 1 } = props;
+    const [inputValue, setInputValue] = useState<string>(value.toString());
+    const inputRef = useRef<HTMLInputElement>(null);
+    const handleRef = useForkRef(inputRef, ref);
+
+    const calculateExpression = (): void => {
+      const numericValue = Number(inputValue);
+      if (inputValue === '') {
+        // Explicitly check this case since `Number()` parses empty string as `0`
+        setInputValue(defaultValue.toString());
+        updateValue(defaultValue);
+      } else if (isNaN(numericValue)) {
+        if (inputValue === EVLUATION_ERROR_LABEL) {
+          setInputValue(value.toString());
+          return;
+        }
+        // If the value is not a number, try to evaluate it as an expression
+        try {
+          const calculatedValue = guaranteeIsNumber(evaluate(inputValue));
+          setInputValue(calculatedValue.toString());
+          updateValue(calculatedValue);
+        } catch {
+          setInputValue(EVLUATION_ERROR_LABEL);
+          updateValue(defaultValue);
+        }
+      }
+    };
+
+    useEffect(() => {
+      setInputValue(value.toString());
+    }, [value]);
+
+    return (
+      <div className="relative h-5 w-full flex-shrink-0">
+        <input
+          ref={handleRef}
+          inputMode="numeric"
+          spellCheck={false}
+          type="text" // NOTE: we leave this as text so that we can support expression evaluation
+          className="h-full w-full border border-neutral-400 px-1 pr-5 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300"
+          value={inputValue}
+          onKeyDown={(event) => {
+            if (event.code === 'Enter') {
+              calculateExpression();
+              inputRef.current?.focus();
+            } else if (event.code === 'Escape') {
+              inputRef.current?.select();
+            } else if (event.code === 'ArrowUp') {
+              event.preventDefault();
+              const newValue = value + step;
+              setInputValue(newValue.toString());
+              updateValue(newValue);
+            } else if (event.code === 'ArrowDown') {
+              event.preventDefault();
+              const newValue = value - step;
+              setInputValue(newValue.toString());
+              updateValue(newValue);
+            }
+          }}
+          onChange={(event) => {
+            const newInputValue = event.target.value;
+            setInputValue(newInputValue);
+            const numericValue = Number(newInputValue);
+            if (
+              isNaN(numericValue) ||
+              !newInputValue // Explicitly check this case since `Number()` parses empty string as `0`
+            ) {
+              return;
+            }
+            updateValue(numericValue);
+          }}
+          onBlur={() => calculateExpression()}
+        />
+        <div className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center">
+          <button
+            className="text-xl text-neutral-500 hover:text-neutral-600"
+            title="Evaluate Expression (Enter)"
+            onClick={calculateExpression}
+            tabIndex={-1}
+          >
+            <DataCubeIcon.Calculate />
+          </button>
+        </div>
+      </div>
+    );
+  }),
+);
+
+// NOTE: this has to be declared here instead of defined inline in slot configuration of DatePicker
+// else, with each re-render, a new function will be created and the ref might be lost
+const CustomDateFieldPicker = forwardRef<HTMLInputElement>(
+  function CustomDateFieldPicker(p, r) {
+    return (
+      <DatePickerField
+        {...p}
+        ref={r}
+        className="h-5 w-full flex-shrink-0 border border-neutral-400 px-1 pr-5 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300"
+      />
+    );
+  },
+);
+
+const CustomDateFieldPickerOpenCalendarButton = observer(
+  (props: { value: string; updateValue: (value: string) => void }) => {
+    const { value, updateValue } = props;
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+    return (
+      <>
+        <button
+          className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center"
+          title="Open Date Picker..."
+          onClick={(event) => {
+            setAnchorEl(event.currentTarget);
+          }}
+          tabIndex={-1}
+        >
+          <DataCubeIcon.Calendar className="text-lg text-neutral-500 hover:text-neutral-600" />
+        </button>
+        <BasePopover
+          open={Boolean(anchorEl)}
+          anchorEl={anchorEl}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+          onClose={() => setAnchorEl(null)}
+          classes={{
+            root: 'data-cube-editor-date-calendar mt-0.5',
+            paper: 'shadow-md rounded-none border border-neutral-300',
+          }}
+        >
+          <DateCalendar
+            autoFocus={true}
+            value={parseISO(value)}
+            onChange={(newValue: Date) => {
+              updateValue(formatDate(newValue, DATE_FORMAT));
+              setAnchorEl(null);
+            }}
+          />
+        </BasePopover>
+      </>
+    );
+  },
+);
+
+const DataCubeEditorFilterConditionNodeDateValueEditor = observer(
   forwardRef<
     HTMLInputElement,
     {
@@ -53,11 +251,24 @@ const DataCubeEditorFilterConditionNodeStringValueEditor = observer(
     const { value, updateValue } = props;
 
     return (
-      <input
+      <DatePicker
         ref={ref}
-        className="h-5 w-full flex-shrink-0 border border-neutral-400 px-1 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300"
-        value={value}
-        onChange={(event) => updateValue(event.target.value)}
+        value={parseISO(value)}
+        format={DATE_FORMAT}
+        slots={{
+          field: CustomDateFieldPicker,
+          openPickerButton: () => (
+            <CustomDateFieldPickerOpenCalendarButton
+              value={value}
+              updateValue={updateValue}
+            />
+          ),
+        }}
+        onChange={(newValue: Date | null) => {
+          if (newValue) {
+            updateValue(formatDate(newValue, DATE_FORMAT));
+          }
+        }}
       />
     );
   }),
@@ -72,11 +283,33 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
     }
   >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
     const { value, updateValue } = props;
-    // WIP: support numeric/date/collection/column
+    // WIP: support collection/column
     switch (value.type) {
       case PRIMITIVE_TYPE.STRING:
         return (
-          <DataCubeEditorFilterConditionNodeStringValueEditor
+          <DataCubeEditorFilterConditionNodeTextValueEditor
+            ref={ref}
+            value={value.value as string}
+            updateValue={(val) => updateValue(val)}
+          />
+        );
+      case PRIMITIVE_TYPE.NUMBER:
+      case PRIMITIVE_TYPE.DECIMAL:
+      case PRIMITIVE_TYPE.FLOAT:
+      case PRIMITIVE_TYPE.INTEGER:
+        return (
+          <DataCubeEditorFilterConditionNodeNumberValueEditor
+            ref={ref}
+            value={value.value as number}
+            updateValue={(val) => updateValue(val)}
+          />
+        );
+      case PRIMITIVE_TYPE.DATE:
+      case PRIMITIVE_TYPE.STRICTDATE:
+      case PRIMITIVE_TYPE.DATETIME:
+        return (
+          <DataCubeEditorFilterConditionNodeDateValueEditor
+            ref={ref}
             value={value.value as string}
             updateValue={(val) => updateValue(val)}
           />
@@ -216,9 +449,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
             >
               <div
                 className={cn('h-[1px] w-full flex-1 bg-neutral-200', {
-                  'bg-sky-600':
-                    parentNode !== undefined &&
-                    parentNode === panel.selectedGroupNode,
+                  'bg-sky-600': parentNode === panel.selectedGroupNode,
                 })}
               />
               {nodeIdx !== undefined && nodeIdx > 0 && (
@@ -226,9 +457,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
                   className={cn(
                     'flex h-6 items-center justify-center pl-1 text-xs text-neutral-600',
                     {
-                      'text-sky-600':
-                        parentNode !== undefined &&
-                        parentNode === panel.selectedGroupNode,
+                      'text-sky-600': parentNode === panel.selectedGroupNode,
                     },
                   )}
                 >
@@ -369,9 +598,7 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
             >
               <div
                 className={cn('h-[1px] w-full flex-1 bg-neutral-200', {
-                  'bg-sky-600':
-                    parentNode !== undefined &&
-                    parentNode === panel.selectedGroupNode,
+                  'bg-sky-600': parentNode === panel.selectedGroupNode,
                 })}
               />
               {nodeIdx !== undefined && nodeIdx > 0 && (
@@ -379,9 +606,7 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
                   className={cn(
                     'flex h-6 items-center justify-center pl-1 text-xs text-neutral-600',
                     {
-                      'text-sky-600':
-                        parentNode !== undefined &&
-                        parentNode === panel.selectedGroupNode,
+                      'text-sky-600': parentNode === panel.selectedGroupNode,
                     },
                   )}
                 >

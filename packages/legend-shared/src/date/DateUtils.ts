@@ -20,9 +20,10 @@ import {
   addDays,
   formatDuration,
   intervalToDuration,
+  parseISO,
 } from 'date-fns';
 
-export { formatDate, formatDistanceToNow, addDays };
+export { formatDate, formatDistanceToNow, addDays, parseISO };
 
 const COMMON_TIME_UNIT_HOURS = 'hours';
 const COMMON_TIME_UNIT_SECONDS = 'seconds';

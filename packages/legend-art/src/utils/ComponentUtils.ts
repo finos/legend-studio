@@ -19,7 +19,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export { clsx, type ClassValue };
-export { Portal } from '@mui/material';
+export { Portal, useForkRef } from '@mui/material';
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

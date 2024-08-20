@@ -356,6 +356,8 @@ button:focus-visible {
   // ---------------------------------------------------------------------------
 }
 
+// ---------------------------------------- Editor Column Selector ----------------------------------------
+
 .data-cube-column-selector .ag-theme-quartz {
   --ag-active-color: var(--tw-color-sky-600);
   --ag-input-focus-border-color: var(--tw-color-sky-600);
@@ -389,5 +391,81 @@ button:focus-visible {
 
   .ag-drag-handle.ag-row-drag {
     margin-right: 5px;
+  }
+}
+
+// --------------------------------- Editor Date Calendar ---------------------------------
+
+.data-cube-editor-date-calendar {
+  .MuiDateCalendar-root * {
+    font-size: 10px;
+  }
+
+  .MuiYearCalendar-root {
+    width: 190px;
+    height: 160px;
+  }
+
+  .MuiDateCalendar-root {
+    width: 190px;
+    height: 210px;
+  }
+
+  .MuiPickersCalendarHeader-root {
+    margin-top: 10px;
+    padding-left: 17px;
+    padding-right: 11px;
+    min-height: 32px;
+    max-height: 32px;
+  }
+
+  .MuiPickersCalendarHeader-label {
+    font-size: 11px;
+  }
+
+  .MuiPickersDay-today:not(.Mui-selected) {
+    border: 1px solid var(--tw-color-neutral-500);
+  }
+
+  .MuiPickersCalendarHeader-switchViewIcon,
+  .MuiPickersArrowSwitcher-leftArrowIcon,
+  .MuiPickersArrowSwitcher-rightArrowIcon {
+    font-size: 12px;
+  }
+
+  .MuiPickersYear-yearButton:focus,
+  .MuiPickersYear-yearButton:hover,
+  .MuiPickersDay-root:focus,
+  .MuiPickersDay-root:hover {
+    background-color: var(--tw-color-sky-50);
+  }
+
+  .MuiPickersYear-yearButton.Mui-selected,
+  .MuiPickersYear-yearButton.Mui-selected:focus,
+  .MuiPickersYear-yearButton.Mui-selected:hover,
+  .MuiPickersDay-root.Mui-selected,
+  .MuiPickersDay-root.Mui-selected:focus,
+  .MuiPickersDay-root.Mui-selected:hover {
+    background-color: var(--tw-color-sky-600);
+  }
+
+  .MuiPickersCalendarHeader-switchViewButton,
+  .MuiPickersArrowSwitcher-button,
+  .MuiDayCalendar-weekDayLabel,
+  .MuiPickersDay-root {
+    height: 20px;
+    width: 20px;
+    border-radius: 0;
+  }
+
+  .MuiPickersYear-yearButton,
+  .MuiPickersYear-root {
+    height: 20px;
+    width: 30px;
+    border-radius: 0;
+  }
+
+  .MuiPickersSlideTransition-root {
+    min-height: 140px;
   }
 }

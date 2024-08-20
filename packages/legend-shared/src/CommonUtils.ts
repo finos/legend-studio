@@ -26,7 +26,6 @@ import {
   debounce,
   throttle,
   mergeWith,
-  toNumber,
   type DebouncedFunc,
   isObject,
 } from 'lodash-es';
@@ -49,7 +48,6 @@ export {
   uniq,
   debounce,
   throttle,
-  toNumber,
   type DebouncedFunc,
 };
 
@@ -210,7 +208,7 @@ export const sortObjectKeys = (value: PlainObject): PlainObject => {
 };
 
 export const parseNumber = (val: string): number => {
-  const num = toNumber(val);
+  const num = Number(val);
   if (isNaN(num)) {
     throw new Error(`Can't parse number '${val}'`);
   }

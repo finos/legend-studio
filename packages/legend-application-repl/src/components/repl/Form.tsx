@@ -29,14 +29,14 @@ import {
   HexColorInput,
   parseColor,
   TailwindCSSPalette,
+  useForkRef,
   type CheckboxProps,
   type DropdownMenuItemProps,
   type DropdownMenuProps,
   type TailwindCSSColorScale,
   type TailwindCSSColorScaleKey,
 } from '@finos/legend-art';
-import { toNumber } from '@finos/legend-shared';
-import React, { forwardRef, useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import { useREPLStore } from '../REPLStoreProvider.js';
 
 export function FormBadge_WIP() {
@@ -61,110 +61,149 @@ export function FormBadge_Advanced() {
   );
 }
 
-export const FormNumberInput = forwardRef(
-  function DataCubeEditorBaseNumberInput(
-    props: React.InputHTMLAttributes<HTMLInputElement> & {
-      min?: number | undefined;
-      max?: number | undefined;
-      step?: number | undefined;
-      isValid?: (value: number | undefined) => boolean;
-      isDecimal?: boolean | undefined;
-      defaultValue?: number | undefined;
-      value: number | undefined;
-      setValue: (value?: number | undefined) => void;
-      className?: string | undefined;
-    },
-    ref: React.Ref<HTMLInputElement>,
-  ) {
-    const {
-      min,
-      max,
-      step,
-      value,
-      setValue,
-      isValid,
-      isDecimal,
-      defaultValue,
-      disabled,
-      className,
-    } = props;
-    const [inputValue, setInputValue] = useState<string | number>(value ?? '');
-
-    useEffect(() => {
-      setInputValue(value ?? '');
-    }, [value]);
-
-    return (
-      <input
-        className={cn(
-          'h-5 flex-shrink-0 border border-neutral-400 px-1.5 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
-          className,
-        )}
-        ref={ref}
-        inputMode="numeric"
-        type="number"
-        min={min}
-        max={max}
-        step={step}
-        value={inputValue}
-        disabled={Boolean(disabled)}
-        onChange={(event) => {
-          const newInputValue = event.target.value;
-          setInputValue(newInputValue);
-          const numericValue = isDecimal
-            ? toNumber(newInputValue)
-            : parseInt(newInputValue, 10);
-          if (
-            isNaN(numericValue) ||
-            // NOTE: `toNumber` parses empty string as `0`, which is not what we want, so we want to do the explicit check here
-            !newInputValue ||
-            (isValid !== undefined
-              ? !isValid(numericValue)
-              : (min !== undefined && numericValue < min) ||
-                (max !== undefined && numericValue > max))
-          ) {
-            return;
-          }
-          setValue(numericValue);
-        }}
-        onBlur={() => {
-          const numericValue = isDecimal
-            ? toNumber(inputValue)
-            : parseInt(inputValue.toString(), 10);
-          if (
-            isNaN(numericValue) ||
-            // NOTE: `toNumber` parses empty string as `0`, which is not what we want, so we want to do the explicit check here
-            !inputValue ||
-            (isValid !== undefined
-              ? !isValid(numericValue)
-              : (min !== undefined && numericValue < min) ||
-                (max !== undefined && numericValue > max))
-          ) {
-            setValue(defaultValue);
-            setInputValue(defaultValue ?? '');
-          } else {
-            setInputValue(value ?? '');
-          }
-        }}
-      />
-    );
+export const FormNumberInput = forwardRef(function FormNumberInput(
+  props: React.InputHTMLAttributes<HTMLInputElement> & {
+    min?: number | undefined;
+    max?: number | undefined;
+    step?: number | undefined;
+    isValid?: (value: number | undefined) => boolean;
+    isDecimal?: boolean | undefined;
+    defaultValue?: number | undefined;
+    value: number | undefined;
+    setValue: (value?: number | undefined) => void;
+    className?: string | undefined;
   },
-);
-
-export function FormTextInput(
-  props: React.InputHTMLAttributes<HTMLInputElement>,
+  ref: React.Ref<HTMLInputElement>,
 ) {
-  const { className, ...otherProps } = props;
+  const {
+    min,
+    max,
+    step,
+    value,
+    setValue,
+    isValid,
+    isDecimal,
+    defaultValue,
+    disabled,
+    className,
+  } = props;
+  const [inputValue, setInputValue] = useState<string | number>(value ?? '');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const handleRef = useForkRef(inputRef, ref);
+
+  useEffect(() => {
+    setInputValue(value ?? '');
+  }, [value]);
+
   return (
     <input
       className={cn(
         'h-5 flex-shrink-0 border border-neutral-400 px-1.5 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
         className,
       )}
+      ref={handleRef}
+      inputMode="numeric"
+      type="number"
+      min={min}
+      max={max}
+      step={step}
+      value={inputValue}
+      disabled={Boolean(disabled)}
+      onKeyDown={(event) => {
+        if (event.code === 'Escape') {
+          inputRef.current?.select();
+        } else if (event.code === 'ArrowUp') {
+          event.preventDefault();
+          if (value !== undefined && step !== undefined) {
+            const newValue = value + step;
+            if (
+              (min !== undefined && newValue < min) ||
+              (max !== undefined && newValue > max)
+            ) {
+              return;
+            }
+            setInputValue(newValue.toString());
+            setValue(newValue);
+          }
+        } else if (event.code === 'ArrowDown') {
+          event.preventDefault();
+          if (value !== undefined && step !== undefined) {
+            const newValue = value - step;
+            if (
+              (min !== undefined && newValue < min) ||
+              (max !== undefined && newValue > max)
+            ) {
+              return;
+            }
+            setInputValue(newValue.toString());
+            setValue(newValue);
+          }
+        }
+      }}
+      onChange={(event) => {
+        const newInputValue = event.target.value;
+        setInputValue(newInputValue);
+        const numericValue = isDecimal
+          ? Number(newInputValue)
+          : parseInt(newInputValue, 10);
+        if (
+          isNaN(numericValue) ||
+          !newInputValue || // Explicitly check this case since `Number()` parses empty string as `0`
+          (isValid !== undefined
+            ? !isValid(numericValue)
+            : (min !== undefined && numericValue < min) ||
+              (max !== undefined && numericValue > max))
+        ) {
+          return;
+        }
+        setValue(numericValue);
+      }}
+      onBlur={() => {
+        const numericValue = isDecimal
+          ? Number(inputValue)
+          : parseInt(inputValue.toString(), 10);
+        if (
+          isNaN(numericValue) ||
+          !inputValue || // Explicitly check this case since `Number()` parses empty string as `0`
+          (isValid !== undefined
+            ? !isValid(numericValue)
+            : (min !== undefined && numericValue < min) ||
+              (max !== undefined && numericValue > max))
+        ) {
+          setValue(defaultValue);
+          setInputValue(defaultValue ?? '');
+        } else {
+          setInputValue(value ?? '');
+        }
+      }}
+    />
+  );
+});
+
+export const FormTextInput = forwardRef<
+  HTMLInputElement,
+  React.InputHTMLAttributes<HTMLInputElement>
+>(function FormTextInput(props, ref) {
+  const { className, ...otherProps } = props;
+  const inputRef = useRef<HTMLInputElement>(null);
+  const handleRef = useForkRef(inputRef, ref);
+
+  return (
+    <input
+      ref={handleRef}
+      className={cn(
+        'h-5 flex-shrink-0 border border-neutral-400 px-1.5 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300',
+        className,
+      )}
+      onKeyDown={(event) => {
+        if (event.code === 'Escape') {
+          inputRef.current?.select();
+        }
+      }}
       {...otherProps}
     />
   );
-}
+});
 
 export function FormCheckbox(
   props: CheckboxProps & {

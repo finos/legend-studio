@@ -24,6 +24,7 @@ export * from './loader/LoadingIcon.js';
 export * from './loader/CubesLoadingIndicator.js';
 
 export * from './input/Input.js';
+export * from './input/DatePicker.js';
 
 export * from './tree/TreeView.js';
 
