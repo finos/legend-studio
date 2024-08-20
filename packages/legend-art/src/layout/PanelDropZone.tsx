@@ -156,7 +156,14 @@ export const PanelEntryDropZonePlaceholder: React.FC<{
           })}
         >
           {alwaysShowChildren ? (
-            <>{children}</>
+            <>
+              <>{children}</>
+              {label?.length && (
+                <div className="dnd__entry-dropzone__placeholder__label--children-overlay">
+                  {label ?? ''}
+                </div>
+              )}
+            </>
           ) : (
             <div className="dnd__entry-dropzone__placeholder__label">
               {label ?? ''}
