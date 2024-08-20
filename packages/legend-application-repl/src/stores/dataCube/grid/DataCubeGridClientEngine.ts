@@ -215,20 +215,25 @@ export class DataCubeGridClientServerSideDataSource
     // ------------------------------ DATA ------------------------------
 
     try {
-      const executableQuery = buildExecutableQuery(syncedSnapshot, {
-        postProcessor: generateRowGroupingDrilldownExecutableQueryPostProcessor(
-          params.request.groupKeys,
-        ),
-        pagination:
-          this.grid.isPaginationEnabled &&
-          params.request.startRow !== undefined &&
-          params.request.endRow !== undefined
-            ? {
-                start: params.request.startRow,
-                end: params.request.endRow,
-              }
-            : undefined,
-      });
+      const executableQuery = buildExecutableQuery(
+        syncedSnapshot,
+        this.grid.dataCube.engine.filterOperations,
+        {
+          postProcessor:
+            generateRowGroupingDrilldownExecutableQueryPostProcessor(
+              params.request.groupKeys,
+            ),
+          pagination:
+            this.grid.isPaginationEnabled &&
+            params.request.startRow !== undefined &&
+            params.request.endRow !== undefined
+              ? {
+                  start: params.request.startRow,
+                  end: params.request.endRow,
+                }
+              : undefined,
+        },
+      );
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
       const result = await this.grid.dataCube.engine.executeQuery(lambda);

@@ -25,23 +25,17 @@ import {
   type PlainObject,
   type Writable,
 } from '@finos/legend-shared';
-import type {
-  DataCubeAggregateOperator,
-  DataCubeOperationValue,
-  DataCubeQueryFilterGroupOperator,
-  DataCubeQueryFilterOperator,
-  DataCubeQuerySortOperator,
-} from './DataCubeQueryEngine.js';
+import type { DataCubeOperationValue } from './DataCubeQueryEngine.js';
 
 export type DataCubeQuerySnapshotFilterCondition =
   DataCubeQuerySnapshotColumn & {
     value: DataCubeOperationValue | undefined;
-    operation: DataCubeQueryFilterOperator;
+    operation: string;
     not?: boolean | undefined;
   };
 
 export type DataCubeQuerySnapshotFilter = {
-  groupOperator: DataCubeQueryFilterGroupOperator;
+  groupOperator: string;
   conditions: (
     | DataCubeQuerySnapshotFilterCondition
     | DataCubeQuerySnapshotFilter
@@ -61,12 +55,12 @@ export type DataCubeQuerySnapshotExtendedColumn =
   };
 
 export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {
-  operation: DataCubeQuerySortOperator;
+  operation: string;
 };
 
 export type DataCubeQuerySnapshotAggregateColumn =
   DataCubeQuerySnapshotColumn & {
-    operation: DataCubeAggregateOperator;
+    operation: string;
     parameters: DataCubeOperationValue[];
   };
 

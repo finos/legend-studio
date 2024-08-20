@@ -23,6 +23,8 @@ import {
 import type {
   DataCubeQuerySnapshot,
   DataCubeQuerySnapshotColumn,
+  DataCubeQuerySnapshotFilter,
+  DataCubeQuerySnapshotFilterCondition,
 } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
 import {
@@ -30,6 +32,7 @@ import {
   deleteEntry,
   getNonNullableEntry,
   guaranteeNonNullable,
+  IllegalStateError,
   uuid,
 } from '@finos/legend-shared';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
@@ -164,6 +167,62 @@ export class DataCubeEditorFilterConditionGroupNode extends DataCubeEditorFilter
       node.setParent(this);
     }
   }
+}
+
+function buildFilterSnapshot(
+  node: DataCubeEditorFilterConditionGroupNode,
+): DataCubeQuerySnapshotFilter {
+  return {
+    groupOperator: node.operation,
+    not: node.not,
+    conditions: node.children.map((childNode) => {
+      if (childNode instanceof DataCubeEditorFilterConditionNode) {
+        return {
+          name: childNode.column.name,
+          type: childNode.column.type,
+          operation: childNode.operation.operator,
+          value: deepClone(childNode.value),
+          not: childNode.not,
+        } satisfies DataCubeQuerySnapshotFilterCondition;
+      } else if (childNode instanceof DataCubeEditorFilterConditionGroupNode) {
+        return buildFilterSnapshot(childNode);
+      }
+      throw new IllegalStateError('Unknown filter node');
+    }),
+  };
+}
+
+function buildFilterTree(
+  _node: DataCubeQuerySnapshotFilter,
+  parent: DataCubeEditorFilterConditionGroupNode | undefined,
+  nodes: Map<string, DataCubeEditorFilterNode>,
+  operationGetter: (operation: string) => DataCubeQueryFilterOperation,
+): DataCubeEditorFilterConditionGroupNode {
+  const node = new DataCubeEditorFilterConditionGroupNode(
+    parent,
+    _node.groupOperator === DataCubeQueryFilterGroupOperator.AND
+      ? DataCubeQueryFilterGroupOperator.AND
+      : DataCubeQueryFilterGroupOperator.OR,
+    _node.not,
+  );
+  _node.conditions.forEach((_childNode) => {
+    let childNode: DataCubeEditorFilterNode;
+    if ('groupOperator' in _childNode) {
+      childNode = buildFilterTree(_childNode, node, nodes, operationGetter);
+    } else {
+      childNode = new DataCubeEditorFilterConditionNode(
+        node,
+        { name: _childNode.name, type: _childNode.type },
+        operationGetter(_childNode.operation),
+        _childNode.value,
+        _childNode.not,
+      );
+    }
+    node.addChild(childNode);
+    nodes.set(childNode.uuid, childNode);
+  });
+  nodes.set(node.uuid, node);
+  return node;
 }
 
 type DataCubeFilterTree = {
@@ -407,13 +466,25 @@ export class DataCubeEditorFilterPanelState
     snapshot: DataCubeQuerySnapshot,
     configuration: DataCubeConfiguration,
   ): void {
-    // throw new Error('Method not implemented.');
+    this.tree.nodes = new Map<string, DataCubeEditorFilterNode>();
+    this.tree.root = snapshot.data.filter
+      ? buildFilterTree(
+          snapshot.data.filter,
+          undefined,
+          this.tree.nodes,
+          (op: string) => this.getOperation(op),
+        )
+      : undefined;
+    this.setSelectedNode(undefined);
+    this.refreshTree();
   }
 
   buildSnapshot(
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
   ): void {
-    // throw new Error('Method not implemented.');
+    newSnapshot.data.filter = this.tree.root
+      ? buildFilterSnapshot(this.tree.root)
+      : undefined;
   }
 }

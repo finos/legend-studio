@@ -25,7 +25,6 @@ import {
   MdOutlineStrikethroughS,
   MdOutlineFormatUnderlined,
   MdOutlineInsertPageBreak,
-  MdCalculate,
 } from 'react-icons/md';
 import {
   PiMouseScroll,
@@ -74,6 +73,7 @@ import {
   TbPlus,
   TbLetterCase,
   TbCalendarEvent,
+  TbCalculator,
 } from 'react-icons/tb';
 import { VscError, VscInfo, VscQuestion, VscWarning } from 'react-icons/vsc';
 
@@ -82,7 +82,7 @@ export const DataCubeIcon = {
   AlertError: VscError,
   AlertInfo: VscInfo,
   AlertWarning: VscWarning,
-  Calculate: MdCalculate,
+  Calculate: TbCalculator,
   Calendar: TbCalendarEvent,
   CaretDown: TbCaretDownFilled,
   CaretRight: TbCaretRightFilled,

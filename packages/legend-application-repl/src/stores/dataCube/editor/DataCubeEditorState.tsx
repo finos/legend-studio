@@ -94,6 +94,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     this.columns.buildSnapshot(snapshot, baseSnapshot);
     this.verticalPivots.buildSnapshot(snapshot, baseSnapshot);
     this.sorts.buildSnapshot(snapshot, baseSnapshot);
+    this.filter.buildSnapshot(snapshot, baseSnapshot);
 
     // grid configuration must be processed before processing columns' configuration
     // to properly generate the container configuration
@@ -117,6 +118,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     this.columns.applySnaphot(snapshot, configuration);
     this.verticalPivots.applySnaphot(snapshot, configuration);
     this.sorts.applySnaphot(snapshot, configuration);
+    this.filter.applySnaphot(snapshot, configuration);
 
     this.generalProperties.applySnaphot(snapshot, configuration);
     this.columnProperties.applySnaphot(snapshot, configuration);

@@ -27,13 +27,9 @@ import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
 export class DataCubeEditorSortColumnState extends DataCubeEditorColumnsSelectorColumnState {
-  operation: DataCubeQuerySortOperator;
+  operation: string;
 
-  constructor(
-    name: string,
-    type: string,
-    direction: DataCubeQuerySortOperator,
-  ) {
+  constructor(name: string, type: string, direction: string) {
     super(name, type);
 
     makeObservable(this, {

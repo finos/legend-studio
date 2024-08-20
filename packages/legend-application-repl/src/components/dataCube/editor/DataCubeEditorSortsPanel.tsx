@@ -28,7 +28,7 @@ import {
 } from '../../repl/Form.js';
 import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
 
-function getSortDirectionLabel(operation: DataCubeQuerySortOperator) {
+function getSortDirectionLabel(operation: string) {
   switch (operation) {
     case DataCubeQuerySortOperator.ASCENDING:
       return 'Ascending';

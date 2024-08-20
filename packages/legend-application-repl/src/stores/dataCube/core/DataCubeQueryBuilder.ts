@@ -17,369 +17,51 @@
 /***************************************************************************************
  * [CORE]
  *
- * These are utilities used to build the executable query from the query snapshot.
- * The executable query is then used to fetch data.
+ * This and its corresponding utilitites are used to build the executable query from
+ * the query snapshot. The executable query is then used to fetch data.
  ***************************************************************************************/
 
 import {
   PRIMITIVE_TYPE,
-  V1_AppliedFunction,
-  V1_AppliedProperty,
-  V1_CBoolean,
-  V1_CDateTime,
-  V1_CDecimal,
-  V1_CFloat,
-  V1_CInteger,
-  V1_CStrictDate,
-  V1_CStrictTime,
-  V1_CString,
-  V1_ClassInstance,
-  V1_ClassInstanceType,
-  V1_ColSpec,
-  V1_ColSpecArray,
-  V1_Collection,
-  V1_Lambda,
-  V1_Multiplicity,
-  V1_PackageableElementPtr,
-  type V1_PrimitiveValueSpecification,
-  V1_Variable,
+  type V1_AppliedFunction,
   V1_deserializeValueSpecification,
   extractElementNameFromPath as _name,
-  type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import {
-  type DataCubeQuerySnapshotFilterCondition,
-  type DataCubeQuerySnapshotFilter,
-  type DataCubeQuerySnapshot,
-  _findCol,
-  type DataCubeQuerySnapshotColumn,
-  type DataCubeQuerySnapshotAggregateColumn,
-} from './DataCubeQuerySnapshot.js';
-import {
-  guaranteeNonNullable,
-  guaranteeIsString,
-  guaranteeIsBoolean,
-  guaranteeIsNumber,
-  UnsupportedOperationError,
-  guaranteeType,
-  type PlainObject,
-} from '@finos/legend-shared';
+import { type DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   DataCubeFunction,
-  DEFAULT_LAMBDA_VARIABLE_NAME,
-  INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME,
   DataCubeQuerySortOperator,
-  DataCubeQueryFilterOperator,
-  DataCubeQueryFilterGroupOperator,
-  DataCubeAggregateOperator,
   type DataCubeQueryFunctionMap,
-  type DataCubeOperationValue,
 } from './DataCubeQueryEngine.js';
 import { DataCubeConfiguration } from './DataCubeConfiguration.js';
-
-// --------------------------------- UTILITIES ---------------------------------
-
-function _deserializeToLambda(json: PlainObject<V1_Lambda>) {
-  return guaranteeType(V1_deserializeValueSpecification(json, []), V1_Lambda);
-}
-
-export function _var(name?: string | undefined) {
-  const variable = new V1_Variable();
-  variable.name = name ?? DEFAULT_LAMBDA_VARIABLE_NAME;
-  return variable;
-}
-
-export function _property(name: string, variable?: V1_Variable | undefined) {
-  const property = new V1_AppliedProperty();
-  property.property = name;
-  property.parameters.push(variable ?? _var());
-  return property;
-}
-
-export function _lambda(
-  parameters: V1_Variable[],
-  body: V1_ValueSpecification[],
-) {
-  const lambda = new V1_Lambda();
-  lambda.parameters = parameters;
-  lambda.body = body;
-  return lambda;
-}
-
-export function _function(
-  functionName: string,
-  parameters: V1_ValueSpecification[],
-) {
-  const func = new V1_AppliedFunction();
-  func.function = functionName;
-  func.parameters = parameters;
-  return func;
-}
-
-function _collection(values: V1_ValueSpecification[]) {
-  const collection = new V1_Collection();
-  collection.multiplicity = new V1_Multiplicity(values.length, values.length);
-  collection.values = values;
-  return collection;
-}
-
-function _primitiveValue(type: string, value: unknown) {
-  const _val = <T extends V1_PrimitiveValueSpecification & { value: unknown }>(
-    primitiveValue: T,
-    val: unknown,
-  ): T => {
-    primitiveValue.value = val;
-    return primitiveValue;
-  };
-  switch (type) {
-    case PRIMITIVE_TYPE.STRING:
-      return _val(new V1_CString(), guaranteeIsString(value));
-    case PRIMITIVE_TYPE.BOOLEAN:
-      return _val(new V1_CBoolean(), guaranteeIsBoolean(value));
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.DECIMAL:
-      return _val(new V1_CDecimal(), guaranteeIsNumber(value));
-    case PRIMITIVE_TYPE.INTEGER:
-      return _val(new V1_CInteger(), guaranteeIsNumber(value));
-    case PRIMITIVE_TYPE.FLOAT:
-      return _val(new V1_CFloat(), guaranteeIsNumber(value));
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME:
-      return _val(new V1_CDateTime(), guaranteeIsString(value));
-    case PRIMITIVE_TYPE.STRICTDATE:
-      return _val(new V1_CStrictDate(), guaranteeIsString(value));
-    case PRIMITIVE_TYPE.STRICTTIME:
-      return _val(new V1_CStrictTime(), guaranteeIsString(value));
-    default:
-      throw new UnsupportedOperationError(`Unsupported value type '${type}'`);
-  }
-}
-
-function _elementPtr(fullPath: string) {
-  const ptr = new V1_PackageableElementPtr();
-  ptr.fullPath = fullPath;
-  return ptr;
-}
-
-function _classInstance(type: string, value: unknown) {
-  const instance = new V1_ClassInstance();
-  instance.type = type;
-  instance.value = value;
-  return instance;
-}
-
-export function _colSpec(
-  name: string,
-  function1?: V1_Lambda | undefined,
-  function2?: V1_Lambda | undefined,
-) {
-  const colSpec = new V1_ColSpec();
-  colSpec.name = name;
-  colSpec.function1 = function1;
-  colSpec.function2 = function2;
-  return colSpec;
-}
-
-function _parameterValue(value: DataCubeOperationValue) {
-  switch (value.type) {
-    case PRIMITIVE_TYPE.STRING:
-    case PRIMITIVE_TYPE.BOOLEAN:
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.FLOAT:
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME:
-    case PRIMITIVE_TYPE.STRICTDATE:
-    case PRIMITIVE_TYPE.STRICTTIME: {
-      if (Array.isArray(value.value)) {
-        return _collection(
-          value.value.map((val) => _primitiveValue(value.type, val)),
-        );
-      }
-      return _primitiveValue(value.type, value.value);
-    }
-    default:
-      throw new UnsupportedOperationError(
-        `Unsupported value type '${value.type}'`,
-      );
-  }
-}
-
-function _aggFunctionName(operation: DataCubeAggregateOperator) {
-  switch (operation) {
-    case DataCubeAggregateOperator.SUM:
-      return DataCubeFunction.SUM;
-    case DataCubeAggregateOperator.AVERAGE:
-      return DataCubeFunction.AVERAGE;
-    case DataCubeAggregateOperator.COUNT:
-      return DataCubeFunction.COUNT;
-    case DataCubeAggregateOperator.MIN:
-      return DataCubeFunction.MIN;
-    case DataCubeAggregateOperator.MAX:
-      return DataCubeFunction.MAX;
-    case DataCubeAggregateOperator.FIRST:
-      return DataCubeFunction.FIRST;
-    case DataCubeAggregateOperator.LAST:
-      return DataCubeFunction.LAST;
-    case DataCubeAggregateOperator.VAR_POP:
-      return DataCubeFunction.VAR_POP;
-    case DataCubeAggregateOperator.VAR_SAMP:
-      return DataCubeFunction.VAR_SAMP;
-    case DataCubeAggregateOperator.STDDEV_POP:
-      return DataCubeFunction.STDDEV_POP;
-    case DataCubeAggregateOperator.STDDEV_SAMP:
-      return DataCubeFunction.STDDEV_SAMP;
-    default:
-      throw new UnsupportedOperationError(
-        `Unsupported aggregate operation '${operation}'`,
-      );
-  }
-}
-
-function _agg(
-  agg: DataCubeQuerySnapshotAggregateColumn,
-  variable?: V1_Variable | undefined,
-) {
-  const parameters = agg.parameters.map((param) => _parameterValue(param));
-  return _function(_aggFunctionName(agg.operation), [
-    variable ?? _var(),
-    ...parameters,
-  ]);
-}
-
-// --------------------------------- BUILDING BLOCKS ---------------------------------
-
-export function _col(
-  name: string,
-  function1?: V1_Lambda | undefined,
-  function2?: V1_Lambda | undefined,
-) {
-  return _classInstance(
-    V1_ClassInstanceType.COL_SPEC,
-    _colSpec(name, function1, function2),
-  );
-}
-
-export function _cols(colSpecs: V1_ColSpec[]) {
-  const colSpecArray = new V1_ColSpecArray();
-  colSpecArray.colSpecs = colSpecs;
-  return _classInstance(V1_ClassInstanceType.COL_SPEC_ARRAY, colSpecArray);
-}
-
-export function _groupByAggCols(
-  columns: DataCubeQuerySnapshotAggregateColumn[],
-) {
-  const variable = _var();
-  return columns.length
-    ? columns.map((agg) =>
-        _colSpec(
-          agg.name,
-          _lambda([variable], [_property(agg.name, variable)]),
-          _lambda([variable], [_agg(agg)]),
-        ),
-      )
-    : // if no aggregates are specified, add a dummy count() aggregate to satisfy compiler
-      [
-        _colSpec(
-          INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME,
-          _lambda([variable], [variable]),
-          _lambda([variable], [_function(DataCubeFunction.COUNT, [variable])]),
-        ),
-      ];
-}
-
-export function _filter(
-  filter: DataCubeQuerySnapshotFilter | DataCubeQuerySnapshotFilterCondition,
-) {
-  if ('groupOperator' in filter) {
-    const group = filter;
-    const groupOperation =
-      group.groupOperator === DataCubeQueryFilterGroupOperator.AND
-        ? DataCubeFunction.AND
-        : DataCubeFunction.OR;
-    let conditions: V1_ValueSpecification[] = [];
-    group.conditions.forEach((condition) => {
-      conditions.push(_filter(condition));
-      // NOTE: a group operation (and/or) function can only have 2 parameters, so we
-      // have to breakdown the group operation into nested group functions
-      if (conditions.length === 2) {
-        conditions = [_function(groupOperation, conditions)];
-      }
-    });
-    return guaranteeNonNullable(conditions[0]);
-  } else {
-    const condition = filter;
-    const property = _property(condition.name);
-    const _cond = (fn: string, ...p: V1_ValueSpecification[]) =>
-      _function(_name(fn), [property, ...p]);
-    const _val = () => _parameterValue(guaranteeNonNullable(condition.value));
-    const _not = (fn: V1_AppliedFunction) =>
-      _function(_name(DataCubeFunction.NOT), [fn]);
-    switch (condition.operation) {
-      case DataCubeQueryFilterOperator.EQUAL:
-        return _cond(DataCubeFunction.EQUAL, _val());
-      case DataCubeQueryFilterOperator.GREATER_THAN:
-        return _cond(DataCubeFunction.GREATER_THAN, _val());
-      case DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL:
-        return _cond(DataCubeFunction.GREATER_THAN_EQUAL, _val());
-      case DataCubeQueryFilterOperator.LESS_THAN:
-        return _cond(DataCubeFunction.LESS_THAN, _val());
-      case DataCubeQueryFilterOperator.LESS_THAN_OR_EQUAL:
-        return _cond(DataCubeFunction.LESS_THAN_EQUAL, _val());
-      case DataCubeQueryFilterOperator.CONTAINS:
-        return _cond(DataCubeFunction.CONTAINS, _val());
-      case DataCubeQueryFilterOperator.ENDS_WITH:
-        return _cond(DataCubeFunction.ENDS_WITH, _val());
-      case DataCubeQueryFilterOperator.STARTS_WITH:
-        return _cond(DataCubeFunction.STARTS_WITH, _val());
-      case DataCubeQueryFilterOperator.IS_NULL:
-        return _cond(DataCubeFunction.IS_EMPTY);
-      case DataCubeQueryFilterOperator.NOT_EQUAL:
-        return _not(_cond(DataCubeFunction.EQUAL, _val()));
-      case DataCubeQueryFilterOperator.IS_NOT_NULL:
-        return _not(_cond(DataCubeFunction.IS_EMPTY));
-      case DataCubeQueryFilterOperator.NOT_CONTAINS:
-        return _not(_cond(DataCubeFunction.CONTAINS, _val()));
-      default:
-        throw new UnsupportedOperationError(
-          `Unsupported filter operation '${condition.operation}'`,
-        );
-    }
-  }
-}
-
-export function _groupByExtend(
-  columns: DataCubeQuerySnapshotColumn[],
-  columnsUsedInGroupBy: DataCubeQuerySnapshotColumn[],
-) {
-  const missingCols = columns.filter(
-    (col) => !_findCol(columnsUsedInGroupBy, col.name),
-  );
-  return missingCols.length
-    ? _function(_name(DataCubeFunction.EXTEND), [
-        _cols(
-          missingCols.map((col) =>
-            _colSpec(
-              col.name,
-              _lambda([_var()], [_primitiveValue(PRIMITIVE_TYPE.STRING, '')]),
-            ),
-          ),
-        ),
-      ])
-    : undefined;
-}
-
-// --------------------------------- MAIN ---------------------------------
+import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
+import {
+  _col,
+  _collection,
+  _cols,
+  _colSpec,
+  _deserializeToLambda,
+  _elementPtr,
+  _filter,
+  _function,
+  _groupByAggCols,
+  _groupByExtend,
+  _lambda,
+  _primitiveValue,
+  _var,
+} from './DataCubeQueryBuilderUtils.js';
 
 export function buildExecutableQuery(
   snapshot: DataCubeQuerySnapshot,
+  filterOperations: DataCubeQueryFilterOperation[],
   options?: {
     postProcessor?: (
       snapshot: DataCubeQuerySnapshot,
       sequence: V1_AppliedFunction[],
       funcMap: DataCubeQueryFunctionMap,
       configuration: DataCubeConfiguration,
+      filterOperations: DataCubeQueryFilterOperation[],
     ) => void;
     pagination?:
       | {
@@ -425,7 +107,7 @@ export function buildExecutableQuery(
     _process(
       'filter',
       _function(_name(DataCubeFunction.FILTER), [
-        _lambda([_var()], [_filter(data.filter)]),
+        _lambda([_var()], [_filter(data.filter, filterOperations)]),
       ]),
     );
   }
@@ -533,7 +215,13 @@ export function buildExecutableQuery(
 
   // --------------------------------- FINALIZE ---------------------------------
 
-  options?.postProcessor?.(snapshot, sequence, funcMap, configuration);
+  options?.postProcessor?.(
+    snapshot,
+    sequence,
+    funcMap,
+    configuration,
+    filterOperations,
+  );
 
   if (!sequence.length) {
     return sourceQuery;

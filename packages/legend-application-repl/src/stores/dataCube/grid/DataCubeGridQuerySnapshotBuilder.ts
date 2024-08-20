@@ -33,7 +33,7 @@ import {
   DataCubeQuerySortOperator,
 } from '../core/DataCubeQueryEngine.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
-import { _defaultAggCol } from '../core/DataCubeQuerySnapshotBuilder.js';
+import { _defaultAggCol } from '../core/DataCubeQuerySnapshotBuilderUtils.js';
 import { isNonNullable } from '@finos/legend-shared';
 
 export function _groupByAggCols(

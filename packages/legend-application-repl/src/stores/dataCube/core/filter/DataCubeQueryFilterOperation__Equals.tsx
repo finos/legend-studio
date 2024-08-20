@@ -14,21 +14,12 @@
  * limitations under the License.
  */
 
+import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
-  DATE_FORMAT,
-  DATE_TIME_FORMAT,
-  matchFunctionName,
-  PRIMITIVE_TYPE,
-  V1_AppliedFunction,
-} from '@finos/legend-graph';
-import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
-import {
-  assertTrue,
-  formatDate,
-  guaranteeType,
-  returnUndefOnError,
-  UnsupportedOperationError,
-} from '@finos/legend-shared';
+  DataCubeQueryFilterOperation,
+  generateDefaultFilterConditionPrimitiveTypeValue,
+  ofType,
+} from './DataCubeQueryFilterOperation.js';
 import type {
   DataCubeQuerySnapshotColumn,
   DataCubeQuerySnapshotFilterCondition,
@@ -38,139 +29,8 @@ import {
   DataCubeQueryFilterOperator,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
-
-function generateDefaultFilterConditionPrimitiveTypeValue(
-  type: string,
-): unknown {
-  switch (type) {
-    case PRIMITIVE_TYPE.STRING:
-      return '';
-    case PRIMITIVE_TYPE.BOOLEAN:
-      return false;
-    case PRIMITIVE_TYPE.BYTE:
-      return btoa('');
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.FLOAT:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.BINARY:
-      return 0;
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.STRICTDATE:
-      return formatDate(new Date(Date.now()), DATE_FORMAT);
-    case PRIMITIVE_TYPE.DATETIME:
-      return formatDate(new Date(Date.now()), DATE_TIME_FORMAT);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't generate value for type '${type}'`,
-      );
-  }
-}
-
-function ofType(
-  type: string,
-  targetTypes: ('string' | 'number' | 'boolean' | 'date')[],
-) {
-  switch (type) {
-    case PRIMITIVE_TYPE.STRING:
-      return targetTypes.includes('string');
-    case PRIMITIVE_TYPE.BOOLEAN:
-      return targetTypes.includes('boolean');
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.FLOAT:
-    case PRIMITIVE_TYPE.INTEGER:
-      return targetTypes.includes('number');
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.STRICTDATE:
-    case PRIMITIVE_TYPE.DATETIME:
-      return targetTypes.includes('date');
-    default:
-      return false;
-  }
-}
-
-function unwrapNotExpression(
-  func: V1_AppliedFunction,
-): V1_AppliedFunction | undefined {
-  return returnUndefOnError(() => {
-    assertTrue(matchFunctionName(func.function, DataCubeFunction.NOT));
-    return guaranteeType(func.parameters[0], V1_AppliedFunction);
-  });
-}
-
-// export const buildPostFilterConditionState = (
-//   postFilterState: QueryBuilderPostFilterState,
-//   expression: FunctionExpression,
-//   operatorFunctionFullPath: string | undefined,
-//   operator: QueryBuilderPostFilterOperator,
-// ): PostFilterConditionState | undefined => {
-//   let postConditionState: PostFilterConditionState | undefined;
-//   const tdsColumnGetter = operator.getTDSColumnGetter();
-//   if (
-//     tdsColumnGetter &&
-//     expression instanceof AbstractPropertyExpression &&
-//     expression.func.value.name === tdsColumnGetter
-//   ) {
-//     const columnState = findProjectionColumnState(expression, postFilterState);
-//     postConditionState = new PostFilterConditionState(
-//       postFilterState,
-//       columnState,
-//       operator,
-//     );
-//     return postConditionState;
-//   } else if (
-//     operatorFunctionFullPath &&
-//     matchFunctionName(expression.functionName, operatorFunctionFullPath)
-//   ) {
-//     assertTrue(
-//       expression.parametersValues.length === 2,
-//       `Can't process ${extractElementNameFromPath(
-//         operatorFunctionFullPath,
-//       )}() expression: ${extractElementNameFromPath(
-//         operatorFunctionFullPath,
-//       )}() expects '1 argument'`,
-//     );
-
-//     // get projection column
-//     const tdsColumnPropertyExpression = guaranteeType(
-//       expression.parametersValues[0],
-//       AbstractPropertyExpression,
-//       `Can't process ${extractElementNameFromPath(
-//         operatorFunctionFullPath,
-//       )}() expression: expects property expression in lambda body`,
-//     );
-//     const columnState = findProjectionColumnState(
-//       tdsColumnPropertyExpression,
-//       postFilterState,
-//     );
-
-//     // get operation value specification
-//     const rightSide = expression.parametersValues[1];
-
-//     // create state
-//     postConditionState = new PostFilterConditionState(
-//       postFilterState,
-//       columnState,
-//       operator,
-//     );
-
-//     buildPostFilterConditionValueState(rightSide, postConditionState);
-
-//     //post checks
-//     assertTrue(
-//       operator.isCompatibleWithPostFilterColumn(postConditionState),
-//       `Can't process ${extractElementNameFromPath(
-//         operatorFunctionFullPath,
-//       )}() expression: property is not compatible with post-filter operator`,
-//     );
-//     assertTrue(
-//       operator.isCompatibleWithConditionValue(postConditionState),
-//       `Operator '${operator.getLabel()}' not compatible with value specification ${rightSide?.toString()}`,
-//     );
-//   }
-//   return postConditionState;
-// };
+import { _filterCondition, _value } from '../DataCubeQueryBuilderUtils.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export class DataCubeQueryFilterOperation__Equals extends DataCubeQueryFilterOperation {
   override get label() {
@@ -205,10 +65,85 @@ export class DataCubeQueryFilterOperation__Equals extends DataCubeQueryFilterOpe
   }
 
   buildConditionSnapshot(expression: V1_AppliedFunction) {
+    // TODO
+    // export const buildPostFilterConditionState = (
+    //   postFilterState: QueryBuilderPostFilterState,
+    //   expression: FunctionExpression,
+    //   operatorFunctionFullPath: string | undefined,
+    //   operator: QueryBuilderPostFilterOperator,
+    // ): PostFilterConditionState | undefined => {
+    //   let postConditionState: PostFilterConditionState | undefined;
+    //   const tdsColumnGetter = operator.getTDSColumnGetter();
+    //   if (
+    //     tdsColumnGetter &&
+    //     expression instanceof AbstractPropertyExpression &&
+    //     expression.func.value.name === tdsColumnGetter
+    //   ) {
+    //     const columnState = findProjectionColumnState(expression, postFilterState);
+    //     postConditionState = new PostFilterConditionState(
+    //       postFilterState,
+    //       columnState,
+    //       operator,
+    //     );
+    //     return postConditionState;
+    //   } else if (
+    //     operatorFunctionFullPath &&
+    //     matchFunctionName(expression.functionName, operatorFunctionFullPath)
+    //   ) {
+    //     assertTrue(
+    //       expression.parametersValues.length === 2,
+    //       `Can't process ${extractElementNameFromPath(
+    //         operatorFunctionFullPath,
+    //       )}() expression: ${extractElementNameFromPath(
+    //         operatorFunctionFullPath,
+    //       )}() expects '1 argument'`,
+    //     );
+
+    //     // get projection column
+    //     const tdsColumnPropertyExpression = guaranteeType(
+    //       expression.parametersValues[0],
+    //       AbstractPropertyExpression,
+    //       `Can't process ${extractElementNameFromPath(
+    //         operatorFunctionFullPath,
+    //       )}() expression: expects property expression in lambda body`,
+    //     );
+    //     const columnState = findProjectionColumnState(
+    //       tdsColumnPropertyExpression,
+    //       postFilterState,
+    //     );
+
+    //     // get operation value specification
+    //     const rightSide = expression.parametersValues[1];
+
+    //     // create state
+    //     postConditionState = new PostFilterConditionState(
+    //       postFilterState,
+    //       columnState,
+    //       operator,
+    //     );
+
+    //     buildPostFilterConditionValueState(rightSide, postConditionState);
+
+    //     //post checks
+    //     assertTrue(
+    //       operator.isCompatibleWithPostFilterColumn(postConditionState),
+    //       `Can't process ${extractElementNameFromPath(
+    //         operatorFunctionFullPath,
+    //       )}() expression: property is not compatible with post-filter operator`,
+    //     );
+    //     assertTrue(
+    //       operator.isCompatibleWithConditionValue(postConditionState),
+    //       `Operator '${operator.getLabel()}' not compatible with value specification ${rightSide?.toString()}`,
+    //     );
+    //   }
+    //   return postConditionState;
+    // };
     return undefined;
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
-    return undefined;
+    return _filterCondition(condition, DataCubeFunction.EQUAL, [
+      _value(guaranteeNonNullable(condition.value)),
+    ]);
   }
 }

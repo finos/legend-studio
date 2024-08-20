@@ -171,7 +171,7 @@ const DataCubeEditorFilterConditionNodeNumberValueEditor = observer(
         />
         <div className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center">
           <button
-            className="text-xl text-neutral-500 hover:text-neutral-600"
+            className="text-lg text-neutral-500 hover:text-neutral-600"
             title="Evaluate Expression (Enter)"
             onClick={calculateExpression}
             tabIndex={-1}

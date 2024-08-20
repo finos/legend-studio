@@ -154,7 +154,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     this.client.setFilterModel({
       [INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID]: {
         type: 'equals',
-        filter: '__TODO_SET_THIS_TO_THE_HASHCODE_OF_FILTER_TREE__',
+        filter: snapshot.hashCode,
       },
     });
   }

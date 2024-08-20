@@ -36,12 +36,13 @@ import {
   _groupByExtend,
   _lambda,
   _var,
-} from '../core/DataCubeQueryBuilder.js';
+} from '../core/DataCubeQueryBuilderUtils.js';
 import {
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
   INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
+import type { DataCubeQueryFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
 
 /*****************************************************************************
  * [GRID]
@@ -72,6 +73,7 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
     sequence: V1_AppliedFunction[],
     funcMap: DataCubeQueryFunctionMap,
     configuration: DataCubeConfiguration,
+    filterOperations: DataCubeQueryFilterOperation[],
   ) => {
     const _unprocess = (funcMapKey: keyof DataCubeQueryFunctionMap) => {
       const func = funcMap[funcMapKey];
@@ -96,67 +98,70 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
             _lambda(
               [_var()],
               [
-                _filter({
-                  conditions: drilldownValues.map((value, i) => {
-                    const groupByColumn = guaranteeNonNullable(
-                      groupBy.columns[i],
-                    );
-                    if (
-                      isNullable(value) ||
-                      value === INTERNAL__GRID_CLIENT_MISSING_VALUE
-                    ) {
-                      return {
+                _filter(
+                  {
+                    conditions: drilldownValues.map((value, i) => {
+                      const groupByColumn = guaranteeNonNullable(
+                        groupBy.columns[i],
+                      );
+                      if (
+                        isNullable(value) ||
+                        value === INTERNAL__GRID_CLIENT_MISSING_VALUE
+                      ) {
+                        return {
+                          ...groupByColumn,
+                          operation: DataCubeQueryFilterOperator.IS_NULL,
+                          value: undefined,
+                        };
+                      }
+                      const condition = {
                         ...groupByColumn,
-                        operation: DataCubeQueryFilterOperator.IS_NULL,
+                        operation: DataCubeQueryFilterOperator.EQUAL,
                         value: undefined,
                       };
-                    }
-                    const condition = {
-                      ...groupByColumn,
-                      operation: DataCubeQueryFilterOperator.EQUAL,
-                      value: undefined,
-                    };
-                    switch (groupByColumn.type) {
-                      case PRIMITIVE_TYPE.BOOLEAN:
-                        return {
-                          ...condition,
-                          value: {
-                            type: PRIMITIVE_TYPE.BOOLEAN,
-                            value: value === 'true',
-                          },
-                        };
-                      case PRIMITIVE_TYPE.INTEGER:
-                        return {
-                          ...condition,
-                          value: {
-                            type: groupByColumn.type,
-                            value: parseInt(value, 10),
-                          },
-                        };
-                      case PRIMITIVE_TYPE.NUMBER:
-                      case PRIMITIVE_TYPE.DECIMAL:
-                      case PRIMITIVE_TYPE.FLOAT:
-                        return {
-                          ...condition,
-                          value: {
-                            type: groupByColumn.type,
-                            value: parseFloat(value),
-                          },
-                        };
-                      case PRIMITIVE_TYPE.STRING:
-                      case PRIMITIVE_TYPE.DATE:
-                      case PRIMITIVE_TYPE.DATETIME:
-                      case PRIMITIVE_TYPE.STRICTDATE:
-                      case PRIMITIVE_TYPE.STRICTTIME:
-                      default:
-                        return {
-                          ...condition,
-                          value: { type: groupByColumn.type, value },
-                        };
-                    }
-                  }),
-                  groupOperator: DataCubeQueryFilterGroupOperator.AND,
-                }),
+                      switch (groupByColumn.type) {
+                        case PRIMITIVE_TYPE.BOOLEAN:
+                          return {
+                            ...condition,
+                            value: {
+                              type: PRIMITIVE_TYPE.BOOLEAN,
+                              value: value === 'true',
+                            },
+                          };
+                        case PRIMITIVE_TYPE.INTEGER:
+                          return {
+                            ...condition,
+                            value: {
+                              type: groupByColumn.type,
+                              value: parseInt(value, 10),
+                            },
+                          };
+                        case PRIMITIVE_TYPE.NUMBER:
+                        case PRIMITIVE_TYPE.DECIMAL:
+                        case PRIMITIVE_TYPE.FLOAT:
+                          return {
+                            ...condition,
+                            value: {
+                              type: groupByColumn.type,
+                              value: parseFloat(value),
+                            },
+                          };
+                        case PRIMITIVE_TYPE.STRING:
+                        case PRIMITIVE_TYPE.DATE:
+                        case PRIMITIVE_TYPE.DATETIME:
+                        case PRIMITIVE_TYPE.STRICTDATE:
+                        case PRIMITIVE_TYPE.STRICTTIME:
+                        default:
+                          return {
+                            ...condition,
+                            value: { type: groupByColumn.type, value },
+                          };
+                      }
+                    }),
+                    groupOperator: DataCubeQueryFilterGroupOperator.AND,
+                  },
+                  filterOperations,
+                ),
               ],
             ),
           ]),
