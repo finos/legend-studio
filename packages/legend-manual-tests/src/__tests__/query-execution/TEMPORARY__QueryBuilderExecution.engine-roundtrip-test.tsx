@@ -15,18 +15,20 @@
  */
 
 import { test, expect } from '@jest/globals';
+import { resolve } from 'path';
 import {
   fireEvent,
   getByText,
   findByText,
   act,
   waitFor,
+  getByTitle,
 } from '@testing-library/react';
 import {
   TEST_DATA_QueryExecution_ExecutionInput,
   TEST_DATA_QueryExecution_MappingAnalysisResult,
+  TEST_DATA_QueryExecution_PreviewData_ExecutionInput,
 } from './TEST_DATA_QueryBuilder_Query_Execution.js';
-import TEST_DATA_QueryBuilder_QueryExecution_Entities from './TEST_DATA_QueryBuilder_QueryExecution_Entities.json' with { type: 'json' };
 import {
   stub_RawLambda,
   create_RawLambda,
@@ -47,22 +49,29 @@ import {
 } from '@finos/legend-query-builder';
 import { TEST__setUpQueryBuilder } from '@finos/legend-query-builder/test';
 import { ENGINE_TEST_SUPPORT__execute } from '@finos/legend-graph/test';
+import { generateModelEntitesFromModelGrammar } from '../utils/testUtils.js';
 
 // NOTE: this should be converted into an end-to-end test
 test(integrationTest('test query execution with parameters'), async () => {
   const {
     mappingPath,
     runtimePath,
-    entities,
+    modelFileDir,
+    modelFilePath,
     rawLambda,
     expectedNumberOfParameter,
   } = {
-    mappingPath: TEST_DATA_QueryExecution_ExecutionInput.mapping,
-    runtimePath: TEST_DATA_QueryExecution_ExecutionInput.runtime.runtime,
-    entities: TEST_DATA_QueryBuilder_QueryExecution_Entities,
-    rawLambda: TEST_DATA_QueryExecution_ExecutionInput.function,
+    mappingPath: 'model::RelationalMapping',
+    runtimePath: 'model::Runtime',
+    modelFileDir: 'model',
+    modelFilePath: 'TEST_DATA_QueryBuilder_Query_Execution_model.pure',
+    rawLambda: TEST_DATA_QueryExecution_ExecutionInput,
     expectedNumberOfParameter: 1,
   };
+  const entities = await generateModelEntitesFromModelGrammar(
+    resolve(__dirname, modelFileDir),
+    modelFilePath,
+  );
   const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
     entities,
     stub_RawLambda(),
@@ -207,4 +216,71 @@ test(integrationTest('test query execution with parameters'), async () => {
       queryBuilderResultPanel1.getElementsByClassName('ag-cell'),
     ).filter((el) => el.getAttribute('col-id') === 'Last Name')[0]?.innerHTML,
   ).toContain('');
+});
+
+test(integrationTest('test preivew-data query execution'), async () => {
+  const { mappingPath, runtimePath, modelFileDir, modelFilePath, rawLambda } = {
+    mappingPath: 'model::RelationalMapping',
+    runtimePath: 'model::Runtime',
+    modelFileDir: 'model',
+    modelFilePath: 'TEST_DATA_QueryBuilder_Query_Execution_model.pure',
+    rawLambda: TEST_DATA_QueryExecution_PreviewData_ExecutionInput,
+  };
+  const entities = await generateModelEntitesFromModelGrammar(
+    resolve(__dirname, modelFileDir),
+    modelFilePath,
+  );
+  const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+    entities,
+    stub_RawLambda(),
+    mappingPath,
+    runtimePath,
+    TEST_DATA_QueryExecution_MappingAnalysisResult,
+  );
+  await act(async () => {
+    queryBuilderState.initializeWithQuery(
+      create_RawLambda(rawLambda.parameters, rawLambda.body),
+    );
+  });
+  const executionInput = (
+    queryBuilderState.graphManagerState.graphManager as V1_PureGraphManager
+  ).createExecutionInput(
+    queryBuilderState.graphManagerState.graph,
+    guaranteeNonNullable(queryBuilderState.executionContextState.mapping),
+    queryBuilderState.resultState.buildExecutionRawLambda(),
+    guaranteeNonNullable(queryBuilderState.executionContextState.runtimeValue),
+    V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+  );
+  const executionResult = await ENGINE_TEST_SUPPORT__execute(executionInput);
+  createSpy(
+    queryBuilderState.graphManagerState.graphManager,
+    'runQuery',
+  ).mockResolvedValue({
+    executionResult: V1_buildExecutionResult(
+      V1_serializeExecutionResult(executionResult),
+    ),
+  });
+  const explorerPanel = await waitFor(() =>
+    renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+  );
+  const ageRow = await waitFor(() => findByText(explorerPanel, 'Age'));
+  if (ageRow.parentElement) {
+    expect(ageRow.parentElement).not.toBeNull();
+    expect(ageRow.parentElement.parentElement).not.toBeNull();
+    await waitFor(() =>
+      fireEvent.click(
+        getByTitle(
+          guaranteeNonNullable(
+            guaranteeNonNullable(ageRow.parentElement).parentElement,
+          ),
+          'Preview Data',
+        ),
+      ),
+    );
+    await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PREVIEW_DATA_MODAL,
+      ),
+    );
+  }
 });
