@@ -2251,11 +2251,14 @@ test(
     );
     fireEvent.click(renderResult.getByText('count'));
     fireEvent.click(renderResult.getByTitle('Toggle calendar aggregation'));
+    expect(
+      await findByText(fetchStructurePanel, 'Drag and drop date column here'),
+    ).not.toBeNull();
 
     // Select calendar function
     const calendarFunctionSelectorContainer = guaranteeNonNullable(
-      (await findByText(fetchStructurePanel, 'Select Calendar Function'))
-        .parentElement?.parentElement,
+      getByText(fetchStructurePanel, 'Select Calendar Function').parentElement
+        ?.parentElement,
     );
     selectFromCustomSelectorInput(
       calendarFunctionSelectorContainer,
@@ -2274,7 +2277,7 @@ test(
     await dragAndDrop(
       explorerPanelDobStrictDateDragSource,
       dateColumnDropZone,
-      dateColumnDropZone,
+      fetchStructurePanel,
       'Change Date Column',
     );
     expect(
@@ -2290,14 +2293,14 @@ test(
     await dragAndDrop(
       explorerPanelFirstNameDragSource,
       dateColumnDropZone,
-      dateColumnDropZone,
+      fetchStructurePanel,
       'Change Date Column',
     );
-    expect(await findByText(fetchStructurePanel, 'First Name')).toBeNull();
+    expect(queryByText(fetchStructurePanel, 'First Name')).toBeNull();
     expect(
       await renderResult.findByText(
         'String type is not compaible with calendar function date column',
       ),
-    ).toBeNull();
+    ).not.toBeNull();
   },
 );
