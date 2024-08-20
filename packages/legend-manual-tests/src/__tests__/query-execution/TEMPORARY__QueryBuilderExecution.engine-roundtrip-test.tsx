@@ -15,6 +15,7 @@
  */
 
 import { test, expect } from '@jest/globals';
+import { resolve } from 'path';
 import {
   fireEvent,
   getByText,
@@ -24,11 +25,10 @@ import {
   getByTitle,
 } from '@testing-library/react';
 import {
-  TEST_DATA_PreviewDataQueryExecution_ExecutionInput,
   TEST_DATA_QueryExecution_ExecutionInput,
   TEST_DATA_QueryExecution_MappingAnalysisResult,
+  TEST_DATA_QueryExecution_PreviewData_ExecutionInput,
 } from './TEST_DATA_QueryBuilder_Query_Execution.js';
-import TEST_DATA_QueryBuilder_QueryExecution_Entities from './TEST_DATA_QueryBuilder_QueryExecution_Entities.json' with { type: 'json' };
 import {
   stub_RawLambda,
   create_RawLambda,
@@ -49,22 +49,29 @@ import {
 } from '@finos/legend-query-builder';
 import { TEST__setUpQueryBuilder } from '@finos/legend-query-builder/test';
 import { ENGINE_TEST_SUPPORT__execute } from '@finos/legend-graph/test';
+import { generateModelEntitesFromModelGrammar } from '../utils/testUtils.js';
 
 // NOTE: this should be converted into an end-to-end test
 test(integrationTest('test query execution with parameters'), async () => {
   const {
     mappingPath,
     runtimePath,
-    entities,
+    modelFileDir,
+    modelFilePath,
     rawLambda,
     expectedNumberOfParameter,
   } = {
-    mappingPath: TEST_DATA_QueryExecution_ExecutionInput.mapping,
-    runtimePath: TEST_DATA_QueryExecution_ExecutionInput.runtime.runtime,
-    entities: TEST_DATA_QueryBuilder_QueryExecution_Entities,
-    rawLambda: TEST_DATA_QueryExecution_ExecutionInput.function,
+    mappingPath: 'model::RelationalMapping',
+    runtimePath: 'model::Runtime',
+    modelFileDir: 'model',
+    modelFilePath: 'TEST_DATA_QueryBuilder_Query_Execution_model.pure',
+    rawLambda: TEST_DATA_QueryExecution_ExecutionInput,
     expectedNumberOfParameter: 1,
   };
+  const entities = await generateModelEntitesFromModelGrammar(
+    resolve(__dirname, modelFileDir),
+    modelFilePath,
+  );
   const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
     entities,
     stub_RawLambda(),
@@ -212,12 +219,17 @@ test(integrationTest('test query execution with parameters'), async () => {
 });
 
 test(integrationTest('test preivew-data query execution'), async () => {
-  const { mappingPath, runtimePath, entities, rawLambda } = {
-    mappingPath: TEST_DATA_QueryExecution_ExecutionInput.mapping,
-    runtimePath: TEST_DATA_QueryExecution_ExecutionInput.runtime.runtime,
-    entities: TEST_DATA_QueryBuilder_QueryExecution_Entities,
-    rawLambda: TEST_DATA_PreviewDataQueryExecution_ExecutionInput.function,
+  const { mappingPath, runtimePath, modelFileDir, modelFilePath, rawLambda } = {
+    mappingPath: 'model::RelationalMapping',
+    runtimePath: 'model::Runtime',
+    modelFileDir: 'model',
+    modelFilePath: 'TEST_DATA_QueryBuilder_Query_Execution_model.pure',
+    rawLambda: TEST_DATA_QueryExecution_PreviewData_ExecutionInput,
   };
+  const entities = await generateModelEntitesFromModelGrammar(
+    resolve(__dirname, modelFileDir),
+    modelFilePath,
+  );
   const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
     entities,
     stub_RawLambda(),

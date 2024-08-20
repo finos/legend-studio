@@ -1,0 +1,148 @@
+###Service
+Service model::SimpleService
+{
+  pattern: '/00f53db5-3b6e-48ab-bb6c-8b2edb41a55e';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: var: Integer[1]|model::Person.all()->filter(
+      x|$x.age ==
+        $var
+    )->project(
+      [
+        x|$x.age
+      ],
+      ['Age']
+    );
+    mapping: model::RelationalMapping;
+    runtime: model::Runtime;
+  }
+}
+
+
+###Relational
+Database model::MyDatabase
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    Legal_name VARCHAR(200),
+    Inc VARCHAR(200)
+  )
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200),
+    age INTEGER
+  )
+
+  Join FirmPerson(PersonTable.firm_id = FirmTable.id)
+)
+
+
+###Pure
+Profile model::MyExtension
+{
+  stereotypes: [important];
+  tags: [doc];
+}
+
+Enum model::IncType
+{
+  Corp,
+  LLC
+}
+
+Class <<model::MyExtension.important>> {model::MyExtension.doc = 'This is a model of a firm'} model::Firm extends model::LegalEntity
+[
+  validName: $this.legalName->startsWith('_')
+]
+{
+  employees: model::Person[1..*];
+  incType: model::IncType[1];
+  isApple: Boolean[1];
+  employeeSize() {$this.employees->count()}: Number[1];
+}
+
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  age: Integer[1];
+  fullName() {$this.firstName + ' ' + $this.lastName}: String[1];
+}
+
+Class model::LegalEntity
+{
+  legalName: String[1];
+}
+
+
+###Mapping
+Mapping model::RelationalMapping
+(
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [model::MyDatabase]FirmTable.id
+    )
+    ~mainTable [model::MyDatabase]FirmTable
+    legalName: concat([model::MyDatabase]FirmTable.Legal_name, '_LTD'),
+    employees[model_Person]: [model::MyDatabase]@FirmPerson,
+    isApple: case(equal([model::MyDatabase]FirmTable.Legal_name, 'Apple'), 'true', 'false'),
+    incType: EnumerationMapping model_IncType: [model::MyDatabase]FirmTable.Inc
+  }
+  *model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [model::MyDatabase]PersonTable.id
+    )
+    ~mainTable [model::MyDatabase]PersonTable
+    firstName: [model::MyDatabase]PersonTable.firstName,
+    lastName: [model::MyDatabase]PersonTable.lastName,
+    age: [model::MyDatabase]PersonTable.age
+  }
+
+  model::IncType: EnumerationMapping
+  {
+    Corp: ['Corp', 'CORP'],
+    LLC: ['LLC']
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection model::MyConnection
+{
+  store: model::MyDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'Drop table if exists FirmTable;\nDrop table if exists PersonTable;\nCreate Table FirmTable(id INT, Legal_Name VARCHAR(200), Inc VARCHAR(200));\nCreate Table PersonTable(id INT, firm_id INT, lastName VARCHAR(200), firstName VARCHAR(200), age INT);\nInsert into FirmTable (id, Legal_Name, Inc) values (1, \'Finos\', \'CORP\');\nInsert into FirmTable (id, Legal_Name, Inc) values (2, \'Apple\', \'Corp\');\nInsert into FirmTable (id, Legal_Name, Inc) values (3, \'GS\', \'Corp\');\nInsert into FirmTable (id, Legal_Name, Inc) values (4, \'Google\', \'Corp\');\nInsert into FirmTable (id, Legal_Name, Inc) values (5, \'Alphabet\', \'LLC\');\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (1, 3, \'X1\', \'Mauricio\', 10);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (2, 3, \'X2\', \'An\', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (3, 3, \'X3\', \'Anne\', 30);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (4, 3, \'X4\', \'Gayathri\', 40);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (5, 3, \'X5\', \'Yannan\', 50);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (6, 3, \'X6\', \'Dave\', 60);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (7, 3, \'X7\', \'Mo\', 70);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (8, 3, \'X9\', \'Teddy\', 80);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (9, 2, \'X8\', \'Teddy\', 90);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (10, 2, \'X8\', \'Teddy\', 100);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (10, 2, null, \'John\', 10000);\n\n\n'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime model::Runtime
+{
+  mappings:
+  [
+    model::RelationalMapping
+  ];
+  connections:
+  [
+    model::MyDatabase:
+    [
+      my_connection: model::MyConnection
+    ]
+  ];
+}
