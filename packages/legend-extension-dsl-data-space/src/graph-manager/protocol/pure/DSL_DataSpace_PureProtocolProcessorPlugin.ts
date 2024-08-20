@@ -105,6 +105,8 @@ import {
   DataElementReference,
   V1_DataElementReference,
   QueryDataSpaceExecutionContextInfo,
+  generateFunctionPrettyName,
+  ConcreteFunctionDefinition,
 } from '@finos/legend-graph';
 import { V1_resolveDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { V1_MappingIncludeDataSpace } from './v1/model/packageableElements/mapping/V1_DSL_DataSpace_MappingIncludeDataSpace.js';
@@ -234,7 +236,9 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                   executableProtocol instanceof V1_DataSpaceTemplateExecutable
                 ) {
                   const executable = new DataSpaceExecutableTemplate();
-                  executable.id = executableProtocol.id;
+                  if (executableProtocol.id) {
+                    executable.id = executableProtocol.id;
+                  }
                   executable.title = executableProtocol.title;
                   executable.description = executableProtocol.description;
                   executable.query = V1_buildRawLambdaWithResolvedPaths(
@@ -253,12 +257,46 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                 ) {
                   const executable =
                     new DataSpacePackageableElementExecutable();
+                  if (executableProtocol.id) {
+                    executable.id = executableProtocol.id;
+                  }
                   executable.title = executableProtocol.title;
                   executable.description = executableProtocol.description;
-                  executable.executable = context.resolveElement(
-                    executableProtocol.executable.path,
-                    false,
-                  );
+                  if (executableProtocol.executionContextKey) {
+                    executable.executionContextKey =
+                      executableProtocol.executionContextKey;
+                  }
+                  try {
+                    executable.executable = context.resolveElement(
+                      executableProtocol.executable.path,
+                      false,
+                    );
+                  } catch {
+                    try {
+                      executable.executable =
+                        PackageableElementExplicitReference.create(
+                          guaranteeNonNullable(
+                            context.graph.functions.find(
+                              (fn) =>
+                                generateFunctionPrettyName(fn, {
+                                  fullPath: true,
+                                  spacing: false,
+                                  notIncludeParamName: true,
+                                }) ===
+                                executableProtocol.executable.path.replaceAll(
+                                  /\s*/gu,
+                                  '',
+                                ),
+                            ),
+                          ),
+                        );
+                    } catch {
+                      throw new UnsupportedOperationError(
+                        `Can't analyze data space executable with element in path: ${executableProtocol.executable.path}`,
+                        executableProtocol,
+                      );
+                    }
+                  }
                   return executable;
                 } else {
                   throw new UnsupportedOperationError(
@@ -424,7 +462,9 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
           protocol.executables = metamodel.executables?.map((executable) => {
             if (executable instanceof DataSpaceExecutableTemplate) {
               const executableProtocol = new V1_DataSpaceTemplateExecutable();
-              executableProtocol.id = executable.id;
+              if (executable.id) {
+                executableProtocol.id = executable.id;
+              }
               executableProtocol.title = executable.title;
               executableProtocol.description = executable.description;
               if (executable.executionContextKey) {
@@ -441,12 +481,35 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
             ) {
               const executableProtocol =
                 new V1_DataSpacePackageableElementExecutable();
+              if (executable.id) {
+                executableProtocol.id = executable.id;
+              }
               executableProtocol.title = executable.title;
               executableProtocol.description = executable.description;
-              executableProtocol.executable = new V1_PackageableElementPointer(
-                undefined,
-                executable.executable.valueForSerialization ?? '',
-              );
+              if (executable.executionContextKey) {
+                executableProtocol.executionContextKey =
+                  executable.executionContextKey;
+              }
+              if (
+                executable.executable.value instanceof
+                ConcreteFunctionDefinition
+              ) {
+                executableProtocol.executable =
+                  new V1_PackageableElementPointer(
+                    PackageableElementPointerType.FUNCTION,
+                    generateFunctionPrettyName(executable.executable.value, {
+                      fullPath: true,
+                      spacing: false,
+                      notIncludeParamName: true,
+                    }),
+                  );
+              } else {
+                executableProtocol.executable =
+                  new V1_PackageableElementPointer(
+                    undefined,
+                    executable.executable.valueForSerialization ?? '',
+                  );
+              }
               return executableProtocol;
             } else {
               throw new UnsupportedOperationError(

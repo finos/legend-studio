@@ -61,14 +61,18 @@ export class V1_DataSpaceElementPointer implements Hashable {
 }
 
 export abstract class V1_DataSpaceExecutable implements Hashable {
+  id?: string;
+  executionContextKey?: string | undefined;
   title!: string;
   description?: string | undefined;
 
   get hashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTABLE,
+      this.id,
       this.title,
       this.description ?? '',
+      this.executionContextKey ?? '',
     ]);
   }
 }
@@ -82,8 +86,10 @@ export class V1_DataSpacePackageableElementExecutable
   override get hashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_PACKAGEABLE_ELEMENT_EXECUTABLE,
+      this.id,
       this.title,
       this.description ?? '',
+      this.executionContextKey ?? '',
       this.executable.path,
     ]);
   }
@@ -93,9 +99,7 @@ export class V1_DataSpaceTemplateExecutable
   extends V1_DataSpaceExecutable
   implements Hashable
 {
-  id!: string;
   query!: V1_RawLambda;
-  executionContextKey?: string | undefined;
 
   override get hashCode(): string {
     return hashArray([

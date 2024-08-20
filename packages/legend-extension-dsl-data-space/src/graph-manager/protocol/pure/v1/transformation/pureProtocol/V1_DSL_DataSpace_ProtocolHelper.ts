@@ -145,6 +145,8 @@ const V1_dataSpacePackageableElementExecutableModelSchema = createModelSchema(
       V1_DATA_SPACE_PACKAGEABLE_ELEMENT_EXECUTABLE,
     ),
     description: optional(primitive()),
+    executionContextKey: optional(primitive()),
+    id: optional(primitive()),
     title: primitive(),
     executable: usingModelSchema(V1_packageableElementPointerModelSchema),
   },

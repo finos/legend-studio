@@ -228,17 +228,23 @@ export class DataSpacesDepotRepository extends DataSpacesBuilderRepoistory {
     dataSpace: DataSpace,
     template: DataSpaceExecutableTemplate,
   ): void {
-    this.applicationStore.navigationService.navigator.visitAddress(
-      this.applicationStore.navigationService.navigator.generateAddress(
-        generateDataSpaceTemplateQueryCreatorRoute(
-          this.project.groupId,
-          this.project.artifactId,
-          this.project.versionId,
-          dataSpace.path,
-          template.id,
+    if (template.id) {
+      this.applicationStore.navigationService.navigator.visitAddress(
+        this.applicationStore.navigationService.navigator.generateAddress(
+          generateDataSpaceTemplateQueryCreatorRoute(
+            this.project.groupId,
+            this.project.artifactId,
+            this.project.versionId,
+            dataSpace.path,
+            template.id,
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      this.applicationStore.notificationService.notifyWarning(
+        `Can't visit tempalte query without a Id`,
+      );
+    }
   }
 
   showAdvancedSearchPanel(dataSpace: DataSpace): void {

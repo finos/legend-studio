@@ -27,6 +27,8 @@ import {
   type RawLambda,
   type DataElementReference,
   PackageableElement,
+  ConcreteFunctionDefinition,
+  generateFunctionPrettyName,
 } from '@finos/legend-graph';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSL_DataSpace_HashUtils.js';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
@@ -68,14 +70,18 @@ export class DataSpaceElementPointer implements Hashable {
 }
 
 export abstract class DataSpaceExecutable implements Hashable {
+  id?: string;
+  executionContextKey?: string;
   title!: string;
   description?: string | undefined;
 
   get hashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTABLE,
+      this.id,
       this.title,
       this.description ?? '',
+      this.executionContextKey ?? '',
     ]);
   }
 }
@@ -89,9 +95,17 @@ export class DataSpacePackageableElementExecutable
   override get hashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_PACKAGEABLE_ELEMENT_EXECUTABLE,
+      this.id,
       this.title,
       this.description ?? '',
-      this.executable.valueForSerialization ?? '',
+      this.executionContextKey ?? '',
+      this.executable.value instanceof ConcreteFunctionDefinition
+        ? generateFunctionPrettyName(this.executable.value, {
+            fullPath: true,
+            spacing: false,
+            notIncludeParamName: true,
+          })
+        : (this.executable.valueForSerialization ?? ''),
     ]);
   }
 }
@@ -100,9 +114,7 @@ export class DataSpaceExecutableTemplate
   extends DataSpaceExecutable
   implements Hashable
 {
-  id!: string;
   query!: RawLambda;
-  executionContextKey?: string;
 
   override get hashCode(): string {
     return hashArray([

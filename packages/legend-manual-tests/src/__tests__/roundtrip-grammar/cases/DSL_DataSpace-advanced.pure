@@ -99,10 +99,6 @@ DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} mod
       executable: model::MyService;
     },
     {
-      title: 'Exec 2';
-      executable: model::MyService;
-    },
-    {
       id: template_id;
       title: 'this is template';
       query: |'';
