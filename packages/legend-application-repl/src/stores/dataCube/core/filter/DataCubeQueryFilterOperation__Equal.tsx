@@ -32,13 +32,13 @@ import {
 import { _filterCondition, _value } from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
-export class DataCubeQueryFilterOperation__Equals extends DataCubeQueryFilterOperation {
+export class DataCubeQueryFilterOperation__Equal extends DataCubeQueryFilterOperation {
   override get label() {
     return '=';
   }
 
   override get description(): string {
-    return 'equals';
+    return 'equal';
   }
 
   override get operator(): string {
@@ -65,7 +65,7 @@ export class DataCubeQueryFilterOperation__Equals extends DataCubeQueryFilterOpe
   }
 
   buildConditionSnapshot(expression: V1_AppliedFunction) {
-    // TODO
+    // TODO: @akphi - implement this for roundtrip testing
     // export const buildPostFilterConditionState = (
     //   postFilterState: QueryBuilderPostFilterState,
     //   expression: FunctionExpression,

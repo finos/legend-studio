@@ -140,10 +140,10 @@ export function _primitiveValue(type: string, value: unknown) {
     case PRIMITIVE_TYPE.FLOAT:
       return _val(new V1_CFloat(), guaranteeIsNumber(value));
     case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME:
-      return _val(new V1_CDateTime(), guaranteeIsString(value));
     case PRIMITIVE_TYPE.STRICTDATE:
       return _val(new V1_CStrictDate(), guaranteeIsString(value));
+    case PRIMITIVE_TYPE.DATETIME:
+      return _val(new V1_CDateTime(), guaranteeIsString(value));
     case PRIMITIVE_TYPE.STRICTTIME:
       return _val(new V1_CStrictTime(), guaranteeIsString(value));
     default:
@@ -244,6 +244,10 @@ function _agg(
   ]);
 }
 
+export function _not(fn: V1_AppliedFunction) {
+  return _function(DataCubeFunction.NOT, [fn]);
+}
+
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
 export function _col(
@@ -292,43 +296,6 @@ export function _filterCondition(
 ): V1_AppliedFunction {
   return _function(_name(func), [_property(condition.name), ...params]);
 }
-
-// const property = _property(condition.name);
-// const _cond = (fn: string, ...p: V1_ValueSpecification[]) =>
-//   _function(_name(fn), [property, ...p]);
-// const _val = () => _value(guaranteeNonNullable(condition.value));
-// const _not = (fn: V1_AppliedFunction) =>
-//   _function(_name(DataCubeFunction.NOT), [fn]);
-// switch (condition.operation) {
-//   case DataCubeQueryFilterOperator.EQUAL:
-//     return _cond(DataCubeFunction.EQUAL, _val());
-//   case DataCubeQueryFilterOperator.GREATER_THAN:
-//     return _cond(DataCubeFunction.GREATER_THAN, _val());
-//   case DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL:
-//     return _cond(DataCubeFunction.GREATER_THAN_EQUAL, _val());
-//   case DataCubeQueryFilterOperator.LESS_THAN:
-//     return _cond(DataCubeFunction.LESS_THAN, _val());
-//   case DataCubeQueryFilterOperator.LESS_THAN_OR_EQUAL:
-//     return _cond(DataCubeFunction.LESS_THAN_EQUAL, _val());
-//   case DataCubeQueryFilterOperator.CONTAINS:
-//     return _cond(DataCubeFunction.CONTAINS, _val());
-//   case DataCubeQueryFilterOperator.ENDS_WITH:
-//     return _cond(DataCubeFunction.ENDS_WITH, _val());
-//   case DataCubeQueryFilterOperator.STARTS_WITH:
-//     return _cond(DataCubeFunction.STARTS_WITH, _val());
-//   case DataCubeQueryFilterOperator.IS_NULL:
-//     return _cond(DataCubeFunction.IS_EMPTY);
-//   case DataCubeQueryFilterOperator.NOT_EQUAL:
-//     return _not(_cond(DataCubeFunction.EQUAL, _val()));
-//   case DataCubeQueryFilterOperator.IS_NOT_NULL:
-//     return _not(_cond(DataCubeFunction.IS_EMPTY));
-//   case DataCubeQueryFilterOperator.NOT_CONTAINS:
-//     return _not(_cond(DataCubeFunction.CONTAINS, _val()));
-//   default:
-//     throw new UnsupportedOperationError(
-//       `Unsupported filter operation '${condition.operation}'`,
-//     );
-// }
 
 export function _filter(
   filter: DataCubeQuerySnapshotFilter | DataCubeQuerySnapshotFilterCondition,

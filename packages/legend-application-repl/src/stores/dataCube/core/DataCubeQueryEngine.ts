@@ -39,18 +39,19 @@ export enum DataCubeFunction {
 
   // filter
   AND = 'meta::pure::functions::boolean::and',
-  NOT = 'meta::pure::functions::boolean::not',
   OR = 'meta::pure::functions::boolean::or',
+  NOT = 'meta::pure::functions::boolean::not',
+  TO_LOWERCASE = 'meta::pure::functions::string::toLower',
 
   CONTAINS = 'meta::pure::functions::string::contains',
   ENDS_WITH = 'meta::pure::functions::string::endsWith',
   EQUAL = 'meta::pure::functions::boolean::equal',
   GREATER_THAN = 'meta::pure::functions::boolean::greaterThan',
-  GREATER_THAN_EQUAL = 'meta::pure::functions::boolean::greaterThanEqual',
+  GREATER_THAN_OR_EQUAL = 'meta::pure::functions::boolean::greaterThanEqual',
   IN = 'meta::pure::functions::collection::in',
   IS_EMPTY = 'meta::pure::functions::collection::isEmpty',
   LESS_THAN = 'meta::pure::functions::boolean::lessThan',
-  LESS_THAN_EQUAL = 'meta::pure::functions::boolean::lessThanEqual',
+  LESS_THAN_OR_EQUAL = 'meta::pure::functions::boolean::lessThanEqual',
   STARTS_WITH = 'meta::pure::functions::string::startsWith',
 
   // aggregate

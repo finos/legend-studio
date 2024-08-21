@@ -33,7 +33,12 @@ import { guaranteeType } from '@finos/legend-shared';
 import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
 import type { REPLStore } from '../REPLStore.js';
 import { action, makeObservable, observable } from 'mobx';
-import { DataCubeQueryFilterOperation__Equals } from './core/filter/DataCubeQueryFilterOperation__Equals.js';
+import { DataCubeQueryFilterOperation__Equal } from './core/filter/DataCubeQueryFilterOperation__Equal.js';
+import { DataCubeQueryFilterOperation__LessThanOrEqual } from './core/filter/DataCubeQueryFilterOperation__LessThanOrEqual.js';
+import { DataCubeQueryFilterOperation__LessThan } from './core/filter/DataCubeQueryFilterOperation__LessThan.js';
+import { DataCubeQueryFilterOperation__GreaterThanOrEqual } from './core/filter/DataCubeQueryFilterOperation__GreaterThanOrEqual.js';
+import { DataCubeQueryFilterOperation__GreaterThan } from './core/filter/DataCubeQueryFilterOperation__GreaterThan.js';
+import { DataCubeQueryFilterOperation__NotEqual } from './core/filter/DataCubeQueryFilterOperation__NotEqual.js';
 
 export const DEFAULT_ENABLE_DEBUG_MODE = false;
 export const DEFAULT_GRID_CLIENT_ROW_BUFFER = 50;
@@ -45,7 +50,14 @@ export class DataCubeEngine {
   readonly application: LegendREPLApplicationStore;
   private readonly client: REPLServerClient;
 
-  readonly filterOperations = [new DataCubeQueryFilterOperation__Equals()];
+  readonly filterOperations = [
+    new DataCubeQueryFilterOperation__LessThan(),
+    new DataCubeQueryFilterOperation__LessThanOrEqual(),
+    new DataCubeQueryFilterOperation__Equal(),
+    new DataCubeQueryFilterOperation__NotEqual(),
+    new DataCubeQueryFilterOperation__GreaterThanOrEqual(),
+    new DataCubeQueryFilterOperation__GreaterThan(),
+  ];
 
   enableDebugMode = DEFAULT_ENABLE_DEBUG_MODE;
   gridClientRowBuffer = DEFAULT_GRID_CLIENT_ROW_BUFFER;
