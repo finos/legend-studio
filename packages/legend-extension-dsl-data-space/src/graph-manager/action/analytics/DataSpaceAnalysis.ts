@@ -134,6 +134,12 @@ export class DataSpaceTemplateExecutableInfo extends DataSpaceExecutableInfo {
   executionContextKey!: string;
 }
 
+export class DataSpaceFunctionPointerExecutableInfo extends DataSpaceExecutableInfo {
+  id!: string;
+  executionContextKey!: string;
+  function!: string;
+}
+
 export class DataSpaceServiceExecutableInfo extends DataSpaceExecutableInfo {
   pattern!: string;
   mapping?: string | undefined;

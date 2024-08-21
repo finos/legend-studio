@@ -249,6 +249,8 @@ export abstract class V1_DataSpaceExecutableInfo {
 }
 
 const V1_DATA_SPACE_TEMPLATE_EXECUTABLE_INFO_TYPE = 'templateExecutableInfo';
+const V1_DATA_SPACE_FUNCTION_POINTER_EXECUTABLE_INFO_TYPE =
+  'functionPointerExecutableInfo';
 const V1_DATA_SPACE_SERVICE_EXECUTABLE_INFO_TYPE = 'service';
 const V1_DATA_SPACE_MULTI_EXECUTION_SERVICE_EXECUTABLE_INFO_TYPE =
   'multiExecutionService';
@@ -258,16 +260,32 @@ export class V1_DataSpaceTemplateExecutableInfo extends V1_DataSpaceExecutableIn
   executionContextKey!: string;
 }
 
-const V1_DataSpaceTemplateExecutableInfoModelSchema = (
-  plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_DataSpaceTemplateExecutableInfo> =>
-  createModelSchema(V1_DataSpaceTemplateExecutableInfo, {
-    _type: usingConstantValueSchema(
-      V1_DATA_SPACE_TEMPLATE_EXECUTABLE_INFO_TYPE,
-    ),
-    id: primitive(),
-    executionContextKey: primitive(),
-  });
+export class V1_DataSpaceFunctionPointerExecutableInfo extends V1_DataSpaceExecutableInfo {
+  id!: string;
+  executionContextKey!: string;
+  function!: string;
+}
+
+const V1_DataSpaceTemplateExecutableInfoModelSchema =
+  (): ModelSchema<V1_DataSpaceTemplateExecutableInfo> =>
+    createModelSchema(V1_DataSpaceTemplateExecutableInfo, {
+      _type: usingConstantValueSchema(
+        V1_DATA_SPACE_TEMPLATE_EXECUTABLE_INFO_TYPE,
+      ),
+      id: primitive(),
+      executionContextKey: primitive(),
+    });
+
+const V1_DataSpaceFunctionPointerExecutableInfoModelSchema =
+  (): ModelSchema<V1_DataSpaceFunctionPointerExecutableInfo> =>
+    createModelSchema(V1_DataSpaceFunctionPointerExecutableInfo, {
+      _type: usingConstantValueSchema(
+        V1_DATA_SPACE_FUNCTION_POINTER_EXECUTABLE_INFO_TYPE,
+      ),
+      id: primitive(),
+      executionContextKey: primitive(),
+      function: primitive(),
+    });
 
 export class V1_DataSpaceServiceExecutableInfo extends V1_DataSpaceExecutableInfo {
   pattern!: string;
@@ -346,8 +364,10 @@ const V1_deserializeDataSpaceExecutableInfo = (
 ): V1_DataSpaceExecutableInfo => {
   switch (json._type) {
     case V1_DATA_SPACE_TEMPLATE_EXECUTABLE_INFO_TYPE:
+      return deserialize(V1_DataSpaceTemplateExecutableInfoModelSchema(), json);
+    case V1_DATA_SPACE_FUNCTION_POINTER_EXECUTABLE_INFO_TYPE:
       return deserialize(
-        V1_DataSpaceTemplateExecutableInfoModelSchema(plugins),
+        V1_DataSpaceFunctionPointerExecutableInfoModelSchema(),
         json,
       );
     case V1_DATA_SPACE_SERVICE_EXECUTABLE_INFO_TYPE:
