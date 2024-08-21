@@ -49,12 +49,14 @@ import {
 import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+  TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
 } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' with { type: 'json' };
 import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexM2M.json' with { type: 'json' };
 import TEST_DATA_SimpleSubtypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json' with { type: 'json' };
 import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
+import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' with { type: 'json' };
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { createMock, integrationTest } from '@finos/legend-shared/test';
 import {
@@ -77,6 +79,7 @@ import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/gr
 import {
   TEST__setUpQueryBuilder,
   dragAndDrop,
+  selectFromCustomSelectorInput,
   setDerivedPropertyValue,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
@@ -2188,6 +2191,116 @@ test(
 
     expect(
       await findByText(fetchStructurePanel, 'Employees/Hobbies/Name'),
+    ).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    `Query builder allows DND date property to calendar aggregation function`,
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates,
+      stub_RawLambda(),
+      'model::RelationalMapping',
+      'model::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithDates,
+    );
+
+    const _personClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Person');
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+
+    // Enable calendar
+    fireEvent.click(
+      await renderResult.findByRole('button', { name: 'Advanced' }),
+    );
+    fireEvent.click(
+      await renderResult.findByRole('button', { name: 'Enable Calendar' }),
+    );
+    fireEvent.click(
+      await renderResult.findByRole('button', { name: 'Proceed' }),
+    );
+
+    // DND number property to fetch structure panel
+    const explorerPanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+    );
+    const fetchStructurePanel = await renderResult.findByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FETCH_STRUCTURE,
+    );
+    const fetchStructurePanelDropZone = await findByText(
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+    const explorerPanelAgeDragSource = await findByText(explorerPanel, 'Age');
+    await dragAndDrop(
+      explorerPanelAgeDragSource,
+      fetchStructurePanelDropZone,
+      fetchStructurePanel,
+      'Add a projection column',
+    );
+    expect(await findByText(fetchStructurePanel, 'Age')).not.toBeNull();
+
+    // Turn on aggregation
+    fireEvent.click(
+      getByTitle(fetchStructurePanel, 'Choose Aggregate Operator...'),
+    );
+    fireEvent.click(renderResult.getByText('count'));
+    fireEvent.click(renderResult.getByTitle('Toggle calendar aggregation'));
+    expect(
+      await findByText(fetchStructurePanel, 'Drag and drop date column here'),
+    ).not.toBeNull();
+
+    // Select calendar function
+    const calendarFunctionSelectorContainer = guaranteeNonNullable(
+      getByText(fetchStructurePanel, 'Select Calendar Function').parentElement
+        ?.parentElement,
+    );
+    selectFromCustomSelectorInput(
+      calendarFunctionSelectorContainer,
+      'Year to Date',
+    );
+
+    // Check that a default date property was selected
+    expect(await findByText(fetchStructurePanel, 'Dob Date')).not.toBeNull();
+
+    // DND a different date property to calendar aggregation function
+    const explorerPanelDobStrictDateDragSource = await findByText(
+      explorerPanel,
+      'Dob Strict Date',
+    );
+    let dateColumnDropZone = getByText(fetchStructurePanel, 'Dob Date');
+    await dragAndDrop(
+      explorerPanelDobStrictDateDragSource,
+      dateColumnDropZone,
+      fetchStructurePanel,
+      'Change Date Column',
+    );
+    expect(
+      await findByText(fetchStructurePanel, 'Dob Strict Date'),
+    ).not.toBeNull();
+
+    // DND a non-date property and verify that error message is shown
+    dateColumnDropZone = getByText(fetchStructurePanel, 'Dob Strict Date');
+    const explorerPanelFirstNameDragSource = getByText(
+      explorerPanel,
+      'First Name',
+    );
+    await dragAndDrop(
+      explorerPanelFirstNameDragSource,
+      dateColumnDropZone,
+      fetchStructurePanel,
+      'Change Date Column',
+    );
+    expect(queryByText(fetchStructurePanel, 'First Name')).toBeNull();
+    expect(
+      await renderResult.findByText(
+        'String type is not compaible with calendar function date column',
+      ),
     ).not.toBeNull();
   },
 );
