@@ -696,10 +696,10 @@ const QueryBuilderProjectionColumnEditor = observer(
         tdsState.queryBuilderState.explorerState,
       ],
     );
-    const [{ isDragOverCalendarDateColumn }, dropTargetConnector] = useDrop<
+    const [{ isDragOver }, dropTargetConnector] = useDrop<
       QueryBuilderExplorerTreeDragSource,
       void,
-      { isDragOverCalendarDateColumn: boolean }
+      { isDragOver: boolean }
     >(
       () => ({
         accept: [QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY],
@@ -709,17 +709,11 @@ const QueryBuilderProjectionColumnEditor = observer(
           } // prevent drop event propagation to accomondate for nested DnD
         },
         collect: (monitor) => ({
-          isDragOverCalendarDateColumn: monitor.isOver({ shallow: true }),
+          isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
       [handleDrop],
     );
-    const { isCalendarDateColumnDroppable } = useDragLayer((monitor) => ({
-      isCalendarDateColumnDroppable:
-        monitor.isDragging() &&
-        monitor.getItemType() ===
-          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-    }));
     const percentileButtonRef = useRef<HTMLButtonElement>(null);
     const percentileInputRef = useRef<HTMLInputElement>(null);
     const [isPercentileOpen, setIsPercentileOpen] = useState(false);
@@ -1187,8 +1181,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                   ref={dropTargetConnector}
                 >
                   <PanelEntryDropZonePlaceholder
-                    isDragOver={isDragOverCalendarDateColumn}
-                    isDroppable={isCalendarDateColumnDroppable}
+                    isDragOver={isDragOver}
                     label="Change Date Column"
                     className="query-builder__projection__calendar__date__column__dnd__placeholder"
                   >
@@ -1631,6 +1624,45 @@ export const QueryBuilderTDSPanel = observer(
             )}
             {Boolean(projectionColumns.length) && (
               <div
+                data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS}
+                className="query-builder__projection__columns"
+              >
+                <div ref={rearrangeColumnDropConnector}>
+                  <DragPreviewLayer
+                    labelGetter={(
+                      item: QueryBuilderProjectionColumnDragSource,
+                    ): string =>
+                      item.columnState.columnName === ''
+                        ? '(unknown)'
+                        : item.columnState.columnName
+                    }
+                    types={[QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE]}
+                  />
+                  {projectionColumns.map((projectionColumnState, columnIdx) => (
+                    <QueryBuilderProjectionColumnEditor
+                      key={projectionColumnState.uuid}
+                      projectionColumnState={projectionColumnState}
+                      isRearrangeActive={isRearrangeActive}
+                      currentRearrangeDraggedColumnIndex={
+                        currentRearrangeDraggedColumnIndex
+                      }
+                      currentRearrangeDropGapIndex={
+                        currentRearrangeDropGapIndex
+                      }
+                      setCurrentRearrangeDraggedColumnIndex={
+                        setCurrentRearrangeDraggedColumnIndex
+                      }
+                      setCurrentRearrangeDropGapIndex={
+                        setCurrentRearrangeDropGapIndex
+                      }
+                      columnIdx={columnIdx}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+            {isDroppable && !isEmpty && (
+              <div
                 ref={addProjectionRef}
                 className="query-builder__projection__free-drop-zone__container"
               >
@@ -1639,51 +1671,11 @@ export const QueryBuilderTDSPanel = observer(
                   isDroppable={isDroppable}
                   className="query-builder__projection__free-drop-zone"
                   label="Add a projection column"
-                  alwaysShowChildren={true}
                 >
-                  <div
-                    data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS}
-                    className="query-builder__projection__columns"
-                  >
-                    <div ref={rearrangeColumnDropConnector}>
-                      <DragPreviewLayer
-                        labelGetter={(
-                          item: QueryBuilderProjectionColumnDragSource,
-                        ): string =>
-                          item.columnState.columnName === ''
-                            ? '(unknown)'
-                            : item.columnState.columnName
-                        }
-                        types={[QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE]}
-                      />
-                      {projectionColumns.map(
-                        (projectionColumnState, columnIdx) => (
-                          <QueryBuilderProjectionColumnEditor
-                            key={projectionColumnState.uuid}
-                            projectionColumnState={projectionColumnState}
-                            isRearrangeActive={isRearrangeActive}
-                            currentRearrangeDraggedColumnIndex={
-                              currentRearrangeDraggedColumnIndex
-                            }
-                            currentRearrangeDropGapIndex={
-                              currentRearrangeDropGapIndex
-                            }
-                            setCurrentRearrangeDraggedColumnIndex={
-                              setCurrentRearrangeDraggedColumnIndex
-                            }
-                            setCurrentRearrangeDropGapIndex={
-                              setCurrentRearrangeDropGapIndex
-                            }
-                            columnIdx={columnIdx}
-                          />
-                        ),
-                      )}
-                    </div>
-                  </div>
+                  <></>
                 </PanelEntryDropZonePlaceholder>
               </div>
             )}
-
             <QueryResultModifierModal tdsState={tdsState} />
           </PanelDropZone>
         </div>
