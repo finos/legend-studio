@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.3.56
+
+### Patch Changes
+
+- [#3447](https://github.com/finos/legend-studio/pull/3447) [`7495e91`](https://github.com/finos/legend-studio/commit/7495e916907c85c7c33dd6453bad9af14e2fff43) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Refactor data sapce executable to support use function pointer
+
 ## 10.3.55
 
 ## 10.3.54
