@@ -30,8 +30,10 @@ import {
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
 import {
-  _filterCondition,
+  _function,
+  _functionName,
   _not,
+  _property,
   _value,
 } from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
@@ -42,7 +44,7 @@ export class DataCubeQueryFilterOperation__NotEqual extends DataCubeQueryFilterO
   }
 
   override get description(): string {
-    return 'not equal';
+    return 'does not equal';
   }
 
   override get operator(): string {
@@ -75,7 +77,8 @@ export class DataCubeQueryFilterOperation__NotEqual extends DataCubeQueryFilterO
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
     return _not(
-      _filterCondition(condition, DataCubeFunction.EQUAL, [
+      _function(_functionName(DataCubeFunction.EQUAL), [
+        _property(condition.name),
         _value(guaranteeNonNullable(condition.value)),
       ]),
     );

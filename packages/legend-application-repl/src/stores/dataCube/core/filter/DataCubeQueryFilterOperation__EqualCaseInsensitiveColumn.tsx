@@ -17,7 +17,6 @@
 import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
   DataCubeQueryFilterOperation,
-  generateDefaultFilterConditionPrimitiveTypeValue,
   ofType,
 } from './DataCubeQueryFilterOperation.js';
 import type {
@@ -26,6 +25,7 @@ import type {
 } from '../DataCubeQuerySnapshot.js';
 import {
   DataCubeFunction,
+  DataCubeOperationAdvancedValueType,
   DataCubeQueryFilterOperator,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
@@ -34,38 +34,39 @@ import {
   _functionName,
   _property,
   _value,
+  _var,
 } from '../DataCubeQueryBuilderUtils.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, isString } from '@finos/legend-shared';
 
-export class DataCubeQueryFilterOperation__GreaterThanOrEqual extends DataCubeQueryFilterOperation {
+export class DataCubeQueryFilterOperation__EqualCaseInsensitiveColumn extends DataCubeQueryFilterOperation {
   override get label() {
-    return '>=';
+    return '= (case-insensitive) value in column';
   }
 
   override get description(): string {
-    return 'is greater than or equals';
+    return 'equals to (case-insensitive) value in column';
   }
 
   override get operator(): string {
-    return DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL;
+    return DataCubeQueryFilterOperator.EQUAL_CASE_INSENSITIVE_COLUMN;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {
-    return ofType(column.type, ['number']);
+    return ofType(column.type, ['string']);
   }
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
     return (
-      ofType(value.type, ['number']) &&
+      value.type === DataCubeOperationAdvancedValueType.COLUMN &&
       value.value !== undefined &&
-      !Array.isArray(value.value)
+      isString(value.value)
     );
   }
 
   generateDefaultValue(column: DataCubeQuerySnapshotColumn) {
     return {
-      type: column.type,
-      value: generateDefaultFilterConditionPrimitiveTypeValue(column.type),
+      type: DataCubeOperationAdvancedValueType.COLUMN,
+      value: column.name,
     };
   }
 
@@ -75,9 +76,14 @@ export class DataCubeQueryFilterOperation__GreaterThanOrEqual extends DataCubeQu
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
-    return _function(_functionName(DataCubeFunction.GREATER_THAN_OR_EQUAL), [
-      _property(condition.name),
-      _value(guaranteeNonNullable(condition.value)),
+    const variable = _var();
+    return _function(_functionName(DataCubeFunction.EQUAL), [
+      _function(_functionName(DataCubeFunction.TO_LOWERCASE), [
+        _property(condition.name, variable),
+      ]),
+      _function(_functionName(DataCubeFunction.TO_LOWERCASE), [
+        _value(guaranteeNonNullable(condition.value), variable),
+      ]),
     ]);
   }
 }

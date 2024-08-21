@@ -26,7 +26,9 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
+  DataCubeOperationAdvancedValueType,
   DataCubeQueryFilterGroupOperator,
+  getDataType,
   type DataCubeOperationValue,
 } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 import {
@@ -274,15 +276,71 @@ const DataCubeEditorFilterConditionNodeDateValueEditor = observer(
   }),
 );
 
+const DataCubeEditorFilterConditionNodeColumnSelector = observer(
+  forwardRef<
+    HTMLInputElement,
+    {
+      value: string;
+      updateValue: (value: string) => void;
+      dataCube: DataCubeState;
+    }
+  >(function DataCubeEditorFilterConditionNodeColumnSelector(props, ref) {
+    const { value, updateValue, dataCube } = props;
+    const panel = dataCube.editor.filter;
+    const matchingColumn = panel.columns.find(
+      (column) => column.name === value,
+    );
+    const [
+      openColumnsDropdown,
+      closeColumnsDropdown,
+      columnsDropdownProps,
+      columnsDropdownPropsOpen,
+    ] = useDropdownMenu();
+
+    return (
+      <>
+        <FormDropdownMenuTrigger
+          className="relative mr-1 w-32"
+          onClick={openColumnsDropdown}
+          open={columnsDropdownPropsOpen}
+        >
+          {value}
+        </FormDropdownMenuTrigger>
+        <FormDropdownMenu className="w-32" {...columnsDropdownProps}>
+          {panel.columns
+            .filter(
+              (column) =>
+                matchingColumn &&
+                getDataType(matchingColumn.type) === getDataType(column.type),
+            )
+            .map((column) => (
+              <FormDropdownMenuItem
+                key={column.name}
+                onClick={() => {
+                  updateValue(column.name);
+                  closeColumnsDropdown();
+                }}
+                autoFocus={value === column.name}
+              >
+                {column.name}
+              </FormDropdownMenuItem>
+            ))}
+        </FormDropdownMenu>
+      </>
+    );
+  }),
+);
+
 const DataCubeEditorFilterConditionNodeValueEditor = observer(
   forwardRef<
     HTMLInputElement,
     {
       value: DataCubeOperationValue;
       updateValue: (value: unknown) => void;
+      dataCube: DataCubeState;
     }
   >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
-    const { value, updateValue } = props;
+    const { value, updateValue, dataCube } = props;
     // WIP: support collection/column
     switch (value.type) {
       case PRIMITIVE_TYPE.STRING:
@@ -312,6 +370,14 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
             ref={ref}
             value={value.value as string}
             updateValue={(val) => updateValue(val)}
+          />
+        );
+      case DataCubeOperationAdvancedValueType.COLUMN:
+        return (
+          <DataCubeEditorFilterConditionNodeColumnSelector
+            value={value.value as string}
+            updateValue={(val) => updateValue(val)}
+            dataCube={dataCube}
           />
         );
       default:
@@ -543,6 +609,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
               ref={ref}
               value={node.value}
               updateValue={(val) => node.updateValue(val)}
+              dataCube={dataCube}
             />
           )}
         </div>

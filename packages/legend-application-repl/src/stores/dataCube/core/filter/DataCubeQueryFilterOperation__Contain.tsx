@@ -37,26 +37,26 @@ import {
 } from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
-export class DataCubeQueryFilterOperation__GreaterThanOrEqual extends DataCubeQueryFilterOperation {
+export class DataCubeQueryFilterOperation__Contain extends DataCubeQueryFilterOperation {
   override get label() {
-    return '>=';
+    return 'contains';
   }
 
   override get description(): string {
-    return 'is greater than or equals';
+    return 'contains';
   }
 
   override get operator(): string {
-    return DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL;
+    return DataCubeQueryFilterOperator.CONTAINS;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {
-    return ofType(column.type, ['number']);
+    return ofType(column.type, ['string']);
   }
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
     return (
-      ofType(value.type, ['number']) &&
+      ofType(value.type, ['string']) &&
       value.value !== undefined &&
       !Array.isArray(value.value)
     );
@@ -75,7 +75,7 @@ export class DataCubeQueryFilterOperation__GreaterThanOrEqual extends DataCubeQu
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
-    return _function(_functionName(DataCubeFunction.GREATER_THAN_OR_EQUAL), [
+    return _function(_functionName(DataCubeFunction.CONTAINS), [
       _property(condition.name),
       _value(guaranteeNonNullable(condition.value)),
     ]);

@@ -29,7 +29,12 @@ import {
   DataCubeQueryFilterOperator,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
-import { _filterCondition, _value } from '../DataCubeQueryBuilderUtils.js';
+import {
+  _function,
+  _functionName,
+  _property,
+  _value,
+} from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export class DataCubeQueryFilterOperation__Equal extends DataCubeQueryFilterOperation {
@@ -38,7 +43,7 @@ export class DataCubeQueryFilterOperation__Equal extends DataCubeQueryFilterOper
   }
 
   override get description(): string {
-    return 'equal';
+    return 'equals';
   }
 
   override get operator(): string {
@@ -142,7 +147,8 @@ export class DataCubeQueryFilterOperation__Equal extends DataCubeQueryFilterOper
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
-    return _filterCondition(condition, DataCubeFunction.EQUAL, [
+    return _function(_functionName(DataCubeFunction.EQUAL), [
+      _property(condition.name),
       _value(guaranteeNonNullable(condition.value)),
     ]);
   }

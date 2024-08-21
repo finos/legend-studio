@@ -32,31 +32,32 @@ import {
 import {
   _function,
   _functionName,
+  _not,
   _property,
   _value,
 } from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
-export class DataCubeQueryFilterOperation__GreaterThanOrEqual extends DataCubeQueryFilterOperation {
+export class DataCubeQueryFilterOperation__NotStartWith extends DataCubeQueryFilterOperation {
   override get label() {
-    return '>=';
+    return 'doest not start with';
   }
 
   override get description(): string {
-    return 'is greater than or equals';
+    return 'does not start with';
   }
 
   override get operator(): string {
-    return DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL;
+    return DataCubeQueryFilterOperator.DOES_NOT_START_WITH;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {
-    return ofType(column.type, ['number']);
+    return ofType(column.type, ['string']);
   }
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
     return (
-      ofType(value.type, ['number']) &&
+      ofType(value.type, ['string']) &&
       value.value !== undefined &&
       !Array.isArray(value.value)
     );
@@ -75,9 +76,11 @@ export class DataCubeQueryFilterOperation__GreaterThanOrEqual extends DataCubeQu
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
-    return _function(_functionName(DataCubeFunction.GREATER_THAN_OR_EQUAL), [
-      _property(condition.name),
-      _value(guaranteeNonNullable(condition.value)),
-    ]);
+    return _not(
+      _function(_functionName(DataCubeFunction.STARTS_WITH), [
+        _property(condition.name),
+        _value(guaranteeNonNullable(condition.value)),
+      ]),
+    );
   }
 }

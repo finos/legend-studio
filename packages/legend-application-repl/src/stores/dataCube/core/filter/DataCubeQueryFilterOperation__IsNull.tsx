@@ -17,7 +17,6 @@
 import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
   DataCubeQueryFilterOperation,
-  generateDefaultFilterConditionPrimitiveTypeValue,
   ofType,
 } from './DataCubeQueryFilterOperation.js';
 import type {
@@ -33,40 +32,35 @@ import {
   _function,
   _functionName,
   _property,
-  _value,
 } from '../DataCubeQueryBuilderUtils.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 
-export class DataCubeQueryFilterOperation__GreaterThanOrEqual extends DataCubeQueryFilterOperation {
+export class DataCubeQueryFilterOperation__IsNull extends DataCubeQueryFilterOperation {
   override get label() {
-    return '>=';
+    return 'is null';
   }
 
   override get description(): string {
-    return 'is greater than or equals';
+    return 'is null';
   }
 
   override get operator(): string {
-    return DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL;
+    return DataCubeQueryFilterOperator.IS_NULL;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {
-    return ofType(column.type, ['number']);
+    return ofType(column.type, ['string', 'number', 'date']);
   }
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
     return (
-      ofType(value.type, ['number']) &&
+      ofType(value.type, ['string', 'number', 'date']) &&
       value.value !== undefined &&
       !Array.isArray(value.value)
     );
   }
 
   generateDefaultValue(column: DataCubeQuerySnapshotColumn) {
-    return {
-      type: column.type,
-      value: generateDefaultFilterConditionPrimitiveTypeValue(column.type),
-    };
+    return undefined;
   }
 
   buildConditionSnapshot(expression: V1_AppliedFunction) {
@@ -75,9 +69,8 @@ export class DataCubeQueryFilterOperation__GreaterThanOrEqual extends DataCubeQu
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
-    return _function(_functionName(DataCubeFunction.GREATER_THAN_OR_EQUAL), [
+    return _function(_functionName(DataCubeFunction.IS_EMPTY), [
       _property(condition.name),
-      _value(guaranteeNonNullable(condition.value)),
     ]);
   }
 }

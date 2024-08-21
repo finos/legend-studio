@@ -29,7 +29,12 @@ import {
   DataCubeQueryFilterOperator,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
-import { _filterCondition, _value } from '../DataCubeQueryBuilderUtils.js';
+import {
+  _function,
+  _functionName,
+  _property,
+  _value,
+} from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export class DataCubeQueryFilterOperation__GreaterThan extends DataCubeQueryFilterOperation {
@@ -38,7 +43,7 @@ export class DataCubeQueryFilterOperation__GreaterThan extends DataCubeQueryFilt
   }
 
   override get description(): string {
-    return 'greater than';
+    return 'is greater than';
   }
 
   override get operator(): string {
@@ -70,7 +75,8 @@ export class DataCubeQueryFilterOperation__GreaterThan extends DataCubeQueryFilt
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
-    return _filterCondition(condition, DataCubeFunction.GREATER_THAN, [
+    return _function(_functionName(DataCubeFunction.GREATER_THAN), [
+      _property(condition.name),
       _value(guaranteeNonNullable(condition.value)),
     ]);
   }

@@ -44,7 +44,7 @@ import {
   type V1_PrimitiveValueSpecification,
   V1_Variable,
   V1_deserializeValueSpecification,
-  extractElementNameFromPath as _name,
+  extractElementNameFromPath as _functionName,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
 import {
@@ -70,6 +70,7 @@ import {
   DataCubeQueryFilterGroupOperator,
   DataCubeAggregateOperator,
   type DataCubeOperationValue,
+  DataCubeOperationAdvancedValueType,
 } from './DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 
@@ -102,6 +103,7 @@ export function _lambda(
   return lambda;
 }
 
+export { _functionName };
 export function _function(
   functionName: string,
   parameters: V1_ValueSpecification[],
@@ -176,7 +178,10 @@ export function _colSpec(
   return colSpec;
 }
 
-export function _value(value: DataCubeOperationValue) {
+export function _value(
+  value: DataCubeOperationValue,
+  variable?: V1_Variable | undefined,
+) {
   switch (value.type) {
     case PRIMITIVE_TYPE.STRING:
     case PRIMITIVE_TYPE.BOOLEAN:
@@ -195,6 +200,8 @@ export function _value(value: DataCubeOperationValue) {
       }
       return _primitiveValue(value.type, value.value);
     }
+    case DataCubeOperationAdvancedValueType.COLUMN:
+      return _property(guaranteeIsString(value.value), variable);
     default:
       throw new UnsupportedOperationError(
         `Unsupported value type '${value.type}'`,
@@ -289,14 +296,6 @@ export function _groupByAggCols(
       ];
 }
 
-export function _filterCondition(
-  condition: DataCubeQuerySnapshotFilterCondition,
-  func: string,
-  params: V1_ValueSpecification[],
-): V1_AppliedFunction {
-  return _function(_name(func), [_property(condition.name), ...params]);
-}
-
 export function _filter(
   filter: DataCubeQuerySnapshotFilter | DataCubeQuerySnapshotFilterCondition,
   filterOperations: DataCubeQueryFilterOperation[],
@@ -340,7 +339,7 @@ export function _groupByExtend(
     (col) => !_findCol(columnsUsedInGroupBy, col.name),
   );
   return missingCols.length
-    ? _function(_name(DataCubeFunction.EXTEND), [
+    ? _function(_functionName(DataCubeFunction.EXTEND), [
         _cols(
           missingCols.map((col) =>
             _colSpec(

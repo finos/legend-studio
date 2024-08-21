@@ -34,29 +34,30 @@ import {
   _functionName,
   _property,
   _value,
+  _var,
 } from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
-export class DataCubeQueryFilterOperation__GreaterThanOrEqual extends DataCubeQueryFilterOperation {
+export class DataCubeQueryFilterOperation__EndWithCaseInsensitive extends DataCubeQueryFilterOperation {
   override get label() {
-    return '>=';
+    return 'ends with (case-insensitive)';
   }
 
   override get description(): string {
-    return 'is greater than or equals';
+    return 'ends with (case-insensitive)';
   }
 
   override get operator(): string {
-    return DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL;
+    return DataCubeQueryFilterOperator.ENDS_WITH_CASE_INSENSITIVE;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {
-    return ofType(column.type, ['number']);
+    return ofType(column.type, ['string']);
   }
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
     return (
-      ofType(value.type, ['number']) &&
+      ofType(value.type, ['string']) &&
       value.value !== undefined &&
       !Array.isArray(value.value)
     );
@@ -75,9 +76,14 @@ export class DataCubeQueryFilterOperation__GreaterThanOrEqual extends DataCubeQu
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
-    return _function(_functionName(DataCubeFunction.GREATER_THAN_OR_EQUAL), [
-      _property(condition.name),
-      _value(guaranteeNonNullable(condition.value)),
+    const variable = _var();
+    return _function(_functionName(DataCubeFunction.ENDS_WITH), [
+      _function(_functionName(DataCubeFunction.TO_LOWERCASE), [
+        _property(condition.name, variable),
+      ]),
+      _function(_functionName(DataCubeFunction.TO_LOWERCASE), [
+        _value(guaranteeNonNullable(condition.value), variable),
+      ]),
     ]);
   }
 }
