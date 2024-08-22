@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.79
+
+### Patch Changes
+
+- [#3451](https://github.com/finos/legend-studio/pull/3451) [`387d68f`](https://github.com/finos/legend-studio/commit/387d68f017dcd6b08dbb3a022fd110f919e71ba7) ([@travisstebbins](https://github.com/travisstebbins)) - Fix DND property to calendar aggregation function
+
 ## 4.14.78
 
 ## 4.14.77
