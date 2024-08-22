@@ -350,7 +350,7 @@ export class DataCubeEditorFilterPanelState
         parentNode.addChild(
           node,
           baseNode instanceof DataCubeEditorFilterConditionNode
-            ? parentNode.children.indexOf(baseNode)
+            ? parentNode.children.indexOf(baseNode) + 1
             : undefined,
         );
 

@@ -42,7 +42,7 @@ import {
   FormDropdownMenuTrigger,
 } from '../../repl/Form.js';
 import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
-import { forwardRef, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import { DATE_FORMAT, PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
   formatDate,
@@ -278,7 +278,7 @@ const DataCubeEditorFilterConditionNodeDateValueEditor = observer(
 
 const DataCubeEditorFilterConditionNodeColumnSelector = observer(
   forwardRef<
-    HTMLInputElement,
+    HTMLButtonElement,
     {
       value: string;
       updateValue: (value: string) => void;
@@ -300,6 +300,7 @@ const DataCubeEditorFilterConditionNodeColumnSelector = observer(
     return (
       <>
         <FormDropdownMenuTrigger
+          ref={ref}
           className="relative mr-1 w-32"
           onClick={openColumnsDropdown}
           open={columnsDropdownPropsOpen}
@@ -333,7 +334,7 @@ const DataCubeEditorFilterConditionNodeColumnSelector = observer(
 
 const DataCubeEditorFilterConditionNodeValueEditor = observer(
   forwardRef<
-    HTMLInputElement,
+    HTMLElement,
     {
       value: DataCubeOperationValue;
       updateValue: (value: unknown) => void;
@@ -346,7 +347,7 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
       case PRIMITIVE_TYPE.STRING:
         return (
           <DataCubeEditorFilterConditionNodeTextValueEditor
-            ref={ref}
+            ref={ref as React.MutableRefObject<HTMLInputElement>}
             value={value.value as string}
             updateValue={(val) => updateValue(val)}
           />
@@ -357,7 +358,7 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
       case PRIMITIVE_TYPE.INTEGER:
         return (
           <DataCubeEditorFilterConditionNodeNumberValueEditor
-            ref={ref}
+            ref={ref as React.MutableRefObject<HTMLInputElement>}
             value={value.value as number}
             updateValue={(val) => updateValue(val)}
           />
@@ -367,7 +368,7 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
       case PRIMITIVE_TYPE.DATETIME:
         return (
           <DataCubeEditorFilterConditionNodeDateValueEditor
-            ref={ref}
+            ref={ref as React.MutableRefObject<HTMLInputElement>}
             value={value.value as string}
             updateValue={(val) => updateValue(val)}
           />
@@ -375,6 +376,7 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
       case DataCubeOperationAdvancedValueType.COLUMN:
         return (
           <DataCubeEditorFilterConditionNodeColumnSelector
+            ref={ref as React.MutableRefObject<HTMLButtonElement>}
             value={value.value as string}
             updateValue={(val) => updateValue(val)}
             dataCube={dataCube}
@@ -471,7 +473,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
     const panel = dataCube.editor.filter;
     const parentNode = node.parent;
     const nodeIdx = parentNode ? parentNode.children.indexOf(node) : undefined;
-    const ref = useRef<HTMLInputElement>(null);
+    const valueEditorRef = useRef<HTMLElement>(null);
     const [
       openColumnsDropdown,
       closeColumnsDropdown,
@@ -484,6 +486,10 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
       operatorsDropdownProps,
       operatorsDropdownPropsOpen,
     ] = useDropdownMenu();
+    const focusOnValueEditor = useCallback(
+      () => valueEditorRef.current?.focus(),
+      [],
+    );
 
     return (
       <div className="group flex h-6 items-center">
@@ -548,7 +554,11 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
         >
           {node.column.name}
         </FormDropdownMenuTrigger>
-        <FormDropdownMenu className="w-32" {...columnsDropdownProps}>
+        <FormDropdownMenu
+          className="w-32"
+          {...columnsDropdownProps}
+          onClosed={focusOnValueEditor}
+        >
           {panel.columns.map((column) => (
             <FormDropdownMenuItem
               key={column.name}
@@ -582,7 +592,11 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
         >
           {node.operation.label}
         </FormDropdownMenuTrigger>
-        <FormDropdownMenu className="w-24" {...operatorsDropdownProps}>
+        <FormDropdownMenu
+          className="w-24"
+          {...operatorsDropdownProps}
+          onClosed={focusOnValueEditor}
+        >
           {panel.operations
             .filter((op) => op.isCompatibleWithColumn(node.column))
             .map((op) => (
@@ -606,7 +620,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
         <div className="relative w-32 flex-shrink-0">
           {node.value && (
             <DataCubeEditorFilterConditionNodeValueEditor
-              ref={ref}
+              ref={valueEditorRef}
               value={node.value}
               updateValue={(val) => node.updateValue(val)}
               dataCube={dataCube}
