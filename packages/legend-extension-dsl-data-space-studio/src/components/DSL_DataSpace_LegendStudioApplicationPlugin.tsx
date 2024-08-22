@@ -34,9 +34,9 @@ import {
   type EditorExtensionStateBuilder,
   type EditorExtensionComponentRendererConfiguration,
   PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY,
-  UnsupportedElementEditorState,
 } from '@finos/legend-application-studio';
 import {
+  type ObserverContext,
   PackageableElementExplicitReference,
   stub_Mapping,
   stub_PackageableRuntime,
@@ -51,7 +51,9 @@ import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
 import {
   DataSpace,
   DataSpaceExecutionContext,
+  DataSpaceSupportEmail,
   observe_DataSpace,
+  observe_DataSpaceSupportInfo,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
 import { DataSpacePreviewState } from '../stores/DataSpacePreviewState.js';
@@ -67,8 +69,8 @@ import {
   DataSpacePreviewDialog,
 } from './DataSpacePreviewAction.js';
 
-import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import { DataSpaceEditor } from './DataSpaceEditor.js';
+import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -188,6 +190,7 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
       ): PackageableElement | undefined => {
         if (type === DATA_SPACE_ELEMENT_TYPE) {
           const dataSpace = new DataSpace(name);
+
           const dataSpaceExecutionContext = new DataSpaceExecutionContext();
           dataSpaceExecutionContext.name = 'dummyContext';
           dataSpaceExecutionContext.mapping =
@@ -225,8 +228,8 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
         element: PackageableElement,
       ): ElementEditorState | undefined => {
         if (element instanceof DataSpace) {
-          return new UnsupportedElementEditorState(editorStore, element);
-          // return new DataSpaceEditorState(editorStore, element);
+          // return new UnsupportedElementEditorState(editorStore, element);
+          return new DataSpaceEditorState(editorStore, element);
         }
         return undefined;
       },
@@ -235,8 +238,11 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
 
   getExtraElementObservers(): ElementObserver[] {
     return [
-      (element: PackageableElement): PackageableElement | undefined => {
-        if (element instanceof DataSpace) {
+      (
+        element: PackageableElement,
+        context: ObserverContext | undefined,
+      ): PackageableElement | undefined => {
+        if (context && element instanceof DataSpace) {
           return observe_DataSpace(element);
         }
         return undefined;

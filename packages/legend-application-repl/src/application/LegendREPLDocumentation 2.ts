@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@forward 'data-space-template-query-promotor';
-@forward 'editor/dataSpace/data-space-editor';
-@forward 'editor/dataSpace/data-space-execution-context';
-@forward 'editor/dataSpace/data-space-diagram';
-@forward 'editor/dataSpace/data-space-executables';
+
+export enum DocumentationKey {
+  DATA_CUBE_EXTENDED_COLUMN_LEVELS = 'data-cube.extended-column.levels',
+  DATA_CUBE_COLUMN_KINDS = 'data-cube.column.kinds',
+  DATA_CUBE_COLUMN_DISPLAY_AS_LINK = 'data-cube.column.display-as-link',
+  DATA_CUBE_COLUMN_MISSING_VALUE_FORMAT = 'data-cube.column.missing-value-format',
+}

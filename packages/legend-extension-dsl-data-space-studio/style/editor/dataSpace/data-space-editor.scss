@@ -16,24 +16,154 @@
 
 @use 'mixins' as *;
 
-.dataSpace-editor--dark {
+// .dataSpace-editor--dark {
+//   background: var(--color-dark-grey-50);
+// }
+
+.dataSpace-editor {
+  background: var(--color-dark-grey-50);
+
   &__header {
-    padding-left: 0;
     background: var(--color-dark-grey-50);
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #444;
 
-    &__configs {
-      display: flex;
-      width: 100%;
+    &__title__label {
+      color: var(--color-light-grey-50);
     }
 
-    &__name {
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-300);
-      color: var(--color-light-grey-0);
-    }
-
-    &__name::placeholder {
-      color: var(--color-dark-grey-300);
+    &__content__form {
+      color: var(--color-light-grey-50);
     }
   }
+
+  &__tab {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    margin-left: 15px;
+    background: var(--color-dark-grey-50);
+    color: var(--color-light-grey-50);
+
+    &--active {
+      background-color: #444;
+      font-weight: bold;
+    }
+  }
+
+  &__general {
+    .panel__content__lists {
+      padding-left: 2rem;
+    }
+  }
+
+  &__form-section {
+    padding: 1rem 0;
+  }
+
+  &__form-list-items {
+    margin-bottom: 1rem;
+  }
+
+  .custom-selector-input {
+    margin-top: 0.5rem;
+  }
+}
+
+.support-info__item__action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  cursor: pointer;
+  background: var(--color-dark-grey-50);
+
+  &:hover {
+    background: var(--color-dark-grey-100);
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &:hover {
+      color: var(--color-light-grey-400);
+    }
+  }
+
+  &__label {
+    flex-grow: 1;
+    padding-left: 1rem;
+    color: var(--color-light-grey-50);
+  }
+}
+
+.dataSpace-execution-context {
+  background: var(--color-dark-grey-50);
+  padding: 5px;
+
+  .custom-selector-input {
+    margin-bottom: 1rem;
+  }
+
+  .uml-element-editor__tabs {
+    height: 2.8rem;
+    z-index: 1;
+    display: flex;
+    overflow-x: overlay;
+    overflow-y: hidden;
+  }
+}
+
+.support-info-item__input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  align-items: flex-start;
+}
+
+.support-info-item__input {
+  width: calc(100% - 80px);
+  padding: 0.5rem;
+  padding-right: 80px;
+  border: 1px solid var(--color-dark-grey-100);
+  border-radius: 4px;
+  background: var(--color-dark-grey-50);
+  color: var(--color-light-grey-50);
+}
+
+.support-info-item__icons {
+  position: absolute;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.support-info-item__action {
+  background: none;
+  border: none;
+  color: var(--color-light-grey-50);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-light-grey-400);
+  }
+}
+
+.dataSpace-editor__emailSupport__validation {
+  display: flex;
+  align-items: center;
+  margin-top: 0.25rem;
+  color: var(--color-red-500);
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.dataSpace-editor__emailSupport__validation-label {
+  margin-left: 0.5rem;
 }
