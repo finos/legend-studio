@@ -278,11 +278,7 @@ const buildGraphFetchSubTree = (
     tree,
   );
   node.setIsReadOnly(isReadOnly);
-  if (
-    node.type instanceof Class &&
-    fetchConstraints &&
-    tree.constraints.length
-  ) {
+  if (node.type instanceof Class && fetchConstraints && !isReadOnly) {
     node.setConstraintsForClass(node.type, tree.constraints);
   }
   tree.subTrees.forEach((subTree) => {
@@ -320,11 +316,7 @@ const buildRootGraphFetchSubTree = (
     tree,
   );
   node.setIsReadOnly(isReadonly);
-  if (
-    node.type instanceof Class &&
-    fetchConstraints &&
-    tree.constraints.length
-  ) {
+  if (node.type instanceof Class && fetchConstraints && !isReadonly) {
     node.setConstraintsForClass(node.type, tree.constraints);
   }
   tree.subTrees.forEach((subTree) => {
@@ -517,58 +509,38 @@ export const addQueryBuilderPropertyNode = (
 
     // construct the query builder graph fetch subtree from the starting point
     if (newSubTree) {
-      const childNode = buildGraphFetchSubTree(
-        editorStore,
-        newSubTree,
-        parentNode,
-        treeData.nodes,
-        false,
-        false,
-      );
-      treeData.nodes.set(childNode.id, childNode);
-      if (parentNode) {
-        addUniqueEntry(parentNode.childrenIds, childNode.id);
-        graphFetchTree_addSubTree(
-          parentNode.tree,
-          childNode.tree,
-          dataQualityState.dataQualityQueryBuilderState.observerContext,
-        );
-      } else {
-        //this case arises when we reach upto rootNode
+      if (!parentNode) {
         let rootNode = treeData.nodes.get(rootNodeId);
-        //check if root node exists in actual tree made
         if (!rootNode) {
           rootNode = buildRootGraphFetchSubTree(
             editorStore,
             treeData.tree,
             undefined,
             treeData.nodes,
-            false,
+            true,
             false,
           );
           addUniqueEntry(treeData.rootIds, rootNode.id);
           treeData.nodes.set(rootNode.id, rootNode);
         }
-        addUniqueEntry(rootNode.childrenIds, childNode.id);
-        graphFetchTree_addSubTree(
-          treeData.tree,
-          childNode.tree,
-          dataQualityState.dataQualityQueryBuilderState.observerContext,
-        );
+        parentNode = rootNode;
       }
-    }
 
-    const nodeToShowConstraintsFor = treeData.nodes.get(
-      `${rootNodeId}.${node.id}`,
-    );
-    //fetching constraints for class node and making sure constraints is populated for the first time
-    if (
-      nodeToShowConstraintsFor &&
-      node.type instanceof Class &&
-      nodeToShowConstraintsFor.constraints.length === 0
-    ) {
-      nodeToShowConstraintsFor.setConstraintsForClass(node.type, []);
-      treeData.nodes.set(nodeToShowConstraintsFor.id, nodeToShowConstraintsFor);
+      const childNode = buildGraphFetchSubTree(
+        editorStore,
+        newSubTree,
+        parentNode,
+        treeData.nodes,
+        true,
+        false,
+      );
+      treeData.nodes.set(childNode.id, childNode);
+      addUniqueEntry(parentNode.childrenIds, childNode.id);
+      graphFetchTree_addSubTree(
+        parentNode.tree,
+        childNode.tree,
+        dataQualityState.dataQualityQueryBuilderState.observerContext,
+      );
     }
   } else {
     //this case arises when root node is dragged
@@ -580,17 +552,10 @@ export const addQueryBuilderPropertyNode = (
         treeData.tree,
         undefined,
         treeData.nodes,
-        false,
+        true,
         false,
       );
       addUniqueEntry(treeData.rootIds, rootNodeFromTree.id);
-    }
-    //making sure root node is class type and constraints is fetch for first time
-    if (
-      node.type instanceof Class &&
-      rootNodeFromTree.constraints.length === 0
-    ) {
-      rootNodeFromTree.setConstraintsForClass(node.type, []);
     }
     treeData.nodes.set(rootNodeFromTree.id, rootNodeFromTree);
   }
