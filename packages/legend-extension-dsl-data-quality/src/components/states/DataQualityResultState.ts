@@ -31,7 +31,6 @@ import {
 import {
   type RawExecutionPlan,
   type ExecutionResult,
-  type ExecutionResultWithMetadata,
   GRAPH_MANAGER_EVENT,
 } from '@finos/legend-graph';
 import { getDataQualityPureGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataQuality_PureGraphManagerExtension.js';
@@ -120,8 +119,7 @@ export class DataQualityResultState {
       ).execute(model, packagePath, this.previewLimit);
 
       this.setQueryRunPromise(promise);
-      const result = ((yield promise) as ExecutionResultWithMetadata)
-        .executionResult;
+      const result = (yield promise) as ExecutionResult;
 
       if (this.queryRunPromise === promise) {
         this.setExecutionResult(result);
