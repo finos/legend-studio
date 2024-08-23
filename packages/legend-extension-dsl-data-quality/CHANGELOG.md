@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 1.0.24
+
+### Patch Changes
+
+- [#3457](https://github.com/finos/legend-studio/pull/3457) [`3a5c562`](https://github.com/finos/legend-studio/commit/3a5c562f8279875f9034c8d6db9b9c7d3b940929) ([@viju4076](https://github.com/viju4076)) - Enhancement to show constraints for each class present in hierarchy. Bug fix in DQ Validation element, the result was not getting showed after doing trial runs
+
 ## 1.0.23
 
 ## 1.0.22
