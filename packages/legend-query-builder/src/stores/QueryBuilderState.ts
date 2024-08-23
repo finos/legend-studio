@@ -108,6 +108,7 @@ import {
 } from './QueryBuilderExecutionContextState.js';
 import type { QueryBuilderConfig } from '../graph-manager/QueryBuilderConfig.js';
 import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
+import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QueryBuilderChangeHistoryState } from './QueryBuilderChangeHistoryState.js';
 import { type QueryBuilderWorkflowState } from './query-workflow/QueryBuilderWorkFlowState.js';
 
@@ -150,12 +151,12 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   textEditorState: QueryBuilderTextEditorState;
   unsupportedQueryState: QueryBuilderUnsupportedQueryState;
   changeHistoryState: QueryBuilderChangeHistoryState;
+  isQueryChatOpened: boolean;
   showFunctionsExplorerPanel = false;
   showParametersPanel = false;
   isEditingWatermark = false;
   isCheckingEntitlments = false;
   isCalendarEnabled = false;
-  isQueryChatOpened = false;
   isLocalModeEnabled = false;
   INTERNAL__enableInitializingDefaultSimpleExpressionValue = false;
 
@@ -265,6 +266,13 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
     this.workflowState = workflowState;
     this.sourceInfo = sourceInfo;
+    //extra check for only QA currently.
+    this.isQueryChatOpened =
+      (!this.config?.TEMPORARY__disableQueryBuilderChat &&
+        this.applicationStore.settingService.getBooleanValue(
+          QUERY_BUILDER_SETTING_KEY.SHOW_QUERY_CHAT_PANEL,
+        )) ??
+      false;
   }
 
   get isMappingReadOnly(): boolean {
@@ -365,6 +373,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setIsQueryChatOpened(val: boolean): void {
     this.isQueryChatOpened = val;
+    this.applicationStore.settingService.persistValue(
+      QUERY_BUILDER_SETTING_KEY.SHOW_QUERY_CHAT_PANEL,
+      val,
+    );
   }
 
   setIsLocalModeEnabled(val: boolean): void {
