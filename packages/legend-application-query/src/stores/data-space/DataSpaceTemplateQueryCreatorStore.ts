@@ -15,24 +15,24 @@
  */
 
 import {
+  type Query,
+  type QuerySearchSpecification,
+  type RawLambda,
   QueryProjectCoordinates,
   extractElementNameFromPath,
-  type Query,
-  type RawLambda,
-  type QuerySearchSpecification,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
   StoreProjectData,
 } from '@finos/legend-server-depot';
-import { filterByType, guaranteeNonNullable, uuid } from '@finos/legend-shared';
+import { IllegalStateError, uuid } from '@finos/legend-shared';
 import {
   type QueryBuilderState,
   QueryBuilderDataBrowserWorkflow,
 } from '@finos/legend-query-builder';
 import {
-  parseGACoordinates,
   type ProjectGAVCoordinates,
+  parseGACoordinates,
 } from '@finos/legend-storage';
 import {
   QueryBuilderActionConfig_QueryApplication,
@@ -42,15 +42,17 @@ import {
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 import {
   DSL_DataSpace_getGraphManagerExtension,
-  DataSpaceExecutableTemplate,
   getDataSpace,
   retrieveAnalyticsResultCache,
+  getExecutionContextFromDataspaceExecutable,
+  getQueryFromDataspaceExecutable,
+  DataSpacePackageableElementExecutable,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
+  type DataSpaceInfo,
   DataSpaceQueryBuilderState,
   createQueryClassTaggedValue,
   createQueryDataSpaceTaggedValue,
-  type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
 import { createDataSpaceDepoRepo } from './DataSpaceQueryBuilderHelper.js';
 
@@ -93,21 +95,40 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
       this.dataSpacePath,
       this.graphManagerState.graph,
     );
-    const dataSpaceExecutableTemplate = guaranteeNonNullable(
-      dataSpace.executables
-        ?.filter(filterByType(DataSpaceExecutableTemplate))
-        .find((executable) => executable.id === this.templateQueryId),
-      `Can't find template query with id '${this.templateQueryId}'`,
+    let template = dataSpace.executables?.find(
+      (executable) => executable.id === this.templateQueryId,
     );
-    const executionContext = guaranteeNonNullable(
-      dataSpaceExecutableTemplate.executionContextKey
-        ? dataSpace.executionContexts.filter(
-            (ec) => ec.name === dataSpaceExecutableTemplate.executionContextKey,
-          )[0]
-        : dataSpace.defaultExecutionContext,
-      `Can't find execution context '${dataSpaceExecutableTemplate.executionContextKey}'`,
+    if (!template) {
+      template = dataSpace.executables?.find(
+        (executable) =>
+          executable instanceof DataSpacePackageableElementExecutable &&
+          executable.executable.value.path === this.templateQueryId,
+      );
+    }
+    if (!template) {
+      throw new IllegalStateError(
+        `Can't find template query with id '${this.templateQueryId}'`,
+      );
+    }
+    const executionContext = getExecutionContextFromDataspaceExecutable(
+      dataSpace,
+      template,
     );
-    this.templateQueryTitle = dataSpaceExecutableTemplate.title;
+    if (!executionContext) {
+      throw new IllegalStateError(
+        `Can't find a correpsonding execution context`,
+      );
+    }
+    const query = getQueryFromDataspaceExecutable(
+      template,
+      this.graphManagerState,
+    );
+    if (!query) {
+      throw new IllegalStateError(
+        `Can't fetch query from dataspace executable`,
+      );
+    }
+    this.templateQueryTitle = template.title;
     let dataSpaceAnalysisResult;
     try {
       const project = StoreProjectData.serialization.fromJson(
@@ -160,7 +181,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     );
     queryBuilderState.setExecutionContext(executionContext);
     queryBuilderState.propagateExecutionContextChange(executionContext);
-    queryBuilderState.initializeWithQuery(dataSpaceExecutableTemplate.query);
+    queryBuilderState.initializeWithQuery(query);
     return queryBuilderState;
   }
 
