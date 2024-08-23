@@ -40,8 +40,12 @@ export class DataCubeQueryFilterOperation__IsNotNull extends DataCubeQueryFilter
     return 'is not null';
   }
 
+  override get textLabel() {
+    return '!= NULL';
+  }
+
   override get description(): string {
-    return 'is not null';
+    return 'is not NULL';
   }
 
   override get operator(): string {

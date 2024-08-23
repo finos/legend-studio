@@ -44,6 +44,10 @@ export class DataCubeQueryFilterOperation__NotEqualColumn extends DataCubeQueryF
     return '!= value in column';
   }
 
+  override get textLabel() {
+    return '!= value in column';
+  }
+
   override get description(): string {
     return 'does not equal value in column';
   }

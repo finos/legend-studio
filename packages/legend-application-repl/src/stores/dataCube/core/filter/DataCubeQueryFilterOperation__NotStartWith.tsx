@@ -43,12 +43,16 @@ export class DataCubeQueryFilterOperation__NotStartWith extends DataCubeQueryFil
     return 'doest not start with';
   }
 
+  override get textLabel() {
+    return '!startsWith';
+  }
+
   override get description(): string {
     return 'does not start with';
   }
 
   override get operator(): string {
-    return DataCubeQueryFilterOperator.DOES_NOT_START_WITH;
+    return DataCubeQueryFilterOperator.NOT_START_WITH;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

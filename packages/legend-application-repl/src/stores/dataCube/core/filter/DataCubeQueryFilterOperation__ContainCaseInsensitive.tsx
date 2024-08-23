@@ -43,12 +43,16 @@ export class DataCubeQueryFilterOperation__ContainCaseInsensitive extends DataCu
     return 'contains (case-insensitive)';
   }
 
+  override get textLabel() {
+    return 'contains (case-insensitive)';
+  }
+
   override get description(): string {
     return 'contains (case-insensitive)';
   }
 
   override get operator(): string {
-    return DataCubeQueryFilterOperator.CONTAINS_CASE_INSENSITIVE;
+    return DataCubeQueryFilterOperator.CONTAIN_CASE_INSENSITIVE;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

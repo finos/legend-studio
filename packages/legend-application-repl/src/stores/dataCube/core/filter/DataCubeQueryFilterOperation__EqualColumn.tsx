@@ -43,6 +43,10 @@ export class DataCubeQueryFilterOperation__EqualColumn extends DataCubeQueryFilt
     return '= value in column';
   }
 
+  override get textLabel() {
+    return '= value in column';
+  }
+
   override get description(): string {
     return 'equals to value in column';
   }

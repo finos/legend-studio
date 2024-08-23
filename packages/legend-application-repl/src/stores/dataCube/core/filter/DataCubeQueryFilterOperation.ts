@@ -81,8 +81,10 @@ export function ofType(
 }
 
 // --------------------------------- CONTRACT ---------------------------------
+
 export abstract class DataCubeQueryFilterOperation {
   abstract get label(): React.ReactNode;
+  abstract get textLabel(): string;
   abstract get description(): string;
   abstract get operator(): string;
 

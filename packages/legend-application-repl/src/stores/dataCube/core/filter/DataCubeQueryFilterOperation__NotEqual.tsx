@@ -43,6 +43,10 @@ export class DataCubeQueryFilterOperation__NotEqual extends DataCubeQueryFilterO
     return '!=';
   }
 
+  override get textLabel() {
+    return '!=';
+  }
+
   override get description(): string {
     return 'does not equal';
   }

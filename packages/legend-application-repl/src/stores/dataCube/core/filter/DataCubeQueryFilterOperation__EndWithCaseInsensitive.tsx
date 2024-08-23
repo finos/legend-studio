@@ -43,12 +43,16 @@ export class DataCubeQueryFilterOperation__EndWithCaseInsensitive extends DataCu
     return 'ends with (case-insensitive)';
   }
 
+  override get textLabel() {
+    return 'endsWith (case-insensitive)';
+  }
+
   override get description(): string {
     return 'ends with (case-insensitive)';
   }
 
   override get operator(): string {
-    return DataCubeQueryFilterOperator.ENDS_WITH_CASE_INSENSITIVE;
+    return DataCubeQueryFilterOperator.END_WITH_CASE_INSENSITIVE;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

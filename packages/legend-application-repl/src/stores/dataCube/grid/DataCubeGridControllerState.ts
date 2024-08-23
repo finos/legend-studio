@@ -26,6 +26,7 @@ import {
   type DataCubeQuerySortOperator,
   type DataCubeColumnPinPlacement,
   DataCubeColumnKind,
+  DataCubeQueryFilterGroupOperator,
 } from '../core/DataCubeQueryEngine.js';
 import type {
   GetContextMenuItemsParams,
@@ -35,6 +36,14 @@ import type {
 import type { DataCubeState } from '../DataCubeState.js';
 import { generateMenuBuilder } from './DataCubeGridMenuBuilder.js';
 import { _groupByAggCols } from './DataCubeGridQuerySnapshotBuilder.js';
+import {
+  buildFilterEditorTree,
+  buildFilterQuerySnapshot,
+  DataCubeFilterEditorConditionGroupTreeNode,
+  type DataCubeFilterEditorConditionTreeNode,
+  type DataCubeFilterEditorTree,
+  type DataCubeFilterEditorTreeNode,
+} from '../core/filter/DataCubeQueryFilterEditorState.js';
 
 /**
  * This state is responsible for capturing edition to the data cube query
@@ -47,6 +56,10 @@ import { _groupByAggCols } from './DataCubeGridQuerySnapshotBuilder.js';
  */
 export class DataCubeGridControllerState extends DataCubeQuerySnapshotController {
   configuration = new DataCubeConfiguration();
+
+  filterTree: DataCubeFilterEditorTree = {
+    nodes: new Map<string, DataCubeFilterEditorTreeNode>(),
+  };
 
   selectableColumns: DataCubeQuerySnapshotColumn[] = [];
   selectColumns: DataCubeQuerySnapshotColumn[] = [];
@@ -67,6 +80,60 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
   getColumnConfiguration(colName: string | undefined) {
     return this.configuration.columns.find((col) => col.name === colName);
+  }
+
+  /**
+   * Add a new filter condition to the root of the filter tree.
+   * 1. If the root is empty, add a new AND group with the condition as the root
+   * 2. If the root is an AND group, add the condition to the root
+   * 3. If the root is an OR group, create a new AND group with the condition and
+   *    wrapping the current root and set that as the new root
+   */
+  addNewFilterCondition(condition: DataCubeFilterEditorConditionTreeNode) {
+    if (!this.filterTree.root) {
+      const root = new DataCubeFilterEditorConditionGroupTreeNode(
+        undefined,
+        DataCubeQueryFilterGroupOperator.AND,
+        undefined,
+      );
+      this.filterTree.nodes.set(root.uuid, root);
+      this.filterTree.root = root;
+      root.addChild(condition);
+      this.filterTree.nodes.set(condition.uuid, condition);
+    } else if (
+      this.filterTree.root.operation === DataCubeQueryFilterGroupOperator.AND
+    ) {
+      this.filterTree.root.addChild(condition);
+      this.filterTree.nodes.set(condition.uuid, condition);
+    } else {
+      // Normally, for this case, we just wrap the current root with a new AND group
+      // but if the current (OR group) root has only 1 condition (this is only allowed
+      // if the group is root), we can just simply change the group operator to AND
+      const currentRoot = this.filterTree.root;
+      if (currentRoot.children.length === 1) {
+        currentRoot.operation = DataCubeQueryFilterGroupOperator.AND;
+        currentRoot.addChild(condition);
+        this.filterTree.nodes.set(condition.uuid, condition);
+      } else {
+        const newRoot = new DataCubeFilterEditorConditionGroupTreeNode(
+          undefined,
+          DataCubeQueryFilterGroupOperator.AND,
+          undefined,
+        );
+        this.filterTree.nodes.set(newRoot.uuid, newRoot);
+        this.filterTree.root = newRoot;
+        newRoot.addChild(currentRoot);
+        newRoot.addChild(condition);
+        this.filterTree.nodes.set(condition.uuid, condition);
+      }
+    }
+    this.applyChanges();
+  }
+
+  clearFilters() {
+    this.filterTree.root = undefined;
+    this.filterTree.nodes = new Map<string, DataCubeFilterEditorTreeNode>();
+    this.applyChanges();
   }
 
   pinColumn(
@@ -189,6 +256,9 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const snapshot = baseSnapshot.clone();
 
+    snapshot.data.filter = this.filterTree.root
+      ? buildFilterQuerySnapshot(this.filterTree.root)
+      : undefined;
     snapshot.data.selectColumns = this.selectColumns;
     snapshot.data.sortColumns = this.sortColumns;
     snapshot.data.configuration = DataCubeConfiguration.serialization.toJson(
@@ -220,6 +290,21 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     this.configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
     );
+
+    this.filterTree.nodes = new Map<string, DataCubeFilterEditorTreeNode>();
+    this.filterTree.root = snapshot.data.filter
+      ? buildFilterEditorTree(
+          snapshot.data.filter,
+          undefined,
+          this.filterTree.nodes,
+          (operator) =>
+            guaranteeNonNullable(
+              this.dataCube.engine.filterOperations.find(
+                (op) => op.operator === operator,
+              ),
+            ),
+        )
+      : undefined;
 
     this.selectableColumns = newSnapshot.stageCols('select');
     this.selectColumns = newSnapshot.data.selectColumns;

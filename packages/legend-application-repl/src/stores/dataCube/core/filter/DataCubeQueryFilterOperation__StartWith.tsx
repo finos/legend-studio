@@ -42,12 +42,16 @@ export class DataCubeQueryFilterOperation__StartWith extends DataCubeQueryFilter
     return 'starts with';
   }
 
+  override get textLabel() {
+    return 'startsWith';
+  }
+
   override get description(): string {
     return 'starts with';
   }
 
   override get operator(): string {
-    return DataCubeQueryFilterOperator.STARTS_WITH;
+    return DataCubeQueryFilterOperator.START_WITH;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

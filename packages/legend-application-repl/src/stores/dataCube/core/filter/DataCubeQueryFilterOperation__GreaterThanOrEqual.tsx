@@ -42,6 +42,10 @@ export class DataCubeQueryFilterOperation__GreaterThanOrEqual extends DataCubeQu
     return '>=';
   }
 
+  override get textLabel() {
+    return '>=';
+  }
+
   override get description(): string {
     return 'is greater than or equals';
   }

@@ -42,12 +42,16 @@ export class DataCubeQueryFilterOperation__Contain extends DataCubeQueryFilterOp
     return 'contains';
   }
 
+  override get textLabel() {
+    return 'contains';
+  }
+
   override get description(): string {
     return 'contains';
   }
 
   override get operator(): string {
-    return DataCubeQueryFilterOperator.CONTAINS;
+    return DataCubeQueryFilterOperator.CONTAIN;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

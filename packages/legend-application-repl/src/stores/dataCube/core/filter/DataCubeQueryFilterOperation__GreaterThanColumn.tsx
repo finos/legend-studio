@@ -43,6 +43,10 @@ export class DataCubeQueryFilterOperation__GreaterThanColumn extends DataCubeQue
     return '> value in column';
   }
 
+  override get textLabel() {
+    return '> value in column';
+  }
+
   override get description(): string {
     return 'is greater than value in column';
   }

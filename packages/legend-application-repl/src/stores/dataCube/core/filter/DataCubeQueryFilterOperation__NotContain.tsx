@@ -43,12 +43,16 @@ export class DataCubeQueryFilterOperation__NotContain extends DataCubeQueryFilte
     return 'does not contain';
   }
 
+  override get textLabel() {
+    return '!contains';
+  }
+
   override get description(): string {
     return 'does not contain';
   }
 
   override get operator(): string {
-    return DataCubeQueryFilterOperator.DOES_NOT_CONTAIN;
+    return DataCubeQueryFilterOperator.NOT_CONTAIN;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

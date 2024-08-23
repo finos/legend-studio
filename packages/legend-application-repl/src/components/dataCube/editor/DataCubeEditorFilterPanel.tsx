@@ -32,10 +32,10 @@ import {
   type DataCubeOperationValue,
 } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 import {
-  DataCubeEditorFilterConditionGroupNode,
-  DataCubeEditorFilterConditionNode,
-  type DataCubeEditorFilterNode,
-} from '../../../stores/dataCube/editor/DataCubeEditorFilterPanelState.js';
+  DataCubeFilterEditorConditionGroupTreeNode,
+  DataCubeFilterEditorConditionTreeNode,
+  type DataCubeFilterEditorTreeNode,
+} from '../../../stores/dataCube/core/filter/DataCubeQueryFilterEditorState.js';
 import {
   FormDropdownMenu,
   FormDropdownMenuItem,
@@ -405,7 +405,7 @@ function DataCubeEditorFilterNotLabel() {
 const DataCubeEditorFilterConditionNodeController = observer(
   (props: {
     className?: string | undefined;
-    node: DataCubeEditorFilterNode;
+    node: DataCubeFilterEditorTreeNode;
     dataCube: DataCubeState;
   }) => {
     const { className, node, dataCube } = props;
@@ -465,7 +465,7 @@ const DataCubeEditorFilterConditionNodeController = observer(
 
 const DataCubeEditorFilterConditionNodeDisplay = observer(
   (props: {
-    node: DataCubeEditorFilterConditionNode;
+    node: DataCubeFilterEditorConditionTreeNode;
     level: number;
     dataCube: DataCubeState;
   }) => {
@@ -567,7 +567,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
                   const newOp = node.operation.isCompatibleWithColumn(column)
                     ? node.operation
                     : getNullableFirstEntry(
-                        panel.operations.filter((op) =>
+                        panel.dataCube.engine.filterOperations.filter((op) =>
                           op.isCompatibleWithColumn(column),
                         ),
                       );
@@ -597,7 +597,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
           {...operatorsDropdownProps}
           onClosed={focusOnValueEditor}
         >
-          {panel.operations
+          {panel.dataCube.engine.filterOperations
             .filter((op) => op.isCompatibleWithColumn(node.column))
             .map((op) => (
               <FormDropdownMenuItem
@@ -634,7 +634,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
 
 const DataCubeEditorFilterGroupNodeDisplay = observer(
   (props: {
-    node: DataCubeEditorFilterConditionGroupNode;
+    node: DataCubeFilterEditorConditionGroupTreeNode;
     level: number;
     dataCube: DataCubeState;
   }) => {
@@ -752,7 +752,7 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
 // See https://github.com/lukasbach/react-complex-tree
 const DataCubeEditorFilterGroupDisplay = observer(
   (props: {
-    node: DataCubeEditorFilterConditionGroupNode;
+    node: DataCubeFilterEditorConditionGroupTreeNode;
     level: number;
     dataCube: DataCubeState;
   }) => {
@@ -789,7 +789,7 @@ const DataCubeEditorFilterGroupDisplay = observer(
             }}
           />
           {node.children.map((childNode) => {
-            if (childNode instanceof DataCubeEditorFilterConditionNode) {
+            if (childNode instanceof DataCubeFilterEditorConditionTreeNode) {
               return (
                 <DataCubeEditorFilterConditionNodeDisplay
                   key={childNode.uuid}
@@ -799,7 +799,7 @@ const DataCubeEditorFilterGroupDisplay = observer(
                 />
               );
             } else if (
-              childNode instanceof DataCubeEditorFilterConditionGroupNode
+              childNode instanceof DataCubeFilterEditorConditionGroupTreeNode
             ) {
               return (
                 <DataCubeEditorFilterGroupDisplay

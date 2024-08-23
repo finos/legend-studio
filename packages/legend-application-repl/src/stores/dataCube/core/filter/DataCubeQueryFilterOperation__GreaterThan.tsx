@@ -42,6 +42,10 @@ export class DataCubeQueryFilterOperation__GreaterThan extends DataCubeQueryFilt
     return '>';
   }
 
+  override get textLabel() {
+    return '>';
+  }
+
   override get description(): string {
     return 'is greater than';
   }

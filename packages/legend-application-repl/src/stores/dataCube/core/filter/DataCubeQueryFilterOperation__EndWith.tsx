@@ -42,12 +42,16 @@ export class DataCubeQueryFilterOperation__EndWith extends DataCubeQueryFilterOp
     return 'ends with';
   }
 
+  override get textLabel() {
+    return '!endsWith';
+  }
+
   override get description(): string {
     return 'ends with';
   }
 
   override get operator(): string {
-    return DataCubeQueryFilterOperator.ENDS_WITH;
+    return DataCubeQueryFilterOperator.END_WITH;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

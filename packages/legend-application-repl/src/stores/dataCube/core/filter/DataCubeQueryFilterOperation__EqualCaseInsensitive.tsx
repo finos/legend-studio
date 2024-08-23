@@ -43,6 +43,10 @@ export class DataCubeQueryFilterOperation__EqualCaseInsensitive extends DataCube
     return '= (case-insensitive)';
   }
 
+  override get textLabel() {
+    return '= (case-insensitive)';
+  }
+
   override get description(): string {
     return 'equals (case-insensitive)';
   }

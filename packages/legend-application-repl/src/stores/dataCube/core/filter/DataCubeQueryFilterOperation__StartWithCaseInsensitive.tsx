@@ -43,12 +43,16 @@ export class DataCubeQueryFilterOperation__StartWithCaseInsensitive extends Data
     return 'starts with (case-insensitive)';
   }
 
+  override get textLabel() {
+    return 'startsWith (case-insensitive)';
+  }
+
   override get description(): string {
     return 'starts with (case-insensitive)';
   }
 
   override get operator(): string {
-    return DataCubeQueryFilterOperator.STARTS_WITH_CASE_INSENSITIVE;
+    return DataCubeQueryFilterOperator.START_WITH_CASE_INSENSITIVE;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

@@ -42,6 +42,10 @@ export class DataCubeQueryFilterOperation__LessThanOrEqual extends DataCubeQuery
     return '<=';
   }
 
+  override get textLabel() {
+    return '<=';
+  }
+
   override get description(): string {
     return 'is less than or equals';
   }

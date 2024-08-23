@@ -216,15 +216,15 @@ export enum DataCubeQueryFilterOperator {
   NOT_EQUAL_CASE_INSENSITIVE = '!= (case-insensitive)', // DONE
   IN_CASE_INSENSITIVE = 'in (case-insensitive)',
   NOT_IN_CASE_INSENSITIVE = 'not in (case-insensitive)',
-  CONTAINS = 'contains', // DONE
-  CONTAINS_CASE_INSENSITIVE = 'contains (case-insensitive)', // DONE
-  DOES_NOT_CONTAIN = 'does not contain', // DONE
-  STARTS_WITH = 'starts with', // DONE
-  STARTS_WITH_CASE_INSENSITIVE = 'starts with (case-insensitive)', // DONE
-  DOES_NOT_START_WITH = 'does not start with', // DONE
-  ENDS_WITH = 'ends with', // DONE
-  ENDS_WITH_CASE_INSENSITIVE = 'ends with (case-insensitive)', // DONE
-  DOES_NOT_END_WITH = 'does not end with', // DONE
+  CONTAIN = 'contains', // DONE
+  CONTAIN_CASE_INSENSITIVE = 'contains (case-insensitive)', // DONE
+  NOT_CONTAIN = 'does not contain', // DONE
+  START_WITH = 'starts with', // DONE
+  START_WITH_CASE_INSENSITIVE = 'starts with (case-insensitive)', // DONE
+  NOT_START_WITH = 'does not start with', // DONE
+  END_WITH = 'ends with', // DONE
+  END_WITH_CASE_INSENSITIVE = 'ends with (case-insensitive)', // DONE
+  NOT_END_WITH = 'does not end with', // DONE
   // column
   LESS_THAN_COLUMN = '< value in column', // DONE
   LESS_THAN_OR_EQUAL_COLUMN = '<= value in column', // DONE

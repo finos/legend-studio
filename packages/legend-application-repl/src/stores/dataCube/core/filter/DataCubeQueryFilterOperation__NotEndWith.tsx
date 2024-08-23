@@ -43,12 +43,16 @@ export class DataCubeQueryFilterOperation__NotEndWith extends DataCubeQueryFilte
     return 'does not end with';
   }
 
+  override get textLabel() {
+    return '!endsWith';
+  }
+
   override get description(): string {
     return 'does not end with';
   }
 
   override get operator(): string {
-    return DataCubeQueryFilterOperator.DOES_NOT_END_WITH;
+    return DataCubeQueryFilterOperator.NOT_END_WITH;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

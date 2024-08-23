@@ -43,6 +43,10 @@ export class DataCubeQueryFilterOperation__LessThanOrEqualColumn extends DataCub
     return '<= value in column';
   }
 
+  override get textLabel() {
+    return '<= value in column';
+  }
+
   override get description(): string {
     return 'is less than or equals value in column';
   }

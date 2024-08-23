@@ -29,7 +29,7 @@ import {
   type DataCubeInfrastructureInfo,
   type CompletionItem,
 } from '../../server/REPLEngine.js';
-import { guaranteeType } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
 import type { REPLStore } from '../REPLStore.js';
 import { action, makeObservable, observable } from 'mobx';
@@ -60,6 +60,7 @@ import { DataCubeQueryFilterOperation__EndWithCaseInsensitive } from './core/fil
 import { DataCubeQueryFilterOperation__NotEndWith } from './core/filter/DataCubeQueryFilterOperation__NotEndWith.js';
 import { DataCubeQueryFilterOperation__IsNull } from './core/filter/DataCubeQueryFilterOperation__IsNull.js';
 import { DataCubeQueryFilterOperation__IsNotNull } from './core/filter/DataCubeQueryFilterOperation__IsNotNull.js';
+import type { DataCubeQueryFilterOperation } from './core/filter/DataCubeQueryFilterOperation.js';
 
 export const DEFAULT_ENABLE_DEBUG_MODE = false;
 export const DEFAULT_GRID_CLIENT_ROW_BUFFER = 50;
@@ -127,6 +128,13 @@ export class DataCubeEngine {
     this.repl = repl;
     this.application = repl.application;
     this.client = repl.client;
+  }
+
+  getFilterOperation(operator: string): DataCubeQueryFilterOperation {
+    return guaranteeNonNullable(
+      this.filterOperations.find((op) => op.operator === operator),
+      `Can't find filter operation '${operator}'`,
+    );
   }
 
   setEnableDebugMode(enableDebugMode: boolean) {

@@ -42,6 +42,10 @@ export class DataCubeQueryFilterOperation__Equal extends DataCubeQueryFilterOper
     return '=';
   }
 
+  override get textLabel() {
+    return '=';
+  }
+
   override get description(): string {
     return 'equals';
   }
