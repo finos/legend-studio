@@ -14,5 +14,6 @@
  * limitations under the License.
  */
 
-export * from './components/DiagramRenderer.js';
+export * from './components/Diagram/DiagramEditor.js';
 export * from './graph-manager/index.js';
+export * from './stores/DiagramEditorState.js';

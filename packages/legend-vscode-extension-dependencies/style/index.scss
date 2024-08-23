@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-.diagram__renderer {
+@import url('@finos/legend-extension-dsl-diagram/lib/index.css');
+@import url('@finos/legend-art/lib/normalize.css');
+@import url('@finos/legend-art/lib/index.css');
+
+.diagram-editor__error {
   height: 100%;
-  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  &__error {
-    font-size: 1.5rem;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &__details {
-      border-bottom: 1px dotted white;
-      cursor: help;
-      margin-left: 5px;
-    }
+  &__details {
+    border-bottom: 1px dotted white;
+    cursor: help;
+    margin-left: 5px;
   }
 }
