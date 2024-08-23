@@ -18,10 +18,14 @@ import type { SettingConfigurationData } from '@finos/legend-application';
 
 export enum QUERY_BUILDER_SETTING_KEY {
   SHOW_POST_FILTER_PANEL = 'query-builder.showPostFilterPanel',
+  SHOW_QUERY_CHAT_PANEL = 'query-builder.showQueryChatPanel',
 }
 
 export const QUERY_BUILDER_SETTING_CONFIG: SettingConfigurationData = {
   [QUERY_BUILDER_SETTING_KEY.SHOW_POST_FILTER_PANEL]: {
+    defaultValue: false,
+  },
+  [QUERY_BUILDER_SETTING_KEY.SHOW_QUERY_CHAT_PANEL]: {
     defaultValue: false,
   },
 };

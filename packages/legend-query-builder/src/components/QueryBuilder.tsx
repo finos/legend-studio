@@ -502,8 +502,6 @@ export const QueryBuilder = observer(
     );
     const showDiff = (): void =>
       queryBuilderState.changeDetectionState.showDiffViewPanel();
-    const openQueryChat = (): void =>
-      queryBuilderState.setIsQueryChatOpened(true);
 
     useEffect(() => {
       // this condition is for passing all exisitng tests because when we initialize a queryBuilderState for a test,
@@ -880,17 +878,6 @@ export const QueryBuilder = observer(
                           </MenuContentItemIcon>
                           <MenuContentItemLabel>
                             Show Query Diff
-                          </MenuContentItemLabel>
-                        </MenuContentItem>
-                      )}
-                      {!queryBuilderState.config
-                        ?.TEMPORARY__disableQueryBuilderChat && (
-                        <MenuContentItem onClick={openQueryChat}>
-                          <MenuContentItemIcon>
-                            <ChatIcon />
-                          </MenuContentItemIcon>
-                          <MenuContentItemLabel>
-                            Open Query Chat
                           </MenuContentItemLabel>
                         </MenuContentItem>
                       )}
