@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useDrop } from 'react-dnd';
 import {
@@ -93,6 +93,7 @@ import {
   getClassPropertyIcon,
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
+import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 
 const getBindingFormatter = (props: {
   darkMode?: boolean;
@@ -785,6 +786,18 @@ const QueryBuilderGraphFetchTreePanel = observer(
       }),
       [handleDrop],
     );
+
+    useEffect(() => {
+      QueryBuilderTelemetryHelper.logEvent_RenderGraphFetchPanel(
+        graphFetchTreeState.queryBuilderState.applicationStore.telemetryService,
+        {
+          serializationType: serializationState.getLabel(),
+        },
+      );
+    }, [
+      graphFetchTreeState.queryBuilderState.applicationStore,
+      serializationState,
+    ]);
 
     return (
       <div

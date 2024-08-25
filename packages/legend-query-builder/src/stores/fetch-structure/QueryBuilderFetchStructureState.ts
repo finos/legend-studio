@@ -28,6 +28,7 @@ import {
   FETCH_STRUCTURE_IMPLEMENTATION,
   type QueryBuilderFetchStructureImplementationState,
 } from './QueryBuilderFetchStructureImplementationState.js';
+import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 
 export const onChangeFetchStructureImplementation =
   (
@@ -36,6 +37,9 @@ export const onChangeFetchStructureImplementation =
   ): (() => void) =>
   (): void => {
     if (fetchStructureState.implementation.type !== implementationType) {
+      QueryBuilderTelemetryHelper.logEvent_ToggleFetchStructure(
+        fetchStructureState.queryBuilderState.applicationStore.telemetryService,
+      );
       fetchStructureState.implementation.checkBeforeChangingImplementation(
         () => {
           fetchStructureState.changeImplementation(implementationType);

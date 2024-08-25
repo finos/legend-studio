@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TooltipPlacement,
@@ -60,6 +60,7 @@ import {
   PURE_DOC_TAG,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
+import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 
 const isDependencyTreeNode = (
   node: QueryBuilderFunctionsExplorerTreeNodeData,
@@ -423,9 +424,18 @@ export const QueryBuilderFunctionsExplorerPanel = observer(
       }
       queryFunctionsState.refreshTree();
     };
-    const toggleShowDependencyFuncions = (): void => {
+    const toggleShowDependencyFunctions = (): void => {
+      QueryBuilderTelemetryHelper.logEvent_TogglePanelFunctionExplorerDependencyView(
+        queryBuilderState.applicationStore.telemetryService,
+      );
       setShowDependencyFuncions(!showDependencyFuncions);
     };
+
+    useEffect(() => {
+      QueryBuilderTelemetryHelper.logEvent_RenderPanelFunctionExplorer(
+        queryBuilderState.applicationStore.telemetryService,
+      );
+    }, [queryBuilderState.applicationStore]);
 
     return (
       <div className="panel query-builder__functions-explorer">
@@ -459,7 +469,7 @@ export const QueryBuilderFunctionsExplorerPanel = observer(
               title="Show Options Menu..."
               content={
                 <MenuContent>
-                  <MenuContentItem onClick={toggleShowDependencyFuncions}>
+                  <MenuContentItem onClick={toggleShowDependencyFunctions}>
                     <MenuContentItemIcon>
                       {showDependencyFuncions ? <CheckIcon /> : null}
                     </MenuContentItemIcon>

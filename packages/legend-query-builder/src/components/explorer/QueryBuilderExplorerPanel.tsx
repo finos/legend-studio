@@ -1056,6 +1056,11 @@ export const QueryBuilderExplorerPanel = observer(
             <ControlledDropdownMenu
               className="panel__header__action"
               title="Show Options Menu..."
+              onOpen={() => {
+                QueryBuilderTelemetryHelper.logEvent_ShowPropertyExplorerOptions(
+                  applicationStore.telemetryService,
+                );
+              }}
               content={
                 <MenuContent>
                   <MenuContentItem onClick={toggleShowUnmappedProperties}>

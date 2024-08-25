@@ -33,6 +33,10 @@ type QueryMappingModelCoverageAnalysis_TelemetryData =
     state?: QueryableClassMappingRuntimeInfo | undefined;
   };
 
+type GraphFetchPanel_TelemtryData = {
+  serializationType: string | undefined;
+};
+
 export class QueryBuilderTelemetryHelper {
   static logEvent_QueryRunLaunched(service: TelemetryService): void {
     service.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__LAUNCH, {});
@@ -224,5 +228,37 @@ export class QueryBuilderTelemetryHelper {
     service: TelemetryService,
   ): void {
     service.logEvent(QUERY_BUILDER_EVENT.SHOW_UNMAPPED_PROPERTIES__LAUNCH, {});
+  }
+
+  static logEvent_ShowPropertyExplorerOptions(service: TelemetryService): void {
+    service.logEvent(QUERY_BUILDER_EVENT.PROPERTY_EXPLORER_OPTIONS__LAUNCH, {});
+  }
+
+  static logEvent_TogglePanelFunctionExplorer(service: TelemetryService): void {
+    service.logEvent(QUERY_BUILDER_EVENT.PANEL_FUNCTION_EXPLORER__TOGGLE, {});
+  }
+
+  static logEvent_RenderPanelFunctionExplorer(service: TelemetryService): void {
+    service.logEvent(QUERY_BUILDER_EVENT.PANEL_FUNCTION_EXPLORER__RENDER, {});
+  }
+
+  static logEvent_TogglePanelFunctionExplorerDependencyView(
+    service: TelemetryService,
+  ): void {
+    service.logEvent(
+      QUERY_BUILDER_EVENT.PANEL_FUNCTION_EXPLORER_DEPENDENCY_VIEW__TOGGLE,
+      {},
+    );
+  }
+
+  static logEvent_ToggleFetchStructure(service: TelemetryService): void {
+    service.logEvent(QUERY_BUILDER_EVENT.PANEL_FETCH_STRUCTURE_TOGGLE, {});
+  }
+
+  static logEvent_RenderGraphFetchPanel(
+    service: TelemetryService,
+    data: GraphFetchPanel_TelemtryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.PANEL_GRAPH_FETCH_RENDER, data);
   }
 }
