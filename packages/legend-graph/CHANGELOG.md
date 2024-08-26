@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.10.24
+
+### Patch Changes
+
+- [#3466](https://github.com/finos/legend-studio/pull/3466) [`5aa5219`](https://github.com/finos/legend-studio/commit/5aa5219bae3e49d178573030820ac3de3a4fb7fb) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Update the service and Snowflake app model to incorporate stereotypes and tagged values
+
 ## 31.10.23
 
 ## 31.10.22
