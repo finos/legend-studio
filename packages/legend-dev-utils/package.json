@@ -79,7 +79,7 @@
     "jest-extended": "4.0.2",
     "jest-watch-typeahead": "2.2.2",
     "jsonc-parser": "3.3.1",
-    "micromatch": "4.0.7",
+    "micromatch": "4.0.8",
     "mini-css-extract-plugin": "2.9.0",
     "monaco-editor": "0.50.0",
     "monaco-editor-webpack-plugin": "7.1.0",
