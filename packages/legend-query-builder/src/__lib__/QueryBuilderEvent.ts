@@ -28,8 +28,17 @@ export enum QUERY_BUILDER_EVENT {
 
   MAPPING_MODEL_COVERAGE_ANALYSYS__LAUNCH = 'query-builder.mapping-model-coverage-analysis.launch',
   MAPPING_MODEL_COVERAGE_ANALYSYS__SUCCESS = 'query-builder.mapping-model-coverage-analysis.success',
-  SHOW_UNMAPPED_PROPERTIES__LAUNCH = 'query-builder.show-unmapped-properties.launch',
+
   UNSUPPORTED_QUERY_LAUNCH = 'query-builder.unsupported-query.lanuch',
+
+  SHOW_UNMAPPED_PROPERTIES__LAUNCH = 'query-builder.show-unmapped-properties.launch',
+  PROPERTY_EXPLORER_OPTIONS__LAUNCH = 'query-builder.property-explorer-options.launch',
+  PANEL_FUNCTION_EXPLORER__TOGGLE = 'query-builder.panel-function-explorer.toggle',
+  PANEL_FUNCTION_EXPLORER__RENDER = 'query-builder.panel-function-explorer.render',
+  PANEL_FUNCTION_EXPLORER_DEPENDENCY_VIEW__TOGGLE = 'query-builder.panel-function-explorer-dependency-view.toggle',
+
+  PANEL_FETCH_STRUCTURE_TOGGLE = 'query-builder.panel-fetch-structure.toggle',
+  PANEL_GRAPH_FETCH_RENDER = 'query-builder.panel-graph-fetch.render',
 
   CHANGE_HISTORY_ERROR = 'query-builder.change-history.error',
 }
