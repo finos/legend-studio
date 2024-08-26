@@ -68,11 +68,11 @@
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@types/css-font-loading-module": "0.0.13",
-    "@types/react": "18.3.3",
+    "@types/react": "18.3.4",
     "@types/react-dom": "18.3.0",
     "mobx": "6.13.1",
     "mobx-react-lite": "4.0.7",
-    "monaco-editor": "0.50.0",
+    "monaco-editor": "0.51.0",
     "react": "18.3.1",
     "react-dnd": "16.0.1",
     "react-dom": "18.3.1"

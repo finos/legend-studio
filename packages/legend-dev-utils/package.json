@@ -79,16 +79,16 @@
     "jest-extended": "4.0.2",
     "jest-watch-typeahead": "2.2.2",
     "jsonc-parser": "3.3.1",
-    "micromatch": "4.0.7",
-    "mini-css-extract-plugin": "2.9.0",
-    "monaco-editor": "0.50.0",
+    "micromatch": "4.0.8",
+    "mini-css-extract-plugin": "2.9.1",
+    "monaco-editor": "0.51.0",
     "monaco-editor-webpack-plugin": "7.1.0",
     "postcss": "8.4.41",
     "postcss-loader": "8.1.1",
     "react-refresh": "0.14.2",
     "resolve": "1.22.8",
     "typescript": "5.5.4",
-    "webpack": "5.93.0"
+    "webpack": "5.94.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
