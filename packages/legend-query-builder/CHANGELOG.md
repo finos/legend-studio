@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.80
+
+### Patch Changes
+
+- [#3460](https://github.com/finos/legend-studio/pull/3460) [`21eb26e`](https://github.com/finos/legend-studio/commit/21eb26effa7915075d24e8e7e0a5300541eeeae3) ([@pragyasri-gs](https://github.com/pragyasri-gs)) - Adding QUERY_BUILDER_SETTING_KEY.SHOW_QUERY_CHAT_PANEL in local storage.
+
 ## 4.14.79
 
 ### Patch Changes
