@@ -182,6 +182,12 @@ export class V1_ElementSecondPassBuilder
         element.activationConfiguration,
         this.context,
       );
+    metamodel.stereotypes = element.stereotypes
+      .map((stereotype) => this.context.resolveStereotype(stereotype))
+      .filter(isNonNullable);
+    metamodel.taggedValues = element.taggedValues
+      .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
+      .filter(isNonNullable);
   }
 
   visit_HostedService(element: V1_HostedService): void {
@@ -214,6 +220,12 @@ export class V1_ElementSecondPassBuilder
           element.activationConfiguration,
         );
     }
+    metamodel.stereotypes = element.stereotypes
+      .map((stereotype) => this.context.resolveStereotype(stereotype))
+      .filter(isNonNullable);
+    metamodel.taggedValues = element.taggedValues
+      .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
+      .filter(isNonNullable);
   }
 
   visit_INTERNAL__UnknownStore(element: V1_INTERNAL__UnknownStore): void {

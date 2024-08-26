@@ -50,6 +50,8 @@ import {
   V1_transformFunction,
   V1_transformMeasure,
   V1_transformProfile,
+  V1_transformStereotype,
+  V1_transformTaggedValue,
 } from './V1_DomainTransformer.js';
 import { V1_transformSectionIndex } from './V1_SectionIndexTransformer.js';
 import {
@@ -182,6 +184,8 @@ class V1_PackageableElementTransformer
       V1_transformSnowflakeAppDeploymentConfiguration(
         element.activationConfiguration,
       );
+    protocol.stereotypes = element.stereotypes.map(V1_transformStereotype);
+    protocol.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
     return protocol;
   }
 
@@ -208,6 +212,8 @@ class V1_PackageableElementTransformer
           element.activationConfiguration,
         );
     }
+    protocol.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
+    protocol.stereotypes = element.stereotypes.map(V1_transformStereotype);
     return protocol;
   }
 

@@ -65,6 +65,8 @@ export class Service extends PackageableElement implements Hashable, Testable {
       this.test ?? '',
       hashArray(this.tests),
       hashArray(this.postValidations),
+      hashArray(this.taggedValues),
+      hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
     ]);
   }
 

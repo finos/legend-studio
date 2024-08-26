@@ -1,4 +1,13 @@
 ###HostedService
+HostedService <<equality.Key>> model::NewActivatorWithTag
+{
+   pattern : '/pattern';
+   ownership : Deployment { identifier: '' };
+   function : model::Firm_QueryFunction():TabularDataSet[1];
+   documentation : '';
+   autoActivateUpdates : true;
+}
+
 HostedService model::NewActivator
 {
    pattern : '/pattern';

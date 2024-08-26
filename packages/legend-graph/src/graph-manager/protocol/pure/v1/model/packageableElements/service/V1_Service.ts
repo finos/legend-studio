@@ -56,6 +56,8 @@ export class V1_Service extends V1_PackageableElement implements Hashable {
       this.test ?? '',
       hashArray(this.testSuites),
       hashArray(this.postValidations),
+      hashArray(this.taggedValues),
+      hashArray(this.stereotypes),
     ]);
   }
 
