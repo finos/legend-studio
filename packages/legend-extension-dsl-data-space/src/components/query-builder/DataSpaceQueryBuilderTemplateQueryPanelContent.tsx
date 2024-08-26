@@ -55,7 +55,7 @@ const DataSpaceTemplateQueryDialog = observer(
         template,
       );
       if (!executionContext) {
-        applicationStore.notificationService.notifyWarning(
+        applicationStore.notificationService.notifyError(
           'Unable find an executionContext of this template query within current dataspace',
         );
       }
@@ -64,7 +64,7 @@ const DataSpaceTemplateQueryDialog = observer(
         queryBuilderState.graphManagerState,
       );
       if (!query) {
-        applicationStore.notificationService.notifyWarning(
+        applicationStore.notificationService.notifyError(
           'Unable get a query from this template query',
         );
       }
