@@ -44,7 +44,7 @@ jobs:
         run: node ./scripts/release/createNewReleasePRTitle.js
       - name: Create new release pull request or Publish to NPM
         id: changesets
-        uses: changesets/action@v1.4.7
+        uses: changesets/action@v1.4.8
         with:
           version: yarn release:version
           commit: 'chore: bump versions and release'
