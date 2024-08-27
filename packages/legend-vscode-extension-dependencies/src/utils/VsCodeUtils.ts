@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
+import type { PlainObject } from '@finos/legend-shared';
+
 interface Vscode {
-  postMessage(message: unknown): void;
+  postMessage(message: PlainObject): void;
 }
 
 declare const vscode: Vscode;
 
-export const postMessage = (message: unknown): void => {
+export const postMessage = (message: PlainObject): void => {
   vscode.postMessage(message);
 };

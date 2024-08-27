@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { Diagram } from '@finos/legend-extension-dsl-diagram';
 import { getDiagram } from '@finos/legend-extension-dsl-diagram';
 import type { Entity } from '@finos/legend-storage';
 import { useRef, useEffect, useState } from 'react';
@@ -35,7 +34,6 @@ export const DiagramEditor = observer(
   (props: { diagramId: string; diagramEditorState: DiagramEditorState }) => {
     const diagramCanvasRef = useRef<HTMLDivElement>(null);
     const { diagramId, diagramEditorState } = props;
-    const [diagram, setDiagram] = useState<Diagram | null>(null);
     const [entities, setEntities] = useState<Entity[]>([]);
     const [error, setError] = useState<string | null>();
 
@@ -61,17 +59,15 @@ export const DiagramEditor = observer(
         getPureGraph(entities, [])
           .then((pureModel) => {
             const diagram = getDiagram(diagramId, pureModel);
-            setDiagram(diagram);
             diagramEditorState.setDiagram(diagram);
             diagramEditorState.setGraph(pureModel);
             setError(null);
           })
           .catch((e) => {
             setError(e.message);
-            setDiagram(null);
           });
       }
-    }, [entities, diagramId]);
+    }, [entities, diagramId, diagramEditorState]);
 
     return (
       <LegendStyleProvider>

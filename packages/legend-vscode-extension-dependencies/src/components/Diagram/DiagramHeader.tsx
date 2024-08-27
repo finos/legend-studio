@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { Diagram } from '@finos/legend-extension-dsl-diagram';
 import {
+  type Diagram,
   DIAGRAM_ALIGNER_OPERATOR,
   DIAGRAM_ZOOM_LEVELS,
   V1_diagramModelSchema,
@@ -41,6 +41,7 @@ import {
 } from '@finos/legend-art';
 import type { DiagramEditorState } from '../../stores/DiagramEditorState.js';
 import { postMessage } from '../../utils/VsCodeUtils.js';
+import type { PlainObject } from '@finos/legend-shared';
 
 export const DiagramEditorHeader = observer(
   (props: { diagramEditorState: DiagramEditorState }) => {
@@ -70,7 +71,7 @@ export const DiagramEditorHeader = observer(
                   V1_transformDiagram(
                     diagramEditorState._renderer?.diagram as Diagram,
                   ),
-                ),
+                ) as PlainObject,
               })
             }
           >

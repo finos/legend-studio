@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 import { clsx, useResizeDetector } from '@finos/legend-art';
-import type { Diagram } from '@finos/legend-extension-dsl-diagram';
 import {
+  type Diagram,
   DiagramRenderer,
   Point,
   V1_diagramModelSchema,
@@ -76,7 +76,7 @@ export const DiagramEditorDiagramCanvas = observer(
       }
     }, [diagramEditorState, width, height]);
 
-    const dropTarget = document.getElementById('root') || document.body;
+    const dropTarget = document.getElementById('root') ?? document.body;
 
     dropTarget.addEventListener('dragover', (event) => {
       // accept any DnD
@@ -85,15 +85,13 @@ export const DiagramEditorDiagramCanvas = observer(
 
     const drop = (event: DragEvent) => {
       event.preventDefault();
-      const droppedEntityIds: string[] = event.dataTransfer
-        ? (
-            JSON.parse(
-              event.dataTransfer.getData(
-                'application/vnd.code.tree.legendConceptTree',
-              ),
-            ).itemHandles as string[]
-          ).map((item) => item.split('/')[1] ?? '')
-        : [];
+      const droppedEntityIds: string[] = (
+        JSON.parse(
+          event.dataTransfer.getData(
+            'application/vnd.code.tree.legendConceptTree',
+          ),
+        ).itemHandles as string[]
+      ).map((item) => item.split('/')[1] ?? '');
       const position =
         diagramEditorState.renderer.canvasCoordinateToModelCoordinate(
           diagramEditorState.renderer.eventCoordinateToCanvasCoordinate(
@@ -113,9 +111,10 @@ export const DiagramEditorDiagramCanvas = observer(
           return isClassInstance;
         })
         .forEach((entityId) => {
-          flowResult(
-            diagramEditorState.addClassView(entityId ?? '', position),
-          ).catch((error: any) => console.log(error));
+          flowResult(diagramEditorState.addClassView(entityId, position)).catch(
+            // eslint-disable-next-line no-console
+            (error: unknown) => console.error(error),
+          );
         });
     };
 

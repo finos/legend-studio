@@ -3448,6 +3448,7 @@ __metadata:
   dependencies:
     "@babel/core": "npm:7.25.2"
     "@finos/legend-application-studio": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-graph": "workspace:*"
@@ -3462,6 +3463,8 @@ __metadata:
     "@types/vscode": "npm:1.92.0"
     cross-env: "npm:7.0.3"
     eslint: "npm:8.57.0"
+    mobx: "npm:6.13.1"
+    mobx-react-lite: "npm:4.0.7"
     npm-run-all: "npm:4.1.5"
     postcss: "npm:8.4.41"
     postcss-url: "npm:10.1.3"
@@ -3471,6 +3474,7 @@ __metadata:
     rollup-plugin-flow: "npm:1.1.1"
     rollup-plugin-import-css: "npm:3.5.1"
     rollup-plugin-postcss: "npm:4.0.2"
+    serializr: "npm:3.0.2"
     typescript: "npm:5.5.4"
   languageName: unknown
   linkType: soft
