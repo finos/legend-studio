@@ -43,10 +43,13 @@ import {
 import type { DataSpaceExecutionContext } from '@finos/legend-extension-dsl-data-space/graph';
 import { DataQualityGraphFetchTreeState } from './DataQualityGraphFetchTreeState.js';
 import {
+  type DataQualityRootGraphFetchTree,
   DataQualityPropertyGraphFetchTree,
-  DataQualityRootGraphFetchTree,
 } from '../../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
-import { buildGraphFetchTreeData } from '../utils/DataQualityGraphFetchTreeUtil.js';
+import {
+  buildDefaultDataQualityRootGraphFetchTree,
+  buildGraphFetchTreeData,
+} from '../utils/DataQualityGraphFetchTreeUtil.js';
 import {
   type GeneratorFn,
   ActionState,
@@ -131,11 +134,11 @@ export abstract class DataQualityState extends ElementEditorState {
       setExecutionContext: action,
       setShowRuntimeSelector: action,
       initializeGraphFetchTreeState: action,
-      initialGraphFetchTreeFromClass: action,
       initializeStructuralValidationsGraphFetchTreeState: action,
       setShowStructuralValidations: action,
       updateElementOnClassChange: action,
       checkConstraintsSelectedAtNode: action,
+      changeClass: action,
       fetchStructuralValidations: flow,
       tabsToShow: computed,
       areNestedConstraintsSelected: computed,
@@ -190,14 +193,6 @@ export abstract class DataQualityState extends ElementEditorState {
     ).fetchStructuralValidations(model, packagePath)) as RootGraphFetchTree;
     this.initializeStructuralValidationsGraphFetchTreeState(
       rootGraphFetchTree as DataQualityRootGraphFetchTree,
-    );
-  }
-
-  initialGraphFetchTreeFromClass(
-    rootClass: Class,
-  ): DataQualityRootGraphFetchTree {
-    return new DataQualityRootGraphFetchTree(
-      PackageableElementExplicitReference.create(rootClass),
     );
   }
 
@@ -334,10 +329,14 @@ export abstract class DataQualityState extends ElementEditorState {
 
   changeClass(val: Class): void {
     this.dataQualityQueryBuilderState.changeClass(val);
-    this.dataQualityGraphFetchTreeState.onClassChange(val);
     this.structuralValidationsGraphFetchTreeState =
       new DataQualityGraphFetchTreeState(this);
     this.resultState = new DataQualityResultState(this);
+    this.initializeGraphFetchTreeState(
+      buildDefaultDataQualityRootGraphFetchTree(
+        this.dataQualityQueryBuilderState.class!,
+      ),
+    );
     this.updateElementOnClassChange();
   }
 
@@ -345,9 +344,7 @@ export abstract class DataQualityState extends ElementEditorState {
     dataQualityClassValidation_setDataQualityGraphFetchTree(
       this
         .constraintsConfigurationElement as DataQualityClassValidationsConfiguration,
-      this.initialGraphFetchTreeFromClass(
-        this.dataQualityQueryBuilderState.class!,
-      ),
+      this.dataQualityGraphFetchTreeState.treeData!.tree,
     );
     dataQualityClassValidation_setFilter(
       this

@@ -1013,8 +1013,9 @@
   }
 
   &__node__icon {
-    width: 4.5rem;
-    min-width: 4.5rem;
+    padding-right: 0.5rem;
+    height: 2.2rem;
+    @include flexCenter;
   }
 
   &__expand-icon,
@@ -1589,6 +1590,10 @@
       &--green:hover {
         background: var(--color-green-200);
       }
+    }
+
+    &__validation {
+      width: 12rem;
     }
   }
 

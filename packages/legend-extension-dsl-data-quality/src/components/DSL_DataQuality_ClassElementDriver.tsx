@@ -28,18 +28,25 @@ import {
   filterByType,
   getNullableFirstEntry,
   guaranteeNonNullable,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
   type Mapping,
   type PackageableRuntime,
+  type Class,
   getMappingCompatibleRuntimes,
   PackageableElementExplicitReference,
+  getMappingCompatibleClasses,
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
   buildElementOption,
 } from '@finos/legend-lego/graph-editor';
-import { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  DataSpace,
+  resolveUsableDataSpaceClasses,
+} from '@finos/legend-extension-dsl-data-space/graph';
+import { buildDefaultDataQualityRootGraphFetchTree } from './utils/DataQualityGraphFetchTreeUtil.js';
 
 export type RuntimeOption = {
   label: string;
@@ -136,6 +143,7 @@ export class DataQuality_ClassElementDriver extends NewElementDriver<DataQuality
   }
 
   createElement(name: string): DataQualityClassValidationsConfiguration {
+    let usableClasses: Class[] = [];
     const dataQualityConstraintsConfiguration =
       new DataQualityClassValidationsConfiguration(name);
     if (
@@ -152,6 +160,11 @@ export class DataQuality_ClassElementDriver extends NewElementDriver<DataQuality
       dataQualityConstraintsConfiguration.context = dataSpaceExecutionContext;
       dataQualityConstraintsConfiguration.dataQualityRootGraphFetchTree =
         undefined;
+      usableClasses = resolveUsableDataSpaceClasses(
+        dataSpaceToSet.value,
+        dataSpaceToSet.value.defaultExecutionContext.mapping.value,
+        this.editorStore.graphManagerState,
+      );
     } else {
       if (this.mappingSelected && this.runtimeSelected) {
         const mappingOption = guaranteeNonNullable(this.mappingSelected);
@@ -166,10 +179,19 @@ export class DataQuality_ClassElementDriver extends NewElementDriver<DataQuality
         mappingAndRuntimeExecutionContext.runtime = runtimeValue;
         dataQualityConstraintsConfiguration.context =
           mappingAndRuntimeExecutionContext;
+        usableClasses = getMappingCompatibleClasses(
+          mapping.value,
+          this.editorStore.graphManagerState.usableClasses,
+        );
       }
-      dataQualityConstraintsConfiguration.dataQualityRootGraphFetchTree =
-        undefined;
     }
+    if (usableClasses.length === 0) {
+      throw new UnsupportedOperationError(
+        'Must have at least one usable class with given mapping',
+      );
+    }
+    dataQualityConstraintsConfiguration.dataQualityRootGraphFetchTree =
+      buildDefaultDataQualityRootGraphFetchTree(usableClasses[0]!);
     return dataQualityConstraintsConfiguration;
   }
 }
