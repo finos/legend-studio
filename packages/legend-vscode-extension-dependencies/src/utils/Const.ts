@@ -17,3 +17,5 @@
 // Event Types
 export const GET_PROJECT_ENTITIES = 'getProjectEntities';
 export const GET_PROJECT_ENTITIES_RESPONSE = 'getProjectEntitiesResponse';
+export const DIAGRAM_DROP_CLASS_ERROR = 'diagramDropClassError';
+export const WRITE_ENTITY = 'writeEntity';

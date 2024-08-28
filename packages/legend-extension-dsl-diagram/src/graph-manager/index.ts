@@ -31,3 +31,5 @@ export * from '../graph/helpers/DSL_Diagram_Helper.js';
 export * from './DSL_Diagram_GraphManagerHelper.js';
 export { V1_DSL_Diagram_PackageableElementPointerType } from './protocol/pure/DSL_Diagram_PureProtocolProcessorPlugin.js';
 export { V1_resolveDiagram } from './protocol/pure/v1/transformation/pureGraph/V1_DSL_Diagram_GraphBuilderHelper.js';
+export { V1_transformDiagram } from './protocol/pure/v1/transformation/pureGraph/V1_DSL_Diagram_TransformerHelper.js';
+export * from './protocol/pure/v1/transformation/pureProtocol/V1_DSL_Diagram_ProtocolHelper.js';
