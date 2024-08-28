@@ -2,31 +2,24 @@
 
 This is the `Legend REPL` web application deployment. This is used for development locally
 
-## Backend
+## Getting Started
 
-`Legend REPL` relies on:
+1. Start the REPL using [this guide](https://github.com/finos/legend-engine/blob/master/legend-engine-config/legend-engine-repl/README.md#developer-guide).
 
-- [Legend Engine](https://github.com/finos/legend-engine) [REPL Client](https://github.com/finos/legend-engine/blob/master/legend-engine-config/legend-engine-repl/legend-engine-repl-relational/src/main/java/org/finos/legend/engine/repl/relational/client/RClient.java).
+- Use [DataCubeClient](https://github.com/finos/legend-engine/blob/master/legend-engine-config/legend-engine-repl/legend-engine-repl-data-cube/src/main/java/org/finos/legend/engine/repl/dataCube/client/DataCubeClient.java).
+- Make sure to configure the properties to have the REPL point at the DEV web app:
 
-## Getting started
+```
+# [DEVELOPMENT] Specify the base URL for the development instance of the web application
+# this is needed to bypass CORS
+-Dlegend.repl.dataCube.devWebAppBaseUrl=http://localhost:9005
 
-To quickly setup the backend, spin up `REPL Client` application:
-
-- In order to start the server, please use the `Main` class `org.finos.legend.engine.repl.relational.client.RClient`
-- This will open a new terminal in your IDE with REPL Client up and running. This will also print the port at which backend server for grid is running at.
-- If you wish to change the port for backend server (preferably 8080 as client assumes server runs at this port) please modify port here [REPL Grid Server](https://github.com/finos/legend-engine/blob/master/legend-engine-config/legend-engine-repl/legend-engine-repl-relational/src/main/java/org/finos/legend/engine/repl/relational/httpServer/ReplGridServer.java)
-
-Before spinning up the application make sure to run these commands on `REPL terminal` so that there is an initial query state for grid.
-
-```bash
-  load <path> <connection>
-  #>{<db.table>}#->from(<connection>)
-  show
+# [DEVELOPMENT] By default, the port is randomized, but for development, the port needs
+# to be fixed to allow the web application to connect to the REPL
+-Dlegend.repl.dataCube.devPort=9006
 ```
 
-To know about more specific synatx of these commands type `help` on the REPL terminal.
-
-Last but not least, make sure you have `Yarn` installed. Run the following commands in order.
+2. Start REPL web-application:
 
 ```bash
   yarn install
@@ -34,4 +27,4 @@ Last but not least, make sure you have `Yarn` installed. Run the following comma
   yarn dev:repl
 ```
 
-After setting up, visit http://localhost:9005/repl/grid and the application should be up and running.
+Visit http://localhost:9005/repl/grid and the application should be up and running.
