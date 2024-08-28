@@ -25,26 +25,22 @@ import {
   type PlainObject,
   type Writable,
 } from '@finos/legend-shared';
-import type {
-  DataCubeAggregateOperation,
-  DataCubeOperationValue,
-  DataCubeQueryFilterGroupOperation,
-  DataCubeQueryFilterOperation,
-  DataCubeQuerySortOperation,
-} from './DataCubeQueryEngine.js';
+import type { DataCubeOperationValue } from './DataCubeQueryEngine.js';
 
 export type DataCubeQuerySnapshotFilterCondition =
   DataCubeQuerySnapshotColumn & {
     value: DataCubeOperationValue | undefined;
-    operation: DataCubeQueryFilterOperation;
+    operation: string;
+    not?: boolean | undefined;
   };
 
 export type DataCubeQuerySnapshotFilter = {
-  groupOperation: DataCubeQueryFilterGroupOperation;
+  groupOperator: string;
   conditions: (
     | DataCubeQuerySnapshotFilterCondition
     | DataCubeQuerySnapshotFilter
   )[];
+  not?: boolean | undefined;
 };
 
 export type DataCubeQuerySnapshotColumn = {
@@ -59,12 +55,12 @@ export type DataCubeQuerySnapshotExtendedColumn =
   };
 
 export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {
-  operation: DataCubeQuerySortOperation;
+  operation: string;
 };
 
 export type DataCubeQuerySnapshotAggregateColumn =
   DataCubeQuerySnapshotColumn & {
-    operation: DataCubeAggregateOperation;
+    operation: string;
     parameters: DataCubeOperationValue[];
   };
 
@@ -156,9 +152,9 @@ export class DataCubeQuerySnapshot {
    */
   stageCols(stage: DataCubeQuerySnapshotStage) {
     switch (stage) {
-      case 'filter':
       case 'leaf-extend':
         return [...this.data.sourceColumns];
+      case 'filter':
       case 'select':
         return [...this.data.sourceColumns, ...this.data.leafExtendedColumns];
       case 'aggregation':

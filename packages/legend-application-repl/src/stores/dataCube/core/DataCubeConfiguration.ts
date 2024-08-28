@@ -61,8 +61,6 @@ export class DataCubeColumnConfiguration {
   numberScale?: DataCubeNumberScale | undefined;
   missingValueDisplayText?: string | undefined;
 
-  hPivotSortFunction?: string | undefined;
-
   fontFamily?: DataCubeFont | undefined;
   fontSize?: number | undefined;
   fontBold?: boolean | undefined;
@@ -87,6 +85,7 @@ export class DataCubeColumnConfiguration {
   minWidth?: number | undefined;
   maxWidth?: number | undefined;
   pinned?: DataCubeColumnPinPlacement | undefined;
+
   displayAsLink = false;
   linkLabelParameter?: string | undefined;
 
@@ -113,7 +112,6 @@ export class DataCubeColumnConfiguration {
       fontStrikethrough: optional(primitive()),
       fontUnderline: optional(primitive()),
       hideFromView: primitive(),
-      hPivotSortFunction: optional(primitive()),
       kind: primitive(),
       linkLabelParameter: optional(primitive()),
       maxWidth: optional(primitive()),

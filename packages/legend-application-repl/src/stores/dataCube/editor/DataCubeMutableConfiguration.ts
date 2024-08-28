@@ -18,7 +18,6 @@ import {
   getDataType,
   type DataCubeColumnKind,
   type DataCubeFont,
-  type DataCubeAggregateOperation,
   type DataCubeOperationValue,
   type DataCubeNumberScale,
   type DataCubeSelectionStat,
@@ -54,9 +53,10 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
   // NOTE: these configurations are synthesized from the data query, and materialized here
   // to make editing more convenient. They should not be part of the persistent configuration
   // to avoid duplication of information with the data query.
-  aggregateFunction?: DataCubeAggregateOperation | undefined;
+  aggregateFunction?: string | undefined;
   aggregateFunctionParameters: DataCubeOperationValue[] = [];
   excludedFromHorizontalPivot = false;
+  horizontalPivotSortFunction?: string | undefined;
 
   static create(
     json: PlainObject<DataCubeColumnConfiguration>,
@@ -89,9 +89,6 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
 
       missingValueDisplayText: observable,
       setMissingValueDisplayText: action,
-
-      hPivotSortFunction: observable,
-      setHPivotSortFunction: action,
 
       fontFamily: observable,
       setFontFamily: action,
@@ -176,6 +173,9 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
 
       excludedFromHorizontalPivot: observable,
       setExcludedFromHorizontalPivot: action,
+
+      horizontalPivotSortFunction: observable,
+      setHorizontalPivotSortFunction: action,
     });
 
     return configuration;
@@ -257,10 +257,6 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
 
   setMissingValueDisplayText(value: string | undefined) {
     this.missingValueDisplayText = value;
-  }
-
-  setHPivotSortFunction(value: string | undefined) {
-    this.hPivotSortFunction = value;
   }
 
   setFontFamily(value: DataCubeFont | undefined) {
@@ -359,7 +355,7 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.linkLabelParameter = value;
   }
 
-  setAggregateFunction(value: DataCubeAggregateOperation | undefined) {
+  setAggregateFunction(value: string | undefined) {
     this.aggregateFunction = value;
   }
 
@@ -369,6 +365,10 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
 
   setAggregateFunctionParameters(value: DataCubeOperationValue[]) {
     this.aggregateFunctionParameters = value;
+  }
+
+  setHorizontalPivotSortFunction(value: string | undefined) {
+    this.horizontalPivotSortFunction = value;
   }
 }
 

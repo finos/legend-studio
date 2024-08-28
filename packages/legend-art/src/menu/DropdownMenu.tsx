@@ -127,6 +127,7 @@ export function useDropdownMenu() {
       anchorEl,
       onClose: () => setAnchorEl(null),
     },
+    Boolean(anchorEl),
   ] as const;
 }
 
@@ -134,12 +135,27 @@ export type DropdownMenuProps = {
   children: React.ReactNode;
   anchorEl: Element | null;
   onClose: () => void;
+  /**
+   * This method will be called after the menu has been closed
+   * NOTE: Usually used to imperatively set the focus to some other input box
+   * It is important to use `useCallback` to this call to avoid unnecessary calls
+   * on the useEffect, which might cause undesired focus behavior
+   */
+  onClosed?: (() => void) | undefined;
   className?: string | undefined;
   menuProps?: Partial<MuiMenuProps> | undefined;
 };
 
 export function DropdownMenu(props: DropdownMenuProps) {
-  const { menuProps, children, onClose, anchorEl } = props;
+  const { menuProps, children, onClosed, onClose, anchorEl } = props;
+
+  // Make sure the first time the menu is opened, we don't trigger onLeave
+  const [hasBeenOpened, setHasBeenOpened] = useState(false);
+  useEffect(() => {
+    if (hasBeenOpened && !anchorEl) {
+      onClosed?.();
+    }
+  }, [anchorEl, hasBeenOpened, onClosed]);
 
   if (!anchorEl) {
     return null;
@@ -162,6 +178,9 @@ export function DropdownMenu(props: DropdownMenuProps) {
       elevation={1}
       marginThreshold={0}
       transitionDuration={0}
+      TransitionProps={{
+        onEnter: () => setHasBeenOpened(true),
+      }}
       onClose={onClose}
       {...menuProps}
     >

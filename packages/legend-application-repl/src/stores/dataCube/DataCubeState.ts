@@ -20,7 +20,7 @@ import { DataCubeEditorState } from './editor/DataCubeEditorState.js';
 import { assertErrorThrown, uuid } from '@finos/legend-shared';
 import { DataCubeQuerySnapshotManager } from './core/DataCubeQuerySnapshotManager.js';
 import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
-import { DataCubeCoreState } from './core/DataCubeCoreState.js';
+import { DataCubeStaticContentDisplayState } from './core/DataCubeStaticContentDisplayState.js';
 import { validateAndBuildQuerySnapshot } from './core/DataCubeQuerySnapshotBuilder.js';
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeEngine } from './DataCubeEngine.js';
@@ -47,7 +47,7 @@ export class DataCubeState {
   readonly engine: DataCubeEngine;
   readonly snapshotManager: DataCubeQuerySnapshotManager;
 
-  readonly core: DataCubeCoreState;
+  readonly staticContent: DataCubeStaticContentDisplayState;
   readonly grid: DataCubeGridState;
   readonly editor: DataCubeEditorState;
 
@@ -66,7 +66,7 @@ export class DataCubeState {
 
     // NOTE: snapshot manager must be instantiated before subscribers
     this.snapshotManager = new DataCubeQuerySnapshotManager(this);
-    this.core = new DataCubeCoreState(this);
+    this.staticContent = new DataCubeStaticContentDisplayState(this);
     this.editor = new DataCubeEditorState(this);
     this.grid = new DataCubeGridState(this);
   }
@@ -87,12 +87,16 @@ export class DataCubeState {
     const task = this.newTask('Initializing');
     try {
       await Promise.all(
-        [this.core, this.editor, this.grid, this.grid.controller].map(
-          async (state) => {
-            this.snapshotManager.registerSubscriber(state);
-            await state.initialize();
-          },
-        ),
+        [
+          this.staticContent,
+          this.editor,
+          this.grid,
+          this.grid.controller,
+          // TODO this.editor.filter,
+          // TODO this.editor.extendedColumns,
+        ].map(async (state) => {
+          this.snapshotManager.registerSubscriber(state);
+        }),
       );
       const result = await this.engine.getBaseQuery();
       const initialSnapshot = validateAndBuildQuerySnapshot(

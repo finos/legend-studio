@@ -39,18 +39,19 @@ export enum DataCubeFunction {
 
   // filter
   AND = 'meta::pure::functions::boolean::and',
-  NOT = 'meta::pure::functions::boolean::not',
   OR = 'meta::pure::functions::boolean::or',
+  NOT = 'meta::pure::functions::boolean::not',
+  TO_LOWERCASE = 'meta::pure::functions::string::toLower',
 
   CONTAINS = 'meta::pure::functions::string::contains',
   ENDS_WITH = 'meta::pure::functions::string::endsWith',
   EQUAL = 'meta::pure::functions::boolean::equal',
   GREATER_THAN = 'meta::pure::functions::boolean::greaterThan',
-  GREATER_THAN_EQUAL = 'meta::pure::functions::boolean::greaterThanEqual',
+  GREATER_THAN_OR_EQUAL = 'meta::pure::functions::boolean::greaterThanEqual',
   IN = 'meta::pure::functions::collection::in',
   IS_EMPTY = 'meta::pure::functions::collection::isEmpty',
   LESS_THAN = 'meta::pure::functions::boolean::lessThan',
-  LESS_THAN_EQUAL = 'meta::pure::functions::boolean::lessThanEqual',
+  LESS_THAN_OR_EQUAL = 'meta::pure::functions::boolean::lessThanEqual',
   STARTS_WITH = 'meta::pure::functions::string::startsWith',
 
   // aggregate
@@ -155,15 +156,17 @@ export enum DataCubeColumnKind {
   DIMENSION = 'Dimension',
 }
 
-// TODO: we could potentially support complex type like parameter/column in the future
-export enum DataCubeOperationValueType {}
+export enum DataCubeOperationAdvancedValueType {
+  COLUMN = 'COLUMN',
+  // PARAMETER
+}
 
 export type DataCubeOperationValue = {
   value: unknown;
   type: string;
 };
 
-export enum DataCubeAggregateOperation {
+export enum DataCubeAggregateOperator {
   SUM = 'sum',
   AVERAGE = 'avg',
   COUNT = 'count',
@@ -197,27 +200,49 @@ export enum DataCubeAggregateOperation {
   // custom
 }
 
-export enum DataCubeQueryFilterOperation {
-  EQUAL = 'equal',
-  NOT_EQUAL = 'notEqual',
-  GREATER_THAN = 'greaterThan',
-  GREATER_THAN_OR_EQUAL = 'greaterThanOrEqual',
-  LESS_THAN = 'lessThan',
-  LESS_THAN_OR_EQUAL = 'lessThanOrEqual',
-  BLANK = 'isEmpty',
-  NOT_BLANK = 'isNotEmpty',
-  CONTAINS = 'contains',
-  NOT_CONTAINS = 'notContains',
-  STARTS_WITH = 'startsWith',
-  ENDS_WITH = 'endsWith',
+export enum DataCubeQueryFilterOperator {
+  LESS_THAN = '<', // DONE
+  LESS_THAN_OR_EQUAL = '<=', // DONE
+  EQUAL = '=', // DONE
+  NOT_EQUAL = '!=', // DONE
+  GREATER_THAN = '>', // DONE
+  GREATER_THAN_OR_EQUAL = '>=', // DONE
+  IN = 'in',
+  NOT_IN = 'not in',
+  IS_NULL = 'is null', // DONE
+  IS_NOT_NULL = 'is not null', // DONE
+  // string ONLY
+  EQUAL_CASE_INSENSITIVE = '= (case-insensitive)', // DONE
+  NOT_EQUAL_CASE_INSENSITIVE = '!= (case-insensitive)', // DONE
+  IN_CASE_INSENSITIVE = 'in (case-insensitive)',
+  NOT_IN_CASE_INSENSITIVE = 'not in (case-insensitive)',
+  CONTAIN = 'contains', // DONE
+  CONTAIN_CASE_INSENSITIVE = 'contains (case-insensitive)', // DONE
+  NOT_CONTAIN = 'does not contain', // DONE
+  START_WITH = 'starts with', // DONE
+  START_WITH_CASE_INSENSITIVE = 'starts with (case-insensitive)', // DONE
+  NOT_START_WITH = 'does not start with', // DONE
+  END_WITH = 'ends with', // DONE
+  END_WITH_CASE_INSENSITIVE = 'ends with (case-insensitive)', // DONE
+  NOT_END_WITH = 'does not end with', // DONE
+  // column
+  LESS_THAN_COLUMN = '< value in column', // DONE
+  LESS_THAN_OR_EQUAL_COLUMN = '<= value in column', // DONE
+  EQUAL_COLUMN = '= value in column', // DONE
+  EQUAL_CASE_INSENSITIVE_COLUMN = '= (case-insensitive) value in column', // DONE
+  NOT_EQUAL_COLUMN = '!= value in column', // DONE
+  NOT_EQUAL_CASE_INSENSITIVE_COLUMN = '!= (case-insensitive) value in column', // DONE
+  GREATER_THAN_COLUMN = '> value in column', // DONE
+  GREATER_THAN_OR_EQUAL_COLUMN = '>= value in column', // DONE
+  // TODO?: having, having in aggregate, between
 }
 
-export enum DataCubeQueryFilterGroupOperation {
+export enum DataCubeQueryFilterGroupOperator {
   AND = 'and',
   OR = 'or',
 }
 
-export enum DataCubeQuerySortOperation {
+export enum DataCubeQuerySortOperator {
   ASCENDING = 'ascending',
   DESCENDING = 'descending',
 }

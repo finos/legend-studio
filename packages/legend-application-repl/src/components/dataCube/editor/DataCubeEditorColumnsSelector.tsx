@@ -48,7 +48,7 @@ function getBaseGridProps<
 >(): AgGridReactProps<T> {
   return {
     modules: [ClientSideRowModelModule],
-    className: 'ag-theme-balham',
+    className: 'ag-theme-quartz',
     animateRows: false,
     getRowId: (params) => params.data.name,
     editType: 'fullRow',

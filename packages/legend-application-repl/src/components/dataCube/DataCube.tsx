@@ -27,10 +27,11 @@ import {
   useDropdownMenu,
 } from '@finos/legend-art';
 import { LayoutManager } from '../repl/LayoutManager.js';
+import { DataCubeEditorTab } from '../../stores/dataCube/editor/DataCubeEditorState.js';
+import type { DataCubeState } from '../../stores/dataCube/DataCubeState.js';
 
-const DataCubeStatusBar = observer(() => {
-  const repl = useREPLStore();
-  const dataCube = repl.dataCube;
+const DataCubeStatusBar = observer((props: { dataCube: DataCubeState }) => {
+  const { dataCube } = props;
 
   return (
     <div className="flex h-5 w-full justify-between bg-neutral-100">
@@ -43,7 +44,13 @@ const DataCubeStatusBar = observer(() => {
           <div className="pl-0.5 underline">Properties</div>
         </button>
         <div className="flex">
-          <button className="flex items-center text-sky-600 hover:text-sky-700">
+          <button
+            className="flex items-center text-sky-600 hover:text-sky-700"
+            onClick={() => {
+              dataCube.editor.setCurrentTab(DataCubeEditorTab.FILTER);
+              dataCube.editor.display.open();
+            }}
+          >
             <DataCubeIcon.TableFilter className="text-lg" />
             <div className="pl-0.5 underline">Filter</div>
           </button>
@@ -67,10 +74,10 @@ const DataCubeStatusBar = observer(() => {
   );
 });
 
-const DataCubeTitleBar = observer(() => {
-  const application = useApplicationStore();
+const DataCubeTitleBar = observer((props: { dataCube: DataCubeState }) => {
+  const { dataCube } = props;
   const repl = useREPLStore();
-  const dataCube = repl.dataCube;
+  const application = useApplicationStore();
   const [openMenuDropdown, closeMenuDropdown, menuDropdownProps] =
     useDropdownMenu();
 
@@ -78,7 +85,7 @@ const DataCubeTitleBar = observer(() => {
     <div className="flex h-6 justify-between bg-neutral-100">
       <div className="flex select-none items-center pl-1 pr-2 text-lg font-medium">
         <DataCubeIcon.Cube className="mr-1 h-4 w-4" />
-        <div>{dataCube.core.name}</div>
+        <div>{dataCube.staticContent.name}</div>
       </div>
       <div>
         <button
@@ -99,7 +106,7 @@ const DataCubeTitleBar = observer(() => {
           }}
         >
           <DropdownMenuItem
-            className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus-visible:bg-neutral-100"
+            className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
             onClick={() => {
               if (application.documentationService.url) {
                 application.navigationService.navigator.visitAddress(
@@ -115,7 +122,7 @@ const DataCubeTitleBar = observer(() => {
           </DropdownMenuItem>
           <div className="my-0.5 h-[1px] w-full bg-neutral-200" />
           <DropdownMenuItem
-            className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus-visible:bg-neutral-100"
+            className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
             onClick={() => {
               repl.settingsDisplay.open();
               closeMenuDropdown();
@@ -140,9 +147,9 @@ export const DataCube = observer(() => {
 
   return (
     <div className="data-cube relative flex h-full w-full flex-col bg-white">
-      <DataCubeTitleBar />
-      <DataCubeGrid />
-      <DataCubeStatusBar />
+      <DataCubeTitleBar dataCube={dataCube} />
+      <DataCubeGrid dataCube={dataCube} />
+      <DataCubeStatusBar dataCube={dataCube} />
       <LayoutManager layoutManagerState={repl.layout} />
     </div>
   );

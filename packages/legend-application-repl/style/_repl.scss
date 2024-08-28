@@ -15,19 +15,25 @@
  */
 
 @import url('@ag-grid-community/styles/ag-grid.css');
-@import url('@ag-grid-community/styles/ag-theme-balham.css');
+@import url('@ag-grid-community/styles/ag-theme-quartz.css');
 
 // ---------------------------------------- NORMALIZE ----------------------------------------
 
 html {
   box-sizing: border-box;
   font-family: Roboto, sans-serif;
+  overscroll-behavior: none;
 }
 
 body {
   // default font size is 12px everywhere to make the app more compact
   font-size: 12px;
 }
+
+// ---------------------------------------- SCROLLBAR ----------------------------------------
+// Make sure to configure the scrollbar to be consistent across browsers
+// and to make sure OS-native auto-hide scrollbar behavior is suppressed
+// See https://stackoverflow.com/questions/38557671/how-to-prevent-scrollbars-from-hiding-on-os-x-without-impacting-windows-users
 
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -38,21 +44,30 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #00000010;
-  border: 0.2rem solid transparent;
+  background: var(--tw-color-neutral-400);
+  border: 3.5px solid transparent;
   background-clip: content-box;
-  border-radius: 0.4rem;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #00000020;
-  border: 0.2rem solid transparent;
+  background: var(--tw-color-neutral-500);
+  border: 3.5px solid transparent;
   background-clip: content-box;
-  border-radius: 0.4rem;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:window-inactive {
-  background: #00000005;
+  background: var(--tw-color-neutral-200);
+  border: 3.5px solid transparent;
+  background-clip: content-box;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar {
+  appearance: none;
+  width: 10px;
+  height: 10px;
 }
 
 // ---------------------------------------- RESET ----------------------------------------
@@ -117,10 +132,10 @@ button:focus-visible {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100' %3E%3Cpath d='M0 100 L100 0' stroke-width='7' stroke='%23ef4444' /%3E%3C/svg%3E");
 }
 
-.data-cube-grid.ag-theme-balham,
-.data-cube-grid .ag-theme-balham {
-  --ag-input-focus-border-color: var(--tw-color-sky-600);
-  --ag-balham-active-color: var(--tw-color-sky-600);
+.data-cube-grid.ag-theme-quartz,
+.data-cube-grid .ag-theme-quartz {
+  --ag-card-radius: 0;
+  --ag-active-color: var(--tw-color-sky-600);
   --ag-range-selection-border-color: var(--tw-color-sky-600);
   --ag-range-selection-highlight-color: var(
     --tw-color-sky-50
@@ -138,6 +153,13 @@ button:focus-visible {
   --ag-header-foreground-color: var(--tw-color-black);
   --ag-row-hover-color: #d4d4d415; // from tailwind neutral 300
   --ag-popup-shadow: 2px 2px 5px rgb(0 0 0 / 20%);
+  --ag-header-column-resize-handle-width: 1px;
+  --ag-background-color: var(--tw-color-white);
+  --ag-menu-background-color: var(--tw-color-white);
+  --ag-menu-border-color: var(--tw-color-neutral-300);
+  --ag-border-radius: 0;
+  --ag-input-focus-box-shadow: none;
+  --ag-input-focus-border-color: var(--tw-color-sky-600);
 
   // tooltip
   --ag-tooltip-background-color: var(--tw-color-white);
@@ -152,6 +174,7 @@ button:focus-visible {
   --ag-list-item-height: 18px;
   --ag-widget-horizontal-spacing: 4px;
   --ag-widget-vertical-spacing: 4px;
+  --ag-wrapper-border-radius: 0;
 
   // --------------------------------- Pinning ---------------------------------
   // Improve visibility of pinned columns
@@ -198,6 +221,11 @@ button:focus-visible {
     font-weight: 500;
   }
 
+  .ag-header-cell-menu-button:hover {
+    background-color: transparent;
+    box-shadow: none;
+  }
+
   // --------------------------------- Context Menu ---------------------------------
   .ag-menu {
     // Gives more spacing to the menu compared to the grid where we favors compactness
@@ -206,6 +234,15 @@ button:focus-visible {
 
   .ag-menu-list {
     min-width: 120px;
+  }
+
+  .ag-menu-option {
+    cursor: default;
+    font-weight: initial;
+  }
+
+  .ag-menu-option-active {
+    background-color: var(--tw-color-neutral-100);
   }
 
   // --------------------------------- Side Bar + Drop Zone (for pivoting) ---------------------------------
@@ -224,6 +261,7 @@ button:focus-visible {
     height: 16px;
     display: flex;
     align-items: center;
+    border-radius: 3px;
 
     .ag-column-drop-cell-text {
       height: 16px;
@@ -237,8 +275,13 @@ button:focus-visible {
   }
 
   .ag-column-panel {
+    .ag-column-select-header-filter-wrapper .ag-input-wrapper::before {
+      margin-left: 3px;
+    }
+
     .ag-input-field-input.ag-text-field-input {
-      padding: 0 3px;
+      padding: 2px 2px 2px 18px;
+      font-size: 10px;
     }
   }
 
@@ -263,6 +306,7 @@ button:focus-visible {
 
   .ag-column-drop-empty-message.ag-column-drop-horizontal-empty-message {
     font-size: 0;
+    color: var(--ag-disabled-foreground-color);
   }
 
   .ag-column-drop-list.ag-column-drop-horizontal-list[aria-label='Row Groups']
@@ -312,11 +356,13 @@ button:focus-visible {
   // ---------------------------------------------------------------------------
 }
 
-.data-cube-column-selector .ag-theme-balham {
-  --ag-balham-active-color: var(--tw-color-sky-600);
+// ---------------------------------------- Editor Column Selector ----------------------------------------
+
+.data-cube-column-selector .ag-theme-quartz {
+  --ag-active-color: var(--tw-color-sky-600);
   --ag-input-focus-border-color: var(--tw-color-sky-600);
   --ag-range-selection-border-color: var(--tw-color-sky-600);
-  --ag-selected-row-background-color: var(--tw-color-sky-200);
+  --ag-selected-row-background-color: var(--tw-color-sky-100);
   --ag-border-color: var(--tw-color-white);
   --ag-header-background-color: var(--tw-color-white);
   --ag-header-height: 20px;
@@ -345,5 +391,81 @@ button:focus-visible {
 
   .ag-drag-handle.ag-row-drag {
     margin-right: 5px;
+  }
+}
+
+// --------------------------------- Editor Date Calendar ---------------------------------
+
+.data-cube-editor-date-calendar {
+  .MuiDateCalendar-root * {
+    font-size: 10px;
+  }
+
+  .MuiYearCalendar-root {
+    width: 190px;
+    height: 160px;
+  }
+
+  .MuiDateCalendar-root {
+    width: 190px;
+    height: 210px;
+  }
+
+  .MuiPickersCalendarHeader-root {
+    margin-top: 10px;
+    padding-left: 17px;
+    padding-right: 11px;
+    min-height: 32px;
+    max-height: 32px;
+  }
+
+  .MuiPickersCalendarHeader-label {
+    font-size: 11px;
+  }
+
+  .MuiPickersDay-today:not(.Mui-selected) {
+    border: 1px solid var(--tw-color-neutral-500);
+  }
+
+  .MuiPickersCalendarHeader-switchViewIcon,
+  .MuiPickersArrowSwitcher-leftArrowIcon,
+  .MuiPickersArrowSwitcher-rightArrowIcon {
+    font-size: 12px;
+  }
+
+  .MuiPickersYear-yearButton:focus,
+  .MuiPickersYear-yearButton:hover,
+  .MuiPickersDay-root:focus,
+  .MuiPickersDay-root:hover {
+    background-color: var(--tw-color-sky-50);
+  }
+
+  .MuiPickersYear-yearButton.Mui-selected,
+  .MuiPickersYear-yearButton.Mui-selected:focus,
+  .MuiPickersYear-yearButton.Mui-selected:hover,
+  .MuiPickersDay-root.Mui-selected,
+  .MuiPickersDay-root.Mui-selected:focus,
+  .MuiPickersDay-root.Mui-selected:hover {
+    background-color: var(--tw-color-sky-600);
+  }
+
+  .MuiPickersCalendarHeader-switchViewButton,
+  .MuiPickersArrowSwitcher-button,
+  .MuiDayCalendar-weekDayLabel,
+  .MuiPickersDay-root {
+    height: 20px;
+    width: 20px;
+    border-radius: 0;
+  }
+
+  .MuiPickersYear-yearButton,
+  .MuiPickersYear-root {
+    height: 20px;
+    width: 30px;
+    border-radius: 0;
+  }
+
+  .MuiPickersSlideTransition-root {
+    min-height: 140px;
   }
 }

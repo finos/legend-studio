@@ -18,7 +18,7 @@ import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import { DataCubeEditorSortsPanelState } from './DataCubeEditorSortsPanelState.js';
 import { DataCubeEditorCodePanelState } from './DataCubeEditorCodePanelState.js';
-import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
+import { DataCubeQuerySnapshotController } from '../core/DataCubeQuerySnapshotManager.js';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGeneralPropertiesPanelState.js';
@@ -28,12 +28,13 @@ import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeEditorVerticalPivotsPanelState } from './DataCubeEditorVerticalPivotsPanelState.js';
 import { SingletonModeDisplayState } from '../../LayoutManagerState.js';
 import { DataCubeEditor } from '../../../components/dataCube/editor/DataCubeEditor.js';
+import { DataCubeEditorFilterPanelState } from './DataCubeEditorFilterPanelState.js';
 
 export enum DataCubeEditorTab {
   GENERAL_PROPERTIES = 'General Properties',
   COLUMN_PROPERTIES = 'Column Properties',
-  FILTER = 'Filter',
   EXTENDED_COLUMNS = 'Extended Columns',
+  FILTER = 'Filter',
   COLUMNS = 'Columns',
   VERTICAL_PIVOTS = 'Vertical Pivots',
   HORIZONTAL_PIVOTS = 'Horizontal Pivots',
@@ -41,10 +42,11 @@ export enum DataCubeEditorTab {
   CODE = 'Code',
 }
 
-export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
+export class DataCubeEditorState extends DataCubeQuerySnapshotController {
   readonly display: SingletonModeDisplayState;
   readonly generalProperties: DataCubeEditorGeneralPropertiesPanelState;
   readonly columnProperties: DataCubeEditorColumnPropertiesPanelState;
+  readonly filter: DataCubeEditorFilterPanelState;
   readonly columns: DataCubeEditorColumnsPanelState;
   readonly verticalPivots: DataCubeEditorVerticalPivotsPanelState;
   readonly sorts: DataCubeEditorSortsPanelState;
@@ -65,12 +67,13 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     this.display = new SingletonModeDisplayState(
       this.dataCube.repl.layout,
       'Properties',
-      () => <DataCubeEditor />,
+      () => <DataCubeEditor dataCube={this.dataCube} />,
     );
     this.generalProperties = new DataCubeEditorGeneralPropertiesPanelState(
       this,
     );
     this.columnProperties = new DataCubeEditorColumnPropertiesPanelState(this);
+    this.filter = new DataCubeEditorFilterPanelState(this);
     this.columns = new DataCubeEditorColumnsPanelState(this);
     this.verticalPivots = new DataCubeEditorVerticalPivotsPanelState(this);
     this.sorts = new DataCubeEditorSortsPanelState(this);
@@ -91,6 +94,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     this.columns.buildSnapshot(snapshot, baseSnapshot);
     this.verticalPivots.buildSnapshot(snapshot, baseSnapshot);
     this.sorts.buildSnapshot(snapshot, baseSnapshot);
+    this.filter.buildSnapshot(snapshot, baseSnapshot);
 
     // grid configuration must be processed before processing columns' configuration
     // to properly generate the container configuration
@@ -114,12 +118,9 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotSubscriber {
     this.columns.applySnaphot(snapshot, configuration);
     this.verticalPivots.applySnaphot(snapshot, configuration);
     this.sorts.applySnaphot(snapshot, configuration);
+    this.filter.applySnaphot(snapshot, configuration);
 
     this.generalProperties.applySnaphot(snapshot, configuration);
     this.columnProperties.applySnaphot(snapshot, configuration);
-  }
-
-  override async initialize() {
-    // do nothing
   }
 }

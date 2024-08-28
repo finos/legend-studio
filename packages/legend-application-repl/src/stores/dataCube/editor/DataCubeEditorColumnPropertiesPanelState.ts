@@ -30,7 +30,7 @@ import {
 } from '@finos/legend-shared';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import {
-  DataCubeAggregateOperation,
+  DataCubeAggregateOperator,
   DataCubeColumnKind,
 } from '../core/DataCubeQueryEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
@@ -123,7 +123,7 @@ export class DataCubeEditorColumnPropertiesPanelState
             case PRIMITIVE_TYPE.INTEGER:
             case PRIMITIVE_TYPE.DECIMAL:
             case PRIMITIVE_TYPE.FLOAT: {
-              column.setAggregateFunction(DataCubeAggregateOperation.SUM);
+              column.setAggregateFunction(DataCubeAggregateOperator.SUM);
               column.setAggregateFunctionParameters([]);
               break;
             }

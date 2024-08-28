@@ -17,7 +17,7 @@
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
-import { DataCubeQuerySortOperation } from '../core/DataCubeQueryEngine.js';
+import { DataCubeQuerySortOperator } from '../core/DataCubeQueryEngine.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import {
   DataCubeEditorColumnsSelectorColumnState,
@@ -27,13 +27,9 @@ import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
 export class DataCubeEditorSortColumnState extends DataCubeEditorColumnsSelectorColumnState {
-  operation: DataCubeQuerySortOperation;
+  operation: string;
 
-  constructor(
-    name: string,
-    type: string,
-    direction: DataCubeQuerySortOperation,
-  ) {
+  constructor(name: string, type: string, direction: string) {
     super(name, type);
 
     makeObservable(this, {
@@ -44,7 +40,7 @@ export class DataCubeEditorSortColumnState extends DataCubeEditorColumnsSelector
     this.operation = direction;
   }
 
-  setOperation(val: DataCubeQuerySortOperation) {
+  setOperation(val: DataCubeQuerySortOperator) {
     this.operation = val;
   }
 }
@@ -64,7 +60,7 @@ export class DataCubeEditorSortColumnsSelectorState extends DataCubeEditorColumn
         new DataCubeEditorSortColumnState(
           col.name,
           col.type,
-          DataCubeQuerySortOperation.ASCENDING,
+          DataCubeQuerySortOperator.ASCENDING,
         ),
     );
   }

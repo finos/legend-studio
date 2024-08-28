@@ -21,14 +21,137 @@ import type {
 } from '@ag-grid-community/core';
 import { WIP_GridMenuItem } from '../../../components/dataCube/grid/DataCubeGridShared.js';
 import {
-  DataCubeQuerySortOperation,
+  DataCubeQuerySortOperator,
   DataCubeColumnPinPlacement,
   DEFAULT_COLUMN_MIN_WIDTH,
   DataCubeColumnKind,
+  type DataCubeOperationValue,
+  DataCubeQueryFilterOperator,
 } from '../core/DataCubeQueryEngine.js';
-import { isNonNullable } from '@finos/legend-shared';
+import {
+  guaranteeIsNumber,
+  isNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import type { DataCubeGridControllerState } from './DataCubeGridControllerState.js';
-import { DataCubeGridClientExportFormat } from './DataCubeGridClientEngine.js';
+import {
+  DataCubeGridClientExportFormat,
+  INTERNAL__GRID_CLIENT_MISSING_VALUE,
+} from './DataCubeGridClientEngine.js';
+import { DataCubeEditorTab } from '../editor/DataCubeEditorState.js';
+import { PRIMITIVE_TYPE } from '@finos/legend-graph';
+import type { DataCubeColumnConfiguration } from '../core/DataCubeConfiguration.js';
+import { DataCubeFilterEditorConditionTreeNode } from '../core/filter/DataCubeQueryFilterEditorState.js';
+
+function toFilterValue(
+  value: unknown,
+  columnConfiguration: DataCubeColumnConfiguration,
+): { label: string; value: DataCubeOperationValue } {
+  const label = `${columnConfiguration.type === PRIMITIVE_TYPE.STRING ? `'${value}'` : value}`;
+  let val: unknown;
+  switch (columnConfiguration.type) {
+    case PRIMITIVE_TYPE.STRING: {
+      val = value;
+      break;
+    }
+    case PRIMITIVE_TYPE.NUMBER:
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.FLOAT:
+    case PRIMITIVE_TYPE.INTEGER: {
+      val = guaranteeIsNumber(Number(value));
+      break;
+    }
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.STRICTDATE:
+    case PRIMITIVE_TYPE.DATETIME: {
+      val = value; // TODO?: make sure this is a parsable date string
+      break;
+    }
+    default: {
+      throw new UnsupportedOperationError(
+        `Can't filter on column with unsupported type '${columnConfiguration.type}'`,
+      );
+    }
+  }
+  return { label, value: { type: columnConfiguration.type, value: val } };
+}
+
+function getColumnFilterOperations(
+  columnConfiguration: DataCubeColumnConfiguration,
+): string[] {
+  switch (columnConfiguration.type) {
+    case PRIMITIVE_TYPE.STRING: {
+      return [
+        DataCubeQueryFilterOperator.EQUAL,
+        DataCubeQueryFilterOperator.NOT_EQUAL,
+        DataCubeQueryFilterOperator.LESS_THAN,
+        DataCubeQueryFilterOperator.LESS_THAN_OR_EQUAL,
+        DataCubeQueryFilterOperator.GREATER_THAN,
+        DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL,
+        DataCubeQueryFilterOperator.CONTAIN,
+        DataCubeQueryFilterOperator.NOT_CONTAIN,
+        DataCubeQueryFilterOperator.START_WITH,
+        DataCubeQueryFilterOperator.NOT_START_WITH,
+        DataCubeQueryFilterOperator.END_WITH,
+        DataCubeQueryFilterOperator.NOT_END_WITH,
+      ];
+    }
+    case PRIMITIVE_TYPE.NUMBER:
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.FLOAT:
+    case PRIMITIVE_TYPE.INTEGER: {
+      return [
+        DataCubeQueryFilterOperator.EQUAL,
+        DataCubeQueryFilterOperator.NOT_EQUAL,
+        DataCubeQueryFilterOperator.LESS_THAN,
+        DataCubeQueryFilterOperator.LESS_THAN_OR_EQUAL,
+        DataCubeQueryFilterOperator.GREATER_THAN,
+        DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL,
+      ];
+    }
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.STRICTDATE:
+    case PRIMITIVE_TYPE.DATETIME: {
+      return [
+        DataCubeQueryFilterOperator.EQUAL,
+        DataCubeQueryFilterOperator.NOT_EQUAL,
+        DataCubeQueryFilterOperator.LESS_THAN,
+        DataCubeQueryFilterOperator.LESS_THAN_OR_EQUAL,
+        DataCubeQueryFilterOperator.GREATER_THAN,
+        DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL,
+      ];
+    }
+    default: {
+      return [];
+    }
+  }
+}
+
+function buildNewFilterConditionMenuItem(
+  columnConfiguration: DataCubeColumnConfiguration,
+  operator: string,
+  value: { label: string; value: DataCubeOperationValue } | undefined,
+  controller: DataCubeGridControllerState,
+): MenuItemDef {
+  const operation = controller.dataCube.engine.getFilterOperation(operator);
+  return {
+    name: `Add Filter: ${columnConfiguration.name} ${operation.textLabel}${value ? ` ${value.label}` : ''}`,
+    action: () => {
+      controller.addNewFilterCondition(
+        new DataCubeFilterEditorConditionTreeNode(
+          controller.filterTree.root,
+          {
+            name: columnConfiguration.name,
+            type: columnConfiguration.type,
+          },
+          operation,
+          value?.value,
+          undefined,
+        ),
+      );
+    },
+  };
+}
 
 export function generateMenuBuilder(
   controller: DataCubeGridControllerState,
@@ -42,7 +165,9 @@ export function generateMenuBuilder(
     const column = params.column ?? undefined;
     const columnName = column?.getColId();
     const columnConfiguration = controller.getColumnConfiguration(columnName);
+    // NOTE: here we assume the value must be coming from the same column
     const value: unknown = 'value' in params ? params.value : undefined;
+    // console.log(params, params.api.getCellRanges());
 
     const sortMenu = [
       {
@@ -55,7 +180,7 @@ export function generateMenuBuilder(
                   action: () =>
                     controller.setSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperation.ASCENDING,
+                      DataCubeQuerySortOperator.ASCENDING,
                     ),
                 },
                 {
@@ -69,7 +194,7 @@ export function generateMenuBuilder(
                   action: () =>
                     controller.setSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperation.DESCENDING,
+                      DataCubeQuerySortOperator.DESCENDING,
                     ),
                 },
                 {
@@ -92,13 +217,13 @@ export function generateMenuBuilder(
                     controller.sortColumns.find(
                       (col) =>
                         col.name === columnName &&
-                        col.operation === DataCubeQuerySortOperation.ASCENDING,
+                        col.operation === DataCubeQuerySortOperator.ASCENDING,
                     ),
                   ),
                   action: () =>
                     controller.addSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperation.ASCENDING,
+                      DataCubeQuerySortOperator.ASCENDING,
                     ),
                 },
                 {
@@ -113,13 +238,13 @@ export function generateMenuBuilder(
                     controller.sortColumns.find(
                       (col) =>
                         col.name === columnName &&
-                        col.operation === DataCubeQuerySortOperation.DESCENDING,
+                        col.operation === DataCubeQuerySortOperator.DESCENDING,
                     ),
                   ),
                   action: () =>
                     controller.addSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperation.DESCENDING,
+                      DataCubeQuerySortOperator.DESCENDING,
                     ),
                 },
                 {
@@ -139,6 +264,60 @@ export function generateMenuBuilder(
         ],
       },
     ];
+
+    let newFilterMenu: MenuItemDef[] = [];
+    if (columnConfiguration && column && value !== undefined) {
+      if (value !== INTERNAL__GRID_CLIENT_MISSING_VALUE) {
+        const filterValue = toFilterValue(value, columnConfiguration);
+        const filterOperations = getColumnFilterOperations(columnConfiguration);
+
+        if (
+          filterOperations.length &&
+          filterOperations.includes(DataCubeQueryFilterOperator.EQUAL)
+        ) {
+          const moreFilterOperations = filterOperations.filter(
+            (op) => op !== DataCubeQueryFilterOperator.EQUAL,
+          );
+
+          newFilterMenu = [
+            buildNewFilterConditionMenuItem(
+              columnConfiguration,
+              DataCubeQueryFilterOperator.EQUAL,
+              filterValue,
+              controller,
+            ),
+            moreFilterOperations.length
+              ? {
+                  name: `More Filters on ${column.getColId()}...`,
+                  subMenu: moreFilterOperations.map((operator) =>
+                    buildNewFilterConditionMenuItem(
+                      columnConfiguration,
+                      operator,
+                      filterValue,
+                      controller,
+                    ),
+                  ),
+                }
+              : undefined,
+          ].filter(isNonNullable);
+        }
+      } else {
+        newFilterMenu = [
+          buildNewFilterConditionMenuItem(
+            columnConfiguration,
+            DataCubeQueryFilterOperator.IS_NULL,
+            undefined,
+            controller,
+          ),
+          buildNewFilterConditionMenuItem(
+            columnConfiguration,
+            DataCubeQueryFilterOperator.IS_NOT_NULL,
+            undefined,
+            controller,
+          ),
+        ];
+      }
+    }
 
     return [
       {
@@ -272,35 +451,21 @@ export function generateMenuBuilder(
       ...sortMenu,
       {
         name: 'Filter',
-        menuItem: WIP_GridMenuItem,
-        disabled: true,
-        cssClasses: ['!opacity-100'],
         subMenu: [
-          ...(column && value
-            ? [
-                {
-                  name: `Add Filter: ${column.getColId()} = {value}`,
-                  menuItem: WIP_GridMenuItem,
-                  cssClasses: ['!opacity-100'],
-                  disabled: true,
-                },
-                {
-                  name: `More Filters on ${column.getColId()}...`,
-                  menuItem: WIP_GridMenuItem,
-                  cssClasses: ['!opacity-100'],
-                  disabled: true,
-                  subMenu: [], // TODO
-                },
-                'separator',
-              ]
-            : []),
+          ...newFilterMenu,
+          newFilterMenu.length ? 'separator' : undefined,
           {
             name: 'Filters...',
+            action: () => {
+              editor.setCurrentTab(DataCubeEditorTab.FILTER);
+              editor.display.open();
+            },
           },
           {
             name: 'Clear All Filters',
+            action: () => controller.clearFilters(),
           },
-        ],
+        ].filter(isNonNullable),
       },
       {
         name: 'Pivot',
@@ -339,28 +504,6 @@ export function generateMenuBuilder(
             action: () => controller.clearAllVerticalPivots(),
           },
         ],
-      },
-      {
-        name: 'Heatmap',
-        menuItem: WIP_GridMenuItem,
-        cssClasses: ['!opacity-100'],
-        disabled: !column,
-        subMenu: column
-          ? [
-              {
-                name: `Add to ${column.getColId()}`,
-                menuItem: WIP_GridMenuItem,
-                cssClasses: ['!opacity-100'],
-                disabled: true,
-              },
-              {
-                name: `Remove from ${column.getColId()}`,
-                menuItem: WIP_GridMenuItem,
-                cssClasses: ['!opacity-100'],
-                disabled: true,
-              },
-            ]
-          : [],
       },
       {
         name: 'Extended Columns',
@@ -508,6 +651,28 @@ export function generateMenuBuilder(
         action: () => controller.showColumn(columnName, false),
       },
       'separator',
+      {
+        name: 'Heatmap',
+        menuItem: WIP_GridMenuItem,
+        cssClasses: ['!opacity-100'],
+        disabled: !column,
+        subMenu: column
+          ? [
+              {
+                name: `Add to ${column.getColId()}`,
+                menuItem: WIP_GridMenuItem,
+                cssClasses: ['!opacity-100'],
+                disabled: true,
+              },
+              {
+                name: `Remove from ${column.getColId()}`,
+                menuItem: WIP_GridMenuItem,
+                cssClasses: ['!opacity-100'],
+                disabled: true,
+              },
+            ]
+          : [],
+      },
       {
         name: 'Show Plot...',
         menuItem: WIP_GridMenuItem,

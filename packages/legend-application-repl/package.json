@@ -64,6 +64,7 @@
     "@finos/legend-shared": "workspace:*",
     "@types/react": "18.3.4",
     "@types/react-dom": "18.3.0",
+    "mathjs": "13.1.0",
     "mobx": "6.13.1",
     "mobx-react-lite": "4.0.7",
     "monaco-editor": "0.51.0",

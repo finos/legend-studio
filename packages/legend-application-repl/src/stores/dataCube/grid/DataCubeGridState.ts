@@ -21,9 +21,10 @@ import type { DataCubeState } from '../DataCubeState.js';
 import {
   DataCubeGridClientServerSideDataSource,
   INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE,
+  INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID,
   INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE,
 } from './DataCubeGridClientEngine.js';
-import { DataCubeQuerySnapshotSubscriber } from '../core/DataCubeQuerySnapshotSubscriber.js';
+import { DataCubeQuerySnapshotController } from '../core/DataCubeQuerySnapshotManager.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import { generateGridOptionsFromSnapshot } from './DataCubeGridConfigurationBuilder.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
@@ -46,7 +47,7 @@ class DataCubeGridDatasourceConfiguration {
   }
 }
 
-export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
+export class DataCubeGridState extends DataCubeQuerySnapshotController {
   readonly controller!: DataCubeGridControllerState;
   readonly exportEngine!: DataCubeGridClientExportEngine;
   private _client?: GridApi | undefined;
@@ -149,9 +150,12 @@ export class DataCubeGridState extends DataCubeQuerySnapshotSubscriber {
         ? INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE
         : INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE,
     });
-  }
-
-  override async initialize() {
-    // do nothing
+    // NOTE: change the value to the hashcode of the filter to trigger data fetch when filter is modified
+    this.client.setFilterModel({
+      [INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID]: {
+        type: 'equals',
+        filter: snapshot.hashCode,
+      },
+    });
   }
 }

@@ -17,19 +17,16 @@
 /***************************************************************************************
  * [CORE]
  *
- * These are utilities used to build the query snapshot from the executable query.
- * This is needed when we initialize the application by loading a persisted query.
+ * This and its corresponding utilitites are used to build the query snapshot from the
+ * executable query. This is needed when we initialize the application by loading a
+ * persisted query.
  ***************************************************************************************/
 
 import {
-  PRIMITIVE_TYPE,
   V1_AppliedFunction,
   V1_CInteger,
-  V1_ClassInstance,
-  V1_ColSpec,
-  V1_ColSpecArray,
+  type V1_ColSpec,
   V1_Collection,
-  V1_Lambda,
   V1_serializeValueSpecification,
   extractElementNameFromPath as _name,
   matchFunctionName,
@@ -38,189 +35,23 @@ import {
 import type { DataCubeQuery } from '../../../server/DataCubeQuery.js';
 import {
   DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotAggregateColumn,
   type DataCubeQuerySnapshotColumn,
 } from './DataCubeQuerySnapshot.js';
+import { assertType, guaranteeNonNullable } from '@finos/legend-shared';
 import {
-  assertTrue,
-  assertType,
-  guaranteeNonNullable,
-  guaranteeType,
-  UnsupportedOperationError,
-  type Clazz,
-} from '@finos/legend-shared';
-import {
-  DataCubeQuerySortOperation,
+  DataCubeQuerySortOperator,
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
-  DataCubeAggregateOperation,
 } from './DataCubeQueryEngine.js';
 import { DataCubeConfiguration } from './DataCubeConfiguration.js';
 import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
-
-// --------------------------------- UTILITIES ---------------------------------
-
-function _param<T extends V1_ValueSpecification>(
-  func: V1_AppliedFunction,
-  paramIdx: number,
-  clazz: Clazz<T>,
-): T {
-  assertTrue(
-    func.parameters.length >= paramIdx + 1,
-    `Can't process ${_name(func.function)}: Expected at least ${paramIdx + 1} parameter(s)`,
-  );
-  return guaranteeType(
-    func.parameters[paramIdx],
-    clazz,
-    `Can't process ${_name(func.function)}: Found unexpected type for parameter at index ${paramIdx}`,
-  );
-}
-
-function _colSpecParam(func: V1_AppliedFunction, paramIdx: number) {
-  return guaranteeType(
-    _param(func, paramIdx, V1_ClassInstance).value,
-    V1_ColSpec,
-    `Can't process ${_name(func.function)}: Expected parameter at index ${paramIdx} to be a column specification`,
-  );
-}
-
-function _colSpecArrayParam(func: V1_AppliedFunction, paramIdx: number) {
-  return guaranteeType(
-    _param(func, paramIdx, V1_ClassInstance).value,
-    V1_ColSpecArray,
-    `Can't process ${_name(func.function)}: Expected parameter at index ${paramIdx} to be a column specification list`,
-  );
-}
-
-function _funcMatch(
-  value: V1_ValueSpecification | undefined,
-  functionNames: string | string[],
-) {
-  assertType(
-    value,
-    V1_AppliedFunction,
-    `Can't process function: Found unexpected value specification type`,
-  );
-  assertTrue(
-    matchFunctionName(
-      value.function,
-      Array.isArray(functionNames) ? functionNames : [functionNames],
-    ),
-    `Can't process function: Expected function name to be one of [${Array.isArray(functionNames) ? functionNames.join(', ') : functionNames}]`,
-  );
-  return value;
-}
-
-function _aggFuncMatch(
-  value: V1_ValueSpecification | undefined,
-  functionNames: string | string[],
-) {
-  assertType(
-    value,
-    V1_Lambda,
-    `Can't process aggregation: Found unexpected value specification type`,
-  );
-  return _funcMatch(value.body[0], functionNames);
-}
-
-export function _defaultAggCol(
-  name: string,
-  type: string,
-): DataCubeQuerySnapshotAggregateColumn | undefined {
-  switch (type) {
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.FLOAT: {
-      return {
-        name,
-        type,
-        operation: DataCubeAggregateOperation.SUM,
-        parameters: [],
-      };
-    }
-    default:
-      return undefined;
-  }
-}
-
-function _aggCol(colSpec: V1_ColSpec, column: DataCubeQuerySnapshotColumn) {
-  const func = _aggFuncMatch(
-    colSpec.function2,
-    Object.values(DataCubeFunction),
-  );
-  if (matchFunctionName(func.function, DataCubeFunction.COUNT)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperation.COUNT,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.SUM)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperation.SUM,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.AVERAGE)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperation.AVERAGE,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.MIN)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperation.MIN,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.MAX)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperation.MAX,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.FIRST)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperation.FIRST,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.LAST)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperation.LAST,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.VAR_POP)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperation.VAR_POP,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.VAR_SAMP)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperation.VAR_SAMP,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.STDDEV_POP)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperation.STDDEV_POP,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.STDDEV_SAMP)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperation.STDDEV_SAMP,
-      parameters: [],
-    };
-  } else {
-    throw new UnsupportedOperationError(
-      `Unsupported aggregate function '${func.function}'`,
-    );
-  }
-}
+import {
+  _aggCol,
+  _colSpecArrayParam,
+  _colSpecParam,
+  _funcMatch,
+  _param,
+} from './DataCubeQuerySnapshotBuilderUtils.js';
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
@@ -228,27 +59,26 @@ const _SUPPORTED_TOP_LEVEL_FUNCTIONS: {
   func: string;
   parameters: number;
 }[] = [
-  { func: DataCubeFunction.FILTER, parameters: 1 },
   { func: DataCubeFunction.EXTEND, parameters: 1 },
+  { func: DataCubeFunction.FILTER, parameters: 1 },
   { func: DataCubeFunction.SELECT, parameters: 1 },
   { func: DataCubeFunction.GROUP_BY, parameters: 3 },
-  { func: DataCubeFunction.LIMIT, parameters: 1 },
   { func: DataCubeFunction.PIVOT, parameters: 3 },
-  { func: DataCubeFunction.SORT, parameters: 1 },
-
   { func: DataCubeFunction.CAST, parameters: 1 },
+  { func: DataCubeFunction.SORT, parameters: 1 },
+  { func: DataCubeFunction.LIMIT, parameters: 1 },
 ];
 
 // NOTE: this corresponds to the sequence:
-// filter()->extend()->groupBy()->select()->pivot()->cast()->extend()->sort()->limit()
+// extend()->filter()->groupBy()->select()->pivot()->cast()->extend()->sort()->limit()
 // which represents the ONLY query shape that we currently support
 const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN: {
   func: string;
   repeat?: boolean | undefined;
   required?: boolean | undefined;
 }[] = [
-  { func: DataCubeFunction.FILTER },
   { func: DataCubeFunction.EXTEND },
+  { func: DataCubeFunction.FILTER },
   { func: DataCubeFunction.SELECT },
   { func: DataCubeFunction.GROUP_BY },
   { func: DataCubeFunction.PIVOT },
@@ -315,7 +145,7 @@ function extractQueryFunctionSequence(query: V1_ValueSpecification) {
     );
   }
 
-  // Special checks
+  // TODO: we need to improve this logic since there can be more than just 2 extend() functions
   // Check that the first and second extend() must be separated by either groupBy() or pivot() (i.e. aggregation)
   const firstExtendIndex = sequence.findIndex((func) =>
     matchFunctionName(func.function, DataCubeFunction.EXTEND),
@@ -464,18 +294,19 @@ export function validateAndBuildQuerySnapshot(
   }));
   data.sourceColumns.map((col) => colsMap.set(col.name, col));
 
+  // --------------------------------- LEAF EXTEND ---------------------------------
+  // TODO: @akphi - implement this
+
   // --------------------------------- FILTER ---------------------------------
 
   if (funcMap.filter) {
+    data.filter = undefined; // TODO: @akphi - implement this
     // data.selectColumns = _colSpecArrayParam(funcMap.select, 0).colSpecs.map(
     //   (colSpec) => ({
     //     _col(colSpec),
     //   }),
     // );
   }
-
-  // --------------------------------- LEAF EXTEND ---------------------------------
-  // TODO: @akphi - implement this
 
   // --------------------------------- SELECT ---------------------------------
 
@@ -522,8 +353,8 @@ export function validateAndBuildQuerySnapshot(
           ..._col(_colSpecParam(sortColFunc, 0)),
           operation:
             _name(sortColFunc.function) === DataCubeFunction.ASC
-              ? DataCubeQuerySortOperation.ASCENDING
-              : DataCubeQuerySortOperation.DESCENDING,
+              ? DataCubeQuerySortOperator.ASCENDING
+              : DataCubeQuerySortOperator.DESCENDING,
         };
       },
     );

@@ -29,10 +29,38 @@ import {
   type DataCubeInfrastructureInfo,
   type CompletionItem,
 } from '../../server/REPLEngine.js';
-import { guaranteeType } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
 import type { REPLStore } from '../REPLStore.js';
 import { action, makeObservable, observable } from 'mobx';
+import { DataCubeQueryFilterOperation__Equal } from './core/filter/DataCubeQueryFilterOperation__Equal.js';
+import { DataCubeQueryFilterOperation__LessThanOrEqual } from './core/filter/DataCubeQueryFilterOperation__LessThanOrEqual.js';
+import { DataCubeQueryFilterOperation__LessThan } from './core/filter/DataCubeQueryFilterOperation__LessThan.js';
+import { DataCubeQueryFilterOperation__GreaterThanOrEqual } from './core/filter/DataCubeQueryFilterOperation__GreaterThanOrEqual.js';
+import { DataCubeQueryFilterOperation__GreaterThan } from './core/filter/DataCubeQueryFilterOperation__GreaterThan.js';
+import { DataCubeQueryFilterOperation__NotEqual } from './core/filter/DataCubeQueryFilterOperation__NotEqual.js';
+import { DataCubeQueryFilterOperation__EqualColumn } from './core/filter/DataCubeQueryFilterOperation__EqualColumn.js';
+import { DataCubeQueryFilterOperation__EqualCaseInsensitive } from './core/filter/DataCubeQueryFilterOperation__EqualCaseInsensitive.js';
+import { DataCubeQueryFilterOperation__NotEqualCaseInsensitive } from './core/filter/DataCubeQueryFilterOperation__NotEqualCaseInsensitive.js';
+import { DataCubeQueryFilterOperation__EqualCaseInsensitiveColumn } from './core/filter/DataCubeQueryFilterOperation__EqualCaseInsensitiveColumn.js';
+import { DataCubeQueryFilterOperation__NotEqualCaseInsensitiveColumn } from './core/filter/DataCubeQueryFilterOperation__NotEqualCaseInsensitiveColumn.js';
+import { DataCubeQueryFilterOperation__NotEqualColumn } from './core/filter/DataCubeQueryFilterOperation__NotEqualColumn.js';
+import { DataCubeQueryFilterOperation__LessThanColumn } from './core/filter/DataCubeQueryFilterOperation__LessThanColumn.js';
+import { DataCubeQueryFilterOperation__LessThanOrEqualColumn } from './core/filter/DataCubeQueryFilterOperation__LessThanOrEqualColumn.js';
+import { DataCubeQueryFilterOperation__GreaterThanColumn } from './core/filter/DataCubeQueryFilterOperation__GreaterThanColumn.js';
+import { DataCubeQueryFilterOperation__GreaterThanOrEqualColumn } from './core/filter/DataCubeQueryFilterOperation__GreaterThanOrEqualColumn.js';
+import { DataCubeQueryFilterOperation__Contain } from './core/filter/DataCubeQueryFilterOperation__Contain.js';
+import { DataCubeQueryFilterOperation__ContainCaseInsensitive } from './core/filter/DataCubeQueryFilterOperation__ContainCaseInsensitive.js';
+import { DataCubeQueryFilterOperation__NotContain } from './core/filter/DataCubeQueryFilterOperation__NotContain.js';
+import { DataCubeQueryFilterOperation__StartWith } from './core/filter/DataCubeQueryFilterOperation__StartWith.js';
+import { DataCubeQueryFilterOperation__StartWithCaseInsensitive } from './core/filter/DataCubeQueryFilterOperation__StartWithCaseInsensitive.js';
+import { DataCubeQueryFilterOperation__NotStartWith } from './core/filter/DataCubeQueryFilterOperation__NotStartWith.js';
+import { DataCubeQueryFilterOperation__EndWith } from './core/filter/DataCubeQueryFilterOperation__EndWith.js';
+import { DataCubeQueryFilterOperation__EndWithCaseInsensitive } from './core/filter/DataCubeQueryFilterOperation__EndWithCaseInsensitive.js';
+import { DataCubeQueryFilterOperation__NotEndWith } from './core/filter/DataCubeQueryFilterOperation__NotEndWith.js';
+import { DataCubeQueryFilterOperation__IsNull } from './core/filter/DataCubeQueryFilterOperation__IsNull.js';
+import { DataCubeQueryFilterOperation__IsNotNull } from './core/filter/DataCubeQueryFilterOperation__IsNotNull.js';
+import type { DataCubeQueryFilterOperation } from './core/filter/DataCubeQueryFilterOperation.js';
 
 export const DEFAULT_ENABLE_DEBUG_MODE = false;
 export const DEFAULT_GRID_CLIENT_ROW_BUFFER = 50;
@@ -43,6 +71,39 @@ export class DataCubeEngine {
   readonly repl: REPLStore;
   readonly application: LegendREPLApplicationStore;
   private readonly client: REPLServerClient;
+
+  readonly filterOperations = [
+    new DataCubeQueryFilterOperation__LessThan(),
+    new DataCubeQueryFilterOperation__LessThanOrEqual(),
+    new DataCubeQueryFilterOperation__Equal(),
+    new DataCubeQueryFilterOperation__NotEqual(),
+    new DataCubeQueryFilterOperation__GreaterThanOrEqual(),
+    new DataCubeQueryFilterOperation__GreaterThan(),
+
+    new DataCubeQueryFilterOperation__IsNull(),
+    new DataCubeQueryFilterOperation__IsNotNull(),
+
+    new DataCubeQueryFilterOperation__EqualCaseInsensitive(),
+    new DataCubeQueryFilterOperation__NotEqualCaseInsensitive(),
+    new DataCubeQueryFilterOperation__Contain(),
+    new DataCubeQueryFilterOperation__ContainCaseInsensitive(),
+    new DataCubeQueryFilterOperation__NotContain(),
+    new DataCubeQueryFilterOperation__StartWith(),
+    new DataCubeQueryFilterOperation__StartWithCaseInsensitive(),
+    new DataCubeQueryFilterOperation__NotStartWith(),
+    new DataCubeQueryFilterOperation__EndWith(),
+    new DataCubeQueryFilterOperation__EndWithCaseInsensitive(),
+    new DataCubeQueryFilterOperation__NotEndWith(),
+
+    new DataCubeQueryFilterOperation__LessThanColumn(),
+    new DataCubeQueryFilterOperation__LessThanOrEqualColumn(),
+    new DataCubeQueryFilterOperation__EqualColumn(),
+    new DataCubeQueryFilterOperation__NotEqualColumn(),
+    new DataCubeQueryFilterOperation__EqualCaseInsensitiveColumn(),
+    new DataCubeQueryFilterOperation__NotEqualCaseInsensitiveColumn(),
+    new DataCubeQueryFilterOperation__GreaterThanColumn(),
+    new DataCubeQueryFilterOperation__GreaterThanOrEqualColumn(),
+  ];
 
   enableDebugMode = DEFAULT_ENABLE_DEBUG_MODE;
   gridClientRowBuffer = DEFAULT_GRID_CLIENT_ROW_BUFFER;
@@ -67,6 +128,13 @@ export class DataCubeEngine {
     this.repl = repl;
     this.application = repl.application;
     this.client = repl.client;
+  }
+
+  getFilterOperation(operator: string): DataCubeQueryFilterOperation {
+    return guaranteeNonNullable(
+      this.filterOperations.find((op) => op.operator === operator),
+      `Can't find filter operation '${operator}'`,
+    );
   }
 
   setEnableDebugMode(enableDebugMode: boolean) {
