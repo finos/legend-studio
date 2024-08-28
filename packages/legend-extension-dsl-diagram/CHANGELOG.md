@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-diagram
 
+## 8.1.0
+
+### Minor Changes
+
+- [#3479](https://github.com/finos/legend-studio/pull/3479) [`a2de995`](https://github.com/finos/legend-studio/commit/a2de995b15cf12b838d2d6b3094b5ea9e5261f24) ([@sameersaini](https://github.com/sameersaini)) - added DiagramEditor to vscode-extension-deps
+
 ## 8.0.216
 
 ## 8.0.215
