@@ -24,21 +24,22 @@ import {
 } from '@finos/legend-query-builder';
 import {
   type GraphManagerState,
-  getMappingCompatibleClasses,
-  RuntimePointer,
   type QueryExecutionContext,
   type Runtime,
-  Class,
   type Mapping,
+  getMappingCompatibleClasses,
+  RuntimePointer,
+  Class,
   getDescendantsOfPackage,
   Package,
   QueryDataSpaceExecutionContext,
+  Service,
 } from '@finos/legend-graph';
 import {
-  DepotScope,
-  SNAPSHOT_VERSION_ALIAS,
   type DepotServerClient,
   type StoredEntity,
+  DepotScope,
+  SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
 import {
   type GeneratorFn,
@@ -51,16 +52,17 @@ import {
 import { action, flow, makeObservable, observable } from 'mobx';
 import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query-builder/DataSpaceQueryBuilder.js';
 import {
-  DataSpace,
   type DataSpaceExecutionContext,
-  type DataSpaceExecutableTemplate,
+  type DataSpaceExecutable,
+  DataSpace,
+  DataSpacePackageableElementExecutable,
 } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceAdvancedSearchState } from '../query/DataSpaceAdvancedSearchState.js';
 import type { DataSpaceAnalysisResult } from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import {
-  extractDataSpaceInfo,
   type DataSpaceInfo,
+  extractDataSpaceInfo,
 } from '../shared/DataSpaceInfo.js';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/to-delete/DSL_DataSpace_LegendQueryNavigation_to_delete.js';
@@ -119,7 +121,7 @@ export abstract class DataSpacesBuilderRepoistory {
   abstract loadDataSpaces(): GeneratorFn<void>;
   abstract visitTemplateQuery(
     dataSpace: DataSpace,
-    template: DataSpaceExecutableTemplate,
+    template: DataSpaceExecutable,
   ): void;
 
   configureDataSpaceOptions(val: DataSpaceInfo[]): void {
@@ -160,7 +162,7 @@ export class DataSpacesGraphRepoistory extends DataSpacesBuilderRepoistory {
 
   override visitTemplateQuery(
     dataSpace: DataSpace,
-    template: DataSpaceExecutableTemplate,
+    template: DataSpaceExecutable,
   ): void {
     throw new Error('Method not implemented.');
   }
@@ -226,7 +228,7 @@ export class DataSpacesDepotRepository extends DataSpacesBuilderRepoistory {
 
   override visitTemplateQuery(
     dataSpace: DataSpace,
-    template: DataSpaceExecutableTemplate,
+    template: DataSpaceExecutable,
   ): void {
     if (template.id) {
       this.applicationStore.navigationService.navigator.visitAddress(
@@ -237,6 +239,21 @@ export class DataSpacesDepotRepository extends DataSpacesBuilderRepoistory {
             this.project.versionId,
             dataSpace.path,
             template.id,
+          ),
+        ),
+      );
+    } else if (
+      template instanceof DataSpacePackageableElementExecutable &&
+      template.executable.value instanceof Service
+    ) {
+      this.applicationStore.navigationService.navigator.visitAddress(
+        this.applicationStore.navigationService.navigator.generateAddress(
+          generateDataSpaceTemplateQueryCreatorRoute(
+            this.project.groupId,
+            this.project.artifactId,
+            this.project.versionId,
+            dataSpace.path,
+            template.executable.value.path,
           ),
         ),
       );
