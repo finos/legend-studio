@@ -71,13 +71,9 @@ export class DataQualityGraphFetchTreeState implements Hashable {
     );
   }
 
-  onClassChange(_class: Class | undefined): void {
-    this.updateTreeData(_class);
-  }
-
   updateNode(
     node: DataQualityGraphFetchTreeNodeData,
-    constraint: Constraint,
+    constraints: Constraint[],
     addConstraint: boolean,
   ): void {
     if (!this.treeData) {
@@ -86,7 +82,7 @@ export class DataQualityGraphFetchTreeState implements Hashable {
       );
       return;
     }
-    updateNodeConstraints(this.treeData, node, constraint, addConstraint);
+    updateNodeConstraints(this.treeData, node, constraints, addConstraint);
     this.setGraphFetchTree({ ...this.treeData });
   }
 

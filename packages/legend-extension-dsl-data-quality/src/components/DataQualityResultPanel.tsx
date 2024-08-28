@@ -152,7 +152,7 @@ export const DataQualityResultPanel = observer(
       if (!queryDuration) {
         return undefined;
       }
-      return `query ran in ${queryDuration}`;
+      return `validation ran in ${queryDuration}`;
     };
     const resultDescription = executionResult
       ? getResultSetDescription(executionResult)
@@ -203,7 +203,7 @@ export const DataQualityResultPanel = observer(
             <div className="panel__header__title__label">results</div>
             {resultState.pressedRunQuery.isInProgress && (
               <div className="panel__header__title__label__status">
-                Running Query...
+                Running Validation...
               </div>
             )}
             <div
@@ -259,13 +259,13 @@ export const DataQualityResultPanel = observer(
               ) : (
                 <>
                   <button
-                    className="btn__dropdown-combo__label data-quality-validation__result__execute-btn__btn data-quality-validation__result__execute-btn__btn--green"
+                    className="btn__dropdown-combo__label data-quality-validation__result__execute-btn__validation data-quality-validation__result__execute-btn__btn data-quality-validation__result__execute-btn__btn--green"
                     onClick={runQuery}
                     tabIndex={-1}
                     disabled={isRunQueryDisabled}
                   >
                     <PlayIcon />
-                    Run Query
+                    Run Validation
                   </button>
                   <ControlledDropdownMenu
                     className="btn__dropdown-combo__dropdown-btn data-quality-validation__result__execute-btn__btn data-quality-validation__result__execute-btn__btn--green"
@@ -314,7 +314,7 @@ export const DataQualityResultPanel = observer(
           </CubesLoadingIndicator>
           {!executionResult && !isLoading && (
             <BlankPanelContent>
-              Build or load a valid query first
+              Click on run validation to see the constraints validation results
             </BlankPanelContent>
           )}
           {executionResult && !isLoading && (

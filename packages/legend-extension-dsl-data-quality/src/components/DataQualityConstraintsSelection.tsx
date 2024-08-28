@@ -39,11 +39,13 @@ import {
   TimesIcon,
   TreeView,
   ExclamationTriangleIcon,
+  MinusSquareIcon,
 } from '@finos/legend-art';
 import { dataQualityClassValidation_setDataQualityGraphFetchTree } from '../graph-manager/DSL_DataQuality_GraphModifierHelper.js';
 import type { DataQualityClassValidationsConfiguration } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import {
   type Type,
+  type Constraint,
   Class,
   Enumeration,
   PropertyGraphFetchTree,
@@ -98,23 +100,66 @@ export const DataQualityConstraintsTreeNodeContainer = observer(
       ) : (
         <ChevronRightIcon />
       )
-    ) : (
-      <div />
-    );
+    ) : null;
     const nodeTypeIcon = type ? (
       getClassPropertyIcon(type)
     ) : (
       <PURE_UnknownElementTypeIcon />
     );
+    const showClassConstraintsSelectionCheckBox =
+      !node.isReadOnly &&
+      node.type instanceof Class &&
+      node.constraints.length !== 0;
+    const noClassConstraintsSelected =
+      node.type instanceof Class &&
+      node.constraints.length > 0 &&
+      node.constraints.every((constraint) => !constraint.isSelected);
+    const allClassConstraintsSelected =
+      node.type instanceof Class &&
+      node.constraints.length > 0 &&
+      node.constraints.every((constraint) => constraint.isSelected);
+
     const toggleExpandNode = (): void => onNodeSelect?.(node);
     const deleteNode = (): void => removeNode?.(node);
     const toggleChecked = (constraint: ConstraintState): void => {
       dataQualityGraphFetchTreeState.updateNode(
         node,
-        constraint.constraint,
+        [constraint.constraint],
         !constraint.isSelected,
       );
       constraint.setIsSelected(!constraint.isSelected);
+    };
+
+    const checkBoxIcon = () => {
+      if (noClassConstraintsSelected) {
+        return <SquareIcon />;
+      }
+      if (allClassConstraintsSelected) {
+        return <CheckSquareIcon />;
+      }
+      return <MinusSquareIcon />;
+    };
+
+    const toggleClassConstraintsSelection = (): void => {
+      const desiredConstraints: Constraint[] = [];
+      let addConstraint = true;
+      if (!allClassConstraintsSelected) {
+        node.constraints.forEach((constraint) => {
+          desiredConstraints.push(constraint.constraint);
+          constraint.setIsSelected(true);
+        });
+      } else {
+        addConstraint = false;
+        node.constraints.forEach((constraint) => {
+          desiredConstraints.push(constraint.constraint);
+          constraint.setIsSelected(false);
+        });
+      }
+      dataQualityGraphFetchTreeState.updateNode(
+        node,
+        desiredConstraints,
+        addConstraint,
+      );
     };
 
     return (
@@ -127,13 +172,31 @@ export const DataQualityConstraintsTreeNodeContainer = observer(
           }}
         >
           <div className="data-quality-validation-graph-fetch-tree__node__content">
-            <div className="tree-view__node__icon data-quality-validation-graph-fetch-tree__node__icon">
-              <div
-                className="data-quality-validation-graph-fetch-tree__expand-icon"
-                onClick={toggleExpandNode}
-              >
-                {nodeExpandIcon}
-              </div>
+            <div className="data-quality-validation-graph-fetch-tree__node__icon">
+              {showClassConstraintsSelectionCheckBox && (
+                <div onClick={toggleClassConstraintsSelection}>
+                  <button
+                    className={clsx(
+                      'panel__content__form__section__toggler__btn',
+                      'data-quality-validation-graph-fetch-tree__constraint__checkbox',
+                      {
+                        'panel__content__form__section__toggler__btn--toggled':
+                          !noClassConstraintsSelected,
+                      },
+                    )}
+                  >
+                    {checkBoxIcon()}
+                  </button>
+                </div>
+              )}
+              {nodeExpandIcon && (
+                <div
+                  className="data-quality-validation-graph-fetch-tree__expand-icon"
+                  onClick={toggleExpandNode}
+                >
+                  {nodeExpandIcon}
+                </div>
+              )}
               <div
                 className="data-quality-validation-graph-fetch-tree__type-icon"
                 onClick={toggleExpandNode}

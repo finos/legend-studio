@@ -380,22 +380,27 @@ export const isConstraintsClassesTreeEmpty = (
   treeData: DataQualityGraphFetchTreeData,
 ): boolean => treeData.rootIds.length === 0;
 
-export const updateNodeConstraints = (
-  treeData: DataQualityGraphFetchTreeData,
-  node: DataQualityGraphFetchTreeNodeData,
-  constraint: Constraint,
-  addConstraint: boolean,
-): void => {
-  //update the node of graph fetch tree present
-  const updatedTreeNode = node.tree;
-  if (addConstraint) {
-    updatedTreeNode.constraints.push(constraint.name);
-  } else {
-    updatedTreeNode.constraints = updatedTreeNode.constraints.filter(
-      (constraintName) => constraintName !== constraint.name,
-    );
-  }
-};
+export const updateNodeConstraints = action(
+  (
+    treeData: DataQualityGraphFetchTreeData,
+    node: DataQualityGraphFetchTreeNodeData,
+    constraints: Constraint[],
+    addConstraint: boolean,
+  ): void => {
+    //update the node of graph fetch tree present
+    const updatedTreeNode = node.tree;
+    if (addConstraint) {
+      constraints.forEach((constraint) => {
+        updatedTreeNode.constraints.push(constraint.name);
+      });
+    } else {
+      updatedTreeNode.constraints = updatedTreeNode.constraints.filter(
+        (constraintName) =>
+          !constraints.find((constraint) => constraint.name === constraintName),
+      );
+    }
+  },
+);
 
 export const addQueryBuilderPropertyNode = (
   treeData: DataQualityGraphFetchTreeData,
@@ -560,3 +565,24 @@ export const addQueryBuilderPropertyNode = (
     treeData.nodes.set(rootNodeFromTree.id, rootNodeFromTree);
   }
 };
+
+export const buildDefaultDataQualityRootGraphFetchTree = action(
+  (selectedClass: Class): DataQualityRootGraphFetchTree => {
+    const dataQualityRootGraphFetchTree = new DataQualityRootGraphFetchTree(
+      PackageableElementExplicitReference.create(selectedClass),
+    );
+    dataQualityRootGraphFetchTree.constraints = selectedClass.constraints.map(
+      (constraint) => constraint.name,
+    );
+    dataQualityRootGraphFetchTree.subTrees = selectedClass.properties
+      .filter((property) => property.multiplicity.lowerBound > 0)
+      .map(
+        (property) =>
+          new DataQualityPropertyGraphFetchTree(
+            PropertyExplicitReference.create(property),
+            undefined,
+          ),
+      );
+    return dataQualityRootGraphFetchTree;
+  },
+);
