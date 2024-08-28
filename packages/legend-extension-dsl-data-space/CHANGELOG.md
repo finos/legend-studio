@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.3.61
+
+### Patch Changes
+
+- [#3463](https://github.com/finos/legend-studio/pull/3463) [`2770a48`](https://github.com/finos/legend-studio/commit/2770a48ab539c9724ccb8909c99726510acb4986) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Display all dataspace executables in Legend Query
+
 ## 10.3.60
 
 ## 10.3.59

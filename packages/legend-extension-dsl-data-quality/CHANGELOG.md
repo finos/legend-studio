@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 1.0.28
+
+### Patch Changes
+
+- [#3478](https://github.com/finos/legend-studio/pull/3478) [`fdfb9f4`](https://github.com/finos/legend-studio/commit/fdfb9f41c57ac382531d7ffdb09f9576b8b249fc) ([@viju4076](https://github.com/viju4076)) - dq validation element fix to create element with default values and enhancement to select or deselect all constraints of a class at once
+
 ## 1.0.27
 
 ## 1.0.26
