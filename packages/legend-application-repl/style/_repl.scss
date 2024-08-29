@@ -179,10 +179,16 @@ button:focus-visible {
   // --------------------------------- Pinning ---------------------------------
   // Improve visibility of pinned columns
 
+  .ag-sticky-top .ag-pinned-left-sticky-top > div,
+  .ag-sticky-top .ag-sticky-top-container > div {
+    border-bottom: 3px double var(--tw-color-neutral-400);
+  }
+
   .ag-cell.ag-cell-last-left-pinned {
     border-right: none;
   }
 
+  .ag-pinned-left-sticky-top,
   .ag-pinned-left-header,
   .ag-pinned-left-cols-container {
     border-right: 3px double var(--tw-color-neutral-400);
@@ -192,6 +198,7 @@ button:focus-visible {
     border-left: none;
   }
 
+  .ag-pinned-right-sticky-top,
   .ag-pinned-right-header,
   .ag-pinned-right-cols-container {
     border-left: 3px double var(--tw-color-neutral-400);
