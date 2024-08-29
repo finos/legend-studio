@@ -306,7 +306,7 @@ export function _filter(
       filterGroup.groupOperator === DataCubeQueryFilterGroupOperator.AND
         ? DataCubeFunction.AND
         : DataCubeFunction.OR;
-    let conditions: V1_ValueSpecification[] = [];
+    let conditions: V1_AppliedFunction[] = [];
     filterGroup.conditions.forEach((condition) => {
       conditions.push(_filter(condition, filterOperations));
       // NOTE: a group operation (and/or) function can only have 2 parameters, so we
@@ -315,7 +315,8 @@ export function _filter(
         conditions = [_function(groupOperation, conditions)];
       }
     });
-    return guaranteeNonNullable(conditions[0]);
+    const groupCondition = guaranteeNonNullable(conditions[0]);
+    return filterGroup.not ? _not(groupCondition) : groupCondition;
   } else {
     const filterCondition = filter;
     const operation = filterOperations.find(
@@ -327,7 +328,7 @@ export function _filter(
         `Unsupported filter operation '${filterCondition.operation}'`,
       );
     }
-    return condition;
+    return filterCondition.not ? _not(condition) : condition;
   }
 }
 
