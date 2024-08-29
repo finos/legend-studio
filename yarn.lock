@@ -3448,11 +3448,13 @@ __metadata:
   resolution: "@finos/legend-vscode-extension-dependencies@workspace:packages/legend-vscode-extension-dependencies"
   dependencies:
     "@babel/core": "npm:7.25.2"
+    "@finos/legend-application": "workspace:*"
     "@finos/legend-application-studio": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-graph": "workspace:*"
+    "@finos/legend-query-builder": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@rollup/plugin-babel": "npm:6.0.4"

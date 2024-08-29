@@ -87,6 +87,7 @@ export {
   getQueryBuilderExplorerTreeNodeSortRank,
   QueryBuilderSubclassInfoTooltip,
 } from './components/explorer/QueryBuilderExplorerPanel.js';
+export { QueryBuilderActionConfig } from './stores/query-workflow/QueryBuilderWorkFlowState.js';
 // ------------------------------------------- Shared components -------------------------------------------
 
 export * from './components/shared/LambdaEditor.js';

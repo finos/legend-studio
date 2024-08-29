@@ -17,15 +17,16 @@
 import '../style/index.scss';
 
 export * from './graph-manager/index.js';
+
 export {
-  getDiagram,
-  Point,
-  DIAGRAM_INTERACTION_MODE,
-  DIAGRAM_RELATIONSHIP_EDIT_MODE,
-  DiagramRenderer,
   type Diagram,
   DIAGRAM_ALIGNER_OPERATOR,
+  DIAGRAM_INTERACTION_MODE,
+  DIAGRAM_RELATIONSHIP_EDIT_MODE,
   DIAGRAM_ZOOM_LEVELS,
+  DiagramRenderer,
+  getDiagram,
+  Point,
   V1_diagramModelSchema,
   V1_transformDiagram,
 } from '@finos/legend-extension-dsl-diagram';
@@ -38,26 +39,61 @@ export {
   AlignStartIcon,
   AlignTopIcon,
   CaretDownIcon,
-  CustomSelectorInput,
-  ControlledDropdownMenu,
+  clsx,
   compareLabelFn,
+  ControlledDropdownMenu,
+  CustomSelectorInput,
   DistributeHorizontalIcon,
   DistributeVerticalIcon,
+  LegendStyleProvider,
   MenuContent,
   MenuContentDivider,
   MenuContentItem,
-  SaveIcon,
-  clsx,
   MousePointerIcon,
   MoveIcon,
+  SaveIcon,
+  useResizeDetector,
   ZoomInIcon,
   ZoomOutIcon,
-  useResizeDetector,
-  LegendStyleProvider,
 } from '@finos/legend-art';
 
-export { Class, type PureModel, CORE_PURE_PATH } from '@finos/legend-graph';
+export {
+  type GraphManagerPluginManager,
+  type PureGraphManagerPlugin,
+  type PureGraphPlugin,
+  type PureModel,
+  type PureProtocolProcessorPlugin,
+  Class,
+  CORE_PURE_PATH,
+  GraphManagerState,
+  Service,
+} from '@finos/legend-graph';
 
 export type { Entity } from '@finos/legend-storage';
 
-export type { GeneratorFn } from '@finos/legend-shared';
+export { type GeneratorFn, AbstractPreset } from '@finos/legend-shared';
+
+export {
+  LegendVSCodeApplicationConfig,
+  LegendVSCodePluginManager,
+  QueryBuilderVSCodeWorkflowState,
+} from './utils/index.js';
+
+export {
+  type LegendApplicationConfigurationData,
+  type LegendApplicationConfigurationInput,
+  ApplicationStore,
+  ApplicationStoreProvider,
+  LegendApplicationConfig,
+  LegendApplicationPlugin,
+  LegendApplicationPluginManager,
+} from '@finos/legend-application';
+
+export {
+  type FetchStructureLayoutConfig,
+  QueryBuilder,
+  QueryBuilderActionConfig,
+  QueryBuilderState,
+  QueryBuilderWorkflowState,
+  ServiceQueryBuilderState,
+} from '@finos/legend-query-builder';

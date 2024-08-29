@@ -69,6 +69,7 @@ export {
   TagReference,
   TagExplicitReference,
 } from './graph/metamodel/pure/packageableElements/domain/TagReference.js';
+export { Service } from './graph/metamodel/pure/packageableElements/service/Service.js';
 export * from './graph/metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 export { TestDataGenerationResult } from './graph/metamodel/pure/packageableElements/service/TestGenerationResult.js';
 export * from './graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
