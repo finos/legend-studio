@@ -45,6 +45,8 @@ export {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from './stores/data-space/DataSpaceQueryBuilderHelper.js';
+export { DataSpaceQuerySetupState } from './stores/data-space/DataSpaceQuerySetupState.js';
+
 // components
 export {
   QueryEditorStoreContext,
