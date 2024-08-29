@@ -30,3 +30,14 @@
     margin-left: 5px;
   }
 }
+
+.diagram-editor__header__search__action {
+  width: 40rem;
+  flex-grow: 1;
+  justify-content: flex-start;
+  margin-left: 4.3rem;
+
+  .selector-input--dark__control {
+    width: inherit;
+  }
+}

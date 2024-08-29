@@ -17,6 +17,7 @@ import {
   type Diagram,
   DIAGRAM_ALIGNER_OPERATOR,
   DIAGRAM_ZOOM_LEVELS,
+  Point,
   V1_diagramModelSchema,
   V1_transformDiagram,
 } from '@finos/legend-extension-dsl-diagram';
@@ -31,7 +32,9 @@ import {
   AlignStartIcon,
   AlignTopIcon,
   CaretDownIcon,
+  compareLabelFn,
   ControlledDropdownMenu,
+  CustomSelectorInput,
   DistributeHorizontalIcon,
   DistributeVerticalIcon,
   MenuContent,
@@ -42,10 +45,14 @@ import {
 import type { DiagramEditorState } from '../../stores/DiagramEditorState.js';
 import { postMessage } from '../../utils/VsCodeUtils.js';
 import type { PlainObject } from '@finos/legend-shared';
+import { CORE_PURE_PATH } from '@finos/legend-graph';
+import { useState } from 'react';
+import { flowResult } from 'mobx';
 
 export const DiagramEditorHeader = observer(
   (props: { diagramEditorState: DiagramEditorState }) => {
     const { diagramEditorState } = props;
+    const [classSearchValue, setClassSearchValue] = useState('');
     const createCenterZoomer =
       (zoomLevel: number): (() => void) =>
       (): void => {
@@ -56,8 +63,47 @@ export const DiagramEditorHeader = observer(
     const isAlignerDisabled =
       diagramEditorState.renderer.selectedClasses.length < 2;
 
+    const classEntities = diagramEditorState.entities.filter(
+      (entity) => entity.classifierPath === CORE_PURE_PATH.CLASS,
+    );
+
     return (
-      <>
+      <div className="diagram-editor__header">
+        <CustomSelectorInput
+          className="diagram-editor__header__action diagram-editor__header__search__action"
+          options={classEntities
+            .map((cl) => ({
+              label: cl.path,
+              value: cl.path,
+            }))
+            .sort(compareLabelFn)}
+          isLoading={false}
+          onInputChange={(value: string) => setClassSearchValue(value)}
+          inputValue={classSearchValue}
+          onChange={(value: { label: string; value: string }) => {
+            const position =
+              diagramEditorState.renderer.canvasCoordinateToModelCoordinate(
+                diagramEditorState.renderer.eventCoordinateToCanvasCoordinate(
+                  new Point(200, 200),
+                ),
+              );
+            flowResult(
+              diagramEditorState.addClassView(value.value, position),
+            ).catch(
+              // eslint-disable-next-line no-console
+              (error: unknown) => console.error(error),
+            );
+          }}
+          value={''}
+          placeholder="Search for a Class..."
+          isClearable={true}
+          escapeClearsValue={true}
+          darkMode={true}
+          formatOptionLabel={{}}
+          optionCustomization={{
+            rowHeight: window.innerHeight * 0.03,
+          }}
+        />
         <div className="diagram-editor__header__group">
           <button
             className="diagram-editor__header__action diagram-editor__header__group__action"
@@ -224,7 +270,7 @@ export const DiagramEditorHeader = observer(
             <CaretDownIcon />
           </div>
         </ControlledDropdownMenu>
-      </>
+      </div>
     );
   },
 );
