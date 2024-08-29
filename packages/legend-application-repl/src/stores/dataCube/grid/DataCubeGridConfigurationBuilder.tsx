@@ -601,7 +601,8 @@ export function generateGridOptionsFromSnapshot(
         // TODO: pinning (should we pin this left by default?)
         // TODO: tooltip
         loadingCellRenderer: DataCubeGridLoadingCellRenderer,
-        sortable: false, // TODO: @akphi - we can support this in the configuration
+        // TODO: @akphi - we can support this in the configuration (support sorting by tree-column?)
+        // sortable: false,
       } satisfies ColDef,
       // NOTE: Internal column used for programatically trigger data fetch when filter is modified
       {

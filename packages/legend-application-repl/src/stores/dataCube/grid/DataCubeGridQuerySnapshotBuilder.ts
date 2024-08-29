@@ -27,7 +27,10 @@ import {
   type DataCubeQuerySnapshotGroupBy,
   _getCol,
 } from '../core/DataCubeQuerySnapshot.js';
-import { GridClientSortDirection } from './DataCubeGridClientEngine.js';
+import {
+  GridClientSortDirection,
+  INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
+} from './DataCubeGridClientEngine.js';
 import {
   DataCubeColumnKind,
   DataCubeQuerySortOperator,
@@ -82,13 +85,20 @@ export function buildQuerySnapshot(
 
   // --------------------------------- SORT ---------------------------------
 
-  snapshot.data.sortColumns = request.sortModel.map((item) => ({
-    ..._getCol(baseSnapshot.stageCols('sort'), item.colId),
-    operation:
-      item.sort === GridClientSortDirection.ASCENDING
-        ? DataCubeQuerySortOperator.ASCENDING
-        : DataCubeQuerySortOperator.DESCENDING,
-  }));
+  snapshot.data.sortColumns = request.sortModel
+    // Make sure the tree group is not being sorted since it's a synthetic column
+    // the sorting state of this special column is `synthesized` by ag-grid
+    // so when all group by columns are sorted in the same direction, the tree group
+    // column will be sorted in that direction, and vice versa, when user sorts
+    // the tree-group, all group-by columns will be sorted in that direction
+    .filter((item) => item.colId !== INTERNAL__GRID_CLIENT_TREE_COLUMN_ID)
+    .map((item) => ({
+      ..._getCol(baseSnapshot.stageCols('sort'), item.colId),
+      operation:
+        item.sort === GridClientSortDirection.ASCENDING
+          ? DataCubeQuerySortOperator.ASCENDING
+          : DataCubeQuerySortOperator.DESCENDING,
+    }));
 
   // --------------------------------- FINALIZE ---------------------------------
 
