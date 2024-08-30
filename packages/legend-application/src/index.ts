@@ -15,7 +15,7 @@
  */
 
 export * from './stores/ApplicationConfig.js';
-
+export * from './components/BrowserEnvironmentProvider.js';
 export * from './application/LegendApplication.js';
 export * from './application/LegendApplicationConfig.js';
 export * from './application/LegendApplicationPluginManager.js';

@@ -82,8 +82,10 @@ export {
 export {
   type LegendApplicationConfigurationData,
   type LegendApplicationConfigurationInput,
+  ApplicationFrameworkProvider,
   ApplicationStore,
   ApplicationStoreProvider,
+  BrowserEnvironmentProvider,
   LegendApplicationConfig,
   LegendApplicationPlugin,
   LegendApplicationPluginManager,
