@@ -25,6 +25,7 @@ import {
   guaranteeType,
   returnUndefOnError,
   IllegalStateError,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { PrimitiveType } from '../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 import { Enumeration } from '../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
@@ -577,6 +578,15 @@ export class PureModel extends BasicModel {
       );
     }
     return element;
+  }
+
+  getPackages(path: string): Package[] {
+    return [
+      this.getNullablePackage(path),
+      ...this.dependencyManager.getPackages(path),
+      this.generationModel.getNullablePackage(path),
+      this.systemModel.getNullablePackage(path),
+    ].filter(isNonNullable);
   }
 
   getMultiplicity(

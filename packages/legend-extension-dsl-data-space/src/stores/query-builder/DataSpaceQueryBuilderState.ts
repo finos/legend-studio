@@ -23,17 +23,17 @@ import {
   QueryBuilderState,
 } from '@finos/legend-query-builder';
 import {
+  type Class,
   type GraphManagerState,
+  getMappingCompatibleClasses,
+  RuntimePointer,
   type QueryExecutionContext,
   type Runtime,
   type Mapping,
-  getMappingCompatibleClasses,
-  RuntimePointer,
-  Class,
-  getDescendantsOfPackage,
   Package,
   QueryDataSpaceExecutionContext,
   Service,
+  elementBelongsToPackage,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
@@ -47,7 +47,6 @@ import {
   assertErrorThrown,
   getNullableFirstEntry,
   filterByType,
-  uniq,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query-builder/DataSpaceQueryBuilder.js';
@@ -56,6 +55,7 @@ import {
   type DataSpaceExecutable,
   DataSpace,
   DataSpacePackageableElementExecutable,
+  type DataSpaceElement,
 } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceAdvancedSearchState } from '../query/DataSpaceAdvancedSearchState.js';
@@ -67,23 +67,44 @@ import {
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/to-delete/DSL_DataSpace_LegendQueryNavigation_to_delete.js';
 
+const matchesDataElement = (
+  _class: Class,
+  element: DataSpaceElement,
+): boolean => {
+  if (_class === element) {
+    return true;
+  }
+  if (element instanceof Package) {
+    return elementBelongsToPackage(_class, element);
+  }
+  return false;
+};
+
 export const resolveUsableDataSpaceClasses = (
   dataSpace: DataSpace,
   mapping: Mapping,
   graphManagerState: GraphManagerState,
 ): Class[] => {
+  const compatibleClasses = getMappingCompatibleClasses(
+    mapping,
+    graphManagerState.usableClasses,
+  );
   if (dataSpace.elements?.length) {
-    const dataSpaceElements = dataSpace.elements.map((ep) => ep.element.value);
-    return uniq([
-      ...dataSpaceElements.filter(filterByType(Class)),
-      ...dataSpaceElements
-        .filter(filterByType(Package))
-        .map((_package) => Array.from(getDescendantsOfPackage(_package)))
-        .flat()
-        .filter(filterByType(Class)),
-    ]);
+    const elements = dataSpace.elements;
+    return compatibleClasses.filter((_class) => {
+      const _classElements = elements
+        .filter((e) => matchesDataElement(_class, e.element.value))
+        // we sort because we respect the closest definition to the element.
+        .sort(
+          (a, b) => b.element.value.path.length - a.element.value.path.length,
+        );
+      if (!_classElements.length) {
+        return false;
+      }
+      return !_classElements[0]?.exclude;
+    });
   }
-  return getMappingCompatibleClasses(mapping, graphManagerState.usableClasses);
+  return compatibleClasses;
 };
 export interface DataSpaceQuerySDLC extends QuerySDLC {
   groupId: string;

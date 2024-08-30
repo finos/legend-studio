@@ -88,9 +88,7 @@ export const deleteElementFromPackage = (
   );
 };
 
-export const getDescendantsOfPackage = (
-  parent: Package,
-): Set<PackageableElement> => {
+const getDescendantsOfPackage = (parent: Package): Set<PackageableElement> => {
   const descendants: Set<PackageableElement> = new Set<PackageableElement>();
   parent.children.forEach((c) => {
     if (c instanceof Package) {
@@ -100,6 +98,32 @@ export const getDescendantsOfPackage = (
     }
   });
   return descendants;
+};
+
+export const getAllDescendantsOfPackage = (
+  parent: Package,
+  graph: PureModel,
+): Set<PackageableElement> =>
+  new Set(
+    graph
+      .getPackages(parent.path)
+      .map((p) => [...getDescendantsOfPackage(p)])
+      .flat(),
+  );
+
+export const elementBelongsToPackage = (
+  element: PackageableElement,
+  parent: Package,
+): boolean => {
+  const elementPackage = element instanceof Package ? element : element.package;
+  if (!elementPackage) {
+    return false;
+  }
+  const elementPackagePath = elementPackage.path;
+  const parentPackage = parent.path;
+  return (elementPackagePath + ELEMENT_PATH_DELIMITER).startsWith(
+    parentPackage + ELEMENT_PATH_DELIMITER,
+  );
 };
 
 export const getElementRootPackage = (element: PackageableElement): Package =>

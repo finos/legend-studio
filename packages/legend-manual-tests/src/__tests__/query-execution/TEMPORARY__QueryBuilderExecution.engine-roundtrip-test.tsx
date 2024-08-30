@@ -71,6 +71,7 @@ test(integrationTest('test query execution with parameters'), async () => {
   const entities = await generateModelEntitesFromModelGrammar(
     resolve(__dirname, modelFileDir),
     modelFilePath,
+    undefined,
   );
   const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
     entities,
@@ -229,6 +230,7 @@ test(integrationTest('test preivew-data query execution'), async () => {
   const entities = await generateModelEntitesFromModelGrammar(
     resolve(__dirname, modelFileDir),
     modelFilePath,
+    undefined,
   );
   const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
     entities,

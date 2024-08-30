@@ -80,7 +80,7 @@ import {
   type PackageableElement,
   Binding,
   Package,
-  getDescendantsOfPackage,
+  getAllDescendantsOfPackage,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
 } from '@finos/legend-graph';
@@ -486,7 +486,14 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
           );
           return elements
             .filter(filterByType(Package))
-            .map((p) => Array.from(getDescendantsOfPackage(p)))
+            .map((p) =>
+              Array.from(
+                getAllDescendantsOfPackage(
+                  p,
+                  graphFetchState.queryBuilderState.graphManagerState.graph,
+                ),
+              ),
+            )
             .flat()
             .concat(elements.filter((e) => !(e instanceof Package)))
             .includes(treeData.tree.class.value);
