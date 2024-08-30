@@ -13,7 +13,6 @@
     { "path": "../legend-application" },
     { "path": "../legend-art" },
     { "path": "../legend-extension-dsl-diagram" },
-    { "path": "../legend-extension-dsl-diagram" },
     { "path": "../legend-graph" },
     { "path": "../legend-query-builder" },
     { "path": "../legend-shared" },
