@@ -183,11 +183,15 @@ export class DirectoryTreeState extends TreeState<
       }
     }
 
-    this.setSelectedNode(
-      guaranteeNonNullable(
-        this.getTreeData().nodes.get(pathToId(path)),
-        `Can't find node with path '${path}'`,
-      ),
+    const currentNode = guaranteeNonNullable(
+      this.getTreeData().nodes.get(pathToId(path)),
+      `Can't find node with path '${path}'`,
     );
+
+    this.setSelectedNode(currentNode);
+    document.getElementById(currentNode.id)?.scrollIntoView({
+      behavior: 'instant',
+      block: 'center',
+    });
   }
 }

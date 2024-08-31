@@ -1112,6 +1112,10 @@ export class PureIDEStore implements CommandRegistrar {
         );
       }
       this.conceptTreeState.setSelectedNode(currentNode);
+      document.getElementById(currentNode.id)?.scrollIntoView({
+        behavior: 'instant',
+        block: 'center',
+      });
     } catch {
       this.applicationStore.notificationService.notifyWarning(errorMessage);
     } finally {
