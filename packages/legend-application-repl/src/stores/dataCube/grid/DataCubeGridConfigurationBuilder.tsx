@@ -360,7 +360,7 @@ function _sortSpec(columnData: ColumnData) {
   const sortColumns = snapshot.data.sortColumns;
   const sortCol = _findCol(sortColumns, column.name);
   return {
-    sortable: true, // if this is pivot column, no sorting is allowed
+    sortable: true, // if this is pivot column, no sorting is supported yet
     sort: sortCol
       ? sortCol.operation === DataCubeQuerySortOperator.ASCENDING
         ? GridClientSortDirection.ASCENDING
@@ -374,7 +374,6 @@ function _rowGroupSpec(columnData: ColumnData) {
   const { snapshot, column } = columnData;
   const data = snapshot.data;
   const groupByCol = _findCol(data.groupBy?.columns, column.name);
-  const aggCol = _findCol(data.groupBy?.aggColumns, column.name);
   return {
     enableRowGroup: column.kind === DataCubeColumnKind.DIMENSION,
     enableValue: column.kind === DataCubeColumnKind.MEASURE,
@@ -385,8 +384,10 @@ function _rowGroupSpec(columnData: ColumnData) {
     // NOTE: we don't quite care about populating these accurately
     // since ag-grid aggregation does not support parameters, so
     // its set of supported aggregators will never match that specified
-    // in the editor, so we just assign dummy values here
-    aggFunc: aggCol ? aggCol.operation : null,
+    // in the editor.
+    // But we need to set this to make sure sorting works when row grouping
+    // is used, so we use a dummy value here.
+    aggFunc: 'sum',
     allowedAggFuncs: [],
   } satisfies ColDef;
 }
