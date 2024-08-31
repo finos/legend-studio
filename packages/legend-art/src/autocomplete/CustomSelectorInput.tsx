@@ -308,10 +308,12 @@ export const CustomSelectorInput = forwardRef<
       ref={ref as LegacyRef<any>} // eslint-disable-line @typescript-eslint/no-explicit-any
       isDisabled={Boolean(disabled)}
       className={clsx(stylePrefix, className, {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         'selector-input--has-error': hasError,
         'selector-input--custom': Boolean(props.optionCustomization),
       })}
       classNamePrefix={stylePrefix}
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       components={{
         Option: CustomOption,
         ClearIndicator,
@@ -321,7 +323,13 @@ export const CustomSelectorInput = forwardRef<
         Input: CustomInput,
         ...components,
       }}
-      {...{ ...innerProps, darkMode, noMatchMessage }}
+      {...{
+        ...innerProps,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        darkMode,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        noMatchMessage,
+      }}
     />
   );
 });

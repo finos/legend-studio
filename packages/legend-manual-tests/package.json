@@ -32,8 +32,8 @@
     "@finos/legend-query-builder": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@testing-library/dom": "10.4.0",
-    "@testing-library/react": "16.0.0",
-    "@types/react": "18.3.4",
+    "@testing-library/react": "16.0.1",
+    "@types/react": "18.3.5",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },

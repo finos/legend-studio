@@ -32,11 +32,11 @@
   "dependencies": {
     "@babel/core": "7.25.2",
     "@babel/helper-plugin-utils": "7.24.8",
-    "@babel/plugin-syntax-import-attributes": "7.24.7",
+    "@babel/plugin-syntax-import-attributes": "7.25.6",
     "@babel/preset-env": "7.25.4",
     "@babel/preset-react": "7.24.7",
     "@babel/preset-typescript": "7.24.7",
-    "@babel/runtime": "7.25.4",
+    "@babel/runtime": "7.25.6",
     "react-refresh": "0.14.2"
   },
   "devDependencies": {

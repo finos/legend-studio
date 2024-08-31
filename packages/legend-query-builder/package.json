@@ -50,11 +50,11 @@
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
     "@testing-library/dom": "10.4.0",
-    "@testing-library/react": "16.0.0",
-    "@types/react": "18.3.4",
+    "@testing-library/react": "16.0.1",
+    "@types/react": "18.3.5",
     "@types/react-dom": "18.3.0",
     "chart.js": "4.4.4",
-    "mathjs": "13.1.0",
+    "mathjs": "13.1.1",
     "mobx": "6.13.1",
     "mobx-react-lite": "4.0.7",
     "monaco-editor": "0.51.0",
@@ -63,7 +63,7 @@
     "react-dnd": "16.0.1",
     "react-dom": "18.3.1",
     "serializr": "3.0.2",
-    "sql-formatter": "15.4.0"
+    "sql-formatter": "15.4.1"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
