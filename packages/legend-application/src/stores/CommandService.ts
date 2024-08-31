@@ -79,7 +79,7 @@ export class CommandService {
     if (this.commandRegistry.has(commandKey)) {
       this.applicationStore.logService.warn(
         LogEvent.create(APPLICATION_EVENT.COMMAND_CENTER_REGISTRATION__FAILURE),
-        `Can't register command: command is already registered`,
+        `Can't register command: command '${commandKey}' is already registered`,
       );
       return;
     }
