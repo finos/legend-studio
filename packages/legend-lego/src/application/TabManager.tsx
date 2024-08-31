@@ -25,6 +25,8 @@ import {
   PanelEntryDropZonePlaceholder,
   TimesIcon,
   useDragPreviewLayer,
+  MenuContentDivider,
+  PushPinIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useRef, useCallback } from 'react';
@@ -65,6 +67,13 @@ const TabContextMenu = observer(
     const close = (): void => managerTabState.closeTab(tabState);
     const closeOthers = (): void => managerTabState.closeAllOtherTabs(tabState);
     const closeAll = (): void => managerTabState.closeAllTabs();
+    const togglePin = () => {
+      if (tabState.isPinned) {
+        managerTabState.unpinTab(tabState);
+      } else {
+        managerTabState.pinTab(tabState);
+      }
+    };
 
     return (
       <MenuContent>
@@ -76,6 +85,10 @@ const TabContextMenu = observer(
           Close Others
         </MenuContentItem>
         <MenuContentItem onClick={closeAll}>Close All</MenuContentItem>
+        <MenuContentDivider />
+        <MenuContentItem onClick={togglePin}>
+          {tabState.isPinned ? 'Unpin' : 'Pin'}
+        </MenuContentItem>
       </MenuContent>
     );
   },
@@ -194,14 +207,26 @@ const Tab = observer(
             >
               {tabRenderer?.(tabState) ?? tabState.label}
             </button>
-            <button
-              className="tab-manager__tab__close-btn"
-              onClick={() => tabManagerState.closeTab(tabState)}
-              tabIndex={-1}
-              title="Close"
-            >
-              <TimesIcon />
-            </button>
+            {tabState.isPinned && (
+              <button
+                className="tab-manager__tab__pin-btn"
+                onClick={() => tabManagerState.unpinTab(tabState)}
+                tabIndex={-1}
+                title="Unpin"
+              >
+                <PushPinIcon />
+              </button>
+            )}
+            {!tabState.isPinned && (
+              <button
+                className="tab-manager__tab__close-btn"
+                onClick={() => tabManagerState.closeTab(tabState)}
+                tabIndex={-1}
+                title="Close"
+              >
+                <TimesIcon />
+              </button>
+            )}
           </ContextMenu>
         </PanelEntryDropZonePlaceholder>
       </div>

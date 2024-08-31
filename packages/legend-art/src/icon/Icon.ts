@@ -71,6 +71,7 @@ import {
   MdQuestionAnswer,
   MdUnfoldLess,
   MdUnfoldMore,
+  MdOutlinePushPin,
 } from 'react-icons/md';
 
 export const ManageSearchIcon = MdManageSearch; // to be reviewed
@@ -105,6 +106,7 @@ export const DescriptionIcon = MdOutlineDescription;
 export const QuestionAnswerIcon = MdQuestionAnswer;
 export const FoldIcon = MdUnfoldLess;
 export const UnfoldIcon = MdUnfoldMore;
+export const PushPinIcon = MdOutlinePushPin;
 
 //======================================================= VSC =======================================================
 import {
