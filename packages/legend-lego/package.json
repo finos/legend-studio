@@ -68,7 +68,7 @@
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@types/css-font-loading-module": "0.0.13",
-    "@types/react": "18.3.4",
+    "@types/react": "18.3.5",
     "@types/react-dom": "18.3.0",
     "mobx": "6.13.1",
     "mobx-react-lite": "4.0.7",
