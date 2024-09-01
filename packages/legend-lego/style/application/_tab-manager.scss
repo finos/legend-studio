@@ -62,14 +62,39 @@
     }
 
     &__close-btn {
-      visibility: hidden;
+      @include flexCenter;
 
-      @include flexVCenter;
+      visibility: hidden;
+      height: 2rem;
+      width: 2rem;
+      border-radius: 0.2rem;
+      margin-right: 0.4rem;
 
       svg {
         color: var(--color-light-grey-200);
         font-size: 1.2rem;
-        margin-right: 1rem;
+      }
+
+      &:hover {
+        background: var(--color-dark-grey-200);
+      }
+    }
+
+    &__pin-btn {
+      @include flexCenter;
+
+      height: 2rem;
+      width: 2rem;
+      border-radius: 0.2rem;
+      margin-right: 0.4rem;
+
+      svg {
+        color: var(--color-dark-grey-500);
+        font-size: 1.4rem;
+      }
+
+      &:hover {
+        background: var(--color-dark-grey-200);
       }
     }
 

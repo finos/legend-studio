@@ -233,6 +233,7 @@ const ConceptTreeNodeContainer: React.FC<
       onClose={onContextMenuClose}
     >
       <div
+        id={node.id}
         className={clsx(
           'tree-view__node__container explorer__package-tree__node__container',
           {

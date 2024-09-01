@@ -24,11 +24,23 @@ import { action, makeObservable, observable } from 'mobx';
 
 export abstract class TabState {
   readonly uuid = uuid();
+  isPinned = false;
+
+  constructor() {
+    makeObservable(this, {
+      isPinned: observable,
+      setPinned: action,
+    });
+  }
 
   abstract get label(): string;
 
   get description(): string | undefined {
     return undefined;
+  }
+
+  setPinned(val: boolean): void {
+    this.isPinned = val;
   }
 
   match(tab: TabState): boolean {
@@ -51,13 +63,16 @@ export abstract class TabManagerState {
   constructor() {
     makeObservable(this, {
       currentTab: observable,
-      tabs: observable,
       setCurrentTab: action,
+
+      tabs: observable,
       closeTab: action,
       closeAllTabs: action,
       closeAllOtherTabs: action,
       openTab: action,
       swapTabs: action,
+      pinTab: action,
+      unpinTab: action,
     });
   }
 
@@ -71,15 +86,21 @@ export abstract class TabManagerState {
       'Specified tab should be currently opened',
     );
     this.setCurrentTab(tab);
-    this.tabs = [tab];
+    this.tabs = this.tabs.filter((_tab) => _tab.isPinned || _tab === tab);
   }
 
   closeAllTabs(): void {
-    this.setCurrentTab(undefined);
-    this.tabs = [];
+    this.tabs = this.tabs.filter((tab) => tab.isPinned);
+    if (!this.currentTab || !this.tabs.includes(this.currentTab)) {
+      this.setCurrentTab(this.tabs.length ? this.tabs[0] : undefined);
+    }
   }
 
   swapTabs(tab1: TabState, tab2: TabState): void {
+    if (tab1.isPinned !== tab2.isPinned) {
+      // cannot swap pinned tab with unpinned tab or vice versa
+      return;
+    }
     swapEntry(this.tabs, tab1, tab2);
   }
 
@@ -94,7 +115,11 @@ export abstract class TabManagerState {
     if (!existingTab) {
       if (this.currentTab) {
         const currIndex = this.tabs.findIndex((e) => e === this.currentTab);
-        this.tabs.splice(currIndex + 1, 0, tab);
+        this.tabs.splice(
+          Math.max(currIndex + 1, this.tabs.filter((t) => t.isPinned).length),
+          0,
+          tab,
+        );
       } else {
         this.tabs.push(tab);
       }
@@ -105,6 +130,9 @@ export abstract class TabManagerState {
   }
 
   closeTab(tab: TabState): void {
+    if (tab.isPinned) {
+      return;
+    }
     const tabIndex = this.tabs.findIndex((t) => t.match(tab));
     assertTrue(tabIndex !== -1, `Can't close a tab which is not opened`);
     this.tabs.splice(tabIndex, 1);
@@ -120,5 +148,25 @@ export abstract class TabManagerState {
     }
 
     tab.onClose();
+  }
+
+  pinTab(tab: TabState): void {
+    if (tab.isPinned) {
+      return;
+    }
+    const tabIndex = this.tabs.findIndex((t) => t.match(tab));
+    this.tabs.splice(tabIndex, 1);
+    this.tabs.splice(this.tabs.filter((t) => t.isPinned).length, 0, tab);
+    tab.setPinned(true);
+  }
+
+  unpinTab(tab: TabState): void {
+    if (!tab.isPinned) {
+      return;
+    }
+    const tabIndex = this.tabs.findIndex((t) => t.match(tab));
+    this.tabs.splice(tabIndex, 1);
+    this.tabs.splice(this.tabs.filter((t) => t.isPinned).length, 0, tab);
+    tab.setPinned(false);
   }
 }

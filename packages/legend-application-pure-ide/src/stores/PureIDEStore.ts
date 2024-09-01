@@ -293,7 +293,16 @@ export class PureIDEStore implements CommandRegistrar {
       this.applicationStore.alertService.setBlockingAlert(undefined);
       const openWelcomeFilePromise = flowResult(
         this.loadFile(WELCOME_FILE_PATH),
-      );
+      ).then(() => {
+        const welcomeFileTab = this.tabManagerState.tabs.find(
+          (tab) =>
+            tab instanceof FileEditorState &&
+            tab.filePath === WELCOME_FILE_PATH,
+        );
+        if (welcomeFileTab) {
+          this.tabManagerState.pinTab(welcomeFileTab);
+        }
+      });
       const directoryTreeInitPromise = this.directoryTreeState.initialize();
       const conceptTreeInitPromise = this.conceptTreeState.initialize();
       const result = deserializeInitializationnResult(
@@ -1112,6 +1121,10 @@ export class PureIDEStore implements CommandRegistrar {
         );
       }
       this.conceptTreeState.setSelectedNode(currentNode);
+      document.getElementById(currentNode.id)?.scrollIntoView({
+        behavior: 'instant',
+        block: 'center',
+      });
     } catch {
       this.applicationStore.notificationService.notifyWarning(errorMessage);
     } finally {

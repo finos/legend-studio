@@ -17,12 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
-import {
-  AssistantIcon,
-  clsx,
-  HammerIcon,
-  TerminalIcon,
-} from '@finos/legend-art';
+import { clsx, HammerIcon, TerminalIcon } from '@finos/legend-art';
 import { usePureIDEStore } from './PureIDEStoreProvider.js';
 import { FileEditorState } from '../stores/FileEditorState.js';
 
@@ -69,8 +64,6 @@ export const StatusBar = observer(() => {
       applicationStore.alertUnhandledError,
     );
   };
-  const toggleAssistant = (): void =>
-    applicationStore.assistantService.toggleAssistant();
 
   return (
     <div className="editor__status-bar">
@@ -115,20 +108,6 @@ export const StatusBar = observer(() => {
           title="Toggle panel"
         >
           <TerminalIcon />
-        </button>
-        <button
-          className={clsx(
-            'editor__status-bar__action editor__status-bar__action__toggler',
-            {
-              'editor__status-bar__action__toggler--active':
-                !applicationStore.assistantService.isHidden,
-            },
-          )}
-          onClick={toggleAssistant}
-          tabIndex={-1}
-          title="Toggle assistant"
-        >
-          <AssistantIcon />
         </button>
       </div>
     </div>

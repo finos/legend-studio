@@ -24,6 +24,7 @@
     height: 2.8rem;
     background: var(--color-dark-grey-200);
     border: 0.1rem solid var(--color-dark-grey-85);
+    z-index: 0;
   }
 
   &__header__actions {
@@ -68,6 +69,10 @@
     position: relative;
     height: calc(100% - 2.8rem);
     width: 100%;
+  }
+
+  .code-editor__body {
+    background: var(--color-dark-grey-100);
   }
 
   .monaco-menu-container {

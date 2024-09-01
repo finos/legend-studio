@@ -19,7 +19,7 @@ import {
   IllegalStateError,
   uuid,
 } from '@finos/legend-shared';
-import { makeObservable, observable, action } from 'mobx';
+import { makeObservable, observable, action, isObservable } from 'mobx';
 import {
   type DataCubeOperationValue,
   DataCubeQueryFilterGroupOperator,
@@ -102,7 +102,9 @@ export class DataCubeFilterEditorConditionTreeNode extends DataCubeFilterEditorT
 
   setValue(value: DataCubeOperationValue | undefined) {
     this.value = value
-      ? makeObservable(value, { value: observable })
+      ? isObservable(value)
+        ? makeObservable(value, { value: observable })
+        : value
       : undefined;
   }
 

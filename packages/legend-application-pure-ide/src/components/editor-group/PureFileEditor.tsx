@@ -50,7 +50,6 @@ import {
   getCastingClassSuggestions,
   getConstructorClassSuggestions,
   getCopyrightHeaderSuggestions,
-  getIdentifierSuggestions,
   getIncompletePathSuggestions,
   getVariableSuggestions,
 } from '../../stores/PureFileEditorUtils.js';
@@ -532,10 +531,8 @@ export const PureFileEditor = observer(
                   ),
                 );
 
-                // identifier suggestions (fetched asynchronously)
-                suggestions = suggestions.concat(
-                  await getIdentifierSuggestions(position, model, ideStore),
-                );
+                // TODO: support contextual suggestions with just the identifier, i.e. auto-complete
+                // which Pure IDE server has not supported at the moment
               }
 
               return { suggestions };
