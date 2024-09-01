@@ -312,9 +312,9 @@ export class PureIDEStore implements CommandRegistrar {
         this.applicationStore.terminalService.terminal.output(result.text, {
           systemCommand: 'initialize application',
         });
-        this.setActivePanelMode(PANEL_MODE.TERMINAL);
-        this.panelGroupDisplayState.open();
       }
+      this.setActivePanelMode(PANEL_MODE.TERMINAL);
+      this.panelGroupDisplayState.open();
       if (result instanceof InitializationFailureResult) {
         if (result.sessionError) {
           this.applicationStore.alertService.setBlockingAlert({

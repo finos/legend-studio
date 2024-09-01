@@ -227,10 +227,21 @@ export const collectExtraInlineSnippetSuggestions =
     },
   ];
 
-export const getCopyrightHeaderSuggestions =
-  (): monacoLanguagesAPI.CompletionItem[] => {
-    const results: monacoLanguagesAPI.CompletionItem[] = [];
+export const getCopyrightHeaderSuggestions = (
+  position: IPosition,
+  model: monacoEditorAPI.ITextModel,
+): monacoLanguagesAPI.CompletionItem[] => {
+  const results: monacoLanguagesAPI.CompletionItem[] = [];
+  const textUntilPosition = model
+    .getValueInRange({
+      startLineNumber: 1,
+      startColumn: 1,
+      endLineNumber: position.lineNumber,
+      endColumn: position.column,
+    })
+    .trimStart();
 
+  if (['', '/'].includes(textUntilPosition)) {
     results.push({
       label: {
         label: `/copyright`,
@@ -248,9 +259,10 @@ export const getCopyrightHeaderSuggestions =
         endColumn: 1000,
       },
     } as monacoLanguagesAPI.CompletionItem);
+  }
 
-    return results;
-  };
+  return results;
+};
 
 const constructorClassSuggestionToCompletionItem = (suggestion: {
   pureId: string;
