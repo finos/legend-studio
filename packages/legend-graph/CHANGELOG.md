@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.10.26
+
+### Patch Changes
+
+- [#3487](https://github.com/finos/legend-studio/pull/3487) [`ac83e22`](https://github.com/finos/legend-studio/commit/ac83e223b15de8aa285670bc69e4b200fd8499c8) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix resolving elements in packages for fixing in dataspace elements render.
+
 ## 31.10.25
 
 ## 31.10.24

@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.5.42
+
+### Patch Changes
+
+- [#3485](https://github.com/finos/legend-studio/pull/3485) [`03ec0a3`](https://github.com/finos/legend-studio/commit/03ec0a350d388759f2249ab75fb4e0c25e114056) ([@pragyasri-gs](https://github.com/pragyasri-gs)) - Adding conditions for Legend AI button and exporting DataSpaceQuerySetupState.
+
 ## 13.5.41
 
 ## 13.5.40
