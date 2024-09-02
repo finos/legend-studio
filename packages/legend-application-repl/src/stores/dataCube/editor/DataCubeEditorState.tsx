@@ -44,13 +44,16 @@ export enum DataCubeEditorTab {
 
 export class DataCubeEditorState extends DataCubeQuerySnapshotController {
   readonly display: SingletonModeDisplayState;
+
+  readonly code: DataCubeEditorCodePanelState;
+
   readonly generalProperties: DataCubeEditorGeneralPropertiesPanelState;
   readonly columnProperties: DataCubeEditorColumnPropertiesPanelState;
+
   readonly filter: DataCubeEditorFilterPanelState;
   readonly columns: DataCubeEditorColumnsPanelState;
   readonly verticalPivots: DataCubeEditorVerticalPivotsPanelState;
   readonly sorts: DataCubeEditorSortsPanelState;
-  readonly code: DataCubeEditorCodePanelState;
 
   currentTab = DataCubeEditorTab.GENERAL_PROPERTIES;
 
@@ -58,10 +61,10 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     super(dataCube);
 
     makeObservable(this, {
-      applyChanges: action,
-
       currentTab: observable,
       setCurrentTab: action,
+
+      applyChanges: action,
     });
 
     this.display = new SingletonModeDisplayState(
@@ -88,13 +91,14 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const snapshot = baseSnapshot.clone();
 
-    // NOTE: column selection must be processed first so necassary
+    // TODO: extended columns
+    this.filter.buildSnapshot(snapshot, baseSnapshot);
+    // NOTE: column selection must be processed first so necessary
     // prunings can be done to make sure other panel stats are in sync
     // with the current column selection
     this.columns.buildSnapshot(snapshot, baseSnapshot);
     this.verticalPivots.buildSnapshot(snapshot, baseSnapshot);
     this.sorts.buildSnapshot(snapshot, baseSnapshot);
-    this.filter.buildSnapshot(snapshot, baseSnapshot);
 
     // grid configuration must be processed before processing columns' configuration
     // to properly generate the container configuration

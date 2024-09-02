@@ -29,7 +29,7 @@ export class DataCubeEditorColumnsSelectorColumnState {
   }
 }
 
-export enum DataCubeEditorColumnsSelectorColumnsVisibility {
+export enum DataCubeEditorColumnsSelectorHiddenColumnsVisibility {
   VISIBLE = 'visible',
   VISIBLE_WITH_WARNING = 'visible-with-warning',
   HIDDEN = 'hidden',
@@ -49,13 +49,13 @@ export abstract class DataCubeEditorColumnsSelectorState<
   readonly onChange?:
     | ((selector: DataCubeEditorColumnsSelectorState<T>) => void)
     | undefined;
-  columnsVisibility!: DataCubeEditorColumnsSelectorColumnsVisibility;
+  hiddenColumnsVisibility!: DataCubeEditorColumnsSelectorHiddenColumnsVisibility;
 
   constructor(
     editor: DataCubeEditorState,
     options?: {
-      initialColumnsVisibility?:
-        | DataCubeEditorColumnsSelectorColumnsVisibility
+      initialHiddenColumnsVisibility?:
+        | DataCubeEditorColumnsSelectorHiddenColumnsVisibility
         | undefined;
       onChange?:
         | ((select: DataCubeEditorColumnsSelectorState<T>) => void)
@@ -76,22 +76,23 @@ export abstract class DataCubeEditorColumnsSelectorState<
       selectedColumnsSearchText: observable,
       setSelectedColumnsSearchText: action,
 
-      columnsVisibility: observable,
-      setColumnsVisibility: action,
+      hiddenColumnsVisibility: observable,
+      setHiddenColumnsVisibility: action,
     });
 
     this.editor = editor;
     this.dataCube = editor.dataCube;
     this.onChange = options?.onChange;
-    this.columnsVisibility =
-      options?.initialColumnsVisibility ??
-      DataCubeEditorColumnsSelectorColumnsVisibility.VISIBLE;
+    this.hiddenColumnsVisibility =
+      options?.initialHiddenColumnsVisibility ??
+      // default to show hidden columns
+      DataCubeEditorColumnsSelectorHiddenColumnsVisibility.VISIBLE;
   }
 
-  setColumnsVisibility(
-    visibility: DataCubeEditorColumnsSelectorColumnsVisibility,
+  setHiddenColumnsVisibility(
+    val: DataCubeEditorColumnsSelectorHiddenColumnsVisibility,
   ) {
-    this.columnsVisibility = visibility;
+    this.hiddenColumnsVisibility = val;
   }
 
   abstract get availableColumns(): T[];
@@ -105,8 +106,8 @@ export abstract class DataCubeEditorColumnsSelectorState<
       .sort((a, b) => a.name.localeCompare(b.name))
       .filter(
         (column) =>
-          this.columnsVisibility !==
-            DataCubeEditorColumnsSelectorColumnsVisibility.HIDDEN ||
+          this.hiddenColumnsVisibility !==
+            DataCubeEditorColumnsSelectorHiddenColumnsVisibility.HIDDEN ||
           !this.editor.columnProperties.columns.find(
             (col) => col.name === column.name,
           )?.hideFromView,
@@ -116,8 +117,8 @@ export abstract class DataCubeEditorColumnsSelectorState<
   get selectedColumnsForDisplay(): T[] {
     return this.selectedColumns.filter(
       (column) =>
-        this.columnsVisibility !==
-          DataCubeEditorColumnsSelectorColumnsVisibility.HIDDEN ||
+        this.hiddenColumnsVisibility !==
+          DataCubeEditorColumnsSelectorHiddenColumnsVisibility.HIDDEN ||
         !this.editor.columnProperties.columns.find(
           (col) => col.name === column.name,
         )?.hideFromView,
@@ -125,6 +126,9 @@ export abstract class DataCubeEditorColumnsSelectorState<
   }
 
   setSelectedColumns(val: T[]) {
+    // NOTE: since we have a list of columns available which we treat as
+    // "templates" to select from, we need to clone these columns in order
+    // to avoid modifying the original available columns
     this.selectedColumns = val.map((col) => this.cloneColumn(col));
     this.onChange?.(this);
   }
@@ -144,5 +148,5 @@ export abstract class DataCubeEditorColumnsSelectorState<
     );
   }
 
-  abstract cloneColumn(column: T): T;
+  protected abstract cloneColumn(column: T): T;
 }

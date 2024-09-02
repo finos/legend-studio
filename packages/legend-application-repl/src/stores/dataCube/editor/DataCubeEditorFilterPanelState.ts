@@ -59,6 +59,8 @@ export class DataCubeEditorFilterPanelState
       addFilterNode: action,
       removeFilterNode: action,
       layerFilterNode: action,
+
+      columns: computed,
     });
 
     this.dataCube = editor.dataCube;

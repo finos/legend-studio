@@ -161,6 +161,7 @@ export class DataCubeFilterEditorConditionGroupTreeNode extends DataCubeFilterEd
     }
   }
 }
+
 export function buildFilterQuerySnapshot(
   node: DataCubeFilterEditorConditionGroupTreeNode,
 ): DataCubeQuerySnapshotFilter {
@@ -185,6 +186,7 @@ export function buildFilterQuerySnapshot(
     }),
   };
 }
+
 export function buildFilterEditorTree(
   _node: DataCubeQuerySnapshotFilter,
   parent: DataCubeFilterEditorConditionGroupTreeNode | undefined,

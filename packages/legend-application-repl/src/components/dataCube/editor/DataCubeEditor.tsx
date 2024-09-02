@@ -33,15 +33,15 @@ export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
   const editor = dataCube.editor;
   const selectedTab = editor.currentTab;
   const tabs = [
-    DataCubeEditorTab.GENERAL_PROPERTIES,
-    DataCubeEditorTab.COLUMN_PROPERTIES,
     DataCubeEditorTab.EXTENDED_COLUMNS,
-    DataCubeEditorTab.FILTER,
     DataCubeEditorTab.COLUMNS,
     DataCubeEditorTab.VERTICAL_PIVOTS,
     DataCubeEditorTab.HORIZONTAL_PIVOTS,
     DataCubeEditorTab.SORTS,
+    DataCubeEditorTab.GENERAL_PROPERTIES,
+    DataCubeEditorTab.COLUMN_PROPERTIES,
     DataCubeEditorTab.CODE,
+    DataCubeEditorTab.FILTER,
   ];
 
   return (
@@ -64,12 +64,6 @@ export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
           ))}
         </div>
         <div className="h-full w-full overflow-auto border border-neutral-300 bg-white">
-          {selectedTab === DataCubeEditorTab.GENERAL_PROPERTIES && (
-            <DataCubeEditorGeneralPropertiesPanel dataCube={dataCube} />
-          )}
-          {selectedTab === DataCubeEditorTab.COLUMN_PROPERTIES && (
-            <DataCubeEditorColumnPropertiesPanel dataCube={dataCube} />
-          )}
           {selectedTab === DataCubeEditorTab.FILTER && (
             <DataCubeEditorFilterPanel dataCube={dataCube} />
           )}
@@ -79,14 +73,20 @@ export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
           {selectedTab === DataCubeEditorTab.COLUMNS && (
             <DataCubeEditorColumnsPanel dataCube={dataCube} />
           )}
-          {selectedTab === DataCubeEditorTab.SORTS && (
-            <DataCubeEditorSortsPanel dataCube={dataCube} />
-          )}
           {selectedTab === DataCubeEditorTab.VERTICAL_PIVOTS && (
             <DataCubeEditorVerticalPivotsPanel dataCube={dataCube} />
           )}
           {selectedTab === DataCubeEditorTab.HORIZONTAL_PIVOTS && (
             <DataCubeEditorHorizontalPivotsPanel dataCube={dataCube} />
+          )}
+          {selectedTab === DataCubeEditorTab.SORTS && (
+            <DataCubeEditorSortsPanel dataCube={dataCube} />
+          )}
+          {selectedTab === DataCubeEditorTab.GENERAL_PROPERTIES && (
+            <DataCubeEditorGeneralPropertiesPanel dataCube={dataCube} />
+          )}
+          {selectedTab === DataCubeEditorTab.COLUMN_PROPERTIES && (
+            <DataCubeEditorColumnPropertiesPanel dataCube={dataCube} />
           )}
           {selectedTab === DataCubeEditorTab.CODE && (
             <DataCubeEditorCodePanel dataCube={dataCube} />

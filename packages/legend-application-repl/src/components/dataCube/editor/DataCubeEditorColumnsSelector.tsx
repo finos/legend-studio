@@ -33,7 +33,7 @@ import {
 } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
-  DataCubeEditorColumnsSelectorColumnsVisibility,
+  DataCubeEditorColumnsSelectorHiddenColumnsVisibility,
   type DataCubeEditorColumnsSelectorColumnState,
   type DataCubeEditorColumnsSelectorState,
 } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
@@ -343,8 +343,8 @@ export const DataCubeEditorColumnsSelector = observer(
                         return null;
                       }
                       const showHiddenIndicator =
-                        selector.columnsVisibility ===
-                          DataCubeEditorColumnsSelectorColumnsVisibility.VISIBLE_WITH_WARNING &&
+                        selector.hiddenColumnsVisibility ===
+                          DataCubeEditorColumnsSelectorHiddenColumnsVisibility.VISIBLE_WITH_WARNING &&
                         selector.editor.columnProperties.columns.find(
                           (col) => col.name === data.name,
                         )?.hideFromView;
@@ -537,8 +537,8 @@ export const DataCubeEditorColumnsSelector = observer(
                         return null;
                       }
                       const showHiddenIndicator =
-                        selector.columnsVisibility ===
-                          DataCubeEditorColumnsSelectorColumnsVisibility.VISIBLE_WITH_WARNING &&
+                        selector.hiddenColumnsVisibility ===
+                          DataCubeEditorColumnsSelectorHiddenColumnsVisibility.VISIBLE_WITH_WARNING &&
                         selector.editor.columnProperties.columns.find(
                           (col) => col.name === data.name,
                         )?.hideFromView;
