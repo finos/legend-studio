@@ -31,9 +31,10 @@ import { DiagramEditorDiagramCanvas } from './DiagramEditorDiagramCanvas.js';
 import { DiagramEditorToolPanel } from './DiagramEditorToolPanel.js';
 
 export const DiagramEditor = observer(
-  (props: { diagramId: string; diagramEditorState: DiagramEditorState }) => {
+  (props: { diagramEditorState: DiagramEditorState }) => {
     const diagramCanvasRef = useRef<HTMLDivElement>(null);
-    const { diagramId, diagramEditorState } = props;
+    const { diagramEditorState } = props;
+    const { diagramId } = diagramEditorState;
     const [entities, setEntities] = useState<Entity[]>([]);
     const [error, setError] = useState<string | null>();
 
@@ -50,6 +51,7 @@ export const DiagramEditor = observer(
         if (message.command === GET_PROJECT_ENTITIES_RESPONSE) {
           const es: Entity[] = message.result;
           setEntities(es);
+          diagramEditorState.setEntities(es);
         }
       },
     );
@@ -84,13 +86,9 @@ export const DiagramEditor = observer(
             </div>
           ) : (
             <>
-              <div className="diagram-editor__header">
-                {diagramEditorState.isDiagramRendererInitialized && (
-                  <DiagramEditorHeader
-                    diagramEditorState={diagramEditorState}
-                  />
-                )}
-              </div>
+              {diagramEditorState.isDiagramRendererInitialized && (
+                <DiagramEditorHeader diagramEditorState={diagramEditorState} />
+              )}
               <div className="diagram-editor__content">
                 <div className="diagram-editor__stage">
                   {diagramEditorState.isDiagramRendererInitialized && (
