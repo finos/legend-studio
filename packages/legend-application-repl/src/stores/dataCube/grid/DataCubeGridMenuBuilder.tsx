@@ -38,7 +38,6 @@ import {
   DataCubeGridClientExportFormat,
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
 } from './DataCubeGridClientEngine.js';
-import { DataCubeEditorTab } from '../editor/DataCubeEditorState.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import type { DataCubeColumnConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeFilterEditorConditionTreeNode } from '../core/filter/DataCubeQueryFilterEditorState.js';
@@ -457,8 +456,7 @@ export function generateMenuBuilder(
           {
             name: 'Filters...',
             action: () => {
-              editor.setCurrentTab(DataCubeEditorTab.FILTER);
-              editor.display.open();
+              dataCube.filter.display.open();
             },
           },
           {

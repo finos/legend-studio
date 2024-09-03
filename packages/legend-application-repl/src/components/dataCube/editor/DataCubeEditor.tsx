@@ -21,8 +21,6 @@ import { DataCubeEditorGeneralPropertiesPanel } from './DataCubeEditorGeneralPro
 import { DataCubeEditorColumnsPanel } from './DataCubeEditorColumnsPanel.js';
 import { DataCubeEditorVerticalPivotsPanel } from './DataCubeEditorVerticalPivotsPanel.js';
 import { DataCubeEditorHorizontalPivotsPanel } from './DataCubeEditorHorizontalPivotsPanel.js';
-import { DataCubeEditorFilterPanel } from './DataCubeEditorFilterPanel.js';
-import { DataCubeEditorExtendedColumnsPanel } from './DataCubeEditorExtendedColumnsPanel.js';
 import { DataCubeEditorCodePanel } from './DataCubeEditorCodePanel.js';
 import { DataCubeEditorColumnPropertiesPanel } from './DataCubeEditorColumnPropertiesPanel.js';
 import { cn } from '@finos/legend-art';
@@ -33,7 +31,6 @@ export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
   const editor = dataCube.editor;
   const selectedTab = editor.currentTab;
   const tabs = [
-    DataCubeEditorTab.EXTENDED_COLUMNS,
     DataCubeEditorTab.COLUMNS,
     DataCubeEditorTab.VERTICAL_PIVOTS,
     DataCubeEditorTab.HORIZONTAL_PIVOTS,
@@ -41,7 +38,6 @@ export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
     DataCubeEditorTab.GENERAL_PROPERTIES,
     DataCubeEditorTab.COLUMN_PROPERTIES,
     DataCubeEditorTab.CODE,
-    DataCubeEditorTab.FILTER,
   ];
 
   return (
@@ -64,12 +60,6 @@ export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
           ))}
         </div>
         <div className="h-full w-full overflow-auto border border-neutral-300 bg-white">
-          {selectedTab === DataCubeEditorTab.FILTER && (
-            <DataCubeEditorFilterPanel dataCube={dataCube} />
-          )}
-          {selectedTab === DataCubeEditorTab.EXTENDED_COLUMNS && (
-            <DataCubeEditorExtendedColumnsPanel dataCube={dataCube} />
-          )}
           {selectedTab === DataCubeEditorTab.COLUMNS && (
             <DataCubeEditorColumnsPanel dataCube={dataCube} />
           )}

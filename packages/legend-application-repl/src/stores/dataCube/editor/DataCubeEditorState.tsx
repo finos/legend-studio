@@ -28,13 +28,10 @@ import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeEditorVerticalPivotsPanelState } from './DataCubeEditorVerticalPivotsPanelState.js';
 import { SingletonModeDisplayState } from '../../LayoutManagerState.js';
 import { DataCubeEditor } from '../../../components/dataCube/editor/DataCubeEditor.js';
-import { DataCubeEditorFilterPanelState } from './DataCubeEditorFilterPanelState.js';
 
 export enum DataCubeEditorTab {
   GENERAL_PROPERTIES = 'General Properties',
   COLUMN_PROPERTIES = 'Column Properties',
-  EXTENDED_COLUMNS = 'Extended Columns',
-  FILTER = 'Filter',
   COLUMNS = 'Columns',
   VERTICAL_PIVOTS = 'Vertical Pivots',
   HORIZONTAL_PIVOTS = 'Horizontal Pivots',
@@ -50,7 +47,6 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
   readonly generalProperties: DataCubeEditorGeneralPropertiesPanelState;
   readonly columnProperties: DataCubeEditorColumnPropertiesPanelState;
 
-  readonly filter: DataCubeEditorFilterPanelState;
   readonly columns: DataCubeEditorColumnsPanelState;
   readonly verticalPivots: DataCubeEditorVerticalPivotsPanelState;
   readonly sorts: DataCubeEditorSortsPanelState;
@@ -76,7 +72,6 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
       this,
     );
     this.columnProperties = new DataCubeEditorColumnPropertiesPanelState(this);
-    this.filter = new DataCubeEditorFilterPanelState(this);
     this.columns = new DataCubeEditorColumnsPanelState(this);
     this.verticalPivots = new DataCubeEditorVerticalPivotsPanelState(this);
     this.sorts = new DataCubeEditorSortsPanelState(this);
@@ -91,8 +86,6 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const snapshot = baseSnapshot.clone();
 
-    // TODO: extended columns
-    this.filter.buildSnapshot(snapshot, baseSnapshot);
     // NOTE: column selection must be processed first so necessary
     // prunings can be done to make sure other panel stats are in sync
     // with the current column selection
@@ -122,7 +115,6 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     this.columns.applySnaphot(snapshot, configuration);
     this.verticalPivots.applySnaphot(snapshot, configuration);
     this.sorts.applySnaphot(snapshot, configuration);
-    this.filter.applySnaphot(snapshot, configuration);
 
     this.generalProperties.applySnaphot(snapshot, configuration);
     this.columnProperties.applySnaphot(snapshot, configuration);

@@ -25,10 +25,7 @@ import {
   getNonNullableEntry,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import type { DataCubeState } from '../DataCubeState.js';
-import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
-import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import {
   type DataCubeFilterEditorTree,
   type DataCubeFilterEditorTreeNode,
@@ -37,21 +34,32 @@ import {
   buildFilterEditorTree,
   buildFilterQuerySnapshot,
 } from '../core/filter/DataCubeQueryFilterEditorState.js';
+import { DataCubeQuerySnapshotController } from '../core/DataCubeQuerySnapshotManager.js';
+import {
+  DataCubeConfiguration,
+  type DataCubeColumnConfiguration,
+} from '../core/DataCubeConfiguration.js';
+import { SingletonModeDisplayState } from '../../LayoutManagerState.js';
+import { DataCubeFilterEditor } from '../../../components/dataCube/filter/DataCubeEditorFilter.js';
 
-export class DataCubeEditorFilterPanelState
-  implements DataCubeQueryEditorPanelState
-{
-  readonly dataCube!: DataCubeState;
-  readonly editor!: DataCubeEditorState;
+export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
+  readonly display: SingletonModeDisplayState;
 
   tree: DataCubeFilterEditorTree;
   selectedNode?: DataCubeFilterEditorTreeNode | undefined;
+  columns: DataCubeColumnConfiguration[] = [];
 
-  constructor(editor: DataCubeEditorState) {
+  constructor(dataCube: DataCubeState) {
+    super(dataCube);
+
     makeObservable(this, {
       tree: observable.ref,
       initializeTree: action,
       refreshTree: action,
+
+      columns: observable,
+
+      applySnapshot: action,
 
       selectedNode: observable,
       selectedGroupNode: computed,
@@ -59,20 +67,17 @@ export class DataCubeEditorFilterPanelState
       addFilterNode: action,
       removeFilterNode: action,
       layerFilterNode: action,
-
-      columns: computed,
     });
 
-    this.dataCube = editor.dataCube;
-    this.editor = editor;
+    this.display = new SingletonModeDisplayState(
+      this.dataCube.repl.layout,
+      'Filter',
+      () => <DataCubeFilterEditor dataCube={this.dataCube} />,
+    );
+
     this.tree = {
       nodes: new Map<string, DataCubeFilterEditorTreeNode>(),
     };
-  }
-
-  get columns() {
-    // TODO: include leaf-extended columns
-    return this.editor.columns.sourceColumns;
   }
 
   initializeTree() {
@@ -120,11 +125,8 @@ export class DataCubeEditorFilterPanelState
         baseNode.not,
       );
     } else if (baseNode instanceof DataCubeFilterEditorConditionGroupTreeNode) {
-      if (this.editor.columnProperties.columns.length !== 0) {
-        const columnConfig = getNonNullableEntry(
-          this.editor.columnProperties.columns,
-          0,
-        );
+      if (this.columns.length !== 0) {
+        const columnConfig = getNonNullableEntry(this.columns, 0);
         const column = {
           name: columnConfig.name,
           type: columnConfig.type,
@@ -269,10 +271,21 @@ export class DataCubeEditorFilterPanelState
     }
   }
 
-  applySnaphot(
+  override async applySnapshot(
     snapshot: DataCubeQuerySnapshot,
-    configuration: DataCubeConfiguration,
-  ): void {
+    previousSnapshot: DataCubeQuerySnapshot | undefined,
+  ): Promise<void> {
+    const configuration = DataCubeConfiguration.serialization.fromJson(
+      snapshot.data.configuration,
+    );
+    // NOTE: filtering group extended columns is not supported
+    this.columns = configuration.columns.filter(
+      (column) =>
+        !snapshot.data.groupExtendedColumns.find(
+          (col) => col.name === column.name,
+        ),
+    );
+
     this.tree.nodes = new Map<string, DataCubeFilterEditorTreeNode>();
     this.tree.root = snapshot.data.filter
       ? buildFilterEditorTree(
@@ -286,12 +299,17 @@ export class DataCubeEditorFilterPanelState
     this.refreshTree();
   }
 
-  buildSnapshot(
-    newSnapshot: DataCubeQuerySnapshot,
-    baseSnapshot: DataCubeQuerySnapshot,
-  ): void {
+  applyChanges() {
+    const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
+    const newSnapshot = baseSnapshot.clone();
+
     newSnapshot.data.filter = this.tree.root
       ? buildFilterQuerySnapshot(this.tree.root)
       : undefined;
+
+    newSnapshot.finalize();
+    if (newSnapshot.hashCode !== baseSnapshot.hashCode) {
+      this.publishSnapshot(newSnapshot);
+    }
   }
 }
