@@ -39,6 +39,8 @@ export {
   AlignStartIcon,
   AlignTopIcon,
   CaretDownIcon,
+  CubesLoadingIndicator,
+  CubesLoadingIndicatorIcon,
   clsx,
   compareLabelFn,
   ControlledDropdownMenu,
