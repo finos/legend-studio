@@ -79,18 +79,13 @@ export {
 } from '@finos/legend-shared';
 
 export {
-  LegendVSCodeApplicationConfig,
-  LegendVSCodePluginManager,
-  QueryBuilderVSCodeWorkflowState,
-} from './utils/index.js';
-
-export {
   type LegendApplicationConfigurationData,
   type LegendApplicationConfigurationInput,
   ApplicationFrameworkProvider,
   ApplicationStore,
   ApplicationStoreProvider,
   BrowserEnvironmentProvider,
+  Core_LegendApplicationPlugin,
   LegendApplicationConfig,
   LegendApplicationPlugin,
   LegendApplicationPluginManager,
@@ -99,6 +94,7 @@ export {
 export {
   type FetchStructureLayoutConfig,
   QueryBuilder_GraphManagerPreset,
+  QueryBuilder_LegendApplicationPlugin,
   QueryBuilder,
   QueryBuilderActionConfig,
   QueryBuilderState,
