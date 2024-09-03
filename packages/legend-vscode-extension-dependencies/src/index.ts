@@ -64,6 +64,7 @@ export {
   type PureModel,
   type PureProtocolProcessorPlugin,
   Class,
+  Core_GraphManagerPreset,
   CORE_PURE_PATH,
   GraphManagerState,
   Service,
@@ -71,7 +72,11 @@ export {
 
 export type { Entity } from '@finos/legend-storage';
 
-export { type GeneratorFn, AbstractPreset } from '@finos/legend-shared';
+export {
+  type GeneratorFn,
+  AbstractPlugin,
+  AbstractPreset,
+} from '@finos/legend-shared';
 
 export {
   LegendVSCodeApplicationConfig,
@@ -93,6 +98,7 @@ export {
 
 export {
   type FetchStructureLayoutConfig,
+  QueryBuilder_GraphManagerPreset,
   QueryBuilder,
   QueryBuilderActionConfig,
   QueryBuilderState,
