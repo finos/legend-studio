@@ -17,6 +17,7 @@ import {
   type Diagram,
   type Point,
 } from '@finos/legend-extension-dsl-diagram/graph';
+import type { Entity } from '@finos/legend-storage';
 import { type PureModel } from '@finos/legend-graph';
 import { type GeneratorFn, guaranteeNonNullable } from '@finos/legend-shared';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
@@ -30,6 +31,7 @@ export class DiagramEditorState {
   diagramId: string;
   diagram?: Diagram;
   graph?: PureModel;
+  entities: Entity[];
 
   constructor(diagramId: string) {
     makeObservable(this, {
@@ -41,6 +43,7 @@ export class DiagramEditorState {
     });
 
     this.diagramId = diagramId;
+    this.entities = [];
   }
 
   get renderer(): DiagramRenderer {
@@ -109,6 +112,10 @@ export class DiagramEditorState {
 
   setGraph(val: PureModel): void {
     this.graph = val;
+  }
+
+  setEntities(val: Entity[]): void {
+    this.entities = val;
   }
 
   *addClassView(path: string, position: Point | undefined): GeneratorFn<void> {
