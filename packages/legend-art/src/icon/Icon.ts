@@ -71,6 +71,8 @@ import {
   MdQuestionAnswer,
   MdUnfoldLess,
   MdUnfoldMore,
+  MdKeyboardDoubleArrowLeft, //to be reviewed
+  MdKeyboardDoubleArrowRight, //to be reviewed
 } from 'react-icons/md';
 
 export const ManageSearchIcon = MdManageSearch; // to be reviewed
@@ -105,6 +107,8 @@ export const DescriptionIcon = MdOutlineDescription;
 export const QuestionAnswerIcon = MdQuestionAnswer;
 export const FoldIcon = MdUnfoldLess;
 export const UnfoldIcon = MdUnfoldMore;
+export const DoubleArrowLeft = MdKeyboardDoubleArrowLeft; //to be reviewed
+export const DoubleArrowRight = MdKeyboardDoubleArrowRight; //to be reviewed
 
 //======================================================= VSC =======================================================
 import {
