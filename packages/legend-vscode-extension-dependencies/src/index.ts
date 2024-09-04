@@ -14,6 +14,50 @@
  * limitations under the License.
  */
 
-export * from './components/Diagram/DiagramEditor.js';
+import '../style/index.scss';
+
 export * from './graph-manager/index.js';
-export * from './stores/DiagramEditorState.js';
+export {
+  getDiagram,
+  Point,
+  DIAGRAM_INTERACTION_MODE,
+  DIAGRAM_RELATIONSHIP_EDIT_MODE,
+  DiagramRenderer,
+  type Diagram,
+  DIAGRAM_ALIGNER_OPERATOR,
+  DIAGRAM_ZOOM_LEVELS,
+  V1_diagramModelSchema,
+  V1_transformDiagram,
+} from '@finos/legend-extension-dsl-diagram';
+
+export {
+  AlignBottomIcon,
+  AlignCenterIcon,
+  AlignEndIcon,
+  AlignMiddleIcon,
+  AlignStartIcon,
+  AlignTopIcon,
+  CaretDownIcon,
+  CustomSelectorInput,
+  ControlledDropdownMenu,
+  compareLabelFn,
+  DistributeHorizontalIcon,
+  DistributeVerticalIcon,
+  MenuContent,
+  MenuContentDivider,
+  MenuContentItem,
+  SaveIcon,
+  clsx,
+  MousePointerIcon,
+  MoveIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
+  useResizeDetector,
+  LegendStyleProvider,
+} from '@finos/legend-art';
+
+export { Class, type PureModel, CORE_PURE_PATH } from '@finos/legend-graph';
+
+export type { Entity } from '@finos/legend-storage';
+
+export type { GeneratorFn } from '@finos/legend-shared';
