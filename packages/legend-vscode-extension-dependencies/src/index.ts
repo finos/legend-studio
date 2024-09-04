@@ -72,14 +72,19 @@ export {
   CORE_PURE_PATH,
   GraphManagerState,
   Service,
+  V1_PureGraphManager,
+  V1_serializePackageableElement,
+  V1_Service,
 } from '@finos/legend-graph';
 
 export type { Entity } from '@finos/legend-storage';
 
 export {
   type GeneratorFn,
+  assertErrorThrown,
   AbstractPlugin,
   AbstractPreset,
+  guaranteeType,
 } from '@finos/legend-shared';
 
 export {
@@ -106,3 +111,5 @@ export {
   QueryBuilderWorkflowState,
   ServiceQueryBuilderState,
 } from '@finos/legend-query-builder';
+
+export { pureExecution_setFunction } from '@finos/legend-application-studio';
