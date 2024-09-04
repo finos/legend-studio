@@ -27,7 +27,6 @@ import {
   useDropdownMenu,
 } from '@finos/legend-art';
 import { LayoutManager } from '../repl/LayoutManager.js';
-import { DataCubeEditorTab } from '../../stores/dataCube/editor/DataCubeEditorState.js';
 import type { DataCubeState } from '../../stores/dataCube/DataCubeState.js';
 
 const DataCubeStatusBar = observer((props: { dataCube: DataCubeState }) => {
@@ -47,8 +46,7 @@ const DataCubeStatusBar = observer((props: { dataCube: DataCubeState }) => {
           <button
             className="flex items-center text-sky-600 hover:text-sky-700"
             onClick={() => {
-              dataCube.editor.setCurrentTab(DataCubeEditorTab.FILTER);
-              dataCube.editor.display.open();
+              dataCube.filter.display.open();
             }}
           >
             <DataCubeIcon.TableFilter className="text-lg" />

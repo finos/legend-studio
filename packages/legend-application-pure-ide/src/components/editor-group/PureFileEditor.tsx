@@ -398,7 +398,7 @@ export const PureFileEditor = observer(
                   // special commands: copyright header, etc.
                   case '/': {
                     suggestions = suggestions.concat(
-                      getCopyrightHeaderSuggestions(),
+                      getCopyrightHeaderSuggestions(position, model),
                     );
                     break;
                   }
@@ -509,7 +509,7 @@ export const PureFileEditor = observer(
               ) {
                 // copyright header
                 suggestions = suggestions.concat(
-                  getCopyrightHeaderSuggestions(),
+                  getCopyrightHeaderSuggestions(position, model),
                 );
 
                 // suggestions for parser element snippets

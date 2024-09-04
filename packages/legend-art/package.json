@@ -59,6 +59,7 @@
     "@fontsource/roboto-serif": "5.0.14",
     "@fontsource/ubuntu-mono": "5.0.21",
     "@mui/material": "6.0.1",
+    "@mui/system": "6.0.1",
     "@mui/x-date-pickers": "7.15.0",
     "@types/react": "18.3.5",
     "@types/react-select": "4.0.18",

@@ -18,7 +18,7 @@ import { DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
 import { FormCheckbox } from '../../repl/Form.js';
-import { DataCubeEditorColumnsSelectorColumnsVisibility } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
+import { DataCubeEditorColumnsSelectorHiddenColumnsVisibility } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
 import { useEffect } from 'react';
 import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
 
@@ -44,15 +44,15 @@ export const DataCubeEditorColumnsPanel = observer(
             <FormCheckbox
               label="Show hidden columns?"
               checked={
-                panel.selector.columnsVisibility !==
-                DataCubeEditorColumnsSelectorColumnsVisibility.HIDDEN
+                panel.selector.hiddenColumnsVisibility !==
+                DataCubeEditorColumnsSelectorHiddenColumnsVisibility.HIDDEN
               }
               onChange={() =>
-                panel.selector.setColumnsVisibility(
-                  panel.selector.columnsVisibility !==
-                    DataCubeEditorColumnsSelectorColumnsVisibility.HIDDEN
-                    ? DataCubeEditorColumnsSelectorColumnsVisibility.HIDDEN
-                    : DataCubeEditorColumnsSelectorColumnsVisibility.VISIBLE_WITH_WARNING,
+                panel.selector.setHiddenColumnsVisibility(
+                  panel.selector.hiddenColumnsVisibility !==
+                    DataCubeEditorColumnsSelectorHiddenColumnsVisibility.HIDDEN
+                    ? DataCubeEditorColumnsSelectorHiddenColumnsVisibility.HIDDEN
+                    : DataCubeEditorColumnsSelectorHiddenColumnsVisibility.VISIBLE_WITH_WARNING,
                 )
               }
             />

@@ -23,7 +23,7 @@ import {
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import {
   DataCubeEditorColumnsSelectorColumnState,
-  DataCubeEditorColumnsSelectorColumnsVisibility,
+  DataCubeEditorColumnsSelectorHiddenColumnsVisibility,
   DataCubeEditorColumnsSelectorState,
 } from './DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
@@ -66,8 +66,8 @@ export class DataCubeEditorColumnsPanelState
     this.editor = editor;
     this.dataCube = editor.dataCube;
     this.selector = new DataCubeEditorBasicColumnsSelectorState(editor, {
-      initialColumnsVisibility:
-        DataCubeEditorColumnsSelectorColumnsVisibility.HIDDEN,
+      initialHiddenColumnsVisibility:
+        DataCubeEditorColumnsSelectorHiddenColumnsVisibility.HIDDEN,
       onChange: (selector) => {
         // populate a default configuration for the newly selected columns
         selector.selectedColumns
@@ -135,6 +135,9 @@ export class DataCubeEditorColumnsPanelState
     this.selector.setSelectedColumns(
       // extract selected columns from the configuration since the configuration specifies the order
       // taking into account the group extended columns
+      // NOTE: since select() is applied before grouping/aggregation, it's technicaly not possible to
+      // unselect the group extended columns, so we will take advantage of the `hidden` property to show
+      // group extended columns that are not hidden as selected
       configuration.columns.map((col) => {
         const column = this.selector.getColumn(col.name);
         return new DataCubeEditorColumnsSelectorColumnState(
@@ -152,6 +155,7 @@ export class DataCubeEditorColumnsPanelState
     this.propagateColumnSelectionChanges();
     newSnapshot.data.selectColumns = this.selector.selectedColumns
       // TODO: filter by group extended columns
+      // and translate unselection to hidden columns in column configuration
       .map((col) => ({
         name: col.name,
         type: col.type,

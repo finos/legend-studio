@@ -103,8 +103,8 @@ export class DataCubeFilterEditorConditionTreeNode extends DataCubeFilterEditorT
   setValue(value: DataCubeOperationValue | undefined) {
     this.value = value
       ? isObservable(value)
-        ? makeObservable(value, { value: observable })
-        : value
+        ? value
+        : makeObservable(value, { value: observable })
       : undefined;
   }
 
@@ -161,6 +161,7 @@ export class DataCubeFilterEditorConditionGroupTreeNode extends DataCubeFilterEd
     }
   }
 }
+
 export function buildFilterQuerySnapshot(
   node: DataCubeFilterEditorConditionGroupTreeNode,
 ): DataCubeQuerySnapshotFilter {
@@ -185,6 +186,7 @@ export function buildFilterQuerySnapshot(
     }),
   };
 }
+
 export function buildFilterEditorTree(
   _node: DataCubeQuerySnapshotFilter,
   parent: DataCubeFilterEditorConditionGroupTreeNode | undefined,

@@ -25,6 +25,7 @@ import { validateAndBuildQuerySnapshot } from './core/DataCubeQuerySnapshotBuild
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeEngine } from './DataCubeEngine.js';
 import { ActionAlertType } from '@finos/legend-application';
+import { DataCubeFilterEditorState } from './filter/DataCubeFilterEditorState.js';
 
 export class DataCubeTask {
   uuid = uuid();
@@ -50,6 +51,7 @@ export class DataCubeState {
   readonly staticContent: DataCubeStaticContentDisplayState;
   readonly grid: DataCubeGridState;
   readonly editor: DataCubeEditorState;
+  readonly filter: DataCubeFilterEditorState;
 
   readonly runningTasks = new Map<string, DataCubeTask>();
 
@@ -68,6 +70,7 @@ export class DataCubeState {
     this.snapshotManager = new DataCubeQuerySnapshotManager(this);
     this.staticContent = new DataCubeStaticContentDisplayState(this);
     this.editor = new DataCubeEditorState(this);
+    this.filter = new DataCubeFilterEditorState(this);
     this.grid = new DataCubeGridState(this);
   }
 
@@ -92,7 +95,7 @@ export class DataCubeState {
           this.editor,
           this.grid,
           this.grid.controller,
-          // TODO this.editor.filter,
+          this.filter,
           // TODO this.editor.extendedColumns,
         ].map(async (state) => {
           this.snapshotManager.registerSubscriber(state);
