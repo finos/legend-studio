@@ -109,7 +109,10 @@ import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceR
 import { SQLPlaygroundPanelState } from './panel-group/SQLPlaygroundPanelState.js';
 import type { QuickInputState } from './QuickInputState.js';
 import { GlobalEndToEndWorkflowState } from './sidebar-state/end-to-end-workflow/GlobalEndToEndFlowState.js';
-import { openShowcaseManager } from '../ShowcaseManagerState.js';
+import {
+  SHOWCASE_PANEL_LOCAL_STORAGE,
+  toggleShowcasePanel,
+} from '../../components/editor/ShowcaseSideBar.js';
 import {
   GraphEditLazyGrammarModeState,
   LazyTextEditorStore,
@@ -196,6 +199,8 @@ export class EditorStore implements CommandRegistrar {
     default: 300,
     snap: 150,
   });
+  readonly showcasePanelDisplayState: PanelDisplayState;
+  readonly showcaseDefaultSize = 500;
   readonly tabManagerState = new EditorTabManagerState(this);
   supportedElementTypesWithCategory: Map<string, string[]>;
 
@@ -303,6 +308,24 @@ export class EditorStore implements CommandRegistrar {
       .filter(isNonNullable);
     this.supportedElementTypesWithCategory =
       this.getSupportedElementTypesWithCategory();
+
+    this.showcasePanelDisplayState = new PanelDisplayState({
+      initial: this.showcaseInitialSize,
+      default: this.showcaseDefaultSize,
+      snap: 150,
+    });
+  }
+
+  get showcaseInitialSize(): number {
+    const showcasesSavedAsOpen =
+      this.applicationStore.userDataService.getBooleanValue(
+        SHOWCASE_PANEL_LOCAL_STORAGE.PANEL_STATE_KEY,
+      );
+    if (showcasesSavedAsOpen || showcasesSavedAsOpen === undefined) {
+      return this.showcaseDefaultSize;
+    } else {
+      return 0;
+    }
   }
 
   get isInitialized(): boolean {
@@ -439,7 +462,7 @@ export class EditorStore implements CommandRegistrar {
             this.conflictResolutionState.hasResolvedAllConflicts),
       ),
       action: () => {
-        openShowcaseManager(this.applicationStore);
+        toggleShowcasePanel(this);
       },
     });
     this.applicationStore.commandService.registerCommand({
