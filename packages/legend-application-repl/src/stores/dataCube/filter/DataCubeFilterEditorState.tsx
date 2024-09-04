@@ -42,6 +42,9 @@ import {
 import { SingletonModeDisplayState } from '../../LayoutManagerState.js';
 import { DataCubeFilterEditor } from '../../../components/dataCube/filter/DataCubeEditorFilter.js';
 
+/**
+ * This query editor state backs the form editor for filter. It batches changes made
+ */
 export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
   readonly display: SingletonModeDisplayState;
 

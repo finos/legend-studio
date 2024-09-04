@@ -20,14 +20,14 @@ import { DataCubeEditorState } from './editor/DataCubeEditorState.js';
 import { assertErrorThrown, uuid } from '@finos/legend-shared';
 import { DataCubeQuerySnapshotManager } from './core/DataCubeQuerySnapshotManager.js';
 import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
-import { DataCubeStaticContentDisplayState } from './core/DataCubeStaticContentDisplayState.js';
+import { DataCubeInfoState } from './core/DataCubeInfoState.js';
 import { validateAndBuildQuerySnapshot } from './core/DataCubeQuerySnapshotBuilder.js';
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeEngine } from './DataCubeEngine.js';
 import { ActionAlertType } from '@finos/legend-application';
 import { DataCubeFilterEditorState } from './filter/DataCubeFilterEditorState.js';
 
-export class DataCubeTask {
+class DataCubeTask {
   uuid = uuid();
   name: string;
   startTime = Date.now();
@@ -48,7 +48,7 @@ export class DataCubeState {
   readonly engine: DataCubeEngine;
   readonly snapshotManager: DataCubeQuerySnapshotManager;
 
-  readonly staticContent: DataCubeStaticContentDisplayState;
+  readonly info: DataCubeInfoState;
   readonly grid: DataCubeGridState;
   readonly editor: DataCubeEditorState;
   readonly filter: DataCubeFilterEditorState;
@@ -68,7 +68,7 @@ export class DataCubeState {
 
     // NOTE: snapshot manager must be instantiated before subscribers
     this.snapshotManager = new DataCubeQuerySnapshotManager(this);
-    this.staticContent = new DataCubeStaticContentDisplayState(this);
+    this.info = new DataCubeInfoState(this);
     this.editor = new DataCubeEditorState(this);
     this.filter = new DataCubeFilterEditorState(this);
     this.grid = new DataCubeGridState(this);
@@ -91,7 +91,7 @@ export class DataCubeState {
     try {
       await Promise.all(
         [
-          this.staticContent,
+          this.info,
           this.editor,
           this.grid,
           this.grid.controller,

@@ -83,7 +83,7 @@ const DataCubeTitleBar = observer((props: { dataCube: DataCubeState }) => {
     <div className="flex h-6 justify-between bg-neutral-100">
       <div className="flex select-none items-center pl-1 pr-2 text-lg font-medium">
         <DataCubeIcon.Cube className="mr-1 h-4 w-4" />
-        <div>{dataCube.staticContent.name}</div>
+        <div>{dataCube.info.name}</div>
       </div>
       <div>
         <button

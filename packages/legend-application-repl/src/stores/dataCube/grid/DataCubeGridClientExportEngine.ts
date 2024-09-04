@@ -90,7 +90,7 @@ export class DataCubeGridClientExportEngine {
   }
 
   private generateFileName() {
-    return `${this.dataCube.staticContent.name} - ${formatDate(new Date(), 'EEE MMM dd yyyy HH_mm_ss')}`;
+    return `${this.dataCube.info.name} - ${formatDate(new Date(), 'EEE MMM dd yyyy HH_mm_ss')}`;
   }
 
   exportFile(format: DataCubeGridClientExportFormat) {

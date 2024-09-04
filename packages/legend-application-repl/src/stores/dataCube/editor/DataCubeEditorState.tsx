@@ -39,6 +39,15 @@ export enum DataCubeEditorTab {
   CODE = 'Code',
 }
 
+/**
+ * This query editor state backs the main form editor of data cube. It supports
+ * batching changes before application, i.e. allowing user to make multiple edits before
+ * applying and propgating them.
+ *
+ * NOTE: It allows almost FULL 1-1 control over the data cube query state.
+ * It could also host other form editor states like filter editors, but due to ergonomic
+ * reasons, those have been separated out into their own respective query editor states.
+ */
 export class DataCubeEditorState extends DataCubeQuerySnapshotController {
   readonly display: SingletonModeDisplayState;
 

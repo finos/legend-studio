@@ -47,6 +47,21 @@ class DataCubeGridDatasourceConfiguration {
   }
 }
 
+/**
+ * This query editor state is responsible for syncing the internal state of ag-grid
+ * server-side row model data source with the data cube query state. When new snapshot
+ * is published, this editor will translate parts of the snapshot into ag-grid grid
+ * configuration to update; on the other hand, when the grid is interacted with in a way
+ * that impacts the data state of the server-side row model datasource (e.g. filter, sort
+ * pivot, etc.), getRows() is called, a new snapshot is published.
+ * See https://www.ag-grid.com/javascript-data-grid/server-side-model-datasource/#implementing-the-server-side-datasource
+ *
+ * NOTE: The server-side row model data source state is not 1-1 with data cube query state
+ * so we need the {@link DataCubeGridControllerState} to bridge this gap. For example,
+ * interactions like column pinning, column resizing, etc. are not handled by server-side
+ * row model datasource, so without the companion grid controller, these changes will not
+ * trigger publishing a new snapshot, hence not propagated.
+ */
 export class DataCubeGridState extends DataCubeQuerySnapshotController {
   readonly controller!: DataCubeGridControllerState;
   readonly exportEngine!: DataCubeGridClientExportEngine;

@@ -46,9 +46,15 @@ import {
 } from '../core/filter/DataCubeQueryFilterEditorState.js';
 
 /**
- * This state is responsible for capturing edition to the data cube query
- * caused by interaction with the grid which is not captured by the server-side row model
- * datasource, e.g. column pinning, column visibility changes, etc.
+ * This query editor state is responsible for capturing updates to the data cube query
+ * caused by interactions with the grid which are either not captured by the server-side row model
+ * datasource, e.g. column pinning, column visibility changes, etc or done programatically via grid
+ * context menu. Think of this as a companion state for grid editor which bridges the gap between
+ * ag-grid state and data cube query state.
+ *
+ * More technically, this handles interactions that result in instant (not batched) change to the query.
+ * For example, in the editor, users can make changes to multiple parts of the query, but until they are
+ * explicit applied, these changes will not impact the query; whereas here a change immediately take effect.
  *
  * NOTE: since typically, each grid action causes a new snapshot to be created,
  * we MUST NEVER use the editor here, as it could potentially create illegal state
@@ -56,19 +62,6 @@ import {
  */
 export class DataCubeGridControllerState extends DataCubeQuerySnapshotController {
   configuration = new DataCubeConfiguration();
-
-  filterTree: DataCubeFilterEditorTree = {
-    nodes: new Map<string, DataCubeFilterEditorTreeNode>(),
-  };
-
-  selectableColumns: DataCubeQuerySnapshotColumn[] = [];
-  selectColumns: DataCubeQuerySnapshotColumn[] = [];
-
-  verticalPivotableColumns: DataCubeQuerySnapshotColumn[] = [];
-  verticalPivotedColumns: DataCubeQuerySnapshotColumn[] = [];
-
-  sortableColumns: DataCubeQuerySnapshotColumn[] = [];
-  sortColumns: DataCubeQuerySnapshotSortColumn[] = [];
 
   menuBuilder?:
     | ((
@@ -82,6 +75,12 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
   getColumnConfiguration(colName: string | undefined) {
     return this.configuration.columns.find((col) => col.name === colName);
   }
+
+  // --------------------------------- FILTER ---------------------------------
+
+  filterTree: DataCubeFilterEditorTree = {
+    nodes: new Map<string, DataCubeFilterEditorTreeNode>(),
+  };
 
   /**
    * Add a new filter condition to the root of the filter tree.
@@ -137,6 +136,11 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     this.applyChanges();
   }
 
+  // --------------------------------- COLUMNS ---------------------------------
+
+  selectableColumns: DataCubeQuerySnapshotColumn[] = [];
+  selectColumns: DataCubeQuerySnapshotColumn[] = [];
+
   pinColumn(
     colName: string | undefined,
     placement: DataCubeColumnPinPlacement | undefined,
@@ -173,6 +177,11 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     }
   }
 
+  // --------------------------------- GROUP BY ---------------------------------
+
+  verticalPivotableColumns: DataCubeQuerySnapshotColumn[] = [];
+  verticalPivotedColumns: DataCubeQuerySnapshotColumn[] = [];
+
   setVerticalPivotOnColumn(colName: string | undefined) {
     const column = this.verticalPivotableColumns.find(
       (col) => col.name === colName,
@@ -204,6 +213,11 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     this.verticalPivotedColumns = [];
     this.applyChanges();
   }
+
+  // --------------------------------- SORT ---------------------------------
+
+  sortableColumns: DataCubeQuerySnapshotColumn[] = [];
+  sortColumns: DataCubeQuerySnapshotSortColumn[] = [];
 
   getActionableSortColumn(
     colName: string,
@@ -252,6 +266,8 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     this.sortColumns = [];
     this.applyChanges();
   }
+
+  // --------------------------------- MAIN ---------------------------------
 
   private applyChanges() {
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
