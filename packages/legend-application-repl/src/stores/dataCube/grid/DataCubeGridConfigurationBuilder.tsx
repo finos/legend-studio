@@ -345,13 +345,19 @@ function _sizeSpec(columnData: ColumnData) {
     //
     // TODO: if we support column resize to fit content, should we disable this behavior?
     resizable: column.fixedWidth === undefined,
-    // suppressAutoSize: columnConfiguration.fixedWidth !== undefined,
+    suppressAutoSize: column.fixedWidth !== undefined,
+    suppressSizeToFit: column.fixedWidth !== undefined,
     width: column.fixedWidth,
     minWidth: Math.max(
       column.minWidth ?? INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
       INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
     ),
     maxWidth: column.maxWidth,
+    // Make sure the column spans the width if possible so when total width
+    // is less than grid width, removing/adding one column will cause the other
+    // columns to take/give up space
+    flex:
+      column.fixedWidth === undefined ? 1 : (undefined as unknown as number),
   } as ColDef;
 }
 
@@ -376,7 +382,8 @@ function _rowGroupSpec(columnData: ColumnData) {
   const groupByCol = _findCol(data.groupBy?.columns, column.name);
   return {
     enableRowGroup: column.kind === DataCubeColumnKind.DIMENSION,
-    enableValue: column.kind === DataCubeColumnKind.MEASURE,
+    enableValue: false, // disable GUI interactions to modify this column's aggregate function
+    allowedAggFuncs: [], // disable GUI for options of the agg functions
     rowGroup: Boolean(groupByCol),
     rowGroupIndex: groupByCol
       ? (data.groupBy?.columns.indexOf(groupByCol) ?? null)
@@ -387,8 +394,7 @@ function _rowGroupSpec(columnData: ColumnData) {
     // in the editor.
     // But we need to set this to make sure sorting works when row grouping
     // is used, so we use a dummy value here.
-    aggFunc: 'sum',
-    allowedAggFuncs: [],
+    aggFunc: () => 0,
   } satisfies ColDef;
 }
 
@@ -456,18 +462,35 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     },
     onBodyScrollEnd: () => grid.setScrollHintText(undefined),
     scrollbarWidth: 10,
+    alwaysShowVerticalScroll: true, // this is needed to ensure
     // -------------------------------------- CONTEXT MENU --------------------------------------
     preventDefaultOnContextMenu: true, // prevent showing the browser's context menu
     columnMenu: 'new', // ensure context menu works on header
     // NOTE: dynamically generate the content of the context menu to make sure the items are not stale
     getContextMenuItems: (params) =>
-      grid.controller.menuBuilder?.(params) ?? [],
-    getMainMenuItems: (params) => grid.controller.menuBuilder?.(params) ?? [],
+      grid.controller.menuBuilder?.(params, false) ?? [],
+    getMainMenuItems: (params) =>
+      grid.controller.menuBuilder?.(params, true) ?? [],
+    // NOTE: when right-clicking empty space in the header, a menu will show up
+    // with 2 default options: 'Choose Columns` and `Reset Columns`, which is not
+    // a desired behavior, so we hide the popup menu immediately
+    onColumnMenuVisibleChanged: (event) => {
+      if (!event.column) {
+        event.api.hidePopupMenu();
+      }
+    },
     // -------------------------------------- COLUMN SIZING --------------------------------------
     autoSizePadding: INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING,
+    // ensure columns are resized to fit the grid width initially and on window resize
+    // NOTE: this has to be used with `alwaysShowVerticalScroll` to ensure accurate sizing
+    // otherwise on initial load, the computation will be done when no data is rendered,
+    // so when data is rendered and the vertical scrollbar shows up, it will block a part of
+    // the last column.
     autoSizeStrategy: {
-      // resize to fit content initially
-      type: 'fitCellContents',
+      type: 'fitGridWidth',
+    },
+    onGridSizeChanged: (event) => {
+      event.api.sizeColumnsToFit();
     },
     // -------------------------------------- TOOLTIP --------------------------------------
     tooltipShowDelay: INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY,
@@ -598,6 +621,8 @@ export function generateGridOptionsFromSnapshot(
           justifyContent: 'space-between',
           display: 'flex',
         },
+        cellDataType: 'text',
+        flex: 1,
         // TODO: display: coloring, text, etc.
         // TODO: pinning (should we pin this left by default?)
         // TODO: tooltip
@@ -609,7 +634,8 @@ export function generateGridOptionsFromSnapshot(
       {
         colId: INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID,
         hide: true,
-        enableValue: false,
+        enableValue: false, // disable GUI interactions to modify this column's aggregate function
+        allowedAggFuncs: [], // disable GUI for options of the agg functions
         enablePivot: false,
         enableRowGroup: false,
         filter: 'agTextColumnFilter',

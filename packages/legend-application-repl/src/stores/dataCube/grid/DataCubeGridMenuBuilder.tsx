@@ -41,6 +41,7 @@ import {
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import type { DataCubeColumnConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeFilterEditorConditionTreeNode } from '../core/filter/DataCubeQueryFilterEditorState.js';
+import { DataCubeEditorTab } from '../editor/DataCubeEditorState.js';
 
 function toFilterValue(
   value: unknown,
@@ -156,11 +157,15 @@ export function generateMenuBuilder(
   controller: DataCubeGridControllerState,
 ): (
   params: GetContextMenuItemsParams | GetMainMenuItemsParams,
+  fromHeader: boolean,
 ) => (string | MenuItemDef)[] {
   const dataCube = controller.dataCube;
   const editor = dataCube.editor;
 
-  return (params: GetContextMenuItemsParams | GetMainMenuItemsParams) => {
+  return (
+    params: GetContextMenuItemsParams | GetMainMenuItemsParams,
+    fromHeader: boolean,
+  ) => {
     const column = params.column ?? undefined;
     const columnName = column?.getColId();
     const columnConfiguration = controller.getColumnConfiguration(columnName);
@@ -561,44 +566,55 @@ export function generateMenuBuilder(
         subMenu: [
           {
             name: `Auto-size to Fit Content`,
+            disabled:
+              !column ||
+              !columnConfiguration ||
+              columnConfiguration.fixedWidth !== undefined,
             action: () =>
               params.api.autoSizeColumns(
                 [column?.getColId()].filter(isNonNullable),
               ),
-            disabled: !column,
           },
           {
             name: `Minimize Column`,
+            disabled:
+              !column ||
+              !columnConfiguration ||
+              columnConfiguration.fixedWidth !== undefined,
             action: () => {
               if (column) {
                 params.api.setColumnWidths([
                   {
                     key: column.getColId(),
                     newWidth:
-                      controller.getColumnConfiguration(columnName)?.minWidth ??
-                      DEFAULT_COLUMN_MIN_WIDTH,
+                      columnConfiguration?.minWidth ?? DEFAULT_COLUMN_MIN_WIDTH,
                   },
                 ]);
               }
             },
-            disabled: !column,
           },
           'separator',
           {
             name: `Auto-size All Columns`,
-            action: () => params.api.autoSizeAllColumns(),
+            action: () =>
+              params.api.autoSizeColumns(
+                controller.configuration.columns
+                  .filter((col) => col.fixedWidth === undefined)
+                  .map((col) => col.name),
+              ),
           },
           {
             name: `Minimize All Columns`,
             action: () => {
               params.api.setColumnWidths(
                 // TODO: take care of pivot columns
-                controller.configuration.columns.map((col) => ({
-                  key: col.name,
-                  newWidth:
-                    controller.getColumnConfiguration(columnName)?.minWidth ??
-                    DEFAULT_COLUMN_MIN_WIDTH,
-                })),
+                controller.configuration.columns
+                  .filter((col) => col.fixedWidth === undefined)
+                  .map((col) => ({
+                    key: col.name,
+                    newWidth:
+                      columnConfiguration?.minWidth ?? DEFAULT_COLUMN_MIN_WIDTH,
+                  })),
               );
             },
           },
@@ -687,7 +703,14 @@ export function generateMenuBuilder(
       {
         name: 'Properties...',
         disabled: editor.display.isOpen,
-        action: () => editor.display.open(),
+        action: () => {
+          // open the column property
+          if (column && fromHeader) {
+            editor.setCurrentTab(DataCubeEditorTab.COLUMN_PROPERTIES);
+            editor.columnProperties.setSelectedColumnName(column.getColId());
+          }
+          editor.display.open();
+        },
       },
     ];
   };

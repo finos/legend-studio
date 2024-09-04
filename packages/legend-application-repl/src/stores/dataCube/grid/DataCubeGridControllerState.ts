@@ -75,6 +75,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
         params:
           | GetContextMenuItemsParams<unknown, { dataCube: DataCubeState }>
           | GetMainMenuItemsParams<unknown, { dataCube: DataCubeState }>,
+        fromHeader: boolean,
       ) => (string | MenuItemDef)[])
     | undefined;
 
