@@ -54,6 +54,7 @@ export {
   MenuContentItem,
   MousePointerIcon,
   MoveIcon,
+  SaveCurrIcon,
   SaveIcon,
   useResizeDetector,
   ZoomInIcon,
