@@ -38,6 +38,7 @@ export {
   AlignMiddleIcon,
   AlignStartIcon,
   AlignTopIcon,
+  Button,
   CaretDownIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
@@ -95,6 +96,7 @@ export {
 
 export {
   type FetchStructureLayoutConfig,
+  type QueryBuilderHeaderActionConfiguration,
   QueryBuilder_GraphManagerPreset,
   QueryBuilder_LegendApplicationPlugin,
   QueryBuilder,
