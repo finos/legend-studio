@@ -1,5 +1,11 @@
 # @finos/legend-vscode-extension-dependencies
 
+## 4.0.0
+
+### Major Changes
+
+- [#3497](https://github.com/finos/legend-studio/pull/3497) [`f7fa8f2`](https://github.com/finos/legend-studio/commit/f7fa8f22121226499f864eecc55cc544bbc103c7) ([@sameersaini](https://github.com/sameersaini)) - minimizes vscode-extension package to export deps only
+
 ## 3.0.3
 
 ## 3.0.2
