@@ -45,12 +45,7 @@
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@finos/legend-storage": "workspace:*",
-    "@types/react": "18.3.5",
-    "mobx": "6.13.1",
-    "mobx-react-lite": "4.0.7",
-    "react": "18.3.1",
-    "serializr": "3.0.2"
+    "@finos/legend-storage": "workspace:*"
   },
   "devDependencies": {
     "@babel/core": "7.25.2",
@@ -60,7 +55,6 @@
     "@rollup/plugin-json": "6.1.0",
     "@rollup/plugin-node-resolve": "15.2.3",
     "@rollup/plugin-terser": "0.4.4",
-    "@types/vscode": "1.92.0",
     "cross-env": "7.0.3",
     "eslint": "8.57.0",
     "npm-run-all": "4.1.5",
