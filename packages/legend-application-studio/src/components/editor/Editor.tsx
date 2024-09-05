@@ -34,6 +34,7 @@ import {
 import { GrammarTextEditor } from './editor-group/GrammarTextEditor.js';
 import { StatusBar } from './StatusBar.js';
 import { ActivityBar } from './ActivityBar.js';
+import { ShowcaseSideBar } from './ShowcaseSideBar.js';
 import type { WorkspaceEditorPathParams } from '../../__lib__/LegendStudioNavigation.js';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
 import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
@@ -53,6 +54,7 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/
 import { EmbeddedQueryBuilder } from './EmbeddedQueryBuilder.js';
 import { GRAPH_EDITOR_MODE } from '../../stores/editor/EditorConfig.js';
 import { QuickInput } from './QuickInput.js';
+import { ShowcaseManager } from '../ShowcaseManager.js';
 
 export const Editor = withEditorStore(
   observer(() => {
@@ -117,6 +119,22 @@ export const Editor = withEditorStore(
     );
     const maximizedCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
       editorStore.panelGroupDisplayState.isMaximized,
+    );
+    // handle resizing showcase sidebar
+    const showcaseResizeSideBar = (
+      handleProps: ResizablePanelHandlerProps,
+    ): void =>
+      editorStore.showcasePanelDisplayState.setSize(
+        (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
+          .width,
+      );
+
+    const showcaseCollapsibleSideBarGroupProps = getCollapsiblePanelGroupProps(
+      editorStore.showcasePanelDisplayState.size === 0,
+      {
+        onStopResize: showcaseResizeSideBar,
+        size: editorStore.showcasePanelDisplayState.size,
+      },
     );
 
     useEffect(() => {
@@ -193,7 +211,6 @@ export const Editor = withEditorStore(
 
     // Cleanup the editor
     useEffect(() => (): void => editorStore.cleanUp(), [editorStore]);
-
     return (
       <div className="app__page">
         <div className="editor">
@@ -210,7 +227,10 @@ export const Editor = withEditorStore(
                   </ResizablePanel>
                   <ResizablePanelSplitter />
                   <ResizablePanel
-                    {...collapsibleSideBarGroupProps.remainingPanel}
+                    {...(!editorStore.sideBarDisplayState.isOpen &&
+                    !editorStore.showcasePanelDisplayState.isOpen
+                      ? { flex: 1 }
+                      : {})}
                     minSize={300}
                   >
                     <ResizablePanelGroup orientation="horizontal">
@@ -250,9 +270,19 @@ export const Editor = withEditorStore(
                       </ResizablePanel>
                     </ResizablePanelGroup>
                   </ResizablePanel>
+                  <ResizablePanelSplitter />
+                  <ResizablePanel
+                    {...showcaseCollapsibleSideBarGroupProps.collapsiblePanel}
+                    direction={-1}
+                  >
+                    <div className="panel__content explorer__content__container">
+                      <ShowcaseManager />
+                    </div>
+                  </ResizablePanel>
                 </ResizablePanelGroup>
               </div>
             </div>
+            <ShowcaseSideBar />
           </div>
           <QuickInput />
           <StatusBar actionsDisabled={!editable} />

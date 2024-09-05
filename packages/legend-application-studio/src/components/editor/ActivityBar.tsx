@@ -62,6 +62,7 @@ import {
   ShowcaseManagerState,
   openShowcaseManager,
 } from '../../stores/ShowcaseManagerState.js';
+import { toggleShowcasePanel } from './ShowcaseSideBar.js';
 
 const SettingsMenu = observer(
   forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {
@@ -81,7 +82,9 @@ const SettingsMenu = observer(
   }),
 );
 
-export const ActivityBarMenu: React.FC = () => {
+export const ActivityBarMenu: React.FC<{
+  openShowcasePanel?: () => void;
+}> = ({ openShowcasePanel }) => {
   const applicationStore = useLegendStudioApplicationStore();
   const appDocUrl = applicationStore.documentationService.url;
   const docLinks = applicationStore.documentationService.links;
@@ -136,7 +139,11 @@ export const ActivityBarMenu: React.FC = () => {
               <MenuContentItem onClick={showAppInfo}>About</MenuContentItem>
               {showcaseManagerState?.isEnabled && (
                 <MenuContentItem
-                  onClick={() => openShowcaseManager(applicationStore)}
+                  onClick={() =>
+                    openShowcasePanel
+                      ? openShowcasePanel()
+                      : openShowcaseManager(applicationStore)
+                  }
                 >
                   See Showcases
                 </MenuContentItem>
@@ -398,9 +405,13 @@ export const ActivityBar = observer(() => {
     },
   ].filter((activity) => !activity.disabled);
 
+  const openShowcasePanel = () => {
+    toggleShowcasePanel(editorStore);
+  };
+
   return (
     <div className="activity-bar">
-      <ActivityBarMenu />
+      <ActivityBarMenu openShowcasePanel={openShowcasePanel} />
       <div className="activity-bar__items">
         {activities.map((activity) => (
           <button
@@ -436,7 +447,7 @@ export const ActivityBar = observer(() => {
       </div>
       <button
         className={clsx('activity-bar__item')}
-        onClick={() => openShowcaseManager(editorStore.applicationStore)}
+        onClick={() => openShowcasePanel()}
         tabIndex={-1}
         title={'Open Showcases'}
       >
