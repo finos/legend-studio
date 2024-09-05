@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.55
+
+### Patch Changes
+
+- [#3498](https://github.com/finos/legend-studio/pull/3498) [`a28e377`](https://github.com/finos/legend-studio/commit/a28e377905c62014ee8101949e5d464f4ba3b57d) ([@kelly-thai](https://github.com/kelly-thai)) - Adding a sidebar on the right hand side of studio to display showcases, with resizable and button functionality as well as saving the state of it in local storage so that users can refresh the page and it will remain opened/closed.
+
 ## 7.1.54
 
 ## 7.1.53
