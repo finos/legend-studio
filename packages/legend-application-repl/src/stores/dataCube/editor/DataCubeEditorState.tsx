@@ -26,7 +26,7 @@ import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumn
 import { DataCubeEditorColumnsPanelState } from './DataCubeEditorColumnsPanelState.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeEditorVerticalPivotsPanelState } from './DataCubeEditorVerticalPivotsPanelState.js';
-import { SingletonModeDisplayState } from '../../LayoutManagerState.js';
+import { DisplayState } from '../../LayoutManagerState.js';
 import { DataCubeEditor } from '../../../components/dataCube/editor/DataCubeEditor.js';
 
 export enum DataCubeEditorTab {
@@ -49,7 +49,7 @@ export enum DataCubeEditorTab {
  * reasons, those have been separated out into their own respective query editor states.
  */
 export class DataCubeEditorState extends DataCubeQuerySnapshotController {
-  readonly display: SingletonModeDisplayState;
+  readonly display: DisplayState;
 
   readonly code: DataCubeEditorCodePanelState;
 
@@ -58,6 +58,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
 
   readonly columns: DataCubeEditorColumnsPanelState;
   readonly verticalPivots: DataCubeEditorVerticalPivotsPanelState;
+  // TODO: horizontal pivot
   readonly sorts: DataCubeEditorSortsPanelState;
 
   currentTab = DataCubeEditorTab.GENERAL_PROPERTIES;
@@ -72,7 +73,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
       applyChanges: action,
     });
 
-    this.display = new SingletonModeDisplayState(
+    this.display = new DisplayState(
       this.dataCube.repl.layout,
       'Properties',
       () => <DataCubeEditor dataCube={this.dataCube} />,

@@ -128,7 +128,7 @@ export const DEFAULT_LARGE_ALERT_WINDOW_CONFIG: WindowConfiguration = {
   center: true,
 };
 
-export class SingletonModeDisplayState {
+export class DisplayState {
   readonly layoutManagerState: LayoutManagerState;
   readonly configuration: LayoutConfiguration;
   window?: WindowState | undefined;

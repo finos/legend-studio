@@ -39,14 +39,14 @@ import {
   DataCubeConfiguration,
   type DataCubeColumnConfiguration,
 } from '../core/DataCubeConfiguration.js';
-import { SingletonModeDisplayState } from '../../LayoutManagerState.js';
-import { DataCubeFilterEditor } from '../../../components/dataCube/filter/DataCubeEditorFilter.js';
+import { DisplayState } from '../../LayoutManagerState.js';
+import { DataCubeFilterEditor } from '../../../components/dataCube/filter/DataCubeFilterEditor.js';
 
 /**
  * This query editor state backs the form editor for filter. It batches changes made
  */
 export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
-  readonly display: SingletonModeDisplayState;
+  readonly display: DisplayState;
 
   tree: DataCubeFilterEditorTree;
   selectedNode?: DataCubeFilterEditorTreeNode | undefined;
@@ -72,11 +72,9 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
       layerFilterNode: action,
     });
 
-    this.display = new SingletonModeDisplayState(
-      this.dataCube.repl.layout,
-      'Filter',
-      () => <DataCubeFilterEditor dataCube={this.dataCube} />,
-    );
+    this.display = new DisplayState(this.dataCube.repl.layout, 'Filter', () => (
+      <DataCubeFilterEditor dataCube={this.dataCube} />
+    ));
 
     this.tree = {
       nodes: new Map<string, DataCubeFilterEditorTreeNode>(),

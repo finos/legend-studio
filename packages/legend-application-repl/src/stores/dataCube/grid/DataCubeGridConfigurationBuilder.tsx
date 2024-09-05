@@ -476,6 +476,12 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     // a desired behavior, so we hide the popup menu immediately
     onColumnMenuVisibleChanged: (event) => {
       if (!event.column) {
+        const menuElement = document.querySelector(
+          `.${INTERNAL__GridClientUtilityCssClassName.ROOT} .ag-popup .ag-menu`,
+        ) as HTMLElement | undefined;
+        if (menuElement) {
+          menuElement.style.display = 'none';
+        }
         event.api.hidePopupMenu();
       }
     },

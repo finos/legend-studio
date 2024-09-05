@@ -176,11 +176,11 @@ export class DataCubeEngine {
 
   async getQueryTypeahead(
     code: string,
-    isPartial?: boolean,
+    query: V1_ValueSpecification,
   ): Promise<CompletionItem[]> {
     return (await this.client.getQueryTypeahead({
       code,
-      isPartial,
+      baseQuery: V1_serializeValueSpecification(query, []),
     })) as CompletionItem[];
   }
 

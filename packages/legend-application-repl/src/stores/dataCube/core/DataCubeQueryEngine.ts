@@ -254,8 +254,9 @@ export enum DataCubeColumnPinPlacement {
 
 export enum DataCubeColumnDataType {
   NUMBER = 'number',
-  DATE = 'date',
   TEXT = 'text',
+  DATE = 'date',
+  TIME = 'time',
 }
 
 export function getDataType(type: string): DataCubeColumnDataType {
@@ -266,9 +267,10 @@ export function getDataType(type: string): DataCubeColumnDataType {
     case PRIMITIVE_TYPE.FLOAT:
       return DataCubeColumnDataType.NUMBER;
     case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME:
     case PRIMITIVE_TYPE.STRICTDATE:
       return DataCubeColumnDataType.DATE;
+    case PRIMITIVE_TYPE.DATETIME:
+      return DataCubeColumnDataType.TIME;
     case PRIMITIVE_TYPE.STRING:
     default:
       return DataCubeColumnDataType.TEXT;

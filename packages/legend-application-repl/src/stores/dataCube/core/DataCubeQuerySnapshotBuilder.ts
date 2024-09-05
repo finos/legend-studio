@@ -327,7 +327,6 @@ export function validateAndBuildQuerySnapshot(
         (colSpec) => _aggCol(colSpec, _col(colSpec)),
       ),
       // TODO: verify agg columns agree with pivot agg columns
-      // TODO: verify groupByExtend expression that all columns are accounted for
     };
   }
 

@@ -19,6 +19,7 @@ import type { DataCubeState } from '../DataCubeState.js';
 import {
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
+  type DataCubeQuerySnapshotExtendedColumn,
 } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import {
@@ -41,7 +42,8 @@ export class DataCubeEditorBasicColumnsSelectorState extends DataCubeEditorColum
   override get availableColumns() {
     return [
       ...this.editor.columns.sourceColumns,
-      // TODO: add extended columns
+      ...this.editor.columns.leafExtendColumns,
+      ...this.editor.columns.groupExtendColumns,
     ].map(
       (col) => new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
     );
@@ -56,11 +58,16 @@ export class DataCubeEditorColumnsPanelState
   readonly selector!: DataCubeEditorBasicColumnsSelectorState;
 
   sourceColumns: DataCubeQuerySnapshotColumn[] = [];
+  leafExtendColumns: DataCubeQuerySnapshotExtendedColumn[] = [];
+  groupExtendColumns: DataCubeQuerySnapshotExtendedColumn[] = [];
 
   constructor(editor: DataCubeEditorState) {
     makeObservable(this, {
-      sourceColumns: observable,
-      setSourceColumns: action,
+      sourceColumns: observable.ref,
+      leafExtendColumns: observable.ref,
+      groupExtendColumns: observable.ref,
+
+      applySnaphot: action,
     });
 
     this.editor = editor;
@@ -123,16 +130,17 @@ export class DataCubeEditorColumnsPanelState
     // TODO: prune horizontal pivots columns
   }
 
-  setSourceColumns(columns: DataCubeQuerySnapshotColumn[]) {
-    this.sourceColumns = columns;
-  }
-
   applySnaphot(
     snapshot: DataCubeQuerySnapshot,
     configuration: DataCubeConfiguration,
   ) {
-    this.setSourceColumns(snapshot.data.sourceColumns);
+    this.sourceColumns = snapshot.data.sourceColumns;
+    this.leafExtendColumns = snapshot.data.leafExtendedColumns;
+    this.groupExtendColumns = snapshot.data.groupExtendedColumns;
+
     this.selector.setSelectedColumns(
+      // TODO: extract the order of the extended columns display based off the order of the column configurations
+      //
       // extract selected columns from the configuration since the configuration specifies the order
       // taking into account the group extended columns
       // NOTE: since select() is applied before grouping/aggregation, it's technicaly not possible to
