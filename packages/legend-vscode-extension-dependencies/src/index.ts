@@ -98,6 +98,7 @@ export {
   LegendApplicationConfig,
   LegendApplicationPlugin,
   LegendApplicationPluginManager,
+  useApplicationStore,
 } from '@finos/legend-application';
 
 export {
