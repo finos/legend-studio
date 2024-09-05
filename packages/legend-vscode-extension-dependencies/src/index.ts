@@ -40,11 +40,11 @@ export {
   AlignTopIcon,
   Button,
   CaretDownIcon,
-  CubesLoadingIndicator,
-  CubesLoadingIndicatorIcon,
   clsx,
   compareLabelFn,
   ControlledDropdownMenu,
+  CubesLoadingIndicator,
+  CubesLoadingIndicatorIcon,
   CustomSelectorInput,
   DistributeHorizontalIcon,
   DistributeVerticalIcon,
@@ -81,9 +81,9 @@ export type { Entity } from '@finos/legend-storage';
 
 export {
   type GeneratorFn,
-  assertErrorThrown,
   AbstractPlugin,
   AbstractPreset,
+  assertErrorThrown,
   guaranteeType,
 } from '@finos/legend-shared';
 
