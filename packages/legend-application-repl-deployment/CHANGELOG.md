@@ -1,5 +1,7 @@
 # @finos/legend-application-repl-deployment
 
+## 12.35.0
+
 ## 12.34.0
 
 ## 12.33.0
