@@ -40,8 +40,9 @@ import {
   type TEMPORARY__ReactRouterComponentType,
 } from '@finos/legend-application/browser';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/LegendStudioDocumentation.js';
-import { ShowcaseViewer } from './showcase/ShowcaseViewer.js';
 import { LazyTextEditor } from './lazy-text-editor/LazyTextEditor.js';
+import { PureCompatibilityTestManager } from './pct/PureCompatibilityTest.js';
+import { ShowcaseViewer } from './showcase/ShowcaseViewer.js';
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -143,6 +144,14 @@ export const LegendStudioWebApplicationRouter = observer(() => {
                     ShowcaseViewer as TEMPORARY__ReactRouterComponentType
                   }
                 />
+                <Route
+                  exact={true}
+                  path={LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.PCT_REPORT}
+                  component={
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    PureCompatibilityTestManager as TEMPORARY__ReactRouterComponentType
+                  }
+                />
                 <Route>
                   <NotFoundPage />
                 </Route>
@@ -218,6 +227,14 @@ export const LegendStudioWebApplicationRouter = observer(() => {
                   component={
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     WorkspaceSetup as TEMPORARY__ReactRouterComponentType
+                  }
+                />
+                <Route
+                  exact={true}
+                  path={LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.PCT_REPORT}
+                  component={
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    PureCompatibilityTestManager as TEMPORARY__ReactRouterComponentType
                   }
                 />
                 {extraApplicationPageEntries.map((entry) => (
