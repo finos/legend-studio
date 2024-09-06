@@ -81,10 +81,19 @@ export type { Entity } from '@finos/legend-storage';
 
 export {
   type GeneratorFn,
+  type PlainObject,
   AbstractPlugin,
   AbstractPreset,
   assertErrorThrown,
+  assertNonNullable,
+  deserializeMap,
+  guaranteeNonEmptyString,
+  guaranteeNonNullable,
   guaranteeType,
+  isBoolean,
+  SerializationFactory,
+  serializeMap,
+  usingModelSchema,
 } from '@finos/legend-shared';
 
 export {
