@@ -108,6 +108,7 @@ export {
   QueryBuilder_LegendApplicationPlugin,
   QueryBuilder,
   QueryBuilderActionConfig,
+  QueryBuilderConfig,
   QueryBuilderState,
   QueryBuilderWorkflowState,
   ServiceQueryBuilderState,
