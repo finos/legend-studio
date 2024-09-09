@@ -223,9 +223,9 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     );
     return cacheResult
       ? this.buildDataSpaceAnalytics(
-          cacheResult,
-          this.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
-        )
+        cacheResult,
+        this.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+      )
       : undefined;
   }
 
@@ -410,6 +410,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
             entry[0],
             V1_buildModelCoverageAnalysisResult(
               entry[1],
+              this.graphManager,
               graph.getMapping(entry[0]),
             ),
           );
@@ -452,9 +453,9 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           context.mapping,
           V1_buildModelCoverageAnalysisResult(
             context.mappingModelCoverageAnalysisResult,
+            this.graphManager,
             contextAnalysisResult.mapping,
-          ),
-        );
+          ));
       }
 
       contextAnalysisResult.compatibleRuntimes = context.compatibleRuntimes.map(
@@ -498,9 +499,9 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           propertyData.milestoning = property.milestoning;
           propertyData.multiplicity = property.multiplicity
             ? graph.getMultiplicity(
-                property.multiplicity.lowerBound,
-                property.multiplicity.upperBound,
-              )
+              property.multiplicity.lowerBound,
+              property.multiplicity.upperBound,
+            )
             : undefined;
           classData.properties.push(propertyData);
           entries.push(
@@ -564,9 +565,9 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           propertyData.milestoning = property.milestoning;
           propertyData.multiplicity = property.multiplicity
             ? graph.getMultiplicity(
-                property.multiplicity.lowerBound,
-                property.multiplicity.upperBound,
-              )
+              property.multiplicity.lowerBound,
+              property.multiplicity.upperBound,
+            )
             : undefined;
           associationData.properties.push(propertyData);
           entries.push(

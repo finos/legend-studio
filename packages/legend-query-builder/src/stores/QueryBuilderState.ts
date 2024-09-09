@@ -339,10 +339,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.executionContextState.mapping,
       'Query required mapping to update',
     );
-    queryExeContext.mapping = PackageableElementExplicitReference.create(
-      this.executionContextState.mapping,
-    );
-    queryExeContext.runtime = runtimeValue.packageableRuntime;
+    queryExeContext.mapping = this.executionContextState.mapping.path;
+    queryExeContext.runtime = runtimeValue.packageableRuntime.value.path;
     return queryExeContext;
   }
 

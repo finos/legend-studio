@@ -88,7 +88,9 @@ export const deleteElementFromPackage = (
   );
 };
 
-const getDescendantsOfPackage = (parent: Package): Set<PackageableElement> => {
+export const getDescendantsOfPackage = (
+  parent: Package,
+): Set<PackageableElement> => {
   const descendants: Set<PackageableElement> = new Set<PackageableElement>();
   parent.children.forEach((c) => {
     if (c instanceof Package) {

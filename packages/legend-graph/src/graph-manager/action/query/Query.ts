@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
-import type { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
-import type { PackageableRuntime } from '../../../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
-
 export class QueryTaggedValue {
   profile!: string;
   tag!: string;
@@ -37,8 +33,9 @@ export class QueryParameterValue {
 export abstract class QueryExecutionContext {}
 
 export class QueryExplicitExecutionContext extends QueryExecutionContext {
-  mapping!: PackageableElementReference<Mapping>;
-  runtime!: PackageableElementReference<PackageableRuntime>;
+  // NOTE: Query can be built before the actual graph is built so we can't have the reference of metamodels here
+  mapping!: string;
+  runtime!: string;
 }
 
 export class QueryDataSpaceExecutionContext extends QueryExecutionContext {
@@ -75,16 +72,17 @@ export class Query {
   content!: string;
   executionContext!: QueryExecutionContext;
 
+  // NOTE: Query can be built before the actual graph is built so we can't have the reference of metamodels here
   /**
    * mapping, runtime have been deprecated in favor of `V1_QueryExecutionContext`
    * @deprecated
    */
-  mapping?: PackageableElementReference<Mapping> | undefined;
+  mapping?: string | undefined;
   /**
    * mapping, runtime have been deprecated in favor of `V1_QueryExecutionContext`
    * @deprecated
    */
-  runtime?: PackageableElementReference<PackageableRuntime> | undefined;
+  runtime?: string | undefined;
 
   lastUpdatedAt?: number | undefined;
   createdAt?: number | undefined;

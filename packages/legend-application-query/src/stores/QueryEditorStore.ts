@@ -119,9 +119,9 @@ import {
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
 import {
-  DSL_DataSpace_getGraphManagerExtension,
   type DataSpace,
   type DataSpaceExecutionContext,
+  DSL_DataSpace_getGraphManagerExtension,
   getOwnDataSpace,
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
@@ -425,6 +425,13 @@ export abstract class QueryEditorStore {
         this.queryBuilderState.executionContextState.mapping,
         'Query required mapping to update',
       );
+      const runtimeValue = guaranteeType(
+        this.queryBuilderState.executionContextState.runtimeValue,
+        RuntimePointer,
+        'Query runtime must be of type runtime pointer',
+      );
+      query.mapping = this.queryBuilderState.executionContextState.mapping.path;
+      query.runtime = runtimeValue.packageableRuntime.value.path;
       query.executionContext =
         this.queryBuilderState.getQueryExecutionContext();
       query.content =
@@ -1267,11 +1274,17 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         exec.dataSpacePath,
         this.graphManagerState.graph,
       );
+      const mapping = query.mapping
+        ? this.graphManagerState.graph.getMapping(query.mapping)
+        : undefined;
+      const runtime = query.runtime
+        ? this.graphManagerState.graph.getRuntime(query.runtime)
+        : undefined;
       const matchingExecutionContext = resolveExecutionContext(
         dataSpace,
         exec.executionKey,
-        query.mapping?.value,
-        query.runtime?.value,
+        mapping,
+        runtime,
       );
       if (matchingExecutionContext) {
         let dataSpaceAnalysisResult;
@@ -1433,12 +1446,18 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         new QueryBuilderActionConfig_QueryApplication(this),
       );
       classQueryBuilderState.executionContextState.setMapping(
-        exec.mapping.value,
+        exec.mapping
+          ? this.graphManagerState.graph.getMapping(exec.mapping)
+          : undefined,
       );
       classQueryBuilderState.executionContextState.setRuntimeValue(
-        new RuntimePointer(
-          PackageableElementExplicitReference.create(exec.runtime.value),
-        ),
+        exec.runtime
+          ? new RuntimePointer(
+              PackageableElementExplicitReference.create(
+                this.graphManagerState.graph.getRuntime(exec.runtime),
+              ),
+            )
+          : undefined,
       );
       return classQueryBuilderState;
     }

@@ -39,7 +39,7 @@ export const queryDataSpace = async (
   const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
   await flowResult(
     embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
-      setupQueryBuilderState: () => {
+      setupQueryBuilderState: async () => {
         const sourceInfo = Object.assign(
           {},
           editorStore.editorMode.getSourceInfo(),

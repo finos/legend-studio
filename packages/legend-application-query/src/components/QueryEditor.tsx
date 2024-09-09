@@ -470,13 +470,21 @@ const QueryEditorExistingQueryInfoModal = observer(
                   <div className="query-preview__field">
                     <div className="query-preview__field__label">Mapping</div>
                     <div className="query-preview__field__value">
-                      {executionContext.mapping.value.name}
+                      {
+                        updateState.editorStore.graphManagerState.graph.getMapping(
+                          executionContext.mapping,
+                        ).name
+                      }
                     </div>
                   </div>
                   <div className="query-preview__field">
                     <div className="query-preview__field__label">Runtime</div>
                     <div className="query-preview__field__value">
-                      {executionContext.runtime.value.name}
+                      {
+                        updateState.editorStore.graphManagerState.graph.getRuntime(
+                          executionContext.runtime,
+                        ).name
+                      }
                     </div>
                   </div>
                 </>

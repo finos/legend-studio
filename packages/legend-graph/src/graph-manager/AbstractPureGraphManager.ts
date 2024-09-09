@@ -145,6 +145,8 @@ export interface GraphBuilderOptions {
    * This ties a graph to an sdlc pointer. Meaning the graph is immutable and tied to a specific `versioned` SDLC.
    */
   origin?: GraphDataOrigin | undefined;
+
+  buildMinimalGraphOnly?: boolean;
 }
 
 export interface ExecutionOptions {

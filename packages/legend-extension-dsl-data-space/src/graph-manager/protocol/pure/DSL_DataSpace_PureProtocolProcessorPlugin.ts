@@ -307,7 +307,10 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
               },
             );
           }
-          if (elementProtocol.diagrams) {
+          if (
+            elementProtocol.diagrams &&
+            !context.options?.buildMinimalGraphOnly
+          ) {
             element.diagrams = elementProtocol.diagrams.map(
               (diagramProtocol) => {
                 const diagram = new DataSpaceDiagram();

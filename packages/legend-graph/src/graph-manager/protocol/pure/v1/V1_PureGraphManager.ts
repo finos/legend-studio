@@ -3143,6 +3143,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       : this.getFullGraphModelData(graph);
     return V1_buildModelCoverageAnalysisResult(
       await this.engine.analyzeMappingModelCoverage(input),
+      this,
       mapping,
     );
   }
@@ -3156,6 +3157,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         V1_MappingModelCoverageAnalysisResult,
         input as PlainObject<V1_MappingModelCoverageAnalysisResult>,
       ),
+      this,
       mapping,
     );
   }

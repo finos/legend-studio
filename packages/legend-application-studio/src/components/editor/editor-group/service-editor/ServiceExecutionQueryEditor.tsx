@@ -137,7 +137,7 @@ export const ServiceExecutionQueryEditor = observer(
           executionState.selectedExecutionContextState;
         await flowResult(
           embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
-            setupQueryBuilderState: (): QueryBuilderState => {
+            setupQueryBuilderState: async (): Promise<QueryBuilderState> => {
               const sourceInfo = {
                 service: service.path,
                 ...editorStore.editorMode.getSourceInfo(),
@@ -488,7 +488,7 @@ export const queryService = async (
   };
   await flowResult(
     embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
-      setupQueryBuilderState: (): QueryBuilderState => {
+      setupQueryBuilderState: async (): Promise<QueryBuilderState> => {
         const queryBuilderState = new ServiceQueryBuilderState(
           embeddedQueryBuilderState.editorStore.applicationStore,
           embeddedQueryBuilderState.editorStore.graphManagerState,
