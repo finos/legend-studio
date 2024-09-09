@@ -28,6 +28,7 @@ import {
   DataCubeGetBaseQueryResult,
   type DataCubeInfrastructureInfo,
   type CompletionItem,
+  type RelationType,
 } from '../../server/REPLEngine.js';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
@@ -198,6 +199,16 @@ export class DataCubeEngine {
     return DataCubeGetBaseQueryResult.serialization.fromJson(
       await this.client.getBaseQuery(),
     );
+  }
+
+  async getQueryCodeRelationReturnType(
+    code: string,
+    query: V1_ValueSpecification,
+  ): Promise<RelationType> {
+    return this.client.getQueryCodeRelationReturnType({
+      code,
+      baseQuery: V1_serializeValueSpecification(query, []),
+    });
   }
 
   async executeQuery(query: V1_Lambda): Promise<{

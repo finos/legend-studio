@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createModelSchema, custom, list, primitive } from 'serializr';
+import { createModelSchema, custom, primitive } from 'serializr';
 import {
   SerializationFactory,
   usingModelSchema,
@@ -26,7 +26,18 @@ import {
   V1_deserializeValueSpecification,
   V1_serializeValueSpecification,
 } from '@finos/legend-graph';
-import { DataCubeQuery, DataCubeQueryColumn } from './DataCubeQuery.js';
+import { DataCubeQuery, type DataCubeQueryColumn } from './DataCubeQuery.js';
+
+export type DataCubeQueryBuilderError = {
+  type: string;
+  message: string;
+  sourceInformation?: {
+    startLine: number;
+    startColumn: number;
+    endLine: number;
+    endColumn: number;
+  };
+};
 
 export type DataCubeInfrastructureInfo = {
   gridClientLicense?: string | undefined;
@@ -56,6 +67,11 @@ export type DataCubeGetQueryRelationReturnTypeInput = {
   query: PlainObject<V1_Lambda>;
 };
 
+export type DataCubeGetQueryCodeRelationReturnTypeInput = {
+  code: string;
+  baseQuery?: PlainObject<V1_ValueSpecification>;
+};
+
 export type DataCubeExecutionInput = {
   query: PlainObject<V1_Lambda>;
   debug?: boolean | undefined;
@@ -67,15 +83,9 @@ export type DataCubeExecutionResult = {
   executedSQL: string;
 };
 
-export class RelationType {
-  columns: DataCubeQueryColumn[] = [];
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(RelationType, {
-      columns: list(usingModelSchema(DataCubeQueryColumn.serialization.schema)),
-    }),
-  );
-}
+export type RelationType = {
+  columns: DataCubeQueryColumn[];
+};
 
 export class DataCubeGetBaseQueryResult {
   query!: DataCubeQuery;

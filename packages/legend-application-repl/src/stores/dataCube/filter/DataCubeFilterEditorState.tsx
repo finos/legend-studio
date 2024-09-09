@@ -44,6 +44,7 @@ import { DataCubeFilterEditor } from '../../../components/dataCube/filter/DataCu
 
 /**
  * This query editor state backs the form editor for filter. It batches changes made
+ * to the filter in the form editor.
  */
 export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
   readonly display: DisplayState;
@@ -60,7 +61,7 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
       initializeTree: action,
       refreshTree: action,
 
-      columns: observable,
+      columns: observable.struct,
 
       applySnapshot: action,
 
@@ -75,6 +76,15 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
     this.display = new DisplayState(this.dataCube.repl.layout, 'Filter', () => (
       <DataCubeFilterEditor dataCube={this.dataCube} />
     ));
+    this.display.configuration.window = {
+      x: -50,
+      y: 50,
+      width: 600,
+      height: 400,
+      minWidth: 300,
+      minHeight: 200,
+      center: false,
+    };
 
     this.tree = {
       nodes: new Map<string, DataCubeFilterEditorTreeNode>(),

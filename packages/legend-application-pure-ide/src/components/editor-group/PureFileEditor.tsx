@@ -38,6 +38,7 @@ import {
   PURE_GRAMMAR_TOKEN,
   getBaseCodeEditorOptions,
   moveCursorToPosition,
+  PURE_CODE_EDITOR_WORD_SEPARATORS,
 } from '@finos/legend-lego/code-editor';
 import { clsx, Dialog, WordWrapIcon } from '@finos/legend-art';
 import { usePureIDEStore } from '../PureIDEStoreProvider.js';
@@ -166,7 +167,7 @@ export const PureFileEditor = observer(
           ...getBaseCodeEditorOptions(),
           language: CODE_EDITOR_LANGUAGE.PURE,
           theme: CODE_EDITOR_THEME.DEFAULT_DARK,
-          wordSeparators: '`~!@#%^&*()-=+[{]}\\|;:\'",.<>/?', // omit $ from default word separators
+          wordSeparators: PURE_CODE_EDITOR_WORD_SEPARATORS,
           wordWrap: editorState.textEditorState.wrapText ? 'on' : 'off',
           readOnly: editorState.file.RO,
           contextmenu: true,

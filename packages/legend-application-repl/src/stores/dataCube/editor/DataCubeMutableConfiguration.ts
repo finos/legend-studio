@@ -15,8 +15,8 @@
  */
 
 import {
+  DataCubeColumnKind,
   getDataType,
-  type DataCubeColumnKind,
   type DataCubeFont,
   type DataCubeOperationValue,
   type DataCubeNumberScale,
@@ -38,6 +38,7 @@ import {
   DEFAULT_ZERO_FOREGROUND_COLOR,
   DEFAULT_ERROR_FOREGROUND_COLOR,
   DEFAULT_BACKGROUND_COLOR,
+  DataCubeAggregateOperator,
 } from '../core/DataCubeQueryEngine.js';
 import { type PlainObject, type Writable } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
@@ -46,6 +47,11 @@ import {
   DataCubeConfiguration,
 } from '../core/DataCubeConfiguration.js';
 import { buildDefaultColumnConfiguration } from '../core/DataCubeConfigurationBuilder.js';
+import {
+  _findCol,
+  type DataCubeQuerySnapshot,
+} from '../core/DataCubeQuerySnapshot.js';
+import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 
 export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfiguration {
   readonly dataType!: DataCubeColumnDataType;
@@ -187,6 +193,31 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
         buildDefaultColumnConfiguration(column),
       ),
     );
+  }
+
+  populateSyntheticMetadata(snapshot: DataCubeQuerySnapshot) {
+    if (this.kind === DataCubeColumnKind.MEASURE) {
+      const aggCol = _findCol(snapshot.data.groupBy?.aggColumns, this.name);
+      if (aggCol) {
+        this.setAggregateFunction(aggCol.operation);
+        this.setAggregateFunctionParameters(aggCol.parameters);
+      } else {
+        switch (this.type) {
+          case PRIMITIVE_TYPE.NUMBER:
+          case PRIMITIVE_TYPE.INTEGER:
+          case PRIMITIVE_TYPE.DECIMAL:
+          case PRIMITIVE_TYPE.FLOAT: {
+            this.setAggregateFunction(DataCubeAggregateOperator.SUM);
+            this.setAggregateFunctionParameters([]);
+            break;
+          }
+          default: {
+            break;
+          }
+        }
+      }
+    }
+    return this;
   }
 
   serialize() {

@@ -288,6 +288,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
           aggColumns: _groupByAggCols(
             baseSnapshot.data.groupBy,
             this.configuration,
+            baseSnapshot.data.groupExtendedColumns,
           ),
         }
       : undefined;

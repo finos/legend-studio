@@ -336,3 +336,6 @@ export const isTokenOneOf = (
   );
   return baseTokens.includes(baseToken);
 };
+
+export const PURE_CODE_EDITOR_WORD_SEPARATORS =
+  '`~!@#%^&*()-=+[{]}\\|;:\'",.<>/?'; // omit $ from default word separators

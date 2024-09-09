@@ -253,10 +253,10 @@ export enum DataCubeColumnPinPlacement {
 }
 
 export enum DataCubeColumnDataType {
-  NUMBER = 'number',
-  TEXT = 'text',
-  DATE = 'date',
-  TIME = 'time',
+  NUMBER = 'Numeric',
+  TEXT = 'Text',
+  DATE = 'Date',
+  TIME = 'Time',
 }
 
 export function getDataType(type: string): DataCubeColumnDataType {

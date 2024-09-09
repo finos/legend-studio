@@ -28,6 +28,7 @@ import {
 } from '@finos/legend-art';
 import { LayoutManager } from '../repl/LayoutManager.js';
 import type { DataCubeState } from '../../stores/dataCube/DataCubeState.js';
+import { INTERNAL__MonacoEditorWidgetsRoot } from '../repl/PureCodeEditor.js';
 
 const DataCubeStatusBar = observer((props: { dataCube: DataCubeState }) => {
   const { dataCube } = props;
@@ -149,6 +150,8 @@ export const DataCube = observer(() => {
       <DataCubeGrid dataCube={dataCube} />
       <DataCubeStatusBar dataCube={dataCube} />
       <LayoutManager layoutManagerState={repl.layout} />
+
+      <INTERNAL__MonacoEditorWidgetsRoot />
     </div>
   );
 });

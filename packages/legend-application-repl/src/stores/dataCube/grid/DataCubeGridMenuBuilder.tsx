@@ -161,6 +161,7 @@ export function generateMenuBuilder(
 ) => (string | MenuItemDef)[] {
   const dataCube = controller.dataCube;
   const editor = dataCube.editor;
+  const extend = dataCube.extend;
 
   return (
     params: GetContextMenuItemsParams | GetMainMenuItemsParams,
@@ -510,28 +511,25 @@ export function generateMenuBuilder(
       },
       {
         name: 'Extended Columns',
-        menuItem: WIP_GridMenuItem,
-        cssClasses: ['!opacity-100'],
-        disabled: true,
         subMenu: [
           {
             name: `Add New Column...`,
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
+            action: () => extend.openNewColumnEditor(),
           },
-          {
-            name: `Edit {column}`,
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
-          },
-          {
-            name: `Remove {column}`,
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
-          },
+          // TODO: check if the current column is an extended column or not
+          // TODO: "Extend {column}" if the column is not an extended column
+          // {
+          //   name: `Edit {column}`,
+          //   menuItem: WIP_GridMenuItem,
+          //   cssClasses: ['!opacity-100'],
+          //   disabled: true,
+          // },
+          // {
+          //   name: `Remove {column}`,
+          //   menuItem: WIP_GridMenuItem,
+          //   cssClasses: ['!opacity-100'],
+          //   disabled: true,
+          // },
         ],
       },
       {

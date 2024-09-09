@@ -26,6 +26,7 @@ import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeEngine } from './DataCubeEngine.js';
 import { ActionAlertType } from '@finos/legend-application';
 import { DataCubeFilterEditorState } from './filter/DataCubeFilterEditorState.js';
+import { DataCubeExtendManagerState } from './extend/DataCubeExtendManagerState.js';
 
 class DataCubeTask {
   uuid = uuid();
@@ -49,9 +50,10 @@ export class DataCubeState {
   readonly snapshotManager: DataCubeQuerySnapshotManager;
 
   readonly info: DataCubeInfoState;
-  readonly grid: DataCubeGridState;
   readonly editor: DataCubeEditorState;
+  readonly grid: DataCubeGridState;
   readonly filter: DataCubeFilterEditorState;
+  readonly extend: DataCubeExtendManagerState;
 
   readonly runningTasks = new Map<string, DataCubeTask>();
 
@@ -68,10 +70,12 @@ export class DataCubeState {
 
     // NOTE: snapshot manager must be instantiated before subscribers
     this.snapshotManager = new DataCubeQuerySnapshotManager(this);
+
     this.info = new DataCubeInfoState(this);
     this.editor = new DataCubeEditorState(this);
-    this.filter = new DataCubeFilterEditorState(this);
     this.grid = new DataCubeGridState(this);
+    this.filter = new DataCubeFilterEditorState(this);
+    this.extend = new DataCubeExtendManagerState(this);
   }
 
   newTask(name: string) {
@@ -96,7 +100,7 @@ export class DataCubeState {
           this.grid,
           this.grid.controller,
           this.filter,
-          // TODO this.editor.extendedColumns,
+          this.extend,
         ].map(async (state) => {
           this.snapshotManager.registerSubscriber(state);
         }),

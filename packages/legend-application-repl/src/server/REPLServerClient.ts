@@ -30,6 +30,7 @@ import type {
   DataCubeExecutionResult,
   DataCubeGetBaseQueryResult,
   DataCubeInfrastructureInfo,
+  DataCubeGetQueryCodeRelationReturnTypeInput,
 } from './REPLEngine.js';
 import type { V1_ValueSpecification } from '@finos/legend-graph';
 
@@ -82,6 +83,15 @@ export class REPLServerClient {
   ): Promise<RelationType> {
     return this.networkClient.post(
       `${this.dataCube}/getRelationReturnType`,
+      input,
+    );
+  }
+
+  async getQueryCodeRelationReturnType(
+    input: DataCubeGetQueryCodeRelationReturnTypeInput,
+  ): Promise<RelationType> {
+    return this.networkClient.post(
+      `${this.dataCube}/getRelationReturnType/code`,
       input,
     );
   }

@@ -380,21 +380,26 @@ function _rowGroupSpec(columnData: ColumnData) {
   const { snapshot, column } = columnData;
   const data = snapshot.data;
   const groupByCol = _findCol(data.groupBy?.columns, column.name);
+  const isGroupExtendedColumn = Boolean(
+    _findCol(data.groupExtendedColumns, column.name),
+  );
   return {
-    enableRowGroup: column.kind === DataCubeColumnKind.DIMENSION,
+    enableRowGroup:
+      !isGroupExtendedColumn && column.kind === DataCubeColumnKind.DIMENSION,
     enableValue: false, // disable GUI interactions to modify this column's aggregate function
     allowedAggFuncs: [], // disable GUI for options of the agg functions
-    rowGroup: Boolean(groupByCol),
-    rowGroupIndex: groupByCol
-      ? (data.groupBy?.columns.indexOf(groupByCol) ?? null)
-      : null,
+    rowGroup: !isGroupExtendedColumn && Boolean(groupByCol),
+    rowGroupIndex:
+      !isGroupExtendedColumn && groupByCol
+        ? (data.groupBy?.columns.indexOf(groupByCol) ?? null)
+        : null,
     // NOTE: we don't quite care about populating these accurately
     // since ag-grid aggregation does not support parameters, so
     // its set of supported aggregators will never match that specified
     // in the editor.
     // But we need to set this to make sure sorting works when row grouping
     // is used, so we use a dummy value here.
-    aggFunc: () => 0,
+    aggFunc: !isGroupExtendedColumn ? () => 0 : null,
   } satisfies ColDef;
 }
 

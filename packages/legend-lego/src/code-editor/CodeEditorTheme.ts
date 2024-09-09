@@ -20,6 +20,7 @@ import { buildCodeEditorTheme } from './themes/MonacoEditorThemeUtils.js';
 import SOLARIZED_DARK_THEME_DATA from './themes/solarized-dark-color-theme.json' with { type: 'json' };
 import GITHUB_DARK_THEME_DATA from './themes/Github-Theme-dark.json' with { type: 'json' };
 import GITHUB_DARK_DIMMED_THEME_DATA from './themes/Github-Theme-dark-dimmed.json' with { type: 'json' };
+import GITHUB_LIGHT_THEME_DATA from './themes/Github-Theme-light.json' with { type: 'json' };
 import MATERIAL_DEFAULT_THEME_DATA from './themes/Material-Theme-Default.json' with { type: 'json' };
 import MATERIAL_DARKER_THEME_DATA from './themes/Material-Theme-Darker.json' with { type: 'json' };
 import ONE_DARK_PRO_THEME_DATA from './themes/OneDark-Pro.json' with { type: 'json' };
@@ -45,6 +46,7 @@ const BASE_PURE_LANGUAGE_COLOR_TOKENS: monacoEditorAPI.ITokenThemeRule[] = [
 
 export enum CODE_EDITOR_THEME {
   DEFAULT_DARK = 'default-dark',
+  GITHUB_LIGHT = 'github-light',
   GITHUB_DARK = 'github-dark',
   GITHUB_DARK_DIMMED = 'github-dark-dimmed',
   SOLARIZED_DARK = 'solarized-dark',
@@ -87,6 +89,30 @@ export const GITHUB_DARK_THEME = buildCodeEditorTheme(
   CODE_EDITOR_THEME.BUILT_IN__VSCODE_DARK,
   {},
   [],
+);
+
+export const GITHUB_LIGHT_THEME = buildCodeEditorTheme(
+  GITHUB_LIGHT_THEME_DATA,
+  CODE_EDITOR_THEME.BUILT_IN__VSCODE_LIGHT,
+  {},
+  [
+    // NOTE: `monaco-editor` only accepts HEX values, not CSS variables
+    // { token: PURE_GRAMMAR_TOKEN.IDENTIFIER, foreground: '000000' },
+    // { token: PURE_GRAMMAR_TOKEN.NUMBER, foreground: 'b5cea8' },
+    // { token: PURE_GRAMMAR_TOKEN.DATE, foreground: 'b5cea8' },
+    // { token: PURE_GRAMMAR_TOKEN.COLOR, foreground: 'b5cea8' },
+    // { token: PURE_GRAMMAR_TOKEN.PACKAGE, foreground: '808080' },
+    // { token: PURE_GRAMMAR_TOKEN.PARSER, foreground: 'c586c0' },
+    // { token: PURE_GRAMMAR_TOKEN.LANGUAGE_STRUCT, foreground: 'c586c0' },
+    // { token: PURE_GRAMMAR_TOKEN.MULTIPLICITY, foreground: '2d796b' },
+    // { token: PURE_GRAMMAR_TOKEN.GENERICS, foreground: '2d796b' },
+    // { token: PURE_GRAMMAR_TOKEN.PROPERTY, foreground: '9cdcfe' },
+    // { token: PURE_GRAMMAR_TOKEN.PARAMETER, foreground: '9cdcfe' },
+    // { token: PURE_GRAMMAR_TOKEN.VARIABLE, foreground: '4fc1ff' },
+    // { token: PURE_GRAMMAR_TOKEN.TYPE, foreground: '3dc9b0' },
+    // { token: `${PURE_GRAMMAR_TOKEN.STRING}.escape`, foreground: 'd7ba7d' },
+    // TODO: handle SQL formatting like in dark theme?
+  ],
 );
 
 export const GITHUB_DARK_DIMMED_THEME = buildCodeEditorTheme(

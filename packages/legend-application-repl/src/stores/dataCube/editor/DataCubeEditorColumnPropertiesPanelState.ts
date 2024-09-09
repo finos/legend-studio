@@ -16,10 +16,7 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
-import {
-  _findCol,
-  type DataCubeQuerySnapshot,
-} from '../core/DataCubeQuerySnapshot.js';
+import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { DataCubeMutableColumnConfiguration } from './DataCubeMutableConfiguration.js';
@@ -29,11 +26,6 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
-import {
-  DataCubeAggregateOperator,
-  DataCubeColumnKind,
-} from '../core/DataCubeQueryEngine.js';
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 
 export class DataCubeEditorColumnPropertiesPanelState
   implements DataCubeQueryEditorPanelState
@@ -107,33 +99,12 @@ export class DataCubeEditorColumnPropertiesPanelState
   ) {
     this.setColumns(
       (snapshot.data.configuration as { columns: PlainObject[] }).columns.map(
-        (column) => DataCubeMutableColumnConfiguration.create(column),
+        (column) =>
+          DataCubeMutableColumnConfiguration.create(
+            column,
+          ).populateSyntheticMetadata(snapshot),
       ),
     );
-    // derive the aggregation operation
-    this.columns.forEach((column) => {
-      if (column.kind === DataCubeColumnKind.MEASURE) {
-        const aggCol = _findCol(snapshot.data.groupBy?.aggColumns, column.name);
-        if (aggCol) {
-          column.setAggregateFunction(aggCol.operation);
-          column.setAggregateFunctionParameters(aggCol.parameters);
-        } else {
-          switch (column.type) {
-            case PRIMITIVE_TYPE.NUMBER:
-            case PRIMITIVE_TYPE.INTEGER:
-            case PRIMITIVE_TYPE.DECIMAL:
-            case PRIMITIVE_TYPE.FLOAT: {
-              column.setAggregateFunction(DataCubeAggregateOperator.SUM);
-              column.setAggregateFunctionParameters([]);
-              break;
-            }
-            default: {
-              break;
-            }
-          }
-        }
-      }
-    });
 
     if (!this.selectedColumn && this.columns.length) {
       this.setSelectedColumnName(

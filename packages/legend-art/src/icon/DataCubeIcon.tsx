@@ -74,6 +74,8 @@ import {
   TbLetterCase,
   TbCalendarEvent,
   TbCalculator,
+  TbCircleCheckFilled,
+  TbCircleXFilled,
 } from 'react-icons/tb';
 import { VscError, VscInfo, VscQuestion, VscWarning } from 'react-icons/vsc';
 
@@ -91,6 +93,8 @@ export const DataCubeIcon = {
   ChevronLeft: TbChevronLeft,
   ChevronRight: TbChevronRight,
   ChevronDown: TbChevronDown,
+  CircleChecked: TbCircleCheckFilled,
+  CircledFailed: TbCircleXFilled,
   Code: TbCode,
   Cube: TbCube,
   Debug: TbBug,
