@@ -321,7 +321,11 @@ export class EditorStore implements CommandRegistrar {
       this.applicationStore.userDataService.getBooleanValue(
         SHOWCASE_PANEL_LOCAL_STORAGE.PANEL_STATE_KEY,
       );
-    if (showcasesSavedAsOpen || showcasesSavedAsOpen === undefined) {
+    const showcaseEnabled = this.applicationStore.config.showcaseServerUrl;
+    if (
+      showcaseEnabled &&
+      (showcasesSavedAsOpen || showcasesSavedAsOpen === undefined)
+    ) {
       return this.showcaseDefaultSize;
     } else {
       return 0;
