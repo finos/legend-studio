@@ -52,7 +52,7 @@ import { DSL_DataQuality_PureGraphManagerExtension } from '../DSL_DataQuality_Pu
 import {
   V1_buildDataQualityGraphFetchTree,
   V1_transformRootGraphFetchTreeToDataQualityRootGraphFetchTree,
-} from './transformation/V1_ValueSpecificationBuilderHelper.js';
+} from './transformation/V1_DSL_DataQuality_ValueSpecificationBuilderHelper.js';
 import type { DataQualityRootGraphFetchTree } from '../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
 
 const DQ_GENERATE_EXECUTION_PLAN = 'generate execution plan';

@@ -39,12 +39,12 @@ import {
 import {
   V1_transformDataQualityExecutionContext,
   V1_transformDataQualityGraphFetchTree,
-} from './v1/transformation/V1_ValueSpecificationTransformer.js';
+} from './v1/transformation/V1_DSL_DataQuality_ValueSpecificationTransformer.js';
 import {
   V1_buildDataQualityExecutionContext,
   V1_buildDataQualityGraphFetchTree,
-} from './v1/transformation/V1_ValueSpecificationBuilderHelper.js';
-import type { V1_DataQualityRootGraphFetchTree } from './v1/model/graphFetch/V1_DataQualityRootGraphFetchTree.js';
+} from './v1/transformation/V1_DSL_DataQuality_ValueSpecificationBuilderHelper.js';
+import { V1_DataQualityRootGraphFetchTree } from './v1/model/graphFetch/V1_DataQualityRootGraphFetchTree.js';
 import {
   type V1_ElementProtocolClassifierPathGetter,
   type V1_ElementProtocolDeserializer,
@@ -54,6 +54,7 @@ import {
   type V1_GraphTransformerContext,
   type V1_PackageableElement,
   type PackageableElement,
+  type V1_GraphFetchTree,
   V1_buildFullPath,
   V1_buildRawLambdaWithResolvedPaths,
   V1_initPackageableElement,
@@ -61,8 +62,18 @@ import {
   V1_ElementBuilder,
   V1_ProcessingContext,
   PureProtocolProcessorPlugin,
+  type V1_GraphFetchSerializer,
+  type V1_GraphFetchDeserializer,
 } from '@finos/legend-graph';
 import type { DataQualityRootGraphFetchTree } from '../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
+import { V1_DataQualityPropertyGraphFetchTree } from './v1/model/graphFetch/V1_DataQualityPropertyGraphFetchTree.js';
+import { deserialize, serialize } from 'serializr';
+import {
+  V1_DATA_QUALITY_PROPERTY_GRAPH_FETCH_TREE_TYPE,
+  V1_DATA_QUALTIY_ROOT_GRAPH_FETCH_TREE_TYPE,
+  V1_propertyGraphFetchTreeModelSchema,
+  V1_rootGraphFetchTreeModelSchema,
+} from './v1/transformation/V1_DSL_DataQuality_ValueSpecificationSerializer.js';
 
 const DATA_QUALITY_CLASSIFIER_PATH =
   'meta::pure::metamodel::dataquality::DataQuality';
@@ -220,10 +231,49 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
         plugins: PureProtocolProcessorPlugin[],
       ): PlainObject<V1_PackageableElement> | undefined => {
         if (protocol instanceof V1_DataQualityClassValidationsConfiguration) {
-          return V1_serializeDataQualityClassValidation(protocol);
+          return V1_serializeDataQualityClassValidation(protocol, plugins);
         }
         if (protocol instanceof V1_DataQualityServiceValidationsConfiguration) {
-          return V1_serializeDataQualityServiceValidation(protocol);
+          return V1_serializeDataQualityServiceValidation(protocol, plugins);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override V1_getExtraGraphFetchProtocolSerializers(): V1_GraphFetchSerializer[] {
+    return [
+      (
+        protocol: V1_GraphFetchTree,
+        plugins: PureProtocolProcessorPlugin[],
+      ): PlainObject<V1_GraphFetchTree> | undefined => {
+        if (protocol instanceof V1_DataQualityPropertyGraphFetchTree) {
+          return serialize(
+            V1_propertyGraphFetchTreeModelSchema(plugins),
+            protocol,
+          );
+        } else if (protocol instanceof V1_DataQualityRootGraphFetchTree) {
+          return serialize(V1_rootGraphFetchTreeModelSchema(plugins), protocol);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override V1_getExtraGraphFetchProtocolDeserializers(): V1_GraphFetchDeserializer[] {
+    return [
+      (
+        json: PlainObject<V1_GraphFetchTree>,
+        plugins: PureProtocolProcessorPlugin[],
+      ): V1_GraphFetchTree | undefined => {
+        if (json._type === V1_DATA_QUALITY_PROPERTY_GRAPH_FETCH_TREE_TYPE) {
+          return deserialize(
+            V1_propertyGraphFetchTreeModelSchema(plugins),
+            json,
+          );
+        }
+        if (json._type === V1_DATA_QUALTIY_ROOT_GRAPH_FETCH_TREE_TYPE) {
+          return deserialize(V1_rootGraphFetchTreeModelSchema(plugins), json);
         }
         return undefined;
       },
@@ -237,10 +287,10 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
         plugins: PureProtocolProcessorPlugin[],
       ): V1_PackageableElement | undefined => {
         if (json._type === V1_DATA_QUALITY_PROTOCOL_TYPE) {
-          return V1_deserializeDataQualityClassValidation(json);
+          return V1_deserializeDataQualityClassValidation(json, plugins);
         }
         if (json._type === V1_DATA_QUALITY_SERVICE_PROTOCOL_TYPE) {
-          return V1_deserializeDataQualityServiceValidation(json);
+          return V1_deserializeDataQualityServiceValidation(json, plugins);
         }
         return undefined;
       },
