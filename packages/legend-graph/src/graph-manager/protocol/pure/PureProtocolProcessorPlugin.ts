@@ -38,6 +38,7 @@ import type {
 } from '../../action/analytics/StoreEntitlementAnalysis.js';
 import type { Entity } from '@finos/legend-storage';
 import type { QueryExecutionContextInfo } from '../../action/query/Query.js';
+import type { V1_GraphFetchTree } from './v1/model/valueSpecification/raw/classInstance/graph/V1_GraphFetchTree.js';
 
 export type V1_ElementProtocolClassifierPathGetter = (
   protocol: V1_PackageableElement,
@@ -110,6 +111,16 @@ export type V1_DatasetSpecificationDeserializer = (
   json: PlainObject<V1_DatasetSpecification>,
   plugins: PureProtocolProcessorPlugin[],
 ) => V1_DatasetSpecification | undefined;
+
+export type V1_GraphFetchDeserializer = (
+  json: PlainObject<V1_GraphFetchTree>,
+  plugins: PureProtocolProcessorPlugin[],
+) => V1_GraphFetchTree | undefined;
+
+export type V1_GraphFetchSerializer = (
+  protocol: V1_GraphFetchTree,
+  plugins: PureProtocolProcessorPlugin[],
+) => PlainObject<V1_GraphFetchTree> | undefined;
 
 export type V1_DatasetEntitlementReportDeserializer = (
   json: PlainObject<V1_DatasetEntitlementReport>,
@@ -248,6 +259,16 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * Get the list of serializers for dataset entitlement report.
    */
   V1_getExtraDatasetEntitlementReportProtocolDeserializers?(): V1_DatasetEntitlementReportDeserializer[];
+
+  /**
+   * Get the list of serializers for Graph Fetch.
+   */
+  V1_getExtraGraphFetchProtocolSerializers?(): V1_GraphFetchSerializer[];
+
+  /**
+   * Get the list of serializers for Graph Fetch.
+   */
+  V1_getExtraGraphFetchProtocolDeserializers?(): V1_GraphFetchDeserializer[];
 
   /**
    * Get the list of builders for dataset specification.

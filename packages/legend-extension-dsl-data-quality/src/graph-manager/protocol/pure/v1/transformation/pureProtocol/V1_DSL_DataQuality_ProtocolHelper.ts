@@ -30,10 +30,6 @@ import {
   V1_MappingAndRuntimeDataQualityExecutionContext,
 } from '../../V1_DataQualityConstraintsConfiguration.js';
 import {
-  V1_deserializeGraphFetchTree,
-  V1_serializeGraphFetchTree,
-} from '../V1_ValueSpecificationSerializer.js';
-import {
   type PlainObject,
   optionalCustom,
   usingConstantValueSchema,
@@ -44,6 +40,8 @@ import {
   type PureProtocolProcessorPlugin,
   V1_packageableElementPointerModelSchema,
   V1_rawLambdaModelSchema,
+  V1_serializeGraphFetchTree,
+  V1_deserializeGraphFetchTree,
 } from '@finos/legend-graph';
 
 export const V1_DATA_QUALITY_PROTOCOL_TYPE = 'dataQualityValidation';
@@ -124,58 +122,62 @@ export function V1_deserializeDataQualityExecutionContext(
   }
 }
 
-const V1_dataQualityClassValidationModelSchema = createModelSchema(
-  V1_DataQualityClassValidationsConfiguration,
-  {
+const V1_dataQualityClassValidationModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataQualityClassValidationsConfiguration> =>
+  createModelSchema(V1_DataQualityClassValidationsConfiguration, {
     _type: usingConstantValueSchema(V1_DATA_QUALITY_PROTOCOL_TYPE),
     context: custom(
-      (val) => V1_serializeDataQualityExecutionContext(val, []),
-      (val) => V1_deserializeDataQualityExecutionContext(val, []),
+      (val) => V1_serializeDataQualityExecutionContext(val, plugins),
+      (val) => V1_deserializeDataQualityExecutionContext(val, plugins),
     ),
     dataQualityRootGraphFetchTree: optionalCustom(
-      (val) => V1_serializeGraphFetchTree(val, []),
-      (val) => V1_deserializeGraphFetchTree(val, []),
+      (val) => V1_serializeGraphFetchTree(val, plugins),
+      (val) => V1_deserializeGraphFetchTree(val, plugins),
     ),
     filter: usingModelSchema(V1_rawLambdaModelSchema),
     name: primitive(),
     package: primitive(),
-  },
-);
+  });
 
-const V1_dataQualityServiceValidationModelSchema = createModelSchema(
-  V1_DataQualityServiceValidationsConfiguration,
-  {
+const V1_dataQualityServiceValidationModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataQualityServiceValidationsConfiguration> =>
+  createModelSchema(V1_DataQualityServiceValidationsConfiguration, {
     _type: usingConstantValueSchema(V1_DATA_QUALITY_SERVICE_PROTOCOL_TYPE),
     contextName: primitive(),
     serviceName: primitive(),
     dataQualityGraphFetchTree: optionalCustom(
-      (val) => V1_serializeGraphFetchTree(val, []),
-      (val) => V1_deserializeGraphFetchTree(val, []),
+      (val) => V1_serializeGraphFetchTree(val, plugins),
+      (val) => V1_deserializeGraphFetchTree(val, plugins),
     ),
     name: primitive(),
     package: primitive(),
-  },
-);
+  });
 
 export const V1_serializeDataQualityClassValidation = (
   protocol: V1_DataQualityClassValidationsConfiguration,
+  plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_DataQualityClassValidationsConfiguration> =>
-  serialize(V1_dataQualityClassValidationModelSchema, protocol);
+  serialize(V1_dataQualityClassValidationModelSchema(plugins), protocol);
 
 export const V1_serializeDataQualityServiceValidation = (
   protocol: V1_DataQualityServiceValidationsConfiguration,
+  plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_DataQualityServiceValidationsConfiguration> =>
-  serialize(V1_dataQualityServiceValidationModelSchema, protocol);
+  serialize(V1_dataQualityServiceValidationModelSchema(plugins), protocol);
 
 export const V1_deserializeDataQualityClassValidation = (
   json: PlainObject<V1_DataQualityClassValidationsConfiguration>,
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_DataQualityClassValidationsConfiguration =>
-  deserialize(V1_dataQualityClassValidationModelSchema, json);
+  deserialize(V1_dataQualityClassValidationModelSchema(plugins), json);
 
 export const V1_deserializeDataQualityServiceValidation = (
   json: PlainObject<V1_DataQualityServiceValidationsConfiguration>,
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_DataQualityServiceValidationsConfiguration =>
-  deserialize(V1_dataQualityServiceValidationModelSchema, json);
+  deserialize(V1_dataQualityServiceValidationModelSchema(plugins), json);
 
 export const V1_dataQualityServiceValidationsConfigurationModelSchema =
   createModelSchema(V1_DataQualityServiceValidationsConfiguration, {

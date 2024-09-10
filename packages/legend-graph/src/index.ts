@@ -375,6 +375,8 @@ export {
 export {
   V1_deserializeValueSpecification,
   V1_serializeValueSpecification,
+  V1_deserializeGraphFetchTree,
+  V1_serializeGraphFetchTree,
   V1_ClassInstanceType,
   V1_lambdaModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';

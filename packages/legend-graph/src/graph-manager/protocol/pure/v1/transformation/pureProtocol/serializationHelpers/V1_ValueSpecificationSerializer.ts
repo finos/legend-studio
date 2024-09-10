@@ -518,6 +518,16 @@ export function V1_serializeGraphFetchTree(
   protocol: V1_GraphFetchTree,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_GraphFetchTree> {
+  // we have further subtypes of Property and RootGraph Tree so we should look at the extensions first
+  const serializers = plugins.flatMap(
+    (plugin) => plugin.V1_getExtraGraphFetchProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of serializers) {
+    const json = serializer(protocol, plugins);
+    if (json) {
+      return json;
+    }
+  }
   if (protocol instanceof V1_PropertyGraphFetchTree) {
     return serialize(propertyGraphFetchTreeModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_RootGraphFetchTree) {
@@ -526,7 +536,7 @@ export function V1_serializeGraphFetchTree(
     return serialize(subTypeGraphFetchTreeModelSchema(plugins), protocol);
   }
   throw new UnsupportedOperationError(
-    `Can't serialize graph fetch tree`,
+    `Can't serialize graph fetch tree: no compatible serializer available from plugins`,
     protocol,
   );
 }
@@ -542,10 +552,20 @@ export function V1_deserializeGraphFetchTree(
       return deserialize(rootGraphFetchTreeModelSchema(plugins), json);
     case V1_ClassInstanceType.SUBTYPE_GRAPH_FETCH_TREE:
       return deserialize(subTypeGraphFetchTreeModelSchema(plugins), json);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't deserialize graph fetch tree node of type '${json._type}'`,
+    default: {
+      const deserializers = plugins.flatMap(
+        (plugin) => plugin.V1_getExtraGraphFetchProtocolDeserializers?.() ?? [],
       );
+      for (const deserializer of deserializers) {
+        const protocol = deserializer(json, plugins);
+        if (protocol) {
+          return protocol;
+        }
+      }
+      throw new UnsupportedOperationError(
+        `Can't deserialize graph fetch tree node of type '${json._type}': no compatible deserializer available from plugins`,
+      );
+    }
   }
 }
 
