@@ -660,7 +660,7 @@ export function generateGridOptionsFromSnapshot(
           configuration,
         };
         return {
-          headerName: column.name,
+          headerName: column.displayName ?? column.name,
           field: column.name,
           menuTabs: [],
 

@@ -185,11 +185,6 @@ export const DataCubeColumnCreator = observer(
       });
     }, [state, state.finalizationState.isInProgress]);
 
-    // auto-focus on name input when opened
-    useEffect(() => {
-      nameInputRef.current?.focus();
-    }, []);
-
     return (
       <>
         <div className="relative h-[calc(100%_-_40px)] w-full px-2 pt-2">
