@@ -179,6 +179,12 @@ export const DataCubeColumnCreator = observer(
       [editor],
     );
 
+    useEffect(() => {
+      state.editor?.updateOptions({
+        readOnly: state.finalizationState.isInProgress,
+      });
+    }, [state, state.finalizationState.isInProgress]);
+
     // auto-focus on name input when opened
     useEffect(() => {
       nameInputRef.current?.focus();
@@ -197,6 +203,7 @@ export const DataCubeColumnCreator = observer(
                   <FormTextInput
                     className="w-32"
                     ref={nameInputRef}
+                    disabled={state.finalizationState.isInProgress}
                     value={state.name}
                     onChange={(event) => {
                       state.setName(event.target.value.trim());
@@ -224,6 +231,7 @@ export const DataCubeColumnCreator = observer(
                     className="w-32"
                     onClick={openKindDropdown}
                     open={kindDropPropsOpen}
+                    disabled={state.finalizationState.isInProgress}
                   >
                     {currentColumnKind}
                   </FormDropdownMenuTrigger>
@@ -279,6 +287,7 @@ export const DataCubeColumnCreator = observer(
                     className="w-32"
                     onClick={openTypeDropdown}
                     open={typeDropPropsOpen}
+                    disabled={state.finalizationState.isInProgress}
                   >
                     {state.expectedType}
                   </FormDropdownMenuTrigger>

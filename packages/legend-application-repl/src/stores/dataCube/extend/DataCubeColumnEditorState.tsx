@@ -31,6 +31,7 @@ import { buildExecutableQuery } from '../core/DataCubeQueryBuilder.js';
 import {
   DataCubeColumnDataType,
   DataCubeColumnKind,
+  DataCubeExtendedColumnType,
   DEFAULT_LAMBDA_VARIABLE_NAME,
   getDataType,
 } from '../core/DataCubeQueryEngine.js';
@@ -334,7 +335,7 @@ export class DataCubeNewColumnState {
 
     this.manager.addNewColumn(
       {
-        _type: 'simple',
+        _type: DataCubeExtendedColumnType.SIMPLE,
         name: this.name,
         type: returnType,
         lambda: V1_serializeValueSpecification(query, []),

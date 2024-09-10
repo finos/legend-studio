@@ -92,8 +92,8 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     editor.display.open();
   }
 
-  addNewColumn(
-    column: DataCubeQuerySnapshotExtendedColumn,
+  addNewColumn<T extends DataCubeQuerySnapshotExtendedColumn>(
+    column: T,
     isGroupLevel: boolean,
     columnKind: DataCubeColumnKind | undefined,
   ) {

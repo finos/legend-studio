@@ -138,8 +138,8 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
   // --------------------------------- COLUMNS ---------------------------------
 
-  selectableColumns: DataCubeQuerySnapshotColumn[] = [];
   selectColumns: DataCubeQuerySnapshotColumn[] = [];
+  extendedColumns: DataCubeQuerySnapshotColumn[] = [];
 
   pinColumn(
     colName: string | undefined,
@@ -324,8 +324,11 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
         )
       : undefined;
 
-    this.selectableColumns = newSnapshot.stageCols('select');
     this.selectColumns = newSnapshot.data.selectColumns;
+    this.extendedColumns = [
+      ...newSnapshot.data.leafExtendedColumns,
+      ...newSnapshot.data.groupExtendedColumns,
+    ];
 
     this.sortableColumns = newSnapshot.stageCols('sort');
     this.sortColumns = newSnapshot.data.sortColumns;

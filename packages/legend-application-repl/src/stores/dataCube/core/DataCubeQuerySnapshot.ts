@@ -48,14 +48,13 @@ export type DataCubeQuerySnapshotColumn = {
   type: string;
 };
 
-// TODO: support moreclassifications of this column, it can also be aggregation with map/reduce or
-// OLAP window aggregation, or custom groupings, etc.
 export type DataCubeQuerySnapshotExtendedColumn =
-  DataCubeQuerySnapshotSimpleExtendedColumn;
+  DataCubeQuerySnapshotColumn & {
+    _type: string;
+  };
 
 export type DataCubeQuerySnapshotSimpleExtendedColumn =
-  DataCubeQuerySnapshotColumn & {
-    _type: 'simple';
+  DataCubeQuerySnapshotExtendedColumn & {
     lambda: PlainObject<V1_Lambda>;
   };
 
