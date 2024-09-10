@@ -114,7 +114,7 @@ export const DEFAULT_TOOL_PANEL_WINDOW_CONFIG: WindowConfiguration = {
 
 export const DEFAULT_SMALL_ALERT_WINDOW_CONFIG: WindowConfiguration = {
   width: 500,
-  height: 80,
+  height: 200,
   minWidth: 200,
   minHeight: 80,
   center: true,

@@ -290,7 +290,6 @@ export class DataCubeNewColumnState {
       }
       this.dataCube.repl.alertError(err, {
         message: `Expression Validation Failure: ${err.message}`,
-        text: err.stack,
       });
     } finally {
       this.validationState.complete();
@@ -321,7 +320,6 @@ export class DataCubeNewColumnState {
       assertErrorThrown(error);
       this.dataCube.repl.alertError(error, {
         message: `Expression Validation Failure: ${error.message}`,
-        text: error.stack,
       });
       return;
     } finally {

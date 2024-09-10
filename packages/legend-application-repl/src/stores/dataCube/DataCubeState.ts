@@ -116,7 +116,7 @@ export class DataCubeState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.repl.application.alertService.setActionAlertInfo({
-        message: `Initialization failure: ${error.message}`,
+        message: `Initialization Failure: ${error.message}`,
         prompt: `Resolve the issue and reload the application.`,
         type: ActionAlertType.ERROR,
         actions: [],
