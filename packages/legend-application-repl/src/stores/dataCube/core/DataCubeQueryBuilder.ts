@@ -93,7 +93,7 @@ export function buildExecutableQuery(
     funcMap[funcMapKey] = func;
   };
 
-  // --------------------------------- LEAF EXTEND ---------------------------------
+  // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
 
   if (data.leafExtendedColumns.length) {
     _process(
@@ -161,7 +161,7 @@ export function buildExecutableQuery(
   // --------------------------------- PIVOT ---------------------------------
   // TODO: @akphi - implement this and CAST
 
-  // --------------------------------- GROUP EXTEND ---------------------------------
+  // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
 
   if (data.groupExtendedColumns.length) {
     _process(

@@ -201,6 +201,14 @@ export class DataCubeEngine {
     );
   }
 
+  async getQueryRelationType(
+    query: V1_ValueSpecification,
+  ): Promise<RelationType> {
+    return this.client.getQueryRelationReturnType({
+      query: V1_serializeValueSpecification(query, []),
+    });
+  }
+
   async getQueryCodeRelationReturnType(
     code: string,
     query: V1_ValueSpecification,

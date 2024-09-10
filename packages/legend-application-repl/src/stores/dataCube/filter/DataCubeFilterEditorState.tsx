@@ -289,7 +289,7 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
     const configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
     );
-    // NOTE: filtering group extended columns is not supported
+    // NOTE: filtering group-level extended columns is not supported
     this.columns = configuration.columns.filter(
       (column) =>
         !snapshot.data.groupExtendedColumns.find(

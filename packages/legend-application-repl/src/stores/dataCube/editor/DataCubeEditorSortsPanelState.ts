@@ -55,7 +55,15 @@ export class DataCubeEditorSortColumnsSelectorState extends DataCubeEditorColumn
   }
 
   override get availableColumns() {
-    return this.editor.columns.selector.selectedColumns.map(
+    return [
+      ...this.editor.columns.selector.selectedColumns,
+      ...this.editor.columns.groupExtendColumns.filter(
+        (col) =>
+          !this.editor.columns.selector.selectedColumns.find(
+            (column) => column.name === col.name,
+          ),
+      ),
+    ].map(
       (col) =>
         new DataCubeEditorSortColumnState(
           col.name,

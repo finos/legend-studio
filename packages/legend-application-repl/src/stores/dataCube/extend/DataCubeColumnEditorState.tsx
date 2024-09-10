@@ -48,6 +48,7 @@ import {
   V1_serializeValueSpecification,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
+import type { DataCubeColumnConfiguration } from '../core/DataCubeConfiguration.js';
 
 export class DataCubeNewColumnState {
   readonly uuid = uuid();
@@ -78,7 +79,7 @@ export class DataCubeNewColumnState {
 
   constructor(
     manager: DataCubeExtendManagerState,
-    columnName?: string | undefined,
+    referenceColumn?: DataCubeColumnConfiguration | undefined,
   ) {
     makeObservable(this, {
       name: observable,
@@ -126,11 +127,15 @@ export class DataCubeNewColumnState {
     this.isGroupLevel = false;
     this.columnKind = DataCubeColumnKind.MEASURE;
 
-    this.code = `${DEFAULT_LAMBDA_VARIABLE_NAME}|${
-      columnName ? `$${DEFAULT_LAMBDA_VARIABLE_NAME}.${columnName}` : ''
-    }`;
+    this.code = `${DEFAULT_LAMBDA_VARIABLE_NAME}|`;
     this.codePrefix = `->extend(~${this._name}:`;
     this.codeSuffix = `)`;
+
+    if (referenceColumn) {
+      this.expectedType = getDataType(referenceColumn.type);
+      this.columnKind = referenceColumn.kind;
+      this.code = `${DEFAULT_LAMBDA_VARIABLE_NAME}|$${DEFAULT_LAMBDA_VARIABLE_NAME}.${referenceColumn.name}`;
+    }
 
     this.editorModelUri = Uri.file(`/${this.uuid}.pure`);
     this.editorModel = monacoEditorAPI.createModel(
@@ -227,6 +232,10 @@ export class DataCubeNewColumnState {
   async getReturnType() {
     const baseQuery = this.buildExtendBaseQuery();
     this.validationState.inProgress();
+
+    // properly reset the error state before revalidating
+    this.clearError();
+    this.setReturnType(undefined);
 
     try {
       const returnRelationType =

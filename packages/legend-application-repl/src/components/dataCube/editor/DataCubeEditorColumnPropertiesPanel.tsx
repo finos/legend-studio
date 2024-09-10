@@ -142,30 +142,71 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     {selectedColumn?.name ?? '(None)'}
                   </div>
                   {selectedColumn && (
-                    <div className="ml-1.5 mr-0.5 flex h-3.5 w-12 flex-shrink-0 items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-xs font-medium uppercase text-neutral-600">
-                      {selectedColumn.dataType}
-                    </div>
+                    <>
+                      <div className="ml-1.5 mr-0.5 flex h-3.5 w-12 flex-shrink-0 items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-xs font-medium uppercase text-neutral-600">
+                        {selectedColumn.dataType}
+                      </div>
+                      {Boolean(
+                        panel.editor.columns.leafExtendColumns.find(
+                          (col) => col.name === selectedColumn.name,
+                        ),
+                      ) && (
+                        <div className="mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
+                          {`Extended (Leaf Level)`}
+                        </div>
+                      )}
+                      {Boolean(
+                        panel.editor.columns.groupExtendColumns.find(
+                          (col) => col.name === selectedColumn.name,
+                        ),
+                      ) && (
+                        <div className="mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
+                          {`Extended (Group Level)`}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </FormDropdownMenuTrigger>
               <FormDropdownMenu className="w-80" {...columnsDropdownProps}>
-                {panel.configurableColumns.map((column) => (
-                  <FormDropdownMenuItem
-                    key={column.name}
-                    onClick={() => {
-                      panel.setSelectedColumnName(column.name);
-                      closeColumnsDropdown();
-                    }}
-                    autoFocus={column.name === selectedColumn?.name}
-                  >
-                    <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">
-                      {column.name}
-                    </div>
-                    <div className="ml-1.5 mr-0.5 flex h-3.5 w-12 flex-shrink-0 items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-xs font-medium uppercase text-neutral-600">
-                      {column.dataType}
-                    </div>
-                  </FormDropdownMenuItem>
-                ))}
+                {panel.configurableColumns
+                  .slice()
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((column) => (
+                    <FormDropdownMenuItem
+                      key={column.name}
+                      onClick={() => {
+                        panel.setSelectedColumnName(column.name);
+                        closeColumnsDropdown();
+                      }}
+                      autoFocus={column.name === selectedColumn?.name}
+                    >
+                      <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">
+                        {column.name}
+                      </div>
+                      <div className="ml-1.5 mr-0.5 flex h-3.5 w-12 flex-shrink-0 items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-xs font-medium uppercase text-neutral-600">
+                        {column.dataType}
+                      </div>
+                      {Boolean(
+                        panel.editor.columns.leafExtendColumns.find(
+                          (col) => col.name === column.name,
+                        ),
+                      ) && (
+                        <div className="mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
+                          {`Extended (Leaf Level)`}
+                        </div>
+                      )}
+                      {Boolean(
+                        panel.editor.columns.groupExtendColumns.find(
+                          (col) => col.name === column.name,
+                        ),
+                      ) && (
+                        <div className="mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
+                          {`Extended (Group Level)`}
+                        </div>
+                      )}
+                    </FormDropdownMenuItem>
+                  ))}
               </FormDropdownMenu>
               {panel.showAdvancedSettings && selectedColumn && (
                 <>
@@ -443,11 +484,33 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     className="ml-3"
                     label="Hide from view"
                     checked={selectedColumn.hideFromView}
-                    onChange={() =>
-                      selectedColumn.setHideFromView(
-                        !selectedColumn.hideFromView,
-                      )
-                    }
+                    onChange={() => {
+                      const newValue = !selectedColumn.hideFromView;
+                      selectedColumn.setHideFromView(newValue);
+
+                      // NOTE: since showing a group-level extended column is equivalent to selecting it
+                      // in the columns selector panel, we need to update the selection state there
+                      if (
+                        panel.editor.columns.groupExtendColumns.find(
+                          (col) => col.name === selectedColumn.name,
+                        )
+                      ) {
+                        if (newValue) {
+                          panel.editor.columns.selector.setSelectedColumns(
+                            panel.editor.columns.selector.selectedColumns.filter(
+                              (col) => col.name !== selectedColumn.name,
+                            ),
+                          );
+                        } else {
+                          panel.editor.columns.selector.setSelectedColumns([
+                            ...panel.editor.columns.selector.selectedColumns,
+                            panel.editor.columns.selector.availableColumns.find(
+                              (col) => col.name === selectedColumn.name,
+                            )!,
+                          ]);
+                        }
+                      }
+                    }}
                   />
                 </div>
 

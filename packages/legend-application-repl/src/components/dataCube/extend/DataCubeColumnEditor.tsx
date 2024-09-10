@@ -147,12 +147,12 @@ export const DataCubeColumnCreator = observer(
         newEditor.onDidChangeModelContent(() => {
           const currentVal = newEditor.getValue();
           if (currentVal !== state.code) {
+            state.code = currentVal;
             // clear error on content change/typing
             state.clearError();
-            state.code = currentVal;
             state.setReturnType(undefined);
-            debouncedCheckReturnType?.cancel();
-            debouncedCheckReturnType?.();
+            debouncedCheckReturnType.cancel();
+            debouncedCheckReturnType();
           }
         });
         // focus on the editor initially and set the cursor to the end
@@ -268,8 +268,8 @@ export const DataCubeColumnCreator = observer(
                           }
                           state.clearError();
                           state.setReturnType(undefined);
-                          debouncedCheckReturnType?.cancel();
-                          debouncedCheckReturnType?.();
+                          debouncedCheckReturnType.cancel();
+                          debouncedCheckReturnType();
                           closeKindDropdown();
                         }}
                         autoFocus={columnKind === currentColumnKind}
@@ -348,7 +348,9 @@ export const DataCubeColumnCreator = observer(
               !state.isTypeValid ||
               !state.validationState.hasCompleted
             }
-            onClick={() => state.applyChanges()}
+            onClick={() =>
+              state.applyChanges().catch(application.alertUnhandledError)
+            }
           >
             OK
           </button>

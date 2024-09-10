@@ -523,11 +523,11 @@ export function generateMenuBuilder(
             name: `Add New Column...`,
             action: () => extend.openNewColumnEditor(),
           },
-          ...(columnName
+          ...(columnConfiguration && columnName
             ? [
                 {
                   name: `Extend Column ${columnName}...`,
-                  action: () => extend.openNewColumnEditor(columnName),
+                  action: () => extend.openNewColumnEditor(columnConfiguration),
                 },
               ]
             : []),

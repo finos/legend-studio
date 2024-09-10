@@ -78,7 +78,7 @@ export class REPLServerClient {
     return this.networkClient.get(`${this.dataCube}/getBaseQuery`);
   }
 
-  async getRelationReturnType(
+  async getQueryRelationReturnType(
     input: DataCubeGetQueryRelationReturnTypeInput,
   ): Promise<RelationType> {
     return this.networkClient.post(

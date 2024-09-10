@@ -20,11 +20,7 @@ import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { DataCubeMutableColumnConfiguration } from './DataCubeMutableConfiguration.js';
-import {
-  getNonNullableEntry,
-  isNonNullable,
-  type PlainObject,
-} from '@finos/legend-shared';
+import { getNonNullableEntry, type PlainObject } from '@finos/legend-shared';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
 export class DataCubeEditorColumnPropertiesPanelState
@@ -49,7 +45,6 @@ export class DataCubeEditorColumnPropertiesPanelState
       showAdvancedSettings: observable,
       setShowAdvancedSettings: action,
 
-      hiddenColumns: computed,
       configurableColumns: computed,
     });
 
@@ -57,18 +52,16 @@ export class DataCubeEditorColumnPropertiesPanelState
     this.dataCube = editor.dataCube;
   }
 
-  get hiddenColumns() {
-    return this.columns.filter((column) => column.hideFromView);
-  }
-
   get configurableColumns() {
-    return this.columns
-      .filter((column) =>
+    return this.columns.filter(
+      (column) =>
         this.editor.columns.selector.selectedColumns.find(
           (col) => col.name === column.name,
+        ) ||
+        this.editor.columns.groupExtendColumns.find(
+          (col) => col.name === column.name,
         ),
-      )
-      .sort((a, b) => a.name.localeCompare(b.name));
+    );
   }
 
   getColumnConfiguration(colName: string | undefined) {
@@ -121,9 +114,12 @@ export class DataCubeEditorColumnPropertiesPanelState
       ...newSnapshot.data.configuration,
       // NOTE: make sure the order of column configurations is consistent with the order of selected columns
       // as this would later be used to determine of order of displayed columns in the grid
-      columns: this.editor.columns.selector.selectedColumns
-        .map((col) => this.columns.find((column) => column.name === col.name))
-        .filter(isNonNullable)
+      columns: this.columns
+        .filter((column) =>
+          // prune columns which have been deselected except for group-level extended columns
+          // those are technically always selected.
+          this.configurableColumns.find((col) => col.name === column.name),
+        )
         .map((column) => column.serialize()),
     };
   }

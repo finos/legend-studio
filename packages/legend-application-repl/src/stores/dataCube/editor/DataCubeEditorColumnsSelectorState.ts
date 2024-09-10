@@ -29,12 +29,6 @@ export class DataCubeEditorColumnsSelectorColumnState {
   }
 }
 
-export enum DataCubeEditorColumnsSelectorHiddenColumnsVisibility {
-  VISIBLE = 'visible',
-  VISIBLE_WITH_WARNING = 'visible-with-warning',
-  HIDDEN = 'hidden',
-}
-
 export abstract class DataCubeEditorColumnsSelectorState<
   T extends DataCubeEditorColumnsSelectorColumnState,
 > {
@@ -49,14 +43,10 @@ export abstract class DataCubeEditorColumnsSelectorState<
   readonly onChange?:
     | ((selector: DataCubeEditorColumnsSelectorState<T>) => void)
     | undefined;
-  hiddenColumnsVisibility!: DataCubeEditorColumnsSelectorHiddenColumnsVisibility;
 
   constructor(
     editor: DataCubeEditorState,
     options?: {
-      initialHiddenColumnsVisibility?:
-        | DataCubeEditorColumnsSelectorHiddenColumnsVisibility
-        | undefined;
       onChange?:
         | ((select: DataCubeEditorColumnsSelectorState<T>) => void)
         | undefined;
@@ -75,24 +65,11 @@ export abstract class DataCubeEditorColumnsSelectorState<
 
       selectedColumnsSearchText: observable,
       setSelectedColumnsSearchText: action,
-
-      hiddenColumnsVisibility: observable,
-      setHiddenColumnsVisibility: action,
     });
 
     this.editor = editor;
     this.dataCube = editor.dataCube;
     this.onChange = options?.onChange;
-    this.hiddenColumnsVisibility =
-      options?.initialHiddenColumnsVisibility ??
-      // default to show hidden columns
-      DataCubeEditorColumnsSelectorHiddenColumnsVisibility.VISIBLE;
-  }
-
-  setHiddenColumnsVisibility(
-    val: DataCubeEditorColumnsSelectorHiddenColumnsVisibility,
-  ) {
-    this.hiddenColumnsVisibility = val;
   }
 
   abstract get availableColumns(): T[];
@@ -103,26 +80,11 @@ export abstract class DataCubeEditorColumnsSelectorState<
         (column) =>
           !this.selectedColumns.find((col) => column.name === col.name),
       )
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .filter(
-        (column) =>
-          this.hiddenColumnsVisibility !==
-            DataCubeEditorColumnsSelectorHiddenColumnsVisibility.HIDDEN ||
-          !this.editor.columnProperties.columns.find(
-            (col) => col.name === column.name,
-          )?.hideFromView,
-      );
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   get selectedColumnsForDisplay(): T[] {
-    return this.selectedColumns.filter(
-      (column) =>
-        this.hiddenColumnsVisibility !==
-          DataCubeEditorColumnsSelectorHiddenColumnsVisibility.HIDDEN ||
-        !this.editor.columnProperties.columns.find(
-          (col) => col.name === column.name,
-        )?.hideFromView,
-    );
+    return this.selectedColumns;
   }
 
   setSelectedColumns(val: T[]) {

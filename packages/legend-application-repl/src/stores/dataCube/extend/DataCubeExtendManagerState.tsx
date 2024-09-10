@@ -86,8 +86,10 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     ].map((col) => col.name);
   }
 
-  openNewColumnEditor(columnName?: string | undefined) {
-    const editor = new DataCubeNewColumnState(this, columnName);
+  openNewColumnEditor(
+    referenceColumn?: DataCubeColumnConfiguration | undefined,
+  ) {
+    const editor = new DataCubeNewColumnState(this, referenceColumn);
     this.newColumnEditors.push(editor);
     editor.display.open();
   }
@@ -143,7 +145,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
       (col) => col.data,
     );
     // update the selected columns
-    // NOTE: group-extend columns cannot be selected!
+    // NOTE: group-level extended columns cannot be selected!
     newSnapshot.data.selectColumns = this.columnConfigurations
       .map((col) => ({
         name: col.name,
