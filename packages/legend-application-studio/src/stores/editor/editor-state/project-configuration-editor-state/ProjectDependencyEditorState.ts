@@ -211,11 +211,7 @@ const buildTreeDataFromConflictVersion = (
       let rootNode: ProjectDependencyTreeNodeData | undefined;
       let parentNode: ProjectDependencyTreeNodeData | undefined;
       let currentVersion: ProjectDependencyVersionNode | undefined;
-      while (
-        (currentVersion = pathIterator.next().value as
-          | ProjectDependencyVersionNode
-          | undefined)
-      ) {
+      while ((currentVersion = pathIterator.next().value)) {
         const id: string = parentNode
           ? `${parentNode.id}.${currentVersion.id}`
           : `path${idx}_${currentVersion.id}`;

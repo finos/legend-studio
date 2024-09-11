@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+const OFF = 0;
 const WARN = 1;
 const ERROR = 2;
 
@@ -51,7 +52,10 @@ const TYPESCRIPT_RULES = {
   '@typescript-eslint/no-implied-eval': ERROR,
   '@typescript-eslint/await-thenable': ERROR,
   '@typescript-eslint/no-redundant-type-constituents': WARN,
-  '@typescript-eslint/no-duplicate-type-constituents': WARN,
+  // NOTE: since we turn on TS option --exactOptionalPropertyTypes, this rule mistakenly flags ?: ... | undefined as violation
+  // so we temporarily turn it off
+  // See https://github.com/typescript-eslint/typescript-eslint/issues/9203
+  '@typescript-eslint/no-duplicate-type-constituents': OFF,
   '@typescript-eslint/unbound-method': WARN,
 
   // The following rules are recommended but we need to disable them since we deem them unecessarily strict
