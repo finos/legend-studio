@@ -343,9 +343,9 @@ export const DataCubeColumnCreator = observer(
               !state.isTypeValid ||
               !state.validationState.hasCompleted
             }
-            onClick={() =>
-              state.applyChanges().catch(application.alertUnhandledError)
-            }
+            onClick={() => {
+              state.applyChanges().catch(application.alertUnhandledError);
+            }}
           >
             OK
           </button>

@@ -57,7 +57,7 @@ export class DataCubeEditorColumnPropertiesPanelState
       (column) =>
         this.editor.columns.selector.selectedColumns.find(
           (col) => col.name === column.name,
-        ) ||
+        ) ??
         this.editor.columns.groupExtendColumns.find(
           (col) => col.name === column.name,
         ),
