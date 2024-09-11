@@ -15,18 +15,17 @@
  */
 
 import { type V1_AppliedFunction } from '@finos/legend-graph';
-import {
-  DataCubeQueryFilterOperation,
-  ofType,
-} from './DataCubeQueryFilterOperation.js';
+import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
 import type {
   DataCubeQuerySnapshotColumn,
   DataCubeQuerySnapshotFilterCondition,
 } from '../DataCubeQuerySnapshot.js';
 import {
+  DataCubeColumnDataType,
   DataCubeFunction,
   DataCubeOperationAdvancedValueType,
   DataCubeQueryFilterOperator,
+  ofDataType,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
 import {
@@ -56,7 +55,7 @@ export class DataCubeQueryFilterOperation__EqualCaseInsensitiveColumn extends Da
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {
-    return ofType(column.type, ['string']);
+    return ofDataType(column.type, [DataCubeColumnDataType.TEXT]);
   }
 
   isCompatibleWithValue(value: DataCubeOperationValue) {

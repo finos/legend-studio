@@ -39,11 +39,15 @@ import {
   DataCubeConfiguration,
   type DataCubeColumnConfiguration,
 } from '../core/DataCubeConfiguration.js';
-import { SingletonModeDisplayState } from '../../LayoutManagerState.js';
-import { DataCubeFilterEditor } from '../../../components/dataCube/filter/DataCubeEditorFilter.js';
+import { DisplayState } from '../../LayoutManagerState.js';
+import { DataCubeFilterEditor } from '../../../components/dataCube/filter/DataCubeFilterEditor.js';
 
+/**
+ * This query editor state backs the form editor for filter. It batches changes made
+ * to the filter in the form editor.
+ */
 export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
-  readonly display: SingletonModeDisplayState;
+  readonly display: DisplayState;
 
   tree: DataCubeFilterEditorTree;
   selectedNode?: DataCubeFilterEditorTreeNode | undefined;
@@ -57,7 +61,7 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
       initializeTree: action,
       refreshTree: action,
 
-      columns: observable,
+      columns: observable.struct,
 
       applySnapshot: action,
 
@@ -69,11 +73,18 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
       layerFilterNode: action,
     });
 
-    this.display = new SingletonModeDisplayState(
-      this.dataCube.repl.layout,
-      'Filter',
-      () => <DataCubeFilterEditor dataCube={this.dataCube} />,
-    );
+    this.display = new DisplayState(this.dataCube.repl.layout, 'Filter', () => (
+      <DataCubeFilterEditor dataCube={this.dataCube} />
+    ));
+    this.display.configuration.window = {
+      x: -50,
+      y: 50,
+      width: 600,
+      height: 400,
+      minWidth: 300,
+      minHeight: 200,
+      center: false,
+    };
 
     this.tree = {
       nodes: new Map<string, DataCubeFilterEditorTreeNode>(),
@@ -278,7 +289,7 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
     const configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
     );
-    // NOTE: filtering group extended columns is not supported
+    // NOTE: filtering group-level extended columns is not supported
     this.columns = configuration.columns.filter(
       (column) =>
         !snapshot.data.groupExtendedColumns.find(

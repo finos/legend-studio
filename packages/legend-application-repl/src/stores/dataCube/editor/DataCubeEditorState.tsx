@@ -20,14 +20,20 @@ import { DataCubeEditorSortsPanelState } from './DataCubeEditorSortsPanelState.j
 import { DataCubeEditorCodePanelState } from './DataCubeEditorCodePanelState.js';
 import { DataCubeQuerySnapshotController } from '../core/DataCubeQuerySnapshotManager.js';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  ActionState,
+  assertErrorThrown,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGeneralPropertiesPanelState.js';
 import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumnPropertiesPanelState.js';
 import { DataCubeEditorColumnsPanelState } from './DataCubeEditorColumnsPanelState.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeEditorVerticalPivotsPanelState } from './DataCubeEditorVerticalPivotsPanelState.js';
-import { SingletonModeDisplayState } from '../../LayoutManagerState.js';
+import { DisplayState } from '../../LayoutManagerState.js';
 import { DataCubeEditor } from '../../../components/dataCube/editor/DataCubeEditor.js';
+import { buildExecutableQuery } from '../core/DataCubeQueryBuilder.js';
+import { _lambda } from '../core/DataCubeQueryBuilderUtils.js';
 
 export enum DataCubeEditorTab {
   GENERAL_PROPERTIES = 'General Properties',
@@ -39,8 +45,18 @@ export enum DataCubeEditorTab {
   CODE = 'Code',
 }
 
+/**
+ * This query editor state backs the main form editor of data cube. It supports
+ * batching changes before application, i.e. allowing user to make multiple edits before
+ * applying and propgating them.
+ *
+ * NOTE: It allows almost FULL 1-1 control over the data cube query state.
+ * It could also host other form editor states like filter editors, but due to ergonomic
+ * reasons, those have been separated out into their own respective query editor states.
+ */
 export class DataCubeEditorState extends DataCubeQuerySnapshotController {
-  readonly display: SingletonModeDisplayState;
+  readonly display: DisplayState;
+  readonly finalizationState = ActionState.create();
 
   readonly code: DataCubeEditorCodePanelState;
 
@@ -49,6 +65,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
 
   readonly columns: DataCubeEditorColumnsPanelState;
   readonly verticalPivots: DataCubeEditorVerticalPivotsPanelState;
+  // TODO: horizontal pivot
   readonly sorts: DataCubeEditorSortsPanelState;
 
   currentTab = DataCubeEditorTab.GENERAL_PROPERTIES;
@@ -63,7 +80,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
       applyChanges: action,
     });
 
-    this.display = new SingletonModeDisplayState(
+    this.display = new DisplayState(
       this.dataCube.repl.layout,
       'Properties',
       () => <DataCubeEditor dataCube={this.dataCube} />,
@@ -82,7 +99,9 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     this.currentTab = val;
   }
 
-  applyChanges() {
+  async applyChanges() {
+    this.finalizationState.inProgress();
+
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const snapshot = baseSnapshot.clone();
 
@@ -97,6 +116,32 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     // to properly generate the container configuration
     this.generalProperties.buildSnapshot(snapshot, baseSnapshot);
     this.columnProperties.buildSnapshot(snapshot, baseSnapshot);
+
+    // compile the query to validate it
+    // NOTE: This is a helpful check for a lot of different scenarios where the
+    // consistency of the query might be thrown off by changes
+    // e.g. when a column that group-level extended columns' expressions depend on has been unselected.
+    try {
+      await this.dataCube.engine.getQueryRelationType(
+        _lambda(
+          [],
+          [
+            buildExecutableQuery(
+              snapshot,
+              this.dataCube.engine.filterOperations,
+            ),
+          ],
+        ),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.dataCube.repl.alertError(error, {
+        message: `Query Validation Failure: ${error.message}`,
+      });
+      return;
+    } finally {
+      this.finalizationState.complete();
+    }
 
     snapshot.finalize();
     if (snapshot.hashCode !== baseSnapshot.hashCode) {

@@ -20,14 +20,15 @@ import { DataCubeEditorState } from './editor/DataCubeEditorState.js';
 import { assertErrorThrown, uuid } from '@finos/legend-shared';
 import { DataCubeQuerySnapshotManager } from './core/DataCubeQuerySnapshotManager.js';
 import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
-import { DataCubeStaticContentDisplayState } from './core/DataCubeStaticContentDisplayState.js';
+import { DataCubeInfoState } from './core/DataCubeInfoState.js';
 import { validateAndBuildQuerySnapshot } from './core/DataCubeQuerySnapshotBuilder.js';
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeEngine } from './DataCubeEngine.js';
 import { ActionAlertType } from '@finos/legend-application';
 import { DataCubeFilterEditorState } from './filter/DataCubeFilterEditorState.js';
+import { DataCubeExtendManagerState } from './extend/DataCubeExtendManagerState.js';
 
-export class DataCubeTask {
+class DataCubeTask {
   uuid = uuid();
   name: string;
   startTime = Date.now();
@@ -48,10 +49,11 @@ export class DataCubeState {
   readonly engine: DataCubeEngine;
   readonly snapshotManager: DataCubeQuerySnapshotManager;
 
-  readonly staticContent: DataCubeStaticContentDisplayState;
-  readonly grid: DataCubeGridState;
+  readonly info: DataCubeInfoState;
   readonly editor: DataCubeEditorState;
+  readonly grid: DataCubeGridState;
   readonly filter: DataCubeFilterEditorState;
+  readonly extend: DataCubeExtendManagerState;
 
   readonly runningTasks = new Map<string, DataCubeTask>();
 
@@ -68,10 +70,12 @@ export class DataCubeState {
 
     // NOTE: snapshot manager must be instantiated before subscribers
     this.snapshotManager = new DataCubeQuerySnapshotManager(this);
-    this.staticContent = new DataCubeStaticContentDisplayState(this);
+
+    this.info = new DataCubeInfoState(this);
     this.editor = new DataCubeEditorState(this);
-    this.filter = new DataCubeFilterEditorState(this);
     this.grid = new DataCubeGridState(this);
+    this.filter = new DataCubeFilterEditorState(this);
+    this.extend = new DataCubeExtendManagerState(this);
   }
 
   newTask(name: string) {
@@ -91,12 +95,12 @@ export class DataCubeState {
     try {
       await Promise.all(
         [
-          this.staticContent,
+          this.info,
           this.editor,
           this.grid,
           this.grid.controller,
           this.filter,
-          // TODO this.editor.extendedColumns,
+          this.extend,
         ].map(async (state) => {
           this.snapshotManager.registerSubscriber(state);
         }),
@@ -112,7 +116,7 @@ export class DataCubeState {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.repl.application.alertService.setActionAlertInfo({
-        message: `Initialization failure: ${error.message}`,
+        message: `Initialization Failure: ${error.message}`,
         prompt: `Resolve the issue and reload the application.`,
         type: ActionAlertType.ERROR,
         actions: [],

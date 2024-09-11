@@ -15,18 +15,17 @@
  */
 
 import { type V1_AppliedFunction } from '@finos/legend-graph';
-import {
-  DataCubeQueryFilterOperation,
-  ofType,
-} from './DataCubeQueryFilterOperation.js';
+import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
 import type {
   DataCubeQuerySnapshotColumn,
   DataCubeQuerySnapshotFilterCondition,
 } from '../DataCubeQuerySnapshot.js';
 import {
+  DataCubeColumnDataType,
   DataCubeFunction,
   DataCubeOperationAdvancedValueType,
   DataCubeQueryFilterOperator,
+  ofDataType,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
 import {
@@ -56,7 +55,11 @@ export class DataCubeQueryFilterOperation__LessThanOrEqualColumn extends DataCub
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {
-    return ofType(column.type, ['string', 'number', 'date']);
+    return ofDataType(column.type, [
+      DataCubeColumnDataType.NUMBER,
+      DataCubeColumnDataType.DATE,
+      DataCubeColumnDataType.TIME,
+    ]);
   }
 
   isCompatibleWithValue(value: DataCubeOperationValue) {

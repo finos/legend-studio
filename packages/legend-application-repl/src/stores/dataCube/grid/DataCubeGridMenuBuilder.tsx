@@ -160,7 +160,13 @@ export function generateMenuBuilder(
   fromHeader: boolean,
 ) => (string | MenuItemDef)[] {
   const dataCube = controller.dataCube;
+
+  // NOTE: we need to minimize the usage of these states
+  // since the grid context-menu should be solely driven
+  // by the grid controller
+  const filter = dataCube.filter;
   const editor = dataCube.editor;
+  const extend = dataCube.extend;
 
   return (
     params: GetContextMenuItemsParams | GetMainMenuItemsParams,
@@ -169,9 +175,11 @@ export function generateMenuBuilder(
     const column = params.column ?? undefined;
     const columnName = column?.getColId();
     const columnConfiguration = controller.getColumnConfiguration(columnName);
+    const isExtendedColumn =
+      columnName &&
+      controller.extendedColumns.find((col) => col.name === columnName);
     // NOTE: here we assume the value must be coming from the same column
     const value: unknown = 'value' in params ? params.value : undefined;
-    // console.log(params, params.api.getCellRanges());
 
     const sortMenu = [
       {
@@ -461,7 +469,7 @@ export function generateMenuBuilder(
           {
             name: 'Filters...',
             action: () => {
-              dataCube.filter.display.open();
+              filter.display.open();
             },
           },
           {
@@ -510,28 +518,36 @@ export function generateMenuBuilder(
       },
       {
         name: 'Extended Columns',
-        menuItem: WIP_GridMenuItem,
-        cssClasses: ['!opacity-100'],
-        disabled: true,
         subMenu: [
           {
             name: `Add New Column...`,
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
+            action: () => extend.openNewColumnEditor(),
           },
-          {
-            name: `Edit {column}`,
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
-          },
-          {
-            name: `Remove {column}`,
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
-          },
+          ...(columnConfiguration && columnName
+            ? [
+                {
+                  name: `Extend Column ${columnName}...`,
+                  action: () => extend.openNewColumnEditor(columnConfiguration),
+                },
+              ]
+            : []),
+          ...(isExtendedColumn
+            ? [
+                'separator',
+                {
+                  name: `Edit Column ${columnName}...`,
+                  menuItem: WIP_GridMenuItem,
+                  cssClasses: ['!opacity-100'],
+                  disabled: true,
+                },
+                {
+                  name: `Delete Column ${columnName}`,
+                  menuItem: WIP_GridMenuItem,
+                  cssClasses: ['!opacity-100'],
+                  disabled: true,
+                },
+              ]
+            : []),
         ],
       },
       {

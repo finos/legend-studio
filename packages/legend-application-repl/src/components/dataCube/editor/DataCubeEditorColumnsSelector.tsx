@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { cn, DataCubeIcon } from '@finos/legend-art';
+import { DataCubeIcon } from '@finos/legend-art';
 import type {
   ColDef,
   ColDefField,
@@ -33,7 +33,6 @@ import {
 } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
-  DataCubeEditorColumnsSelectorHiddenColumnsVisibility,
   type DataCubeEditorColumnsSelectorColumnState,
   type DataCubeEditorColumnsSelectorState,
 } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
@@ -148,15 +147,26 @@ export const DataCubeEditorColumnsSelector = observer(
     T extends DataCubeEditorColumnsSelectorColumnState,
   >(props: {
     selector: DataCubeEditorColumnsSelectorState<T>;
-    extraColumnComponent?:
-      | React.FC<{
+    columnLabelRenderer?:
+      | ((p: {
           selector: DataCubeEditorColumnsSelectorState<T>;
           column: T;
-        }>
+        }) => React.ReactNode)
+      | undefined;
+    columnActionRenderer?:
+      | ((p: {
+          selector: DataCubeEditorColumnsSelectorState<T>;
+          column: T;
+        }) => React.ReactNode)
       | undefined;
     noColumnsSelectedRenderer?: (() => React.ReactNode) | undefined;
   }) {
-    const { selector, extraColumnComponent, noColumnsSelectedRenderer } = props;
+    const {
+      selector,
+      columnLabelRenderer,
+      columnActionRenderer,
+      noColumnsSelectedRenderer,
+    } = props;
     const [selectedAvailableColumns, setSelectedAvailableColumns] = useState<
       T[]
     >([]);
@@ -342,19 +352,11 @@ export const DataCubeEditorColumnsSelector = observer(
                       if (!data) {
                         return null;
                       }
-                      const showHiddenIndicator =
-                        selector.hiddenColumnsVisibility ===
-                          DataCubeEditorColumnsSelectorHiddenColumnsVisibility.VISIBLE_WITH_WARNING &&
-                        selector.editor.columnProperties.columns.find(
-                          (col) => col.name === data.name,
-                        )?.hideFromView;
 
                       return (
                         <div
-                          className={cn('flex h-full w-full cursor-pointer', {
-                            'text-neutral-400': showHiddenIndicator,
-                          })}
-                          title={`[${data.name}]${showHiddenIndicator ? ' - Hidden' : ''}\nDouble-click to add column`}
+                          className="flex h-full w-full cursor-pointer items-center"
+                          title={`[${data.name}]\nDouble-click to add column`}
                           onDoubleClick={() => {
                             selector.setSelectedColumns([
                               ...selector.selectedColumns,
@@ -363,11 +365,16 @@ export const DataCubeEditorColumnsSelector = observer(
                             params.api.clearFocusedCell();
                           }}
                         >
-                          <div className="h-full flex-1 items-center overflow-hidden overflow-ellipsis whitespace-nowrap pl-2">
-                            {data.name}
-                          </div>
+                          {columnLabelRenderer?.({
+                            selector,
+                            column: data,
+                          }) ?? (
+                            <div className="h-full flex-1 items-center overflow-hidden overflow-ellipsis whitespace-nowrap pl-2">
+                              {data.name}
+                            </div>
+                          )}
                           <div className="flex h-full">
-                            {extraColumnComponent?.({
+                            {columnActionRenderer?.({
                               selector,
                               column: data,
                             }) ?? null}
@@ -536,19 +543,11 @@ export const DataCubeEditorColumnsSelector = observer(
                       if (!data) {
                         return null;
                       }
-                      const showHiddenIndicator =
-                        selector.hiddenColumnsVisibility ===
-                          DataCubeEditorColumnsSelectorHiddenColumnsVisibility.VISIBLE_WITH_WARNING &&
-                        selector.editor.columnProperties.columns.find(
-                          (col) => col.name === data.name,
-                        )?.hideFromView;
 
                       return (
                         <div
-                          className={cn('flex h-full w-full cursor-pointer', {
-                            'text-neutral-400': showHiddenIndicator,
-                          })}
-                          title={`[${data.name}]${showHiddenIndicator ? ' - Hidden' : ''}\nDouble-click to remove column`}
+                          className="flex h-full w-full cursor-pointer items-center"
+                          title={`[${data.name}]\nDouble-click to add column`}
                           onDoubleClick={() => {
                             selector.setSelectedColumns(
                               selector.selectedColumns.filter(
@@ -558,11 +557,16 @@ export const DataCubeEditorColumnsSelector = observer(
                             params.api.clearFocusedCell();
                           }}
                         >
-                          <div className="h-full flex-1 items-center overflow-hidden overflow-ellipsis whitespace-nowrap pl-2">
-                            {data.name}
-                          </div>
+                          {columnLabelRenderer?.({
+                            selector,
+                            column: data,
+                          }) ?? (
+                            <div className="h-full flex-1 items-center overflow-hidden overflow-ellipsis whitespace-nowrap pl-2">
+                              {data.name}
+                            </div>
+                          )}
                           <div className="flex h-full">
-                            {extraColumnComponent?.({
+                            {columnActionRenderer?.({
                               selector,
                               column: data,
                             }) ?? null}

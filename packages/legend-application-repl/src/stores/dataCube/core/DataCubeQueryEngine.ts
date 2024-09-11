@@ -252,10 +252,17 @@ export enum DataCubeColumnPinPlacement {
   RIGHT = 'Right',
 }
 
+// TODO: support moreclassifications of this column, it can also be aggregation with map/reduce or
+// OLAP window aggregation, or custom groupings, etc.
+export enum DataCubeExtendedColumnType {
+  SIMPLE = 'simple',
+}
+
 export enum DataCubeColumnDataType {
-  NUMBER = 'number',
-  DATE = 'date',
-  TEXT = 'text',
+  NUMBER = 'Numeric',
+  TEXT = 'Text',
+  DATE = 'Date',
+  TIME = 'Time',
 }
 
 export function getDataType(type: string): DataCubeColumnDataType {
@@ -266,13 +273,21 @@ export function getDataType(type: string): DataCubeColumnDataType {
     case PRIMITIVE_TYPE.FLOAT:
       return DataCubeColumnDataType.NUMBER;
     case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME:
     case PRIMITIVE_TYPE.STRICTDATE:
       return DataCubeColumnDataType.DATE;
+    case PRIMITIVE_TYPE.DATETIME:
+      return DataCubeColumnDataType.TIME;
     case PRIMITIVE_TYPE.STRING:
     default:
       return DataCubeColumnDataType.TEXT;
   }
+}
+
+export function ofDataType(
+  type: string,
+  dataTypes: DataCubeColumnDataType[],
+): boolean {
+  return dataTypes.includes(getDataType(type));
 }
 
 export const DEFAULT_URL_LABEL_QUERY_PARAM = 'dataCube.linkLabel';

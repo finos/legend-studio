@@ -22,21 +22,26 @@ import type { DataCubeQuery } from '../../../server/DataCubeQuery.js';
 import { formatDate } from '@finos/legend-shared';
 import { DEFAULT_REPORT_NAME } from './DataCubeQueryEngine.js';
 
-export class DataCubeStaticContentDisplayState extends DataCubeQuerySnapshotController {
+/**
+ * Unlike other query editor state, this state does not support making any
+ * modification to the query, it simplies subscribe to extract information
+ * from the latest snapshot to help display latest static info about the query.
+ */
+export class DataCubeInfoState extends DataCubeQuerySnapshotController {
   baseQuery!: DataCubeQuery;
   name = DEFAULT_REPORT_NAME;
-  private startTime?: number | undefined;
+  private editionStartTime?: number | undefined;
 
   constructor(dataCube: DataCubeState) {
     super(dataCube);
 
-    makeObservable(this, {
+    makeObservable<DataCubeInfoState, 'setName'>(this, {
       name: observable,
       setName: action,
     });
   }
 
-  setName(val: string) {
+  private setName(val: string) {
     this.name = val;
   }
 
@@ -46,11 +51,11 @@ export class DataCubeStaticContentDisplayState extends DataCubeQuerySnapshotCont
   ) {
     const data = snapshot.data;
     this.setName(data.name);
-    if (!this.startTime) {
-      this.startTime = snapshot.timestamp;
+    if (!this.editionStartTime) {
+      this.editionStartTime = snapshot.timestamp;
     }
     this.application.layoutService.setWindowTitle(
-      `\u229E ${data.name}${this.startTime ? ` - ${formatDate(new Date(this.startTime), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
+      `\u229E ${data.name}${this.editionStartTime ? ` - ${formatDate(new Date(this.editionStartTime), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
     );
   }
 }

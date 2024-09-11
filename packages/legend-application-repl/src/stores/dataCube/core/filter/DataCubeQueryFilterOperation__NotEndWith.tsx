@@ -18,15 +18,16 @@ import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
   DataCubeQueryFilterOperation,
   generateDefaultFilterConditionPrimitiveTypeValue,
-  ofType,
 } from './DataCubeQueryFilterOperation.js';
 import type {
   DataCubeQuerySnapshotColumn,
   DataCubeQuerySnapshotFilterCondition,
 } from '../DataCubeQuerySnapshot.js';
 import {
+  DataCubeColumnDataType,
   DataCubeFunction,
   DataCubeQueryFilterOperator,
+  ofDataType,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
 import {
@@ -56,12 +57,12 @@ export class DataCubeQueryFilterOperation__NotEndWith extends DataCubeQueryFilte
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {
-    return ofType(column.type, ['string']);
+    return ofDataType(column.type, [DataCubeColumnDataType.TEXT]);
   }
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
     return (
-      ofType(value.type, ['string']) &&
+      ofDataType(value.type, [DataCubeColumnDataType.TEXT]) &&
       value.value !== undefined &&
       !Array.isArray(value.value)
     );

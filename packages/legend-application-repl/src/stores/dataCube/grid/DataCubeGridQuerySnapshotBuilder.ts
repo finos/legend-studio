@@ -24,6 +24,7 @@
 import type { IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import {
   type DataCubeQuerySnapshot,
+  type DataCubeQuerySnapshotColumn,
   type DataCubeQuerySnapshotGroupBy,
   _getCol,
 } from '../core/DataCubeQuerySnapshot.js';
@@ -42,11 +43,13 @@ import { isNonNullable } from '@finos/legend-shared';
 export function _groupByAggCols(
   groupBy: DataCubeQuerySnapshotGroupBy | undefined,
   configuration: DataCubeConfiguration,
+  excludedColumns?: DataCubeQuerySnapshotColumn[] | undefined,
 ) {
   return configuration.columns
     .filter(
       (column) =>
         column.kind === DataCubeColumnKind.MEASURE &&
+        !excludedColumns?.find((col) => col.name === column.name) &&
         !groupBy?.columns.find((col) => col.name === column.name),
     )
     .map(
@@ -77,7 +80,11 @@ export function buildQuerySnapshot(
         name: col.id,
         type: _getCol(availableCols, col.id).type,
       })),
-      aggColumns: _groupByAggCols(baseSnapshot.data.groupBy, configuration),
+      aggColumns: _groupByAggCols(
+        baseSnapshot.data.groupBy,
+        configuration,
+        baseSnapshot.data.groupExtendedColumns,
+      ),
     };
   } else {
     snapshot.data.groupBy = undefined;

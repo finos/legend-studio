@@ -27,9 +27,16 @@ import {
   V1_deserializeValueSpecification,
   extractElementNameFromPath as _name,
 } from '@finos/legend-graph';
-import { type DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
+  type DataCubeQuerySnapshot,
+  type DataCubeQuerySnapshotSimpleExtendedColumn,
+} from './DataCubeQuerySnapshot.js';
+import {
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
+import {
+  DataCubeExtendedColumnType,
   DataCubeFunction,
   DataCubeQuerySortOperator,
   type DataCubeQueryFunctionMap,
@@ -86,16 +93,22 @@ export function buildExecutableQuery(
     funcMap[funcMapKey] = func;
   };
 
-  // --------------------------------- LEAF EXTEND ---------------------------------
+  // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
 
   if (data.leafExtendedColumns.length) {
     _process(
       'leafExtend',
       _function(_name(DataCubeFunction.EXTEND), [
         _cols(
-          data.leafExtendedColumns.map((col) =>
-            _colSpec(col.name, _deserializeToLambda(col.lambda)),
-          ),
+          data.leafExtendedColumns.map((eCol) => {
+            if (eCol._type === DataCubeExtendedColumnType.SIMPLE) {
+              const col = eCol as DataCubeQuerySnapshotSimpleExtendedColumn;
+              return _colSpec(col.name, _deserializeToLambda(col.lambda));
+            }
+            throw new UnsupportedOperationError(
+              `Can't build extended column of type '${eCol._type}'`,
+            );
+          }),
         ),
       ]),
     );
@@ -148,16 +161,22 @@ export function buildExecutableQuery(
   // --------------------------------- PIVOT ---------------------------------
   // TODO: @akphi - implement this and CAST
 
-  // --------------------------------- GROUP EXTEND ---------------------------------
+  // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
 
   if (data.groupExtendedColumns.length) {
     _process(
       'groupExtend',
       _function(_name(DataCubeFunction.EXTEND), [
         _cols(
-          data.groupExtendedColumns.map((col) =>
-            _colSpec(col.name, _deserializeToLambda(col.lambda)),
-          ),
+          data.groupExtendedColumns.map((eCol) => {
+            if (eCol._type === DataCubeExtendedColumnType.SIMPLE) {
+              const col = eCol as DataCubeQuerySnapshotSimpleExtendedColumn;
+              return _colSpec(col.name, _deserializeToLambda(col.lambda));
+            }
+            throw new UnsupportedOperationError(
+              `Can't build extended column of type '${eCol._type}'`,
+            );
+          }),
         ),
       ]),
     );

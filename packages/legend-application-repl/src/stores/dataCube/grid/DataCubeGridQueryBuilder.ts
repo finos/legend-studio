@@ -186,6 +186,7 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
         funcMap.groupBy = groupByFunc;
 
         // extend columns to maintain the same set of columns prior to groupBy()
+        // TODO: we should use the `uniq` agg on these columns rather than doing this hack
         const groupByExtend = _groupByExtend(
           snapshot.stageCols('aggregation'),
           [...groupByColumns, ...groupBy.aggColumns],

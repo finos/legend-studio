@@ -31,7 +31,7 @@ import {
   DEFAULT_SMALL_ALERT_WINDOW_CONFIG,
   LayoutConfiguration,
   LayoutManagerState,
-  SingletonModeDisplayState,
+  DisplayState,
   WindowState,
   type WindowConfiguration,
 } from './LayoutManagerState.js';
@@ -48,8 +48,8 @@ export class REPLStore {
   readonly client: REPLServerClient;
   readonly layout: LayoutManagerState;
   readonly initState = ActionState.create();
-  readonly settingsDisplay: SingletonModeDisplayState;
-  readonly documentationDisplay: SingletonModeDisplayState;
+  readonly settingsDisplay: DisplayState;
+  readonly documentationDisplay: DisplayState;
 
   dataCubeEngine!: DataCubeEngine;
 
@@ -73,11 +73,9 @@ export class REPLStore {
     this.layout = new LayoutManagerState(this.application);
     this.dataCubeEngine = new DataCubeEngine(this);
     this.dataCube = new DataCubeState(this);
-    this.settingsDisplay = new SingletonModeDisplayState(
-      this.layout,
-      'Settings',
-      () => <SettingsPanel />,
-    );
+    this.settingsDisplay = new DisplayState(this.layout, 'Settings', () => (
+      <SettingsPanel />
+    ));
     this.settingsDisplay.configuration.window = {
       x: -50,
       y: 50,
@@ -87,7 +85,7 @@ export class REPLStore {
       minHeight: 200,
       center: false,
     };
-    this.documentationDisplay = new SingletonModeDisplayState(
+    this.documentationDisplay = new DisplayState(
       this.layout,
       'Documentation',
       () => <DocumentationPanel />,
@@ -181,7 +179,7 @@ export class REPLStore {
     } catch (error: unknown) {
       assertErrorThrown(error);
       this.application.alertService.setActionAlertInfo({
-        message: `Initialization failure: ${error.message}`,
+        message: `Initialization Failure: ${error.message}`,
         prompt: `Resolve the issue and reload the application.`,
         type: ActionAlertType.ERROR,
         actions: [],

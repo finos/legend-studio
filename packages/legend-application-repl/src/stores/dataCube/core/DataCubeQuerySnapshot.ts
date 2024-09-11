@@ -50,8 +50,12 @@ export type DataCubeQuerySnapshotColumn = {
 
 export type DataCubeQuerySnapshotExtendedColumn =
   DataCubeQuerySnapshotColumn & {
+    _type: string;
+  };
+
+export type DataCubeQuerySnapshotSimpleExtendedColumn =
+  DataCubeQuerySnapshotExtendedColumn & {
     lambda: PlainObject<V1_Lambda>;
-    code: string;
   };
 
 export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {

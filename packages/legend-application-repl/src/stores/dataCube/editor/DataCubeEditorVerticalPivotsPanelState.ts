@@ -38,16 +38,18 @@ export class DataCubeEditorVerticalPivotColumnsSelectorState extends DataCubeEdi
 
   override get availableColumns(): DataCubeEditorColumnsSelectorColumnState[] {
     return this.editor.columns.selector.selectedColumns
-      .map(
-        // TODO: filter group extended columns
-        (col) =>
-          new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
-      )
       .filter(
         (column) =>
-          this.editor.columnProperties.columns.find(
+          this.editor.columnProperties.getColumnConfiguration(column.name)
+            ?.kind === DataCubeColumnKind.DIMENSION &&
+          // exclude group-level extended columns
+          !this.editor.columns.groupExtendColumns.find(
             (col) => col.name === column.name,
-          )?.kind === DataCubeColumnKind.DIMENSION,
+          ),
+      )
+      .map(
+        (col) =>
+          new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
       );
   }
 }
@@ -92,8 +94,13 @@ export class DataCubeEditorVerticalPivotsPanelState
               (column) =>
                 column.kind === DataCubeColumnKind.MEASURE &&
                 column.aggregateFunction !== undefined &&
+                // exclude group-by columns
                 this.selector.selectedColumns.find(
                   (col) => col.name !== column.name,
+                ) &&
+                // exclude group-level extended columns
+                !this.editor.columns.groupExtendColumns.find(
+                  (col) => col.name === column.name,
                 ),
             )
             .map((column) => ({

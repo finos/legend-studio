@@ -14,13 +14,64 @@
  * limitations under the License.
  */
 
-import { DataCubeIcon } from '@finos/legend-art';
+import { cn, DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
-import { FormCheckbox } from '../../repl/Form.js';
-import { DataCubeEditorColumnsSelectorHiddenColumnsVisibility } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
 import { useEffect } from 'react';
 import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
+import { FormCheckbox } from '../../repl/Form.js';
+import type {
+  DataCubeEditorColumnsSelectorColumnState,
+  DataCubeEditorColumnsSelectorState,
+} from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
+
+const ColumnsSelectorLabelRenderer = observer(
+  (props: {
+    selector: DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState>;
+    column: DataCubeEditorColumnsSelectorColumnState;
+  }) => {
+    const { selector, column } = props;
+    const showHiddenIndicator =
+      !selector.editor.columns.groupExtendColumns.find(
+        (col) => col.name === column.name,
+      ) &&
+      selector.editor.columnProperties.getColumnConfiguration(column.name)
+        ?.hideFromView;
+
+    return (
+      <>
+        <div
+          className={cn(
+            'items-center overflow-hidden overflow-ellipsis whitespace-nowrap pl-2',
+            {
+              'text-neutral-400': showHiddenIndicator,
+            },
+          )}
+        >
+          {column.name}
+        </div>
+        {Boolean(
+          selector.editor.columns.leafExtendColumns.find(
+            (col) => col.name === column.name,
+          ),
+        ) && (
+          <div className="ml-1.5 mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
+            {`Extended (Leaf Level)`}
+          </div>
+        )}
+        {Boolean(
+          selector.editor.columns.groupExtendColumns.find(
+            (col) => col.name === column.name,
+          ),
+        ) && (
+          <div className="ml-1.5 mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
+            {`Extended (Group Level)`}
+          </div>
+        )}
+      </>
+    );
+  },
+);
 
 export const DataCubeEditorColumnsPanel = observer(
   (props: { dataCube: DataCubeState }) => {
@@ -43,16 +94,10 @@ export const DataCubeEditorColumnsPanel = observer(
           <div className="flex h-full items-center pr-2">
             <FormCheckbox
               label="Show hidden columns?"
-              checked={
-                panel.selector.hiddenColumnsVisibility !==
-                DataCubeEditorColumnsSelectorHiddenColumnsVisibility.HIDDEN
-              }
+              checked={panel.selector.showHiddenColumns}
               onChange={() =>
-                panel.selector.setHiddenColumnsVisibility(
-                  panel.selector.hiddenColumnsVisibility !==
-                    DataCubeEditorColumnsSelectorHiddenColumnsVisibility.HIDDEN
-                    ? DataCubeEditorColumnsSelectorHiddenColumnsVisibility.HIDDEN
-                    : DataCubeEditorColumnsSelectorHiddenColumnsVisibility.VISIBLE_WITH_WARNING,
+                panel.selector.setShowHiddenColumns(
+                  !panel.selector.showHiddenColumns,
                 )
               }
             />
@@ -69,6 +114,7 @@ export const DataCubeEditorColumnsPanel = observer(
                 No columns selected
               </div>
             )}
+            columnLabelRenderer={(p) => <ColumnsSelectorLabelRenderer {...p} />}
           />
         </div>
       </div>

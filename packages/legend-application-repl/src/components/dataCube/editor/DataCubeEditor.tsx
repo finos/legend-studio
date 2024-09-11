@@ -25,10 +25,12 @@ import { DataCubeEditorCodePanel } from './DataCubeEditorCodePanel.js';
 import { DataCubeEditorColumnPropertiesPanel } from './DataCubeEditorColumnPropertiesPanel.js';
 import { cn } from '@finos/legend-art';
 import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
   const { dataCube } = props;
   const editor = dataCube.editor;
+  const application = useApplicationStore();
   const selectedTab = editor.currentTab;
   const tabs = [
     DataCubeEditorTab.COLUMNS,
@@ -86,9 +88,12 @@ export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
       <div className="flex h-10 items-center justify-end px-2">
         <button
           className="h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
+          disabled={editor.finalizationState.isInProgress}
           onClick={() => {
-            editor.applyChanges();
-            editor.display.close();
+            editor
+              .applyChanges()
+              .then(() => editor.display.close())
+              .catch(application.alertUnhandledError);
           }}
         >
           OK
@@ -101,7 +106,10 @@ export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
         </button>
         <button
           className="ml-2 h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
-          onClick={() => editor.applyChanges()}
+          disabled={editor.finalizationState.isInProgress}
+          onClick={() => {
+            editor.applyChanges().catch(application.alertUnhandledError);
+          }}
         >
           Apply
         </button>

@@ -294,7 +294,7 @@ export function validateAndBuildQuerySnapshot(
   }));
   data.sourceColumns.map((col) => colsMap.set(col.name, col));
 
-  // --------------------------------- LEAF EXTEND ---------------------------------
+  // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
   // TODO: @akphi - implement this
 
   // --------------------------------- FILTER ---------------------------------
@@ -327,7 +327,6 @@ export function validateAndBuildQuerySnapshot(
         (colSpec) => _aggCol(colSpec, _col(colSpec)),
       ),
       // TODO: verify agg columns agree with pivot agg columns
-      // TODO: verify groupByExtend expression that all columns are accounted for
     };
   }
 
@@ -337,7 +336,7 @@ export function validateAndBuildQuerySnapshot(
   // --------------------------------- CAST ---------------------------------
   // TODO: @akphi - implement this
 
-  // --------------------------------- GROUP EXTEND ---------------------------------
+  // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
   // TODO: @akphi - implement this
 
   // --------------------------------- SORT ---------------------------------
