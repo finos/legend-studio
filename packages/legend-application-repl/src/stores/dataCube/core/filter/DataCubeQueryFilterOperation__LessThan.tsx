@@ -18,15 +18,16 @@ import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
   DataCubeQueryFilterOperation,
   generateDefaultFilterConditionPrimitiveTypeValue,
-  ofType,
 } from './DataCubeQueryFilterOperation.js';
 import type {
   DataCubeQuerySnapshotColumn,
   DataCubeQuerySnapshotFilterCondition,
 } from '../DataCubeQuerySnapshot.js';
 import {
+  DataCubeColumnDataType,
   DataCubeFunction,
   DataCubeQueryFilterOperator,
+  ofDataType,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
 import {
@@ -55,12 +56,20 @@ export class DataCubeQueryFilterOperation__LessThan extends DataCubeQueryFilterO
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {
-    return ofType(column.type, ['number', 'date']);
+    return ofDataType(column.type, [
+      DataCubeColumnDataType.NUMBER,
+      DataCubeColumnDataType.DATE,
+      DataCubeColumnDataType.TIME,
+    ]);
   }
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
     return (
-      ofType(value.type, ['number', 'date']) &&
+      ofDataType(value.type, [
+        DataCubeColumnDataType.NUMBER,
+        DataCubeColumnDataType.DATE,
+        DataCubeColumnDataType.TIME,
+      ]) &&
       value.value !== undefined &&
       !Array.isArray(value.value)
     );

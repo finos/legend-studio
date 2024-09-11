@@ -283,6 +283,13 @@ export function getDataType(type: string): DataCubeColumnDataType {
   }
 }
 
+export function ofDataType(
+  type: string,
+  dataTypes: DataCubeColumnDataType[],
+): boolean {
+  return dataTypes.includes(getDataType(type));
+}
+
 export const DEFAULT_URL_LABEL_QUERY_PARAM = 'dataCube.linkLabel';
 export const DEFAULT_MISSING_VALUE_DISPLAY_TEXT = '';
 

@@ -57,29 +57,6 @@ export function generateDefaultFilterConditionPrimitiveTypeValue(
   }
 }
 
-export function ofType(
-  type: string,
-  targetTypes: ('string' | 'number' | 'boolean' | 'date')[],
-) {
-  switch (type) {
-    case PRIMITIVE_TYPE.STRING:
-      return targetTypes.includes('string');
-    case PRIMITIVE_TYPE.BOOLEAN:
-      return targetTypes.includes('boolean');
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.FLOAT:
-    case PRIMITIVE_TYPE.INTEGER:
-      return targetTypes.includes('number');
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.STRICTDATE:
-    case PRIMITIVE_TYPE.DATETIME:
-      return targetTypes.includes('date');
-    default:
-      return false;
-  }
-}
-
 // --------------------------------- CONTRACT ---------------------------------
 
 export abstract class DataCubeQueryFilterOperation {
