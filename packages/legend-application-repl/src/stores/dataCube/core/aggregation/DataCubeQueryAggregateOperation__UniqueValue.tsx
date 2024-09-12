@@ -42,7 +42,7 @@ export class DataCubeQueryAggregateOperation__UniqueValue extends DataCubeQueryA
   }
 
   override get operator(): string {
-    return DataCubeAggregateOperator.JOIN_STRINGS;
+    return DataCubeAggregateOperator.UNIQUE;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

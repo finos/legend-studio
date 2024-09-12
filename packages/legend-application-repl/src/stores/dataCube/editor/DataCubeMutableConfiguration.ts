@@ -15,7 +15,7 @@
  */
 
 import {
-  DataCubeColumnKind,
+  type DataCubeColumnKind,
   getDataType,
   type DataCubeFont,
   type DataCubeOperationValue,
@@ -214,35 +214,33 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     snapshot: DataCubeQuerySnapshot,
     aggregateOperations: DataCubeQueryAggregateOperation[],
   ) {
-    if (this.kind === DataCubeColumnKind.MEASURE) {
-      const aggCol = _findCol(snapshot.data.groupBy?.aggColumns, this.name);
-      if (aggCol) {
-        this.setAggregateOperation(
-          getAggregateOperation(aggCol.operation, aggregateOperations),
-        );
-        this.setAggregationParameters(aggCol.parameters);
-      } else {
-        switch (this.dataType) {
-          case DataCubeColumnDataType.NUMBER: {
-            this.setAggregateOperation(
-              getAggregateOperation(
-                DataCubeAggregateOperator.SUM,
-                aggregateOperations,
-              ),
-            );
-            this.setAggregationParameters([]);
-            break;
-          }
-          default: {
-            this.setAggregateOperation(
-              getAggregateOperation(
-                DataCubeAggregateOperator.UNIQUE,
-                aggregateOperations,
-              ),
-            );
-            this.setAggregationParameters([]);
-            break;
-          }
+    const aggCol = _findCol(snapshot.data.groupBy?.aggColumns, this.name);
+    if (aggCol) {
+      this.setAggregateOperation(
+        getAggregateOperation(aggCol.operation, aggregateOperations),
+      );
+      this.setAggregationParameters(aggCol.parameters);
+    } else {
+      switch (this.dataType) {
+        case DataCubeColumnDataType.NUMBER: {
+          this.setAggregateOperation(
+            getAggregateOperation(
+              DataCubeAggregateOperator.SUM,
+              aggregateOperations,
+            ),
+          );
+          this.setAggregationParameters([]);
+          break;
+        }
+        default: {
+          this.setAggregateOperation(
+            getAggregateOperation(
+              DataCubeAggregateOperator.UNIQUE,
+              aggregateOperations,
+            ),
+          );
+          this.setAggregationParameters([]);
+          break;
         }
       }
     }

@@ -33,14 +33,14 @@ import {
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import {
-  DataCubeColumnKind,
+  DataCubeAggregateOperator,
   DataCubeQuerySortOperator,
 } from '../core/DataCubeQueryEngine.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
-import { _defaultAggCol } from '../core/DataCubeQuerySnapshotBuilderUtils.js';
-import { isNonNullable } from '@finos/legend-shared';
+import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 
 export function _groupByAggCols(
+  newGroupByColumns: DataCubeQuerySnapshotColumn[],
   groupBy: DataCubeQuerySnapshotGroupBy | undefined,
   configuration: DataCubeConfiguration,
   excludedColumns?: DataCubeQuerySnapshotColumn[] | undefined,
@@ -48,16 +48,40 @@ export function _groupByAggCols(
   return configuration.columns
     .filter(
       (column) =>
-        column.kind === DataCubeColumnKind.MEASURE &&
         !excludedColumns?.find((col) => col.name === column.name) &&
-        !groupBy?.columns.find((col) => col.name === column.name),
+        !newGroupByColumns.find((col) => col.name === column.name),
     )
-    .map(
-      (column) =>
-        groupBy?.aggColumns.find((col) => col.name === column.name) ??
-        _defaultAggCol(column.name, column.type),
-    )
-    .filter(isNonNullable);
+    .map((column) => {
+      // try to retrieve the aggregation from previous snapshot
+      // if not possible, create a new default aggregation
+      // based on the column type
+      const aggCol = groupBy?.aggColumns.find(
+        (col) => col.name === column.name,
+      );
+      if (aggCol) {
+        return aggCol;
+      }
+      switch (column.type) {
+        case PRIMITIVE_TYPE.NUMBER:
+        case PRIMITIVE_TYPE.INTEGER:
+        case PRIMITIVE_TYPE.DECIMAL:
+        case PRIMITIVE_TYPE.FLOAT: {
+          return {
+            name: column.name,
+            type: column.type,
+            operation: DataCubeAggregateOperator.SUM,
+            parameters: [],
+          };
+        }
+        default:
+          return {
+            name: column.name,
+            type: column.type,
+            operation: DataCubeAggregateOperator.UNIQUE,
+            parameters: [],
+          };
+      }
+    });
 }
 
 // --------------------------------- MAIN ---------------------------------
@@ -75,12 +99,14 @@ export function buildQuerySnapshot(
 
   if (request.rowGroupCols.length) {
     const availableCols = baseSnapshot.stageCols('aggregation');
+    const newGroupByColumns = request.rowGroupCols.map((col) => ({
+      name: col.id,
+      type: _getCol(availableCols, col.id).type,
+    }));
     snapshot.data.groupBy = {
-      columns: request.rowGroupCols.map((col) => ({
-        name: col.id,
-        type: _getCol(availableCols, col.id).type,
-      })),
+      columns: newGroupByColumns,
       aggColumns: _groupByAggCols(
+        newGroupByColumns,
         baseSnapshot.data.groupBy,
         configuration,
         baseSnapshot.data.groupExtendedColumns,

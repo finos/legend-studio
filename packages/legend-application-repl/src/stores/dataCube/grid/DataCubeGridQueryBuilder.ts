@@ -33,7 +33,6 @@ import {
   _cols,
   _filter,
   _function,
-  _groupByExtend,
   _lambda,
   _var,
 } from '../core/DataCubeQueryBuilderUtils.js';
@@ -181,28 +180,15 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
           _cols(groupByColumns.map((col) => _colSpec(col.name))),
           _cols([
             ..._groupByAggCols(groupBy.aggColumns, aggregateOperations),
-            _rowGroupingCountCol(),
+            _rowGroupingCountCol(), // get the count for each group
           ]),
         ]);
         sequence[groupByIdx] = groupByFunc;
         funcMap.groupBy = groupByFunc;
-
-        // extend columns to maintain the same set of columns prior to groupBy()
-        // TODO: we should use the `uniq` agg on these columns rather than doing this hack
-        const groupByExtend = _groupByExtend(
-          snapshot.stageCols('aggregation'),
-          [...groupByColumns, ...groupBy.aggColumns],
-        );
-        _unprocess('groupByExtend');
-        funcMap.groupByExtend = groupByExtend;
-        if (groupByExtend) {
-          sequence.splice(groupByIdx + 1, 0, groupByExtend);
-        }
       } else {
         // when maximum level of drilldown is reached, we simply just need to
         // filter the data to match drilldown values, no groupBy() is needed.
         _unprocess('groupBy');
-        _unprocess('groupByExtend');
       }
 
       // --------------------------------- PIVOT ---------------------------------

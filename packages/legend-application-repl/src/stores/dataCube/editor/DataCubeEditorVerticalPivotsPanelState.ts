@@ -91,7 +91,6 @@ export class DataCubeEditorVerticalPivotsPanelState
           aggColumns: this.editor.columnProperties.columns
             .filter(
               (column) =>
-                column.kind === DataCubeColumnKind.MEASURE &&
                 // exclude group-by columns
                 this.selector.selectedColumns.find(
                   (col) => col.name !== column.name,

@@ -286,6 +286,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
       ? {
           columns: this.verticalPivotedColumns,
           aggColumns: _groupByAggCols(
+            this.verticalPivotedColumns,
             baseSnapshot.data.groupBy,
             this.configuration,
             baseSnapshot.data.groupExtendedColumns,

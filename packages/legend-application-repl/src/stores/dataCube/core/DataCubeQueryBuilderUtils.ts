@@ -51,8 +51,6 @@ import {
 import {
   type DataCubeQuerySnapshotFilterCondition,
   type DataCubeQuerySnapshotFilter,
-  _findCol,
-  type DataCubeQuerySnapshotColumn,
   type DataCubeQuerySnapshotAggregateColumn,
 } from './DataCubeQuerySnapshot.js';
 import {
@@ -352,25 +350,4 @@ export function _filter(
     }
     return filterCondition.not ? _not(condition) : condition;
   }
-}
-
-export function _groupByExtend(
-  columns: DataCubeQuerySnapshotColumn[],
-  columnsUsedInGroupBy: DataCubeQuerySnapshotColumn[],
-) {
-  const missingCols = columns.filter(
-    (col) => !_findCol(columnsUsedInGroupBy, col.name),
-  );
-  return missingCols.length
-    ? _function(_functionName(DataCubeFunction.EXTEND), [
-        _cols(
-          missingCols.map((col) =>
-            _colSpec(
-              col.name,
-              _lambda([_var()], [_primitiveValue(PRIMITIVE_TYPE.STRING, '')]),
-            ),
-          ),
-        ),
-      ])
-    : undefined;
 }

@@ -15,7 +15,6 @@
  */
 
 import {
-  PRIMITIVE_TYPE,
   V1_AppliedFunction,
   V1_ClassInstance,
   V1_ColSpec,
@@ -25,10 +24,7 @@ import {
   matchFunctionName,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import {
-  type DataCubeQuerySnapshotAggregateColumn,
-  type DataCubeQuerySnapshotColumn,
-} from './DataCubeQuerySnapshot.js';
+import { type DataCubeQuerySnapshotColumn } from './DataCubeQuerySnapshot.js';
 import {
   assertTrue,
   assertType,
@@ -106,27 +102,6 @@ function _aggFuncMatch(
     `Can't process aggregation: Found unexpected value specification type`,
   );
   return _funcMatch(value.body[0], functionNames);
-}
-
-export function _defaultAggCol(
-  name: string,
-  type: string,
-): DataCubeQuerySnapshotAggregateColumn | undefined {
-  switch (type) {
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.FLOAT: {
-      return {
-        name,
-        type,
-        operation: DataCubeAggregateOperator.SUM,
-        parameters: [],
-      };
-    }
-    default:
-      return undefined;
-  }
 }
 
 export function _aggCol(

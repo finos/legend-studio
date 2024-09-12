@@ -86,8 +86,7 @@ export type DataCubeQueryFunctionMap = {
   leafExtend?: V1_AppliedFunction | undefined;
   filter?: V1_AppliedFunction | undefined;
   groupBy?: V1_AppliedFunction | undefined;
-  groupByExtend?: V1_AppliedFunction | undefined; // used to populate empty columns erased by groupBy()
-  pivotExtend?: V1_AppliedFunction | undefined; // used to populate columns erased by pivot()
+  pivotExtend?: V1_AppliedFunction | undefined; // used to populate columns to be erased by pivot()
   pivot?: V1_AppliedFunction | undefined;
   pivotCast?: V1_AppliedFunction | undefined; // used to set the relation type post pivot() to make compilation works properly
   groupExtend?: V1_AppliedFunction | undefined;

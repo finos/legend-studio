@@ -54,7 +54,6 @@ import {
   _filter,
   _function,
   _groupByAggCols,
-  _groupByExtend,
   _lambda,
   _primitiveValue,
   _var,
@@ -151,15 +150,6 @@ export function buildExecutableQuery(
         _cols(_groupByAggCols(groupBy.aggColumns, aggregateOperations)),
       ]),
     );
-
-    // extend columns to maintain the same set of columns prior to groupBy()
-    const groupByExtend = _groupByExtend(snapshot.stageCols('aggregation'), [
-      ...groupBy.columns,
-      ...groupBy.aggColumns,
-    ]);
-    if (groupByExtend) {
-      _process('groupByExtend', groupByExtend);
-    }
   }
 
   // --------------------------------- PIVOT ---------------------------------
