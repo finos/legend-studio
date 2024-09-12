@@ -92,7 +92,7 @@ export class DataCubeColumnConfiguration {
 
   aggregateOperator!: string;
   aggregationParameters: DataCubeOperationValue[] = [];
-  excludedFromHorizontalPivot = false;
+  excludedFromHorizontalPivot = true; // this agrees with default column kind set as Dimension
   horizontalPivotSortFunction?: string | undefined;
 
   constructor(name: string, type: string) {

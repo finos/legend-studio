@@ -26,7 +26,6 @@ import {
   FormDropdownMenuTrigger,
   FormNumberInput,
   FormTextInput,
-  FormBadge_WIP,
   FormDocumentation,
 } from '../../repl/Form.js';
 import {
@@ -224,7 +223,15 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       className="ml-1.5 w-20"
                       onClick={openKindDropdown}
                       open={kindDropdownPropsOpen}
-                      disabled={true}
+                      // disallow changing the column kind if the column is being used as pivot column
+                      disabled={Boolean(
+                        panel.editor.verticalPivots.selector.selectedColumns.find(
+                          (col) => col.name === selectedColumn.name,
+                        ) ??
+                          panel.editor.horizontalPivots.selector.selectedColumns.find(
+                            (col) => col.name === selectedColumn.name,
+                          ),
+                      )}
                     >
                       {selectedColumn.kind}
                     </FormDropdownMenuTrigger>
@@ -236,7 +243,12 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         <FormDropdownMenuItem
                           key={kind}
                           onClick={() => {
-                            selectedColumn.setKind(kind);
+                            if (kind !== selectedColumn.kind) {
+                              selectedColumn.setKind(kind);
+                              selectedColumn.setExcludedFromHorizontalPivot(
+                                kind === DataCubeColumnKind.DIMENSION,
+                              );
+                            }
                             closeKindDropdown();
                           }}
                           autoFocus={kind === selectedColumn.kind}
@@ -314,9 +326,10 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         !selectedColumn.excludedFromHorizontalPivot,
                       )
                     }
-                    disabled={true}
+                    disabled={
+                      selectedColumn.kind === DataCubeColumnKind.DIMENSION
+                    }
                   />
-                  <FormBadge_WIP />
                 </div>
 
                 {selectedColumn.dataType === DataCubeColumnDataType.NUMBER && (
