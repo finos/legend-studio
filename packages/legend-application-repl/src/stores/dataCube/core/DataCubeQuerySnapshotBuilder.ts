@@ -46,7 +46,6 @@ import {
 import { DataCubeConfiguration } from './DataCubeConfiguration.js';
 import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
 import {
-  _aggCol,
   _colSpecArrayParam,
   _colSpecParam,
   _funcMatch,
@@ -324,15 +323,13 @@ export function validateAndBuildQuerySnapshot(
       columns: _colSpecArrayParam(funcMap.groupBy, 0).colSpecs.map((colSpec) =>
         _col(colSpec),
       ),
-      aggColumns: _colSpecArrayParam(funcMap.groupBy, 1).colSpecs.map(
-        (colSpec) => _aggCol(colSpec, _col(colSpec)),
-      ),
-      // TODO: verify agg columns agree with pivot agg columns
+      // TODO: verify group-by agg columns, pivot agg columns and configuration agree
     };
   }
 
   // --------------------------------- PIVOT ---------------------------------
   // TODO: @akphi - implement this
+  // TODO: verify group-by agg columns, pivot agg columns and configuration agree
 
   // --------------------------------- CAST ---------------------------------
   // TODO: @akphi - implement this
@@ -369,14 +366,23 @@ export function validateAndBuildQuerySnapshot(
   }
 
   // --------------------------------- CONFIGURATION ---------------------------------
-  // The data query takes precedence over the configuration, we do this for 2 reasons
-  // 1. The purpose of the configuration is to provide the layout and styling
-  //    customization on top of the data query result grid. If conflicts happen between
-  //    the configuration and the query, we will reconciliate by modifying the configuration
-  // 2. The configuration when missing, can be generated from default presets. This helps
-  //    helps with use cases where the query might comes from a different source, such as
-  //    Studio or Query, or another part of Engine.
-
+  // NOTE: we aim to keep the data query a Pure query instead of a specification object
+  // so this configuration holds mostly layout and styling customization.
+  // But there are overlaps, i.e. certain data query configuration are stored in the
+  // configuration, e.g. column aggregation type, this is because a column
+  // aggregation's preference can be populated even when there's no aggregation specified
+  // in the data query.
+  //
+  // Arguably, the query should be the single source for these information, but when
+  // the configuration for a particular data query function coming from multiple sources
+  // conflict, we need to do some reconciliation (or throw error). Some examples include:
+  // - missing/extra columns present in the configuration
+  // - column kind and type conflict with aggregation
+  // - column kind and type conflict with the column configuration
+  //
+  // In certain cases, configuration needs to be generated from default presets. This
+  // helps with use cases where the query might comes from a different source, such as
+  // Studio or Query, or another part of Engine.
   const configuration = baseQuery.configuration
     ? DataCubeConfiguration.serialization.fromJson(baseQuery.configuration)
     : buildDefaultConfiguration(baseQuery.source.columns);
@@ -388,6 +394,7 @@ export function validateAndBuildQuerySnapshot(
   // - column type
   // - base off the type, check the settings
   // - aggregation
+  // TODO: verify group-by agg columns, pivot agg columns and configuration agree
 
   return snapshot.finalize();
 }

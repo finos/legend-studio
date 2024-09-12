@@ -37,8 +37,7 @@ import {
   DEFAULT_ZERO_FOREGROUND_COLOR,
   DEFAULT_ERROR_FOREGROUND_COLOR,
   DEFAULT_BACKGROUND_COLOR,
-  DataCubeAggregateOperator,
-  DataCubeColumnDataType,
+  type DataCubeColumnDataType,
 } from '../core/DataCubeQueryEngine.js';
 import { type PlainObject, type Writable } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
@@ -47,10 +46,7 @@ import {
   DataCubeConfiguration,
 } from '../core/DataCubeConfiguration.js';
 import { buildDefaultColumnConfiguration } from '../core/DataCubeConfigurationBuilder.js';
-import {
-  _findCol,
-  type DataCubeQuerySnapshot,
-} from '../core/DataCubeQuerySnapshot.js';
+import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import {
   getAggregateOperation,
   type DataCubeQueryAggregateOperation,
@@ -72,6 +68,10 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
     (
       configuration as Writable<DataCubeEditorMutableColumnConfiguration>
     ).dataType = getDataType(configuration.type);
+    configuration.aggregateOperation = getAggregateOperation(
+      configuration.aggregateOperator,
+      aggregateOperations,
+    );
 
     makeObservable(configuration, {
       kind: observable,
@@ -183,40 +183,6 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
       horizontalPivotSortFunction: observable,
       setHorizontalPivotSortFunction: action,
     });
-
-    // TODO: @akphi - account for pivot aggColumns as well, though we should
-    // assume that they agree with the groupBy aggColumns
-    // this validation would have been done by the initial query snapshot builder
-    const aggCol = _findCol(snapshot?.data.groupBy?.aggColumns, this.name);
-    if (aggCol) {
-      configuration.setAggregateOperation(
-        getAggregateOperation(aggCol.operation, aggregateOperations),
-      );
-      configuration.setAggregationParameters(aggCol.parameters);
-    } else {
-      switch (configuration.dataType) {
-        case DataCubeColumnDataType.NUMBER: {
-          configuration.setAggregateOperation(
-            getAggregateOperation(
-              DataCubeAggregateOperator.SUM,
-              aggregateOperations,
-            ),
-          );
-          configuration.setAggregationParameters([]);
-          break;
-        }
-        default: {
-          configuration.setAggregateOperation(
-            getAggregateOperation(
-              DataCubeAggregateOperator.UNIQUE,
-              aggregateOperations,
-            ),
-          );
-          configuration.setAggregationParameters([]);
-          break;
-        }
-      }
-    }
 
     return configuration;
   }

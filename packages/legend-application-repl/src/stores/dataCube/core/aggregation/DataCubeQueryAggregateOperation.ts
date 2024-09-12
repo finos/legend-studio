@@ -15,11 +15,9 @@
  */
 
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import type {
-  DataCubeQuerySnapshotAggregateColumn,
-  DataCubeQuerySnapshotColumn,
-} from '../DataCubeQuerySnapshot.js';
+import type { DataCubeQuerySnapshotColumn } from '../DataCubeQuerySnapshot.js';
 import { type V1_ColSpec } from '@finos/legend-graph';
+import type { DataCubeColumnConfiguration } from '../DataCubeConfiguration.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -43,11 +41,7 @@ export abstract class DataCubeQueryAggregateOperation {
 
   abstract isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn): boolean;
 
-  abstract buildAggregateColumnSnapshot(
-    aggColSpec: V1_ColSpec,
-  ): DataCubeQuerySnapshotAggregateColumn | undefined;
-
   abstract buildAggregateColumn(
-    aggCol: DataCubeQuerySnapshotAggregateColumn,
+    column: DataCubeColumnConfiguration,
   ): V1_ColSpec | undefined;
 }

@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import type {
-  DataCubeQuerySnapshotAggregateColumn,
-  DataCubeQuerySnapshotColumn,
-} from '../DataCubeQuerySnapshot.js';
-import { type V1_ColSpec } from '@finos/legend-graph';
+import type { DataCubeQuerySnapshotColumn } from '../DataCubeQuerySnapshot.js';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
   DataCubeAggregateOperator,
@@ -27,6 +23,7 @@ import {
   ofDataType,
 } from '../DataCubeQueryEngine.js';
 import { _aggCol_basic } from '../DataCubeQueryBuilderUtils.js';
+import type { DataCubeColumnConfiguration } from '../DataCubeConfiguration.js';
 
 export class DataCubeQueryAggregateOperation__StdDevPopulation extends DataCubeQueryAggregateOperation {
   override get label() {
@@ -49,14 +46,9 @@ export class DataCubeQueryAggregateOperation__StdDevPopulation extends DataCubeQ
     return ofDataType(column.type, [DataCubeColumnDataType.NUMBER]);
   }
 
-  buildAggregateColumnSnapshot(aggColSpec: V1_ColSpec) {
-    // TODO: @akphi - implement this for roundtrip testing
-    return undefined;
-  }
-
-  buildAggregateColumn(aggCol: DataCubeQuerySnapshotAggregateColumn) {
+  buildAggregateColumn(column: DataCubeColumnConfiguration) {
     return _aggCol_basic(
-      aggCol,
+      column,
       DataCubeFunction.STANDARD_DEVIATION_POPULATION,
     );
   }

@@ -147,7 +147,14 @@ export function buildExecutableQuery(
       'groupBy',
       _function(_name(DataCubeFunction.GROUP_BY), [
         _cols(groupBy.columns.map((col) => _colSpec(col.name))),
-        _cols(_groupByAggCols(groupBy.aggColumns, aggregateOperations)),
+        _cols(
+          _groupByAggCols(
+            groupBy.columns,
+            snapshot,
+            configuration,
+            aggregateOperations,
+          ),
+        ),
       ]),
     );
   }

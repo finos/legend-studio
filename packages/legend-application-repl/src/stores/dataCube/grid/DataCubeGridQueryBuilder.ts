@@ -179,7 +179,12 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
         const groupByFunc = _function(_name(DataCubeFunction.GROUP_BY), [
           _cols(groupByColumns.map((col) => _colSpec(col.name))),
           _cols([
-            ..._groupByAggCols(groupBy.aggColumns, aggregateOperations),
+            ..._groupByAggCols(
+              groupByColumns,
+              snapshot,
+              configuration,
+              aggregateOperations,
+            ),
             _rowGroupingCountCol(), // get the count for each group
           ]),
         ]);

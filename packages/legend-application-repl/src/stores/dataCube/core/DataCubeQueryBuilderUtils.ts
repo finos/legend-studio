@@ -51,7 +51,8 @@ import {
 import {
   type DataCubeQuerySnapshotFilterCondition,
   type DataCubeQuerySnapshotFilter,
-  type DataCubeQuerySnapshotAggregateColumn,
+  type DataCubeQuerySnapshotColumn,
+  type DataCubeQuerySnapshot,
 } from './DataCubeQuerySnapshot.js';
 import {
   guaranteeNonNullable,
@@ -72,6 +73,7 @@ import {
 } from './DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
+import type { DataCubeConfiguration } from './DataCubeConfiguration.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -277,31 +279,40 @@ export function _cols(colSpecs: V1_ColSpec[]) {
 }
 
 export function _aggCol_basic(
-  aggCol: DataCubeQuerySnapshotAggregateColumn,
+  column: DataCubeQuerySnapshotColumn,
   func: string,
 ) {
   const variable = _var();
   return _colSpec(
-    aggCol.name,
-    _lambda([variable], [_property(aggCol.name, variable)]),
+    column.name,
+    _lambda([variable], [_property(column.name, variable)]),
     _lambda([variable], [_function(_functionName(func), [variable])]),
   );
 }
 
 export function _groupByAggCols(
-  columns: DataCubeQuerySnapshotAggregateColumn[],
+  groupByColumns: DataCubeQuerySnapshotColumn[],
+  snapshot: DataCubeQuerySnapshot,
+  configuration: DataCubeConfiguration,
   aggregateOperations: DataCubeQueryAggregateOperation[],
 ) {
   const variable = _var();
-  return columns.length
-    ? columns.map((agg) => {
+  const aggColumns = configuration.columns.filter(
+    (column) =>
+      !groupByColumns.find((col) => col.name === column.name) &&
+      !snapshot.data.groupExtendedColumns.find(
+        (col) => col.name === column.name,
+      ),
+  );
+  return aggColumns.length
+    ? aggColumns.map((agg) => {
         const operation = aggregateOperations.find(
-          (op) => op.operator === agg.operation,
+          (op) => op.operator === agg.aggregateOperator,
         );
         const aggCol = operation?.buildAggregateColumn(agg);
         if (!aggCol) {
           throw new UnsupportedOperationError(
-            `Unsupported aggregate operation '${agg.operation}'`,
+            `Unsupported aggregate operation '${agg.aggregateOperator}'`,
           );
         }
         return aggCol;

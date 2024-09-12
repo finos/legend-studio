@@ -35,7 +35,6 @@ import type {
 } from '@ag-grid-community/core';
 import type { DataCubeState } from '../DataCubeState.js';
 import { generateMenuBuilder } from './DataCubeGridMenuBuilder.js';
-import { _groupByAggCols } from './DataCubeGridQuerySnapshotBuilder.js';
 import {
   buildFilterEditorTree,
   buildFilterQuerySnapshot,
@@ -285,12 +284,6 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     snapshot.data.groupBy = this.verticalPivotedColumns.length
       ? {
           columns: this.verticalPivotedColumns,
-          aggColumns: _groupByAggCols(
-            this.verticalPivotedColumns,
-            baseSnapshot.data.groupBy,
-            this.configuration,
-            baseSnapshot.data.groupExtendedColumns,
-          ),
         }
       : undefined;
 

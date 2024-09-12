@@ -62,20 +62,12 @@ export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {
   operation: string;
 };
 
-export type DataCubeQuerySnapshotAggregateColumn =
-  DataCubeQuerySnapshotColumn & {
-    operation: string;
-    parameters: DataCubeOperationValue[];
-  };
-
 export type DataCubeQuerySnapshotGroupBy = {
   columns: DataCubeQuerySnapshotColumn[];
-  aggColumns: DataCubeQuerySnapshotAggregateColumn[];
 };
 
 export type DataCubeQuerySnapshotPivot = {
   columns: DataCubeQuerySnapshotColumn[];
-  aggColumns: DataCubeQuerySnapshotAggregateColumn[];
   castColumns: DataCubeQuerySnapshotColumn[];
 };
 
