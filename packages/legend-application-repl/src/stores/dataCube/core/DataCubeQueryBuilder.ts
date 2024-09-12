@@ -33,6 +33,7 @@ import {
 } from './DataCubeQuerySnapshot.js';
 import {
   guaranteeNonNullable,
+  isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
@@ -229,7 +230,13 @@ export function buildExecutableQuery(
   // --------------------------------- FROM ---------------------------------
 
   sequence.push(
-    _function(_name(DataCubeFunction.FROM), [_elementPtr(data.runtime)]),
+    _function(
+      _name(DataCubeFunction.FROM),
+      [
+        data.mapping ? _elementPtr(data.mapping) : undefined,
+        _elementPtr(data.runtime),
+      ].filter(isNonNullable),
+    ),
   );
 
   // --------------------------------- FINALIZE ---------------------------------

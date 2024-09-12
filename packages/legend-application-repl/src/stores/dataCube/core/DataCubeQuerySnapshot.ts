@@ -82,6 +82,7 @@ export type DataCubeQuerySnapshotPivot = {
 export type DataCubeQuerySnapshotData = {
   name: string;
   runtime: string;
+  mapping: string | undefined;
   sourceQuery: PlainObject<V1_ValueSpecification>;
   configuration: PlainObject<DataCubeConfiguration>;
   sourceColumns: DataCubeQuerySnapshotColumn[];
@@ -114,12 +115,14 @@ export class DataCubeQuerySnapshot {
   private constructor(
     name: string,
     runtime: string,
+    mapping: string | undefined,
     sourceQuery: PlainObject<V1_ValueSpecification>,
     configuration: PlainObject<DataCubeConfiguration>,
   ) {
     this.data = {
       name,
       runtime,
+      mapping,
       sourceQuery,
       configuration,
       sourceColumns: [],
@@ -137,14 +140,21 @@ export class DataCubeQuerySnapshot {
   static create(
     name: string,
     runtime: string,
+    mapping: string | undefined,
     sourceQuery: PlainObject<V1_ValueSpecification>,
     configuration: PlainObject<DataCubeConfiguration>,
   ) {
-    return new DataCubeQuerySnapshot(name, runtime, sourceQuery, configuration);
+    return new DataCubeQuerySnapshot(
+      name,
+      runtime,
+      mapping,
+      sourceQuery,
+      configuration,
+    );
   }
 
   clone() {
-    const clone = new DataCubeQuerySnapshot('', '', {}, {});
+    const clone = new DataCubeQuerySnapshot('', '', '', {}, {});
     (clone.data as Writable<DataCubeQuerySnapshotData>) = JSON.parse(
       JSON.stringify(this.data),
     ) as DataCubeQuerySnapshotData;

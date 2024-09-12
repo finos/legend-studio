@@ -26,6 +26,7 @@ import {
   custom,
   deserialize,
   list,
+  optional,
   primitive,
   raw,
   serialize,
@@ -35,6 +36,7 @@ export abstract class DataCubeQuerySource {
   columns: DataCubeQueryColumn[] = [];
   query!: string;
   runtime!: string;
+  mapping?: string | undefined;
 }
 
 export class DataCubeQueryColumn {
@@ -60,6 +62,7 @@ export class DataCubeQuerySourceREPLExecutedQuery extends DataCubeQuerySource {
         DataCubeQuerySourceType.REPL_EXECUTED_QUERY,
       ),
       columns: list(usingModelSchema(DataCubeQueryColumn.serialization.schema)),
+      mapping: optional(primitive()),
       query: primitive(),
       runtime: primitive(),
     }),

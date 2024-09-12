@@ -270,6 +270,7 @@ export function validateAndBuildQuerySnapshot(
   const snapshot = DataCubeQuerySnapshot.create(
     baseQuery.name,
     baseQuery.source.runtime,
+    baseQuery.source.mapping,
     V1_serializeValueSpecification(sourceQuery, []),
     {},
   );
