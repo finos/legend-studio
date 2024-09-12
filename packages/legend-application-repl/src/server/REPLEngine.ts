@@ -44,7 +44,7 @@ export type DataCubeInfrastructureInfo = {
 };
 
 export type DataCubeGetQueryCodeInput = {
-  query: PlainObject<V1_ValueSpecification>; // TODO: @akphi - consider if we should update this to use Lambda instead
+  query: PlainObject<V1_ValueSpecification>;
   pretty?: boolean;
 };
 

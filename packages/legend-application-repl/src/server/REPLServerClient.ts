@@ -62,7 +62,6 @@ export class REPLServerClient {
     return this.networkClient.post(`${this.dataCube}/typeahead`, input);
   }
 
-  // TODO: @akphi - we might need to support batch, source information offset, etc.
   async parseQuery(
     input: DataCubeParseQueryInput,
   ): Promise<PlainObject<V1_ValueSpecification>> {

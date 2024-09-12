@@ -295,12 +295,13 @@ export function validateAndBuildQuerySnapshot(
   data.sourceColumns.map((col) => colsMap.set(col.name, col));
 
   // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
-  // TODO: @akphi - implement this
+  /** TODO: @datacube roundtrip */
 
   // --------------------------------- FILTER ---------------------------------
 
   if (funcMap.filter) {
-    data.filter = undefined; // TODO: @akphi - implement this
+    /** TODO: @datacube roundtrip */
+    data.filter = undefined;
     // data.selectColumns = _colSpecArrayParam(funcMap.select, 0).colSpecs.map(
     //   (colSpec) => ({
     //     _col(colSpec),
@@ -328,14 +329,14 @@ export function validateAndBuildQuerySnapshot(
   }
 
   // --------------------------------- PIVOT ---------------------------------
-  // TODO: @akphi - implement this
+  /** TODO: @datacube roundtrip */
   // TODO: verify group-by agg columns, pivot agg columns and configuration agree
 
   // --------------------------------- CAST ---------------------------------
-  // TODO: @akphi - implement this
+  /** TODO: @datacube roundtrip */
 
   // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
-  // TODO: @akphi - implement this
+  /** TODO: @datacube roundtrip */
 
   // --------------------------------- SORT ---------------------------------
 
@@ -388,13 +389,15 @@ export function validateAndBuildQuerySnapshot(
     : buildDefaultConfiguration(baseQuery.source.columns);
   data.configuration =
     DataCubeConfiguration.serialization.toJson(configuration);
-  // TODO: @akphi - implement the logic to reconcile the configuration with the query
-  // - columns (missing/extra columns - remove or generate default column configuration)
-  // - column kind
-  // - column type
-  // - base off the type, check the settings
-  // - aggregation
-  // TODO: verify group-by agg columns, pivot agg columns and configuration agree
+  /**
+   * TODO: @datacube roundtrip - implement the logic to reconcile the configuration with the query
+   * - columns (missing/extra columns - remove or generate default column configuration)
+   * - column kind
+   * - column type
+   * - base off the type, check the settings
+   * - aggregation
+   * - verify group-by agg columns, pivot agg columns and configuration agree
+   */
 
   return snapshot.finalize();
 }

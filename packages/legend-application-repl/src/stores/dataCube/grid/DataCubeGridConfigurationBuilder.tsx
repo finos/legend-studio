@@ -607,6 +607,8 @@ export function generateGridOptionsFromSnapshot(
         headerName: '',
         colId: INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
         cellRenderer: 'agGroupCellRenderer',
+        // TODO: display: coloring, text, etc.
+        // TODO: tooltip
         // cellRendererParams: {
         //   innerRenderer: (params: ICellRendererParams) => (
         //     <>
@@ -634,11 +636,8 @@ export function generateGridOptionsFromSnapshot(
         },
         cellDataType: 'text',
         flex: 1,
-        // TODO: display: coloring, text, etc.
-        // TODO: pinning (should we pin this left by default?)
-        // TODO: tooltip
         loadingCellRenderer: DataCubeGridLoadingCellRenderer,
-        // TODO: @akphi - we can support this in the configuration (support sorting by tree-column?)
+        // TODO: we can support this in the configuration (support sorting by tree-column?)
         // sortable: false,
       } satisfies ColDef,
       // NOTE: Internal column used for programatically trigger data fetch when filter is modified

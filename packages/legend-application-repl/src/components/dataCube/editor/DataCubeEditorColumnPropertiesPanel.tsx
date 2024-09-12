@@ -212,10 +212,16 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                   <div className="mx-2 h-[1px] w-4 flex-shrink-0 bg-neutral-400" />
                   <div className="flex h-6 items-center">
                     <div className="flex h-full flex-shrink-0 items-center text-sm">
-                      Kind:
+                      Column Kind:
+                      <FormDocumentation
+                        className="ml-1"
+                        documentationKey={
+                          DocumentationKey.DATA_CUBE_COLUMN_KINDS
+                        }
+                      />
                     </div>
                     <FormDropdownMenuTrigger
-                      className="ml-1 w-20"
+                      className="ml-1.5 w-20"
                       onClick={openKindDropdown}
                       open={kindDropdownPropsOpen}
                       disabled={true}
@@ -240,11 +246,6 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       ))}
                     </FormDropdownMenu>
                     <FormBadge_Advanced />
-                    <FormBadge_WIP />
-                    <FormDocumentation
-                      className="ml-1"
-                      documentationKey={DocumentationKey.DATA_CUBE_COLUMN_KINDS}
-                    />
                   </div>
                 </>
               )}
@@ -268,6 +269,54 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       );
                     }}
                   />
+                </div>
+
+                <div className="mt-2 flex h-5 w-full items-center">
+                  <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
+                    Aggregation:
+                  </div>
+                  <FormDropdownMenuTrigger
+                    className="w-32"
+                    onClick={openAggregationTypeDropdown}
+                    disabled={
+                      selectedColumn.kind === DataCubeColumnKind.DIMENSION
+                    }
+                    open={aggregationTypeDropdownPropsOpen}
+                  >
+                    {selectedColumn.aggregateOperation.operator}
+                  </FormDropdownMenuTrigger>
+                  <FormDropdownMenu
+                    className="w-32"
+                    {...aggregationTypeDropdownProps}
+                  >
+                    {panel.dataCube.engine.aggregateOperations
+                      .filter((op) => op.isCompatibleWithColumn(selectedColumn))
+                      .map((op) => (
+                        <FormDropdownMenuItem
+                          key={op.operator}
+                          onClick={() => {
+                            selectedColumn.setAggregateOperation(op);
+                            closeAggregationTypeDropdown();
+                          }}
+                          autoFocus={op === selectedColumn.aggregateOperation}
+                        >
+                          {op.label}
+                        </FormDropdownMenuItem>
+                      ))}
+                  </FormDropdownMenu>
+
+                  <FormCheckbox
+                    className="ml-3"
+                    label="Exclude from H-Pivot"
+                    checked={selectedColumn.excludedFromHorizontalPivot}
+                    onChange={() =>
+                      selectedColumn.setExcludedFromHorizontalPivot(
+                        !selectedColumn.excludedFromHorizontalPivot,
+                      )
+                    }
+                    disabled={true}
+                  />
+                  <FormBadge_WIP />
                 </div>
 
                 {selectedColumn.dataType === DataCubeColumnDataType.NUMBER && (
@@ -389,54 +438,6 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     </div>
                   </>
                 )}
-
-                <div className="mt-2 flex h-5 w-full items-center">
-                  <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-                    Aggregation:
-                  </div>
-                  <FormDropdownMenuTrigger
-                    className="w-32"
-                    onClick={openAggregationTypeDropdown}
-                    disabled={
-                      selectedColumn.kind === DataCubeColumnKind.DIMENSION
-                    }
-                    open={aggregationTypeDropdownPropsOpen}
-                  >
-                    {selectedColumn.aggregateOperation.operator}
-                  </FormDropdownMenuTrigger>
-                  <FormDropdownMenu
-                    className="w-32"
-                    {...aggregationTypeDropdownProps}
-                  >
-                    {panel.dataCube.engine.aggregateOperations
-                      .filter((op) => op.isCompatibleWithColumn(selectedColumn))
-                      .map((op) => (
-                        <FormDropdownMenuItem
-                          key={op.operator}
-                          onClick={() => {
-                            selectedColumn.setAggregateOperation(op);
-                            closeAggregationTypeDropdown();
-                          }}
-                          autoFocus={op === selectedColumn.aggregateOperation}
-                        >
-                          {op.label}
-                        </FormDropdownMenuItem>
-                      ))}
-                  </FormDropdownMenu>
-
-                  <FormCheckbox
-                    className="ml-3"
-                    label="Exclude from H-Pivot"
-                    checked={selectedColumn.excludedFromHorizontalPivot}
-                    onChange={() =>
-                      selectedColumn.setExcludedFromHorizontalPivot(
-                        !selectedColumn.excludedFromHorizontalPivot,
-                      )
-                    }
-                    disabled={true}
-                  />
-                  <FormBadge_WIP />
-                </div>
 
                 <div className="mt-2 flex h-5 w-full items-center">
                   <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">

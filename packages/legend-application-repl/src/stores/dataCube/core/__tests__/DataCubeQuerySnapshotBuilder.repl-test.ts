@@ -45,8 +45,7 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
     '',
   ],
   ['Valid: select()', 'select(~[a])', ['a:Integer'], ''],
-  // TODO: @akphi - enable when engine supports relation casting syntax
-  // See https://github.com/finos/legend-engine/pull/2873
+  /** TODO: @datacube roundtrip - enable when we support relation casting syntax */
   // [
   //   'Valid: pivot()',
   //   'pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)',
@@ -67,7 +66,7 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
     ['a:Integer'],
     '',
   ],
-  // TODO: @akphi - enable when we support extended columns
+  /** TODO: @datacube roundtrip - enable when we support extended columns */
   // [
   //   'Valid: Usage - Extended Columns: extend()->groupBy()->extend()->sort()->limit()',
   //   'extend(~[a:x|1])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
@@ -80,16 +79,13 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
   //   ['a:String', 'b:Integer'],
   //   '',
   // ],
-  // TODO: @akphi - enable when engine supports relation casting syntax
-  // See https://github.com/finos/legend-engine/pull/2873
+  /** TODO: @datacube roundtrip - enable when we support relation casting syntax */
   // [
   //   'Valid: Usage - H-Pivot: pivot()->cast()->sort()->limit()',
   //   'pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)->sort([ascending(~a)])->limit(10)',
   //   ['a:Integer'],
   //   '',
   // ],
-  // TODO: @akphi - enable when engine supports relation casting syntax
-  // See https://github.com/finos/legend-engine/pull/2873
   // [
   //   'Valid: Full form: extend()->filter()->groupBy()->select()->pivot()->cast()->extend()->sort()->limit()',
   //   'extend(~[a:x|1])->filter(x|$x.a==1)->groupBy(~a, ~b:x|$x.a:x|$x->sum())->select(~a)->pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
@@ -126,7 +122,7 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
     [],
     'Found usage of dynamic function pivot() without casting',
   ],
-  // TODO: @akphi - enable when engine supports relation casting syntax
+  /** TODO: @datacube roundtrip - enable when we support extended columns */
   // See https://github.com/finos/legend-engine/pull/2873
   // [
   //   'Invalid: Casting used without dynamic function pivot()',
@@ -134,8 +130,6 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
   //   [],
   //   'Found usage of dynamic function pivot() without casting',
   // ],
-
-  // TODO: @akphi - add more tests for each function processors
 ];
 
 describe(unitTest('Analyze and build base snapshot'), () => {

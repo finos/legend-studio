@@ -119,7 +119,8 @@ export class DataCubeQuery {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeQuery, {
-      configuration: raw(), // TODO: @akphi - populate this once we know the shape better
+      /** TODO: @datacube roundtrip - populate this once we know the shape better */
+      configuration: raw(),
       name: primitive(),
       partialQuery: primitive(),
       query: primitive(),

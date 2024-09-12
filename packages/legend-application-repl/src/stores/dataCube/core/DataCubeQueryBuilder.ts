@@ -160,7 +160,7 @@ export function buildExecutableQuery(
   }
 
   // --------------------------------- PIVOT ---------------------------------
-  // TODO: @akphi - implement this and CAST
+  /** TODO: @datacube pivot - implement this and CAST */
 
   // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
 
