@@ -91,8 +91,7 @@ export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
           disabled={editor.finalizationState.isInProgress}
           onClick={() => {
             editor
-              .applyChanges()
-              .then(() => editor.display.close())
+              .applyChanges({ closeAfterApply: true })
               .catch(application.alertUnhandledError);
           }}
         >

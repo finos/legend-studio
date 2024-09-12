@@ -99,7 +99,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     this.currentTab = val;
   }
 
-  async applyChanges() {
+  async applyChanges(options?: { closeAfterApply?: boolean | undefined }) {
     this.finalizationState.inProgress();
 
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
@@ -146,6 +146,10 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     snapshot.finalize();
     if (snapshot.hashCode !== baseSnapshot.hashCode) {
       this.publishSnapshot(snapshot);
+    }
+
+    if (options?.closeAfterApply) {
+      this.display.close();
     }
   }
 
