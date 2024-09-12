@@ -28,7 +28,7 @@ import {
 } from './DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { type DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
-import { DataCubeMutableColumnConfiguration } from './DataCubeMutableConfiguration.js';
+import { DataCubeEditorMutableColumnConfiguration } from './DataCubeEditorMutableConfiguration.js';
 
 export class DataCubeEditorBasicColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState> {
   showHiddenColumns = false;
@@ -159,7 +159,7 @@ export class DataCubeEditorColumnsPanelState
           .forEach((col) => {
             this.editor.columnProperties.setColumns([
               ...this.editor.columnProperties.columns,
-              DataCubeMutableColumnConfiguration.createDefault(
+              DataCubeEditorMutableColumnConfiguration.createDefault(
                 {
                   name: col.name,
                   type: col.type,

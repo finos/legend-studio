@@ -30,7 +30,7 @@ import { _aggCol_basic } from '../DataCubeQueryBuilderUtils.js';
 
 export class DataCubeQueryAggregateOperation__VarianceSample extends DataCubeQueryAggregateOperation {
   override get label() {
-    return 'var_sample';
+    return 'var (sample)';
   }
 
   override get textLabel() {

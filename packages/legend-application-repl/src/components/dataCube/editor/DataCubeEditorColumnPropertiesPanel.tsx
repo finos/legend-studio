@@ -348,60 +348,6 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         ))}
                       </FormDropdownMenu>
                     </div>
-
-                    <div className="mt-2 flex h-5 w-full items-center">
-                      <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-                        Aggregation Type:
-                      </div>
-                      <FormDropdownMenuTrigger
-                        className="w-32"
-                        onClick={openAggregationTypeDropdown}
-                        disabled={true}
-                        open={aggregationTypeDropdownPropsOpen}
-                      >
-                        {selectedColumn.aggregateOperation.operator}
-                      </FormDropdownMenuTrigger>
-                      <FormDropdownMenu
-                        className="w-32"
-                        {...aggregationTypeDropdownProps}
-                      >
-                        {panel.dataCube.engine.aggregateOperations
-                          .filter((op) =>
-                            op.isCompatibleWithColumn(selectedColumn),
-                          )
-                          .map((op) => (
-                            <FormDropdownMenuItem
-                              key={op.operator}
-                              onClick={() => {
-                                selectedColumn.setAggregateOperation(op);
-                                closeAggregationTypeDropdown();
-                              }}
-                              autoFocus={
-                                op === selectedColumn.aggregateOperation
-                              }
-                            >
-                              {op.label}
-                            </FormDropdownMenuItem>
-                          ))}
-                      </FormDropdownMenu>
-                      <FormBadge_WIP />
-                    </div>
-
-                    <div className="mt-2 flex h-5 w-full items-center">
-                      <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-                        Exclude from HPivot?
-                      </div>
-                      <FormCheckbox
-                        checked={selectedColumn.excludedFromHorizontalPivot}
-                        onChange={() =>
-                          selectedColumn.setExcludedFromHorizontalPivot(
-                            !selectedColumn.excludedFromHorizontalPivot,
-                          )
-                        }
-                        disabled={true}
-                      />
-                      <FormBadge_WIP />
-                    </div>
                   </>
                 )}
 
@@ -443,6 +389,54 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     </div>
                   </>
                 )}
+
+                <div className="mt-2 flex h-5 w-full items-center">
+                  <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
+                    Aggregation:
+                  </div>
+                  <FormDropdownMenuTrigger
+                    className="w-32"
+                    onClick={openAggregationTypeDropdown}
+                    disabled={
+                      selectedColumn.kind === DataCubeColumnKind.DIMENSION
+                    }
+                    open={aggregationTypeDropdownPropsOpen}
+                  >
+                    {selectedColumn.aggregateOperation.operator}
+                  </FormDropdownMenuTrigger>
+                  <FormDropdownMenu
+                    className="w-32"
+                    {...aggregationTypeDropdownProps}
+                  >
+                    {panel.dataCube.engine.aggregateOperations
+                      .filter((op) => op.isCompatibleWithColumn(selectedColumn))
+                      .map((op) => (
+                        <FormDropdownMenuItem
+                          key={op.operator}
+                          onClick={() => {
+                            selectedColumn.setAggregateOperation(op);
+                            closeAggregationTypeDropdown();
+                          }}
+                          autoFocus={op === selectedColumn.aggregateOperation}
+                        >
+                          {op.label}
+                        </FormDropdownMenuItem>
+                      ))}
+                  </FormDropdownMenu>
+
+                  <FormCheckbox
+                    className="ml-3"
+                    label="Exclude from H-Pivot"
+                    checked={selectedColumn.excludedFromHorizontalPivot}
+                    onChange={() =>
+                      selectedColumn.setExcludedFromHorizontalPivot(
+                        !selectedColumn.excludedFromHorizontalPivot,
+                      )
+                    }
+                    disabled={true}
+                  />
+                  <FormBadge_WIP />
+                </div>
 
                 <div className="mt-2 flex h-5 w-full items-center">
                   <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { deepClone } from '@finos/legend-shared';
 import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeColumnKind } from '../core/DataCubeQueryEngine.js';
@@ -92,8 +93,8 @@ export class DataCubeEditorVerticalPivotsPanelState
             .filter(
               (column) =>
                 // exclude group-by columns
-                this.selector.selectedColumns.find(
-                  (col) => col.name !== column.name,
+                !this.selector.selectedColumns.find(
+                  (col) => col.name === column.name,
                 ) &&
                 // exclude group-level extended columns
                 !this.editor.columns.groupExtendColumns.find(
@@ -104,7 +105,9 @@ export class DataCubeEditorVerticalPivotsPanelState
               name: column.name,
               type: column.type,
               operation: column.aggregateOperation.operator,
-              parameters: column.aggregationParameters,
+              parameters: column.aggregationParameters.map((param) =>
+                deepClone(param),
+              ),
             })),
         }
       : undefined;

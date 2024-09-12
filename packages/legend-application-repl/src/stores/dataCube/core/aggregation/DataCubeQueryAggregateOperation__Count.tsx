@@ -42,7 +42,7 @@ export class DataCubeQueryAggregateOperation__Count extends DataCubeQueryAggrega
   }
 
   override get operator(): string {
-    return DataCubeAggregateOperator.SUM;
+    return DataCubeAggregateOperator.COUNT;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

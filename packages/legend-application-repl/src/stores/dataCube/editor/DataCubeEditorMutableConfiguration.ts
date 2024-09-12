@@ -56,7 +56,7 @@ import {
   type DataCubeQueryAggregateOperation,
 } from '../core/aggregation/DataCubeQueryAggregateOperation.js';
 
-export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfiguration {
+export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConfiguration {
   readonly dataType!: DataCubeColumnDataType;
 
   // NOTE: these configurations are synthesized from the data query, and materialized here
@@ -69,14 +69,16 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
 
   static create(
     json: PlainObject<DataCubeColumnConfiguration>,
+    snapshot: DataCubeQuerySnapshot | undefined,
     aggregateOperations: DataCubeQueryAggregateOperation[],
-  ): DataCubeMutableColumnConfiguration {
+  ): DataCubeEditorMutableColumnConfiguration {
     const configuration = Object.assign(
-      new DataCubeMutableColumnConfiguration('', ''),
+      new DataCubeEditorMutableColumnConfiguration('', ''),
       DataCubeColumnConfiguration.serialization.fromJson(json),
     );
-    (configuration as Writable<DataCubeMutableColumnConfiguration>).dataType =
-      getDataType(configuration.type);
+    (
+      configuration as Writable<DataCubeEditorMutableColumnConfiguration>
+    ).dataType = getDataType(configuration.type);
 
     makeObservable(configuration, {
       kind: observable,
@@ -188,12 +190,39 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       setHorizontalPivotSortFunction: action,
     });
 
-    configuration.setAggregateOperation(
-      getAggregateOperation(
-        DataCubeAggregateOperator.UNIQUE,
-        aggregateOperations,
-      ),
-    );
+    // TODO: @akphi - account for pivot aggColumns as well, though we should
+    // assume that they agree with the groupBy aggColumns
+    // this validation would have been done by the initial query snapshot builder
+    const aggCol = _findCol(snapshot?.data.groupBy?.aggColumns, this.name);
+    if (aggCol) {
+      configuration.setAggregateOperation(
+        getAggregateOperation(aggCol.operation, aggregateOperations),
+      );
+      configuration.setAggregationParameters(aggCol.parameters);
+    } else {
+      switch (configuration.dataType) {
+        case DataCubeColumnDataType.NUMBER: {
+          configuration.setAggregateOperation(
+            getAggregateOperation(
+              DataCubeAggregateOperator.SUM,
+              aggregateOperations,
+            ),
+          );
+          configuration.setAggregationParameters([]);
+          break;
+        }
+        default: {
+          configuration.setAggregateOperation(
+            getAggregateOperation(
+              DataCubeAggregateOperator.UNIQUE,
+              aggregateOperations,
+            ),
+          );
+          configuration.setAggregationParameters([]);
+          break;
+        }
+      }
+    }
 
     return configuration;
   }
@@ -202,49 +231,13 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     column: { name: string; type: string },
     aggregateOperations: DataCubeQueryAggregateOperation[],
   ) {
-    return DataCubeMutableColumnConfiguration.create(
+    return DataCubeEditorMutableColumnConfiguration.create(
       DataCubeColumnConfiguration.serialization.toJson(
         buildDefaultColumnConfiguration(column),
       ),
+      undefined,
       aggregateOperations,
     );
-  }
-
-  populateSyntheticMetadata(
-    snapshot: DataCubeQuerySnapshot,
-    aggregateOperations: DataCubeQueryAggregateOperation[],
-  ) {
-    const aggCol = _findCol(snapshot.data.groupBy?.aggColumns, this.name);
-    if (aggCol) {
-      this.setAggregateOperation(
-        getAggregateOperation(aggCol.operation, aggregateOperations),
-      );
-      this.setAggregationParameters(aggCol.parameters);
-    } else {
-      switch (this.dataType) {
-        case DataCubeColumnDataType.NUMBER: {
-          this.setAggregateOperation(
-            getAggregateOperation(
-              DataCubeAggregateOperator.SUM,
-              aggregateOperations,
-            ),
-          );
-          this.setAggregationParameters([]);
-          break;
-        }
-        default: {
-          this.setAggregateOperation(
-            getAggregateOperation(
-              DataCubeAggregateOperator.UNIQUE,
-              aggregateOperations,
-            ),
-          );
-          this.setAggregationParameters([]);
-          break;
-        }
-      }
-    }
-    return this;
   }
 
   serialize() {
@@ -430,12 +423,12 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
   }
 }
 
-export class DataCubeMutableConfiguration extends DataCubeConfiguration {
+export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
   static create(
     json: PlainObject<DataCubeConfiguration>,
-  ): DataCubeMutableConfiguration {
+  ): DataCubeEditorMutableConfiguration {
     const configuration = Object.assign(
-      new DataCubeMutableConfiguration(),
+      new DataCubeEditorMutableConfiguration(),
       DataCubeConfiguration.serialization.fromJson(json),
     );
     configuration.columns = [];

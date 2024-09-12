@@ -19,7 +19,7 @@ import type { DataCubeState } from '../DataCubeState.js';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
-import { DataCubeMutableColumnConfiguration } from './DataCubeMutableConfiguration.js';
+import { DataCubeEditorMutableColumnConfiguration } from './DataCubeEditorMutableConfiguration.js';
 import { getNonNullableEntry, type PlainObject } from '@finos/legend-shared';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
@@ -29,7 +29,7 @@ export class DataCubeEditorColumnPropertiesPanelState
   readonly dataCube!: DataCubeState;
   readonly editor!: DataCubeEditorState;
 
-  columns: DataCubeMutableColumnConfiguration[] = [];
+  columns: DataCubeEditorMutableColumnConfiguration[] = [];
   selectedColumnName?: string | undefined;
   showAdvancedSettings = false;
 
@@ -68,7 +68,7 @@ export class DataCubeEditorColumnPropertiesPanelState
     return this.columns.find((col) => col.name === colName);
   }
 
-  setColumns(val: DataCubeMutableColumnConfiguration[]) {
+  setColumns(val: DataCubeEditorMutableColumnConfiguration[]) {
     this.columns = val;
   }
 
@@ -93,10 +93,8 @@ export class DataCubeEditorColumnPropertiesPanelState
     this.setColumns(
       (snapshot.data.configuration as { columns: PlainObject[] }).columns.map(
         (column) =>
-          DataCubeMutableColumnConfiguration.create(
+          DataCubeEditorMutableColumnConfiguration.create(
             column,
-            this.dataCube.engine.aggregateOperations,
-          ).populateSyntheticMetadata(
             snapshot,
             this.dataCube.engine.aggregateOperations,
           ),

@@ -30,7 +30,7 @@ import { _aggCol_basic } from '../DataCubeQueryBuilderUtils.js';
 
 export class DataCubeQueryAggregateOperation__StdDevSample extends DataCubeQueryAggregateOperation {
   override get label() {
-    return 'std_sample';
+    return 'std (sample)';
   }
 
   override get textLabel() {
