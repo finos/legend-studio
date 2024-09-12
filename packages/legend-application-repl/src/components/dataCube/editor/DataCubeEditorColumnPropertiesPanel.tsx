@@ -30,7 +30,6 @@ import {
   FormDocumentation,
 } from '../../repl/Form.js';
 import {
-  DataCubeAggregateOperator,
   DataCubeColumnDataType,
   DataCubeColumnKind,
   DataCubeColumnPinPlacement,
@@ -360,30 +359,30 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         disabled={true}
                         open={aggregationTypeDropdownPropsOpen}
                       >
-                        {selectedColumn.aggregateFunction ?? '(None)'}
+                        {selectedColumn.aggregateOperation.operator}
                       </FormDropdownMenuTrigger>
                       <FormDropdownMenu
                         className="w-32"
                         {...aggregationTypeDropdownProps}
                       >
-                        {[
-                          DataCubeAggregateOperator.SUM,
-                          DataCubeAggregateOperator.AVERAGE,
-                          DataCubeAggregateOperator.COUNT,
-                          DataCubeAggregateOperator.MIN,
-                          DataCubeAggregateOperator.MAX,
-                        ].map((op) => (
-                          <FormDropdownMenuItem
-                            key={op}
-                            onClick={() => {
-                              selectedColumn.setAggregateFunction(op);
-                              closeAggregationTypeDropdown();
-                            }}
-                            autoFocus={op === selectedColumn.aggregateFunction}
-                          >
-                            {op}
-                          </FormDropdownMenuItem>
-                        ))}
+                        {panel.dataCube.engine.aggregateOperations
+                          .filter((op) =>
+                            op.isCompatibleWithColumn(selectedColumn),
+                          )
+                          .map((op) => (
+                            <FormDropdownMenuItem
+                              key={op.operator}
+                              onClick={() => {
+                                selectedColumn.setAggregateOperation(op);
+                                closeAggregationTypeDropdown();
+                              }}
+                              autoFocus={
+                                op === selectedColumn.aggregateOperation
+                              }
+                            >
+                              {op.label}
+                            </FormDropdownMenuItem>
+                          ))}
                       </FormDropdownMenu>
                       <FormBadge_WIP />
                     </div>

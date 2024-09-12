@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { formatDate, UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  formatDate,
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import type { DataCubeOperationValue } from '../DataCubeQueryEngine.js';
 import type {
   DataCubeQuerySnapshotColumn,
@@ -55,6 +59,16 @@ export function generateDefaultFilterConditionPrimitiveTypeValue(
         `Can't generate value for type '${type}'`,
       );
   }
+}
+
+export function getFilterOperation(
+  operator: string,
+  operators: DataCubeQueryFilterOperation[],
+) {
+  return guaranteeNonNullable(
+    operators.find((op) => op.operator === operator),
+    `Can't find filter operation '${operator}'`,
+  );
 }
 
 // --------------------------------- CONTRACT ---------------------------------

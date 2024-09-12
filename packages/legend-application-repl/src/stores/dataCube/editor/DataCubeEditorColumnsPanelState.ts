@@ -159,10 +159,13 @@ export class DataCubeEditorColumnsPanelState
           .forEach((col) => {
             this.editor.columnProperties.setColumns([
               ...this.editor.columnProperties.columns,
-              DataCubeMutableColumnConfiguration.createDefault({
-                name: col.name,
-                type: col.type,
-              }),
+              DataCubeMutableColumnConfiguration.createDefault(
+                {
+                  name: col.name,
+                  type: col.type,
+                },
+                this.dataCube.engine.aggregateOperations,
+              ),
             ]);
           });
 

@@ -315,12 +315,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
           snapshot.data.filter,
           undefined,
           this.filterTree.nodes,
-          (operator) =>
-            guaranteeNonNullable(
-              this.dataCube.engine.filterOperations.find(
-                (op) => op.operator === operator,
-              ),
-            ),
+          (operator) => this.dataCube.engine.getFilterOperation(operator),
         )
       : undefined;
 

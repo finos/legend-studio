@@ -14,11 +14,24 @@
  * limitations under the License.
  */
 
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import type {
   DataCubeQuerySnapshotAggregateColumn,
   DataCubeQuerySnapshotColumn,
 } from '../DataCubeQuerySnapshot.js';
 import { type V1_ColSpec } from '@finos/legend-graph';
+
+// --------------------------------- UTILITIES ---------------------------------
+
+export function getAggregateOperation(
+  operator: string,
+  aggregateOperations: DataCubeQueryAggregateOperation[],
+) {
+  return guaranteeNonNullable(
+    aggregateOperations.find((op) => op.operator === operator),
+    `Can't find aggregate operation '${operator}'`,
+  );
+}
 
 // --------------------------------- CONTRACT ---------------------------------
 

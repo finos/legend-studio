@@ -24,7 +24,6 @@ import {
   type DataCubeFontFormatUnderlineVariant,
   type DataCubeFontCase,
   type DataCubeFontTextAlignment,
-  type DataCubeColumnDataType,
   type DataCubeColumnPinPlacement,
   DEFAULT_FONT_FAMILY,
   DEFAULT_FONT_SIZE,
@@ -39,6 +38,7 @@ import {
   DEFAULT_ERROR_FOREGROUND_COLOR,
   DEFAULT_BACKGROUND_COLOR,
   DataCubeAggregateOperator,
+  DataCubeColumnDataType,
 } from '../core/DataCubeQueryEngine.js';
 import { type PlainObject, type Writable } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
@@ -51,7 +51,10 @@ import {
   _findCol,
   type DataCubeQuerySnapshot,
 } from '../core/DataCubeQuerySnapshot.js';
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
+import {
+  getAggregateOperation,
+  type DataCubeQueryAggregateOperation,
+} from '../core/aggregation/DataCubeQueryAggregateOperation.js';
 
 export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfiguration {
   readonly dataType!: DataCubeColumnDataType;
@@ -59,13 +62,14 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
   // NOTE: these configurations are synthesized from the data query, and materialized here
   // to make editing more convenient. They should not be part of the persistent configuration
   // to avoid duplication of information with the data query.
-  aggregateFunction?: string | undefined;
-  aggregateFunctionParameters: DataCubeOperationValue[] = [];
+  aggregateOperation!: DataCubeQueryAggregateOperation;
+  aggregationParameters: DataCubeOperationValue[] = [];
   excludedFromHorizontalPivot = false;
   horizontalPivotSortFunction?: string | undefined;
 
   static create(
     json: PlainObject<DataCubeColumnConfiguration>,
+    aggregateOperations: DataCubeQueryAggregateOperation[],
   ): DataCubeMutableColumnConfiguration {
     const configuration = Object.assign(
       new DataCubeMutableColumnConfiguration('', ''),
@@ -171,11 +175,11 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       isUsingDefaultStyling: computed,
       useDefaultStyling: action,
 
-      aggregateFunction: observable,
-      setAggregateFunction: action,
+      aggregateOperation: observable,
+      setAggregateOperation: action,
 
-      aggregateFunctionParameters: observable,
-      setAggregateFunctionParameters: action,
+      aggregationParameters: observable,
+      setAggregationParameters: action,
 
       excludedFromHorizontalPivot: observable,
       setExcludedFromHorizontalPivot: action,
@@ -184,34 +188,59 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       setHorizontalPivotSortFunction: action,
     });
 
+    configuration.setAggregateOperation(
+      getAggregateOperation(
+        DataCubeAggregateOperator.UNIQUE,
+        aggregateOperations,
+      ),
+    );
+
     return configuration;
   }
 
-  static createDefault(column: { name: string; type: string }) {
+  static createDefault(
+    column: { name: string; type: string },
+    aggregateOperations: DataCubeQueryAggregateOperation[],
+  ) {
     return DataCubeMutableColumnConfiguration.create(
       DataCubeColumnConfiguration.serialization.toJson(
         buildDefaultColumnConfiguration(column),
       ),
+      aggregateOperations,
     );
   }
 
-  populateSyntheticMetadata(snapshot: DataCubeQuerySnapshot) {
+  populateSyntheticMetadata(
+    snapshot: DataCubeQuerySnapshot,
+    aggregateOperations: DataCubeQueryAggregateOperation[],
+  ) {
     if (this.kind === DataCubeColumnKind.MEASURE) {
       const aggCol = _findCol(snapshot.data.groupBy?.aggColumns, this.name);
       if (aggCol) {
-        this.setAggregateFunction(aggCol.operation);
-        this.setAggregateFunctionParameters(aggCol.parameters);
+        this.setAggregateOperation(
+          getAggregateOperation(aggCol.operation, aggregateOperations),
+        );
+        this.setAggregationParameters(aggCol.parameters);
       } else {
-        switch (this.type) {
-          case PRIMITIVE_TYPE.NUMBER:
-          case PRIMITIVE_TYPE.INTEGER:
-          case PRIMITIVE_TYPE.DECIMAL:
-          case PRIMITIVE_TYPE.FLOAT: {
-            this.setAggregateFunction(DataCubeAggregateOperator.SUM);
-            this.setAggregateFunctionParameters([]);
+        switch (this.dataType) {
+          case DataCubeColumnDataType.NUMBER: {
+            this.setAggregateOperation(
+              getAggregateOperation(
+                DataCubeAggregateOperator.SUM,
+                aggregateOperations,
+              ),
+            );
+            this.setAggregationParameters([]);
             break;
           }
           default: {
+            this.setAggregateOperation(
+              getAggregateOperation(
+                DataCubeAggregateOperator.UNIQUE,
+                aggregateOperations,
+              ),
+            );
+            this.setAggregationParameters([]);
             break;
           }
         }
@@ -386,16 +415,16 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.linkLabelParameter = value;
   }
 
-  setAggregateFunction(value: string | undefined) {
-    this.aggregateFunction = value;
+  setAggregateOperation(value: DataCubeQueryAggregateOperation) {
+    this.aggregateOperation = value;
+  }
+
+  setAggregationParameters(value: DataCubeOperationValue[]) {
+    this.aggregationParameters = value;
   }
 
   setExcludedFromHorizontalPivot(value: boolean) {
     this.excludedFromHorizontalPivot = value;
-  }
-
-  setAggregateFunctionParameters(value: DataCubeOperationValue[]) {
-    this.aggregateFunctionParameters = value;
   }
 
   setHorizontalPivotSortFunction(value: string | undefined) {

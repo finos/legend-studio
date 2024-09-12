@@ -95,7 +95,11 @@ export class DataCubeEditorColumnPropertiesPanelState
         (column) =>
           DataCubeMutableColumnConfiguration.create(
             column,
-          ).populateSyntheticMetadata(snapshot),
+            this.dataCube.engine.aggregateOperations,
+          ).populateSyntheticMetadata(
+            snapshot,
+            this.dataCube.engine.aggregateOperations,
+          ),
       ),
     );
 
