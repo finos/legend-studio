@@ -38,9 +38,10 @@ import {
   type DataCubeSelectionStat,
   type DataCubeColumnPinPlacement,
   type DataCubeFontCase,
+  type DataCubeOperationValue,
 } from './DataCubeQueryEngine.js';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import { createModelSchema, list, optional, primitive } from 'serializr';
+import { createModelSchema, list, optional, primitive, raw } from 'serializr';
 
 export type DataCubeConfigurationColorKey =
   | 'normal'
@@ -89,6 +90,11 @@ export class DataCubeColumnConfiguration {
   displayAsLink = false;
   linkLabelParameter?: string | undefined;
 
+  aggregateOperator!: string;
+  aggregationParameters: DataCubeOperationValue[] = [];
+  excludedFromHorizontalPivot = false;
+  horizontalPivotSortFunction?: string | undefined;
+
   constructor(name: string, type: string) {
     this.name = name;
     this.type = type;
@@ -96,6 +102,8 @@ export class DataCubeColumnConfiguration {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeColumnConfiguration, {
+      aggregateOperator: primitive(),
+      aggregationParameters: list(raw()),
       blur: primitive(),
       decimals: optional(primitive()),
       displayAsLink: primitive(),
@@ -103,6 +111,7 @@ export class DataCubeColumnConfiguration {
       displayName: optional(primitive()),
       errorBackgroundColor: optional(primitive()),
       errorForegroundColor: optional(primitive()),
+      excludedFromHorizontalPivot: primitive(),
       fixedWidth: optional(primitive()),
       fontBold: optional(primitive()),
       fontCase: optional(primitive()),
@@ -112,6 +121,7 @@ export class DataCubeColumnConfiguration {
       fontStrikethrough: optional(primitive()),
       fontUnderline: optional(primitive()),
       hideFromView: primitive(),
+      horizontalPivotSortFunction: optional(primitive()),
       kind: primitive(),
       linkLabelParameter: optional(primitive()),
       maxWidth: optional(primitive()),

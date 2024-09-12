@@ -58,14 +58,7 @@ import {
 
 export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConfiguration {
   readonly dataType!: DataCubeColumnDataType;
-
-  // NOTE: these configurations are synthesized from the data query, and materialized here
-  // to make editing more convenient. They should not be part of the persistent configuration
-  // to avoid duplication of information with the data query.
   aggregateOperation!: DataCubeQueryAggregateOperation;
-  aggregationParameters: DataCubeOperationValue[] = [];
-  excludedFromHorizontalPivot = false;
-  horizontalPivotSortFunction?: string | undefined;
 
   static create(
     json: PlainObject<DataCubeColumnConfiguration>,
@@ -177,6 +170,7 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
       isUsingDefaultStyling: computed,
       useDefaultStyling: action,
 
+      aggregateOperator: observable,
       aggregateOperation: observable,
       setAggregateOperation: action,
 
@@ -408,6 +402,7 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
 
   setAggregateOperation(value: DataCubeQueryAggregateOperation) {
     this.aggregateOperation = value;
+    this.aggregateOperator = value.operator;
   }
 
   setAggregationParameters(value: DataCubeOperationValue[]) {
