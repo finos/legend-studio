@@ -14,15 +14,26 @@
  * limitations under the License.
  */
 
-import type {
-  DataCubeQuerySnapshotAggregateColumn,
-  DataCubeQuerySnapshotColumn,
-} from '../DataCubeQuerySnapshot.js';
-import { type V1_AppliedFunction } from '@finos/legend-graph';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import type { DataCubeQuerySnapshotColumn } from '../DataCubeQuerySnapshot.js';
+import { type V1_ColSpec } from '@finos/legend-graph';
+import type { DataCubeColumnConfiguration } from '../DataCubeConfiguration.js';
+
+// --------------------------------- UTILITIES ---------------------------------
+
+export function getAggregateOperation(
+  operator: string,
+  aggregateOperations: DataCubeQueryAggregateOperation[],
+) {
+  return guaranteeNonNullable(
+    aggregateOperations.find((op) => op.operator === operator),
+    `Can't find aggregate operation '${operator}'`,
+  );
+}
 
 // --------------------------------- CONTRACT ---------------------------------
 
-export abstract class DataCubeQueryAggregationOperation {
+export abstract class DataCubeQueryAggregateOperation {
   abstract get label(): React.ReactNode;
   abstract get textLabel(): string;
   abstract get description(): string;
@@ -30,11 +41,7 @@ export abstract class DataCubeQueryAggregationOperation {
 
   abstract isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn): boolean;
 
-  abstract buildAggregateColumnSnapshot(
-    expression: V1_AppliedFunction,
-  ): DataCubeQuerySnapshotAggregateColumn | undefined;
-
   abstract buildAggregateColumn(
-    condition: DataCubeQuerySnapshotAggregateColumn,
-  ): V1_AppliedFunction | undefined;
+    column: DataCubeColumnConfiguration,
+  ): V1_ColSpec | undefined;
 }

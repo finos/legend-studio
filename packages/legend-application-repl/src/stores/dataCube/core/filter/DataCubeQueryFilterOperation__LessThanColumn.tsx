@@ -78,7 +78,7 @@ export class DataCubeQueryFilterOperation__LessThanColumn extends DataCubeQueryF
   }
 
   buildConditionSnapshot(expression: V1_AppliedFunction) {
-    // TODO: @akphi - implement this for roundtrip testing
+    /** TODO: @datacube roundtrip */
     return undefined;
   }
 

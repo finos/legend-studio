@@ -28,7 +28,7 @@ import {
   DataCubeConfiguration,
 } from '../core/DataCubeConfiguration.js';
 import { DataCubeNewColumnState } from './DataCubeColumnEditorState.js';
-import type { DataCubeColumnKind } from '../core/DataCubeQueryEngine.js';
+import { DataCubeColumnKind } from '../core/DataCubeQueryEngine.js';
 import { buildDefaultColumnConfiguration } from '../core/DataCubeConfigurationBuilder.js';
 
 export class DataCubeQueryExtendedColumnState {
@@ -106,6 +106,8 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     const columnConfiguration = buildDefaultColumnConfiguration(column);
     if (columnKind) {
       columnConfiguration.kind = columnKind;
+      columnConfiguration.excludedFromHorizontalPivot =
+        columnKind === DataCubeColumnKind.DIMENSION;
     }
 
     this.columnConfigurations.push(columnConfiguration);

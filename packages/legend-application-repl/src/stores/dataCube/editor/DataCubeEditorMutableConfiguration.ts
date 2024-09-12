@@ -15,7 +15,7 @@
  */
 
 import {
-  DataCubeColumnKind,
+  type DataCubeColumnKind,
   getDataType,
   type DataCubeFont,
   type DataCubeOperationValue,
@@ -24,7 +24,6 @@ import {
   type DataCubeFontFormatUnderlineVariant,
   type DataCubeFontCase,
   type DataCubeFontTextAlignment,
-  type DataCubeColumnDataType,
   type DataCubeColumnPinPlacement,
   DEFAULT_FONT_FAMILY,
   DEFAULT_FONT_SIZE,
@@ -38,7 +37,7 @@ import {
   DEFAULT_ZERO_FOREGROUND_COLOR,
   DEFAULT_ERROR_FOREGROUND_COLOR,
   DEFAULT_BACKGROUND_COLOR,
-  DataCubeAggregateOperator,
+  type DataCubeColumnDataType,
 } from '../core/DataCubeQueryEngine.js';
 import { type PlainObject, type Writable } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
@@ -47,32 +46,32 @@ import {
   DataCubeConfiguration,
 } from '../core/DataCubeConfiguration.js';
 import { buildDefaultColumnConfiguration } from '../core/DataCubeConfigurationBuilder.js';
+import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import {
-  _findCol,
-  type DataCubeQuerySnapshot,
-} from '../core/DataCubeQuerySnapshot.js';
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
+  getAggregateOperation,
+  type DataCubeQueryAggregateOperation,
+} from '../core/aggregation/DataCubeQueryAggregateOperation.js';
 
-export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfiguration {
+export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConfiguration {
   readonly dataType!: DataCubeColumnDataType;
-
-  // NOTE: these configurations are synthesized from the data query, and materialized here
-  // to make editing more convenient. They should not be part of the persistent configuration
-  // to avoid duplication of information with the data query.
-  aggregateFunction?: string | undefined;
-  aggregateFunctionParameters: DataCubeOperationValue[] = [];
-  excludedFromHorizontalPivot = false;
-  horizontalPivotSortFunction?: string | undefined;
+  aggregateOperation!: DataCubeQueryAggregateOperation;
 
   static create(
     json: PlainObject<DataCubeColumnConfiguration>,
-  ): DataCubeMutableColumnConfiguration {
+    snapshot: DataCubeQuerySnapshot | undefined,
+    aggregateOperations: DataCubeQueryAggregateOperation[],
+  ): DataCubeEditorMutableColumnConfiguration {
     const configuration = Object.assign(
-      new DataCubeMutableColumnConfiguration('', ''),
+      new DataCubeEditorMutableColumnConfiguration('', ''),
       DataCubeColumnConfiguration.serialization.fromJson(json),
     );
-    (configuration as Writable<DataCubeMutableColumnConfiguration>).dataType =
-      getDataType(configuration.type);
+    (
+      configuration as Writable<DataCubeEditorMutableColumnConfiguration>
+    ).dataType = getDataType(configuration.type);
+    configuration.aggregateOperation = getAggregateOperation(
+      configuration.aggregateOperator,
+      aggregateOperations,
+    );
 
     makeObservable(configuration, {
       kind: observable,
@@ -171,11 +170,12 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
       isUsingDefaultStyling: computed,
       useDefaultStyling: action,
 
-      aggregateFunction: observable,
-      setAggregateFunction: action,
+      aggregateOperator: observable,
+      aggregateOperation: observable,
+      setAggregateOperation: action,
 
-      aggregateFunctionParameters: observable,
-      setAggregateFunctionParameters: action,
+      aggregationParameters: observable,
+      setAggregationParameters: action,
 
       excludedFromHorizontalPivot: observable,
       setExcludedFromHorizontalPivot: action,
@@ -187,37 +187,17 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     return configuration;
   }
 
-  static createDefault(column: { name: string; type: string }) {
-    return DataCubeMutableColumnConfiguration.create(
+  static createDefault(
+    column: { name: string; type: string },
+    aggregateOperations: DataCubeQueryAggregateOperation[],
+  ) {
+    return DataCubeEditorMutableColumnConfiguration.create(
       DataCubeColumnConfiguration.serialization.toJson(
         buildDefaultColumnConfiguration(column),
       ),
+      undefined,
+      aggregateOperations,
     );
-  }
-
-  populateSyntheticMetadata(snapshot: DataCubeQuerySnapshot) {
-    if (this.kind === DataCubeColumnKind.MEASURE) {
-      const aggCol = _findCol(snapshot.data.groupBy?.aggColumns, this.name);
-      if (aggCol) {
-        this.setAggregateFunction(aggCol.operation);
-        this.setAggregateFunctionParameters(aggCol.parameters);
-      } else {
-        switch (this.type) {
-          case PRIMITIVE_TYPE.NUMBER:
-          case PRIMITIVE_TYPE.INTEGER:
-          case PRIMITIVE_TYPE.DECIMAL:
-          case PRIMITIVE_TYPE.FLOAT: {
-            this.setAggregateFunction(DataCubeAggregateOperator.SUM);
-            this.setAggregateFunctionParameters([]);
-            break;
-          }
-          default: {
-            break;
-          }
-        }
-      }
-    }
-    return this;
   }
 
   serialize() {
@@ -386,16 +366,17 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
     this.linkLabelParameter = value;
   }
 
-  setAggregateFunction(value: string | undefined) {
-    this.aggregateFunction = value;
+  setAggregateOperation(value: DataCubeQueryAggregateOperation) {
+    this.aggregateOperation = value;
+    this.aggregateOperator = value.operator;
+  }
+
+  setAggregationParameters(value: DataCubeOperationValue[]) {
+    this.aggregationParameters = value;
   }
 
   setExcludedFromHorizontalPivot(value: boolean) {
     this.excludedFromHorizontalPivot = value;
-  }
-
-  setAggregateFunctionParameters(value: DataCubeOperationValue[]) {
-    this.aggregateFunctionParameters = value;
   }
 
   setHorizontalPivotSortFunction(value: string | undefined) {
@@ -403,12 +384,12 @@ export class DataCubeMutableColumnConfiguration extends DataCubeColumnConfigurat
   }
 }
 
-export class DataCubeMutableConfiguration extends DataCubeConfiguration {
+export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
   static create(
     json: PlainObject<DataCubeConfiguration>,
-  ): DataCubeMutableConfiguration {
+  ): DataCubeEditorMutableConfiguration {
     const configuration = Object.assign(
-      new DataCubeMutableConfiguration(),
+      new DataCubeEditorMutableConfiguration(),
       DataCubeConfiguration.serialization.fromJson(json),
     );
     configuration.columns = [];

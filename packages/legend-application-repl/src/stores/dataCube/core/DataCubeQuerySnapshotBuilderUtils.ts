@@ -15,7 +15,6 @@
  */
 
 import {
-  PRIMITIVE_TYPE,
   V1_AppliedFunction,
   V1_ClassInstance,
   V1_ColSpec,
@@ -25,10 +24,7 @@ import {
   matchFunctionName,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import {
-  type DataCubeQuerySnapshotAggregateColumn,
-  type DataCubeQuerySnapshotColumn,
-} from './DataCubeQuerySnapshot.js';
+import { type DataCubeQuerySnapshotColumn } from './DataCubeQuerySnapshot.js';
 import {
   assertTrue,
   assertType,
@@ -108,27 +104,6 @@ function _aggFuncMatch(
   return _funcMatch(value.body[0], functionNames);
 }
 
-export function _defaultAggCol(
-  name: string,
-  type: string,
-): DataCubeQuerySnapshotAggregateColumn | undefined {
-  switch (type) {
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.FLOAT: {
-      return {
-        name,
-        type,
-        operation: DataCubeAggregateOperator.SUM,
-        parameters: [],
-      };
-    }
-    default:
-      return undefined;
-  }
-}
-
 export function _aggCol(
   colSpec: V1_ColSpec,
   column: DataCubeQuerySnapshotColumn,
@@ -179,28 +154,39 @@ export function _aggCol(
       operation: DataCubeAggregateOperator.LAST,
       parameters: [],
     };
-  } else if (matchFunctionName(func.function, DataCubeFunction.VAR_POP)) {
+  } else if (
+    matchFunctionName(func.function, DataCubeFunction.VARIANCE_POPULATION)
+  ) {
     return {
       ...column,
-      operation: DataCubeAggregateOperator.VAR_POP,
+      operation: DataCubeAggregateOperator.VARIANCE_POPULATION,
       parameters: [],
     };
-  } else if (matchFunctionName(func.function, DataCubeFunction.VAR_SAMP)) {
+  } else if (
+    matchFunctionName(func.function, DataCubeFunction.VARIANCE_SAMPLE)
+  ) {
     return {
       ...column,
-      operation: DataCubeAggregateOperator.VAR_SAMP,
+      operation: DataCubeAggregateOperator.VARIANCE_SAMPLE,
       parameters: [],
     };
-  } else if (matchFunctionName(func.function, DataCubeFunction.STDDEV_POP)) {
+  } else if (
+    matchFunctionName(
+      func.function,
+      DataCubeFunction.STANDARD_DEVIATION_POPULATION,
+    )
+  ) {
     return {
       ...column,
-      operation: DataCubeAggregateOperator.STDDEV_POP,
+      operation: DataCubeAggregateOperator.STANDARD_DEVIATION_POPULATION,
       parameters: [],
     };
-  } else if (matchFunctionName(func.function, DataCubeFunction.STDDEV_SAMP)) {
+  } else if (
+    matchFunctionName(func.function, DataCubeFunction.STANDARD_DEVIATION_SAMPLE)
+  ) {
     return {
       ...column,
-      operation: DataCubeAggregateOperator.STDDEV_SAMP,
+      operation: DataCubeAggregateOperator.STANDARD_DEVIATION_SAMPLE,
       parameters: [],
     };
   } else {

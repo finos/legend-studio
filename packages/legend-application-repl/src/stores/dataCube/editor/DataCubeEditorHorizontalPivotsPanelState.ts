@@ -25,7 +25,7 @@ import {
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 
-export class DataCubeEditorVerticalPivotColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState> {
+export class DataCubeEditorHorizontalPivotColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState> {
   override cloneColumn(
     column: DataCubeEditorColumnsSelectorColumnState,
   ): DataCubeEditorColumnsSelectorColumnState {
@@ -53,17 +53,19 @@ export class DataCubeEditorVerticalPivotColumnsSelectorState extends DataCubeEdi
   }
 }
 
-export class DataCubeEditorVerticalPivotsPanelState
+export class DataCubeEditorHorizontalPivotsPanelState
   implements DataCubeQueryEditorPanelState
 {
   readonly dataCube!: DataCubeState;
   readonly editor!: DataCubeEditorState;
-  readonly selector!: DataCubeEditorVerticalPivotColumnsSelectorState;
+  readonly selector!: DataCubeEditorHorizontalPivotColumnsSelectorState;
 
   constructor(editor: DataCubeEditorState) {
     this.editor = editor;
     this.dataCube = editor.dataCube;
-    this.selector = new DataCubeEditorVerticalPivotColumnsSelectorState(editor);
+    this.selector = new DataCubeEditorHorizontalPivotColumnsSelectorState(
+      editor,
+    );
   }
 
   applySnaphot(
@@ -71,9 +73,10 @@ export class DataCubeEditorVerticalPivotsPanelState
     configuration: DataCubeConfiguration,
   ) {
     this.selector.setSelectedColumns(
-      (snapshot.data.groupBy?.columns ?? []).map(
+      (snapshot.data.pivot?.columns ?? []).map(
         (col) =>
           new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
+        /** TODO: @datacube pivot - account for cast columns */
       ),
     );
   }
@@ -82,12 +85,14 @@ export class DataCubeEditorVerticalPivotsPanelState
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
   ) {
-    newSnapshot.data.groupBy = this.selector.selectedColumns.length
+    newSnapshot.data.pivot = this.selector.selectedColumns.length
       ? {
           columns: this.selector.selectedColumns.map((column) => ({
             name: column.name,
             type: column.type,
           })),
+          /** TODO: @datacube pivot - how do we get this information? */
+          castColumns: [],
         }
       : undefined;
   }

@@ -34,6 +34,7 @@ import { DisplayState } from '../../LayoutManagerState.js';
 import { DataCubeEditor } from '../../../components/dataCube/editor/DataCubeEditor.js';
 import { buildExecutableQuery } from '../core/DataCubeQueryBuilder.js';
 import { _lambda } from '../core/DataCubeQueryBuilderUtils.js';
+import { DataCubeEditorHorizontalPivotsPanelState } from './DataCubeEditorHorizontalPivotsPanelState.js';
 
 export enum DataCubeEditorTab {
   GENERAL_PROPERTIES = 'General Properties',
@@ -65,7 +66,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
 
   readonly columns: DataCubeEditorColumnsPanelState;
   readonly verticalPivots: DataCubeEditorVerticalPivotsPanelState;
-  // TODO: horizontal pivot
+  readonly horizontalPivots: DataCubeEditorHorizontalPivotsPanelState;
   readonly sorts: DataCubeEditorSortsPanelState;
 
   currentTab = DataCubeEditorTab.GENERAL_PROPERTIES;
@@ -91,6 +92,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     this.columnProperties = new DataCubeEditorColumnPropertiesPanelState(this);
     this.columns = new DataCubeEditorColumnsPanelState(this);
     this.verticalPivots = new DataCubeEditorVerticalPivotsPanelState(this);
+    this.horizontalPivots = new DataCubeEditorHorizontalPivotsPanelState(this);
     this.sorts = new DataCubeEditorSortsPanelState(this);
     this.code = new DataCubeEditorCodePanelState(this);
   }
@@ -99,7 +101,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     this.currentTab = val;
   }
 
-  async applyChanges() {
+  async applyChanges(options?: { closeAfterApply?: boolean | undefined }) {
     this.finalizationState.inProgress();
 
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
@@ -110,6 +112,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     // with the current column selection
     this.columns.buildSnapshot(snapshot, baseSnapshot);
     this.verticalPivots.buildSnapshot(snapshot, baseSnapshot);
+    this.horizontalPivots.buildSnapshot(snapshot, baseSnapshot);
     this.sorts.buildSnapshot(snapshot, baseSnapshot);
 
     // grid configuration must be processed before processing columns' configuration
@@ -129,6 +132,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
             buildExecutableQuery(
               snapshot,
               this.dataCube.engine.filterOperations,
+              this.dataCube.engine.aggregateOperations,
             ),
           ],
         ),
@@ -147,6 +151,10 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     if (snapshot.hashCode !== baseSnapshot.hashCode) {
       this.publishSnapshot(snapshot);
     }
+
+    if (options?.closeAfterApply) {
+      this.display.close();
+    }
   }
 
   override async applySnapshot(
@@ -159,6 +167,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
 
     this.columns.applySnaphot(snapshot, configuration);
     this.verticalPivots.applySnaphot(snapshot, configuration);
+    this.horizontalPivots.applySnaphot(snapshot, configuration);
     this.sorts.applySnaphot(snapshot, configuration);
 
     this.generalProperties.applySnaphot(snapshot, configuration);

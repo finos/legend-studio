@@ -16,16 +16,13 @@
 
 import { DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
-import { FormBadge_WIP } from '../../repl/Form.js';
 import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
+import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
 
 export const DataCubeEditorHorizontalPivotsPanel = observer(
   (props: { dataCube: DataCubeState }) => {
     const { dataCube } = props;
-    const panel = dataCube.editor.sorts;
-
-    useEffect(() => {}, [panel]); // TODO: @akphi - remove this dummy useEffect
+    const panel = dataCube.editor.horizontalPivots;
 
     return (
       <div className="h-full w-full select-none p-2">
@@ -35,10 +32,11 @@ export const DataCubeEditorHorizontalPivotsPanel = observer(
           </div>
           <div className="ml-1 flex h-6 items-center text-xl font-medium">
             Horizontal Pivots
-            <FormBadge_WIP />
           </div>
         </div>
-        <div className="flex h-[calc(100%_-_24px)] w-full"></div>
+        <div className="flex h-[calc(100%_-_24px)] w-full">
+          <DataCubeEditorColumnsSelector selector={panel.selector} />
+        </div>
       </div>
     );
   },

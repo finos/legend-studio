@@ -85,7 +85,7 @@ export class DataCubeQueryFilterOperation__Equal extends DataCubeQueryFilterOper
   }
 
   buildConditionSnapshot(expression: V1_AppliedFunction) {
-    // TODO: @akphi - implement this for roundtrip testing
+    /** TODO: @datacube roundtrip */
     // export const buildPostFilterConditionState = (
     //   postFilterState: QueryBuilderPostFilterState,
     //   expression: FunctionExpression,
