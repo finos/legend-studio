@@ -64,11 +64,11 @@ export enum DataCubeFunction {
   MAX = 'meta::pure::functions::collection::max',
   MIN = 'meta::pure::functions::collection::min',
   SUM = 'meta::pure::functions::math::sum',
-  STDDEV_POP = 'meta::pure::functions::math::stdDevPopulation',
-  STDDEV_SAMP = 'meta::pure::functions::math::stdDevSample',
-  VAR_POP = 'meta::pure::functions::math::variancePopulation',
-  VAR_SAMP = 'meta::pure::functions::math::varianceSample',
-  // UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
+  STANDARD_DEVIATION_POPULATION = 'meta::pure::functions::math::stdDevPopulation',
+  STANDARD_DEVIATION_SAMPLE = 'meta::pure::functions::math::stdDevSample',
+  UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
+  VARIANCE_POPULATION = 'meta::pure::functions::math::variancePopulation',
+  VARIANCE_SAMPLE = 'meta::pure::functions::math::varianceSample',
   // PERCENTILE = 'meta::pure::functions::math::percentile',
 }
 
@@ -172,14 +172,14 @@ export enum DataCubeAggregateOperator {
   COUNT = 'count',
   MIN = 'min',
   MAX = 'max',
-  // UNIQUE = 'uniq',
+  UNIQUE = 'uniq',
   FIRST = 'first',
   LAST = 'last',
   // MEDIAN = 'median',
-  VAR_POP = 'var_samp',
-  VAR_SAMP = 'var_pop',
-  STDDEV_POP = 'stddev_pop',
-  STDDEV_SAMP = 'stddev_samp',
+  VARIANCE_POPULATION = 'var',
+  VARIANCE_SAMPLE = 'var_sample',
+  STANDARD_DEVIATION_POPULATION = 'std',
+  STANDARD_DEVIATION_SAMPLE = 'std_sample',
   // STANDARD_ERROR = 'stderr',
   // NULL = 'null',
   // ssq
@@ -190,7 +190,7 @@ export enum DataCubeAggregateOperator {
   // maxmagnitude
   // commonprefix
   // commonprefixunstrict
-  // strjoin
+  JOIN_STRINGS = 'strjoin',
   // strjoinuniq
   // splitjoin
   // daterange

@@ -62,6 +62,19 @@ import { DataCubeQueryFilterOperation__NotEndWith } from './core/filter/DataCube
 import { DataCubeQueryFilterOperation__IsNull } from './core/filter/DataCubeQueryFilterOperation__IsNull.js';
 import { DataCubeQueryFilterOperation__IsNotNull } from './core/filter/DataCubeQueryFilterOperation__IsNotNull.js';
 import type { DataCubeQueryFilterOperation } from './core/filter/DataCubeQueryFilterOperation.js';
+import { DataCubeQueryAggregateOperation__Sum } from './core/aggregation/DataCubeQueryAggregateOperation__Sum.js';
+import { DataCubeQueryAggregateOperation__Average } from './core/aggregation/DataCubeQueryAggregateOperation__Average.js';
+import { DataCubeQueryAggregateOperation__Count } from './core/aggregation/DataCubeQueryAggregateOperation__Count.js';
+import { DataCubeQueryAggregateOperation__Min } from './core/aggregation/DataCubeQueryAggregateOperation__Min.js';
+import { DataCubeQueryAggregateOperation__Max } from './core/aggregation/DataCubeQueryAggregateOperation__Max.js';
+import { DataCubeQueryAggregateOperation__UniqueValue } from './core/aggregation/DataCubeQueryAggregateOperation__UniqueValue.js';
+import { DataCubeQueryAggregateOperation__First } from './core/aggregation/DataCubeQueryAggregateOperation__First.js';
+import { DataCubeQueryAggregateOperation__Last } from './core/aggregation/DataCubeQueryAggregateOperation__Last.js';
+import { DataCubeQueryAggregateOperation__VariancePopulation } from './core/aggregation/DataCubeQueryAggregateOperation__VariancePopulation.js';
+import { DataCubeQueryAggregateOperation__VarianceSample } from './core/aggregation/DataCubeQueryAggregateOperation__VarianceSample.js';
+import { DataCubeQueryAggregateOperation__StdDevPopulation } from './core/aggregation/DataCubeQueryAggregateOperation__StdDevPopulation.js';
+import { DataCubeQueryAggregateOperation__StdDevSample } from './core/aggregation/DataCubeQueryAggregateOperation__StdDevSample.js';
+import { DataCubeQueryAggregateOperation__JoinStrings } from './core/aggregation/DataCubeQueryAggregateOperation__JoinStrings.js';
 
 export const DEFAULT_ENABLE_DEBUG_MODE = false;
 export const DEFAULT_GRID_CLIENT_ROW_BUFFER = 50;
@@ -104,6 +117,22 @@ export class DataCubeEngine {
     new DataCubeQueryFilterOperation__NotEqualCaseInsensitiveColumn(),
     new DataCubeQueryFilterOperation__GreaterThanColumn(),
     new DataCubeQueryFilterOperation__GreaterThanOrEqualColumn(),
+  ];
+
+  readonly aggregateOperations = [
+    new DataCubeQueryAggregateOperation__Sum(),
+    new DataCubeQueryAggregateOperation__Average(),
+    new DataCubeQueryAggregateOperation__Count(),
+    new DataCubeQueryAggregateOperation__Min(),
+    new DataCubeQueryAggregateOperation__Max(),
+    new DataCubeQueryAggregateOperation__UniqueValue(),
+    new DataCubeQueryAggregateOperation__First(),
+    new DataCubeQueryAggregateOperation__Last(),
+    new DataCubeQueryAggregateOperation__VariancePopulation(),
+    new DataCubeQueryAggregateOperation__VarianceSample(),
+    new DataCubeQueryAggregateOperation__StdDevPopulation(),
+    new DataCubeQueryAggregateOperation__StdDevSample(),
+    new DataCubeQueryAggregateOperation__JoinStrings(),
   ];
 
   enableDebugMode = DEFAULT_ENABLE_DEBUG_MODE;

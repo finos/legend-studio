@@ -179,28 +179,39 @@ export function _aggCol(
       operation: DataCubeAggregateOperator.LAST,
       parameters: [],
     };
-  } else if (matchFunctionName(func.function, DataCubeFunction.VAR_POP)) {
+  } else if (
+    matchFunctionName(func.function, DataCubeFunction.VARIANCE_POPULATION)
+  ) {
     return {
       ...column,
-      operation: DataCubeAggregateOperator.VAR_POP,
+      operation: DataCubeAggregateOperator.VARIANCE_POPULATION,
       parameters: [],
     };
-  } else if (matchFunctionName(func.function, DataCubeFunction.VAR_SAMP)) {
+  } else if (
+    matchFunctionName(func.function, DataCubeFunction.VARIANCE_SAMPLE)
+  ) {
     return {
       ...column,
-      operation: DataCubeAggregateOperator.VAR_SAMP,
+      operation: DataCubeAggregateOperator.VARIANCE_SAMPLE,
       parameters: [],
     };
-  } else if (matchFunctionName(func.function, DataCubeFunction.STDDEV_POP)) {
+  } else if (
+    matchFunctionName(
+      func.function,
+      DataCubeFunction.STANDARD_DEVIATION_POPULATION,
+    )
+  ) {
     return {
       ...column,
-      operation: DataCubeAggregateOperator.STDDEV_POP,
+      operation: DataCubeAggregateOperator.STANDARD_DEVIATION_POPULATION,
       parameters: [],
     };
-  } else if (matchFunctionName(func.function, DataCubeFunction.STDDEV_SAMP)) {
+  } else if (
+    matchFunctionName(func.function, DataCubeFunction.STANDARD_DEVIATION_SAMPLE)
+  ) {
     return {
       ...column,
-      operation: DataCubeAggregateOperator.STDDEV_SAMP,
+      operation: DataCubeAggregateOperator.STANDARD_DEVIATION_SAMPLE,
       parameters: [],
     };
   } else {

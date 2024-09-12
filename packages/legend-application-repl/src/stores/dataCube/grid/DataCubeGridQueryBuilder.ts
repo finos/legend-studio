@@ -43,6 +43,7 @@ import {
 } from './DataCubeGridClientEngine.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import type { DataCubeQueryFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
+import type { DataCubeQueryAggregateOperation } from '../core/aggregation/DataCubeQueryAggregateOperation.js';
 
 /*****************************************************************************
  * [GRID]
@@ -74,6 +75,7 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
     funcMap: DataCubeQueryFunctionMap,
     configuration: DataCubeConfiguration,
     filterOperations: DataCubeQueryFilterOperation[],
+    aggregateOperations: DataCubeQueryAggregateOperation[],
   ) => {
     const _unprocess = (funcMapKey: keyof DataCubeQueryFunctionMap) => {
       const func = funcMap[funcMapKey];
@@ -178,7 +180,7 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
         const groupByFunc = _function(_name(DataCubeFunction.GROUP_BY), [
           _cols(groupByColumns.map((col) => _colSpec(col.name))),
           _cols([
-            ..._groupByAggCols(groupBy.aggColumns),
+            ..._groupByAggCols(groupBy.aggColumns, aggregateOperations),
             _rowGroupingCountCol(),
           ]),
         ]);

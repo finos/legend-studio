@@ -129,6 +129,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
             buildExecutableQuery(
               snapshot,
               this.dataCube.engine.filterOperations,
+              this.dataCube.engine.aggregateOperations,
             ),
           ],
         ),

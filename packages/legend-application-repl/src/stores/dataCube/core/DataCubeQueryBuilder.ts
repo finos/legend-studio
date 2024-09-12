@@ -59,10 +59,12 @@ import {
   _primitiveValue,
   _var,
 } from './DataCubeQueryBuilderUtils.js';
+import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 
 export function buildExecutableQuery(
   snapshot: DataCubeQuerySnapshot,
   filterOperations: DataCubeQueryFilterOperation[],
+  aggregateOperations: DataCubeQueryAggregateOperation[],
   options?: {
     postProcessor?: (
       snapshot: DataCubeQuerySnapshot,
@@ -70,6 +72,7 @@ export function buildExecutableQuery(
       funcMap: DataCubeQueryFunctionMap,
       configuration: DataCubeConfiguration,
       filterOperations: DataCubeQueryFilterOperation[],
+      aggregateOperations: DataCubeQueryAggregateOperation[],
     ) => void;
     pagination?:
       | {
@@ -145,7 +148,7 @@ export function buildExecutableQuery(
       'groupBy',
       _function(_name(DataCubeFunction.GROUP_BY), [
         _cols(groupBy.columns.map((col) => _colSpec(col.name))),
-        _cols(_groupByAggCols(groupBy.aggColumns)),
+        _cols(_groupByAggCols(groupBy.aggColumns, aggregateOperations)),
       ]),
     );
 
@@ -247,6 +250,7 @@ export function buildExecutableQuery(
     funcMap,
     configuration,
     filterOperations,
+    aggregateOperations,
   );
 
   if (!sequence.length) {

@@ -226,6 +226,7 @@ export class DataCubeNewColumnState {
     return buildExecutableQuery(
       snapshot,
       this.manager.dataCube.engine.filterOperations,
+      this.manager.dataCube.engine.aggregateOperations,
     );
   }
 

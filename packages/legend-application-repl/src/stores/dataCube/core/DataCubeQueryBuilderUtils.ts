@@ -44,8 +44,9 @@ import {
   type V1_PrimitiveValueSpecification,
   V1_Variable,
   V1_deserializeValueSpecification,
-  extractElementNameFromPath as _functionName,
+  extractElementNameFromPath,
   type V1_ValueSpecification,
+  extractPackagePathFromPath,
 } from '@finos/legend-graph';
 import {
   type DataCubeQuerySnapshotFilterCondition,
@@ -68,11 +69,11 @@ import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME,
   DataCubeQueryFilterGroupOperator,
-  DataCubeAggregateOperator,
   type DataCubeOperationValue,
   DataCubeOperationAdvancedValueType,
 } from './DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
+import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -103,7 +104,52 @@ export function _lambda(
   return lambda;
 }
 
-export { _functionName };
+// NOTE: the list of auto-import are kept in `m3.pure` file in `finos/legend-pure`,
+// this includes a more extensive list of packges which contain native functions, classes, etc.
+// See https://github.com/finos/legend-pure/blob/master/legend-pure-core/legend-pure-m3-core/src/main/resources/platform/pure/grammar/m3.pure
+const PURE_AUTO_IMPORT_PACKAGE_PATHS = [
+  'meta::pure::metamodel',
+  'meta::pure::metamodel::type',
+  'meta::pure::metamodel::type::generics',
+  'meta::pure::metamodel::relationship',
+  'meta::pure::metamodel::valuespecification',
+  'meta::pure::metamodel::multiplicity',
+  'meta::pure::metamodel::function',
+  'meta::pure::metamodel::function::property',
+  'meta::pure::metamodel::extension',
+  'meta::pure::metamodel::import',
+  'meta::pure::functions::date',
+  'meta::pure::functions::string',
+  'meta::pure::functions::collection',
+  'meta::pure::functions::meta',
+  'meta::pure::functions::constraints',
+  'meta::pure::functions::lang',
+  'meta::pure::functions::boolean',
+  'meta::pure::functions::tools',
+  'meta::pure::functions::relation',
+  'meta::pure::functions::io',
+  'meta::pure::functions::math',
+  'meta::pure::functions::asserts',
+  'meta::pure::functions::test',
+  'meta::pure::functions::multiplicity',
+  'meta::pure::router',
+  'meta::pure::service',
+  'meta::pure::tds',
+  'meta::pure::tools',
+  'meta::pure::profiles',
+];
+
+export function _functionName(funcNameOrPath: string) {
+  const funcPakagePath = extractPackagePathFromPath(funcNameOrPath);
+  if (
+    funcPakagePath &&
+    PURE_AUTO_IMPORT_PACKAGE_PATHS.includes(funcPakagePath)
+  ) {
+    return extractElementNameFromPath(funcNameOrPath);
+  }
+  return funcNameOrPath;
+}
+
 export function _function(
   functionName: string,
   parameters: V1_ValueSpecification[],
@@ -209,48 +255,6 @@ export function _value(
   }
 }
 
-function _aggFunctionName(operation: string) {
-  switch (operation) {
-    case DataCubeAggregateOperator.SUM:
-      return DataCubeFunction.SUM;
-    case DataCubeAggregateOperator.AVERAGE:
-      return DataCubeFunction.AVERAGE;
-    case DataCubeAggregateOperator.COUNT:
-      return DataCubeFunction.COUNT;
-    case DataCubeAggregateOperator.MIN:
-      return DataCubeFunction.MIN;
-    case DataCubeAggregateOperator.MAX:
-      return DataCubeFunction.MAX;
-    case DataCubeAggregateOperator.FIRST:
-      return DataCubeFunction.FIRST;
-    case DataCubeAggregateOperator.LAST:
-      return DataCubeFunction.LAST;
-    case DataCubeAggregateOperator.VAR_POP:
-      return DataCubeFunction.VAR_POP;
-    case DataCubeAggregateOperator.VAR_SAMP:
-      return DataCubeFunction.VAR_SAMP;
-    case DataCubeAggregateOperator.STDDEV_POP:
-      return DataCubeFunction.STDDEV_POP;
-    case DataCubeAggregateOperator.STDDEV_SAMP:
-      return DataCubeFunction.STDDEV_SAMP;
-    default:
-      throw new UnsupportedOperationError(
-        `Unsupported aggregate operation '${operation}'`,
-      );
-  }
-}
-
-function _agg(
-  agg: DataCubeQuerySnapshotAggregateColumn,
-  variable?: V1_Variable | undefined,
-) {
-  const parameters = agg.parameters.map((param) => _value(param));
-  return _function(_aggFunctionName(agg.operation), [
-    variable ?? _var(),
-    ...parameters,
-  ]);
-}
-
 export function _not(fn: V1_AppliedFunction) {
   return _function(DataCubeFunction.NOT, [fn]);
 }
@@ -274,18 +278,36 @@ export function _cols(colSpecs: V1_ColSpec[]) {
   return _classInstance(V1_ClassInstanceType.COL_SPEC_ARRAY, colSpecArray);
 }
 
+export function _aggCol_basic(
+  aggCol: DataCubeQuerySnapshotAggregateColumn,
+  func: string,
+) {
+  const variable = _var();
+  return _colSpec(
+    aggCol.name,
+    _lambda([variable], [_property(aggCol.name, variable)]),
+    _lambda([variable], [_function(_functionName(func), [variable])]),
+  );
+}
+
 export function _groupByAggCols(
   columns: DataCubeQuerySnapshotAggregateColumn[],
+  aggregateOperations: DataCubeQueryAggregateOperation[],
 ) {
   const variable = _var();
   return columns.length
-    ? columns.map((agg) =>
-        _colSpec(
-          agg.name,
-          _lambda([variable], [_property(agg.name, variable)]),
-          _lambda([variable], [_agg(agg)]),
-        ),
-      )
+    ? columns.map((agg) => {
+        const operation = aggregateOperations.find(
+          (op) => op.operator === agg.operation,
+        );
+        const aggCol = operation?.buildAggregateColumn(agg);
+        if (!aggCol) {
+          throw new UnsupportedOperationError(
+            `Unsupported aggregate operation '${agg.operation}'`,
+          );
+        }
+        return aggCol;
+      })
     : // if no aggregates are specified, add a dummy count() aggregate to satisfy compiler
       [
         _colSpec(

@@ -18,11 +18,11 @@ import type {
   DataCubeQuerySnapshotAggregateColumn,
   DataCubeQuerySnapshotColumn,
 } from '../DataCubeQuerySnapshot.js';
-import { type V1_AppliedFunction } from '@finos/legend-graph';
+import { type V1_ColSpec } from '@finos/legend-graph';
 
 // --------------------------------- CONTRACT ---------------------------------
 
-export abstract class DataCubeQueryAggregationOperation {
+export abstract class DataCubeQueryAggregateOperation {
   abstract get label(): React.ReactNode;
   abstract get textLabel(): string;
   abstract get description(): string;
@@ -31,10 +31,10 @@ export abstract class DataCubeQueryAggregationOperation {
   abstract isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn): boolean;
 
   abstract buildAggregateColumnSnapshot(
-    expression: V1_AppliedFunction,
+    aggColSpec: V1_ColSpec,
   ): DataCubeQuerySnapshotAggregateColumn | undefined;
 
   abstract buildAggregateColumn(
-    condition: DataCubeQuerySnapshotAggregateColumn,
-  ): V1_AppliedFunction | undefined;
+    aggCol: DataCubeQuerySnapshotAggregateColumn,
+  ): V1_ColSpec | undefined;
 }
