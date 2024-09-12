@@ -1,5 +1,7 @@
 # @finos/legend-application-studio
 
+## 28.18.31
+
 ## 28.18.30
 
 ## 28.18.29
