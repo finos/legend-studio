@@ -85,6 +85,21 @@ class V1_DataSpaceExecutionContextAnalysisResult {
   compatibleRuntimes!: string[];
   mappingModelCoverageAnalysisResult!: V1_MappingModelCoverageAnalysisResult;
   datasets: V1_DatasetSpecification[] = [];
+  runtimeMetadata?: V1_DataSpaceExecutionContextRuntimeMetadata;
+}
+
+class V1_DataSpaceExecutionContextRuntimeMetadata {
+  storePath?: string;
+  connectionPath?: string;
+  connectionType?: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataSpaceExecutionContextRuntimeMetadata, {
+      storePath: optional(primitive()),
+      connectionPath: optional(primitive()),
+      connectionType: optional(primitive()),
+    }),
+  );
 }
 
 const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
@@ -107,6 +122,9 @@ const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
     mapping: primitive(),
     name: primitive(),
     title: optional(primitive()),
+    metadata: usingModelSchema(
+      V1_DataSpaceExecutionContextRuntimeMetadata.serialization.schema,
+    ),
   });
 
 export class V1_DataSpaceBasicDocumentationEntry {

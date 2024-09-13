@@ -35,6 +35,13 @@ export class DataSpaceExecutionContextAnalysisResult {
   compatibleRuntimes!: PackageableRuntime[];
   mappingModelCoverageAnalysisResult!: MappingModelCoverageAnalysisResult;
   datasets: DatasetSpecification[] = [];
+  runtimeMetadata?: DataSpaceExecutionContextRuntimeMetadata;
+}
+
+export class DataSpaceExecutionContextRuntimeMetadata {
+  storePath?: string;
+  connectionPath?: string;
+  connectionType?: string;
 }
 
 export class DataSpaceTaggedValueInfo {
