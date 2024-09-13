@@ -1,0 +1,84 @@
+###Pure
+Class model::Class_1
+[
+  propertyNotEmpty: $this.property_1->isNotEmpty()
+]
+{
+  property_1: String[1];
+}
+
+
+###Relational
+Database mapping::db
+(
+  Table table1
+  (
+    property_1 VARCHAR(200)
+  )
+)
+
+
+###Mapping
+Mapping model::DummyMapping
+(
+  *model::Class_1: Relational
+  {
+    ~mainTable [mapping::db]table1
+    property_1: [mapping::db]table1.property_1
+  }
+)
+
+
+###Runtime
+Runtime model::DummyRuntime
+{
+  mappings:
+  [
+    model::DummyMapping
+  ];
+}
+
+
+###DataSpace
+DataSpace model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      description: 'some information about the context';
+      mapping: model::DummyMapping;
+      defaultRuntime: model::DummyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  title: 'Untitled';
+  description: 'some description';
+  diagrams: [];
+  executables: [];
+  supportInfo: Email {
+    address: 'someEmail@test.org';
+  };
+}
+
+
+###DataQualityValidation
+DataQualityValidation model::classValidation
+{
+   context: fromDataSpace(model::dataSpace, 'Context 1');
+   validationTree: $[
+      model::Class_1<propertyNotEmpty>{
+        property_1
+      }
+    ]$;
+}
+
+DataQualityValidation model::classValidation1
+{
+   context: fromMappingAndRuntime(model::DummyMapping, model::DummyRuntime);
+   validationTree: $[
+      model::Class_1<propertyNotEmpty>{
+        property_1
+      }
+    ]$;
+}

@@ -18,6 +18,8 @@ import {
   type V1_PackageableElementVisitor,
   type V1_PackageableElementPointer,
   type V1_RawLambda,
+  type V1_TaggedValue,
+  type V1_StereotypePtr,
   V1_PackageableElement,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
@@ -61,6 +63,8 @@ export class V1_DataQualityClassValidationsConfiguration
   context!: V1_DataQualityExecutionContext;
   dataQualityRootGraphFetchTree: V1_DataQualityRootGraphFetchTree | undefined;
   filter?: V1_RawLambda | undefined;
+  taggedValues: V1_TaggedValue[] = [];
+  stereotypes: V1_StereotypePtr[] = [];
 
   override get hashCode(): string {
     return hashArray([
