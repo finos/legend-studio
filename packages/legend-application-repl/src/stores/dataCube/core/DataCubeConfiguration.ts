@@ -90,6 +90,7 @@ export class DataCubeColumnConfiguration {
   displayAsLink = false;
   linkLabelParameter?: string | undefined;
 
+  // NOTE: these configurations, when changed, would potentially trigger data-fetching
   aggregateOperator!: string;
   aggregationParameters: DataCubeOperationValue[] = [];
   excludedFromHorizontalPivot = true; // this agrees with default column kind set as Dimension
@@ -175,22 +176,18 @@ export class DataCubeConfiguration {
   alternateRowsColor = DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR;
   alternateRowsCount = 1;
 
-  // aggregation
-  initialExpandLevel?: number | undefined;
-  showRootAggregation = false;
-  showLeafCount = false;
-  addPivotTotalColumn = true;
-  addPivotTotalColumnOnLeft = true;
-  treeGroupSortFunction?: string | undefined;
-
-  // misc
   selectionStats: DataCubeSelectionStat[] = [];
   showWarningForTruncatedResult = true;
 
+  // NOTE: these configurations, when changed, would potentially trigger data-fetching
+  initialExpandLevel?: number | undefined;
+  showRootAggregation = false;
+  showLeafCount = false;
+  pivotTotalColumnPlacement?: DataCubeColumnPinPlacement | undefined;
+  treeGroupSortFunction?: string | undefined;
+
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeConfiguration, {
-      addPivotTotalColumn: primitive(),
-      addPivotTotalColumnOnLeft: primitive(),
       alternateRows: primitive(),
       alternateRowsColor: primitive(),
       alternateRowsCount: primitive(),
@@ -214,6 +211,7 @@ export class DataCubeConfiguration {
       negativeForegroundColor: primitive(),
       normalBackgroundColor: primitive(),
       normalForegroundColor: primitive(),
+      pivotTotalColumnPlacement: optional(primitive()),
       selectionStats: list(primitive()),
       showHorizontalGridLines: primitive(),
       showLeafCount: primitive(),

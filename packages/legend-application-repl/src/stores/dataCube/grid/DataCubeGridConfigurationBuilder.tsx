@@ -52,7 +52,7 @@ import {
   INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
   INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
-  INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID,
+  INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
@@ -376,7 +376,7 @@ function _sortSpec(columnData: ColumnData) {
   } as ColDef;
 }
 
-function _rowGroupSpec(columnData: ColumnData) {
+function _aggSpec(columnData: ColumnData) {
   const { snapshot, column } = columnData;
   const data = snapshot.data;
   const groupByCol = _findCol(data.groupBy?.columns, column.name);
@@ -386,8 +386,8 @@ function _rowGroupSpec(columnData: ColumnData) {
   return {
     enableRowGroup:
       !isGroupExtendedColumn && column.kind === DataCubeColumnKind.DIMENSION,
-    enableValue: false, // disable GUI interactions to modify this column's aggregate function
-    allowedAggFuncs: [], // disable GUI for options of the agg functions
+    enablePivot:
+      !isGroupExtendedColumn && column.kind === DataCubeColumnKind.DIMENSION,
     rowGroup: !isGroupExtendedColumn && Boolean(groupByCol),
     rowGroupIndex:
       !isGroupExtendedColumn && groupByCol
@@ -396,10 +396,11 @@ function _rowGroupSpec(columnData: ColumnData) {
     // NOTE: we don't quite care about populating these accurately
     // since ag-grid aggregation does not support parameters, so
     // its set of supported aggregators will never match that specified
-    // in the editor.
-    // But we need to set this to make sure sorting works when row grouping
-    // is used, so we use a dummy value here.
-    aggFunc: !isGroupExtendedColumn ? () => 0 : null,
+    // in the editor. But we MUST set this to make sure sorting works
+    // when row grouping is used, so we need to set a non-null value here.
+    aggFunc: !isGroupExtendedColumn ? column.aggregateOperator : null,
+    enableValue: false, // disable GUI interactions to modify this column's aggregate function
+    allowedAggFuncs: [], // disable GUI for options of the agg functions
   } satisfies ColDef;
 }
 
@@ -421,12 +422,12 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     groupDisplayType: 'custom', // keeps the column set stable even when row grouping is used
     suppressRowGroupHidesColumns: true, // keeps the column set stable even when row grouping is used
     suppressAggFuncInHeader: true, //  keeps the columns stable when aggregation is used
-    // purgeClosedRowNodes: true, // remove closed row nodes from the cache to allow reloading failed rows? - or should we have declarative action to retry?
     getChildCount: (data) =>
       data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID],
     // -------------------------------------- PIVOT --------------------------------------
-    // pivotPanelShow: "always"
-    // pivotMode:true, // TODO: need to make sure we don't hide away any columns when this is enabled
+    pivotPanelShow: 'always',
+    // pivotMode: true,
+    // serverSidePivotResultFieldSeparator: '__|__',
     // -------------------------------------- SORT --------------------------------------
     // Force multi-sorting since this is what the query supports anyway
     alwaysMultiSort: true,
@@ -526,9 +527,7 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
           width: INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
           toolPanelParams: {
             suppressValues: true,
-            // TODO: enable when we support pivot
             suppressPivotMode: true,
-            suppressPivots: true,
           },
         },
       ],
@@ -607,23 +606,18 @@ export function generateGridOptionsFromSnapshot(
         headerName: '',
         colId: INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
         cellRenderer: 'agGroupCellRenderer',
-        // TODO: display: coloring, text, etc.
-        // TODO: tooltip
-        // cellRendererParams: {
-        //   innerRenderer: (params: ICellRendererParams) => (
-        //     <>
-        //       <span>{params.value}</span>
-        //       {Boolean(
-        //         params.data[
-        //           INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID
-        //         ],
-        //       ) && (
-        //         <span>{`(${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID]})`}</span>
-        //       )}
-        //     </>
-        //   ),
-        //   suppressCount: true,
-        // } satisfies IGroupCellRendererParams,
+        tooltipValueGetter: (params) => {
+          if (
+            isNonNullable(params.value) &&
+            params.value !== INTERNAL__GRID_CLIENT_MISSING_VALUE
+          ) {
+            return (
+              `Group Value = ${params.value === '' ? "''" : params.value === true ? 'TRUE' : params.value === false ? 'FALSE' : params.value}` +
+              `${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] !== undefined ? ` (${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID]})` : ''}`
+            );
+          }
+          return null;
+        },
         showRowGroup: true,
         hide: !snapshot.data.groupBy,
         lockPinned: true,
@@ -642,7 +636,7 @@ export function generateGridOptionsFromSnapshot(
       } satisfies ColDef,
       // NOTE: Internal column used for programatically trigger data fetch when filter is modified
       {
-        colId: INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID,
+        colId: INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
         hide: true,
         enableValue: false, // disable GUI interactions to modify this column's aggregate function
         allowedAggFuncs: [], // disable GUI for options of the agg functions
@@ -651,7 +645,7 @@ export function generateGridOptionsFromSnapshot(
         filter: 'agTextColumnFilter',
         suppressColumnsToolPanel: true,
       },
-      // TODO: handle pivot and column grouping
+      /** TODO: @datacube pivot handle pivot and column grouping */
       ...configuration.columns.map((column) => {
         const columnData = {
           snapshot,
@@ -666,7 +660,7 @@ export function generateGridOptionsFromSnapshot(
           ..._displaySpec(columnData),
           ..._sizeSpec(columnData),
           ..._sortSpec(columnData),
-          ..._rowGroupSpec(columnData),
+          ..._aggSpec(columnData),
         } satisfies ColDef | ColGroupDef;
       }),
     ],

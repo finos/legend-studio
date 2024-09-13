@@ -25,8 +25,10 @@ import {
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
+  hashObject,
   isBoolean,
   isNonNullable,
+  pruneObject,
 } from '@finos/legend-shared';
 import { buildExecutableQuery } from '../core/DataCubeQueryBuilder.js';
 import { type TabularDataSet, V1_Lambda } from '@finos/legend-graph';
@@ -34,9 +36,13 @@ import { APPLICATION_EVENT } from '@finos/legend-application';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { generateRowGroupingDrilldownExecutableQueryPostProcessor } from './DataCubeGridQueryBuilder.js';
 import { makeObservable, observable, runInAction } from 'mobx';
-import type { DataCubeConfigurationColorKey } from '../core/DataCubeConfiguration.js';
+import type {
+  DataCubeConfiguration,
+  DataCubeConfigurationColorKey,
+} from '../core/DataCubeConfiguration.js';
 import { AlertType } from '../../../components/repl/Alert.js';
 import { DEFAULT_LARGE_ALERT_WINDOW_CONFIG } from '../../LayoutManagerState.js';
+import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 
 type GridClientCellValue = string | number | boolean | null | undefined;
 type GridClientRowData = {
@@ -111,8 +117,8 @@ export const INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY = 1000;
 export const INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING = 10;
 export const INTERNAL__GRID_CLIENT_MISSING_VALUE = '__MISSING';
 export const INTERNAL__GRID_CLIENT_TREE_COLUMN_ID = 'INTERNAL__tree';
-export const INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID =
-  'INTERNAL__filterTrigger';
+export const INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID =
+  'INTERNAL__dataFetchManualTrigger';
 export const INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID =
   'INTERNAL__count';
 
@@ -148,6 +154,36 @@ export function getDataForAllFilteredNodes<T>(client: GridApi<T>): T[] {
     }
   });
   return rows;
+}
+
+/**
+ * This method computes the hash code for the parts of the snapshot that should trigger data fetching.
+ * This is used to manually trigger server-side row model data source getRows() method.
+ */
+export function computeHashCodeForDataFetchManualTrigger(
+  snapshot: DataCubeQuerySnapshot,
+  configuration: DataCubeConfiguration,
+) {
+  return hashObject(
+    pruneObject({
+      ...snapshot.data,
+      configuration: {
+        initialExpandLevel: configuration.initialExpandLevel,
+        showRootAggregation: configuration.showRootAggregation,
+        showLeafCount: configuration.showLeafCount,
+        pivotTotalColumnPlacement: configuration.pivotTotalColumnPlacement,
+        treeGroupSortFunction: configuration.treeGroupSortFunction,
+        columns: configuration.columns.map((column) => ({
+          name: column.name,
+          type: column.type,
+          aggregateOperator: column.aggregateOperator,
+          aggregationParameters: column.aggregationParameters,
+          excludedFromHorizontalPivot: column.excludedFromHorizontalPivot,
+          horizontalPivotSortFunction: column.horizontalPivotSortFunction,
+        })),
+      },
+    }),
+  );
 }
 
 function TDStoRowData(tds: TabularDataSet): GridClientRowData[] {
@@ -205,8 +241,11 @@ export class DataCubeGridClientServerSideDataSource
     // ------------------------------ SNAPSHOT ------------------------------
 
     const currentSnapshot = guaranteeNonNullable(this.grid.getLatestSnapshot());
-    // TODO: when we support pivoting, we should make a quick call to check for columns
-    // created by pivots and specify them as cast columns when pivot is activated
+    /**
+     * TODO: @datacube pivot
+     * when we support pivoting, we should make a quick call to check for columns
+     * created by pivots and specify them as cast columns when pivot is activated
+     */
     const syncedSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
     if (syncedSnapshot.hashCode !== currentSnapshot.hashCode) {
       this.grid.publishSnapshot(syncedSnapshot);
