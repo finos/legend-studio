@@ -19,7 +19,7 @@ import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
-import { DataCubeMutableConfiguration } from './DataCubeMutableConfiguration.js';
+import { DataCubeEditorMutableConfiguration } from './DataCubeEditorMutableConfiguration.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
 export class DataCubeEditorGeneralPropertiesPanelState
@@ -30,7 +30,7 @@ export class DataCubeEditorGeneralPropertiesPanelState
 
   name = '';
   limit = -1;
-  configuration = new DataCubeMutableConfiguration();
+  configuration = new DataCubeEditorMutableConfiguration();
 
   constructor(editor: DataCubeEditorState) {
     makeObservable(this, {
@@ -56,7 +56,7 @@ export class DataCubeEditorGeneralPropertiesPanelState
     this.limit = val;
   }
 
-  setConfiguration(val: DataCubeMutableConfiguration) {
+  setConfiguration(val: DataCubeEditorMutableConfiguration) {
     this.configuration = val;
   }
 
@@ -71,7 +71,7 @@ export class DataCubeEditorGeneralPropertiesPanelState
         : -1,
     );
     this.setConfiguration(
-      DataCubeMutableConfiguration.create(snapshot.data.configuration),
+      DataCubeEditorMutableConfiguration.create(snapshot.data.configuration),
     );
   }
 

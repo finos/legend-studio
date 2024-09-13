@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeColumnKind } from '../core/DataCubeQueryEngine.js';
@@ -89,26 +88,6 @@ export class DataCubeEditorVerticalPivotsPanelState
             name: column.name,
             type: column.type,
           })),
-          aggColumns: this.editor.columnProperties.columns
-            .filter(
-              (column) =>
-                column.kind === DataCubeColumnKind.MEASURE &&
-                column.aggregateFunction !== undefined &&
-                // exclude group-by columns
-                this.selector.selectedColumns.find(
-                  (col) => col.name !== column.name,
-                ) &&
-                // exclude group-level extended columns
-                !this.editor.columns.groupExtendColumns.find(
-                  (col) => col.name === column.name,
-                ),
-            )
-            .map((column) => ({
-              name: column.name,
-              type: column.type,
-              operation: guaranteeNonNullable(column.aggregateFunction),
-              parameters: column.aggregateFunctionParameters,
-            })),
         }
       : undefined;
   }

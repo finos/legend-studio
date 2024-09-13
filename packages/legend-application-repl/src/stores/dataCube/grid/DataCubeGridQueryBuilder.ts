@@ -33,7 +33,6 @@ import {
   _cols,
   _filter,
   _function,
-  _groupByExtend,
   _lambda,
   _var,
 } from '../core/DataCubeQueryBuilderUtils.js';
@@ -43,6 +42,7 @@ import {
 } from './DataCubeGridClientEngine.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import type { DataCubeQueryFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
+import type { DataCubeQueryAggregateOperation } from '../core/aggregation/DataCubeQueryAggregateOperation.js';
 
 /*****************************************************************************
  * [GRID]
@@ -74,6 +74,7 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
     funcMap: DataCubeQueryFunctionMap,
     configuration: DataCubeConfiguration,
     filterOperations: DataCubeQueryFilterOperation[],
+    aggregateOperations: DataCubeQueryAggregateOperation[],
   ) => {
     const _unprocess = (funcMapKey: keyof DataCubeQueryFunctionMap) => {
       const func = funcMap[funcMapKey];
@@ -178,33 +179,25 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
         const groupByFunc = _function(_name(DataCubeFunction.GROUP_BY), [
           _cols(groupByColumns.map((col) => _colSpec(col.name))),
           _cols([
-            ..._groupByAggCols(groupBy.aggColumns),
-            _rowGroupingCountCol(),
+            ..._groupByAggCols(
+              groupByColumns,
+              snapshot,
+              configuration,
+              aggregateOperations,
+            ),
+            _rowGroupingCountCol(), // get the count for each group
           ]),
         ]);
         sequence[groupByIdx] = groupByFunc;
         funcMap.groupBy = groupByFunc;
-
-        // extend columns to maintain the same set of columns prior to groupBy()
-        // TODO: we should use the `uniq` agg on these columns rather than doing this hack
-        const groupByExtend = _groupByExtend(
-          snapshot.stageCols('aggregation'),
-          [...groupByColumns, ...groupBy.aggColumns],
-        );
-        _unprocess('groupByExtend');
-        funcMap.groupByExtend = groupByExtend;
-        if (groupByExtend) {
-          sequence.splice(groupByIdx + 1, 0, groupByExtend);
-        }
       } else {
         // when maximum level of drilldown is reached, we simply just need to
         // filter the data to match drilldown values, no groupBy() is needed.
         _unprocess('groupBy');
-        _unprocess('groupByExtend');
       }
 
       // --------------------------------- PIVOT ---------------------------------
-      // TODO: @akphi - implement this and CAST
+      /** TODO: @datacube pivot - implement this and CAST */
     }
   };
 }

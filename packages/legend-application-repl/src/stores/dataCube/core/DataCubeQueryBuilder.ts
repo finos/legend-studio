@@ -33,6 +33,7 @@ import {
 } from './DataCubeQuerySnapshot.js';
 import {
   guaranteeNonNullable,
+  isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
@@ -53,15 +54,16 @@ import {
   _filter,
   _function,
   _groupByAggCols,
-  _groupByExtend,
   _lambda,
   _primitiveValue,
   _var,
 } from './DataCubeQueryBuilderUtils.js';
+import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 
 export function buildExecutableQuery(
   snapshot: DataCubeQuerySnapshot,
   filterOperations: DataCubeQueryFilterOperation[],
+  aggregateOperations: DataCubeQueryAggregateOperation[],
   options?: {
     postProcessor?: (
       snapshot: DataCubeQuerySnapshot,
@@ -69,6 +71,7 @@ export function buildExecutableQuery(
       funcMap: DataCubeQueryFunctionMap,
       configuration: DataCubeConfiguration,
       filterOperations: DataCubeQueryFilterOperation[],
+      aggregateOperations: DataCubeQueryAggregateOperation[],
     ) => void;
     pagination?:
       | {
@@ -144,22 +147,20 @@ export function buildExecutableQuery(
       'groupBy',
       _function(_name(DataCubeFunction.GROUP_BY), [
         _cols(groupBy.columns.map((col) => _colSpec(col.name))),
-        _cols(_groupByAggCols(groupBy.aggColumns)),
+        _cols(
+          _groupByAggCols(
+            groupBy.columns,
+            snapshot,
+            configuration,
+            aggregateOperations,
+          ),
+        ),
       ]),
     );
-
-    // extend columns to maintain the same set of columns prior to groupBy()
-    const groupByExtend = _groupByExtend(snapshot.stageCols('aggregation'), [
-      ...groupBy.columns,
-      ...groupBy.aggColumns,
-    ]);
-    if (groupByExtend) {
-      _process('groupByExtend', groupByExtend);
-    }
   }
 
   // --------------------------------- PIVOT ---------------------------------
-  // TODO: @akphi - implement this and CAST
+  /** TODO: @datacube pivot - implement this and CAST */
 
   // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
 
@@ -229,7 +230,13 @@ export function buildExecutableQuery(
   // --------------------------------- FROM ---------------------------------
 
   sequence.push(
-    _function(_name(DataCubeFunction.FROM), [_elementPtr(data.runtime)]),
+    _function(
+      _name(DataCubeFunction.FROM),
+      [
+        data.mapping ? _elementPtr(data.mapping) : undefined,
+        _elementPtr(data.runtime),
+      ].filter(isNonNullable),
+    ),
   );
 
   // --------------------------------- FINALIZE ---------------------------------
@@ -240,6 +247,7 @@ export function buildExecutableQuery(
     funcMap,
     configuration,
     filterOperations,
+    aggregateOperations,
   );
 
   if (!sequence.length) {

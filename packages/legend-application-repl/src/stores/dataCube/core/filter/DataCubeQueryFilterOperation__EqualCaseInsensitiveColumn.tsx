@@ -74,7 +74,7 @@ export class DataCubeQueryFilterOperation__EqualCaseInsensitiveColumn extends Da
   }
 
   buildConditionSnapshot(expression: V1_AppliedFunction) {
-    // TODO: @akphi - implement this for roundtrip testing
+    /** TODO: @datacube roundtrip */
     return undefined;
   }
 

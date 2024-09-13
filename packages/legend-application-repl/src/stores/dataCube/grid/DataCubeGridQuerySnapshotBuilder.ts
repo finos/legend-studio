@@ -24,41 +24,13 @@
 import type { IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import {
   type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotColumn,
-  type DataCubeQuerySnapshotGroupBy,
   _getCol,
 } from '../core/DataCubeQuerySnapshot.js';
 import {
   GridClientSortDirection,
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
-import {
-  DataCubeColumnKind,
-  DataCubeQuerySortOperator,
-} from '../core/DataCubeQueryEngine.js';
-import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
-import { _defaultAggCol } from '../core/DataCubeQuerySnapshotBuilderUtils.js';
-import { isNonNullable } from '@finos/legend-shared';
-
-export function _groupByAggCols(
-  groupBy: DataCubeQuerySnapshotGroupBy | undefined,
-  configuration: DataCubeConfiguration,
-  excludedColumns?: DataCubeQuerySnapshotColumn[] | undefined,
-) {
-  return configuration.columns
-    .filter(
-      (column) =>
-        column.kind === DataCubeColumnKind.MEASURE &&
-        !excludedColumns?.find((col) => col.name === column.name) &&
-        !groupBy?.columns.find((col) => col.name === column.name),
-    )
-    .map(
-      (column) =>
-        groupBy?.aggColumns.find((col) => col.name === column.name) ??
-        _defaultAggCol(column.name, column.type),
-    )
-    .filter(isNonNullable);
-}
+import { DataCubeQuerySortOperator } from '../core/DataCubeQueryEngine.js';
 
 // --------------------------------- MAIN ---------------------------------
 
@@ -66,25 +38,18 @@ export function buildQuerySnapshot(
   request: IServerSideGetRowsRequest,
   baseSnapshot: DataCubeQuerySnapshot,
 ) {
-  const configuration = DataCubeConfiguration.serialization.fromJson(
-    baseSnapshot.data.configuration,
-  );
   const snapshot = baseSnapshot.clone();
 
   // --------------------------------- GROUP BY ---------------------------------
 
   if (request.rowGroupCols.length) {
     const availableCols = baseSnapshot.stageCols('aggregation');
+    const newGroupByColumns = request.rowGroupCols.map((col) => ({
+      name: col.id,
+      type: _getCol(availableCols, col.id).type,
+    }));
     snapshot.data.groupBy = {
-      columns: request.rowGroupCols.map((col) => ({
-        name: col.id,
-        type: _getCol(availableCols, col.id).type,
-      })),
-      aggColumns: _groupByAggCols(
-        baseSnapshot.data.groupBy,
-        configuration,
-        baseSnapshot.data.groupExtendedColumns,
-      ),
+      columns: newGroupByColumns,
     };
   } else {
     snapshot.data.groupBy = undefined;

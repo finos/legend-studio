@@ -18,6 +18,7 @@ import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
 import type { DataCubeConfiguration } from './DataCubeConfiguration.js';
 import {
   IllegalStateError,
+  UnsupportedOperationError,
   guaranteeNonNullable,
   hashObject,
   pruneObject,
@@ -62,26 +63,19 @@ export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {
   operation: string;
 };
 
-export type DataCubeQuerySnapshotAggregateColumn =
-  DataCubeQuerySnapshotColumn & {
-    operation: string;
-    parameters: DataCubeOperationValue[];
-  };
-
 export type DataCubeQuerySnapshotGroupBy = {
   columns: DataCubeQuerySnapshotColumn[];
-  aggColumns: DataCubeQuerySnapshotAggregateColumn[];
 };
 
 export type DataCubeQuerySnapshotPivot = {
   columns: DataCubeQuerySnapshotColumn[];
-  aggColumns: DataCubeQuerySnapshotAggregateColumn[];
   castColumns: DataCubeQuerySnapshotColumn[];
 };
 
 export type DataCubeQuerySnapshotData = {
   name: string;
   runtime: string;
+  mapping: string | undefined;
   sourceQuery: PlainObject<V1_ValueSpecification>;
   configuration: PlainObject<DataCubeConfiguration>;
   sourceColumns: DataCubeQuerySnapshotColumn[];
@@ -114,12 +108,14 @@ export class DataCubeQuerySnapshot {
   private constructor(
     name: string,
     runtime: string,
+    mapping: string | undefined,
     sourceQuery: PlainObject<V1_ValueSpecification>,
     configuration: PlainObject<DataCubeConfiguration>,
   ) {
     this.data = {
       name,
       runtime,
+      mapping,
       sourceQuery,
       configuration,
       sourceColumns: [],
@@ -137,14 +133,21 @@ export class DataCubeQuerySnapshot {
   static create(
     name: string,
     runtime: string,
+    mapping: string | undefined,
     sourceQuery: PlainObject<V1_ValueSpecification>,
     configuration: PlainObject<DataCubeConfiguration>,
   ) {
-    return new DataCubeQuerySnapshot(name, runtime, sourceQuery, configuration);
+    return new DataCubeQuerySnapshot(
+      name,
+      runtime,
+      mapping,
+      sourceQuery,
+      configuration,
+    );
   }
 
   clone() {
-    const clone = new DataCubeQuerySnapshot('', '', {}, {});
+    const clone = new DataCubeQuerySnapshot('', '', '', {}, {});
     (clone.data as Writable<DataCubeQuerySnapshotData>) = JSON.parse(
       JSON.stringify(this.data),
     ) as DataCubeQuerySnapshotData;
@@ -164,8 +167,9 @@ export class DataCubeQuerySnapshot {
       case 'aggregation':
         return [...this.data.selectColumns];
       case 'group-extend':
-        // TODO: @akphi - add pivot columns
-        return [...this.data.selectColumns];
+        throw new UnsupportedOperationError(
+          `Can't get columns for group-level extend stage: dynamic pivot columns cannot be accounted for`,
+        );
       case 'sort':
         return [...this.data.selectColumns, ...this.data.groupExtendedColumns];
       default:

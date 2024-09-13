@@ -218,6 +218,7 @@ export class DataCubeGridClientServerSideDataSource
       const executableQuery = buildExecutableQuery(
         syncedSnapshot,
         this.grid.dataCube.engine.filterOperations,
+        this.grid.dataCube.engine.aggregateOperations,
         {
           postProcessor:
             generateRowGroupingDrilldownExecutableQueryPostProcessor(
