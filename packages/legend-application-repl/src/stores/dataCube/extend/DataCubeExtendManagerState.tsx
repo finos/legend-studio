@@ -20,7 +20,7 @@ import type {
   DataCubeQuerySnapshotColumn,
   DataCubeQuerySnapshotExtendedColumn,
 } from '../core/DataCubeQuerySnapshot.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, noop } from '@finos/legend-shared';
 import type { DataCubeState } from '../DataCubeState.js';
 import { DataCubeQuerySnapshotController } from '../core/DataCubeQuerySnapshotManager.js';
 import {
@@ -129,6 +129,12 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     this.groupExtendedColumns = snapshot.data.groupExtendedColumns.map(
       (col) => new DataCubeQueryExtendedColumnState(col),
     );
+
+    // trigger re-compile in each existing column editor as the base query has changed
+    this.newColumnEditors.forEach((editor) =>
+      editor.getReturnType().catch(noop()),
+    );
+    // TODO: existingColumnEditors
   }
 
   applyChanges() {
