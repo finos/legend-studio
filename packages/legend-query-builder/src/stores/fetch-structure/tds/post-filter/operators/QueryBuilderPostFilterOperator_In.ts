@@ -19,6 +19,7 @@ import {
   type ValueSpecification,
   type SimpleFunctionExpression,
   type FunctionExpression,
+  type LambdaFunction,
   CollectionInstanceValue,
   Enumeration,
   PRIMITIVE_TYPE,
@@ -39,7 +40,7 @@ import {
   type PostFilterConditionState,
   type QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState.js';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
+import { buildPostFilterConditionExpressionHelper } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import {
   buildNotExpression,
   getCollectionValueSpecificationType,
@@ -139,11 +140,13 @@ export class QueryBuilderPostFilterOperator_In
 
   buildPostFilterConditionExpression(
     postFilterConditionState: PostFilterConditionState,
+    parentExpression: LambdaFunction | undefined,
   ): ValueSpecification | undefined {
-    return buildPostFilterConditionExpression(
+    return buildPostFilterConditionExpressionHelper(
       postFilterConditionState,
       this,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.IN,
+      parentExpression,
     );
   }
 
@@ -173,9 +176,11 @@ export class QueryBuilderPostFilterOperator_NotIn extends QueryBuilderPostFilter
 
   override buildPostFilterConditionExpression(
     postFilterConditionState: PostFilterConditionState,
+    parentExpression: LambdaFunction | undefined,
   ): ValueSpecification | undefined {
     const expression = super.buildPostFilterConditionExpression(
       postFilterConditionState,
+      parentExpression,
     );
     return expression ? buildNotExpression(expression) : undefined;
   }

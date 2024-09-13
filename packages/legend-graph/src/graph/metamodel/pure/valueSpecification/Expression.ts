@@ -77,6 +77,8 @@ export class FunctionExpression extends Expression implements Hashable {
   }
 }
 
+// export class
+
 export class SimpleFunctionExpression
   extends FunctionExpression
   implements Hashable

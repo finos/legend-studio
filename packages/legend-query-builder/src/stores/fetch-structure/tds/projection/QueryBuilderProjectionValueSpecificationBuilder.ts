@@ -251,7 +251,6 @@ export const appendProjection = (
     lambdaFunction.expressionSequence[0],
     `Can't build projection expression: preceding expression is not defined`,
   );
-
   // build projection
   if (tdsState.aggregationState.columns.length) {
     // aggregation
@@ -498,7 +497,6 @@ export const appendProjection = (
       lambdaFunction.expressionSequence[0] = projectFunction;
     }
   }
-
   // build olapGroupBy
   appendOLAPGroupByState(tdsState.windowState, lambdaFunction);
 

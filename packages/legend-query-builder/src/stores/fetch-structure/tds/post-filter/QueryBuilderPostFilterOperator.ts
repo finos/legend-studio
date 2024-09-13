@@ -16,6 +16,7 @@
 
 import type {
   FunctionExpression,
+  LambdaFunction,
   Type,
   ValueSpecification,
 } from '@finos/legend-graph';
@@ -57,6 +58,7 @@ export abstract class QueryBuilderPostFilterOperator implements Hashable {
 
   abstract buildPostFilterConditionExpression(
     postFilterConditionState: PostFilterConditionState,
+    parentExpression: LambdaFunction | undefined,
   ): ValueSpecification | undefined;
 
   abstract buildPostFilterConditionState(

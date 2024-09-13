@@ -525,6 +525,11 @@ export * from './graph-manager/extensions/DSL_Mapping_PureGraphManagerPlugin_Ext
 export { INTERNAL__UnknownSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownSetImplementation.js';
 export { INTERNAL__UnknownPropertyMapping } from './graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownPropertyMapping.js';
 export { INTERNAL__UnknownConnection } from './graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
+export { Relation_Relation } from './graph/metamodel/pure/packageableElements/relation/Relation_Relation.js';
+export {
+  Relation_RelationType,
+  Relation_RelationalColumn,
+} from './graph/metamodel/pure/packageableElements/relation/Relation_RelationType.js';
 
 export { Store } from './graph/metamodel/pure/packageableElements/store/Store.js';
 export { Mapping } from './graph/metamodel/pure/packageableElements/mapping/Mapping.js';

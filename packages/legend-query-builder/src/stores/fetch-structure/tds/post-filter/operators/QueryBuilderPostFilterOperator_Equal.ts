@@ -19,6 +19,7 @@ import {
   type ValueSpecification,
   type SimpleFunctionExpression,
   type FunctionExpression,
+  type LambdaFunction,
   AbstractPropertyExpression,
   Enumeration,
   PRIMITIVE_TYPE,
@@ -40,7 +41,7 @@ import {
   isTypeCompatibleForAssignment,
   unwrapNotExpression,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
+import { buildPostFilterConditionExpressionHelper } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
 import { buildDefaultInstanceValue } from '../../../../shared/ValueSpecificationEditorHelper.js';
@@ -106,8 +107,9 @@ export class QueryBuilderPostFilterOperator_Equal
 
   buildPostFilterConditionExpression(
     postFilterConditionState: PostFilterConditionState,
+    parentExpression: LambdaFunction | undefined,
   ): ValueSpecification | undefined {
-    return buildPostFilterConditionExpression(
+    return buildPostFilterConditionExpressionHelper(
       postFilterConditionState,
       this,
       postFilterConditionState.leftConditionValue.getColumnType() ===
@@ -116,6 +118,7 @@ export class QueryBuilderPostFilterOperator_Equal
           PrimitiveType.DATETIME
         ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_ON_DAY
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.EQUAL,
+      parentExpression,
     );
   }
 
@@ -150,9 +153,11 @@ export class QueryBuilderPostFilterOperator_NotEqual extends QueryBuilderPostFil
 
   override buildPostFilterConditionExpression(
     postFilterConditionState: PostFilterConditionState,
+    parentExpression: LambdaFunction | undefined,
   ): ValueSpecification | undefined {
     const expression = super.buildPostFilterConditionExpression(
       postFilterConditionState,
+      parentExpression,
     );
     return expression ? buildNotExpression(expression) : undefined;
   }

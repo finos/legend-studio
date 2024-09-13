@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-import { uuid } from '@finos/legend-shared';
-import type { Type } from './Type.js';
-import type { GenericTypeReference } from './GenericTypeReference.js';
+import { Class } from '../domain/Class.js';
 
-export class GenericType {
-  readonly _UUID = uuid();
+const RELATION_NAME = 'Relation';
 
-  rawType: Type;
-  typeArguments: GenericTypeReference[] | undefined;
-
-  constructor(rawType: Type) {
-    this.rawType = rawType;
-  }
+export class Relation_Relation {
+  static readonly INSTANCE = new Class(RELATION_NAME);
 }

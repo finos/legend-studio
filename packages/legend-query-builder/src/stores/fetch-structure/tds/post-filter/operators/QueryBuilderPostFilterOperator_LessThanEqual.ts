@@ -17,6 +17,7 @@
 import {
   type FunctionExpression,
   type ValueSpecification,
+  type LambdaFunction,
   AbstractPropertyExpression,
   PRIMITIVE_TYPE,
   PrimitiveType,
@@ -26,7 +27,7 @@ import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState.js';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
+import { buildPostFilterConditionExpressionHelper } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { QueryBuilderPostFilterOperator_LessThan } from './QueryBuilderPostFilterOperator_LessThan.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
@@ -42,8 +43,9 @@ export class QueryBuilderPostFilterOperator_LessThanEqual
 
   override buildPostFilterConditionExpression(
     postFilterConditionState: PostFilterConditionState,
+    parentExpression: LambdaFunction | undefined,
   ): ValueSpecification | undefined {
-    return buildPostFilterConditionExpression(
+    return buildPostFilterConditionExpressionHelper(
       postFilterConditionState,
       this,
       postFilterConditionState.leftConditionValue.getColumnType() ===
@@ -52,6 +54,7 @@ export class QueryBuilderPostFilterOperator_LessThanEqual
           PrimitiveType.DATETIME
         ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_ON_OR_BEFORE_DAY
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL,
+      parentExpression,
     );
   }
 
