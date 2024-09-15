@@ -46,6 +46,7 @@ import { DSL_Diagram_GraphManagerPreset as DSL_Diagram_GraphManagerPreset } from
 import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space/graph';
 import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence/graph';
 import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store/graph';
+import { DSL_DataQuality_GraphManagerPreset } from '@finos/legend-extension-dsl-data-quality/graph';
 
 const TEST_CASE_DIR = resolve(__dirname, 'cases');
 
@@ -134,6 +135,7 @@ const checkGrammarRoundtrip = async (
             new DSL_DataSpace_GraphManagerPreset(),
             new DSL_Persistence_GraphManagerPreset(),
             new STO_ServiceStore_GraphManagerPreset(),
+            new DSL_DataQuality_GraphManagerPreset(),
           ],
     )
     .usePlugins([logger]);

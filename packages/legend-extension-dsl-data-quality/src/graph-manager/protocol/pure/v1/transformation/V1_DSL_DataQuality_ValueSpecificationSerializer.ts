@@ -51,6 +51,12 @@ export const V1_rootGraphFetchTreeModelSchema = (
         (val) => V1_deserializeGraphFetchTree(val, plugins),
       ),
     ),
+    subTypeTrees: list(
+      custom(
+        (val) => V1_serializeGraphFetchTree(val, plugins),
+        (val) => V1_deserializeGraphFetchTree(val, plugins),
+      ),
+    ),
   });
 
 export const V1_propertyGraphFetchTreeModelSchema = (
@@ -70,6 +76,12 @@ export const V1_propertyGraphFetchTreeModelSchema = (
     property: primitive(),
     constraints: list(primitive()),
     subTrees: list(
+      custom(
+        (val) => V1_serializeGraphFetchTree(val, plugins),
+        (val) => V1_deserializeGraphFetchTree(val, plugins),
+      ),
+    ),
+    subTypeTrees: list(
       custom(
         (val) => V1_serializeGraphFetchTree(val, plugins),
         (val) => V1_deserializeGraphFetchTree(val, plugins),

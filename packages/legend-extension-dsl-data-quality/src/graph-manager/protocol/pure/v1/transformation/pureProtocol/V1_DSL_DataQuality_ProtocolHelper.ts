@@ -35,6 +35,7 @@ import {
   usingConstantValueSchema,
   usingModelSchema,
   UnsupportedOperationError,
+  customListWithSchema,
 } from '@finos/legend-shared';
 import {
   type PureProtocolProcessorPlugin,
@@ -42,6 +43,8 @@ import {
   V1_rawLambdaModelSchema,
   V1_serializeGraphFetchTree,
   V1_deserializeGraphFetchTree,
+  V1_stereotypePtrModelSchema,
+  V1_taggedValueModelSchema,
 } from '@finos/legend-graph';
 
 export const V1_DATA_QUALITY_PROTOCOL_TYPE = 'dataQualityValidation';
@@ -138,6 +141,12 @@ const V1_dataQualityClassValidationModelSchema = (
     filter: usingModelSchema(V1_rawLambdaModelSchema),
     name: primitive(),
     package: primitive(),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
+    taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
   });
 
 const V1_dataQualityServiceValidationModelSchema = (
