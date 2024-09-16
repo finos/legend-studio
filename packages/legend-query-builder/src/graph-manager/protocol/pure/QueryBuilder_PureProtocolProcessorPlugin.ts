@@ -268,8 +268,6 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
   override V1_getExtraPropertyExpressionTypeInferrers(): V1_PropertyExpressionTypeInferrer[] {
     return [
       (inferredVariable: ValueSpecification | undefined): Type | undefined => {
-        let inferredType: Type | undefined =
-          inferredVariable?.genericType?.value.rawType;
         if (
           inferredVariable instanceof SimpleFunctionExpression &&
           matchFunctionName(
@@ -279,10 +277,11 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             ),
           )
         ) {
-          inferredType =
-            V1_buildSubTypePropertyExpressionTypeInference(inferredVariable);
+          return V1_buildSubTypePropertyExpressionTypeInference(
+            inferredVariable,
+          );
         }
-        return inferredType;
+        return undefined;
       },
     ];
   }

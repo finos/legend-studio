@@ -1,0 +1,1168 @@
+###Service
+Service model::MyService
+{
+  pattern: '/testUrl';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |model::pure::tests::model::simple::Person.all()->project(
+      [
+        x|$x.name
+      ],
+      ['Name']
+    )->take(1000);
+    mapping: model::relational::tests::simpleRelationalMapping;
+    runtime: model::MyRuntime;
+  }
+}
+
+
+###Relational
+Database model::relational::tests::db
+(
+  include model::relational::tests::dbInc
+
+  Schema productSchema
+  (
+    Table synonymTable
+    (
+      ID INTEGER PRIMARY KEY,
+      PRODID INTEGER,
+      TYPE VARCHAR(200),
+      NAME VARCHAR(200)
+    )
+  )
+
+  Table interactionTable
+  (
+    ID INTEGER PRIMARY KEY,
+    sourceId INTEGER,
+    targetId INTEGER,
+    time INTEGER,
+    active VARCHAR(1)
+  )
+  Table tradeTable
+  (
+    ID INTEGER PRIMARY KEY,
+    prodId INTEGER,
+    accountID INTEGER,
+    quantity FLOAT,
+    tradeDate DATE,
+    settlementDateTime TIMESTAMP
+  )
+  Table accountTable
+  (
+    ID INTEGER PRIMARY KEY,
+    name VARCHAR(200),
+    createDate DATE
+  )
+  Table tradeEventTable
+  (
+    EVENT_ID INTEGER PRIMARY KEY,
+    trade_id INTEGER,
+    eventType VARCHAR(10),
+    eventDate DATE,
+    person_id INTEGER
+  )
+  Table orderTable
+  (
+    ID INTEGER PRIMARY KEY,
+    prodId INTEGER,
+    accountID INTEGER,
+    quantity INTEGER,
+    orderDate DATE,
+    settlementDateTime TIMESTAMP
+  )
+  Table orderPnlTable
+  (
+    ORDER_ID INTEGER PRIMARY KEY,
+    pnl FLOAT,
+    from_z DATE,
+    thru_z DATE
+  )
+  Table salesPersonTable
+  (
+    PERSON_ID INTEGER PRIMARY KEY,
+    ACCOUNT_ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200),
+    from_z DATE,
+    thru_z DATE
+  )
+  Table otherNamesTable
+  (
+    PERSON_ID INTEGER,
+    OTHER_NAME VARCHAR(200)
+  )
+  Table tableWithQuotedColumns
+  (
+    ID INTEGER PRIMARY KEY,
+    "FIRST NAME" VARCHAR(200) PRIMARY KEY,
+    "LAST NAME" VARCHAR(200) PRIMARY KEY
+  )
+
+  View interactionViewMaxTime
+  (
+    ~groupBy
+    (
+      interactionTable.sourceId,
+      interactionTable.targetId
+    )
+    sourceId: interactionTable.sourceId,
+    targetId: interactionTable.targetId,
+    maxTime: max(interactionTable.time)
+  )
+  View tradeEventViewMaxTradeEventDate
+  (
+    ~groupBy
+    (
+      tradeEventTable.trade_id
+    )
+    trade_id: tradeEventTable.trade_id,
+    maxTradeEventDate: max(tradeEventTable.eventDate)
+  )
+  View orderPnlView
+  (
+    ~distinct
+    ORDER_ID: orderPnlTable.ORDER_ID PRIMARY KEY,
+    pnl: orderPnlTable.pnl,
+    accountId: [model::relational::tests::db]@OrderPnlTable_Order > [model::relational::tests::db]@Order_Account | accountTable.ID,
+    supportContact: [model::relational::tests::db]@OrderPnlTable_Order > [model::relational::tests::db]@Order_SalesPerson | salesPersonTable.NAME,
+    supportContactId: [model::relational::tests::db]@OrderPnlTable_Order > [model::relational::tests::db]@Order_SalesPerson | salesPersonTable.PERSON_ID
+  )
+  View orderPnlViewOnView
+  (
+    ORDER_ID: orderPnlView.ORDER_ID PRIMARY KEY,
+    pnl: orderPnlView.pnl
+  )
+  View orderNegativePnlView
+  (
+    ~distinct
+    ORDER_ID: orderPnlTable.ORDER_ID PRIMARY KEY,
+    pnl: orderPnlTable.pnl,
+    accountId: [model::relational::tests::db]@OrderPnlTable_Order > [model::relational::tests::db]@Order_Account | accountTable.ID,
+    supportContact: [model::relational::tests::db]@OrderPnlTable_Order > [model::relational::tests::db]@Order_SalesPerson | salesPersonTable.NAME,
+    supportContactId: [model::relational::tests::db]@OrderPnlTable_Order > [model::relational::tests::db]@Order_SalesPerson | salesPersonTable.PERSON_ID
+  )
+  View orderNegativePnlViewOnView
+  (
+    ORDER_ID: orderNegativePnlView.ORDER_ID PRIMARY KEY,
+    pnl: orderNegativePnlView.pnl
+  )
+  View accountOrderPnlView
+  (
+    ~groupBy
+    (
+      orderTable.accountID
+    )
+    accountId: orderTable.accountID PRIMARY KEY,
+    orderPnl: sum([model::relational::tests::db]@OrderPnlTable_Order | orderPnlTable.pnl)
+  )
+
+  Join Product_Synonym(productSchema.synonymTable.PRODID = productSchema.productTable.ID)
+  Join Trade_Product(tradeTable.prodId = productSchema.productTable.ID)
+  Join Trade_Account(tradeTable.accountID = accountTable.ID)
+  Join Interaction_Source(interactionTable.sourceId = personTable.ID)
+  Join Interaction_Target(interactionTable.targetId = personTable.ID)
+  Join InteractionTable_InteractionViewMaxTime(interactionTable.sourceId = interactionViewMaxTime.sourceId
+    and interactionTable.targetId = interactionViewMaxTime.targetId)
+  Join Trade_TradeEvent(tradeTable.ID = tradeEventTable.trade_id)
+  Join Trade_TradeEventViewMaxTradeEventDate(tradeTable.ID = tradeEventViewMaxTradeEventDate.trade_id)
+  Join TradeEvent_Person(tradeEventTable.person_id = personTable.ID)
+  Join Interaction_Interaction(interactionTable.sourceId = {target}.sourceId
+    and interactionTable.targetId = {target}.targetId)
+  Join Order_SalesPerson(orderTable.accountID = salesPersonTable.ACCOUNT_ID)
+  Join Order_Account(orderTable.accountID = accountTable.ID)
+  Join OrderPnlView_Order(orderPnlView.ORDER_ID = orderTable.ID)
+  Join OrderPnlViewOnView_Order(orderPnlViewOnView.ORDER_ID = orderTable.ID)
+  Join OrderNetativePnlView_Order(orderNegativePnlView.ORDER_ID = orderTable.ID)
+  Join OrderNegativePnlViewOnView_Order(orderNegativePnlViewOnView.ORDER_ID = orderTable.ID)
+  Join OrderPnlView_Person(orderPnlView.supportContactId = personTable.ID)
+  Join SalesPerson_PersonView(salesPersonTable.PERSON_ID = PersonFirmView.PERSON_ID)
+  Join OrderPnlTable_Order(orderPnlTable.ORDER_ID = orderTable.ID)
+  Join AccountPnlView_Account(accountOrderPnlView.accountId = accountTable.ID)
+  Join Person_OtherNames(personTable.ID = otherNamesTable.PERSON_ID)
+
+  Filter PositiveInteractionTimeFilter(interactionTable.time > 0)
+  Filter ProductSynonymFilter(productSchema.synonymTable.ID != 1)
+  Filter NonNegativePnlFilter(orderPnlTable.pnl > 0)
+  Filter LessThanEqualZeroPnlFilter(orderPnlTable.pnl <= 0)
+)
+
+Database model::relational::tests::dbInc
+(
+  Schema productSchema
+  (
+    Table productTable
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(200)
+    )
+  )
+
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER,
+    MANAGERID INTEGER
+  )
+  Table PersonTableExtension
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER,
+    MANAGERID INTEGER,
+    birthDate DATE
+  )
+  Table differentPersonTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER,
+    MANAGERID INTEGER
+  )
+  Table firmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(200),
+    ADDRESSID INTEGER,
+    CEOID INTEGER
+  )
+  Table firmExtensionTable
+  (
+    firmId INTEGER PRIMARY KEY,
+    legalName VARCHAR(200),
+    establishedDate DATE
+  )
+  Table otherFirmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(200),
+    ADDRESSID INTEGER
+  )
+  Table addressTable
+  (
+    ID INTEGER PRIMARY KEY,
+    TYPE INTEGER,
+    NAME VARCHAR(200),
+    STREET VARCHAR(100),
+    COMMENTS VARCHAR(100)
+  )
+  Table locationTable
+  (
+    ID INTEGER PRIMARY KEY,
+    PERSONID INTEGER,
+    PLACE VARCHAR(200),
+    date DATE
+  )
+  Table placeOfInterestTable
+  (
+    ID INTEGER PRIMARY KEY,
+    locationID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200)
+  )
+
+  View PersonFirmView
+  (
+    PERSON_ID: personTable.ID PRIMARY KEY,
+    lastName: personTable.LASTNAME,
+    firm_name: [model::relational::tests::dbInc]@Firm_Person | firmTable.LEGALNAME
+  )
+  View personViewWithGroupBy
+  (
+    ~groupBy
+    (
+      personTable.ID
+    )
+    id: personTable.ID PRIMARY KEY,
+    maxage: max(personTable.AGE)
+  )
+  View PersonViewWithDistinct
+  (
+    ~distinct
+    id: [model::relational::tests::dbInc]@PersonWithPersonView | personTable.ID PRIMARY KEY,
+    firstName: [model::relational::tests::dbInc]@PersonWithPersonView | personTable.FIRSTNAME,
+    lastName: [model::relational::tests::dbInc]@PersonWithPersonView | personTable.LASTNAME,
+    firmId: [model::relational::tests::dbInc]@PersonWithPersonView | personTable.FIRMID
+  )
+
+  Join personViewWithFirmTable(firmTable.ID = PersonViewWithDistinct.firmId)
+  Join PersonWithPersonView(personTable.ID = personViewWithGroupBy.id
+    and personTable.AGE = personViewWithGroupBy.maxage)
+  Join Address_Firm(addressTable.ID = firmTable.ADDRESSID)
+  Join Address_Person(addressTable.ID = personTable.ADDRESSID)
+  Join Firm_Ceo(firmTable.CEOID = personTable.ID)
+  Join Firm_Person(firmTable.ID = personTable.FIRMID)
+  Join FirmExtension_PersonExtension(firmExtensionTable.firmId = PersonTableExtension.FIRMID)
+  Join Person_Location(personTable.ID = locationTable.PERSONID)
+  Join Person_Manager(personTable.MANAGERID = {target}.ID)
+  Join location_PlaceOfInterest(locationTable.ID = placeOfInterestTable.locationID)
+  Join Person_OtherFirm(personTable.FIRMID = otherFirmTable.ID)
+
+  Filter FirmXFilter(firmTable.LEGALNAME = 'Firm X')
+)
+
+
+###Pure
+Enum model::pure::tests::model::simple::GeographicEntityType
+{
+  {doc.doc = 'A city, town, village, or other urban area.'} CITY,
+  <<doc.deprecated>> COUNTRY,
+  {doc.doc = 'Any geographic entity other than a city or country.'} REGION
+}
+
+Enum model::owl::tests::model::OrgLevelType
+{
+  VP,
+  MD,
+  PMD
+}
+
+Enum model::pure::tests::model::simple::ProductSynonymType
+{
+  CUSIP,
+  ISIN,
+  GSN
+}
+
+Enum model::owl::tests::model::GenderType
+{
+  MALE,
+  FEMALE
+}
+
+Class model::relational::tests::mapping::union::extend::Person extends model::pure::tests::model::simple::Person
+{
+}
+
+Class model::pure::tests::model::simple::Location extends model::pure::tests::model::simple::GeographicEntity
+{
+  place: String[1];
+  censusdate: Date[0..1];
+}
+
+Class model::pure::tests::model::simple::Department extends model::pure::tests::model::simple::Organization
+{
+}
+
+Class model::pure::tests::model::simple::Bridge
+{
+}
+
+Class model::pure::tests::model::simple::GeographicEntity
+{
+  type: model::pure::tests::model::simple::GeographicEntityType[1];
+}
+
+Class model::pure::tests::model::simple::Trade
+{
+  id: Integer[1];
+  date: StrictDate[1];
+  quantity: Float[1];
+  product: model::pure::tests::model::simple::Product[0..1];
+  settlementDateTime: DateTime[0..1];
+  latestEventDate: StrictDate[0..1];
+  events: model::pure::tests::model::simple::TradeEvent[*];
+  productIdentifier() {if(
+  $this.product->isNotEmpty(),
+  |if(
+    $this.product.cusip->isNotEmpty(),
+    |$this.product.cusip->toOne(),
+    |$this.product->toOne().name
+  ),
+  |'Unknown'
+)}: String[1];
+  filterProductByNameAndTradeDate() {$this.product->filter(
+  p|($p.name == ' test') &&
+    ($this.date == %2020-01-01)
+)}: model::pure::tests::model::simple::Product[*];
+  classificationType() {$this.product->filter(
+  p|$p.name == ' test'
+).classification(%2020-01-01)->toOne().type}: String[1];
+  productDescription() {if(
+  $this.product->isEmpty(),
+  |'Unknown',
+  |$this.product->toOne().name
+)}: String[1];
+  accountDescription() {if(
+  $this.account->isNotEmpty(),
+  |$this.account->toOne().name,
+  |'Unknown'
+)}: String[1];
+  productIdentifierWithNull() {if(
+  $this.product->isNotEmpty(),
+  |if(
+    $this.product.cusip->isNotEmpty(),
+    |$this.product.cusip,
+    |$this.product.name
+  ),
+  |[]
+)}: String[0..1];
+  customerQuantity() {$this.quantity->minus()}: Float[1];
+  daysToLastEvent() {$this.latestEventDate->toOne()->dateDiff(
+  $this.date,
+  meta::pure::functions::date::DurationUnit.DAYS
+)}: Integer[1];
+  latestEvent() {$this.events->filter(
+  e|$e.date ==
+    $this.latestEventDate
+)->toOne()}: model::pure::tests::model::simple::TradeEvent[1];
+  eventsByDate(date: Date[1]) {$this.events->filter(
+  e|$e.date ==
+    $date
+)}: model::pure::tests::model::simple::TradeEvent[*];
+  tradeDateEventType() {$this.eventsByDate($this.date->toOne()).eventType->toOne()}: String[1];
+  tradeDateEvent() {$this.eventsByDate($this.date->toOne())->toOne()}: model::pure::tests::model::simple::TradeEvent[1];
+  tradeDateEventTypeInlined() {$this.events->filter(
+  e|$e.date ==
+    $this.date
+).eventType->toOne()}: String[1];
+  initiator() {$this.eventsByDate($this.date).initiator->toOne()}: model::pure::tests::model::simple::Person[0..1];
+  initiatorInlined() {$this.events->filter(
+  e|$e.date ==
+    $this.date
+).initiator->toOne()}: model::pure::tests::model::simple::Person[0..1];
+  initiatorInlinedByProductName() {$this.events->filter(
+  e|$e.eventType ==
+    $this.product.name
+).initiator->toOneMany()}: model::pure::tests::model::simple::Person[1..*];
+}
+
+Class model::owl::tests::model::FemaleExecutive extends model::owl::tests::model::Executive, model::owl::tests::model::FemalePerson
+{
+}
+
+Class model::owl::tests::model::Professional
+{
+}
+
+Class model::pure::tests::model::simple::Division extends model::pure::tests::model::simple::Organization
+{
+}
+
+Class model::pure::tests::model::simple::PlaceOfInterest
+{
+  name: String[1];
+}
+
+Class model::relational::tests::mapping::subType::MyProduct extends model::pure::tests::model::simple::Product
+{
+}
+
+Class model::pure::tests::model::simple::Product
+{
+  name: String[1];
+  classification: model::pure::tests::model::simple::ProductClassification[0..1];
+  cusip() {$this.synonymByType(model::pure::tests::model::simple::ProductSynonymType.CUSIP).name}: String[1];
+  isin() {$this.synonymByType(model::pure::tests::model::simple::ProductSynonymType.ISIN).name}: String[1];
+  cusipSynonym() {$this.synonymByType(model::pure::tests::model::simple::ProductSynonymType.CUSIP)}: model::pure::tests::model::simple::Synonym[1];
+  isinSynonym() {$this.synonymByType(model::pure::tests::model::simple::ProductSynonymType.ISIN)}: model::pure::tests::model::simple::Synonym[1];
+}
+
+Class model::owl::tests::model::Organization
+{
+  officialName: String[0..1];
+}
+
+Class model::pure::tests::model::simple::Interaction
+{
+  id: String[1];
+  source: model::pure::tests::model::simple::Person[0..1];
+  target: model::pure::tests::model::simple::Person[0..1];
+  active: Boolean[1];
+  time: Integer[1];
+  longestInteractionBetweenSourceAndTarget: Integer[1];
+}
+
+Class model::owl::tests::model::EntityWithLocation
+{
+  location: model::owl::tests::model::GeoLocation[0..1];
+}
+
+Class model::pure::tests::model::simple::Firm extends model::pure::tests::model::simple::EntityWithAddress
+{
+  legalName: String[1];
+  nickName: String[0..1];
+  averageEmployeesAge() {$this.employees.age->average() * 2.0}: Float[1];
+  sumEmployeesAge() {$this.employees.age->sum()}: Integer[1];
+  maxEmployeesAge() {$this.employees.age->max()}: Integer[0..1];
+  nameAndAddress() {$this.legalName + ',' + $this.address->toOne().name}: String[1];
+  isfirmX() {if(
+  $this.legalName->toOne() == 'Firm X',
+  |'Yes',
+  |'No'
+)}: String[1];
+  nameAndMaskedAddress() {if(
+  $this.legalName == 'Firm X',
+  |$this.legalName + ' , Top Secret',
+  |$this.legalName + ',' + $this.address->toOne().name
+)}: String[1];
+  employeeByLastName(lastName: String[1]) {$this.employees->filter(
+  e|$e.lastName ==
+    $lastName
+)->toOne()}: model::pure::tests::model::simple::Person[0..1];
+  employeeByLastNameFirstName(lastName: String[1]) {$this.employees->filter(
+  e|$e.lastName ==
+    $lastName
+)->toOne().firstName}: String[0..1];
+  employeeByLastNameWhereVarIsFirstEqualArg(lastName: String[1]) {$this.employees->filter(
+  e|$lastName ==
+    $e.lastName
+)->toOne()}: model::pure::tests::model::simple::Person[0..1];
+  employeesByAge(age: Integer[1]) {$this.employees->filter(
+  e|$e.age->toOne() <
+    $age
+)}: model::pure::tests::model::simple::Person[*];
+  employeesByCityOrManager(city: String[1],managerName: String[1]) {$this.employees->filter(
+  e|($e.address.name ==
+    $city) ||
+    ($e.manager.name ==
+    $managerName)
+)}: model::pure::tests::model::simple::Person[*];
+  employeesByCityOrManagerAndLastName(name: String[1],city: String[1],managerName: String[1]) {$this.employees->filter(
+  e|($e.lastName ==
+    $name) &&
+    (($e.address.name ==
+    $city) ||
+    ($e.manager.name ==
+    $managerName))
+)->toOne()}: model::pure::tests::model::simple::Person[1];
+  hasEmployeeBelowAge(age: Integer[1]) {$this.employees->exists(
+  e|$e.age->toOne() <
+    $age
+)}: Boolean[1];
+  employeeWithFirmAddressName() {$this.employees->filter(
+  e|$e.name ==
+    $this.address.name
+)->first()}: model::pure::tests::model::simple::Person[0..1];
+  employeeWithAddressName(name: String[1]) {$this.employees->filter(
+  e|$e.address.name ==
+    $name
+)->first()}: model::pure::tests::model::simple::Person[0..1];
+  employeesWithAddressNameSorted(name: String[1]) {$this.employees->filter(
+  e|$e.address.name->toOne()->trim() ==
+    $name
+)->sortBy(
+  #/model::pure::tests::model::simple::Person/lastName#
+).lastName->joinStrings('')}: String[0..1];
+  employeeAddressesWithFirmAddressName(name: String[1],t: model::pure::tests::model::simple::GeographicEntityType[1]) {$this.employees->map(
+  e|$e.address
+)->filter(
+  x|($name ==
+    $this.address.name) &&
+    ($t ==
+    $x.type)
+)}: model::pure::tests::model::simple::Address[*];
+  isfirmXGroup() {$this.legalName->in(
+  [
+    'Firm X',
+    'Firm X & Co.',
+    'Firm X and Group'
+  ]
+)}: Boolean[1];
+}
+
+Class model::pure::tests::model::simple::Account
+{
+  name: String[1];
+  createDate: StrictDate[1];
+  accountCategory() {if(
+  $this.name->in(
+    [
+      'Account 1',
+      'Account 2'
+    ]
+  ),
+  |'A',
+  |'B'
+)}: String[1];
+  isTypeA() {if(
+  $this.name->contains('2'),
+  |true,
+  |false
+)}: Boolean[1];
+}
+
+Class model::pure::tests::model::simple::Order
+{
+  id: Integer[1];
+  date: StrictDate[1];
+  quantity: Float[1];
+  settlementDateTime: DateTime[0..1];
+  pnl: Float[0..1];
+  pnlContact: model::pure::tests::model::simple::Person[0..1];
+  zeroPnl: Boolean[1];
+}
+
+Class model::pure::tests::model::simple::PersonExtension extends model::pure::tests::model::simple::Person
+{
+  birthdate: Date[0..1];
+  birthYear() {$this.birthdate->year()}: Integer[0..1];
+}
+
+Class model::owl::tests::model::MalePerson extends model::owl::tests::model::Person
+{
+}
+
+Class model::pure::tests::model::simple::EntityWithAddress
+{
+  address: model::pure::tests::model::simple::Address[0..1];
+}
+
+Class model::pure::tests::model::simple::OrderPnl
+{
+  pnl: Float[1];
+  supportContactName: String[1];
+  order: model::pure::tests::model::simple::Order[1];
+}
+
+Class model::owl::tests::model::Executive extends model::owl::tests::model::Professional
+{
+  organization: model::owl::tests::model::Business[0..1];
+  seniorityLevel: model::owl::tests::model::OrgLevelType[0..1];
+}
+
+Class model::relational::tests::mapping::union::extend::Address extends model::pure::tests::model::simple::Address
+{
+}
+
+Class model::owl::tests::model::FemalePerson extends model::owl::tests::model::Person
+{
+}
+
+Class model::owl::tests::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  gender: model::owl::tests::model::GenderType[1];
+  nicknames: String[2..*];
+}
+
+Class model::pure::tests::model::simple::ProductClassification
+{
+  type: String[1];
+  description: String[1];
+}
+
+Class model::pure::tests::model::simple::Team extends model::pure::tests::model::simple::Organization
+{
+}
+
+Class model::owl::tests::model::GeoLocation
+{
+  engName: String[0..1];
+}
+
+Class model::pure::tests::model::simple::PersonNameParameter
+{
+  lastNameFirst: Boolean[1];
+  nested: model::pure::tests::model::simple::PersonNameParameterNested[1];
+}
+
+Class model::relational::tests::mapping::subType::CreditRating
+{
+  description: String[1];
+}
+
+Class model::relational::tests::mapping::union::extend::Firm extends model::pure::tests::model::simple::Firm
+{
+}
+
+Class model::pure::tests::model::simple::AccountPnl
+{
+  pnl: Float[1];
+}
+
+Class model::pure::tests::model::simple::Person extends model::pure::tests::model::simple::EntityWithAddress, model::pure::tests::model::simple::EntityWithLocations
+{
+  firstName: String[1];
+  lastName: String[1];
+  otherNames: String[*];
+  extraInformation: String[0..1];
+  manager: model::pure::tests::model::simple::Person[0..1];
+  age: Integer[0..1];
+  nickName: String[0..1];
+  activeEmployment: Boolean[0..1];
+  name() {$this.firstName + ' ' + $this.lastName}: String[1];
+  nameWithTitle(title: String[1]) {$title + ' ' + $this.firstName + ' ' + $this.lastName}: String[1];
+  nameWithPrefixAndSuffix(prefix: String[0..1],suffixes: String[*]) {if(
+  $prefix->isEmpty(),
+  |if(
+    $suffixes->isEmpty(),
+    |$this.firstName + ' ' + $this.lastName,
+    |$this.firstName + ' ' + $this.lastName + ', ' + $suffixes->joinStrings(', ')
+  ),
+  |if(
+    $suffixes->isEmpty(),
+    |$prefix->toOne() + ' ' + $this.firstName + ' ' + $this.lastName,
+    |$prefix->toOne() + ' ' + $this.firstName + ' ' + $this.lastName + ', ' + $suffixes->joinStrings(', ')
+  )
+)}: String[1];
+  fullName(lastNameFirst: Boolean[1]) {if(
+  $lastNameFirst,
+  |$this.lastName + ', ' + $this.firstName,
+  |$this.firstName + ' ' + $this.lastName
+)}: String[1];
+  parameterizedName(personNameParameter: model::pure::tests::model::simple::PersonNameParameter[1]) {if(
+  $personNameParameter.lastNameFirst,
+  |$personNameParameter.nested.prefix + ' ' + $this.lastName + ', ' + $this.firstName,
+  |$this.firstName + ' ' + $this.lastName
+)}: String[1];
+  allOrganizations() {$this.organizations->concatenate(
+  $this.organizations->map(
+    o|$o.superOrganizations
+  )
+)->removeDuplicates()}: model::pure::tests::model::simple::Organization[*];
+  constant() {'constant'}: String[1];
+  addresses() {$this.address->concatenate(
+  $this.firm.address
+)}: model::pure::tests::model::simple::Address[*];
+}
+
+Class model::owl::tests::model::Business extends model::owl::tests::model::Organization, model::owl::tests::model::EntityWithLocation
+{
+  address: String[0..1];
+}
+
+Class model::pure::tests::model::simple::Organization
+{
+  name: String[1];
+  superOrganizations() {if(
+  $this.parent->isEmpty(),
+  |[],
+  |$this.parent->concatenate(
+    $this.parent->toOne().superOrganizations
+  )
+)}: model::pure::tests::model::simple::Organization[*];
+  subOrganizations() {$this.children->concatenate(
+  $this.children->map(
+    c|$c.subOrganizations
+  )
+)->removeDuplicates()}: model::pure::tests::model::simple::Organization[*];
+  child(name: String[1]) {$this.children->filter(
+  c|$c.name ==
+    $name
+)->toOne()}: model::pure::tests::model::simple::Organization[1];
+  allMembers() {$this.members->concatenate(
+  $this.subOrganizations->map(
+    o|$o.members
+  )
+)->removeDuplicates()}: model::pure::tests::model::simple::Person[*];
+}
+
+Class model::pure::tests::model::simple::TradeEvent
+{
+  eventType: String[0..1];
+  date: StrictDate[1];
+  initiator: model::pure::tests::model::simple::Person[0..1];
+  traderAddress: String[0..1];
+}
+
+Class model::pure::tests::model::simple::Synonym
+{
+  typeAsString: String[1];
+  type: model::pure::tests::model::simple::ProductSynonymType[1];
+  name: String[1];
+}
+
+Class model::pure::tests::model::simple::FirmExtension extends model::pure::tests::model::simple::Firm
+{
+  establishedDate: Date[1];
+  employeesExt: model::pure::tests::model::simple::PersonExtension[*];
+  establishedYear() {$this.establishedDate->year()}: Integer[1];
+  allEmployeesLastName() {$this.employeesExt.lastName->joinStrings(',')}: String[0..1];
+}
+
+Class model::pure::tests::model::simple::EntityWithLocations
+{
+  locations: model::pure::tests::model::simple::Location[*];
+  locationsByType(types: model::pure::tests::model::simple::GeographicEntityType[*]) {$this.locations->filter(
+  l|$types->exists(
+    type|$l.type->is(
+      $type
+    )
+  )
+)}: model::pure::tests::model::simple::Location[*];
+}
+
+Class model::owl::tests::model::MaleExecutive extends model::owl::tests::model::Executive, model::owl::tests::model::MalePerson
+{
+}
+
+Class model::pure::tests::model::simple::PersonNameParameterNested
+{
+  prefix: String[1];
+}
+
+Class model::pure::tests::model::simple::Address extends model::pure::tests::model::simple::GeographicEntity
+{
+  name: String[1];
+  street: String[0..1];
+  comments: String[0..1];
+  description() {'D:' + $this.name}: String[1];
+}
+
+Association model::pure::tests::model::simple::Trade_Orders
+{
+  account: model::pure::tests::model::simple::Account[0..1];
+  orders: model::pure::tests::model::simple::Order[*];
+}
+
+Association model::pure::tests::model::simple::FirmCEO
+{
+  ceoFirm: model::pure::tests::model::simple::Firm[0..1];
+  ceo: model::pure::tests::model::simple::Person[0..1];
+}
+
+Association model::pure::tests::model::simple::PlacesOfInterest
+{
+  location: model::pure::tests::model::simple::Location[1];
+  placeOfInterest: model::pure::tests::model::simple::PlaceOfInterest[*];
+}
+
+Association model::pure::tests::model::simple::FirmOrganizations
+{
+  firm: model::pure::tests::model::simple::Firm[1];
+  organizations: model::pure::tests::model::simple::Organization[*];
+}
+
+Association model::pure::tests::model::simple::Membership
+{
+  organizations: model::pure::tests::model::simple::Organization[*];
+  members: model::pure::tests::model::simple::Person[*];
+}
+
+Association model::pure::tests::model::simple::Trade_Accounts
+{
+  account: model::pure::tests::model::simple::Account[0..1];
+  trades: model::pure::tests::model::simple::Trade[*];
+}
+
+Association model::owl::tests::model::OrgStructures
+{
+  parentOrg: model::owl::tests::model::Organization[0..1];
+  subOrgs: model::owl::tests::model::Organization[*];
+}
+
+Association model::pure::tests::model::simple::AddressLocation
+{
+  location: model::pure::tests::model::simple::Location[0..1];
+  addresses: model::pure::tests::model::simple::Address[*];
+}
+
+Association model::pure::tests::model::simple::BridgeAsso1
+{
+  bridge: model::pure::tests::model::simple::Bridge[0..1];
+  employees: model::pure::tests::model::simple::Person[*];
+}
+
+Association model::owl::tests::model::Parent_Children
+{
+  parents: model::owl::tests::model::Person[2];
+  children: model::owl::tests::model::Person[*];
+}
+
+Association model::pure::tests::model::simple::Employment
+{
+  firm: model::pure::tests::model::simple::Firm[0..1];
+  employees: model::pure::tests::model::simple::Person[*];
+}
+
+Association model::owl::tests::model::Business_Employees
+{
+  firm: model::owl::tests::model::Business[0..1];
+  employs: model::owl::tests::model::Person[*];
+}
+
+Association model::relational::tests::mapping::subType::ProductRating
+{
+  product: model::relational::tests::mapping::subType::MyProduct[1];
+  rating: model::relational::tests::mapping::subType::CreditRating[0..1];
+}
+
+Association model::pure::tests::model::simple::BridgeAsso2
+{
+  bridge: model::pure::tests::model::simple::Bridge[0..1];
+  firm: model::pure::tests::model::simple::Firm[0..1];
+}
+
+Association model::pure::tests::model::simple::SubOrganization
+{
+  parent: model::pure::tests::model::simple::Organization[0..1];
+  children: model::pure::tests::model::simple::Organization[*];
+}
+
+Association model::pure::tests::model::simple::Account_AccountPnl
+{
+  account: model::pure::tests::model::simple::Account[0..1];
+  accountPnl: model::pure::tests::model::simple::AccountPnl[0..1];
+}
+
+Association model::owl::tests::model::Person_Accounts
+{
+  acctOwner: model::owl::tests::model::Person[0..1];
+  accounts: model::pure::tests::model::simple::Account[*];
+}
+
+Association model::pure::tests::model::simple::ProdSynonym
+{
+  synonyms: model::pure::tests::model::simple::Synonym[*];
+  product: model::pure::tests::model::simple::Product[1];
+  synonymByType(type: model::pure::tests::model::simple::ProductSynonymType[1]) {$this.synonyms->filter(
+  s|$s.type ==
+    $type
+)->toOne()}: model::pure::tests::model::simple::Synonym[1];
+  synonymsByTypes(types: model::pure::tests::model::simple::ProductSynonymType[*]) {$this.synonyms->filter(
+  s|$s.type->in(
+    $types
+  )
+)}: model::pure::tests::model::simple::Synonym[*];
+}
+
+
+###Mapping
+Mapping model::relational::tests::simpleRelationalMapping
+(
+  model::pure::tests::model::simple::Person: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::dbInc]personTable.ID
+    )
+    ~mainTable [model::relational::tests::dbInc]personTable
+    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,
+    age: [model::relational::tests::dbInc]personTable.AGE,
+    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,
+    firm[model_pure_tests_model_simple_Firm]: [model::relational::tests::dbInc]@Firm_Person,
+    address[model_pure_tests_model_simple_Address]: [model::relational::tests::dbInc]@Address_Person,
+    locations[model_pure_tests_model_simple_Location]: [model::relational::tests::dbInc]@Person_Location,
+    manager[model_pure_tests_model_simple_Person]: [model::relational::tests::dbInc]@Person_Manager
+  }
+  model::pure::tests::model::simple::PersonExtension extends [model_pure_tests_model_simple_Person]: Relational
+  {
+    ~mainTable [model::relational::tests::dbInc]PersonTableExtension
+    birthdate: [model::relational::tests::dbInc]PersonTableExtension.birthDate
+  }
+  model::pure::tests::model::simple::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::dbInc]firmTable.ID
+    )
+    ~mainTable [model::relational::tests::dbInc]firmTable
+    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME,
+    employees[model_pure_tests_model_simple_Person]: [model::relational::tests::dbInc]@Firm_Person,
+    address[model_pure_tests_model_simple_Address]: [model::relational::tests::dbInc]@Address_Firm
+  }
+  model::pure::tests::model::simple::FirmExtension: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::dbInc]firmExtensionTable.firmId
+    )
+    ~mainTable [model::relational::tests::dbInc]firmExtensionTable
+    legalName: [model::relational::tests::dbInc]firmExtensionTable.legalName,
+    establishedDate: [model::relational::tests::dbInc]firmExtensionTable.establishedDate,
+    employeesExt
+    (
+      birthdate: [model::relational::tests::dbInc]@FirmExtension_PersonExtension | [model::relational::tests::dbInc]PersonTableExtension.birthDate
+    )
+  }
+  model::pure::tests::model::simple::Address: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::dbInc]addressTable.ID
+    )
+    ~mainTable [model::relational::tests::dbInc]addressTable
+    name: [model::relational::tests::dbInc]addressTable.NAME,
+    street: [model::relational::tests::dbInc]addressTable.STREET,
+    type: EnumerationMapping GE: [model::relational::tests::dbInc]addressTable.TYPE,
+    comments: [model::relational::tests::dbInc]addressTable.COMMENTS
+  }
+  model::pure::tests::model::simple::Location: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::dbInc]locationTable.ID
+    )
+    ~mainTable [model::relational::tests::dbInc]locationTable
+    place: [model::relational::tests::dbInc]locationTable.PLACE,
+    censusdate: [model::relational::tests::dbInc]locationTable.date
+  }
+  model::pure::tests::model::simple::PlaceOfInterest: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::dbInc]placeOfInterestTable.ID,
+      [model::relational::tests::dbInc]placeOfInterestTable.locationID
+    )
+    ~mainTable [model::relational::tests::dbInc]placeOfInterestTable
+    name: [model::relational::tests::dbInc]placeOfInterestTable.NAME
+  }
+  model::pure::tests::model::simple::Product: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::db]productSchema.productTable.ID
+    )
+    ~mainTable [model::relational::tests::db]productSchema.productTable
+    name: [model::relational::tests::db]productSchema.productTable.NAME,
+    synonyms[model_pure_tests_model_simple_Synonym]: [model::relational::tests::db]@Product_Synonym
+  }
+  model::pure::tests::model::simple::Synonym: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::db]productSchema.synonymTable.ID
+    )
+    ~mainTable [model::relational::tests::db]productSchema.synonymTable
+    name: [model::relational::tests::db]productSchema.synonymTable.NAME,
+    typeAsString: [model::relational::tests::db]productSchema.synonymTable.TYPE,
+    type: EnumerationMapping SynonymEnum: [model::relational::tests::db]productSchema.synonymTable.TYPE,
+    product[model_pure_tests_model_simple_Product]: [model::relational::tests::db]@Product_Synonym
+  }
+  model::pure::tests::model::simple::Trade: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::db]tradeTable.ID
+    )
+    ~mainTable [model::relational::tests::db]tradeTable
+    id: [model::relational::tests::db]tradeTable.ID,
+    quantity: [model::relational::tests::db]tradeTable.quantity,
+    account[model_pure_tests_model_simple_Account]: [model::relational::tests::db]@Trade_Account,
+    product[model_pure_tests_model_simple_Product]: [model::relational::tests::db]@Trade_Product,
+    date: [model::relational::tests::db]tradeTable.tradeDate,
+    settlementDateTime: [model::relational::tests::db]tradeTable.settlementDateTime,
+    latestEventDate: [model::relational::tests::db]@Trade_TradeEventViewMaxTradeEventDate | [model::relational::tests::db]tradeEventViewMaxTradeEventDate.maxTradeEventDate,
+    events[model_pure_tests_model_simple_TradeEvent]: [model::relational::tests::db]@Trade_TradeEvent
+  }
+  model::pure::tests::model::simple::Order: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::db]orderTable.ID
+    )
+    ~mainTable [model::relational::tests::db]orderTable
+    id: [model::relational::tests::db]orderTable.ID,
+    quantity: [model::relational::tests::db]orderTable.quantity,
+    date: [model::relational::tests::db]orderTable.orderDate,
+    settlementDateTime: [model::relational::tests::db]orderTable.settlementDateTime,
+    pnl: [model::relational::tests::db]@OrderPnlView_Order | [model::relational::tests::db]orderPnlView.pnl,
+    pnlContact[model_pure_tests_model_simple_Person]: [model::relational::tests::db]@OrderPnlView_Order > [model::relational::tests::db]@OrderPnlView_Person,
+    zeroPnl: case([model::relational::tests::db]@OrderPnlView_Order | equal([model::relational::tests::db]orderPnlView.pnl, 0), 'true', 'false')
+  }
+  model::pure::tests::model::simple::OrderPnl: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::db]orderPnlView.ORDER_ID
+    )
+    ~mainTable [model::relational::tests::db]orderPnlView
+    pnl: [model::relational::tests::db]orderPnlView.pnl,
+    supportContactName: [model::relational::tests::db]orderPnlView.supportContact,
+    order[model_pure_tests_model_simple_Order]: [model::relational::tests::db]@OrderPnlView_Order
+  }
+  model::pure::tests::model::simple::AccountPnl: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::db]accountOrderPnlView.accountId
+    )
+    ~mainTable [model::relational::tests::db]accountOrderPnlView
+    pnl: [model::relational::tests::db]accountOrderPnlView.orderPnl,
+    account[model_pure_tests_model_simple_Account]: [model::relational::tests::db]@AccountPnlView_Account
+  }
+  model::pure::tests::model::simple::TradeEvent: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::db]tradeEventTable.EVENT_ID
+    )
+    ~mainTable [model::relational::tests::db]tradeEventTable
+    eventType: [model::relational::tests::db]tradeEventTable.eventType,
+    date: [model::relational::tests::db]tradeEventTable.eventDate,
+    initiator[model_pure_tests_model_simple_Person]: [model::relational::tests::db]@TradeEvent_Person,
+    traderAddress: [model::relational::tests::db]@TradeEvent_Person > [model::relational::tests::dbInc]@Address_Person | concat([model::relational::tests::db]addressTable.NAME, [model::relational::tests::db]addressTable.STREET)
+  }
+  model::pure::tests::model::simple::Account: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::db]accountTable.ID
+    )
+    ~mainTable [model::relational::tests::db]accountTable
+    name: [model::relational::tests::db]accountTable.name,
+    createDate: [model::relational::tests::db]accountTable.createDate,
+    trades[model_pure_tests_model_simple_Trade]: [model::relational::tests::db]@Trade_Account,
+    orders[model_pure_tests_model_simple_Order]: [model::relational::tests::db]@Order_Account,
+    accountPnl[model_pure_tests_model_simple_AccountPnl]: [model::relational::tests::db]@AccountPnlView_Account
+  }
+  model::pure::tests::model::simple::Interaction: Relational
+  {
+    ~primaryKey
+    (
+      [model::relational::tests::db]interactionTable.ID
+    )
+    ~mainTable [model::relational::tests::db]interactionTable
+    id: [model::relational::tests::db]interactionTable.ID,
+    time: [model::relational::tests::db]interactionTable.time,
+    source[model_pure_tests_model_simple_Person]: [model::relational::tests::db]@Interaction_Source,
+    target[model_pure_tests_model_simple_Person]: [model::relational::tests::db]@Interaction_Target,
+    active: case(equal([model::relational::tests::db]interactionTable.active, 'Y'), 'true', 'false'),
+    longestInteractionBetweenSourceAndTarget: [model::relational::tests::db]@InteractionTable_InteractionViewMaxTime | [model::relational::tests::db]interactionViewMaxTime.maxTime
+  }
+
+  model::pure::tests::model::simple::GeographicEntityType: EnumerationMapping GE
+  {
+    CITY: [1]
+  }
+  model::pure::tests::model::simple::ProductSynonymType: EnumerationMapping SynonymEnum
+  {
+    CUSIP: ['CUSIP'],
+    ISIN: ['ISIN']
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection model::runtime::H2Connection
+{
+  store: model::relational::tests::db;
+  type: H2;
+  specification: Static
+  {
+    name: 'myDb';
+    host: 'somehost';
+    port: 999;
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime model::MyRuntime
+{
+  mappings:
+  [
+    model::relational::tests::simpleRelationalMapping
+  ];
+  connections:
+  [
+    model::relational::tests::db:
+    [
+      connection_1: model::runtime::H2Connection
+    ]
+  ];
+}

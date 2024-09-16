@@ -18,6 +18,7 @@ import {
   type Type,
   type ValueSpecification,
   type FunctionExpression,
+  type LambdaFunction,
   Enumeration,
   PrimitiveType,
 } from '@finos/legend-graph';
@@ -29,7 +30,7 @@ import {
   PostFilterValueSpecConditionValueState,
 } from '../QueryBuilderPostFilterState.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../projection/QueryBuilderProjectionColumnState.js';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
+import { buildPostFilterConditionExpressionHelper } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { isPropertyExpressionChainOptional } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
@@ -91,11 +92,13 @@ export class QueryBuilderPostFilterOperator_IsEmpty
 
   buildPostFilterConditionExpression(
     postFilterConditionState: PostFilterConditionState,
+    parentExpression: LambdaFunction | undefined,
   ): ValueSpecification | undefined {
-    return buildPostFilterConditionExpression(
+    return buildPostFilterConditionExpressionHelper(
       postFilterConditionState,
       this,
       undefined,
+      parentExpression,
     );
   }
 

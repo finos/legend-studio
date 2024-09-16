@@ -3247,6 +3247,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-manual-tests@workspace:packages/legend-manual-tests"
   dependencies:
+    "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-quality": "workspace:*"

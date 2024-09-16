@@ -18,6 +18,7 @@ import {
   type Type,
   type ValueSpecification,
   type FunctionExpression,
+  type LambdaFunction,
   PRIMITIVE_TYPE,
   PrimitiveType,
 } from '@finos/legend-graph';
@@ -36,7 +37,7 @@ import {
   buildNotExpression,
   unwrapNotExpression,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
+import { buildPostFilterConditionExpressionHelper } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graph/QueryBuilderMetaModelConst.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../../../../QueryBuilderStateHashUtils.js';
 import { buildDefaultInstanceValue } from '../../../../shared/ValueSpecificationEditorHelper.js';
@@ -88,11 +89,13 @@ export class QueryBuilderPostFilterOperator_EndWith
 
   buildPostFilterConditionExpression(
     postFilterConditionState: PostFilterConditionState,
+    parentExpression: LambdaFunction | undefined,
   ): ValueSpecification | undefined {
-    return buildPostFilterConditionExpression(
+    return buildPostFilterConditionExpressionHelper(
       postFilterConditionState,
       this,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.ENDS_WITH,
+      parentExpression,
     );
   }
 
@@ -122,9 +125,11 @@ export class QueryBuilderPostFilterOperator_NotEndWith extends QueryBuilderPostF
 
   override buildPostFilterConditionExpression(
     postFilterConditionState: PostFilterConditionState,
+    parentExpression: LambdaFunction | undefined,
   ): ValueSpecification | undefined {
     const expression = super.buildPostFilterConditionExpression(
       postFilterConditionState,
+      parentExpression,
     );
     return expression ? buildNotExpression(expression) : undefined;
   }

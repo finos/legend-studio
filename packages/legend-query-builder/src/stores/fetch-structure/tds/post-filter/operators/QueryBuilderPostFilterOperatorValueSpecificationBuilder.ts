@@ -15,9 +15,9 @@
  */
 
 import {
-  type FunctionExpression,
   AbstractPropertyExpression,
   extractElementNameFromPath,
+  FunctionExpression,
   GenericType,
   GenericTypeExplicitReference,
   PrimitiveInstanceValue,
@@ -28,6 +28,8 @@ import {
   Multiplicity,
   PrimitiveType,
   type PureModel,
+  type LambdaFunction,
+  getRelationTypeGenericType,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
@@ -44,38 +46,55 @@ export const buildtdsPropertyExpressionFromColState = (
   colState: QueryBuilderTDSColumnState,
   graph: PureModel,
   operator: QueryBuilderPostFilterOperator | undefined,
-): AbstractPropertyExpression => {
-  const tdsPropertyExpression = new AbstractPropertyExpression('');
-  let tdsDerivedPropertyName: TDS_COLUMN_GETTER;
-  const correspondingTDSDerivedProperty = operator
-    ? operator.getTDSColumnGetter()
+  parentExpression: LambdaFunction | undefined,
+): FunctionExpression => {
+  const relationType = parentExpression?.expressionSequence[0]
+    ? getRelationTypeGenericType(parentExpression.expressionSequence[0])
     : undefined;
-  if (correspondingTDSDerivedProperty) {
-    tdsDerivedPropertyName = correspondingTDSDerivedProperty;
-  } else {
-    const type = guaranteeNonNullable(colState.getColumnType());
-    tdsDerivedPropertyName = getTDSColumnDerivedProperyFromType(type);
-  }
-  tdsPropertyExpression.func = PropertyExplicitReference.create(
-    guaranteeNonNullable(
-      getAllClassDerivedProperties(
-        graph.getClass(QUERY_BUILDER_PURE_PATH.TDS_ROW),
-      ).find((p) => p.name === tdsDerivedPropertyName),
-    ),
-  );
   const variableName = new VariableExpression(
     filterConditionState.postFilterState.lambdaParameterName,
     Multiplicity.ONE,
   );
-  const colInstanceValue = new PrimitiveInstanceValue(
-    GenericTypeExplicitReference.create(new GenericType(PrimitiveType.STRING)),
-  );
-  colInstanceValue.values = [colState.columnName];
-  tdsPropertyExpression.parametersValues = [variableName, colInstanceValue];
-  return tdsPropertyExpression;
+  if (relationType) {
+    const col = guaranteeNonNullable(
+      relationType.columns.find((e) => colState.columnName === e.name),
+      `Can't find property ${colState.columnName} in relation`,
+    );
+    const _funcExp = new FunctionExpression(col.name);
+    _funcExp.func = col;
+    _funcExp.parametersValues = [variableName];
+    return _funcExp;
+  } else {
+    const tdsPropertyExpression = new AbstractPropertyExpression('');
+    let tdsDerivedPropertyName: TDS_COLUMN_GETTER;
+    const correspondingTDSDerivedProperty = operator
+      ? operator.getTDSColumnGetter()
+      : undefined;
+    if (correspondingTDSDerivedProperty) {
+      tdsDerivedPropertyName = correspondingTDSDerivedProperty;
+    } else {
+      const type = guaranteeNonNullable(colState.getColumnType());
+      tdsDerivedPropertyName = getTDSColumnDerivedProperyFromType(type);
+    }
+    tdsPropertyExpression.func = PropertyExplicitReference.create(
+      guaranteeNonNullable(
+        getAllClassDerivedProperties(
+          graph.getClass(QUERY_BUILDER_PURE_PATH.TDS_ROW),
+        ).find((p) => p.name === tdsDerivedPropertyName),
+      ),
+    );
+    const colInstanceValue = new PrimitiveInstanceValue(
+      GenericTypeExplicitReference.create(
+        new GenericType(PrimitiveType.STRING),
+      ),
+    );
+    colInstanceValue.values = [colState.columnName];
+    tdsPropertyExpression.parametersValues = [variableName, colInstanceValue];
+    return tdsPropertyExpression;
+  }
 };
 
-export const buildPostFilterConditionExpression = (
+export const buildPostFilterConditionExpressionHelper = (
   filterConditionState: PostFilterConditionState,
   operator: QueryBuilderPostFilterOperator,
   /**
@@ -85,6 +104,7 @@ export const buildPostFilterConditionExpression = (
    * This is the case because with TDS, we are provided some filter-like operators, e.g. IS_NULL, IS_NOT_NULL, etc.
    */
   operatorFunctionFullPath: string | undefined,
+  parentExpression: LambdaFunction | undefined,
 ): FunctionExpression => {
   // primitives
   const graph =
@@ -96,6 +116,7 @@ export const buildPostFilterConditionExpression = (
     filterConditionState.leftConditionValue,
     graph,
     operator,
+    parentExpression,
   );
 
   if (operatorFunctionFullPath) {
@@ -103,7 +124,10 @@ export const buildPostFilterConditionExpression = (
       extractElementNameFromPath(operatorFunctionFullPath),
     );
     expression.parametersValues.push(tdsPropertyExpression);
-    filterConditionState.rightConditionValue.appendConditionValue(expression);
+    filterConditionState.rightConditionValue.appendConditionValue(
+      expression,
+      parentExpression,
+    );
     return expression;
   } else {
     return tdsPropertyExpression;

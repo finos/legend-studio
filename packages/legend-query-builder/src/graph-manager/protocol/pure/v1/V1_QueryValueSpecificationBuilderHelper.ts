@@ -23,6 +23,7 @@ import {
   guaranteeType,
   isNonNullable,
   returnUndefOnError,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
   type V1_GraphBuilderContext,
@@ -62,6 +63,10 @@ import {
   ColSpecArrayInstance,
   ColSpecArray,
   ColSpec,
+  Relation_RelationType,
+  Relation_RelationalColumn,
+  getValueSpecificationReturnType,
+  Relation_Relation,
 } from '@finos/legend-graph';
 import {
   QUERY_BUILDER_PURE_PATH,
@@ -641,7 +646,7 @@ const V1_buildTypedProjectFunctionExpression = (
   const processedExpression = new ColSpecArrayInstance(Multiplicity.ONE);
   const processedColSpecArray = new ColSpecArray();
   processedExpression.values = [processedColSpecArray];
-
+  const relationType = new Relation_RelationType(Relation_RelationType.ID);
   processedColSpecArray.colSpecs = specArray.colSpecs.map((colSpec) => {
     const pColSpec = new ColSpec();
     let lambda: ValueSpecification;
@@ -667,6 +672,16 @@ const V1_buildTypedProjectFunctionExpression = (
     }
     pColSpec.function1 = lambda;
     pColSpec.name = colSpec.name;
+    const returnType = getValueSpecificationReturnType(lambda);
+    if (returnType) {
+      relationType.columns.push(
+        new Relation_RelationalColumn(colSpec.name, returnType),
+      );
+    } else {
+      throw new UnsupportedOperationError(
+        'Unable to get return type for current lambda',
+      );
+    }
     return pColSpec;
   });
 
@@ -675,12 +690,13 @@ const V1_buildTypedProjectFunctionExpression = (
     functionName,
     compileContext,
   );
-  expression.genericType = GenericTypeExplicitReference.create(
-    new GenericType(
-      compileContext.resolveType(QUERY_BUILDER_PURE_PATH.RELATION).value,
-    ),
-  );
-
+  const relationGenericType = new GenericType(Relation_Relation.INSTANCE);
+  const relationTypeGenericType = new GenericType(relationType);
+  relationGenericType.typeArguments = [
+    GenericTypeExplicitReference.create(relationTypeGenericType),
+  ];
+  expression.genericType =
+    GenericTypeExplicitReference.create(relationGenericType);
   return expression;
 };
 

@@ -34,10 +34,12 @@ import {
 const buildPostFilterExpression = (
   postFilterState: QueryBuilderPostFilterState,
   node: QueryBuilderPostFilterTreeNodeData,
+  parentExpression: LambdaFunction | undefined,
 ): ValueSpecification | undefined => {
   if (node instanceof QueryBuilderPostFilterTreeConditionNodeData) {
     return node.condition.operator.buildPostFilterConditionExpression(
       node.condition,
+      parentExpression,
     );
   } else if (node instanceof QueryBuilderPostFilterTreeGroupNodeData) {
     const func = new SimpleFunctionExpression(
@@ -46,7 +48,9 @@ const buildPostFilterExpression = (
     const clauses = node.childrenIds
       .map((e) => postFilterState.nodes.get(e))
       .filter(isNonNullable)
-      .map((e) => buildPostFilterExpression(postFilterState, e))
+      .map((e) =>
+        buildPostFilterExpression(postFilterState, e, parentExpression),
+      )
       .filter(isNonNullable);
     /**
      * NOTE: Due to a limitation (or perhaps design decision) in the engine, group operations
@@ -84,8 +88,10 @@ export const appendPostFilter = (
   lambdaFunction: LambdaFunction,
 ): LambdaFunction => {
   const postFilterConditionExpressions = postFilterState.rootIds
-    .map((e) => guaranteeNonNullable(postFilterState.nodes.get(e)))
-    .map((e) => buildPostFilterExpression(postFilterState, e))
+    .map((node) => guaranteeNonNullable(postFilterState.nodes.get(node)))
+    .map((_node) =>
+      buildPostFilterExpression(postFilterState, _node, lambdaFunction),
+    )
     .filter(isNonNullable);
   if (
     !postFilterConditionExpressions.length ||

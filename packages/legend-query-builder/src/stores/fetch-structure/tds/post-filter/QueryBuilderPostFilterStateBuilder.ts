@@ -188,17 +188,20 @@ export const buildPostFilterConditionState = (
     );
 
     // get projection column
-    const tdsColumnPropertyExpression = guaranteeType(
-      expression.parametersValues[0],
-      AbstractPropertyExpression,
-      `Can't process ${extractElementNameFromPath(
-        operatorFunctionFullPath,
-      )}() expression: expects property expression in lambda body`,
-    );
-    const columnState = findProjectionColumnState(
-      tdsColumnPropertyExpression,
-      postFilterState,
-    );
+    const paramValue = expression.parametersValues[0];
+    let columnState: QueryBuilderTDSColumnState;
+    if (paramValue instanceof AbstractPropertyExpression) {
+      columnState = findProjectionColumnState(paramValue, postFilterState);
+    } else if (paramValue instanceof FunctionExpression) {
+      const columnName = paramValue.functionName;
+      columnState = getTDSColumnState(postFilterState.tdsState, columnName);
+    } else {
+      throw new UnsupportedOperationError(
+        `Can't process ${extractElementNameFromPath(
+          operatorFunctionFullPath,
+        )}() expression: expects property expression in lambda body`,
+      );
+    }
 
     // get operation value specification
     const rightSide = expression.parametersValues[1];

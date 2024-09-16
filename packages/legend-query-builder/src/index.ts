@@ -35,6 +35,8 @@ export { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './components/QueryBuilderCom
 export {
   type QueryableSourceInfo as QuerySDLC,
   QueryBuilderState,
+  QUERY_BUILDER_LAMBDA_WRITER_MODE,
+  INTERNAL__BasicQueryBuilderState,
 } from './stores/QueryBuilderState.js';
 export {
   getTDSColumnDerivedProperyFromType,
@@ -59,6 +61,10 @@ export {
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
   QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
 } from './graph/QueryBuilderMetaModelConst.js';
+export {
+  TEST__LegendApplicationPluginManager,
+  TEST__getGenericApplicationConfig,
+} from './stores/__test-utils__/QueryBuilderStateTestUtils.js';
 export { getQueryBuilderGraphManagerExtension } from './graph-manager/protocol/pure/QueryBuilder_PureGraphManagerExtension.js';
 export type { ServiceExecutionAnalysisResult } from './graph-manager/action/analytics/ServiceExecutionAnalysis.js';
 export type { MappingRuntimeCompatibilityAnalysisResult } from './graph-manager/action/analytics/MappingRuntimeCompatibilityAnalysis.js';

@@ -46,6 +46,7 @@ import { ValueSpecification } from '../../../../../../../../graph/metamodel/pure
 import {
   SimpleFunctionExpression,
   AbstractPropertyExpression,
+  FunctionExpression,
 } from '../../../../../../../../graph/metamodel/pure/valueSpecification/Expression.js';
 import { GenericType } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
 import { GenericTypeExplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
@@ -107,6 +108,8 @@ import {
 } from '../../../../../../../../graph/metamodel/pure/valueSpecification/KeyExpressionInstanceValue.js';
 import { V1_SubTypeGraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_SubTypeGraphFetchTree.js';
 import { findMappingLocalProperty } from '../../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
+import { getRelationTypeGenericType } from '../../../../../../../../graph/helpers/ValueSpecificationHelper.js';
+import { Relation_RelationType } from '../../../../../../../../graph/metamodel/pure/packageableElements/relation/Relation_RelationType.js';
 
 const buildPrimtiveInstanceValue = (
   type: PRIMITIVE_TYPE,
@@ -574,6 +577,15 @@ export function V1_processProperty(
       EnumValueExplicitReference.create(getEnumValue(inferredType, property)),
     ];
     return enumValueInstanceValue;
+  } else if (inferredType instanceof Relation_RelationType) {
+    const col = guaranteeNonNullable(
+      inferredType.columns.find((e) => property === e.name),
+      `Can't find property ${property} in relation`,
+    );
+    const _funcExp = new FunctionExpression(col.name);
+    _funcExp.func = col;
+    _funcExp.parametersValues = processedParameters;
+    return _funcExp;
   }
   throw new UnsupportedOperationError(
     `Can't resolve property '${property}' of type '${inferredType?.name}'`,
@@ -765,9 +777,13 @@ export function V1_resolvePropertyExpressionTypeInference(
       return inferredType;
     }
   }
-  throw new UnsupportedOperationError(
-    `Can't infer type for variable '${inferredVariable}': no compatible property expression type inferrer available from plugins`,
-  );
+  const relationType = inferredVariable
+    ? getRelationTypeGenericType(inferredVariable)
+    : undefined;
+  if (relationType) {
+    return relationType;
+  }
+  return inferredVariable?.genericType?.value.rawType;
 }
 
 // --------------------------------------------- Graph Fetch Tree ---------------------------------------------
