@@ -67,7 +67,7 @@ export interface LegendApplicationConfigurationData {
 
 export abstract class LegendApplicationConfig {
   readonly appName: string;
-  readonly baseAddress: string;
+  readonly baseAddress: string | undefined;
   readonly env: string;
   readonly applicationStorageKey: string;
 

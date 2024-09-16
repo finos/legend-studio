@@ -91,7 +91,7 @@ export class LegendApplicationWebConsole extends LegendApplicationLogger {
 export interface LegendApplicationConfigurationInput<
   T extends LegendApplicationConfigurationData,
 > {
-  baseAddress: string;
+  baseAddress?: string;
   configData: T;
   versionData: LegendApplicationVersionData;
   docEntries?: Record<string, DocumentationEntryData>;
