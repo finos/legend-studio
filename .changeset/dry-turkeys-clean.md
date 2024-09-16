@@ -3,4 +3,4 @@
 '@finos/legend-application': patch
 ---
 
-Make LegendApplicationConfigurationInput baseAddress prop optional
+Make LegendApplicationConfigurationInput baseAddress and versionData props optional
