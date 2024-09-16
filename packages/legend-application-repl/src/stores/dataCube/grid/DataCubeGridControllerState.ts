@@ -152,9 +152,15 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
   }
 
   rearrangeColumns(columnByNames: string[]) {
-    this.configuration.columns = columnByNames
+    const columnConfigurations = columnByNames
       .map((colName) => this.getColumnConfiguration(colName))
       .filter(isNonNullable);
+    this.configuration.columns = [
+      ...this.configuration.columns.filter(
+        (col) => !columnConfigurations.includes(col),
+      ),
+      ...columnConfigurations,
+    ];
     this.selectColumns = this.configuration.columns
       .map((column) =>
         this.selectColumns.find((col) => col.name === column.name),
