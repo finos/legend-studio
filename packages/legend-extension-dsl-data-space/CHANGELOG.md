@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.3.70
+
+### Patch Changes
+
+- [#3508](https://github.com/finos/legend-studio/pull/3508) [`ec76548`](https://github.com/finos/legend-studio/commit/ec76548c9c0ee107972b076a95834bd3d4a86a36) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Use the DataSpace analytics result to bypass reading the connection when using PMCD to load the minimal graph
+
 ## 10.3.69
 
 ## 10.3.68
