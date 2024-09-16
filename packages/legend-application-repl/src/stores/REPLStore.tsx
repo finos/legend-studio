@@ -19,6 +19,7 @@ import { REPLServerClient } from '../server/REPLServerClient.js';
 import {
   ActionState,
   assertErrorThrown,
+  guaranteeNonNullable,
   LogEvent,
   NetworkClient,
 } from '@finos/legend-shared';
@@ -62,11 +63,13 @@ export class REPLStore {
     });
 
     this.application = application;
+    const baseAddress = guaranteeNonNullable(
+      this.application.config.baseAddress,
+    );
     this.client = new REPLServerClient(
       new NetworkClient({
         baseUrl: this.application.config.useDynamicREPLServer
-          ? window.location.origin +
-            this.application.config.baseAddress.replace('/repl/', '')
+          ? window.location.origin + baseAddress.replace('/repl/', '')
           : this.application.config.replUrl,
       }),
     );
