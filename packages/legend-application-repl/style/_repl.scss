@@ -132,40 +132,44 @@ button:focus-visible {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100' %3E%3Cpath d='M0 100 L100 0' stroke-width='7' stroke='%23ef4444' /%3E%3C/svg%3E");
 }
 
+.data-cube-grid__utility--pivot-column-group {
+  padding: 0 0 0 4px;
+  border: 1px solid var(--tw-color-neutral-400);
+}
 // following is the color rotation used to alternate the color of pivot result columns
 // TODO?: should we make it more programatic?
 .data-cube-grid__utility--pivot-column-group-0 {
   background: linear-gradient(
-    var(--tw-color-blue-500),
-    var(--tw-color-blue-400)
+    var(--tw-color-blue-200),
+    var(--tw-color-blue-50)
   );
 }
 
 .data-cube-grid__utility--pivot-column-group-1 {
   background: linear-gradient(
-    var(--tw-color-emerald-500),
-    var(--tw-color-emerald-400)
+    var(--tw-color-emerald-200),
+    var(--tw-color-emerald-50)
   );
 }
 
 .data-cube-grid__utility--pivot-column-group-2 {
   background: linear-gradient(
-    var(--tw-color-rose-500),
-    var(--tw-color-rose-400)
+    var(--tw-color-rose-200),
+    var(--tw-color-rose-50)
   );
 }
 
 .data-cube-grid__utility--pivot-column-group-3 {
   background: linear-gradient(
-    var(--tw-color-teal-500),
-    var(--tw-color-teal-400)
+    var(--tw-color-teal-200),
+    var(--tw-color-teal-50)
   );
 }
 
 .data-cube-grid__utility--pivot-column-group-4 {
   background: linear-gradient(
-    var(--tw-color-yellow-500),
-    var(--tw-color-yellow-400)
+    var(--tw-color-yellow-200),
+    var(--tw-color-yellow-50)
   );
 }
 

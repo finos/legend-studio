@@ -626,7 +626,7 @@ export function generateDefinitionForPivotResultColumns(
       } else {
         const newGroup = {
           ...group,
-          headerClass: `${INTERNAL__GridClientUtilityCssClassName.PIVOT_COLUMN_GROUP_PREFIX}${currentCollection.length % INTERNAL__GRID_CLIENT_PIVOT_COLUMN_GROUP_COLOR_ROTATION_SIZE}`,
+          headerClass: `${INTERNAL__GridClientUtilityCssClassName.PIVOT_COLUMN_GROUP} ${INTERNAL__GridClientUtilityCssClassName.PIVOT_COLUMN_GROUP_PREFIX}${currentCollection.length % INTERNAL__GRID_CLIENT_PIVOT_COLUMN_GROUP_COLOR_ROTATION_SIZE}`,
         } satisfies ColGroupDef;
         currentCollection.push(newGroup);
         currentCollection = newGroup.children;

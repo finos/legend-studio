@@ -76,6 +76,7 @@ export enum INTERNAL__GridClientUtilityCssClassName {
   TEXT_COLOR_PREFIX = 'data-cube-grid__utility--text-color-',
   BACKGROUND_COLOR_PREFIX = 'data-cube-grid__utility--background-color-',
 
+  PIVOT_COLUMN_GROUP = 'data-cube-grid__utility--pivot-column-group',
   PIVOT_COLUMN_GROUP_PREFIX = 'data-cube-grid__utility--pivot-column-group-',
 }
 export const generateFontFamilyUtilityClassName = (fontFamily: string) =>
