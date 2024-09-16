@@ -35,9 +35,9 @@ import {
 import type { SettingOverrideConfigData } from '../stores/SettingService.js';
 
 export interface LegendApplicationVersionData {
-  buildTime: string;
+  buildTime?: string;
   version: string;
-  commitSHA: string;
+  commitSHA?: string;
 }
 
 export interface LegendApplicationLink {
