@@ -17,17 +17,17 @@
 import {
   type V1_Multiplicity,
   type V1_PureModelContextData,
-  V1_multiplicityModelSchema,
   type V1_DatasetSpecification,
   type PureProtocolProcessorPlugin,
+  V1_multiplicityModelSchema,
   V1_deserializeDatasetSpecification,
   V1_pureModelContextDataPropSchema,
   V1_MappingModelCoverageAnalysisResult,
 } from '@finos/legend-graph';
 import {
+  type PlainObject,
   SerializationFactory,
   optionalCustom,
-  type PlainObject,
   UnsupportedOperationError,
   customListWithSchema,
   usingConstantValueSchema,
@@ -37,6 +37,7 @@ import {
   usingModelSchema,
 } from '@finos/legend-shared';
 import {
+  type ModelSchema,
   createModelSchema,
   custom,
   deserialize,
@@ -45,7 +46,6 @@ import {
   optional,
   primitive,
   SKIP,
-  type ModelSchema,
 } from 'serializr';
 import type { V1_DataSpaceSupportInfo } from '../../model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import { V1_deserializeSupportInfo } from '../../transformation/pureProtocol/V1_DSL_DataSpace_ProtocolHelper.js';
@@ -122,7 +122,7 @@ const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
     mapping: primitive(),
     name: primitive(),
     title: optional(primitive()),
-    metadata: usingModelSchema(
+    runtimeMetadata: usingModelSchema(
       V1_DataSpaceExecutionContextRuntimeMetadata.serialization.schema,
     ),
   });
