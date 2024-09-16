@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
-import { DataCubeColumnKind } from '../core/DataCubeQueryEngine.js';
+import {
+  DataCubeColumnKind,
+  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
+} from '../core/DataCubeQueryEngine.js';
 import {
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
@@ -71,6 +74,9 @@ export class DataCubeEditorHorizontalPivotsPanelState
       castColumns: observable.ref,
       setCastColumns: action,
 
+      pivotResultColumns: computed,
+      columnsConsumedByPivot: computed,
+
       applySnaphot: action,
     });
 
@@ -79,6 +85,12 @@ export class DataCubeEditorHorizontalPivotsPanelState
     this.selector = new DataCubeEditorHorizontalPivotColumnsSelectorState(
       editor,
     );
+  }
+
+  get pivotResultColumns(): DataCubeQuerySnapshotColumn[] {
+    return this.castColumns
+      .filter((col) => col.name.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR))
+      .map((col) => ({ name: col.name, type: col.type }));
   }
 
   get columnsConsumedByPivot(): DataCubeQuerySnapshotColumn[] {

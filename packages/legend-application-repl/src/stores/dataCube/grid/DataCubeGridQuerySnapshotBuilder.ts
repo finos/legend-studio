@@ -74,5 +74,5 @@ export function buildQuerySnapshot(
 
   // --------------------------------- FINALIZE ---------------------------------
 
-  return snapshot.finalize();
+  return snapshot;
 }

@@ -22,6 +22,7 @@ import type {
 } from '@ag-grid-community/core';
 import type { DataCubeGridState } from './DataCubeGridState.js';
 import {
+  IllegalStateError,
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
@@ -43,6 +44,8 @@ import type {
 import { AlertType } from '../../../components/repl/Alert.js';
 import { DEFAULT_LARGE_ALERT_WINDOW_CONFIG } from '../../LayoutManagerState.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
+import type { DataCubeEngine } from '../DataCubeEngine.js';
+import { generateColumnDefs } from './DataCubeGridConfigurationBuilder.js';
 
 type GridClientCellValue = string | number | boolean | null | undefined;
 type GridClientRowData = {
@@ -207,6 +210,38 @@ function TDStoRowData(tds: TabularDataSet): GridClientRowData[] {
   });
 }
 
+async function getCastColumns(
+  currentSnapshot: DataCubeQuerySnapshot,
+  engine: DataCubeEngine,
+) {
+  if (!currentSnapshot.data.pivot) {
+    throw new IllegalStateError(
+      `Can't build cast columns collector query when no pivot is specified`,
+    );
+  }
+  const snapshot = currentSnapshot.clone();
+  guaranteeNonNullable(snapshot.data.pivot).castColumns = [];
+  snapshot.data.groupBy = undefined;
+  snapshot.data.groupExtendedColumns = [];
+  snapshot.data.groupExtendedColumns = [];
+  snapshot.data.sortColumns = [];
+  snapshot.data.limit = 0;
+  const query = buildExecutableQuery(
+    snapshot,
+    engine.filterOperations,
+    engine.aggregateOperations,
+  );
+
+  const lambda = new V1_Lambda();
+  lambda.body.push(query);
+  const result = await engine.executeQuery(lambda);
+
+  return result.result.builder.columns.map((column) => ({
+    name: column.name,
+    type: column.type as string,
+  }));
+}
+
 export class DataCubeGridClientServerSideDataSource
   implements IServerSideDatasource
 {
@@ -245,21 +280,56 @@ export class DataCubeGridClientServerSideDataSource
     // ------------------------------ SNAPSHOT ------------------------------
 
     const currentSnapshot = guaranteeNonNullable(this.grid.getLatestSnapshot());
-    /**
-     * TODO: @datacube pivot
-     * when we support pivoting, we should make a quick call to check for columns
-     * created by pivots and specify them as cast columns when pivot is activated
-     */
-    const syncedSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
-    if (syncedSnapshot.hashCode !== currentSnapshot.hashCode) {
-      this.grid.publishSnapshot(syncedSnapshot);
+    const newSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
+    // NOTE: if h-pivot is enabled
+    // if h-pivot is enabled, update the cast columns
+    // and panels which might be affected by this (e.g. sorts)
+    // TOOD?: this is an expensive operation in certain case, so we might want to
+    // optimize when this gets called
+    if (newSnapshot.data.pivot) {
+      try {
+        const castColumns = await getCastColumns(
+          newSnapshot,
+          this.grid.dataCube.engine,
+        );
+        newSnapshot.data.pivot.castColumns = castColumns;
+        newSnapshot.data.sortColumns = newSnapshot.data.sortColumns.filter(
+          (column) =>
+            [...castColumns, ...newSnapshot.data.groupExtendedColumns].find(
+              (col) => column.name === col.name,
+            ),
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        this.grid.dataCube.repl.alertError(error, {
+          message: `Query Validation Failure: Can't retrieve pivot results column metadata. ${error.message}`,
+        });
+        // fail early since we can't proceed without the cast columns validated
+        params.fail();
+        this.grid.dataCube.endTask(task);
+        return;
+      }
+    }
+
+    newSnapshot.finalize();
+    if (newSnapshot.hashCode !== currentSnapshot.hashCode) {
+      // update grid column definitions since new columns could have been added
+      // due to changes in pivot
+      this.grid.client.updateGridOptions({
+        columnDefs: generateColumnDefs(
+          newSnapshot,
+          this.grid.queryConfiguration,
+          this.grid.dataCube,
+        ),
+      });
+      this.grid.publishSnapshot(newSnapshot);
     }
 
     // ------------------------------ DATA ------------------------------
 
     try {
       const executableQuery = buildExecutableQuery(
-        syncedSnapshot,
+        newSnapshot,
         this.grid.dataCube.engine.filterOperations,
         this.grid.dataCube.engine.aggregateOperations,
         {
