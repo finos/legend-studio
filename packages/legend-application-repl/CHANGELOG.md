@@ -1,5 +1,11 @@
 # @finos/legend-application-repl
 
+## 0.0.56
+
+### Patch Changes
+
+- [#3527](https://github.com/finos/legend-studio/pull/3527) [`2d61b1d`](https://github.com/finos/legend-studio/commit/2d61b1d5394ad73f43722f80dcdea1d39a732019) ([@travisstebbins](https://github.com/travisstebbins)) - Make LegendApplicationConfigurationInput baseAddress and versionData props optional
+
 ## 0.0.55
 
 ## 0.0.54
