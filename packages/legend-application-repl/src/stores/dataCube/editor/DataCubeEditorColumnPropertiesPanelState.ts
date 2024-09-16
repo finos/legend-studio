@@ -50,6 +50,9 @@ export class DataCubeEditorColumnPropertiesPanelState
       setShowAdvancedSettings: action,
 
       configurableColumns: computed,
+
+      adaptPropagatedChanges: action,
+      applySnaphot: action,
     });
 
     this.editor = editor;
@@ -87,6 +90,14 @@ export class DataCubeEditorColumnPropertiesPanelState
 
   setShowAdvancedSettings(val: boolean) {
     this.showAdvancedSettings = val;
+  }
+
+  adaptPropagatedChanges() {
+    this.setColumns(
+      this.columns.filter((column) =>
+        this.configurableColumns.find((col) => col.name === column.name),
+      ),
+    );
   }
 
   applySnaphot(

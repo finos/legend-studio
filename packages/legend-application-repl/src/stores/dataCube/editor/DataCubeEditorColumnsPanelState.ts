@@ -185,6 +185,21 @@ export class DataCubeEditorColumnsPanelState
   }
 
   /**
+   * Propagate column selection changes to subsequent states: i.e. column properties, pivots, sorts.
+   *
+   * NOTE: Ideally, this should be called on every changes made to the column selection, but to
+   * give user some room for error, i.e. when user accidentally select/deselect columns, we would
+   * not propagate this change until user either leaves this panel or explicitly applies changes
+   * (i.e. publishes a new snapshot)
+   */
+  propgateChanges(): void {
+    this.editor.columnProperties.adaptPropagatedChanges();
+    this.editor.horizontalPivots.adaptPropagatedChanges();
+    this.editor.verticalPivots.adaptPropagatedChanges();
+    this.editor.sorts.adaptPropagatedChanges();
+  }
+
+  /**
    * Propagate column selection changes to other states: column properties, sorts, pivots, etc.
    *
    * NOTE: Ideally, this should be called on every changes made to the column selection, but to
@@ -192,36 +207,27 @@ export class DataCubeEditorColumnsPanelState
    * not propagate this change until user either leaves this panel or explicitly applies changes
    * (i.e. publishes a new snapshot)
    */
-  propagateColumnSelectionChanges() {
-    // prune column properties
-    this.editor.columnProperties.setColumns(
-      this.editor.columnProperties.columns.filter((column) =>
-        this.editor.columnProperties.configurableColumns.find(
-          (col) => col.name === column.name,
-        ),
-      ),
-    );
 
-    // prune sorts
-    this.editor.sorts.selector.setSelectedColumns(
-      this.editor.sorts.selector.selectedColumns.filter((column) =>
-        this.editor.sorts.selector.availableColumns.find(
-          (col) => col.name === column.name,
-        ),
-      ),
-    );
+  //   // prune sorts
+  //   this.editor.sorts.selector.setSelectedColumns(
+  //     this.editor.sorts.selector.selectedColumns.filter((column) =>
+  //       this.editor.sorts.selector.availableColumns.find(
+  //         (col) => col.name === column.name,
+  //       ),
+  //     ),
+  //   );
 
-    // prune vertical pivots columns
-    this.editor.verticalPivots.selector.setSelectedColumns(
-      this.editor.verticalPivots.selector.selectedColumns.filter((column) =>
-        this.editor.verticalPivots.selector.availableColumns.find(
-          (col) => col.name === column.name,
-        ),
-      ),
-    );
+  //   // prune vertical pivots columns
+  //   this.editor.verticalPivots.selector.setSelectedColumns(
+  //     this.editor.verticalPivots.selector.selectedColumns.filter((column) =>
+  //       this.editor.verticalPivots.selector.availableColumns.find(
+  //         (col) => col.name === column.name,
+  //       ),
+  //     ),
+  //   );
 
-    // TODO: prune horizontal pivots columns
-  }
+  //   // TODO: prune horizontal pivots columns
+  // }
 
   applySnaphot(
     snapshot: DataCubeQuerySnapshot,
@@ -258,7 +264,7 @@ export class DataCubeEditorColumnsPanelState
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
   ) {
-    this.propagateColumnSelectionChanges();
+    this.propgateChanges();
     newSnapshot.data.selectColumns = this.selector.selectedColumns
       // filter out group-level extended columns since these columns are technically not selectable
       .filter(

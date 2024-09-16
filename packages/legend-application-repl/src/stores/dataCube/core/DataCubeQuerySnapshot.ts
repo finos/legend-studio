@@ -18,7 +18,6 @@ import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
 import type { DataCubeConfiguration } from './DataCubeConfiguration.js';
 import {
   IllegalStateError,
-  UnsupportedOperationError,
   guaranteeNonNullable,
   hashObject,
   pruneObject,
@@ -92,7 +91,8 @@ export type DataCubeQuerySnapshotData = {
 type DataCubeQuerySnapshotStage =
   | 'leaf-extend'
   | 'filter'
-  | 'aggregation'
+  | 'pivot'
+  | 'group-by'
   | 'group-extend'
   | 'select'
   | 'sort';
@@ -163,16 +163,17 @@ export class DataCubeQuerySnapshot {
         return [...this.data.sourceColumns];
       case 'filter':
       case 'select':
+      case 'pivot':
         return [...this.data.sourceColumns, ...this.data.leafExtendedColumns];
-      case 'aggregation':
-        return [...this.data.selectColumns];
+      case 'group-by':
       case 'group-extend':
-        throw new UnsupportedOperationError(
-          `Can't get columns for group-level extend stage: dynamic pivot columns cannot be accounted for`,
-        );
+        return [
+          ...(this.data.pivot
+            ? this.data.pivot.castColumns
+            : this.data.selectColumns),
+        ];
       case 'sort':
         return [
-          // NOTE: cast columns, when present, override earlier collumn selection
           ...(this.data.pivot
             ? this.data.pivot.castColumns
             : this.data.selectColumns),

@@ -329,6 +329,10 @@ export function validateAndBuildQuerySnapshot(
     );
   }
 
+  // --------------------------------- PIVOT ---------------------------------
+  /** TODO: @datacube roundtrip */
+  // TODO: verify group-by agg columns, pivot agg columns and configuration agree
+
   // --------------------------------- GROUP BY ---------------------------------
 
   if (funcMap.groupBy) {
@@ -339,10 +343,6 @@ export function validateAndBuildQuerySnapshot(
       // TODO: verify group-by agg columns, pivot agg columns and configuration agree
     };
   }
-
-  // --------------------------------- PIVOT ---------------------------------
-  /** TODO: @datacube roundtrip */
-  // TODO: verify group-by agg columns, pivot agg columns and configuration agree
 
   // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
   /** TODO: @datacube roundtrip */

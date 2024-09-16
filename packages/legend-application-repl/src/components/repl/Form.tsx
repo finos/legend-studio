@@ -42,7 +42,7 @@ import { useREPLStore } from '../REPLStoreProvider.js';
 export function FormBadge_WIP() {
   return (
     <div
-      className="text-2xs ml-1 select-none rounded-md bg-sky-500 px-1 py-0.5 font-semibold text-white"
+      className="text-2xs ml-1 flex h-2.5 flex-shrink-0 select-none items-center rounded-md bg-sky-500 px-1 font-semibold leading-[10px] text-white"
       title="Work In Progress"
     >
       WIP

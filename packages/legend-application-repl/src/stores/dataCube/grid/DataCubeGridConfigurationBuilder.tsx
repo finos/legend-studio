@@ -777,6 +777,7 @@ export function generateGridOptionsFromSnapshot(
         };
         return {
           headerName: column.displayName ?? column.name,
+          suppressSpanHeaderHeight: true,
           colId: column.name,
           field: column.name,
           menuTabs: [],

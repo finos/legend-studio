@@ -285,6 +285,8 @@ export class DataCubeEngine {
     }
     const snapshot = currentSnapshot.clone();
     guaranteeNonNullable(snapshot.data.pivot).castColumns = [];
+    snapshot.data.groupBy = undefined;
+    snapshot.data.groupExtendedColumns = [];
     snapshot.data.groupExtendedColumns = [];
     snapshot.data.sortColumns = [];
     snapshot.data.limit = 0;

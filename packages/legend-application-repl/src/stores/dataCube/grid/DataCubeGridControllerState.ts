@@ -319,17 +319,17 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
       ...newSnapshot.data.groupExtendedColumns,
     ];
 
-    this.sortableColumns = newSnapshot.stageCols('sort');
-    this.sortColumns = newSnapshot.data.sortColumns;
-
     this.verticalPivotableColumns = newSnapshot
-      .stageCols('aggregation')
+      .stageCols('group-by')
       .filter(
         (column) =>
           this.getColumnConfiguration(column.name)?.kind ===
           DataCubeColumnKind.DIMENSION,
       );
     this.verticalPivotedColumns = newSnapshot.data.groupBy?.columns ?? [];
+
+    this.sortableColumns = newSnapshot.stageCols('sort');
+    this.sortColumns = newSnapshot.data.sortColumns;
 
     this.menuBuilder = generateMenuBuilder(this);
   }

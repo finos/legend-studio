@@ -81,8 +81,36 @@ export class DataCubeEditorHorizontalPivotsPanelState
     );
   }
 
-  setCastColumns(val: DataCubeQuerySnapshotColumn[]): void {
-    this.castColumns = val;
+  get columnsConsumedByPivot(): DataCubeQuerySnapshotColumn[] {
+    if (!this.selector.selectedColumns.length) {
+      return [];
+    }
+    return [
+      ...this.selector.selectedColumns,
+      ...this.editor.columnProperties.columns.filter(
+        (col) =>
+          col.kind === DataCubeColumnKind.MEASURE &&
+          !col.excludedFromHorizontalPivot,
+      ),
+      /** TODO: @datacube pivot - need to include columns used in aggregates (such as weighted-average) */
+    ].map((col) => ({ name: col.name, type: col.type }));
+  }
+
+  setCastColumns(value: DataCubeQuerySnapshotColumn[]) {
+    this.castColumns = value;
+  }
+
+  adaptPropagatedChanges() {
+    this.selector.setSelectedColumns(
+      this.selector.selectedColumns.filter((column) =>
+        this.selector.availableColumns.find((col) => col.name === column.name),
+      ),
+    );
+  }
+
+  propagateChanges() {
+    this.editor.verticalPivots.adaptPropagatedChanges();
+    this.editor.sorts.adaptPropagatedChanges();
   }
 
   applySnaphot(
@@ -93,10 +121,9 @@ export class DataCubeEditorHorizontalPivotsPanelState
       (snapshot.data.pivot?.columns ?? []).map(
         (col) =>
           new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
-        /** TODO: @datacube pivot - account for cast columns */
       ),
     );
-    this.castColumns = snapshot.data.pivot?.castColumns ?? [];
+    this.setCastColumns(snapshot.data.pivot?.castColumns ?? []);
   }
 
   buildSnapshot(

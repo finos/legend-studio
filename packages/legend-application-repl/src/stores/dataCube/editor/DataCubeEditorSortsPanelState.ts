@@ -89,6 +89,14 @@ export class DataCubeEditorSortsPanelState
     this.selector = new DataCubeEditorSortColumnsSelectorState(editor);
   }
 
+  adaptPropagatedChanges(): void {
+    this.selector.setSelectedColumns(
+      this.selector.selectedColumns.filter((column) =>
+        this.selector.availableColumns.find((col) => col.name === column.name),
+      ),
+    );
+  }
+
   applySnaphot(
     snapshot: DataCubeQuerySnapshot,
     configuration: DataCubeConfiguration,

@@ -21,7 +21,6 @@ import { DataCubeEditorGeneralPropertiesPanel } from './DataCubeEditorGeneralPro
 import { DataCubeEditorColumnsPanel } from './DataCubeEditorColumnsPanel.js';
 import { DataCubeEditorVerticalPivotsPanel } from './DataCubeEditorVerticalPivotsPanel.js';
 import { DataCubeEditorHorizontalPivotsPanel } from './DataCubeEditorHorizontalPivotsPanel.js';
-import { DataCubeEditorCodePanel } from './DataCubeEditorCodePanel.js';
 import { DataCubeEditorColumnPropertiesPanel } from './DataCubeEditorColumnPropertiesPanel.js';
 import { cn } from '@finos/legend-art';
 import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
@@ -39,7 +38,6 @@ export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
     DataCubeEditorTab.SORTS,
     DataCubeEditorTab.GENERAL_PROPERTIES,
     DataCubeEditorTab.COLUMN_PROPERTIES,
-    DataCubeEditorTab.CODE,
   ];
 
   return (
@@ -79,9 +77,6 @@ export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
           )}
           {selectedTab === DataCubeEditorTab.COLUMN_PROPERTIES && (
             <DataCubeEditorColumnPropertiesPanel dataCube={dataCube} />
-          )}
-          {selectedTab === DataCubeEditorTab.CODE && (
-            <DataCubeEditorCodePanel dataCube={dataCube} />
           )}
         </div>
       </div>

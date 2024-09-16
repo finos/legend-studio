@@ -105,13 +105,13 @@ export function buildExecutableQuery(
       'leafExtend',
       _function(_name(DataCubeFunction.EXTEND), [
         _cols(
-          data.leafExtendedColumns.map((eCol) => {
-            if (eCol._type === DataCubeExtendedColumnType.SIMPLE) {
-              const col = eCol as DataCubeQuerySnapshotSimpleExtendedColumn;
-              return _colSpec(col.name, _deserializeToLambda(col.lambda));
+          data.leafExtendedColumns.map((col) => {
+            if (col._type === DataCubeExtendedColumnType.SIMPLE) {
+              const column = col as DataCubeQuerySnapshotSimpleExtendedColumn;
+              return _colSpec(column.name, _deserializeToLambda(column.lambda));
             }
             throw new UnsupportedOperationError(
-              `Can't build extended column of type '${eCol._type}'`,
+              `Can't build extended column of type '${col._type}'`,
             );
           }),
         ),
@@ -141,32 +141,12 @@ export function buildExecutableQuery(
     );
   }
 
-  // --------------------------------- GROUP BY ---------------------------------
-
-  if (data.groupBy) {
-    const groupBy = data.groupBy;
-    _process(
-      'groupBy',
-      _function(_name(DataCubeFunction.GROUP_BY), [
-        _cols(groupBy.columns.map((col) => _colSpec(col.name))),
-        _cols(
-          _groupByAggCols(
-            groupBy.columns,
-            snapshot,
-            configuration,
-            aggregateOperations,
-          ),
-        ),
-      ]),
-    );
-  }
-
   // --------------------------------- PIVOT ---------------------------------
 
   if (data.pivot) {
     const pivot = data.pivot;
 
-    // NOTE: pre-sort to maintain stable order
+    // pre-sort to maintain stable order for pivot result columns
     _process(
       'sort',
       _function(_name(DataCubeFunction.SORT), [
@@ -201,6 +181,26 @@ export function buildExecutableQuery(
     }
   }
 
+  // --------------------------------- GROUP BY ---------------------------------
+
+  if (data.groupBy) {
+    const groupBy = data.groupBy;
+    _process(
+      'groupBy',
+      _function(_name(DataCubeFunction.GROUP_BY), [
+        _cols(groupBy.columns.map((col) => _colSpec(col.name))),
+        _cols(
+          _groupByAggCols(
+            groupBy.columns,
+            snapshot,
+            configuration,
+            aggregateOperations,
+          ),
+        ),
+      ]),
+    );
+  }
+
   // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
 
   if (data.groupExtendedColumns.length) {
@@ -208,30 +208,13 @@ export function buildExecutableQuery(
       'groupExtend',
       _function(_name(DataCubeFunction.EXTEND), [
         _cols(
-          data.groupExtendedColumns.map((eCol) => {
-            if (eCol._type === DataCubeExtendedColumnType.SIMPLE) {
-              const col = eCol as DataCubeQuerySnapshotSimpleExtendedColumn;
-              return _colSpec(col.name, _deserializeToLambda(col.lambda));
+          data.groupExtendedColumns.map((col) => {
+            if (col._type === DataCubeExtendedColumnType.SIMPLE) {
+              const column = col as DataCubeQuerySnapshotSimpleExtendedColumn;
+              return _colSpec(column.name, _deserializeToLambda(column.lambda));
             }
             throw new UnsupportedOperationError(
-              `Can't build extended column of type '${eCol._type}'`,
-            );
-          }),
-        ),
-      ]),
-    );
-
-    _process(
-      'groupExtend',
-      _function(_name(DataCubeFunction.EXTEND), [
-        _cols(
-          data.groupExtendedColumns.map((eCol) => {
-            if (eCol._type === DataCubeExtendedColumnType.SIMPLE) {
-              const col = eCol as DataCubeQuerySnapshotSimpleExtendedColumn;
-              return _colSpec(col.name, _deserializeToLambda(col.lambda));
-            }
-            throw new UnsupportedOperationError(
-              `Can't build extended column of type '${eCol._type}'`,
+              `Can't build extended column of type '${col._type}'`,
             );
           }),
         ),
