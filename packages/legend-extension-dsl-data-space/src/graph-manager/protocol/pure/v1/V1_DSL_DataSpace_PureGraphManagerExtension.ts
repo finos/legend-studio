@@ -78,6 +78,7 @@ import {
   DataSpaceMultiExecutionServiceKeyedExecutableInfo,
   DataSpaceTemplateExecutableInfo,
   DataSpaceFunctionPointerExecutableInfo,
+  DataSpaceExecutionContextRuntimeMetadata,
 } from '../../../action/analytics/DataSpaceAnalysis.js';
 import { DSL_DataSpace_PureGraphManagerExtension } from '../DSL_DataSpace_PureGraphManagerExtension.js';
 import {
@@ -412,6 +413,19 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       contextAnalysisResult.defaultRuntime = graph.getRuntime(
         context.defaultRuntime,
       );
+      if (context.runtimeMetadata) {
+        const metadata = new DataSpaceExecutionContextRuntimeMetadata();
+        if (context.runtimeMetadata.storePath) {
+          metadata.storePath = context.runtimeMetadata.storePath;
+        }
+        if (context.runtimeMetadata.connectionPath) {
+          metadata.connectionPath = context.runtimeMetadata.connectionPath;
+        }
+        if (context.runtimeMetadata.connectionType) {
+          metadata.connectionType = context.runtimeMetadata.connectionType;
+        }
+        contextAnalysisResult.runtimeMetadata = metadata;
+      }
       contextAnalysisResult.mappingModelCoverageAnalysisResult =
         V1_buildModelCoverageAnalysisResult(
           context.mappingModelCoverageAnalysisResult,

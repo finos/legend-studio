@@ -31,6 +31,7 @@ import { type QueryEditorStore } from '../../stores/QueryEditorStore.js';
 import {
   type DataSpace,
   type DataSpaceExecutionContext,
+  DataSpaceQueryBuilderState,
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
@@ -93,12 +94,36 @@ export const QueryEditorDataspaceInfoModal = observer(
       }
     };
 
-    const connection =
-      executionContext.defaultRuntime.value.runtimeValue.connections[0]
-        ?.storeConnections[0]?.connection instanceof ConnectionPointer
-        ? executionContext.defaultRuntime.value.runtimeValue.connections[0]
-            ?.storeConnections[0]?.connection
+    const dataSpaceAnalysisResult =
+      editorStore.queryBuilderState instanceof DataSpaceQueryBuilderState
+        ? editorStore.queryBuilderState.dataSpaceAnalysisResult
         : undefined;
+    const dataSpaceMedata = dataSpaceAnalysisResult?.executionContextsIndex.get(
+      executionContext.name,
+    )?.runtimeMetadata;
+    const connection =
+      executionContext.defaultRuntime.value.runtimeValue.connections.length > 0
+        ? executionContext.defaultRuntime.value.runtimeValue.connections[0]
+            ?.storeConnections?.[0]?.connection instanceof ConnectionPointer
+          ? executionContext.defaultRuntime.value.runtimeValue.connections[0]
+              ?.storeConnections?.[0]?.connection
+          : undefined
+        : undefined;
+    const connectionPath = connection
+      ? connection.packageableConnection.value.path
+      : dataSpaceMedata
+        ? dataSpaceMedata.connectionPath
+        : undefined;
+    const connectionType =
+      connection &&
+      connection.packageableConnection.value.connectionValue instanceof
+        RelationalDatabaseConnection
+        ? connection.packageableConnection.value.connectionValue.type
+        : dataSpaceMedata
+          ? dataSpaceMedata.connectionType
+          : undefined;
+    const storePath =
+      connection?.store?.value.path ?? dataSpaceMedata?.storePath;
 
     const openInTaxonomy = (): void => {
       if (
@@ -209,9 +234,9 @@ export const QueryEditorDataspaceInfoModal = observer(
                   {executionContext.defaultRuntime.value.name}
                 </div>
               </div>
-              {connection && (
+              {(connection || dataSpaceMedata) && (
                 <>
-                  {connection.store && (
+                  {storePath && (
                     <div className="dataspace-info-modal__field">
                       <div className="dataspace-info-modal__field__label">
                         Store
@@ -219,14 +244,10 @@ export const QueryEditorDataspaceInfoModal = observer(
                       <div
                         className="dataspace-info-modal__field__value dataspace-info-modal__field__value--linkable"
                         onClick={() => {
-                          if (connection.store) {
-                            flowResult(
-                              visitElement(connection.store.value.path),
-                            );
-                          }
+                          flowResult(visitElement(storePath));
                         }}
                       >
-                        {connection.store.value.name}
+                        {connection?.store?.value.name ?? storePath}
                       </div>
                     </div>
                   )}
@@ -236,18 +257,23 @@ export const QueryEditorDataspaceInfoModal = observer(
                     </div>
                     <div
                       className="dataspace-info-modal__field__value dataspace-info-modal__field__value--linkable"
-                      onClick={() =>
-                        flowResult(
-                          visitElement(
-                            connection.packageableConnection.value.path,
-                          ),
-                        )
-                      }
+                      onClick={() => {
+                        if (connectionPath) {
+                          flowResult(visitElement(connectionPath));
+                        }
+                      }}
                     >
-                      {connection.packageableConnection.value
+                      {connection &&
+                      connection.packageableConnection.value
                         .connectionValue instanceof RelationalDatabaseConnection
                         ? `${connection.packageableConnection.value.name}:${connection.packageableConnection.value.connectionValue.type}`
-                        : connection.packageableConnection.value.name}
+                        : connection
+                          ? connection.packageableConnection.value.name
+                          : connectionPath && connectionType
+                            ? `${connectionPath}:${connectionType}`
+                            : connectionPath
+                              ? `${connectionPath}`
+                              : `${connectionType}`}
                     </div>
                   </div>
                 </>
