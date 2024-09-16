@@ -105,7 +105,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     this.finalizationState.inProgress();
 
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
-    const snapshot = baseSnapshot.clone();
+    let snapshot = baseSnapshot.clone();
 
     // NOTE: column selection must be processed first so necessary
     // prunings can be done to make sure other panel stats are in sync
@@ -119,6 +119,35 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     // to properly generate the container configuration
     this.generalProperties.buildSnapshot(snapshot, baseSnapshot);
     this.columnProperties.buildSnapshot(snapshot, baseSnapshot);
+
+    snapshot.finalize();
+    if (snapshot.hashCode === baseSnapshot.hashCode) {
+      if (options?.closeAfterApply) {
+        this.display.close();
+      }
+      this.finalizationState.complete();
+      return;
+    }
+
+    // if h-pivot is enabled, update the cast columns
+    try {
+      if (snapshot.data.pivot) {
+        const castColumns = await this.dataCube.engine.getCastColumns(snapshot);
+        snapshot.data.pivot.castColumns = castColumns;
+        this.horizontalPivots.setCastColumns(castColumns);
+        this.sorts.selector.setSelectedColumns(
+          this.sorts.selector.selectedColumns.filter((column) =>
+            this.sorts.selector.availableColumns.find(
+              (col) => col.name === column.name,
+            ),
+          ),
+        );
+        this.sorts.buildSnapshot(snapshot, baseSnapshot);
+        snapshot = snapshot.clone();
+      }
+    } catch {
+      // do nothing
+    }
 
     // compile the query to validate it
     // NOTE: This is a helpful check for a lot of different scenarios where the

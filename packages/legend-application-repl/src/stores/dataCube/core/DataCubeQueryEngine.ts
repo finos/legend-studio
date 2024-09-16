@@ -85,10 +85,10 @@ export const DEFAULT_ROW_BUFFER = 20;
 export type DataCubeQueryFunctionMap = {
   leafExtend?: V1_AppliedFunction | undefined;
   filter?: V1_AppliedFunction | undefined;
-  groupBy?: V1_AppliedFunction | undefined;
-  pivotExtend?: V1_AppliedFunction | undefined; // used to populate columns to be erased by pivot()
+  pivotSort?: V1_AppliedFunction | undefined;
   pivot?: V1_AppliedFunction | undefined;
-  pivotCast?: V1_AppliedFunction | undefined; // used to set the relation type post pivot() to make compilation works properly
+  pivotCast?: V1_AppliedFunction | undefined;
+  groupBy?: V1_AppliedFunction | undefined;
   groupExtend?: V1_AppliedFunction | undefined;
   select?: V1_AppliedFunction | undefined;
   sort?: V1_AppliedFunction | undefined;

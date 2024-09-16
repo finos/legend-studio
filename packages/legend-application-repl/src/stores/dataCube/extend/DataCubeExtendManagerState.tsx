@@ -131,9 +131,9 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     );
 
     // trigger re-compile in each existing column editor as the base query has changed
-    this.newColumnEditors.forEach((editor) =>
-      editor.getReturnType().catch(noop()),
-    );
+    this.newColumnEditors.forEach((editor) => {
+      editor.getReturnType().catch(noop());
+    });
     // TODO: existingColumnEditors
   }
 

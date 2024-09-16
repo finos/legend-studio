@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
+import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeColumnKind } from '../core/DataCubeQueryEngine.js';
-import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
+import {
+  type DataCubeQuerySnapshot,
+  type DataCubeQuerySnapshotColumn,
+} from '../core/DataCubeQuerySnapshot.js';
 import {
   DataCubeEditorColumnsSelectorColumnState,
   DataCubeEditorColumnsSelectorState,
@@ -60,12 +64,25 @@ export class DataCubeEditorHorizontalPivotsPanelState
   readonly editor!: DataCubeEditorState;
   readonly selector!: DataCubeEditorHorizontalPivotColumnsSelectorState;
 
+  castColumns: DataCubeQuerySnapshotColumn[] = [];
+
   constructor(editor: DataCubeEditorState) {
+    makeObservable(this, {
+      castColumns: observable.ref,
+      setCastColumns: action,
+
+      applySnaphot: action,
+    });
+
     this.editor = editor;
     this.dataCube = editor.dataCube;
     this.selector = new DataCubeEditorHorizontalPivotColumnsSelectorState(
       editor,
     );
+  }
+
+  setCastColumns(val: DataCubeQuerySnapshotColumn[]): void {
+    this.castColumns = val;
   }
 
   applySnaphot(
@@ -79,6 +96,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
         /** TODO: @datacube pivot - account for cast columns */
       ),
     );
+    this.castColumns = snapshot.data.pivot?.castColumns ?? [];
   }
 
   buildSnapshot(
@@ -91,8 +109,10 @@ export class DataCubeEditorHorizontalPivotsPanelState
             name: column.name,
             type: column.type,
           })),
-          /** TODO: @datacube pivot - how do we get this information? */
-          castColumns: [],
+          castColumns: this.castColumns.map((column) => ({
+            name: column.name,
+            type: column.type,
+          })),
         }
       : undefined;
   }

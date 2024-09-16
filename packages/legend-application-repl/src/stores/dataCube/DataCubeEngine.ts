@@ -15,11 +15,11 @@
  */
 
 import {
-  type V1_Lambda,
   V1_deserializeValueSpecification,
   V1_serializeValueSpecification,
   type V1_ValueSpecification,
   TDSExecutionResult,
+  V1_Lambda,
   V1_serializeExecutionResult,
   V1_buildExecutionResult,
 } from '@finos/legend-graph';
@@ -30,7 +30,11 @@ import {
   type CompletionItem,
   type RelationType,
 } from '../../server/REPLEngine.js';
-import { guaranteeType } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  guaranteeType,
+  IllegalStateError,
+} from '@finos/legend-shared';
 import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
 import type { REPLStore } from '../REPLStore.js';
 import { action, makeObservable, observable } from 'mobx';
@@ -76,6 +80,8 @@ import { DataCubeQueryAggregateOperation__StdDevPopulation } from './core/aggreg
 import { DataCubeQueryAggregateOperation__StdDevSample } from './core/aggregation/DataCubeQueryAggregateOperation__StdDevSample.js';
 import { DataCubeQueryAggregateOperation__JoinStrings } from './core/aggregation/DataCubeQueryAggregateOperation__JoinStrings.js';
 import { getAggregateOperation } from './core/aggregation/DataCubeQueryAggregateOperation.js';
+import type { DataCubeQuerySnapshot } from './core/DataCubeQuerySnapshot.js';
+import { buildExecutableQuery } from './core/DataCubeQueryBuilder.js';
 
 export const DEFAULT_ENABLE_DEBUG_MODE = false;
 export const DEFAULT_GRID_CLIENT_ROW_BUFFER = 50;
@@ -269,5 +275,32 @@ export class DataCubeEngine {
       executedQuery: result.executedQuery,
       executedSQL: result.executedSQL,
     };
+  }
+
+  async getCastColumns(currentSnapshot: DataCubeQuerySnapshot) {
+    if (!currentSnapshot.data.pivot) {
+      throw new IllegalStateError(
+        `Can't build cast columns collector query when no pivot is specified`,
+      );
+    }
+    const snapshot = currentSnapshot.clone();
+    guaranteeNonNullable(snapshot.data.pivot).castColumns = [];
+    snapshot.data.groupExtendedColumns = [];
+    snapshot.data.sortColumns = [];
+    snapshot.data.limit = 0;
+    const query = buildExecutableQuery(
+      snapshot,
+      this.filterOperations,
+      this.aggregateOperations,
+    );
+
+    const lambda = new V1_Lambda();
+    lambda.body.push(query);
+    const result = await this.executeQuery(lambda);
+
+    return result.result.builder.columns.map((column) => ({
+      name: column.name,
+      type: column.type as string,
+    }));
   }
 }

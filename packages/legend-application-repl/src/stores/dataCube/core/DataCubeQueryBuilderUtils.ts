@@ -47,6 +47,8 @@ import {
   extractElementNameFromPath,
   type V1_ValueSpecification,
   extractPackagePathFromPath,
+  CORE_PURE_PATH,
+  V1_GenericTypeInstance,
 } from '@finos/legend-graph';
 import {
   type DataCubeQuerySnapshotFilterCondition,
@@ -155,7 +157,7 @@ export function _function(
   parameters: V1_ValueSpecification[],
 ) {
   const func = new V1_AppliedFunction();
-  func.function = functionName;
+  func.function = _functionName(functionName);
   func.parameters = parameters;
   return func;
 }
@@ -256,7 +258,7 @@ export function _value(
 }
 
 export function _not(fn: V1_AppliedFunction) {
-  return _function(DataCubeFunction.NOT, [fn]);
+  return _function(_functionName(DataCubeFunction.NOT), [fn]);
 }
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
@@ -325,6 +327,52 @@ export function _groupByAggCols(
           _lambda([variable], [_function(DataCubeFunction.COUNT, [variable])]),
         ),
       ];
+}
+
+export function _pivotAggCols(
+  pivotColumns: DataCubeQuerySnapshotColumn[],
+  snapshot: DataCubeQuerySnapshot,
+  configuration: DataCubeConfiguration,
+  aggregateOperations: DataCubeQueryAggregateOperation[],
+) {
+  const variable = _var();
+  const aggColumns = configuration.columns.filter(
+    (column) =>
+      !pivotColumns.find((col) => col.name === column.name) &&
+      !configuration.columns.find((col) => col.name === column.name)
+        ?.excludedFromHorizontalPivot &&
+      !snapshot.data.groupExtendedColumns.find(
+        (col) => col.name === column.name,
+      ),
+  );
+  return aggColumns.length
+    ? aggColumns.map((agg) => {
+        const operation = aggregateOperations.find(
+          (op) => op.operator === agg.aggregateOperator,
+        );
+        const aggCol = operation?.buildAggregateColumn(agg);
+        if (!aggCol) {
+          throw new UnsupportedOperationError(
+            `Unsupported aggregate operation '${agg.aggregateOperator}'`,
+          );
+        }
+        return aggCol;
+      })
+    : // if no aggregates are specified, add a dummy count() aggregate to satisfy compiler
+      [
+        _colSpec(
+          INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME,
+          _lambda([variable], [variable]),
+          _lambda([variable], [_function(DataCubeFunction.COUNT, [variable])]),
+        ),
+      ];
+}
+
+export function _castCols(columns: DataCubeQuerySnapshotColumn[]) {
+  const genericType = new V1_GenericTypeInstance();
+  genericType.fullPath = CORE_PURE_PATH.RELATION;
+  genericType.typeArguments = [_cols(columns)];
+  return genericType;
 }
 
 export function _filter(

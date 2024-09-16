@@ -75,6 +75,8 @@ export enum INTERNAL__GridClientUtilityCssClassName {
   TEXT_ALIGN_PREFIX = 'data-cube-grid__utility--text-align-',
   TEXT_COLOR_PREFIX = 'data-cube-grid__utility--text-color-',
   BACKGROUND_COLOR_PREFIX = 'data-cube-grid__utility--background-color-',
+
+  PIVOT_COLUMN_GROUP_PREFIX = 'data-cube-grid__utility--pivot-column-group-',
 }
 export const generateFontFamilyUtilityClassName = (fontFamily: string) =>
   `${INTERNAL__GridClientUtilityCssClassName.FONT_FAMILY_PREFIX}${fontFamily.replaceAll(' ', '-')}`;
@@ -109,6 +111,7 @@ export const INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE = 100;
 // so the value set must be reasonable, or else it can crash the application!
 export const INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE = 1e5;
 
+export const INTERNAL__GRID_CLIENT_PIVOT_COLUMN_GROUP_COLOR_ROTATION_SIZE = 5;
 export const INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH = 200;
 export const INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH = 50;
 export const INTERNAL__GRID_CLIENT_HEADER_HEIGHT = 24;

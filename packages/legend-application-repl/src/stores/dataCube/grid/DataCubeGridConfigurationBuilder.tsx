@@ -53,9 +53,11 @@ import {
   INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
   INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
+  INTERNAL__GRID_CLIENT_PIVOT_COLUMN_GROUP_COLOR_ROTATION_SIZE,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
+  getNonNullableEntry,
   getQueryParameters,
   getQueryParameterValue,
   isNonNullable,
@@ -77,6 +79,7 @@ import {
   DataCubeQuerySortOperator,
   DataCubeColumnKind,
   DEFAULT_MISSING_VALUE_DISPLAY_TEXT,
+  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
 } from '../core/DataCubeQueryEngine.js';
 import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
 import { DataCubeIcon } from '@finos/legend-art';
@@ -380,6 +383,7 @@ function _aggSpec(columnData: ColumnData) {
   const { snapshot, column } = columnData;
   const data = snapshot.data;
   const groupByCol = _findCol(data.groupBy?.columns, column.name);
+  const pivotCol = _findCol(data.pivot?.columns, column.name);
   const isGroupExtendedColumn = Boolean(
     _findCol(data.groupExtendedColumns, column.name),
   );
@@ -401,6 +405,11 @@ function _aggSpec(columnData: ColumnData) {
     aggFunc: !isGroupExtendedColumn ? column.aggregateOperator : null,
     enableValue: false, // disable GUI interactions to modify this column's aggregate function
     allowedAggFuncs: [], // disable GUI for options of the agg functions
+    pivot: !isGroupExtendedColumn && Boolean(pivotCol),
+    pivotIndex:
+      !isGroupExtendedColumn && groupByCol
+        ? (data.groupBy?.columns.indexOf(groupByCol) ?? null)
+        : null,
   } satisfies ColDef;
 }
 
@@ -425,9 +434,12 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     getChildCount: (data) =>
       data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID],
     // -------------------------------------- PIVOT --------------------------------------
-    pivotPanelShow: 'always',
-    // pivotMode: true,
-    // serverSidePivotResultFieldSeparator: '__|__',
+    // NOTE: we opt-out from ag-grid native support for pivot mode as it has a lot of constraints
+    // e.g. pivot mode impacts how row-grouping column drilldown is handled: when enabled, one
+    // cannot drill down to the leaf level.
+    // Another problem is we cannot use custom group column when in pivot mode.
+    // See https://github.com/ag-grid/ag-grid/issues/8088
+    pivotMode: false,
     // -------------------------------------- SORT --------------------------------------
     // Force multi-sorting since this is what the query supports anyway
     alwaysMultiSort: true,
@@ -527,6 +539,7 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
           width: INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
           toolPanelParams: {
             suppressValues: true,
+            suppressPivots: true,
             suppressPivotMode: true,
           },
         },
@@ -540,11 +553,115 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
   };
 }
 
+export function generateDefinitionForPivotResultColumns(
+  pivotResultColumns: DataCubeQuerySnapshotColumn[],
+  snapshot: DataCubeQuerySnapshot,
+  configuration: DataCubeConfiguration,
+  dataCube: DataCubeState,
+) {
+  const columns = pivotResultColumns
+    .map((col) => ({
+      ...col,
+      values: col.name.split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR),
+    }))
+    .filter((col) => col.values.length > 1);
+
+  const columnDefs: ColGroupDef[] = [];
+
+  columns.forEach((col) => {
+    const groups: ColGroupDef[] = [];
+    let leaf!: ColDef;
+    let id = '';
+    for (let i = 0; i < col.values.length; i++) {
+      const value = getNonNullableEntry(col.values, i);
+      id =
+        id === ''
+          ? getNonNullableEntry(col.values, i)
+          : `${id}${PIVOT_COLUMN_NAME_VALUE_SEPARATOR}${value}`;
+
+      if (i !== col.values.length - 1) {
+        groups.push({
+          groupId: id,
+          children: [],
+          suppressColumnsToolPanel: true,
+          headerName: value,
+        } satisfies ColGroupDef);
+      } else {
+        const column = _findCol(configuration.columns, value);
+        if (column) {
+          const columnData = {
+            snapshot,
+            column,
+            configuration,
+          };
+          leaf = {
+            headerName: column.displayName ?? column.name,
+            colId: col.name,
+            field: col.name,
+            menuTabs: [],
+
+            ..._displaySpec(columnData),
+            ..._sizeSpec(columnData),
+            // ..._sortSpec(columnData),
+            // ..._aggSpec(columnData),
+          } satisfies ColDef;
+        } else {
+          leaf = {
+            headerName: value,
+            colId: col.name,
+            field: col.name,
+          } satisfies ColDef;
+        }
+      }
+    }
+
+    let currentCollection: (ColDef | ColGroupDef)[] = columnDefs;
+    groups.forEach((group) => {
+      const existingGroup = currentCollection.find(
+        (collection) =>
+          'groupId' in collection && collection.groupId === group.groupId,
+      );
+      if (existingGroup) {
+        currentCollection = (existingGroup as ColGroupDef).children;
+      } else {
+        const newGroup = {
+          ...group,
+          headerClass: `${INTERNAL__GridClientUtilityCssClassName.PIVOT_COLUMN_GROUP_PREFIX}${currentCollection.length % INTERNAL__GRID_CLIENT_PIVOT_COLUMN_GROUP_COLOR_ROTATION_SIZE}`,
+        } satisfies ColGroupDef;
+        currentCollection.push(newGroup);
+        currentCollection = newGroup.children;
+      }
+    });
+    currentCollection.push(leaf);
+  });
+
+  // TODO: decorate header colors, etc.
+
+  return columnDefs;
+}
+
 export function generateGridOptionsFromSnapshot(
   snapshot: DataCubeQuerySnapshot,
   configuration: DataCubeConfiguration,
   dataCube: DataCubeState,
 ): GridOptions {
+  let pivotResultColumns: DataCubeQuerySnapshotColumn[] = [];
+  let columnsToDisplay = configuration.columns;
+  if (snapshot.data.pivot) {
+    const castColumns = snapshot.data.pivot.castColumns;
+    const pivotColumns = snapshot.data.pivot.columns;
+    pivotResultColumns = castColumns.filter(
+      (column) =>
+        !configuration.columns.find((col) => col.name === column.name),
+    );
+    columnsToDisplay = configuration.columns.filter(
+      (column) =>
+        !pivotColumns.find((col) => col.name === column.name) &&
+        !pivotResultColumns.find((col) => col.name === column.name) &&
+        column.excludedFromHorizontalPivot,
+    );
+  }
+
   const gridOptions = {
     /**
      * NOTE: there is a strange issue where if we put dynamic configuration directly
@@ -632,7 +749,7 @@ export function generateGridOptionsFromSnapshot(
         flex: 1,
         loadingCellRenderer: DataCubeGridLoadingCellRenderer,
         // TODO: we can support this in the configuration (support sorting by tree-column?)
-        // sortable: false,
+        sortable: true,
       } satisfies ColDef,
       // NOTE: Internal column used for programatically trigger data fetch when filter is modified
       {
@@ -645,8 +762,14 @@ export function generateGridOptionsFromSnapshot(
         filter: 'agTextColumnFilter',
         suppressColumnsToolPanel: true,
       },
+      ...generateDefinitionForPivotResultColumns(
+        pivotResultColumns,
+        snapshot,
+        configuration,
+        dataCube,
+      ),
       /** TODO: @datacube pivot handle pivot and column grouping */
-      ...configuration.columns.map((column) => {
+      ...columnsToDisplay.map((column) => {
         const columnData = {
           snapshot,
           column,
@@ -654,6 +777,7 @@ export function generateGridOptionsFromSnapshot(
         };
         return {
           headerName: column.displayName ?? column.name,
+          colId: column.name,
           field: column.name,
           menuTabs: [],
 
@@ -661,7 +785,7 @@ export function generateGridOptionsFromSnapshot(
           ..._sizeSpec(columnData),
           ..._sortSpec(columnData),
           ..._aggSpec(columnData),
-        } satisfies ColDef | ColGroupDef;
+        } satisfies ColDef;
       }),
     ],
   } as GridOptions;
