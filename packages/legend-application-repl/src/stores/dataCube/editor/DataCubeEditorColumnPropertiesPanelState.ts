@@ -64,9 +64,16 @@ export class DataCubeEditorColumnPropertiesPanelState
       ...this.editor.columns.selector.selectedColumns.map((column) =>
         this.columns.find((col) => col.name === column.name),
       ),
+      // NOTE: visible group-level extended columns are already included in
+      // the selected columns; whereas hidden group-level extended columns are
+      // not included, so we need to include them manually.
+      //
+      // since the order of columns specified here is important as it would be used
+      // to determine the order of displayed columns in the grid and the selector
+      // so we will put the hidden group-level extended columns last.
       ...this.editor.columns.groupExtendColumns
         .map((column) => this.columns.find((col) => col.name === column.name))
-        .filter((column) => column && !column.hideFromView),
+        .filter((column) => column && column.hideFromView),
     ].filter(isNonNullable);
   }
 

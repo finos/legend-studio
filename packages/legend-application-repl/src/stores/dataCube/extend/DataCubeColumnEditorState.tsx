@@ -350,6 +350,7 @@ export class DataCubeNewColumnState {
       },
       this.isGroupLevel,
       this.columnKind,
+      this,
     );
 
     this.close();

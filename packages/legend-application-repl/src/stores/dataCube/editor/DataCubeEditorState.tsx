@@ -135,10 +135,17 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
       // of pivot result columns for casting to guarantee validation is not thronn off.
       if (tempSnapshot.data.pivot) {
         tempSnapshot.data.pivot.castColumns =
-          this.sorts.selector.availableColumns.map((col) => ({
-            name: col.name,
-            type: col.type,
-          }));
+          this.sorts.selector.availableColumns
+            .filter(
+              (col) =>
+                !tempSnapshot.data.groupExtendedColumns.find(
+                  (column) => column.name === col.name,
+                ),
+            )
+            .map((col) => ({
+              name: col.name,
+              type: col.type,
+            }));
       }
       await this.dataCube.engine.getQueryRelationType(
         _lambda(

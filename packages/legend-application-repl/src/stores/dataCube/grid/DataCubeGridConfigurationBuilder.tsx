@@ -602,6 +602,13 @@ function generateDefinitionForPivotResultColumns(
 
             ..._displaySpec(columnData),
             ..._sizeSpec(columnData),
+
+            // disallow pinning and moving pivot result columns
+            pinned: false,
+            lockPinned: true,
+            lockPosition: true,
+            suppressColumnsToolPanel: true, // hide from column tool panel
+
             // ..._sortSpec(columnData),
             // ..._aggSpec(columnData),
           } satisfies ColDef;
@@ -610,6 +617,11 @@ function generateDefinitionForPivotResultColumns(
             headerName: value,
             colId: col.name,
             field: col.name,
+
+            // NOTE: hide columns which do not have a corresponding base column configuration
+            // these could be internal columns (such as count)
+            hide: true,
+            suppressColumnsToolPanel: true, // hide from column tool panel
           } satisfies ColDef;
         }
       }
@@ -649,16 +661,15 @@ export function generateColumnDefs(
   let columnsToDisplay = configuration.columns;
   if (snapshot.data.pivot) {
     const castColumns = snapshot.data.pivot.castColumns;
-    const pivotColumns = snapshot.data.pivot.columns;
-    pivotResultColumns = castColumns.filter(
-      (column) =>
-        !configuration.columns.find((col) => col.name === column.name),
+    pivotResultColumns = castColumns.filter((column) =>
+      column.name.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR),
     );
     columnsToDisplay = configuration.columns.filter(
       (column) =>
-        !pivotColumns.find((col) => col.name === column.name) &&
-        !pivotResultColumns.find((col) => col.name === column.name) &&
-        column.excludedFromHorizontalPivot,
+        castColumns.find((col) => col.name === column.name) ||
+        snapshot.data.groupExtendedColumns.find(
+          (col) => col.name === column.name,
+        ),
     );
   }
   return [

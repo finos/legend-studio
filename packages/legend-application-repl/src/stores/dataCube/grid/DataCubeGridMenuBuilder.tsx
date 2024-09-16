@@ -643,29 +643,36 @@ export function generateMenuBuilder(
       {
         name: 'Pin',
         subMenu: [
-          {
-            name: `Pin Left`,
-            disabled: !column || column.isPinnedLeft(),
-            checked: Boolean(column?.isPinnedLeft()),
-            action: () =>
-              controller.pinColumn(columnName, DataCubeColumnPinPlacement.LEFT),
-          },
-          {
-            name: `Pin Right`,
-            disabled: !column || column.isPinnedRight(),
-            checked: Boolean(column?.isPinnedRight()),
-            action: () =>
-              controller.pinColumn(
-                columnName,
-                DataCubeColumnPinPlacement.RIGHT,
-              ),
-          },
-          {
-            name: `Unpin`,
-            disabled: !column?.isPinned(),
-            action: () => controller.pinColumn(columnName, undefined),
-          },
-          'separator',
+          ...(columnConfiguration
+            ? [
+                {
+                  name: `Pin Left`,
+                  disabled: !column || column.isPinnedLeft(),
+                  checked: Boolean(column?.isPinnedLeft()),
+                  action: () =>
+                    controller.pinColumn(
+                      columnName,
+                      DataCubeColumnPinPlacement.LEFT,
+                    ),
+                },
+                {
+                  name: `Pin Right`,
+                  disabled: !column || column.isPinnedRight(),
+                  checked: Boolean(column?.isPinnedRight()),
+                  action: () =>
+                    controller.pinColumn(
+                      columnName,
+                      DataCubeColumnPinPlacement.RIGHT,
+                    ),
+                },
+                {
+                  name: `Unpin`,
+                  disabled: !column?.isPinned(),
+                  action: () => controller.pinColumn(columnName, undefined),
+                },
+                'separator',
+              ]
+            : []),
           {
             name: `Remove All Pinnings`,
             disabled: controller.configuration.columns.every(
@@ -677,7 +684,7 @@ export function generateMenuBuilder(
       },
       {
         name: 'Hide',
-        disabled: !column,
+        disabled: !columnConfiguration,
         action: () => controller.showColumn(columnName, false),
       },
       'separator',

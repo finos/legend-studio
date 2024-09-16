@@ -168,13 +168,13 @@ export class DataCubeQuerySnapshot {
       case 'group-by':
       case 'group-extend':
         return [
-          ...(this.data.pivot
+          ...(this.data.pivot?.castColumns.length
             ? this.data.pivot.castColumns
             : this.data.selectColumns),
         ];
       case 'sort':
         return [
-          ...(this.data.pivot
+          ...(this.data.pivot?.castColumns.length
             ? this.data.pivot.castColumns
             : this.data.selectColumns),
           ...this.data.groupExtendedColumns,

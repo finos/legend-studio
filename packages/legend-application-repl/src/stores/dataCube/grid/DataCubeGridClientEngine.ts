@@ -32,7 +32,11 @@ import {
   pruneObject,
 } from '@finos/legend-shared';
 import { buildExecutableQuery } from '../core/DataCubeQueryBuilder.js';
-import { type TabularDataSet, V1_Lambda } from '@finos/legend-graph';
+import {
+  type TabularDataSet,
+  type V1_AppliedFunction,
+  V1_Lambda,
+} from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { generateRowGroupingDrilldownExecutableQueryPostProcessor } from './DataCubeGridQueryBuilder.js';
@@ -46,6 +50,9 @@ import { DEFAULT_LARGE_ALERT_WINDOW_CONFIG } from '../../LayoutManagerState.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeEngine } from '../DataCubeEngine.js';
 import { generateColumnDefs } from './DataCubeGridConfigurationBuilder.js';
+import type { DataCubeQueryFunctionMap } from '../core/DataCubeQueryEngine.js';
+import type { DataCubeQueryFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
+import type { DataCubeQueryAggregateOperation } from '../core/aggregation/DataCubeQueryAggregateOperation.js';
 
 type GridClientCellValue = string | number | boolean | null | undefined;
 type GridClientRowData = {
@@ -222,14 +229,34 @@ async function getCastColumns(
   const snapshot = currentSnapshot.clone();
   guaranteeNonNullable(snapshot.data.pivot).castColumns = [];
   snapshot.data.groupBy = undefined;
-  snapshot.data.groupExtendedColumns = [];
-  snapshot.data.groupExtendedColumns = [];
   snapshot.data.sortColumns = [];
   snapshot.data.limit = 0;
   const query = buildExecutableQuery(
     snapshot,
     engine.filterOperations,
     engine.aggregateOperations,
+    {
+      postProcessor: (
+        _snapshot: DataCubeQuerySnapshot,
+        sequence: V1_AppliedFunction[],
+        funcMap: DataCubeQueryFunctionMap,
+        configuration: DataCubeConfiguration,
+        filterOperations: DataCubeQueryFilterOperation[],
+        aggregateOperations: DataCubeQueryAggregateOperation[],
+      ) => {
+        const _unprocess = (funcMapKey: keyof DataCubeQueryFunctionMap) => {
+          const func = funcMap[funcMapKey];
+          if (func) {
+            sequence.splice(sequence.indexOf(func), 1);
+            funcMap[funcMapKey] = undefined;
+          }
+        };
+
+        if (funcMap.groupExtend) {
+          _unprocess('groupExtend');
+        }
+      },
+    },
   );
 
   const lambda = new V1_Lambda();
