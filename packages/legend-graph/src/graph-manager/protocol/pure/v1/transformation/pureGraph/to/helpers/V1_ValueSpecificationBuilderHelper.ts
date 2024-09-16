@@ -580,7 +580,7 @@ export function V1_processProperty(
   } else if (inferredType instanceof Relation_RelationType) {
     const col = guaranteeNonNullable(
       inferredType.columns.find((e) => property === e.name),
-      `Can't find property ${property}`,
+      `Can't find property ${property} in relation`,
     );
     const _funcExp = new FunctionExpression(col.name);
     _funcExp.func = col;

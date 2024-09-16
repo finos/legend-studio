@@ -23,6 +23,7 @@ import {
   guaranteeType,
   isNonNullable,
   returnUndefOnError,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
   type V1_GraphBuilderContext,
@@ -677,7 +678,9 @@ const V1_buildTypedProjectFunctionExpression = (
         new Relation_RelationalColumn(colSpec.name, returnType),
       );
     } else {
-      // TODO: throw
+      throw new UnsupportedOperationError(
+        'Unable to get return type for current lambda',
+      );
     }
     return pColSpec;
   });

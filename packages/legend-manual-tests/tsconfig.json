@@ -7,6 +7,7 @@
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
   "references": [
+    { "path": "../legend-application" },
     { "path": "../legend-art" },
     { "path": "../legend-shared" },
     { "path": "../legend-graph" },

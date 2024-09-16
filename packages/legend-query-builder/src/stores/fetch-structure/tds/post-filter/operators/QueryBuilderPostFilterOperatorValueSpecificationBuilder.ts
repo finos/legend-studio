@@ -58,7 +58,7 @@ export const buildtdsPropertyExpressionFromColState = (
   if (relationType) {
     const col = guaranteeNonNullable(
       relationType.columns.find((e) => colState.columnName === e.name),
-      `Can't find property ${colState.columnName}`,
+      `Can't find property ${colState.columnName} in relation`,
     );
     const _funcExp = new FunctionExpression(col.name);
     _funcExp.func = col;
