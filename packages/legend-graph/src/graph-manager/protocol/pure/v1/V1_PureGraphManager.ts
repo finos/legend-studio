@@ -4015,7 +4015,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return graphData;
   }
 
-  private elementToProtocol = <T extends V1_PackageableElement>(
+  elementToProtocol = <T extends V1_PackageableElement>(
     element: PackageableElement,
     options?: { keepSourceInformation?: boolean | undefined } | undefined,
   ): T =>

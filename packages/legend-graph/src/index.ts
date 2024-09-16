@@ -69,6 +69,7 @@ export {
   TagReference,
   TagExplicitReference,
 } from './graph/metamodel/pure/packageableElements/domain/TagReference.js';
+export { Service } from './graph/metamodel/pure/packageableElements/service/Service.js';
 export * from './graph/metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 export { TestDataGenerationResult } from './graph/metamodel/pure/packageableElements/service/TestGenerationResult.js';
 export * from './graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
@@ -639,7 +640,10 @@ export {
   V1_serializeConnectionValue,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper.js';
 export { V1_buildEngineRuntime } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper.js';
-export { V1_deserializePackageableElement } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PackageableElementSerialization.js';
+export {
+  V1_deserializePackageableElement,
+  V1_serializePackageableElement,
+} from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PackageableElementSerialization.js';
 export {
   V1_DatasetSpecification,
   V1_DatasetEntitlementReport,

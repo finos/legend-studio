@@ -40,10 +40,12 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@finos/legend-application": "workspace:*",
     "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-graph": "workspace:*",
+    "@finos/legend-query-builder": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
     "@types/react": "18.3.5",
