@@ -80,8 +80,8 @@ export abstract class LegendApplicationConfig {
 
   // version
   readonly appVersion: string;
-  readonly appVersionBuildTime: string;
-  readonly appVersionCommitId: string;
+  readonly appVersionBuildTime: string | undefined;
+  readonly appVersionCommitId: string | undefined;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendApplicationConfigurationData>,
@@ -117,14 +117,8 @@ export abstract class LegendApplicationConfig {
       input.versionData.version,
       `Can't collect application version: 'version' field is missing`,
     );
-    this.appVersionBuildTime = guaranteeNonNullable(
-      input.versionData.buildTime,
-      `Can't collect application version: 'buildTime' field is missing`,
-    );
-    this.appVersionCommitId = guaranteeNonNullable(
-      input.versionData.commitSHA,
-      `Can't collect application version: 'commitSHA' field is missing`,
-    );
+    this.appVersionBuildTime = input.versionData.buildTime;
+    this.appVersionCommitId = input.versionData.commitSHA;
   }
 
   protected static resolveAbsoluteUrl(url: string): string {
