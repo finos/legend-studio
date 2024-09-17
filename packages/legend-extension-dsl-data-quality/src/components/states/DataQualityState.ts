@@ -16,24 +16,31 @@
 
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import {
-  type GraphManagerState,
-  type Runtime,
-  type RawLambda,
-  type RootGraphFetchTree,
-  type PackageableElement,
   type Class,
   type GraphFetchTree,
-  buildRawLambdaFromLambdaFunction,
+  type GraphManagerState,
+  type PackageableElement,
+  type RawLambda,
+  type RootGraphFetchTree,
+  type Runtime,
   CORE_PURE_PATH,
   FunctionType,
   GenericType,
   GenericTypeExplicitReference,
+  getMilestoneTemporalStereotype,
   LambdaFunction,
   LambdaFunctionInstanceValue,
+  MILESTONING_STEREOTYPE,
   Multiplicity,
   observe_ValueSpecification,
   PackageableElementExplicitReference,
+  ParameterValue,
+  PRIMITIVE_TYPE,
+  buildRawLambdaFromLambdaFunction,
   VariableExpression,
+  PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
+  BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
+  V1_RawValueSpecificationType,
 } from '@finos/legend-graph';
 import {
   type EditorExtensionState,
@@ -64,6 +71,7 @@ import { DataQualityResultState } from './DataQualityResultState.js';
 import { DATA_QUALITY_HASH_STRUCTURE } from '../../graph/metamodel/DSL_DataQuality_HashUtils.js';
 import {
   buildFilterConditionExpression,
+  generateDefaultValueForPrimitiveType,
   processFilterLambda,
   QueryBuilderAdvancedWorkflowState,
 } from '@finos/legend-query-builder';
@@ -119,6 +127,13 @@ export abstract class DataQualityState extends ElementEditorState {
   dataQualityQueryBuilderState: DataQualityQueryBuilderState;
   resultState: DataQualityResultState;
   showStructuralValidations = false;
+  showDateSelection = false;
+  processingDate = generateDefaultValueForPrimitiveType(
+    PRIMITIVE_TYPE.STRICTDATE,
+  ) as string;
+  businessDate = generateDefaultValueForPrimitiveType(
+    PRIMITIVE_TYPE.STRICTDATE,
+  ) as string;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -129,6 +144,9 @@ export abstract class DataQualityState extends ElementEditorState {
       structuralValidationsGraphFetchTreeState: observable,
       dataQualityQueryBuilderState: observable,
       showStructuralValidations: observable,
+      showDateSelection: observable,
+      processingDate: observable,
+      businessDate: observable,
       constraintsConfigurationElement: computed,
       setSelectedTab: action,
       setExecutionContext: action,
@@ -136,9 +154,12 @@ export abstract class DataQualityState extends ElementEditorState {
       initializeGraphFetchTreeState: action,
       initializeStructuralValidationsGraphFetchTreeState: action,
       setShowStructuralValidations: action,
+      setShowDateSelection: action,
       updateElementOnClassChange: action,
       checkConstraintsSelectedAtNode: action,
       changeClass: action,
+      setProcessingDate: action,
+      setBusinessDate: action,
       fetchStructuralValidations: flow,
       tabsToShow: computed,
       areNestedConstraintsSelected: computed,
@@ -169,6 +190,18 @@ export abstract class DataQualityState extends ElementEditorState {
     this.showStructuralValidations = val;
   }
 
+  setShowDateSelection(val: boolean): void {
+    this.showDateSelection = val;
+  }
+
+  setProcessingDate(val: string): void {
+    this.processingDate = val;
+  }
+
+  setBusinessDate(val: string): void {
+    this.businessDate = val;
+  }
+
   get tabsToShow(): string[] {
     const tabs: string[] = Object.values(DATA_QUALITY_TAB);
     const extensionTabGetters = this.editorStore.pluginManager
@@ -183,6 +216,54 @@ export abstract class DataQualityState extends ElementEditorState {
       tabs.push(...tabGetter());
     }
     return tabs;
+  }
+
+  get currentClassMilestoningStrategy(): MILESTONING_STEREOTYPE | undefined {
+    const currentclass = this.dataQualityQueryBuilderState.class;
+    if (currentclass !== undefined) {
+      return getMilestoneTemporalStereotype(
+        currentclass,
+        this.graphManagerState.graph,
+      );
+    }
+    return undefined;
+  }
+
+  get isCurrentClassMilestoned(): boolean {
+    return this.currentClassMilestoningStrategy !== undefined;
+  }
+
+  get lambdaParameterValues(): ParameterValue[] {
+    const parameters: ParameterValue[] = [];
+    const currentClassMilestoningStrategy =
+      this.currentClassMilestoningStrategy;
+    if (
+      currentClassMilestoningStrategy ===
+        MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL ||
+      currentClassMilestoningStrategy === MILESTONING_STEREOTYPE.BITEMPORAL
+    ) {
+      const parameterValue = new ParameterValue();
+      parameterValue.name = PROCESSING_DATE_MILESTONING_PROPERTY_NAME;
+      parameterValue.value = {
+        _type: V1_RawValueSpecificationType.CSTRICTDATE,
+        value: this.processingDate,
+      };
+      parameters.push(parameterValue);
+    }
+    if (
+      currentClassMilestoningStrategy ===
+        MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL ||
+      currentClassMilestoningStrategy === MILESTONING_STEREOTYPE.BITEMPORAL
+    ) {
+      const parameterValue = new ParameterValue();
+      parameterValue.name = BUSINESS_DATE_MILESTONING_PROPERTY_NAME;
+      parameterValue.value = {
+        _type: V1_RawValueSpecificationType.CSTRICTDATE,
+        value: this.businessDate,
+      };
+      parameters.push(parameterValue);
+    }
+    return parameters;
   }
 
   *fetchStructuralValidations(): GeneratorFn<void> {

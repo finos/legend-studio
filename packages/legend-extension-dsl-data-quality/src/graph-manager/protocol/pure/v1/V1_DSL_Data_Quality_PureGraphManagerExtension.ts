@@ -24,6 +24,8 @@ import {
   type V1_ExecutionResult,
   type V1_PureModelContext,
   type V1_RootGraphFetchTree,
+  type ParameterValue,
+  type V1_ParameterValue,
   LegendSDLC,
   PureClientVersion,
   V1_buildExecutionError,
@@ -37,6 +39,8 @@ import {
   V1_PureModelContextPointer,
   V1_pureModelContextPropSchema,
   V1_serializeExecutionResult,
+  V1_parameterValueModelSchema,
+  V1_transformParameterValue,
 } from '@finos/legend-graph';
 import { createModelSchema, optional, primitive } from 'serializr';
 import {
@@ -47,6 +51,7 @@ import {
   returnUndefOnError,
   SerializationFactory,
   UnsupportedOperationError,
+  customListWithSchema,
 } from '@finos/legend-shared';
 import { DSL_DataQuality_PureGraphManagerExtension } from '../DSL_DataQuality_PureGraphManagerExtension.js';
 import {
@@ -63,6 +68,7 @@ const DQ_FETCH_PROPERTY_PATH_TREE = 'dq fetch property path tree';
 export class V1_DQExecuteInput {
   clientVersion: string | undefined;
   model!: V1_PureModelContext;
+  lambdaParameterValues: V1_ParameterValue[] = [];
   packagePath!: string;
   queryLimit: number | undefined;
 
@@ -70,6 +76,7 @@ export class V1_DQExecuteInput {
     createModelSchema(V1_DQExecuteInput, {
       clientVersion: optional(primitive()),
       model: V1_pureModelContextPropSchema,
+      lambdaParameterValues: customListWithSchema(V1_parameterValueModelSchema),
       packagePath: primitive(),
       queryLimit: optional(primitive()),
     }),
@@ -143,6 +150,7 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
 
   createExecutionInput(
     graph: PureModel,
+    lambdaParameterValues: ParameterValue[],
     packagePath: string,
     clientVersion: string | undefined,
     previewLimit: number | undefined,
@@ -152,6 +160,9 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     dqExecuteInput.model = graph.origin
       ? this.buildPureModelSDLCPointer(graph.origin, undefined)
       : this.graphManager.getFullGraphModelData(graph);
+    dqExecuteInput.lambdaParameterValues = lambdaParameterValues.map(
+      V1_transformParameterValue,
+    );
     dqExecuteInput.packagePath = packagePath;
     dqExecuteInput.queryLimit = previewLimit;
     return dqExecuteInput;
@@ -163,6 +174,7 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
   ): Promise<RawExecutionPlan> => {
     const input = this.createExecutionInput(
       graph,
+      [],
       packagePath,
       V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION,
       undefined,
@@ -186,11 +198,13 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
 
   execute = async (
     graph: PureModel,
+    lambdaParameterValues: ParameterValue[],
     packagePath: string,
     previewLimit: number,
   ): Promise<ExecutionResult> => {
     const input = this.createExecutionInput(
       graph,
+      lambdaParameterValues,
       packagePath,
       V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION,
       previewLimit,
@@ -229,6 +243,7 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
   ): Promise<{ plan: RawExecutionPlan; debug: string }> => {
     const input = this.createExecutionInput(
       graph,
+      [],
       packagePath,
       V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION,
       undefined,
@@ -261,6 +276,7 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     const engineServerClient = this.graphManager.engine.getEngineServerClient();
     const input = this.createExecutionInput(
       graph,
+      [],
       packagePath,
       V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION,
       undefined,

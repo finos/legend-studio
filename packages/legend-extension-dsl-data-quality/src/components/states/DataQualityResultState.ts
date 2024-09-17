@@ -116,7 +116,12 @@ export class DataQualityResultState {
 
       promise = getDataQualityPureGraphManagerExtension(
         this.dataQualityState.graphManagerState.graphManager,
-      ).execute(model, packagePath, this.previewLimit);
+      ).execute(
+        model,
+        this.dataQualityState.lambdaParameterValues,
+        packagePath,
+        this.previewLimit,
+      );
 
       this.setQueryRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
