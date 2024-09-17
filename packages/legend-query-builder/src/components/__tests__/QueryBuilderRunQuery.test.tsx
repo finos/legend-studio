@@ -49,6 +49,7 @@ import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuil
 import { filterByOrOutValues } from '../result/tds/QueryBuilderTDSResultShared.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 
+const GOOGLE_LINK = 'https://www.google.com/';
 const mockedResult = {
   builder: {
     _type: 'tdsBuilder',
@@ -69,7 +70,7 @@ const mockedResult = {
       { values: [22, 'John', true] },
       { values: ['129305879132475986', 'Olivia', false] },
       { values: [1450, 'Henry', true] },
-      { values: [55, 'https://www.google.com/', null] },
+      { values: [55, GOOGLE_LINK, null] },
     ],
   },
 };
@@ -119,7 +120,6 @@ test(
     const tdsResult = renderResult.getByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_VALUES_TDS,
     );
-    const GOOGLE_LINK = 'https://www.google.com/';
     const knownValues = [
       'Edited First Name',
       'John',
