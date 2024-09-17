@@ -246,7 +246,7 @@ export function buildExecutableQuery(
 
   // --------------------------------- LIMIT ---------------------------------
 
-  if (data.limit) {
+  if (data.limit !== undefined) {
     _process(
       'limit',
       _function(_name(DataCubeFunction.LIMIT), [
