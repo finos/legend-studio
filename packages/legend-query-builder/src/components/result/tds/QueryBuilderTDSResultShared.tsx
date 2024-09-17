@@ -247,6 +247,7 @@ const generateNewPreFilterConditionNodeData = (
     LegendApplicationConfig,
     LegendApplicationPluginManager<LegendApplicationPlugin>
   >,
+  operator: QueryBuilderFilterOperator,
   _cellData: QueryBuilderTDSResultCellData,
   filterState: QueryBuilderFilterState,
   propertyExpression: AbstractPropertyExpression | undefined,
@@ -257,6 +258,7 @@ const generateNewPreFilterConditionNodeData = (
       filterConditionState = new FilterConditionState(
         filterState,
         propertyExpression,
+        operator,
       );
 
       const defaultFilterConditionValue =
@@ -592,6 +594,7 @@ const preFilterByOrOutValue = (
     try {
       generateNewPreFilterConditionNodeData(
         applicationStore,
+        operator,
         _cellData,
         queryBuilderState.filterState,
         propertyExpressionState.propertyExpression,
