@@ -181,7 +181,7 @@ const postFilterNotEqualOperator =
   new QueryBuilderPostFilterOperator_NotEqual();
 const postFilterNotInOperator = new QueryBuilderPostFilterOperator_NotIn();
 
-const getExistingPreFilterNode = (
+const getExistingFilterNode = (
   operators: QueryBuilderFilterOperator[],
   propertyExpressionState: QueryBuilderPropertyExpressionState | undefined,
   filterState: QueryBuilderFilterState,
@@ -242,7 +242,7 @@ const updateFilterConditionValue = (
   }
 };
 
-const generateNewPreFilterConditionNodeData = (
+const generateNewFilterConditionNodeData = (
   applicationStore: ApplicationStore<
     LegendApplicationConfig,
     LegendApplicationPluginManager<LegendApplicationPlugin>
@@ -348,7 +348,7 @@ const generateNewPostFilterConditionNodeData = async (
   }
 };
 
-const updateExistingPreFilterConditionNodeData = (
+const updateExistingFilterConditionNodeData = (
   existingPreFilterNode: QueryBuilderFilterTreeNodeData,
   isFilterBy: boolean,
   _cellData: QueryBuilderTDSResultCellData,
@@ -572,7 +572,7 @@ const preFilterByOrOutValue = (
 ): void => {
   queryBuilderState.filterState.setShowPanel(true);
   const operator = getFilterOperator(isFilterBy, _cellData);
-  const existingPreFilterNode = getExistingPreFilterNode(
+  const existingPreFilterNode = getExistingFilterNode(
     _cellData.value === null
       ? [filterEmptyOperator, filterNotEmptyOperator]
       : isFilterBy
@@ -582,7 +582,7 @@ const preFilterByOrOutValue = (
     queryBuilderState.filterState,
   );
   if (existingPreFilterNode) {
-    updateExistingPreFilterConditionNodeData(
+    updateExistingFilterConditionNodeData(
       existingPreFilterNode,
       isFilterBy,
       _cellData,
@@ -592,7 +592,7 @@ const preFilterByOrOutValue = (
     );
   } else {
     try {
-      generateNewPreFilterConditionNodeData(
+      generateNewFilterConditionNodeData(
         applicationStore,
         operator,
         _cellData,
