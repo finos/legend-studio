@@ -56,13 +56,17 @@ export class DataCubeEditorSortColumnsSelectorState extends DataCubeEditorColumn
 
   override get availableColumns() {
     return [
-      ...this.editor.columns.selector.selectedColumns,
-      ...this.editor.columns.groupExtendColumns.filter(
-        (col) =>
-          !this.editor.columns.selector.selectedColumns.find(
-            (column) => column.name === col.name,
+      ...this.editor.horizontalPivots.pivotResultColumns,
+      ...this.editor.columns.selector.selectedColumns.filter(
+        (column) =>
+          !this.editor.columns.groupExtendColumns.find(
+            (col) => col.name === column.name,
+          ) &&
+          !this.editor.horizontalPivots.columnsConsumedByPivot.find(
+            (col) => col.name === column.name,
           ),
       ),
+      ...this.editor.columns.groupExtendColumns,
     ].map(
       (col) =>
         new DataCubeEditorSortColumnState(
@@ -85,6 +89,14 @@ export class DataCubeEditorSortsPanelState
     this.editor = editor;
     this.dataCube = editor.dataCube;
     this.selector = new DataCubeEditorSortColumnsSelectorState(editor);
+  }
+
+  adaptPropagatedChanges(): void {
+    this.selector.setSelectedColumns(
+      this.selector.selectedColumns.filter((column) =>
+        this.selector.availableColumns.find((col) => col.name === column.name),
+      ),
+    );
   }
 
   applySnaphot(

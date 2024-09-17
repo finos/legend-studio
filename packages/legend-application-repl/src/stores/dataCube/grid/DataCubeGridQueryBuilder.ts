@@ -195,9 +195,6 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
         // filter the data to match drilldown values, no groupBy() is needed.
         _unprocess('groupBy');
       }
-
-      // --------------------------------- PIVOT ---------------------------------
-      /** TODO: @datacube pivot - implement this and CAST */
     }
   };
 }

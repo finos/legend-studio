@@ -108,19 +108,13 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
     'Invalid: Unsupported function composition: select()->filter()',
     'select(~a)->filter(x|$x.a==1)',
     ['a:Integer'],
-    'Unsupported function composition select()->filter() (supported composition: extend()->filter()->select()->groupBy()->pivot()->cast()->extend()->sort()->limit())',
+    'Unsupported function composition select()->filter() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->groupBy()->extend()->sort()->limit())',
   ],
   [
-    'Invalid: Group-level extend() used when no aggregation/grouping presents',
-    'extend(~[a:x|1])->extend(~[b:x|1])',
-    [],
-    'Found invalid usage of group-level extend() for query without aggregation such as pivot() and groupBy()',
-  ],
-  [
-    'Invalid: Dynamic function pivot() not chained with casting',
+    'Unsupported function composition pivot() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->groupBy()->extend()->sort()->limit())',
     'pivot(~a, ~b:x|$x.a:x|$x->sum())',
     [],
-    'Found usage of dynamic function pivot() without casting',
+    'Unsupported function composition pivot() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->groupBy()->extend()->sort()->limit())',
   ],
   /** TODO: @datacube roundtrip - enable when we support extended columns */
   // See https://github.com/finos/legend-engine/pull/2873

@@ -55,6 +55,8 @@ import {
   _function,
   _groupByAggCols,
   _lambda,
+  _pivotAggCols,
+  _castCols,
   _primitiveValue,
   _var,
 } from './DataCubeQueryBuilderUtils.js';
@@ -103,13 +105,13 @@ export function buildExecutableQuery(
       'leafExtend',
       _function(_name(DataCubeFunction.EXTEND), [
         _cols(
-          data.leafExtendedColumns.map((eCol) => {
-            if (eCol._type === DataCubeExtendedColumnType.SIMPLE) {
-              const col = eCol as DataCubeQuerySnapshotSimpleExtendedColumn;
-              return _colSpec(col.name, _deserializeToLambda(col.lambda));
+          data.leafExtendedColumns.map((col) => {
+            if (col._type === DataCubeExtendedColumnType.SIMPLE) {
+              const column = col as DataCubeQuerySnapshotSimpleExtendedColumn;
+              return _colSpec(column.name, _deserializeToLambda(column.lambda));
             }
             throw new UnsupportedOperationError(
-              `Can't build extended column of type '${eCol._type}'`,
+              `Can't build extended column of type '${col._type}'`,
             );
           }),
         ),
@@ -139,6 +141,46 @@ export function buildExecutableQuery(
     );
   }
 
+  // --------------------------------- PIVOT ---------------------------------
+
+  if (data.pivot) {
+    const pivot = data.pivot;
+
+    // pre-sort to maintain stable order for pivot result columns
+    _process(
+      'sort',
+      _function(_name(DataCubeFunction.SORT), [
+        _collection(
+          data.pivot.columns.map((col) =>
+            _function(_name(DataCubeFunction.ASC), [_col(col.name)]),
+          ),
+        ),
+      ]),
+    );
+
+    _process(
+      'pivot',
+      _function(_name(DataCubeFunction.PIVOT), [
+        _cols(pivot.columns.map((col) => _colSpec(col.name))),
+        _cols(
+          _pivotAggCols(
+            pivot.columns,
+            snapshot,
+            configuration,
+            aggregateOperations,
+          ),
+        ),
+      ]),
+    );
+
+    if (pivot.castColumns.length) {
+      _process(
+        'pivotCast',
+        _function(_name(DataCubeFunction.CAST), [_castCols(pivot.castColumns)]),
+      );
+    }
+  }
+
   // --------------------------------- GROUP BY ---------------------------------
 
   if (data.groupBy) {
@@ -159,9 +201,6 @@ export function buildExecutableQuery(
     );
   }
 
-  // --------------------------------- PIVOT ---------------------------------
-  /** TODO: @datacube pivot - implement this and CAST */
-
   // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
 
   if (data.groupExtendedColumns.length) {
@@ -169,13 +208,13 @@ export function buildExecutableQuery(
       'groupExtend',
       _function(_name(DataCubeFunction.EXTEND), [
         _cols(
-          data.groupExtendedColumns.map((eCol) => {
-            if (eCol._type === DataCubeExtendedColumnType.SIMPLE) {
-              const col = eCol as DataCubeQuerySnapshotSimpleExtendedColumn;
-              return _colSpec(col.name, _deserializeToLambda(col.lambda));
+          data.groupExtendedColumns.map((col) => {
+            if (col._type === DataCubeExtendedColumnType.SIMPLE) {
+              const column = col as DataCubeQuerySnapshotSimpleExtendedColumn;
+              return _colSpec(column.name, _deserializeToLambda(column.lambda));
             }
             throw new UnsupportedOperationError(
-              `Can't build extended column of type '${eCol._type}'`,
+              `Can't build extended column of type '${col._type}'`,
             );
           }),
         ),

@@ -44,6 +44,10 @@ export class DataCubeEditorVerticalPivotColumnsSelectorState extends DataCubeEdi
           // exclude group-level extended columns
           !this.editor.columns.groupExtendColumns.find(
             (col) => col.name === column.name,
+          ) &&
+          // prune available columns if h-pivot is present
+          !this.editor.horizontalPivots.columnsConsumedByPivot.find(
+            (col) => col.name === column.name,
           ),
       )
       .map(
@@ -64,6 +68,14 @@ export class DataCubeEditorVerticalPivotsPanelState
     this.editor = editor;
     this.dataCube = editor.dataCube;
     this.selector = new DataCubeEditorVerticalPivotColumnsSelectorState(editor);
+  }
+
+  adaptPropagatedChanges(): void {
+    this.selector.setSelectedColumns(
+      this.selector.selectedColumns.filter((column) =>
+        this.selector.availableColumns.find((col) => col.name === column.name),
+      ),
+    );
   }
 
   applySnaphot(

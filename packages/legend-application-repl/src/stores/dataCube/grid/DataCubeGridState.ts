@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable, hashArray } from '@finos/legend-shared';
-import { action, makeObservable, observable, runInAction } from 'mobx';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { action, makeObservable, observable } from 'mobx';
 import type { GridApi } from '@ag-grid-community/core';
 import type { DataCubeState } from '../DataCubeState.js';
 import {
   DataCubeGridClientServerSideDataSource,
   INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE,
-  INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID,
+  INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
   INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE,
+  computeHashCodeForDataFetchManualTrigger,
 } from './DataCubeGridClientEngine.js';
 import { DataCubeQuerySnapshotController } from '../core/DataCubeQuerySnapshotManager.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
@@ -30,22 +31,6 @@ import { generateGridOptionsFromSnapshot } from './DataCubeGridConfigurationBuil
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeGridControllerState } from './DataCubeGridControllerState.js';
 import { DataCubeGridClientExportEngine } from './DataCubeGridClientExportEngine.js';
-
-class DataCubeGridDatasourceConfiguration {
-  readonly limit?: number | undefined;
-
-  constructor(input: {
-    snapshot?: DataCubeQuerySnapshot | undefined;
-    queryConfiguration?: DataCubeConfiguration | undefined;
-  }) {
-    const { snapshot } = input;
-    this.limit = snapshot?.data.limit;
-  }
-
-  get hashCode() {
-    return hashArray([`limit: ${this.limit ?? ''}`]);
-  }
-}
 
 /**
  * This query editor state is responsible for syncing the internal state of ag-grid
@@ -69,29 +54,32 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
 
   clientDataSource: DataCubeGridClientServerSideDataSource;
 
+  queryConfiguration: DataCubeConfiguration;
+  rowLimit?: number | undefined;
   isPaginationEnabled = false;
   scrollHintText?: string | undefined;
-  datasourceConfiguration: DataCubeGridDatasourceConfiguration;
-  queryConfiguration: DataCubeConfiguration;
 
   constructor(dataCube: DataCubeState) {
     super(dataCube);
 
     makeObservable(this, {
       clientDataSource: observable,
-      datasourceConfiguration: observable,
+
       queryConfiguration: observable,
+
+      rowLimit: observable,
 
       isPaginationEnabled: observable,
       setPaginationEnabled: action,
 
       scrollHintText: observable,
       setScrollHintText: action,
+
+      applySnapshot: action,
     });
 
     this.controller = new DataCubeGridControllerState(this.dataCube);
     this.exportEngine = new DataCubeGridClientExportEngine(this);
-    this.datasourceConfiguration = new DataCubeGridDatasourceConfiguration({});
     this.queryConfiguration = new DataCubeConfiguration();
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
   }
@@ -129,28 +117,11 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,
   ) {
-    const existingExtraConfiguration = this.datasourceConfiguration;
     const queryConfiguration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
     );
-
-    // NOTE: if one of the change affects the structure of the data cube but cannot be captured
-    // in the grid client options, we will need to manually reset the grid by resetting the
-    // datasource to ensure we don't fetch the result twice while forcing the data to be refreshed
-    runInAction(() => {
-      this.datasourceConfiguration = new DataCubeGridDatasourceConfiguration({
-        snapshot,
-        queryConfiguration,
-      });
-      this.queryConfiguration = queryConfiguration;
-    });
-    if (
-      existingExtraConfiguration.hashCode !==
-      this.datasourceConfiguration.hashCode
-    ) {
-      // reset the entire grid
-      this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
-    }
+    this.queryConfiguration = queryConfiguration;
+    this.rowLimit = snapshot.data.limit;
 
     const gridOptions = generateGridOptionsFromSnapshot(
       snapshot,
@@ -165,11 +136,18 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
         ? INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE
         : INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE,
     });
-    // NOTE: change the value to the hashcode of the filter to trigger data fetch when filter is modified
+
+    // NOTE: when there are changes that affect the data query specification but cannot be captured
+    // in the grid client options, we will need to manually trigger data fetching by updating the
+    // following hash code which is computed from those parts of the new snapshot then making use of
+    // the filter configuration mechanism to trigger getRows() method of server-side row model data source
     this.client.setFilterModel({
-      [INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID]: {
+      [INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID]: {
         type: 'equals',
-        filter: snapshot.hashCode,
+        filter: computeHashCodeForDataFetchManualTrigger(
+          snapshot,
+          queryConfiguration,
+        ),
       },
     });
   }

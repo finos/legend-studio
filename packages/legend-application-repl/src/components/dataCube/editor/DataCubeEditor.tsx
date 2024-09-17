@@ -21,7 +21,6 @@ import { DataCubeEditorGeneralPropertiesPanel } from './DataCubeEditorGeneralPro
 import { DataCubeEditorColumnsPanel } from './DataCubeEditorColumnsPanel.js';
 import { DataCubeEditorVerticalPivotsPanel } from './DataCubeEditorVerticalPivotsPanel.js';
 import { DataCubeEditorHorizontalPivotsPanel } from './DataCubeEditorHorizontalPivotsPanel.js';
-import { DataCubeEditorCodePanel } from './DataCubeEditorCodePanel.js';
 import { DataCubeEditorColumnPropertiesPanel } from './DataCubeEditorColumnPropertiesPanel.js';
 import { cn } from '@finos/legend-art';
 import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
@@ -39,7 +38,6 @@ export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
     DataCubeEditorTab.SORTS,
     DataCubeEditorTab.GENERAL_PROPERTIES,
     DataCubeEditorTab.COLUMN_PROPERTIES,
-    DataCubeEditorTab.CODE,
   ];
 
   return (
@@ -80,14 +78,11 @@ export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
           {selectedTab === DataCubeEditorTab.COLUMN_PROPERTIES && (
             <DataCubeEditorColumnPropertiesPanel dataCube={dataCube} />
           )}
-          {selectedTab === DataCubeEditorTab.CODE && (
-            <DataCubeEditorCodePanel dataCube={dataCube} />
-          )}
         </div>
       </div>
       <div className="flex h-10 items-center justify-end px-2">
         <button
-          className="h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
+          className="h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100"
           disabled={editor.finalizationState.isInProgress}
           onClick={() => {
             editor
@@ -104,7 +99,7 @@ export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
           Cancel
         </button>
         <button
-          className="ml-2 h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
+          className="ml-2 h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100"
           disabled={editor.finalizationState.isInProgress}
           onClick={() => {
             editor.applyChanges().catch(application.alertUnhandledError);

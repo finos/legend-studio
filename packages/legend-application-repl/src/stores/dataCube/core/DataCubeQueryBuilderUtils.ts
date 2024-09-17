@@ -47,6 +47,8 @@ import {
   extractElementNameFromPath,
   type V1_ValueSpecification,
   extractPackagePathFromPath,
+  CORE_PURE_PATH,
+  V1_GenericTypeInstance,
 } from '@finos/legend-graph';
 import {
   type DataCubeQuerySnapshotFilterCondition,
@@ -66,14 +68,18 @@ import {
 import {
   DataCubeFunction,
   DEFAULT_LAMBDA_VARIABLE_NAME,
-  INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME,
   DataCubeQueryFilterGroupOperator,
   type DataCubeOperationValue,
   DataCubeOperationAdvancedValueType,
+  DataCubeColumnKind,
+  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
 } from './DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
-import type { DataCubeConfiguration } from './DataCubeConfiguration.js';
+import {
+  DataCubeColumnConfiguration,
+  type DataCubeConfiguration,
+} from './DataCubeConfiguration.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -155,7 +161,7 @@ export function _function(
   parameters: V1_ValueSpecification[],
 ) {
   const func = new V1_AppliedFunction();
-  func.function = functionName;
+  func.function = _functionName(functionName);
   func.parameters = parameters;
   return func;
 }
@@ -256,7 +262,7 @@ export function _value(
 }
 
 export function _not(fn: V1_AppliedFunction) {
-  return _function(DataCubeFunction.NOT, [fn]);
+  return _function(_functionName(DataCubeFunction.NOT), [fn]);
 }
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
@@ -278,6 +284,24 @@ export function _cols(colSpecs: V1_ColSpec[]) {
   return _classInstance(V1_ClassInstanceType.COL_SPEC_ARRAY, colSpecArray);
 }
 
+// NOTE: this is the column name used for the dummy count() aggregate
+// when no aggregate is specified in groupBy() or pivot()
+const INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME =
+  'INTERNAL__filler_count_agg_column';
+// if no aggregates are specified, add a dummy count() aggregate to satisfy compiler
+function fixEmptyAggCols(aggCols: V1_ColSpec[]) {
+  const variable = _var();
+  return aggCols.length
+    ? aggCols
+    : [
+        _colSpec(
+          INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME,
+          _lambda([variable], [variable]),
+          _lambda([variable], [_function(DataCubeFunction.COUNT, [variable])]),
+        ),
+      ];
+}
+
 export function _aggCol_basic(
   column: DataCubeQuerySnapshotColumn,
   func: string,
@@ -290,22 +314,64 @@ export function _aggCol_basic(
   );
 }
 
+export function _pivotAggCols(
+  pivotColumns: DataCubeQuerySnapshotColumn[],
+  snapshot: DataCubeQuerySnapshot,
+  configuration: DataCubeConfiguration,
+  aggregateOperations: DataCubeQueryAggregateOperation[],
+) {
+  const aggColumns = configuration.columns.filter(
+    (column) =>
+      !pivotColumns.find((col) => col.name === column.name) &&
+      column.kind === DataCubeColumnKind.MEASURE &&
+      !column.excludedFromHorizontalPivot &&
+      !snapshot.data.groupExtendedColumns.find(
+        (col) => col.name === column.name,
+      ),
+  );
+  return fixEmptyAggCols(
+    aggColumns.map((agg) => {
+      const operation = aggregateOperations.find(
+        (op) => op.operator === agg.aggregateOperator,
+      );
+      const aggCol = operation?.buildAggregateColumn(agg);
+      if (!aggCol) {
+        throw new UnsupportedOperationError(
+          `Unsupported aggregate operation '${agg.aggregateOperator}'`,
+        );
+      }
+      return aggCol;
+    }),
+  );
+}
+
+export function _castCols(columns: DataCubeQuerySnapshotColumn[]) {
+  const genericType = new V1_GenericTypeInstance();
+  genericType.fullPath = CORE_PURE_PATH.RELATION;
+  genericType.typeArguments = [_cols(columns)];
+  return genericType;
+}
+
 export function _groupByAggCols(
   groupByColumns: DataCubeQuerySnapshotColumn[],
   snapshot: DataCubeQuerySnapshot,
   configuration: DataCubeConfiguration,
   aggregateOperations: DataCubeQueryAggregateOperation[],
 ) {
-  const variable = _var();
-  const aggColumns = configuration.columns.filter(
-    (column) =>
-      !groupByColumns.find((col) => col.name === column.name) &&
-      !snapshot.data.groupExtendedColumns.find(
-        (col) => col.name === column.name,
-      ),
-  );
-  return aggColumns.length
-    ? aggColumns.map((agg) => {
+  const pivot = snapshot.data.pivot;
+
+  if (!pivot) {
+    // NOTE: reference off column configuration so we follow the order of columns
+    // established in columns selector
+    const aggColumns = configuration.columns.filter(
+      (column) =>
+        !groupByColumns.find((col) => col.name === column.name) &&
+        !snapshot.data.groupExtendedColumns.find(
+          (col) => col.name === column.name,
+        ),
+    );
+    return fixEmptyAggCols(
+      aggColumns.map((agg) => {
         const operation = aggregateOperations.find(
           (op) => op.operator === agg.aggregateOperator,
         );
@@ -316,15 +382,73 @@ export function _groupByAggCols(
           );
         }
         return aggCol;
+      }),
+    );
+  }
+
+  const pivotResultColumns = pivot.castColumns.filter((col) =>
+    col.name.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR),
+  );
+  const pivotGroupByColumns = pivot.castColumns.filter(
+    (col) => !col.name.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR),
+  );
+  return fixEmptyAggCols([
+    // for pivot result columns, resolve the base aggregate column to get aggregate configuration
+    ...pivotResultColumns
+      .map((column) => {
+        const baseAggColName = column.name.substring(
+          column.name.lastIndexOf(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) +
+            PIVOT_COLUMN_NAME_VALUE_SEPARATOR.length,
+        );
+        return {
+          ...column,
+          matchingColumnConfiguration: configuration.columns.find(
+            (col) => col.name === baseAggColName,
+          ),
+        };
       })
-    : // if no aggregates are specified, add a dummy count() aggregate to satisfy compiler
-      [
-        _colSpec(
-          INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME,
-          _lambda([variable], [variable]),
-          _lambda([variable], [_function(DataCubeFunction.COUNT, [variable])]),
-        ),
-      ];
+      .filter((column) => column.matchingColumnConfiguration)
+      .map((column) => {
+        const columnConfiguration =
+          DataCubeColumnConfiguration.serialization.fromJson(
+            DataCubeColumnConfiguration.serialization.toJson(
+              guaranteeNonNullable(column.matchingColumnConfiguration),
+            ),
+          );
+        columnConfiguration.name = column.name;
+        const operation = aggregateOperations.find(
+          (op) => op.operator === columnConfiguration.aggregateOperator,
+        );
+        const aggCol = operation?.buildAggregateColumn(columnConfiguration);
+        if (!aggCol) {
+          throw new UnsupportedOperationError(
+            `Unsupported aggregate operation '${columnConfiguration.aggregateOperator}'`,
+          );
+        }
+        return aggCol;
+      }),
+    // these are the columns which are available for group-by but not selected for group-by
+    // operation, they would be aggregated as well
+    ...pivotGroupByColumns
+      .filter(
+        (column) => !groupByColumns.find((col) => col.name === column.name),
+      )
+      .map((column) => {
+        const columnConfiguration = guaranteeNonNullable(
+          configuration.columns.find((col) => col.name === column.name),
+        );
+        const operation = aggregateOperations.find(
+          (op) => op.operator === columnConfiguration.aggregateOperator,
+        );
+        const aggCol = operation?.buildAggregateColumn(columnConfiguration);
+        if (!aggCol) {
+          throw new UnsupportedOperationError(
+            `Unsupported aggregate operation '${columnConfiguration.aggregateOperator}'`,
+          );
+        }
+        return aggCol;
+      }),
+  ]);
 }
 
 export function _filter(

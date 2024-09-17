@@ -72,23 +72,13 @@ export enum DataCubeFunction {
   // PERCENTILE = 'meta::pure::functions::math::percentile',
 }
 
-export const DEFAULT_REPORT_NAME = 'New Report';
-export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
-export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
-
-// NOTE: this is the column name used for the dummy count() aggregate
-// when no aggregate is specified in groupBy() or pivot()
-export const INTERNAL__FILLER_COUNT_AGG_COLUMN_NAME =
-  'INTERNAL__filler_count_agg_column';
-export const DEFAULT_ROW_BUFFER = 20;
-
 export type DataCubeQueryFunctionMap = {
   leafExtend?: V1_AppliedFunction | undefined;
   filter?: V1_AppliedFunction | undefined;
-  groupBy?: V1_AppliedFunction | undefined;
-  pivotExtend?: V1_AppliedFunction | undefined; // used to populate columns to be erased by pivot()
+  pivotSort?: V1_AppliedFunction | undefined;
   pivot?: V1_AppliedFunction | undefined;
-  pivotCast?: V1_AppliedFunction | undefined; // used to set the relation type post pivot() to make compilation works properly
+  pivotCast?: V1_AppliedFunction | undefined;
+  groupBy?: V1_AppliedFunction | undefined;
   groupExtend?: V1_AppliedFunction | undefined;
   select?: V1_AppliedFunction | undefined;
   sort?: V1_AppliedFunction | undefined;
@@ -288,6 +278,12 @@ export function ofDataType(
 ): boolean {
   return dataTypes.includes(getDataType(type));
 }
+
+export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
+export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
+
+export const DEFAULT_REPORT_NAME = 'New Report';
+export const DEFAULT_ROW_BUFFER = 20;
 
 export const DEFAULT_URL_LABEL_QUERY_PARAM = 'dataCube.linkLabel';
 export const DEFAULT_MISSING_VALUE_DISPLAY_TEXT = '';

@@ -27,6 +27,7 @@ import {
   DataCubeColumnKind,
   type DataCubeOperationValue,
   DataCubeQueryFilterOperator,
+  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
 } from '../core/DataCubeQueryEngine.js';
 import {
   guaranteeIsNumber,
@@ -175,6 +176,16 @@ export function generateMenuBuilder(
     const column = params.column ?? undefined;
     const columnName = column?.getColId();
     const columnConfiguration = controller.getColumnConfiguration(columnName);
+    const baseColumnConfiguration = columnName?.includes(
+      PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
+    )
+      ? controller.getColumnConfiguration(
+          columnName.substring(
+            columnName.lastIndexOf(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) +
+              PIVOT_COLUMN_NAME_VALUE_SEPARATOR.length,
+          ),
+        )
+      : undefined;
     const isExtendedColumn =
       columnName &&
       controller.extendedColumns.find((col) => col.name === columnName);
@@ -507,12 +518,61 @@ export function generateMenuBuilder(
                     controller.removeVerticalPivotOnColumn(columnName),
                 },
                 'separator',
+                {
+                  name: `Horizontal Pivot on ${column.getColId()}`,
+                  action: () =>
+                    controller.setHorizontalPivotOnColumn(columnName),
+                },
+                {
+                  name: `Add Horizontal Pivot on ${column.getColId()}`,
+                  disabled: Boolean(
+                    controller.horizontalPivotedColumns.find(
+                      (col) => col.name === columnName,
+                    ),
+                  ),
+                  action: () =>
+                    controller.addHorizontalPivotOnColumn(columnName),
+                },
+                'separator',
+              ]
+            : []),
+          ...(column &&
+          columnName &&
+          baseColumnConfiguration?.kind === DataCubeColumnKind.MEASURE &&
+          !baseColumnConfiguration.excludedFromHorizontalPivot &&
+          controller.horizontalPivotedColumns.length !== 0 // pivot must be active
+            ? [
+                {
+                  name: `Exclude Column ${column.getColId()} from Horizontal Pivot`,
+                  action: () =>
+                    controller.excludeColumnFromHorizontalPivot(columnName),
+                },
+                'separator',
+              ]
+            : []),
+          ...(column &&
+          columnName &&
+          columnConfiguration?.kind === DataCubeColumnKind.MEASURE &&
+          columnConfiguration.excludedFromHorizontalPivot &&
+          controller.horizontalPivotedColumns.length !== 0 // pivot must be active
+            ? [
+                {
+                  name: `Include Column ${column.getColId()} in Horizontal Pivot`,
+                  action: () =>
+                    controller.includeColumnInHorizontalPivot(columnName),
+                },
+                'separator',
               ]
             : []),
           {
             name: `Clear All Vertical Pivots`,
             disabled: controller.verticalPivotedColumns.length === 0,
             action: () => controller.clearAllVerticalPivots(),
+          },
+          {
+            name: `Clear All Horizontal Pivots`,
+            disabled: controller.verticalPivotedColumns.length === 0,
+            action: () => controller.clearAllHorizontalPivots(),
           },
         ],
       },
@@ -643,29 +703,36 @@ export function generateMenuBuilder(
       {
         name: 'Pin',
         subMenu: [
-          {
-            name: `Pin Left`,
-            disabled: !column || column.isPinnedLeft(),
-            checked: Boolean(column?.isPinnedLeft()),
-            action: () =>
-              controller.pinColumn(columnName, DataCubeColumnPinPlacement.LEFT),
-          },
-          {
-            name: `Pin Right`,
-            disabled: !column || column.isPinnedRight(),
-            checked: Boolean(column?.isPinnedRight()),
-            action: () =>
-              controller.pinColumn(
-                columnName,
-                DataCubeColumnPinPlacement.RIGHT,
-              ),
-          },
-          {
-            name: `Unpin`,
-            disabled: !column?.isPinned(),
-            action: () => controller.pinColumn(columnName, undefined),
-          },
-          'separator',
+          ...(columnConfiguration
+            ? [
+                {
+                  name: `Pin Left`,
+                  disabled: !column || column.isPinnedLeft(),
+                  checked: Boolean(column?.isPinnedLeft()),
+                  action: () =>
+                    controller.pinColumn(
+                      columnName,
+                      DataCubeColumnPinPlacement.LEFT,
+                    ),
+                },
+                {
+                  name: `Pin Right`,
+                  disabled: !column || column.isPinnedRight(),
+                  checked: Boolean(column?.isPinnedRight()),
+                  action: () =>
+                    controller.pinColumn(
+                      columnName,
+                      DataCubeColumnPinPlacement.RIGHT,
+                    ),
+                },
+                {
+                  name: `Unpin`,
+                  disabled: !column?.isPinned(),
+                  action: () => controller.pinColumn(columnName, undefined),
+                },
+                'separator',
+              ]
+            : []),
           {
             name: `Remove All Pinnings`,
             disabled: controller.configuration.columns.every(
@@ -677,7 +744,7 @@ export function generateMenuBuilder(
       },
       {
         name: 'Hide',
-        disabled: !column,
+        disabled: !columnConfiguration,
         action: () => controller.showColumn(columnName, false),
       },
       'separator',

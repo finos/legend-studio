@@ -485,11 +485,8 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
       showLeafCount: observable,
       setShowLeafCount: action,
 
-      addPivotTotalColumn: observable,
-      setAddPivotTotalColumn: action,
-
-      addPivotTotalColumnOnLeft: observable,
-      setAddPivotTotalColumnOnLeft: action,
+      pivotTotalColumnPlacement: observable,
+      setPivotTotalColumnPlacement: action,
 
       treeGroupSortFunction: observable,
       setTreeGroupSortFunction: action,
@@ -663,12 +660,8 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
     this.showLeafCount = value;
   }
 
-  setAddPivotTotalColumn(value: boolean) {
-    this.addPivotTotalColumn = value;
-  }
-
-  setAddPivotTotalColumnOnLeft(value: boolean) {
-    this.addPivotTotalColumnOnLeft = value;
+  setPivotTotalColumnPlacement(value: DataCubeColumnPinPlacement | undefined) {
+    this.pivotTotalColumnPlacement = value;
   }
 
   setTreeGroupSortFunction(value: string | undefined) {

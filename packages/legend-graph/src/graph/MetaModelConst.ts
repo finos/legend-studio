@@ -104,6 +104,7 @@ export enum CORE_PURE_PATH {
   // type
   ANY = 'meta::pure::metamodel::type::Any',
   NIL = 'meta::pure::metamodel::type::Nil',
+  RELATION = 'meta::pure::metamodel::relation::Relation',
 
   // profile
   PROFILE_DOC = 'meta::pure::profiles::doc',

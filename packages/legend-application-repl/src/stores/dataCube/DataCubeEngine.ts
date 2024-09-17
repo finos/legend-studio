@@ -15,10 +15,10 @@
  */
 
 import {
+  type V1_ValueSpecification,
   type V1_Lambda,
   V1_deserializeValueSpecification,
   V1_serializeValueSpecification,
-  type V1_ValueSpecification,
   TDSExecutionResult,
   V1_serializeExecutionResult,
   V1_buildExecutionResult,

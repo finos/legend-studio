@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 
+import { action, computed, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
-import { DataCubeColumnKind } from '../core/DataCubeQueryEngine.js';
-import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
+import {
+  DataCubeColumnKind,
+  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
+} from '../core/DataCubeQueryEngine.js';
+import {
+  type DataCubeQuerySnapshot,
+  type DataCubeQuerySnapshotColumn,
+} from '../core/DataCubeQuerySnapshot.js';
 import {
   DataCubeEditorColumnsSelectorColumnState,
   DataCubeEditorColumnsSelectorState,
@@ -60,12 +67,62 @@ export class DataCubeEditorHorizontalPivotsPanelState
   readonly editor!: DataCubeEditorState;
   readonly selector!: DataCubeEditorHorizontalPivotColumnsSelectorState;
 
+  castColumns: DataCubeQuerySnapshotColumn[] = [];
+
   constructor(editor: DataCubeEditorState) {
+    makeObservable(this, {
+      castColumns: observable.ref,
+      setCastColumns: action,
+
+      pivotResultColumns: computed,
+      columnsConsumedByPivot: computed,
+
+      applySnaphot: action,
+    });
+
     this.editor = editor;
     this.dataCube = editor.dataCube;
     this.selector = new DataCubeEditorHorizontalPivotColumnsSelectorState(
       editor,
     );
+  }
+
+  get pivotResultColumns(): DataCubeQuerySnapshotColumn[] {
+    return this.castColumns
+      .filter((col) => col.name.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR))
+      .map((col) => ({ name: col.name, type: col.type }));
+  }
+
+  get columnsConsumedByPivot(): DataCubeQuerySnapshotColumn[] {
+    if (!this.selector.selectedColumns.length) {
+      return [];
+    }
+    return [
+      ...this.selector.selectedColumns,
+      ...this.editor.columnProperties.columns.filter(
+        (col) =>
+          col.kind === DataCubeColumnKind.MEASURE &&
+          !col.excludedFromHorizontalPivot,
+      ),
+      /** TODO: @datacube pivot - need to include columns used in complex aggregates (such as weighted-average) */
+    ].map((col) => ({ name: col.name, type: col.type }));
+  }
+
+  setCastColumns(value: DataCubeQuerySnapshotColumn[]) {
+    this.castColumns = value;
+  }
+
+  adaptPropagatedChanges() {
+    this.selector.setSelectedColumns(
+      this.selector.selectedColumns.filter((column) =>
+        this.selector.availableColumns.find((col) => col.name === column.name),
+      ),
+    );
+  }
+
+  propagateChanges() {
+    this.editor.verticalPivots.adaptPropagatedChanges();
+    this.editor.sorts.adaptPropagatedChanges();
   }
 
   applySnaphot(
@@ -76,9 +133,9 @@ export class DataCubeEditorHorizontalPivotsPanelState
       (snapshot.data.pivot?.columns ?? []).map(
         (col) =>
           new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
-        /** TODO: @datacube pivot - account for cast columns */
       ),
     );
+    this.setCastColumns(snapshot.data.pivot?.castColumns ?? []);
   }
 
   buildSnapshot(
@@ -91,8 +148,10 @@ export class DataCubeEditorHorizontalPivotsPanelState
             name: column.name,
             type: column.type,
           })),
-          /** TODO: @datacube pivot - how do we get this information? */
-          castColumns: [],
+          castColumns: this.castColumns.map((column) => ({
+            name: column.name,
+            type: column.type,
+          })),
         }
       : undefined;
   }
