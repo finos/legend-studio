@@ -131,21 +131,19 @@ test(
         state,
       );
     });
-    const postFilterPanel = renderResult.getByTestId(
-      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
+    const filterPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
     );
 
-    expect(
-      await findByText(postFilterPanel, 'Edited First Name'),
-    ).not.toBeNull();
-    expect(await findByText(postFilterPanel, 'is')).not.toBeNull();
-    expect(await findByText(postFilterPanel, '"Henry"')).not.toBeNull();
+    expect(await findByText(filterPanel, 'First Name')).not.toBeNull();
+    expect(await findByText(filterPanel, 'is')).not.toBeNull();
+    expect(await findByText(filterPanel, '"Henry"')).not.toBeNull();
 
     // remove post-filter
-    fireEvent.click(getByTitle(postFilterPanel, 'Remove'));
-    expect(queryByText(postFilterPanel, 'Edited First Name')).toBeNull();
-    expect(queryByText(postFilterPanel, 'is')).toBeNull();
-    expect(queryByText(postFilterPanel, '"Henry"')).toBeNull();
+    fireEvent.click(getByTitle(filterPanel, 'Remove'));
+    expect(queryByText(filterPanel, 'First Name')).toBeNull();
+    expect(queryByText(filterPanel, 'is')).toBeNull();
+    expect(queryByText(filterPanel, '"Henry"')).toBeNull();
 
     // re-add post-filter
     await act(async () => {
@@ -156,10 +154,8 @@ test(
         state,
       );
     });
-    expect(
-      await findByText(postFilterPanel, 'Edited First Name'),
-    ).not.toBeNull();
-    expect(await findByText(postFilterPanel, 'is')).not.toBeNull();
-    expect(await findByText(postFilterPanel, '"Henry"')).not.toBeNull();
+    expect(await findByText(filterPanel, 'First Name')).not.toBeNull();
+    expect(await findByText(filterPanel, 'is')).not.toBeNull();
+    expect(await findByText(filterPanel, '"Henry"')).not.toBeNull();
   },
 );
