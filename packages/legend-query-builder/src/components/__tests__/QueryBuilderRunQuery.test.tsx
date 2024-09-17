@@ -49,8 +49,30 @@ import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuil
 import { filterByOrOutValues } from '../result/tds/QueryBuilderTDSResultShared.js';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 
-const mocked =
-  '{"builder":{"_type":"tdsBuilder","columns":[{"name":"Age","type":"Integer","relationalType":"INTEGER"},{"name":"Edited First Name","type":"String","relationalType":"VARCHAR(200)"},{"name":"Last Reported Flag","type":"Boolean","relationalType":"BIT"}]},"activities":[{"_type":"relational","comment":"","sql":"select"}],"result":{"columns":["Age","Edited First Name","Last Reported Flag"],"rows":[{"values":[22,"John",true]},{"values":[129305879132475986,"Olivia",false]},{"values":[1450,"Henry",true]},{"values":[55,"https://www.google.com/",null]}]}}';
+const mockedResult = {
+  builder: {
+    _type: 'tdsBuilder',
+    columns: [
+      { name: 'Age', type: 'Integer', relationalType: 'INTEGER' },
+      {
+        name: 'Edited First Name',
+        type: 'String',
+        relationalType: 'VARCHAR(200)',
+      },
+      { name: 'Last Reported Flag', type: 'Boolean', relationalType: 'BIT' },
+    ],
+  },
+  activities: [{ _type: 'relational', comment: '', sql: 'select' }],
+  result: {
+    columns: ['Age', 'Edited First Name', 'Last Reported Flag'],
+    rows: [
+      { values: [22, 'John', true] },
+      { values: ['129305879132475986', 'Olivia', false] },
+      { values: [1450, 'Henry', true] },
+      { values: [55, 'https://www.google.com/', null] },
+    ],
+  },
+};
 // TODO make more generic. maybe pass string execution result and what we expect to render for each test case
 test(
   integrationTest('Query Builder run query and render execution result'),
@@ -81,7 +103,7 @@ test(
     const graphManager = queryBuilderState.graphManagerState.graphManager;
     const pureManager = guaranteeType(graphManager, V1_PureGraphManager);
     const executionResultMap = new Map<string, string>();
-    executionResultMap.set(V1_EXECUTION_RESULT, mocked);
+    executionResultMap.set(V1_EXECUTION_RESULT, JSON.stringify(mockedResult));
     createSpy(pureManager.engine, 'runQueryAndReturnMap').mockResolvedValue(
       executionResultMap,
     );
@@ -168,7 +190,7 @@ test(
   },
 );
 
-const mocked2 = {
+const mockedResultForFilterTest = {
   builder: {
     _type: 'tdsBuilder',
     columns: [
@@ -229,7 +251,10 @@ test(
     const graphManager = queryBuilderState.graphManagerState.graphManager;
     const pureManager = guaranteeType(graphManager, V1_PureGraphManager);
     const executionResultMap = new Map<string, string>();
-    executionResultMap.set(V1_EXECUTION_RESULT, JSON.stringify(mocked2));
+    executionResultMap.set(
+      V1_EXECUTION_RESULT,
+      JSON.stringify(mockedResultForFilterTest),
+    );
     createSpy(pureManager.engine, 'runQueryAndReturnMap').mockResolvedValue(
       executionResultMap,
     );
