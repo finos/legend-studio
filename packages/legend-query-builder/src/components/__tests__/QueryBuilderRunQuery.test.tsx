@@ -169,13 +169,13 @@ test(
     expect(await findByText(filterPanel, 'is')).not.toBeNull();
     expect(await findByText(filterPanel, '"Henry"')).not.toBeNull();
 
-    // remove post-filter
+    // remove filter
     fireEvent.click(getByTitle(filterPanel, 'Remove'));
     expect(queryByText(filterPanel, 'First Name')).toBeNull();
     expect(queryByText(filterPanel, 'is')).toBeNull();
     expect(queryByText(filterPanel, '"Henry"')).toBeNull();
 
-    // re-add post-filter
+    // re-add filter
     await act(async () => {
       await filterByOrOutValues(
         queryBuilderState.applicationStore,
