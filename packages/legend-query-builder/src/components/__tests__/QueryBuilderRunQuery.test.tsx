@@ -124,7 +124,7 @@ test(
     );
 
     await act(async () => {
-      filterByOrOutValues(
+      await filterByOrOutValues(
         queryBuilderState.applicationStore,
         queryBuilderState.resultState.mousedOverCell,
         true,
@@ -149,7 +149,7 @@ test(
 
     // re-add post-filter
     await act(async () => {
-      filterByOrOutValues(
+      await filterByOrOutValues(
         queryBuilderState.applicationStore,
         queryBuilderState.resultState.mousedOverCell,
         true,

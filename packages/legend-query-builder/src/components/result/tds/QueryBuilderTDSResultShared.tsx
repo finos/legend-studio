@@ -742,7 +742,9 @@ export const QueryBuilderGridResultContextMenu = observer(
         <MenuContentItem
           disabled={!tdsColState}
           onClick={(): void => {
-            filterByOrOutValues(applicationStore, data, true, tdsState);
+            filterByOrOutValues(applicationStore, data, true, tdsState).catch(
+              tdsState.queryBuilderState.applicationStore.alertUnhandledError,
+            );
           }}
         >
           Filter By
@@ -750,7 +752,9 @@ export const QueryBuilderGridResultContextMenu = observer(
         <MenuContentItem
           disabled={!tdsColState}
           onClick={(): void => {
-            filterByOrOutValues(applicationStore, data, false, tdsState);
+            filterByOrOutValues(applicationStore, data, false, tdsState).catch(
+              tdsState.queryBuilderState.applicationStore.alertUnhandledError,
+            );
           }}
         >
           Filter Out
