@@ -16,11 +16,13 @@
 
 import { uuid } from '@finos/legend-shared';
 import type { Type } from './Type.js';
+import type { GenericTypeReference } from './GenericTypeReference.js';
 
 export class GenericType {
   readonly _UUID = uuid();
 
   rawType: Type;
+  typeArguments: GenericTypeReference[] | undefined;
 
   constructor(rawType: Type) {
     this.rawType = rawType;

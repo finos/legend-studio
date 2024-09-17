@@ -68,39 +68,71 @@ const _SUPPORTED_TOP_LEVEL_FUNCTIONS: {
   { func: DataCubeFunction.LIMIT, parameters: 1 },
 ];
 
-// NOTE: this corresponds to the sequence:
-// extend()->filter()->groupBy()->select()->pivot()->cast()->extend()->sort()->limit()
-// which represents the ONLY query shape that we currently support
-const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN: {
-  func: string;
+type FunctionSequenceCompositionNodePattern = {
+  name: string;
   repeat?: boolean | undefined;
   required?: boolean | undefined;
-}[] = [
-  { func: DataCubeFunction.EXTEND },
-  { func: DataCubeFunction.FILTER },
-  { func: DataCubeFunction.SELECT },
-  { func: DataCubeFunction.GROUP_BY },
-  { func: DataCubeFunction.PIVOT },
-  { func: DataCubeFunction.CAST },
-  { func: DataCubeFunction.EXTEND },
-  { func: DataCubeFunction.SORT },
-  { func: DataCubeFunction.LIMIT },
+};
+type FunctionSequenceCompositionSimpleNodePattern =
+  FunctionSequenceCompositionNodePattern & {
+    func: string;
+  };
+type FunctionSequenceCompositionGroupNodePattern =
+  FunctionSequenceCompositionNodePattern & {
+    funcs: FunctionSequenceCompositionSimpleNodePattern[];
+  };
+
+// NOTE: this corresponds to the sequence:
+// extend()->filter()->select()->sort()->pivot()->cast()->groupBy()->extend()->sort()->limit()
+// which represents the ONLY query shape that we currently support
+const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN: (
+  | FunctionSequenceCompositionSimpleNodePattern
+  | FunctionSequenceCompositionGroupNodePattern
+)[] = [
+  { name: 'leaf_extend', func: DataCubeFunction.EXTEND }, // leaf-level extend
+  { name: 'filter', func: DataCubeFunction.FILTER },
+  { name: 'select', func: DataCubeFunction.SELECT },
+  {
+    name: 'pivot_group',
+    funcs: [
+      { name: 'pivot_sort', func: DataCubeFunction.SORT, required: true }, // pre-pivot sort
+      { name: 'pivot', func: DataCubeFunction.PIVOT, required: true },
+      { name: 'pivot_cast', func: DataCubeFunction.CAST, required: true }, // cast to a relation type post pivot() to enable type-checking
+    ],
+  },
+  { name: 'group_by', func: DataCubeFunction.GROUP_BY },
+  { name: 'group_extend', func: DataCubeFunction.EXTEND }, // group-level extend
+  { name: 'sort', func: DataCubeFunction.SORT },
+  { name: 'limit', func: DataCubeFunction.LIMIT },
 ];
 const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN_REGEXP = new RegExp(
   `^${_FUNCTION_SEQUENCE_COMPOSITION_PATTERN
-    .map(
-      (entry) =>
-        `(?:<${_name(entry.func)}>)${entry.repeat ? '*' : !entry.required ? '?' : ''}`,
+    .map((node) =>
+      'funcs' in node
+        ? `(${node.funcs.map(
+            (childNode) =>
+              `(?<${childNode.name}><${_name(childNode.func)}>)${childNode.repeat ? '*' : !childNode.required ? '?' : ''}`,
+          )})${node.repeat ? '*' : !node.required ? '?' : ''}`
+        : `(?<${node.name}><${_name(node.func)}>)${node.repeat ? '*' : !node.required ? '?' : ''}`,
     )
     .join('')}$`,
 );
 
+type FunctionSequenceMatchingResult = {
+  sequence: V1_AppliedFunction[];
+  leafExtend: boolean;
+  pivot: boolean;
+  groupExtend: boolean;
+  sort: boolean;
+};
 /**
  * Since the query created by DataCube will be a chain call of various functions,
  * this utility function will extract that sequence of function calls as well as
  * do various basic checks for the validity, composition, and order of those functions.
  */
-function extractQueryFunctionSequence(query: V1_ValueSpecification) {
+function extractQueryFunctionSequence(
+  query: V1_ValueSpecification,
+): FunctionSequenceMatchingResult {
   // Make sure this is a sequence of function calls
   if (!(query instanceof V1_AppliedFunction)) {
     throw new Error(
@@ -108,28 +140,28 @@ function extractQueryFunctionSequence(query: V1_ValueSpecification) {
     );
   }
   const sequence: V1_AppliedFunction[] = [];
-  let currentQuery = query;
-  while (currentQuery instanceof V1_AppliedFunction) {
+  let currentFunc = query;
+  while (currentFunc instanceof V1_AppliedFunction) {
     const supportedFunc = _SUPPORTED_TOP_LEVEL_FUNCTIONS.find((spec) =>
-      matchFunctionName(currentQuery.function, spec.func),
+      matchFunctionName(currentFunc.function, spec.func),
     );
 
     // Check that all functions in sequence are supported
     if (!supportedFunc) {
-      throw new Error(`Found unsupported function ${currentQuery.function}()`);
+      throw new Error(`Found unsupported function ${currentFunc.function}()`);
     }
-    if (currentQuery.parameters.length > supportedFunc.parameters) {
-      const vs = currentQuery.parameters[0];
+    if (currentFunc.parameters.length > supportedFunc.parameters) {
+      const vs = currentFunc.parameters[0];
       if (!(vs instanceof V1_AppliedFunction)) {
         throw new Error(
           `Query must be a sequence of function calls (e.g. x()->y()->z())`,
         );
       }
-      currentQuery.parameters = currentQuery.parameters.slice(1);
-      sequence.unshift(currentQuery);
-      currentQuery = vs;
+      currentFunc.parameters = currentFunc.parameters.slice(1);
+      sequence.unshift(currentFunc);
+      currentFunc = vs;
     } else {
-      sequence.unshift(currentQuery);
+      sequence.unshift(currentFunc);
       break;
     }
   }
@@ -138,47 +170,22 @@ function extractQueryFunctionSequence(query: V1_ValueSpecification) {
   const sequenceFormText = sequence
     .map((func) => `<${_name(func.function)}>`)
     .join('');
-  if (!sequenceFormText.match(_FUNCTION_SEQUENCE_COMPOSITION_PATTERN_REGEXP)) {
+  const matchResult = sequenceFormText.match(
+    _FUNCTION_SEQUENCE_COMPOSITION_PATTERN_REGEXP,
+  );
+  if (!matchResult) {
     throw new Error(
-      `Unsupported function composition ${sequence.map((fn) => `${_name(fn.function)}()`).join('->')} (supported composition: ${_FUNCTION_SEQUENCE_COMPOSITION_PATTERN.map((entry) => `${_name(entry.func)}()`).join('->')})`,
+      `Unsupported function composition ${sequence.map((fn) => `${_name(fn.function)}()`).join('->')} (supported composition: ${_FUNCTION_SEQUENCE_COMPOSITION_PATTERN.map((node) => `${'funcs' in node ? `[${node.funcs.map((childNode) => `${_name(childNode.func)}()`).join('->')}]` : `${_name(node.func)}()`}`).join('->')})`,
     );
   }
 
-  // TODO: we need to improve this logic since there can be more than just 2 extend() functions
-  // Check that the first and second extend() must be separated by either groupBy() or pivot() (i.e. aggregation)
-  const firstExtendIndex = sequence.findIndex((func) =>
-    matchFunctionName(func.function, DataCubeFunction.EXTEND),
-  );
-  const secondExtendIndex = sequence.findLastIndex((func) =>
-    matchFunctionName(func.function, DataCubeFunction.EXTEND),
-  );
-  if (firstExtendIndex !== -1 && firstExtendIndex !== secondExtendIndex) {
-    const seq = sequence.slice(firstExtendIndex + 1, secondExtendIndex);
-    if (
-      !seq.some(
-        (func) =>
-          matchFunctionName(func.function, DataCubeFunction.GROUP_BY) ||
-          matchFunctionName(func.function, DataCubeFunction.PIVOT),
-      )
-    ) {
-      throw new Error(
-        `Found invalid usage of group-level extend() for query without aggregation such as pivot() and groupBy()`,
-      );
-    }
-  }
-
-  // Check that pivot() and cast() must co-present and stand consecutively in the sequence
-  const pivotFunc = sequence.find((func) =>
-    matchFunctionName(func.function, DataCubeFunction.PIVOT),
-  );
-  const castFunc = sequence.find((func) =>
-    matchFunctionName(func.function, DataCubeFunction.CAST),
-  );
-  if (Boolean(pivotFunc) !== Boolean(castFunc)) {
-    throw new Error(`Found usage of dynamic function pivot() without casting`);
-  }
-
-  return sequence;
+  return {
+    sequence,
+    leafExtend: Boolean(matchResult.groups?.leaf_extend),
+    pivot: Boolean(matchResult.groups?.pivot),
+    groupExtend: Boolean(matchResult.groups?.group_extend),
+    sort: Boolean(matchResult.groups?.sort),
+  };
 }
 
 /**
@@ -186,59 +193,64 @@ function extractQueryFunctionSequence(query: V1_ValueSpecification) {
  * for easier construction of the snapshot
  */
 function extractFunctionMap(
-  sequence: V1_AppliedFunction[],
+  sequenceMatchingResult: FunctionSequenceMatchingResult,
 ): DataCubeQueryFunctionMap {
-  let leafExtend: V1_AppliedFunction | undefined = undefined;
-  let groupExtend: V1_AppliedFunction | undefined = undefined;
-  const aggregationFuncIndex = sequence.findLastIndex((func) =>
-    matchFunctionName(func.function, [
-      DataCubeFunction.PIVOT,
-      DataCubeFunction.GROUP_BY,
-    ]),
-  );
-  const firstExtendIndex = sequence.findIndex((func) =>
-    matchFunctionName(func.function, DataCubeFunction.EXTEND),
-  );
-  const secondExtendIndex = sequence.findLastIndex((func) =>
-    matchFunctionName(func.function, DataCubeFunction.EXTEND),
-  );
-  if (aggregationFuncIndex !== -1) {
-    if (firstExtendIndex !== secondExtendIndex) {
-      leafExtend = sequence[firstExtendIndex];
-      groupExtend = sequence[secondExtendIndex];
-    }
-  } else {
-    if (firstExtendIndex !== -1) {
-      leafExtend = sequence[firstExtendIndex];
-    }
-  }
-
-  const select = sequence.find((func) =>
-    matchFunctionName(func.function, DataCubeFunction.SELECT),
-  );
+  const {
+    sequence,
+    leafExtend: hasLeafExtend,
+    groupExtend: hasGroupExtend,
+    pivot: hasPivot,
+    sort: hasSort,
+  } = sequenceMatchingResult;
+  const leafExtend = hasLeafExtend
+    ? sequence.find((func) =>
+        matchFunctionName(func.function, DataCubeFunction.EXTEND),
+      )
+    : undefined;
   const filter = sequence.find((func) =>
     matchFunctionName(func.function, DataCubeFunction.FILTER),
   );
+  const select = sequence.find((func) =>
+    matchFunctionName(func.function, DataCubeFunction.SELECT),
+  );
+  const pivotSort = hasPivot
+    ? sequence.find((func) =>
+        matchFunctionName(func.function, DataCubeFunction.SORT),
+      )
+    : undefined;
+  const pivot = hasPivot
+    ? sequence.find((func) =>
+        matchFunctionName(func.function, DataCubeFunction.PIVOT),
+      )
+    : undefined;
+  const pivotCast = hasPivot
+    ? sequence.find((func) =>
+        matchFunctionName(func.function, DataCubeFunction.CAST),
+      )
+    : undefined;
   const groupBy = sequence.find((func) =>
     matchFunctionName(func.function, DataCubeFunction.GROUP_BY),
   );
-  const pivot = sequence.find((func) =>
-    matchFunctionName(func.function, DataCubeFunction.PIVOT),
-  );
-  const pivotCast = sequence.find((func) =>
-    matchFunctionName(func.function, DataCubeFunction.CAST),
-  );
-  const sort = sequence.find((func) =>
-    matchFunctionName(func.function, DataCubeFunction.SORT),
-  );
+  const groupExtend = hasGroupExtend
+    ? sequence.find((func) =>
+        matchFunctionName(func.function, DataCubeFunction.EXTEND),
+      )
+    : undefined;
+  const sort = hasSort
+    ? sequence.find((func) =>
+        matchFunctionName(func.function, DataCubeFunction.SORT),
+      )
+    : undefined;
   const limit = sequence.find((func) =>
     matchFunctionName(func.function, DataCubeFunction.LIMIT),
   );
+
   return {
-    leafExtend,
+    leafExtend: leafExtend,
     select,
     filter,
     groupBy,
+    pivotSort,
     pivot,
     pivotCast,
     groupExtend,
@@ -264,8 +276,8 @@ export function validateAndBuildQuerySnapshot(
   // Build the function call sequence and the function map to make the
   // analysis more ergonomic
 
-  const sequence = extractQueryFunctionSequence(partialQuery);
-  const funcMap = extractFunctionMap(sequence);
+  const sequenceMatchingResult = extractQueryFunctionSequence(partialQuery);
+  const funcMap = extractFunctionMap(sequenceMatchingResult);
   const snapshot = DataCubeQuerySnapshot.create(
     baseQuery.name,
     baseQuery.source.runtime,
@@ -317,6 +329,10 @@ export function validateAndBuildQuerySnapshot(
     );
   }
 
+  // --------------------------------- PIVOT ---------------------------------
+  /** TODO: @datacube roundtrip */
+  // TODO: verify group-by agg columns, pivot agg columns and configuration agree
+
   // --------------------------------- GROUP BY ---------------------------------
 
   if (funcMap.groupBy) {
@@ -327,13 +343,6 @@ export function validateAndBuildQuerySnapshot(
       // TODO: verify group-by agg columns, pivot agg columns and configuration agree
     };
   }
-
-  // --------------------------------- PIVOT ---------------------------------
-  /** TODO: @datacube roundtrip */
-  // TODO: verify group-by agg columns, pivot agg columns and configuration agree
-
-  // --------------------------------- CAST ---------------------------------
-  /** TODO: @datacube roundtrip */
 
   // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
   /** TODO: @datacube roundtrip */

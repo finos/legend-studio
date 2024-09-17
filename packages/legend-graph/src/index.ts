@@ -69,6 +69,7 @@ export {
   TagReference,
   TagExplicitReference,
 } from './graph/metamodel/pure/packageableElements/domain/TagReference.js';
+export { Service } from './graph/metamodel/pure/packageableElements/service/Service.js';
 export * from './graph/metamodel/pure/packageableElements/service/ExecutionEnvironmentInstance.js';
 export { TestDataGenerationResult } from './graph/metamodel/pure/packageableElements/service/TestGenerationResult.js';
 export * from './graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
@@ -178,6 +179,7 @@ export {
 export { V1_RootGraphFetchTree } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/graph/V1_RootGraphFetchTree.js';
 export { V1_PropertyGraphFetchTree } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/graph/V1_PropertyGraphFetchTree.js';
 export { V1_SubTypeGraphFetchTree } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/graph/V1_SubTypeGraphFetchTree.js';
+export { V1_GenericTypeInstance } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_GenericTypeInstance.js';
 export { V1_ParameterValue } from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_ParameterValue.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
@@ -530,6 +532,11 @@ export * from './graph-manager/extensions/DSL_Mapping_PureGraphManagerPlugin_Ext
 export { INTERNAL__UnknownSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownSetImplementation.js';
 export { INTERNAL__UnknownPropertyMapping } from './graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownPropertyMapping.js';
 export { INTERNAL__UnknownConnection } from './graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
+export { Relation_Relation } from './graph/metamodel/pure/packageableElements/relation/Relation_Relation.js';
+export {
+  Relation_RelationType,
+  Relation_RelationalColumn,
+} from './graph/metamodel/pure/packageableElements/relation/Relation_RelationType.js';
 
 export { Store } from './graph/metamodel/pure/packageableElements/store/Store.js';
 export { Mapping } from './graph/metamodel/pure/packageableElements/mapping/Mapping.js';
@@ -642,7 +649,10 @@ export {
   V1_serializeConnectionValue,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper.js';
 export { V1_buildEngineRuntime } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper.js';
-export { V1_deserializePackageableElement } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PackageableElementSerialization.js';
+export {
+  V1_deserializePackageableElement,
+  V1_serializePackageableElement,
+} from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PackageableElementSerialization.js';
 export {
   V1_DatasetSpecification,
   V1_DatasetEntitlementReport,

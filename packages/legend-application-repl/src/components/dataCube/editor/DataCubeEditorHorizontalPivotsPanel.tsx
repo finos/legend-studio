@@ -18,11 +18,24 @@ import { DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
+import { useEffect } from 'react';
+import { FormBadge_WIP } from '../../repl/Form.js';
+
+const PivotColumnSortDirectionDropdown = observer((props) => (
+  <div className="relative flex h-full items-center">
+    <div className="flex h-[18px] w-32 items-center border border-transparent px-2 text-sm text-neutral-400">
+      Ascending
+      <FormBadge_WIP />
+    </div>
+  </div>
+));
 
 export const DataCubeEditorHorizontalPivotsPanel = observer(
   (props: { dataCube: DataCubeState }) => {
     const { dataCube } = props;
     const panel = dataCube.editor.horizontalPivots;
+
+    useEffect(() => () => panel.propagateChanges(), [panel]);
 
     return (
       <div className="h-full w-full select-none p-2">
@@ -35,7 +48,12 @@ export const DataCubeEditorHorizontalPivotsPanel = observer(
           </div>
         </div>
         <div className="flex h-[calc(100%_-_24px)] w-full">
-          <DataCubeEditorColumnsSelector selector={panel.selector} />
+          <DataCubeEditorColumnsSelector
+            selector={panel.selector}
+            columnActionRenderer={(p) => (
+              <PivotColumnSortDirectionDropdown {...p} />
+            )}
+          />
         </div>
       </div>
     );

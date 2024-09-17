@@ -33,6 +33,7 @@ import {
   guaranteeIsString,
   isString,
   isPlainObject,
+  optionalCustomList,
 } from '@finos/legend-shared';
 import { V1_Variable } from '../../../model/valueSpecification/V1_Variable.js';
 import { V1_RootGraphFetchTree } from '../../../model/valueSpecification/raw/classInstance/graph/V1_RootGraphFetchTree.js';
@@ -240,12 +241,21 @@ const packageableElementPtrSchema = createModelSchema(
   },
 );
 
-const genericTypeInstanceSchema = createModelSchema(V1_GenericTypeInstance, {
-  _type: usingConstantValueSchema(
-    V1_ValueSpecificationType.GENERIC_TYPE_INSTANCE,
-  ),
-  fullPath: primitive(),
-});
+const genericTypeInstanceSchema = (plugins: PureProtocolProcessorPlugin[]) =>
+  createModelSchema(V1_GenericTypeInstance, {
+    _type: usingConstantValueSchema(
+      V1_ValueSpecificationType.GENERIC_TYPE_INSTANCE,
+    ),
+    fullPath: primitive(),
+    typeArguments: optionalCustomList(
+      (val: V1_ValueSpecification) =>
+        V1_serializeValueSpecification(val, plugins),
+      (val) => V1_deserializeValueSpecification(val, plugins),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
+    ),
+  });
 
 /**
  * @backwardCompatibility
@@ -920,7 +930,10 @@ class V1_ValueSpecificationSerializer
   visit_GenericTypeInstance(
     valueSpecification: V1_GenericTypeInstance,
   ): PlainObject<V1_ValueSpecification> {
-    return serialize(genericTypeInstanceSchema, valueSpecification);
+    return serialize(
+      genericTypeInstanceSchema(this.plugins),
+      valueSpecification,
+    );
   }
 
   visit_AppliedFunction(
@@ -1139,7 +1152,7 @@ export function V1_deserializeValueSpecification(
     case V1_ValueSpecificationType.PACKAGEABLE_ELEMENT_PTR:
       return deserialize(packageableElementPtrSchema, json);
     case V1_ValueSpecificationType.GENERIC_TYPE_INSTANCE:
-      return deserialize(genericTypeInstanceSchema, json);
+      return deserialize(genericTypeInstanceSchema(plugins), json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize value specification of type '${json._type}'`,

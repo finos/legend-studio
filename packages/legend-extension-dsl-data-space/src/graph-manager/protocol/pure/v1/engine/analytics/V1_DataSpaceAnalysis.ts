@@ -17,17 +17,17 @@
 import {
   type V1_Multiplicity,
   type V1_PureModelContextData,
-  V1_multiplicityModelSchema,
   type V1_DatasetSpecification,
   type PureProtocolProcessorPlugin,
+  V1_multiplicityModelSchema,
   V1_deserializeDatasetSpecification,
   V1_pureModelContextDataPropSchema,
   V1_MappingModelCoverageAnalysisResult,
 } from '@finos/legend-graph';
 import {
+  type PlainObject,
   SerializationFactory,
   optionalCustom,
-  type PlainObject,
   UnsupportedOperationError,
   customListWithSchema,
   usingConstantValueSchema,
@@ -37,6 +37,7 @@ import {
   usingModelSchema,
 } from '@finos/legend-shared';
 import {
+  type ModelSchema,
   createModelSchema,
   custom,
   deserialize,
@@ -45,7 +46,6 @@ import {
   optional,
   primitive,
   SKIP,
-  type ModelSchema,
 } from 'serializr';
 import type { V1_DataSpaceSupportInfo } from '../../model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import { V1_deserializeSupportInfo } from '../../transformation/pureProtocol/V1_DSL_DataSpace_ProtocolHelper.js';
@@ -85,6 +85,21 @@ class V1_DataSpaceExecutionContextAnalysisResult {
   compatibleRuntimes!: string[];
   mappingModelCoverageAnalysisResult!: V1_MappingModelCoverageAnalysisResult;
   datasets: V1_DatasetSpecification[] = [];
+  runtimeMetadata?: V1_DataSpaceExecutionContextRuntimeMetadata;
+}
+
+class V1_DataSpaceExecutionContextRuntimeMetadata {
+  storePath?: string;
+  connectionPath?: string;
+  connectionType?: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataSpaceExecutionContextRuntimeMetadata, {
+      storePath: optional(primitive()),
+      connectionPath: optional(primitive()),
+      connectionType: optional(primitive()),
+    }),
+  );
 }
 
 const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
@@ -107,6 +122,9 @@ const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
     mapping: primitive(),
     name: primitive(),
     title: optional(primitive()),
+    runtimeMetadata: usingModelSchema(
+      V1_DataSpaceExecutionContextRuntimeMetadata.serialization.schema,
+    ),
   });
 
 export class V1_DataSpaceBasicDocumentationEntry {

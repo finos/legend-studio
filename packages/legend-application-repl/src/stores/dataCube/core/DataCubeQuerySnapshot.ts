@@ -18,7 +18,6 @@ import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
 import type { DataCubeConfiguration } from './DataCubeConfiguration.js';
 import {
   IllegalStateError,
-  UnsupportedOperationError,
   guaranteeNonNullable,
   hashObject,
   pruneObject,
@@ -92,7 +91,8 @@ export type DataCubeQuerySnapshotData = {
 type DataCubeQuerySnapshotStage =
   | 'leaf-extend'
   | 'filter'
-  | 'aggregation'
+  | 'pivot'
+  | 'group-by'
   | 'group-extend'
   | 'select'
   | 'sort';
@@ -163,15 +163,22 @@ export class DataCubeQuerySnapshot {
         return [...this.data.sourceColumns];
       case 'filter':
       case 'select':
+      case 'pivot':
         return [...this.data.sourceColumns, ...this.data.leafExtendedColumns];
-      case 'aggregation':
-        return [...this.data.selectColumns];
+      case 'group-by':
       case 'group-extend':
-        throw new UnsupportedOperationError(
-          `Can't get columns for group-level extend stage: dynamic pivot columns cannot be accounted for`,
-        );
+        return [
+          ...(this.data.pivot?.castColumns.length
+            ? this.data.pivot.castColumns
+            : this.data.selectColumns),
+        ];
       case 'sort':
-        return [...this.data.selectColumns, ...this.data.groupExtendedColumns];
+        return [
+          ...(this.data.pivot?.castColumns.length
+            ? this.data.pivot.castColumns
+            : this.data.selectColumns),
+          ...this.data.groupExtendedColumns,
+        ];
       default:
         throw new IllegalStateError(`Unknown stage '${stage}'`);
     }
@@ -185,7 +192,15 @@ export class DataCubeQuerySnapshot {
     if (this._finalized) {
       return this;
     }
-    this._hashCode = this.computeHashCode();
+    /**
+     * NOTE: if this becomes a performance bottleneck, we can consider
+     * more granular hashing strategy
+     *
+     * Here, we are just hashing the raw object, but we must ensure
+     * to properly prune the snapshot data object before hashing
+     * else there would be mismatch
+     */
+    this._hashCode = hashObject(pruneObject(this.data));
     this._finalized = true;
     return this;
   }
@@ -195,18 +210,6 @@ export class DataCubeQuerySnapshot {
       throw new IllegalStateError('Snapshot is not finalized');
     }
     return this._hashCode;
-  }
-
-  /**
-   * NOTE: if this becomes a performance bottleneck, we can consider
-   * more granular hashing strategy
-   *
-   * Here, we are just hashing the raw object, but we must ensure
-   * to properly prune the snapshot data object before hashing
-   * else there would be mismatch
-   */
-  private computeHashCode() {
-    return hashObject(pruneObject(this.data));
   }
 }
 

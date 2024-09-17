@@ -89,6 +89,7 @@ import { V1_CByteArray } from '../../../model/valueSpecification/raw/V1_CByteArr
 import type { ColSpecArrayInstance } from '../../../../../../../graph/metamodel/pure/valueSpecification/RelationValueSpecification.js';
 import { V1_ColSpecArray } from '../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpecArray.js';
 import { V1_ColSpec } from '../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
+import { Relation_RelationalColumn } from '../../../../../../../graph/metamodel/pure/packageableElements/relation/Relation_RelationType.js';
 
 class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
@@ -131,6 +132,22 @@ class V1_ValueSpecificationTransformer
   visit_FunctionExpression(
     valueSpecification: FunctionExpression,
   ): V1_ValueSpecification {
+    // handle relational column
+    if (valueSpecification.func instanceof Relation_RelationalColumn) {
+      const _property = new V1_AppliedProperty();
+      _property.property = valueSpecification.func.name;
+      _property.parameters = valueSpecification.parametersValues.map((value) =>
+        value.accept_ValueSpecificationVisitor(
+          new V1_ValueSpecificationTransformer(
+            this.inScope,
+            this.open,
+            this.isParameter,
+            this.useAppliedFunction,
+          ),
+        ),
+      );
+      return _property;
+    }
     const appliedFunc = new V1_AppliedFunction();
     appliedFunc.function = valueSpecification.functionName;
     appliedFunc.parameters = valueSpecification.parametersValues.map((value) =>

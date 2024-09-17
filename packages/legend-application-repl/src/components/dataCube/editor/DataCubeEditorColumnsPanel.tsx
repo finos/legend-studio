@@ -78,7 +78,7 @@ export const DataCubeEditorColumnsPanel = observer(
     const { dataCube } = props;
     const panel = dataCube.editor.columns;
 
-    useEffect(() => () => panel.propagateColumnSelectionChanges(), [panel]);
+    useEffect(() => () => panel.propgateChanges(), [panel]);
 
     return (
       <div className="h-full w-full select-none p-2">

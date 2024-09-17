@@ -22,6 +22,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-extension-dsl-data-quality": "workspace:*",
     "@finos/legend-extension-dsl-data-space": "workspace:*",

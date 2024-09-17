@@ -341,7 +341,8 @@ export const DataCubeColumnCreator = observer(
             disabled={
               !state.isNameValid ||
               !state.isTypeValid ||
-              !state.validationState.hasCompleted
+              state.validationState.isInProgress ||
+              state.finalizationState.isInProgress
             }
             onClick={() => {
               state.applyChanges().catch(application.alertUnhandledError);

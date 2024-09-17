@@ -1,5 +1,13 @@
 # @finos/legend-vscode-extension-dependencies
 
+## 4.0.6
+
+## 4.0.5
+
+### Patch Changes
+
+- [#3499](https://github.com/finos/legend-studio/pull/3499) [`2f4227b`](https://github.com/finos/legend-studio/commit/2f4227ba995fc8245c1c3eeb62ad71cd39821732) ([@travisstebbins](https://github.com/travisstebbins)) - Add QueryBuilder to VS Code extension
+
 ## 4.0.4
 
 ## 4.0.3

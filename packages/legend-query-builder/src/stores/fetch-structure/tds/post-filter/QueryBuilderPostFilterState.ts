@@ -26,6 +26,7 @@ import {
   PrimitiveType,
   CollectionInstanceValue,
   InstanceValue,
+  type LambdaFunction,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -298,7 +299,10 @@ export abstract class PostFilterConditionValueState implements Hashable {
     ]);
   }
 
-  abstract appendConditionValue(expressionVal: SimpleFunctionExpression): void;
+  abstract appendConditionValue(
+    expressionVal: SimpleFunctionExpression,
+    parentExpression: LambdaFunction | undefined,
+  ): void;
 }
 
 export class PostFilterValueSpecConditionValueState extends PostFilterConditionValueState {
@@ -341,7 +345,10 @@ export class PostFilterValueSpecConditionValueState extends PostFilterConditionV
       : undefined;
     return this.value;
   }
-  override appendConditionValue(expressionVal: SimpleFunctionExpression): void {
+  override appendConditionValue(
+    expressionVal: SimpleFunctionExpression,
+    parentExpression: LambdaFunction | undefined,
+  ): void {
     if (this.value) {
       expressionVal.parametersValues.push(this.value);
     }
@@ -381,13 +388,17 @@ export class PostFilterTDSColumnValueConditionValueState extends PostFilterCondi
   override get isCollection(): boolean {
     return false;
   }
-  override appendConditionValue(expressionVal: SimpleFunctionExpression): void {
+  override appendConditionValue(
+    expressionVal: SimpleFunctionExpression,
+    parentExpression: LambdaFunction | undefined,
+  ): void {
     const tdsPropertyExpression = buildtdsPropertyExpressionFromColState(
       this.conditionState,
       this.tdsColumn,
       this.conditionState.postFilterState.tdsState.queryBuilderState
         .graphManagerState.graph,
       undefined,
+      parentExpression,
     );
     expressionVal.parametersValues.push(tdsPropertyExpression);
   }

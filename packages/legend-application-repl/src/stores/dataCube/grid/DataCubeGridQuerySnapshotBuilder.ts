@@ -43,7 +43,7 @@ export function buildQuerySnapshot(
   // --------------------------------- GROUP BY ---------------------------------
 
   if (request.rowGroupCols.length) {
-    const availableCols = baseSnapshot.stageCols('aggregation');
+    const availableCols = baseSnapshot.stageCols('group-by');
     const newGroupByColumns = request.rowGroupCols.map((col) => ({
       name: col.id,
       type: _getCol(availableCols, col.id).type,
@@ -74,5 +74,5 @@ export function buildQuerySnapshot(
 
   // --------------------------------- FINALIZE ---------------------------------
 
-  return snapshot.finalize();
+  return snapshot;
 }

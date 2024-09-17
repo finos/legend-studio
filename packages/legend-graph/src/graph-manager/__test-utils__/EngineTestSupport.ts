@@ -85,6 +85,26 @@ export async function ENGINE_TEST_SUPPORT__grammarToJSON_model(
   ).data;
 }
 
+export async function ENGINE_TEST_SUPPORT__JsonToGrammar_valueSpecification(
+  code: PlainObject<V1_ValueSpecification>,
+): Promise<string> {
+  return (
+    await axios.post<unknown, AxiosResponse<string>>(
+      `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/jsonToGrammar/valueSpecification`,
+      code,
+      {
+        headers: {
+          [HttpHeader.CONTENT_TYPE]: ContentType.APPLICATION_JSON,
+          [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN,
+        },
+        params: {
+          renderStyle: 'STANDARD',
+        },
+      },
+    )
+  ).data;
+}
+
 export async function ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(
   code: string,
 ): Promise<PlainObject<V1_ValueSpecification>> {

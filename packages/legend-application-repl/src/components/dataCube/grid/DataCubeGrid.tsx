@@ -281,7 +281,7 @@ const DataCubeGridStatusBar = observer((props: { dataCube: DataCubeState }) => {
             ? `Rows: ${grid.clientDataSource.rowCount}`
             : ''}
         </div>
-        {grid.datasourceConfiguration.limit !== undefined &&
+        {grid.rowLimit !== undefined &&
           grid.queryConfiguration.showWarningForTruncatedResult && (
             // TODO: if we want to properly warn if the data has been truncated due to row limit,
             // this would require us to fetch n+1 rows when limit=n
@@ -292,7 +292,7 @@ const DataCubeGridStatusBar = observer((props: { dataCube: DataCubeState }) => {
               <div className="h-3 w-[1px] bg-neutral-200" />
               <div className="flex h-full items-center px-2 text-orange-500">
                 <DataCubeIcon.Warning className="stroke-[3px]" />
-                <div className="ml-1 text-sm font-semibold">{`Results truncated to fit within row limit (${grid.datasourceConfiguration.limit})`}</div>
+                <div className="ml-1 text-sm font-semibold">{`Results truncated to fit within row limit (${grid.rowLimit})`}</div>
               </div>
             </>
           )}

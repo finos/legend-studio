@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 1.0.38
+
+## 1.0.37
+
+### Patch Changes
+
+- [#3525](https://github.com/finos/legend-studio/pull/3525) [`8894c63`](https://github.com/finos/legend-studio/commit/8894c637a2dfd3cc5b7ab8758dda907e95804c9b) ([@viju4076](https://github.com/viju4076)) - data quality class validation roundtrip grammar test
+
 ## 1.0.36
 
 ## 1.0.35

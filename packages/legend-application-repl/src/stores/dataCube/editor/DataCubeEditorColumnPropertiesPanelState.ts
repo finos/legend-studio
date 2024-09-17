@@ -20,7 +20,11 @@ import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { DataCubeEditorMutableColumnConfiguration } from './DataCubeEditorMutableConfiguration.js';
-import { getNonNullableEntry, type PlainObject } from '@finos/legend-shared';
+import {
+  getNonNullableEntry,
+  isNonNullable,
+  type PlainObject,
+} from '@finos/legend-shared';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 
 export class DataCubeEditorColumnPropertiesPanelState
@@ -46,6 +50,9 @@ export class DataCubeEditorColumnPropertiesPanelState
       setShowAdvancedSettings: action,
 
       configurableColumns: computed,
+
+      adaptPropagatedChanges: action,
+      applySnaphot: action,
     });
 
     this.editor = editor;
@@ -53,15 +60,21 @@ export class DataCubeEditorColumnPropertiesPanelState
   }
 
   get configurableColumns() {
-    return this.columns.filter(
-      (column) =>
-        this.editor.columns.selector.selectedColumns.find(
-          (col) => col.name === column.name,
-        ) ??
-        this.editor.columns.groupExtendColumns.find(
-          (col) => col.name === column.name,
-        ),
-    );
+    return [
+      ...this.editor.columns.selector.selectedColumns.map((column) =>
+        this.columns.find((col) => col.name === column.name),
+      ),
+      // NOTE: visible group-level extended columns are already included in
+      // the selected columns; whereas hidden group-level extended columns are
+      // not included, so we need to include them manually.
+      //
+      // since the order of columns specified here is important as it would be used
+      // to determine the order of displayed columns in the grid and the selector
+      // so we will put the hidden group-level extended columns last.
+      ...this.editor.columns.groupExtendColumns
+        .map((column) => this.columns.find((col) => col.name === column.name))
+        .filter((column) => column?.hideFromView),
+    ].filter(isNonNullable);
   }
 
   getColumnConfiguration(colName: string | undefined) {
@@ -84,6 +97,14 @@ export class DataCubeEditorColumnPropertiesPanelState
 
   setShowAdvancedSettings(val: boolean) {
     this.showAdvancedSettings = val;
+  }
+
+  adaptPropagatedChanges() {
+    this.setColumns(
+      this.columns.filter((column) =>
+        this.configurableColumns.find((col) => col.name === column.name),
+      ),
+    );
   }
 
   applySnaphot(
@@ -116,11 +137,11 @@ export class DataCubeEditorColumnPropertiesPanelState
       ...newSnapshot.data.configuration,
       // NOTE: make sure the order of column configurations is consistent with the order of selected columns
       // as this would later be used to determine of order of displayed columns in the grid
-      columns: this.columns
+      columns: this.configurableColumns
         .filter((column) =>
           // prune columns which have been deselected except for group-level extended columns
           // those are technically always selected.
-          this.configurableColumns.find((col) => col.name === column.name),
+          this.columns.find((col) => col.name === column.name),
         )
         .map((column) => column.serialize()),
     };

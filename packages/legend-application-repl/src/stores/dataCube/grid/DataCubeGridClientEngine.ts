@@ -22,21 +22,37 @@ import type {
 } from '@ag-grid-community/core';
 import type { DataCubeGridState } from './DataCubeGridState.js';
 import {
+  IllegalStateError,
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
+  hashObject,
   isBoolean,
   isNonNullable,
+  pruneObject,
 } from '@finos/legend-shared';
 import { buildExecutableQuery } from '../core/DataCubeQueryBuilder.js';
-import { type TabularDataSet, V1_Lambda } from '@finos/legend-graph';
+import {
+  type TabularDataSet,
+  type V1_AppliedFunction,
+  V1_Lambda,
+} from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { generateRowGroupingDrilldownExecutableQueryPostProcessor } from './DataCubeGridQueryBuilder.js';
 import { makeObservable, observable, runInAction } from 'mobx';
-import type { DataCubeConfigurationColorKey } from '../core/DataCubeConfiguration.js';
+import type {
+  DataCubeConfiguration,
+  DataCubeConfigurationColorKey,
+} from '../core/DataCubeConfiguration.js';
 import { AlertType } from '../../../components/repl/Alert.js';
 import { DEFAULT_LARGE_ALERT_WINDOW_CONFIG } from '../../LayoutManagerState.js';
+import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
+import type { DataCubeEngine } from '../DataCubeEngine.js';
+import { generateColumnDefs } from './DataCubeGridConfigurationBuilder.js';
+import type { DataCubeQueryFunctionMap } from '../core/DataCubeQueryEngine.js';
+import type { DataCubeQueryFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
+import type { DataCubeQueryAggregateOperation } from '../core/aggregation/DataCubeQueryAggregateOperation.js';
 
 type GridClientCellValue = string | number | boolean | null | undefined;
 type GridClientRowData = {
@@ -69,6 +85,9 @@ export enum INTERNAL__GridClientUtilityCssClassName {
   TEXT_ALIGN_PREFIX = 'data-cube-grid__utility--text-align-',
   TEXT_COLOR_PREFIX = 'data-cube-grid__utility--text-color-',
   BACKGROUND_COLOR_PREFIX = 'data-cube-grid__utility--background-color-',
+
+  PIVOT_COLUMN_GROUP = 'data-cube-grid__utility--pivot-column-group',
+  PIVOT_COLUMN_GROUP_PREFIX = 'data-cube-grid__utility--pivot-column-group-',
 }
 export const generateFontFamilyUtilityClassName = (fontFamily: string) =>
   `${INTERNAL__GridClientUtilityCssClassName.FONT_FAMILY_PREFIX}${fontFamily.replaceAll(' ', '-')}`;
@@ -103,6 +122,7 @@ export const INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE = 100;
 // so the value set must be reasonable, or else it can crash the application!
 export const INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE = 1e5;
 
+export const INTERNAL__GRID_CLIENT_PIVOT_COLUMN_GROUP_COLOR_ROTATION_SIZE = 5;
 export const INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH = 200;
 export const INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH = 50;
 export const INTERNAL__GRID_CLIENT_HEADER_HEIGHT = 24;
@@ -111,8 +131,8 @@ export const INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY = 1000;
 export const INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING = 10;
 export const INTERNAL__GRID_CLIENT_MISSING_VALUE = '__MISSING';
 export const INTERNAL__GRID_CLIENT_TREE_COLUMN_ID = 'INTERNAL__tree';
-export const INTERNAL__GRID_CLIENT_FILTER_TRIGGER_COLUMN_ID =
-  'INTERNAL__filterTrigger';
+export const INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID =
+  'INTERNAL__dataFetchManualTrigger';
 export const INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID =
   'INTERNAL__count';
 
@@ -150,6 +170,36 @@ export function getDataForAllFilteredNodes<T>(client: GridApi<T>): T[] {
   return rows;
 }
 
+/**
+ * This method computes the hash code for the parts of the snapshot that should trigger data fetching.
+ * This is used to manually trigger server-side row model data source getRows() method.
+ */
+export function computeHashCodeForDataFetchManualTrigger(
+  snapshot: DataCubeQuerySnapshot,
+  configuration: DataCubeConfiguration,
+) {
+  return hashObject(
+    pruneObject({
+      ...snapshot.data,
+      configuration: {
+        initialExpandLevel: configuration.initialExpandLevel,
+        showRootAggregation: configuration.showRootAggregation,
+        showLeafCount: configuration.showLeafCount,
+        pivotTotalColumnPlacement: configuration.pivotTotalColumnPlacement,
+        treeGroupSortFunction: configuration.treeGroupSortFunction,
+        columns: configuration.columns.map((column) => ({
+          name: column.name,
+          type: column.type,
+          aggregateOperator: column.aggregateOperator,
+          aggregationParameters: column.aggregationParameters,
+          excludedFromHorizontalPivot: column.excludedFromHorizontalPivot,
+          horizontalPivotSortFunction: column.horizontalPivotSortFunction,
+        })),
+      },
+    }),
+  );
+}
+
 function TDStoRowData(tds: TabularDataSet): GridClientRowData[] {
   return tds.rows.map((_row, rowIdx) => {
     const row: GridClientRowData = {};
@@ -165,6 +215,58 @@ function TDStoRowData(tds: TabularDataSet): GridClientRowData[] {
     });
     return row;
   });
+}
+
+async function getCastColumns(
+  currentSnapshot: DataCubeQuerySnapshot,
+  engine: DataCubeEngine,
+) {
+  if (!currentSnapshot.data.pivot) {
+    throw new IllegalStateError(
+      `Can't build cast columns collector query when no pivot is specified`,
+    );
+  }
+  const snapshot = currentSnapshot.clone();
+  guaranteeNonNullable(snapshot.data.pivot).castColumns = [];
+  snapshot.data.groupBy = undefined;
+  snapshot.data.sortColumns = [];
+  snapshot.data.limit = 0;
+  const query = buildExecutableQuery(
+    snapshot,
+    engine.filterOperations,
+    engine.aggregateOperations,
+    {
+      postProcessor: (
+        _snapshot: DataCubeQuerySnapshot,
+        sequence: V1_AppliedFunction[],
+        funcMap: DataCubeQueryFunctionMap,
+        configuration: DataCubeConfiguration,
+        filterOperations: DataCubeQueryFilterOperation[],
+        aggregateOperations: DataCubeQueryAggregateOperation[],
+      ) => {
+        const _unprocess = (funcMapKey: keyof DataCubeQueryFunctionMap) => {
+          const func = funcMap[funcMapKey];
+          if (func) {
+            sequence.splice(sequence.indexOf(func), 1);
+            funcMap[funcMapKey] = undefined;
+          }
+        };
+
+        if (funcMap.groupExtend) {
+          _unprocess('groupExtend');
+        }
+      },
+    },
+  );
+
+  const lambda = new V1_Lambda();
+  lambda.body.push(query);
+  const result = await engine.executeQuery(lambda);
+
+  return result.result.builder.columns.map((column) => ({
+    name: column.name,
+    type: column.type as string,
+  }));
 }
 
 export class DataCubeGridClientServerSideDataSource
@@ -205,18 +307,56 @@ export class DataCubeGridClientServerSideDataSource
     // ------------------------------ SNAPSHOT ------------------------------
 
     const currentSnapshot = guaranteeNonNullable(this.grid.getLatestSnapshot());
-    // TODO: when we support pivoting, we should make a quick call to check for columns
-    // created by pivots and specify them as cast columns when pivot is activated
-    const syncedSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
-    if (syncedSnapshot.hashCode !== currentSnapshot.hashCode) {
-      this.grid.publishSnapshot(syncedSnapshot);
+    const newSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
+    // NOTE: if h-pivot is enabled
+    // if h-pivot is enabled, update the cast columns
+    // and panels which might be affected by this (e.g. sorts)
+    // TOOD?: this is an expensive operation in certain case, so we might want to
+    // optimize when this gets called
+    if (newSnapshot.data.pivot) {
+      try {
+        const castColumns = await getCastColumns(
+          newSnapshot,
+          this.grid.dataCube.engine,
+        );
+        newSnapshot.data.pivot.castColumns = castColumns;
+        newSnapshot.data.sortColumns = newSnapshot.data.sortColumns.filter(
+          (column) =>
+            [...castColumns, ...newSnapshot.data.groupExtendedColumns].find(
+              (col) => column.name === col.name,
+            ),
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        this.grid.dataCube.repl.alertError(error, {
+          message: `Query Validation Failure: Can't retrieve pivot results column metadata. ${error.message}`,
+        });
+        // fail early since we can't proceed without the cast columns validated
+        params.fail();
+        this.grid.dataCube.endTask(task);
+        return;
+      }
+    }
+
+    newSnapshot.finalize();
+    if (newSnapshot.hashCode !== currentSnapshot.hashCode) {
+      // update grid column definitions since new columns could have been added
+      // due to changes in pivot
+      this.grid.client.updateGridOptions({
+        columnDefs: generateColumnDefs(
+          newSnapshot,
+          this.grid.queryConfiguration,
+          this.grid.dataCube,
+        ),
+      });
+      this.grid.publishSnapshot(newSnapshot);
     }
 
     // ------------------------------ DATA ------------------------------
 
     try {
       const executableQuery = buildExecutableQuery(
-        syncedSnapshot,
+        newSnapshot,
         this.grid.dataCube.engine.filterOperations,
         this.grid.dataCube.engine.aggregateOperations,
         {
