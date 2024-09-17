@@ -694,13 +694,8 @@ export function generateColumnDefs(
       lockPinned: true,
       lockPosition: true,
       pinned: GridClientPinnedAlignement.LEFT,
-      cellStyle: {
-        flex: 1,
-        justifyContent: 'space-between',
-        display: 'flex',
-      },
+      suppressSpanHeaderHeight: true,
       cellDataType: 'text',
-      flex: 1,
       loadingCellRenderer: DataCubeGridLoadingCellRenderer,
       // TODO: we can support this in the configuration (support sorting by tree-column?)
       sortable: true,

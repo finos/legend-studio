@@ -78,9 +78,10 @@ import { DataCubeQueryAggregateOperation__JoinStrings } from './core/aggregation
 import { getAggregateOperation } from './core/aggregation/DataCubeQueryAggregateOperation.js';
 
 export const DEFAULT_ENABLE_DEBUG_MODE = false;
+export const DEFAULT_ENABLE_ENGINE_DEBUG_MODE = false;
 export const DEFAULT_GRID_CLIENT_ROW_BUFFER = 50;
 export const DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES = false;
-export const DEFAULT_DISABLE_LARGE_DATASET_WARNING = false;
+export const DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING = false;
 
 export class DataCubeEngine {
   readonly repl: REPLStore;
@@ -137,14 +138,20 @@ export class DataCubeEngine {
   ];
 
   enableDebugMode = DEFAULT_ENABLE_DEBUG_MODE;
+  enableEngineDebugMode = DEFAULT_ENABLE_ENGINE_DEBUG_MODE;
+
   gridClientRowBuffer = DEFAULT_GRID_CLIENT_ROW_BUFFER;
   gridClientPurgeClosedRowNodes = DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES;
-  disableLargeDatasetWarning = DEFAULT_DISABLE_LARGE_DATASET_WARNING;
+  gridClientSuppressLargeDatasetWarning =
+    DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING;
 
   constructor(repl: REPLStore) {
     makeObservable(this, {
       enableDebugMode: observable,
       setEnableDebugMode: action,
+
+      enableEngineDebugMode: observable,
+      setEnableEngineDebugMode: action,
 
       gridClientRowBuffer: observable,
       setGridClientRowBuffer: action,
@@ -152,8 +159,8 @@ export class DataCubeEngine {
       gridClientPurgeClosedRowNodes: observable,
       setGridClientPurgeClosedRowNodes: action,
 
-      disableLargeDatasetWarning: observable,
-      setDisableLargeDatasetWarning: action,
+      gridClientSuppressLargeDatasetWarning: observable,
+      setGridClientSuppressLargeDatasetWarning: action,
     });
 
     this.repl = repl;
@@ -161,30 +168,34 @@ export class DataCubeEngine {
     this.client = repl.client;
   }
 
-  getFilterOperation(operator: string) {
-    return getFilterOperation(operator, this.filterOperations);
+  getFilterOperation(value: string) {
+    return getFilterOperation(value, this.filterOperations);
   }
 
-  getAggregateOperation(operator: string) {
-    return getAggregateOperation(operator, this.aggregateOperations);
+  getAggregateOperation(value: string) {
+    return getAggregateOperation(value, this.aggregateOperations);
   }
 
-  setEnableDebugMode(enableDebugMode: boolean) {
-    this.enableDebugMode = enableDebugMode;
+  setEnableDebugMode(value: boolean) {
+    this.enableDebugMode = value;
   }
 
-  setGridClientRowBuffer(rowBuffer: number) {
-    this.gridClientRowBuffer = rowBuffer;
+  setEnableEngineDebugMode(value: boolean) {
+    this.enableEngineDebugMode = value;
+  }
+
+  setGridClientRowBuffer(value: number) {
+    this.gridClientRowBuffer = value;
     this.propagateGridOptionUpdates();
   }
 
-  setGridClientPurgeClosedRowNodes(purgeClosedRowNodes: boolean) {
-    this.gridClientPurgeClosedRowNodes = purgeClosedRowNodes;
+  setGridClientPurgeClosedRowNodes(value: boolean) {
+    this.gridClientPurgeClosedRowNodes = value;
     this.propagateGridOptionUpdates();
   }
 
-  setDisableLargeDatasetWarning(disableLargeDatasetWarning: boolean) {
-    this.disableLargeDatasetWarning = disableLargeDatasetWarning;
+  setGridClientSuppressLargeDatasetWarning(value: boolean) {
+    this.gridClientSuppressLargeDatasetWarning = value;
   }
 
   refreshFailedDataFetches() {
@@ -257,7 +268,7 @@ export class DataCubeEngine {
   }> {
     const result = await this.client.executeQuery({
       query: V1_serializeValueSpecification(query, []),
-      debug: this.enableDebugMode,
+      debug: this.enableEngineDebugMode,
     });
     return {
       result: guaranteeType(

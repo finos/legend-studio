@@ -412,7 +412,8 @@ export class DataCubeGridClientServerSideDataSource
         // behavior by forcing a scroll top for every data fetch and also reset the cache block size to the default value to save memory
         if (rowData.length > INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE) {
           if (
-            !this.grid.dataCube.repl.dataCubeEngine.disableLargeDatasetWarning
+            !this.grid.dataCube.repl.dataCubeEngine
+              .gridClientSuppressLargeDatasetWarning
           ) {
             this.grid.dataCube.repl.alert({
               message: `Large dataset (>${INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE} rows) detected!`,
@@ -429,7 +430,7 @@ export class DataCubeGridClientServerSideDataSource
                   label: 'Dismiss Warning',
                   handler: () => {
                     // this.grid.setPaginationEnabled(true);
-                    this.grid.dataCube.repl.dataCubeEngine.setDisableLargeDatasetWarning(
+                    this.grid.dataCube.repl.dataCubeEngine.setGridClientSuppressLargeDatasetWarning(
                       true,
                     );
                   },
