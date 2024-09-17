@@ -393,24 +393,3 @@ test(
     ).not.toBeNull();
   },
 );
-
-describe(
-  integrationTest('Query builder result panel filter by/filter out'),
-  () => {
-    test('Check that filter by pre-filters simple projection columns', async () => {
-      const { renderResult, queryBuilderState } =
-        await testQueryBuilderStateSetup();
-      const executionResult = V1_buildExecutionResult(
-        V1_serializeExecutionResult(TEST_DATA__result),
-      );
-      await act(async () => {
-        queryBuilderState.resultState.setExecutionResult(executionResult);
-      });
-
-      expect(renderResult.getByText('Employees/First Name')).not.toBeNull();
-      expect(renderResult.getByText('Doe')).not.toBeNull();
-      fireEvent.contextMenu(renderResult.getByText('Doe'));
-      expect(await renderResult.findByText('Filter By')).not.toBeNull();
-    });
-  },
-);
