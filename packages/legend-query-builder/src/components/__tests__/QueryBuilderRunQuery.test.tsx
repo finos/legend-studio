@@ -68,7 +68,7 @@ const mockedResult = {
     columns: ['Age', 'Edited First Name', 'Last Reported Flag'],
     rows: [
       { values: [22, 'John', true] },
-      { values: ['129305879132475986', 'Olivia', false] },
+      { values: [129305879132475986n.toString(), 'Olivia', false] },
       { values: [1450, 'Henry', true] },
       { values: [55, GOOGLE_LINK, null] },
     ],
