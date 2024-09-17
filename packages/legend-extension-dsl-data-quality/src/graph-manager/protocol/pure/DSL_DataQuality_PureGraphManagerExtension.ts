@@ -20,6 +20,7 @@ import {
   type ExecutionResult,
   type PureModel,
   type RootGraphFetchTree,
+  type ParameterValue,
   AbstractPureGraphManagerExtension,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
@@ -32,6 +33,7 @@ export abstract class DSL_DataQuality_PureGraphManagerExtension extends Abstract
 
   abstract execute(
     graph: PureModel,
+    lambdaParameterValues: ParameterValue[],
     packagePath: string,
     previewLimit: number,
   ): Promise<ExecutionResult>;

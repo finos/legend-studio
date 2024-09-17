@@ -25,6 +25,7 @@ import {
 } from '@finos/legend-query-builder';
 import {
   type ExecutionResult,
+  MILESTONING_STEREOTYPE,
   buildRawLambdaFromLambdaFunction,
   CORE_PURE_PATH,
   FunctionType,
@@ -62,6 +63,7 @@ import {
 import { DataQualityResultValues } from './DataQualityResultValues.js';
 import { dataQualityClassValidation_setFilter } from '../graph-manager/DSL_DataQuality_GraphModifierHelper.js';
 import type { DataQualityClassValidationsConfiguration } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
+import { DataQualityDateSelectionPanel } from './DataQualityDateSelectionPanel.js';
 
 export const DataQualityResultPanel = observer(
   (props: { dataQualityState: DataQualityState }) => {
@@ -121,6 +123,7 @@ export const DataQualityResultPanel = observer(
       );
       resultState.pressedRunQuery.complete();
     };
+
     const cancelQuery = applicationStore.guardUnhandledError(() =>
       flowResult(resultState.cancelQuery()),
     );
@@ -191,6 +194,17 @@ export const DataQualityResultPanel = observer(
     const isLoading =
       resultState.isRunningQuery || resultState.isGeneratingPlan;
 
+    const currentClassMilestoningStrategy =
+      dataQualityState.currentClassMilestoningStrategy;
+    const showProcessingDate =
+      currentClassMilestoningStrategy ===
+        MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL ||
+      currentClassMilestoningStrategy === MILESTONING_STEREOTYPE.BITEMPORAL;
+    const showBusinessDate =
+      currentClassMilestoningStrategy ===
+        MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL ||
+      currentClassMilestoningStrategy === MILESTONING_STEREOTYPE.BITEMPORAL;
+
     return (
       <div
         data-testid={
@@ -226,6 +240,36 @@ export const DataQualityResultPanel = observer(
             )}
           </div>
           <div className="panel__header__actions data-quality-validation__result__header__actions">
+            {showProcessingDate && (
+              <div className="trial-runs-result-modifier-prompt__group">
+                <div className="trial-runs-result-modifier-prompt__group__label">
+                  Processing Date
+                </div>
+                <button
+                  className="trial-runs-result-modifier-prompt__header__label editable-value"
+                  onClick={() => dataQualityState.setShowDateSelection(true)}
+                >
+                  <div className="trial-runs-result-modifier-prompt__header__label__title">
+                    {dataQualityState.processingDate}
+                  </div>
+                </button>
+              </div>
+            )}
+            {showBusinessDate && (
+              <div className="trial-runs-result-modifier-prompt__group">
+                <div className="trial-runs-result-modifier-prompt__group__label">
+                  Business Date
+                </div>
+                <button
+                  className="trial-runs-result-modifier-prompt__header__label editable-value"
+                  onClick={() => dataQualityState.setShowDateSelection(true)}
+                >
+                  <div className="trial-runs-result-modifier-prompt__header__label__title">
+                    {dataQualityState.businessDate}
+                  </div>
+                </button>
+              </div>
+            )}
             {allowSettingPreviewLimit && (
               <div className="data-quality-validation__result__limit">
                 <div className="data-quality-validation__result__limit__label">
@@ -243,7 +287,6 @@ export const DataQualityResultPanel = observer(
                 />
               </div>
             )}
-
             <div className="data-quality-validation__result__execute-btn btn__dropdown-combo btn__dropdown-combo--primary">
               {resultState.isRunningQuery ? (
                 <button
@@ -329,6 +372,7 @@ export const DataQualityResultPanel = observer(
         <ExecutionPlanViewer
           executionPlanState={resultState.executionPlanState}
         />
+        <DataQualityDateSelectionPanel dataQualityState={dataQualityState} />
       </div>
     );
   },

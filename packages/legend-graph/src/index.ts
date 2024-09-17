@@ -180,6 +180,7 @@ export { V1_RootGraphFetchTree } from './graph-manager/protocol/pure/v1/model/va
 export { V1_PropertyGraphFetchTree } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/graph/V1_PropertyGraphFetchTree.js';
 export { V1_SubTypeGraphFetchTree } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/graph/V1_SubTypeGraphFetchTree.js';
 export { V1_GenericTypeInstance } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_GenericTypeInstance.js';
+export { V1_ParameterValue } from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_ParameterValue.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
@@ -354,6 +355,7 @@ export {
   V1_rawLambdaModelSchema,
   V1_deserializeRawValueSpecification,
   V1_serializeRawValueSpecification,
+  V1_RawValueSpecificationType,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 export { V1_transformPropertyReference } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_MappingTransformer.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer.js';
@@ -395,6 +397,7 @@ export {
   V1_buildPropertyGraphFetchTree,
   V1_buildRootGraphFetchTree,
 } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper.js';
+export { V1_transformParameterValue } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_ServiceTransformer.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_TestBuilderHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/V1_DSL_ExternalFormat_GraphBuilderHelper.js';
