@@ -104,7 +104,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
           col.kind === DataCubeColumnKind.MEASURE &&
           !col.excludedFromHorizontalPivot,
       ),
-      /** TODO: @datacube pivot - need to include columns used in aggregates (such as weighted-average) */
+      /** TODO: @datacube pivot - need to include columns used in complex aggregates (such as weighted-average) */
     ].map((col) => ({ name: col.name, type: col.type }));
   }
 

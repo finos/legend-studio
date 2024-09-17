@@ -73,7 +73,7 @@ export class DataCubeEditorColumnPropertiesPanelState
       // so we will put the hidden group-level extended columns last.
       ...this.editor.columns.groupExtendColumns
         .map((column) => this.columns.find((col) => col.name === column.name))
-        .filter((column) => column && column.hideFromView),
+        .filter((column) => column?.hideFromView),
     ].filter(isNonNullable);
   }
 

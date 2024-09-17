@@ -666,7 +666,7 @@ export function generateColumnDefs(
     );
     columnsToDisplay = configuration.columns.filter(
       (column) =>
-        castColumns.find((col) => col.name === column.name) ||
+        castColumns.find((col) => col.name === column.name) ??
         snapshot.data.groupExtendedColumns.find(
           (col) => col.name === column.name,
         ),
@@ -722,7 +722,6 @@ export function generateColumnDefs(
       configuration,
       dataCube,
     ),
-    /** TODO: @datacube pivot handle pivot and column grouping */
     ...columnsToDisplay.map((column) => {
       const columnData = {
         snapshot,

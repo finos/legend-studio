@@ -27,6 +27,7 @@ import {
   type DataCubeColumnPinPlacement,
   DataCubeColumnKind,
   DataCubeQueryFilterGroupOperator,
+  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
 } from '../core/DataCubeQueryEngine.js';
 import type {
   GetContextMenuItemsParams,
@@ -182,6 +183,75 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     }
   }
 
+  // --------------------------------- PIVOT ---------------------------------
+
+  horizontalPivotableColumns: DataCubeQuerySnapshotColumn[] = [];
+  horizontalPivotedColumns: DataCubeQuerySnapshotColumn[] = [];
+  horizontalPivotCastColumns: DataCubeQuerySnapshotColumn[] = [];
+
+  setHorizontalPivotOnColumn(colName: string | undefined) {
+    const column = this.horizontalPivotableColumns.find(
+      (col) => col.name === colName,
+    );
+    if (column) {
+      this.horizontalPivotedColumns = [column];
+      /** TODO?: @datacube pivot - naively propagate this change, this might cause a bug so to be revisited */
+      this.verticalPivotedColumns = this.verticalPivotedColumns.filter(
+        (col) =>
+          !this.horizontalPivotedColumns.find((c) => c.name === col.name),
+      );
+      this.applyChanges();
+    }
+  }
+
+  addHorizontalPivotOnColumn(colName: string | undefined) {
+    const column = this.horizontalPivotableColumns.find(
+      (col) => col.name === colName,
+    );
+    if (column) {
+      this.horizontalPivotedColumns = [
+        ...this.horizontalPivotedColumns,
+        column,
+      ];
+      /** TODO?: @datacube pivot - naively propagate this change, this might cause a bug so to be revisited */
+      this.verticalPivotedColumns = this.verticalPivotedColumns.filter(
+        (col) =>
+          !this.horizontalPivotedColumns.find((c) => c.name === col.name),
+      );
+      this.applyChanges();
+    }
+  }
+
+  clearAllHorizontalPivots() {
+    this.horizontalPivotedColumns = [];
+    this.applyChanges();
+  }
+
+  excludeColumnFromHorizontalPivot(colName: string | undefined) {
+    if (colName?.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR)) {
+      const baseColumnName = colName.substring(
+        colName.lastIndexOf(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) +
+          PIVOT_COLUMN_NAME_VALUE_SEPARATOR.length,
+      );
+      const columnConfiguration = this.getColumnConfiguration(baseColumnName);
+      if (
+        columnConfiguration &&
+        !columnConfiguration.excludedFromHorizontalPivot
+      ) {
+        columnConfiguration.excludedFromHorizontalPivot = true;
+        this.applyChanges();
+      }
+    }
+  }
+
+  includeColumnInHorizontalPivot(colName: string | undefined) {
+    const columnConfiguration = this.getColumnConfiguration(colName);
+    if (columnConfiguration?.excludedFromHorizontalPivot) {
+      columnConfiguration.excludedFromHorizontalPivot = false;
+      this.applyChanges();
+    }
+  }
+
   // --------------------------------- GROUP BY ---------------------------------
 
   verticalPivotableColumns: DataCubeQuerySnapshotColumn[] = [];
@@ -287,6 +357,13 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
       this.configuration,
     );
 
+    snapshot.data.pivot = this.horizontalPivotedColumns.length
+      ? {
+          columns: this.horizontalPivotedColumns,
+          castColumns: this.horizontalPivotCastColumns,
+        }
+      : undefined;
+
     snapshot.data.groupBy = this.verticalPivotedColumns.length
       ? {
           columns: this.verticalPivotedColumns,
@@ -324,6 +401,16 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
       ...newSnapshot.data.leafExtendedColumns,
       ...newSnapshot.data.groupExtendedColumns,
     ];
+
+    this.horizontalPivotableColumns = newSnapshot
+      .stageCols('pivot')
+      .filter(
+        (column) =>
+          this.getColumnConfiguration(column.name)?.kind ===
+          DataCubeColumnKind.DIMENSION,
+      );
+    this.horizontalPivotedColumns = newSnapshot.data.pivot?.columns ?? [];
+    this.horizontalPivotCastColumns = newSnapshot.data.pivot?.castColumns ?? [];
 
     this.verticalPivotableColumns = newSnapshot
       .stageCols('group-by')
