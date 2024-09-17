@@ -25,8 +25,15 @@ import {
   getByTitle,
   queryByText,
 } from '@testing-library/react';
-import { TEST_DATA__simpleProjection } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
-import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
+import {
+  TEST_DATA__projectionWithSimpleDerivationAndAggregation,
+  TEST_DATA__simpleProjection,
+} from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
+import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
+import {
+  TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+  TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+} from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' with { type: 'json' };
 import { guaranteeType } from '@finos/legend-shared';
 import { createSpy, integrationTest } from '@finos/legend-shared/test';
@@ -40,6 +47,7 @@ import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { filterByOrOutValues } from '../result/tds/QueryBuilderTDSResultShared.js';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 
 const mocked =
   '{"builder":{"_type":"tdsBuilder","columns":[{"name":"Age","type":"Integer","relationalType":"INTEGER"},{"name":"Edited First Name","type":"String","relationalType":"VARCHAR(200)"},{"name":"Last Reported Flag","type":"Boolean","relationalType":"BIT"}]},"activities":[{"_type":"relational","comment":"","sql":"select"}],"result":{"columns":["Age","Edited First Name","Last Reported Flag"],"rows":[{"values":[22,"John",true]},{"values":[129305879132475986,"Olivia",false]},{"values":[1450,"Henry",true]},{"values":[55,"https://www.google.com/",null]}]}}';
@@ -157,5 +165,260 @@ test(
     expect(await findByText(filterPanel, 'First Name')).not.toBeNull();
     expect(await findByText(filterPanel, 'is')).not.toBeNull();
     expect(await findByText(filterPanel, '"Henry"')).not.toBeNull();
+  },
+);
+
+const mocked2 = {
+  builder: {
+    _type: 'tdsBuilder',
+    columns: [
+      { name: 'Id', type: 'Integer', relationalType: 'INTEGER' },
+      { name: '(derivation)', type: 'String', relationalType: 'VARCHAR(200)' },
+      {
+        name: 'Employees/First Name',
+        type: 'String',
+        relationalType: 'VARCHAR(200)',
+      },
+      {
+        name: 'Id (sum)',
+        type: 'Integer',
+        relationalType: 'INTEGER',
+      },
+    ],
+  },
+  activities: [{ _type: 'relational', comment: '', sql: 'select' }],
+  result: {
+    columns: ['Id', '(derivation)', 'Employees/First Name', 'Id (sum)'],
+    rows: [
+      { values: [22, 'test derivation 1', 'John', 45] },
+      { values: [23, 'test derivation 2', 'Olivia', 46] },
+    ],
+  },
+};
+test(
+  integrationTest(
+    'Query Builder result panel "filter by" creates filter for simple projection and post-filter for others',
+  ),
+  async () => {
+    // Set up query
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+    const _firmClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeClass(_firmClass);
+    });
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: false,
+    });
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__projectionWithSimpleDerivationAndAggregation.parameters,
+          TEST_DATA__projectionWithSimpleDerivationAndAggregation.body,
+        ),
+      );
+    });
+
+    // Mock result
+    const graphManager = queryBuilderState.graphManagerState.graphManager;
+    const pureManager = guaranteeType(graphManager, V1_PureGraphManager);
+    const executionResultMap = new Map<string, string>();
+    executionResultMap.set(V1_EXECUTION_RESULT, JSON.stringify(mocked2));
+    createSpy(pureManager.engine, 'runQueryAndReturnMap').mockResolvedValue(
+      executionResultMap,
+    );
+
+    // Mock derivation return type
+    createSpy(graphManager, 'getLambdaReturnType').mockReturnValue(
+      Promise.resolve('String'),
+    );
+
+    // Run query
+    await act(async () => {
+      fireEvent.click(renderResult.getByText('Run Query'));
+    });
+    const resultPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
+    );
+
+    // Verify results are present
+    expect(getByText(resultPanel, 'Run Query')).toBeDefined();
+    expect(getByText(resultPanel, '2 row(s)', { exact: false })).toBeDefined();
+
+    // Create filter with id column
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    const tdsResult = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_VALUES_TDS,
+    );
+    fireEvent.mouseDown(getByText(tdsResult, 22));
+    fireEvent.mouseUp(getByText(tdsResult, 22));
+
+    await act(async () => {
+      await filterByOrOutValues(
+        queryBuilderState.applicationStore,
+        queryBuilderState.resultState.mousedOverCell,
+        true,
+        tdsState,
+      );
+    });
+    const filterPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_PANEL,
+    );
+
+    expect(await findByText(filterPanel, 'Id')).not.toBeNull();
+    expect(await findByText(filterPanel, 'is')).not.toBeNull();
+    expect(await findByText(filterPanel, '"22"')).not.toBeNull();
+
+    // Add to existing ID filter
+    fireEvent.mouseDown(getByText(tdsResult, 23));
+    fireEvent.mouseUp(getByText(tdsResult, 23));
+    await act(async () => {
+      await filterByOrOutValues(
+        queryBuilderState.applicationStore,
+        queryBuilderState.resultState.mousedOverCell,
+        true,
+        tdsState,
+      );
+    });
+    expect(await findByText(filterPanel, 'is in list of')).not.toBeNull();
+    expect(await findByText(filterPanel, 'List(2): 22,23')).not.toBeNull();
+
+    // Remove filter
+    fireEvent.click(getByTitle(filterPanel, 'Remove'));
+    expect(queryByText(filterPanel, 'Id')).toBeNull();
+
+    // Create not in filter with id column
+    fireEvent.mouseDown(getByText(tdsResult, 22));
+    fireEvent.mouseOver(getByText(tdsResult, 23));
+    fireEvent.mouseUp(getByText(tdsResult, 23));
+    await act(async () => {
+      await filterByOrOutValues(
+        queryBuilderState.applicationStore,
+        queryBuilderState.resultState.mousedOverCell,
+        false,
+        tdsState,
+      );
+    });
+    expect(await findByText(filterPanel, 'Id')).not.toBeNull();
+    expect(await findByText(filterPanel, 'is not in list of')).not.toBeNull();
+    expect(await findByText(filterPanel, 'List(2): 22,23')).not.toBeNull();
+
+    // Remove filter
+    fireEvent.click(getByTitle(filterPanel, 'Remove'));
+    expect(queryByText(filterPanel, 'Id')).toBeNull();
+
+    // Create post-filter with derivation column
+    fireEvent.mouseDown(getByText(tdsResult, 'test derivation 1'));
+    fireEvent.mouseOver(getByText(tdsResult, 'test derivation 2'));
+    fireEvent.mouseUp(getByText(tdsResult, 'test derivation 2'));
+
+    await act(async () => {
+      await filterByOrOutValues(
+        queryBuilderState.applicationStore,
+        queryBuilderState.resultState.mousedOverCell,
+        true,
+        tdsState,
+      );
+    });
+
+    const postFilterPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER_PANEL,
+    );
+
+    expect(await findByText(postFilterPanel, '(derivation)')).not.toBeNull();
+    expect(await findByText(postFilterPanel, 'is in list of')).not.toBeNull();
+    expect(
+      await findByText(
+        postFilterPanel,
+        'List(2): test derivation 1,test derivation 2',
+      ),
+    ).not.toBeNull();
+
+    // Remove filter
+    fireEvent.click(getByTitle(postFilterPanel, 'Remove'));
+    expect(queryByText(postFilterPanel, '(derivation)')).toBeNull();
+
+    // Create post-filter not in filter with derivation column
+    fireEvent.mouseDown(getByText(tdsResult, 'test derivation 1'));
+    fireEvent.mouseOver(getByText(tdsResult, 'test derivation 2'));
+
+    await act(async () => {
+      await filterByOrOutValues(
+        queryBuilderState.applicationStore,
+        queryBuilderState.resultState.mousedOverCell,
+        false,
+        tdsState,
+      );
+    });
+
+    expect(await findByText(postFilterPanel, '(derivation)')).not.toBeNull();
+    expect(
+      await findByText(postFilterPanel, 'is not in list of'),
+    ).not.toBeNull();
+    expect(
+      await findByText(
+        postFilterPanel,
+        'List(2): test derivation 1,test derivation 2',
+      ),
+    ).not.toBeNull();
+
+    // Remove filter
+    fireEvent.click(getByTitle(postFilterPanel, 'Remove'));
+    expect(queryByText(postFilterPanel, '(derivation)')).toBeNull();
+
+    // Create post-filter with exploded column
+    fireEvent.mouseDown(getByText(tdsResult, 'John'));
+    fireEvent.mouseOver(getByText(tdsResult, 'Olivia'));
+
+    await act(async () => {
+      await filterByOrOutValues(
+        queryBuilderState.applicationStore,
+        queryBuilderState.resultState.mousedOverCell,
+        true,
+        tdsState,
+      );
+    });
+
+    expect(
+      await findByText(postFilterPanel, 'Employees/First Name'),
+    ).not.toBeNull();
+    expect(await findByText(postFilterPanel, 'is in list of')).not.toBeNull();
+    expect(
+      await findByText(postFilterPanel, 'List(2): John,Olivia'),
+    ).not.toBeNull();
+
+    // Remove filter
+    fireEvent.click(getByTitle(postFilterPanel, 'Remove'));
+    expect(queryByText(postFilterPanel, 'Employees/First Name')).toBeNull();
+
+    // Create post-filter with aggregation column
+    fireEvent.mouseDown(getByText(tdsResult, 45));
+    fireEvent.mouseOver(getByText(tdsResult, 46));
+
+    await act(async () => {
+      await filterByOrOutValues(
+        queryBuilderState.applicationStore,
+        queryBuilderState.resultState.mousedOverCell,
+        true,
+        tdsState,
+      );
+    });
+
+    expect(await findByText(postFilterPanel, 'Id (sum)')).not.toBeNull();
+    expect(await findByText(postFilterPanel, 'is in list of')).not.toBeNull();
+    expect(await findByText(postFilterPanel, 'List(2): 45,46')).not.toBeNull();
+
+    // Remove filter
+    fireEvent.click(getByTitle(postFilterPanel, 'Remove'));
+    expect(queryByText(postFilterPanel, 'Id (sum)')).toBeNull();
   },
 );
