@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.58
+
+### Patch Changes
+
+- [#3536](https://github.com/finos/legend-studio/pull/3536) [`1d2f4a9`](https://github.com/finos/legend-studio/commit/1d2f4a96018d9432307ad123c450f23044a005ba) ([@pragyasri-gs](https://github.com/pragyasri-gs)) - Add LikeIcon and DislikeIcon.
+
 ## 7.1.57
 
 ## 7.1.56
