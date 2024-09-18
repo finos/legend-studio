@@ -562,11 +562,19 @@ export const SwaggerIcon = SiSwagger; // to be reviewed
 
 //======================================================= BI =======================================================
 
-import { BiShapeTriangle, BiAtom, BiCabinet } from 'react-icons/bi';
+import {
+  BiShapeTriangle,
+  BiAtom,
+  BiCabinet,
+  BiLike,
+  BiDislike,
+} from 'react-icons/bi';
 
 export const ShapeTriangleIcon = BiShapeTriangle;
 export const AtomIcon = BiAtom;
 export const CabinetIcon = BiCabinet;
+export const LikeIcon = BiLike;
+export const DislikeIcon = BiDislike;
 
 //======================================================= CG =======================================================
 import { CgOptions } from 'react-icons/cg';
