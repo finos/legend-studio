@@ -23,14 +23,30 @@
 
 import type { IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import {
+  _toCol,
   type DataCubeQuerySnapshot,
-  _getCol,
 } from '../core/DataCubeQuerySnapshot.js';
 import {
   GridClientSortDirection,
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
-import { DataCubeQuerySortOperator } from '../core/DataCubeQueryEngine.js';
+import {
+  DataCubeQuerySortOperator,
+  getPivotResultColumnBaseColumnName,
+  isPivotResultColumnName,
+} from '../core/DataCubeQueryEngine.js';
+import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+
+export function getColumnConfiguration(
+  colName: string,
+  configuration: DataCubeConfiguration,
+) {
+  return guaranteeNonNullable(
+    configuration.columns.find((col) => col.name === colName),
+    `Can't find configuration for column '${colName}'`,
+  );
+}
 
 // --------------------------------- MAIN ---------------------------------
 
@@ -39,14 +55,16 @@ export function buildQuerySnapshot(
   baseSnapshot: DataCubeQuerySnapshot,
 ) {
   const snapshot = baseSnapshot.clone();
+  const configuration = DataCubeConfiguration.serialization.fromJson(
+    snapshot.data.configuration,
+  );
 
   // --------------------------------- GROUP BY ---------------------------------
 
   if (request.rowGroupCols.length) {
-    const availableCols = baseSnapshot.stageCols('group-by');
     const newGroupByColumns = request.rowGroupCols.map((col) => ({
       name: col.id,
-      type: _getCol(availableCols, col.id).type,
+      type: getColumnConfiguration(col.id, configuration).type,
     }));
     snapshot.data.groupBy = {
       columns: newGroupByColumns,
@@ -65,7 +83,14 @@ export function buildQuerySnapshot(
     // the tree-group, all group-by columns will be sorted in that direction
     .filter((item) => item.colId !== INTERNAL__GRID_CLIENT_TREE_COLUMN_ID)
     .map((item) => ({
-      ..._getCol(baseSnapshot.stageCols('sort'), item.colId),
+      ..._toCol(
+        getColumnConfiguration(
+          isPivotResultColumnName(item.colId)
+            ? getPivotResultColumnBaseColumnName(item.colId)
+            : item.colId,
+          configuration,
+        ),
+      ),
       operation:
         item.sort === GridClientSortDirection.ASCENDING
           ? DataCubeQuerySortOperator.ASCENDING

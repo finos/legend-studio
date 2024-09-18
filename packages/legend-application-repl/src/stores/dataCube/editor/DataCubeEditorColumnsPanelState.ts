@@ -74,7 +74,7 @@ export class DataCubeEditorBasicColumnsSelectorState extends DataCubeEditorColum
       (column) =>
         this.showHiddenColumns ||
         !this.editor.columnProperties.getColumnConfiguration(column.name)
-          ?.hideFromView,
+          .hideFromView,
     );
   }
 
@@ -83,7 +83,7 @@ export class DataCubeEditorBasicColumnsSelectorState extends DataCubeEditorColum
       (column) =>
         this.showHiddenColumns ||
         !this.editor.columnProperties.getColumnConfiguration(column.name)
-          ?.hideFromView,
+          .hideFromView,
     );
   }
 

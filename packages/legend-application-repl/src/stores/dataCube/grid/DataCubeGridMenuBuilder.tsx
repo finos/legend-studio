@@ -196,7 +196,7 @@ export function generateMenuBuilder(
       {
         name: 'Sort',
         subMenu: [
-          ...(column && columnName
+          ...(column && columnName && controller.getSortableColumn(columnName)
             ? [
                 {
                   name: 'Ascending',
@@ -494,7 +494,8 @@ export function generateMenuBuilder(
         subMenu: [
           ...(column &&
           columnName &&
-          columnConfiguration?.kind === DataCubeColumnKind.DIMENSION
+          columnConfiguration?.kind === DataCubeColumnKind.DIMENSION &&
+          controller.getVerticalPivotableColumn(columnName)
             ? [
                 {
                   name: `Vertical Pivot on ${column.getColId()}`,
@@ -518,6 +519,13 @@ export function generateMenuBuilder(
                     controller.removeVerticalPivotOnColumn(columnName),
                 },
                 'separator',
+              ]
+            : []),
+          ...(column &&
+          columnName &&
+          columnConfiguration?.kind === DataCubeColumnKind.DIMENSION &&
+          controller.getHorizontalPivotableColumn(columnName)
+            ? [
                 {
                   name: `Horizontal Pivot on ${column.getColId()}`,
                   action: () =>

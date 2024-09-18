@@ -32,6 +32,7 @@ import {
 } from './DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
+import { uniqBy } from '@finos/legend-shared';
 
 export class DataCubeEditorHorizontalPivotColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState> {
   override cloneColumn(
@@ -43,7 +44,7 @@ export class DataCubeEditorHorizontalPivotColumnsSelectorState extends DataCubeE
     );
   }
 
-  override get availableColumns(): DataCubeEditorColumnsSelectorColumnState[] {
+  override get availableColumns() {
     return this.editor.columnProperties.columns
       .filter(
         (col) =>
@@ -93,20 +94,27 @@ export class DataCubeEditorHorizontalPivotsPanelState
       .map((col) => _toCol(col));
   }
 
+  /**
+   * Due to the nature of pivot() operation, some base columns (i.e. source columns and leaf-level columns)
+   * will be "consumed" and not available for subsequent operations (e.g. sort, groupBy, etc.).
+   */
   get columnsConsumedByPivot(): DataCubeQuerySnapshotColumn[] {
     if (!this.selector.selectedColumns.length) {
       return [];
     }
-    return [
-      ...this.selector.selectedColumns,
-      ...this.editor.columnProperties.columns.filter(
-        (col) =>
-          col.isSelected &&
-          col.kind === DataCubeColumnKind.MEASURE &&
-          !col.excludedFromHorizontalPivot,
-      ),
-      /** TODO: @datacube pivot - need to include columns used in complex aggregates (such as weighted-average) */
-    ].map((col) => _toCol(col));
+    return uniqBy(
+      [
+        ...this.selector.selectedColumns,
+        ...this.editor.columnProperties.columns.filter(
+          (col) =>
+            col.isSelected &&
+            col.kind === DataCubeColumnKind.MEASURE &&
+            !col.excludedFromHorizontalPivot,
+        ),
+        /** TODO: @datacube pivot - need to include columns used in complex aggregates (such as weighted-average) */
+      ],
+      (col) => col.name,
+    ).map((col) => _toCol(col));
   }
 
   setCastColumns(value: DataCubeQuerySnapshotColumn[]) {
@@ -141,16 +149,9 @@ export class DataCubeEditorHorizontalPivotsPanelState
           castColumns: this.castColumns.map((col) => _toCol(col)),
         }
       : undefined;
-    newSnapshot.data.selectColumns = [
-      ...newSnapshot.data.selectColumns,
-      ...this.selector.selectedColumns
-        .filter(
-          (col) =>
-            !newSnapshot.data.selectColumns.find(
-              (column) => column.name === col.name,
-            ),
-        )
-        .map((col) => _toCol(col)),
-    ];
+    newSnapshot.data.selectColumns = uniqBy(
+      [...newSnapshot.data.selectColumns, ...this.selector.selectedColumns],
+      (col) => col.name,
+    ).map((col) => _toCol(col));
   }
 }

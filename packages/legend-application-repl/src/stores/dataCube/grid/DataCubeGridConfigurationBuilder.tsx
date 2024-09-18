@@ -79,6 +79,7 @@ import {
   DataCubeColumnKind,
   DEFAULT_MISSING_VALUE_DISPLAY_TEXT,
   PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
+  isPivotResultColumnName,
 } from '../core/DataCubeQueryEngine.js';
 import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
 import { DataCubeIcon } from '@finos/legend-art';
@@ -138,6 +139,7 @@ function DataCubeGridLoadingCellRenderer(
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
 type ColumnData = {
+  name: string;
   snapshot: DataCubeQuerySnapshot;
   column: DataCubeColumnConfiguration;
   configuration: DataCubeConfiguration;
@@ -173,7 +175,7 @@ function getCellRenderer(columnData: ColumnData) {
 }
 
 function _displaySpec(columnData: ColumnData) {
-  const { column, configuration } = columnData;
+  const { name, snapshot, column, configuration } = columnData;
   const dataType = getDataType(column.type);
   const fontFamily = column.fontFamily ?? configuration.fontFamily;
   const fontSize = column.fontSize ?? configuration.fontSize;
@@ -205,7 +207,11 @@ function _displaySpec(columnData: ColumnData) {
     // disabling cell data type inference can grid performance
     // especially when this information is only necessary for cell value editor
     cellDataType: false,
-    hide: column.hideFromView,
+    hide:
+      column.hideFromView ||
+      !column.isSelected ||
+      (snapshot.data.pivot &&
+        !snapshot.data.pivot.castColumns.find((col) => col.name === name)),
     valueFormatter:
       dataType === DataCubeColumnDataType.NUMBER
         ? (params) => {
@@ -346,9 +352,9 @@ function _sizeSpec(columnData: ColumnData) {
 }
 
 function _sortSpec(columnData: ColumnData) {
-  const { snapshot, column } = columnData;
+  const { name, snapshot } = columnData;
   const sortColumns = snapshot.data.sortColumns;
-  const sortCol = _findCol(sortColumns, column.name);
+  const sortCol = _findCol(sortColumns, name);
   return {
     sortable: true, // if this is pivot column, no sorting is supported yet
     sort: sortCol
@@ -361,17 +367,14 @@ function _sortSpec(columnData: ColumnData) {
 }
 
 function _aggSpec(columnData: ColumnData) {
-  const { snapshot, column } = columnData;
+  const { name, snapshot, column } = columnData;
   const data = snapshot.data;
-  const groupByCol = _findCol(data.groupBy?.columns, column.name);
-  const pivotCol = _findCol(data.pivot?.columns, column.name);
+  const groupByCol = _findCol(data.groupBy?.columns, name);
   const isGroupExtendedColumn = Boolean(
-    _findCol(data.groupExtendedColumns, column.name),
+    _findCol(data.groupExtendedColumns, name),
   );
   return {
     enableRowGroup:
-      !isGroupExtendedColumn && column.kind === DataCubeColumnKind.DIMENSION,
-    enablePivot:
       !isGroupExtendedColumn && column.kind === DataCubeColumnKind.DIMENSION,
     rowGroup: !isGroupExtendedColumn && Boolean(groupByCol),
     rowGroupIndex:
@@ -386,11 +389,6 @@ function _aggSpec(columnData: ColumnData) {
     aggFunc: !isGroupExtendedColumn ? column.aggregateOperator : null,
     enableValue: false, // disable GUI interactions to modify this column's aggregate function
     allowedAggFuncs: [], // disable GUI for options of the agg functions
-    pivot: !isGroupExtendedColumn && Boolean(pivotCol),
-    pivotIndex:
-      !isGroupExtendedColumn && groupByCol
-        ? (data.groupBy?.columns.indexOf(groupByCol) ?? null)
-        : null,
   } satisfies ColDef;
 }
 
@@ -572,6 +570,7 @@ function generateDefinitionForPivotResultColumns(
         const column = _findCol(configuration.columns, value);
         if (column) {
           const columnData = {
+            name: col.name,
             snapshot,
             column,
             configuration,
@@ -590,9 +589,6 @@ function generateDefinitionForPivotResultColumns(
             lockPinned: true,
             lockPosition: true,
             suppressColumnsToolPanel: true, // hide from column tool panel
-
-            // ..._sortSpec(columnData),
-            // ..._aggSpec(columnData),
           } satisfies ColDef;
         }
       }
@@ -629,24 +625,36 @@ export function generateColumnDefs(
   configuration: DataCubeConfiguration,
   dataCube: DataCubeState,
 ) {
-  let pivotResultColumns: DataCubeQuerySnapshotColumn[] = [];
-  // only show columns which are fetched
+  // NOTE: only show columns which are fetched in select() as we
+  // can't solely rely on column selection because of certain restrictions
+  // from ag-grid, e.g. in the case of row grouping tree column: the columns
+  // which are grouped must be present in the column definitions, so even
+  // when some of these might not be selected explicitly by the users, they
+  // must still be included in the column definitions, and made hidden instead.
   let columns = configuration.columns.filter((col) =>
     snapshot.data.selectColumns.find((column) => column.name === col.name),
   );
+  let pivotResultColumns: DataCubeQuerySnapshotColumn[] = [];
+
   if (snapshot.data.pivot) {
     const castColumns = snapshot.data.pivot.castColumns;
-    pivotResultColumns = castColumns.filter((column) =>
-      column.name.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR),
+    pivotResultColumns = castColumns.filter((col) =>
+      isPivotResultColumnName(col.name),
     );
-    columns = columns.filter(
-      (column) =>
-        castColumns.find((col) => col.name === column.name) ??
-        snapshot.data.groupExtendedColumns.find(
-          (col) => col.name === column.name,
-        ),
-    );
+    // Since fetching cast columns is an expensive operation, we often do this asynchronously
+    // so sometimes, the grid column definitions might be generated with incorrect casting
+    // information. In order to account for those cases, we include all select() columns
+    // to make sure pivoting information is properly propagated to server-side row model datasource.
+    columns = [
+      ...columns.filter((col) =>
+        castColumns.find((column) => column.name === col.name),
+      ),
+      ...columns.filter(
+        (col) => !castColumns.find((column) => column.name === col.name),
+      ),
+    ];
   }
+
   return [
     {
       headerName: '',
@@ -697,6 +705,7 @@ export function generateColumnDefs(
     ),
     ...columns.map((column) => {
       const columnData = {
+        name: column.name,
         snapshot,
         column,
         configuration,

@@ -181,6 +181,7 @@ export function computeHashCodeForDataFetchManualTrigger(
   return hashObject(
     pruneObject({
       ...snapshot.data,
+      name: undefined,
       configuration: {
         initialExpandLevel: configuration.initialExpandLevel,
         showRootAggregation: configuration.showRootAggregation,

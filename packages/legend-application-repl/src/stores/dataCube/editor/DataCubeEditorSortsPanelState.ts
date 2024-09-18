@@ -25,6 +25,7 @@ import {
 } from './DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
+import { uniqBy } from '@finos/legend-shared';
 
 export class DataCubeEditorSortColumnState extends DataCubeEditorColumnsSelectorColumnState {
   operation: string;
@@ -55,19 +56,23 @@ export class DataCubeEditorSortColumnsSelectorState extends DataCubeEditorColumn
   }
 
   override get availableColumns() {
-    return [
-      ...this.editor.horizontalPivots.pivotResultColumns,
-      ...this.editor.columns.selector.selectedColumns.filter(
-        (column) =>
-          !this.editor.groupExtendColumns.find(
-            (col) => col.name === column.name,
-          ) &&
-          !this.editor.horizontalPivots.columnsConsumedByPivot.find(
-            (col) => col.name === column.name,
-          ),
-      ),
-      ...this.editor.groupExtendColumns,
-    ].map(
+    return uniqBy(
+      [
+        ...this.editor.horizontalPivots.pivotResultColumns,
+        ...[
+          ...this.editor.columns.selector.selectedColumns,
+          ...this.editor.horizontalPivots.selector.selectedColumns,
+          ...this.editor.verticalPivots.selector.selectedColumns,
+        ].filter(
+          (column) =>
+            !this.editor.horizontalPivots.columnsConsumedByPivot.find(
+              (col) => col.name === column.name,
+            ),
+        ),
+        ...this.editor.groupExtendColumns,
+      ],
+      (col) => col.name,
+    ).map(
       (col) =>
         new DataCubeEditorSortColumnState(
           col.name,

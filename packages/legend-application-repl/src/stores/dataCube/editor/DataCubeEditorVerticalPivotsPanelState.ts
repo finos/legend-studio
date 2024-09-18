@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { uniqBy } from '@finos/legend-shared';
 import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeColumnKind } from '../core/DataCubeQueryEngine.js';
@@ -38,7 +39,7 @@ export class DataCubeEditorVerticalPivotColumnsSelectorState extends DataCubeEdi
     );
   }
 
-  override get availableColumns(): DataCubeEditorColumnsSelectorColumnState[] {
+  override get availableColumns() {
     return this.editor.columnProperties.columns
       .filter(
         (column) =>
@@ -47,8 +48,8 @@ export class DataCubeEditorVerticalPivotColumnsSelectorState extends DataCubeEdi
           !this.editor.groupExtendColumns.find(
             (col) => col.name === column.name,
           ) &&
-          // prune columns according to active h-pivot
-          !this.editor.horizontalPivots.columnsConsumedByPivot.find(
+          // exclude pivot columns
+          !this.editor.horizontalPivots.selector.selectedColumns.find(
             (col) => col.name === column.name,
           ),
       )
@@ -101,16 +102,9 @@ export class DataCubeEditorVerticalPivotsPanelState
           columns: this.selector.selectedColumns.map((col) => _toCol(col)),
         }
       : undefined;
-    newSnapshot.data.selectColumns = [
-      ...newSnapshot.data.selectColumns,
-      ...this.selector.selectedColumns
-        .filter(
-          (col) =>
-            !newSnapshot.data.selectColumns.find(
-              (column) => column.name === col.name,
-            ),
-        )
-        .map((col) => _toCol(col)),
-    ];
+    newSnapshot.data.selectColumns = uniqBy(
+      [...newSnapshot.data.selectColumns, ...this.selector.selectedColumns],
+      (col) => col.name,
+    ).map((col) => _toCol(col));
   }
 }

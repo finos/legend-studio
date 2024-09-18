@@ -18,7 +18,6 @@ import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
 import type { DataCubeConfiguration } from './DataCubeConfiguration.js';
 import {
   IllegalStateError,
-  guaranteeNonNullable,
   hashObject,
   pruneObject,
   uuid,
@@ -88,15 +87,6 @@ export type DataCubeQuerySnapshotData = {
   limit: number | undefined;
 };
 
-type DataCubeQuerySnapshotStage =
-  | 'leaf-extend'
-  | 'filter'
-  | 'pivot'
-  | 'group-by'
-  | 'group-extend'
-  | 'select'
-  | 'sort';
-
 export class DataCubeQuerySnapshot {
   readonly uuid = uuid();
   timestamp = Date.now();
@@ -154,36 +144,6 @@ export class DataCubeQuerySnapshot {
     return clone;
   }
 
-  /**
-   * Get available columns at a certain stage of the query
-   */
-  stageCols(stage: DataCubeQuerySnapshotStage) {
-    switch (stage) {
-      case 'leaf-extend':
-        return [...this.data.sourceColumns];
-      case 'filter':
-      case 'select':
-      case 'pivot':
-        return [...this.data.sourceColumns, ...this.data.leafExtendedColumns];
-      case 'group-by':
-      case 'group-extend':
-        return [
-          ...(this.data.pivot?.castColumns.length
-            ? this.data.pivot.castColumns
-            : this.data.selectColumns),
-        ];
-      case 'sort':
-        return [
-          ...(this.data.pivot?.castColumns.length
-            ? this.data.pivot.castColumns
-            : this.data.selectColumns),
-          ...this.data.groupExtendedColumns,
-        ];
-      default:
-        throw new IllegalStateError(`Unknown stage '${stage}'`);
-    }
-  }
-
   isFinalized() {
     return this._finalized;
   }
@@ -218,16 +178,6 @@ export function _findCol<T extends DataCubeQuerySnapshotColumn>(
   name: string,
 ): T | undefined {
   return cols?.find((c) => c.name === name);
-}
-
-export function _getCol<T extends DataCubeQuerySnapshotColumn>(
-  cols: T[] | undefined,
-  name: string,
-): T {
-  return guaranteeNonNullable(
-    cols?.find((c) => c.name === name),
-    `Can't find column '${name}'`,
-  );
 }
 
 export function _toCol(col: {
