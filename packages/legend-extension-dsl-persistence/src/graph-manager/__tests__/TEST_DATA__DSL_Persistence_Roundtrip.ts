@@ -94,7 +94,7 @@ export const TEST_DATA__roundtrip_case1 = [
     path: 'org::dxl::Animal',
   },
   {
-    classifierPath: 'meta::external::shared::format::binding::Binding',
+    classifierPath: 'meta::external::format::shared::binding::Binding',
     content: {
       _type: 'binding',
       contentType: 'application/json',
@@ -708,7 +708,7 @@ export const TEST_DATA__cloud__roundtrip = [
   },
   {
     path: 'org::dxl::ZooBinding',
-    classifierPath: 'meta::external::shared::format::binding::Binding',
+    classifierPath: 'meta::external::format::shared::binding::Binding',
     content: {
       _type: 'binding',
       contentType: 'application/json',

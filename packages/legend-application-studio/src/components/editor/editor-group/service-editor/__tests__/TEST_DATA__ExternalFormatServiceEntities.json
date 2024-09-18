@@ -97,7 +97,7 @@
       "package": "demo::externalFormat::flatdata::simple::binding",
       "schemaSet": "demo::externalFormat::flatdata::simple::schemaSet::PersonSchema"
     },
-    "classifierPath": "meta::external::shared::format::binding::Binding"
+    "classifierPath": "meta::external::format::shared::binding::Binding"
   },
   {
     "path": "demo::externalFormat::flatdata::simple::mapping::M2MMapping",
@@ -721,6 +721,6 @@
         }
       ]
     },
-    "classifierPath": "meta::external::shared::format::metamodel::SchemaSet"
+    "classifierPath": "meta::external::format::shared::metamodel::SchemaSet"
   }
 ]

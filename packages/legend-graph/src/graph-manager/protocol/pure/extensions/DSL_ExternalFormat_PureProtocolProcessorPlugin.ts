@@ -80,9 +80,9 @@ import {
 } from '../v1/transformation/pureProtocol/serializationHelpers/V1_DSL_ExternalFormat_ProtocolHelper.js';
 
 const BINDING_ELEMENT_CLASSIFIER_PATH =
-  'meta::external::shared::format::binding::Binding';
+  'meta::external::format::shared::binding::Binding';
 const SCHEMA_SET_ELEMENT_CLASSIFIER_PATH =
-  'meta::external::shared::format::metamodel::SchemaSet';
+  'meta::external::format::shared::metamodel::SchemaSet';
 
 export class DSL_ExternalFormat_PureProtocolProcessorPlugin
   extends PureProtocolProcessorPlugin
