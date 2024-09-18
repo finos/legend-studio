@@ -86,6 +86,7 @@ export {
   V1_ArtifactGenerationExtensionInput,
   V1_ArtifactGenerationExtensionOutput,
   V1_CheckEntitlementsResult,
+  V1_DatabaseBuilderInput,
   V1_DatabaseToModelGenerationInput,
   V1_DebugTestsResult,
   V1_DeploymentResult,

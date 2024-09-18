@@ -539,6 +539,7 @@ export { ConfigurationProperty } from './graph/metamodel/pure/packageableElement
 export * from './graph-manager/protocol/pure/extensions/DSL_Generation_PureProtocolProcessorPlugin_Extension.js';
 export { V1_ModelGenerationSpecification } from './graph-manager/protocol/pure/v1/model/packageableElements/generationSpecification/V1_ModelGenerationSpecification.js';
 
+export { V1_DatabaseBuilderInput } from './graph-manager/protocol/pure/v1/engine/generation/V1_DatabaseBuilderInput.js';
 export { V1_GenerationInput } from './graph-manager/protocol/pure/v1/engine/generation/V1_GenerationInput.js';
 export { V1_GenerationOutput } from './graph-manager/protocol/pure/v1/engine/generation/V1_GenerationOutput.js';
 export { V1_GenerationConfigurationDescription } from './graph-manager/protocol/pure/v1/engine/generation/V1_GenerationConfigurationDescription.js';
