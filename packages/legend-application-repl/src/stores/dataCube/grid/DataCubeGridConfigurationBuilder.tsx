@@ -55,7 +55,6 @@ import {
   INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
   INTERNAL__GRID_CLIENT_PIVOT_COLUMN_GROUP_COLOR_ROTATION_SIZE,
 } from './DataCubeGridClientEngine.js';
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
   getNonNullableEntry,
   getQueryParameters,
@@ -86,24 +85,6 @@ import { DataCubeIcon } from '@finos/legend-art';
 import type { DataCubeState } from '../DataCubeState.js';
 
 // --------------------------------- UTILITIES ---------------------------------
-
-// See https://www.ag-grid.com/react-data-grid/cell-data-types/
-function _cellDataType(column: DataCubeQuerySnapshotColumn) {
-  switch (column.type) {
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.FLOAT:
-      return 'number';
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME:
-    case PRIMITIVE_TYPE.STRICTDATE:
-      return 'dateString';
-    case PRIMITIVE_TYPE.STRING:
-    default:
-      return 'text';
-  }
-}
 
 function scaleNumber(
   value: number,
@@ -221,9 +202,9 @@ function _displaySpec(columnData: ColumnData) {
     column.errorBackgroundColor ?? configuration.errorBackgroundColor;
   const cellRenderer = getCellRenderer(columnData);
   return {
-    // setting the cell data type might helps guide the grid to render the cell properly
-    // and optimize the grid performance slightly by avoiding unnecessary type inference
-    cellDataType: _cellDataType(column),
+    // disabling cell data type inference can grid performance
+    // especially when this information is only necessary for cell value editor
+    cellDataType: false,
     hide: column.hideFromView,
     valueFormatter:
       dataType === DataCubeColumnDataType.NUMBER
@@ -446,7 +427,6 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     // -------------------------------------- DISPLAY --------------------------------------
     rowHeight: INTERNAL__GRID_CLIENT_ROW_HEIGHT,
     headerHeight: INTERNAL__GRID_CLIENT_HEADER_HEIGHT,
-    suppressBrowserResizeObserver: true,
     noRowsOverlayComponent: () => (
       <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-medium text-neutral-400">
         <div>
@@ -525,7 +505,9 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     suppressScrollOnNewData: true,
     suppressServerSideFullWidthLoadingRow: true, // make sure each column has its own loading indicator instead of the whole row
     // -------------------------------------- SELECTION --------------------------------------
-    enableRangeSelection: true,
+    selection: {
+      mode: 'cell',
+    },
     // -------------------------------------- SIDEBAR --------------------------------------
     sideBar: {
       toolPanels: [
@@ -570,7 +552,7 @@ function generateDefinitionForPivotResultColumns(
 
   columns.forEach((col) => {
     const groups: ColGroupDef[] = [];
-    let leaf!: ColDef;
+    let leaf: ColDef | undefined = undefined;
     let id = '';
     for (let i = 0; i < col.values.length; i++) {
       const value = getNonNullableEntry(col.values, i);
@@ -633,7 +615,10 @@ function generateDefinitionForPivotResultColumns(
         currentCollection = newGroup.children;
       }
     });
-    currentCollection.push(leaf);
+
+    if (leaf) {
+      currentCollection.push(leaf);
+    }
   });
 
   return columnDefs;
@@ -685,7 +670,7 @@ export function generateColumnDefs(
       lockPosition: true,
       pinned: GridClientPinnedAlignement.LEFT,
       suppressSpanHeaderHeight: true,
-      cellDataType: 'text',
+      cellDataType: false,
       loadingCellRenderer: DataCubeGridLoadingCellRenderer,
       // TODO: we can support this in the configuration (support sorting by tree-column?)
       sortable: true,

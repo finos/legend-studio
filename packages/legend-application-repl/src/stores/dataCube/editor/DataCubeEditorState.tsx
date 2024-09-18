@@ -196,6 +196,8 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
       }
 
       this.publishSnapshot(newSnapshot);
+    } else {
+      this.finalizationState.complete();
     }
 
     if (options?.closeAfterApply) {

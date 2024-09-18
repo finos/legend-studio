@@ -47,16 +47,12 @@ import type {
 } from '../core/DataCubeConfiguration.js';
 import { AlertType } from '../../../components/repl/Alert.js';
 import { DEFAULT_LARGE_ALERT_WINDOW_CONFIG } from '../../LayoutManagerState.js';
-import {
-  _toCol,
-  type DataCubeQuerySnapshot,
-} from '../core/DataCubeQuerySnapshot.js';
+import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeEngine } from '../DataCubeEngine.js';
 import { generateColumnDefs } from './DataCubeGridConfigurationBuilder.js';
 import type { DataCubeQueryFunctionMap } from '../core/DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from '../core/aggregation/DataCubeQueryAggregateOperation.js';
-import { _functionCompositionUnProcessor } from '../core/DataCubeQueryBuilderUtils.js';
 
 type GridClientCellValue = string | number | boolean | null | undefined;
 type GridClientRowData = {
@@ -248,7 +244,13 @@ async function getCastColumns(
         filterOperations: DataCubeQueryFilterOperation[],
         aggregateOperations: DataCubeQueryAggregateOperation[],
       ) => {
-        const _unprocess = _functionCompositionUnProcessor(sequence, funcMap);
+        const _unprocess = (funcMapKey: keyof DataCubeQueryFunctionMap) => {
+          const func = funcMap[funcMapKey];
+          if (func) {
+            sequence.splice(sequence.indexOf(func), 1);
+            funcMap[funcMapKey] = undefined;
+          }
+        };
 
         if (funcMap.groupExtend) {
           _unprocess('groupExtend');
@@ -261,9 +263,10 @@ async function getCastColumns(
   lambda.body.push(query);
   const result = await engine.executeQuery(lambda);
 
-  return result.result.builder.columns.map((col) =>
-    _toCol({ name: col.name, type: col.type as string }),
-  );
+  return result.result.builder.columns.map((column) => ({
+    name: column.name,
+    type: column.type as string,
+  }));
 }
 
 export class DataCubeGridClientServerSideDataSource
@@ -394,6 +397,17 @@ export class DataCubeGridClientServerSideDataSource
             this.rowCount = (params.request.startRow ?? 0) + rowData.length;
           });
         }
+
+        // toggle no-rows overlay
+        if (
+          params.request.groupKeys.length === 0 &&
+          params.request.startRow === 0 &&
+          rowData.length === 0
+        ) {
+          this.grid.client.showNoRowsOverlay();
+        } else {
+          this.grid.client.hideOverlay();
+        }
       } else {
         // NOTE: When pagination is disabled and the user currently scrolls to somewhere in the grid, as data is fetched
         // and the operation does not force a scroll top (for example, grouping will always force scrolling to the
@@ -453,6 +467,13 @@ export class DataCubeGridClientServerSideDataSource
           runInAction(() => {
             this.rowCount = rowData.length;
           });
+        }
+
+        // toggle no-rows overlay
+        if (params.request.groupKeys.length === 0 && rowData.length === 0) {
+          this.grid.client.showNoRowsOverlay();
+        } else {
+          this.grid.client.hideOverlay();
         }
       }
     } catch (error) {
