@@ -98,7 +98,7 @@
       "name": "TBinding",
       "package": "model"
     },
-    "classifierPath": "meta::external::shared::format::binding::Binding"
+    "classifierPath": "meta::external::format::shared::binding::Binding"
   },
   {
     "path": "model::SourceBinding",
@@ -113,7 +113,7 @@
       "name": "SourceBinding",
       "package": "model"
     },
-    "classifierPath": "meta::external::shared::format::binding::Binding"
+    "classifierPath": "meta::external::format::shared::binding::Binding"
   },
   {
     "path": "model::PersonToPersonMapping",

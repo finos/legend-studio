@@ -24,7 +24,7 @@ export const roundtripTestData = [
       package: 'anything',
       schemas: [],
     },
-    classifierPath: 'meta::external::shared::format::metamodel::SchemaSet',
+    classifierPath: 'meta::external::format::shared::metamodel::SchemaSet',
   },
   {
     path: 'anything::schemaSet2',
@@ -46,7 +46,7 @@ export const roundtripTestData = [
         },
       ],
     },
-    classifierPath: 'meta::external::shared::format::metamodel::SchemaSet',
+    classifierPath: 'meta::external::format::shared::metamodel::SchemaSet',
   },
   {
     path: 'anything::binding1',
@@ -61,7 +61,7 @@ export const roundtripTestData = [
       package: 'anything',
       schemaSet: 'anything::schemaSet1',
     },
-    classifierPath: 'meta::external::shared::format::binding::Binding',
+    classifierPath: 'meta::external::format::shared::binding::Binding',
   },
   {
     path: 'anything::tConn',

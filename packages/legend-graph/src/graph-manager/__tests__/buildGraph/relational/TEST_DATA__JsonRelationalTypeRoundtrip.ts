@@ -244,7 +244,7 @@ export const TEST_DATA__JsonRelationalTypeRoundtrip = [
       name: 'FirmBinding',
       package: 'joinChain::store',
     },
-    classifierPath: 'meta::external::shared::format::binding::Binding',
+    classifierPath: 'meta::external::format::shared::binding::Binding',
   },
   {
     path: 'joinChain::mapping::SnowflakeMapping',
