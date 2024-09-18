@@ -37,8 +37,9 @@ import {
 } from '../../../../../graph-manager/action/generation/GenerationConfigurationDescription.js';
 import { TEMPORARY__AbstractEngineConfig } from '../../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
-  V1_EngineServerClient,
+  type V1_EngineServerClient,
   type V1_GrammarParserBatchInputEntry,
+  V1_RemoteEngineServerClient,
 } from './V1_EngineServerClient.js';
 import { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import {
@@ -209,8 +210,13 @@ export class V1_Engine {
   readonly logService: LogService;
   readonly config: V1_EngineConfig;
 
-  constructor(clientConfig: ServerClientConfig, logService: LogService) {
-    this.engineServerClient = new V1_EngineServerClient(clientConfig);
+  constructor(
+    clientConfig: ServerClientConfig,
+    logService: LogService,
+    serverClient?: V1_EngineServerClient,
+  ) {
+    this.engineServerClient =
+      serverClient ?? new V1_RemoteEngineServerClient(clientConfig);
     this.config = new V1_EngineConfig(this);
     this.config.setBaseUrl(this.engineServerClient.baseUrl);
     this.config.setUseClientRequestPayloadCompression(

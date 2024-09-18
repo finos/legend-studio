@@ -15,11 +15,12 @@
  */
 
 import {
-  ContentType,
-  AbstractServerClient,
   type PlainObject,
   type ServerClientConfig,
   type TraceData,
+  type TracerService,
+  AbstractServerClient,
+  ContentType,
   HttpHeader,
 } from '@finos/legend-shared';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
@@ -160,7 +161,313 @@ const getEngineSerializationFormat = (
   }
 };
 
-export class V1_EngineServerClient extends AbstractServerClient {
+export interface V1_EngineServerClient {
+  baseUrl?: string | undefined;
+  currentUserId?: string | undefined;
+  enableCompression: boolean;
+
+  // ------------------------------------------- Helper -------------------------------------------
+  setEnv: (value: string | undefined) => void;
+  setCurrentUserId: (value: string | undefined) => void;
+  setBaseUrl: (val: string | undefined) => void;
+  setBaseUrlForServiceRegistration: (val: string | undefined) => void;
+  setCompression: (val: boolean) => void;
+  setDebugPayload: (val: boolean) => void;
+  setTracerService: (val: TracerService) => void;
+
+  // ------------------------------------------- Server -------------------------------------------
+
+  getCurrentUserId: () => Promise<string>;
+
+  // ------------------------------------------- Lambda -------------------------------------------
+
+  getLambdaPrefixes: () => Promise<PlainObject<V1_LambdaPrefix>[]>;
+
+  // ------------------------------------------- Protocol -------------------------------------------
+
+  getClassifierPathMap: () => Promise<ClassifierPathMapping[]>;
+  getSubtypeInfo: () => Promise<SubtypeInfo>;
+
+  // ------------------------------------------- SDLC -------------------------------------------
+
+  createPrototypeProject: () => Promise<{
+    projectId: string;
+    webUrl: string | undefined;
+    owner: string;
+  }>;
+  validUserAccessRole: (userId: string) => Promise<boolean>;
+
+  // ------------------------------------------- Grammar -------------------------------------------
+
+  grammarToJSON_model: (
+    input: string,
+    sourceId?: string,
+    lineOffset?: number,
+    returnSourceInformation?: boolean,
+  ) => Promise<PlainObject<V1_PureModelContextData>>;
+  grammarToJSON_lambda: (
+    input: string,
+    sourceId?: string,
+    lineOffset?: number,
+    columnOffset?: number,
+    returnSourceInformation?: boolean,
+  ) => Promise<PlainObject<V1_RawLambda>>;
+  grammarToJSON_lambda_batch: (
+    input: Record<string, V1_GrammarParserBatchInputEntry>,
+  ) => Promise<{
+    errors?: Record<string, PlainObject<V1_ParserError>> | undefined;
+    result?: Record<string, PlainObject<V1_RawLambda>> | undefined;
+  }>;
+  grammarToJSON_valueSpecification_batch: (
+    input: Record<string, V1_GrammarParserBatchInputEntry>,
+  ) => Promise<{
+    errors?: Record<string, PlainObject<V1_ParserError>> | undefined;
+    result?: Record<string, PlainObject<V1_ValueSpecification>> | undefined;
+  }>;
+  grammarToJSON_valueSpecification: (
+    input: string,
+  ) => Promise<PlainObject<V1_ValueSpecification>>;
+  grammarToJSON_relationalOperationElement: (
+    input: string,
+    sourceId?: string,
+    lineOffset?: number,
+    columnOffset?: number,
+    returnSourceInformation?: boolean,
+  ) => Promise<PlainObject<V1_RawRelationalOperationElement>>;
+  grammarToJSON_relationalOperationElement_batch: (
+    input: Record<string, V1_GrammarParserBatchInputEntry>,
+  ) => Promise<{
+    errors?: Record<string, PlainObject<V1_ParserError>> | undefined;
+    result?:
+      | Record<string, PlainObject<V1_RawRelationalOperationElement>>
+      | undefined;
+  }>;
+  JSONToGrammar_model: (
+    input: PlainObject<V1_PureModelContextData>,
+    renderStyle?: V1_RenderStyle,
+  ) => Promise<string>;
+  JSONToGrammar_lambda: (
+    input: PlainObject<V1_RawLambda>,
+    renderStyle?: V1_RenderStyle,
+  ) => Promise<string>;
+  JSONToGrammar_lambda_batch: (
+    input: Record<string, PlainObject<V1_RawLambda>>,
+    renderStyle?: V1_RenderStyle,
+  ) => Promise<Record<string, string>>;
+  JSONToGrammar_valueSpecification_batch: (
+    input: Record<string, PlainObject<V1_ValueSpecification>>,
+    renderStyle?: V1_RenderStyle,
+  ) => Promise<Record<string, string>>;
+  JSONToGrammar_valueSpecification: (
+    input: PlainObject<V1_ValueSpecification>,
+    renderStyle?: V1_RenderStyle,
+  ) => Promise<string>;
+  JSONToGrammar_relationalOperationElement: (
+    input: PlainObject<V1_RawRelationalOperationElement>,
+    renderStyle?: V1_RenderStyle,
+  ) => Promise<string>;
+  JSONToGrammar_relationalOperationElement_batch: (
+    input: Record<string, PlainObject<V1_RawRelationalOperationElement>>,
+    renderStyle?: V1_RenderStyle,
+  ) => Promise<Record<string, string>>;
+
+  // ------------------------------------------- Test ---------------------------------------
+
+  runTests: (
+    input: PlainObject<V1_RunTestsInput>,
+  ) => Promise<PlainObject<V1_RunTestsResult>>;
+  debugTests: (
+    input: PlainObject<V1_RunTestsInput>,
+  ) => Promise<PlainObject<V1_DebugTestsResult>>;
+
+  // ------------------------------------------- External Format ---------------------------------------
+
+  getAvailableExternalFormatsDescriptions: () => Promise<
+    PlainObject<V1_ExternalFormatDescription>[]
+  >;
+  generateModel: (
+    input: PlainObject<V1_ExternalFormatModelGenerationInput>,
+  ) => Promise<PlainObject<V1_PureModelContextData>[]>;
+  generateSchema: (
+    input: PlainObject<V1_GenerateSchemaInput>,
+  ) => Promise<PlainObject<V1_PureModelContextData>[]>;
+
+  // ------------------------------------------- Code Import -------------------------------------------
+
+  getAvailableCodeImportDescriptions: () => Promise<
+    PlainObject<V1_ImportConfigurationDescription>[]
+  >;
+
+  // ------------------------------------------- Schema Import -------------------------------------------
+
+  getAvailableSchemaImportDescriptions: () => Promise<
+    PlainObject<V1_ImportConfigurationDescription>[]
+  >;
+
+  // ------------------------------------------- Code Generation -------------------------------------------
+
+  getAvailableCodeGenerationDescriptions: () => Promise<
+    PlainObject<V1_GenerationConfigurationDescription>[]
+  >;
+  generateFile: (
+    mode: GenerationMode,
+    type: string,
+    input: PlainObject<V1_GenerateFileInput>,
+  ) => Promise<PlainObject<V1_GenerationOutput>[]>;
+  generateAritfacts: (
+    input: PlainObject<V1_ArtifactGenerationExtensionInput>,
+  ) => Promise<PlainObject<V1_ArtifactGenerationExtensionOutput>>;
+
+  // ------------------------------------------- Schema Generation -------------------------------------------
+
+  getAvailableSchemaGenerationDescriptions: () => Promise<
+    PlainObject<V1_GenerationConfigurationDescription>[]
+  >;
+
+  // --------------------------------------------- Test Data Generation ---------------------------------------------
+
+  generateTestData: (
+    input: PlainObject<V1_TestDataGenerationInput>,
+  ) => Promise<PlainObject<V1_TestDataGenerationResult>>;
+
+  // ------------------------------------------- Compile -------------------------------------------
+
+  compile: (
+    input: PlainObject<V1_PureModelContext>,
+  ) => Promise<PlainObject<V1_CompileResult>>;
+  lambdaReturnType: (
+    input: PlainObject<V1_LambdaReturnTypeInput>,
+  ) => Promise<PlainObject<V1_LambdaReturnTypeResult>>;
+
+  // ------------------------------------------- Execute -------------------------------------------
+
+  runQuery: (
+    input: PlainObject<V1_ExecuteInput>,
+    options?: {
+      returnAsResponse?: boolean;
+      serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
+      abortController?: AbortController | undefined;
+    },
+  ) => Promise<PlainObject<V1_ExecutionResult> | Response>;
+  generatePlan: (
+    input: PlainObject<V1_ExecuteInput>,
+  ) => Promise<PlainObject<V1_ExecutionPlan>>;
+  debugPlanGeneration: (
+    input: PlainObject<V1_ExecuteInput>,
+  ) => Promise<{ plan: PlainObject<V1_ExecutionPlan>; debug: string[] }>;
+  generateTestDataWithDefaultSeed: (
+    input: PlainObject<V1_ExecuteInput>,
+  ) => Promise<string>;
+  generateTestDataWithSeed: (
+    input: PlainObject<V1_ExecuteInput>,
+  ) => Promise<string>;
+  /**
+   * TODO: this is an internal API that should me refactored out using extension mechanism
+   */
+  INTERNAL__cancelUserExecutions: (
+    userID: string,
+    broadcastToCluster: boolean,
+  ) => Promise<string>;
+
+  // ------------------------------------------- Query -------------------------------------------
+
+  searchQueries: (
+    searchSpecification: PlainObject<V1_QuerySearchSpecification>,
+  ) => Promise<PlainObject<V1_LightQuery>[]>;
+  getQueries: (queryIds: string[]) => Promise<PlainObject<V1_LightQuery>[]>;
+  getQuery: (queryId: string) => Promise<PlainObject<V1_Query>>;
+  createQuery: (query: PlainObject<V1_Query>) => Promise<PlainObject<V1_Query>>;
+  updateQuery: (
+    queryId: string,
+    query: PlainObject<V1_Query>,
+  ) => Promise<PlainObject<V1_Query>>;
+  patchQuery: (
+    queryId: string,
+    query: PlainObject<Partial<V1_Query>>,
+  ) => Promise<PlainObject<V1_Query>>;
+  deleteQuery: (queryId: string) => Promise<PlainObject<V1_Query>>;
+
+  // --------------------------------------- Analysis ---------------------------------------
+
+  analyzeMappingModelCoverage: (
+    input: PlainObject<V1_MappingModelCoverageAnalysisInput>,
+  ) => Promise<PlainObject<V1_MappingModelCoverageAnalysisResult>>;
+  surveyDatasets: (
+    input: PlainObject<V1_StoreEntitlementAnalysisInput>,
+  ) => Promise<PlainObject<V1_SurveyDatasetsResult>>;
+  checkDatasetEntitlements: (
+    input: PlainObject<V1_EntitlementReportAnalyticsInput>,
+  ) => Promise<PlainObject<V1_CheckEntitlementsResult>>;
+  buildDatabase: (
+    input: PlainObject<V1_DatabaseBuilderInput>,
+  ) => Promise<PlainObject<V1_PureModelContextData>>;
+
+  // ------------------------------------------- Function ---------------------------------------
+
+  executeRawSQL: (input: PlainObject<V1_RawSQLExecuteInput>) => Promise<string>;
+  getAvailableFunctionActivators: () => Promise<
+    PlainObject<V1_FunctionActivatorInfo>[]
+  >;
+  validateFunctionActivator: (
+    input: PlainObject<V1_FunctionActivatorInput>,
+  ) => Promise<PlainObject<V1_FunctionActivatorError>[]>;
+  publishFunctionActivatorToSandbox: (
+    input: PlainObject<V1_FunctionActivatorInput>,
+  ) => Promise<PlainObject<V1_DeploymentResult>>;
+
+  // ------------------------------------------- Relational ---------------------------------------
+
+  generateModelsFromDatabaseSpecification: (
+    input: PlainObject<V1_DatabaseToModelGenerationInput>,
+  ) => Promise<PlainObject<V1_PureModelContextData>>;
+  getAvailableRelationalDatabaseTypeConfigurations: () => Promise<
+    PlainObject<V1_RelationalConnectionBuilder>[]
+  >;
+
+  // ------------------------------------------- Service -------------------------------------------
+
+  /**
+   * TODO: this is an internal API that should be refactored out using extension mechanism
+   */
+  TEMPORARY__getServerServiceInfo: () => Promise<
+    PlainObject<V1_ServiceConfigurationInfo>
+  >;
+  /**
+   * TODO: this is an internal API that should be refactored out using extension mechanism
+   */
+  TEMPORARY__getServiceVersionInfo: (
+    serviceServerUrl: string,
+    serviceId: string,
+  ) => Promise<PlainObject<V1_ServiceStorage>>;
+  /**
+   * TODO: this is an internal API that should be refactored out using extension mechanism
+   */
+  TEMPORARY__activateGenerationId: (
+    serviceServerUrl: string,
+    generationId: string,
+  ) => Promise<Response>;
+  runServicePostVal: (
+    servicePath: string,
+    input: PlainObject,
+    assertionId: string,
+  ) => Promise<PlainObject>;
+  /**
+   * TODO: this is an internal API that should be refactored out using extension mechanism
+   */
+  INTERNAL__registerService: (
+    input: PlainObject<V1_PureModelContext>,
+    serviceServerUrl: string,
+    serviceExecutionMode: ServiceExecutionMode,
+    TEMPORARY__useStoreModel: boolean,
+    TEMPORARY__useGenerateLineage: boolean,
+    TEMPORARY__useGenerateOpenApi: boolean,
+  ) => Promise<PlainObject<V1_ServiceRegistrationResult>>;
+}
+
+export class V1_RemoteEngineServerClient
+  extends AbstractServerClient
+  implements V1_EngineServerClient
+{
   currentUserId?: string | undefined;
   private env?: string | undefined;
 

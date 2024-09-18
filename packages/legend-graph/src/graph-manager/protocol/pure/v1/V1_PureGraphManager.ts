@@ -301,7 +301,10 @@ import { V1_RawSQLExecuteInput } from './engine/execution/V1_RawSQLExecuteInput.
 import type { SubtypeInfo } from '../../../action/protocol/ProtocolInfo.js';
 import { V1_INTERNAL__UnknownStore } from './model/packageableElements/store/V1_INTERNAL__UnknownStore.js';
 import type { V1_ValueSpecification } from './model/valueSpecification/V1_ValueSpecification.js';
-import type { V1_GrammarParserBatchInputEntry } from './engine/V1_EngineServerClient.js';
+import type {
+  V1_GrammarParserBatchInputEntry,
+  V1_EngineServerClient,
+} from './engine/V1_EngineServerClient.js';
 import type { ArtifactGenerationExtensionResult } from '../../../action/generation/ArtifactGenerationExtensionResult.js';
 import {
   V1_ArtifactGenerationExtensionInput,
@@ -556,9 +559,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   constructor(
     pluginManager: GraphManagerPluginManager,
     logService: LogService,
+    serverClient?: V1_EngineServerClient,
   ) {
     super(pluginManager, logService);
-    this.engine = new V1_Engine({}, logService);
+    this.engine = new V1_Engine({}, logService, serverClient);
 
     // setup plugins
     this.graphBuilderExtensions = new V1_GraphBuilderExtensions(

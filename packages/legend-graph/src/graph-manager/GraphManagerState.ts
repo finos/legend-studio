@@ -55,10 +55,12 @@ export class BasicGraphManagerState {
   constructor(
     pluginManager: GraphManagerPluginManager,
     logService: LogService,
+    graphManager?: AbstractPureGraphManager,
   ) {
     this.pluginManager = pluginManager;
     this.logService = logService;
-    this.graphManager = buildPureGraphManager(this.pluginManager, logService);
+    this.graphManager =
+      graphManager ?? buildPureGraphManager(this.pluginManager, logService);
   }
 }
 
@@ -76,8 +78,9 @@ export class GraphManagerState extends BasicGraphManagerState {
   constructor(
     pluginManager: GraphManagerPluginManager,
     logService: LogService,
+    graphManager?: AbstractPureGraphManager,
   ) {
-    super(pluginManager, logService);
+    super(pluginManager, logService, graphManager);
 
     makeObservable(this, {
       graph: observable,
