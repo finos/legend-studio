@@ -188,7 +188,10 @@ export function generateMenuBuilder(
       : undefined;
     const isExtendedColumn =
       columnName &&
-      controller.extendedColumns.find((col) => col.name === columnName);
+      [
+        ...controller.leafExtendedColumns,
+        ...controller.groupExtendedColumns,
+      ].find((col) => col.name === columnName);
     // NOTE: here we assume the value must be coming from the same column
     const value: unknown = 'value' in params ? params.value : undefined;
 

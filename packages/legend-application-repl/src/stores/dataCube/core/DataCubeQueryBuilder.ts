@@ -59,6 +59,7 @@ import {
   _castCols,
   _primitiveValue,
   _var,
+  _functionCompositionProcessor,
 } from './DataCubeQueryBuilderUtils.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 
@@ -90,13 +91,7 @@ export function buildExecutableQuery(
   );
   const sequence: V1_AppliedFunction[] = [];
   const funcMap: DataCubeQueryFunctionMap = {};
-  const _process = (
-    funcMapKey: keyof DataCubeQueryFunctionMap,
-    func: V1_AppliedFunction,
-  ) => {
-    sequence.push(func);
-    funcMap[funcMapKey] = func;
-  };
+  const _process = _functionCompositionProcessor(sequence, funcMap);
 
   // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
 

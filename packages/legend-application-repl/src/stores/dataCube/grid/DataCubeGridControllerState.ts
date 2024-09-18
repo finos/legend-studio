@@ -139,7 +139,8 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
   // --------------------------------- COLUMNS ---------------------------------
 
   selectColumns: DataCubeQuerySnapshotColumn[] = [];
-  extendedColumns: DataCubeQuerySnapshotColumn[] = [];
+  leafExtendedColumns: DataCubeQuerySnapshotColumn[] = [];
+  groupExtendedColumns: DataCubeQuerySnapshotColumn[] = [];
 
   pinColumn(
     colName: string | undefined,
@@ -153,20 +154,28 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
   }
 
   rearrangeColumns(columnByNames: string[]) {
-    const columnConfigurations = columnByNames
+    // rearrange the column configurations and select columns
+    // anything that is not rearranged (e.g. due to pivot) will be
+    // pushed to the end
+    const rearrangedColumnConfigurations = columnByNames
       .map((colName) => this.getColumnConfiguration(colName))
       .filter(isNonNullable);
     this.configuration.columns = [
+      ...rearrangedColumnConfigurations,
       ...this.configuration.columns.filter(
-        (col) => !columnConfigurations.includes(col),
+        (col) => !rearrangedColumnConfigurations.includes(col),
       ),
-      ...columnConfigurations,
     ];
-    this.selectColumns = this.configuration.columns
-      .map((column) =>
-        this.selectColumns.find((col) => col.name === column.name),
-      )
+
+    const rearrangedSelectColumns = columnByNames
+      .map((colName) => this.selectColumns.find((col) => col.name === colName))
       .filter(isNonNullable);
+    this.selectColumns = [
+      ...rearrangedSelectColumns,
+      ...rearrangedSelectColumns.filter(
+        (col) => !rearrangedSelectColumns.includes(col),
+      ),
+    ];
     this.applyChanges();
   }
 
@@ -344,38 +353,6 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
   // --------------------------------- MAIN ---------------------------------
 
-  private applyChanges() {
-    const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
-    const snapshot = baseSnapshot.clone();
-
-    snapshot.data.filter = this.filterTree.root
-      ? buildFilterQuerySnapshot(this.filterTree.root)
-      : undefined;
-    snapshot.data.selectColumns = this.selectColumns;
-    snapshot.data.sortColumns = this.sortColumns;
-    snapshot.data.configuration = DataCubeConfiguration.serialization.toJson(
-      this.configuration,
-    );
-
-    snapshot.data.pivot = this.horizontalPivotedColumns.length
-      ? {
-          columns: this.horizontalPivotedColumns,
-          castColumns: this.horizontalPivotCastColumns,
-        }
-      : undefined;
-
-    snapshot.data.groupBy = this.verticalPivotedColumns.length
-      ? {
-          columns: this.verticalPivotedColumns,
-        }
-      : undefined;
-
-    snapshot.finalize();
-    if (snapshot.hashCode !== baseSnapshot.hashCode) {
-      this.publishSnapshot(snapshot);
-    }
-  }
-
   override async applySnapshot(
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,
@@ -397,10 +374,8 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
       : undefined;
 
     this.selectColumns = newSnapshot.data.selectColumns;
-    this.extendedColumns = [
-      ...newSnapshot.data.leafExtendedColumns,
-      ...newSnapshot.data.groupExtendedColumns,
-    ];
+    this.leafExtendedColumns = newSnapshot.data.leafExtendedColumns;
+    this.groupExtendedColumns = newSnapshot.data.groupExtendedColumns;
 
     this.horizontalPivotableColumns = newSnapshot
       .stageCols('pivot')
@@ -425,5 +400,38 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     this.sortColumns = newSnapshot.data.sortColumns;
 
     this.menuBuilder = generateMenuBuilder(this);
+  }
+
+  private applyChanges() {
+    const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
+    const snapshot = baseSnapshot.clone();
+
+    snapshot.data.filter = this.filterTree.root
+      ? buildFilterQuerySnapshot(this.filterTree.root)
+      : undefined;
+    snapshot.data.selectColumns = this.selectColumns;
+    snapshot.data.configuration = DataCubeConfiguration.serialization.toJson(
+      this.configuration,
+    );
+
+    snapshot.data.pivot = this.horizontalPivotedColumns.length
+      ? {
+          columns: this.horizontalPivotedColumns,
+          castColumns: this.horizontalPivotCastColumns,
+        }
+      : undefined;
+
+    snapshot.data.groupBy = this.verticalPivotedColumns.length
+      ? {
+          columns: this.verticalPivotedColumns,
+        }
+      : undefined;
+
+    snapshot.data.sortColumns = this.sortColumns;
+
+    snapshot.finalize();
+    if (snapshot.hashCode !== baseSnapshot.hashCode) {
+      this.publishSnapshot(snapshot);
+    }
   }
 }

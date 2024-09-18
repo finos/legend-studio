@@ -17,9 +17,8 @@
 import { action, makeObservable, observable, override } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import {
+  _toCol,
   type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotColumn,
-  type DataCubeQuerySnapshotExtendedColumn,
 } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import {
@@ -28,7 +27,6 @@ import {
 } from './DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { type DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
-import { DataCubeEditorMutableColumnConfiguration } from './DataCubeEditorMutableConfiguration.js';
 
 export class DataCubeEditorBasicColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState> {
   showHiddenColumns = false;
@@ -63,54 +61,30 @@ export class DataCubeEditorBasicColumnsSelectorState extends DataCubeEditorColum
 
   override get availableColumns() {
     return [
-      ...this.editor.columns.sourceColumns,
-      ...this.editor.columns.leafExtendColumns,
-      ...this.editor.columns.groupExtendColumns,
+      ...this.editor.sourceColumns,
+      ...this.editor.leafExtendColumns,
+      ...this.editor.groupExtendColumns,
     ].map(
       (col) => new DataCubeEditorColumnsSelectorColumnState(col.name, col.type),
     );
   }
 
   override get availableColumnsForDisplay(): DataCubeEditorColumnsSelectorColumnState[] {
-    return this.availableColumns
-      .filter(
-        (column) =>
-          !this.selectedColumns.find((col) => column.name === col.name),
-      )
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .filter((column) => {
-        // group-level extended columns are always shown regardless if they are hidden or not
-        if (
-          this.editor.columns.groupExtendColumns.find(
-            (col) => col.name === column.name,
-          )
-        ) {
-          return true;
-        }
-
-        return this.showHiddenColumns
-          ? true
-          : !this.editor.columnProperties.getColumnConfiguration(column.name)
-              ?.hideFromView;
-      });
+    return super.availableColumnsForDisplay.filter(
+      (column) =>
+        this.showHiddenColumns ||
+        !this.editor.columnProperties.getColumnConfiguration(column.name)
+          ?.hideFromView,
+    );
   }
 
   override get selectedColumnsForDisplay(): DataCubeEditorColumnsSelectorColumnState[] {
-    return this.selectedColumns.filter((column) => {
-      // group-level extended columns are always shown regardless if they are hidden or not
-      if (
-        this.editor.columns.groupExtendColumns.find(
-          (col) => col.name === column.name,
-        )
-      ) {
-        return true;
-      }
-
-      return this.showHiddenColumns
-        ? true
-        : !this.editor.columnProperties.getColumnConfiguration(column.name)
-            ?.hideFromView;
-    });
+    return super.selectedColumnsForDisplay.filter(
+      (column) =>
+        this.showHiddenColumns ||
+        !this.editor.columnProperties.getColumnConfiguration(column.name)
+          ?.hideFromView,
+    );
   }
 
   setShowHiddenColumns(val: boolean): void {
@@ -121,10 +95,12 @@ export class DataCubeEditorBasicColumnsSelectorState extends DataCubeEditorColum
 /**
  * This panel allows selection of columns (including extended columns) for the query.
  *
- * NOTE: though it technically represents the `select()` function in the query, since for
- * convenience, we also show group-level extended columns, there are a fair amount of
- * edge cases we need to handle, such as we need to translate `unselecting` a group-level
- * extended column to hiding it since this extend() operation occurs after select().
+ * NOTE: this does not really represent the `select()` function in the query. Think about
+ * this column selection more intuitively from users' perspective, i.e. what columns they
+ * wish to see in the grid. Whereas the `select()` function actually impact the data fetching
+ * which should be computed based on more than just information coming from this panels, such
+ * as horizontal pivots and vertical pivots, since regardless of whether user choose to see
+ * those columns or not, they still need to be fetched.
  */
 export class DataCubeEditorColumnsPanelState
   implements DataCubeQueryEditorPanelState
@@ -133,16 +109,8 @@ export class DataCubeEditorColumnsPanelState
   readonly editor!: DataCubeEditorState;
   readonly selector!: DataCubeEditorBasicColumnsSelectorState;
 
-  sourceColumns: DataCubeQuerySnapshotColumn[] = [];
-  leafExtendColumns: DataCubeQuerySnapshotExtendedColumn[] = [];
-  groupExtendColumns: DataCubeQuerySnapshotExtendedColumn[] = [];
-
   constructor(editor: DataCubeEditorState) {
     makeObservable(this, {
-      sourceColumns: observable.ref,
-      leafExtendColumns: observable.ref,
-      groupExtendColumns: observable.ref,
-
       applySnaphot: action,
     });
 
@@ -150,106 +118,49 @@ export class DataCubeEditorColumnsPanelState
     this.dataCube = editor.dataCube;
     this.selector = new DataCubeEditorBasicColumnsSelectorState(editor, {
       onChange: (selector) => {
-        // populate a default configuration for the newly selected columns
-        selector.selectedColumns
-          .filter(
-            (col) =>
-              !this.editor.columnProperties.getColumnConfiguration(col.name),
-          )
-          .forEach((col) => {
-            this.editor.columnProperties.setColumns([
-              ...this.editor.columnProperties.columns,
-              DataCubeEditorMutableColumnConfiguration.createDefault(
-                {
-                  name: col.name,
-                  type: col.type,
-                },
-                this.dataCube.engine.aggregateOperations,
-              ),
-            ]);
-          });
-
-        // update hidden flag for group-level extended columns
-        // based on the new selection state
-        this.groupExtendColumns.forEach((col) => {
-          const columnConfiguration =
-            this.editor.columnProperties.getColumnConfiguration(col.name);
-          columnConfiguration?.setHideFromView(
-            !selector.selectedColumns.find(
-              (column) => column.name === col.name,
-            ),
+        const selectedColumnConfigurations = selector.selectedColumns.map(
+          (col) =>
+            this.editor.columnProperties.getColumnConfiguration(col.name),
+        );
+        const unselectedColumnConfigurations =
+          this.editor.columnProperties.columns.filter(
+            (col) => !selectedColumnConfigurations.includes(col),
           );
-        });
+
+        // update selection config in column configurations and apply the
+        // order of selected columns in the column configurations list (unselected
+        // columns are kept in the same order and placed after all selected ones)
+        selectedColumnConfigurations.forEach((col) => col.setIsSelected(true));
+        unselectedColumnConfigurations.forEach((col) =>
+          col.setIsSelected(false),
+        );
+        this.editor.columnProperties.setColumns([
+          ...selectedColumnConfigurations,
+          ...unselectedColumnConfigurations,
+        ]);
       },
     });
   }
 
   /**
-   * Propagate column selection changes to subsequent states: i.e. column properties, pivots, sorts.
-   *
    * NOTE: Ideally, this should be called on every changes made to the column selection, but to
    * give user some room for error, i.e. when user accidentally select/deselect columns, we would
    * not propagate this change until user either leaves this panel or explicitly applies changes
    * (i.e. publishes a new snapshot)
    */
-  propgateChanges(): void {
-    this.editor.columnProperties.adaptPropagatedChanges();
-    this.editor.horizontalPivots.adaptPropagatedChanges();
-    this.editor.verticalPivots.adaptPropagatedChanges();
+  propagateChanges(): void {
     this.editor.sorts.adaptPropagatedChanges();
   }
-
-  /**
-   * Propagate column selection changes to other states: column properties, sorts, pivots, etc.
-   *
-   * NOTE: Ideally, this should be called on every changes made to the column selection, but to
-   * give user some room for error, i.e. when user accidentally select/deselect columns, we would
-   * not propagate this change until user either leaves this panel or explicitly applies changes
-   * (i.e. publishes a new snapshot)
-   */
-
-  //   // prune sorts
-  //   this.editor.sorts.selector.setSelectedColumns(
-  //     this.editor.sorts.selector.selectedColumns.filter((column) =>
-  //       this.editor.sorts.selector.availableColumns.find(
-  //         (col) => col.name === column.name,
-  //       ),
-  //     ),
-  //   );
-
-  //   // prune vertical pivots columns
-  //   this.editor.verticalPivots.selector.setSelectedColumns(
-  //     this.editor.verticalPivots.selector.selectedColumns.filter((column) =>
-  //       this.editor.verticalPivots.selector.availableColumns.find(
-  //         (col) => col.name === column.name,
-  //       ),
-  //     ),
-  //   );
-
-  //   // TODO: prune horizontal pivots columns
-  // }
 
   applySnaphot(
     snapshot: DataCubeQuerySnapshot,
     configuration: DataCubeConfiguration,
   ) {
-    this.sourceColumns = snapshot.data.sourceColumns;
-    this.leafExtendColumns = snapshot.data.leafExtendedColumns;
-    this.groupExtendColumns = snapshot.data.groupExtendedColumns;
-
     this.selector.setSelectedColumns(
-      // extract selected columns from the configuration since the configuration specifies the order
-      // taking into account the group-level extended columns
-      configuration.columns
-        // NOTE: since select() is applied before grouping/aggregation, it's technicaly not possible to
-        // unselect the group-level extended columns, so we will take advantage of the `hidden` property to show
-        // group-level extended columns that are not hidden as selected
-        .filter(
-          (col) =>
-            !this.groupExtendColumns.find(
-              (column) => column.name === col.name,
-            ) || !col.hideFromView,
-        )
+      this.editor.columnProperties.columns
+        // extract from the configuration since it specifies the order of columns
+        // there taking into account group-level extended columns
+        .filter((col) => col.isSelected)
         .map((col) => {
           const column = this.selector.getColumn(col.name);
           return new DataCubeEditorColumnsSelectorColumnState(
@@ -264,16 +175,24 @@ export class DataCubeEditorColumnsPanelState
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
   ) {
-    this.propgateChanges();
+    this.propagateChanges();
+    // NOTE: these columns make up just part of the set of columns we want to fetch with `select()`.
+    // Subsequently, we need to include columns used for horizontal pivots and vertical pivots.
+    //
+    // Note that this is a fairly simple way to determine the set of columns to fetch, but we have a
+    // compile check to ensure the columns needed by parts we don't account for well such as group-level
+    // extended columns must be properly included.
+    //
+    // Maybe, we can improve this later by having an algorithm to determine the set of columns needed
+    // by each extended column.
     newSnapshot.data.selectColumns = this.selector.selectedColumns
       // filter out group-level extended columns since these columns are technically not selectable
       .filter(
         (col) =>
-          !this.groupExtendColumns.find((column) => column.name === col.name),
+          !this.editor.groupExtendColumns.find(
+            (column) => column.name === col.name,
+          ),
       )
-      .map((col) => ({
-        name: col.name,
-        type: col.type,
-      }));
+      .map((col) => _toCol(col));
   }
 }

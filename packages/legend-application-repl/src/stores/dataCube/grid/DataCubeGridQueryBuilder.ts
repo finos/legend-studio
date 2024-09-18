@@ -35,6 +35,7 @@ import {
   _function,
   _lambda,
   _var,
+  _functionCompositionUnProcessor,
 } from '../core/DataCubeQueryBuilderUtils.js';
 import {
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
@@ -76,13 +77,7 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
     filterOperations: DataCubeQueryFilterOperation[],
     aggregateOperations: DataCubeQueryAggregateOperation[],
   ) => {
-    const _unprocess = (funcMapKey: keyof DataCubeQueryFunctionMap) => {
-      const func = funcMap[funcMapKey];
-      if (func) {
-        sequence.splice(sequence.indexOf(func), 1);
-        funcMap[funcMapKey] = undefined;
-      }
-    };
+    const _unprocess = _functionCompositionUnProcessor(sequence, funcMap);
     const data = snapshot.data;
 
     if (funcMap.groupBy) {

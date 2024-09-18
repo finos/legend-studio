@@ -145,7 +145,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         {selectedColumn.dataType}
                       </div>
                       {Boolean(
-                        panel.editor.columns.leafExtendColumns.find(
+                        panel.editor.leafExtendColumns.find(
                           (col) => col.name === selectedColumn.name,
                         ),
                       ) && (
@@ -154,7 +154,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         </div>
                       )}
                       {Boolean(
-                        panel.editor.columns.groupExtendColumns.find(
+                        panel.editor.groupExtendColumns.find(
                           (col) => col.name === selectedColumn.name,
                         ),
                       ) && (
@@ -167,7 +167,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                 </div>
               </FormDropdownMenuTrigger>
               <FormDropdownMenu className="w-80" {...columnsDropdownProps}>
-                {panel.configurableColumns
+                {panel.columns
                   .slice()
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .map((column) => (
@@ -186,7 +186,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         {column.dataType}
                       </div>
                       {Boolean(
-                        panel.editor.columns.leafExtendColumns.find(
+                        panel.editor.leafExtendColumns.find(
                           (col) => col.name === column.name,
                         ),
                       ) && (
@@ -195,7 +195,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         </div>
                       )}
                       {Boolean(
-                        panel.editor.columns.groupExtendColumns.find(
+                        panel.editor.groupExtendColumns.find(
                           (col) => col.name === column.name,
                         ),
                       ) && (
@@ -491,33 +491,11 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     className="ml-3"
                     label="Hide from view"
                     checked={selectedColumn.hideFromView}
-                    onChange={() => {
-                      const newValue = !selectedColumn.hideFromView;
-                      selectedColumn.setHideFromView(newValue);
-
-                      // NOTE: since showing a group-level extended column is equivalent to selecting it
-                      // in the columns selector panel, we need to update the selection state there
-                      if (
-                        panel.editor.columns.groupExtendColumns.find(
-                          (col) => col.name === selectedColumn.name,
-                        )
-                      ) {
-                        if (newValue) {
-                          panel.editor.columns.selector.setSelectedColumns(
-                            panel.editor.columns.selector.selectedColumns.filter(
-                              (col) => col.name !== selectedColumn.name,
-                            ),
-                          );
-                        } else {
-                          panel.editor.columns.selector.setSelectedColumns([
-                            ...panel.editor.columns.selector.selectedColumns,
-                            panel.editor.columns.selector.availableColumns.find(
-                              (col) => col.name === selectedColumn.name,
-                            )!,
-                          ]);
-                        }
-                      }
-                    }}
+                    onChange={() =>
+                      selectedColumn.setHideFromView(
+                        !selectedColumn.hideFromView,
+                      )
+                    }
                   />
                 </div>
 

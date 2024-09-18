@@ -612,17 +612,6 @@ function generateDefinitionForPivotResultColumns(
             // ..._sortSpec(columnData),
             // ..._aggSpec(columnData),
           } satisfies ColDef;
-        } else {
-          leaf = {
-            headerName: value,
-            colId: col.name,
-            field: col.name,
-
-            // NOTE: hide columns which do not have a corresponding base column configuration
-            // these could be internal columns (such as count)
-            hide: true,
-            suppressColumnsToolPanel: true, // hide from column tool panel
-          } satisfies ColDef;
         }
       }
     }
@@ -647,8 +636,6 @@ function generateDefinitionForPivotResultColumns(
     currentCollection.push(leaf);
   });
 
-  // TODO: decorate header colors, etc.
-
   return columnDefs;
 }
 
@@ -658,13 +645,16 @@ export function generateColumnDefs(
   dataCube: DataCubeState,
 ) {
   let pivotResultColumns: DataCubeQuerySnapshotColumn[] = [];
-  let columnsToDisplay = configuration.columns;
+  // only show columns which are fetched
+  let columns = configuration.columns.filter((col) =>
+    snapshot.data.selectColumns.find((column) => column.name === col.name),
+  );
   if (snapshot.data.pivot) {
     const castColumns = snapshot.data.pivot.castColumns;
     pivotResultColumns = castColumns.filter((column) =>
       column.name.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR),
     );
-    columnsToDisplay = configuration.columns.filter(
+    columns = columns.filter(
       (column) =>
         castColumns.find((col) => col.name === column.name) ??
         snapshot.data.groupExtendedColumns.find(
@@ -717,7 +707,7 @@ export function generateColumnDefs(
       configuration,
       dataCube,
     ),
-    ...columnsToDisplay.map((column) => {
+    ...columns.map((column) => {
       const columnData = {
         snapshot,
         column,

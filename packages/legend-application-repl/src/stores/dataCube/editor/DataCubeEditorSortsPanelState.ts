@@ -59,14 +59,14 @@ export class DataCubeEditorSortColumnsSelectorState extends DataCubeEditorColumn
       ...this.editor.horizontalPivots.pivotResultColumns,
       ...this.editor.columns.selector.selectedColumns.filter(
         (column) =>
-          !this.editor.columns.groupExtendColumns.find(
+          !this.editor.groupExtendColumns.find(
             (col) => col.name === column.name,
           ) &&
           !this.editor.horizontalPivots.columnsConsumedByPivot.find(
             (col) => col.name === column.name,
           ),
       ),
-      ...this.editor.columns.groupExtendColumns,
+      ...this.editor.groupExtendColumns,
     ].map(
       (col) =>
         new DataCubeEditorSortColumnState(

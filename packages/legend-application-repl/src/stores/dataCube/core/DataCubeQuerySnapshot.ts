@@ -80,10 +80,10 @@ export type DataCubeQuerySnapshotData = {
   sourceColumns: DataCubeQuerySnapshotColumn[];
   leafExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
   filter?: DataCubeQuerySnapshotFilter | undefined;
+  selectColumns: DataCubeQuerySnapshotColumn[];
   groupBy?: DataCubeQuerySnapshotGroupBy | undefined;
   pivot?: DataCubeQuerySnapshotPivot | undefined;
   groupExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
-  selectColumns: DataCubeQuerySnapshotColumn[];
   sortColumns: DataCubeQuerySnapshotSortColumn[];
   limit: number | undefined;
 };
@@ -228,4 +228,11 @@ export function _getCol<T extends DataCubeQuerySnapshotColumn>(
     cols?.find((c) => c.name === name),
     `Can't find column '${name}'`,
   );
+}
+
+export function _toCol(col: {
+  name: string;
+  type: string;
+}): DataCubeQuerySnapshotColumn {
+  return { name: col.name, type: col.type };
 }

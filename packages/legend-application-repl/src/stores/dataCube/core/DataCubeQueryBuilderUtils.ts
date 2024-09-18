@@ -73,6 +73,7 @@ import {
   DataCubeOperationAdvancedValueType,
   DataCubeColumnKind,
   PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
+  type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
@@ -82,6 +83,29 @@ import {
 } from './DataCubeConfiguration.js';
 
 // --------------------------------- UTILITIES ---------------------------------
+
+export function _functionCompositionProcessor(
+  sequence: V1_AppliedFunction[],
+  funcMap: DataCubeQueryFunctionMap,
+) {
+  return (key: keyof DataCubeQueryFunctionMap, func: V1_AppliedFunction) => {
+    sequence.push(func);
+    funcMap[key] = func;
+  };
+}
+
+export function _functionCompositionUnProcessor(
+  sequence: V1_AppliedFunction[],
+  funcMap: DataCubeQueryFunctionMap,
+) {
+  return (key: keyof DataCubeQueryFunctionMap) => {
+    const func = funcMap[key];
+    if (func) {
+      sequence.splice(sequence.indexOf(func), 1);
+      funcMap[key] = undefined;
+    }
+  };
+}
 
 export function _deserializeToLambda(json: PlainObject<V1_Lambda>) {
   return guaranteeType(V1_deserializeValueSpecification(json, []), V1_Lambda);
@@ -322,8 +346,11 @@ export function _pivotAggCols(
 ) {
   const aggColumns = configuration.columns.filter(
     (column) =>
-      !pivotColumns.find((col) => col.name === column.name) &&
+      column.isSelected &&
+      // unlike groupBy, pivot aggreation on dimension columns (e.g. unique values aggregator)
+      // are not helpful and therefore excluded
       column.kind === DataCubeColumnKind.MEASURE &&
+      !pivotColumns.find((col) => col.name === column.name) &&
       !column.excludedFromHorizontalPivot &&
       !snapshot.data.groupExtendedColumns.find(
         (col) => col.name === column.name,
@@ -365,6 +392,7 @@ export function _groupByAggCols(
     // established in columns selector
     const aggColumns = configuration.columns.filter(
       (column) =>
+        column.isSelected &&
         !groupByColumns.find((col) => col.name === column.name) &&
         !snapshot.data.groupExtendedColumns.find(
           (col) => col.name === column.name,

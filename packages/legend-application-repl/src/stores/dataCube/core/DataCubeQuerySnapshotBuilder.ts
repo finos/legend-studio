@@ -34,6 +34,7 @@ import {
 } from '@finos/legend-graph';
 import type { DataCubeQuery } from '../../../server/DataCubeQuery.js';
 import {
+  _toCol,
   DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
 } from './DataCubeQuerySnapshot.js';
@@ -292,18 +293,12 @@ export function validateAndBuildQuerySnapshot(
       colsMap.get(colSpec.name),
       `Can't find column '${colSpec.name}'`,
     );
-    return {
-      name: column.name,
-      type: column.type,
-    };
+    return _toCol(column);
   };
 
   // --------------------------------- SOURCE ---------------------------------
 
-  data.sourceColumns = baseQuery.source.columns.map((col) => ({
-    name: col.name,
-    type: col.type,
-  }));
+  data.sourceColumns = baseQuery.source.columns.map((col) => _toCol(col));
   data.sourceColumns.map((col) => colsMap.set(col.name, col));
 
   // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
@@ -395,7 +390,11 @@ export function validateAndBuildQuerySnapshot(
   // Studio or Query, or another part of Engine.
   const configuration = baseQuery.configuration
     ? DataCubeConfiguration.serialization.fromJson(baseQuery.configuration)
-    : buildDefaultConfiguration(baseQuery.source.columns);
+    : buildDefaultConfiguration([
+        ...baseQuery.source.columns,
+        ...data.leafExtendedColumns,
+        ...data.groupExtendedColumns,
+      ]);
   data.configuration =
     DataCubeConfiguration.serialization.toJson(configuration);
   /**
