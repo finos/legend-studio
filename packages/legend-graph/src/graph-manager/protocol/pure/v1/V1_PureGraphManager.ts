@@ -305,6 +305,7 @@ import type {
   V1_GrammarParserBatchInputEntry,
   V1_EngineServerClient,
 } from './engine/V1_EngineServerClient.js';
+import { V1_RemoteEngineServerClient } from './engine/V1_RemoteEngineServerClient.js';
 import type { ArtifactGenerationExtensionResult } from '../../../action/generation/ArtifactGenerationExtensionResult.js';
 import {
   V1_ArtifactGenerationExtensionInput,
@@ -562,7 +563,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     serverClient?: V1_EngineServerClient,
   ) {
     super(pluginManager, logService);
-    this.engine = new V1_Engine({}, logService, serverClient);
+    this.engine = new V1_Engine(
+      serverClient ?? new V1_RemoteEngineServerClient({}),
+      logService,
+    );
 
     // setup plugins
     this.graphBuilderExtensions = new V1_GraphBuilderExtensions(
@@ -579,9 +583,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: {
       tracerService?: TracerService | undefined;
       disableGraphConfiguration?: boolean | undefined;
+      serverClient?: V1_EngineServerClient;
     },
   ): Promise<void> {
-    this.engine = new V1_Engine(config.clientConfig, this.logService);
+    this.engine = new V1_Engine(
+      options?.serverClient ??
+        new V1_RemoteEngineServerClient(config.clientConfig),
+      this.logService,
+    );
     this.engine
       .getEngineServerClient()
       .setTracerService(options?.tracerService ?? new TracerService());
