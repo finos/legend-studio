@@ -51,10 +51,30 @@ function getBaseGridProps<
     animateRows: false,
     getRowId: (params) => params.data.name,
     editType: 'fullRow',
-    rowSelection: 'multiple',
     rowDragMultiRow: true,
     rowDragEntireRow: true,
-    suppressRowClickSelection: false,
+    selection: {
+      mode: 'multiRow',
+      checkboxes: true,
+      headerCheckbox: true,
+      enableClickSelection: true,
+      enableMultiSelectWithClick: true,
+    },
+    selectionColumnDef: {
+      width: 40,
+      headerClass: '!pl-[23px]',
+      cellClass: '!pl-1.5',
+      rowDrag: true,
+      rowDragText: (params, dragItemCount) => {
+        if (dragItemCount > 1) {
+          return `${dragItemCount} columns`;
+        }
+        return (params.rowNode?.data as T).name;
+      },
+      sortable: false,
+      resizable: false,
+      suppressHeaderMenuButton: true,
+    },
     suppressMoveWhenRowDragging: true,
     rowHeight: 20,
     headerHeight: 20,
@@ -96,22 +116,13 @@ function getBaseColumnDef<
 >(): ColDef<T> {
   return {
     field: 'name' as ColDefField<T>,
+    colId: 'name',
     flex: 1,
     minWidth: 100,
     filter: true,
     sortable: false,
     resizable: false,
     suppressHeaderMenuButton: true,
-    colId: 'checkbox',
-    checkboxSelection: true,
-    headerCheckboxSelection: true,
-    rowDrag: true,
-    rowDragText: (params, dragItemCount) => {
-      if (dragItemCount > 1) {
-        return `${dragItemCount} columns`;
-      }
-      return (params.rowNode?.data as T).name;
-    },
     getQuickFilterText: (params) => params.value,
   };
 }
