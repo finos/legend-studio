@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.10.32
+
+### Patch Changes
+
+- [#3534](https://github.com/finos/legend-studio/pull/3534) [`22f8e5e`](https://github.com/finos/legend-studio/commit/22f8e5e628b999671f393551cea4a55ae5d7c324) ([@viju4076](https://github.com/viju4076)) - ability to select business or processing date for milestoned class in dq class validation
+
 ## 31.10.31
 
 ## 31.10.30
