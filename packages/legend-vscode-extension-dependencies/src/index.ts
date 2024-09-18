@@ -81,6 +81,7 @@ export {
   EXECUTION_SERIALIZATION_FORMAT,
   GenerationMode,
   GraphManagerState,
+  PureExecution,
   Service,
   ServiceExecutionMode,
   V1_ArtifactGenerationExtensionInput,
