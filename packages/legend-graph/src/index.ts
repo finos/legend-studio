@@ -375,8 +375,8 @@ export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1
 export {
   type V1_EngineServerClient,
   type V1_GrammarParserBatchInputEntry,
-  V1_RemoteEngineServerClient,
 } from './graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.js';
+export { V1_RemoteEngineServerClient } from './graph-manager/protocol/pure/v1/engine/V1_RemoteEngineServerClient.js';
 export { V1_Engine } from './graph-manager/protocol/pure/v1/engine/V1_Engine.js';
 export { V1_ParserError } from './graph-manager/protocol/pure/v1/engine/grammar/V1_ParserError.js';
 export { V1_RenderStyle } from './graph-manager/protocol/pure/v1/engine/grammar/V1_RenderStyle.js';

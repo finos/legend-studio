@@ -39,8 +39,8 @@ import { TEMPORARY__AbstractEngineConfig } from '../../../../../graph-manager/ac
 import {
   type V1_EngineServerClient,
   type V1_GrammarParserBatchInputEntry,
-  V1_RemoteEngineServerClient,
 } from './V1_EngineServerClient.js';
+import { V1_RemoteEngineServerClient } from './V1_RemoteEngineServerClient.js';
 import { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import {
   type V1_LambdaReturnTypeResult,
