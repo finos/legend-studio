@@ -128,6 +128,7 @@ const getEngineSerializationFormat = (
   val: EXECUTION_SERIALIZATION_FORMAT,
 ): ENGINE_EXECUTION_SERIALIZATION_FORMAT | string => {
   switch (val) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     case EXECUTION_SERIALIZATION_FORMAT.CSV:
       return ENGINE_EXECUTION_SERIALIZATION_FORMAT.CSV_TRANSFORMED;
     default:
