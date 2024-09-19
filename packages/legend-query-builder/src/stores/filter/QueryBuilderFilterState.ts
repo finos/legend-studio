@@ -246,6 +246,7 @@ export class FilterConditionState implements Hashable {
   constructor(
     filterState: QueryBuilderFilterState,
     propertyExpression: AbstractPropertyExpression,
+    operator?: QueryBuilderFilterOperator,
   ) {
     makeObservable(this, {
       propertyExpressionState: observable,
@@ -271,11 +272,15 @@ export class FilterConditionState implements Hashable {
     );
 
     // operator
-    assertTrue(
-      this.operators.length !== 0,
-      `Can't find an operator for property '${this.propertyExpressionState.path}': no operators registered`,
-    );
-    this.operator = this.operators[0] as QueryBuilderFilterOperator;
+    if (operator) {
+      this.operator = operator;
+    } else {
+      assertTrue(
+        this.operators.length !== 0,
+        `Can't find an operator for property '${this.propertyExpressionState.path}': no operators registered`,
+      );
+      this.operator = this.operators[0] as QueryBuilderFilterOperator;
+    }
     this.buildRightConditionValueFromValueSpec(
       this.operator.getDefaultFilterConditionValue(this),
     );

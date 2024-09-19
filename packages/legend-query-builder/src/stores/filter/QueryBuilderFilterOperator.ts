@@ -27,7 +27,7 @@ import type {
 export abstract class QueryBuilderFilterOperator implements Hashable {
   readonly uuid = uuid();
 
-  abstract getLabel(filterConditionState: FilterConditionState): string;
+  abstract getLabel(): string;
 
   abstract isCompatibleWithFilterConditionProperty(
     filterConditionState: FilterConditionState,
