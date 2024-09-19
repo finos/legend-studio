@@ -27,7 +27,8 @@ import {
   DataCubeColumnKind,
   type DataCubeOperationValue,
   DataCubeQueryFilterOperator,
-  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
+  isPivotResultColumnName,
+  getPivotResultColumnBaseColumnName,
 } from '../core/DataCubeQueryEngine.js';
 import {
   guaranteeIsNumber,
@@ -176,16 +177,12 @@ export function generateMenuBuilder(
     const column = params.column ?? undefined;
     const columnName = column?.getColId();
     const columnConfiguration = controller.getColumnConfiguration(columnName);
-    const baseColumnConfiguration = columnName?.includes(
-      PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
-    )
-      ? controller.getColumnConfiguration(
-          columnName.substring(
-            columnName.lastIndexOf(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) +
-              PIVOT_COLUMN_NAME_VALUE_SEPARATOR.length,
-          ),
-        )
-      : undefined;
+    const baseColumnConfiguration =
+      columnName && isPivotResultColumnName(columnName)
+        ? controller.getColumnConfiguration(
+            getPivotResultColumnBaseColumnName(columnName),
+          )
+        : undefined;
     const isExtendedColumn =
       columnName &&
       [
@@ -289,7 +286,7 @@ export function generateMenuBuilder(
           },
         ],
       },
-    ];
+    ] satisfies (string | MenuItemDef)[];
 
     let newFilterMenu: MenuItemDef[] = [];
     if (columnConfiguration && column && value !== undefined) {
@@ -676,25 +673,73 @@ export function generateMenuBuilder(
           {
             name: `Auto-size All Columns`,
             action: () =>
-              params.api.autoSizeColumns(
-                controller.configuration.columns
-                  .filter((col) => col.fixedWidth === undefined)
+              params.api.autoSizeColumns([
+                ...controller.configuration.columns
+                  .filter(
+                    (col) =>
+                      col.fixedWidth === undefined &&
+                      col.isSelected &&
+                      !col.hideFromView,
+                  )
                   .map((col) => col.name),
-              ),
+                ...controller.horizontalPivotCastColumns
+                  .map((col) => {
+                    if (isPivotResultColumnName(col.name)) {
+                      const colConf = controller.configuration.columns.find(
+                        (c) =>
+                          c.name ===
+                          getPivotResultColumnBaseColumnName(col.name),
+                      );
+                      if (
+                        colConf &&
+                        colConf.fixedWidth === undefined &&
+                        colConf.isSelected &&
+                        !colConf.hideFromView
+                      ) {
+                        return col.name;
+                      }
+                    }
+                    return undefined;
+                  })
+                  .filter(isNonNullable),
+              ]),
           },
           {
             name: `Minimize All Columns`,
             action: () => {
-              params.api.setColumnWidths(
-                // TODO: take care of pivot columns
-                controller.configuration.columns
+              params.api.setColumnWidths([
+                ...controller.configuration.columns
                   .filter((col) => col.fixedWidth === undefined)
                   .map((col) => ({
                     key: col.name,
                     newWidth:
                       columnConfiguration?.minWidth ?? DEFAULT_COLUMN_MIN_WIDTH,
                   })),
-              );
+                ...controller.horizontalPivotCastColumns
+                  .map((col) => {
+                    if (isPivotResultColumnName(col.name)) {
+                      const colConf = controller.configuration.columns.find(
+                        (c) =>
+                          c.name ===
+                          getPivotResultColumnBaseColumnName(col.name),
+                      );
+                      if (
+                        colConf &&
+                        colConf.fixedWidth === undefined &&
+                        colConf.isSelected &&
+                        !colConf.hideFromView
+                      ) {
+                        return {
+                          key: col.name,
+                          newWidth:
+                            colConf.minWidth ?? DEFAULT_COLUMN_MIN_WIDTH,
+                        };
+                      }
+                    }
+                    return undefined;
+                  })
+                  .filter(isNonNullable),
+              ]);
             },
           },
           {
@@ -798,6 +843,6 @@ export function generateMenuBuilder(
           editor.display.open();
         },
       },
-    ];
+    ] satisfies (string | MenuItemDef)[];
   };
 }

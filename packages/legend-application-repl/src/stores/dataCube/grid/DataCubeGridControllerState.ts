@@ -27,7 +27,8 @@ import {
   type DataCubeColumnPinPlacement,
   DataCubeColumnKind,
   DataCubeQueryFilterGroupOperator,
-  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
+  isPivotResultColumnName,
+  getPivotResultColumnBaseColumnName,
 } from '../core/DataCubeQueryEngine.js';
 import type {
   GetContextMenuItemsParams,
@@ -237,11 +238,8 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
   }
 
   excludeColumnFromHorizontalPivot(colName: string | undefined) {
-    if (colName?.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR)) {
-      const baseColumnName = colName.substring(
-        colName.lastIndexOf(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) +
-          PIVOT_COLUMN_NAME_VALUE_SEPARATOR.length,
-      );
+    if (colName && isPivotResultColumnName(colName)) {
+      const baseColumnName = getPivotResultColumnBaseColumnName(colName);
       const columnConfiguration = this.getColumnConfiguration(baseColumnName);
       if (
         columnConfiguration &&

@@ -58,7 +58,6 @@ function getBaseGridProps<
       checkboxes: true,
       headerCheckbox: true,
       enableClickSelection: true,
-      enableMultiSelectWithClick: true,
     },
     selectionColumnDef: {
       width: 40,

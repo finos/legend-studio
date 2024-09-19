@@ -72,8 +72,9 @@ import {
   type DataCubeOperationValue,
   DataCubeOperationAdvancedValueType,
   DataCubeColumnKind,
-  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
   type DataCubeQueryFunctionMap,
+  isPivotResultColumnName,
+  getPivotResultColumnBaseColumnName,
 } from './DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
@@ -415,19 +416,16 @@ export function _groupByAggCols(
   }
 
   const pivotResultColumns = pivot.castColumns.filter((col) =>
-    col.name.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR),
+    isPivotResultColumnName(col.name),
   );
   const pivotGroupByColumns = pivot.castColumns.filter(
-    (col) => !col.name.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR),
+    (col) => !isPivotResultColumnName(col.name),
   );
   return fixEmptyAggCols([
     // for pivot result columns, resolve the base aggregate column to get aggregate configuration
     ...pivotResultColumns
       .map((column) => {
-        const baseAggColName = column.name.substring(
-          column.name.lastIndexOf(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) +
-            PIVOT_COLUMN_NAME_VALUE_SEPARATOR.length,
-        );
+        const baseAggColName = getPivotResultColumnBaseColumnName(column.name);
         return {
           ...column,
           matchingColumnConfiguration: configuration.columns.find(

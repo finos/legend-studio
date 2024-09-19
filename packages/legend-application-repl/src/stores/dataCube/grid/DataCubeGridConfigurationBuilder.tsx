@@ -460,7 +460,7 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     },
     onBodyScrollEnd: () => grid.setScrollHintText(undefined),
     scrollbarWidth: 10,
-    alwaysShowVerticalScroll: true, // this is needed to ensure
+    alwaysShowVerticalScroll: true, // this is needed to ensure column resize calculation is accurate
     // -------------------------------------- CONTEXT MENU --------------------------------------
     preventDefaultOnContextMenu: true, // prevent showing the browser's context menu
     columnMenu: 'new', // ensure context menu works on header
@@ -671,6 +671,9 @@ export function generateColumnDefs(
       pinned: GridClientPinnedAlignement.LEFT,
       suppressSpanHeaderHeight: true,
       cellDataType: false,
+      minWidth: 200,
+      suppressAutoSize: true,
+      suppressSizeToFit: true,
       loadingCellRenderer: DataCubeGridLoadingCellRenderer,
       // TODO: we can support this in the configuration (support sorting by tree-column?)
       sortable: true,

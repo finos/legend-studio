@@ -19,7 +19,7 @@ import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import {
   DataCubeColumnKind,
-  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
+  isPivotResultColumnName,
 } from '../core/DataCubeQueryEngine.js';
 import {
   _toCol,
@@ -89,7 +89,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
 
   get pivotResultColumns(): DataCubeQuerySnapshotColumn[] {
     return this.castColumns
-      .filter((col) => col.name.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR))
+      .filter((col) => isPivotResultColumnName(col.name))
       .map((col) => _toCol(col));
   }
 
