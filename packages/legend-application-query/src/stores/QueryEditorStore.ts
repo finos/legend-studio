@@ -1392,9 +1392,9 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
           sourceInfo,
         );
         const mappingModelCoverageAnalysisResult =
-          dataSpaceAnalysisResult?.executionContextsIndex.get(
-            matchingExecutionContext.name,
-          )?.mappingModelCoverageAnalysisResult;
+          dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
+            matchingExecutionContext.mapping.value.path,
+          );
         if (mappingModelCoverageAnalysisResult) {
           dataSpaceQueryBuilderState.explorerState.mappingModelCoverageAnalysisResult =
             mappingModelCoverageAnalysisResult;

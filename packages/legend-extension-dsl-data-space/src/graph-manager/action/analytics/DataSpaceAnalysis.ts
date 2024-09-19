@@ -33,7 +33,6 @@ export class DataSpaceExecutionContextAnalysisResult {
   mapping!: Mapping;
   defaultRuntime!: PackageableRuntime;
   compatibleRuntimes!: PackageableRuntime[];
-  mappingModelCoverageAnalysisResult!: MappingModelCoverageAnalysisResult;
   datasets: DatasetSpecification[] = [];
   runtimeMetadata?: DataSpaceExecutionContextRuntimeMetadata;
 }
@@ -133,17 +132,14 @@ export class DataSpaceDiagramAnalysisResult {
 }
 
 export abstract class DataSpaceExecutableInfo {
+  id!: string;
+  executionContextKey!: string;
   query!: string;
 }
 
-export class DataSpaceTemplateExecutableInfo extends DataSpaceExecutableInfo {
-  id!: string;
-  executionContextKey!: string;
-}
+export class DataSpaceTemplateExecutableInfo extends DataSpaceExecutableInfo {}
 
 export class DataSpaceFunctionPointerExecutableInfo extends DataSpaceExecutableInfo {
-  id!: string;
-  executionContextKey!: string;
   function!: string;
 }
 
@@ -219,6 +215,11 @@ export class DataSpaceAnalysisResult {
   executables: DataSpaceExecutableAnalysisResult[] = [];
 
   supportInfo?: DataSpaceSupportInfo | undefined;
+
+  mappingToMappingCoverageResult?: Map<
+    string,
+    MappingModelCoverageAnalysisResult
+  >;
 
   get displayName(): string {
     return this.title ?? prettyCONSTName(this.name);

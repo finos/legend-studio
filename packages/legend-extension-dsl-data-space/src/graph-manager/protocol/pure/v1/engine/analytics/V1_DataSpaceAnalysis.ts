@@ -35,6 +35,8 @@ import {
   isNonNullable,
   optionalCustomUsingModelSchema,
   usingModelSchema,
+  serializeMap,
+  deserializeMap,
 } from '@finos/legend-shared';
 import {
   type ModelSchema,
@@ -45,6 +47,7 @@ import {
   object,
   optional,
   primitive,
+  serialize,
   SKIP,
 } from 'serializr';
 import type { V1_DataSpaceSupportInfo } from '../../model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
@@ -83,7 +86,7 @@ class V1_DataSpaceExecutionContextAnalysisResult {
   mapping!: string;
   defaultRuntime!: string;
   compatibleRuntimes!: string[];
-  mappingModelCoverageAnalysisResult!: V1_MappingModelCoverageAnalysisResult;
+  mappingModelCoverageAnalysisResult?: V1_MappingModelCoverageAnalysisResult;
   datasets: V1_DatasetSpecification[] = [];
   runtimeMetadata?: V1_DataSpaceExecutionContextRuntimeMetadata;
 }
@@ -116,8 +119,10 @@ const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
     ),
     defaultRuntime: primitive(),
     description: optional(primitive()),
-    mappingModelCoverageAnalysisResult: usingModelSchema(
-      V1_MappingModelCoverageAnalysisResult.serialization.schema,
+    mappingModelCoverageAnalysisResult: optional(
+      usingModelSchema(
+        V1_MappingModelCoverageAnalysisResult.serialization.schema,
+      ),
     ),
     mapping: primitive(),
     name: primitive(),
@@ -263,6 +268,8 @@ export class V1_DataSpaceDiagramAnalysisResult {
 }
 
 export abstract class V1_DataSpaceExecutableInfo {
+  id?: string;
+  executionContextKey?: string;
   query!: string;
 }
 
@@ -273,14 +280,9 @@ const V1_DATA_SPACE_SERVICE_EXECUTABLE_INFO_TYPE = 'service';
 const V1_DATA_SPACE_MULTI_EXECUTION_SERVICE_EXECUTABLE_INFO_TYPE =
   'multiExecutionService';
 
-export class V1_DataSpaceTemplateExecutableInfo extends V1_DataSpaceExecutableInfo {
-  id!: string;
-  executionContextKey!: string;
-}
+export class V1_DataSpaceTemplateExecutableInfo extends V1_DataSpaceExecutableInfo {}
 
 export class V1_DataSpaceFunctionPointerExecutableInfo extends V1_DataSpaceExecutableInfo {
-  id!: string;
-  executionContextKey!: string;
   function!: string;
 }
 
@@ -324,6 +326,8 @@ const V1_dataSpaceServiceExecutableInfoModelSchema = (
           V1_deserializeDatasetSpecification(val, plugins),
       ),
     ),
+    id: optional(primitive()),
+    executionContextKey: optional(primitive()),
     mapping: optional(primitive()),
     pattern: primitive(),
     query: primitive(),
@@ -348,6 +352,8 @@ const V1_dataSpaceMultiExecutionServiceKeyedExecutableInfoModelSchema = (
           V1_deserializeDatasetSpecification(val, plugins),
       ),
     ),
+    id: optional(primitive()),
+    executionContextKey: optional(primitive()),
     key: primitive(),
     mapping: optional(primitive()),
     runtime: optional(primitive()),
@@ -501,6 +507,11 @@ export class V1_DataSpaceAnalysisResult {
 
   executables: V1_DataSpaceExecutableAnalysisResult[] = [];
   diagrams: V1_DataSpaceDiagramAnalysisResult[] = [];
+
+  mappingToMappingCoverageResult?: Map<
+    string,
+    V1_MappingModelCoverageAnalysisResult
+  >;
 }
 
 const V1_dataSpaceAnalysisResultModelSchema = (
@@ -527,9 +538,6 @@ const V1_dataSpaceAnalysisResultModelSchema = (
     executionContexts: customListWithSchema(
       V1_dataSpaceExecutionContextAnalysisResultModelSchema(plugins),
     ),
-    mappingModelCoverageAnalysisResult: usingModelSchema(
-      V1_MappingModelCoverageAnalysisResult.serialization.schema,
-    ),
     defaultExecutionContext: primitive(),
 
     elements: list(primitive()),
@@ -543,6 +551,24 @@ const V1_dataSpaceAnalysisResultModelSchema = (
     ),
     executables: customListWithSchema(
       V1_dataSpaceExecutableAnalysisResultModelSchema(plugins),
+    ),
+    mappingToMappingCoverageResult: optional(
+      custom(
+        (val) =>
+          serializeMap(val, (_val) =>
+            serialize(
+              V1_MappingModelCoverageAnalysisResult.serialization.schema,
+              _val,
+            ),
+          ),
+        (val) =>
+          deserializeMap(val, (_val) =>
+            deserialize(
+              V1_MappingModelCoverageAnalysisResult.serialization.schema,
+              _val,
+            ),
+          ),
+      ),
     ),
   });
 
