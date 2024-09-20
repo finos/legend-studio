@@ -59,6 +59,7 @@ import {
   getNonNullableEntry,
   getQueryParameters,
   getQueryParameterValue,
+  guaranteeNonNullable,
   isNonNullable,
   isNullable,
   isNumber,
@@ -212,6 +213,10 @@ function _displaySpec(columnData: ColumnData) {
       !column.isSelected ||
       (snapshot.data.pivot &&
         !snapshot.data.pivot.castColumns.find((col) => col.name === name)),
+    lockVisible:
+      !column.isSelected ||
+      (snapshot.data.pivot &&
+        !snapshot.data.pivot.castColumns.find((col) => col.name === name)),
     valueFormatter:
       dataType === DataCubeColumnDataType.NUMBER
         ? (params) => {
@@ -258,6 +263,9 @@ function _displaySpec(columnData: ColumnData) {
                 DEFAULT_MISSING_VALUE_DISPLAY_TEXT)
               : params.value,
     loadingCellRenderer: DataCubeGridLoadingCellRenderer,
+    headerClass: isPivotResultColumnName(name)
+      ? 'pl-1 border border-neutral-300'
+      : 'pl-1 border border-neutral-200',
     cellClassRules: {
       [generateFontFamilyUtilityClassName(fontFamily)]: () => true,
       [generateFontSizeUtilityClassName(fontSize)]: () => true,
@@ -533,6 +541,38 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
   };
 }
 
+function generatePivotResultColumnHeaderTooltip(
+  id: string,
+  snapshot: DataCubeQuerySnapshot,
+  configuration: DataCubeConfiguration,
+) {
+  const values = id.split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR);
+  if (
+    !snapshot.data.pivot ||
+    values.length > snapshot.data.pivot.columns.length + 1
+  ) {
+    return values.join(' / ');
+  }
+  if (values.length === snapshot.data.pivot.columns.length + 1) {
+    const baseColumnName = guaranteeNonNullable(values[values.length - 1]);
+    const columnConfiguration = _findCol(configuration.columns, baseColumnName);
+    return `Column = ${
+      columnConfiguration
+        ? columnConfiguration.displayName
+          ? `${columnConfiguration.displayName} (${columnConfiguration.name})`
+          : columnConfiguration.name
+        : baseColumnName
+    } ~ [ ${snapshot.data.pivot.columns.map((col, i) => `${_findCol(configuration.columns, col.name)?.displayName ?? col.name} = ${values[i]}`).join(', ')} ]`;
+  }
+  return `[ ${snapshot.data.pivot.columns
+    .slice(0, values.length)
+    .map(
+      (col, i) =>
+        `${_findCol(configuration.columns, col.name)?.displayName ?? col.name} = ${values[i]}`,
+    )
+    .join(', ')} ]`;
+}
+
 function generateDefinitionForPivotResultColumns(
   pivotResultColumns: DataCubeQuerySnapshotColumn[],
   snapshot: DataCubeQuerySnapshot,
@@ -565,6 +605,11 @@ function generateDefinitionForPivotResultColumns(
           children: [],
           suppressColumnsToolPanel: true,
           headerName: value,
+          headerTooltip: generatePivotResultColumnHeaderTooltip(
+            id,
+            snapshot,
+            configuration,
+          ),
         } satisfies ColGroupDef);
       } else {
         const column = _findCol(configuration.columns, value);
@@ -589,6 +634,11 @@ function generateDefinitionForPivotResultColumns(
             lockPinned: true,
             lockPosition: true,
             suppressColumnsToolPanel: true, // hide from column tool panel
+            headerTooltip: generatePivotResultColumnHeaderTooltip(
+              id,
+              snapshot,
+              configuration,
+            ),
           } satisfies ColDef;
         }
       }
@@ -712,6 +762,11 @@ export function generateColumnDefs(
       };
       return {
         headerName: column.displayName ?? column.name,
+        headerTooltip: `Column = ${
+          column.displayName
+            ? `${column.displayName} (${column.name})`
+            : column.name
+        }`,
         suppressSpanHeaderHeight: true,
         colId: column.name,
         field: column.name,
