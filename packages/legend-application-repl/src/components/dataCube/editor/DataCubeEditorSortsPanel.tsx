@@ -19,7 +19,10 @@ import { DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
 import type { DataCubeEditorColumnsSelectorState } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeEditorSortColumnState } from '../../../stores/dataCube/editor/DataCubeEditorSortsPanelState.js';
-import { DataCubeQuerySortOperator } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
+import {
+  DataCubeQuerySortOperator,
+  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
+} from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 import { IllegalStateError } from '@finos/legend-shared';
 import {
   FormBadge_WIP,
@@ -120,6 +123,21 @@ const SortDirectionDropdown = observer(
   },
 );
 
+const SortColumnLabel = observer(
+  (props: {
+    selector: DataCubeEditorColumnsSelectorState<DataCubeEditorSortColumnState>;
+    column: DataCubeEditorSortColumnState;
+  }) => {
+    const { column } = props;
+
+    return (
+      <div className="h-full flex-1 items-center overflow-hidden overflow-ellipsis whitespace-nowrap pl-2">
+        {column.name.split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR).join(' / ')}
+      </div>
+    );
+  },
+);
+
 export const DataCubeEditorSortsPanel = observer(
   (props: { dataCube: DataCubeState }) => {
     const { dataCube } = props;
@@ -138,6 +156,7 @@ export const DataCubeEditorSortsPanel = observer(
         <div className="flex h-[calc(100%_-_24px)] w-full">
           <DataCubeEditorColumnsSelector
             selector={panel.selector}
+            columnLabelRenderer={(p) => <SortColumnLabel {...p} />}
             columnActionRenderer={(p) => <SortDirectionDropdown {...p} />}
           />
         </div>

@@ -25,7 +25,7 @@ import type {
   DataCubeEditorColumnsSelectorState,
 } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
 
-const ColumnsSelectorLabelRenderer = observer(
+const ColumnsSelectorLabel = observer(
   (props: {
     selector: DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState>;
     column: DataCubeEditorColumnsSelectorColumnState;
@@ -112,7 +112,7 @@ export const DataCubeEditorColumnsPanel = observer(
                 No columns selected
               </div>
             )}
-            columnLabelRenderer={(p) => <ColumnsSelectorLabelRenderer {...p} />}
+            columnLabelRenderer={(p) => <ColumnsSelectorLabel {...p} />}
           />
         </div>
       </div>
