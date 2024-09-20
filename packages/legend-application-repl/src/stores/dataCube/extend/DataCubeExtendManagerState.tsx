@@ -15,10 +15,11 @@
  */
 
 import { action, computed, makeObservable, observable } from 'mobx';
-import type {
-  DataCubeQuerySnapshot,
-  DataCubeQuerySnapshotColumn,
-  DataCubeQuerySnapshotExtendedColumn,
+import {
+  _toCol,
+  type DataCubeQuerySnapshot,
+  type DataCubeQuerySnapshotColumn,
+  type DataCubeQuerySnapshotExtendedColumn,
 } from '../core/DataCubeQuerySnapshot.js';
 import { deleteEntry, guaranteeNonNullable, noop } from '@finos/legend-shared';
 import type { DataCubeState } from '../DataCubeState.js';
@@ -53,11 +54,14 @@ export class DataCubeQueryExtendedColumnState {
  */
 export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController {
   configuration = new DataCubeConfiguration();
-  columnConfigurations: DataCubeColumnConfiguration[] = [];
 
+  columnConfigurations: DataCubeColumnConfiguration[] = [];
+  selectedColumns: DataCubeQuerySnapshotColumn[] = [];
   sourceColumns: DataCubeQuerySnapshotColumn[] = [];
+
   leafExtendedColumns: DataCubeQueryExtendedColumnState[] = [];
   groupExtendedColumns: DataCubeQueryExtendedColumnState[] = [];
+
   newColumnEditors: DataCubeNewColumnState[] = [];
   // TODO: existingColumnEditors
 
@@ -65,8 +69,10 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     super(dataCube);
 
     makeObservable(this, {
-      sourceColumns: observable.ref,
       columnConfigurations: observable.struct,
+      selectedColumns: observable.struct,
+      sourceColumns: observable.ref,
+
       leafExtendedColumns: observable,
       groupExtendedColumns: observable,
 
@@ -113,6 +119,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
 
     this.columnConfigurations.push(columnConfiguration);
     deleteEntry(this.newColumnEditors, editor);
+    this.selectedColumns.push(_toCol(column));
     this.applyChanges();
   }
 
@@ -154,19 +161,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     newSnapshot.data.groupExtendedColumns = this.groupExtendedColumns.map(
       (col) => col.data,
     );
-    // update the selected columns
-    // NOTE: group-level extended columns cannot be selected!
-    newSnapshot.data.selectColumns = this.columnConfigurations
-      .map((col) => ({
-        name: col.name,
-        type: col.type,
-      }))
-      .filter(
-        (col) =>
-          !newSnapshot.data.groupExtendedColumns.find(
-            (c) => c.name === col.name,
-          ),
-      );
+    newSnapshot.data.selectColumns = [...this.selectedColumns];
 
     // TODO: support edition, so v-pivots/h-pivots or column configuration that
     // depends on columns with name/type changed should be updated

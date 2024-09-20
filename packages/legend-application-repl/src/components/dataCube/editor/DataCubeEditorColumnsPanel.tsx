@@ -25,18 +25,16 @@ import type {
   DataCubeEditorColumnsSelectorState,
 } from '../../../stores/dataCube/editor/DataCubeEditorColumnsSelectorState.js';
 
-const ColumnsSelectorLabelRenderer = observer(
+const ColumnsSelectorLabel = observer(
   (props: {
     selector: DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState>;
     column: DataCubeEditorColumnsSelectorColumnState;
   }) => {
     const { selector, column } = props;
     const showHiddenIndicator =
-      !selector.editor.columns.groupExtendColumns.find(
-        (col) => col.name === column.name,
-      ) &&
-      selector.editor.columnProperties.getColumnConfiguration(column.name)
-        ?.hideFromView;
+      selector.editor.columnProperties.getColumnConfiguration(
+        column.name,
+      ).hideFromView;
 
     return (
       <>
@@ -51,7 +49,7 @@ const ColumnsSelectorLabelRenderer = observer(
           {column.name}
         </div>
         {Boolean(
-          selector.editor.columns.leafExtendColumns.find(
+          selector.editor.leafExtendColumns.find(
             (col) => col.name === column.name,
           ),
         ) && (
@@ -60,7 +58,7 @@ const ColumnsSelectorLabelRenderer = observer(
           </div>
         )}
         {Boolean(
-          selector.editor.columns.groupExtendColumns.find(
+          selector.editor.groupExtendColumns.find(
             (col) => col.name === column.name,
           ),
         ) && (
@@ -78,7 +76,7 @@ export const DataCubeEditorColumnsPanel = observer(
     const { dataCube } = props;
     const panel = dataCube.editor.columns;
 
-    useEffect(() => () => panel.propgateChanges(), [panel]);
+    useEffect(() => () => panel.propagateChanges(), [panel]);
 
     return (
       <div className="h-full w-full select-none p-2">
@@ -107,14 +105,14 @@ export const DataCubeEditorColumnsPanel = observer(
           <DataCubeEditorColumnsSelector
             selector={panel.selector}
             noColumnsSelectedRenderer={() => (
-              <div className="flex items-center border-[1.5px] border-red-400 p-2 font-semibold text-red-500">
+              <div className="flex items-center border-[1.5px] border-neutral-200 p-2 font-semibold text-neutral-400">
                 <div>
                   <DataCubeIcon.Warning className="mr-1 text-lg" />
                 </div>
                 No columns selected
               </div>
             )}
-            columnLabelRenderer={(p) => <ColumnsSelectorLabelRenderer {...p} />}
+            columnLabelRenderer={(p) => <ColumnsSelectorLabel {...p} />}
           />
         </div>
       </div>

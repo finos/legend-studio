@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
+import { uniqBy } from '@finos/legend-shared';
 import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeColumnKind } from '../core/DataCubeQueryEngine.js';
-import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
+import {
+  _toCol,
+  type DataCubeQuerySnapshot,
+} from '../core/DataCubeQuerySnapshot.js';
 import {
   DataCubeEditorColumnsSelectorColumnState,
   DataCubeEditorColumnsSelectorState,
@@ -35,18 +39,17 @@ export class DataCubeEditorVerticalPivotColumnsSelectorState extends DataCubeEdi
     );
   }
 
-  override get availableColumns(): DataCubeEditorColumnsSelectorColumnState[] {
-    return this.editor.columns.selector.selectedColumns
+  override get availableColumns() {
+    return this.editor.columnProperties.columns
       .filter(
         (column) =>
-          this.editor.columnProperties.getColumnConfiguration(column.name)
-            ?.kind === DataCubeColumnKind.DIMENSION &&
+          column.kind === DataCubeColumnKind.DIMENSION &&
           // exclude group-level extended columns
-          !this.editor.columns.groupExtendColumns.find(
+          !this.editor.groupExtendColumns.find(
             (col) => col.name === column.name,
           ) &&
-          // prune available columns if h-pivot is present
-          !this.editor.horizontalPivots.columnsConsumedByPivot.find(
+          // exclude pivot columns
+          !this.editor.horizontalPivots.selector.selectedColumns.find(
             (col) => col.name === column.name,
           ),
       )
@@ -96,11 +99,12 @@ export class DataCubeEditorVerticalPivotsPanelState
   ) {
     newSnapshot.data.groupBy = this.selector.selectedColumns.length
       ? {
-          columns: this.selector.selectedColumns.map((column) => ({
-            name: column.name,
-            type: column.type,
-          })),
+          columns: this.selector.selectedColumns.map((col) => _toCol(col)),
         }
       : undefined;
+    newSnapshot.data.selectColumns = uniqBy(
+      [...newSnapshot.data.selectColumns, ...this.selector.selectedColumns],
+      (col) => col.name,
+    ).map((col) => _toCol(col));
   }
 }

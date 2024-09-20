@@ -55,11 +55,11 @@ import {
   INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
   INTERNAL__GRID_CLIENT_PIVOT_COLUMN_GROUP_COLOR_ROTATION_SIZE,
 } from './DataCubeGridClientEngine.js';
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
   getNonNullableEntry,
   getQueryParameters,
   getQueryParameterValue,
+  guaranteeNonNullable,
   isNonNullable,
   isNullable,
   isNumber,
@@ -80,30 +80,13 @@ import {
   DataCubeColumnKind,
   DEFAULT_MISSING_VALUE_DISPLAY_TEXT,
   PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
+  isPivotResultColumnName,
 } from '../core/DataCubeQueryEngine.js';
 import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
 import { DataCubeIcon } from '@finos/legend-art';
 import type { DataCubeState } from '../DataCubeState.js';
 
 // --------------------------------- UTILITIES ---------------------------------
-
-// See https://www.ag-grid.com/react-data-grid/cell-data-types/
-function _cellDataType(column: DataCubeQuerySnapshotColumn) {
-  switch (column.type) {
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.INTEGER:
-    case PRIMITIVE_TYPE.FLOAT:
-      return 'number';
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME:
-    case PRIMITIVE_TYPE.STRICTDATE:
-      return 'dateString';
-    case PRIMITIVE_TYPE.STRING:
-    default:
-      return 'text';
-  }
-}
 
 function scaleNumber(
   value: number,
@@ -157,6 +140,7 @@ function DataCubeGridLoadingCellRenderer(
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
 type ColumnData = {
+  name: string;
   snapshot: DataCubeQuerySnapshot;
   column: DataCubeColumnConfiguration;
   configuration: DataCubeConfiguration;
@@ -192,7 +176,7 @@ function getCellRenderer(columnData: ColumnData) {
 }
 
 function _displaySpec(columnData: ColumnData) {
-  const { column, configuration } = columnData;
+  const { name, snapshot, column, configuration } = columnData;
   const dataType = getDataType(column.type);
   const fontFamily = column.fontFamily ?? configuration.fontFamily;
   const fontSize = column.fontSize ?? configuration.fontSize;
@@ -221,10 +205,18 @@ function _displaySpec(columnData: ColumnData) {
     column.errorBackgroundColor ?? configuration.errorBackgroundColor;
   const cellRenderer = getCellRenderer(columnData);
   return {
-    // setting the cell data type might helps guide the grid to render the cell properly
-    // and optimize the grid performance slightly by avoiding unnecessary type inference
-    cellDataType: _cellDataType(column),
-    hide: column.hideFromView,
+    // disabling cell data type inference can grid performance
+    // especially when this information is only necessary for cell value editor
+    cellDataType: false,
+    hide:
+      column.hideFromView ||
+      !column.isSelected ||
+      (snapshot.data.pivot &&
+        !snapshot.data.pivot.castColumns.find((col) => col.name === name)),
+    lockVisible:
+      !column.isSelected ||
+      (snapshot.data.pivot &&
+        !snapshot.data.pivot.castColumns.find((col) => col.name === name)),
     valueFormatter:
       dataType === DataCubeColumnDataType.NUMBER
         ? (params) => {
@@ -271,6 +263,9 @@ function _displaySpec(columnData: ColumnData) {
                 DEFAULT_MISSING_VALUE_DISPLAY_TEXT)
               : params.value,
     loadingCellRenderer: DataCubeGridLoadingCellRenderer,
+    headerClass: isPivotResultColumnName(name)
+      ? 'pl-1 border border-neutral-300'
+      : 'pl-1 border border-neutral-200',
     cellClassRules: {
       [generateFontFamilyUtilityClassName(fontFamily)]: () => true,
       [generateFontSizeUtilityClassName(fontSize)]: () => true,
@@ -365,9 +360,9 @@ function _sizeSpec(columnData: ColumnData) {
 }
 
 function _sortSpec(columnData: ColumnData) {
-  const { snapshot, column } = columnData;
+  const { name, snapshot } = columnData;
   const sortColumns = snapshot.data.sortColumns;
-  const sortCol = _findCol(sortColumns, column.name);
+  const sortCol = _findCol(sortColumns, name);
   return {
     sortable: true, // if this is pivot column, no sorting is supported yet
     sort: sortCol
@@ -380,17 +375,14 @@ function _sortSpec(columnData: ColumnData) {
 }
 
 function _aggSpec(columnData: ColumnData) {
-  const { snapshot, column } = columnData;
+  const { name, snapshot, column } = columnData;
   const data = snapshot.data;
-  const groupByCol = _findCol(data.groupBy?.columns, column.name);
-  const pivotCol = _findCol(data.pivot?.columns, column.name);
+  const groupByCol = _findCol(data.groupBy?.columns, name);
   const isGroupExtendedColumn = Boolean(
-    _findCol(data.groupExtendedColumns, column.name),
+    _findCol(data.groupExtendedColumns, name),
   );
   return {
     enableRowGroup:
-      !isGroupExtendedColumn && column.kind === DataCubeColumnKind.DIMENSION,
-    enablePivot:
       !isGroupExtendedColumn && column.kind === DataCubeColumnKind.DIMENSION,
     rowGroup: !isGroupExtendedColumn && Boolean(groupByCol),
     rowGroupIndex:
@@ -405,11 +397,6 @@ function _aggSpec(columnData: ColumnData) {
     aggFunc: !isGroupExtendedColumn ? column.aggregateOperator : null,
     enableValue: false, // disable GUI interactions to modify this column's aggregate function
     allowedAggFuncs: [], // disable GUI for options of the agg functions
-    pivot: !isGroupExtendedColumn && Boolean(pivotCol),
-    pivotIndex:
-      !isGroupExtendedColumn && groupByCol
-        ? (data.groupBy?.columns.indexOf(groupByCol) ?? null)
-        : null,
   } satisfies ColDef;
 }
 
@@ -446,7 +433,6 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     // -------------------------------------- DISPLAY --------------------------------------
     rowHeight: INTERNAL__GRID_CLIENT_ROW_HEIGHT,
     headerHeight: INTERNAL__GRID_CLIENT_HEADER_HEIGHT,
-    suppressBrowserResizeObserver: true,
     noRowsOverlayComponent: () => (
       <div className="flex items-center border-[1.5px] border-neutral-300 p-2 font-medium text-neutral-400">
         <div>
@@ -480,7 +466,7 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     },
     onBodyScrollEnd: () => grid.setScrollHintText(undefined),
     scrollbarWidth: 10,
-    alwaysShowVerticalScroll: true, // this is needed to ensure
+    alwaysShowVerticalScroll: true, // this is needed to ensure column resize calculation is accurate
     // -------------------------------------- CONTEXT MENU --------------------------------------
     preventDefaultOnContextMenu: true, // prevent showing the browser's context menu
     columnMenu: 'new', // ensure context menu works on header
@@ -525,7 +511,9 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     suppressScrollOnNewData: true,
     suppressServerSideFullWidthLoadingRow: true, // make sure each column has its own loading indicator instead of the whole row
     // -------------------------------------- SELECTION --------------------------------------
-    enableRangeSelection: true,
+    selection: {
+      mode: 'cell',
+    },
     // -------------------------------------- SIDEBAR --------------------------------------
     sideBar: {
       toolPanels: [
@@ -553,6 +541,38 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
   };
 }
 
+function generatePivotResultColumnHeaderTooltip(
+  id: string,
+  snapshot: DataCubeQuerySnapshot,
+  configuration: DataCubeConfiguration,
+) {
+  const values = id.split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR);
+  if (
+    !snapshot.data.pivot ||
+    values.length > snapshot.data.pivot.columns.length + 1
+  ) {
+    return values.join(' / ');
+  }
+  if (values.length === snapshot.data.pivot.columns.length + 1) {
+    const baseColumnName = guaranteeNonNullable(values[values.length - 1]);
+    const columnConfiguration = _findCol(configuration.columns, baseColumnName);
+    return `Column = ${
+      columnConfiguration
+        ? columnConfiguration.displayName
+          ? `${columnConfiguration.displayName} (${columnConfiguration.name})`
+          : columnConfiguration.name
+        : baseColumnName
+    } ~ [ ${snapshot.data.pivot.columns.map((col, i) => `${_findCol(configuration.columns, col.name)?.displayName ?? col.name} = ${values[i]}`).join(', ')} ]`;
+  }
+  return `[ ${snapshot.data.pivot.columns
+    .slice(0, values.length)
+    .map(
+      (col, i) =>
+        `${_findCol(configuration.columns, col.name)?.displayName ?? col.name} = ${values[i]}`,
+    )
+    .join(', ')} ]`;
+}
+
 function generateDefinitionForPivotResultColumns(
   pivotResultColumns: DataCubeQuerySnapshotColumn[],
   snapshot: DataCubeQuerySnapshot,
@@ -570,7 +590,7 @@ function generateDefinitionForPivotResultColumns(
 
   columns.forEach((col) => {
     const groups: ColGroupDef[] = [];
-    let leaf!: ColDef;
+    let leaf: ColDef | undefined = undefined;
     let id = '';
     for (let i = 0; i < col.values.length; i++) {
       const value = getNonNullableEntry(col.values, i);
@@ -585,11 +605,17 @@ function generateDefinitionForPivotResultColumns(
           children: [],
           suppressColumnsToolPanel: true,
           headerName: value,
+          headerTooltip: generatePivotResultColumnHeaderTooltip(
+            id,
+            snapshot,
+            configuration,
+          ),
         } satisfies ColGroupDef);
       } else {
         const column = _findCol(configuration.columns, value);
         if (column) {
           const columnData = {
+            name: col.name,
             snapshot,
             column,
             configuration,
@@ -608,20 +634,11 @@ function generateDefinitionForPivotResultColumns(
             lockPinned: true,
             lockPosition: true,
             suppressColumnsToolPanel: true, // hide from column tool panel
-
-            // ..._sortSpec(columnData),
-            // ..._aggSpec(columnData),
-          } satisfies ColDef;
-        } else {
-          leaf = {
-            headerName: value,
-            colId: col.name,
-            field: col.name,
-
-            // NOTE: hide columns which do not have a corresponding base column configuration
-            // these could be internal columns (such as count)
-            hide: true,
-            suppressColumnsToolPanel: true, // hide from column tool panel
+            headerTooltip: generatePivotResultColumnHeaderTooltip(
+              id,
+              snapshot,
+              configuration,
+            ),
           } satisfies ColDef;
         }
       }
@@ -644,10 +661,11 @@ function generateDefinitionForPivotResultColumns(
         currentCollection = newGroup.children;
       }
     });
-    currentCollection.push(leaf);
-  });
 
-  // TODO: decorate header colors, etc.
+    if (leaf) {
+      currentCollection.push(leaf);
+    }
+  });
 
   return columnDefs;
 }
@@ -657,21 +675,36 @@ export function generateColumnDefs(
   configuration: DataCubeConfiguration,
   dataCube: DataCubeState,
 ) {
+  // NOTE: only show columns which are fetched in select() as we
+  // can't solely rely on column selection because of certain restrictions
+  // from ag-grid, e.g. in the case of row grouping tree column: the columns
+  // which are grouped must be present in the column definitions, so even
+  // when some of these might not be selected explicitly by the users, they
+  // must still be included in the column definitions, and made hidden instead.
+  let columns = configuration.columns.filter((col) =>
+    snapshot.data.selectColumns.find((column) => column.name === col.name),
+  );
   let pivotResultColumns: DataCubeQuerySnapshotColumn[] = [];
-  let columnsToDisplay = configuration.columns;
+
   if (snapshot.data.pivot) {
     const castColumns = snapshot.data.pivot.castColumns;
-    pivotResultColumns = castColumns.filter((column) =>
-      column.name.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR),
+    pivotResultColumns = castColumns.filter((col) =>
+      isPivotResultColumnName(col.name),
     );
-    columnsToDisplay = configuration.columns.filter(
-      (column) =>
-        castColumns.find((col) => col.name === column.name) ??
-        snapshot.data.groupExtendedColumns.find(
-          (col) => col.name === column.name,
-        ),
-    );
+    // Since fetching cast columns is an expensive operation, we often do this asynchronously
+    // so sometimes, the grid column definitions might be generated with incorrect casting
+    // information. In order to account for those cases, we include all select() columns
+    // to make sure pivoting information is properly propagated to server-side row model datasource.
+    columns = [
+      ...columns.filter((col) =>
+        castColumns.find((column) => column.name === col.name),
+      ),
+      ...columns.filter(
+        (col) => !castColumns.find((column) => column.name === col.name),
+      ),
+    ];
   }
+
   return [
     {
       headerName: '',
@@ -694,13 +727,11 @@ export function generateColumnDefs(
       lockPinned: true,
       lockPosition: true,
       pinned: GridClientPinnedAlignement.LEFT,
-      cellStyle: {
-        flex: 1,
-        justifyContent: 'space-between',
-        display: 'flex',
-      },
-      cellDataType: 'text',
-      flex: 1,
+      suppressSpanHeaderHeight: true,
+      cellDataType: false,
+      minWidth: 200,
+      suppressAutoSize: true,
+      suppressSizeToFit: true,
       loadingCellRenderer: DataCubeGridLoadingCellRenderer,
       // TODO: we can support this in the configuration (support sorting by tree-column?)
       sortable: true,
@@ -722,14 +753,20 @@ export function generateColumnDefs(
       configuration,
       dataCube,
     ),
-    ...columnsToDisplay.map((column) => {
+    ...columns.map((column) => {
       const columnData = {
+        name: column.name,
         snapshot,
         column,
         configuration,
       };
       return {
         headerName: column.displayName ?? column.name,
+        headerTooltip: `Column = ${
+          column.displayName
+            ? `${column.displayName} (${column.name})`
+            : column.name
+        }`,
         suppressSpanHeaderHeight: true,
         colId: column.name,
         field: column.name,

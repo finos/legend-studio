@@ -38,6 +38,7 @@ import {
 } from '@finos/legend-art';
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import { useREPLStore } from '../REPLStoreProvider.js';
+import { isString } from '@finos/legend-shared';
 
 export function FormBadge_WIP() {
   return (
@@ -148,7 +149,7 @@ export const FormNumberInput = forwardRef(function FormNumberInput(
           : parseInt(newInputValue, 10);
         if (
           isNaN(numericValue) ||
-          !newInputValue || // Explicitly check this case since `Number()` parses empty string as `0`
+          (isString(newInputValue) && !newInputValue) || // Explicitly check this case since `Number()` parses empty string as `0`
           (isValid !== undefined
             ? !isValid(numericValue)
             : (min !== undefined && numericValue < min) ||
@@ -164,7 +165,7 @@ export const FormNumberInput = forwardRef(function FormNumberInput(
           : parseInt(inputValue.toString(), 10);
         if (
           isNaN(numericValue) ||
-          !inputValue || // Explicitly check this case since `Number()` parses empty string as `0`
+          (isString(inputValue) && !inputValue) || // Explicitly check this case since `Number()` parses empty string as `0`
           (isValid !== undefined
             ? !isValid(numericValue)
             : (min !== undefined && numericValue < min) ||

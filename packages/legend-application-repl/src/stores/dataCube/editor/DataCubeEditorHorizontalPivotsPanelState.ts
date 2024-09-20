@@ -19,9 +19,10 @@ import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import {
   DataCubeColumnKind,
-  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
+  isPivotResultColumnName,
 } from '../core/DataCubeQueryEngine.js';
 import {
+  _toCol,
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotColumn,
 } from '../core/DataCubeQuerySnapshot.js';
@@ -31,6 +32,7 @@ import {
 } from './DataCubeEditorColumnsSelectorState.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
+import { uniqBy } from '@finos/legend-shared';
 
 export class DataCubeEditorHorizontalPivotColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState> {
   override cloneColumn(
@@ -42,15 +44,14 @@ export class DataCubeEditorHorizontalPivotColumnsSelectorState extends DataCubeE
     );
   }
 
-  override get availableColumns(): DataCubeEditorColumnsSelectorColumnState[] {
-    return this.editor.columns.selector.selectedColumns
+  override get availableColumns() {
+    return this.editor.columnProperties.columns
       .filter(
-        (column) =>
-          this.editor.columnProperties.getColumnConfiguration(column.name)
-            ?.kind === DataCubeColumnKind.DIMENSION &&
+        (col) =>
+          col.kind === DataCubeColumnKind.DIMENSION &&
           // exclude group-level extended columns
-          !this.editor.columns.groupExtendColumns.find(
-            (col) => col.name === column.name,
+          !this.editor.groupExtendColumns.find(
+            (column) => column.name === col.name,
           ),
       )
       .map(
@@ -89,35 +90,35 @@ export class DataCubeEditorHorizontalPivotsPanelState
 
   get pivotResultColumns(): DataCubeQuerySnapshotColumn[] {
     return this.castColumns
-      .filter((col) => col.name.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR))
-      .map((col) => ({ name: col.name, type: col.type }));
+      .filter((col) => isPivotResultColumnName(col.name))
+      .map((col) => _toCol(col));
   }
 
+  /**
+   * Due to the nature of pivot() operation, some base columns (i.e. source columns and leaf-level columns)
+   * will be "consumed" and not available for subsequent operations (e.g. sort, groupBy, etc.).
+   */
   get columnsConsumedByPivot(): DataCubeQuerySnapshotColumn[] {
     if (!this.selector.selectedColumns.length) {
       return [];
     }
-    return [
-      ...this.selector.selectedColumns,
-      ...this.editor.columnProperties.columns.filter(
-        (col) =>
-          col.kind === DataCubeColumnKind.MEASURE &&
-          !col.excludedFromHorizontalPivot,
-      ),
-      /** TODO: @datacube pivot - need to include columns used in complex aggregates (such as weighted-average) */
-    ].map((col) => ({ name: col.name, type: col.type }));
+    return uniqBy(
+      [
+        ...this.selector.selectedColumns,
+        ...this.editor.columnProperties.columns.filter(
+          (col) =>
+            col.isSelected &&
+            col.kind === DataCubeColumnKind.MEASURE &&
+            !col.excludedFromHorizontalPivot,
+        ),
+        /** TODO: @datacube pivot - need to include columns used in complex aggregates (such as weighted-average) */
+      ],
+      (col) => col.name,
+    ).map((col) => _toCol(col));
   }
 
   setCastColumns(value: DataCubeQuerySnapshotColumn[]) {
     this.castColumns = value;
-  }
-
-  adaptPropagatedChanges() {
-    this.selector.setSelectedColumns(
-      this.selector.selectedColumns.filter((column) =>
-        this.selector.availableColumns.find((col) => col.name === column.name),
-      ),
-    );
   }
 
   propagateChanges() {
@@ -144,15 +145,13 @@ export class DataCubeEditorHorizontalPivotsPanelState
   ) {
     newSnapshot.data.pivot = this.selector.selectedColumns.length
       ? {
-          columns: this.selector.selectedColumns.map((column) => ({
-            name: column.name,
-            type: column.type,
-          })),
-          castColumns: this.castColumns.map((column) => ({
-            name: column.name,
-            type: column.type,
-          })),
+          columns: this.selector.selectedColumns.map((col) => _toCol(col)),
+          castColumns: this.castColumns.map((col) => _toCol(col)),
         }
       : undefined;
+    newSnapshot.data.selectColumns = uniqBy(
+      [...newSnapshot.data.selectColumns, ...this.selector.selectedColumns],
+      (col) => col.name,
+    ).map((col) => _toCol(col));
   }
 }

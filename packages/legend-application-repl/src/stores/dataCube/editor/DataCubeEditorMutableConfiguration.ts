@@ -143,11 +143,14 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
       errorBackgroundColor: observable,
       setErrorBackgroundColor: action,
 
-      blur: observable,
-      setBlur: action,
+      isSelected: observable,
+      setIsSelected: action,
 
       hideFromView: observable,
       setHideFromView: action,
+
+      blur: observable,
+      setBlur: action,
 
       fixedWidth: observable,
       setFixedWidth: action,
@@ -334,12 +337,16 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
     this.errorBackgroundColor = value;
   }
 
-  setBlur(value: boolean) {
-    this.blur = value;
+  setIsSelected(value: boolean) {
+    this.isSelected = value;
   }
 
   setHideFromView(value: boolean) {
     this.hideFromView = value;
+  }
+
+  setBlur(value: boolean) {
+    this.blur = value;
   }
 
   setFixedWidth(value: number | undefined) {

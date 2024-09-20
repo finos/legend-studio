@@ -181,6 +181,7 @@ export function computeHashCodeForDataFetchManualTrigger(
   return hashObject(
     pruneObject({
       ...snapshot.data,
+      name: undefined,
       configuration: {
         initialExpandLevel: configuration.initialExpandLevel,
         showRootAggregation: configuration.showRootAggregation,
@@ -397,6 +398,17 @@ export class DataCubeGridClientServerSideDataSource
             this.rowCount = (params.request.startRow ?? 0) + rowData.length;
           });
         }
+
+        // toggle no-rows overlay
+        if (
+          params.request.groupKeys.length === 0 &&
+          params.request.startRow === 0 &&
+          rowData.length === 0
+        ) {
+          this.grid.client.showNoRowsOverlay();
+        } else {
+          this.grid.client.hideOverlay();
+        }
       } else {
         // NOTE: When pagination is disabled and the user currently scrolls to somewhere in the grid, as data is fetched
         // and the operation does not force a scroll top (for example, grouping will always force scrolling to the
@@ -412,7 +424,8 @@ export class DataCubeGridClientServerSideDataSource
         // behavior by forcing a scroll top for every data fetch and also reset the cache block size to the default value to save memory
         if (rowData.length > INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE) {
           if (
-            !this.grid.dataCube.repl.dataCubeEngine.disableLargeDatasetWarning
+            !this.grid.dataCube.repl.dataCubeEngine
+              .gridClientSuppressLargeDatasetWarning
           ) {
             this.grid.dataCube.repl.alert({
               message: `Large dataset (>${INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE} rows) detected!`,
@@ -429,7 +442,7 @@ export class DataCubeGridClientServerSideDataSource
                   label: 'Dismiss Warning',
                   handler: () => {
                     // this.grid.setPaginationEnabled(true);
-                    this.grid.dataCube.repl.dataCubeEngine.setDisableLargeDatasetWarning(
+                    this.grid.dataCube.repl.dataCubeEngine.setGridClientSuppressLargeDatasetWarning(
                       true,
                     );
                   },
@@ -455,6 +468,13 @@ export class DataCubeGridClientServerSideDataSource
           runInAction(() => {
             this.rowCount = rowData.length;
           });
+        }
+
+        // toggle no-rows overlay
+        if (params.request.groupKeys.length === 0 && rowData.length === 0) {
+          this.grid.client.showNoRowsOverlay();
+        } else {
+          this.grid.client.hideOverlay();
         }
       }
     } catch (error) {

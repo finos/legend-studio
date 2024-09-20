@@ -66,7 +66,7 @@ export class DataCubeEditorGeneralPropertiesPanelState
   ) {
     this.setName(snapshot.data.name);
     this.setLimit(
-      snapshot.data.limit !== undefined && snapshot.data.limit > 0
+      snapshot.data.limit !== undefined && snapshot.data.limit >= 0
         ? snapshot.data.limit
         : -1,
     );
@@ -81,7 +81,7 @@ export class DataCubeEditorGeneralPropertiesPanelState
   ) {
     const data = newSnapshot.data;
     data.name = this.name;
-    data.limit = this.limit <= 0 ? undefined : this.limit;
+    data.limit = this.limit < 0 ? undefined : this.limit;
     data.configuration = this.configuration.serialize();
   }
 }

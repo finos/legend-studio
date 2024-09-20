@@ -16,6 +16,7 @@
 
 import { TailwindCSSPalette } from '@finos/legend-art';
 import { PRIMITIVE_TYPE, type V1_AppliedFunction } from '@finos/legend-graph';
+import { IllegalStateError } from '@finos/legend-shared';
 
 export enum DataCubeFunction {
   // relation
@@ -241,7 +242,7 @@ export enum DataCubeColumnPinPlacement {
   RIGHT = 'Right',
 }
 
-// TODO: support moreclassifications of this column, it can also be aggregation with map/reduce or
+// TODO: support more classifications of this column, it can also be aggregation with map/reduce or
 // OLAP window aggregation, or custom groupings, etc.
 export enum DataCubeExtendedColumnType {
   SIMPLE = 'simple',
@@ -280,6 +281,21 @@ export function ofDataType(
 }
 
 export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
+export function isPivotResultColumnName(columnName: string) {
+  return columnName.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR);
+}
+export function getPivotResultColumnBaseColumnName(columnName: string) {
+  if (!isPivotResultColumnName(columnName)) {
+    throw new IllegalStateError(
+      `Column '${columnName}' is not a pivot result column`,
+    );
+  }
+  return columnName.substring(
+    columnName.lastIndexOf(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) +
+      PIVOT_COLUMN_NAME_VALUE_SEPARATOR.length,
+  );
+}
+
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
 
 export const DEFAULT_REPORT_NAME = 'New Report';

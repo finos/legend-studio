@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  isNonNullable,
+  uniqBy,
+} from '@finos/legend-shared';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
-import type {
-  DataCubeQuerySnapshot,
-  DataCubeQuerySnapshotColumn,
-  DataCubeQuerySnapshotSortColumn,
+import {
+  _toCol,
+  type DataCubeQuerySnapshot,
+  type DataCubeQuerySnapshotColumn,
+  type DataCubeQuerySnapshotSortColumn,
 } from '../core/DataCubeQuerySnapshot.js';
 import { DataCubeQuerySnapshotController } from '../core/DataCubeQuerySnapshotManager.js';
 import {
@@ -27,7 +32,8 @@ import {
   type DataCubeColumnPinPlacement,
   DataCubeColumnKind,
   DataCubeQueryFilterGroupOperator,
-  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
+  isPivotResultColumnName,
+  getPivotResultColumnBaseColumnName,
 } from '../core/DataCubeQueryEngine.js';
 import type {
   GetContextMenuItemsParams,
@@ -139,7 +145,8 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
   // --------------------------------- COLUMNS ---------------------------------
 
   selectColumns: DataCubeQuerySnapshotColumn[] = [];
-  extendedColumns: DataCubeQuerySnapshotColumn[] = [];
+  leafExtendedColumns: DataCubeQuerySnapshotColumn[] = [];
+  groupExtendedColumns: DataCubeQuerySnapshotColumn[] = [];
 
   pinColumn(
     colName: string | undefined,
@@ -153,20 +160,28 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
   }
 
   rearrangeColumns(columnByNames: string[]) {
-    const columnConfigurations = columnByNames
+    // rearrange the column configurations and select columns
+    // anything that is not rearranged (e.g. due to pivot) will be
+    // pushed to the end
+    const rearrangedColumnConfigurations = columnByNames
       .map((colName) => this.getColumnConfiguration(colName))
       .filter(isNonNullable);
     this.configuration.columns = [
+      ...rearrangedColumnConfigurations,
       ...this.configuration.columns.filter(
-        (col) => !columnConfigurations.includes(col),
+        (col) => !rearrangedColumnConfigurations.includes(col),
       ),
-      ...columnConfigurations,
     ];
-    this.selectColumns = this.configuration.columns
-      .map((column) =>
-        this.selectColumns.find((col) => col.name === column.name),
-      )
+
+    const rearrangedSelectColumns = columnByNames
+      .map((colName) => this.selectColumns.find((col) => col.name === colName))
       .filter(isNonNullable);
+    this.selectColumns = [
+      ...rearrangedSelectColumns,
+      ...rearrangedSelectColumns.filter(
+        (col) => !rearrangedSelectColumns.includes(col),
+      ),
+    ];
     this.applyChanges();
   }
 
@@ -183,16 +198,35 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     }
   }
 
+  private updateSelectColumns() {
+    this.selectColumns = uniqBy(
+      [
+        ...this.configuration.columns.filter((col) => col.isSelected),
+        ...this.horizontalPivotedColumns,
+        ...this.verticalPivotedColumns,
+      ],
+      (col) => col.name,
+    ).map((col) => _toCol(col));
+  }
+
   // --------------------------------- PIVOT ---------------------------------
 
-  horizontalPivotableColumns: DataCubeQuerySnapshotColumn[] = [];
   horizontalPivotedColumns: DataCubeQuerySnapshotColumn[] = [];
   horizontalPivotCastColumns: DataCubeQuerySnapshotColumn[] = [];
 
-  setHorizontalPivotOnColumn(colName: string | undefined) {
-    const column = this.horizontalPivotableColumns.find(
-      (col) => col.name === colName,
-    );
+  getHorizontalPivotableColumn(colName: string) {
+    return this.configuration.columns
+      .filter(
+        (col) =>
+          col.kind === DataCubeColumnKind.DIMENSION &&
+          // exclude group-level extended columns
+          !this.groupExtendedColumns.find((column) => column.name === col.name),
+      )
+      .find((col) => col.name === colName);
+  }
+
+  setHorizontalPivotOnColumn(colName: string) {
+    const column = this.getHorizontalPivotableColumn(colName);
     if (column) {
       this.horizontalPivotedColumns = [column];
       /** TODO?: @datacube pivot - naively propagate this change, this might cause a bug so to be revisited */
@@ -204,10 +238,8 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     }
   }
 
-  addHorizontalPivotOnColumn(colName: string | undefined) {
-    const column = this.horizontalPivotableColumns.find(
-      (col) => col.name === colName,
-    );
+  addHorizontalPivotOnColumn(colName: string) {
+    const column = this.getHorizontalPivotableColumn(colName);
     if (column) {
       this.horizontalPivotedColumns = [
         ...this.horizontalPivotedColumns,
@@ -227,12 +259,9 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     this.applyChanges();
   }
 
-  excludeColumnFromHorizontalPivot(colName: string | undefined) {
-    if (colName?.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR)) {
-      const baseColumnName = colName.substring(
-        colName.lastIndexOf(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) +
-          PIVOT_COLUMN_NAME_VALUE_SEPARATOR.length,
-      );
+  excludeColumnFromHorizontalPivot(colName: string) {
+    if (isPivotResultColumnName(colName)) {
+      const baseColumnName = getPivotResultColumnBaseColumnName(colName);
       const columnConfiguration = this.getColumnConfiguration(baseColumnName);
       if (
         columnConfiguration &&
@@ -244,7 +273,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     }
   }
 
-  includeColumnInHorizontalPivot(colName: string | undefined) {
+  includeColumnInHorizontalPivot(colName: string) {
     const columnConfiguration = this.getColumnConfiguration(colName);
     if (columnConfiguration?.excludedFromHorizontalPivot) {
       columnConfiguration.excludedFromHorizontalPivot = false;
@@ -254,32 +283,44 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
   // --------------------------------- GROUP BY ---------------------------------
 
-  verticalPivotableColumns: DataCubeQuerySnapshotColumn[] = [];
   verticalPivotedColumns: DataCubeQuerySnapshotColumn[] = [];
 
-  setVerticalPivotOnColumn(colName: string | undefined) {
-    const column = this.verticalPivotableColumns.find(
-      (col) => col.name === colName,
-    );
+  getVerticalPivotableColumn(colName: string) {
+    return this.configuration.columns
+      .filter(
+        (col) =>
+          col.kind === DataCubeColumnKind.DIMENSION &&
+          // exclude group-level extended columns
+          !this.groupExtendedColumns.find(
+            (column) => column.name === col.name,
+          ) &&
+          // exclude pivot columns
+          !this.horizontalPivotedColumns.find(
+            (column) => column.name === col.name,
+          ),
+      )
+      .find((col) => col.name === colName);
+  }
+
+  setVerticalPivotOnColumn(colName: string) {
+    const column = this.getVerticalPivotableColumn(colName);
     if (column) {
       this.verticalPivotedColumns = [column];
       this.applyChanges();
     }
   }
 
-  addVerticalPivotOnColumn(colName: string | undefined) {
-    const column = this.verticalPivotableColumns.find(
-      (col) => col.name === colName,
-    );
+  addVerticalPivotOnColumn(colName: string) {
+    const column = this.getVerticalPivotableColumn(colName);
     if (column) {
       this.verticalPivotedColumns = [...this.verticalPivotedColumns, column];
       this.applyChanges();
     }
   }
 
-  removeVerticalPivotOnColumn(colName: string | undefined) {
+  removeVerticalPivotOnColumn(colName: string) {
     this.verticalPivotedColumns = this.verticalPivotedColumns.filter(
-      (col) => col.name === colName,
+      (col) => col.name !== colName,
     );
     this.applyChanges();
   }
@@ -291,14 +332,25 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
   // --------------------------------- SORT ---------------------------------
 
-  sortableColumns: DataCubeQuerySnapshotColumn[] = [];
   sortColumns: DataCubeQuerySnapshotSortColumn[] = [];
 
-  getActionableSortColumn(
+  getSortableColumn(colName: string | undefined) {
+    if (!colName) {
+      return undefined;
+    }
+    return [
+      ...(this.horizontalPivotCastColumns.length
+        ? this.horizontalPivotCastColumns
+        : this.selectColumns),
+      ...this.groupExtendedColumns,
+    ].find((col) => col.name === colName);
+  }
+
+  private getActionableSortColumn(
     colName: string,
     operation: DataCubeQuerySortOperator,
   ) {
-    const column = this.sortableColumns.find((col) => col.name === colName);
+    const column = this.getSortableColumn(colName);
     if (!column) {
       return undefined;
     }
@@ -344,38 +396,6 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
   // --------------------------------- MAIN ---------------------------------
 
-  private applyChanges() {
-    const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
-    const snapshot = baseSnapshot.clone();
-
-    snapshot.data.filter = this.filterTree.root
-      ? buildFilterQuerySnapshot(this.filterTree.root)
-      : undefined;
-    snapshot.data.selectColumns = this.selectColumns;
-    snapshot.data.sortColumns = this.sortColumns;
-    snapshot.data.configuration = DataCubeConfiguration.serialization.toJson(
-      this.configuration,
-    );
-
-    snapshot.data.pivot = this.horizontalPivotedColumns.length
-      ? {
-          columns: this.horizontalPivotedColumns,
-          castColumns: this.horizontalPivotCastColumns,
-        }
-      : undefined;
-
-    snapshot.data.groupBy = this.verticalPivotedColumns.length
-      ? {
-          columns: this.verticalPivotedColumns,
-        }
-      : undefined;
-
-    snapshot.finalize();
-    if (snapshot.hashCode !== baseSnapshot.hashCode) {
-      this.publishSnapshot(snapshot);
-    }
-  }
-
   override async applySnapshot(
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,
@@ -397,33 +417,52 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
       : undefined;
 
     this.selectColumns = newSnapshot.data.selectColumns;
-    this.extendedColumns = [
-      ...newSnapshot.data.leafExtendedColumns,
-      ...newSnapshot.data.groupExtendedColumns,
-    ];
+    this.leafExtendedColumns = newSnapshot.data.leafExtendedColumns;
+    this.groupExtendedColumns = newSnapshot.data.groupExtendedColumns;
 
-    this.horizontalPivotableColumns = newSnapshot
-      .stageCols('pivot')
-      .filter(
-        (column) =>
-          this.getColumnConfiguration(column.name)?.kind ===
-          DataCubeColumnKind.DIMENSION,
-      );
     this.horizontalPivotedColumns = newSnapshot.data.pivot?.columns ?? [];
     this.horizontalPivotCastColumns = newSnapshot.data.pivot?.castColumns ?? [];
 
-    this.verticalPivotableColumns = newSnapshot
-      .stageCols('group-by')
-      .filter(
-        (column) =>
-          this.getColumnConfiguration(column.name)?.kind ===
-          DataCubeColumnKind.DIMENSION,
-      );
     this.verticalPivotedColumns = newSnapshot.data.groupBy?.columns ?? [];
 
-    this.sortableColumns = newSnapshot.stageCols('sort');
     this.sortColumns = newSnapshot.data.sortColumns;
 
     this.menuBuilder = generateMenuBuilder(this);
+  }
+
+  private applyChanges() {
+    const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
+    const snapshot = baseSnapshot.clone();
+
+    snapshot.data.configuration = DataCubeConfiguration.serialization.toJson(
+      this.configuration,
+    );
+
+    snapshot.data.filter = this.filterTree.root
+      ? buildFilterQuerySnapshot(this.filterTree.root)
+      : undefined;
+
+    this.updateSelectColumns();
+    snapshot.data.selectColumns = this.selectColumns;
+
+    snapshot.data.pivot = this.horizontalPivotedColumns.length
+      ? {
+          columns: this.horizontalPivotedColumns,
+          castColumns: this.horizontalPivotCastColumns,
+        }
+      : undefined;
+
+    snapshot.data.groupBy = this.verticalPivotedColumns.length
+      ? {
+          columns: this.verticalPivotedColumns,
+        }
+      : undefined;
+
+    snapshot.data.sortColumns = this.sortColumns;
+
+    snapshot.finalize();
+    if (snapshot.hashCode !== baseSnapshot.hashCode) {
+      this.publishSnapshot(snapshot);
+    }
   }
 }

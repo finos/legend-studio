@@ -68,7 +68,7 @@ export async function getCodeSuggestions(
     (suggestion) =>
       ({
         label: suggestion.display,
-        kind: monacoLanguagesAPI.CompletionItemKind.Text, // TODO: we need REPL to provide this information
+        kind: monacoLanguagesAPI.CompletionItemKind.Text, // TODO?: the engine should provide this information
         filterText: suggestion.display,
         insertTextRules:
           monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,

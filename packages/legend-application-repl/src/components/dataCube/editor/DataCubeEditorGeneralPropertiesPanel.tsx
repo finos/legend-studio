@@ -258,9 +258,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
                 min={-1}
                 step={1}
                 defaultValue={-1}
-                isValid={(value) =>
-                  value !== undefined && (value === -1 || value > 0)
-                }
+                isValid={(value) => value !== undefined && value >= -1}
                 setValue={(value) => panel.setLimit(value ?? -1)}
               />
               <div className="flex-shrink-0 pl-1 text-sm italic text-neutral-500">

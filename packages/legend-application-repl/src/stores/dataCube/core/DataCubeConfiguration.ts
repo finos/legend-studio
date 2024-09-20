@@ -79,8 +79,19 @@ export class DataCubeColumnConfiguration {
   zeroBackgroundColor?: string | undefined;
   errorBackgroundColor?: string | undefined;
 
-  blur = false;
+  /**
+   * Used to indicate if the column is to be fetched as part of the result
+   * or to be used in aggregation. This would influence data-fetching.
+   */
+  isSelected = true;
+  /**
+   * Unlike `isSelected`, this is used to indicate if the column is to be displayed
+   * in the grid or not, this would not influence data-fetching, i.e. the column
+   * is still fetched and used in various part of the queries, but the column associated
+   * will not be displayed in the result grid.
+   */
   hideFromView = false;
+  blur = false;
 
   fixedWidth?: number | undefined;
   minWidth?: number | undefined;
@@ -123,6 +134,7 @@ export class DataCubeColumnConfiguration {
       fontUnderline: optional(primitive()),
       hideFromView: primitive(),
       horizontalPivotSortFunction: optional(primitive()),
+      isSelected: primitive(),
       kind: primitive(),
       linkLabelParameter: optional(primitive()),
       maxWidth: optional(primitive()),

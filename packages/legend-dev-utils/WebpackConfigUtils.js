@@ -325,6 +325,15 @@ export const getWebAppBaseWebpackConfig = (
         // NOTE: there is a bug that the line '[HMR] Waiting for update signal from WDS...' is not suppressed
         // See https://github.com/webpack/webpack-dev-server/issues/2166
         logging: 'warn',
+        overlay: {
+          // NOTE: hide some runtime errors which can be somewhat too noisy
+          // See https://stackoverflow.com/questions/49384120/resizeobserver-loop-limit-exceeded
+          // See https://github.com/w3c/csswg-drafts/issues/5023
+          runtimeErrors: (error) => {
+            console.debug(`[DEV] Unhandled Runtime Error:`, error);
+            return false;
+          },
+        },
       },
       ...(appConfig.devServer ?? {}),
     },

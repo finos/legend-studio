@@ -19,10 +19,11 @@ import { DataCubeIcon } from '@finos/legend-art';
 import { useREPLStore } from '../REPLStoreProvider.js';
 import { FormCheckbox, FormNumberInput } from './Form.js';
 import {
-  DEFAULT_DISABLE_LARGE_DATASET_WARNING,
+  DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
   DEFAULT_ENABLE_DEBUG_MODE,
   DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
   DEFAULT_GRID_CLIENT_ROW_BUFFER,
+  DEFAULT_ENABLE_ENGINE_DEBUG_MODE,
 } from '../../stores/dataCube/DataCubeEngine.js';
 import { useState } from 'react';
 
@@ -33,25 +34,32 @@ export const SettingsPanel = observer(() => {
   // NOTE: this makes sure the changes are not applied until saved, but it generates
   // a lot of boilerplate code, consider using a more ergonomic approach when we need
   // to scale this to more settings.
+  const [enableDebugMode, setEnableDebugMode] = useState(
+    dataCubeEngine.enableDebugMode,
+  );
+  const [enableEngineDebugMode, setEnableEngineDebugMode] = useState(
+    dataCubeEngine.enableEngineDebugMode,
+  );
   const [gridClientRowBuffer, setGridClientRowBuffer] = useState(
     dataCubeEngine.gridClientRowBuffer,
   );
   const [gridClientPurgeClosedRowNodes, setGridClientPurgeClosedRowNodes] =
     useState(dataCubeEngine.gridClientPurgeClosedRowNodes);
-  const [enableDebugMode, setEnableDebugMode] = useState(
-    dataCubeEngine.enableDebugMode,
-  );
-  const [disableLargeDatasetWarning, setDisableLargeDatasetWarning] = useState(
-    dataCubeEngine.disableLargeDatasetWarning,
-  );
+  const [
+    gridClientSuppressLargeDatasetWarning,
+    setGridClientSuppressLargeDatasetWarning,
+  ] = useState(dataCubeEngine.gridClientSuppressLargeDatasetWarning);
 
   const save = () => {
+    dataCubeEngine.setEnableDebugMode(enableDebugMode);
+    dataCubeEngine.setEnableEngineDebugMode(enableEngineDebugMode);
     dataCubeEngine.setGridClientRowBuffer(gridClientRowBuffer);
     dataCubeEngine.setGridClientPurgeClosedRowNodes(
       gridClientPurgeClosedRowNodes,
     );
-    dataCubeEngine.setEnableDebugMode(enableDebugMode);
-    dataCubeEngine.setDisableLargeDatasetWarning(disableLargeDatasetWarning);
+    dataCubeEngine.setGridClientSuppressLargeDatasetWarning(
+      gridClientSuppressLargeDatasetWarning,
+    );
   };
   const restoreDefaults = () => {
     setGridClientRowBuffer(DEFAULT_GRID_CLIENT_ROW_BUFFER);
@@ -59,7 +67,10 @@ export const SettingsPanel = observer(() => {
       DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
     );
     setEnableDebugMode(DEFAULT_ENABLE_DEBUG_MODE);
-    setDisableLargeDatasetWarning(DEFAULT_DISABLE_LARGE_DATASET_WARNING);
+    setEnableEngineDebugMode(DEFAULT_ENABLE_ENGINE_DEBUG_MODE);
+    setGridClientSuppressLargeDatasetWarning(
+      DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
+    );
     save();
   };
 
@@ -82,9 +93,11 @@ export const SettingsPanel = observer(() => {
             <div className="flex pr-2">
               <FormCheckbox
                 label="Suggests user to enable pagination when handling large datasets to improve performance."
-                checked={disableLargeDatasetWarning}
+                checked={gridClientSuppressLargeDatasetWarning}
                 onChange={() =>
-                  setDisableLargeDatasetWarning(!disableLargeDatasetWarning)
+                  setGridClientSuppressLargeDatasetWarning(
+                    !gridClientSuppressLargeDatasetWarning,
+                  )
                 }
               />
             </div>
@@ -158,6 +171,18 @@ export const SettingsPanel = observer(() => {
                 label="Enable debug logging when running data queries, updating snapshots, etc."
                 checked={enableDebugMode}
                 onChange={() => setEnableDebugMode(!enableDebugMode)}
+              />
+            </div>
+          </div>
+          <div className="mt-1.5">
+            <div className="font-medium">Engine Debug Mode: Enabled</div>
+            <div className="flex pr-2">
+              <FormCheckbox
+                label="Enable debug logging in the engine when running data queries, computing query analytics, etc."
+                checked={enableEngineDebugMode}
+                onChange={() =>
+                  setEnableEngineDebugMode(!enableEngineDebugMode)
+                }
               />
             </div>
           </div>

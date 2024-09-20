@@ -424,10 +424,7 @@ button:focus-visible {
   --ag-header-foreground-color: var(--tw-color-black);
   --ag-row-hover-color: #d4d4d415; // tailwind neutral 300
   --ag-header-column-separator-display: none;
-
-  .ag-header-cell {
-    padding-left: 20px;
-  }
+  --ag-wrapper-border-radius: 0;
 
   // ag-grid header always comes with a big padding, we want to suppress that
   .ag-header-cell:focus-visible::after {
