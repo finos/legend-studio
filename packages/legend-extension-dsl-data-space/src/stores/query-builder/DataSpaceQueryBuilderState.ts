@@ -437,9 +437,9 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     const mapping = executionContext.mapping.value;
     this.changeMapping(mapping);
     const mappingModelCoverageAnalysisResult =
-      this.dataSpaceAnalysisResult?.executionContextsIndex.get(
-        executionContext.name,
-      )?.mappingModelCoverageAnalysisResult;
+      this.dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
+        mapping.path,
+      );
     if (mappingModelCoverageAnalysisResult) {
       this.explorerState.mappingModelCoverageAnalysisResult =
         mappingModelCoverageAnalysisResult;

@@ -15,8 +15,10 @@
  */
 
 import {
+  type QueryInfo,
   type AbstractPureGraphManager,
   type PureProtocolProcessorPlugin,
+  type MappingModelCoverageAnalysisResult,
   PureModel,
   V1_PureGraphManager,
   PureClientVersion,
@@ -32,7 +34,6 @@ import {
   V1_buildDatasetSpecification,
   V1_buildModelCoverageAnalysisResult,
   V1_deserializePackageableElement,
-  type QueryInfo,
   QueryDataSpaceExecutionContextInfo,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
@@ -398,6 +399,24 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       ActionState.create(),
     );
 
+    const mappingToMappingCoverageResult = new Map<
+      string,
+      MappingModelCoverageAnalysisResult
+    >();
+    if (analysisResult.mappingToMappingCoverageResult) {
+      Object.entries(analysisResult.mappingToMappingCoverageResult).forEach(
+        (entry) => {
+          mappingToMappingCoverageResult.set(
+            entry[0],
+            V1_buildModelCoverageAnalysisResult(
+              entry[1],
+              graph.getMapping(entry[0]),
+            ),
+          );
+        },
+      );
+    }
+
     // execution context
     result.executionContextsIndex = new Map<
       string,
@@ -426,11 +445,18 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         }
         contextAnalysisResult.runtimeMetadata = metadata;
       }
-      contextAnalysisResult.mappingModelCoverageAnalysisResult =
-        V1_buildModelCoverageAnalysisResult(
-          context.mappingModelCoverageAnalysisResult,
-          contextAnalysisResult.mapping,
+
+      // for handling deprecated mappingModelCoverageAnalysisResult
+      if (context.mappingModelCoverageAnalysisResult) {
+        mappingToMappingCoverageResult.set(
+          context.mapping,
+          V1_buildModelCoverageAnalysisResult(
+            context.mappingModelCoverageAnalysisResult,
+            contextAnalysisResult.mapping,
+          ),
         );
+      }
+
       contextAnalysisResult.compatibleRuntimes = context.compatibleRuntimes.map(
         (runtime) => graph.getRuntime(runtime),
       );
@@ -578,25 +604,40 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           executableProtocol.info instanceof V1_DataSpaceTemplateExecutableInfo
         ) {
           const templateExecutableInfo = new DataSpaceTemplateExecutableInfo();
-          templateExecutableInfo.id = executableProtocol.info.id;
+          if (executableProtocol.info.id) {
+            templateExecutableInfo.id = executableProtocol.info.id;
+          }
+          if (executableProtocol.info.executionContextKey) {
+            templateExecutableInfo.executionContextKey =
+              executableProtocol.info.executionContextKey;
+          }
           templateExecutableInfo.query = executableProtocol.info.query;
-          templateExecutableInfo.executionContextKey =
-            executableProtocol.info.executionContextKey;
         } else if (
           executableProtocol.info instanceof
           V1_DataSpaceFunctionPointerExecutableInfo
         ) {
           const templateExecutableInfo =
             new DataSpaceFunctionPointerExecutableInfo();
-          templateExecutableInfo.id = executableProtocol.info.id;
+          if (executableProtocol.info.id) {
+            templateExecutableInfo.id = executableProtocol.info.id;
+          }
+          if (executableProtocol.info.executionContextKey) {
+            templateExecutableInfo.executionContextKey =
+              executableProtocol.info.executionContextKey;
+          }
           templateExecutableInfo.function = executableProtocol.info.function;
-          templateExecutableInfo.executionContextKey =
-            executableProtocol.info.executionContextKey;
         } else if (
           executableProtocol.info instanceof V1_DataSpaceServiceExecutableInfo
         ) {
           const serviceExecutableInfo = new DataSpaceServiceExecutableInfo();
           serviceExecutableInfo.query = executableProtocol.info.query;
+          if (executableProtocol.info.id) {
+            serviceExecutableInfo.id = executableProtocol.info.id;
+          }
+          if (executableProtocol.info.executionContextKey) {
+            serviceExecutableInfo.executionContextKey =
+              executableProtocol.info.executionContextKey;
+          }
           serviceExecutableInfo.pattern = executableProtocol.info.pattern;
           serviceExecutableInfo.mapping = executableProtocol.info.mapping;
           serviceExecutableInfo.runtime = executableProtocol.info.runtime;
@@ -626,6 +667,13 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
             executableProtocol.info.query;
           multiExecutionServiceExecutableInfo.pattern =
             executableProtocol.info.pattern;
+          if (executableProtocol.info.id) {
+            multiExecutionServiceExecutableInfo.id = executableProtocol.info.id;
+          }
+          if (executableProtocol.info.executionContextKey) {
+            multiExecutionServiceExecutableInfo.executionContextKey =
+              executableProtocol.info.executionContextKey;
+          }
           executable.info = multiExecutionServiceExecutableInfo;
         }
         if (
@@ -668,6 +716,8 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         return executable;
       },
     );
+
+    result.mappingToMappingCoverageResult = mappingToMappingCoverageResult;
 
     return result;
   }
