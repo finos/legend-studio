@@ -196,7 +196,7 @@ export const DevToolPanel = observer(() => {
         />
         <PanelFormBooleanField
           name="Generate Artifact Generations"
-          prompt="Include generation of artifacet extensions during generation action (F10)"
+          prompt="Include generation of artifact extensions during generation action (F10)"
           value={
             editorStore.graphState.graphGenerationState.enableArtifactGeneration
           }
