@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.14.92
+
+### Patch Changes
+
+- [#3533](https://github.com/finos/legend-studio/pull/3533) [`deb0a30`](https://github.com/finos/legend-studio/commit/deb0a30ff11f3bc487a0b3d7fe766fef1398cd76) ([@travisstebbins](https://github.com/travisstebbins)) - Create pre-filter when right clicking simple projection column in grid output
+
 ## 4.14.91
 
 ## 4.14.90

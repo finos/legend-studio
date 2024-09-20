@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.3.73
+
+### Patch Changes
+
+- [#3542](https://github.com/finos/legend-studio/pull/3542) [`ea81381`](https://github.com/finos/legend-studio/commit/ea813817fc759353c6461621f65d690c0196b921) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - update DataSpaceAnalysisResult metamodel
+
 ## 10.3.72
 
 ## 10.3.71
