@@ -805,9 +805,12 @@ export function generateGridOptionsFromSnapshot(
     rowBuffer: DEFAULT_ROW_BUFFER,
 
     // -------------------------------------- EVENT HANDLERS --------------------------------------
+    // NOTE: make sure the event source must not be 'api' since these handlers are meant for direct
+    // user interaction with the grid. Actions through context menu (i.e. grid controller) or programatic
+    // update of the grid options due to change in query snapshot should not trigger these handlers.
 
     onColumnPinned: (event) => {
-      if (event.column) {
+      if (event.source !== 'api' && event.column) {
         const column = event.column;
         const pinned = column.getPinned();
         dataCube.grid.controller.pinColumn(
@@ -823,7 +826,7 @@ export function generateGridOptionsFromSnapshot(
 
     onColumnMoved: (event) => {
       // make sure the move event is finished before syncing the changes
-      if (event.column && event.finished) {
+      if (event.source !== 'api' && event.column && event.finished) {
         dataCube.grid.controller.rearrangeColumns(
           (event.api.getColumnDefs() ?? [])
             .filter((col): col is ColDef => !('children' in col))
@@ -833,7 +836,7 @@ export function generateGridOptionsFromSnapshot(
     },
 
     onColumnVisible: (event) => {
-      if (event.column) {
+      if (event.source !== 'api' && event.column) {
         const column = event.column;
         const isVisible = column.isVisible();
         dataCube.grid.controller.showColumn(column.getColId(), isVisible);
