@@ -357,6 +357,10 @@ button:focus-visible {
     color: var(--ag-disabled-foreground-color);
   }
 
+  .ag-column-drop-list.ag-column-drop-horizontal-list {
+    overflow-x: overlay;
+  }
+
   .ag-column-drop-list.ag-column-drop-horizontal-list[aria-label='Row Groups']
     .ag-column-drop-empty-message.ag-column-drop-horizontal-empty-message::after {
     content: 'Drag columns here to set vertical pivots';

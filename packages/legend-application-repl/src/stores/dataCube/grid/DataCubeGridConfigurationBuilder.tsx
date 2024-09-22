@@ -33,7 +33,6 @@ import type {
   ICellRendererParams,
 } from '@ag-grid-community/core';
 import {
-  INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
   GridClientSortDirection,
   INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
   INTERNAL__GridClientUtilityCssClassName,
@@ -54,6 +53,7 @@ import {
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
   INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
   INTERNAL__GRID_CLIENT_PIVOT_COLUMN_GROUP_COLOR_ROTATION_SIZE,
+  INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import {
   getNonNullableEntry,
@@ -415,7 +415,9 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     //
     // -------------------------------------- ROW GROUPING --------------------------------------
     rowGroupPanelShow: 'always',
-    groupDisplayType: 'custom', // keeps the column set stable even when row grouping is used
+    // use the auto-generated group column to make it work with pivot mode
+    // See https://github.com/ag-grid/ag-grid/issues/8088
+    groupDisplayType: 'singleColumn',
     suppressRowGroupHidesColumns: true, // keeps the column set stable even when row grouping is used
     suppressAggFuncInHeader: true, //  keeps the columns stable when aggregation is used
     getChildCount: (data) =>
@@ -504,7 +506,9 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     },
     // -------------------------------------- TOOLTIP --------------------------------------
     tooltipShowDelay: INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY,
-    tooltipInteraction: true,
+    // though this is a nice behavior to have enabled, ag-grid not dismissing tooltip
+    // when context-menu is triggered makes it an undesirable interaction.
+    tooltipInteraction: false,
     // -------------------------------------- COLUMN MOVING --------------------------------------
     suppressDragLeaveHidesColumns: true, // disable this since it's quite easy to accidentally hide columns while moving
     // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
@@ -706,36 +710,6 @@ export function generateColumnDefs(
   }
 
   return [
-    {
-      headerName: '',
-      colId: INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
-      cellRenderer: 'agGroupCellRenderer',
-      tooltipValueGetter: (params) => {
-        if (
-          isNonNullable(params.value) &&
-          params.value !== INTERNAL__GRID_CLIENT_MISSING_VALUE
-        ) {
-          return (
-            `Group Value = ${params.value === '' ? "''" : params.value === true ? 'TRUE' : params.value === false ? 'FALSE' : params.value}` +
-            `${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] !== undefined ? ` (${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID]})` : ''}`
-          );
-        }
-        return null;
-      },
-      showRowGroup: true,
-      hide: !snapshot.data.groupBy,
-      lockPinned: true,
-      lockPosition: true,
-      pinned: GridClientPinnedAlignement.LEFT,
-      suppressSpanHeaderHeight: true,
-      cellDataType: false,
-      minWidth: 200,
-      suppressAutoSize: true,
-      suppressSizeToFit: true,
-      loadingCellRenderer: DataCubeGridLoadingCellRenderer,
-      // TODO: we can support this in the configuration (support sorting by tree-column?)
-      sortable: true,
-    } satisfies ColDef,
     // NOTE: Internal column used for programatically trigger data fetch when filter is modified
     {
       colId: INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
@@ -846,6 +820,39 @@ export function generateGridOptionsFromSnapshot(
     // -------------------------------------- COLUMNS --------------------------------------
 
     columnDefs: generateColumnDefs(snapshot, configuration, dataCube),
+    autoGroupColumnDef: {
+      // NOTE: the column ID here is set for explicitness, but this is not something ag-grid
+      // allows setting for auto-group column, for more advanced use cases, we might want to
+      // look into custom group columns
+      // See https://www.ag-grid.com/react-data-grid/grouping-custom-group-columns/
+      colId: INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
+      headerName: '',
+      cellRenderer: 'agGroupCellRenderer',
+      tooltipValueGetter: (params) => {
+        if (
+          isNonNullable(params.value) &&
+          params.value !== INTERNAL__GRID_CLIENT_MISSING_VALUE
+        ) {
+          return (
+            `Group Value = ${params.value === '' ? "''" : params.value === true ? 'TRUE' : params.value === false ? 'FALSE' : params.value}` +
+            `${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] !== undefined ? ` (${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID]})` : ''}`
+          );
+        }
+        return null;
+      },
+      showRowGroup: true,
+      hide: !snapshot.data.groupBy,
+      lockPinned: true,
+      lockPosition: true,
+      pinned: GridClientPinnedAlignement.LEFT,
+      suppressSpanHeaderHeight: true,
+      cellDataType: false,
+      minWidth: 200,
+      suppressAutoSize: true,
+      suppressSizeToFit: true,
+      loadingCellRenderer: DataCubeGridLoadingCellRenderer,
+      sortable: true,
+    } satisfies ColDef,
   } as GridOptions;
 
   return gridOptions;

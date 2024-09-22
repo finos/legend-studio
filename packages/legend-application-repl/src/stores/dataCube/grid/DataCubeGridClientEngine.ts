@@ -127,10 +127,10 @@ export const INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH = 200;
 export const INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH = 50;
 export const INTERNAL__GRID_CLIENT_HEADER_HEIGHT = 24;
 export const INTERNAL__GRID_CLIENT_ROW_HEIGHT = 20;
-export const INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY = 1000;
+export const INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY = 1500;
 export const INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING = 10;
 export const INTERNAL__GRID_CLIENT_MISSING_VALUE = '__MISSING';
-export const INTERNAL__GRID_CLIENT_TREE_COLUMN_ID = 'INTERNAL__tree';
+export const INTERNAL__GRID_CLIENT_TREE_COLUMN_ID = 'ag-Grid-AutoColumn';
 export const INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID =
   'INTERNAL__dataFetchManualTrigger';
 export const INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID =
@@ -185,12 +185,12 @@ export function computeHashCodeForDataFetchManualTrigger(
       configuration: {
         initialExpandLevel: configuration.initialExpandLevel,
         showRootAggregation: configuration.showRootAggregation,
-        showLeafCount: configuration.showLeafCount,
         pivotTotalColumnPlacement: configuration.pivotTotalColumnPlacement,
         treeGroupSortFunction: configuration.treeGroupSortFunction,
         columns: configuration.columns.map((column) => ({
           name: column.name,
           type: column.type,
+          kind: column.kind,
           aggregateOperator: column.aggregateOperator,
           aggregationParameters: column.aggregationParameters,
           excludedFromHorizontalPivot: column.excludedFromHorizontalPivot,
