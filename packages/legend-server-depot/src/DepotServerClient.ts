@@ -75,8 +75,9 @@ export class DepotServerClient extends AbstractServerClient {
     groupId: string,
     artifactId: string,
     version: string,
+    classifier?: string,
   ): string =>
-    `${this._versions(groupId, artifactId)}/${encodeURIComponent(version)}`;
+    `${this._versions(groupId, artifactId)}/${encodeURIComponent(version)}${classifier ? `/classifiers/${classifier}` : ``}`;
 
   getAllVersions = (groupId: string, artifactId: string): Promise<string[]> =>
     this.get(this._versions(groupId, artifactId));
@@ -85,17 +86,20 @@ export class DepotServerClient extends AbstractServerClient {
     groupId: string,
     artifactId: string,
     version: string,
+    classifier?: string,
   ): Promise<PlainObject<Entity>[]> =>
-    this.get(this._version(groupId, artifactId, version));
+    this.get(this._version(groupId, artifactId, version, classifier));
 
   getEntities(
     project: StoreProjectData,
     versionId: string,
+    classifier?: string,
   ): Promise<PlainObject<Entity>[]> {
     return this.getVersionEntities(
       project.groupId,
       project.artifactId,
       resolveVersion(versionId),
+      classifier,
     );
   }
 
@@ -213,9 +217,10 @@ export class DepotServerClient extends AbstractServerClient {
      * Flag indicating whether to return the root of the dependency tree.
      */
     includeOrigin: boolean,
+    classifier?: string,
   ): Promise<PlainObject<ProjectVersionEntities>[]> =>
     this.get(
-      `${this._version(groupId, artifactId, version)}/dependencies`,
+      `${this._version(groupId, artifactId, version)}${classifier ? `/classifiers/${classifier}` : ''}/dependencies`,
       undefined,
       undefined,
       {
@@ -228,6 +233,7 @@ export class DepotServerClient extends AbstractServerClient {
   async getIndexedDependencyEntities(
     project: StoreProjectData,
     versionId: string,
+    classifier?: string,
   ): Promise<Map<string, EntitiesWithOrigin>> {
     const dependencyEntitiesIndex = new Map<string, EntitiesWithOrigin>();
     const dependencies = await this.getDependencyEntities(
@@ -236,6 +242,7 @@ export class DepotServerClient extends AbstractServerClient {
       resolveVersion(versionId),
       true,
       false,
+      classifier,
     );
     dependencies
       .map((v) => ProjectVersionEntities.serialization.fromJson(v))
