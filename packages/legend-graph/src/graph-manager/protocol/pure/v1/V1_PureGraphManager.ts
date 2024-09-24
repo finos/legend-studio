@@ -557,9 +557,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   constructor(
     pluginManager: GraphManagerPluginManager,
     logService: LogService,
+    engine?: V1_GraphManagerEngine,
   ) {
     super(pluginManager, logService);
-    this.engine = new V1_RemoteEngine({}, logService);
+    this.engine = engine ?? new V1_RemoteEngine({}, logService);
 
     // setup plugins
     this.graphBuilderExtensions = new V1_GraphBuilderExtensions(

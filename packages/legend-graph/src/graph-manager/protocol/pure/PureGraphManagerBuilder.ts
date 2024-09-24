@@ -18,10 +18,12 @@ import type { AbstractPureGraphManager } from '../../../graph-manager/AbstractPu
 import { V1_PureGraphManager } from './v1/V1_PureGraphManager.js';
 import type { LogService } from '@finos/legend-shared';
 import type { GraphManagerPluginManager } from '../../GraphManagerPluginManager.js';
+import type { V1_GraphManagerEngine } from './v1/engine/V1_GraphManagerEngine.js';
 
 export const buildPureGraphManager = (
   pluginManager: GraphManagerPluginManager,
   logService: LogService,
+  engine?: V1_GraphManagerEngine,
 ): AbstractPureGraphManager =>
   // NOTE: until we support more client versions, we always default to return V1
-  new V1_PureGraphManager(pluginManager, logService);
+  new V1_PureGraphManager(pluginManager, logService, engine);
