@@ -18,10 +18,15 @@ import {
   type Query,
   type QuerySearchSpecification,
   type RawLambda,
+  type FunctionAnalysisInfo,
   extractElementNameFromPath,
   RuntimePointer,
   PackageableElementExplicitReference,
   QueryProjectCoordinates,
+  CORE_PURE_PATH,
+  V1_deserializePackageableElement,
+  V1_ConcreteFunctionDefinition,
+  V1_buildFunctionInfoAnalysis,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
@@ -33,6 +38,7 @@ import {
   assertErrorThrown,
   assertTrue,
   guaranteeNonNullable,
+  guaranteeType,
   returnUndefOnError,
   uuid,
   type GeneratorFn,
@@ -47,6 +53,7 @@ import {
   type ProjectGAVCoordinates,
 } from '@finos/legend-storage';
 import {
+  type DataSpaceAnalysisResult,
   type DataSpaceExecutionContext,
   DSL_DataSpace_getGraphManagerExtension,
   getDataSpace,
@@ -386,6 +393,69 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     // add to visited dataspaces
     this.addVisitedDataSpace(queryableDataSpace);
     return queryBuilderState;
+  }
+
+  // build function analysis info by fetching functions within this project from metadata when building minimal graph
+  async processFunctionForMinimalGraph(
+    project: StoreProjectData,
+    queryableDataSpace: QueryableDataSpace,
+    dataSpaceAnalysisResult: DataSpaceAnalysisResult,
+  ): Promise<void> {
+    const functionEntities = await this.depotServerClient.getEntities(
+      project,
+      queryableDataSpace.versionId,
+      CORE_PURE_PATH.FUNCTION,
+    );
+    const functionProtocols = functionEntities.map((func) =>
+      guaranteeType(
+        V1_deserializePackageableElement(
+          (func.entity as Entity).content,
+          this.graphManagerState.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+        ),
+        V1_ConcreteFunctionDefinition,
+      ),
+    );
+    const dependencyFunctionEntities =
+      await this.depotServerClient.getDependencyEntities(
+        queryableDataSpace.groupId,
+        queryableDataSpace.artifactId,
+        queryableDataSpace.versionId,
+        false,
+        false,
+        CORE_PURE_PATH.FUNCTION,
+      );
+    const dependencyFunctionProtocols = dependencyFunctionEntities.map((func) =>
+      guaranteeType(
+        V1_deserializePackageableElement(
+          (func.entity as Entity).content,
+          this.graphManagerState.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+        ),
+        V1_ConcreteFunctionDefinition,
+      ),
+    );
+    const functionInfos = V1_buildFunctionInfoAnalysis(
+      functionProtocols,
+      this.graphManagerState.graph,
+    );
+    const dependencyFunctionInfos = V1_buildFunctionInfoAnalysis(
+      dependencyFunctionProtocols,
+      this.graphManagerState.graph,
+    );
+    if (functionInfos.length > 0) {
+      const functionInfoMap = new Map<string, FunctionAnalysisInfo>();
+      functionInfos.forEach((funcInfo) => {
+        functionInfoMap.set(funcInfo.functionPath, funcInfo);
+      });
+      dataSpaceAnalysisResult.functionInfos = functionInfoMap;
+    }
+    if (dependencyFunctionInfos.length > 0) {
+      const dependencyFunctionInfoMap = new Map<string, FunctionAnalysisInfo>();
+      functionInfos.forEach((funcInfo) => {
+        dependencyFunctionInfoMap.set(funcInfo.functionPath, funcInfo);
+      });
+      dataSpaceAnalysisResult.dependencyFunctionInfos =
+        dependencyFunctionInfoMap;
+    }
   }
 
   *changeDataSpace(val: DataSpaceInfo): GeneratorFn<void> {

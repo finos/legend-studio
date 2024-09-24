@@ -26,13 +26,21 @@ import type {
   CuratedTemplateQuery,
   CuratedTemplateQuerySpecification,
   LoadQueryFilterOption,
+  QueryBuilderExtraFunctionHelper,
   QueryBuilderState,
   QueryBuilder_LegendApplicationPlugin_Extension,
   TemplateQueryPanelContentRenderer,
 } from '@finos/legend-query-builder';
 import { DataSpaceQueryBuilderState } from '../stores/query-builder/DataSpaceQueryBuilderState.js';
 import { DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_CONFIG } from '../__lib__/DSL_DataSpace_LegendApplicationCommand.js';
-import type { QuerySearchSpecification } from '@finos/legend-graph';
+import {
+  type QuerySearchSpecification,
+  ConcreteFunctionDefinition,
+  getOrCreateGraphPackage,
+  Multiplicity,
+  PackageableElementExplicitReference,
+  PrimitiveType,
+} from '@finos/legend-graph';
 import { configureDataGridComponent } from '@finos/legend-lego/data-grid';
 import { DataSpaceExecutableTemplate } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { filterByType } from '@finos/legend-shared';
@@ -203,5 +211,35 @@ export class DSL_DataSpace_LegendApplicationPlugin
         },
       },
     ];
+  }
+
+  getExtraQueryBuilderFunctionHelper(
+    queryBuilderState: QueryBuilderState,
+  ): QueryBuilderExtraFunctionHelper[] {
+    if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
+      const functionInfos =
+        queryBuilderState.dataSpaceAnalysisResult?.functionInfos;
+      if (functionInfos) {
+        const _functions = Array.from(functionInfos).map(([key, info]) => {
+          const _function = new ConcreteFunctionDefinition(
+            info.functionName,
+            PackageableElementExplicitReference.create(PrimitiveType.STRING),
+            Multiplicity.ONE,
+          );
+          _function.expressionSequence =
+            queryBuilderState.graphManagerState.graphManager.createDefaultBasicRawLambda()
+              .body as object[];
+          _function.package = getOrCreateGraphPackage(
+            queryBuilderState.graphManagerState.graph,
+            info.packagePath,
+            undefined,
+          );
+          return _function;
+        });
+        return [{ functions: _functions, functionInfoMap: functionInfos }];
+      }
+      return [];
+    }
+    return [];
   }
 }

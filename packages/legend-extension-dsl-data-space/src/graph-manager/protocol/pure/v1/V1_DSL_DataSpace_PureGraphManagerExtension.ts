@@ -38,6 +38,7 @@ import {
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import {
+  type PlainObject,
   ActionState,
   assertErrorThrown,
   filterByType,
@@ -47,7 +48,6 @@ import {
   isNonNullable,
   LogEvent,
   uniq,
-  type PlainObject,
 } from '@finos/legend-shared';
 import {
   DataSpaceSupportCombinedInfo,

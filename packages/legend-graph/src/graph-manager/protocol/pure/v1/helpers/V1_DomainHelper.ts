@@ -15,9 +15,15 @@
  */
 
 import {
+  FunctionAnalysisInfo,
+  FunctionAnalysisParameterInfo,
+} from '../../../../../graph/helpers/FunctionAnalysis.js';
+import { generateMultiplicityString } from '../../../../../graph/helpers/PureLanguageHelper.js';
+import {
   ELEMENT_PATH_DELIMITER,
   FUNCTION_SIGNATURE_MULTIPLICITY_INFINITE_TOKEN,
 } from '../../../../../graph/MetaModelConst.js';
+import type { PureModel } from '../../../../../graph/PureModel.js';
 import type { V1_Multiplicity } from '../model/packageableElements/domain/V1_Multiplicity.js';
 import type { V1_ConcreteFunctionDefinition } from '../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
 import type { V1_RawVariable } from '../model/rawValueSpecification/V1_RawVariable.js';
@@ -43,15 +49,80 @@ const V1_buildFunctionParameterSignature = (variable: V1_RawVariable): string =>
     .split(ELEMENT_PATH_DELIMITER)
     .pop()}_${V1_buildFunctionMultiplicitySignature(variable.multiplicity)}_`;
 
-export const V1_buildFunctionSignature = (
+export const V1_buildFunctionSignatureSuffix = (
   func: V1_ConcreteFunctionDefinition,
-): string => {
-  const functionSignature = `_${func.parameters
+): string =>
+  `_${func.parameters
     .map((p) => V1_buildFunctionParameterSignature(p))
     .join('_')}_${func.returnType
     .split(ELEMENT_PATH_DELIMITER)
     .pop()}_${V1_buildFunctionMultiplicitySignature(func.returnMultiplicity)}_`;
+
+export const V1_buildFunctionSignature = (
+  func: V1_ConcreteFunctionDefinition,
+): string => {
+  const functionSignature = V1_buildFunctionSignatureSuffix(func);
   return func.name.endsWith(functionSignature)
     ? func.name
     : func.name + functionSignature;
+};
+
+export const V1_buildFunctionPrettyName = (
+  element: V1_ConcreteFunctionDefinition,
+  options?: {
+    fullPath?: boolean;
+    spacing?: boolean;
+    notIncludeParamName?: boolean;
+  },
+): string =>
+  `${
+    options?.fullPath ? `${element.package}${ELEMENT_PATH_DELIMITER}` : ''
+  }${element.name.substring(0, element.name.indexOf(V1_buildFunctionSignatureSuffix(element)))}(${element.parameters
+    .map((p) =>
+      !options?.notIncludeParamName
+        ? `${p.name}: ${p.class}[${generateMultiplicityString(
+            p.multiplicity.lowerBound,
+            p.multiplicity.upperBound,
+          )}]`
+        : `${p.class}[${generateMultiplicityString(
+            p.multiplicity.lowerBound,
+            p.multiplicity.upperBound,
+          )}]`,
+    )
+    .join(', ')}): ${element.returnType}[${generateMultiplicityString(
+    element.returnMultiplicity.lowerBound,
+    element.returnMultiplicity.upperBound,
+  )}]`.replaceAll(/\s*/gu, (val) => {
+    if (options?.spacing) {
+      return val;
+    }
+    return '';
+  });
+
+export const V1_buildFunctionInfoAnalysis = (
+  functionProtocols: V1_ConcreteFunctionDefinition[],
+  graph: PureModel,
+): FunctionAnalysisInfo[] => {
+  const functionInfos = functionProtocols.map((func) => {
+    const functionInfo = new FunctionAnalysisInfo();
+    functionInfo.functionPath = func.path;
+    functionInfo.functionName = func.name;
+    functionInfo.functionPrettyName = V1_buildFunctionPrettyName(func, {
+      fullPath: true,
+    });
+    functionInfo.packagePath = func.package;
+    functionInfo.returnType = func.returnType;
+    functionInfo.parameterInfoList = func.parameters.map((param) => {
+      const paramInfo = new FunctionAnalysisParameterInfo();
+      paramInfo.multiplicity = graph.getMultiplicity(
+        param.multiplicity.lowerBound,
+        param.multiplicity.upperBound,
+      );
+      paramInfo.name = param.name;
+      paramInfo.type = param.class;
+      return paramInfo;
+    });
+    return functionInfo;
+  });
+  return functionInfos;
 };

@@ -50,6 +50,7 @@ import {
 } from '../../stores/explorer/QueryFunctionsExplorerState.js';
 import { useDrag } from 'react-dnd';
 import {
+  type FunctionAnalysisInfo,
   ConcreteFunctionDefinition,
   generateFunctionPrettyName,
   getElementRootPackage,
@@ -72,8 +73,9 @@ const QueryBuilderFunctionInfoTooltip: React.FC<{
   element: ConcreteFunctionDefinition;
   children: React.ReactElement;
   placement?: TooltipPlacement | undefined;
+  functionInfo?: FunctionAnalysisInfo | undefined;
 }> = (props) => {
-  const { element, children, placement } = props;
+  const { element, children, placement, functionInfo } = props;
   const documentation = element.taggedValues
     .filter(
       (taggedValue) =>
@@ -111,12 +113,20 @@ const QueryBuilderFunctionInfoTooltip: React.FC<{
             </div>
             <div className="query-builder__tooltip__item__value">
               {element.parameters
-                .map(
-                  (param) =>
-                    `${param.name}: ${
+                .map((param) => {
+                  const paramInfo = functionInfo?.parameterInfoList.filter(
+                    (p) => p.name === param.name,
+                  )[0];
+                  if (paramInfo) {
+                    return `${paramInfo.name}: ${
+                      paramInfo.type
+                    }${getMultiplicityDescription(paramInfo.multiplicity)}`;
+                  } else {
+                    return `${param.name}: ${
                       param.type.value.name
-                    }${getMultiplicityDescription(param.multiplicity)}`,
-                )
+                    }${getMultiplicityDescription(param.multiplicity)}`;
+                  }
+                })
                 .join('; ')}
             </div>
           </div>
@@ -135,7 +145,7 @@ const QueryBuilderFunctionInfoTooltip: React.FC<{
               Return Type
             </div>
             <div className="query-builder__tooltip__item__value">
-              {element.returnType.value.name}
+              {functionInfo?.returnType ?? element.returnType.value.name}
             </div>
           </div>
         </div>
@@ -158,9 +168,15 @@ const QueryBuilderFunctionsExplorerListEntry = observer(
       element,
       rootPackageName,
     );
-    const functionPrettyName = generateFunctionPrettyName(element, {
-      fullPath: true,
-    });
+    const functionInfo =
+      queryBuilderState.functionsExplorerState.functionInfoMap?.get(
+        element.path,
+      );
+    const functionPrettyName =
+      functionInfo?.functionPrettyName ??
+      generateFunctionPrettyName(element, {
+        fullPath: true,
+      });
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: QUERY_BUILDER_FUNCTION_DND_TYPE,
@@ -191,6 +207,7 @@ const QueryBuilderFunctionsExplorerListEntry = observer(
         <div className="query-builder__functions-explorer__function__actions">
           <QueryBuilderFunctionInfoTooltip
             element={node.packageableElement as ConcreteFunctionDefinition}
+            functionInfo={functionInfo}
           >
             <div className="query-builder__functions-explorer__function__action query-builder__functions-explorer__function__node__info">
               <InfoCircleIcon />
@@ -211,11 +228,17 @@ const QueryBuilderFunctionsExplorerTreeNodeContainer = observer(
       }
     >,
   ) => {
-    const { node, level, stepPaddingInRem, onNodeSelect } = props;
+    const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
     const isPackage = node.packageableElement instanceof Package;
+    const functionInfo =
+      innerProps.queryBuilderState.functionsExplorerState.functionInfoMap?.get(
+        node.packageableElement.path,
+      );
     const name =
       node.packageableElement instanceof ConcreteFunctionDefinition
-        ? generateFunctionPrettyName(node.packageableElement)
+        ? (functionInfo?.functionPrettyName.split(
+            `${functionInfo.packagePath}::`,
+          )[1] ?? generateFunctionPrettyName(node.packageableElement))
         : node.packageableElement.name;
     const isExpandable = Boolean(node.childrenIds.length);
     const nodeExpandIcon = isExpandable ? (
@@ -293,6 +316,7 @@ const QueryBuilderFunctionsExplorerTreeNodeContainer = observer(
                   ConcreteFunctionDefinition && (
                   <QueryBuilderFunctionInfoTooltip
                     element={node.packageableElement}
+                    functionInfo={functionInfo}
                   >
                     <div className="query-builder__functions-explorer__tree__node__action query-builder__functions-explorer__tree__node__info">
                       <InfoCircleIcon />
@@ -493,12 +517,19 @@ export const QueryBuilderFunctionsExplorerPanel = observer(
           <DragPreviewLayer
             labelGetter={(
               item: QueryBuilderFunctionsExplorerDragSource,
-            ): string =>
-              generateFunctionPrettyName(
-                item.node.packageableElement as ConcreteFunctionDefinition,
-                { fullPath: true },
-              )
-            }
+            ): string => {
+              const functionInfo =
+                queryBuilderState.functionsExplorerState.functionInfoMap?.get(
+                  item.node.packageableElement.path,
+                );
+              return (
+                functionInfo?.functionPrettyName ??
+                generateFunctionPrettyName(
+                  item.node.packageableElement as ConcreteFunctionDefinition,
+                  { fullPath: true },
+                )
+              );
+            }}
             types={[QUERY_BUILDER_FUNCTION_DND_TYPE]}
           />
           {((showDependencyFuncions &&

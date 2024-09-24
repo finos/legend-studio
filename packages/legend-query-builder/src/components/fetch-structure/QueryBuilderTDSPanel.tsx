@@ -239,13 +239,24 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
             }`,
           );
         } else if (type === QUERY_BUILDER_FUNCTION_DND_TYPE) {
+          const functionPrettyName = generateFunctionCallString(
+            (item as QueryBuilderFunctionsExplorerDragSource).node
+              .packageableElement as ConcreteFunctionDefinition,
+            {
+              graph:
+                projectionColumnState.tdsState.queryBuilderState
+                  .graphManagerState.graph,
+              functionInfo:
+                projectionColumnState.tdsState.queryBuilderState.functionsExplorerState.functionInfoMap?.get(
+                  (item as QueryBuilderFunctionsExplorerDragSource).node
+                    .packageableElement.path,
+                ),
+            },
+          );
           projectionColumnState.derivationLambdaEditorState.setLambdaString(
             `${
               projectionColumnState.derivationLambdaEditorState.lambdaString
-            }${`${generateFunctionCallString(
-              (item as QueryBuilderFunctionsExplorerDragSource).node
-                .packageableElement as ConcreteFunctionDefinition,
-            )}`}`,
+            }${functionPrettyName}`,
           );
         } else {
           projectionColumnState.derivationLambdaEditorState.setLambdaString(
@@ -748,9 +759,9 @@ const QueryBuilderProjectionColumnEditor = observer(
         return '...';
       }
       if (acending === undefined || continuous === undefined) {
-        return `${Number(percentileValue)}`;
+        return `${Number(percentileValue)} `;
       }
-      return `${Number(percentileValue)}, ${acending}, ${continuous}`;
+      return `${Number(percentileValue)}, ${acending}, ${continuous} `;
     };
     const setPercentileArguments = (): void => {
       setIsPercentileOpen(!isPercentileOpen);
@@ -1262,11 +1273,20 @@ export const QueryBuilderTDSPanel = observer(
                   { addDummyParameter: true },
                 ),
               );
+            const functionPrettyName = generateFunctionCallString(
+              (item as QueryBuilderFunctionsExplorerDragSource).node
+                .packageableElement as ConcreteFunctionDefinition,
+              {
+                graph: tdsState.queryBuilderState.graphManagerState.graph,
+                functionInfo:
+                  tdsState.queryBuilderState.functionsExplorerState.functionInfoMap?.get(
+                    (item as QueryBuilderFunctionsExplorerDragSource).node
+                      .packageableElement.path,
+                  ),
+              },
+            );
             derivationProjectionColumn.derivationLambdaEditorState.setLambdaString(
-              `${DEFAULT_LAMBDA_VARIABLE_NAME}${LAMBDA_PIPE}${generateFunctionCallString(
-                (item as QueryBuilderFunctionsExplorerDragSource).node
-                  .packageableElement as ConcreteFunctionDefinition,
-              )}`,
+              `${DEFAULT_LAMBDA_VARIABLE_NAME}${LAMBDA_PIPE}${functionPrettyName} `,
             );
             tdsState.addColumn(derivationProjectionColumn);
             break;
@@ -1544,7 +1564,7 @@ export const QueryBuilderTDSPanel = observer(
                       onClick={openResultSetModifierEditor}
                     >
                       <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                        {`${columnState.columnState.columnName} ${columnState.sortType}`}
+                        {`${columnState.columnState.columnName} ${columnState.sortType} `}
                       </div>
                     </button>
                   ),
@@ -1561,7 +1581,7 @@ export const QueryBuilderTDSPanel = observer(
                   onClick={openResultSetModifierEditor}
                 >
                   <div className="query-builder__projection__result-modifier-prompt__header__label__title">
-                    {`${tdsState.resultSetModifierState.slice[0]},${tdsState.resultSetModifierState.slice[1]}`}
+                    {`${tdsState.resultSetModifierState.slice[0]},${tdsState.resultSetModifierState.slice[1]} `}
                   </div>
                 </button>
               </div>

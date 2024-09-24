@@ -16,7 +16,12 @@
 
 import type { LegendApplicationPlugin } from '@finos/legend-application';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import type { QuerySearchSpecification, RawLambda } from '@finos/legend-graph';
+import type {
+  ConcreteFunctionDefinition,
+  FunctionAnalysisInfo,
+  QuerySearchSpecification,
+  RawLambda,
+} from '@finos/legend-graph';
 import type {
   DataAccessState,
   DatasetAccessInfo,
@@ -95,6 +100,11 @@ export type QueryBuilderMenuActionConfiguration = {
   ) => React.ReactNode;
 };
 
+export type QueryBuilderExtraFunctionHelper = {
+  functions: ConcreteFunctionDefinition[];
+  functionInfoMap: Map<string, FunctionAnalysisInfo>;
+};
+
 export interface QueryBuilder_LegendApplicationPlugin_Extension
   extends LegendApplicationPlugin {
   /**
@@ -158,4 +168,11 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
    * Get the list of export menu action configurations
    */
   getExtraQueryBuilderExportMenuActionConfigurations?(): QueryBuilderMenuActionConfiguration[];
+
+  /**
+   * Get extra functions
+   */
+  getExtraQueryBuilderFunctionHelper?(
+    queryBuilderState: QueryBuilderState,
+  ): QueryBuilderExtraFunctionHelper[];
 }
