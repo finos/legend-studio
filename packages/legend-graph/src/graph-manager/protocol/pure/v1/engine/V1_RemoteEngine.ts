@@ -18,6 +18,7 @@ import {
   type LogService,
   type PlainObject,
   type ServerClientConfig,
+  type TracerService,
   LogEvent,
   parseLosslessJSON,
   assertErrorThrown,
@@ -92,7 +93,10 @@ import { deserialize, serialize } from 'serializr';
 import { V1_ExecutionError } from './execution/V1_ExecutionError.js';
 import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText.js';
 import { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification.js';
-import type { ExecutionOptions } from '../../../../AbstractPureGraphManager.js';
+import type {
+  ExecutionOptions,
+  TEMPORARY__EngineSetupConfig,
+} from '../../../../AbstractPureGraphManager.js';
 import type { ExternalFormatDescription } from '../../../../action/externalFormat/ExternalFormatDescription.js';
 import { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription.js';
 import { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration.js';
@@ -151,48 +155,49 @@ import { V1_RelationalConnectionBuilder } from './relational/V1_RelationalConnec
 import { V1_DeploymentResult } from './functionActivator/V1_DeploymentResult.js';
 import type { PostValidationAssertionResult } from '../../../../../DSL_Service_Exports.js';
 import { V1_DebugTestsResult } from './test/V1_DebugTestsResult.js';
+import type { V1_GraphManagerEngine } from './V1_GraphManagerEngine.js';
 
-class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
+class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_RemoteEngine;
 
   override setEnv(val: string | undefined): void {
     super.setEnv(val);
-    this.engine.getEngineServerClient().setEnv(val);
+    this.engine.setServerClientEnv(val);
   }
 
   override setCurrentUserId(val: string | undefined): void {
     super.setCurrentUserId(val);
-    this.engine.getEngineServerClient().setCurrentUserId(val);
+    this.engine.setServerClientCurrentUserId(val);
   }
 
   override setBaseUrl(val: string | undefined): void {
     super.setBaseUrl(val);
-    this.engine.getEngineServerClient().setBaseUrl(val);
+    this.engine.setServerClientBaseUrl(val);
   }
 
   override setBaseUrlForServiceRegistration(val: string | undefined): void {
     super.setBaseUrlForServiceRegistration(val);
-    this.engine.getEngineServerClient().setBaseUrlForServiceRegistration(val);
+    this.engine.setServerClientBaseUrlForServiceRegistration(val);
   }
 
   override setUseClientRequestPayloadCompression(val: boolean): void {
     super.setUseClientRequestPayloadCompression(val);
-    this.engine.getEngineServerClient().setCompression(val);
+    this.engine.setServerClientUseClientRequestPayloadCompression(val);
   }
 
   override setEnableDebuggingPayload(val: boolean): void {
     super.setEnableDebuggingPayload(val);
-    this.engine.getEngineServerClient().setDebugPayload(val);
+    this.engine.setServerClientEnableDebuggingPayload(val);
   }
 
   constructor(engine: V1_RemoteEngine) {
     super();
     this.engine = engine;
-    this.baseUrl = this.engine.getEngineServerClient().baseUrl;
+    this.baseUrl = this.engine.getServerClientBaseUrl();
   }
 }
 
-interface V1_EngineSetupConfig {
+interface V1_EngineSetupConfig extends TEMPORARY__EngineSetupConfig {
   env: string;
   tabSize: number;
   clientConfig: ServerClientConfig;
@@ -204,14 +209,14 @@ interface V1_EngineSetupConfig {
  * However, this might change in the future if we ever bring some engine functionalities
  * to Studio. As such, we want to encapsulate engine client within this class.
  */
-export class V1_RemoteEngine {
+export class V1_RemoteEngine implements V1_GraphManagerEngine {
   private readonly engineServerClient: V1_EngineServerClient;
   readonly logService: LogService;
-  readonly config: V1_EngineConfig;
+  readonly config: V1_RemoteEngineConfig;
 
   constructor(clientConfig: ServerClientConfig, logService: LogService) {
     this.engineServerClient = new V1_EngineServerClient(clientConfig);
-    this.config = new V1_EngineConfig(this);
+    this.config = new V1_RemoteEngineConfig(this);
     this.config.setBaseUrl(this.engineServerClient.baseUrl);
     this.config.setUseClientRequestPayloadCompression(
       this.engineServerClient.enableCompression,
@@ -236,31 +241,42 @@ export class V1_RemoteEngine {
     return serializedGraph;
   };
 
-  /**
-   * NOTE: ideally, we would not want to leak engine server client like this,
-   * since the communication with engine client should only be done in this class
-   * alone. However, we need to expose the client for plugins, tests, and dev tool
-   * configurations.
-   */
-  getEngineServerClient(): V1_EngineServerClient {
-    return this.engineServerClient;
-  }
-
-  getCurrentUserId(): string | undefined {
-    return this.engineServerClient.currentUserId;
-  }
-
   async setup(config: V1_EngineSetupConfig): Promise<void> {
     this.config.setEnv(config.env);
     this.config.setTabSize(config.tabSize);
     try {
-      this.config.setCurrentUserId(
-        await this.engineServerClient.getCurrentUserId(),
-      );
+      this.config.setCurrentUserId(await this.getServerClientCurrentUserId());
     } catch {
       // do nothing
     }
   }
+
+  // ----------------------------------------- Server Client ----------------------------------------
+  getServerClientCurrentUserId = (): string | undefined =>
+    this.engineServerClient.currentUserId;
+  getServerClientBaseUrl = (): string | undefined =>
+    this.engineServerClient.baseUrl;
+  setServerClientTracerService = (tracerService: TracerService) => {
+    this.engineServerClient.setTracerService(tracerService);
+  };
+  setServerClientEnv = (val: string | undefined) => {
+    this.engineServerClient.setEnv(val);
+  };
+  setServerClientCurrentUserId = (val: string | undefined) => {
+    this.engineServerClient.setCurrentUserId(val);
+  };
+  setServerClientBaseUrl = (val: string | undefined) => {
+    this.engineServerClient.setBaseUrl(val);
+  };
+  setServerClientBaseUrlForServiceRegistration = (val: string | undefined) => {
+    this.engineServerClient.setBaseUrlForServiceRegistration(val);
+  };
+  setServerClientUseClientRequestPayloadCompression = (val: boolean) => {
+    this.engineServerClient.setCompression(val);
+  };
+  setServerClientEnableDebuggingPayload = (val: boolean) => {
+    this.engineServerClient.setDebugPayload(val);
+  };
 
   // ------------------------------------------- Protocol -------------------------------------------
 
@@ -1109,7 +1125,7 @@ export class V1_RemoteEngine {
 
   async cancelUserExecutions(broadcastToCluster: boolean): Promise<string> {
     return this.engineServerClient.INTERNAL__cancelUserExecutions(
-      guaranteeNonNullable(this.getCurrentUserId()),
+      guaranteeNonNullable(this.engineServerClient.currentUserId),
       broadcastToCluster,
     );
   }
@@ -1257,4 +1273,15 @@ export class V1_RemoteEngine {
       ),
     );
   }
+
+  // ------------------------------------------- SDLC -------------------------------------------
+
+  createPrototypeProject = (): Promise<{
+    projectId: string;
+    webUrl: string | undefined;
+    owner: string;
+  }> => this.engineServerClient.createPrototypeProject();
+
+  validUserAccessRole = (userId: string): Promise<boolean> =>
+    this.engineServerClient.validUserAccessRole(userId);
 }

@@ -333,6 +333,7 @@ import { V1_PureSingleExecution } from './model/packageableElements/service/V1_S
 import { V1_RuntimePointer } from './model/packageableElements/runtime/V1_Runtime.js';
 import type { TestDebug } from '../../../../graph/metamodel/pure/test/result/DebugTestsResult.js';
 import { V1_buildDebugTestsResult } from './engine/test/V1_DebugTestsResult.js';
+import type { V1_GraphManagerEngine } from './engine/V1_GraphManagerEngine.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -550,7 +551,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   static readonly DEV_PROTOCOL_VERSION = PureClientVersion.VX_X_X;
   static readonly PROD_PROTOCOL_VERSION = undefined;
 
-  engine: V1_RemoteEngine;
+  engine: V1_GraphManagerEngine;
   readonly graphBuilderExtensions: V1_GraphBuilderExtensions;
 
   constructor(
@@ -578,9 +579,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     },
   ): Promise<void> {
     this.engine = new V1_RemoteEngine(config.clientConfig, this.logService);
-    this.engine
-      .getEngineServerClient()
-      .setTracerService(options?.tracerService ?? new TracerService());
+    this.engine.setServerClientTracerService(
+      options?.tracerService ?? new TracerService(),
+    );
     if (!options?.disableGraphConfiguration) {
       // TODO: should probably be moved into each store's own initialize method
       await Promise.all([
@@ -2994,20 +2995,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         V1_transformQuerySearchSpecification(searchSpecification),
       )
     ).map((protocol) =>
-      V1_buildLightQuery(protocol, this.engine.getCurrentUserId()),
+      V1_buildLightQuery(protocol, this.engine.getServerClientCurrentUserId()),
     );
   }
 
   async getQueries(queryIds: string[]): Promise<LightQuery[]> {
     return (await this.engine.getQueries(queryIds)).map((protocol) =>
-      V1_buildLightQuery(protocol, this.engine.getCurrentUserId()),
+      V1_buildLightQuery(protocol, this.engine.getServerClientCurrentUserId()),
     );
   }
 
   async getLightQuery(queryId: string): Promise<LightQuery> {
     return V1_buildLightQuery(
       await this.engine.getQuery(queryId),
-      this.engine.getCurrentUserId(),
+      this.engine.getServerClientCurrentUserId(),
     );
   }
 
@@ -3015,7 +3016,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_buildQuery(
       await this.engine.getQuery(queryId),
       graph,
-      this.engine.getCurrentUserId(),
+      this.engine.getServerClientCurrentUserId(),
     );
   }
   async getQueryInfo(queryId: string): Promise<QueryInfo> {
@@ -3037,7 +3038,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_buildQuery(
       await this.engine.createQuery(V1_transformQuery(query)),
       graph,
-      this.engine.getCurrentUserId(),
+      this.engine.getServerClientCurrentUserId(),
     );
   }
 
@@ -3045,7 +3046,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_buildQuery(
       await this.engine.updateQuery(V1_transformQuery(query)),
       graph,
-      this.engine.getCurrentUserId(),
+      this.engine.getServerClientCurrentUserId(),
     );
   }
 
@@ -3053,7 +3054,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_buildQuery(
       await this.engine.patchQuery(V1_transformQuery(query)),
       graph,
-      this.engine.getCurrentUserId(),
+      this.engine.getServerClientCurrentUserId(),
     );
   }
 
@@ -3062,7 +3063,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     query.name = queryName;
     return V1_buildLightQuery(
       await this.engine.updateQuery(query),
-      this.engine.getCurrentUserId(),
+      this.engine.getServerClientCurrentUserId(),
     );
   }
 
@@ -3739,11 +3740,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     webUrl: string | undefined;
     owner: string;
   }> {
-    return this.engine.getEngineServerClient().createPrototypeProject();
+    return this.engine.createPrototypeProject();
   }
 
   userHasPrototypeProjectAccess(userId: string): Promise<boolean> {
-    return this.engine.getEngineServerClient().validUserAccessRole(userId);
+    return this.engine.validUserAccessRole(userId);
   }
 
   // --------------------------------------------- Change Detection ---------------------------------------------
