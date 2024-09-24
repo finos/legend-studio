@@ -111,7 +111,7 @@ import {
   V1_GraphBuilderContextBuilder,
 } from './transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import { V1_PureModelContextPointer } from './model/context/V1_PureModelContextPointer.js';
-import { V1_Engine } from './engine/V1_Engine.js';
+import { V1_RemoteEngine } from './engine/V1_RemoteEngine.js';
 import { V1_transformPackageableElement } from './transformation/pureGraph/from/V1_PackageableElementTransformer.js';
 import {
   V1_transformRawLambda,
@@ -550,7 +550,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   static readonly DEV_PROTOCOL_VERSION = PureClientVersion.VX_X_X;
   static readonly PROD_PROTOCOL_VERSION = undefined;
 
-  engine: V1_Engine;
+  engine: V1_RemoteEngine;
   readonly graphBuilderExtensions: V1_GraphBuilderExtensions;
 
   constructor(
@@ -558,7 +558,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     logService: LogService,
   ) {
     super(pluginManager, logService);
-    this.engine = new V1_Engine({}, logService);
+    this.engine = new V1_RemoteEngine({}, logService);
 
     // setup plugins
     this.graphBuilderExtensions = new V1_GraphBuilderExtensions(
@@ -577,7 +577,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       disableGraphConfiguration?: boolean | undefined;
     },
   ): Promise<void> {
-    this.engine = new V1_Engine(config.clientConfig, this.logService);
+    this.engine = new V1_RemoteEngine(config.clientConfig, this.logService);
     this.engine
       .getEngineServerClient()
       .setTracerService(options?.tracerService ?? new TracerService());

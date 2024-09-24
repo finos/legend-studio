@@ -360,7 +360,7 @@ export {
 export { V1_transformPropertyReference } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_MappingTransformer.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer.js';
 export { V1_EngineServerClient } from './graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.js';
-export { V1_Engine } from './graph-manager/protocol/pure/v1/engine/V1_Engine.js';
+export { V1_RemoteEngine } from './graph-manager/protocol/pure/v1/engine/V1_RemoteEngine.js';
 export { V1_ParserError } from './graph-manager/protocol/pure/v1/engine/grammar/V1_ParserError.js';
 export {
   V1_PureModelContextType,

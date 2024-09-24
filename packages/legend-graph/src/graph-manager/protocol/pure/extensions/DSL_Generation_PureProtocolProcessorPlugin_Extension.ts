@@ -16,13 +16,13 @@
 
 import type { ModelGenerationSpecification } from '../../../../graph/metamodel/pure/packageableElements/generationSpecification/ModelGenerationSpecification.js';
 import type { PureProtocolProcessorPlugin } from '../PureProtocolProcessorPlugin.js';
-import type { V1_Engine } from '../v1/engine/V1_Engine.js';
+import type { V1_RemoteEngine } from '../v1/engine/V1_RemoteEngine.js';
 import type { V1_PureModelContextData } from '../v1/model/context/V1_PureModelContextData.js';
 
 export type V1_ModelGenerator = (
   generationElement: ModelGenerationSpecification,
   model: V1_PureModelContextData,
-  engine: V1_Engine,
+  engine: V1_RemoteEngine,
 ) => Promise<V1_PureModelContextData | undefined>;
 
 export interface DSL_Generation_PureProtocolProcessorPlugin_Extension
