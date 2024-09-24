@@ -91,7 +91,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
   get pivotResultColumns(): DataCubeQuerySnapshotColumn[] {
     return this.castColumns
       .filter((col) => isPivotResultColumnName(col.name))
-      .map((col) => _toCol(col));
+      .map(_toCol);
   }
 
   /**
@@ -114,7 +114,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
         /** TODO: @datacube pivot - need to include columns used in complex aggregates (such as weighted-average) */
       ],
       (col) => col.name,
-    ).map((col) => _toCol(col));
+    ).map(_toCol);
   }
 
   setCastColumns(value: DataCubeQuerySnapshotColumn[]) {
@@ -145,13 +145,13 @@ export class DataCubeEditorHorizontalPivotsPanelState
   ) {
     newSnapshot.data.pivot = this.selector.selectedColumns.length
       ? {
-          columns: this.selector.selectedColumns.map((col) => _toCol(col)),
-          castColumns: this.castColumns.map((col) => _toCol(col)),
+          columns: this.selector.selectedColumns.map(_toCol),
+          castColumns: this.castColumns.map(_toCol),
         }
       : undefined;
     newSnapshot.data.selectColumns = uniqBy(
       [...newSnapshot.data.selectColumns, ...this.selector.selectedColumns],
       (col) => col.name,
-    ).map((col) => _toCol(col));
+    ).map(_toCol);
   }
 }

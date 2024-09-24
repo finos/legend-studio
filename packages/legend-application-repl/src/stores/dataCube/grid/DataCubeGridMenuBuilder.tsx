@@ -579,7 +579,7 @@ export function generateMenuBuilder(
           },
           {
             name: `Clear All Horizontal Pivots`,
-            disabled: controller.verticalPivotedColumns.length === 0,
+            disabled: controller.horizontalPivotedColumns.length === 0,
             action: () => controller.clearAllHorizontalPivots(),
           },
         ],

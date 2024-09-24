@@ -38,7 +38,6 @@ import {
   V1_Lambda,
 } from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
-import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { generateRowGroupingDrilldownExecutableQueryPostProcessor } from './DataCubeGridQueryBuilder.js';
 import { makeObservable, observable, runInAction } from 'mobx';
 import type {
@@ -47,12 +46,17 @@ import type {
 } from '../core/DataCubeConfiguration.js';
 import { AlertType } from '../../../components/repl/Alert.js';
 import { DEFAULT_LARGE_ALERT_WINDOW_CONFIG } from '../../LayoutManagerState.js';
-import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
+import {
+  _sortByColName,
+  type DataCubeQuerySnapshot,
+  type DataCubeQuerySnapshotData,
+} from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeEngine } from '../DataCubeEngine.js';
 import { generateColumnDefs } from './DataCubeGridConfigurationBuilder.js';
 import type { DataCubeQueryFunctionMap } from '../core/DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from '../core/aggregation/DataCubeQueryAggregateOperation.js';
+import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 
 type GridClientCellValue = string | number | boolean | null | undefined;
 type GridClientRowData = {
@@ -181,23 +185,37 @@ export function computeHashCodeForDataFetchManualTrigger(
   return hashObject(
     pruneObject({
       ...snapshot.data,
-      name: undefined,
+      name: '', // name change should not trigger data fetching
       configuration: {
         initialExpandLevel: configuration.initialExpandLevel,
         showRootAggregation: configuration.showRootAggregation,
         pivotTotalColumnPlacement: configuration.pivotTotalColumnPlacement,
         treeGroupSortFunction: configuration.treeGroupSortFunction,
-        columns: configuration.columns.map((column) => ({
-          name: column.name,
-          type: column.type,
-          kind: column.kind,
-          aggregateOperator: column.aggregateOperator,
-          aggregationParameters: column.aggregationParameters,
-          excludedFromHorizontalPivot: column.excludedFromHorizontalPivot,
-          horizontalPivotSortFunction: column.horizontalPivotSortFunction,
-        })),
+        columns: configuration.columns
+          .map((column) => ({
+            name: column.name,
+            type: column.type,
+            kind: column.kind,
+            aggregateOperator: column.aggregateOperator,
+            aggregationParameters: column.aggregationParameters,
+            excludedFromHorizontalPivot: column.excludedFromHorizontalPivot,
+            horizontalPivotSortFunction: column.horizontalPivotSortFunction,
+          }))
+          .sort(_sortByColName), // sort to make sure column reordering does not trigger data fetching
       },
-    }),
+      groupBy: undefined,
+      sortColumns: [],
+      // TODO: remove pivot once we use ag-grid pivot API
+      pivot: snapshot.data.pivot
+        ? {
+            ...snapshot.data.pivot,
+            castColumns: snapshot.data.pivot.castColumns
+              .slice()
+              .sort(_sortByColName), // sort to make sure column reordering does not trigger data fetching
+          }
+        : undefined,
+      selectColumns: snapshot.data.selectColumns.slice().sort(_sortByColName), // sort to make sure column reordering does not trigger data fetching
+    } satisfies DataCubeQuerySnapshotData),
   );
 }
 

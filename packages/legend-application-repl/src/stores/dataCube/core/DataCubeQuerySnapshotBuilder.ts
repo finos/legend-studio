@@ -298,7 +298,7 @@ export function validateAndBuildQuerySnapshot(
 
   // --------------------------------- SOURCE ---------------------------------
 
-  data.sourceColumns = baseQuery.source.columns.map((col) => _toCol(col));
+  data.sourceColumns = baseQuery.source.columns.map(_toCol);
   data.sourceColumns.map((col) => colsMap.set(col.name, col));
 
   // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
@@ -309,11 +309,6 @@ export function validateAndBuildQuerySnapshot(
   if (funcMap.filter) {
     /** TODO: @datacube roundtrip */
     data.filter = undefined;
-    // data.selectColumns = _colSpecArrayParam(funcMap.select, 0).colSpecs.map(
-    //   (colSpec) => ({
-    //     _col(colSpec),
-    //   }),
-    // );
   }
 
   // --------------------------------- SELECT ---------------------------------

@@ -57,6 +57,7 @@ import {
 } from './DataCubeGridClientEngine.js';
 import {
   getNonNullableEntry,
+  getNullableLastEntry,
   getQueryParameters,
   getQueryParameterValue,
   guaranteeNonNullable,
@@ -668,6 +669,30 @@ function generateDefinitionForPivotResultColumns(
 
     if (leaf) {
       currentCollection.push(leaf);
+
+      // sort the leaf level columns based on the order of selected/configuration columns
+      (currentCollection as ColDef[]).sort((a, b) => {
+        const colAName = getNullableLastEntry(
+          a.colId?.split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) ?? [],
+        );
+        const colAConf = colAName
+          ? _findCol(configuration.columns, colAName)
+          : undefined;
+        const colBName = getNullableLastEntry(
+          b.colId?.split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) ?? [],
+        );
+        const colBConf = colBName
+          ? _findCol(configuration.columns, colBName)
+          : undefined;
+        return (
+          (colAConf
+            ? configuration.columns.indexOf(colAConf)
+            : Number.MAX_VALUE) -
+          (colBConf
+            ? configuration.columns.indexOf(colBConf)
+            : Number.MAX_VALUE)
+        );
+      });
     }
   });
 
@@ -685,7 +710,7 @@ export function generateColumnDefs(
   // which are grouped must be present in the column definitions, so even
   // when some of these might not be selected explicitly by the users, they
   // must still be included in the column definitions, and made hidden instead.
-  let columns = configuration.columns.filter((col) =>
+  const columns = configuration.columns.filter((col) =>
     snapshot.data.selectColumns.find((column) => column.name === col.name),
   );
   let pivotResultColumns: DataCubeQuerySnapshotColumn[] = [];
@@ -695,18 +720,6 @@ export function generateColumnDefs(
     pivotResultColumns = castColumns.filter((col) =>
       isPivotResultColumnName(col.name),
     );
-    // Since fetching cast columns is an expensive operation, we often do this asynchronously
-    // so sometimes, the grid column definitions might be generated with incorrect casting
-    // information. In order to account for those cases, we include all select() columns
-    // to make sure pivoting information is properly propagated to server-side row model datasource.
-    columns = [
-      ...columns.filter((col) =>
-        castColumns.find((column) => column.name === col.name),
-      ),
-      ...columns.filter(
-        (col) => !castColumns.find((column) => column.name === col.name),
-      ),
-    ];
   }
 
   return [

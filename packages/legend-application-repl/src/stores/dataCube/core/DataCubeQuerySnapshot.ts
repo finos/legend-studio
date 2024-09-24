@@ -186,3 +186,6 @@ export function _toCol(col: {
 }): DataCubeQuerySnapshotColumn {
   return { name: col.name, type: col.type };
 }
+
+export const _sortByColName = (a: { name: string }, b: { name: string }) =>
+  a.name.localeCompare(b.name);

@@ -159,11 +159,8 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     }
   }
 
-  rearrangeColumns(columnByNames: string[]) {
-    // rearrange the column configurations and select columns
-    // anything that is not rearranged (e.g. due to pivot) will be
-    // pushed to the end
-    const rearrangedColumnConfigurations = columnByNames
+  rearrangeColumns(columns: string[]) {
+    const rearrangedColumnConfigurations = columns
       .map((colName) => this.getColumnConfiguration(colName))
       .filter(isNonNullable);
     this.configuration.columns = [
@@ -173,7 +170,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
       ),
     ];
 
-    const rearrangedSelectColumns = columnByNames
+    const rearrangedSelectColumns = columns
       .map((colName) => this.selectColumns.find((col) => col.name === colName))
       .filter(isNonNullable);
     this.selectColumns = [
@@ -182,6 +179,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
         (col) => !rearrangedSelectColumns.includes(col),
       ),
     ];
+
     this.applyChanges();
   }
 
@@ -206,7 +204,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
         ...this.verticalPivotedColumns,
       ],
       (col) => col.name,
-    ).map((col) => _toCol(col));
+    ).map(_toCol);
   }
 
   // --------------------------------- PIVOT ---------------------------------
@@ -256,6 +254,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
   clearAllHorizontalPivots() {
     this.horizontalPivotedColumns = [];
+    this.horizontalPivotCastColumns = [];
     this.applyChanges();
   }
 

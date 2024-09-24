@@ -44,6 +44,7 @@ import {
 } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 import { DocumentationKey } from '../../../application/LegendREPLDocumentation.js';
 import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
+import { _sortByColName } from '../../../stores/dataCube/core/DataCubeQuerySnapshot.js';
 
 export const DataCubeEditorColumnPropertiesPanel = observer(
   (props: { dataCube: DataCubeState }) => {
@@ -169,7 +170,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
               <FormDropdownMenu className="w-80" {...columnsDropdownProps}>
                 {panel.columns
                   .slice()
-                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .sort(_sortByColName)
                   .map((column) => (
                     <FormDropdownMenuItem
                       key={column.name}

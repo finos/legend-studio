@@ -170,7 +170,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
                     (column) => column.name === col.name,
                   ),
               )
-              .map((col) => _toCol(col));
+              .map(_toCol);
         }
         await this.dataCube.engine.getQueryRelationType(
           _lambda(

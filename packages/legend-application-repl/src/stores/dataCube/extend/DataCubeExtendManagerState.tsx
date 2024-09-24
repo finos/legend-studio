@@ -138,9 +138,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     this.groupExtendedColumns = snapshot.data.groupExtendedColumns.map(
       (col) => new DataCubeQueryExtendedColumnState(col),
     );
-    this.selectedColumns = snapshot.data.selectColumns.map((col) =>
-      _toCol(col),
-    );
+    this.selectedColumns = snapshot.data.selectColumns.map(_toCol);
 
     // trigger re-compile in each existing column editor as the base query has changed
     this.newColumnEditors.forEach((editor) => {

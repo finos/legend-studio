@@ -18,6 +18,7 @@ import { makeObservable, observable, action, computed } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { _sortByColName } from '../core/DataCubeQuerySnapshot.js';
 
 export class DataCubeEditorColumnsSelectorColumnState {
   readonly name: string;
@@ -80,7 +81,7 @@ export abstract class DataCubeEditorColumnsSelectorState<
         (column) =>
           !this.selectedColumns.find((col) => column.name === col.name),
       )
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .sort(_sortByColName);
   }
 
   get selectedColumnsForDisplay(): T[] {
