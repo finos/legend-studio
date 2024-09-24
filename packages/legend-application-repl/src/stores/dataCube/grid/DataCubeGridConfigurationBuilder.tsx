@@ -179,6 +179,7 @@ function getCellRenderer(columnData: ColumnData) {
 function _displaySpec(columnData: ColumnData) {
   const { name, snapshot, column, configuration } = columnData;
   const dataType = getDataType(column.type);
+
   const fontFamily = column.fontFamily ?? configuration.fontFamily;
   const fontSize = column.fontSize ?? configuration.fontSize;
   const fontBold = column.fontBold ?? configuration.fontBold;
@@ -192,6 +193,7 @@ function _displaySpec(columnData: ColumnData) {
     column.normalForegroundColor ?? configuration.normalForegroundColor;
   const normalBackgroundColor =
     column.normalBackgroundColor ?? configuration.normalBackgroundColor;
+
   const negativeForegroundColor =
     column.negativeForegroundColor ?? configuration.negativeForegroundColor;
   const negativeBackgroundColor =
@@ -204,7 +206,6 @@ function _displaySpec(columnData: ColumnData) {
     column.errorForegroundColor ?? configuration.errorForegroundColor;
   const errorBackgroundColor =
     column.errorBackgroundColor ?? configuration.errorBackgroundColor;
-  const cellRenderer = getCellRenderer(columnData);
   return {
     // disabling cell data type inference can grid performance
     // especially when this information is only necessary for cell value editor
@@ -218,52 +219,12 @@ function _displaySpec(columnData: ColumnData) {
       !column.isSelected ||
       (snapshot.data.pivot &&
         !snapshot.data.pivot.castColumns.find((col) => col.name === name)),
-    valueFormatter:
-      dataType === DataCubeColumnDataType.NUMBER
-        ? (params) => {
-            const value = params.value as number | null | undefined;
-            if (
-              isNullable(value) ||
-              (value as unknown as string) ===
-                INTERNAL__GRID_CLIENT_MISSING_VALUE
-            ) {
-              return (
-                column.missingValueDisplayText ??
-                DEFAULT_MISSING_VALUE_DISPLAY_TEXT
-              );
-            }
-            const showNegativeNumberInParens =
-              column.negativeNumberInParens && value < 0;
-            // 1. apply the number scale
-            const scaledNumber = scaleNumber(value, column.numberScale);
-            // 2. apply the number formatter
-            const formattedValue = (
-              showNegativeNumberInParens
-                ? Math.abs(scaledNumber.value)
-                : scaledNumber.value
-            ).toLocaleString(undefined, {
-              useGrouping: column.displayCommas,
-              ...(column.decimals !== undefined
-                ? {
-                    minimumFractionDigits: column.decimals,
-                    maximumFractionDigits: column.decimals,
-                  }
-                : {}),
-            });
-            // 3. add the parentheses (and then the unit)
-            return (
-              (showNegativeNumberInParens
-                ? `(${formattedValue})`
-                : formattedValue) +
-              (scaledNumber.unit ? ` ${scaledNumber.unit}` : '')
-            );
-          }
-        : (params) =>
-            params.value === INTERNAL__GRID_CLIENT_MISSING_VALUE
-              ? (column.missingValueDisplayText ??
-                DEFAULT_MISSING_VALUE_DISPLAY_TEXT)
-              : params.value,
-    loadingCellRenderer: DataCubeGridLoadingCellRenderer,
+    pinned:
+      column.pinned !== undefined
+        ? column.pinned === DataCubeColumnPinPlacement.RIGHT
+          ? GridClientPinnedAlignement.RIGHT
+          : GridClientPinnedAlignement.LEFT
+        : null,
     headerClass: isPivotResultColumnName(name)
       ? 'pl-1 border border-neutral-300'
       : 'pl-1 border border-neutral-200',
@@ -316,19 +277,117 @@ function _displaySpec(columnData: ColumnData) {
         (params) => params.node.failedLoad,
       [INTERNAL__GridClientUtilityCssClassName.BLUR]: () => column.blur,
     },
-    cellRenderer: cellRenderer,
-    pinned:
-      column.pinned !== undefined
-        ? column.pinned === DataCubeColumnPinPlacement.RIGHT
-          ? GridClientPinnedAlignement.RIGHT
-          : GridClientPinnedAlignement.LEFT
-        : null,
+    valueFormatter:
+      dataType === DataCubeColumnDataType.NUMBER
+        ? (params) => {
+            const value = params.value as number | null | undefined;
+            if (
+              isNullable(value) ||
+              (value as unknown as string) ===
+                INTERNAL__GRID_CLIENT_MISSING_VALUE
+            ) {
+              return (
+                column.missingValueDisplayText ??
+                DEFAULT_MISSING_VALUE_DISPLAY_TEXT
+              );
+            }
+            const showNegativeNumberInParens =
+              column.negativeNumberInParens && value < 0;
+            // 1. apply the number scale
+            const scaledNumber = scaleNumber(value, column.numberScale);
+            // 2. apply the number formatter
+            const formattedValue = (
+              showNegativeNumberInParens
+                ? Math.abs(scaledNumber.value)
+                : scaledNumber.value
+            ).toLocaleString(undefined, {
+              useGrouping: column.displayCommas,
+              ...(column.decimals !== undefined
+                ? {
+                    minimumFractionDigits: column.decimals,
+                    maximumFractionDigits: column.decimals,
+                  }
+                : {}),
+            });
+            // 3. add the parentheses (and then the unit)
+            return (
+              (showNegativeNumberInParens
+                ? `(${formattedValue})`
+                : formattedValue) +
+              (scaledNumber.unit ? ` ${scaledNumber.unit}` : '')
+            );
+          }
+        : (params) =>
+            params.value === INTERNAL__GRID_CLIENT_MISSING_VALUE
+              ? (column.missingValueDisplayText ??
+                DEFAULT_MISSING_VALUE_DISPLAY_TEXT)
+              : params.value,
     tooltipValueGetter: (params) =>
       isNonNullable(params.value) &&
       params.value !== INTERNAL__GRID_CLIENT_MISSING_VALUE
         ? `Value = ${params.value === '' ? "''" : params.value === true ? 'TRUE' : params.value === false ? 'FALSE' : params.value}`
         : `Missing Value`,
+    loadingCellRenderer: DataCubeGridLoadingCellRenderer,
+    cellRenderer: getCellRenderer(columnData),
   } as ColDef;
+}
+
+function _groupDisplaySpec(
+  snapshot: DataCubeQuerySnapshot,
+  configuration: DataCubeConfiguration,
+) {
+  // TODO?: we can technically alternate the styling based on the column at various drilldown level
+  // but for now,we will simply use the same styling as the (default) grid styling
+  const fontFamily = configuration.fontFamily;
+  const fontSize = configuration.fontSize;
+  const fontBold = configuration.fontBold;
+  const fontItalic = configuration.fontItalic;
+  const fontStrikethrough = configuration.fontStrikethrough;
+  const fontUnderline = configuration.fontUnderline;
+  const fontCase = configuration.fontCase;
+  const textAlign = configuration.textAlign;
+  const normalForegroundColor = configuration.normalForegroundColor;
+  const normalBackgroundColor = configuration.normalBackgroundColor;
+
+  return {
+    cellDataType: false, // no point in specifying a type here since it can be of multiple types
+    hide: !snapshot.data.groupBy,
+    lockPosition: true,
+    lockPinned: true,
+    pinned: GridClientPinnedAlignement.LEFT,
+    cellClassRules: {
+      [generateFontFamilyUtilityClassName(fontFamily)]: () => true,
+      [generateFontSizeUtilityClassName(fontSize)]: () => true,
+      [INTERNAL__GridClientUtilityCssClassName.FONT_BOLD]: () => fontBold,
+      [INTERNAL__GridClientUtilityCssClassName.FONT_ITALIC]: () => fontItalic,
+      [INTERNAL__GridClientUtilityCssClassName.FONT_STRIKETHROUGH]: () =>
+        fontStrikethrough,
+      [generateFontUnderlineUtilityClassName(fontUnderline)]: () =>
+        Boolean(fontUnderline),
+      [generateFontCaseUtilityClassName(fontCase)]: (params) =>
+        Boolean(fontCase),
+      [generateTextAlignUtilityClassName(textAlign)]: () => true,
+      [generateTextColorUtilityClassName(normalForegroundColor, 'normal')]:
+        () => true,
+      [generateBackgroundColorUtilityClassName(
+        normalBackgroundColor,
+        'normal',
+      )]: () => true,
+    },
+    tooltipValueGetter: (params) => {
+      if (
+        isNonNullable(params.value) &&
+        params.value !== INTERNAL__GRID_CLIENT_MISSING_VALUE
+      ) {
+        return (
+          `Group Value = ${params.value === '' ? "''" : params.value === true ? 'TRUE' : params.value === false ? 'FALSE' : params.value}` +
+          `${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] !== undefined ? ` (${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID]})` : ''}`
+        );
+      }
+      return null;
+    },
+    loadingCellRenderer: DataCubeGridLoadingCellRenderer,
+  } satisfies ColDef;
 }
 
 function _sizeSpec(columnData: ColumnData) {
@@ -375,7 +434,7 @@ function _sortSpec(columnData: ColumnData) {
   } as ColDef;
 }
 
-function _aggSpec(columnData: ColumnData) {
+function _aggregationSpec(columnData: ColumnData) {
   const { name, snapshot, column } = columnData;
   const data = snapshot.data;
   const groupByCol = _findCol(data.groupBy?.columns, name);
@@ -762,7 +821,7 @@ export function generateColumnDefs(
         ..._displaySpec(columnData),
         ..._sizeSpec(columnData),
         ..._sortSpec(columnData),
-        ..._aggSpec(columnData),
+        ..._aggregationSpec(columnData),
       } satisfies ColDef;
     }),
   ] satisfies (ColDef | ColGroupDef)[];
@@ -841,30 +900,21 @@ export function generateGridOptionsFromSnapshot(
       colId: INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
       headerName: '',
       cellRenderer: 'agGroupCellRenderer',
-      tooltipValueGetter: (params) => {
-        if (
-          isNonNullable(params.value) &&
-          params.value !== INTERNAL__GRID_CLIENT_MISSING_VALUE
-        ) {
-          return (
-            `Group Value = ${params.value === '' ? "''" : params.value === true ? 'TRUE' : params.value === false ? 'FALSE' : params.value}` +
-            `${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] !== undefined ? ` (${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID]})` : ''}`
-          );
-        }
-        return null;
-      },
-      showRowGroup: true,
-      hide: !snapshot.data.groupBy,
-      lockPinned: true,
-      lockPosition: true,
-      pinned: GridClientPinnedAlignement.LEFT,
-      suppressSpanHeaderHeight: true,
-      cellDataType: false,
-      minWidth: 200,
+
+      // display
+      ..._groupDisplaySpec(snapshot, configuration),
+
+      // size
       suppressAutoSize: true,
       suppressSizeToFit: true,
-      loadingCellRenderer: DataCubeGridLoadingCellRenderer,
+      minWidth: 200,
+
+      // sorting
       sortable: true,
+
+      // aggregation
+      showRowGroup: true,
+      suppressSpanHeaderHeight: true,
     } satisfies ColDef,
   } as GridOptions;
 
