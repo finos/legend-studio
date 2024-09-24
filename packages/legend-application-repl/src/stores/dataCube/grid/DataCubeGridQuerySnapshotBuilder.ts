@@ -59,6 +59,18 @@ export function buildQuerySnapshot(
     snapshot.data.configuration,
   );
 
+  // TODO: select
+  // this.selectColumns = uniqBy(
+  //   [
+  //     ...this.configuration.columns.filter((col) => col.isSelected),
+  //     ...this.horizontalPivotedColumns,
+  //     ...this.verticalPivotedColumns,
+  //   ],
+  //   (col) => col.name,
+  // ).map(_toCol);
+
+  // --------------------------------- PIVOT ---------------------------------
+
   // --------------------------------- GROUP BY ---------------------------------
 
   if (request.rowGroupCols.length) {

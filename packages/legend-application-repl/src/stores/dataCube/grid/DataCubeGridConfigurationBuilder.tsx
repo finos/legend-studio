@@ -213,12 +213,16 @@ function _displaySpec(columnData: ColumnData) {
     hide:
       column.hideFromView ||
       !column.isSelected ||
-      (snapshot.data.pivot &&
-        !snapshot.data.pivot.castColumns.find((col) => col.name === name)),
+      Boolean(
+        snapshot.data.pivot &&
+          !snapshot.data.pivot.castColumns.find((col) => col.name === name),
+      ),
     lockVisible:
       !column.isSelected ||
-      (snapshot.data.pivot &&
-        !snapshot.data.pivot.castColumns.find((col) => col.name === name)),
+      Boolean(
+        snapshot.data.pivot &&
+          !snapshot.data.pivot.castColumns.find((col) => col.name === name),
+      ),
     pinned:
       column.pinned !== undefined
         ? column.pinned === DataCubeColumnPinPlacement.RIGHT
@@ -272,9 +276,9 @@ function _displaySpec(columnData: ColumnData) {
         params.value < 0,
       [generateTextColorUtilityClassName(errorForegroundColor, 'error')]: (
         params,
-      ) => params.node.failedLoad,
+      ) => Boolean(params.node.failedLoad),
       [generateBackgroundColorUtilityClassName(errorBackgroundColor, 'error')]:
-        (params) => params.node.failedLoad,
+        (params) => Boolean(params.node.failedLoad),
       [INTERNAL__GridClientUtilityCssClassName.BLUR]: () => column.blur,
     },
     valueFormatter:
@@ -329,7 +333,7 @@ function _displaySpec(columnData: ColumnData) {
         : `Missing Value`,
     loadingCellRenderer: DataCubeGridLoadingCellRenderer,
     cellRenderer: getCellRenderer(columnData),
-  } as ColDef;
+  } satisfies ColDef;
 }
 
 function _groupDisplaySpec(
@@ -431,7 +435,7 @@ function _sortSpec(columnData: ColumnData) {
         : GridClientSortDirection.DESCENDING
       : null,
     sortIndex: sortCol ? sortColumns.indexOf(sortCol) : null,
-  } as ColDef;
+  } satisfies ColDef;
 }
 
 function _aggregationSpec(columnData: ColumnData) {
@@ -847,7 +851,7 @@ export function generateGridOptionsFromSnapshot(
             params.rowIndex % (configuration.alternateRowsCount * 2) >=
             configuration.alternateRowsCount,
         }
-      : null,
+      : {},
     rowBuffer: DEFAULT_ROW_BUFFER,
 
     // -------------------------------------- EVENT HANDLERS --------------------------------------
@@ -916,7 +920,7 @@ export function generateGridOptionsFromSnapshot(
       showRowGroup: true,
       suppressSpanHeaderHeight: true,
     } satisfies ColDef,
-  } as GridOptions;
+  } satisfies GridOptions;
 
   return gridOptions;
 }
