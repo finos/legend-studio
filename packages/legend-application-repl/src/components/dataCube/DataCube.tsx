@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useREPLStore } from '../REPLStoreProvider.js';
 import { useEffect } from 'react';
 import { DataCubeGrid } from './grid/DataCubeGrid.js';
 import { useApplicationStore } from '@finos/legend-application';
@@ -29,6 +28,7 @@ import {
 import { LayoutManager } from '../repl/LayoutManager.js';
 import type { DataCubeState } from '../../stores/dataCube/DataCubeState.js';
 import { INTERNAL__MonacoEditorWidgetsRoot } from '../repl/PureCodeEditor.js';
+import { useDataCubeStore } from '../DataCubeStoreProvider.js';
 
 const DataCubeStatusBar = observer((props: { dataCube: DataCubeState }) => {
   const { dataCube } = props;
@@ -75,7 +75,6 @@ const DataCubeStatusBar = observer((props: { dataCube: DataCubeState }) => {
 
 const DataCubeTitleBar = observer((props: { dataCube: DataCubeState }) => {
   const { dataCube } = props;
-  const repl = useREPLStore();
   const application = useApplicationStore();
   const [openMenuDropdown, closeMenuDropdown, menuDropdownProps] =
     useDropdownMenu();
@@ -123,7 +122,7 @@ const DataCubeTitleBar = observer((props: { dataCube: DataCubeState }) => {
           <DropdownMenuItem
             className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
             onClick={() => {
-              repl.settingsDisplay.open();
+              dataCube.store.settingsDisplay.open();
               closeMenuDropdown();
             }}
           >
@@ -136,9 +135,9 @@ const DataCubeTitleBar = observer((props: { dataCube: DataCubeState }) => {
 });
 
 export const DataCube = observer(() => {
-  const repl = useREPLStore();
-  const application = useApplicationStore();
-  const dataCube = repl.dataCube;
+  const dataCubeStore = useDataCubeStore();
+  const application = dataCubeStore.application;
+  const dataCube = dataCubeStore.dataCubeState;
 
   useEffect(() => {
     dataCube.initialize().catch(application.logUnhandledError);
@@ -149,7 +148,7 @@ export const DataCube = observer(() => {
       <DataCubeTitleBar dataCube={dataCube} />
       <DataCubeGrid dataCube={dataCube} />
       <DataCubeStatusBar dataCube={dataCube} />
-      <LayoutManager layoutManagerState={repl.layout} />
+      <LayoutManager layoutManagerState={dataCubeStore.layout} />
 
       <INTERNAL__MonacoEditorWidgetsRoot />
     </div>

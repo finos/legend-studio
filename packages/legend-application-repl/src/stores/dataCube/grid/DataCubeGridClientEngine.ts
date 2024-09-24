@@ -329,7 +329,7 @@ export class DataCubeGridClientServerSideDataSource
         );
       } catch (error) {
         assertErrorThrown(error);
-        this.grid.dataCube.repl.alertError(error, {
+        this.grid.dataCube.store.alertError(error, {
           message: `Query Validation Failure: Can't retrieve pivot results column metadata. ${error.message}`,
         });
         // fail early since we can't proceed without the cast columns validated
@@ -424,10 +424,9 @@ export class DataCubeGridClientServerSideDataSource
         // behavior by forcing a scroll top for every data fetch and also reset the cache block size to the default value to save memory
         if (rowData.length > INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE) {
           if (
-            !this.grid.dataCube.repl.dataCubeEngine
-              .gridClientSuppressLargeDatasetWarning
+            !this.grid.dataCube.engine.gridClientSuppressLargeDatasetWarning
           ) {
-            this.grid.dataCube.repl.alert({
+            this.grid.dataCube.store.alert({
               message: `Large dataset (>${INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE} rows) detected!`,
               text: `Overall app performance can be impacted by large dataset due to longer query execution time and increased memory usage. At its limit, the application can crash!\nTo boost performance, consider enabling pagination while working with large dataset.`,
               type: AlertType.WARNING,
@@ -442,7 +441,7 @@ export class DataCubeGridClientServerSideDataSource
                   label: 'Dismiss Warning',
                   handler: () => {
                     // this.grid.setPaginationEnabled(true);
-                    this.grid.dataCube.repl.dataCubeEngine.setGridClientSuppressLargeDatasetWarning(
+                    this.grid.dataCube.engine.setGridClientSuppressLargeDatasetWarning(
                       true,
                     );
                   },
@@ -479,7 +478,7 @@ export class DataCubeGridClientServerSideDataSource
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.grid.dataCube.repl.alertError(error, {
+      this.grid.dataCube.store.alertError(error, {
         message: `Data Fetch Failure: ${error.message}`,
       });
       params.fail();

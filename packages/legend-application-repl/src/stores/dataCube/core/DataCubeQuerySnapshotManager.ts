@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { APPLICATION_EVENT } from '@finos/legend-application';
+import {
+  APPLICATION_EVENT,
+  type GenericLegendApplicationStore,
+} from '@finos/legend-application';
 import type { DataCubeState } from '../DataCubeState.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import {
@@ -25,7 +28,6 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { DataCubeQuery } from '../../../server/DataCubeQuery.js';
-import type { LegendREPLApplicationStore } from '../../LegendREPLBaseStore.js';
 
 // TODO: set a stack depth when we implement undo/redo
 // const DATA_CUBE_MAX_SNAPSHOT_COUNT = 100;
@@ -39,7 +41,7 @@ export abstract class DataCubeQuerySnapshotController
   implements DataCubeQuerySnapshotSubscriber
 {
   readonly dataCube!: DataCubeState;
-  readonly application!: LegendREPLApplicationStore;
+  readonly application!: GenericLegendApplicationStore;
 
   private latestSnapshot: DataCubeQuerySnapshot | undefined;
 

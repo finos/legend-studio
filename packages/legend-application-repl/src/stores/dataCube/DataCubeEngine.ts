@@ -17,23 +17,29 @@
 import {
   type V1_ValueSpecification,
   type V1_Lambda,
-  V1_deserializeValueSpecification,
-  V1_serializeValueSpecification,
-  TDSExecutionResult,
-  V1_serializeExecutionResult,
-  V1_buildExecutionResult,
+  type TDSExecutionResult,
 } from '@finos/legend-graph';
-import type { REPLServerClient } from '../../server/REPLServerClient.js';
 import {
-  DataCubeGetBaseQueryResult,
+  type DataCubeGetBaseQueryResult,
   type DataCubeInfrastructureInfo,
   type CompletionItem,
   type RelationType,
 } from '../../server/REPLEngine.js';
-import { guaranteeType } from '@finos/legend-shared';
-import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
-import type { REPLStore } from '../REPLStore.js';
-import { action, makeObservable, observable } from 'mobx';
+import { getFilterOperation } from './core/filter/DataCubeQueryFilterOperation.js';
+import { getAggregateOperation } from './core/aggregation/DataCubeQueryAggregateOperation.js';
+import { DataCubeQueryAggregateOperation__Sum } from './core/aggregation/DataCubeQueryAggregateOperation__Sum.js';
+import { DataCubeQueryAggregateOperation__Average } from './core/aggregation/DataCubeQueryAggregateOperation__Average.js';
+import { DataCubeQueryAggregateOperation__Count } from './core/aggregation/DataCubeQueryAggregateOperation__Count.js';
+import { DataCubeQueryAggregateOperation__Min } from './core/aggregation/DataCubeQueryAggregateOperation__Min.js';
+import { DataCubeQueryAggregateOperation__Max } from './core/aggregation/DataCubeQueryAggregateOperation__Max.js';
+import { DataCubeQueryAggregateOperation__UniqueValue } from './core/aggregation/DataCubeQueryAggregateOperation__UniqueValue.js';
+import { DataCubeQueryAggregateOperation__First } from './core/aggregation/DataCubeQueryAggregateOperation__First.js';
+import { DataCubeQueryAggregateOperation__Last } from './core/aggregation/DataCubeQueryAggregateOperation__Last.js';
+import { DataCubeQueryAggregateOperation__VariancePopulation } from './core/aggregation/DataCubeQueryAggregateOperation__VariancePopulation.js';
+import { DataCubeQueryAggregateOperation__VarianceSample } from './core/aggregation/DataCubeQueryAggregateOperation__VarianceSample.js';
+import { DataCubeQueryAggregateOperation__StdDevPopulation } from './core/aggregation/DataCubeQueryAggregateOperation__StdDevPopulation.js';
+import { DataCubeQueryAggregateOperation__StdDevSample } from './core/aggregation/DataCubeQueryAggregateOperation__StdDevSample.js';
+import { DataCubeQueryAggregateOperation__JoinStrings } from './core/aggregation/DataCubeQueryAggregateOperation__JoinStrings.js';
 import { DataCubeQueryFilterOperation__Equal } from './core/filter/DataCubeQueryFilterOperation__Equal.js';
 import { DataCubeQueryFilterOperation__LessThanOrEqual } from './core/filter/DataCubeQueryFilterOperation__LessThanOrEqual.js';
 import { DataCubeQueryFilterOperation__LessThan } from './core/filter/DataCubeQueryFilterOperation__LessThan.js';
@@ -61,32 +67,18 @@ import { DataCubeQueryFilterOperation__EndWithCaseInsensitive } from './core/fil
 import { DataCubeQueryFilterOperation__NotEndWith } from './core/filter/DataCubeQueryFilterOperation__NotEndWith.js';
 import { DataCubeQueryFilterOperation__IsNull } from './core/filter/DataCubeQueryFilterOperation__IsNull.js';
 import { DataCubeQueryFilterOperation__IsNotNull } from './core/filter/DataCubeQueryFilterOperation__IsNotNull.js';
-import { getFilterOperation } from './core/filter/DataCubeQueryFilterOperation.js';
-import { DataCubeQueryAggregateOperation__Sum } from './core/aggregation/DataCubeQueryAggregateOperation__Sum.js';
-import { DataCubeQueryAggregateOperation__Average } from './core/aggregation/DataCubeQueryAggregateOperation__Average.js';
-import { DataCubeQueryAggregateOperation__Count } from './core/aggregation/DataCubeQueryAggregateOperation__Count.js';
-import { DataCubeQueryAggregateOperation__Min } from './core/aggregation/DataCubeQueryAggregateOperation__Min.js';
-import { DataCubeQueryAggregateOperation__Max } from './core/aggregation/DataCubeQueryAggregateOperation__Max.js';
-import { DataCubeQueryAggregateOperation__UniqueValue } from './core/aggregation/DataCubeQueryAggregateOperation__UniqueValue.js';
-import { DataCubeQueryAggregateOperation__First } from './core/aggregation/DataCubeQueryAggregateOperation__First.js';
-import { DataCubeQueryAggregateOperation__Last } from './core/aggregation/DataCubeQueryAggregateOperation__Last.js';
-import { DataCubeQueryAggregateOperation__VariancePopulation } from './core/aggregation/DataCubeQueryAggregateOperation__VariancePopulation.js';
-import { DataCubeQueryAggregateOperation__VarianceSample } from './core/aggregation/DataCubeQueryAggregateOperation__VarianceSample.js';
-import { DataCubeQueryAggregateOperation__StdDevPopulation } from './core/aggregation/DataCubeQueryAggregateOperation__StdDevPopulation.js';
-import { DataCubeQueryAggregateOperation__StdDevSample } from './core/aggregation/DataCubeQueryAggregateOperation__StdDevSample.js';
-import { DataCubeQueryAggregateOperation__JoinStrings } from './core/aggregation/DataCubeQueryAggregateOperation__JoinStrings.js';
-import { getAggregateOperation } from './core/aggregation/DataCubeQueryAggregateOperation.js';
+import type { DataCubeStore } from './DataCubeStore.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export const DEFAULT_ENABLE_DEBUG_MODE = false;
 export const DEFAULT_ENABLE_ENGINE_DEBUG_MODE = false;
+
 export const DEFAULT_GRID_CLIENT_ROW_BUFFER = 50;
 export const DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES = false;
 export const DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING = false;
 
-export class DataCubeEngine {
-  readonly repl: REPLStore;
-  readonly application: LegendREPLApplicationStore;
-  private readonly client: REPLServerClient;
+export abstract class DataCubeEngine {
+  private _store: DataCubeStore | undefined;
 
   readonly filterOperations = [
     new DataCubeQueryFilterOperation__LessThan(),
@@ -120,7 +112,6 @@ export class DataCubeEngine {
     new DataCubeQueryFilterOperation__GreaterThanColumn(),
     new DataCubeQueryFilterOperation__GreaterThanOrEqualColumn(),
   ];
-
   readonly aggregateOperations = [
     new DataCubeQueryAggregateOperation__Sum(),
     new DataCubeQueryAggregateOperation__Average(),
@@ -145,27 +136,12 @@ export class DataCubeEngine {
   gridClientSuppressLargeDatasetWarning =
     DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING;
 
-  constructor(repl: REPLStore) {
-    makeObservable(this, {
-      enableDebugMode: observable,
-      setEnableDebugMode: action,
+  get store(): DataCubeStore {
+    return guaranteeNonNullable(this._store, 'store has not been initialized');
+  }
 
-      enableEngineDebugMode: observable,
-      setEnableEngineDebugMode: action,
-
-      gridClientRowBuffer: observable,
-      setGridClientRowBuffer: action,
-
-      gridClientPurgeClosedRowNodes: observable,
-      setGridClientPurgeClosedRowNodes: action,
-
-      gridClientSuppressLargeDatasetWarning: observable,
-      setGridClientSuppressLargeDatasetWarning: action,
-    });
-
-    this.repl = repl;
-    this.application = repl.application;
-    this.client = repl.client;
+  init(store: DataCubeStore): void {
+    this._store = store;
   }
 
   getFilterOperation(value: string) {
@@ -183,7 +159,6 @@ export class DataCubeEngine {
   setEnableEngineDebugMode(value: boolean) {
     this.enableEngineDebugMode = value;
   }
-
   setGridClientRowBuffer(value: number) {
     this.gridClientRowBuffer = value;
     this.propagateGridOptionUpdates();
@@ -198,87 +173,46 @@ export class DataCubeEngine {
     this.gridClientSuppressLargeDatasetWarning = value;
   }
 
-  refreshFailedDataFetches() {
-    // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
-    // to traverse through and update the configurations of all of their grid clients
-    this.repl.dataCube.grid.client.retryServerSideLoads();
-  }
-
   private propagateGridOptionUpdates() {
     // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
     // to traverse through and update the configurations of all of their grid clients
-    this.repl.dataCube.grid.client.updateGridOptions({
+    this.store.dataCubeState.grid.client.updateGridOptions({
       rowBuffer: this.gridClientRowBuffer,
       purgeClosedRowNodes: this.gridClientPurgeClosedRowNodes,
     });
   }
 
-  async getInfrastructureInfo(): Promise<DataCubeInfrastructureInfo> {
-    return this.client.getInfrastructureInfo();
+  refreshFailedDataFetches() {
+    // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
+    // to traverse through and update the configurations of all of their grid clients
+    this.store.dataCubeState.grid.client.retryServerSideLoads();
   }
 
-  async getQueryTypeahead(
+  abstract getInfrastructureInfo(): Promise<DataCubeInfrastructureInfo>;
+  abstract getQueryTypeahead(
     code: string,
     query: V1_ValueSpecification,
-  ): Promise<CompletionItem[]> {
-    return (await this.client.getQueryTypeahead({
-      code,
-      baseQuery: V1_serializeValueSpecification(query, []),
-    })) as CompletionItem[];
-  }
+  ): Promise<CompletionItem[]>;
 
-  async parseQuery(
+  abstract parseQuery(
     code: string,
     returnSourceInformation?: boolean,
-  ): Promise<V1_ValueSpecification> {
-    return V1_deserializeValueSpecification(
-      await this.client.parseQuery({ code, returnSourceInformation }),
-      [],
-    );
-  }
+  ): Promise<V1_ValueSpecification>;
 
-  async getBaseQuery(): Promise<DataCubeGetBaseQueryResult> {
-    return DataCubeGetBaseQueryResult.serialization.fromJson(
-      await this.client.getBaseQuery(),
-    );
-  }
+  abstract getBaseQuery(): Promise<DataCubeGetBaseQueryResult>;
 
-  async getQueryRelationType(
+  abstract getQueryRelationType(
     query: V1_ValueSpecification,
-  ): Promise<RelationType> {
-    return this.client.getQueryRelationReturnType({
-      query: V1_serializeValueSpecification(query, []),
-    });
-  }
+  ): Promise<RelationType>;
 
-  async getQueryCodeRelationReturnType(
+  abstract getQueryCodeRelationReturnType(
     code: string,
     query: V1_ValueSpecification,
-  ): Promise<RelationType> {
-    return this.client.getQueryCodeRelationReturnType({
-      code,
-      baseQuery: V1_serializeValueSpecification(query, []),
-    });
-  }
+  ): Promise<RelationType>;
 
-  async executeQuery(query: V1_Lambda): Promise<{
+  abstract executeQuery(query: V1_Lambda): Promise<{
     result: TDSExecutionResult;
     executedQuery: string;
     executedSQL: string;
-  }> {
-    const result = await this.client.executeQuery({
-      query: V1_serializeValueSpecification(query, []),
-      debug: this.enableEngineDebugMode,
-    });
-    return {
-      result: guaranteeType(
-        V1_buildExecutionResult(
-          V1_serializeExecutionResult(JSON.parse(result.result)),
-        ),
-        TDSExecutionResult,
-      ),
-      executedQuery: result.executedQuery,
-      executedSQL: result.executedSQL,
-    };
-  }
+  }>;
 }

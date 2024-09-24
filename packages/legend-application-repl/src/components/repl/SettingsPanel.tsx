@@ -16,20 +16,20 @@
 
 import { observer } from 'mobx-react-lite';
 import { DataCubeIcon } from '@finos/legend-art';
-import { useREPLStore } from '../REPLStoreProvider.js';
 import { FormCheckbox, FormNumberInput } from './Form.js';
 import {
-  DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
   DEFAULT_ENABLE_DEBUG_MODE,
+  DEFAULT_ENABLE_ENGINE_DEBUG_MODE,
   DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
   DEFAULT_GRID_CLIENT_ROW_BUFFER,
-  DEFAULT_ENABLE_ENGINE_DEBUG_MODE,
+  DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
 } from '../../stores/dataCube/DataCubeEngine.js';
 import { useState } from 'react';
+import { useDataCubeStore } from '../DataCubeStoreProvider.js';
 
 export const SettingsPanel = observer(() => {
-  const repl = useREPLStore();
-  const dataCubeEngine = repl.dataCubeEngine;
+  const dataCubeStore = useDataCubeStore();
+  const dataCubeEngine = dataCubeStore.engine;
 
   // NOTE: this makes sure the changes are not applied until saved, but it generates
   // a lot of boilerplate code, consider using a more ergonomic approach when we need

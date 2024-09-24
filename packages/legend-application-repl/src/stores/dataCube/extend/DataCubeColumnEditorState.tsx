@@ -108,7 +108,7 @@ export class DataCubeNewColumnState {
     this.manager = manager;
     this.dataCube = manager.dataCube;
     this.display = new DisplayState(
-      this.dataCube.repl.layout,
+      this.dataCube.store.layout,
       'Add New Column',
       () => <DataCubeColumnCreator state={this} />,
     );
@@ -289,7 +289,7 @@ export class DataCubeNewColumnState {
         this.showError(err.payload as DataCubeQueryBuilderError);
         return undefined;
       }
-      this.dataCube.repl.alertError(err, {
+      this.dataCube.store.alertError(err, {
         message: `Expression Validation Failure: ${err.message}`,
       });
     } finally {
@@ -319,7 +319,7 @@ export class DataCubeNewColumnState {
       ]);
     } catch (error) {
       assertErrorThrown(error);
-      this.dataCube.repl.alertError(error, {
+      this.dataCube.store.alertError(error, {
         message: `Expression Validation Failure: ${error.message}`,
       });
       return;
@@ -328,14 +328,14 @@ export class DataCubeNewColumnState {
     }
 
     if (!(query instanceof V1_Lambda)) {
-      this.dataCube.repl.alertError(new Error(), {
+      this.dataCube.store.alertError(new Error(), {
         message: `Expression Validation Failure: Expression must be a lambda.`,
       });
       return;
     }
 
     if (!returnType) {
-      this.dataCube.repl.alertError(new Error(), {
+      this.dataCube.store.alertError(new Error(), {
         message: `Expression Validation Failure: Can't compute expression return type.`,
       });
       return;

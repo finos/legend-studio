@@ -73,9 +73,11 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
       layerFilterNode: action,
     });
 
-    this.display = new DisplayState(this.dataCube.repl.layout, 'Filter', () => (
-      <DataCubeFilterEditor dataCube={this.dataCube} />
-    ));
+    this.display = new DisplayState(
+      this.dataCube.store.layout,
+      'Filter',
+      () => <DataCubeFilterEditor dataCube={this.dataCube} />,
+    );
     this.display.configuration.window = {
       x: -50,
       y: 50,

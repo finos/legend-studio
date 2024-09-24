@@ -37,8 +37,8 @@ import {
   type TailwindCSSColorScaleKey,
 } from '@finos/legend-art';
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
-import { useREPLStore } from '../REPLStoreProvider.js';
 import { isString } from '@finos/legend-shared';
+import { useDataCubeStore } from '../DataCubeStoreProvider.js';
 
 export function FormBadge_WIP() {
   return (
@@ -542,7 +542,7 @@ export const FormDocumentation: React.FC<{
   className?: string | undefined;
 }> = ({ documentationKey, title, className }) => {
   const application = useApplicationStore();
-  const repl = useREPLStore();
+  const dataCubeStore = useDataCubeStore();
   const documentationEntry =
     application.documentationService.getDocEntry(documentationKey);
   const openDocLink: React.MouseEventHandler<HTMLDivElement> = (event) => {
@@ -553,7 +553,7 @@ export const FormDocumentation: React.FC<{
     if (entry) {
       if (shouldDisplayVirtualAssistantDocumentationEntry(entry)) {
         application.assistantService.openDocumentationEntry(documentationKey);
-        repl.documentationDisplay.open();
+        dataCubeStore.documentationDisplay.open();
       } else if (entry.url) {
         application.navigationService.navigator.visitAddress(entry.url);
       }

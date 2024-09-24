@@ -92,7 +92,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     });
 
     this.display = new DisplayState(
-      this.dataCube.repl.layout,
+      this.dataCube.store.layout,
       'Properties',
       () => <DataCubeEditor dataCube={this.dataCube} />,
     );
@@ -186,7 +186,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
         );
       } catch (error) {
         assertErrorThrown(error);
-        this.dataCube.repl.alertError(error, {
+        this.dataCube.store.alertError(error, {
           message: `Query Validation Failure: ${error.message}`,
         });
         this.dataCube.endTask(task);

@@ -7,6 +7,7 @@
     { "path": "packages/legend-storage/tsconfig.build.json" },
     { "path": "packages/legend-graph/tsconfig.build.json" },
     { "path": "packages/legend-query-builder/tsconfig.build.json" },
+    { "path": "packages/legend-application-data-cube/tsconfig.build.json" },
     { "path": "packages/legend-art/tsconfig.build.json" },
     { "path": "packages/legend-lego/tsconfig.build.json" },
     { "path": "packages/legend-application/tsconfig.build.json" },

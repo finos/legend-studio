@@ -20,17 +20,17 @@ import {
   Switch,
   type TEMPORARY__ReactRouterComponentType,
 } from '@finos/legend-application/browser';
-import { DataCube } from './dataCube/DataCube.js';
 import { LegendREPLFrameworkProvider } from './LegendREPLFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
-import { withREPLStore } from './REPLStoreProvider.js';
+import { withDataCubeStore } from './DataCubeStoreProvider.js';
 import { BlockingActionAlert } from './repl/Alert.js';
+import { DataCube } from './dataCube/DataCube.js';
 
 export const LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN = Object.freeze({
   DATA_CUBE: `/dataCube`,
 });
 
-export const LegendREPLRouter = withREPLStore(
+export const LegendREPLRouter = withDataCubeStore(
   observer(() => (
     <div className="app">
       <Switch>
