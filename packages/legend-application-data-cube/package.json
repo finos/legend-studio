@@ -1,0 +1,65 @@
+{
+  "name": "@finos/legend-application-data-cube",
+  "version": "0.0.0",
+  "description": "Legend Data Cube",
+  "keywords": [
+    "legend",
+    "legend-application",
+    "legend-data-cube",
+    "data-cube"
+  ],
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-application-data-cube",
+  "bugs": {
+    "url": "https://github.com/finos/legend-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-application-data-cube"
+  },
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": "./lib/index.js",
+    "./lib/index.css": "./lib/index.css"
+  },
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "yarn clean && yarn build:sass && yarn build:ts",
+    "build:sass": "cross-env INIT_CWD=$INIT_CWD node ../../scripts/workflow/buildSass.js",
+    "build:ts": "tsc --project ./tsconfig.build.json",
+    "clean": "npm-run-all clean:cache clean:lib",
+    "clean:cache": "rimraf \"build\"",
+    "clean:lib": "rimraf \"lib\"",
+    "dev": "npm-run-all --parallel dev:sass dev:ts",
+    "dev:sass": "sass style:lib --watch --load-path=../../node_modules/@finos/legend-art/scss",
+    "dev:ts": "tsc --watch --preserveWatchOutput",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@finos/legend-application": "workspace:*"
+  },
+  "devDependencies": {
+    "@finos/legend-dev-utils": "workspace:*",
+    "@jest/globals": "29.7.0",
+    "cross-env": "7.0.3",
+    "eslint": "8.57.1",
+    "jest": "29.7.0",
+    "npm-run-all": "4.1.5",
+    "rimraf": "6.0.1",
+    "sass": "1.79.1",
+    "typescript": "5.6.2"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
+  }
+}

@@ -16,21 +16,36 @@
 
 import { createContext, useContext, useEffect } from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { REPLStore } from '../stores/REPLStore.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, NetworkClient } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LegendREPLApplicationConfig } from '../application/LegendREPLApplicationConfig.js';
 import type { LegendREPLPluginManager } from '../application/LegendREPLPluginManager.js';
+import { DataCubeStore } from '../stores/dataCube/DataCubeStore.js';
+import { REPLServerClient } from '../server/REPLServerClient.js';
+import { REPLDataCubeEngine } from '../stores/REPLDataCubeEngine_.js';
 
-const REPLStoreContext = createContext<REPLStore | undefined>(undefined);
+const DataCubeStoreContext = createContext<DataCubeStore | undefined>(
+  undefined,
+);
 
-export const REPLStoreProvider = observer(
+export const DataCubeStoreProvider = observer(
   ({ children }: { children: React.ReactNode }): React.ReactElement => {
     const application = useApplicationStore<
       LegendREPLApplicationConfig,
       LegendREPLPluginManager
     >();
-    const store = useLocalObservable(() => new REPLStore(application));
+    const baseAddress = guaranteeNonNullable(application.config.baseAddress);
+    const client = new REPLServerClient(
+      new NetworkClient({
+        baseUrl: application.config.useDynamicREPLServer
+          ? window.location.origin + baseAddress.replace('/repl/', '')
+          : application.config.replUrl,
+      }),
+    );
+    const engine = new REPLDataCubeEngine(client);
+    const dataCubeStore = new DataCubeStore(application, engine);
+    engine.init(dataCubeStore);
+    const store = useLocalObservable(() => dataCubeStore);
 
     useEffect(() => {
       store.initialize().catch(application.logUnhandledError);
@@ -40,24 +55,24 @@ export const REPLStoreProvider = observer(
       return <></>;
     }
     return (
-      <REPLStoreContext.Provider value={store}>
+      <DataCubeStoreContext.Provider value={store}>
         {children}
-      </REPLStoreContext.Provider>
+      </DataCubeStoreContext.Provider>
     );
   },
 );
 
-export const useREPLStore = () =>
+export const useDataCubeStore = () =>
   guaranteeNonNullable(
-    useContext(REPLStoreContext),
+    useContext(DataCubeStoreContext),
     `Can't find REPL store in context`,
   );
 
-export const withREPLStore = (WrappedComponent: React.FC): React.FC =>
-  function WithREPLStore() {
+export const withDataCubeStore = (WrappedComponent: React.FC): React.FC =>
+  function WithDATACUBEStore() {
     return (
-      <REPLStoreProvider>
+      <DataCubeStoreProvider>
         <WrappedComponent />
-      </REPLStoreProvider>
+      </DataCubeStoreProvider>
     );
   };

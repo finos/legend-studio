@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-import type { REPLStore } from '../REPLStore.js';
 import { DataCubeGridState } from './grid/DataCubeGridState.js';
 import { DataCubeEditorState } from './editor/DataCubeEditorState.js';
 import { assertErrorThrown, uuid } from '@finos/legend-shared';
 import { DataCubeQuerySnapshotManager } from './core/DataCubeQuerySnapshotManager.js';
-import type { LegendREPLApplicationStore } from '../LegendREPLBaseStore.js';
 import { DataCubeInfoState } from './core/DataCubeInfoState.js';
 import { validateAndBuildQuerySnapshot } from './core/DataCubeQuerySnapshotBuilder.js';
 import { action, makeObservable, observable } from 'mobx';
-import type { DataCubeEngine } from './DataCubeEngine.js';
-import { ActionAlertType } from '@finos/legend-application';
+import {
+  ActionAlertType,
+  type GenericLegendApplicationStore,
+} from '@finos/legend-application';
 import { DataCubeFilterEditorState } from './filter/DataCubeFilterEditorState.js';
 import { DataCubeExtendManagerState } from './extend/DataCubeExtendManagerState.js';
+import type { DataCubeStore } from './DataCubeStore.js';
+import type { DataCubeEngine } from './DataCubeEngine.js';
 
 class DataCubeTask {
   uuid = uuid();
@@ -44,9 +46,8 @@ class DataCubeTask {
 }
 
 export class DataCubeState {
-  readonly repl: REPLStore;
-  readonly application: LegendREPLApplicationStore;
-  readonly engine: DataCubeEngine;
+  readonly store: DataCubeStore;
+  readonly application: GenericLegendApplicationStore;
   readonly snapshotManager: DataCubeQuerySnapshotManager;
 
   readonly info: DataCubeInfoState;
@@ -54,19 +55,19 @@ export class DataCubeState {
   readonly grid: DataCubeGridState;
   readonly filter: DataCubeFilterEditorState;
   readonly extend: DataCubeExtendManagerState;
+  readonly engine: DataCubeEngine;
 
   readonly runningTasks = new Map<string, DataCubeTask>();
 
-  constructor(repl: REPLStore) {
+  constructor(dataCubeStore: DataCubeStore, dataCubeEngine: DataCubeEngine) {
     makeObservable(this, {
       runningTasks: observable,
       newTask: action,
       endTask: action,
     });
 
-    this.repl = repl;
-    this.application = repl.application;
-    this.engine = repl.dataCubeEngine;
+    this.application = dataCubeStore.application;
+    this.store = dataCubeStore;
 
     // NOTE: snapshot manager must be instantiated before subscribers
     this.snapshotManager = new DataCubeQuerySnapshotManager(this);
@@ -76,6 +77,7 @@ export class DataCubeState {
     this.grid = new DataCubeGridState(this);
     this.filter = new DataCubeFilterEditorState(this);
     this.extend = new DataCubeExtendManagerState(this);
+    this.engine = dataCubeEngine;
   }
 
   newTask(name: string) {
@@ -115,7 +117,7 @@ export class DataCubeState {
       this.snapshotManager.broadcastSnapshot(initialSnapshot);
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.repl.application.alertService.setActionAlertInfo({
+      this.application.alertService.setActionAlertInfo({
         message: `Initialization Failure: ${error.message}`,
         prompt: `Resolve the issue and reload the application.`,
         type: ActionAlertType.ERROR,
