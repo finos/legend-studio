@@ -53,7 +53,7 @@ import {
 } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeEngine } from '../DataCubeEngine.js';
 import { generateColumnDefs } from './DataCubeGridConfigurationBuilder.js';
-import type { DataCubeQueryFunctionMap } from '../core/DataCubeQueryEngine.js';
+import { type DataCubeQueryFunctionMap } from '../core/DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from '../core/aggregation/DataCubeQueryAggregateOperation.js';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
@@ -203,18 +203,10 @@ export function computeHashCodeForDataFetchManualTrigger(
           }))
           .sort(_sortByColName), // sort to make sure column reordering does not trigger data fetching
       },
+      selectColumns: snapshot.data.selectColumns.slice().sort(_sortByColName), // sort to make sure column reordering does not trigger data fetching
+      pivot: undefined,
       groupBy: undefined,
       sortColumns: [],
-      // TODO: remove pivot once we use ag-grid pivot API
-      pivot: snapshot.data.pivot
-        ? {
-            ...snapshot.data.pivot,
-            castColumns: snapshot.data.pivot.castColumns
-              .slice()
-              .sort(_sortByColName), // sort to make sure column reordering does not trigger data fetching
-          }
-        : undefined,
-      selectColumns: snapshot.data.selectColumns.slice().sort(_sortByColName), // sort to make sure column reordering does not trigger data fetching
     } satisfies DataCubeQuerySnapshotData),
   );
 }

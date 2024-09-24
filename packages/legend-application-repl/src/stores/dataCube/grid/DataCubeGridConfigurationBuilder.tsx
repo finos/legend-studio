@@ -441,6 +441,7 @@ function _sortSpec(columnData: ColumnData) {
 function _aggregationSpec(columnData: ColumnData) {
   const { name, snapshot, column } = columnData;
   const data = snapshot.data;
+  const pivotCol = _findCol(data.pivot?.columns, name);
   const groupByCol = _findCol(data.groupBy?.columns, name);
   const isGroupExtendedColumn = Boolean(
     _findCol(data.groupExtendedColumns, name),
@@ -452,6 +453,13 @@ function _aggregationSpec(columnData: ColumnData) {
     rowGroupIndex:
       !isGroupExtendedColumn && groupByCol
         ? (data.groupBy?.columns.indexOf(groupByCol) ?? null)
+        : null,
+    enablePivot:
+      !isGroupExtendedColumn && column.kind === DataCubeColumnKind.DIMENSION,
+    pivot: !isGroupExtendedColumn && Boolean(pivotCol),
+    pivotIndex:
+      !isGroupExtendedColumn && pivotCol
+        ? (data.pivot?.columns.indexOf(pivotCol) ?? null)
         : null,
     // NOTE: we don't quite care about populating these accurately
     // since ag-grid aggregation does not support parameters, so
@@ -487,12 +495,21 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     getChildCount: (data) =>
       data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID],
     // -------------------------------------- PIVOT --------------------------------------
-    // NOTE: we opt-out from ag-grid native support for pivot mode as it has a lot of constraints
-    // e.g. pivot mode impacts how row-grouping column drilldown is handled: when enabled, one
-    // cannot drill down to the leaf level.
-    // Another problem is we cannot use custom group column when in pivot mode.
-    // See https://github.com/ag-grid/ag-grid/issues/8088
-    pivotMode: false,
+    // NOTE: when enabled, pivot mode will show the pivot panel (allowing drag and drop)
+    // and pivot section in column tools panel, but it comes with many restrictions/opinionated
+    // behaviors on column grouping: i.e. it disallow full control of column definitions, so we
+    // couldn't display dimension columns which are not part of pivot while pivoting.
+    //
+    // Even setting flag pivotSuppressAutoColumn=true does not seem to remove the column
+    // auto-grouping behavior
+    //
+    // As such, we will just make use of column pivot settings to trigger server-side row
+    // model data-fetching when pivot changes, and would opt out from all GUI features
+    // that pivot mode offers by disabling pivot mode and will re-assess its usage in the future.
+    //
+    // pivotMode: Boolean(snapshot.data.pivot),
+    // pivotPanelShow: 'always',
+    // pivotSuppressAutoColumn: true,
     // -------------------------------------- SORT --------------------------------------
     // Force multi-sorting since this is what the query supports anyway
     alwaysMultiSort: true,
@@ -595,7 +612,6 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
           width: INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
           toolPanelParams: {
             suppressValues: true,
-            suppressPivots: true,
             suppressPivotMode: true,
           },
         },
