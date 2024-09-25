@@ -73,10 +73,8 @@ export class DataCubeEditorHorizontalPivotsPanelState
   constructor(editor: DataCubeEditorState) {
     makeObservable(this, {
       castColumns: observable.ref,
-      setCastColumns: action,
-
       pivotResultColumns: computed,
-      columnsConsumedByPivot: computed,
+      setCastColumns: action,
 
       applySnaphot: action,
     });
@@ -92,29 +90,6 @@ export class DataCubeEditorHorizontalPivotsPanelState
     return this.castColumns
       .filter((col) => isPivotResultColumnName(col.name))
       .map(_toCol);
-  }
-
-  /**
-   * Due to the nature of pivot() operation, some base columns (i.e. source columns and leaf-level columns)
-   * will be "consumed" and not available for subsequent operations (e.g. sort, groupBy, etc.).
-   */
-  get columnsConsumedByPivot(): DataCubeQuerySnapshotColumn[] {
-    if (!this.selector.selectedColumns.length) {
-      return [];
-    }
-    return uniqBy(
-      [
-        ...this.selector.selectedColumns,
-        ...this.editor.columnProperties.columns.filter(
-          (col) =>
-            col.isSelected &&
-            col.kind === DataCubeColumnKind.MEASURE &&
-            !col.excludedFromHorizontalPivot,
-        ),
-        /** TODO: @datacube pivot - need to include columns used in complex aggregates (such as weighted-average) */
-      ],
-      (col) => col.name,
-    ).map(_toCol);
   }
 
   setCastColumns(value: DataCubeQuerySnapshotColumn[]) {

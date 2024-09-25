@@ -504,7 +504,7 @@ export function generateMenuBuilder(
                 {
                   name: `Add Vertical Pivot on ${columnName}`,
                   disabled: Boolean(
-                    controller.verticalPivotedColumns.find(
+                    controller.verticalPivotColumns.find(
                       (col) => col.name === columnName,
                     ),
                   ),
@@ -512,7 +512,7 @@ export function generateMenuBuilder(
                 },
                 {
                   name: `Remove Vertical Pivot on ${columnName}`,
-                  disabled: !controller.verticalPivotedColumns.find(
+                  disabled: !controller.verticalPivotColumns.find(
                     (col) => col.name === columnName,
                   ),
                   action: () =>
@@ -534,7 +534,7 @@ export function generateMenuBuilder(
                 {
                   name: `Add Horizontal Pivot on ${columnName}`,
                   disabled: Boolean(
-                    controller.horizontalPivotedColumns.find(
+                    controller.horizontalPivotColumns.find(
                       (col) => col.name === columnName,
                     ),
                   ),
@@ -548,7 +548,7 @@ export function generateMenuBuilder(
           columnName &&
           baseColumnConfiguration?.kind === DataCubeColumnKind.MEASURE &&
           !baseColumnConfiguration.excludedFromHorizontalPivot &&
-          controller.horizontalPivotedColumns.length !== 0 // pivot must be active
+          controller.horizontalPivotColumns.length !== 0 // pivot must be active
             ? [
                 {
                   name: `Exclude Column ${baseColumnConfiguration.name} from Horizontal Pivot`,
@@ -562,7 +562,7 @@ export function generateMenuBuilder(
           columnName &&
           columnConfiguration?.kind === DataCubeColumnKind.MEASURE &&
           columnConfiguration.excludedFromHorizontalPivot &&
-          controller.horizontalPivotedColumns.length !== 0 // pivot must be active
+          controller.horizontalPivotColumns.length !== 0 // pivot must be active
             ? [
                 {
                   name: `Include Column ${columnName} in Horizontal Pivot`,
@@ -574,12 +574,12 @@ export function generateMenuBuilder(
             : []),
           {
             name: `Clear All Vertical Pivots`,
-            disabled: controller.verticalPivotedColumns.length === 0,
+            disabled: controller.verticalPivotColumns.length === 0,
             action: () => controller.clearAllVerticalPivots(),
           },
           {
             name: `Clear All Horizontal Pivots`,
-            disabled: controller.horizontalPivotedColumns.length === 0,
+            disabled: controller.horizontalPivotColumns.length === 0,
             action: () => controller.clearAllHorizontalPivots(),
           },
         ],
