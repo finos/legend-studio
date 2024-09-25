@@ -15,7 +15,7 @@
  */
 
 import { action, makeObservable, observable } from 'mobx';
-import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { DataCubeEditorSortsPanelState } from './DataCubeEditorSortsPanelState.js';
 import { DataCubeQuerySnapshotController } from '../core/DataCubeQuerySnapshotManager.js';
 import {
@@ -76,8 +76,8 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
   leafExtendColumns: DataCubeQuerySnapshotExtendedColumn[] = [];
   groupExtendColumns: DataCubeQuerySnapshotExtendedColumn[] = [];
 
-  constructor(dataCube: DataCubeState) {
-    super(dataCube);
+  constructor(view: DataCubeViewState) {
+    super(view);
 
     makeObservable(this, {
       currentTab: observable,
@@ -92,9 +92,9 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     });
 
     this.display = new DisplayState(
-      this.dataCube.store.layout,
+      this.view.store.layout,
       'Properties',
-      () => <DataCubeEditor dataCube={this.dataCube} />,
+      () => <DataCubeEditor view={this.view} />,
     );
     this.generalProperties = new DataCubeEditorGeneralPropertiesPanelState(
       this,
@@ -131,7 +131,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
   }
 
   async applyChanges(options?: { closeAfterApply?: boolean | undefined }) {
-    const task = this.dataCube.newTask('Validate query');
+    const task = this.view.newTask('Validate query');
     this.finalizationState.inProgress();
 
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
@@ -172,24 +172,24 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
               )
               .map(_toCol);
         }
-        await this.dataCube.engine.getQueryRelationType(
+        await this.view.engine.getQueryRelationType(
           _lambda(
             [],
             [
               buildExecutableQuery(
                 tempSnapshot,
-                this.dataCube.engine.filterOperations,
-                this.dataCube.engine.aggregateOperations,
+                this.view.engine.filterOperations,
+                this.view.engine.aggregateOperations,
               ),
             ],
           ),
         );
       } catch (error) {
         assertErrorThrown(error);
-        this.dataCube.store.alertError(error, {
+        this.view.store.alertError(error, {
           message: `Query Validation Failure: ${error.message}`,
         });
-        this.dataCube.endTask(task);
+        this.view.endTask(task);
         return;
       } finally {
         this.finalizationState.complete();
@@ -203,6 +203,6 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     if (options?.closeAfterApply) {
       this.display.close();
     }
-    this.dataCube.endTask(task);
+    this.view.endTask(task);
   }
 }

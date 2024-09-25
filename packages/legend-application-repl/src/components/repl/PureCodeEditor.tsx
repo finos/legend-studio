@@ -19,7 +19,7 @@ import {
   languages as monacoLanguagesAPI,
   type IPosition,
 } from 'monaco-editor';
-import type { DataCubeState } from '../../stores/dataCube/DataCubeState.js';
+import type { DataCubeViewState } from '../../stores/dataCube/DataCubeViewState.js';
 import type { CompletionItem } from '../../server/REPLEngine.js';
 import type { V1_ValueSpecification } from '@finos/legend-graph';
 
@@ -43,7 +43,7 @@ export async function getCodeSuggestions(
   position: IPosition,
   model: monacoEditorAPI.ITextModel,
   prefix: string | undefined,
-  dataCube: DataCubeState,
+  view: DataCubeViewState,
   baseQueryBuilder: () => V1_ValueSpecification,
 ) {
   const textUntilPosition = model.getValueInRange({
@@ -57,7 +57,7 @@ export async function getCodeSuggestions(
   let suggestions: CompletionItem[] = [];
 
   try {
-    suggestions = await dataCube.engine.getQueryTypeahead(
+    suggestions = await view.engine.getQueryTypeahead(
       (prefix ?? '') + textUntilPosition,
       baseQueryBuilder(),
     );

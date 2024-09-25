@@ -41,12 +41,12 @@ import {
   FormNumberInput,
   FormBadge_WIP,
 } from '../../repl/Form.js';
-import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
+import type { DataCubeViewState } from '../../../stores/dataCube/DataCubeViewState.js';
 
 export const DataCubeEditorGeneralPropertiesPanel = observer(
-  (props: { dataCube: DataCubeState }) => {
-    const { dataCube } = props;
-    const panel = dataCube.editor.generalProperties;
+  (props: { view: DataCubeViewState }) => {
+    const { view } = props;
+    const panel = view.editor.generalProperties;
     const configuration = panel.configuration;
     const [
       openInitialExpandLevelDropdown,

@@ -20,11 +20,11 @@ import { guaranteeNonNullable, NetworkClient } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LegendREPLApplicationConfig } from '../application/LegendREPLApplicationConfig.js';
 import type { LegendREPLPluginManager } from '../application/LegendREPLPluginManager.js';
-import { DataCubeStore } from '../stores/dataCube/DataCubeStore.js';
+import { DataCubeState } from '../stores/dataCube/DataCubeState.js';
 import { REPLServerClient } from '../server/REPLServerClient.js';
-import { REPLDataCubeEngine } from '../stores/REPLDataCubeEngine_.js';
+import { REPLDataCubeEngine } from '../stores/REPLDataCubeEngine.js';
 
-const DataCubeStoreContext = createContext<DataCubeStore | undefined>(
+const DataCubeStoreContext = createContext<DataCubeState | undefined>(
   undefined,
 );
 
@@ -42,10 +42,13 @@ export const DataCubeStoreProvider = observer(
           : application.config.replUrl,
       }),
     );
-    const engine = new REPLDataCubeEngine(client);
-    const dataCubeStore = new DataCubeStore(application, engine);
-    engine.init(dataCubeStore);
-    const store = useLocalObservable(() => dataCubeStore);
+    const store = useLocalObservable(
+      () =>
+        new DataCubeState(
+          application,
+          (dataCubeStore) => new REPLDataCubeEngine(dataCubeStore, client),
+        ),
+    );
 
     useEffect(() => {
       store.initialize().catch(application.logUnhandledError);

@@ -15,7 +15,7 @@
  */
 
 import { action, makeObservable, observable } from 'mobx';
-import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { DataCubeQuerySnapshotController } from './DataCubeQuerySnapshotManager.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import type { DataCubeQuery } from '../../../server/DataCubeQuery.js';
@@ -32,8 +32,8 @@ export class DataCubeInfoState extends DataCubeQuerySnapshotController {
   name = DEFAULT_REPORT_NAME;
   private editionStartTime?: number | undefined;
 
-  constructor(dataCube: DataCubeState) {
-    super(dataCube);
+  constructor(view: DataCubeViewState) {
+    super(view);
 
     makeObservable<DataCubeInfoState, 'setName'>(this, {
       name: observable,

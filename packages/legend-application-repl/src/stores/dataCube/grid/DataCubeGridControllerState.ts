@@ -40,7 +40,7 @@ import type {
   GetMainMenuItemsParams,
   MenuItemDef,
 } from '@ag-grid-community/core';
-import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { generateMenuBuilder } from './DataCubeGridMenuBuilder.js';
 import {
   buildFilterEditorTree,
@@ -72,8 +72,8 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
   menuBuilder?:
     | ((
         params:
-          | GetContextMenuItemsParams<unknown, { dataCube: DataCubeState }>
-          | GetMainMenuItemsParams<unknown, { dataCube: DataCubeState }>,
+          | GetContextMenuItemsParams<unknown, { view: DataCubeViewState }>
+          | GetMainMenuItemsParams<unknown, { view: DataCubeViewState }>,
         fromHeader: boolean,
       ) => (string | MenuItemDef)[])
     | undefined;
@@ -393,7 +393,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
           snapshot.data.filter,
           undefined,
           this.filterTree.nodes,
-          (operator) => this.dataCube.engine.getFilterOperation(operator),
+          (operator) => this.view.engine.getFilterOperation(operator),
         )
       : undefined;
 

@@ -18,7 +18,7 @@ import { cn, DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
 import { useEffect } from 'react';
-import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
+import type { DataCubeViewState } from '../../../stores/dataCube/DataCubeViewState.js';
 import { FormCheckbox } from '../../repl/Form.js';
 import type {
   DataCubeEditorColumnsSelectorColumnState,
@@ -72,9 +72,9 @@ const ColumnsSelectorLabel = observer(
 );
 
 export const DataCubeEditorColumnsPanel = observer(
-  (props: { dataCube: DataCubeState }) => {
-    const { dataCube } = props;
-    const panel = dataCube.editor.columns;
+  (props: { view: DataCubeViewState }) => {
+    const { view } = props;
+    const panel = view.editor.columns;
 
     useEffect(() => () => panel.propagateChanges(), [panel]);
 

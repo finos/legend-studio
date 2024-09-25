@@ -15,7 +15,7 @@
  */
 
 import { action, makeObservable, observable } from 'mobx';
-import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
@@ -25,7 +25,7 @@ import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 export class DataCubeEditorGeneralPropertiesPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly dataCube!: DataCubeState;
+  readonly view!: DataCubeViewState;
   readonly editor!: DataCubeEditorState;
 
   name = '';
@@ -45,7 +45,7 @@ export class DataCubeEditorGeneralPropertiesPanelState
     });
 
     this.editor = editor;
-    this.dataCube = editor.dataCube;
+    this.view = editor.view;
   }
 
   setName(val: string) {

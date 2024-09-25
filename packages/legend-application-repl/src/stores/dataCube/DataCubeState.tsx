@@ -20,7 +20,7 @@ import {
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import { type DataCubeEngine } from './DataCubeEngine.js';
-import { DataCubeState } from './DataCubeState.js';
+import { DataCubeViewState } from './DataCubeViewState.js';
 import {
   DEFAULT_SMALL_ALERT_WINDOW_CONFIG,
   DisplayState,
@@ -40,26 +40,31 @@ import {
 } from '../../components/repl/Alert.js';
 import { action, makeObservable } from 'mobx';
 
-export class DataCubeStore {
+export class DataCubeState {
   readonly application: GenericLegendApplicationStore;
   readonly engine: DataCubeEngine;
-  readonly dataCubeState: DataCubeState;
+  readonly initState = ActionState.create();
+
   readonly layout: LayoutManagerState;
   readonly settingsDisplay: DisplayState;
   readonly documentationDisplay: DisplayState;
-  readonly initState = ActionState.create();
+
+  // NOTE: when we support multiview, there can be multiple view states to support
+  // the first one in that list will be taken as the main view state
+  readonly view: DataCubeViewState;
+
   constructor(
-    applicationStore: GenericLegendApplicationStore,
-    engine: DataCubeEngine,
+    application: GenericLegendApplicationStore,
+    engineBuilder: (store: DataCubeState) => DataCubeEngine,
   ) {
     makeObservable(this, {
       alert: action,
       alertError: action,
     });
-    this.application = applicationStore;
-    this.engine = engine;
+    this.application = application;
+    this.engine = engineBuilder(this);
     this.layout = new LayoutManagerState(this.application);
-    this.dataCubeState = new DataCubeState(this, this.engine);
+    this.view = new DataCubeViewState(this, this.engine);
     const settingsDisplay = new DisplayState(this.layout, 'Settings', () => (
       <SettingsPanel />
     ));

@@ -33,11 +33,14 @@ import {
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
 import { guaranteeType } from '@finos/legend-shared';
+import type { DataCubeState } from './dataCube/DataCubeState.js';
 
 export class REPLDataCubeEngine extends DataCubeEngine {
   readonly client: REPLServerClient;
-  constructor(serverClient: REPLServerClient) {
-    super();
+
+  constructor(store: DataCubeState, client: REPLServerClient) {
+    super(store);
+
     makeObservable(this, {
       enableDebugMode: observable,
       setEnableDebugMode: action,
@@ -54,7 +57,7 @@ export class REPLDataCubeEngine extends DataCubeEngine {
       gridClientSuppressLargeDatasetWarning: observable,
       setGridClientSuppressLargeDatasetWarning: action,
     });
-    this.client = serverClient;
+    this.client = client;
   }
 
   async getInfrastructureInfo(): Promise<DataCubeInfrastructureInfo> {

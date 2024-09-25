@@ -26,19 +26,19 @@ import {
   useDropdownMenu,
 } from '@finos/legend-art';
 import { LayoutManager } from '../repl/LayoutManager.js';
-import type { DataCubeState } from '../../stores/dataCube/DataCubeState.js';
+import type { DataCubeViewState } from '../../stores/dataCube/DataCubeViewState.js';
 import { INTERNAL__MonacoEditorWidgetsRoot } from '../repl/PureCodeEditor.js';
 import { useDataCubeStore } from '../DataCubeStoreProvider.js';
 
-const DataCubeStatusBar = observer((props: { dataCube: DataCubeState }) => {
-  const { dataCube } = props;
+const DataCubeStatusBar = observer((props: { view: DataCubeViewState }) => {
+  const { view } = props;
 
   return (
     <div className="flex h-5 w-full justify-between bg-neutral-100">
       <div className="flex">
         <button
           className="flex items-center px-2 text-sky-600 hover:text-sky-700"
-          onClick={() => dataCube.editor.display.open()}
+          onClick={() => view.editor.display.open()}
         >
           <DataCubeIcon.Settings className="text-xl" />
           <div className="pl-0.5 underline">Properties</div>
@@ -47,7 +47,7 @@ const DataCubeStatusBar = observer((props: { dataCube: DataCubeState }) => {
           <button
             className="flex items-center text-sky-600 hover:text-sky-700"
             onClick={() => {
-              dataCube.filter.display.open();
+              view.filter.display.open();
             }}
           >
             <DataCubeIcon.TableFilter className="text-lg" />
@@ -57,7 +57,7 @@ const DataCubeStatusBar = observer((props: { dataCube: DataCubeState }) => {
       </div>
       <div className="flex items-center px-2">
         <div className="flex h-3.5 w-48 border-[0.5px] border-neutral-300">
-          {dataCube.runningTasks.size > 0 && (
+          {view.runningTasks.size > 0 && (
             <ProgressBar
               classes={{
                 root: 'h-3.5 w-full bg-transparent',
@@ -73,8 +73,8 @@ const DataCubeStatusBar = observer((props: { dataCube: DataCubeState }) => {
   );
 });
 
-const DataCubeTitleBar = observer((props: { dataCube: DataCubeState }) => {
-  const { dataCube } = props;
+const DataCubeTitleBar = observer((props: { view: DataCubeViewState }) => {
+  const { view } = props;
   const application = useApplicationStore();
   const [openMenuDropdown, closeMenuDropdown, menuDropdownProps] =
     useDropdownMenu();
@@ -83,7 +83,7 @@ const DataCubeTitleBar = observer((props: { dataCube: DataCubeState }) => {
     <div className="flex h-6 justify-between bg-neutral-100">
       <div className="flex select-none items-center pl-1 pr-2 text-lg font-medium">
         <DataCubeIcon.Cube className="mr-1 h-4 w-4" />
-        <div>{dataCube.info.name}</div>
+        <div>{view.info.name}</div>
       </div>
       <div>
         <button
@@ -122,7 +122,7 @@ const DataCubeTitleBar = observer((props: { dataCube: DataCubeState }) => {
           <DropdownMenuItem
             className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
             onClick={() => {
-              dataCube.store.settingsDisplay.open();
+              view.store.settingsDisplay.open();
               closeMenuDropdown();
             }}
           >
@@ -135,20 +135,20 @@ const DataCubeTitleBar = observer((props: { dataCube: DataCubeState }) => {
 });
 
 export const DataCube = observer(() => {
-  const dataCubeStore = useDataCubeStore();
-  const application = dataCubeStore.application;
-  const dataCube = dataCubeStore.dataCubeState;
+  const store = useDataCubeStore();
+  const application = store.application;
+  const view = store.view;
 
   useEffect(() => {
-    dataCube.initialize().catch(application.logUnhandledError);
-  }, [dataCube, application]);
+    view.initialize().catch(application.logUnhandledError);
+  }, [view, application]);
 
   return (
     <div className="data-cube relative flex h-full w-full flex-col bg-white">
-      <DataCubeTitleBar dataCube={dataCube} />
-      <DataCubeGrid dataCube={dataCube} />
-      <DataCubeStatusBar dataCube={dataCube} />
-      <LayoutManager layoutManagerState={dataCubeStore.layout} />
+      <DataCubeTitleBar view={view} />
+      <DataCubeGrid view={view} />
+      <DataCubeStatusBar view={view} />
+      <LayoutManager layoutManagerState={store.layout} />
 
       <INTERNAL__MonacoEditorWidgetsRoot />
     </div>

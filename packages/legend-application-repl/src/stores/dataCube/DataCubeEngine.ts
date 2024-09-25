@@ -67,8 +67,7 @@ import { DataCubeQueryFilterOperation__EndWithCaseInsensitive } from './core/fil
 import { DataCubeQueryFilterOperation__NotEndWith } from './core/filter/DataCubeQueryFilterOperation__NotEndWith.js';
 import { DataCubeQueryFilterOperation__IsNull } from './core/filter/DataCubeQueryFilterOperation__IsNull.js';
 import { DataCubeQueryFilterOperation__IsNotNull } from './core/filter/DataCubeQueryFilterOperation__IsNotNull.js';
-import type { DataCubeStore } from './DataCubeStore.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import type { DataCubeState } from './DataCubeState.js';
 
 export const DEFAULT_ENABLE_DEBUG_MODE = false;
 export const DEFAULT_ENABLE_ENGINE_DEBUG_MODE = false;
@@ -78,7 +77,7 @@ export const DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES = false;
 export const DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING = false;
 
 export abstract class DataCubeEngine {
-  private _store: DataCubeStore | undefined;
+  readonly store: DataCubeState;
 
   readonly filterOperations = [
     new DataCubeQueryFilterOperation__LessThan(),
@@ -136,12 +135,8 @@ export abstract class DataCubeEngine {
   gridClientSuppressLargeDatasetWarning =
     DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING;
 
-  get store(): DataCubeStore {
-    return guaranteeNonNullable(this._store, 'store has not been initialized');
-  }
-
-  init(store: DataCubeStore): void {
-    this._store = store;
+  constructor(store: DataCubeState) {
+    this.store = store;
   }
 
   getFilterOperation(value: string) {
@@ -176,7 +171,7 @@ export abstract class DataCubeEngine {
   private propagateGridOptionUpdates() {
     // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
     // to traverse through and update the configurations of all of their grid clients
-    this.store.dataCubeState.grid.client.updateGridOptions({
+    this.store.view.grid.client.updateGridOptions({
       rowBuffer: this.gridClientRowBuffer,
       purgeClosedRowNodes: this.gridClientPurgeClosedRowNodes,
     });
@@ -185,7 +180,7 @@ export abstract class DataCubeEngine {
   refreshFailedDataFetches() {
     // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
     // to traverse through and update the configurations of all of their grid clients
-    this.store.dataCubeState.grid.client.retryServerSideLoads();
+    this.store.view.grid.client.retryServerSideLoads();
   }
 
   abstract getInfrastructureInfo(): Promise<DataCubeInfrastructureInfo>;

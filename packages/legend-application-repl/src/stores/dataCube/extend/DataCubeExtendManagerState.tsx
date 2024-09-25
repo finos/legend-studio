@@ -22,7 +22,7 @@ import {
   type DataCubeQuerySnapshotExtendedColumn,
 } from '../core/DataCubeQuerySnapshot.js';
 import { deleteEntry, guaranteeNonNullable, noop } from '@finos/legend-shared';
-import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { DataCubeQuerySnapshotController } from '../core/DataCubeQuerySnapshotManager.js';
 import {
   type DataCubeColumnConfiguration,
@@ -65,8 +65,8 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
   newColumnEditors: DataCubeNewColumnState[] = [];
   // TODO: existingColumnEditors
 
-  constructor(dataCube: DataCubeState) {
-    super(dataCube);
+  constructor(view: DataCubeViewState) {
+    super(view);
 
     makeObservable(this, {
       columnConfigurations: observable.struct,

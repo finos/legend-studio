@@ -27,7 +27,7 @@ import {
 } from '@finos/legend-application';
 import { DataCubeFilterEditorState } from './filter/DataCubeFilterEditorState.js';
 import { DataCubeExtendManagerState } from './extend/DataCubeExtendManagerState.js';
-import type { DataCubeStore } from './DataCubeStore.js';
+import type { DataCubeState } from './DataCubeState.js';
 import type { DataCubeEngine } from './DataCubeEngine.js';
 
 class DataCubeTask {
@@ -45,8 +45,8 @@ class DataCubeTask {
   }
 }
 
-export class DataCubeState {
-  readonly store: DataCubeStore;
+export class DataCubeViewState {
+  readonly store: DataCubeState;
   readonly application: GenericLegendApplicationStore;
   readonly snapshotManager: DataCubeQuerySnapshotManager;
 
@@ -59,7 +59,7 @@ export class DataCubeState {
 
   readonly runningTasks = new Map<string, DataCubeTask>();
 
-  constructor(dataCubeStore: DataCubeStore, dataCubeEngine: DataCubeEngine) {
+  constructor(dataCubeStore: DataCubeState, engine: DataCubeEngine) {
     makeObservable(this, {
       runningTasks: observable,
       newTask: action,
@@ -77,7 +77,7 @@ export class DataCubeState {
     this.grid = new DataCubeGridState(this);
     this.filter = new DataCubeFilterEditorState(this);
     this.extend = new DataCubeExtendManagerState(this);
-    this.engine = dataCubeEngine;
+    this.engine = engine;
   }
 
   newTask(name: string) {

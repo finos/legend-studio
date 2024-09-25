@@ -29,7 +29,7 @@ import {
   FormDropdownMenu,
   FormDropdownMenuItem,
 } from '../../repl/Form.js';
-import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
+import type { DataCubeViewState } from '../../../stores/dataCube/DataCubeViewState.js';
 
 function getSortDirectionLabel(operation: string) {
   switch (operation) {
@@ -139,9 +139,9 @@ const SortColumnLabel = observer(
 );
 
 export const DataCubeEditorSortsPanel = observer(
-  (props: { dataCube: DataCubeState }) => {
-    const { dataCube } = props;
-    const panel = dataCube.editor.sorts;
+  (props: { view: DataCubeViewState }) => {
+    const { view } = props;
+    const panel = view.editor.sorts;
 
     return (
       <div className="h-full w-full select-none p-2">

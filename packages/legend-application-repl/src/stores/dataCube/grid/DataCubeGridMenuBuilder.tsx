@@ -135,7 +135,7 @@ function buildNewFilterConditionMenuItem(
   value: { label: string; value: DataCubeOperationValue } | undefined,
   controller: DataCubeGridControllerState,
 ): MenuItemDef {
-  const operation = controller.dataCube.engine.getFilterOperation(operator);
+  const operation = controller.view.engine.getFilterOperation(operator);
   return {
     name: `Add Filter: ${columnConfiguration.name} ${operation.textLabel}${value ? ` ${value.label}` : ''}`,
     action: () => {
@@ -161,14 +161,14 @@ export function generateMenuBuilder(
   params: GetContextMenuItemsParams | GetMainMenuItemsParams,
   fromHeader: boolean,
 ) => (string | MenuItemDef)[] {
-  const dataCube = controller.dataCube;
+  const view = controller.view;
 
   // NOTE: we need to minimize the usage of these states
   // since the grid context-menu should be solely driven
   // by the grid controller
-  const filter = dataCube.filter;
-  const editor = dataCube.editor;
-  const extend = dataCube.extend;
+  const filter = view.filter;
+  const editor = view.editor;
+  const extend = view.extend;
 
   return (
     params: GetContextMenuItemsParams | GetMainMenuItemsParams,
@@ -367,14 +367,14 @@ export function generateMenuBuilder(
           {
             name: 'Excel',
             action: () =>
-              dataCube.grid.exportEngine.exportFile(
+              view.grid.exportEngine.exportFile(
                 DataCubeGridClientExportFormat.EXCEL,
               ),
           },
           {
             name: 'CSV',
             action: () =>
-              dataCube.grid.exportEngine.exportFile(
+              view.grid.exportEngine.exportFile(
                 DataCubeGridClientExportFormat.CSV,
               ),
           },
@@ -424,17 +424,17 @@ export function generateMenuBuilder(
           {
             name: 'Excel Attachment',
             action: () => {
-              dataCube.grid.exportEngine
+              view.grid.exportEngine
                 .exportEmail(DataCubeGridClientExportFormat.EXCEL)
-                .catch(dataCube.application.logUnhandledError);
+                .catch(view.application.logUnhandledError);
             },
           },
           {
             name: 'CSV Attachment',
             action: () => {
-              dataCube.grid.exportEngine
+              view.grid.exportEngine
                 .exportEmail(DataCubeGridClientExportFormat.CSV)
-                .catch(dataCube.application.logUnhandledError);
+                .catch(view.application.logUnhandledError);
             },
           },
           {

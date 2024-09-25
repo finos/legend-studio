@@ -57,7 +57,7 @@ enum DataCubeExtendedColumnKind {
 export const DataCubeColumnCreator = observer(
   (props: { state: DataCubeNewColumnState }) => {
     const { state } = props;
-    const dataCube = state.dataCube;
+    const view = state.view;
     const application = useApplicationStore();
 
     const nameInputRef = useRef<HTMLInputElement>(null);
@@ -132,7 +132,7 @@ export const DataCubeColumnCreator = observer(
                       position,
                       model,
                       state.codePrefix,
-                      dataCube,
+                      view,
                       () => state.buildExtendBaseQuery(),
                     ),
                   );
@@ -165,7 +165,7 @@ export const DataCubeColumnCreator = observer(
         state.setEditor(newEditor);
         setEditor(newEditor);
       }
-    }, [state, editor, debouncedCheckReturnType, dataCube]);
+    }, [state, editor, debouncedCheckReturnType, view]);
 
     // clean up
     useEffect(

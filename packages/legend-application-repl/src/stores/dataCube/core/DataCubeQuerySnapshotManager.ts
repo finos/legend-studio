@@ -18,7 +18,7 @@ import {
   APPLICATION_EVENT,
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
-import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import {
   IllegalStateError,
@@ -40,14 +40,14 @@ interface DataCubeQuerySnapshotSubscriber {
 export abstract class DataCubeQuerySnapshotController
   implements DataCubeQuerySnapshotSubscriber
 {
-  readonly dataCube!: DataCubeState;
+  readonly view!: DataCubeViewState;
   readonly application!: GenericLegendApplicationStore;
 
   private latestSnapshot: DataCubeQuerySnapshot | undefined;
 
-  constructor(dataCube: DataCubeState) {
-    this.dataCube = dataCube;
-    this.application = dataCube.application;
+  constructor(view: DataCubeViewState) {
+    this.view = view;
+    this.application = view.application;
   }
 
   abstract applySnapshot(
@@ -62,7 +62,7 @@ export abstract class DataCubeQuerySnapshotController
   }
 
   publishSnapshot(snapshot: DataCubeQuerySnapshot) {
-    if (this.dataCube.engine.enableDebugMode) {
+    if (this.view.engine.enableDebugMode) {
       this.application.debugProcess(
         `New Snapshot`,
         '\nSnapshot',
@@ -74,7 +74,7 @@ export abstract class DataCubeQuerySnapshotController
       );
     }
     this.latestSnapshot = snapshot;
-    this.dataCube.snapshotManager.broadcastSnapshot(snapshot);
+    this.view.snapshotManager.broadcastSnapshot(snapshot);
   }
 
   getLatestSnapshot() {
@@ -83,15 +83,15 @@ export abstract class DataCubeQuerySnapshotController
 }
 
 export class DataCubeQuerySnapshotManager {
-  private readonly dataCube: DataCubeState;
+  private readonly view: DataCubeViewState;
   private readonly subscribers: DataCubeQuerySnapshotSubscriber[] = [];
   private readonly snapshots: DataCubeQuerySnapshot[] = [];
 
   private _initialSnapshot: DataCubeQuerySnapshot | undefined;
   private _initialQuery: DataCubeQuery | undefined;
 
-  constructor(dataCube: DataCubeState) {
-    this.dataCube = dataCube;
+  constructor(view: DataCubeViewState) {
+    this.view = view;
   }
 
   get currentSnapshot() {
@@ -131,7 +131,7 @@ export class DataCubeQuerySnapshotManager {
 
   broadcastSnapshot(snapshot: DataCubeQuerySnapshot) {
     if (!snapshot.isFinalized()) {
-      this.dataCube.application.logService.error(
+      this.view.application.logService.error(
         LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
         `Snapshot must be finalized before broadcasting`,
       );
@@ -143,7 +143,7 @@ export class DataCubeQuerySnapshotManager {
       if (currentSnapshot?.uuid !== snapshot.uuid) {
         subscriber.receiveSnapshot(snapshot).catch((error: unknown) => {
           assertErrorThrown(error);
-          this.dataCube.application.logService.error(
+          this.view.application.logService.error(
             LogEvent.create(
               APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
             ),

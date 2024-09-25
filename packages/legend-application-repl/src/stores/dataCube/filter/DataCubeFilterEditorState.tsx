@@ -25,7 +25,7 @@ import {
   getNonNullableEntry,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 import {
   type DataCubeFilterEditorTree,
   type DataCubeFilterEditorTreeNode,
@@ -53,8 +53,8 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
   selectedNode?: DataCubeFilterEditorTreeNode | undefined;
   columns: DataCubeColumnConfiguration[] = [];
 
-  constructor(dataCube: DataCubeState) {
-    super(dataCube);
+  constructor(view: DataCubeViewState) {
+    super(view);
 
     makeObservable(this, {
       tree: observable.ref,
@@ -73,11 +73,9 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
       layerFilterNode: action,
     });
 
-    this.display = new DisplayState(
-      this.dataCube.store.layout,
-      'Filter',
-      () => <DataCubeFilterEditor dataCube={this.dataCube} />,
-    );
+    this.display = new DisplayState(this.view.store.layout, 'Filter', () => (
+      <DataCubeFilterEditor view={this.view} />
+    ));
     this.display.configuration.window = {
       x: -50,
       y: 50,
@@ -144,7 +142,7 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
           name: columnConfig.name,
           type: columnConfig.type,
         };
-        const operation = this.dataCube.engine.getFilterOperation(
+        const operation = this.view.engine.getFilterOperation(
           DataCubeQueryFilterOperator.EQUAL,
         );
         return new DataCubeFilterEditorConditionTreeNode(
@@ -305,7 +303,7 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
           snapshot.data.filter,
           undefined,
           this.tree.nodes,
-          (op) => this.dataCube.engine.getFilterOperation(op),
+          (op) => this.view.engine.getFilterOperation(op),
         )
       : undefined;
     this.setSelectedNode(undefined);

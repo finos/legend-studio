@@ -15,7 +15,7 @@
  */
 
 import { action, computed, makeObservable, observable } from 'mobx';
-import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import {
   DataCubeColumnKind,
@@ -64,7 +64,7 @@ export class DataCubeEditorHorizontalPivotColumnsSelectorState extends DataCubeE
 export class DataCubeEditorHorizontalPivotsPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly dataCube!: DataCubeState;
+  readonly view!: DataCubeViewState;
   readonly editor!: DataCubeEditorState;
   readonly selector!: DataCubeEditorHorizontalPivotColumnsSelectorState;
 
@@ -80,7 +80,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
     });
 
     this.editor = editor;
-    this.dataCube = editor.dataCube;
+    this.view = editor.view;
     this.selector = new DataCubeEditorHorizontalPivotColumnsSelectorState(
       editor,
     );

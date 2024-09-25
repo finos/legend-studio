@@ -17,12 +17,12 @@
 import { DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
-import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
+import type { DataCubeViewState } from '../../../stores/dataCube/DataCubeViewState.js';
 
 export const DataCubeEditorVerticalPivotsPanel = observer(
-  (props: { dataCube: DataCubeState }) => {
-    const { dataCube } = props;
-    const panel = dataCube.editor.verticalPivots;
+  (props: { view: DataCubeViewState }) => {
+    const { view } = props;
+    const panel = view.editor.verticalPivots;
 
     return (
       <div className="h-full w-full select-none p-2">

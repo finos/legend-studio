@@ -85,7 +85,7 @@ import {
 } from '../core/DataCubeQueryEngine.js';
 import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
 import { DataCubeIcon } from '@finos/legend-art';
-import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -474,8 +474,8 @@ function _aggregationSpec(columnData: ColumnData) {
 
 // --------------------------------- MAIN ---------------------------------
 
-export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
-  const grid = dataCube.grid;
+export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
+  const grid = view.grid;
 
   return {
     // -------------------------------------- README --------------------------------------
@@ -661,7 +661,7 @@ function generateDefinitionForPivotResultColumns(
   pivotResultColumns: DataCubeQuerySnapshotColumn[],
   snapshot: DataCubeQuerySnapshot,
   configuration: DataCubeConfiguration,
-  dataCube: DataCubeState,
+  view: DataCubeViewState,
 ) {
   const columns = pivotResultColumns
     .map((col) => ({
@@ -781,7 +781,7 @@ function generateDefinitionForPivotResultColumns(
 export function generateColumnDefs(
   snapshot: DataCubeQuerySnapshot,
   configuration: DataCubeConfiguration,
-  dataCube: DataCubeState,
+  view: DataCubeViewState,
 ) {
   // NOTE: only show columns which are fetched in select() as we
   // can't solely rely on column selection because of certain restrictions
@@ -817,7 +817,7 @@ export function generateColumnDefs(
       pivotResultColumns,
       snapshot,
       configuration,
-      dataCube,
+      view,
     ),
     ...columns.map((column) => {
       const columnData = {
@@ -850,7 +850,7 @@ export function generateColumnDefs(
 export function generateGridOptionsFromSnapshot(
   snapshot: DataCubeQuerySnapshot,
   configuration: DataCubeConfiguration,
-  dataCube: DataCubeState,
+  view: DataCubeViewState,
 ): GridOptions {
   const gridOptions = {
     /**
@@ -879,7 +879,7 @@ export function generateGridOptionsFromSnapshot(
       if (event.source !== 'api' && event.column) {
         const column = event.column;
         const pinned = column.getPinned();
-        dataCube.grid.controller.pinColumn(
+        view.grid.controller.pinColumn(
           column.getColId(),
           pinned === null
             ? undefined
@@ -893,7 +893,7 @@ export function generateGridOptionsFromSnapshot(
     onColumnMoved: (event) => {
       // make sure the move event is finished before syncing the changes
       if (event.source !== 'api' && event.column && event.finished) {
-        dataCube.grid.controller.rearrangeColumns(
+        view.grid.controller.rearrangeColumns(
           (event.api.getColumnDefs() ?? [])
             .filter((col): col is ColDef => !('children' in col))
             .map((col) => col.colId ?? ''),
@@ -905,13 +905,13 @@ export function generateGridOptionsFromSnapshot(
       if (event.source !== 'api' && event.column) {
         const column = event.column;
         const isVisible = column.isVisible();
-        dataCube.grid.controller.showColumn(column.getColId(), isVisible);
+        view.grid.controller.showColumn(column.getColId(), isVisible);
       }
     },
 
     // -------------------------------------- COLUMNS --------------------------------------
 
-    columnDefs: generateColumnDefs(snapshot, configuration, dataCube),
+    columnDefs: generateColumnDefs(snapshot, configuration, view),
     autoGroupColumnDef: {
       // NOTE: the column ID here is set for explicitness, but this is not something ag-grid
       // allows setting for auto-group column, for more advanced use cases, we might want to

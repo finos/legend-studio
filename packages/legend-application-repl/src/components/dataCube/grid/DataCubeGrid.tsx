@@ -51,7 +51,7 @@ import type {
   DataCubeConfigurationColorKey,
 } from '../../../stores/dataCube/core/DataCubeConfiguration.js';
 import { generateBaseGridOptions } from '../../../stores/dataCube/grid/DataCubeGridConfigurationBuilder.js';
-import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
+import type { DataCubeViewState } from '../../../stores/dataCube/DataCubeViewState.js';
 
 // NOTE: This is a workaround to prevent ag-grid license key check from flooding the console screen
 // with its stack trace in Chrome.
@@ -102,9 +102,9 @@ function backgroundColorStyle(
 }
 
 export const DataCubeGridStyleController = observer(
-  (props: { dataCube: DataCubeState }) => {
-    const { dataCube } = props;
-    const grid = dataCube.grid;
+  (props: { view: DataCubeViewState }) => {
+    const { view } = props;
+    const grid = view.grid;
     const configuration = grid.queryConfiguration;
 
     return (
@@ -235,9 +235,9 @@ export const DataCubeGridStyleController = observer(
   },
 );
 
-const DataCubeGridScroller = observer((props: { dataCube: DataCubeState }) => {
-  const { dataCube } = props;
-  const grid = dataCube.grid;
+const DataCubeGridScroller = observer((props: { view: DataCubeViewState }) => {
+  const { view } = props;
+  const grid = view.grid;
   const scrollHintText = grid.scrollHintText;
   const gridClientSideBarElement = document.querySelector(
     '.data-cube-grid .ag-side-bar',
@@ -265,15 +265,13 @@ const DataCubeGridScroller = observer((props: { dataCube: DataCubeState }) => {
   );
 });
 
-const DataCubeGridStatusBar = observer((props: { dataCube: DataCubeState }) => {
-  const { dataCube } = props;
-  const grid = dataCube.grid;
+const DataCubeGridStatusBar = observer((props: { view: DataCubeViewState }) => {
+  const { view } = props;
+  const grid = view.grid;
 
   return (
     <div className="relative flex h-5 w-full select-none justify-between border-b border-neutral-200 bg-neutral-100">
-      {Boolean(grid.scrollHintText) && (
-        <DataCubeGridScroller dataCube={dataCube} />
-      )}
+      {Boolean(grid.scrollHintText) && <DataCubeGridScroller view={view} />}
       <div />
       <div className="flex h-full items-center">
         <div className="flex h-full items-center px-2 font-mono text-sm text-neutral-500">
@@ -335,9 +333,9 @@ const DataCubeGridStatusBar = observer((props: { dataCube: DataCubeState }) => {
   );
 });
 
-const DataCubeGridClient = observer((props: { dataCube: DataCubeState }) => {
-  const { dataCube } = props;
-  const grid = dataCube.grid;
+const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
+  const { view } = props;
+  const grid = view.grid;
 
   return (
     <div className="relative h-[calc(100%_-_20px)] w-full">
@@ -346,7 +344,7 @@ const DataCubeGridClient = observer((props: { dataCube: DataCubeState }) => {
         rowModelType="serverSide"
         serverSideDatasource={grid.clientDataSource}
         context={{
-          dataCube,
+          view,
         }}
         onGridReady={(params) => {
           grid.configureClient(params.api);
@@ -367,19 +365,20 @@ const DataCubeGridClient = observer((props: { dataCube: DataCubeState }) => {
           ColumnsToolPanelModule,
           ExcelExportModule,
         ]}
-        {...generateBaseGridOptions(dataCube)}
+        {...generateBaseGridOptions(view)}
       />
     </div>
   );
 });
 
-export const DataCubeGrid = observer((props: { dataCube: DataCubeState }) => {
-  const { dataCube } = props;
+export const DataCubeGrid = observer((props: { view: DataCubeViewState }) => {
+  const { view } = props;
+
   return (
     <div className="h-full w-full">
-      <DataCubeGridStyleController dataCube={dataCube} />
-      <DataCubeGridClient dataCube={dataCube} />
-      <DataCubeGridStatusBar dataCube={dataCube} />
+      <DataCubeGridStyleController view={view} />
+      <DataCubeGridClient view={view} />
+      <DataCubeGridStatusBar view={view} />
     </div>
   );
 });

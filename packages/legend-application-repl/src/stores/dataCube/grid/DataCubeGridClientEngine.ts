@@ -295,7 +295,7 @@ export class DataCubeGridClientServerSideDataSource
   }
 
   async fetchRows(params: IServerSideGetRowsParams<unknown, unknown>) {
-    const task = this.grid.dataCube.newTask('Fetching data');
+    const task = this.grid.view.newTask('Fetching data');
 
     // ------------------------------ GRID OPTIONS ------------------------------
     // Here, we make adjustments to the grid display in response to the new
@@ -328,7 +328,7 @@ export class DataCubeGridClientServerSideDataSource
       try {
         const castColumns = await getCastColumns(
           newSnapshot,
-          this.grid.dataCube.engine,
+          this.grid.view.engine,
         );
         newSnapshot.data.pivot.castColumns = castColumns;
         newSnapshot.data.sortColumns = newSnapshot.data.sortColumns.filter(
@@ -339,12 +339,12 @@ export class DataCubeGridClientServerSideDataSource
         );
       } catch (error) {
         assertErrorThrown(error);
-        this.grid.dataCube.store.alertError(error, {
+        this.grid.view.store.alertError(error, {
           message: `Query Validation Failure: Can't retrieve pivot results column metadata. ${error.message}`,
         });
         // fail early since we can't proceed without the cast columns validated
         params.fail();
-        this.grid.dataCube.endTask(task);
+        this.grid.view.endTask(task);
         return;
       }
     }
@@ -357,7 +357,7 @@ export class DataCubeGridClientServerSideDataSource
         columnDefs: generateColumnDefs(
           newSnapshot,
           this.grid.queryConfiguration,
-          this.grid.dataCube,
+          this.grid.view,
         ),
       });
       this.grid.publishSnapshot(newSnapshot);
@@ -368,8 +368,8 @@ export class DataCubeGridClientServerSideDataSource
     try {
       const executableQuery = buildExecutableQuery(
         newSnapshot,
-        this.grid.dataCube.engine.filterOperations,
-        this.grid.dataCube.engine.aggregateOperations,
+        this.grid.view.engine.filterOperations,
+        this.grid.view.engine.aggregateOperations,
         {
           postProcessor:
             generateRowGroupingDrilldownExecutableQueryPostProcessor(
@@ -388,10 +388,10 @@ export class DataCubeGridClientServerSideDataSource
       );
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
-      const result = await this.grid.dataCube.engine.executeQuery(lambda);
+      const result = await this.grid.view.engine.executeQuery(lambda);
       const rowData = TDStoRowData(result.result.result);
-      if (this.grid.dataCube.engine.enableDebugMode) {
-        this.grid.dataCube.application.debugProcess(
+      if (this.grid.view.engine.enableDebugMode) {
+        this.grid.view.application.debugProcess(
           `Execution`,
           `\nQuery: ${result.executedQuery}`,
           `\nConfig: pagination=${this.grid.isPaginationEnabled}`,
@@ -433,10 +433,8 @@ export class DataCubeGridClientServerSideDataSource
         // When there are just too many rows (exceeding the maximum cache block size), we will fallback to a slightly less ideal
         // behavior by forcing a scroll top for every data fetch and also reset the cache block size to the default value to save memory
         if (rowData.length > INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE) {
-          if (
-            !this.grid.dataCube.engine.gridClientSuppressLargeDatasetWarning
-          ) {
-            this.grid.dataCube.store.alert({
+          if (!this.grid.view.engine.gridClientSuppressLargeDatasetWarning) {
+            this.grid.view.store.alert({
               message: `Large dataset (>${INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE} rows) detected!`,
               text: `Overall app performance can be impacted by large dataset due to longer query execution time and increased memory usage. At its limit, the application can crash!\nTo boost performance, consider enabling pagination while working with large dataset.`,
               type: AlertType.WARNING,
@@ -451,7 +449,7 @@ export class DataCubeGridClientServerSideDataSource
                   label: 'Dismiss Warning',
                   handler: () => {
                     // this.grid.setPaginationEnabled(true);
-                    this.grid.dataCube.engine.setGridClientSuppressLargeDatasetWarning(
+                    this.grid.view.engine.setGridClientSuppressLargeDatasetWarning(
                       true,
                     );
                   },
@@ -488,19 +486,19 @@ export class DataCubeGridClientServerSideDataSource
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.grid.dataCube.store.alertError(error, {
+      this.grid.view.store.alertError(error, {
         message: `Data Fetch Failure: ${error.message}`,
       });
       params.fail();
     } finally {
-      this.grid.dataCube.endTask(task);
+      this.grid.view.endTask(task);
     }
   }
 
   getRows(params: IServerSideGetRowsParams<unknown, unknown>) {
     this.fetchRows(params).catch((error: unknown) => {
       assertErrorThrown(error);
-      this.grid.dataCube.application.logService.error(
+      this.grid.view.application.logService.error(
         LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
         `Error ocurred while fetching data for grid should have been handled gracefully`,
         error,

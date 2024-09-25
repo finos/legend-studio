@@ -22,7 +22,7 @@ import {
   isString,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 import type { DataCubeGridState } from './DataCubeGridState.js';
 import { DataCubeGridClientExportFormat } from './DataCubeGridClientEngine.js';
 
@@ -81,16 +81,16 @@ ${EMAIL_HTML_CONTENT}
  * server-side export engine which is more standardized and scalable.
  */
 export class DataCubeGridClientExportEngine {
-  readonly dataCube!: DataCubeState;
+  readonly view!: DataCubeViewState;
   readonly grid!: DataCubeGridState;
 
   constructor(grid: DataCubeGridState) {
-    this.dataCube = grid.dataCube;
+    this.view = grid.view;
     this.grid = grid;
   }
 
   private generateFileName() {
-    return `${this.dataCube.info.name} - ${formatDate(new Date(), 'EEE MMM dd yyyy HH_mm_ss')}`;
+    return `${this.view.info.name} - ${formatDate(new Date(), 'EEE MMM dd yyyy HH_mm_ss')}`;
   }
 
   exportFile(format: DataCubeGridClientExportFormat) {

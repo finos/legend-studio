@@ -41,7 +41,7 @@ import {
   FormDropdownMenuItem,
   FormDropdownMenuTrigger,
 } from '../../repl/Form.js';
-import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
+import type { DataCubeViewState } from '../../../stores/dataCube/DataCubeViewState.js';
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import { DATE_FORMAT, PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
@@ -284,11 +284,11 @@ const DataCubeEditorFilterConditionNodeColumnSelector = observer(
     {
       value: string;
       updateValue: (value: string) => void;
-      dataCube: DataCubeState;
+      view: DataCubeViewState;
     }
   >(function DataCubeEditorFilterConditionNodeColumnSelector(props, ref) {
-    const { value, updateValue, dataCube } = props;
-    const editor = dataCube.filter;
+    const { value, updateValue, view } = props;
+    const editor = view.filter;
     const matchingColumn = editor.columns.find(
       (column) => column.name === value,
     );
@@ -340,10 +340,10 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
     {
       value: DataCubeOperationValue;
       updateValue: (value: unknown) => void;
-      dataCube: DataCubeState;
+      view: DataCubeViewState;
     }
   >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
-    const { value, updateValue, dataCube } = props;
+    const { value, updateValue, view } = props;
     // WIP: support collection/column
     switch (value.type) {
       case PRIMITIVE_TYPE.STRING:
@@ -381,7 +381,7 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
             ref={ref as React.MutableRefObject<HTMLButtonElement>}
             value={value.value as string}
             updateValue={(val) => updateValue(val)}
-            dataCube={dataCube}
+            view={view}
           />
         );
       default:
@@ -408,10 +408,10 @@ const DataCubeEditorFilterConditionNodeController = observer(
   (props: {
     className?: string | undefined;
     node: DataCubeFilterEditorTreeNode;
-    dataCube: DataCubeState;
+    view: DataCubeViewState;
   }) => {
-    const { className, node, dataCube } = props;
-    const editor = dataCube.filter;
+    const { className, node, view } = props;
+    const editor = view.filter;
 
     return (
       <div
@@ -469,10 +469,10 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
   (props: {
     node: DataCubeFilterEditorConditionTreeNode;
     level: number;
-    dataCube: DataCubeState;
+    view: DataCubeViewState;
   }) => {
-    const { node, level, dataCube } = props;
-    const editor = dataCube.filter;
+    const { node, level, view } = props;
+    const editor = view.filter;
     const parentNode = node.parent;
     const nodeIdx = parentNode ? parentNode.children.indexOf(node) : undefined;
     const valueEditorRef = useRef<HTMLElement>(null);
@@ -546,7 +546,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
         <DataCubeEditorFilterConditionNodeController
           className="relative mr-1"
           node={node}
-          dataCube={dataCube}
+          view={view}
         />
         {node.not && <DataCubeEditorFilterNotLabel />}
         <FormDropdownMenuTrigger
@@ -569,7 +569,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
                   const newOp = node.operation.isCompatibleWithColumn(column)
                     ? node.operation
                     : getNullableFirstEntry(
-                        editor.dataCube.engine.filterOperations.filter((op) =>
+                        editor.view.engine.filterOperations.filter((op) =>
                           op.isCompatibleWithColumn(column),
                         ),
                       );
@@ -599,7 +599,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
           {...operatorsDropdownProps}
           onClosed={focusOnValueEditor}
         >
-          {editor.dataCube.engine.filterOperations
+          {editor.view.engine.filterOperations
             .filter((op) => op.isCompatibleWithColumn(node.column))
             .map((op) => (
               <FormDropdownMenuItem
@@ -625,7 +625,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
               ref={valueEditorRef}
               value={node.value}
               updateValue={(val) => node.updateValue(val)}
-              dataCube={dataCube}
+              view={view}
             />
           )}
         </div>
@@ -638,10 +638,10 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
   (props: {
     node: DataCubeFilterEditorConditionGroupTreeNode;
     level: number;
-    dataCube: DataCubeState;
+    view: DataCubeViewState;
   }) => {
-    const { node, level, dataCube } = props;
-    const editor = dataCube.filter;
+    const { node, level, view } = props;
+    const editor = view.filter;
     const parentNode = node.parent;
     const nodeIdx = parentNode ? parentNode.children.indexOf(node) : undefined;
     const [
@@ -706,7 +706,7 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
             <DataCubeEditorFilterConditionNodeController
               className="relative mr-1"
               node={node}
-              dataCube={dataCube}
+              view={view}
             />
             {node.not && <DataCubeEditorFilterNotLabel />}
           </>
@@ -756,10 +756,10 @@ const DataCubeEditorFilterGroupDisplay = observer(
   (props: {
     node: DataCubeFilterEditorConditionGroupTreeNode;
     level: number;
-    dataCube: DataCubeState;
+    view: DataCubeViewState;
   }) => {
-    const { node, level, dataCube } = props;
-    const editor = dataCube.filter;
+    const { node, level, view } = props;
+    const editor = view.filter;
 
     return (
       <div className="relative w-full">
@@ -776,7 +776,7 @@ const DataCubeEditorFilterGroupDisplay = observer(
         <DataCubeEditorFilterGroupNodeDisplay
           node={node}
           level={level}
-          dataCube={dataCube}
+          view={view}
         />
         <div className="relative">
           <div
@@ -797,7 +797,7 @@ const DataCubeEditorFilterGroupDisplay = observer(
                   key={childNode.uuid}
                   level={level + 1}
                   node={childNode}
-                  dataCube={dataCube}
+                  view={view}
                 />
               );
             } else if (
@@ -808,7 +808,7 @@ const DataCubeEditorFilterGroupDisplay = observer(
                   key={childNode.uuid}
                   level={level + 1}
                   node={childNode}
-                  dataCube={dataCube}
+                  view={view}
                 />
               );
             }
@@ -821,9 +821,9 @@ const DataCubeEditorFilterGroupDisplay = observer(
 );
 
 export const DataCubeFilterEditor = observer(
-  (props: { dataCube: DataCubeState }) => {
-    const { dataCube } = props;
-    const editor = dataCube.filter;
+  (props: { view: DataCubeViewState }) => {
+    const { view } = props;
+    const editor = view.filter;
 
     useEffect(() => {
       editor.setSelectedNode(undefined);
@@ -864,7 +864,7 @@ export const DataCubeFilterEditor = observer(
                       <DataCubeEditorFilterGroupDisplay
                         node={editor.tree.root}
                         level={0}
-                        dataCube={dataCube}
+                        view={view}
                       />
                       <div
                         // add a padding so there will always be a clickable area to clear node selection

@@ -15,7 +15,7 @@
  */
 
 import { action, computed, makeObservable, observable } from 'mobx';
-import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { DisplayState } from '../../LayoutManagerState.js';
 import { DataCubeColumnCreator } from '../../../components/dataCube/extend/DataCubeColumnEditor.js';
 import { editor as monacoEditorAPI, Uri } from 'monaco-editor';
@@ -52,7 +52,7 @@ import type { DataCubeColumnConfiguration } from '../core/DataCubeConfiguration.
 
 export class DataCubeNewColumnState {
   readonly uuid = uuid();
-  readonly dataCube: DataCubeState;
+  readonly view: DataCubeViewState;
   readonly manager: DataCubeExtendManagerState;
 
   // NOTE: use UUID in the column name to prevent collision
@@ -106,9 +106,9 @@ export class DataCubeNewColumnState {
     });
 
     this.manager = manager;
-    this.dataCube = manager.dataCube;
+    this.view = manager.view;
     this.display = new DisplayState(
-      this.dataCube.store.layout,
+      this.view.store.layout,
       'Add New Column',
       () => <DataCubeColumnCreator state={this} />,
     );
@@ -225,8 +225,8 @@ export class DataCubeNewColumnState {
     snapshot.data.limit = undefined;
     return buildExecutableQuery(
       snapshot,
-      this.manager.dataCube.engine.filterOperations,
-      this.manager.dataCube.engine.aggregateOperations,
+      this.manager.view.engine.filterOperations,
+      this.manager.view.engine.aggregateOperations,
     );
   }
 
@@ -240,7 +240,7 @@ export class DataCubeNewColumnState {
 
     try {
       const returnRelationType =
-        await this.dataCube.engine.getQueryCodeRelationReturnType(
+        await this.view.engine.getQueryCodeRelationReturnType(
           this.codePrefix + this.code + this.codeSuffix,
           baseQuery,
         );
@@ -289,7 +289,7 @@ export class DataCubeNewColumnState {
         this.showError(err.payload as DataCubeQueryBuilderError);
         return undefined;
       }
-      this.dataCube.store.alertError(err, {
+      this.view.store.alertError(err, {
         message: `Expression Validation Failure: ${err.message}`,
       });
     } finally {
@@ -314,12 +314,12 @@ export class DataCubeNewColumnState {
     let returnType: string | undefined;
     try {
       [query, returnType] = await Promise.all([
-        this.dataCube.engine.parseQuery(this.code, false),
+        this.view.engine.parseQuery(this.code, false),
         this.getReturnType(), // recompile to get the return type
       ]);
     } catch (error) {
       assertErrorThrown(error);
-      this.dataCube.store.alertError(error, {
+      this.view.store.alertError(error, {
         message: `Expression Validation Failure: ${error.message}`,
       });
       return;
@@ -328,14 +328,14 @@ export class DataCubeNewColumnState {
     }
 
     if (!(query instanceof V1_Lambda)) {
-      this.dataCube.store.alertError(new Error(), {
+      this.view.store.alertError(new Error(), {
         message: `Expression Validation Failure: Expression must be a lambda.`,
       });
       return;
     }
 
     if (!returnType) {
-      this.dataCube.store.alertError(new Error(), {
+      this.view.store.alertError(new Error(), {
         message: `Expression Validation Failure: Can't compute expression return type.`,
       });
       return;

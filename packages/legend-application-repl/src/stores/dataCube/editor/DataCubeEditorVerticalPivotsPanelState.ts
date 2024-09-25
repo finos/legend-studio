@@ -15,7 +15,7 @@
  */
 
 import { uniqBy } from '@finos/legend-shared';
-import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeColumnKind } from '../core/DataCubeQueryEngine.js';
 import {
@@ -63,13 +63,13 @@ export class DataCubeEditorVerticalPivotColumnsSelectorState extends DataCubeEdi
 export class DataCubeEditorVerticalPivotsPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly dataCube!: DataCubeState;
+  readonly view!: DataCubeViewState;
   readonly editor!: DataCubeEditorState;
   readonly selector!: DataCubeEditorVerticalPivotColumnsSelectorState;
 
   constructor(editor: DataCubeEditorState) {
     this.editor = editor;
-    this.dataCube = editor.dataCube;
+    this.view = editor.view;
     this.selector = new DataCubeEditorVerticalPivotColumnsSelectorState(editor);
   }
 

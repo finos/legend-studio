@@ -17,7 +17,7 @@
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import type { GridApi } from '@ag-grid-community/core';
-import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 import {
   DataCubeGridClientServerSideDataSource,
   INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE,
@@ -59,8 +59,8 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
   isPaginationEnabled = false;
   scrollHintText?: string | undefined;
 
-  constructor(dataCube: DataCubeState) {
-    super(dataCube);
+  constructor(view: DataCubeViewState) {
+    super(view);
 
     makeObservable(this, {
       clientDataSource: observable,
@@ -78,7 +78,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
       applySnapshot: action,
     });
 
-    this.controller = new DataCubeGridControllerState(this.dataCube);
+    this.controller = new DataCubeGridControllerState(this.view);
     this.exportEngine = new DataCubeGridClientExportEngine(this);
     this.queryConfiguration = new DataCubeConfiguration();
     this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
@@ -126,7 +126,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     const gridOptions = generateGridOptionsFromSnapshot(
       snapshot,
       queryConfiguration,
-      this.dataCube,
+      this.view,
     );
     this.client.updateGridOptions({
       ...gridOptions,

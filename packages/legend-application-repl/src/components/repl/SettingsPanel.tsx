@@ -28,36 +28,34 @@ import { useState } from 'react';
 import { useDataCubeStore } from '../DataCubeStoreProvider.js';
 
 export const SettingsPanel = observer(() => {
-  const dataCubeStore = useDataCubeStore();
-  const dataCubeEngine = dataCubeStore.engine;
+  const store = useDataCubeStore();
+  const engine = store.engine;
 
   // NOTE: this makes sure the changes are not applied until saved, but it generates
   // a lot of boilerplate code, consider using a more ergonomic approach when we need
   // to scale this to more settings.
   const [enableDebugMode, setEnableDebugMode] = useState(
-    dataCubeEngine.enableDebugMode,
+    engine.enableDebugMode,
   );
   const [enableEngineDebugMode, setEnableEngineDebugMode] = useState(
-    dataCubeEngine.enableEngineDebugMode,
+    engine.enableEngineDebugMode,
   );
   const [gridClientRowBuffer, setGridClientRowBuffer] = useState(
-    dataCubeEngine.gridClientRowBuffer,
+    engine.gridClientRowBuffer,
   );
   const [gridClientPurgeClosedRowNodes, setGridClientPurgeClosedRowNodes] =
-    useState(dataCubeEngine.gridClientPurgeClosedRowNodes);
+    useState(engine.gridClientPurgeClosedRowNodes);
   const [
     gridClientSuppressLargeDatasetWarning,
     setGridClientSuppressLargeDatasetWarning,
-  ] = useState(dataCubeEngine.gridClientSuppressLargeDatasetWarning);
+  ] = useState(engine.gridClientSuppressLargeDatasetWarning);
 
   const save = () => {
-    dataCubeEngine.setEnableDebugMode(enableDebugMode);
-    dataCubeEngine.setEnableEngineDebugMode(enableEngineDebugMode);
-    dataCubeEngine.setGridClientRowBuffer(gridClientRowBuffer);
-    dataCubeEngine.setGridClientPurgeClosedRowNodes(
-      gridClientPurgeClosedRowNodes,
-    );
-    dataCubeEngine.setGridClientSuppressLargeDatasetWarning(
+    engine.setEnableDebugMode(enableDebugMode);
+    engine.setEnableEngineDebugMode(enableEngineDebugMode);
+    engine.setGridClientRowBuffer(gridClientRowBuffer);
+    engine.setGridClientPurgeClosedRowNodes(gridClientPurgeClosedRowNodes);
+    engine.setGridClientSuppressLargeDatasetWarning(
       gridClientSuppressLargeDatasetWarning,
     );
   };
@@ -110,7 +108,7 @@ export const SettingsPanel = observer(() => {
             <div className="flex pr-2">
               <button
                 className="ml-2 h-5 min-w-16 border border-neutral-400 bg-neutral-300 px-2 text-sm first-of-type:ml-0 hover:brightness-95"
-                onClick={() => dataCubeEngine.refreshFailedDataFetches()}
+                onClick={() => engine.refreshFailedDataFetches()}
               >
                 Run Action
               </button>

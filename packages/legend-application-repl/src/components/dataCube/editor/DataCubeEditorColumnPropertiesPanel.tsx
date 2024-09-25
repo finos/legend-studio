@@ -43,14 +43,14 @@ import {
   DEFAULT_URL_LABEL_QUERY_PARAM,
 } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
 import { DocumentationKey } from '../../../application/LegendREPLDocumentation.js';
-import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
+import type { DataCubeViewState } from '../../../stores/dataCube/DataCubeViewState.js';
 import { _sortByColName } from '../../../stores/dataCube/core/DataCubeQuerySnapshot.js';
 
 export const DataCubeEditorColumnPropertiesPanel = observer(
-  (props: { dataCube: DataCubeState }) => {
-    const { dataCube } = props;
-    const panel = dataCube.editor.columnProperties;
-    const gridConfiguration = dataCube.editor.generalProperties.configuration;
+  (props: { view: DataCubeViewState }) => {
+    const { view } = props;
+    const panel = view.editor.columnProperties;
+    const gridConfiguration = view.editor.generalProperties.configuration;
     const selectedColumn = panel.selectedColumn;
     const [
       openColumnsDropdown,
@@ -302,7 +302,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     className="w-32"
                     {...aggregationTypeDropdownProps}
                   >
-                    {panel.dataCube.engine.aggregateOperations
+                    {panel.view.engine.aggregateOperations
                       .filter((op) => op.isCompatibleWithColumn(selectedColumn))
                       .map((op) => (
                         <FormDropdownMenuItem

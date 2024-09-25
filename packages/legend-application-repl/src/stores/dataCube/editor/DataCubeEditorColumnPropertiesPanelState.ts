@@ -15,7 +15,7 @@
  */
 
 import { action, computed, makeObservable, observable } from 'mobx';
-import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
@@ -30,7 +30,7 @@ import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 export class DataCubeEditorColumnPropertiesPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly dataCube!: DataCubeState;
+  readonly view!: DataCubeViewState;
   readonly editor!: DataCubeEditorState;
 
   columns: DataCubeEditorMutableColumnConfiguration[] = [];
@@ -53,7 +53,7 @@ export class DataCubeEditorColumnPropertiesPanelState
     });
 
     this.editor = editor;
-    this.dataCube = editor.dataCube;
+    this.view = editor.view;
   }
 
   getColumnConfiguration(colName: string | undefined) {
@@ -89,7 +89,7 @@ export class DataCubeEditorColumnPropertiesPanelState
           DataCubeEditorMutableColumnConfiguration.create(
             column,
             snapshot,
-            this.dataCube.engine.aggregateOperations,
+            this.view.engine.aggregateOperations,
           ),
       ),
     );

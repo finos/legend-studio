@@ -15,7 +15,7 @@
  */
 
 import { action, makeObservable, observable, override } from 'mobx';
-import type { DataCubeState } from '../DataCubeState.js';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 import {
   _toCol,
   type DataCubeQuerySnapshot,
@@ -105,7 +105,7 @@ export class DataCubeEditorBasicColumnsSelectorState extends DataCubeEditorColum
 export class DataCubeEditorColumnsPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly dataCube!: DataCubeState;
+  readonly view!: DataCubeViewState;
   readonly editor!: DataCubeEditorState;
   readonly selector!: DataCubeEditorBasicColumnsSelectorState;
 
@@ -115,7 +115,7 @@ export class DataCubeEditorColumnsPanelState
     });
 
     this.editor = editor;
-    this.dataCube = editor.dataCube;
+    this.view = editor.view;
     this.selector = new DataCubeEditorBasicColumnsSelectorState(editor, {
       onChange: (selector) => {
         const selectedColumnConfigurations = selector.selectedColumns.map(

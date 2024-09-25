@@ -23,12 +23,12 @@ import { DataCubeEditorVerticalPivotsPanel } from './DataCubeEditorVerticalPivot
 import { DataCubeEditorHorizontalPivotsPanel } from './DataCubeEditorHorizontalPivotsPanel.js';
 import { DataCubeEditorColumnPropertiesPanel } from './DataCubeEditorColumnPropertiesPanel.js';
 import { cn } from '@finos/legend-art';
-import type { DataCubeState } from '../../../stores/dataCube/DataCubeState.js';
+import type { DataCubeViewState } from '../../../stores/dataCube/DataCubeViewState.js';
 import { useApplicationStore } from '@finos/legend-application';
 
-export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
-  const { dataCube } = props;
-  const editor = dataCube.editor;
+export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
+  const { view } = props;
+  const editor = view.editor;
   const application = useApplicationStore();
   const selectedTab = editor.currentTab;
   const tabs = [
@@ -61,22 +61,22 @@ export const DataCubeEditor = observer((props: { dataCube: DataCubeState }) => {
         </div>
         <div className="h-full w-full overflow-auto border border-neutral-300 bg-white">
           {selectedTab === DataCubeEditorTab.COLUMNS && (
-            <DataCubeEditorColumnsPanel dataCube={dataCube} />
+            <DataCubeEditorColumnsPanel view={view} />
           )}
           {selectedTab === DataCubeEditorTab.VERTICAL_PIVOTS && (
-            <DataCubeEditorVerticalPivotsPanel dataCube={dataCube} />
+            <DataCubeEditorVerticalPivotsPanel view={view} />
           )}
           {selectedTab === DataCubeEditorTab.HORIZONTAL_PIVOTS && (
-            <DataCubeEditorHorizontalPivotsPanel dataCube={dataCube} />
+            <DataCubeEditorHorizontalPivotsPanel view={view} />
           )}
           {selectedTab === DataCubeEditorTab.SORTS && (
-            <DataCubeEditorSortsPanel dataCube={dataCube} />
+            <DataCubeEditorSortsPanel view={view} />
           )}
           {selectedTab === DataCubeEditorTab.GENERAL_PROPERTIES && (
-            <DataCubeEditorGeneralPropertiesPanel dataCube={dataCube} />
+            <DataCubeEditorGeneralPropertiesPanel view={view} />
           )}
           {selectedTab === DataCubeEditorTab.COLUMN_PROPERTIES && (
-            <DataCubeEditorColumnPropertiesPanel dataCube={dataCube} />
+            <DataCubeEditorColumnPropertiesPanel view={view} />
           )}
         </div>
       </div>

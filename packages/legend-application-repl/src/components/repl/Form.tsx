@@ -542,7 +542,7 @@ export const FormDocumentation: React.FC<{
   className?: string | undefined;
 }> = ({ documentationKey, title, className }) => {
   const application = useApplicationStore();
-  const dataCubeStore = useDataCubeStore();
+  const store = useDataCubeStore();
   const documentationEntry =
     application.documentationService.getDocEntry(documentationKey);
   const openDocLink: React.MouseEventHandler<HTMLDivElement> = (event) => {
@@ -553,7 +553,7 @@ export const FormDocumentation: React.FC<{
     if (entry) {
       if (shouldDisplayVirtualAssistantDocumentationEntry(entry)) {
         application.assistantService.openDocumentationEntry(documentationKey);
-        dataCubeStore.documentationDisplay.open();
+        store.documentationDisplay.open();
       } else if (entry.url) {
         application.navigationService.navigator.visitAddress(entry.url);
       }
