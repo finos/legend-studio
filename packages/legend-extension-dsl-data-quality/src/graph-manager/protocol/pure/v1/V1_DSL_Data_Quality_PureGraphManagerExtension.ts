@@ -120,10 +120,10 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       returnAsResponse?: boolean;
     },
   ): Promise<PlainObject<V1_ExecutionResult> | Response> => {
-    const engineServerClient = this.graphManager.engine.getEngineServerClient();
-    return engineServerClient.postWithTracing(
-      engineServerClient.getTraceData(DQ_EXECUTE_PLAN),
-      `${engineServerClient._pure()}/dataquality/execute`,
+    const engine = this.graphManager.engine;
+    return engine.serverClientPostWithTracing(
+      engine.getServerClientTraceData(DQ_EXECUTE_PLAN),
+      `${engine.getServerClientPureBaseUrl()}/dataquality/execute`,
       input,
       {},
       undefined,
@@ -183,11 +183,11 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
 
-    const engineServerClient = this.graphManager.engine.getEngineServerClient();
+    const engine = this.graphManager.engine;
 
-    return engineServerClient.postWithTracing(
-      engineServerClient.getTraceData(DQ_GENERATE_EXECUTION_PLAN),
-      `${engineServerClient._pure()}/dataquality/generatePlan`,
+    return engine.serverClientPostWithTracing(
+      engine.getServerClientTraceData(DQ_GENERATE_EXECUTION_PLAN),
+      `${engine.getServerClientPureBaseUrl()}/dataquality/generatePlan`,
       serializedInput,
       {},
       undefined,
@@ -251,12 +251,12 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     );
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
-    const engineServerClient = this.graphManager.engine.getEngineServerClient();
+    const engine = this.graphManager.engine;
 
     const result: { plan: RawExecutionPlan; debug: string[] } =
-      await engineServerClient.postWithTracing(
-        engineServerClient.getTraceData(DQ_DEBUG_EXECUTION_PLAN),
-        `${engineServerClient._pure()}/dataquality/debugPlan`,
+      await engine.serverClientPostWithTracing(
+        engine.getServerClientTraceData(DQ_DEBUG_EXECUTION_PLAN),
+        `${engine.getServerClientPureBaseUrl()}/dataquality/debugPlan`,
         serializedInput,
         {},
         undefined,
@@ -273,7 +273,7 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     graph: PureModel,
     packagePath: string,
   ): Promise<RootGraphFetchTree> => {
-    const engineServerClient = this.graphManager.engine.getEngineServerClient();
+    const engine = this.graphManager.engine;
     const input = this.createExecutionInput(
       graph,
       [],
@@ -285,9 +285,9 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
     const V1_rootGraphFetchTree: V1_RootGraphFetchTree =
-      await engineServerClient.postWithTracing(
-        engineServerClient.getTraceData(DQ_FETCH_PROPERTY_PATH_TREE),
-        `${engineServerClient._pure()}/dataquality/propertyPathTree`,
+      await engine.serverClientPostWithTracing(
+        engine.getServerClientTraceData(DQ_FETCH_PROPERTY_PATH_TREE),
+        `${engine.getServerClientPureBaseUrl()}/dataquality/propertyPathTree`,
         serializedInput,
         {},
         undefined,

@@ -16,8 +16,13 @@
 
 import {
   type LogService,
+  type Parameters,
   type PlainObject,
+  type RequestHeaders,
+  type RequestProcessConfig,
+  type ResponseProcessConfig,
   type ServerClientConfig,
+  type TraceData,
   type TracerService,
   LogEvent,
   parseLosslessJSON,
@@ -256,6 +261,11 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     this.engineServerClient.currentUserId;
   getServerClientBaseUrl = (): string | undefined =>
     this.engineServerClient.baseUrl;
+  getServerClientPureBaseUrl = (): string => this.engineServerClient._pure();
+  getServerClientTraceData = (
+    name: string,
+    tracingTags?: PlainObject,
+  ): TraceData => this.engineServerClient.getTraceData(name, tracingTags);
   setServerClientTracerService = (tracerService: TracerService) => {
     this.engineServerClient.setTracerService(tracerService);
   };
@@ -282,9 +292,28 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     webUrl: string | undefined;
     owner: string;
   }> => this.engineServerClient.createPrototypeProject();
-
   serverClientValidUserAccessRole = (userId: string): Promise<boolean> =>
     this.engineServerClient.validUserAccessRole(userId);
+  serverClientPostWithTracing = <T>(
+    traceData: TraceData,
+    url: string,
+    data: unknown,
+    options: RequestInit,
+    headers?: RequestHeaders,
+    parameters?: Parameters,
+    requestProcessConfig?: RequestProcessConfig,
+    responseProcessConfig?: ResponseProcessConfig,
+  ): Promise<T> =>
+    this.engineServerClient.postWithTracing(
+      traceData,
+      url,
+      data,
+      options,
+      headers,
+      parameters,
+      requestProcessConfig,
+      responseProcessConfig,
+    );
 
   // ------------------------------------------- Protocol -------------------------------------------
 

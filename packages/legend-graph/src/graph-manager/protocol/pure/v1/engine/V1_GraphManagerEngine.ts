@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import { type PlainObject, type TracerService } from '@finos/legend-shared';
+import {
+  type Parameters,
+  type PlainObject,
+  type RequestHeaders,
+  type RequestProcessConfig,
+  type ResponseProcessConfig,
+  type TraceData,
+  type TracerService,
+} from '@finos/legend-shared';
 import type { RawLambda } from '../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import {
   type GenerationMode,
@@ -102,6 +110,11 @@ export interface V1_GraphManagerEngine {
    */
   getServerClientCurrentUserId: () => string | undefined;
   getServerClientBaseUrl: () => string | undefined;
+  getServerClientPureBaseUrl: () => string;
+  getServerClientTraceData: (
+    name: string,
+    tracingTags?: PlainObject,
+  ) => TraceData;
   setServerClientTracerService: (tracerService: TracerService) => void;
   setServerClientEnv: (val: string | undefined) => void;
   setServerClientCurrentUserId: (val: string | undefined) => void;
@@ -117,6 +130,16 @@ export interface V1_GraphManagerEngine {
     owner: string;
   }>;
   serverClientValidUserAccessRole: (userId: string) => Promise<boolean>;
+  serverClientPostWithTracing: <T>(
+    traceData: TraceData,
+    url: string,
+    data: unknown,
+    options: RequestInit,
+    headers?: RequestHeaders,
+    parameters?: Parameters,
+    requestProcessConfig?: RequestProcessConfig,
+    responseProcessConfig?: ResponseProcessConfig,
+  ) => Promise<T>;
 
   // ------------------------------------------- Protocol -------------------------------------------
 
