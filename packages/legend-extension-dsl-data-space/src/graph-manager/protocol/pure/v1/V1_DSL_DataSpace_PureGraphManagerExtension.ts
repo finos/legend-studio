@@ -191,8 +191,8 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       analysisResult = await engine.serverClientPostWithTracing<
         PlainObject<V1_DataSpaceAnalysisResult>
       >(
-        engine.getServerClientTraceData(ANALYZE_DATA_SPACE_TRACE),
-        `${engine.getServerClientPureBaseUrl()}/analytics/dataSpace/render`,
+        engine.serverClientGetTraceData(ANALYZE_DATA_SPACE_TRACE),
+        `${engine.serverClientGetPureBaseUrl()}/analytics/dataSpace/render`,
         {
           clientVersion: V1_PureGraphManager.DEV_PROTOCOL_VERSION,
           dataSpace: dataSpacePath,

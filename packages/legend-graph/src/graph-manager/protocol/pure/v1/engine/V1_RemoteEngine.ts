@@ -167,38 +167,38 @@ class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
 
   override setEnv(val: string | undefined): void {
     super.setEnv(val);
-    this.engine.setServerClientEnv(val);
+    this.engine.serverClientSetEnv(val);
   }
 
   override setCurrentUserId(val: string | undefined): void {
     super.setCurrentUserId(val);
-    this.engine.setServerClientCurrentUserId(val);
+    this.engine.serverClientSetCurrentUserId(val);
   }
 
   override setBaseUrl(val: string | undefined): void {
     super.setBaseUrl(val);
-    this.engine.setServerClientBaseUrl(val);
+    this.engine.serverClientSetBaseUrl(val);
   }
 
   override setBaseUrlForServiceRegistration(val: string | undefined): void {
     super.setBaseUrlForServiceRegistration(val);
-    this.engine.setServerClientBaseUrlForServiceRegistration(val);
+    this.engine.serverClientSetBaseUrlForServiceRegistration(val);
   }
 
   override setUseClientRequestPayloadCompression(val: boolean): void {
     super.setUseClientRequestPayloadCompression(val);
-    this.engine.setServerClientUseClientRequestPayloadCompression(val);
+    this.engine.serverClientSetUseClientRequestPayloadCompression(val);
   }
 
   override setEnableDebuggingPayload(val: boolean): void {
     super.setEnableDebuggingPayload(val);
-    this.engine.setServerClientEnableDebuggingPayload(val);
+    this.engine.serverClientSetEnableDebuggingPayload(val);
   }
 
   constructor(engine: V1_RemoteEngine) {
     super();
     this.engine = engine;
-    this.baseUrl = this.engine.getServerClientBaseUrl();
+    this.baseUrl = this.engine.serverClientGetBaseUrl();
   }
 }
 
@@ -250,41 +250,41 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     this.config.setEnv(config.env);
     this.config.setTabSize(config.tabSize);
     try {
-      this.config.setCurrentUserId(await this.getServerClientCurrentUserId());
+      this.config.setCurrentUserId(await this.serverClientGetCurrentUserId());
     } catch {
       // do nothing
     }
   }
 
   // ----------------------------------------- Server Client ----------------------------------------
-  getServerClientCurrentUserId = (): string | undefined =>
+  serverClientGetCurrentUserId = (): string | undefined =>
     this.engineServerClient.currentUserId;
-  getServerClientBaseUrl = (): string | undefined =>
+  serverClientGetBaseUrl = (): string | undefined =>
     this.engineServerClient.baseUrl;
-  getServerClientPureBaseUrl = (): string => this.engineServerClient._pure();
-  getServerClientTraceData = (
+  serverClientGetPureBaseUrl = (): string => this.engineServerClient._pure();
+  serverClientGetTraceData = (
     name: string,
     tracingTags?: PlainObject,
   ): TraceData => this.engineServerClient.getTraceData(name, tracingTags);
-  setServerClientTracerService = (tracerService: TracerService) => {
+  serverClientSetTracerService = (tracerService: TracerService) => {
     this.engineServerClient.setTracerService(tracerService);
   };
-  setServerClientEnv = (val: string | undefined) => {
+  serverClientSetEnv = (val: string | undefined) => {
     this.engineServerClient.setEnv(val);
   };
-  setServerClientCurrentUserId = (val: string | undefined) => {
+  serverClientSetCurrentUserId = (val: string | undefined) => {
     this.engineServerClient.setCurrentUserId(val);
   };
-  setServerClientBaseUrl = (val: string | undefined) => {
+  serverClientSetBaseUrl = (val: string | undefined) => {
     this.engineServerClient.setBaseUrl(val);
   };
-  setServerClientBaseUrlForServiceRegistration = (val: string | undefined) => {
+  serverClientSetBaseUrlForServiceRegistration = (val: string | undefined) => {
     this.engineServerClient.setBaseUrlForServiceRegistration(val);
   };
-  setServerClientUseClientRequestPayloadCompression = (val: boolean) => {
+  serverClientSetUseClientRequestPayloadCompression = (val: boolean) => {
     this.engineServerClient.setCompression(val);
   };
-  setServerClientEnableDebuggingPayload = (val: boolean) => {
+  serverClientSetEnableDebuggingPayload = (val: boolean) => {
     this.engineServerClient.setDebugPayload(val);
   };
   serverClientCreatePrototypeProject = (): Promise<{
@@ -1162,7 +1162,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
 
   async cancelUserExecutions(broadcastToCluster: boolean): Promise<string> {
     return this.engineServerClient.INTERNAL__cancelUserExecutions(
-      guaranteeNonNullable(this.getServerClientCurrentUserId()),
+      guaranteeNonNullable(this.serverClientGetCurrentUserId()),
       broadcastToCluster,
     );
   }

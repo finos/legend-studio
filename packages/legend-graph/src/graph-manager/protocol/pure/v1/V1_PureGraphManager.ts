@@ -583,7 +583,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     this.engine =
       options?.engine ??
       new V1_RemoteEngine(config.clientConfig, this.logService);
-    this.engine.setServerClientTracerService(
+    this.engine.serverClientSetTracerService(
       options?.tracerService ?? new TracerService(),
     );
     if (!options?.disableGraphConfiguration) {
@@ -2999,20 +2999,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         V1_transformQuerySearchSpecification(searchSpecification),
       )
     ).map((protocol) =>
-      V1_buildLightQuery(protocol, this.engine.getServerClientCurrentUserId()),
+      V1_buildLightQuery(protocol, this.engine.serverClientGetCurrentUserId()),
     );
   }
 
   async getQueries(queryIds: string[]): Promise<LightQuery[]> {
     return (await this.engine.getQueries(queryIds)).map((protocol) =>
-      V1_buildLightQuery(protocol, this.engine.getServerClientCurrentUserId()),
+      V1_buildLightQuery(protocol, this.engine.serverClientGetCurrentUserId()),
     );
   }
 
   async getLightQuery(queryId: string): Promise<LightQuery> {
     return V1_buildLightQuery(
       await this.engine.getQuery(queryId),
-      this.engine.getServerClientCurrentUserId(),
+      this.engine.serverClientGetCurrentUserId(),
     );
   }
 
@@ -3020,7 +3020,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_buildQuery(
       await this.engine.getQuery(queryId),
       graph,
-      this.engine.getServerClientCurrentUserId(),
+      this.engine.serverClientGetCurrentUserId(),
     );
   }
   async getQueryInfo(queryId: string): Promise<QueryInfo> {
@@ -3042,7 +3042,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_buildQuery(
       await this.engine.createQuery(V1_transformQuery(query)),
       graph,
-      this.engine.getServerClientCurrentUserId(),
+      this.engine.serverClientGetCurrentUserId(),
     );
   }
 
@@ -3050,7 +3050,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_buildQuery(
       await this.engine.updateQuery(V1_transformQuery(query)),
       graph,
-      this.engine.getServerClientCurrentUserId(),
+      this.engine.serverClientGetCurrentUserId(),
     );
   }
 
@@ -3058,7 +3058,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_buildQuery(
       await this.engine.patchQuery(V1_transformQuery(query)),
       graph,
-      this.engine.getServerClientCurrentUserId(),
+      this.engine.serverClientGetCurrentUserId(),
     );
   }
 
@@ -3067,7 +3067,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     query.name = queryName;
     return V1_buildLightQuery(
       await this.engine.updateQuery(query),
-      this.engine.getServerClientCurrentUserId(),
+      this.engine.serverClientGetCurrentUserId(),
     );
   }
 

@@ -108,28 +108,27 @@ export interface V1_GraphManagerEngine {
    * alone. However, we need to expose the client for plugins, tests, and dev tool
    * configurations.
    */
-  getServerClientCurrentUserId: () => string | undefined;
-  getServerClientBaseUrl: () => string | undefined;
-  getServerClientPureBaseUrl: () => string;
-  getServerClientTraceData: (
+  serverClientGetBaseUrl: () => string | undefined;
+  serverClientGetCurrentUserId: () => string | undefined;
+  serverClientGetPureBaseUrl: () => string;
+  serverClientGetTraceData: (
     name: string,
     tracingTags?: PlainObject,
   ) => TraceData;
-  setServerClientTracerService: (tracerService: TracerService) => void;
-  setServerClientEnv: (val: string | undefined) => void;
-  setServerClientCurrentUserId: (val: string | undefined) => void;
-  setServerClientBaseUrl: (val: string | undefined) => void;
-  setServerClientBaseUrlForServiceRegistration: (
+  serverClientSetBaseUrl: (val: string | undefined) => void;
+  serverClientSetBaseUrlForServiceRegistration: (
     val: string | undefined,
   ) => void;
-  setServerClientUseClientRequestPayloadCompression: (val: boolean) => void;
-  setServerClientEnableDebuggingPayload: (val: boolean) => void;
+  serverClientSetCurrentUserId: (val: string | undefined) => void;
+  serverClientSetEnableDebuggingPayload: (val: boolean) => void;
+  serverClientSetEnv: (val: string | undefined) => void;
+  serverClientSetTracerService: (tracerService: TracerService) => void;
+  serverClientSetUseClientRequestPayloadCompression: (val: boolean) => void;
   serverClientCreatePrototypeProject: () => Promise<{
     projectId: string;
     webUrl: string | undefined;
     owner: string;
   }>;
-  serverClientValidUserAccessRole: (userId: string) => Promise<boolean>;
   serverClientPostWithTracing: <T>(
     traceData: TraceData,
     url: string,
@@ -140,6 +139,7 @@ export interface V1_GraphManagerEngine {
     requestProcessConfig?: RequestProcessConfig,
     responseProcessConfig?: ResponseProcessConfig,
   ) => Promise<T>;
+  serverClientValidUserAccessRole: (userId: string) => Promise<boolean>;
 
   // ------------------------------------------- Protocol -------------------------------------------
 
