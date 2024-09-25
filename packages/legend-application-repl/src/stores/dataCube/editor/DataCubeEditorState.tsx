@@ -34,7 +34,7 @@ import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumn
 import { DataCubeEditorColumnsPanelState } from './DataCubeEditorColumnsPanelState.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeEditorVerticalPivotsPanelState } from './DataCubeEditorVerticalPivotsPanelState.js';
-import { DisplayState } from '../../LayoutManagerState.js';
+import { DisplayState } from '../../../components/shared/LayoutManagerState.js';
 import { DataCubeEditor } from '../../../components/dataCube/editor/DataCubeEditor.js';
 import { buildExecutableQuery } from '../core/DataCubeQueryBuilder.js';
 import { _lambda } from '../core/DataCubeQueryBuilderUtils.js';
@@ -92,7 +92,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     });
 
     this.display = new DisplayState(
-      this.view.store.layout,
+      this.view.dataCube.layout,
       'Properties',
       () => <DataCubeEditor view={this.view} />,
     );
@@ -186,7 +186,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
         );
       } catch (error) {
         assertErrorThrown(error);
-        this.view.store.alertError(error, {
+        this.view.dataCube.alertError(error, {
           message: `Query Validation Failure: ${error.message}`,
         });
         this.view.endTask(task);

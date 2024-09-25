@@ -40,7 +40,7 @@ import {
   FormDropdownMenu,
   FormDropdownMenuItem,
   FormDropdownMenuTrigger,
-} from '../../repl/Form.js';
+} from '../../shared/Form.js';
 import type { DataCubeViewState } from '../../../stores/dataCube/DataCubeViewState.js';
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import { DATE_FORMAT, PRIMITIVE_TYPE } from '@finos/legend-graph';

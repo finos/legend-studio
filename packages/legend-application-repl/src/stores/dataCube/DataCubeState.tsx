@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-import {
-  ActionAlertType,
-  APPLICATION_EVENT,
-  type GenericLegendApplicationStore,
-} from '@finos/legend-application';
 import { type DataCubeEngine } from './DataCubeEngine.js';
 import { DataCubeViewState } from './DataCubeViewState.js';
 import {
@@ -28,24 +23,25 @@ import {
   LayoutManagerState,
   WindowState,
   type WindowConfiguration,
-} from '../LayoutManagerState.js';
-import { DocumentationPanel } from '../../components/repl/DocumentationPanel.js';
-import { SettingsPanel } from '../../components/repl/SettingsPanel.js';
-import { ActionState, assertErrorThrown, LogEvent } from '@finos/legend-shared';
-import { LicenseManager } from '@ag-grid-enterprise/core';
+} from '../../components/shared/LayoutManagerState.js';
+import { DocumentationPanel } from '../../components/shared/DocumentationPanel.js';
+import { SettingsPanel } from '../../components/shared/SettingsPanel.js';
+import { ActionState, assertErrorThrown } from '@finos/legend-shared';
 import {
   Alert,
   AlertType,
-  type AlertAction,
-} from '../../components/repl/Alert.js';
+  type ActionAlertAction,
+} from '../../components/shared/Alert.js';
 import { action, makeObservable } from 'mobx';
+import { type DataCubeApplicationEngine } from './DataCubeApplicationEngine.js';
 
 export class DataCubeState {
-  readonly application: GenericLegendApplicationStore;
+  readonly application: DataCubeApplicationEngine;
   readonly engine: DataCubeEngine;
+  readonly layout: LayoutManagerState;
+
   readonly initState = ActionState.create();
 
-  readonly layout: LayoutManagerState;
   readonly settingsDisplay: DisplayState;
   readonly documentationDisplay: DisplayState;
 
@@ -53,18 +49,17 @@ export class DataCubeState {
   // the first one in that list will be taken as the main view state
   readonly view: DataCubeViewState;
 
-  constructor(
-    application: GenericLegendApplicationStore,
-    engineBuilder: (store: DataCubeState) => DataCubeEngine,
-  ) {
+  constructor(application: DataCubeApplicationEngine, engine: DataCubeEngine) {
     makeObservable(this, {
       alert: action,
       alertError: action,
     });
     this.application = application;
-    this.engine = engineBuilder(this);
-    this.layout = new LayoutManagerState(this.application);
-    this.view = new DataCubeViewState(this, this.engine);
+    this.engine = engine;
+    this.engine.viewTaskRunner = this.runTaskForAllViews;
+    this.layout = new LayoutManagerState();
+    this.view = new DataCubeViewState(this);
+
     const settingsDisplay = new DisplayState(this.layout, 'Settings', () => (
       <SettingsPanel />
     ));
@@ -95,35 +90,28 @@ export class DataCubeState {
     this.documentationDisplay = documentationDisplay;
   }
 
+  private runTaskForAllViews(task: (view: DataCubeViewState) => void): void {
+    // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
+    // to traverse through and update the configurations of all of their grid clients
+    task(this.view);
+  }
+
   async initialize() {
     if (!this.initState.isInInitialState) {
-      // eslint-disable-next-line no-process-env
-      if (process.env.NODE_ENV === 'production') {
-        this.application.notificationService.notifyIllegalState(
-          'REPL store is re-initialized',
-        );
-      } else {
-        this.application.logService.debug(
-          LogEvent.create(APPLICATION_EVENT.DEBUG),
-          'REPL store is re-initialized',
-        );
-      }
+      this.application.logDebug('REPL store is re-initialized');
       return;
     }
     this.initState.inProgress();
 
     try {
-      const info = await this.engine.getInfrastructureInfo();
-      if (info.gridClientLicense) {
-        LicenseManager.setLicenseKey(info.gridClientLicense);
-      }
+      await this.engine.initialize();
       this.initState.pass();
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.application.alertService.setActionAlertInfo({
+      this.application.alertAction({
         message: `Initialization Failure: ${error.message}`,
         prompt: `Resolve the issue and reload the application.`,
-        type: ActionAlertType.ERROR,
+        type: AlertType.ERROR,
         actions: [],
       });
       this.initState.fail();
@@ -135,13 +123,12 @@ export class DataCubeState {
     options: {
       message: string;
       text?: string | undefined;
-      actions?: AlertAction[] | undefined;
+      actions?: ActionAlertAction[] | undefined;
       windowTitle?: string | undefined;
       windowConfig?: WindowConfiguration | undefined;
     },
   ) {
     const { message, text, actions, windowTitle, windowConfig } = options;
-    this.application.notificationService.notifyError(error);
     const window = new WindowState(
       new LayoutConfiguration(windowTitle ?? 'Error', () => (
         <Alert
@@ -161,7 +148,7 @@ export class DataCubeState {
     message: string;
     type: AlertType;
     text?: string | undefined;
-    actions?: AlertAction[] | undefined;
+    actions?: ActionAlertAction[] | undefined;
     windowTitle?: string | undefined;
     windowConfig?: WindowConfiguration | undefined;
   }) {

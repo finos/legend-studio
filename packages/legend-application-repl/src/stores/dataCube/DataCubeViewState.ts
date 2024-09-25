@@ -21,14 +21,12 @@ import { DataCubeQuerySnapshotManager } from './core/DataCubeQuerySnapshotManage
 import { DataCubeInfoState } from './core/DataCubeInfoState.js';
 import { validateAndBuildQuerySnapshot } from './core/DataCubeQuerySnapshotBuilder.js';
 import { action, makeObservable, observable } from 'mobx';
-import {
-  ActionAlertType,
-  type GenericLegendApplicationStore,
-} from '@finos/legend-application';
 import { DataCubeFilterEditorState } from './filter/DataCubeFilterEditorState.js';
 import { DataCubeExtendManagerState } from './extend/DataCubeExtendManagerState.js';
 import type { DataCubeState } from './DataCubeState.js';
 import type { DataCubeEngine } from './DataCubeEngine.js';
+import { type DataCubeApplicationEngine } from './DataCubeApplicationEngine.js';
+import { AlertType } from '../../components/shared/Alert.js';
 
 class DataCubeTask {
   uuid = uuid();
@@ -46,8 +44,10 @@ class DataCubeTask {
 }
 
 export class DataCubeViewState {
-  readonly store: DataCubeState;
-  readonly application: GenericLegendApplicationStore;
+  readonly dataCube: DataCubeState;
+  readonly application: DataCubeApplicationEngine;
+  readonly engine: DataCubeEngine;
+
   readonly snapshotManager: DataCubeQuerySnapshotManager;
 
   readonly info: DataCubeInfoState;
@@ -55,19 +55,19 @@ export class DataCubeViewState {
   readonly grid: DataCubeGridState;
   readonly filter: DataCubeFilterEditorState;
   readonly extend: DataCubeExtendManagerState;
-  readonly engine: DataCubeEngine;
 
   readonly runningTasks = new Map<string, DataCubeTask>();
 
-  constructor(dataCubeStore: DataCubeState, engine: DataCubeEngine) {
+  constructor(dataCube: DataCubeState) {
     makeObservable(this, {
       runningTasks: observable,
       newTask: action,
       endTask: action,
     });
 
-    this.application = dataCubeStore.application;
-    this.store = dataCubeStore;
+    this.dataCube = dataCube;
+    this.application = dataCube.application;
+    this.engine = dataCube.engine;
 
     // NOTE: snapshot manager must be instantiated before subscribers
     this.snapshotManager = new DataCubeQuerySnapshotManager(this);
@@ -77,7 +77,6 @@ export class DataCubeViewState {
     this.grid = new DataCubeGridState(this);
     this.filter = new DataCubeFilterEditorState(this);
     this.extend = new DataCubeExtendManagerState(this);
-    this.engine = engine;
   }
 
   newTask(name: string) {
@@ -117,10 +116,10 @@ export class DataCubeViewState {
       this.snapshotManager.broadcastSnapshot(initialSnapshot);
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.application.alertService.setActionAlertInfo({
+      this.application.alertAction({
         message: `Initialization Failure: ${error.message}`,
         prompt: `Resolve the issue and reload the application.`,
-        type: ActionAlertType.ERROR,
+        type: AlertType.ERROR,
         actions: [],
       });
     } finally {

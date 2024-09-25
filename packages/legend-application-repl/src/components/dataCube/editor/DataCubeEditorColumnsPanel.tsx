@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
 import { useEffect } from 'react';
 import type { DataCubeViewState } from '../../../stores/dataCube/DataCubeViewState.js';
-import { FormCheckbox } from '../../repl/Form.js';
+import { FormCheckbox } from '../../shared/Form.js';
 import type {
   DataCubeEditorColumnsSelectorColumnState,
   DataCubeEditorColumnsSelectorState,

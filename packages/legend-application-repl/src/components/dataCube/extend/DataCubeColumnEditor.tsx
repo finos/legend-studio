@@ -31,16 +31,15 @@ import {
 import {
   getCodeSuggestions,
   MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID,
-} from '../../repl/PureCodeEditor.js';
+} from '../../shared/PureCodeEditor.js';
 import {
   FormDocumentation,
   FormDropdownMenu,
   FormDropdownMenuItem,
   FormDropdownMenuTrigger,
   FormTextInput,
-} from '../../repl/Form.js';
+} from '../../shared/Form.js';
 import { debounce } from '@finos/legend-shared';
-import { useApplicationStore } from '@finos/legend-application';
 import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import {
   DataCubeColumnDataType,
@@ -58,7 +57,7 @@ export const DataCubeColumnCreator = observer(
   (props: { state: DataCubeNewColumnState }) => {
     const { state } = props;
     const view = state.view;
-    const application = useApplicationStore();
+    const application = view.application;
 
     const nameInputRef = useRef<HTMLInputElement>(null);
     const currentColumnKind = state.isGroupLevel

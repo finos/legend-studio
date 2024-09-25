@@ -17,7 +17,6 @@
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import { DataCubeGrid } from './grid/DataCubeGrid.js';
-import { useApplicationStore } from '@finos/legend-application';
 import {
   DataCubeIcon,
   DropdownMenu,
@@ -25,10 +24,11 @@ import {
   ProgressBar,
   useDropdownMenu,
 } from '@finos/legend-art';
-import { LayoutManager } from '../repl/LayoutManager.js';
+import { LayoutManager } from '../shared/LayoutManager.js';
 import type { DataCubeViewState } from '../../stores/dataCube/DataCubeViewState.js';
-import { INTERNAL__MonacoEditorWidgetsRoot } from '../repl/PureCodeEditor.js';
-import { useDataCubeStore } from '../DataCubeStoreProvider.js';
+import { INTERNAL__MonacoEditorWidgetsRoot } from '../shared/PureCodeEditor.js';
+import { useDataCube } from './DataCubeProvider.js';
+import { BlockingActionAlert } from '../shared/Alert.js';
 
 const DataCubeStatusBar = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
@@ -73,9 +73,11 @@ const DataCubeStatusBar = observer((props: { view: DataCubeViewState }) => {
   );
 });
 
+// TODO?: we might need to move this up a level to accomondate for multi-view use case
+// as only the top-level view should have their own title bar
 const DataCubeTitleBar = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
-  const application = useApplicationStore();
+  const application = view.application;
   const [openMenuDropdown, closeMenuDropdown, menuDropdownProps] =
     useDropdownMenu();
 
@@ -106,14 +108,11 @@ const DataCubeTitleBar = observer((props: { view: DataCubeViewState }) => {
           <DropdownMenuItem
             className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
             onClick={() => {
-              if (application.documentationService.url) {
-                application.navigationService.navigator.visitAddress(
-                  application.documentationService.url,
-                );
+              if (application.documentationUrl) {
+                application.openLink(application.documentationUrl);
               }
               closeMenuDropdown();
             }}
-            // disabled={!application.documentationService.url}
             disabled={true} // TODO: enable when we set up the documentation website
           >
             See Documentation
@@ -122,7 +121,7 @@ const DataCubeTitleBar = observer((props: { view: DataCubeViewState }) => {
           <DropdownMenuItem
             className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
             onClick={() => {
-              view.store.settingsDisplay.open();
+              view.dataCube.settingsDisplay.open();
               closeMenuDropdown();
             }}
           >
@@ -134,10 +133,10 @@ const DataCubeTitleBar = observer((props: { view: DataCubeViewState }) => {
   );
 });
 
-export const DataCube = observer(() => {
-  const store = useDataCubeStore();
-  const application = store.application;
-  const view = store.view;
+export const DataCubeView = observer(() => {
+  const dataCube = useDataCube();
+  const application = dataCube.application;
+  const view = dataCube.view;
 
   useEffect(() => {
     view.initialize().catch(application.logUnhandledError);
@@ -148,8 +147,9 @@ export const DataCube = observer(() => {
       <DataCubeTitleBar view={view} />
       <DataCubeGrid view={view} />
       <DataCubeStatusBar view={view} />
-      <LayoutManager layoutManagerState={store.layout} />
 
+      <LayoutManager layoutManagerState={dataCube.layout} />
+      <BlockingActionAlert />
       <INTERNAL__MonacoEditorWidgetsRoot />
     </div>
   );

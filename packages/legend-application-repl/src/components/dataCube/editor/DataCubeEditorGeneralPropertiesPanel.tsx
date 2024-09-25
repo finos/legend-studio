@@ -40,7 +40,7 @@ import {
   FormTextInput,
   FormNumberInput,
   FormBadge_WIP,
-} from '../../repl/Form.js';
+} from '../../shared/Form.js';
 import type { DataCubeViewState } from '../../../stores/dataCube/DataCubeViewState.js';
 
 export const DataCubeEditorGeneralPropertiesPanel = observer(

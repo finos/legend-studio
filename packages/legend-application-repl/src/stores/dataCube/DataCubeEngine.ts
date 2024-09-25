@@ -67,7 +67,8 @@ import { DataCubeQueryFilterOperation__EndWithCaseInsensitive } from './core/fil
 import { DataCubeQueryFilterOperation__NotEndWith } from './core/filter/DataCubeQueryFilterOperation__NotEndWith.js';
 import { DataCubeQueryFilterOperation__IsNull } from './core/filter/DataCubeQueryFilterOperation__IsNull.js';
 import { DataCubeQueryFilterOperation__IsNotNull } from './core/filter/DataCubeQueryFilterOperation__IsNotNull.js';
-import type { DataCubeState } from './DataCubeState.js';
+import type { DataCubeViewState } from './DataCubeViewState.js';
+import { LicenseManager } from '@ag-grid-enterprise/core';
 
 export const DEFAULT_ENABLE_DEBUG_MODE = false;
 export const DEFAULT_ENABLE_ENGINE_DEBUG_MODE = false;
@@ -77,7 +78,10 @@ export const DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES = false;
 export const DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING = false;
 
 export abstract class DataCubeEngine {
-  readonly store: DataCubeState;
+  gridClientLicense?: string | undefined;
+  viewTaskRunner?:
+    | ((action: (view: DataCubeViewState) => void) => void)
+    | undefined;
 
   readonly filterOperations = [
     new DataCubeQueryFilterOperation__LessThan(),
@@ -135,10 +139,6 @@ export abstract class DataCubeEngine {
   gridClientSuppressLargeDatasetWarning =
     DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING;
 
-  constructor(store: DataCubeState) {
-    this.store = store;
-  }
-
   getFilterOperation(value: string) {
     return getFilterOperation(value, this.filterOperations);
   }
@@ -168,19 +168,27 @@ export abstract class DataCubeEngine {
     this.gridClientSuppressLargeDatasetWarning = value;
   }
 
+  async initialize(): Promise<void> {
+    const info = await this.getInfrastructureInfo();
+    if (info.gridClientLicense) {
+      this.gridClientLicense = info.gridClientLicense;
+      LicenseManager.setLicenseKey(info.gridClientLicense);
+    }
+  }
+
   private propagateGridOptionUpdates() {
-    // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
-    // to traverse through and update the configurations of all of their grid clients
-    this.store.view.grid.client.updateGridOptions({
-      rowBuffer: this.gridClientRowBuffer,
-      purgeClosedRowNodes: this.gridClientPurgeClosedRowNodes,
+    this.viewTaskRunner?.((view) => {
+      view.grid.client.updateGridOptions({
+        rowBuffer: this.gridClientRowBuffer,
+        purgeClosedRowNodes: this.gridClientPurgeClosedRowNodes,
+      });
     });
   }
 
   refreshFailedDataFetches() {
-    // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
-    // to traverse through and update the configurations of all of their grid clients
-    this.store.view.grid.client.retryServerSideLoads();
+    this.viewTaskRunner?.((view) => {
+      view.grid.client.retryServerSideLoads();
+    });
   }
 
   abstract getInfrastructureInfo(): Promise<DataCubeInfrastructureInfo>;
@@ -202,7 +210,7 @@ export abstract class DataCubeEngine {
 
   abstract getQueryCodeRelationReturnType(
     code: string,
-    query: V1_ValueSpecification,
+    baseQuery: V1_ValueSpecification,
   ): Promise<RelationType>;
 
   abstract executeQuery(query: V1_Lambda): Promise<{

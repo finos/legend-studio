@@ -24,12 +24,11 @@ import { DataCubeEditorHorizontalPivotsPanel } from './DataCubeEditorHorizontalP
 import { DataCubeEditorColumnPropertiesPanel } from './DataCubeEditorColumnPropertiesPanel.js';
 import { cn } from '@finos/legend-art';
 import type { DataCubeViewState } from '../../../stores/dataCube/DataCubeViewState.js';
-import { useApplicationStore } from '@finos/legend-application';
 
 export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
   const editor = view.editor;
-  const application = useApplicationStore();
+  const application = view.application;
   const selectedTab = editor.currentTab;
   const tabs = [
     DataCubeEditorTab.COLUMNS,

@@ -15,10 +15,6 @@
  */
 
 import {
-  shouldDisplayVirtualAssistantDocumentationEntry,
-  useApplicationStore,
-} from '@finos/legend-application';
-import {
   BasePopover,
   Checkbox,
   cn,
@@ -38,7 +34,7 @@ import {
 } from '@finos/legend-art';
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import { isString } from '@finos/legend-shared';
-import { useDataCubeStore } from '../DataCubeStoreProvider.js';
+import { useDataCube } from '../dataCube/DataCubeProvider.js';
 
 export function FormBadge_WIP() {
   return (
@@ -541,21 +537,20 @@ export const FormDocumentation: React.FC<{
   title?: string | undefined;
   className?: string | undefined;
 }> = ({ documentationKey, title, className }) => {
-  const application = useApplicationStore();
-  const store = useDataCubeStore();
+  const dataCube = useDataCube();
+  const application = dataCube.application;
   const documentationEntry =
-    application.documentationService.getDocEntry(documentationKey);
+    application.getDocumentationEntry(documentationKey);
   const openDocLink: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.preventDefault();
     event.stopPropagation();
-    const entry =
-      application.documentationService.getDocEntry(documentationKey);
+    const entry = application.getDocumentationEntry(documentationKey);
     if (entry) {
-      if (shouldDisplayVirtualAssistantDocumentationEntry(entry)) {
-        application.assistantService.openDocumentationEntry(documentationKey);
-        store.documentationDisplay.open();
+      if (application.shouldDisplayDocumentationEntry(entry)) {
+        application.openDocumentationEntry(entry);
+        dataCube.documentationDisplay.open();
       } else if (entry.url) {
-        application.navigationService.navigator.visitAddress(entry.url);
+        application.openLink(entry.url);
       }
     }
   };
@@ -563,7 +558,7 @@ export const FormDocumentation: React.FC<{
   if (
     !documentationEntry ||
     (!documentationEntry.url &&
-      !shouldDisplayVirtualAssistantDocumentationEntry(documentationEntry))
+      !application.shouldDisplayDocumentationEntry(documentationEntry))
   ) {
     return null;
   }

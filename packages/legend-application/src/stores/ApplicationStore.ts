@@ -222,15 +222,6 @@ export class ApplicationStore<
     );
   };
 
-  debugProcess(processName: string, ...data: unknown[]): void {
-    this.logService.debug(
-      LogEvent.create(APPLICATION_EVENT.DEBUG),
-      `\n------ START DEBUG PROCESS: ${processName} ------\n`,
-      ...data,
-      `\n------- END DEBUG PROCESS: ${processName} -------\n`,
-    );
-  }
-
   /**
    * Guarantee that the action being used by the component does not throw unhandled errors
    */

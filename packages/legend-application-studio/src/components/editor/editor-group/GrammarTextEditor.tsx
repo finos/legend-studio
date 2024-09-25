@@ -39,7 +39,6 @@ import {
   DEFAULT_TAB_SIZE,
   useApplicationStore,
   useApplicationNavigationContext,
-  type DocumentationEntry,
 } from '@finos/legend-application';
 import {
   disposeCodeEditor,
@@ -73,6 +72,7 @@ import {
   assertTrue,
   hasWhiteSpace,
   isNonNullable,
+  type DocumentationEntry,
 } from '@finos/legend-shared';
 import {
   ELEMENT_PATH_DELIMITER,

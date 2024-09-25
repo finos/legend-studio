@@ -14,26 +14,28 @@
  * limitations under the License.
  */
 
-import { useApplicationStore } from '@finos/legend-application';
 import { MarkdownTextViewer } from '@finos/legend-art';
 import { isString } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
+import { useDataCube } from '../dataCube/DataCubeProvider.js';
 
 export const DocumentationPanel = observer(() => {
-  const application = useApplicationStore();
-  const entry = application.assistantService.currentDocumentationEntry;
+  const dataCube = useDataCube();
+  const application = dataCube.application;
+  const entry = application.currentDocumentationEntry;
 
   if (!entry) {
     return null;
   }
+  const content = entry.markdownText ?? entry.text;
   return (
     <div className="h-full w-full overflow-auto bg-white p-4">
       <div className="mb-3 text-2xl font-bold">{entry.title}</div>
-      {entry.content &&
-        (isString(entry.content) ? (
-          <div className="">{entry.content}</div>
+      {content &&
+        (isString(content) ? (
+          <div className="">{content}</div>
         ) : (
-          <MarkdownTextViewer value={entry.content} />
+          <MarkdownTextViewer value={content} />
         ))}
     </div>
   );

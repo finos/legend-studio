@@ -27,7 +27,7 @@ import {
   FormNumberInput,
   FormTextInput,
   FormDocumentation,
-} from '../../repl/Form.js';
+} from '../../shared/Form.js';
 import {
   DataCubeColumnDataType,
   DataCubeColumnKind,

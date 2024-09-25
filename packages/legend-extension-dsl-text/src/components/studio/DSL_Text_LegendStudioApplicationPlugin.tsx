@@ -44,9 +44,9 @@ import {
   PLAIN_TEXT_SNIPPET,
 } from '../../__lib__/studio/DSL_Text_LegendStudioCodeSnippet.js';
 import { create_TextElement } from '../../graph/helpers/DSL_Text_Helper.js';
-import type { DocumentationEntry } from '@finos/legend-application';
 import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/studio/DSL_Text_LegendStudioApplicationNavigationContext.js';
 import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
+import type { DocumentationEntry } from '@finos/legend-shared';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';

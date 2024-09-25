@@ -42,6 +42,7 @@ export * from './application/ActionState.js';
 export * from './application/TimerUtils.js';
 export * from './application/AbstractPluginManager.js';
 export * from './application/BrowserUtils.js';
+export * from './application/DocumentationUtils.js';
 
 export * from './data-structure/Pair.js';
 export * from './data-structure/Stack.js';

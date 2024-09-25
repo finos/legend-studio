@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-import {
-  APPLICATION_EVENT,
-  type GenericLegendApplicationStore,
-} from '@finos/legend-application';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import {
   IllegalStateError,
-  LogEvent,
   assertErrorThrown,
   deepDiff,
   guaranteeNonNullable,
@@ -41,13 +36,11 @@ export abstract class DataCubeQuerySnapshotController
   implements DataCubeQuerySnapshotSubscriber
 {
   readonly view!: DataCubeViewState;
-  readonly application!: GenericLegendApplicationStore;
 
   private latestSnapshot: DataCubeQuerySnapshot | undefined;
 
   constructor(view: DataCubeViewState) {
     this.view = view;
-    this.application = view.application;
   }
 
   abstract applySnapshot(
@@ -63,7 +56,7 @@ export abstract class DataCubeQuerySnapshotController
 
   publishSnapshot(snapshot: DataCubeQuerySnapshot) {
     if (this.view.engine.enableDebugMode) {
-      this.application.debugProcess(
+      this.view.application.debugProcess(
         `New Snapshot`,
         '\nSnapshot',
         snapshot,
@@ -131,8 +124,7 @@ export class DataCubeQuerySnapshotManager {
 
   broadcastSnapshot(snapshot: DataCubeQuerySnapshot) {
     if (!snapshot.isFinalized()) {
-      this.view.application.logService.error(
-        LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
+      this.view.application.logIllegalStateError(
         `Snapshot must be finalized before broadcasting`,
       );
       return;
@@ -143,10 +135,7 @@ export class DataCubeQuerySnapshotManager {
       if (currentSnapshot?.uuid !== snapshot.uuid) {
         subscriber.receiveSnapshot(snapshot).catch((error: unknown) => {
           assertErrorThrown(error);
-          this.view.application.logService.error(
-            LogEvent.create(
-              APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
-            ),
+          this.view.application.logIllegalStateError(
             `Error occured while subscribers receiving and applying new snapshot should be handled gracefully`,
             error,
           );

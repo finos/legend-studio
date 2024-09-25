@@ -33,13 +33,12 @@ import {
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
 import { guaranteeType } from '@finos/legend-shared';
-import type { DataCubeState } from './dataCube/DataCubeState.js';
 
-export class REPLDataCubeEngine extends DataCubeEngine {
+export class LegendREPLDataCubeEngine extends DataCubeEngine {
   readonly client: REPLServerClient;
 
-  constructor(store: DataCubeState, client: REPLServerClient) {
-    super(store);
+  constructor(client: REPLServerClient) {
+    super();
 
     makeObservable(this, {
       enableDebugMode: observable,
@@ -100,11 +99,11 @@ export class REPLDataCubeEngine extends DataCubeEngine {
 
   async getQueryCodeRelationReturnType(
     code: string,
-    query: V1_ValueSpecification,
+    baseQuery: V1_ValueSpecification,
   ): Promise<RelationType> {
     return this.client.getQueryCodeRelationReturnType({
       code,
-      baseQuery: V1_serializeValueSpecification(query, []),
+      baseQuery: V1_serializeValueSpecification(baseQuery, []),
     });
   }
 

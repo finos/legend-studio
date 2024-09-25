@@ -25,11 +25,11 @@ import {
   DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
 } from '../../stores/dataCube/DataCubeEngine.js';
 import { useState } from 'react';
-import { useDataCubeStore } from '../DataCubeStoreProvider.js';
+import { useDataCube } from '../dataCube/DataCubeProvider.js';
 
 export const SettingsPanel = observer(() => {
-  const store = useDataCubeStore();
-  const engine = store.engine;
+  const dataCube = useDataCube();
+  const engine = dataCube.engine;
 
   // NOTE: this makes sure the changes are not applied until saved, but it generates
   // a lot of boilerplate code, consider using a more ergonomic approach when we need

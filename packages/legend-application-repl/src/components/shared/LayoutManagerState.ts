@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import { uuid } from '@finos/legend-shared';
 import {
   action,
@@ -63,18 +62,15 @@ export class WindowState {
 }
 
 export class LayoutManagerState {
-  readonly application: GenericLegendApplicationStore;
   windows: WindowState[] = [];
 
-  constructor(application: GenericLegendApplicationStore) {
+  constructor() {
     makeObservable(this, {
       windows: observable,
       newWindow: action,
       bringWindowFront: action,
       closeWindow: action,
     });
-
-    this.application = application;
   }
 
   newWindow(window: WindowState) {

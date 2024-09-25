@@ -20,43 +20,72 @@ import {
   Switch,
   type TEMPORARY__ReactRouterComponentType,
 } from '@finos/legend-application/browser';
-import { LegendREPLFrameworkProvider } from './LegendREPLFrameworkProvider.js';
+import {
+  LegendREPLFrameworkProvider,
+  useLegendREPLApplicationStore,
+} from './LegendREPLFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
-import { withDataCubeStore } from './DataCubeStoreProvider.js';
-import { BlockingActionAlert } from './repl/Alert.js';
-import { DataCube } from './dataCube/DataCube.js';
+import { DataCubeView } from './dataCube/DataCube.js';
+import { useMemo } from 'react';
+import { guaranteeNonNullable, NetworkClient } from '@finos/legend-shared';
+import { REPLServerClient } from '../server/REPLServerClient.js';
+import { LegendREPLDataCubeApplicationEngine } from '../stores/LegendREPLDataCubeApplicationEngine.js';
+import { LegendREPLDataCubeEngine } from '../stores/LegendREPLDataCubeEngine.js';
+import { DataCubeProvider } from './dataCube/DataCubeProvider.js';
+
+const LegendREPLDataCube = observer(() => {
+  const applicationStore = useLegendREPLApplicationStore();
+  const application = useMemo(
+    () => new LegendREPLDataCubeApplicationEngine(applicationStore),
+    [applicationStore],
+  );
+  const engine = new LegendREPLDataCubeEngine(
+    new REPLServerClient(
+      new NetworkClient({
+        baseUrl: applicationStore.config.useDynamicREPLServer
+          ? window.location.origin +
+            guaranteeNonNullable(applicationStore.config.baseAddress).replace(
+              '/repl/',
+              '',
+            )
+          : applicationStore.config.replUrl,
+      }),
+    ),
+  );
+
+  return (
+    <DataCubeProvider application={application} engine={engine}>
+      <DataCubeView />
+    </DataCubeProvider>
+  );
+});
 
 export const LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN = Object.freeze({
   DATA_CUBE: `/dataCube`,
 });
 
-export const LegendREPLRouter = withDataCubeStore(
-  observer(() => (
-    <div className="app">
-      <Switch>
-        <Route
-          exact={true}
-          path={[LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN.DATA_CUBE]}
-          component={
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            DataCube as TEMPORARY__ReactRouterComponentType
-          }
-        />
-      </Switch>
-    </div>
-  )),
-);
+export const LegendREPLRouter = observer(() => (
+  <div className="app">
+    <Switch>
+      <Route
+        exact={true}
+        path={[LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN.DATA_CUBE]}
+        component={
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          LegendREPLDataCube as TEMPORARY__ReactRouterComponentType
+        }
+      />
+    </Switch>
+  </div>
+));
 
-export const LegendREPLWebApplication: React.FC<{
-  baseUrl: string;
-}> = (props) => {
+export const LegendREPLWebApplication = (props: { baseUrl: string }) => {
   const { baseUrl } = props;
 
   return (
     <BrowserEnvironmentProvider baseUrl={baseUrl}>
       <LegendREPLFrameworkProvider>
         <LegendREPLRouter />
-        <BlockingActionAlert />
       </LegendREPLFrameworkProvider>
     </BrowserEnvironmentProvider>
   );

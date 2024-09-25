@@ -54,7 +54,7 @@ export class DataCubeInfoState extends DataCubeQuerySnapshotController {
     if (!this.editionStartTime) {
       this.editionStartTime = snapshot.timestamp;
     }
-    this.application.layoutService.setWindowTitle(
+    this.view.application.setWindowTitle(
       `\u229E ${data.name}${this.editionStartTime ? ` - ${formatDate(new Date(this.editionStartTime), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
     );
   }

@@ -24,7 +24,7 @@ import {
   WINDOW_DEFAULT_WIDTH,
   type LayoutManagerState,
   type WindowState,
-} from '../../stores/LayoutManagerState.js';
+} from './LayoutManagerState.js';
 import { observer } from 'mobx-react-lite';
 
 export const Window = (props: {

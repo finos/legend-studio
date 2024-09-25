@@ -28,7 +28,7 @@ import {
   FormBadge_WIP,
   FormDropdownMenu,
   FormDropdownMenuItem,
-} from '../../repl/Form.js';
+} from '../../shared/Form.js';
 import type { DataCubeViewState } from '../../../stores/dataCube/DataCubeViewState.js';
 
 function getSortDirectionLabel(operation: string) {

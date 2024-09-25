@@ -23,7 +23,6 @@ import type {
 import type { DataCubeGridState } from './DataCubeGridState.js';
 import {
   IllegalStateError,
-  LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
   hashObject,
@@ -37,15 +36,13 @@ import {
   type V1_AppliedFunction,
   V1_Lambda,
 } from '@finos/legend-graph';
-import { APPLICATION_EVENT } from '@finos/legend-application';
 import { generateRowGroupingDrilldownExecutableQueryPostProcessor } from './DataCubeGridQueryBuilder.js';
 import { makeObservable, observable, runInAction } from 'mobx';
 import type {
   DataCubeConfiguration,
   DataCubeConfigurationColorKey,
 } from '../core/DataCubeConfiguration.js';
-import { AlertType } from '../../../components/repl/Alert.js';
-import { DEFAULT_LARGE_ALERT_WINDOW_CONFIG } from '../../LayoutManagerState.js';
+import { DEFAULT_LARGE_ALERT_WINDOW_CONFIG } from '../../../components/shared/LayoutManagerState.js';
 import {
   _sortByColName,
   type DataCubeQuerySnapshot,
@@ -57,6 +54,7 @@ import { type DataCubeQueryFunctionMap } from '../core/DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from '../core/aggregation/DataCubeQueryAggregateOperation.js';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
+import { AlertType } from '../../../components/shared/Alert.js';
 
 type GridClientCellValue = string | number | boolean | null | undefined;
 type GridClientRowData = {
@@ -339,7 +337,7 @@ export class DataCubeGridClientServerSideDataSource
         );
       } catch (error) {
         assertErrorThrown(error);
-        this.grid.view.store.alertError(error, {
+        this.grid.view.dataCube.alertError(error, {
           message: `Query Validation Failure: Can't retrieve pivot results column metadata. ${error.message}`,
         });
         // fail early since we can't proceed without the cast columns validated
@@ -434,7 +432,7 @@ export class DataCubeGridClientServerSideDataSource
         // behavior by forcing a scroll top for every data fetch and also reset the cache block size to the default value to save memory
         if (rowData.length > INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE) {
           if (!this.grid.view.engine.gridClientSuppressLargeDatasetWarning) {
-            this.grid.view.store.alert({
+            this.grid.view.dataCube.alert({
               message: `Large dataset (>${INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE} rows) detected!`,
               text: `Overall app performance can be impacted by large dataset due to longer query execution time and increased memory usage. At its limit, the application can crash!\nTo boost performance, consider enabling pagination while working with large dataset.`,
               type: AlertType.WARNING,
@@ -486,7 +484,7 @@ export class DataCubeGridClientServerSideDataSource
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.grid.view.store.alertError(error, {
+      this.grid.view.dataCube.alertError(error, {
         message: `Data Fetch Failure: ${error.message}`,
       });
       params.fail();
@@ -498,8 +496,7 @@ export class DataCubeGridClientServerSideDataSource
   getRows(params: IServerSideGetRowsParams<unknown, unknown>) {
     this.fetchRows(params).catch((error: unknown) => {
       assertErrorThrown(error);
-      this.grid.view.application.logService.error(
-        LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
+      this.grid.view.application.logIllegalStateError(
         `Error ocurred while fetching data for grid should have been handled gracefully`,
         error,
       );

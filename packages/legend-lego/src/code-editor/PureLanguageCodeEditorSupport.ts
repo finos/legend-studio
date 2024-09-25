@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import type { DocumentationEntry } from '@finos/legend-application';
 import { PARSER_SECTION_MARKER, PURE_PARSER } from '@finos/legend-graph';
 import {
   getNullableFirstEntry,
   guaranteeNonNullable,
   hasWhiteSpace,
+  type DocumentationEntry,
 } from '@finos/legend-shared';
 import {
   type editor as monacoEditorAPI,
