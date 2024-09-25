@@ -577,9 +577,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: {
       tracerService?: TracerService | undefined;
       disableGraphConfiguration?: boolean | undefined;
+      engine?: V1_GraphManagerEngine;
     },
   ): Promise<void> {
-    this.engine = new V1_RemoteEngine(config.clientConfig, this.logService);
+    this.engine =
+      options?.engine ??
+      new V1_RemoteEngine(config.clientConfig, this.logService);
     this.engine.setServerClientTracerService(
       options?.tracerService ?? new TracerService(),
     );
