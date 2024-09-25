@@ -277,6 +277,14 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   setServerClientEnableDebuggingPayload = (val: boolean) => {
     this.engineServerClient.setDebugPayload(val);
   };
+  serverClientCreatePrototypeProject = (): Promise<{
+    projectId: string;
+    webUrl: string | undefined;
+    owner: string;
+  }> => this.engineServerClient.createPrototypeProject();
+
+  serverClientValidUserAccessRole = (userId: string): Promise<boolean> =>
+    this.engineServerClient.validUserAccessRole(userId);
 
   // ------------------------------------------- Protocol -------------------------------------------
 
@@ -1273,15 +1281,4 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       ),
     );
   }
-
-  // ------------------------------------------- SDLC -------------------------------------------
-
-  createPrototypeProject = (): Promise<{
-    projectId: string;
-    webUrl: string | undefined;
-    owner: string;
-  }> => this.engineServerClient.createPrototypeProject();
-
-  validUserAccessRole = (userId: string): Promise<boolean> =>
-    this.engineServerClient.validUserAccessRole(userId);
 }

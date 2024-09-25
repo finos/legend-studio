@@ -111,6 +111,12 @@ export interface V1_GraphManagerEngine {
   ) => void;
   setServerClientUseClientRequestPayloadCompression: (val: boolean) => void;
   setServerClientEnableDebuggingPayload: (val: boolean) => void;
+  serverClientCreatePrototypeProject: () => Promise<{
+    projectId: string;
+    webUrl: string | undefined;
+    owner: string;
+  }>;
+  serverClientValidUserAccessRole: (userId: string) => Promise<boolean>;
 
   // ------------------------------------------- Protocol -------------------------------------------
 
@@ -387,14 +393,4 @@ export interface V1_GraphManagerEngine {
   getAvailableRelationalDatabaseTypeConfigurations: () => Promise<
     V1_RelationalConnectionBuilder[]
   >;
-
-  // ------------------------------------------- SDLC -------------------------------------------
-
-  createPrototypeProject: () => Promise<{
-    projectId: string;
-    webUrl: string | undefined;
-    owner: string;
-  }>;
-
-  validUserAccessRole: (userId: string) => Promise<boolean>;
 }

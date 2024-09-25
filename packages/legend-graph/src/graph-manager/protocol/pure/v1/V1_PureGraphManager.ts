@@ -3744,11 +3744,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     webUrl: string | undefined;
     owner: string;
   }> {
-    return this.engine.createPrototypeProject();
+    return this.engine.serverClientCreatePrototypeProject();
   }
 
   userHasPrototypeProjectAccess(userId: string): Promise<boolean> {
-    return this.engine.validUserAccessRole(userId);
+    return this.engine.serverClientValidUserAccessRole(userId);
   }
 
   // --------------------------------------------- Change Detection ---------------------------------------------
