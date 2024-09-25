@@ -311,7 +311,7 @@ export function generateMenuBuilder(
             ),
             moreFilterOperations.length
               ? {
-                  name: `More Filters on ${column.getColId()}...`,
+                  name: `More Filters on ${columnName}...`,
                   subMenu: moreFilterOperations.map((operator) =>
                     buildNewFilterConditionMenuItem(
                       columnConfiguration,
@@ -498,21 +498,21 @@ export function generateMenuBuilder(
           controller.getVerticalPivotableColumn(columnName)
             ? [
                 {
-                  name: `Vertical Pivot on ${column.getColId()}`,
+                  name: `Vertical Pivot on ${columnName}`,
                   action: () => controller.setVerticalPivotOnColumn(columnName),
                 },
                 {
-                  name: `Add Vertical Pivot on ${column.getColId()}`,
+                  name: `Add Vertical Pivot on ${columnName}`,
                   disabled: Boolean(
-                    controller.verticalPivotedColumns.find(
+                    controller.verticalPivotColumns.find(
                       (col) => col.name === columnName,
                     ),
                   ),
                   action: () => controller.addVerticalPivotOnColumn(columnName),
                 },
                 {
-                  name: `Remove Vertical Pivot on ${column.getColId()}`,
-                  disabled: !controller.verticalPivotedColumns.find(
+                  name: `Remove Vertical Pivot on ${columnName}`,
+                  disabled: !controller.verticalPivotColumns.find(
                     (col) => col.name === columnName,
                   ),
                   action: () =>
@@ -527,14 +527,14 @@ export function generateMenuBuilder(
           controller.getHorizontalPivotableColumn(columnName)
             ? [
                 {
-                  name: `Horizontal Pivot on ${column.getColId()}`,
+                  name: `Horizontal Pivot on ${columnName}`,
                   action: () =>
                     controller.setHorizontalPivotOnColumn(columnName),
                 },
                 {
-                  name: `Add Horizontal Pivot on ${column.getColId()}`,
+                  name: `Add Horizontal Pivot on ${columnName}`,
                   disabled: Boolean(
-                    controller.horizontalPivotedColumns.find(
+                    controller.horizontalPivotColumns.find(
                       (col) => col.name === columnName,
                     ),
                   ),
@@ -548,10 +548,10 @@ export function generateMenuBuilder(
           columnName &&
           baseColumnConfiguration?.kind === DataCubeColumnKind.MEASURE &&
           !baseColumnConfiguration.excludedFromHorizontalPivot &&
-          controller.horizontalPivotedColumns.length !== 0 // pivot must be active
+          controller.horizontalPivotColumns.length !== 0 // pivot must be active
             ? [
                 {
-                  name: `Exclude Column ${column.getColId()} from Horizontal Pivot`,
+                  name: `Exclude Column ${baseColumnConfiguration.name} from Horizontal Pivot`,
                   action: () =>
                     controller.excludeColumnFromHorizontalPivot(columnName),
                 },
@@ -562,10 +562,10 @@ export function generateMenuBuilder(
           columnName &&
           columnConfiguration?.kind === DataCubeColumnKind.MEASURE &&
           columnConfiguration.excludedFromHorizontalPivot &&
-          controller.horizontalPivotedColumns.length !== 0 // pivot must be active
+          controller.horizontalPivotColumns.length !== 0 // pivot must be active
             ? [
                 {
-                  name: `Include Column ${column.getColId()} in Horizontal Pivot`,
+                  name: `Include Column ${columnName} in Horizontal Pivot`,
                   action: () =>
                     controller.includeColumnInHorizontalPivot(columnName),
                 },
@@ -574,12 +574,12 @@ export function generateMenuBuilder(
             : []),
           {
             name: `Clear All Vertical Pivots`,
-            disabled: controller.verticalPivotedColumns.length === 0,
+            disabled: controller.verticalPivotColumns.length === 0,
             action: () => controller.clearAllVerticalPivots(),
           },
           {
             name: `Clear All Horizontal Pivots`,
-            disabled: controller.verticalPivotedColumns.length === 0,
+            disabled: controller.horizontalPivotColumns.length === 0,
             action: () => controller.clearAllHorizontalPivots(),
           },
         ],
@@ -666,12 +666,12 @@ export function generateMenuBuilder(
               !columnConfiguration ||
               columnConfiguration.fixedWidth !== undefined,
             action: () => {
-              if (column) {
+              if (column && columnConfiguration) {
                 params.api.setColumnWidths([
                   {
-                    key: column.getColId(),
+                    key: columnConfiguration.name,
                     newWidth:
-                      columnConfiguration?.minWidth ?? DEFAULT_COLUMN_MIN_WIDTH,
+                      columnConfiguration.minWidth ?? DEFAULT_COLUMN_MIN_WIDTH,
                   },
                 ]);
               }
@@ -846,7 +846,11 @@ export function generateMenuBuilder(
           // open the column property
           if (column && fromHeader) {
             editor.setCurrentTab(DataCubeEditorTab.COLUMN_PROPERTIES);
-            editor.columnProperties.setSelectedColumnName(column.getColId());
+            editor.columnProperties.setSelectedColumnName(
+              baseColumnConfiguration?.name ??
+                columnConfiguration?.name ??
+                columnName,
+            );
           }
           editor.display.open();
         },

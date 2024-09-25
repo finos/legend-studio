@@ -99,12 +99,12 @@ export class DataCubeEditorVerticalPivotsPanelState
   ) {
     newSnapshot.data.groupBy = this.selector.selectedColumns.length
       ? {
-          columns: this.selector.selectedColumns.map((col) => _toCol(col)),
+          columns: this.selector.selectedColumns.map(_toCol),
         }
       : undefined;
     newSnapshot.data.selectColumns = uniqBy(
       [...newSnapshot.data.selectColumns, ...this.selector.selectedColumns],
       (col) => col.name,
-    ).map((col) => _toCol(col));
+    ).map(_toCol);
   }
 }

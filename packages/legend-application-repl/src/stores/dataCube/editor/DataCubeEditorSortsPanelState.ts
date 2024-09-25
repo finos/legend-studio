@@ -17,7 +17,10 @@
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeState } from '../DataCubeState.js';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
-import { DataCubeQuerySortOperator } from '../core/DataCubeQueryEngine.js';
+import {
+  DataCubeColumnKind,
+  DataCubeQuerySortOperator,
+} from '../core/DataCubeQueryEngine.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import {
   DataCubeEditorColumnsSelectorColumnState,
@@ -58,17 +61,28 @@ export class DataCubeEditorSortColumnsSelectorState extends DataCubeEditorColumn
   override get availableColumns() {
     return uniqBy(
       [
-        ...this.editor.horizontalPivots.pivotResultColumns,
-        ...[
-          ...this.editor.columns.selector.selectedColumns,
-          ...this.editor.horizontalPivots.selector.selectedColumns,
-          ...this.editor.verticalPivots.selector.selectedColumns,
-        ].filter(
-          (column) =>
-            !this.editor.horizontalPivots.columnsConsumedByPivot.find(
-              (col) => col.name === column.name,
-            ),
-        ),
+        // if pivot is active, take the pivot result columns and include
+        // selected dimension columns which are not part of pivot columns
+        ...(this.editor.horizontalPivots.selector.selectedColumns.length
+          ? [
+              ...this.editor.horizontalPivots.pivotResultColumns,
+              ...[
+                ...this.editor.columns.selector.selectedColumns,
+                ...this.editor.verticalPivots.selector.selectedColumns,
+              ].filter(
+                (column) =>
+                  this.editor.columnProperties.getColumnConfiguration(
+                    column.name,
+                  ).kind === DataCubeColumnKind.DIMENSION &&
+                  !this.editor.horizontalPivots.selector.selectedColumns.find(
+                    (col) => col.name === column.name,
+                  ),
+              ),
+            ]
+          : [
+              ...this.editor.columns.selector.selectedColumns,
+              ...this.editor.verticalPivots.selector.selectedColumns,
+            ]),
         ...this.editor.groupExtendColumns,
       ],
       (col) => col.name,

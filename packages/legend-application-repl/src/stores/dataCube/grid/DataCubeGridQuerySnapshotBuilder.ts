@@ -36,7 +36,7 @@ import {
   isPivotResultColumnName,
 } from '../core/DataCubeQueryEngine.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, uniqBy } from '@finos/legend-shared';
 
 export function getColumnConfiguration(
   colName: string,
@@ -59,19 +59,41 @@ export function buildQuerySnapshot(
     snapshot.data.configuration,
   );
 
+  // --------------------------------- SELECT ---------------------------------
+
+  snapshot.data.selectColumns = uniqBy(
+    [
+      ...configuration.columns.filter((col) => col.isSelected),
+      ...request.pivotCols.map((col) =>
+        getColumnConfiguration(col.id, configuration),
+      ),
+      ...request.rowGroupCols.map((col) =>
+        getColumnConfiguration(col.id, configuration),
+      ),
+    ],
+    (col) => col.name,
+  ).map(_toCol);
+
+  // --------------------------------- PIVOT ---------------------------------
+
+  snapshot.data.pivot = request.pivotCols.length
+    ? {
+        columns: request.pivotCols.map((col) =>
+          _toCol(getColumnConfiguration(col.id, configuration)),
+        ),
+        castColumns: [],
+      }
+    : undefined;
+
   // --------------------------------- GROUP BY ---------------------------------
 
-  if (request.rowGroupCols.length) {
-    const newGroupByColumns = request.rowGroupCols.map((col) => ({
-      name: col.id,
-      type: getColumnConfiguration(col.id, configuration).type,
-    }));
-    snapshot.data.groupBy = {
-      columns: newGroupByColumns,
-    };
-  } else {
-    snapshot.data.groupBy = undefined;
-  }
+  snapshot.data.groupBy = request.rowGroupCols.length
+    ? {
+        columns: request.rowGroupCols.map((col) =>
+          _toCol(getColumnConfiguration(col.id, configuration)),
+        ),
+      }
+    : undefined;
 
   // --------------------------------- SORT ---------------------------------
 

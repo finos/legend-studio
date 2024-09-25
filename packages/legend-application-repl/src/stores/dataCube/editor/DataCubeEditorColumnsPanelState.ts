@@ -193,6 +193,6 @@ export class DataCubeEditorColumnsPanelState
             (column) => column.name === col.name,
           ),
       )
-      .map((col) => _toCol(col));
+      .map(_toCol);
   }
 }

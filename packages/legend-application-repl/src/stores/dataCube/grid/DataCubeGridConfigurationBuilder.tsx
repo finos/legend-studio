@@ -33,7 +33,6 @@ import type {
   ICellRendererParams,
 } from '@ag-grid-community/core';
 import {
-  INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
   GridClientSortDirection,
   INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
   INTERNAL__GridClientUtilityCssClassName,
@@ -54,9 +53,11 @@ import {
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
   INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
   INTERNAL__GRID_CLIENT_PIVOT_COLUMN_GROUP_COLOR_ROTATION_SIZE,
+  INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import {
   getNonNullableEntry,
+  getNullableLastEntry,
   getQueryParameters,
   getQueryParameterValue,
   guaranteeNonNullable,
@@ -178,6 +179,7 @@ function getCellRenderer(columnData: ColumnData) {
 function _displaySpec(columnData: ColumnData) {
   const { name, snapshot, column, configuration } = columnData;
   const dataType = getDataType(column.type);
+
   const fontFamily = column.fontFamily ?? configuration.fontFamily;
   const fontSize = column.fontSize ?? configuration.fontSize;
   const fontBold = column.fontBold ?? configuration.fontBold;
@@ -191,6 +193,7 @@ function _displaySpec(columnData: ColumnData) {
     column.normalForegroundColor ?? configuration.normalForegroundColor;
   const normalBackgroundColor =
     column.normalBackgroundColor ?? configuration.normalBackgroundColor;
+
   const negativeForegroundColor =
     column.negativeForegroundColor ?? configuration.negativeForegroundColor;
   const negativeBackgroundColor =
@@ -203,7 +206,6 @@ function _displaySpec(columnData: ColumnData) {
     column.errorForegroundColor ?? configuration.errorForegroundColor;
   const errorBackgroundColor =
     column.errorBackgroundColor ?? configuration.errorBackgroundColor;
-  const cellRenderer = getCellRenderer(columnData);
   return {
     // disabling cell data type inference can grid performance
     // especially when this information is only necessary for cell value editor
@@ -211,58 +213,22 @@ function _displaySpec(columnData: ColumnData) {
     hide:
       column.hideFromView ||
       !column.isSelected ||
-      (snapshot.data.pivot &&
-        !snapshot.data.pivot.castColumns.find((col) => col.name === name)),
+      Boolean(
+        snapshot.data.pivot &&
+          !snapshot.data.pivot.castColumns.find((col) => col.name === name),
+      ),
     lockVisible:
       !column.isSelected ||
-      (snapshot.data.pivot &&
-        !snapshot.data.pivot.castColumns.find((col) => col.name === name)),
-    valueFormatter:
-      dataType === DataCubeColumnDataType.NUMBER
-        ? (params) => {
-            const value = params.value as number | null | undefined;
-            if (
-              isNullable(value) ||
-              (value as unknown as string) ===
-                INTERNAL__GRID_CLIENT_MISSING_VALUE
-            ) {
-              return (
-                column.missingValueDisplayText ??
-                DEFAULT_MISSING_VALUE_DISPLAY_TEXT
-              );
-            }
-            const showNegativeNumberInParens =
-              column.negativeNumberInParens && value < 0;
-            // 1. apply the number scale
-            const scaledNumber = scaleNumber(value, column.numberScale);
-            // 2. apply the number formatter
-            const formattedValue = (
-              showNegativeNumberInParens
-                ? Math.abs(scaledNumber.value)
-                : scaledNumber.value
-            ).toLocaleString(undefined, {
-              useGrouping: column.displayCommas,
-              ...(column.decimals !== undefined
-                ? {
-                    minimumFractionDigits: column.decimals,
-                    maximumFractionDigits: column.decimals,
-                  }
-                : {}),
-            });
-            // 3. add the parentheses (and then the unit)
-            return (
-              (showNegativeNumberInParens
-                ? `(${formattedValue})`
-                : formattedValue) +
-              (scaledNumber.unit ? ` ${scaledNumber.unit}` : '')
-            );
-          }
-        : (params) =>
-            params.value === INTERNAL__GRID_CLIENT_MISSING_VALUE
-              ? (column.missingValueDisplayText ??
-                DEFAULT_MISSING_VALUE_DISPLAY_TEXT)
-              : params.value,
-    loadingCellRenderer: DataCubeGridLoadingCellRenderer,
+      Boolean(
+        snapshot.data.pivot &&
+          !snapshot.data.pivot.castColumns.find((col) => col.name === name),
+      ),
+    pinned:
+      column.pinned !== undefined
+        ? column.pinned === DataCubeColumnPinPlacement.RIGHT
+          ? GridClientPinnedAlignement.RIGHT
+          : GridClientPinnedAlignement.LEFT
+        : null,
     headerClass: isPivotResultColumnName(name)
       ? 'pl-1 border border-neutral-300'
       : 'pl-1 border border-neutral-200',
@@ -310,24 +276,122 @@ function _displaySpec(columnData: ColumnData) {
         params.value < 0,
       [generateTextColorUtilityClassName(errorForegroundColor, 'error')]: (
         params,
-      ) => params.node.failedLoad,
+      ) => Boolean(params.node.failedLoad),
       [generateBackgroundColorUtilityClassName(errorBackgroundColor, 'error')]:
-        (params) => params.node.failedLoad,
+        (params) => Boolean(params.node.failedLoad),
       [INTERNAL__GridClientUtilityCssClassName.BLUR]: () => column.blur,
     },
-    cellRenderer: cellRenderer,
-    pinned:
-      column.pinned !== undefined
-        ? column.pinned === DataCubeColumnPinPlacement.RIGHT
-          ? GridClientPinnedAlignement.RIGHT
-          : GridClientPinnedAlignement.LEFT
-        : null,
+    valueFormatter:
+      dataType === DataCubeColumnDataType.NUMBER
+        ? (params) => {
+            const value = params.value as number | null | undefined;
+            if (
+              isNullable(value) ||
+              (value as unknown as string) ===
+                INTERNAL__GRID_CLIENT_MISSING_VALUE
+            ) {
+              return (
+                column.missingValueDisplayText ??
+                DEFAULT_MISSING_VALUE_DISPLAY_TEXT
+              );
+            }
+            const showNegativeNumberInParens =
+              column.negativeNumberInParens && value < 0;
+            // 1. apply the number scale
+            const scaledNumber = scaleNumber(value, column.numberScale);
+            // 2. apply the number formatter
+            const formattedValue = (
+              showNegativeNumberInParens
+                ? Math.abs(scaledNumber.value)
+                : scaledNumber.value
+            ).toLocaleString(undefined, {
+              useGrouping: column.displayCommas,
+              ...(column.decimals !== undefined
+                ? {
+                    minimumFractionDigits: column.decimals,
+                    maximumFractionDigits: column.decimals,
+                  }
+                : {}),
+            });
+            // 3. add the parentheses (and then the unit)
+            return (
+              (showNegativeNumberInParens
+                ? `(${formattedValue})`
+                : formattedValue) +
+              (scaledNumber.unit ? ` ${scaledNumber.unit}` : '')
+            );
+          }
+        : (params) =>
+            params.value === INTERNAL__GRID_CLIENT_MISSING_VALUE
+              ? (column.missingValueDisplayText ??
+                DEFAULT_MISSING_VALUE_DISPLAY_TEXT)
+              : params.value,
     tooltipValueGetter: (params) =>
       isNonNullable(params.value) &&
       params.value !== INTERNAL__GRID_CLIENT_MISSING_VALUE
         ? `Value = ${params.value === '' ? "''" : params.value === true ? 'TRUE' : params.value === false ? 'FALSE' : params.value}`
         : `Missing Value`,
-  } as ColDef;
+    loadingCellRenderer: DataCubeGridLoadingCellRenderer,
+    cellRenderer: getCellRenderer(columnData),
+  } satisfies ColDef;
+}
+
+function _groupDisplaySpec(
+  snapshot: DataCubeQuerySnapshot,
+  configuration: DataCubeConfiguration,
+) {
+  // TODO?: we can technically alternate the styling based on the column at various drilldown level
+  // but for now,we will simply use the same styling as the (default) grid styling
+  const fontFamily = configuration.fontFamily;
+  const fontSize = configuration.fontSize;
+  const fontBold = configuration.fontBold;
+  const fontItalic = configuration.fontItalic;
+  const fontStrikethrough = configuration.fontStrikethrough;
+  const fontUnderline = configuration.fontUnderline;
+  const fontCase = configuration.fontCase;
+  const textAlign = configuration.textAlign;
+  const normalForegroundColor = configuration.normalForegroundColor;
+  const normalBackgroundColor = configuration.normalBackgroundColor;
+
+  return {
+    cellDataType: false, // no point in specifying a type here since it can be of multiple types
+    hide: !snapshot.data.groupBy,
+    lockPosition: true,
+    lockPinned: true,
+    pinned: GridClientPinnedAlignement.LEFT,
+    cellClassRules: {
+      [generateFontFamilyUtilityClassName(fontFamily)]: () => true,
+      [generateFontSizeUtilityClassName(fontSize)]: () => true,
+      [INTERNAL__GridClientUtilityCssClassName.FONT_BOLD]: () => fontBold,
+      [INTERNAL__GridClientUtilityCssClassName.FONT_ITALIC]: () => fontItalic,
+      [INTERNAL__GridClientUtilityCssClassName.FONT_STRIKETHROUGH]: () =>
+        fontStrikethrough,
+      [generateFontUnderlineUtilityClassName(fontUnderline)]: () =>
+        Boolean(fontUnderline),
+      [generateFontCaseUtilityClassName(fontCase)]: (params) =>
+        Boolean(fontCase),
+      [generateTextAlignUtilityClassName(textAlign)]: () => true,
+      [generateTextColorUtilityClassName(normalForegroundColor, 'normal')]:
+        () => true,
+      [generateBackgroundColorUtilityClassName(
+        normalBackgroundColor,
+        'normal',
+      )]: () => true,
+    },
+    tooltipValueGetter: (params) => {
+      if (
+        isNonNullable(params.value) &&
+        params.value !== INTERNAL__GRID_CLIENT_MISSING_VALUE
+      ) {
+        return (
+          `Group Value = ${params.value === '' ? "''" : params.value === true ? 'TRUE' : params.value === false ? 'FALSE' : params.value}` +
+          `${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] !== undefined ? ` (${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID]})` : ''}`
+        );
+      }
+      return null;
+    },
+    loadingCellRenderer: DataCubeGridLoadingCellRenderer,
+  } satisfies ColDef;
 }
 
 function _sizeSpec(columnData: ColumnData) {
@@ -371,12 +435,13 @@ function _sortSpec(columnData: ColumnData) {
         : GridClientSortDirection.DESCENDING
       : null,
     sortIndex: sortCol ? sortColumns.indexOf(sortCol) : null,
-  } as ColDef;
+  } satisfies ColDef;
 }
 
-function _aggSpec(columnData: ColumnData) {
+function _aggregationSpec(columnData: ColumnData) {
   const { name, snapshot, column } = columnData;
   const data = snapshot.data;
+  const pivotCol = _findCol(data.pivot?.columns, name);
   const groupByCol = _findCol(data.groupBy?.columns, name);
   const isGroupExtendedColumn = Boolean(
     _findCol(data.groupExtendedColumns, name),
@@ -388,6 +453,13 @@ function _aggSpec(columnData: ColumnData) {
     rowGroupIndex:
       !isGroupExtendedColumn && groupByCol
         ? (data.groupBy?.columns.indexOf(groupByCol) ?? null)
+        : null,
+    enablePivot:
+      !isGroupExtendedColumn && column.kind === DataCubeColumnKind.DIMENSION,
+    pivot: !isGroupExtendedColumn && Boolean(pivotCol),
+    pivotIndex:
+      !isGroupExtendedColumn && pivotCol
+        ? (data.pivot?.columns.indexOf(pivotCol) ?? null)
         : null,
     // NOTE: we don't quite care about populating these accurately
     // since ag-grid aggregation does not support parameters, so
@@ -415,18 +487,29 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     //
     // -------------------------------------- ROW GROUPING --------------------------------------
     rowGroupPanelShow: 'always',
-    groupDisplayType: 'custom', // keeps the column set stable even when row grouping is used
+    // use the auto-generated group column to make it work with pivot mode
+    // See https://github.com/ag-grid/ag-grid/issues/8088
+    groupDisplayType: 'singleColumn',
     suppressRowGroupHidesColumns: true, // keeps the column set stable even when row grouping is used
     suppressAggFuncInHeader: true, //  keeps the columns stable when aggregation is used
     getChildCount: (data) =>
       data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID],
     // -------------------------------------- PIVOT --------------------------------------
-    // NOTE: we opt-out from ag-grid native support for pivot mode as it has a lot of constraints
-    // e.g. pivot mode impacts how row-grouping column drilldown is handled: when enabled, one
-    // cannot drill down to the leaf level.
-    // Another problem is we cannot use custom group column when in pivot mode.
-    // See https://github.com/ag-grid/ag-grid/issues/8088
-    pivotMode: false,
+    // NOTE: when enabled, pivot mode will show the pivot panel (allowing drag and drop)
+    // and pivot section in column tools panel, but it comes with many restrictions/opinionated
+    // behaviors on column grouping: i.e. it disallow full control of column definitions, so we
+    // couldn't display dimension columns which are not part of pivot while pivoting.
+    //
+    // Even setting flag pivotSuppressAutoColumn=true does not seem to remove the column
+    // auto-grouping behavior
+    //
+    // As such, we will just make use of column pivot settings to trigger server-side row
+    // model data-fetching when pivot changes, and would opt out from all GUI features
+    // that pivot mode offers by disabling pivot mode and will re-assess its usage in the future.
+    //
+    // pivotMode: Boolean(snapshot.data.pivot),
+    // pivotPanelShow: 'always',
+    // pivotSuppressAutoColumn: true,
     // -------------------------------------- SORT --------------------------------------
     // Force multi-sorting since this is what the query supports anyway
     alwaysMultiSort: true,
@@ -504,7 +587,9 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
     },
     // -------------------------------------- TOOLTIP --------------------------------------
     tooltipShowDelay: INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY,
-    tooltipInteraction: true,
+    // though this is a nice behavior to have enabled, ag-grid not dismissing tooltip
+    // when context-menu is triggered makes it an undesirable interaction.
+    tooltipInteraction: false,
     // -------------------------------------- COLUMN MOVING --------------------------------------
     suppressDragLeaveHidesColumns: true, // disable this since it's quite easy to accidentally hide columns while moving
     // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
@@ -527,7 +612,6 @@ export function generateBaseGridOptions(dataCube: DataCubeState): GridOptions {
           width: INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH,
           toolPanelParams: {
             suppressValues: true,
-            suppressPivots: true,
             suppressPivotMode: true,
           },
         },
@@ -664,6 +748,30 @@ function generateDefinitionForPivotResultColumns(
 
     if (leaf) {
       currentCollection.push(leaf);
+
+      // sort the leaf level columns based on the order of selected/configuration columns
+      (currentCollection as ColDef[]).sort((a, b) => {
+        const colAName = getNullableLastEntry(
+          a.colId?.split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) ?? [],
+        );
+        const colAConf = colAName
+          ? _findCol(configuration.columns, colAName)
+          : undefined;
+        const colBName = getNullableLastEntry(
+          b.colId?.split(PIVOT_COLUMN_NAME_VALUE_SEPARATOR) ?? [],
+        );
+        const colBConf = colBName
+          ? _findCol(configuration.columns, colBName)
+          : undefined;
+        return (
+          (colAConf
+            ? configuration.columns.indexOf(colAConf)
+            : Number.MAX_VALUE) -
+          (colBConf
+            ? configuration.columns.indexOf(colBConf)
+            : Number.MAX_VALUE)
+        );
+      });
     }
   });
 
@@ -681,7 +789,7 @@ export function generateColumnDefs(
   // which are grouped must be present in the column definitions, so even
   // when some of these might not be selected explicitly by the users, they
   // must still be included in the column definitions, and made hidden instead.
-  let columns = configuration.columns.filter((col) =>
+  const columns = configuration.columns.filter((col) =>
     snapshot.data.selectColumns.find((column) => column.name === col.name),
   );
   let pivotResultColumns: DataCubeQuerySnapshotColumn[] = [];
@@ -691,51 +799,9 @@ export function generateColumnDefs(
     pivotResultColumns = castColumns.filter((col) =>
       isPivotResultColumnName(col.name),
     );
-    // Since fetching cast columns is an expensive operation, we often do this asynchronously
-    // so sometimes, the grid column definitions might be generated with incorrect casting
-    // information. In order to account for those cases, we include all select() columns
-    // to make sure pivoting information is properly propagated to server-side row model datasource.
-    columns = [
-      ...columns.filter((col) =>
-        castColumns.find((column) => column.name === col.name),
-      ),
-      ...columns.filter(
-        (col) => !castColumns.find((column) => column.name === col.name),
-      ),
-    ];
   }
 
   return [
-    {
-      headerName: '',
-      colId: INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
-      cellRenderer: 'agGroupCellRenderer',
-      tooltipValueGetter: (params) => {
-        if (
-          isNonNullable(params.value) &&
-          params.value !== INTERNAL__GRID_CLIENT_MISSING_VALUE
-        ) {
-          return (
-            `Group Value = ${params.value === '' ? "''" : params.value === true ? 'TRUE' : params.value === false ? 'FALSE' : params.value}` +
-            `${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] !== undefined ? ` (${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID]})` : ''}`
-          );
-        }
-        return null;
-      },
-      showRowGroup: true,
-      hide: !snapshot.data.groupBy,
-      lockPinned: true,
-      lockPosition: true,
-      pinned: GridClientPinnedAlignement.LEFT,
-      suppressSpanHeaderHeight: true,
-      cellDataType: false,
-      minWidth: 200,
-      suppressAutoSize: true,
-      suppressSizeToFit: true,
-      loadingCellRenderer: DataCubeGridLoadingCellRenderer,
-      // TODO: we can support this in the configuration (support sorting by tree-column?)
-      sortable: true,
-    } satisfies ColDef,
     // NOTE: Internal column used for programatically trigger data fetch when filter is modified
     {
       colId: INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
@@ -775,7 +841,7 @@ export function generateColumnDefs(
         ..._displaySpec(columnData),
         ..._sizeSpec(columnData),
         ..._sortSpec(columnData),
-        ..._aggSpec(columnData),
+        ..._aggregationSpec(columnData),
       } satisfies ColDef;
     }),
   ] satisfies (ColDef | ColGroupDef)[];
@@ -801,13 +867,16 @@ export function generateGridOptionsFromSnapshot(
             params.rowIndex % (configuration.alternateRowsCount * 2) >=
             configuration.alternateRowsCount,
         }
-      : null,
+      : {},
     rowBuffer: DEFAULT_ROW_BUFFER,
 
     // -------------------------------------- EVENT HANDLERS --------------------------------------
+    // NOTE: make sure the event source must not be 'api' since these handlers are meant for direct
+    // user interaction with the grid. Actions through context menu (i.e. grid controller) or programatic
+    // update of the grid options due to change in query snapshot should not trigger these handlers.
 
     onColumnPinned: (event) => {
-      if (event.column) {
+      if (event.source !== 'api' && event.column) {
         const column = event.column;
         const pinned = column.getPinned();
         dataCube.grid.controller.pinColumn(
@@ -823,7 +892,7 @@ export function generateGridOptionsFromSnapshot(
 
     onColumnMoved: (event) => {
       // make sure the move event is finished before syncing the changes
-      if (event.column && event.finished) {
+      if (event.source !== 'api' && event.column && event.finished) {
         dataCube.grid.controller.rearrangeColumns(
           (event.api.getColumnDefs() ?? [])
             .filter((col): col is ColDef => !('children' in col))
@@ -833,7 +902,7 @@ export function generateGridOptionsFromSnapshot(
     },
 
     onColumnVisible: (event) => {
-      if (event.column) {
+      if (event.source !== 'api' && event.column) {
         const column = event.column;
         const isVisible = column.isVisible();
         dataCube.grid.controller.showColumn(column.getColId(), isVisible);
@@ -843,7 +912,31 @@ export function generateGridOptionsFromSnapshot(
     // -------------------------------------- COLUMNS --------------------------------------
 
     columnDefs: generateColumnDefs(snapshot, configuration, dataCube),
-  } as GridOptions;
+    autoGroupColumnDef: {
+      // NOTE: the column ID here is set for explicitness, but this is not something ag-grid
+      // allows setting for auto-group column, for more advanced use cases, we might want to
+      // look into custom group columns
+      // See https://www.ag-grid.com/react-data-grid/grouping-custom-group-columns/
+      colId: INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
+      headerName: '',
+      cellRenderer: 'agGroupCellRenderer',
+
+      // display
+      ..._groupDisplaySpec(snapshot, configuration),
+
+      // size
+      suppressAutoSize: true,
+      suppressSizeToFit: true,
+      minWidth: 200,
+
+      // sorting
+      sortable: true,
+
+      // aggregation
+      showRowGroup: true,
+      suppressSpanHeaderHeight: true,
+    } satisfies ColDef,
+  } satisfies GridOptions;
 
   return gridOptions;
 }

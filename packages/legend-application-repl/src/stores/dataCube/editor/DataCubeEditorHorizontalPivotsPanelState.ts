@@ -73,10 +73,8 @@ export class DataCubeEditorHorizontalPivotsPanelState
   constructor(editor: DataCubeEditorState) {
     makeObservable(this, {
       castColumns: observable.ref,
-      setCastColumns: action,
-
       pivotResultColumns: computed,
-      columnsConsumedByPivot: computed,
+      setCastColumns: action,
 
       applySnaphot: action,
     });
@@ -91,30 +89,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
   get pivotResultColumns(): DataCubeQuerySnapshotColumn[] {
     return this.castColumns
       .filter((col) => isPivotResultColumnName(col.name))
-      .map((col) => _toCol(col));
-  }
-
-  /**
-   * Due to the nature of pivot() operation, some base columns (i.e. source columns and leaf-level columns)
-   * will be "consumed" and not available for subsequent operations (e.g. sort, groupBy, etc.).
-   */
-  get columnsConsumedByPivot(): DataCubeQuerySnapshotColumn[] {
-    if (!this.selector.selectedColumns.length) {
-      return [];
-    }
-    return uniqBy(
-      [
-        ...this.selector.selectedColumns,
-        ...this.editor.columnProperties.columns.filter(
-          (col) =>
-            col.isSelected &&
-            col.kind === DataCubeColumnKind.MEASURE &&
-            !col.excludedFromHorizontalPivot,
-        ),
-        /** TODO: @datacube pivot - need to include columns used in complex aggregates (such as weighted-average) */
-      ],
-      (col) => col.name,
-    ).map((col) => _toCol(col));
+      .map(_toCol);
   }
 
   setCastColumns(value: DataCubeQuerySnapshotColumn[]) {
@@ -145,13 +120,13 @@ export class DataCubeEditorHorizontalPivotsPanelState
   ) {
     newSnapshot.data.pivot = this.selector.selectedColumns.length
       ? {
-          columns: this.selector.selectedColumns.map((col) => _toCol(col)),
-          castColumns: this.castColumns.map((col) => _toCol(col)),
+          columns: this.selector.selectedColumns.map(_toCol),
+          castColumns: this.castColumns.map(_toCol),
         }
       : undefined;
     newSnapshot.data.selectColumns = uniqBy(
       [...newSnapshot.data.selectColumns, ...this.selector.selectedColumns],
       (col) => col.name,
-    ).map((col) => _toCol(col));
+    ).map(_toCol);
   }
 }
