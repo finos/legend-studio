@@ -1133,7 +1133,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
 
   async cancelUserExecutions(broadcastToCluster: boolean): Promise<string> {
     return this.engineServerClient.INTERNAL__cancelUserExecutions(
-      guaranteeNonNullable(this.engineServerClient.currentUserId),
+      guaranteeNonNullable(this.getServerClientCurrentUserId()),
       broadcastToCluster,
     );
   }
