@@ -671,7 +671,7 @@ export function generateMenuBuilder(
                   {
                     key: columnConfiguration.name,
                     newWidth:
-                      columnConfiguration?.minWidth ?? DEFAULT_COLUMN_MIN_WIDTH,
+                      columnConfiguration.minWidth ?? DEFAULT_COLUMN_MIN_WIDTH,
                   },
                 ]);
               }
