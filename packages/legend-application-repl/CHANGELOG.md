@@ -1,5 +1,11 @@
 # @finos/legend-application-repl
 
+## 1.0.0
+
+### Major Changes
+
+- [#3556](https://github.com/finos/legend-studio/pull/3556) [`12ea153`](https://github.com/finos/legend-studio/commit/12ea15327d8ad4386983c2a6b6ec839aacb0c1e4) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Separate core DataCube code to `@finos/legend-data-cube`
+
 ## 0.0.60
 
 ## 0.0.59

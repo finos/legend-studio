@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 6.0.61
+
+### Patch Changes
+
+- [#3550](https://github.com/finos/legend-studio/pull/3550) [`0a8601e`](https://github.com/finos/legend-studio/commit/0a8601e41b1359b4276132f5594967690f58733e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add get project entities by classifier APIs in depot server client
+
 ## 6.0.60
 
 ## 6.0.59
