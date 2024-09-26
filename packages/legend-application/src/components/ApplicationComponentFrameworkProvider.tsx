@@ -198,7 +198,7 @@ export const ApplicationComponentFrameworkProvider = observer(
         )}
         <DndProvider backend={HTML5Backend}>
           <div
-            className="app__container"
+            style={{ height: '100%', width: '100%' }}
             // NOTE: this `id` is used to quickly identify this DOM node so we could manually
             // dispatch keyboard event here in order to be captured by our global hotkeys matchers
             data-elementid={
@@ -254,7 +254,7 @@ export const SimpleApplicationComponentFrameworkProvider = observer(
       <LegendStyleProvider>
         <DndProvider backend={HTML5Backend}>
           <div
-            className="app__container"
+            style={{ height: '100%', width: '100%' }}
             // NOTE: this `id` is used to quickly identify this DOM node so we could manually
             // dispatch keyboard event here in order to be captured by our global hotkeys matchers
             data-elementid={

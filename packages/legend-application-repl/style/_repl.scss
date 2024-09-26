@@ -87,6 +87,102 @@ button:focus-visible {
   outline-style: solid;
 }
 
+.markdown-content {
+  margin: 0;
+  word-wrap: break-word;
+  width: 100%;
+}
+
+.markdown-content [hidden] {
+  display: none !important;
+}
+
+.markdown-content a {
+  background: transparent;
+  color: var(--tw-color-sky-500);
+  text-decoration: none;
+}
+
+.markdown-content a:active,
+.markdown-content a:hover {
+  outline-width: 0;
+}
+
+.markdown-content abbr[title] {
+  border-bottom: none;
+  text-decoration: underline dotted;
+}
+
+.markdown-content b,
+.markdown-content strong {
+  font-weight: 700;
+}
+
+.markdown-content dfn {
+  font-style: italic;
+}
+
+.markdown-content h1 {
+  margin: 20px 0 10px;
+  font-weight: 700;
+  padding-bottom: 2px;
+  font-size: 16px;
+  border-bottom: 1px solid var(--tw-color-neutral-200);
+}
+
+.markdown-content code {
+  font-family: 'Roboto Mono', monospace;
+  padding: 2px 4px;
+  margin: 0;
+  font-size: 12px;
+  background: var(--tw-color-neutral-200);
+  border-radius: 2px;
+}
+
+.markdown-content code br {
+  display: none;
+}
+
+.markdown-content del code {
+  text-decoration: inherit;
+}
+
+.markdown-content pre > code {
+  padding: 0;
+  margin: 0;
+  word-break: normal;
+  white-space: pre;
+  background: transparent;
+  border: 0;
+}
+
+.markdown-content pre {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-family: 'Roboto Mono', monospace;
+  word-wrap: normal;
+  overflow: auto;
+  font-size: 12px;
+  line-height: 1.45;
+  background: var(--tw-color-neutral-100);
+  border-radius: 2px;
+}
+
+.markdown-content pre code {
+  display: inline;
+  max-width: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  line-height: inherit;
+  word-wrap: normal;
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+}
+
+// ---------------------------------------- CUSTOMIZE ----------------------------------------
+
 .data-cube-editor-checkbox--checked svg {
   color: var(--tw-color-neutral-600);
 }
@@ -94,8 +190,6 @@ button:focus-visible {
 .data-cube-editor-checkbox--disabled svg {
   color: var(--tw-color-neutral-300);
 }
-
-// ---------------------------------------- CUSTOMIZE ----------------------------------------
 
 .data-cube-color-picker {
   .react-colorful {

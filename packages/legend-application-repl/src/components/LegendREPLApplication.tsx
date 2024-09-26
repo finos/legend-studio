@@ -71,7 +71,7 @@ export const LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN = Object.freeze({
 });
 
 export const LegendREPLRouter = observer(() => (
-  <div className="app">
+  <div className="h-full">
     <Switch>
       <Route
         exact={true}

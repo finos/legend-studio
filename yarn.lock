@@ -2481,7 +2481,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-application-repl-deployment@workspace:packages/legend-application-repl-deployment"
   dependencies:
-    "@finos/legend-application": "workspace:*"
     "@finos/legend-application-repl": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"

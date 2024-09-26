@@ -8,7 +8,6 @@
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json", "repl.config.js"],
   "references": [
-    { "path": "../legend-application" },
     { "path": "../legend-art" },
     { "path": "../legend-application-repl" }
   ]

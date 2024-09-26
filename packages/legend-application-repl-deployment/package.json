@@ -39,7 +39,6 @@
     "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js --dir ./dev"
   },
   "dependencies": {
-    "@finos/legend-application": "workspace:*",
     "@finos/legend-application-repl": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@types/react": "18.3.9",
