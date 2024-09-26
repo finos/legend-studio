@@ -7,5 +7,12 @@
     "jsx": "react-jsxdev"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
-  "references": [{ "path": "../legend-application" }]
+  "references": [
+    { "path": "./tsconfig.package.json" },
+    { "path": "../legend-shared" },
+    { "path": "../legend-application" },
+    { "path": "../legend-graph" },
+    { "path": "../legend-art" },
+    { "path": "../legend-code-editor" }
+  ]
 }

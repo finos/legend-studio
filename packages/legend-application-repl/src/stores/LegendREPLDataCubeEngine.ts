@@ -22,7 +22,7 @@ import {
   type CompletionItem,
   type DataCubeInfrastructureInfo,
   type RelationType,
-} from './dataCube/engine/DataCubeEngine.js';
+} from '@finos/legend-data-cube';
 import {
   TDSExecutionResult,
   V1_buildExecutionResult,

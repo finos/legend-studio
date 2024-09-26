@@ -5,5 +5,12 @@
     "jsx": "react-jsx"
   },
   "exclude": ["src/**/__tests__/**/*.*", "src/**/__mocks__/**/*.*"],
-  "references": [{ "path": "../legend-application/tsconfig.build.json" }]
+  "references": [
+    { "path": "./tsconfig.package.json" },
+    { "path": "../legend-shared/tsconfig.build.json" },
+    { "path": "../legend-application/tsconfig.build.json" },
+    { "path": "../legend-graph/tsconfig.build.json" },
+    { "path": "../legend-art/tsconfig.build.json" },
+    { "path": "../legend-code-editor/tsconfig.build.json" }
+  ]
 }

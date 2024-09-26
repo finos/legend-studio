@@ -19,8 +19,10 @@ import {
   APPLICATION_EVENT,
 } from '@finos/legend-application';
 import { type DocumentationEntry, LogEvent } from '@finos/legend-shared';
-import { DataCubeApplicationEngine } from './dataCube/engine/DataCubeApplicationEngine.js';
-import type { ActionAlert } from '../components/dataCube/application/DataCubeAlert.js';
+import {
+  DataCubeApplicationEngine,
+  type ActionAlert,
+} from '@finos/legend-data-cube';
 import type { LegendREPLApplicationStore } from '../application/LegendREPLApplicationStore.js';
 
 export class LegendREPLDataCubeApplicationEngine extends DataCubeApplicationEngine {

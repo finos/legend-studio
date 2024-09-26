@@ -12,7 +12,7 @@
     { "path": "../legend-shared" },
     { "path": "../legend-application" },
     { "path": "../legend-graph" },
-    { "path": "../legend-art" },
-    { "path": "../legend-code-editor" }
+    { "path": "../legend-data-cube" },
+    { "path": "../legend-art" }
   ]
 }

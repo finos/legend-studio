@@ -24,7 +24,7 @@ import type {
   RelationType,
   DataCubeGetBaseQueryResult,
   DataCubeInfrastructureInfo,
-} from './dataCube/engine/DataCubeEngine.js';
+} from '@finos/legend-data-cube';
 import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
 
 type DataCubeGetQueryCodeInput = {

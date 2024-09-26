@@ -21,13 +21,12 @@ import {
   type TEMPORARY__ReactRouterComponentType,
 } from '@finos/legend-application/browser';
 import { observer } from 'mobx-react-lite';
-import { DataCube } from './dataCube/DataCube.js';
 import { useMemo } from 'react';
 import { guaranteeNonNullable, NetworkClient } from '@finos/legend-shared';
 import { LegendREPLServerClient } from '../stores/LegendREPLServerClient.js';
 import { LegendREPLDataCubeApplicationEngine } from '../stores/LegendREPLDataCubeApplicationEngine.js';
 import { LegendREPLDataCubeEngine } from '../stores/LegendREPLDataCubeEngine.js';
-import { DataCubeProvider } from './dataCube/DataCubeProvider.js';
+import { DataCube, DataCubeProvider } from '@finos/legend-data-cube';
 import {
   ApplicationFrameworkProvider,
   useApplicationStore,
