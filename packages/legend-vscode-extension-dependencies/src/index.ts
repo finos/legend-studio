@@ -88,6 +88,7 @@ export {
   GenerationMode,
   GraphManagerState,
   PostValidationAssertionResult,
+  PureExecution,
   RawLambda,
   Service,
   ServiceExecutionMode,
