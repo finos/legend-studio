@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import type { DataCubeViewState } from '../../../stores/dataCube/DataCubeViewState.js';
 import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
 import { useEffect } from 'react';
-import { FormBadge_WIP } from '../../shared/Form.js';
+import { FormBadge_WIP } from '../../shared/DataCubeFormUtils.js';
 
 const PivotColumnSortDirectionDropdown = observer((props) => (
   <div className="relative flex h-full items-center">

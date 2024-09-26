@@ -21,20 +21,48 @@ import {
 } from '@finos/legend-shared';
 import type {
   CompletionItem,
-  DataCubeGetQueryCodeInput,
-  DataCubeGetQueryRelationReturnTypeInput,
-  DataCubeParseQueryInput,
-  DataCubeQueryTypeaheadInput,
   RelationType,
-  DataCubeExecutionInput,
-  DataCubeExecutionResult,
   DataCubeGetBaseQueryResult,
   DataCubeInfrastructureInfo,
-  DataCubeGetQueryCodeRelationReturnTypeInput,
-} from './REPLEngine.js';
-import type { V1_ValueSpecification } from '@finos/legend-graph';
+} from './dataCube/engine/DataCubeEngine.js';
+import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
 
-export class REPLServerClient {
+type DataCubeGetQueryCodeInput = {
+  query: PlainObject<V1_ValueSpecification>;
+  pretty?: boolean;
+};
+
+type DataCubeParseQueryInput = {
+  code: string;
+  returnSourceInformation?: boolean | undefined;
+};
+
+type DataCubeQueryTypeaheadInput = {
+  code: string;
+  baseQuery?: PlainObject<V1_ValueSpecification>;
+};
+
+type DataCubeGetQueryRelationReturnTypeInput = {
+  query: PlainObject<V1_Lambda>;
+};
+
+type DataCubeGetQueryCodeRelationReturnTypeInput = {
+  code: string;
+  baseQuery?: PlainObject<V1_ValueSpecification>;
+};
+
+type DataCubeExecutionInput = {
+  query: PlainObject<V1_Lambda>;
+  debug?: boolean | undefined;
+};
+
+type DataCubeExecutionResult = {
+  result: string;
+  executedQuery: string;
+  executedSQL: string;
+};
+
+export class LegendREPLServerClient {
   private readonly networkClient: NetworkClient;
 
   constructor(networkClient: NetworkClient) {

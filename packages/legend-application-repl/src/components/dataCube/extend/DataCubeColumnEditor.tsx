@@ -31,14 +31,14 @@ import {
 import {
   getCodeSuggestions,
   MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID,
-} from '../../shared/PureCodeEditor.js';
+} from '../../shared/DataCubePureCodeEditorUtils.js';
 import {
   FormDocumentation,
   FormDropdownMenu,
   FormDropdownMenuItem,
   FormDropdownMenuTrigger,
   FormTextInput,
-} from '../../shared/Form.js';
+} from '../../shared/DataCubeFormUtils.js';
 import { debounce } from '@finos/legend-shared';
 import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import {

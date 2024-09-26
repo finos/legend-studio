@@ -21,14 +21,14 @@ import {
   AlertType,
   type ActionAlert,
   type ActionAlertAction,
-} from '../../components/shared/Alert.js';
+} from '../../../components/dataCube/application/DataCubeAlert.js';
 import {
   DEFAULT_SMALL_ALERT_WINDOW_CONFIG,
   LayoutConfiguration,
   LayoutManagerState,
   WindowState,
   type WindowConfiguration,
-} from '../../components/shared/LayoutManagerState.js';
+} from './DataCubeLayoutManagerState.js';
 
 export abstract class DataCubeApplicationEngine {
   readonly layout: LayoutManagerState;

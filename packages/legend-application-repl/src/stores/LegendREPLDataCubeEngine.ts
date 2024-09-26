@@ -15,14 +15,14 @@
  */
 
 import { action, makeObservable, observable } from 'mobx';
-import type { REPLServerClient } from '../server/REPLServerClient.js';
-import { DataCubeEngine } from './dataCube/DataCubeEngine.js';
+import type { LegendREPLServerClient } from './LegendREPLServerClient.js';
 import {
+  DataCubeEngine,
   DataCubeGetBaseQueryResult,
   type CompletionItem,
   type DataCubeInfrastructureInfo,
   type RelationType,
-} from '../server/REPLEngine.js';
+} from './dataCube/engine/DataCubeEngine.js';
 import {
   TDSExecutionResult,
   V1_buildExecutionResult,
@@ -35,9 +35,9 @@ import {
 import { guaranteeType } from '@finos/legend-shared';
 
 export class LegendREPLDataCubeEngine extends DataCubeEngine {
-  readonly client: REPLServerClient;
+  readonly client: LegendREPLServerClient;
 
-  constructor(client: REPLServerClient) {
+  constructor(client: LegendREPLServerClient) {
     super();
 
     makeObservable(this, {

@@ -24,7 +24,7 @@ import {
   WINDOW_DEFAULT_WIDTH,
   type LayoutManagerState,
   type WindowState,
-} from './LayoutManagerState.js';
+} from '../../../stores/dataCube/engine/DataCubeLayoutManagerState.js';
 import { observer } from 'mobx-react-lite';
 
 export const Window = (props: {
@@ -171,7 +171,7 @@ export const Window = (props: {
   );
 };
 
-export const LayoutManager = observer(
+export const DataCubeLayoutManager = observer(
   (props: { layout: LayoutManagerState }) => {
     const { layout } = props;
 

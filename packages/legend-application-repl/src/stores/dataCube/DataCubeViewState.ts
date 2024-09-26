@@ -24,9 +24,9 @@ import { action, makeObservable, observable } from 'mobx';
 import { DataCubeFilterEditorState } from './filter/DataCubeFilterEditorState.js';
 import { DataCubeExtendManagerState } from './extend/DataCubeExtendManagerState.js';
 import type { DataCubeState } from './DataCubeState.js';
-import type { DataCubeEngine } from './DataCubeEngine.js';
-import { type DataCubeApplicationEngine } from './DataCubeApplicationEngine.js';
-import { AlertType } from '../../components/shared/Alert.js';
+import type { DataCubeEngine } from './engine/DataCubeEngine.js';
+import { type DataCubeApplicationEngine } from './engine/DataCubeApplicationEngine.js';
+import { AlertType } from '../../components/dataCube/application/DataCubeAlert.js';
 
 class DataCubeTask {
   uuid = uuid();

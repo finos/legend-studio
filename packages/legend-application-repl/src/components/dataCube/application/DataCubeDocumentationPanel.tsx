@@ -17,7 +17,7 @@
 import { MarkdownTextViewer } from '@finos/legend-art';
 import { isString } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
-import { useDataCube } from '../dataCube/DataCubeProvider.js';
+import { useDataCube } from '../DataCubeProvider.js';
 
 export const DocumentationPanel = observer(() => {
   const dataCube = useDataCube();

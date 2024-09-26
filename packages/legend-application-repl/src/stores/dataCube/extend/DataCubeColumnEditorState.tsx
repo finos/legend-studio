@@ -16,7 +16,7 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import type { DisplayState } from '../../../components/shared/LayoutManagerState.js';
+import type { DisplayState } from '../engine/DataCubeLayoutManagerState.js';
 import { DataCubeColumnCreator } from '../../../components/dataCube/extend/DataCubeColumnEditor.js';
 import { editor as monacoEditorAPI, Uri } from 'monaco-editor';
 import {
@@ -40,7 +40,7 @@ import {
   CODE_EDITOR_LANGUAGE,
   setErrorMarkers,
 } from '@finos/legend-code-editor';
-import type { DataCubeQueryBuilderError } from '../../../server/REPLEngine.js';
+import type { DataCubeQueryBuilderError } from '../engine/DataCubeEngine.js';
 import type { DataCubeExtendManagerState } from './DataCubeExtendManagerState.js';
 import {
   PRIMITIVE_TYPE,

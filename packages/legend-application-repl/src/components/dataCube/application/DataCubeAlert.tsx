@@ -18,7 +18,7 @@ import { cn, DataCubeIcon, Dialog } from '@finos/legend-art';
 import { noop } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
-import { useDataCube } from '../dataCube/DataCubeProvider.js';
+import { useDataCube } from '../DataCubeProvider.js';
 
 export enum AlertType {
   INFO = 'INFO',
@@ -161,7 +161,7 @@ const BlockingActionAlertContent = observer((props: { alert: ActionAlert }) => {
   );
 });
 
-export const BlockingActionAlert = observer(() => {
+export const DataCubeBlockingActionAlert = observer(() => {
   const dataCube = useDataCube();
   const application = dataCube.application;
   const actionAlert = application.currentActionAlert;

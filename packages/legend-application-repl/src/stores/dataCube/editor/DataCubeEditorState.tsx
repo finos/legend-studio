@@ -34,7 +34,7 @@ import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumn
 import { DataCubeEditorColumnsPanelState } from './DataCubeEditorColumnsPanelState.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeEditorVerticalPivotsPanelState } from './DataCubeEditorVerticalPivotsPanelState.js';
-import type { DisplayState } from '../../../components/shared/LayoutManagerState.js';
+import type { DisplayState } from '../engine/DataCubeLayoutManagerState.js';
 import { DataCubeEditor } from '../../../components/dataCube/editor/DataCubeEditor.js';
 import { buildExecutableQuery } from '../core/DataCubeQueryBuilder.js';
 import { _lambda } from '../core/DataCubeQueryBuilderUtils.js';

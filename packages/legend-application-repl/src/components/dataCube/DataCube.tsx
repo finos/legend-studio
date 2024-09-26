@@ -24,11 +24,11 @@ import {
   ProgressBar,
   useDropdownMenu,
 } from '@finos/legend-art';
-import { LayoutManager } from '../shared/LayoutManager.js';
+import { DataCubeLayoutManager } from './application/DataCubeLayoutManager.js';
 import type { DataCubeViewState } from '../../stores/dataCube/DataCubeViewState.js';
-import { INTERNAL__MonacoEditorWidgetsRoot } from '../shared/PureCodeEditor.js';
+import { INTERNAL__MonacoEditorWidgetsRoot } from '../shared/DataCubePureCodeEditorUtils.js';
 import { useDataCube } from './DataCubeProvider.js';
-import { BlockingActionAlert } from '../shared/Alert.js';
+import { DataCubeBlockingActionAlert } from './application/DataCubeAlert.js';
 
 const DataCubeStatusBar = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
@@ -149,8 +149,8 @@ export const DataCube = observer(() => {
       <DataCubeGrid view={view} />
       <DataCubeStatusBar view={view} />
 
-      <LayoutManager layout={application.layout} />
-      <BlockingActionAlert />
+      <DataCubeLayoutManager layout={application.layout} />
+      <DataCubeBlockingActionAlert />
       <INTERNAL__MonacoEditorWidgetsRoot />
     </div>
   );

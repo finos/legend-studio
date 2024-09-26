@@ -42,19 +42,19 @@ import type {
   DataCubeConfiguration,
   DataCubeConfigurationColorKey,
 } from '../core/DataCubeConfiguration.js';
-import { DEFAULT_LARGE_ALERT_WINDOW_CONFIG } from '../../../components/shared/LayoutManagerState.js';
+import { DEFAULT_LARGE_ALERT_WINDOW_CONFIG } from '../engine/DataCubeLayoutManagerState.js';
 import {
   _sortByColName,
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotData,
 } from '../core/DataCubeQuerySnapshot.js';
-import type { DataCubeEngine } from '../DataCubeEngine.js';
+import type { DataCubeEngine } from '../engine/DataCubeEngine.js';
 import { generateColumnDefs } from './DataCubeGridConfigurationBuilder.js';
 import { type DataCubeQueryFunctionMap } from '../core/DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from '../core/aggregation/DataCubeQueryAggregateOperation.js';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
-import { AlertType } from '../../../components/shared/Alert.js';
+import { AlertType } from '../../../components/dataCube/application/DataCubeAlert.js';
 
 type GridClientCellValue = string | number | boolean | null | undefined;
 type GridClientRowData = {

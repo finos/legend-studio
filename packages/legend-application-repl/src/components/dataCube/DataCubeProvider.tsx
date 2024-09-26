@@ -18,8 +18,8 @@ import { createContext, useContext, useEffect } from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { DataCubeState } from '../../stores/dataCube/DataCubeState.js';
-import type { DataCubeApplicationEngine } from '../../stores/dataCube/DataCubeApplicationEngine.js';
-import type { DataCubeEngine } from '../../stores/dataCube/DataCubeEngine.js';
+import type { DataCubeApplicationEngine } from '../../stores/dataCube/engine/DataCubeApplicationEngine.js';
+import type { DataCubeEngine } from '../../stores/dataCube/engine/DataCubeEngine.js';
 
 const DataCubeStateContext = createContext<DataCubeState | undefined>(
   undefined,

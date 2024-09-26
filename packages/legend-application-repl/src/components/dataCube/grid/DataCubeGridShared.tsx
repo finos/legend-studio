@@ -18,7 +18,7 @@ import {
   useGridMenuItem,
   type CustomMenuItemProps,
 } from '@ag-grid-community/react';
-import { FormBadge_WIP } from '../../shared/Form.js';
+import { FormBadge_WIP } from '../../shared/DataCubeFormUtils.js';
 
 export function WIP_GridMenuItem({
   name,

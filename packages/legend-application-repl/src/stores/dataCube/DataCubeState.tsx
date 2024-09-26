@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { type DataCubeEngine } from './DataCubeEngine.js';
+import { type DataCubeEngine } from './engine/DataCubeEngine.js';
 import { DataCubeViewState } from './DataCubeViewState.js';
-import type { DisplayState } from '../../components/shared/LayoutManagerState.js';
-import { DocumentationPanel } from '../../components/shared/DocumentationPanel.js';
-import { SettingsPanel } from '../../components/shared/SettingsPanel.js';
+import type { DisplayState } from './engine/DataCubeLayoutManagerState.js';
+import { DocumentationPanel } from '../../components/dataCube/application/DataCubeDocumentationPanel.js';
+import { DataCubeSettingsPanel } from '../../components/dataCube/application/DataCubeSettingsPanel.js';
 import { ActionState, assertErrorThrown } from '@finos/legend-shared';
-import { AlertType } from '../../components/shared/Alert.js';
-import { type DataCubeApplicationEngine } from './DataCubeApplicationEngine.js';
+import { AlertType } from '../../components/dataCube/application/DataCubeAlert.js';
+import { type DataCubeApplicationEngine } from './engine/DataCubeApplicationEngine.js';
 
 export class DataCubeState {
   readonly application: DataCubeApplicationEngine;
@@ -44,7 +44,7 @@ export class DataCubeState {
 
     this.settingsDisplay = this.application.layout.newDisplay(
       'Settings',
-      () => <SettingsPanel />,
+      () => <DataCubeSettingsPanel />,
       {
         x: -50,
         y: 50,

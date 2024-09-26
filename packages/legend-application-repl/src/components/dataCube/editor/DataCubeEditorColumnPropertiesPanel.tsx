@@ -27,7 +27,7 @@ import {
   FormNumberInput,
   FormTextInput,
   FormDocumentation,
-} from '../../shared/Form.js';
+} from '../../shared/DataCubeFormUtils.js';
 import {
   DataCubeColumnDataType,
   DataCubeColumnKind,

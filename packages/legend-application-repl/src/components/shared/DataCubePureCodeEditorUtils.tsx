@@ -20,7 +20,7 @@ import {
   type IPosition,
 } from 'monaco-editor';
 import type { DataCubeViewState } from '../../stores/dataCube/DataCubeViewState.js';
-import type { CompletionItem } from '../../server/REPLEngine.js';
+import type { CompletionItem } from '../../stores/dataCube/engine/DataCubeEngine.js';
 import type { V1_ValueSpecification } from '@finos/legend-graph';
 
 // Since we render the editor in a window which has been CSS transformed, and monaco-editor renders

@@ -24,7 +24,7 @@ import { observer } from 'mobx-react-lite';
 import { DataCube } from './dataCube/DataCube.js';
 import { useMemo } from 'react';
 import { guaranteeNonNullable, NetworkClient } from '@finos/legend-shared';
-import { REPLServerClient } from '../server/REPLServerClient.js';
+import { LegendREPLServerClient } from '../stores/LegendREPLServerClient.js';
 import { LegendREPLDataCubeApplicationEngine } from '../stores/LegendREPLDataCubeApplicationEngine.js';
 import { LegendREPLDataCubeEngine } from '../stores/LegendREPLDataCubeEngine.js';
 import { DataCubeProvider } from './dataCube/DataCubeProvider.js';
@@ -46,7 +46,7 @@ const LegendREPLDataCube = observer(() => {
     [applicationStore],
   );
   const engine = new LegendREPLDataCubeEngine(
-    new REPLServerClient(
+    new LegendREPLServerClient(
       new NetworkClient({
         baseUrl: applicationStore.config.useDynamicREPLServer
           ? window.location.origin +

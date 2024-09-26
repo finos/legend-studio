@@ -16,18 +16,21 @@
 
 import { observer } from 'mobx-react-lite';
 import { DataCubeIcon } from '@finos/legend-art';
-import { FormCheckbox, FormNumberInput } from './Form.js';
+import {
+  FormCheckbox,
+  FormNumberInput,
+} from '../../shared/DataCubeFormUtils.js';
 import {
   DEFAULT_ENABLE_DEBUG_MODE,
   DEFAULT_ENABLE_ENGINE_DEBUG_MODE,
   DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
   DEFAULT_GRID_CLIENT_ROW_BUFFER,
   DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
-} from '../../stores/dataCube/DataCubeEngine.js';
+} from '../../../stores/dataCube/engine/DataCubeEngine.js';
 import { useState } from 'react';
-import { useDataCube } from '../dataCube/DataCubeProvider.js';
+import { useDataCube } from '../DataCubeProvider.js';
 
-export const SettingsPanel = observer(() => {
+export const DataCubeSettingsPanel = observer(() => {
   const dataCube = useDataCube();
   const engine = dataCube.engine;
 

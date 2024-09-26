@@ -39,7 +39,7 @@ import {
   DataCubeConfiguration,
   type DataCubeColumnConfiguration,
 } from '../core/DataCubeConfiguration.js';
-import type { DisplayState } from '../../../components/shared/LayoutManagerState.js';
+import type { DisplayState } from '../engine/DataCubeLayoutManagerState.js';
 import { DataCubeFilterEditor } from '../../../components/dataCube/filter/DataCubeFilterEditor.js';
 
 /**

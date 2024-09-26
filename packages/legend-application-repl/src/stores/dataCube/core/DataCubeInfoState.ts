@@ -18,7 +18,7 @@ import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { DataCubeQuerySnapshotController } from './DataCubeQuerySnapshotManager.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
-import type { DataCubeQuery } from '../../../server/DataCubeQuery.js';
+import type { DataCubeQuery } from '../engine/DataCubeQuery.js';
 import { formatDate } from '@finos/legend-shared';
 import { DEFAULT_REPORT_NAME } from './DataCubeQueryEngine.js';
 
