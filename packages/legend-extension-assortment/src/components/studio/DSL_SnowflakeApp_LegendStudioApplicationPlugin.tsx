@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
+import type { PureGrammarTextSuggestion } from '@finos/legend-code-editor';
 import packageJson from '../../../package.json' with { type: 'json' };
 import {
   LegendStudioApplicationPlugin,

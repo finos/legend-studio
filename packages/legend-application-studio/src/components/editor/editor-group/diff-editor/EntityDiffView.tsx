@@ -27,11 +27,8 @@ import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { sortObjectKeys } from '@finos/legend-shared';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeDiffView,
-  JSONDiffView,
-} from '@finos/legend-lego/code-editor';
+import { CodeDiffView, JSONDiffView } from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 
 const getDiffItemTitle = (diff: EntityDiff): string | undefined => {
   switch (diff.entityChangeType) {

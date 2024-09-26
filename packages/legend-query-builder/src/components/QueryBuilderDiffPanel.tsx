@@ -34,11 +34,8 @@ import {
   QueryBuilderDiffViewMode,
 } from '../stores/QueryBuilderChangeDetectionState.js';
 import { pruneSourceInformation } from '@finos/legend-graph';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeDiffView,
-  JSONDiffView,
-} from '@finos/legend-lego/code-editor';
+import { CodeDiffView, JSONDiffView } from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 
 export const QueryBuilderDiffViewPanel = observer(
   (props: { diffViewState: QueryBuilderDiffViewState }) => {

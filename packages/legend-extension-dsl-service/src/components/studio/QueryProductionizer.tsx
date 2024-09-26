@@ -54,10 +54,8 @@ import type { QueryInfo } from '@finos/legend-graph';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { useParams } from '@finos/legend-application/browser';
 import { DSL_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/DSL_Service_LegendStudioDocumentation.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { DocumentationLink } from '@finos/legend-lego/application';
 import { useApplicationStore } from '@finos/legend-application';
 

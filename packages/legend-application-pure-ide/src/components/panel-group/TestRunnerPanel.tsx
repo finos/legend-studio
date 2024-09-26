@@ -81,9 +81,9 @@ import {
 import {
   CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
-  disposeCodeEditor,
-  getBaseConsoleOptions,
-} from '@finos/legend-lego/code-editor';
+  getBaseCodeEditorOptions,
+} from '@finos/legend-code-editor';
+import { disposeCodeEditor } from '@finos/legend-lego/code-editor';
 
 const TestTreeNodeContainer = observer(
   (
@@ -360,7 +360,26 @@ const TestResultConsole: React.FC<{
     if (!editor && textInputRef.current) {
       const element = textInputRef.current;
       const newEditor = monacoEditorAPI.create(element, {
-        ...getBaseConsoleOptions(),
+        ...getBaseCodeEditorOptions(),
+        fontSize: 12,
+        extraEditorClassName: 'monaco-editor--small-font',
+        readOnly: true,
+        glyphMargin: false,
+        folding: false,
+        lineNumbers: 'off',
+        lineDecorationsWidth: 10,
+        lineNumbersMinChars: 0,
+        minimap: {
+          enabled: false,
+        },
+        guides: {
+          bracketPairs: false,
+          bracketPairsHorizontal: false,
+          highlightActiveBracketPair: false,
+          indentation: false,
+          highlightActiveIndentation: false,
+        },
+        renderLineHighlight: 'none',
         theme: CODE_EDITOR_THEME.DEFAULT_DARK,
         language: CODE_EDITOR_LANGUAGE.TEXT,
       });

@@ -87,10 +87,8 @@ import {
 import type { LegendStudioApplicationPlugin } from '../../../../stores/LegendStudioApplicationPlugin.js';
 import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
   buildElementOption,
   type PackageableElementOption,

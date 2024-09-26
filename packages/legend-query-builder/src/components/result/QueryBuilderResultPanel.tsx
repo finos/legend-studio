@@ -68,10 +68,8 @@ import { useRef, useState } from 'react';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { PARAMETER_SUBMIT_ACTION } from '../../stores/shared/LambdaParameterState.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { ExecutionPlanViewer } from '../execution-plan/ExecutionPlanViewer.js';
 import { QueryUsageViewer } from '../QueryUsageViewer.js';
 import { DocumentationLink } from '@finos/legend-lego/application';

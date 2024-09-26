@@ -19,8 +19,9 @@
     { "path": "packages/legend-storage" },
     { "path": "packages/legend-graph" },
     { "path": "packages/legend-query-builder" },
-    { "path": "packages/legend-application-data-cube" },
+    { "path": "packages/legend-data-cube" },
     { "path": "packages/legend-art" },
+    { "path": "packages/legend-code-editor" },
     { "path": "packages/legend-lego" },
     { "path": "packages/legend-application" },
     // sdlc

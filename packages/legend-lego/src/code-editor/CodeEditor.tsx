@@ -15,9 +15,13 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
-import { type IDisposable, editor as monacoEditorAPI } from 'monaco-editor';
 import {
-  disposeCodeEditor,
+  type IDisposable,
+  editor as monacoEditorAPI,
+  KeyCode,
+  KeyMod,
+} from 'monaco-editor';
+import {
   getBaseCodeEditorOptions,
   resetLineNumberGutterWidth,
   getCodeEditorValue,
@@ -25,14 +29,75 @@ import {
   type CODE_EDITOR_LANGUAGE,
   setErrorMarkers,
   clearMarkers,
-} from './CodeEditorUtils.js';
+  CODE_EDITOR_THEME,
+  configureCodeEditor,
+} from '@finos/legend-code-editor';
 import {
   DEFAULT_TAB_SIZE,
   useApplicationStore,
+  APPLICATION_EVENT,
+  DEFAULT_MONOSPACED_FONT_FAMILY,
+  type GenericLegendApplicationStore,
 } from '@finos/legend-application';
-import { CODE_EDITOR_THEME } from './CodeEditorTheme.js';
 import { clsx, WordWrapIcon } from '@finos/legend-art';
 import type { CompilationError, ParserError } from '@finos/legend-graph';
+import { LogEvent } from '@finos/legend-shared';
+
+export const configureCodeEditorComponent = async (
+  applicationStore: GenericLegendApplicationStore,
+): Promise<void> => {
+  await configureCodeEditor(DEFAULT_MONOSPACED_FONT_FAMILY, (error) =>
+    applicationStore.logService.error(
+      LogEvent.create(APPLICATION_EVENT.APPLICATION_SETUP__FAILURE),
+      error.message,
+    ),
+  );
+
+  // override native hotkeys supported by monaco-editor
+  // here we map these keys to a dummy command that would just dispatch the key combination
+  // to the application keyboard shortcut service, effectively bypassing the command associated
+  // with the native keybinding
+  const OVERRIDE_DEFAULT_KEYBINDING_COMMAND =
+    'legend.code-editor.override-default-keybinding';
+  monacoEditorAPI.registerCommand(
+    OVERRIDE_DEFAULT_KEYBINDING_COMMAND,
+    (accessor, ...args) => {
+      applicationStore.keyboardShortcutsService.dispatch(args[0]);
+    },
+  );
+  const hotkeyMapping: [number, string][] = [
+    [KeyCode.F1, 'F1'], // show command center
+    [KeyCode.F8, 'F8'], // show error
+    [KeyCode.F9, 'F9'], // toggle debugger breakpoint
+    [KeyMod.WinCtrl | KeyCode.KeyG, 'Control+KeyG'], // go-to line command
+    [KeyMod.WinCtrl | KeyCode.KeyB, 'Control+KeyB'], // cursor move (core command)
+    [KeyMod.WinCtrl | KeyCode.KeyO, 'Control+KeyO'], // cursor move (core command)
+    [KeyMod.WinCtrl | KeyCode.KeyD, 'Control+KeyD'], // cursor move (core command)
+    [KeyMod.WinCtrl | KeyCode.KeyP, 'Control+KeyP'], // cursor move (core command)
+    [KeyMod.Shift | KeyCode.F10, 'Shift+F10'], // show editor context menu
+    [KeyMod.WinCtrl | KeyCode.F2, 'Control+F2'], // change all instances
+    [KeyMod.WinCtrl | KeyCode.F12, 'Control+F12'], // go-to definition
+  ];
+  monacoEditorAPI.addKeybindingRules(
+    hotkeyMapping.map(([nativeCodeEditorKeyBinding, keyCombination]) => ({
+      keybinding: nativeCodeEditorKeyBinding,
+      command: OVERRIDE_DEFAULT_KEYBINDING_COMMAND,
+      commandArgs: keyCombination,
+    })),
+  );
+};
+
+/**
+ * Normally `monaco-editor` worker disposes after 5 minutes staying idle, but we fasten
+ * this pace just in case the usage of the editor causes memory-leak somehow
+ */
+export const disposeCodeEditor = (
+  editor: monacoEditorAPI.IStandaloneCodeEditor,
+): void => {
+  editor.dispose();
+  // NOTE: just to be sure, we dispose the model after disposing the editor
+  editor.getModel()?.dispose();
+};
 
 export const CodeEditor: React.FC<{
   inputValue: string;

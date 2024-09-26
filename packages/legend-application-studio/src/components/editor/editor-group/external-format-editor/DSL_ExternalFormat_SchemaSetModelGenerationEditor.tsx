@@ -35,10 +35,8 @@ import {
   ResizablePanelSplitterLine,
 } from '@finos/legend-art';
 import { GenerationPropertyEditor } from '../element-generation-editor/FileGenerationEditor.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 

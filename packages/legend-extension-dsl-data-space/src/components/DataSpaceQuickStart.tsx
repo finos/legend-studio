@@ -47,8 +47,8 @@ import {
 import {
   CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+} from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
   generateAnchorForActivity,

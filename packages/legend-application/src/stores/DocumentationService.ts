@@ -16,20 +16,11 @@
 
 import {
   type MarkdownText,
-  type PlainObject,
-  type Writable,
-  SerializationFactory,
   LogEvent,
   uniq,
   guaranteeNonEmptyString,
+  DocumentationEntry,
 } from '@finos/legend-shared';
-import {
-  createModelSchema,
-  custom,
-  list,
-  optional,
-  primitive,
-} from 'serializr';
 import { APPLICATION_EVENT } from '../__lib__/LegendApplicationEvent.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 import type { LegendApplicationLink } from '../application/LegendApplicationConfig.js';
@@ -68,38 +59,6 @@ export type DocumentationEntryData = {
   url?: string | undefined;
   related?: string[] | undefined;
 };
-
-export class DocumentationEntry {
-  readonly key!: string;
-
-  markdownText?: MarkdownText | undefined;
-  title?: string | undefined;
-  text?: string | undefined;
-  url?: string | undefined;
-  related?: string[] | undefined;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(DocumentationEntry, {
-      markdownText: custom(
-        (val) => val,
-        (val) => (val.value ? val : undefined),
-      ),
-      related: optional(list(primitive())),
-      title: optional(primitive()),
-      text: optional(primitive()),
-      url: optional(primitive()),
-    }),
-  );
-
-  static create(
-    json: PlainObject<DocumentationEntry>,
-    documentationKey: string,
-  ): DocumentationEntry {
-    const entry = DocumentationEntry.serialization.fromJson(json);
-    (entry as Writable<DocumentationEntry>).key = documentationKey;
-    return entry;
-  }
-}
 
 export type KeyedDocumentationEntry = {
   key: string;

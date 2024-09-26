@@ -19,7 +19,7 @@ import {
   CODE_EDITOR_LANGUAGE,
   isTokenOneOf,
   PURE_GRAMMAR_TOKEN,
-} from '@finos/legend-lego/code-editor';
+} from '@finos/legend-code-editor';
 import {
   ELEMENT_PATH_DELIMITER,
   extractElementNameFromPath,

@@ -15,11 +15,6 @@
  */
 
 @import url('@finos/legend-art/lib/fonts.css');
-@import url('./markdown-viewer.css');
-@import url('@finos/legend-application/lib/index.css');
-
-/* @import url('@finos/legend-lego/lib/index.css'); */
-
 @import url('@finos/legend-application-repl/lib/index.css');
 
 html {

@@ -9,12 +9,12 @@
     { "path": "./tsconfig.package.json" },
     { "path": "../legend-application/tsconfig.build.json" },
     { "path": "../legend-application-studio/tsconfig.build.json" },
+    { "path": "../legend-art/tsconfig.build.json" },
+    { "path": "../legend-code-editor/tsconfig.build.json" },
     { "path": "../legend-query-builder/tsconfig.build.json" },
     { "path": "../legend-server-depot/tsconfig.build.json" },
     { "path": "../legend-server-sdlc/tsconfig.build.json" },
     { "path": "../legend-shared/tsconfig.build.json" },
-    { "path": "../legend-extension-dsl-data-space/tsconfig.build.json" },
-    { "path": "../legend-application/tsconfig.build.json" },
-    { "path": "../legend-art/tsconfig.build.json" }
+    { "path": "../legend-extension-dsl-data-space/tsconfig.build.json" }
   ]
 }

@@ -47,6 +47,7 @@
   "dependencies": {
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
+    "@finos/legend-code-editor": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-lego": "workspace:*",
     "@finos/legend-query-builder": "workspace:*",
@@ -60,7 +61,7 @@
     "@types/react": "18.3.9",
     "@types/react-dom": "18.3.0",
     "fast-xml-parser": "4.5.0",
-    "mobx": "6.13.2",
+    "mobx": "6.13.3",
     "mobx-react-lite": "4.0.7",
     "mobx-utils": "6.0.8",
     "monaco-editor": "0.52.0",

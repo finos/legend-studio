@@ -43,11 +43,8 @@ import {
   type ElementObserver,
   type PackageableElement,
 } from '@finos/legend-graph';
-import type {
-  ApplicationPageEntry,
-  DocumentationEntry,
-} from '@finos/legend-application';
-import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
+import type { ApplicationPageEntry } from '@finos/legend-application';
+import type { PureGrammarTextSuggestion } from '@finos/legend-code-editor';
 import {
   DataSpace,
   DataSpaceExecutionContext,
@@ -69,6 +66,7 @@ import {
 
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import { DataSpaceEditor } from './DataSpaceEditor.js';
+import type { DocumentationEntry } from '@finos/legend-shared';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

@@ -15,7 +15,6 @@
  */
 
 import { action, makeObservable, observable, computed } from 'mobx';
-import type { DocumentationEntry } from './DocumentationService.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 import {
   type MarkdownText,
@@ -25,6 +24,7 @@ import {
   ActionState,
   FuzzySearchEngine,
   FuzzySearchAdvancedConfigState,
+  type DocumentationEntry,
 } from '@finos/legend-shared';
 
 export enum VIRTUAL_ASSISTANT_TAB {

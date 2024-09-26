@@ -39,10 +39,8 @@ import {
   DEFAULT_TAB_SIZE,
   useApplicationStore,
   useApplicationNavigationContext,
-  type DocumentationEntry,
 } from '@finos/legend-application';
 import {
-  disposeCodeEditor,
   getBaseCodeEditorOptions,
   resetLineNumberGutterWidth,
   getCodeEditorValue,
@@ -58,7 +56,8 @@ import {
   getParserKeywordSuggestions,
   getParserElementSnippetSuggestions,
   getSectionParserNameFromLineText,
-} from '@finos/legend-lego/code-editor';
+} from '@finos/legend-code-editor';
+import { disposeCodeEditor } from '@finos/legend-lego/code-editor';
 import {
   type ElementDragSource,
   CORE_DND_TYPE,
@@ -73,6 +72,7 @@ import {
   assertTrue,
   hasWhiteSpace,
   isNonNullable,
+  type DocumentationEntry,
 } from '@finos/legend-shared';
 import {
   ELEMENT_PATH_DELIMITER,

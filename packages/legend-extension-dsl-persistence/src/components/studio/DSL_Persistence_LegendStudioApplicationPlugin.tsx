@@ -15,7 +15,6 @@
  */
 
 import packageJson from '../../../package.json' with { type: 'json' };
-import type { DocumentationEntry } from '@finos/legend-application';
 import { MeteorIcon, PuzzlePieceIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
 import {
@@ -44,7 +43,8 @@ import {
   BLANK_PERSISTENCE_SNIPPET,
 } from '../../__lib__/studio/DSL_Persistence_LegendStudioCodeSnippet.js';
 import { DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/studio/DSL_Persistence_LegendStudioDocumentation.js';
-import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
+import type { PureGrammarTextSuggestion } from '@finos/legend-code-editor';
+import type { DocumentationEntry } from '@finos/legend-shared';
 
 const PERSISTENCE_ELEMENT_TYPE = 'PERSISTENCE';
 const PERSISTENCE_CONTEXT_ELEMENT_TYPE = 'PERSISTENCE_CONTEXT';

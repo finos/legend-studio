@@ -31,7 +31,7 @@ import {
   CODE_EDITOR_THEME,
   getBaseCodeEditorOptions,
   moveCursorToPosition,
-} from '@finos/legend-lego/code-editor';
+} from '@finos/legend-code-editor';
 
 const POSITION_PATTERN = /[0-9]+(?::[0-9]+)?/;
 

@@ -64,11 +64,8 @@ import {
 import { externalFormatData_setData } from '../../../../stores/graph-modifier/DSL_Data_GraphModifierHelper.js';
 import { TESTABLE_RESULT } from '../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-  JSONDiffView,
-} from '@finos/legend-lego/code-editor';
+import { CodeEditor, JSONDiffView } from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { forwardRef, useState } from 'react';
 import type { TestableTestEditorState } from '../../../../stores/editor/editor-state/element-editor-state/testable/TestableEditorState.js';
 import { getTestableResultIcon } from '../../side-bar/testable/GlobalTestRunner.js';

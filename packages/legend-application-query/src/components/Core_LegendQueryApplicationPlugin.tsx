@@ -59,10 +59,7 @@ import { CloneQueryServiceSetup } from './CloneQueryServiceSetup.js';
 import { QueryProductionizerSetup } from './QueryProductionizerSetup.js';
 import { UpdateExistingServiceQuerySetup } from './UpdateExistingServiceQuerySetup.js';
 import { LoadProjectServiceQuerySetup } from './LoadProjectServiceQuerySetup.js';
-import {
-  configureCodeEditorComponent,
-  setupPureLanguageService,
-} from '@finos/legend-lego/code-editor';
+import { setupPureLanguageService } from '@finos/legend-code-editor';
 import {
   generateDataSpaceQueryCreatorRoute,
   generateDataSpaceQuerySetupRoute,
@@ -89,6 +86,7 @@ import { QueryEditorExistingQueryHeader } from './QueryEditor.js';
 import { DataSpaceTemplateQueryCreatorStore } from '../stores/data-space/DataSpaceTemplateQueryCreatorStore.js';
 import { createViewSDLCProjectHandler } from '../stores/data-space/DataSpaceQueryBuilderHelper.js';
 import { DataSpaceQueryCreatorStore } from '../stores/data-space/DataSpaceQueryCreatorStore.js';
+import { configureCodeEditorComponent } from '@finos/legend-lego/code-editor';
 
 export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   static NAME = packageJson.extensions.applicationQueryPlugin;

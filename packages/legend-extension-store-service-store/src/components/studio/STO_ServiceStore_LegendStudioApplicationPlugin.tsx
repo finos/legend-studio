@@ -89,9 +89,8 @@ import {
   ServiceStoreConnectionEditor,
   NewServiceStoreConnectionDriver,
 } from './ServiceStoreElementEditor.js';
-import type { DocumentationEntry } from '@finos/legend-application';
-import { prettyCONSTName } from '@finos/legend-shared';
-import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
+import { prettyCONSTName, type DocumentationEntry } from '@finos/legend-shared';
+import type { PureGrammarTextSuggestion } from '@finos/legend-code-editor';
 
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICE_STORE';
 const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

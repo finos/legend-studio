@@ -54,10 +54,8 @@ import {
 } from '@finos/legend-graph';
 import { generateServiceManagementUrl } from '../../../stores/editor/editor-state/element-editor-state/service/ServiceRegistrationState.js';
 import { useApplicationStore } from '@finos/legend-application';
-import {
-  CodeEditor,
-  CODE_EDITOR_LANGUAGE,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 export const getRegistrationStatusIcon = (
   isSelected: boolean,

@@ -20,10 +20,8 @@ import type { ElementEditorState } from '../../../../stores/editor/editor-state/
 import { ELEMENT_NATIVE_VIEW_MODE } from '../../../../stores/editor/EditorConfig.js';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 export const ElementNativeView = observer(
   (props: { currentElementState: ElementEditorState }) => {

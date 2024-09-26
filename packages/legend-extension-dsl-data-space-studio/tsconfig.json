@@ -12,10 +12,11 @@
     { "path": "../legend-application" },
     { "path": "../legend-application-studio" },
     { "path": "../legend-art" },
+    { "path": "../legend-code-editor" },
     { "path": "../legend-query-builder" },
-    { "path": "../legend-extension-dsl-data-space" },
     { "path": "../legend-server-depot" },
     { "path": "../legend-server-sdlc" },
-    { "path": "../legend-shared" }
+    { "path": "../legend-shared" },
+    { "path": "../legend-extension-dsl-data-space" }
   ]
 }

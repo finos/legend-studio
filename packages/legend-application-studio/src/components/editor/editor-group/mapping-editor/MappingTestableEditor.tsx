@@ -92,10 +92,8 @@ import {
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
 import { MappingExecutionQueryBuilderState } from '../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { atomicTest_setDoc } from '../../../../stores/graph-modifier/Testable_GraphModifierHelper.js';
 import {
   RenameModal,

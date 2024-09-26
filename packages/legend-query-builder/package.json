@@ -44,6 +44,7 @@
   "dependencies": {
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
+    "@finos/legend-code-editor": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-lego": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
@@ -55,7 +56,7 @@
     "@types/react-dom": "18.3.0",
     "chart.js": "4.4.4",
     "mathjs": "13.1.1",
-    "mobx": "6.13.2",
+    "mobx": "6.13.3",
     "mobx-react-lite": "4.0.7",
     "monaco-editor": "0.52.0",
     "react": "18.3.1",

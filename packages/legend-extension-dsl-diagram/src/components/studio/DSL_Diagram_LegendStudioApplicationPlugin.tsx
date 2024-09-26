@@ -51,12 +51,12 @@ import {
 } from '../../__lib__/studio/DSL_Diagram_LegendStudioCodeSnippet.js';
 import {
   collectKeyedCommandConfigEntriesFromConfig,
-  type DocumentationEntry,
   type KeyedCommandConfigEntry,
 } from '@finos/legend-application';
 import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../__lib__/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
 import { DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_CONFIG } from '../../__lib__/studio/DSL_Diagram_LegendStudioCommand.js';
-import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
+import type { PureGrammarTextSuggestion } from '@finos/legend-code-editor';
+import type { DocumentationEntry } from '@finos/legend-shared';
 
 const DIAGRAM_ELEMENT_TYPE = 'DIAGRAM';
 const DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_DIAGRAM';

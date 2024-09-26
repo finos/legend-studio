@@ -36,10 +36,8 @@ import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import { DatabaseBuilderModalContent } from '../connection-editor/DatabaseBuilderWizard.js';
 import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import type { DatabaseBuilderWizardState } from '../../../../stores/editor/editor-state/element-editor-state/connection/DatabaseBuilderWizardState.js';
 import {
   DatabaseModelPackageInput,

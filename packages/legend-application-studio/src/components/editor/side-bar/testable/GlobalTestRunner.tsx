@@ -83,11 +83,8 @@ import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.j
 import { getElementTypeIcon } from '../../../ElementIconUtils.js';
 import { UnsupportedEditorPanel } from '../../editor-group/UnsupportedElementEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-  CodeDiffView,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor, CodeDiffView } from '@finos/legend-lego/code-editor';
 
 export const getTestableResultIcon = (
   testableResult: TESTABLE_RESULT,

@@ -62,10 +62,8 @@ import {
   guaranteeType,
   isNonNullable,
 } from '@finos/legend-shared';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const getWorkflowStatusIcon = (
   workflowStatus: WorkflowStatus,

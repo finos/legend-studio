@@ -96,10 +96,8 @@ import {
   ExecutionPlanViewer,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 interface ClassMappingSelectOption {
   label: string;

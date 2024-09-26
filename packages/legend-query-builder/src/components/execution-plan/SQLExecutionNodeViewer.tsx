@@ -32,10 +32,8 @@ import {
   PanelContent,
 } from '@finos/legend-art';
 import { ResultTypeViewer } from './ResultTypeViewer.js';
-import {
-  CodeEditor,
-  CODE_EDITOR_LANGUAGE,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { tryToFormatSql } from '../result/tds/QueryBuilderTDSResultShared.js';
 
 /**

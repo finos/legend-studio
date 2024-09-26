@@ -33,7 +33,7 @@ import type { EditorStore } from '../EditorStore.js';
 import {
   CODE_EDITOR_LANGUAGE,
   moveCursorToPosition,
-} from '@finos/legend-lego/code-editor';
+} from '@finos/legend-code-editor';
 import type { CommandRegistrar } from '@finos/legend-application';
 import { STO_RELATIONAL_LEGEND_STUDIO_COMMAND_KEY } from '../../../__lib__/STO_Relational_LegendStudioCommand.js';
 import { PANEL_MODE } from '../EditorConfig.js';

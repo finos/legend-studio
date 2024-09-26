@@ -33,10 +33,8 @@ import { QueryBuilderTextEditorMode } from '../stores/QueryBuilderTextEditorStat
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import { LambdaEditor } from './shared/LambdaEditor.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 export const QueryBuilderTextEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
