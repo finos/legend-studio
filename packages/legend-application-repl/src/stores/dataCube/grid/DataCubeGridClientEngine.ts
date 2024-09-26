@@ -338,7 +338,7 @@ export class DataCubeGridClientServerSideDataSource
         );
       } catch (error) {
         assertErrorThrown(error);
-        this.grid.view.dataCube.alertError(error, {
+        this.grid.view.application.alertError(error, {
           message: `Query Validation Failure: Can't retrieve pivot results column metadata. ${error.message}`,
         });
         // fail early since we can't proceed without the cast columns validated
@@ -433,7 +433,7 @@ export class DataCubeGridClientServerSideDataSource
         // behavior by forcing a scroll top for every data fetch and also reset the cache block size to the default value to save memory
         if (rowData.length > INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE) {
           if (!this.grid.view.engine.gridClientSuppressLargeDatasetWarning) {
-            this.grid.view.dataCube.alert({
+            this.grid.view.application.alert({
               message: `Large dataset (>${INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE} rows) detected!`,
               text: `Overall app performance can be impacted by large dataset due to longer query execution time and increased memory usage. At its limit, the application can crash!\nTo boost performance, consider enabling pagination while working with large dataset.`,
               type: AlertType.WARNING,
@@ -485,7 +485,7 @@ export class DataCubeGridClientServerSideDataSource
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.grid.view.dataCube.alertError(error, {
+      this.grid.view.application.alertError(error, {
         message: `Data Fetch Failure: ${error.message}`,
       });
       params.fail();

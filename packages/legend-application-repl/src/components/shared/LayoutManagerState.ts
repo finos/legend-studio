@@ -61,39 +61,6 @@ export class WindowState {
   }
 }
 
-export class LayoutManagerState {
-  windows: WindowState[] = [];
-
-  constructor() {
-    makeObservable(this, {
-      windows: observable,
-      newWindow: action,
-      bringWindowFront: action,
-      closeWindow: action,
-    });
-  }
-
-  newWindow(window: WindowState) {
-    this.windows.push(window);
-  }
-
-  bringWindowFront(window: WindowState) {
-    const matchingWindow = this.windows.find((w) => w.uuid === window.uuid);
-    if (matchingWindow) {
-      this.windows = this.windows.filter((w) => w.uuid !== window.uuid);
-      this.windows.push(window);
-    }
-  }
-
-  closeWindow(window: WindowState) {
-    const matchingWindow = this.windows.find((w) => w.uuid === window.uuid);
-    if (matchingWindow) {
-      this.windows = this.windows.filter((w) => w.uuid !== window.uuid);
-      window.onClose?.();
-    }
-  }
-}
-
 export const WINDOW_DEFAULT_OFFSET = 50;
 export const WINDOW_DEFAULT_WIDTH = 800;
 export const WINDOW_DEFAULT_HEIGHT = 600;
@@ -125,7 +92,7 @@ export const DEFAULT_LARGE_ALERT_WINDOW_CONFIG: WindowConfiguration = {
 };
 
 export class DisplayState {
-  readonly layoutManagerState: LayoutManagerState;
+  private readonly layoutManagerState: LayoutManagerState;
   readonly configuration: LayoutConfiguration;
   window?: WindowState | undefined;
 
@@ -167,6 +134,51 @@ export class DisplayState {
     if (this.window) {
       this.layoutManagerState.closeWindow(this.window);
       this.window = undefined;
+    }
+  }
+}
+
+export class LayoutManagerState {
+  windows: WindowState[] = [];
+
+  constructor() {
+    makeObservable(this, {
+      windows: observable,
+      newWindow: action,
+      bringWindowFront: action,
+      closeWindow: action,
+    });
+  }
+
+  newDisplay(
+    title: string,
+    contentRenderer: (config: LayoutConfiguration) => React.ReactNode,
+    windowConfiguration?: WindowConfiguration | undefined,
+  ): DisplayState {
+    const display = new DisplayState(this, title, contentRenderer);
+    if (windowConfiguration) {
+      display.configuration.window = windowConfiguration;
+    }
+    return display;
+  }
+
+  newWindow(window: WindowState) {
+    this.windows.push(window);
+  }
+
+  bringWindowFront(window: WindowState) {
+    const matchingWindow = this.windows.find((w) => w.uuid === window.uuid);
+    if (matchingWindow) {
+      this.windows = this.windows.filter((w) => w.uuid !== window.uuid);
+      this.windows.push(window);
+    }
+  }
+
+  closeWindow(window: WindowState) {
+    const matchingWindow = this.windows.find((w) => w.uuid === window.uuid);
+    if (matchingWindow) {
+      this.windows = this.windows.filter((w) => w.uuid !== window.uuid);
+      window.onClose?.();
     }
   }
 }

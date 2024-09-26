@@ -16,7 +16,7 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import { DisplayState } from '../../../components/shared/LayoutManagerState.js';
+import type { DisplayState } from '../../../components/shared/LayoutManagerState.js';
 import { DataCubeColumnCreator } from '../../../components/dataCube/extend/DataCubeColumnEditor.js';
 import { editor as monacoEditorAPI, Uri } from 'monaco-editor';
 import {
@@ -107,20 +107,19 @@ export class DataCubeNewColumnState {
 
     this.manager = manager;
     this.view = manager.view;
-    this.display = new DisplayState(
-      this.view.dataCube.layout,
+    this.display = this.view.application.layout.newDisplay(
       'Add New Column',
       () => <DataCubeColumnCreator state={this} />,
+      {
+        x: 50,
+        y: 50,
+        width: 500,
+        height: 300,
+        minWidth: 300,
+        minHeight: 200,
+        center: false,
+      },
     );
-    this.display.configuration.window = {
-      x: 50,
-      y: 50,
-      width: 500,
-      height: 300,
-      minWidth: 300,
-      minHeight: 200,
-      center: false,
-    };
 
     this.name = `col_${manager.allColumnNames.length + 1}`;
     this.expectedType = DataCubeColumnDataType.NUMBER;
@@ -289,7 +288,7 @@ export class DataCubeNewColumnState {
         this.showError(err.payload as DataCubeQueryBuilderError);
         return undefined;
       }
-      this.view.dataCube.alertError(err, {
+      this.view.application.alertError(err, {
         message: `Expression Validation Failure: ${err.message}`,
       });
     } finally {
@@ -319,7 +318,7 @@ export class DataCubeNewColumnState {
       ]);
     } catch (error) {
       assertErrorThrown(error);
-      this.view.dataCube.alertError(error, {
+      this.view.application.alertError(error, {
         message: `Expression Validation Failure: ${error.message}`,
       });
       return;
@@ -328,14 +327,14 @@ export class DataCubeNewColumnState {
     }
 
     if (!(query instanceof V1_Lambda)) {
-      this.view.dataCube.alertError(new Error(), {
+      this.view.application.alertError(new Error(), {
         message: `Expression Validation Failure: Expression must be a lambda.`,
       });
       return;
     }
 
     if (!returnType) {
-      this.view.dataCube.alertError(new Error(), {
+      this.view.application.alertError(new Error(), {
         message: `Expression Validation Failure: Can't compute expression return type.`,
       });
       return;

@@ -21,7 +21,7 @@ import {
   type TEMPORARY__ReactRouterComponentType,
 } from '@finos/legend-application/browser';
 import { observer } from 'mobx-react-lite';
-import { DataCubeView } from './dataCube/DataCube.js';
+import { DataCube } from './dataCube/DataCube.js';
 import { useMemo } from 'react';
 import { guaranteeNonNullable, NetworkClient } from '@finos/legend-shared';
 import { REPLServerClient } from '../server/REPLServerClient.js';
@@ -61,7 +61,7 @@ const LegendREPLDataCube = observer(() => {
 
   return (
     <DataCubeProvider application={application} engine={engine}>
-      <DataCubeView />
+      <DataCube />
     </DataCubeProvider>
   );
 });

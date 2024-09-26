@@ -29,10 +29,10 @@ import { observer } from 'mobx-react-lite';
 
 export const Window = (props: {
   parent?: React.RefObject<HTMLElement> | undefined;
-  layoutManagerState: LayoutManagerState;
+  layout: LayoutManagerState;
   windowState: WindowState;
 }) => {
-  const { parent, layoutManagerState, windowState } = props;
+  const { parent, layout, windowState } = props;
   const configuration = windowState.configuration.window;
   const [windowSpec, setWindowSpec] = useState(() => {
     const x = configuration.x ?? WINDOW_DEFAULT_OFFSET;
@@ -146,7 +146,7 @@ export const Window = (props: {
       <div
         className="h-full w-full border border-neutral-400 bg-neutral-200 shadow-xl"
         onMouseDown={() => {
-          layoutManagerState.bringWindowFront(windowState);
+          layout.bringWindowFront(windowState);
         }}
       >
         <div
@@ -158,7 +158,7 @@ export const Window = (props: {
           <div className="px-2">{windowState.configuration.title}</div>
           <button
             className="flex h-[23px] w-6 items-center justify-center hover:bg-red-500 hover:text-white"
-            onClick={() => layoutManagerState.closeWindow(windowState)}
+            onClick={() => layout.closeWindow(windowState)}
           >
             <DataCubeIcon.X />
           </button>
@@ -172,15 +172,15 @@ export const Window = (props: {
 };
 
 export const LayoutManager = observer(
-  (props: { layoutManagerState: LayoutManagerState }) => {
-    const { layoutManagerState } = props;
+  (props: { layout: LayoutManagerState }) => {
+    const { layout } = props;
 
     return (
       <>
-        {layoutManagerState.windows.map((windowState) => (
+        {layout.windows.map((windowState) => (
           <Window
             key={windowState.uuid}
-            layoutManagerState={layoutManagerState}
+            layout={layout}
             windowState={windowState}
           />
         ))}

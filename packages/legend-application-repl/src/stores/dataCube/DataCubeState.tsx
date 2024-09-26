@@ -16,29 +16,16 @@
 
 import { type DataCubeEngine } from './DataCubeEngine.js';
 import { DataCubeViewState } from './DataCubeViewState.js';
-import {
-  DEFAULT_SMALL_ALERT_WINDOW_CONFIG,
-  DisplayState,
-  LayoutConfiguration,
-  LayoutManagerState,
-  WindowState,
-  type WindowConfiguration,
-} from '../../components/shared/LayoutManagerState.js';
+import type { DisplayState } from '../../components/shared/LayoutManagerState.js';
 import { DocumentationPanel } from '../../components/shared/DocumentationPanel.js';
 import { SettingsPanel } from '../../components/shared/SettingsPanel.js';
 import { ActionState, assertErrorThrown } from '@finos/legend-shared';
-import {
-  Alert,
-  AlertType,
-  type ActionAlertAction,
-} from '../../components/shared/Alert.js';
-import { action, makeObservable } from 'mobx';
+import { AlertType } from '../../components/shared/Alert.js';
 import { type DataCubeApplicationEngine } from './DataCubeApplicationEngine.js';
 
 export class DataCubeState {
   readonly application: DataCubeApplicationEngine;
   readonly engine: DataCubeEngine;
-  readonly layout: LayoutManagerState;
 
   readonly initState = ActionState.create();
 
@@ -50,44 +37,37 @@ export class DataCubeState {
   readonly view: DataCubeViewState;
 
   constructor(application: DataCubeApplicationEngine, engine: DataCubeEngine) {
-    makeObservable(this, {
-      alert: action,
-      alertError: action,
-    });
     this.application = application;
     this.engine = engine;
     this.engine.viewTaskRunner = (task) => this.runTaskForAllViews(task);
-    this.layout = new LayoutManagerState();
     this.view = new DataCubeViewState(this);
 
-    const settingsDisplay = new DisplayState(this.layout, 'Settings', () => (
-      <SettingsPanel />
-    ));
-    settingsDisplay.configuration.window = {
-      x: -50,
-      y: 50,
-      width: 600,
-      height: 400,
-      minWidth: 300,
-      minHeight: 200,
-      center: false,
-    };
-    const documentationDisplay = new DisplayState(
-      this.layout,
+    this.settingsDisplay = this.application.layout.newDisplay(
+      'Settings',
+      () => <SettingsPanel />,
+      {
+        x: -50,
+        y: 50,
+        width: 600,
+        height: 400,
+        minWidth: 300,
+        minHeight: 200,
+        center: false,
+      },
+    );
+    this.documentationDisplay = this.application.layout.newDisplay(
       'Documentation',
       () => <DocumentationPanel />,
+      {
+        x: -50,
+        y: -50,
+        width: 400,
+        height: 400,
+        minWidth: 300,
+        minHeight: 200,
+        center: false,
+      },
     );
-    documentationDisplay.configuration.window = {
-      x: -50,
-      y: -50,
-      width: 400,
-      height: 400,
-      minWidth: 300,
-      minHeight: 200,
-      center: false,
-    };
-    this.settingsDisplay = settingsDisplay;
-    this.documentationDisplay = documentationDisplay;
   }
 
   private runTaskForAllViews(task: (view: DataCubeViewState) => void): void {
@@ -116,56 +96,5 @@ export class DataCubeState {
       });
       this.initState.fail();
     }
-  }
-
-  alertError(
-    error: Error,
-    options: {
-      message: string;
-      text?: string | undefined;
-      actions?: ActionAlertAction[] | undefined;
-      windowTitle?: string | undefined;
-      windowConfig?: WindowConfiguration | undefined;
-    },
-  ) {
-    const { message, text, actions, windowTitle, windowConfig } = options;
-    const window = new WindowState(
-      new LayoutConfiguration(windowTitle ?? 'Error', () => (
-        <Alert
-          type={AlertType.ERROR}
-          message={message}
-          text={text}
-          actions={actions}
-        />
-      )),
-    );
-    window.configuration.window =
-      windowConfig ?? DEFAULT_SMALL_ALERT_WINDOW_CONFIG;
-    this.layout.newWindow(window);
-  }
-
-  alert(options: {
-    message: string;
-    type: AlertType;
-    text?: string | undefined;
-    actions?: ActionAlertAction[] | undefined;
-    windowTitle?: string | undefined;
-    windowConfig?: WindowConfiguration | undefined;
-  }) {
-    const { message, type, text, actions, windowTitle, windowConfig } = options;
-    const window = new WindowState(
-      new LayoutConfiguration(windowTitle ?? '', () => (
-        <Alert
-          type={type}
-          message={message}
-          text={text}
-          actions={actions}
-          onClose={() => this.layout.closeWindow(window)}
-        />
-      )),
-    );
-    window.configuration.window =
-      windowConfig ?? DEFAULT_SMALL_ALERT_WINDOW_CONFIG;
-    this.layout.newWindow(window);
   }
 }

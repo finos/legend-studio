@@ -39,7 +39,7 @@ import {
   DataCubeConfiguration,
   type DataCubeColumnConfiguration,
 } from '../core/DataCubeConfiguration.js';
-import { DisplayState } from '../../../components/shared/LayoutManagerState.js';
+import type { DisplayState } from '../../../components/shared/LayoutManagerState.js';
 import { DataCubeFilterEditor } from '../../../components/dataCube/filter/DataCubeFilterEditor.js';
 
 /**
@@ -73,18 +73,19 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
       layerFilterNode: action,
     });
 
-    this.display = new DisplayState(this.view.dataCube.layout, 'Filter', () => (
-      <DataCubeFilterEditor view={this.view} />
-    ));
-    this.display.configuration.window = {
-      x: -50,
-      y: 50,
-      width: 600,
-      height: 400,
-      minWidth: 300,
-      minHeight: 200,
-      center: false,
-    };
+    this.display = this.view.application.layout.newDisplay(
+      'Filter',
+      () => <DataCubeFilterEditor view={this.view} />,
+      {
+        x: -50,
+        y: 50,
+        width: 600,
+        height: 400,
+        minWidth: 300,
+        minHeight: 200,
+        center: false,
+      },
+    );
 
     this.tree = {
       nodes: new Map<string, DataCubeFilterEditorTreeNode>(),

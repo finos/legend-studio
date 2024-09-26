@@ -133,7 +133,7 @@ const DataCubeTitleBar = observer((props: { view: DataCubeViewState }) => {
   );
 });
 
-export const DataCubeView = observer(() => {
+export const DataCube = observer(() => {
   const dataCube = useDataCube();
   const application = dataCube.application;
   const view = dataCube.view;
@@ -145,10 +145,11 @@ export const DataCubeView = observer(() => {
   return (
     <div className="data-cube relative flex h-full w-full flex-col bg-white">
       <DataCubeTitleBar view={view} />
+
       <DataCubeGrid view={view} />
       <DataCubeStatusBar view={view} />
 
-      <LayoutManager layoutManagerState={dataCube.layout} />
+      <LayoutManager layout={application.layout} />
       <BlockingActionAlert />
       <INTERNAL__MonacoEditorWidgetsRoot />
     </div>

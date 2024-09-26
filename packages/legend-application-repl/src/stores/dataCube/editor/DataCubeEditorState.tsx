@@ -34,7 +34,7 @@ import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumn
 import { DataCubeEditorColumnsPanelState } from './DataCubeEditorColumnsPanelState.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { DataCubeEditorVerticalPivotsPanelState } from './DataCubeEditorVerticalPivotsPanelState.js';
-import { DisplayState } from '../../../components/shared/LayoutManagerState.js';
+import type { DisplayState } from '../../../components/shared/LayoutManagerState.js';
 import { DataCubeEditor } from '../../../components/dataCube/editor/DataCubeEditor.js';
 import { buildExecutableQuery } from '../core/DataCubeQueryBuilder.js';
 import { _lambda } from '../core/DataCubeQueryBuilderUtils.js';
@@ -91,11 +91,9 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
       applyChanges: action,
     });
 
-    this.display = new DisplayState(
-      this.view.dataCube.layout,
-      'Properties',
-      () => <DataCubeEditor view={this.view} />,
-    );
+    this.display = this.view.application.layout.newDisplay('Properties', () => (
+      <DataCubeEditor view={this.view} />
+    ));
     this.generalProperties = new DataCubeEditorGeneralPropertiesPanelState(
       this,
     );
@@ -186,7 +184,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
         );
       } catch (error) {
         assertErrorThrown(error);
-        this.view.dataCube.alertError(error, {
+        this.view.application.alertError(error, {
           message: `Query Validation Failure: ${error.message}`,
         });
         this.view.endTask(task);
