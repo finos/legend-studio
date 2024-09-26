@@ -72,6 +72,7 @@ export {
   type PureProtocolProcessorPlugin,
   type RawRelationalOperationElement,
   type SubtypeInfo,
+  type TEMPORARY__EngineSetupConfig,
   type V1_CompilationResult,
   type V1_GrammarParserBatchInputEntry,
   type V1_GraphManagerEngine,

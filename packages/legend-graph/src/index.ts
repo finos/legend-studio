@@ -283,6 +283,7 @@ export {
   AbstractPureGraphManager,
   type ExecutionOptions,
   type GraphBuilderOptions,
+  type TEMPORARY__EngineSetupConfig,
 } from './graph-manager/AbstractPureGraphManager.js';
 export * from './graph-manager/GraphManagerStatistics.js';
 export * from './graph-manager/GraphManagerUtils.js';
