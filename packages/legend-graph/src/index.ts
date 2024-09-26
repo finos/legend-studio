@@ -324,6 +324,7 @@ export {
 export { DEPRECATED__ServiceTestResult } from './graph-manager/action/service/DEPRECATED__ServiceTestResult.js';
 export { SourceInformation } from './graph-manager/action/SourceInformation.js';
 export { buildPureGraphManager } from './graph-manager/protocol/pure/PureGraphManagerBuilder.js';
+export { TEMPORARY__AbstractEngineConfig } from './graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 export * from './graph-manager/protocol/pure/PureProtocolProcessorPlugin.js';
 export * from './graph-manager/protocol/pure/extensions/DSL_ExternalFormat_PureProtocolProcessorPlugin.js';
 export * from './graph-manager/action/functionActivator/FunctionActivatorConfiguration.js';

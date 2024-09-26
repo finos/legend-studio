@@ -90,6 +90,7 @@ export {
   RawLambda,
   Service,
   ServiceExecutionMode,
+  TEMPORARY__AbstractEngineConfig,
   V1_ArtifactGenerationExtensionInput,
   V1_ArtifactGenerationExtensionOutput,
   V1_CompilationError,
