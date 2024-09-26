@@ -39,7 +39,7 @@ import {
 import {
   DataCubeExtendedColumnType,
   DataCubeFunction,
-  DataCubeQuerySortOperator,
+  DataCubeQuerySortDirection,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
 import { DataCubeConfiguration } from './DataCubeConfiguration.js';
@@ -227,7 +227,7 @@ export function buildExecutableQuery(
           data.sortColumns.map((col) =>
             _function(
               _name(
-                col.operation === DataCubeQuerySortOperator.ASCENDING
+                col.direction === DataCubeQuerySortDirection.ASCENDING
                   ? DataCubeFunction.ASC
                   : DataCubeFunction.DESC,
               ),

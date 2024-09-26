@@ -31,7 +31,7 @@ import {
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import {
-  DataCubeQuerySortOperator,
+  DataCubeQuerySortDirection,
   getPivotResultColumnBaseColumnName,
   isPivotResultColumnName,
 } from '../core/DataCubeQueryEngine.js';
@@ -113,10 +113,10 @@ export function buildQuerySnapshot(
           configuration,
         ),
       ),
-      operation:
+      direction:
         item.sort === GridClientSortDirection.ASCENDING
-          ? DataCubeQuerySortOperator.ASCENDING
-          : DataCubeQuerySortOperator.DESCENDING,
+          ? DataCubeQuerySortDirection.ASCENDING
+          : DataCubeQuerySortDirection.DESCENDING,
     }));
 
   // --------------------------------- FINALIZE ---------------------------------

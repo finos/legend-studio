@@ -40,7 +40,7 @@ import {
 } from './DataCubeQuerySnapshot.js';
 import { assertType, guaranteeNonNullable } from '@finos/legend-shared';
 import {
-  DataCubeQuerySortOperator,
+  DataCubeQuerySortDirection,
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
@@ -348,10 +348,10 @@ export function validateAndBuildQuerySnapshot(
         ]);
         return {
           ..._col(_colSpecParam(sortColFunc, 0)),
-          operation:
+          direction:
             _name(sortColFunc.function) === DataCubeFunction.ASC
-              ? DataCubeQuerySortOperator.ASCENDING
-              : DataCubeQuerySortOperator.DESCENDING,
+              ? DataCubeQuerySortDirection.ASCENDING
+              : DataCubeQuerySortDirection.DESCENDING,
         };
       },
     );

@@ -77,7 +77,7 @@ import {
   DEFAULT_ROW_BUFFER,
   DEFAULT_URL_LABEL_QUERY_PARAM,
   getDataType,
-  DataCubeQuerySortOperator,
+  DataCubeQuerySortDirection,
   DataCubeColumnKind,
   DEFAULT_MISSING_VALUE_DISPLAY_TEXT,
   PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
@@ -430,7 +430,7 @@ function _sortSpec(columnData: ColumnData) {
   return {
     sortable: true, // if this is pivot column, no sorting is supported yet
     sort: sortCol
-      ? sortCol.operation === DataCubeQuerySortOperator.ASCENDING
+      ? sortCol.direction === DataCubeQuerySortDirection.ASCENDING
         ? GridClientSortDirection.ASCENDING
         : GridClientSortDirection.DESCENDING
       : null,

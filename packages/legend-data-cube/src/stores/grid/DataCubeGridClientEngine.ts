@@ -188,8 +188,8 @@ export function computeHashCodeForDataFetchManualTrigger(
       configuration: {
         initialExpandLevel: configuration.initialExpandLevel,
         showRootAggregation: configuration.showRootAggregation,
-        pivotTotalColumnPlacement: configuration.pivotTotalColumnPlacement,
-        treeGroupSortFunction: configuration.treeGroupSortFunction,
+        pivotTotalColumnPlacement: configuration.pivotStatisticColumnPlacement,
+        treeGroupSortFunction: configuration.treeColumnSortDirection,
         columns: configuration.columns
           .map((column) => ({
             name: column.name,
@@ -197,8 +197,11 @@ export function computeHashCodeForDataFetchManualTrigger(
             kind: column.kind,
             aggregateOperator: column.aggregateOperator,
             aggregationParameters: column.aggregationParameters,
-            excludedFromHorizontalPivot: column.excludedFromHorizontalPivot,
-            horizontalPivotSortFunction: column.horizontalPivotSortFunction,
+            excludedFromPivot: column.excludedFromPivot,
+            pivotSortDirection: column.pivotSortDirection,
+            // technically, we just need to refresh the row-data since this computation
+            // is done on the client-side, but to simplify the flow, we can just refetch data
+            pivotStatisticColumnFunction: column.pivotStatisticColumnFunction,
           }))
           .sort(_sortByColName), // sort to make sure column reordering does not trigger data fetching
       },

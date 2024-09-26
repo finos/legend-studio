@@ -352,7 +352,7 @@ export function _pivotAggCols(
       // are not helpful and therefore excluded
       column.kind === DataCubeColumnKind.MEASURE &&
       !pivotColumns.find((col) => col.name === column.name) &&
-      !column.excludedFromHorizontalPivot &&
+      !column.excludedFromPivot &&
       !snapshot.data.groupExtendedColumns.find(
         (col) => col.name === column.name,
       ),

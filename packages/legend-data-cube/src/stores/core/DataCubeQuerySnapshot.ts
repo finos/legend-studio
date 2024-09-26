@@ -58,7 +58,7 @@ export type DataCubeQuerySnapshotSimpleExtendedColumn =
   };
 
 export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {
-  operation: string;
+  direction: string;
 };
 
 export type DataCubeQuerySnapshotGroupBy = {

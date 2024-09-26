@@ -28,7 +28,7 @@ import {
 } from '../core/DataCubeQuerySnapshot.js';
 import { DataCubeQuerySnapshotController } from '../core/DataCubeQuerySnapshotManager.js';
 import {
-  type DataCubeQuerySortOperator,
+  type DataCubeQuerySortDirection,
   type DataCubeColumnPinPlacement,
   DataCubeColumnKind,
   DataCubeQueryFilterGroupOperator,
@@ -244,11 +244,8 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     if (isPivotResultColumnName(colName)) {
       const baseColumnName = getPivotResultColumnBaseColumnName(colName);
       const columnConfiguration = this.getColumnConfiguration(baseColumnName);
-      if (
-        columnConfiguration &&
-        !columnConfiguration.excludedFromHorizontalPivot
-      ) {
-        columnConfiguration.excludedFromHorizontalPivot = true;
+      if (columnConfiguration && !columnConfiguration.excludedFromPivot) {
+        columnConfiguration.excludedFromPivot = true;
         this.applyChanges();
       }
     }
@@ -256,8 +253,8 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
   includeColumnInHorizontalPivot(colName: string) {
     const columnConfiguration = this.getColumnConfiguration(colName);
-    if (columnConfiguration?.excludedFromHorizontalPivot) {
-      columnConfiguration.excludedFromHorizontalPivot = false;
+    if (columnConfiguration?.excludedFromPivot) {
+      columnConfiguration.excludedFromPivot = false;
       this.applyChanges();
     }
   }
@@ -329,38 +326,38 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
   private getActionableSortColumn(
     colName: string,
-    operation: DataCubeQuerySortOperator,
+    direction: DataCubeQuerySortDirection,
   ) {
     const column = this.getSortableColumn(colName);
     if (!column) {
       return undefined;
     }
     const sortColumn = this.sortColumns.find((col) => col.name === colName);
-    if (sortColumn && sortColumn.operation !== operation) {
+    if (sortColumn && sortColumn.direction !== direction) {
       return sortColumn;
     }
     if (!sortColumn) {
-      return { ...column, operation };
+      return { ...column, direction };
     }
     return undefined;
   }
 
-  setSortByColumn(colName: string, operation: DataCubeQuerySortOperator) {
-    const column = this.getActionableSortColumn(colName, operation);
+  setSortByColumn(colName: string, direction: DataCubeQuerySortDirection) {
+    const column = this.getActionableSortColumn(colName, direction);
     if (!column) {
       return;
     }
-    column.operation = operation;
+    column.direction = direction;
     this.sortColumns = [column];
     this.applyChanges();
   }
 
-  addSortByColumn(colName: string, operation: DataCubeQuerySortOperator) {
-    const column = this.getActionableSortColumn(colName, operation);
+  addSortByColumn(colName: string, direction: DataCubeQuerySortDirection) {
+    const column = this.getActionableSortColumn(colName, direction);
     if (!column) {
       return;
     }
-    column.operation = operation;
+    column.direction = direction;
     this.sortColumns = [...this.sortColumns, column];
     this.applyChanges();
   }

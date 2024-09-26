@@ -21,7 +21,7 @@ import type {
 } from '@ag-grid-community/core';
 import { WIP_GridMenuItem } from '../../components/grid/DataCubeGridShared.js';
 import {
-  DataCubeQuerySortOperator,
+  DataCubeQuerySortDirection,
   DataCubeColumnPinPlacement,
   DEFAULT_COLUMN_MIN_WIDTH,
   DataCubeColumnKind,
@@ -204,7 +204,7 @@ export function generateMenuBuilder(
                   action: () =>
                     controller.setSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperator.ASCENDING,
+                      DataCubeQuerySortDirection.ASCENDING,
                     ),
                 },
                 {
@@ -218,7 +218,7 @@ export function generateMenuBuilder(
                   action: () =>
                     controller.setSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperator.DESCENDING,
+                      DataCubeQuerySortDirection.DESCENDING,
                     ),
                 },
                 {
@@ -241,13 +241,13 @@ export function generateMenuBuilder(
                     controller.sortColumns.find(
                       (col) =>
                         col.name === columnName &&
-                        col.operation === DataCubeQuerySortOperator.ASCENDING,
+                        col.direction === DataCubeQuerySortDirection.ASCENDING,
                     ),
                   ),
                   action: () =>
                     controller.addSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperator.ASCENDING,
+                      DataCubeQuerySortDirection.ASCENDING,
                     ),
                 },
                 {
@@ -262,13 +262,13 @@ export function generateMenuBuilder(
                     controller.sortColumns.find(
                       (col) =>
                         col.name === columnName &&
-                        col.operation === DataCubeQuerySortOperator.DESCENDING,
+                        col.direction === DataCubeQuerySortDirection.DESCENDING,
                     ),
                   ),
                   action: () =>
                     controller.addSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperator.DESCENDING,
+                      DataCubeQuerySortDirection.DESCENDING,
                     ),
                 },
                 {
@@ -548,7 +548,7 @@ export function generateMenuBuilder(
           ...(column &&
           columnName &&
           baseColumnConfiguration?.kind === DataCubeColumnKind.MEASURE &&
-          !baseColumnConfiguration.excludedFromHorizontalPivot &&
+          !baseColumnConfiguration.excludedFromPivot &&
           controller.horizontalPivotColumns.length !== 0 // pivot must be active
             ? [
                 {
@@ -562,7 +562,7 @@ export function generateMenuBuilder(
           ...(column &&
           columnName &&
           columnConfiguration?.kind === DataCubeColumnKind.MEASURE &&
-          columnConfiguration.excludedFromHorizontalPivot &&
+          columnConfiguration.excludedFromPivot &&
           controller.horizontalPivotColumns.length !== 0 // pivot must be active
             ? [
                 {

@@ -96,14 +96,6 @@ export enum DataCubeNumberScale {
   AUTO = 'Auto (k/m/b/t)',
 }
 
-export enum DataCubeSelectionStat {
-  COUNT = 'Count',
-  SUM = 'Sum',
-  MIN = 'Min',
-  MAX = 'Max',
-  AVERAGE = 'Average',
-}
-
 export enum DataCubeFont {
   // sans-serif
   ARIAL = 'Arial',
@@ -190,6 +182,19 @@ export enum DataCubeAggregateOperator {
   // custom
 }
 
+export enum DataCubeClientSideAggregateOperator {
+  SUM = 'sum',
+  AVERAGE = 'avg',
+  MEDIAN = 'median',
+  COUNT = 'count',
+  MIN = 'min',
+  MAX = 'max',
+  VARIANCE_POPULATION = 'var',
+  VARIANCE_SAMPLE = 'var_sample',
+  STANDARD_DEVIATION_POPULATION = 'std',
+  STANDARD_DEVIATION_SAMPLE = 'std_sample',
+}
+
 export enum DataCubeQueryFilterOperator {
   LESS_THAN = '<', // DONE
   LESS_THAN_OR_EQUAL = '<=', // DONE
@@ -232,9 +237,9 @@ export enum DataCubeQueryFilterGroupOperator {
   OR = 'or',
 }
 
-export enum DataCubeQuerySortOperator {
-  ASCENDING = 'ascending',
-  DESCENDING = 'descending',
+export enum DataCubeQuerySortDirection {
+  ASCENDING = 'Ascending',
+  DESCENDING = 'Descending',
 }
 
 export enum DataCubeColumnPinPlacement {
@@ -281,6 +286,7 @@ export function ofDataType(
 }
 
 export const PIVOT_COLUMN_NAME_VALUE_SEPARATOR = '__|__';
+
 export function isPivotResultColumnName(columnName: string) {
   return columnName.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR);
 }
@@ -297,9 +303,12 @@ export function getPivotResultColumnBaseColumnName(columnName: string) {
 }
 
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
+export const DEFAULT_ROW_BUFFER = 20;
 
 export const DEFAULT_REPORT_NAME = 'New Report';
-export const DEFAULT_ROW_BUFFER = 20;
+export const DEFAULT_TREE_COLUMN_SORT_DIRECTION =
+  DataCubeQuerySortDirection.ASCENDING;
+export const DEFAULT_PIVOT_STATISTIC_COLUMN_NAME = 'Total';
 
 export const DEFAULT_URL_LABEL_QUERY_PARAM = 'dataCube.linkLabel';
 export const DEFAULT_MISSING_VALUE_DISPLAY_TEXT = '';
