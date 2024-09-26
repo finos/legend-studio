@@ -1,21 +1,20 @@
 {
-  "name": "@finos/legend-application-data-cube",
+  "name": "@finos/legend-data-cube",
   "version": "0.0.0",
   "description": "Legend Data Cube",
   "keywords": [
     "legend",
-    "legend-application",
     "legend-data-cube",
     "data-cube"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-application-data-cube",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-data-cube",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-application-data-cube"
+    "directory": "packages/legend-data-cube"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
