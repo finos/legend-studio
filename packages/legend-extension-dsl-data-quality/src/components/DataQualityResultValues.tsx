@@ -21,10 +21,8 @@ import {
   extractExecutionResultValues,
   RawExecutionResult,
 } from '@finos/legend-graph';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 
 export const DataQualityResultValues = observer(

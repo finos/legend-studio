@@ -69,6 +69,10 @@ import { DataCubeQueryFilterOperation__IsNull } from './core/filter/DataCubeQuer
 import { DataCubeQueryFilterOperation__IsNotNull } from './core/filter/DataCubeQueryFilterOperation__IsNotNull.js';
 import type { DataCubeViewState } from './DataCubeViewState.js';
 import { LicenseManager } from '@ag-grid-enterprise/core';
+import {
+  configureCodeEditor,
+  setupPureLanguageService,
+} from '@finos/legend-code-editor';
 
 export const DEFAULT_ENABLE_DEBUG_MODE = false;
 export const DEFAULT_ENABLE_ENGINE_DEBUG_MODE = false;
@@ -80,7 +84,7 @@ export const DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING = false;
 export abstract class DataCubeEngine {
   gridClientLicense?: string | undefined;
   viewTaskRunner?:
-    | ((action: (view: DataCubeViewState) => void) => void)
+    | ((task: (view: DataCubeViewState) => void) => void)
     | undefined;
 
   readonly filterOperations = [
@@ -174,6 +178,11 @@ export abstract class DataCubeEngine {
       this.gridClientLicense = info.gridClientLicense;
       LicenseManager.setLicenseKey(info.gridClientLicense);
     }
+
+    await configureCodeEditor('Roboto Mono', (error) => {
+      throw error;
+    });
+    setupPureLanguageService({});
   }
 
   private propagateGridOptionUpdates() {

@@ -86,7 +86,7 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
           onClick={() => {
             editor
               .applyChanges({ closeAfterApply: true })
-              .catch(application.alertUnhandledError);
+              .catch((error) => application.alertUnhandledError(error));
           }}
         >
           OK
@@ -101,7 +101,9 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
           className="ml-2 h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100"
           disabled={editor.finalizationState.isInProgress}
           onClick={() => {
-            editor.applyChanges().catch(application.alertUnhandledError);
+            editor
+              .applyChanges()
+              .catch((error) => application.alertUnhandledError(error));
           }}
         >
           Apply

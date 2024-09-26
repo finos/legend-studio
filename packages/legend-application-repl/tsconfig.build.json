@@ -9,8 +9,8 @@
     { "path": "./tsconfig.package.json" },
     { "path": "../legend-shared/tsconfig.build.json" },
     { "path": "../legend-application/tsconfig.build.json" },
-    { "path": "../legend-art/tsconfig.build.json" },
     { "path": "../legend-graph/tsconfig.build.json" },
-    { "path": "../legend-lego/tsconfig.build.json" }
+    { "path": "../legend-art/tsconfig.build.json" },
+    { "path": "../legend-code-editor/tsconfig.build.json" }
   ]
 }

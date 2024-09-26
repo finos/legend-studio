@@ -144,10 +144,8 @@ import {
 } from '@finos/legend-query-builder';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import { graph_renameElement } from '../../../../stores/graph-modifier/GraphModifierHelper.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { PanelGroupItemExperimentalBadge } from '../../panel-group/PanelGroup.js';
 import type { FunctionActivatorState } from '../../../../stores/editor/editor-state/element-editor-state/FunctionActivatorState.js';
 import { FunctionTestableEditor } from './testable/FunctionTestableEditor.js';

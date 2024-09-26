@@ -43,10 +43,8 @@ import {
 } from '@finos/legend-application';
 import { flowResult } from 'mobx';
 import { useEffect, useMemo } from 'react';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { debounce, noop } from '@finos/legend-shared';
 import { isValidPath } from '@finos/legend-graph';
 

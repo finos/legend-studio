@@ -47,7 +47,6 @@ import {
   ArrowUpIcon,
 } from '@finos/legend-art';
 import {
-  disposeCodeEditor,
   getBaseCodeEditorOptions,
   moveCursorToPosition,
   setErrorMarkers,
@@ -57,7 +56,10 @@ import {
   clearMarkers,
   CODE_EDITOR_THEME,
   CODE_EDITOR_LANGUAGE,
+} from '@finos/legend-code-editor';
+import {
   CodeDiffView,
+  disposeCodeEditor,
 } from '@finos/legend-lego/code-editor';
 import { getPrettyLabelForRevision } from '../../../../stores/editor/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import { flowResult } from 'mobx';

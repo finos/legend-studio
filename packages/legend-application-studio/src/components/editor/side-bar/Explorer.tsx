@@ -138,10 +138,8 @@ import {
   CLASS_MOCK_DATA_GENERATION_FORMAT,
   createMockDataForClassWithFormat,
 } from '../../../stores/editor/utils/MockDataUtils.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { DatabaseBuilderWizard } from '../editor-group/connection-editor/DatabaseBuilderWizard.js';
 import { DatabaseModelBuilder } from '../editor-group/connection-editor/DatabaseModelBuilder.js';
 import { queryService } from '../editor-group/service-editor/ServiceExecutionQueryEditor.js';

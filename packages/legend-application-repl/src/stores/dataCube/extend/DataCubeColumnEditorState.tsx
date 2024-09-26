@@ -39,7 +39,7 @@ import {
   clearMarkers,
   CODE_EDITOR_LANGUAGE,
   setErrorMarkers,
-} from '@finos/legend-lego/code-editor';
+} from '@finos/legend-code-editor';
 import type { DataCubeQueryBuilderError } from '../../../server/REPLEngine.js';
 import type { DataCubeExtendManagerState } from './DataCubeExtendManagerState.js';
 import {

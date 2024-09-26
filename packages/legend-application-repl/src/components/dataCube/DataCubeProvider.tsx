@@ -37,7 +37,7 @@ export const DataCubeProvider = observer(
     );
 
     useEffect(() => {
-      store.initialize().catch(application.logUnhandledError);
+      store.initialize().catch((error) => application.logUnhandledError(error));
     }, [store, application]);
 
     if (!store.initState.hasSucceeded) {

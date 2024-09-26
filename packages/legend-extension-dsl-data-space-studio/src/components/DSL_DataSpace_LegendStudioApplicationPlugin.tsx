@@ -44,7 +44,7 @@ import {
   type PackageableElement,
 } from '@finos/legend-graph';
 import type { ApplicationPageEntry } from '@finos/legend-application';
-import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
+import type { PureGrammarTextSuggestion } from '@finos/legend-code-editor';
 import {
   DataSpace,
   DataSpaceExecutionContext,

@@ -41,7 +41,6 @@ import {
   useApplicationNavigationContext,
 } from '@finos/legend-application';
 import {
-  disposeCodeEditor,
   getBaseCodeEditorOptions,
   resetLineNumberGutterWidth,
   getCodeEditorValue,
@@ -57,7 +56,8 @@ import {
   getParserKeywordSuggestions,
   getParserElementSnippetSuggestions,
   getSectionParserNameFromLineText,
-} from '@finos/legend-lego/code-editor';
+} from '@finos/legend-code-editor';
+import { disposeCodeEditor } from '@finos/legend-lego/code-editor';
 import {
   type ElementDragSource,
   CORE_DND_TYPE,

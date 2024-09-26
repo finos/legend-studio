@@ -31,7 +31,7 @@ import { DiagramEditor } from './DiagramEditor.js';
 import { usePureIDEStore } from '../PureIDEStoreProvider.js';
 import { PURE_DiagramIcon } from '../shared/ConceptIconUtils.js';
 import { TabManager, type TabState } from '@finos/legend-lego/application';
-import { CODE_EDITOR_LANGUAGE } from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 
 const EditorGroupSplashScreen: React.FC = () => {
   const commandListWidth = 300;

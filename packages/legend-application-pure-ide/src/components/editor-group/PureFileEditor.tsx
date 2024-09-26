@@ -39,7 +39,7 @@ import {
   getBaseCodeEditorOptions,
   moveCursorToPosition,
   PURE_CODE_EDITOR_WORD_SEPARATORS,
-} from '@finos/legend-lego/code-editor';
+} from '@finos/legend-code-editor';
 import { clsx, Dialog, WordWrapIcon } from '@finos/legend-art';
 import { usePureIDEStore } from '../PureIDEStoreProvider.js';
 import {

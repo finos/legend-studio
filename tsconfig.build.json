@@ -9,6 +9,7 @@
     { "path": "packages/legend-query-builder/tsconfig.build.json" },
     { "path": "packages/legend-data-cube/tsconfig.build.json" },
     { "path": "packages/legend-art/tsconfig.build.json" },
+    { "path": "packages/legend-code-editor/tsconfig.build.json" },
     { "path": "packages/legend-lego/tsconfig.build.json" },
     { "path": "packages/legend-application/tsconfig.build.json" },
     // sdlc

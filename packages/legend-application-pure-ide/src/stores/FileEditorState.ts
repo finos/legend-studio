@@ -24,7 +24,7 @@ import {
   setErrorMarkers,
   type CodeEditorPosition,
   CODE_EDITOR_LANGUAGE,
-} from '@finos/legend-lego/code-editor';
+} from '@finos/legend-code-editor';
 import { DIRECTORY_PATH_DELIMITER } from '@finos/legend-graph';
 import {
   assertErrorThrown,

@@ -139,7 +139,7 @@ export const DataCubeView = observer(() => {
   const view = dataCube.view;
 
   useEffect(() => {
-    view.initialize().catch(application.logUnhandledError);
+    view.initialize().catch((error) => application.logUnhandledError(error));
   }, [view, application]);
 
   return (

@@ -2363,6 +2363,7 @@ __metadata:
   dependencies:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-graph": "workspace:*"
@@ -2445,6 +2446,7 @@ __metadata:
   dependencies:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-graph": "workspace:*"
@@ -2483,7 +2485,6 @@ __metadata:
     "@finos/legend-application-repl": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-lego": "workspace:*"
     "@types/react": "npm:18.3.9"
     copy-webpack-plugin: "npm:12.0.2"
     cross-env: "npm:7.0.3"
@@ -2520,9 +2521,9 @@ __metadata:
     "@ag-grid-enterprise/side-bar": "npm:32.2.0"
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-lego": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": "npm:29.7.0"
     "@types/react": "npm:18.3.9"
@@ -2603,6 +2604,7 @@ __metadata:
   dependencies:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"
@@ -2735,6 +2737,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-code-editor@workspace:*, @finos/legend-code-editor@workspace:packages/legend-code-editor":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-code-editor@workspace:packages/legend-code-editor"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@jest/globals": "npm:29.7.0"
+    "@types/css-font-loading-module": "npm:0.0.13"
+    cross-env: "npm:7.0.3"
+    eslint: "npm:8.57.1"
+    jest: "npm:29.7.0"
+    monaco-editor: "npm:0.52.0"
+    npm-run-all: "npm:4.1.5"
+    rimraf: "npm:6.0.1"
+    sass: "npm:1.79.3"
+    typescript: "npm:5.6.2"
+  peerDependencies:
+    react: ^18.0.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-data-cube@workspace:packages/legend-data-cube":
   version: 0.0.0-use.local
   resolution: "@finos/legend-data-cube@workspace:packages/legend-data-cube"
@@ -2810,9 +2834,9 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-application-studio": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-lego": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": "npm:29.7.0"
     "@types/react": "npm:18.3.9"
@@ -2839,6 +2863,7 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-application-studio": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-graph": "workspace:*"
@@ -2874,6 +2899,7 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-application-studio": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-query-builder": "workspace:*"
@@ -2903,6 +2929,7 @@ __metadata:
   dependencies:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-graph": "workspace:*"
@@ -2938,9 +2965,9 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-application-studio": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-lego": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": "npm:29.7.0"
@@ -2972,9 +2999,9 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-application-studio": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-lego": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": "npm:29.7.0"
@@ -3002,6 +3029,7 @@ __metadata:
     "@finos/legend-application-query": "workspace:*"
     "@finos/legend-application-studio": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"
@@ -3036,6 +3064,7 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-application-studio": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"
@@ -3124,6 +3153,7 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-application-studio": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"
@@ -3237,6 +3267,7 @@ __metadata:
     "@ag-grid-enterprise/status-bar": "npm:32.2.0"
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -3299,6 +3330,7 @@ __metadata:
   dependencies:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"

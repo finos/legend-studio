@@ -1,11 +1,10 @@
 {
   "name": "@finos/legend-lego",
-  "version": "1.2.72",
-  "description": "Legend shared advanced application components and building blocks",
+  "version": "0.0.1",
+  "description": "Legend code editor support",
   "keywords": [
     "legend",
-    "component",
-    "shared-component"
+    "code-editor"
   ],
   "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-lego",
   "bugs": {
@@ -65,6 +64,7 @@
     "@ag-grid-enterprise/status-bar": "32.2.0",
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
+    "@finos/legend-code-editor": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@types/css-font-loading-module": "0.0.13",

@@ -15,6 +15,6 @@
     { "path": "../legend-storage" },
     { "path": "../legend-application" },
     { "path": "../legend-art" },
-    { "path": "../legend-lego" }
+    { "path": "../legend-code-editor" }
   ]
 }

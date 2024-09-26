@@ -63,10 +63,8 @@ import {
   SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl } from '../../../../__lib__/LegendStudioNavigation.js';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import { pureExecution_setFunction } from '../../../../stores/graph-modifier/DSL_Service_GraphModifierHelper.js';

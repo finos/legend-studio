@@ -23,11 +23,11 @@ import {
 } from 'monaco-editor';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
-  getBaseCodeEditorOptions,
   PURE_CODE_EDITOR_WORD_SEPARATORS,
-} from '@finos/legend-lego/code-editor';
+  CODE_EDITOR_LANGUAGE,
+  getBaseCodeEditorOptions,
+} from '@finos/legend-code-editor';
 import {
   getCodeSuggestions,
   MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID,
@@ -86,7 +86,9 @@ export const DataCubeColumnCreator = observer(
     const debouncedCheckReturnType = useMemo(
       () =>
         debounce((): void => {
-          state.getReturnType().catch(application.alertUnhandledError);
+          state
+            .getReturnType()
+            .catch((error) => application.alertUnhandledError(error));
         }, 500),
       [state, application],
     );
@@ -344,7 +346,9 @@ export const DataCubeColumnCreator = observer(
               state.finalizationState.isInProgress
             }
             onClick={() => {
-              state.applyChanges().catch(application.alertUnhandledError);
+              state
+                .applyChanges()
+                .catch((error) => application.alertUnhandledError(error));
             }}
           >
             OK

@@ -33,7 +33,7 @@ import type {
   MappingElementState,
   PropertyMappingState,
 } from '../editor/editor-state/element-editor-state/mapping/MappingElementState.js';
-import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
+import type { PureGrammarTextSuggestion } from '@finos/legend-code-editor';
 
 type MappingSourceTypeInfo = {
   sourceType: string;

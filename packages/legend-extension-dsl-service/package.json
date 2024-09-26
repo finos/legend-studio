@@ -46,6 +46,7 @@
     "@finos/legend-application-query": "workspace:*",
     "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
+    "@finos/legend-code-editor": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-lego": "workspace:*",
     "@finos/legend-query-builder": "workspace:*",

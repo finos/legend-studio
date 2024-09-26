@@ -37,10 +37,8 @@ import {
 } from '../../stores/LegendStudioApplicationPlugin.js';
 import { LEGEND_STUDIO_COMMAND_CONFIG } from '../../__lib__/LegendStudioCommand.js';
 import { LEGEND_STUDIO_SETTING_CONFIG } from '../../__lib__/LegendStudioSetting.js';
-import {
-  configureCodeEditorComponent,
-  setupPureLanguageService,
-} from '@finos/legend-lego/code-editor';
+import { setupPureLanguageService } from '@finos/legend-code-editor';
+import { configureCodeEditorComponent } from '@finos/legend-lego/code-editor';
 import { STO_RELATIONAL_LEGEND_STUDIO_COMMAND_CONFIG } from '../../__lib__/STO_Relational_LegendStudioCommand.js';
 import { ShowcaseManager } from '../ShowcaseManager.js';
 import { CabinetIcon } from '@finos/legend-art';

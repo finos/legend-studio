@@ -31,7 +31,6 @@ import {
   ModalFooterButton,
 } from '@finos/legend-art';
 import {
-  disposeCodeEditor,
   getBaseCodeEditorOptions,
   getCodeEditorValue,
   normalizeLineEnding,
@@ -39,7 +38,8 @@ import {
   setErrorMarkers,
   CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
-} from '@finos/legend-lego/code-editor';
+} from '@finos/legend-code-editor';
+import { disposeCodeEditor } from '@finos/legend-lego/code-editor';
 import type { LambdaEditorState } from '../../stores/shared/LambdaEditorState.js';
 import {
   debounce,

@@ -19,7 +19,7 @@ import { EditorState } from './EditorState.js';
 import { observable, makeObservable, computed } from 'mobx';
 import { returnUndefOnError } from '@finos/legend-shared';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
-import { CODE_EDITOR_LANGUAGE } from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import type { FileSystem_File } from '../utils/FileSystemTreeUtils.js';
 
 export const getTextContent = (

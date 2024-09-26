@@ -33,10 +33,8 @@ import {
   MIGRATE_PHASE,
   type MappingTestMigrationState,
 } from '../../../../../stores/editor/editor-state/element-editor-state/mapping/legacy/MappingTestMigrationState.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeDiffView,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeDiffView } from '@finos/legend-lego/code-editor';
 
 export const MappingTestMigrationTool = observer(
   (props: {

@@ -23,7 +23,7 @@ import type {
 } from '@finos/legend-graph';
 import type { RelationalDatabaseConnectionValueState } from '../editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import type { PostProcessorEditorState } from '../editor/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
-import type { ElementEmbeddedContentSnippetSuggestion } from '@finos/legend-lego/code-editor';
+import type { ElementEmbeddedContentSnippetSuggestion } from '@finos/legend-code-editor';
 
 /**
  * NOTE: The tab-stop index of the snippet must start from 6

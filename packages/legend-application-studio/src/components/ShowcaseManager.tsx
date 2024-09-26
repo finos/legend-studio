@@ -45,10 +45,8 @@ import {
 import { debounce, isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import type { Showcase } from '@finos/legend-server-showcase';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { generateShowcasePath } from '../__lib__/LegendStudioNavigation.js';
 

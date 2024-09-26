@@ -45,6 +45,7 @@
   "dependencies": {
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
+    "@finos/legend-code-editor": "workspace:*",
     "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-lego": "workspace:*",

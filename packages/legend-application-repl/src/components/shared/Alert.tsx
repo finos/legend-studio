@@ -147,9 +147,9 @@ const BlockingActionAlertContent = observer((props: { alert: ActionAlert }) => {
             message={message}
             text={prompt}
             actions={(actions ?? []).map((action) => ({
-              label: action.label as string,
+              label: action.label,
               handler: () => {
-                action.handler?.();
+                action.handler();
                 onClose?.();
                 application.alertAction(undefined);
               },

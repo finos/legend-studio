@@ -46,7 +46,7 @@ import {
   CODE_EDITOR_LANGUAGE,
   CODE_EDITOR_THEME,
   getBaseCodeEditorOptions,
-} from '@finos/legend-lego/code-editor';
+} from '@finos/legend-code-editor';
 import {
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,

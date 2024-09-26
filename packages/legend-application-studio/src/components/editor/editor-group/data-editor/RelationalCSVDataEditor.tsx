@@ -43,10 +43,8 @@ import {
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useState } from 'react';
 import type { RelationalCSVDataState } from '../../../../stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import {

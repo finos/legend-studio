@@ -29,10 +29,17 @@ import {
 } from '@finos/legend-shared';
 import {
   CODE_EDITOR_LANGUAGE,
-  disposeDiffCodeEditor,
+  CODE_EDITOR_THEME,
   getBaseCodeEditorOptions,
-} from './CodeEditorUtils.js';
-import { CODE_EDITOR_THEME } from './CodeEditorTheme.js';
+} from '@finos/legend-code-editor';
+
+export const disposeDiffCodeEditor = (
+  editor: monacoEditorAPI.IStandaloneDiffEditor,
+): void => {
+  editor.dispose();
+  editor.getOriginalEditor().getModel()?.dispose();
+  editor.getModifiedEditor().getModel()?.dispose();
+};
 
 export const CodeDiffView = observer(
   (props: {

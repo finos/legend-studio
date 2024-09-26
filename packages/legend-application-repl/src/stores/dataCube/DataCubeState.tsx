@@ -56,7 +56,7 @@ export class DataCubeState {
     });
     this.application = application;
     this.engine = engine;
-    this.engine.viewTaskRunner = this.runTaskForAllViews;
+    this.engine.viewTaskRunner = (task) => this.runTaskForAllViews(task);
     this.layout = new LayoutManagerState();
     this.view = new DataCubeViewState(this);
 

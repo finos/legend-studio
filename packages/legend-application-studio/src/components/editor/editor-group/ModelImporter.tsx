@@ -51,10 +51,8 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib
 import { SCHEMA_SET_TAB_TYPE } from '../../../stores/editor/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
 import { SchemaSetModelGenerationEditor } from './external-format-editor/DSL_ExternalFormat_SchemaSetModelGenerationEditor.js';
 import { SchemaSetGeneralEditor } from './external-format-editor/DSL_ExternalFormat_SchemaSetElementEditor.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 
 const ExternalFormatModelImporterEditor = observer(
   (props: { externalFormatState: ExternalFormatModelImporterState }) => {

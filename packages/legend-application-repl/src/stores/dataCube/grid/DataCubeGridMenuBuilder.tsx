@@ -162,6 +162,7 @@ export function generateMenuBuilder(
   fromHeader: boolean,
 ) => (string | MenuItemDef)[] {
   const view = controller.view;
+  const application = view.application;
 
   // NOTE: we need to minimize the usage of these states
   // since the grid context-menu should be solely driven
@@ -426,7 +427,7 @@ export function generateMenuBuilder(
             action: () => {
               view.grid.exportEngine
                 .exportEmail(DataCubeGridClientExportFormat.EXCEL)
-                .catch(view.application.logUnhandledError);
+                .catch((error) => application.logUnhandledError(error));
             },
           },
           {
@@ -434,7 +435,7 @@ export function generateMenuBuilder(
             action: () => {
               view.grid.exportEngine
                 .exportEmail(DataCubeGridClientExportFormat.CSV)
-                .catch(view.application.logUnhandledError);
+                .catch((error) => application.logUnhandledError(error));
             },
           },
           {

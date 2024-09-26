@@ -92,7 +92,7 @@ import type {
   NewElementDriver,
   NewElementState,
 } from '../../stores/editor/NewElementState.js';
-import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
+import type { PureGrammarTextSuggestion } from '@finos/legend-code-editor';
 import { PACKAGEABLE_ELEMENT_GROUP_BY_CATEGORY } from '../../stores/editor/utils/ModelClassifierUtils.js';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';

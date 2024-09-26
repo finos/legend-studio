@@ -93,11 +93,8 @@ import {
   ExecutionPlanViewer,
 } from '@finos/legend-query-builder';
 import { MappingExecutionQueryBuilderState } from '../../../../../stores/editor/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-  JSONDiffView,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor, JSONDiffView } from '@finos/legend-lego/code-editor';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: DEPRECATED__MappingTestState; isReadOnly: boolean }) => {

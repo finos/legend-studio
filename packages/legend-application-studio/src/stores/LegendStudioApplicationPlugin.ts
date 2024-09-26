@@ -31,7 +31,7 @@ import type {
   ExtensionModelImportRendererState,
   ModelImporterState,
 } from './editor/editor-state/ModelImporterState.js';
-import type { PureGrammarTextSuggestion } from '@finos/legend-lego/code-editor';
+import type { PureGrammarTextSuggestion } from '@finos/legend-code-editor';
 import type { DocumentationEntry } from '@finos/legend-shared';
 
 export type ExplorerContextMenuItemRendererConfiguration = {

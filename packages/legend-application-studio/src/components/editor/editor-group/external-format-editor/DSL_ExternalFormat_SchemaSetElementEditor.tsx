@@ -55,10 +55,8 @@ import {
   externalFormat_schema_setLocation,
 } from '../../../../stores/graph-modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import { SchemaSetModelGenerationEditor } from './DSL_ExternalFormat_SchemaSetModelGenerationEditor.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { getEditorLanguageForFormat } from '../../../../stores/editor/editor-state/ArtifactGenerationViewerState.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';

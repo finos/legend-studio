@@ -80,10 +80,8 @@ import { AllocationExecutionNodeViewer } from './AllocationExecutionNodeViewer.j
 import { ConstantExecutionNodeViewer } from './ConstantExecutionNodeViewer.js';
 import { SequenceExecutionNodeViewer } from './SequenceExecutionNodeViewer.js';
 import { RelationalTDSInstantiationExecutionNodeViewer } from './RelationalTDSInstantiationExecutionNodeViewer.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  CodeEditor,
-} from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { RelationalRootQueryTempTableGraphFetchExecutionNodeViewer } from './RelationalRootQueryTempTableGraphFetchExecutionNodeViewer.js';
 import { RelationalClassQueryTempTableGraphFetchExecutionNodeViewer } from './RelationalClassQueryTempTableGraphFetchExecutionNodeViewer.js';
