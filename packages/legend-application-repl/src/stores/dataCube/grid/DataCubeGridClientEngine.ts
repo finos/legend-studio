@@ -119,10 +119,11 @@ export const generateBackgroundColorUtilityClassName = (
 // Indicates how many rows for each block in the cache, i.e. how many rows returned from the server at a time.
 // ag-grid will dedicte space in advanced to store these rows. In server-side row model, this is used as the page size.
 // See https://www.ag-grid.com/react-data-grid/server-side-model-configuration/#server-side-cache
-export const INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE = 100;
+export const INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE = 500;
+export const INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_PAGINATION = true;
 // NOTE: The cache block size is used by ag-grid to pre-allocate memory for the grid
 // so the value set must be reasonable, or else it can crash the application!
-export const INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE = 1e5;
+export const INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE = 1e4;
 
 export const INTERNAL__GRID_CLIENT_PIVOT_COLUMN_GROUP_COLOR_ROTATION_SIZE = 5;
 export const INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH = 200;

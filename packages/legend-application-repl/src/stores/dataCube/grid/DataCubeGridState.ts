@@ -23,6 +23,7 @@ import {
   INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE,
   INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
   INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE,
+  INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_PAGINATION,
   computeHashCodeForDataFetchManualTrigger,
 } from './DataCubeGridClientEngine.js';
 import { DataCubeQuerySnapshotController } from '../core/DataCubeQuerySnapshotManager.js';
@@ -56,7 +57,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
 
   queryConfiguration: DataCubeConfiguration;
   rowLimit?: number | undefined;
-  isPaginationEnabled = false;
+  isPaginationEnabled = INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_PAGINATION;
   scrollHintText?: string | undefined;
 
   constructor(view: DataCubeViewState) {
