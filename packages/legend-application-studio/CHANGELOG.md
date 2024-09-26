@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.36
+
+### Patch Changes
+
+- [#3546](https://github.com/finos/legend-studio/pull/3546) [`ca407e7`](https://github.com/finos/legend-studio/commit/ca407e77e566c17bae0689adaebbd0c5bf3b81b6) ([@Yasirmod17](https://github.com/Yasirmod17)) - Fix Typo
+
 ## 28.18.35
 
 ## 28.18.34

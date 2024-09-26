@@ -1,5 +1,11 @@
 # @finos/legend-lego
 
+## 1.0.0
+
+### Major Changes
+
+- [#3556](https://github.com/finos/legend-studio/pull/3556) [`12ea153`](https://github.com/finos/legend-studio/commit/12ea15327d8ad4386983c2a6b6ec839aacb0c1e4) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Split core code editor utilities (theming, Pure language support, etc.) which are not dependent on `@finos/legend-application` to `@finos/legend-code-editor`.
+
 ## 1.2.72
 
 ## 1.2.71

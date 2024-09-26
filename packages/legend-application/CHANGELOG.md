@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.0
+
+### Major Changes
+
+- [#3556](https://github.com/finos/legend-studio/pull/3556) [`12ea153`](https://github.com/finos/legend-studio/commit/12ea15327d8ad4386983c2a6b6ec839aacb0c1e4) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move `DocumentationEntry` to `@finos/legend-shared`.
+
 ## 15.1.31
 
 ## 15.1.30
