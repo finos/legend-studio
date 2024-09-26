@@ -202,7 +202,7 @@ class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
   }
 }
 
-interface V1_EngineSetupConfig extends TEMPORARY__EngineSetupConfig {
+interface V1_RemoteEngineSetupConfig extends TEMPORARY__EngineSetupConfig {
   env: string;
   tabSize: number;
   clientConfig: ServerClientConfig;
@@ -246,7 +246,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     return serializedGraph;
   };
 
-  async setup(config: V1_EngineSetupConfig): Promise<void> {
+  async setup(config: V1_RemoteEngineSetupConfig): Promise<void> {
     this.config.setEnv(config.env);
     this.config.setTabSize(config.tabSize);
     try {
