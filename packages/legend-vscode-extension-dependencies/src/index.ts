@@ -78,6 +78,7 @@ export {
   type V1_LambdaReturnTypeResult,
   type V1_RawRelationalOperationElement,
   type V1_TextCompilationResult,
+  buildPureGraphManager,
   Class,
   Core_GraphManagerPreset,
   CORE_PURE_PATH,
