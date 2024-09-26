@@ -250,15 +250,17 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     this.config.setEnv(config.env);
     this.config.setTabSize(config.tabSize);
     try {
-      this.config.setCurrentUserId(await this.serverClientGetCurrentUserId());
+      this.config.setCurrentUserId(
+        await this.engineServerClient.getCurrentUserId(),
+      );
     } catch {
       // do nothing
     }
   }
 
   // ----------------------------------------- Server Client ----------------------------------------
-  serverClientGetCurrentUserId = async (): Promise<string | undefined> =>
-    this.engineServerClient.getCurrentUserId();
+  getCurrentUserId = (): string | undefined =>
+    this.engineServerClient.currentUserId;
   serverClientGetBaseUrl = (): string | undefined =>
     this.engineServerClient.baseUrl;
   serverClientGetPureBaseUrl = (): string => this.engineServerClient._pure();
@@ -1162,7 +1164,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
 
   async cancelUserExecutions(broadcastToCluster: boolean): Promise<string> {
     return this.engineServerClient.INTERNAL__cancelUserExecutions(
-      guaranteeNonNullable(await this.serverClientGetCurrentUserId()),
+      guaranteeNonNullable(this.getCurrentUserId()),
       broadcastToCluster,
     );
   }

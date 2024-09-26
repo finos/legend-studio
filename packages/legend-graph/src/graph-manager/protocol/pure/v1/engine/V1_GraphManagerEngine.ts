@@ -108,8 +108,8 @@ export interface V1_GraphManagerEngine {
    * alone. However, we need to expose the client for plugins, tests, and dev tool
    * configurations.
    */
+  getCurrentUserId: () => string | undefined;
   serverClientGetBaseUrl: () => string | undefined;
-  serverClientGetCurrentUserId: () => Promise<string | undefined>;
   serverClientGetPureBaseUrl: () => string;
   serverClientGetTraceData: (
     name: string,
