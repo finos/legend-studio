@@ -109,7 +109,7 @@ export interface V1_GraphManagerEngine {
    * configurations.
    */
   serverClientGetBaseUrl: () => string | undefined;
-  serverClientGetCurrentUserId: () => string | undefined;
+  serverClientGetCurrentUserId: () => Promise<string | undefined>;
   serverClientGetPureBaseUrl: () => string;
   serverClientGetTraceData: (
     name: string,

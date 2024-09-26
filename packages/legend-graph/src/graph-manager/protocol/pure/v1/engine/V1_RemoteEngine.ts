@@ -257,8 +257,8 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   }
 
   // ----------------------------------------- Server Client ----------------------------------------
-  serverClientGetCurrentUserId = (): string | undefined =>
-    this.engineServerClient.currentUserId;
+  serverClientGetCurrentUserId = async (): Promise<string | undefined> =>
+    this.engineServerClient.getCurrentUserId();
   serverClientGetBaseUrl = (): string | undefined =>
     this.engineServerClient.baseUrl;
   serverClientGetPureBaseUrl = (): string => this.engineServerClient._pure();
@@ -1162,7 +1162,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
 
   async cancelUserExecutions(broadcastToCluster: boolean): Promise<string> {
     return this.engineServerClient.INTERNAL__cancelUserExecutions(
-      guaranteeNonNullable(this.serverClientGetCurrentUserId()),
+      guaranteeNonNullable(await this.serverClientGetCurrentUserId()),
       broadcastToCluster,
     );
   }
