@@ -19,9 +19,9 @@ import {
   APPLICATION_EVENT,
 } from '@finos/legend-application';
 import { type DocumentationEntry, LogEvent } from '@finos/legend-shared';
-import type { LegendREPLApplicationStore } from './LegendREPLBaseStore.js';
 import { DataCubeApplicationEngine } from './dataCube/DataCubeApplicationEngine.js';
 import type { ActionAlert } from '../components/shared/Alert.js';
+import type { LegendREPLApplicationStore } from '../application/LegendREPLApplicationStore.js';
 
 export class LegendREPLDataCubeApplicationEngine extends DataCubeApplicationEngine {
   private readonly application: LegendREPLApplicationStore;

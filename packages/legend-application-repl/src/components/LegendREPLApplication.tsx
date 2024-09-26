@@ -20,10 +20,6 @@ import {
   Switch,
   type TEMPORARY__ReactRouterComponentType,
 } from '@finos/legend-application/browser';
-import {
-  LegendREPLFrameworkProvider,
-  useLegendREPLApplicationStore,
-} from './LegendREPLFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
 import { DataCubeView } from './dataCube/DataCube.js';
 import { useMemo } from 'react';
@@ -32,9 +28,19 @@ import { REPLServerClient } from '../server/REPLServerClient.js';
 import { LegendREPLDataCubeApplicationEngine } from '../stores/LegendREPLDataCubeApplicationEngine.js';
 import { LegendREPLDataCubeEngine } from '../stores/LegendREPLDataCubeEngine.js';
 import { DataCubeProvider } from './dataCube/DataCubeProvider.js';
+import {
+  ApplicationFrameworkProvider,
+  useApplicationStore,
+  type LegendApplicationPlugin,
+  type LegendApplicationPluginManager,
+} from '@finos/legend-application';
+import type { LegendREPLApplicationConfig } from '../application/LegendREPLApplicationConfig.js';
 
 const LegendREPLDataCube = observer(() => {
-  const applicationStore = useLegendREPLApplicationStore();
+  const applicationStore = useApplicationStore<
+    LegendREPLApplicationConfig,
+    LegendApplicationPluginManager<LegendApplicationPlugin>
+  >();
   const application = useMemo(
     () => new LegendREPLDataCubeApplicationEngine(applicationStore),
     [applicationStore],
@@ -84,9 +90,9 @@ export const LegendREPLWebApplication = (props: { baseUrl: string }) => {
 
   return (
     <BrowserEnvironmentProvider baseUrl={baseUrl}>
-      <LegendREPLFrameworkProvider>
+      <ApplicationFrameworkProvider simple={true}>
         <LegendREPLRouter />
-      </LegendREPLFrameworkProvider>
+      </ApplicationFrameworkProvider>
     </BrowserEnvironmentProvider>
   );
 };

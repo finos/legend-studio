@@ -16,7 +16,6 @@
 
 import { WebConsole } from '@finos/legend-shared';
 import { LegendREPL } from './application/LegendREPL.js';
-import { Core_LegendREPLApplicationPlugin } from './components/Core_LegendREPLApplicationPlugin.js';
 
 export class LegendREPLWebApplication {
   static getPresetCollection() {
@@ -24,7 +23,7 @@ export class LegendREPLWebApplication {
   }
 
   static getPluginCollection() {
-    return [new Core_LegendREPLApplicationPlugin(), new WebConsole()];
+    return [new WebConsole()];
   }
 
   static run(baseUrl: string) {

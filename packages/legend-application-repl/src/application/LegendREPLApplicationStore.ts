@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-import type { ApplicationStore } from '@finos/legend-application';
-import type { LegendREPLApplicationConfig } from '../application/LegendREPLApplicationConfig.js';
-import type { LegendREPLPluginManager } from '../application/LegendREPLPluginManager.js';
+import type {
+  ApplicationStore,
+  LegendApplicationPlugin,
+  LegendApplicationPluginManager,
+} from '@finos/legend-application';
+import type { LegendREPLApplicationConfig } from './LegendREPLApplicationConfig.js';
 
 export type LegendREPLApplicationStore = ApplicationStore<
   LegendREPLApplicationConfig,
-  LegendREPLPluginManager
+  LegendApplicationPluginManager<LegendApplicationPlugin>
 >;
-
-export class LegendREPLBaseStore {
-  readonly application: LegendREPLApplicationStore;
-  readonly pluginManager: LegendREPLPluginManager;
-
-  constructor(application: LegendREPLApplicationStore) {
-    this.application = application;
-    this.pluginManager = application.pluginManager;
-  }
-}

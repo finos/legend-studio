@@ -42,7 +42,7 @@ import {
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_URL_LABEL_QUERY_PARAM,
 } from '../../../stores/dataCube/core/DataCubeQueryEngine.js';
-import { DocumentationKey } from '../../../application/LegendREPLDocumentation.js';
+import { DocumentationKey } from '../../../application/DataCubeDocumentation.js';
 import type { DataCubeViewState } from '../../../stores/dataCube/DataCubeViewState.js';
 import { _sortByColName } from '../../../stores/dataCube/core/DataCubeQuerySnapshot.js';
 

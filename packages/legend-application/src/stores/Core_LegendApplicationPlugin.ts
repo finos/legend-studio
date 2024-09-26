@@ -30,7 +30,6 @@ import {
   collectSettingConfigurationEntriesFromConfig,
   type SettingConfigurationEntry,
 } from './SettingService.js';
-import { configure as configureMobx } from 'mobx';
 import { configureComponents } from '@finos/legend-art';
 
 export class Core_LegendApplicationPlugin extends LegendApplicationPlugin {
@@ -49,15 +48,6 @@ export class Core_LegendApplicationPlugin extends LegendApplicationPlugin {
   override getExtraApplicationSetups(): LegendApplicationSetup[] {
     return [
       async (applicationStore) => {
-        // configure `mobx`
-        configureMobx({
-          // Force state modification to be done via actions
-          // Otherwise, warning will be shown in development mode
-          // However, no warning will shown in production mode
-          // See https://mobx.js.org/configuration.html#enforceactions
-          enforceActions: 'observed',
-        });
-
         // configure UI components
         configureComponents();
       },

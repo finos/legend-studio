@@ -89,8 +89,5 @@
   },
   "publishConfig": {
     "directory": "build/publishContent"
-  },
-  "extensions": {
-    "applicationREPLPlugin": "@finos/legend-application-repl-plugin-core"
   }
 }

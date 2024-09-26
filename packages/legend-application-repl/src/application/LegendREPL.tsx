@@ -19,29 +19,25 @@ import {
   type LegendApplicationConfigurationInput,
   LegendApplication,
   ApplicationStoreProvider,
-  Core_LegendApplicationPlugin,
   getApplicationRootElement,
+  LegendApplicationPluginManager,
+  type LegendApplicationPlugin,
+  Core_LegendApplicationPlugin,
 } from '@finos/legend-application';
 import {
   LegendREPLApplicationConfig,
   type LegendREPLApplicationConfigData,
 } from './LegendREPLApplicationConfig.js';
-import { LegendREPLPluginManager } from './LegendREPLPluginManager.js';
 import { LegendREPLWebApplication } from '../components/LegendREPLApplication.js';
-import { Core_LegendREPLApplicationPlugin } from '../components/Core_LegendREPLApplicationPlugin.js';
-import type { LegendREPLApplicationStore } from '../stores/LegendREPLBaseStore.js';
+import type { LegendREPLApplicationStore } from './LegendREPLApplicationStore.js';
 
 export class LegendREPL extends LegendApplication {
   declare config: LegendREPLApplicationConfig;
-  declare pluginManager: LegendREPLPluginManager;
+  declare pluginManager: LegendApplicationPluginManager<LegendApplicationPlugin>;
 
   static create() {
-    const application = new LegendREPL(LegendREPLPluginManager.create());
-    application.withBasePlugins([
-      new Core_LegendApplicationPlugin(),
-      new Core_LegendREPLApplicationPlugin(),
-    ]);
-    application.withBasePresets([]);
+    const application = new LegendREPL(new LegendApplicationPluginManager());
+    application.withBasePlugins([new Core_LegendApplicationPlugin()]);
     return application;
   }
 
