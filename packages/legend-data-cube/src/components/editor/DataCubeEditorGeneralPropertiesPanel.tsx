@@ -164,9 +164,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
                 onChange={() =>
                   configuration.setShowLeafCount(!configuration.showLeafCount)
                 }
-                disabled={true}
               />
-              <FormBadge_WIP />
             </div>
 
             <div className="mt-2 flex h-5 w-full items-center">

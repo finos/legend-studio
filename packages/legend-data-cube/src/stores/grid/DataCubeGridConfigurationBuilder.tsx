@@ -918,6 +918,9 @@ export function generateGridOptionsFromSnapshot(
       colId: INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
       headerName: '',
       cellRenderer: 'agGroupCellRenderer',
+      cellRendererParams: {
+        suppressCount: !configuration.showLeafCount,
+      },
 
       // display
       ..._groupDisplaySpec(snapshot, configuration),

@@ -194,7 +194,7 @@ export class DataCubeConfiguration {
   // NOTE: these configurations, when changed, would potentially trigger data-fetching
   initialExpandLevel?: number | undefined;
   showRootAggregation = false;
-  showLeafCount = false;
+  showLeafCount = true;
   pivotTotalColumnPlacement?: DataCubeColumnPinPlacement | undefined;
   treeGroupSortFunction?: string | undefined;
 
