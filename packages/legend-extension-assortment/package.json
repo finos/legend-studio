@@ -49,7 +49,7 @@
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@types/react": "18.3.9",
-    "mobx": "6.13.2",
+    "mobx": "6.13.3",
     "mobx-react-lite": "4.0.7",
     "react": "18.3.1",
     "serializr": "3.0.2"

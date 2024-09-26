@@ -596,9 +596,7 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
     suppressScrollOnNewData: true,
     suppressServerSideFullWidthLoadingRow: true, // make sure each column has its own loading indicator instead of the whole row
     // -------------------------------------- SELECTION --------------------------------------
-    selection: {
-      mode: 'cell',
-    },
+    cellSelection: true,
     // -------------------------------------- SIDEBAR --------------------------------------
     sideBar: {
       toolPanels: [

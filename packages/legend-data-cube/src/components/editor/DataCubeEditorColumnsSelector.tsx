@@ -53,7 +53,7 @@ function getBaseGridProps<
     editType: 'fullRow',
     rowDragMultiRow: true,
     rowDragEntireRow: true,
-    selection: {
+    rowSelection: {
       mode: 'multiRow',
       checkboxes: true,
       headerCheckbox: true,
