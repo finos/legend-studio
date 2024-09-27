@@ -81,7 +81,9 @@ export function buildQuerySnapshot(
         columns: request.pivotCols.map((col) =>
           _toCol(getColumnConfiguration(col.id, configuration)),
         ),
-        castColumns: [],
+        // NOTE: since we re-fetch the cast columns anyway in this flow, we just
+        // reuse the current cast columns
+        castColumns: baseSnapshot.data.pivot?.castColumns ?? [],
       }
     : undefined;
 

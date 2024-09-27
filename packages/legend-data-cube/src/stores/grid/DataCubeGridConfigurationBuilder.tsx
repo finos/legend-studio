@@ -907,6 +907,27 @@ export function generateGridOptionsFromSnapshot(
       }
     },
 
+    isServerSideGroupOpenByDefault: (params) => {
+      // const route = params.rowNode.getRoute();
+      // if (!route) {
+      //   return false;
+      // }
+      // const routeAsString = route.join('__|__');
+      // const routesToOpenByDefault = [
+      //   // 'China',
+      //   // 'China__|__Archery',
+      //   // 'United States__|__Swimming',
+      // ];
+      // return routesToOpenByDefault.indexOf(routeAsString) >= 0;
+      if (
+        configuration.initialExpandLevel !== undefined &&
+        configuration.initialExpandLevel > 0
+      ) {
+        return params.rowNode.level <= configuration.initialExpandLevel - 1;
+      }
+      return false;
+    },
+
     // -------------------------------------- COLUMNS --------------------------------------
 
     columnDefs: generateColumnDefs(snapshot, configuration, view),

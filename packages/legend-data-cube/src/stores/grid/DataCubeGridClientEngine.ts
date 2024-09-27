@@ -321,33 +321,38 @@ export class DataCubeGridClientServerSideDataSource
 
     const currentSnapshot = guaranteeNonNullable(this.grid.getLatestSnapshot());
     const newSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
-    // NOTE: if h-pivot is enabled
-    // if h-pivot is enabled, update the cast columns
-    // and panels which might be affected by this (e.g. sorts)
-    // TOOD?: this is an expensive operation in certain case, so we might want to
-    // optimize when this gets called
-    if (newSnapshot.data.pivot) {
-      try {
-        const castColumns = await getCastColumns(
-          newSnapshot,
-          this.grid.view.engine,
-        );
-        newSnapshot.data.pivot.castColumns = castColumns;
-        newSnapshot.data.sortColumns = newSnapshot.data.sortColumns.filter(
-          (column) =>
-            [...castColumns, ...newSnapshot.data.groupExtendedColumns].find(
-              (col) => column.name === col.name,
-            ),
-        );
-      } catch (error) {
-        assertErrorThrown(error);
-        this.grid.view.application.alertError(error, {
-          message: `Query Validation Failure: Can't retrieve pivot results column metadata. ${error.message}`,
-        });
-        // fail early since we can't proceed without the cast columns validated
-        params.fail();
-        this.grid.view.endTask(task);
-        return;
+
+    // console.log('drilldown', params.request.groupKeys);
+
+    // only recompute the snapshot if this is not a drilldown request
+    if (params.request.groupKeys.length === 0) {
+      // NOTE: if h-pivot is enabled, update the cast columns
+      // and panels which might be affected by this (e.g. sorts)
+      // TOOD?: this is an expensive operation in certain case, so we might want to
+      // optimize when this gets called
+      if (newSnapshot.data.pivot) {
+        try {
+          const castColumns = await getCastColumns(
+            newSnapshot,
+            this.grid.view.engine,
+          );
+          newSnapshot.data.pivot.castColumns = castColumns;
+          newSnapshot.data.sortColumns = newSnapshot.data.sortColumns.filter(
+            (column) =>
+              [...castColumns, ...newSnapshot.data.groupExtendedColumns].find(
+                (col) => column.name === col.name,
+              ),
+          );
+        } catch (error) {
+          assertErrorThrown(error);
+          this.grid.view.application.alertError(error, {
+            message: `Query Validation Failure: Can't retrieve pivot results column metadata. ${error.message}`,
+          });
+          // fail early since we can't proceed without the cast columns validated
+          params.fail();
+          this.grid.view.endTask(task);
+          return;
+        }
       }
     }
 

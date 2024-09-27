@@ -170,7 +170,6 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
               <FormDropdownMenuTrigger
                 className="w-16"
                 onClick={openInitialExpandLevelDropdown}
-                disabled={true}
                 open={initialExpandLevelDropdownPropsOpen}
               >
                 {configuration.initialExpandLevel ?? '(None)'}
@@ -192,7 +191,6 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
                   </FormDropdownMenuItem>
                 ))}
               </FormDropdownMenu>
-              <FormBadge_WIP />
             </div>
 
             <div className="mt-2 flex h-5 w-full items-center">

@@ -159,6 +159,8 @@ export class DataCubeColumnConfiguration {
   );
 }
 
+export class DataCubePivotLayoutConfiguration {}
+
 export class DataCubeConfiguration {
   description?: string | undefined;
   columns: DataCubeColumnConfiguration[] = [];
