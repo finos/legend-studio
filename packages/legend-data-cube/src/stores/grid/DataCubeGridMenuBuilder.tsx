@@ -39,6 +39,7 @@ import type { DataCubeGridControllerState } from './DataCubeGridControllerState.
 import {
   DataCubeGridClientExportFormat,
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
+  INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import type { DataCubeColumnConfiguration } from '../core/DataCubeConfiguration.js';
@@ -290,56 +291,73 @@ export function generateMenuBuilder(
     ] satisfies (string | MenuItemDef)[];
 
     let newFilterMenu: MenuItemDef[] = [];
-    if (columnConfiguration && column && value !== undefined) {
-      if (value !== INTERNAL__GRID_CLIENT_MISSING_VALUE) {
-        const filterValue = toFilterValue(value, columnConfiguration);
-        const filterOperations = getColumnFilterOperations(columnConfiguration);
+    if (column && value !== undefined) {
+      let _columnConfiguration = columnConfiguration;
+      if (
+        column.getColId() === INTERNAL__GRID_CLIENT_TREE_COLUMN_ID &&
+        controller.verticalPivotColumns.length &&
+        'node' in params &&
+        params.node
+      ) {
+        const groupByColumn =
+          controller.verticalPivotColumns[params.node.level];
+        _columnConfiguration = controller.getColumnConfiguration(
+          groupByColumn?.name,
+        );
+      }
 
-        if (
-          filterOperations.length &&
-          filterOperations.includes(DataCubeQueryFilterOperator.EQUAL)
-        ) {
-          const moreFilterOperations = filterOperations.filter(
-            (op) => op !== DataCubeQueryFilterOperator.EQUAL,
-          );
+      if (_columnConfiguration) {
+        if (value !== INTERNAL__GRID_CLIENT_MISSING_VALUE) {
+          const filterValue = toFilterValue(value, _columnConfiguration);
+          const filterOperations =
+            getColumnFilterOperations(_columnConfiguration);
 
+          if (
+            filterOperations.length &&
+            filterOperations.includes(DataCubeQueryFilterOperator.EQUAL)
+          ) {
+            const moreFilterOperations = filterOperations.filter(
+              (op) => op !== DataCubeQueryFilterOperator.EQUAL,
+            );
+
+            newFilterMenu = [
+              buildNewFilterConditionMenuItem(
+                _columnConfiguration,
+                DataCubeQueryFilterOperator.EQUAL,
+                filterValue,
+                controller,
+              ),
+              moreFilterOperations.length
+                ? {
+                    name: `More Filters on ${columnName}...`,
+                    subMenu: moreFilterOperations.map((operator) =>
+                      buildNewFilterConditionMenuItem(
+                        _columnConfiguration,
+                        operator,
+                        filterValue,
+                        controller,
+                      ),
+                    ),
+                  }
+                : undefined,
+            ].filter(isNonNullable);
+          }
+        } else {
           newFilterMenu = [
             buildNewFilterConditionMenuItem(
-              columnConfiguration,
-              DataCubeQueryFilterOperator.EQUAL,
-              filterValue,
+              _columnConfiguration,
+              DataCubeQueryFilterOperator.IS_NULL,
+              undefined,
               controller,
             ),
-            moreFilterOperations.length
-              ? {
-                  name: `More Filters on ${columnName}...`,
-                  subMenu: moreFilterOperations.map((operator) =>
-                    buildNewFilterConditionMenuItem(
-                      columnConfiguration,
-                      operator,
-                      filterValue,
-                      controller,
-                    ),
-                  ),
-                }
-              : undefined,
-          ].filter(isNonNullable);
+            buildNewFilterConditionMenuItem(
+              _columnConfiguration,
+              DataCubeQueryFilterOperator.IS_NOT_NULL,
+              undefined,
+              controller,
+            ),
+          ];
         }
-      } else {
-        newFilterMenu = [
-          buildNewFilterConditionMenuItem(
-            columnConfiguration,
-            DataCubeQueryFilterOperator.IS_NULL,
-            undefined,
-            controller,
-          ),
-          buildNewFilterConditionMenuItem(
-            columnConfiguration,
-            DataCubeQueryFilterOperator.IS_NOT_NULL,
-            undefined,
-            controller,
-          ),
-        ];
       }
     }
 
