@@ -80,6 +80,7 @@ export type DataCubeQueryFunctionMap = {
   pivot?: V1_AppliedFunction | undefined;
   pivotCast?: V1_AppliedFunction | undefined;
   groupBy?: V1_AppliedFunction | undefined;
+  groupBySort?: V1_AppliedFunction | undefined;
   groupExtend?: V1_AppliedFunction | undefined;
   select?: V1_AppliedFunction | undefined;
   sort?: V1_AppliedFunction | undefined;

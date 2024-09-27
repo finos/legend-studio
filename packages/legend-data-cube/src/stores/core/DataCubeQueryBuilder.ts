@@ -25,7 +25,6 @@ import {
   PRIMITIVE_TYPE,
   type V1_AppliedFunction,
   V1_deserializeValueSpecification,
-  extractElementNameFromPath as _name,
 } from '@finos/legend-graph';
 import {
   type DataCubeQuerySnapshot,
@@ -98,7 +97,7 @@ export function buildExecutableQuery(
   if (data.leafExtendedColumns.length) {
     _process(
       'leafExtend',
-      _function(_name(DataCubeFunction.EXTEND), [
+      _function(DataCubeFunction.EXTEND, [
         _cols(
           data.leafExtendedColumns.map((col) => {
             if (col._type === DataCubeExtendedColumnType.SIMPLE) {
@@ -119,7 +118,7 @@ export function buildExecutableQuery(
   if (data.filter) {
     _process(
       'filter',
-      _function(_name(DataCubeFunction.FILTER), [
+      _function(DataCubeFunction.FILTER, [
         _lambda([_var()], [_filter(data.filter, filterOperations)]),
       ]),
     );
@@ -130,7 +129,7 @@ export function buildExecutableQuery(
   if (data.selectColumns.length) {
     _process(
       'select',
-      _function(_name(DataCubeFunction.SELECT), [
+      _function(DataCubeFunction.SELECT, [
         _cols(data.selectColumns.map((col) => _colSpec(col.name))),
       ]),
     );
@@ -144,10 +143,10 @@ export function buildExecutableQuery(
     // pre-sort to maintain stable order for pivot result columns
     _process(
       'sort',
-      _function(_name(DataCubeFunction.SORT), [
+      _function(DataCubeFunction.SORT, [
         _collection(
           data.pivot.columns.map((col) =>
-            _function(_name(DataCubeFunction.ASC), [_col(col.name)]),
+            _function(DataCubeFunction.ASC, [_col(col.name)]),
           ),
         ),
       ]),
@@ -155,7 +154,7 @@ export function buildExecutableQuery(
 
     _process(
       'pivot',
-      _function(_name(DataCubeFunction.PIVOT), [
+      _function(DataCubeFunction.PIVOT, [
         _cols(pivot.columns.map((col) => _colSpec(col.name))),
         _cols(
           _pivotAggCols(
@@ -171,7 +170,7 @@ export function buildExecutableQuery(
     if (pivot.castColumns.length) {
       _process(
         'pivotCast',
-        _function(_name(DataCubeFunction.CAST), [_castCols(pivot.castColumns)]),
+        _function(DataCubeFunction.CAST, [_castCols(pivot.castColumns)]),
       );
     }
   }
@@ -182,7 +181,7 @@ export function buildExecutableQuery(
     const groupBy = data.groupBy;
     _process(
       'groupBy',
-      _function(_name(DataCubeFunction.GROUP_BY), [
+      _function(DataCubeFunction.GROUP_BY, [
         _cols(groupBy.columns.map((col) => _colSpec(col.name))),
         _cols(
           _groupByAggCols(
@@ -194,6 +193,22 @@ export function buildExecutableQuery(
         ),
       ]),
     );
+    _process(
+      'groupBySort',
+      _function(DataCubeFunction.SORT, [
+        _collection(
+          groupBy.columns.map((col) =>
+            _function(
+              configuration.treeColumnSortDirection ===
+                DataCubeQuerySortDirection.ASCENDING
+                ? DataCubeFunction.ASC
+                : DataCubeFunction.DESC,
+              [_col(col.name)],
+            ),
+          ),
+        ),
+      ]),
+    );
   }
 
   // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
@@ -201,7 +216,7 @@ export function buildExecutableQuery(
   if (data.groupExtendedColumns.length) {
     _process(
       'groupExtend',
-      _function(_name(DataCubeFunction.EXTEND), [
+      _function(DataCubeFunction.EXTEND, [
         _cols(
           data.groupExtendedColumns.map((col) => {
             if (col._type === DataCubeExtendedColumnType.SIMPLE) {
@@ -222,15 +237,13 @@ export function buildExecutableQuery(
   if (data.sortColumns.length) {
     _process(
       'sort',
-      _function(_name(DataCubeFunction.SORT), [
+      _function(DataCubeFunction.SORT, [
         _collection(
           data.sortColumns.map((col) =>
             _function(
-              _name(
-                col.direction === DataCubeQuerySortDirection.ASCENDING
-                  ? DataCubeFunction.ASC
-                  : DataCubeFunction.DESC,
-              ),
+              col.direction === DataCubeQuerySortDirection.ASCENDING
+                ? DataCubeFunction.ASC
+                : DataCubeFunction.DESC,
               [_col(col.name)],
             ),
           ),
@@ -244,7 +257,7 @@ export function buildExecutableQuery(
   if (data.limit !== undefined) {
     _process(
       'limit',
-      _function(_name(DataCubeFunction.LIMIT), [
+      _function(DataCubeFunction.LIMIT, [
         _primitiveValue(PRIMITIVE_TYPE.INTEGER, data.limit),
       ]),
     );
@@ -254,7 +267,7 @@ export function buildExecutableQuery(
 
   if (options?.pagination) {
     sequence.push(
-      _function(_name(DataCubeFunction.SLICE), [
+      _function(DataCubeFunction.SLICE, [
         _primitiveValue(PRIMITIVE_TYPE.INTEGER, options.pagination.start),
         _primitiveValue(PRIMITIVE_TYPE.INTEGER, options.pagination.end),
       ]),
@@ -265,7 +278,7 @@ export function buildExecutableQuery(
 
   sequence.push(
     _function(
-      _name(DataCubeFunction.FROM),
+      DataCubeFunction.FROM,
       [
         data.mapping ? _elementPtr(data.mapping) : undefined,
         _elementPtr(data.runtime),
