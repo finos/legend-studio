@@ -66,7 +66,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     makeObservable(this, {
       clientDataSource: observable,
 
-      queryConfiguration: observable,
+      queryConfiguration: observable.ref,
 
       rowLimit: observable,
 
@@ -118,19 +118,23 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,
   ) {
-    const queryConfiguration = DataCubeConfiguration.serialization.fromJson(
+    const configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
     );
-    this.queryConfiguration = queryConfiguration;
+    this.queryConfiguration = configuration;
     this.rowLimit = snapshot.data.limit;
 
     const gridOptions = generateGridOptionsFromSnapshot(
       snapshot,
-      queryConfiguration,
+      configuration,
       this.view,
     );
+    if (this.view.engine.enableDebugMode) {
+      this.view.application.debugProcess(`New Grid Options`, gridOptions);
+    }
     this.client.updateGridOptions({
       ...gridOptions,
+      rowBuffer: this.view.engine.gridClientRowBuffer,
       // NOTE: ag-grid uses the cache block size as page size, so it's important to set this
       // in corresponding to the pagination setting, else it would cause unexpected scrolling behavior
       cacheBlockSize: this.isPaginationEnabled
@@ -147,7 +151,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
         type: 'equals',
         filter: computeHashCodeForDataFetchManualTrigger(
           snapshot,
-          queryConfiguration,
+          configuration,
         ),
       },
     });

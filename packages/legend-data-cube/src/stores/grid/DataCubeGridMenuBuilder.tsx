@@ -822,6 +822,17 @@ export function generateMenuBuilder(
         disabled: !columnConfiguration,
         action: () => controller.showColumn(columnName, false),
       },
+      ...(columnName === INTERNAL__GRID_CLIENT_TREE_COLUMN_ID
+        ? [
+            'separator',
+            {
+              name: 'Collapse All',
+              action: () => {
+                controller.collapseAllPaths();
+              },
+            },
+          ]
+        : []),
       'separator',
       {
         name: 'Heatmap',

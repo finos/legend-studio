@@ -19,28 +19,22 @@ import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
-import { DataCubeEditorMutableConfiguration } from './DataCubeEditorMutableConfiguration.js';
+import { DataCubeEditorMutablePivotLayoutConfiguration } from './DataCubeEditorMutableConfiguration.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
+import type { PlainObject } from '@finos/legend-shared';
+import { _pruneExpandedPaths } from '../core/DataCubeQuerySnapshotBuilderUtils.js';
 
-export class DataCubeEditorGeneralPropertiesPanelState
+export class DataCubeEditorPivotLayoutPanelState
   implements DataCubeQueryEditorPanelState
 {
   readonly view!: DataCubeViewState;
   readonly editor!: DataCubeEditorState;
 
-  name = '';
-  limit = -1;
-  configuration = new DataCubeEditorMutableConfiguration();
+  pivotLayout = new DataCubeEditorMutablePivotLayoutConfiguration();
 
   constructor(editor: DataCubeEditorState) {
     makeObservable(this, {
-      configuration: observable,
-
-      name: observable,
-      setName: action,
-
-      limit: observable,
-      setLimit: action,
+      pivotLayout: observable,
 
       applySnaphot: action,
     });
@@ -49,26 +43,12 @@ export class DataCubeEditorGeneralPropertiesPanelState
     this.view = editor.view;
   }
 
-  setName(val: string) {
-    this.name = val;
-  }
-
-  setLimit(val: number) {
-    this.limit = val;
-  }
-
   applySnaphot(
     snapshot: DataCubeQuerySnapshot,
     configuration: DataCubeConfiguration,
   ) {
-    this.setName(snapshot.data.name);
-    this.setLimit(
-      snapshot.data.limit !== undefined && snapshot.data.limit >= 0
-        ? snapshot.data.limit
-        : -1,
-    );
-    this.configuration = DataCubeEditorMutableConfiguration.create(
-      snapshot.data.configuration,
+    this.pivotLayout = DataCubeEditorMutablePivotLayoutConfiguration.create(
+      snapshot.data.configuration.pivotLayout as PlainObject,
     );
   }
 
@@ -76,9 +56,16 @@ export class DataCubeEditorGeneralPropertiesPanelState
     newSnapshot: DataCubeQuerySnapshot,
     baseSnapshot: DataCubeQuerySnapshot,
   ) {
-    const data = newSnapshot.data;
-    data.name = this.name;
-    data.limit = this.limit < 0 ? undefined : this.limit;
-    data.configuration = this.configuration.serialize();
+    this.pivotLayout.setExpandedPaths(
+      _pruneExpandedPaths(
+        baseSnapshot.data.groupBy?.columns ?? [],
+        this.editor.verticalPivots.selector.selectedColumns,
+        this.pivotLayout.expandedPaths,
+      ),
+    );
+    newSnapshot.data.configuration = {
+      ...newSnapshot.data.configuration,
+      pivotLayout: this.pivotLayout.serialize(),
+    };
   }
 }

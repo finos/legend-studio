@@ -39,6 +39,7 @@ import { DataCubeEditor } from '../../components/editor/DataCubeEditor.js';
 import { buildExecutableQuery } from '../core/DataCubeQueryBuilder.js';
 import { _lambda } from '../core/DataCubeQueryBuilderUtils.js';
 import { DataCubeEditorHorizontalPivotsPanelState } from './DataCubeEditorHorizontalPivotsPanelState.js';
+import { DataCubeEditorPivotLayoutPanelState } from './DataCubeEditorPivotLayoutPanelState.js';
 
 export enum DataCubeEditorTab {
   GENERAL_PROPERTIES = 'General Properties',
@@ -63,6 +64,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
   readonly finalizationState = ActionState.create();
 
   readonly generalProperties: DataCubeEditorGeneralPropertiesPanelState;
+  readonly pivotLayout: DataCubeEditorPivotLayoutPanelState;
   readonly columnProperties: DataCubeEditorColumnPropertiesPanelState;
 
   readonly columns: DataCubeEditorColumnsPanelState;
@@ -97,6 +99,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     this.generalProperties = new DataCubeEditorGeneralPropertiesPanelState(
       this,
     );
+    this.pivotLayout = new DataCubeEditorPivotLayoutPanelState(this);
     this.columnProperties = new DataCubeEditorColumnPropertiesPanelState(this);
     this.columns = new DataCubeEditorColumnsPanelState(this);
     this.horizontalPivots = new DataCubeEditorHorizontalPivotsPanelState(this);
@@ -120,6 +123,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
       snapshot.data.configuration,
     );
     this.generalProperties.applySnaphot(snapshot, configuration);
+    this.pivotLayout.applySnaphot(snapshot, configuration);
     this.columnProperties.applySnaphot(snapshot, configuration);
 
     this.columns.applySnaphot(snapshot, configuration);
@@ -138,6 +142,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     // grid configuration must be processed before processing columns' configuration
     // to properly generate the container configuration
     this.generalProperties.buildSnapshot(newSnapshot, baseSnapshot);
+    this.pivotLayout.buildSnapshot(newSnapshot, baseSnapshot);
     this.columnProperties.buildSnapshot(newSnapshot, baseSnapshot);
 
     // NOTE: column selection must be processed first since the snapshot

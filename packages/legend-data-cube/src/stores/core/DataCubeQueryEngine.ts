@@ -303,8 +303,8 @@ export function getPivotResultColumnBaseColumnName(columnName: string) {
   );
 }
 
+export const TREE_COLUMN_VALUE_SEPARATOR = '__/__';
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
-export const DEFAULT_ROW_BUFFER = 20;
 
 export const DEFAULT_REPORT_NAME = 'New Report';
 export const DEFAULT_TREE_COLUMN_SORT_DIRECTION =

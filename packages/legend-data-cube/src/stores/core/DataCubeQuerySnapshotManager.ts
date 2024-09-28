@@ -63,7 +63,7 @@ export abstract class DataCubeQuerySnapshotController
         '\nPrevious Snapshot',
         this.latestSnapshot ?? {},
         '\nDiff',
-        deepDiff(snapshot, this.latestSnapshot ?? {}),
+        deepDiff(this.latestSnapshot ?? {}, snapshot),
       );
     }
     this.latestSnapshot = snapshot;

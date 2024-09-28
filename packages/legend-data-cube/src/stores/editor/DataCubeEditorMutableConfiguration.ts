@@ -44,6 +44,7 @@ import { makeObservable, observable, action, computed } from 'mobx';
 import {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
+  DataCubePivotLayoutConfiguration,
 } from '../core/DataCubeConfiguration.js';
 import { buildDefaultColumnConfiguration } from '../core/DataCubeConfigurationBuilder.js';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
@@ -398,6 +399,32 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
   }
 }
 
+export class DataCubeEditorMutablePivotLayoutConfiguration extends DataCubePivotLayoutConfiguration {
+  static create(
+    json: PlainObject<DataCubePivotLayoutConfiguration>,
+  ): DataCubeEditorMutablePivotLayoutConfiguration {
+    const configuration = Object.assign(
+      new DataCubeEditorMutablePivotLayoutConfiguration(),
+      DataCubePivotLayoutConfiguration.serialization.fromJson(json),
+    );
+
+    makeObservable(configuration, {
+      expandedPaths: observable,
+      setExpandedPaths: action,
+    });
+
+    return configuration;
+  }
+
+  serialize() {
+    return DataCubePivotLayoutConfiguration.serialization.toJson(this);
+  }
+
+  setExpandedPaths(value: string[]) {
+    this.expandedPaths = value;
+  }
+}
+
 export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
   static create(
     json: PlainObject<DataCubeConfiguration>,
@@ -682,5 +709,9 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
 
   setPivotStatisticColumnName(value: string) {
     this.pivotStatisticColumnName = value;
+  }
+
+  setExpandedPaths(value: string[]) {
+    this.pivotLayout.expandedPaths = value;
   }
 }

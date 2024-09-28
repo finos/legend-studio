@@ -37,6 +37,7 @@ import {
 } from '../core/DataCubeQueryEngine.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { guaranteeNonNullable, uniqBy } from '@finos/legend-shared';
+import { _pruneExpandedPaths } from '../core/DataCubeQuerySnapshotBuilderUtils.js';
 
 export function getColumnConfiguration(
   colName: string,
@@ -120,6 +121,16 @@ export function buildQuerySnapshot(
           ? DataCubeQuerySortDirection.ASCENDING
           : DataCubeQuerySortDirection.DESCENDING,
     }));
+
+  // --------------------------------- CONFIGURATION ---------------------------------
+
+  configuration.pivotLayout.expandedPaths = _pruneExpandedPaths(
+    baseSnapshot.data.groupBy?.columns ?? [],
+    snapshot.data.groupBy?.columns ?? [],
+    configuration.pivotLayout.expandedPaths,
+  );
+  snapshot.data.configuration =
+    DataCubeConfiguration.serialization.toJson(configuration);
 
   // --------------------------------- FINALIZE ---------------------------------
 

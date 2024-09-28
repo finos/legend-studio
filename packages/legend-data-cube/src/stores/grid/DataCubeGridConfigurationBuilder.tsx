@@ -74,7 +74,6 @@ import {
   DataCubeColumnDataType,
   DataCubeColumnPinPlacement,
   DataCubeNumberScale,
-  DEFAULT_ROW_BUFFER,
   DEFAULT_URL_LABEL_QUERY_PARAM,
   getDataType,
   DataCubeQuerySortDirection,
@@ -82,6 +81,7 @@ import {
   DEFAULT_MISSING_VALUE_DISPLAY_TEXT,
   PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
   isPivotResultColumnName,
+  TREE_COLUMN_VALUE_SEPARATOR,
 } from '../core/DataCubeQueryEngine.js';
 import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
 import { DataCubeIcon } from '@finos/legend-art';
@@ -851,6 +851,27 @@ export function generateGridOptionsFromSnapshot(
   view: DataCubeViewState,
 ): GridOptions {
   const gridOptions = {
+    isServerSideGroupOpenByDefault: (params) => {
+      if (
+        configuration.initialExpandLevel !== undefined &&
+        configuration.initialExpandLevel > 0 &&
+        params.rowNode.level <= configuration.initialExpandLevel - 1
+      ) {
+        return true;
+      }
+
+      const routes = params.rowNode.getRoute();
+      if (!routes) {
+        return false;
+      }
+      const path = routes.join(TREE_COLUMN_VALUE_SEPARATOR);
+      if (configuration.pivotLayout.expandedPaths.includes(path)) {
+        return true;
+      }
+
+      return false;
+    },
+
     /**
      * NOTE: there is a strange issue where if we put dynamic configuration directly
      * such as rowClassRules which depends on some changing state (e.g. alternateRows)
@@ -866,7 +887,6 @@ export function generateGridOptionsFromSnapshot(
             configuration.alternateRowsCount,
         }
       : {},
-    rowBuffer: DEFAULT_ROW_BUFFER,
 
     // -------------------------------------- EVENT HANDLERS --------------------------------------
     // NOTE: make sure the event source must not be 'api' since these handlers are meant for direct
@@ -907,25 +927,22 @@ export function generateGridOptionsFromSnapshot(
       }
     },
 
-    isServerSideGroupOpenByDefault: (params) => {
-      // const route = params.rowNode.getRoute();
-      // if (!route) {
-      //   return false;
-      // }
-      // const routeAsString = route.join('__|__');
-      // const routesToOpenByDefault = [
-      //   // 'China',
-      //   // 'China__|__Archery',
-      //   // 'United States__|__Swimming',
-      // ];
-      // return routesToOpenByDefault.indexOf(routeAsString) >= 0;
-      if (
-        configuration.initialExpandLevel !== undefined &&
-        configuration.initialExpandLevel > 0
-      ) {
-        return params.rowNode.level <= configuration.initialExpandLevel - 1;
+    onRowGroupOpened: (event) => {
+      // NOTE: only update the pivot layout expanded paths when the user manually expands/collapses
+      // a path. If the path is expanded/collapsed programmatically, such as when tree column initially-
+      // expanded-to-level is specified, causing the groups to be automatically drilled down, resultant
+      // expanded paths will not be kept for record.
+      if (event.event) {
+        const path = event.node.getRoute()?.join(TREE_COLUMN_VALUE_SEPARATOR);
+        if (!path) {
+          return;
+        }
+        if (event.expanded) {
+          view.grid.controller.expandPath(path);
+        } else {
+          view.grid.controller.collapsePath(path);
+        }
       }
-      return false;
     },
 
     // -------------------------------------- COLUMNS --------------------------------------

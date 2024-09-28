@@ -17,6 +17,7 @@
 import {
   guaranteeNonNullable,
   isNonNullable,
+  uniq,
   uniqBy,
 } from '@finos/legend-shared';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
@@ -50,6 +51,7 @@ import {
   type DataCubeFilterEditorTree,
   type DataCubeFilterEditorTreeNode,
 } from '../core/filter/DataCubeQueryFilterEditorState.js';
+import { _pruneExpandedPaths } from '../core/DataCubeQuerySnapshotBuilderUtils.js';
 
 /**
  * This query editor state is responsible for capturing updates to the data cube query
@@ -308,6 +310,26 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     this.applyChanges();
   }
 
+  collapseAllPaths() {
+    this.view.grid.client.collapseAll();
+    this.configuration.pivotLayout.expandedPaths = [];
+    this.applyChanges();
+  }
+
+  expandPath(path: string) {
+    this.configuration.pivotLayout.expandedPaths = uniq([
+      ...this.configuration.pivotLayout.expandedPaths,
+      path,
+    ]).sort();
+    this.applyChanges();
+  }
+
+  collapsePath(path: string) {
+    this.configuration.pivotLayout.expandedPaths =
+      this.configuration.pivotLayout.expandedPaths.filter((p) => p !== path);
+    this.applyChanges();
+  }
+
   // --------------------------------- SORT ---------------------------------
 
   sortColumns: DataCubeQuerySnapshotSortColumn[] = [];
@@ -408,10 +430,15 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     this.menuBuilder = generateMenuBuilder(this);
   }
 
-  private propagateChanges() {
+  private propagateChanges(baseSnapshot: DataCubeQuerySnapshot) {
     this.verticalPivotColumns = this.verticalPivotColumns.filter(
       (col) =>
         !this.horizontalPivotColumns.find((column) => column.name === col.name),
+    );
+    this.configuration.pivotLayout.expandedPaths = _pruneExpandedPaths(
+      baseSnapshot.data.groupBy?.columns ?? [],
+      this.verticalPivotColumns,
+      this.configuration.pivotLayout.expandedPaths,
     );
 
     this.selectColumns = uniqBy(
@@ -456,10 +483,10 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
   }
 
   private applyChanges() {
-    this.propagateChanges();
-
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const snapshot = baseSnapshot.clone();
+
+    this.propagateChanges(baseSnapshot);
 
     snapshot.data.configuration = DataCubeConfiguration.serialization.toJson(
       this.configuration,

@@ -159,7 +159,15 @@ export class DataCubeColumnConfiguration {
   );
 }
 
-export class DataCubePivotLayoutConfiguration {}
+export class DataCubePivotLayoutConfiguration {
+  expandedPaths: string[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataCubePivotLayoutConfiguration, {
+      expandedPaths: list(primitive()),
+    }),
+  );
+}
 
 export class DataCubeConfiguration {
   description?: string | undefined;
@@ -203,6 +211,8 @@ export class DataCubeConfiguration {
   pivotStatisticColumnName = DEFAULT_PIVOT_STATISTIC_COLUMN_NAME;
   pivotStatisticColumnPlacement?: DataCubeColumnPinPlacement | undefined; // unspecified -> hide the column
 
+  pivotLayout = new DataCubePivotLayoutConfiguration();
+
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeConfiguration, {
       alternateRows: primitive(),
@@ -230,6 +240,9 @@ export class DataCubeConfiguration {
       normalForegroundColor: primitive(),
       pivotStatisticColumnName: primitive(),
       pivotStatisticColumnPlacement: optional(primitive()),
+      pivotLayout: usingModelSchema(
+        DataCubePivotLayoutConfiguration.serialization.schema,
+      ),
       showHorizontalGridLines: primitive(),
       showLeafCount: primitive(),
       showSelectionStats: primitive(),
