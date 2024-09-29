@@ -352,7 +352,7 @@ export function _pivotAggCols(
       // are not helpful and therefore excluded
       column.kind === DataCubeColumnKind.MEASURE &&
       !pivotColumns.find((col) => col.name === column.name) &&
-      !column.excludedFromHorizontalPivot &&
+      !column.excludedFromPivot &&
       !snapshot.data.groupExtendedColumns.find(
         (col) => col.name === column.name,
       ),
@@ -453,7 +453,7 @@ export function _groupByAggCols(
         }
         return aggCol;
       }),
-    // these are the columns which are available for group-by but not selected for group-by
+    // these are the columns which are available for groupBy but not selected for groupBy
     // operation, they would be aggregated as well
     ...pivotGroupByColumns
       .filter(

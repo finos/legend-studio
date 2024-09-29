@@ -20,11 +20,11 @@ import {
   type DataCubeFont,
   type DataCubeOperationValue,
   type DataCubeNumberScale,
-  type DataCubeSelectionStat,
   type DataCubeFontFormatUnderlineVariant,
   type DataCubeFontCase,
   type DataCubeFontTextAlignment,
   type DataCubeColumnPinPlacement,
+  type DataCubeQuerySortDirection,
   DEFAULT_FONT_FAMILY,
   DEFAULT_FONT_SIZE,
   DEFAULT_FONT_BOLD,
@@ -44,6 +44,7 @@ import { makeObservable, observable, action, computed } from 'mobx';
 import {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
+  DataCubePivotLayoutConfiguration,
 } from '../core/DataCubeConfiguration.js';
 import { buildDefaultColumnConfiguration } from '../core/DataCubeConfigurationBuilder.js';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
@@ -180,11 +181,14 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
       aggregationParameters: observable,
       setAggregationParameters: action,
 
-      excludedFromHorizontalPivot: observable,
-      setExcludedFromHorizontalPivot: action,
+      excludedFromPivot: observable,
+      setExcludedFromPivot: action,
 
-      horizontalPivotSortFunction: observable,
-      setHorizontalPivotSortFunction: action,
+      pivotSortDirection: observable,
+      setPivotSortDirection: action,
+
+      pivotStatisticColumnFunction: observable,
+      setPivotStatisticColumnFunction: action,
     });
 
     return configuration;
@@ -382,12 +386,42 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
     this.aggregationParameters = value;
   }
 
-  setExcludedFromHorizontalPivot(value: boolean) {
-    this.excludedFromHorizontalPivot = value;
+  setExcludedFromPivot(value: boolean) {
+    this.excludedFromPivot = value;
   }
 
-  setHorizontalPivotSortFunction(value: string | undefined) {
-    this.horizontalPivotSortFunction = value;
+  setPivotSortDirection(value: string | undefined) {
+    this.pivotSortDirection = value;
+  }
+
+  setPivotStatisticColumnFunction(value: string | undefined) {
+    this.pivotStatisticColumnFunction = value;
+  }
+}
+
+export class DataCubeEditorMutablePivotLayoutConfiguration extends DataCubePivotLayoutConfiguration {
+  static create(
+    json: PlainObject<DataCubePivotLayoutConfiguration>,
+  ): DataCubeEditorMutablePivotLayoutConfiguration {
+    const configuration = Object.assign(
+      new DataCubeEditorMutablePivotLayoutConfiguration(),
+      DataCubePivotLayoutConfiguration.serialization.fromJson(json),
+    );
+
+    makeObservable(configuration, {
+      expandedPaths: observable,
+      setExpandedPaths: action,
+    });
+
+    return configuration;
+  }
+
+  serialize() {
+    return DataCubePivotLayoutConfiguration.serialization.toJson(this);
+  }
+
+  setExpandedPaths(value: string[]) {
+    this.expandedPaths = value;
   }
 }
 
@@ -404,9 +438,6 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
     makeObservable(configuration, {
       description: observable,
       setDescription: action,
-
-      showTreeLines: observable,
-      setShowTreeLines: action,
 
       showHorizontalGridLines: observable,
       setShowHorizontalGridLines: action,
@@ -477,8 +508,8 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
       alternateRowsStandardMode: observable,
       setAlternateRowsStandardMode: action,
 
-      selectionStats: observable,
-      setSelectionStats: action,
+      showSelectionStats: observable,
+      setShowSelectionStats: action,
 
       showWarningForTruncatedResult: observable,
       setShowWarningForTruncatedResult: action,
@@ -492,11 +523,14 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
       showLeafCount: observable,
       setShowLeafCount: action,
 
-      pivotTotalColumnPlacement: observable,
-      setPivotTotalColumnPlacement: action,
+      treeColumnSortDirection: observable,
+      setTreeColumnSortDirection: action,
 
-      treeGroupSortFunction: observable,
-      setTreeGroupSortFunction: action,
+      pivotStatisticColumnName: observable,
+      setPivotStatisticColumnName: action,
+
+      pivotStatisticColumnPlacement: observable,
+      setPivotStatisticColumnPlacement: action,
 
       isUsingDefaultStyling: computed,
       useDefaultStyling: action,
@@ -549,10 +583,6 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
 
   setDescription(value: string | undefined) {
     this.description = value;
-  }
-
-  setShowTreeLines(value: boolean) {
-    this.showTreeLines = value;
   }
 
   setShowHorizontalGridLines(value: boolean) {
@@ -647,8 +677,8 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
     this.alternateRowsStandardMode = value;
   }
 
-  setSelectionStats(value: DataCubeSelectionStat[]) {
-    this.selectionStats = value;
+  setShowSelectionStats(value: boolean) {
+    this.showSelectionStats = value;
   }
 
   setShowWarningForTruncatedResult(value: boolean) {
@@ -667,11 +697,21 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
     this.showLeafCount = value;
   }
 
-  setPivotTotalColumnPlacement(value: DataCubeColumnPinPlacement | undefined) {
-    this.pivotTotalColumnPlacement = value;
+  setTreeColumnSortDirection(value: DataCubeQuerySortDirection) {
+    this.treeColumnSortDirection = value;
   }
 
-  setTreeGroupSortFunction(value: string | undefined) {
-    this.treeGroupSortFunction = value;
+  setPivotStatisticColumnPlacement(
+    value: DataCubeColumnPinPlacement | undefined,
+  ) {
+    this.pivotStatisticColumnPlacement = value;
+  }
+
+  setPivotStatisticColumnName(value: string) {
+    this.pivotStatisticColumnName = value;
+  }
+
+  setExpandedPaths(value: string[]) {
+    this.pivotLayout.expandedPaths = value;
   }
 }

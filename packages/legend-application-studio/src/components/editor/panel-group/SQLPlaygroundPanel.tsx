@@ -451,10 +451,14 @@ const PlayGroundSQLExecutionResultGrid = observer(
               rowData={data.rowData}
               gridOptions={{
                 suppressScrollOnNewData: true,
-                rowSelection: 'multiple',
+                rowSelection: {
+                  mode: 'multiRow',
+                  checkboxes: false,
+                  headerCheckbox: false,
+                },
                 pivotPanelShow: 'always',
                 rowGroupPanelShow: 'always',
-                enableRangeSelection: true,
+                cellSelection: true,
               }}
               // NOTE: when column definition changed, we need to force refresh the cell to make sure the cell renderer is updated
               // See https://stackoverflow.com/questions/56341073/how-to-refresh-an-ag-grid-when-a-change-occurs-inside-a-custom-cell-renderer-com
@@ -510,8 +514,12 @@ const PlayGroundSQLExecutionResultGrid = observer(
             overlayNoRowsTemplate={`<div class="sql-playground__result__grid--empty">No results</div>`}
             gridOptions={{
               suppressScrollOnNewData: true,
-              rowSelection: 'multiple',
-              enableRangeSelection: true,
+              rowSelection: {
+                mode: 'multiRow',
+                checkboxes: false,
+                headerCheckbox: false,
+              },
+              cellSelection: true,
             }}
             onRowDataUpdated={(params) => {
               params.api.refreshCells({ force: true });

@@ -19,7 +19,7 @@ import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import {
   DataCubeColumnKind,
-  DataCubeQuerySortOperator,
+  DataCubeQuerySortDirection,
 } from '../core/DataCubeQueryEngine.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import {
@@ -31,21 +31,21 @@ import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { uniqBy } from '@finos/legend-shared';
 
 export class DataCubeEditorSortColumnState extends DataCubeEditorColumnsSelectorColumnState {
-  operation: string;
+  direction: string;
 
   constructor(name: string, type: string, direction: string) {
     super(name, type);
 
     makeObservable(this, {
-      operation: observable,
-      setOperation: action,
+      direction: observable,
+      setDirection: action,
     });
 
-    this.operation = direction;
+    this.direction = direction;
   }
 
-  setOperation(val: DataCubeQuerySortOperator) {
-    this.operation = val;
+  setDirection(val: DataCubeQuerySortDirection) {
+    this.direction = val;
   }
 }
 
@@ -54,7 +54,7 @@ export class DataCubeEditorSortColumnsSelectorState extends DataCubeEditorColumn
     return new DataCubeEditorSortColumnState(
       column.name,
       column.type,
-      column.operation,
+      column.direction,
     );
   }
 
@@ -91,7 +91,7 @@ export class DataCubeEditorSortColumnsSelectorState extends DataCubeEditorColumn
         new DataCubeEditorSortColumnState(
           col.name,
           col.type,
-          DataCubeQuerySortOperator.ASCENDING,
+          DataCubeQuerySortDirection.ASCENDING,
         ),
     );
   }
@@ -128,7 +128,7 @@ export class DataCubeEditorSortsPanelState
         return new DataCubeEditorSortColumnState(
           column.name,
           column.type,
-          col.operation,
+          col.direction,
         );
       }),
     );
@@ -141,7 +141,7 @@ export class DataCubeEditorSortsPanelState
     newSnapshot.data.sortColumns = this.selector.selectedColumns.map((col) => ({
       name: col.name,
       type: col.type,
-      operation: col.operation,
+      direction: col.direction,
     }));
   }
 }

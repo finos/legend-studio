@@ -40,7 +40,7 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
   ['Valid: filter()', 'filter(x|$x.a==1)', [], ''],
   [
     'Valid: groupBy()',
-    'groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])',
+    'groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([ascending(~a), ascending(~b)])',
     ['a:String', 'b:Integer'],
     '',
   ],
@@ -108,13 +108,13 @@ const cases: BaseSnapshotAnalysisTestCase[] = [
     'Invalid: Unsupported function composition: select()->filter()',
     'select(~a)->filter(x|$x.a==1)',
     ['a:Integer'],
-    'Unsupported function composition select()->filter() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->groupBy()->extend()->sort()->limit())',
+    'Unsupported function composition select()->filter() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())',
   ],
   [
-    'Unsupported function composition pivot() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->groupBy()->extend()->sort()->limit())',
+    'Unsupported function composition pivot()',
     'pivot(~a, ~b:x|$x.a:x|$x->sum())',
     [],
-    'Unsupported function composition pivot() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->groupBy()->extend()->sort()->limit())',
+    'Unsupported function composition pivot() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())',
   ],
   /** TODO: @datacube roundtrip - enable when we support extended columns */
   // See https://github.com/finos/legend-engine/pull/2873

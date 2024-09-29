@@ -31,12 +31,13 @@ import {
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import {
-  DataCubeQuerySortOperator,
+  DataCubeQuerySortDirection,
   getPivotResultColumnBaseColumnName,
   isPivotResultColumnName,
 } from '../core/DataCubeQueryEngine.js';
 import { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { guaranteeNonNullable, uniqBy } from '@finos/legend-shared';
+import { _pruneExpandedPaths } from '../core/DataCubeQuerySnapshotBuilderUtils.js';
 
 export function getColumnConfiguration(
   colName: string,
@@ -81,7 +82,9 @@ export function buildQuerySnapshot(
         columns: request.pivotCols.map((col) =>
           _toCol(getColumnConfiguration(col.id, configuration)),
         ),
-        castColumns: [],
+        // NOTE: since we re-fetch the cast columns anyway in this flow, we just
+        // reuse the current cast columns
+        castColumns: baseSnapshot.data.pivot?.castColumns ?? [],
       }
     : undefined;
 
@@ -98,11 +101,11 @@ export function buildQuerySnapshot(
   // --------------------------------- SORT ---------------------------------
 
   snapshot.data.sortColumns = request.sortModel
-    // Make sure the tree group is not being sorted since it's a synthetic column
+    // Make sure the tree column is not being sorted since it's a synthetic column
     // the sorting state of this special column is `synthesized` by ag-grid
     // so when all group by columns are sorted in the same direction, the tree group
     // column will be sorted in that direction, and vice versa, when user sorts
-    // the tree-group, all group-by columns will be sorted in that direction
+    // the tree column, all groupBy columns will be sorted in that direction
     .filter((item) => item.colId !== INTERNAL__GRID_CLIENT_TREE_COLUMN_ID)
     .map((item) => ({
       ..._toCol(
@@ -113,11 +116,21 @@ export function buildQuerySnapshot(
           configuration,
         ),
       ),
-      operation:
+      direction:
         item.sort === GridClientSortDirection.ASCENDING
-          ? DataCubeQuerySortOperator.ASCENDING
-          : DataCubeQuerySortOperator.DESCENDING,
+          ? DataCubeQuerySortDirection.ASCENDING
+          : DataCubeQuerySortDirection.DESCENDING,
     }));
+
+  // --------------------------------- CONFIGURATION ---------------------------------
+
+  configuration.pivotLayout.expandedPaths = _pruneExpandedPaths(
+    baseSnapshot.data.groupBy?.columns ?? [],
+    snapshot.data.groupBy?.columns ?? [],
+    configuration.pivotLayout.expandedPaths,
+  );
+  snapshot.data.configuration =
+    DataCubeConfiguration.serialization.toJson(configuration);
 
   // --------------------------------- FINALIZE ---------------------------------
 

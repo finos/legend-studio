@@ -21,7 +21,7 @@ import {
   DataCubeFontCase,
   DataCubeFontFormatUnderlineVariant,
   DataCubeFontTextAlignment,
-  DataCubeSelectionStat,
+  DataCubeQuerySortDirection,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_ERROR_FOREGROUND_COLOR,
   DEFAULT_FOREGROUND_COLOR,
@@ -49,18 +49,16 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
     const panel = view.editor.generalProperties;
     const configuration = panel.configuration;
     const [
+      openTreeColumnSortDirectionDropdown,
+      closeTreeColumnSortDirectionDropdown,
+      treeColumnSortDirectionDropdownProps,
+      treeColumnSortDirectionDropdownPropsOpen,
+    ] = useDropdownMenu();
+    const [
       openInitialExpandLevelDropdown,
       closeInitialExpandLevelDropdown,
       initialExpandLevelDropdownProps,
       initialExpandLevelDropdownPropsOpen,
-    ] = useDropdownMenu();
-    // TODO: selection stats should be shown as a list of checkboxes
-    // rather than a dropdown!
-    const [
-      openSelectionStatDropdown,
-      closeSelectionStatDropdown,
-      selectionStatDropdownProps,
-      selectionStatDropdownPropsOpen,
     ] = useDropdownMenu();
     const [
       openFontFamilyDropdown,
@@ -109,12 +107,69 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
 
             <div className="mt-2 flex h-5 w-full items-center">
               <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-                Initially Expand to Level:
+                Tree Column:
+              </div>
+              <FormCheckbox
+                label="Show root aggregation"
+                checked={configuration.showRootAggregation}
+                onChange={() =>
+                  configuration.setShowRootAggregation(
+                    !configuration.showRootAggregation,
+                  )
+                }
+                disabled={true}
+              />
+              <FormBadge_WIP />
+              <FormCheckbox
+                className="ml-3"
+                label="Show leaf count"
+                checked={configuration.showLeafCount}
+                onChange={() =>
+                  configuration.setShowLeafCount(!configuration.showLeafCount)
+                }
+              />
+              <div className="ml-3 mr-1.5 flex h-full flex-shrink-0 items-center text-sm">
+                Sort:
+              </div>
+              <FormDropdownMenuTrigger
+                className="w-20"
+                onClick={openTreeColumnSortDirectionDropdown}
+                open={treeColumnSortDirectionDropdownPropsOpen}
+              >
+                {configuration.treeColumnSortDirection}
+              </FormDropdownMenuTrigger>
+              <FormDropdownMenu
+                className="w-20"
+                {...treeColumnSortDirectionDropdownProps}
+              >
+                {[
+                  DataCubeQuerySortDirection.ASCENDING,
+                  DataCubeQuerySortDirection.DESCENDING,
+                ].map((direction) => (
+                  <FormDropdownMenuItem
+                    key={direction}
+                    onClick={() => {
+                      configuration.setTreeColumnSortDirection(direction);
+                      closeTreeColumnSortDirectionDropdown();
+                    }}
+                    autoFocus={
+                      direction === configuration.treeColumnSortDirection
+                    }
+                  >
+                    {direction}
+                  </FormDropdownMenuItem>
+                ))}
+              </FormDropdownMenu>
+            </div>
+
+            <div className="mt-2 flex h-5 w-full items-center">
+              <div className="flex h-full w-32 flex-shrink-0 items-center text-sm" />
+              <div className="mr-1.5 flex h-full flex-shrink-0 items-center text-sm">
+                Initially expand to level:
               </div>
               <FormDropdownMenuTrigger
                 className="w-16"
                 onClick={openInitialExpandLevelDropdown}
-                disabled={true}
                 open={initialExpandLevelDropdownPropsOpen}
               >
                 {configuration.initialExpandLevel ?? '(None)'}
@@ -136,116 +191,6 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
                   </FormDropdownMenuItem>
                 ))}
               </FormDropdownMenu>
-              <FormBadge_WIP />
-            </div>
-
-            <div className="mt-2 flex h-5 w-full items-center">
-              <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-                Show Root Aggregation?
-              </div>
-              <FormCheckbox
-                checked={configuration.showRootAggregation}
-                onChange={() =>
-                  configuration.setShowRootAggregation(
-                    !configuration.showRootAggregation,
-                  )
-                }
-                disabled={true}
-              />
-              <FormBadge_WIP />
-            </div>
-
-            <div className="mt-2 flex h-5 w-full items-center">
-              <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-                Show Leaf Count?
-              </div>
-              <FormCheckbox
-                checked={configuration.showLeafCount}
-                onChange={() =>
-                  configuration.setShowLeafCount(!configuration.showLeafCount)
-                }
-                disabled={true}
-              />
-              <FormBadge_WIP />
-            </div>
-
-            <div className="mt-2 flex h-5 w-full items-center">
-              <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-                Show Lines?
-              </div>
-              <FormCheckbox
-                label="Tree"
-                checked={configuration.showTreeLines}
-                onChange={() =>
-                  configuration.setShowTreeLines(!configuration.showTreeLines)
-                }
-                disabled={true}
-              />
-              <FormBadge_WIP />
-              <FormCheckbox
-                className="ml-2"
-                label="Horizontal"
-                checked={configuration.showHorizontalGridLines}
-                onChange={() =>
-                  configuration.setShowHorizontalGridLines(
-                    !configuration.showHorizontalGridLines,
-                  )
-                }
-              />
-              <FormCheckbox
-                className="ml-2"
-                label="Vertical"
-                checked={configuration.showVerticalGridLines}
-                onChange={() =>
-                  configuration.setShowVerticalGridLines(
-                    !configuration.showVerticalGridLines,
-                  )
-                }
-              />
-              <div className="ml-2 h-[1px] w-2 flex-shrink-0 bg-neutral-400" />
-              <FormColorPickerButton
-                className="ml-2"
-                color={configuration.gridLineColor}
-                defaultColor={DEFAULT_GRID_LINE_COLOR}
-                onChange={(value) => configuration.setGridLineColor(value)}
-              />
-            </div>
-
-            <div className="mt-2 flex h-5 w-full items-center">
-              <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-                Show Selection Stats:
-              </div>
-              <FormDropdownMenuTrigger
-                className="w-16"
-                onClick={openSelectionStatDropdown}
-                disabled={true}
-                open={selectionStatDropdownPropsOpen}
-              >
-                {'(None)'}
-              </FormDropdownMenuTrigger>
-              <FormDropdownMenu
-                className="w-16"
-                {...selectionStatDropdownProps}
-              >
-                {[
-                  DataCubeSelectionStat.SUM,
-                  DataCubeSelectionStat.AVERAGE,
-                  DataCubeSelectionStat.COUNT,
-                  DataCubeSelectionStat.MIN,
-                  DataCubeSelectionStat.MAX,
-                ].map((operation) => (
-                  <FormDropdownMenuItem
-                    key={operation}
-                    onClick={() => {
-                      // TODO
-                      closeSelectionStatDropdown();
-                    }}
-                  >
-                    {operation}
-                  </FormDropdownMenuItem>
-                ))}
-              </FormDropdownMenu>
-              <FormBadge_WIP />
             </div>
 
             <div className="mt-2 flex h-5 w-full items-center">
@@ -277,6 +222,54 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
                     !configuration.showWarningForTruncatedResult,
                   )
                 }
+              />
+            </div>
+
+            <div className="mt-2 flex h-5 w-full items-center">
+              <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
+                Show Selection Stats?
+              </div>
+              <FormCheckbox
+                checked={configuration.showSelectionStats}
+                onChange={() =>
+                  configuration.setShowSelectionStats(
+                    !configuration.showSelectionStats,
+                  )
+                }
+                disabled={true}
+              />
+              <FormBadge_WIP />
+            </div>
+
+            <div className="mt-2 flex h-5 w-full items-center">
+              <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
+                Show Lines?
+              </div>
+              <FormCheckbox
+                label="Horizontal"
+                checked={configuration.showHorizontalGridLines}
+                onChange={() =>
+                  configuration.setShowHorizontalGridLines(
+                    !configuration.showHorizontalGridLines,
+                  )
+                }
+              />
+              <FormCheckbox
+                className="ml-3"
+                label="Vertical"
+                checked={configuration.showVerticalGridLines}
+                onChange={() =>
+                  configuration.setShowVerticalGridLines(
+                    !configuration.showVerticalGridLines,
+                  )
+                }
+              />
+              <div className="ml-2 h-[1px] w-2 flex-shrink-0 bg-neutral-400" />
+              <FormColorPickerButton
+                className="ml-2"
+                color={configuration.gridLineColor}
+                defaultColor={DEFAULT_GRID_LINE_COLOR}
+                onChange={(value) => configuration.setGridLineColor(value)}
               />
             </div>
 

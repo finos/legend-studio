@@ -29,6 +29,7 @@ import {
   FormDocumentation,
 } from '../shared/DataCubeFormUtils.js';
 import {
+  DataCubeClientSideAggregateOperator,
   DataCubeColumnDataType,
   DataCubeColumnKind,
   DataCubeColumnPinPlacement,
@@ -246,8 +247,13 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                           onClick={() => {
                             if (kind !== selectedColumn.kind) {
                               selectedColumn.setKind(kind);
-                              selectedColumn.setExcludedFromHorizontalPivot(
+                              selectedColumn.setExcludedFromPivot(
                                 kind === DataCubeColumnKind.DIMENSION,
+                              );
+                              selectedColumn.setPivotStatisticColumnFunction(
+                                kind === DataCubeColumnKind.DIMENSION
+                                  ? undefined
+                                  : DataCubeClientSideAggregateOperator.SUM,
                               );
                             }
                             closeKindDropdown();
@@ -321,10 +327,10 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                   <FormCheckbox
                     className="ml-3"
                     label="Exclude from H-Pivot"
-                    checked={selectedColumn.excludedFromHorizontalPivot}
+                    checked={selectedColumn.excludedFromPivot}
                     onChange={() =>
-                      selectedColumn.setExcludedFromHorizontalPivot(
-                        !selectedColumn.excludedFromHorizontalPivot,
+                      selectedColumn.setExcludedFromPivot(
+                        !selectedColumn.excludedFromPivot,
                       )
                     }
                     disabled={
@@ -436,7 +442,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       />
                       <div className="ml-1 h-[1px] w-2 flex-shrink-0 bg-neutral-400" />
                       <div className="ml-2 mr-1.5 flex h-full flex-shrink-0 items-center text-sm">
-                        Use Parameter in Link as Label:
+                        Use parameter in link as label:
                       </div>
                       <FormTextInput
                         className="w-48"

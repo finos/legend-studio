@@ -4933,48 +4933,48 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@shikijs/core@npm:1.19.0":
-  version: 1.19.0
-  resolution: "@shikijs/core@npm:1.19.0"
+"@shikijs/core@npm:1.20.0":
+  version: 1.20.0
+  resolution: "@shikijs/core@npm:1.20.0"
   dependencies:
-    "@shikijs/engine-javascript": "npm:1.19.0"
-    "@shikijs/engine-oniguruma": "npm:1.19.0"
-    "@shikijs/types": "npm:1.19.0"
+    "@shikijs/engine-javascript": "npm:1.20.0"
+    "@shikijs/engine-oniguruma": "npm:1.20.0"
+    "@shikijs/types": "npm:1.20.0"
     "@shikijs/vscode-textmate": "npm:^9.2.2"
     "@types/hast": "npm:^3.0.4"
     hast-util-to-html: "npm:^9.0.3"
-  checksum: 10/263fe2ee9699435f6d878fb4f8b7d2d2a99acd5369c636c55a8e54eca22184d25a84be325c60711247a5235c4957d82923650b1c1b7057330586c01d8f0b82b7
+  checksum: 10/5b5f7f5dd4f1e2778175746f723afa7b30316ae940004d4a15601b0ed51e0e191015b8cf0717964624d020bc5a45bc9ed7c6ec15b458f76a3c6f22b94c26cdd0
   languageName: node
   linkType: hard
 
-"@shikijs/engine-javascript@npm:1.19.0":
-  version: 1.19.0
-  resolution: "@shikijs/engine-javascript@npm:1.19.0"
+"@shikijs/engine-javascript@npm:1.20.0":
+  version: 1.20.0
+  resolution: "@shikijs/engine-javascript@npm:1.20.0"
   dependencies:
-    "@shikijs/types": "npm:1.19.0"
+    "@shikijs/types": "npm:1.20.0"
     "@shikijs/vscode-textmate": "npm:^9.2.2"
     oniguruma-to-js: "npm:0.4.3"
-  checksum: 10/362759c30801980b3885bf4cad3902e5eaad81683c31ef72b04d2cc9cc928d79043ce84d7b4cbe8decb93003d76a295a9b5ea5d0e1d583b3a12acdf4ad0bd536
+  checksum: 10/31500128e1e39333ed272c64260762c813b15f5f878c96a2afecb5e55d17bcf30d234987470b1e6b5f184c826ed45f81fb90d85e4850a411f2fa02016d5fdec3
   languageName: node
   linkType: hard
 
-"@shikijs/engine-oniguruma@npm:1.19.0":
-  version: 1.19.0
-  resolution: "@shikijs/engine-oniguruma@npm:1.19.0"
+"@shikijs/engine-oniguruma@npm:1.20.0":
+  version: 1.20.0
+  resolution: "@shikijs/engine-oniguruma@npm:1.20.0"
   dependencies:
-    "@shikijs/types": "npm:1.19.0"
+    "@shikijs/types": "npm:1.20.0"
     "@shikijs/vscode-textmate": "npm:^9.2.2"
-  checksum: 10/5c75e489f9a88aad71f3b231575f6da3870d00335d0d241e92abe8e8c629309bef806620f76ceb2e2712eb782b185c8a82fb11edaf75dc683b95a1e911386564
+  checksum: 10/3caa0736e159f6859d7b9414b65b134eb9b5066c509c20a2c3d41ed3d01ac9f8d5adc0d5c9f599400fa4d3b2e8c471707092c392c4ad8c2610d8dcdcb22d6a77
   languageName: node
   linkType: hard
 
-"@shikijs/types@npm:1.19.0":
-  version: 1.19.0
-  resolution: "@shikijs/types@npm:1.19.0"
+"@shikijs/types@npm:1.20.0":
+  version: 1.20.0
+  resolution: "@shikijs/types@npm:1.20.0"
   dependencies:
     "@shikijs/vscode-textmate": "npm:^9.2.2"
     "@types/hast": "npm:^3.0.4"
-  checksum: 10/38089e90be28d8c636a85e385d858933dfa7aded783e17f6319c1f56d100d1b52168395edf2ac45ff4e65be8d94da657712f8454466df898faff7b5f999f686e
+  checksum: 10/428487b0d52bf947c00bf3798f7503f8eb7446b11222970498911e194571f1f7983d26ce99950f0fa42f2fde5bcb9a64df55892c6683d8ad1c86938ca18c1a16
   languageName: node
   linkType: hard
 
@@ -5412,7 +5412,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:22.7.2, @types/node@npm:^22.5.5":
+"@types/node@npm:*, @types/node@npm:^22.5.5":
+  version: 22.7.3
+  resolution: "@types/node@npm:22.7.3"
+  dependencies:
+    undici-types: "npm:~6.19.2"
+  checksum: 10/f5e450c8c0588506698c6dd5fb9617cc516e2bd35417d853c96378533bc45b69219715ecc5d78667a194387647e69a10852b348b52e2d45f41ec75985cd3ef88
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:22.7.2":
   version: 22.7.2
   resolution: "@types/node@npm:22.7.2"
   dependencies:
@@ -9190,7 +9199,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"escalade@npm:^3.1.1, escalade@npm:^3.1.2":
+"escalade@npm:^3.1.1, escalade@npm:^3.2.0":
   version: 3.2.0
   resolution: "escalade@npm:3.2.0"
   checksum: 10/9d7169e3965b2f9ae46971afa392f6e5a25545ea30f2e2dd99c9b0a95a3f52b5653681a84f5b2911a413ddad2d7a93d3514165072f349b5ffc59c75a899970d6
@@ -9280,14 +9289,14 @@ __metadata:
   linkType: hard
 
 "eslint-module-utils@npm:^2.9.0":
-  version: 2.11.1
-  resolution: "eslint-module-utils@npm:2.11.1"
+  version: 2.12.0
+  resolution: "eslint-module-utils@npm:2.12.0"
   dependencies:
     debug: "npm:^3.2.7"
   peerDependenciesMeta:
     eslint:
       optional: true
-  checksum: 10/88285f758cc2d4a07410a5b765cc2858319075e12bedb65ae26459f1bc5a18c2b154f9026d4acb5049896c3815adb29087fd07b2b04d26beb59182bd6028b121
+  checksum: 10/dd27791147eca17366afcb83f47d6825b6ce164abb256681e5de4ec1d7e87d8605641eb869298a0dbc70665e2446dbcc2f40d3e1631a9475dd64dd23d4ca5dee
   languageName: node
   linkType: hard
 
@@ -9793,9 +9802,9 @@ __metadata:
   linkType: hard
 
 "fast-uri@npm:^3.0.0, fast-uri@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "fast-uri@npm:3.0.1"
-  checksum: 10/e8ee4712270de0d29eb0fbf41ffad0ac80952e8797be760e8bb62c4707f08f50a86fe2d7829681ca133c07d6eb4b4a75389a5fc36674c5b254a3ac0891a68fc7
+  version: 3.0.2
+  resolution: "fast-uri@npm:3.0.2"
+  checksum: 10/99224f0198e24a4072b9a8a25fc5fa553aa0153e00d29d41272096a6d97be417c9faa5978682868cbba46b09066dc9348563c7244057f3818067e7737db153b2
   languageName: node
   linkType: hard
 
@@ -10763,9 +10772,9 @@ __metadata:
   linkType: hard
 
 "html-url-attributes@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "html-url-attributes@npm:3.0.0"
-  checksum: 10/80c892b013d253a5638318a481b8a5f4f207117da73901f8c50f49b0a37eaaf71cb9e59c9426820f8b455b2429d9056955e17662ebc9fc77da189c5b80d7ea98
+  version: 3.0.1
+  resolution: "html-url-attributes@npm:3.0.1"
+  checksum: 10/494074c2f730c5c0e517aa1b10111fb36732534a2d2b70427582c4a615472b47da472cf3a17562cc653826d378d20960f2783e0400f4f7cf0c3c2d91c6188d13
   languageName: node
   linkType: hard
 
@@ -14741,9 +14750,9 @@ __metadata:
   linkType: hard
 
 "package-json-from-dist@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "package-json-from-dist@npm:1.0.0"
-  checksum: 10/ac706ec856a5a03f5261e4e48fa974f24feb044d51f84f8332e2af0af04fbdbdd5bbbfb9cbbe354190409bc8307c83a9e38c6672c3c8855f709afb0006a009ea
+  version: 1.0.1
+  resolution: "package-json-from-dist@npm:1.0.1"
+  checksum: 10/58ee9538f2f762988433da00e26acc788036914d57c71c246bf0be1b60cdbd77dd60b6a3e1a30465f0b248aeb80079e0b34cb6050b1dfa18c06953bb1cbc7602
   languageName: node
   linkType: hard
 
@@ -17650,16 +17659,16 @@ __metadata:
   linkType: hard
 
 "shiki@npm:^1.16.2":
-  version: 1.19.0
-  resolution: "shiki@npm:1.19.0"
+  version: 1.20.0
+  resolution: "shiki@npm:1.20.0"
   dependencies:
-    "@shikijs/core": "npm:1.19.0"
-    "@shikijs/engine-javascript": "npm:1.19.0"
-    "@shikijs/engine-oniguruma": "npm:1.19.0"
-    "@shikijs/types": "npm:1.19.0"
+    "@shikijs/core": "npm:1.20.0"
+    "@shikijs/engine-javascript": "npm:1.20.0"
+    "@shikijs/engine-oniguruma": "npm:1.20.0"
+    "@shikijs/types": "npm:1.20.0"
     "@shikijs/vscode-textmate": "npm:^9.2.2"
     "@types/hast": "npm:^3.0.4"
-  checksum: 10/ce904dd4fc2da7445617ec08ececabe592748b712d165424fe545bd72b9ff235fe15a4b52cbbaa95d2f266de775ab8dfed87c82bc27c28873213b1dbc3edd341
+  checksum: 10/2c6ba28d7586f25abc5dec5d9dc405d19812a37ba8f763de614f5a310182b93963c71b154c2ff53e8bcda2a2d99e804049c74c1f0934d36386df2d4011f74d1b
   languageName: node
   linkType: hard
 
@@ -19267,16 +19276,16 @@ __metadata:
   linkType: hard
 
 "update-browserslist-db@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "update-browserslist-db@npm:1.1.0"
+  version: 1.1.1
+  resolution: "update-browserslist-db@npm:1.1.1"
   dependencies:
-    escalade: "npm:^3.1.2"
-    picocolors: "npm:^1.0.1"
+    escalade: "npm:^3.2.0"
+    picocolors: "npm:^1.1.0"
   peerDependencies:
     browserslist: ">= 4.21.0"
   bin:
     update-browserslist-db: cli.js
-  checksum: 10/d70b9efeaf4601aadb1a4f6456a7a5d9118e0063d995866b8e0c5e0cf559482671dab6ce7b079f9536b06758a344fbd83f974b965211e1c6e8d1958540b0c24c
+  checksum: 10/7678dd8609750588d01aa7460e8eddf2ff9d16c2a52fb1811190e0d056390f1fdffd94db3cf8fb209cf634ab4fa9407886338711c71cc6ccade5eeb22b093734
   languageName: node
   linkType: hard
 

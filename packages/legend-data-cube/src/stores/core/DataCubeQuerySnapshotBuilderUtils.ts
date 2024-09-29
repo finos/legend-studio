@@ -19,7 +19,6 @@ import {
   V1_ClassInstance,
   V1_ColSpec,
   V1_ColSpecArray,
-  V1_Lambda,
   extractElementNameFromPath as _name,
   matchFunctionName,
   type V1_ValueSpecification,
@@ -28,14 +27,11 @@ import { type DataCubeQuerySnapshotColumn } from './DataCubeQuerySnapshot.js';
 import {
   assertTrue,
   assertType,
+  guaranteeNonNullable,
   guaranteeType,
-  UnsupportedOperationError,
   type Clazz,
 } from '@finos/legend-shared';
-import {
-  DataCubeFunction,
-  DataCubeAggregateOperator,
-} from './DataCubeQueryEngine.js';
+import { TREE_COLUMN_VALUE_SEPARATOR } from './DataCubeQueryEngine.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -90,108 +86,38 @@ export function _funcMatch(
   return value;
 }
 
-// TODO: move these functions out into aggregator utils when we make agg operator handling systematic
-// similar to what we did with filter
-function _aggFuncMatch(
-  value: V1_ValueSpecification | undefined,
-  functionNames: string | string[],
-) {
-  assertType(
-    value,
-    V1_Lambda,
-    `Can't process aggregation: Found unexpected value specification type`,
-  );
-  return _funcMatch(value.body[0], functionNames);
-}
+// --------------------------------- BUILDING BLOCKS ---------------------------------
 
-export function _aggCol(
-  colSpec: V1_ColSpec,
-  column: DataCubeQuerySnapshotColumn,
+/**
+ * This method prunes expanded paths that are no longer valid due to changes in group by columns.
+ * It finds the last common group by column between the previous and current group by columns and
+ * prune the expanded paths beyond that point.
+ */
+export function _pruneExpandedPaths(
+  prevGroupByCols: DataCubeQuerySnapshotColumn[],
+  currentGroupByCols: DataCubeQuerySnapshotColumn[],
+  expandedPaths: string[],
 ) {
-  const func = _aggFuncMatch(
-    colSpec.function2,
-    Object.values(DataCubeFunction),
-  );
-  if (matchFunctionName(func.function, DataCubeFunction.COUNT)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperator.COUNT,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.SUM)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperator.SUM,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.AVERAGE)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperator.AVERAGE,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.MIN)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperator.MIN,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.MAX)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperator.MAX,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.FIRST)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperator.FIRST,
-      parameters: [],
-    };
-  } else if (matchFunctionName(func.function, DataCubeFunction.LAST)) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperator.LAST,
-      parameters: [],
-    };
-  } else if (
-    matchFunctionName(func.function, DataCubeFunction.VARIANCE_POPULATION)
-  ) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperator.VARIANCE_POPULATION,
-      parameters: [],
-    };
-  } else if (
-    matchFunctionName(func.function, DataCubeFunction.VARIANCE_SAMPLE)
-  ) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperator.VARIANCE_SAMPLE,
-      parameters: [],
-    };
-  } else if (
-    matchFunctionName(
-      func.function,
-      DataCubeFunction.STANDARD_DEVIATION_POPULATION,
-    )
-  ) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperator.STANDARD_DEVIATION_POPULATION,
-      parameters: [],
-    };
-  } else if (
-    matchFunctionName(func.function, DataCubeFunction.STANDARD_DEVIATION_SAMPLE)
-  ) {
-    return {
-      ...column,
-      operation: DataCubeAggregateOperator.STANDARD_DEVIATION_SAMPLE,
-      parameters: [],
-    };
-  } else {
-    throw new UnsupportedOperationError(
-      `Unsupported aggregate function '${func.function}'`,
-    );
+  const length = Math.min(prevGroupByCols.length, currentGroupByCols.length);
+  if (!length) {
+    return [];
   }
+  let lastCommonIndex = -1;
+  for (let i = 0; i < length; i++) {
+    if (
+      guaranteeNonNullable(prevGroupByCols[i]).name !==
+        guaranteeNonNullable(currentGroupByCols[i]).name ||
+      guaranteeNonNullable(prevGroupByCols[i]).type !==
+        guaranteeNonNullable(currentGroupByCols[i]).type
+    ) {
+      break;
+    }
+    lastCommonIndex = i;
+  }
+  return expandedPaths
+    .filter(
+      (path) =>
+        path.split(TREE_COLUMN_VALUE_SEPARATOR).length <= lastCommonIndex + 1,
+    )
+    .sort();
 }

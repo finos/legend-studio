@@ -21,7 +21,7 @@ import type {
 } from '@ag-grid-community/core';
 import { WIP_GridMenuItem } from '../../components/grid/DataCubeGridShared.js';
 import {
-  DataCubeQuerySortOperator,
+  DataCubeQuerySortDirection,
   DataCubeColumnPinPlacement,
   DEFAULT_COLUMN_MIN_WIDTH,
   DataCubeColumnKind,
@@ -39,6 +39,7 @@ import type { DataCubeGridControllerState } from './DataCubeGridControllerState.
 import {
   DataCubeGridClientExportFormat,
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
+  INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import type { DataCubeColumnConfiguration } from '../core/DataCubeConfiguration.js';
@@ -204,7 +205,7 @@ export function generateMenuBuilder(
                   action: () =>
                     controller.setSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperator.ASCENDING,
+                      DataCubeQuerySortDirection.ASCENDING,
                     ),
                 },
                 {
@@ -218,7 +219,7 @@ export function generateMenuBuilder(
                   action: () =>
                     controller.setSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperator.DESCENDING,
+                      DataCubeQuerySortDirection.DESCENDING,
                     ),
                 },
                 {
@@ -241,13 +242,13 @@ export function generateMenuBuilder(
                     controller.sortColumns.find(
                       (col) =>
                         col.name === columnName &&
-                        col.operation === DataCubeQuerySortOperator.ASCENDING,
+                        col.direction === DataCubeQuerySortDirection.ASCENDING,
                     ),
                   ),
                   action: () =>
                     controller.addSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperator.ASCENDING,
+                      DataCubeQuerySortDirection.ASCENDING,
                     ),
                 },
                 {
@@ -262,13 +263,13 @@ export function generateMenuBuilder(
                     controller.sortColumns.find(
                       (col) =>
                         col.name === columnName &&
-                        col.operation === DataCubeQuerySortOperator.DESCENDING,
+                        col.direction === DataCubeQuerySortDirection.DESCENDING,
                     ),
                   ),
                   action: () =>
                     controller.addSortByColumn(
                       columnName,
-                      DataCubeQuerySortOperator.DESCENDING,
+                      DataCubeQuerySortDirection.DESCENDING,
                     ),
                 },
                 {
@@ -290,56 +291,73 @@ export function generateMenuBuilder(
     ] satisfies (string | MenuItemDef)[];
 
     let newFilterMenu: MenuItemDef[] = [];
-    if (columnConfiguration && column && value !== undefined) {
-      if (value !== INTERNAL__GRID_CLIENT_MISSING_VALUE) {
-        const filterValue = toFilterValue(value, columnConfiguration);
-        const filterOperations = getColumnFilterOperations(columnConfiguration);
+    if (column && value !== undefined) {
+      let _columnConfiguration = columnConfiguration;
+      if (
+        column.getColId() === INTERNAL__GRID_CLIENT_TREE_COLUMN_ID &&
+        controller.verticalPivotColumns.length &&
+        'node' in params &&
+        params.node
+      ) {
+        const groupByColumn =
+          controller.verticalPivotColumns[params.node.level];
+        _columnConfiguration = controller.getColumnConfiguration(
+          groupByColumn?.name,
+        );
+      }
 
-        if (
-          filterOperations.length &&
-          filterOperations.includes(DataCubeQueryFilterOperator.EQUAL)
-        ) {
-          const moreFilterOperations = filterOperations.filter(
-            (op) => op !== DataCubeQueryFilterOperator.EQUAL,
-          );
+      if (_columnConfiguration) {
+        if (value !== INTERNAL__GRID_CLIENT_MISSING_VALUE) {
+          const filterValue = toFilterValue(value, _columnConfiguration);
+          const filterOperations =
+            getColumnFilterOperations(_columnConfiguration);
 
+          if (
+            filterOperations.length &&
+            filterOperations.includes(DataCubeQueryFilterOperator.EQUAL)
+          ) {
+            const moreFilterOperations = filterOperations.filter(
+              (op) => op !== DataCubeQueryFilterOperator.EQUAL,
+            );
+
+            newFilterMenu = [
+              buildNewFilterConditionMenuItem(
+                _columnConfiguration,
+                DataCubeQueryFilterOperator.EQUAL,
+                filterValue,
+                controller,
+              ),
+              moreFilterOperations.length
+                ? {
+                    name: `More Filters on ${columnName}...`,
+                    subMenu: moreFilterOperations.map((operator) =>
+                      buildNewFilterConditionMenuItem(
+                        _columnConfiguration,
+                        operator,
+                        filterValue,
+                        controller,
+                      ),
+                    ),
+                  }
+                : undefined,
+            ].filter(isNonNullable);
+          }
+        } else {
           newFilterMenu = [
             buildNewFilterConditionMenuItem(
-              columnConfiguration,
-              DataCubeQueryFilterOperator.EQUAL,
-              filterValue,
+              _columnConfiguration,
+              DataCubeQueryFilterOperator.IS_NULL,
+              undefined,
               controller,
             ),
-            moreFilterOperations.length
-              ? {
-                  name: `More Filters on ${columnName}...`,
-                  subMenu: moreFilterOperations.map((operator) =>
-                    buildNewFilterConditionMenuItem(
-                      columnConfiguration,
-                      operator,
-                      filterValue,
-                      controller,
-                    ),
-                  ),
-                }
-              : undefined,
-          ].filter(isNonNullable);
+            buildNewFilterConditionMenuItem(
+              _columnConfiguration,
+              DataCubeQueryFilterOperator.IS_NOT_NULL,
+              undefined,
+              controller,
+            ),
+          ];
         }
-      } else {
-        newFilterMenu = [
-          buildNewFilterConditionMenuItem(
-            columnConfiguration,
-            DataCubeQueryFilterOperator.IS_NULL,
-            undefined,
-            controller,
-          ),
-          buildNewFilterConditionMenuItem(
-            columnConfiguration,
-            DataCubeQueryFilterOperator.IS_NOT_NULL,
-            undefined,
-            controller,
-          ),
-        ];
       }
     }
 
@@ -548,7 +566,7 @@ export function generateMenuBuilder(
           ...(column &&
           columnName &&
           baseColumnConfiguration?.kind === DataCubeColumnKind.MEASURE &&
-          !baseColumnConfiguration.excludedFromHorizontalPivot &&
+          !baseColumnConfiguration.excludedFromPivot &&
           controller.horizontalPivotColumns.length !== 0 // pivot must be active
             ? [
                 {
@@ -562,7 +580,7 @@ export function generateMenuBuilder(
           ...(column &&
           columnName &&
           columnConfiguration?.kind === DataCubeColumnKind.MEASURE &&
-          columnConfiguration.excludedFromHorizontalPivot &&
+          columnConfiguration.excludedFromPivot &&
           controller.horizontalPivotColumns.length !== 0 // pivot must be active
             ? [
                 {
@@ -804,6 +822,17 @@ export function generateMenuBuilder(
         disabled: !columnConfiguration,
         action: () => controller.showColumn(columnName, false),
       },
+      ...(columnName === INTERNAL__GRID_CLIENT_TREE_COLUMN_ID
+        ? [
+            'separator',
+            {
+              name: 'Collapse All',
+              action: () => {
+                controller.collapseAllPaths();
+              },
+            },
+          ]
+        : []),
       'separator',
       {
         name: 'Heatmap',

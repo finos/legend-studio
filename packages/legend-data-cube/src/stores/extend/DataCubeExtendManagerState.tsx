@@ -113,7 +113,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     const columnConfiguration = buildDefaultColumnConfiguration(column);
     if (columnKind) {
       columnConfiguration.kind = columnKind;
-      columnConfiguration.excludedFromHorizontalPivot =
+      columnConfiguration.excludedFromPivot =
         columnKind === DataCubeColumnKind.DIMENSION;
     }
 

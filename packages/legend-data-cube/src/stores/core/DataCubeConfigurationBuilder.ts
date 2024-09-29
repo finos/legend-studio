@@ -41,13 +41,14 @@ export function buildDefaultColumnConfiguration(column: {
       config.displayCommas = true;
       config.negativeNumberInParens = true;
       config.textAlign = DataCubeFontTextAlignment.RIGHT; // always align number to the right
-      config.excludedFromHorizontalPivot = false;
+      config.excludedFromPivot = false;
       config.aggregateOperator = DataCubeAggregateOperator.SUM;
+      config.pivotStatisticColumnFunction = DataCubeAggregateOperator.SUM;
       break;
     }
     default: {
       config.kind = DataCubeColumnKind.DIMENSION;
-      config.excludedFromHorizontalPivot = true;
+      config.excludedFromPivot = true;
       config.aggregateOperator = DataCubeAggregateOperator.UNIQUE;
       break;
     }

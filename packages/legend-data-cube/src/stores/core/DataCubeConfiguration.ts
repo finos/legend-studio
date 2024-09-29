@@ -35,10 +35,11 @@ import {
   type DataCubeFontTextAlignment,
   type DataCubeFontFormatUnderlineVariant,
   type DataCubeNumberScale,
-  type DataCubeSelectionStat,
   type DataCubeColumnPinPlacement,
   type DataCubeFontCase,
   type DataCubeOperationValue,
+  DEFAULT_PIVOT_STATISTIC_COLUMN_NAME,
+  DEFAULT_TREE_COLUMN_SORT_DIRECTION,
 } from './DataCubeQueryEngine.js';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, list, optional, primitive, raw } from 'serializr';
@@ -104,8 +105,9 @@ export class DataCubeColumnConfiguration {
   // NOTE: these configurations, when changed, would potentially trigger data-fetching
   aggregateOperator!: string;
   aggregationParameters: DataCubeOperationValue[] = [];
-  excludedFromHorizontalPivot = true; // this agrees with default column kind set as Dimension
-  horizontalPivotSortFunction?: string | undefined;
+  excludedFromPivot = true; // this agrees with default column kind set as Dimension
+  pivotSortDirection?: string | undefined;
+  pivotStatisticColumnFunction?: string | undefined;
 
   constructor(name: string, type: string) {
     this.name = name;
@@ -123,7 +125,7 @@ export class DataCubeColumnConfiguration {
       displayName: optional(primitive()),
       errorBackgroundColor: optional(primitive()),
       errorForegroundColor: optional(primitive()),
-      excludedFromHorizontalPivot: primitive(),
+      excludedFromPivot: primitive(),
       fixedWidth: optional(primitive()),
       fontBold: optional(primitive()),
       fontCase: optional(primitive()),
@@ -133,7 +135,6 @@ export class DataCubeColumnConfiguration {
       fontStrikethrough: optional(primitive()),
       fontUnderline: optional(primitive()),
       hideFromView: primitive(),
-      horizontalPivotSortFunction: optional(primitive()),
       isSelected: primitive(),
       kind: primitive(),
       linkLabelParameter: optional(primitive()),
@@ -148,6 +149,8 @@ export class DataCubeColumnConfiguration {
       negativeNumberInParens: primitive(),
       numberScale: optional(primitive()),
       pinned: optional(primitive()),
+      pivotSortDirection: optional(primitive()),
+      pivotStatisticColumnFunction: optional(primitive()),
       textAlign: optional(primitive()),
       type: primitive(),
       zeroBackgroundColor: optional(primitive()),
@@ -156,11 +159,20 @@ export class DataCubeColumnConfiguration {
   );
 }
 
+export class DataCubePivotLayoutConfiguration {
+  expandedPaths: string[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataCubePivotLayoutConfiguration, {
+      expandedPaths: list(primitive()),
+    }),
+  );
+}
+
 export class DataCubeConfiguration {
   description?: string | undefined;
   columns: DataCubeColumnConfiguration[] = [];
 
-  showTreeLines = false;
   showHorizontalGridLines = false;
   showVerticalGridLines = true;
   gridLineColor = DEFAULT_GRID_LINE_COLOR;
@@ -188,15 +200,18 @@ export class DataCubeConfiguration {
   alternateRowsColor = DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR;
   alternateRowsCount = 1;
 
-  selectionStats: DataCubeSelectionStat[] = [];
+  showSelectionStats = false;
   showWarningForTruncatedResult = true;
 
-  // NOTE: these configurations, when changed, would potentially trigger data-fetching
+  // these configurations, when changed, would potentially trigger data-fetching
   initialExpandLevel?: number | undefined;
   showRootAggregation = false;
-  showLeafCount = false;
-  pivotTotalColumnPlacement?: DataCubeColumnPinPlacement | undefined;
-  treeGroupSortFunction?: string | undefined;
+  showLeafCount = true;
+  treeColumnSortDirection = DEFAULT_TREE_COLUMN_SORT_DIRECTION;
+  pivotStatisticColumnName = DEFAULT_PIVOT_STATISTIC_COLUMN_NAME;
+  pivotStatisticColumnPlacement?: DataCubeColumnPinPlacement | undefined; // unspecified -> hide the column
+
+  pivotLayout = new DataCubePivotLayoutConfiguration();
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeConfiguration, {
@@ -223,16 +238,19 @@ export class DataCubeConfiguration {
       negativeForegroundColor: primitive(),
       normalBackgroundColor: primitive(),
       normalForegroundColor: primitive(),
-      pivotTotalColumnPlacement: optional(primitive()),
-      selectionStats: list(primitive()),
+      pivotStatisticColumnName: primitive(),
+      pivotStatisticColumnPlacement: optional(primitive()),
+      pivotLayout: usingModelSchema(
+        DataCubePivotLayoutConfiguration.serialization.schema,
+      ),
       showHorizontalGridLines: primitive(),
       showLeafCount: primitive(),
+      showSelectionStats: primitive(),
       showRootAggregation: primitive(),
-      showTreeLines: primitive(),
       showVerticalGridLines: primitive(),
       showWarningForTruncatedResult: primitive(),
       textAlign: primitive(),
-      treeGroupSortFunction: optional(primitive()),
+      treeColumnSortDirection: primitive(),
       zeroBackgroundColor: primitive(),
       zeroForegroundColor: primitive(),
     }),

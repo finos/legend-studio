@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  PRIMITIVE_TYPE,
-  type V1_AppliedFunction,
-  extractElementNameFromPath as _name,
-} from '@finos/legend-graph';
+import { PRIMITIVE_TYPE, type V1_AppliedFunction } from '@finos/legend-graph';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import {
   DataCubeQueryFilterGroupOperator,
@@ -90,7 +86,7 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
         sequence.splice(
           sequence.indexOf(funcMap.groupBy),
           0,
-          _function(_name(DataCubeFunction.FILTER), [
+          _function(DataCubeFunction.FILTER, [
             _lambda(
               [_var()],
               [
@@ -171,7 +167,7 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
           0,
           drilldownValues.length + 1,
         );
-        const groupByFunc = _function(_name(DataCubeFunction.GROUP_BY), [
+        const groupByFunc = _function(DataCubeFunction.GROUP_BY, [
           _cols(groupByColumns.map((col) => _colSpec(col.name))),
           _cols([
             ..._groupByAggCols(

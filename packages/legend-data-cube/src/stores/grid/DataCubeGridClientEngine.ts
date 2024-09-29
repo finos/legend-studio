@@ -49,7 +49,6 @@ import {
   type DataCubeQuerySnapshotData,
 } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeEngine } from '../engine/DataCubeEngine.js';
-import { generateColumnDefs } from './DataCubeGridConfigurationBuilder.js';
 import { type DataCubeQueryFunctionMap } from '../core/DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from '../core/aggregation/DataCubeQueryAggregateOperation.js';
@@ -186,10 +185,10 @@ export function computeHashCodeForDataFetchManualTrigger(
       ...snapshot.data,
       name: '', // name change should not trigger data fetching
       configuration: {
-        initialExpandLevel: configuration.initialExpandLevel,
         showRootAggregation: configuration.showRootAggregation,
-        pivotTotalColumnPlacement: configuration.pivotTotalColumnPlacement,
-        treeGroupSortFunction: configuration.treeGroupSortFunction,
+        pivotStatisticColumnPlacement:
+          configuration.pivotStatisticColumnPlacement,
+        treeColumnSortDirection: configuration.treeColumnSortDirection,
         columns: configuration.columns
           .map((column) => ({
             name: column.name,
@@ -197,8 +196,11 @@ export function computeHashCodeForDataFetchManualTrigger(
             kind: column.kind,
             aggregateOperator: column.aggregateOperator,
             aggregationParameters: column.aggregationParameters,
-            excludedFromHorizontalPivot: column.excludedFromHorizontalPivot,
-            horizontalPivotSortFunction: column.horizontalPivotSortFunction,
+            excludedFromPivot: column.excludedFromPivot,
+            pivotSortDirection: column.pivotSortDirection,
+            // technically, we just need to refresh the row-data since this computation
+            // is done on the client-side, but to simplify the flow, we can just refetch data
+            pivotStatisticColumnFunction: column.pivotStatisticColumnFunction,
           }))
           .sort(_sortByColName), // sort to make sure column reordering does not trigger data fetching
       },
@@ -317,49 +319,52 @@ export class DataCubeGridClientServerSideDataSource
     // ------------------------------ SNAPSHOT ------------------------------
 
     const currentSnapshot = guaranteeNonNullable(this.grid.getLatestSnapshot());
-    const newSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
-    // NOTE: if h-pivot is enabled
-    // if h-pivot is enabled, update the cast columns
-    // and panels which might be affected by this (e.g. sorts)
-    // TOOD?: this is an expensive operation in certain case, so we might want to
-    // optimize when this gets called
-    if (newSnapshot.data.pivot) {
-      try {
-        const castColumns = await getCastColumns(
-          newSnapshot,
-          this.grid.view.engine,
-        );
-        newSnapshot.data.pivot.castColumns = castColumns;
-        newSnapshot.data.sortColumns = newSnapshot.data.sortColumns.filter(
-          (column) =>
-            [...castColumns, ...newSnapshot.data.groupExtendedColumns].find(
-              (col) => column.name === col.name,
-            ),
-        );
-      } catch (error) {
-        assertErrorThrown(error);
-        this.grid.view.application.alertError(error, {
-          message: `Query Validation Failure: Can't retrieve pivot results column metadata. ${error.message}`,
-        });
-        // fail early since we can't proceed without the cast columns validated
-        params.fail();
-        this.grid.view.endTask(task);
-        return;
-      }
-    }
+    let newSnapshot = currentSnapshot;
 
-    newSnapshot.finalize();
-    if (newSnapshot.hashCode !== currentSnapshot.hashCode) {
-      // update grid column definitions since new columns could have been added
-      // due to changes in pivot
-      this.grid.client.updateGridOptions({
-        columnDefs: generateColumnDefs(
-          newSnapshot,
-          this.grid.queryConfiguration,
-          this.grid.view,
-        ),
-      });
-      this.grid.publishSnapshot(newSnapshot);
+    // only recompute the snapshot if this is not a drilldown request
+    if (params.request.groupKeys.length === 0) {
+      newSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
+
+      // NOTE: if h-pivot is enabled, update the cast columns
+      // and panels which might be affected by this (e.g. sorts)
+      // Because is an expensive operation in certain case, we only
+      // recompute when it's not a drilldown or paging request,
+      // but we could still optimize further if needed.
+      if (!this.grid.isPaginationEnabled || params.request.startRow === 0) {
+        if (newSnapshot.data.pivot) {
+          try {
+            const castColumns = await getCastColumns(
+              newSnapshot,
+              this.grid.view.engine,
+            );
+            newSnapshot.data.pivot.castColumns = castColumns;
+            newSnapshot.data.sortColumns = newSnapshot.data.sortColumns.filter(
+              (column) =>
+                [...castColumns, ...newSnapshot.data.groupExtendedColumns].find(
+                  (col) => column.name === col.name,
+                ),
+            );
+          } catch (error) {
+            assertErrorThrown(error);
+            this.grid.view.application.alertError(error, {
+              message: `Query Validation Failure: Can't retrieve pivot results column metadata. ${error.message}`,
+            });
+            // fail early since we can't proceed without the cast columns validated
+            params.fail();
+            this.grid.view.endTask(task);
+            return;
+          }
+        }
+      }
+
+      newSnapshot.finalize();
+      if (newSnapshot.hashCode !== currentSnapshot.hashCode) {
+        // NOTE: if we mess up the computation of the snapshot, we run the risk
+        // of triggering an infinite loop, by keep updating the grid options
+        // so we need to be careful here when making this call!
+        await this.grid.applySnapshot(newSnapshot, currentSnapshot);
+        this.grid.publishSnapshot(newSnapshot);
+      }
     }
 
     // ------------------------------ DATA ------------------------------
@@ -447,7 +452,6 @@ export class DataCubeGridClientServerSideDataSource
                 {
                   label: 'Dismiss Warning',
                   handler: () => {
-                    // this.grid.setPaginationEnabled(true);
                     this.grid.view.engine.setGridClientSuppressLargeDatasetWarning(
                       true,
                     );
