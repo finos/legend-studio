@@ -29,6 +29,8 @@ import type { DataCubeViewState } from '../stores/DataCubeViewState.js';
 import { INTERNAL__MonacoEditorWidgetsRoot } from './shared/DataCubePureCodeEditorUtils.js';
 import { useDataCube } from './DataCubeProvider.js';
 import { DataCubeBlockingActionAlert } from './application/DataCubeAlert.js';
+import { LogEvent } from '@finos/legend-shared';
+import { DataCubeEvent } from '../application/DataCubeEvent.js';
 
 const DataCubeStatusBar = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
@@ -142,6 +144,25 @@ export const DataCube = observer(() => {
     view.initialize().catch((error) => application.logUnhandledError(error));
   }, [view, application]);
 
+  // TODO: move this to upper layer component when we have multi-view support
+  useEffect(() => {
+    application.blockNavigation(
+      // Only block navigation in production
+      // eslint-disable-next-line no-process-env
+      [() => process.env.NODE_ENV === 'production'],
+      undefined,
+      () => {
+        application.logWarning(
+          LogEvent.create(DataCubeEvent.NAVIGATION_BLOCKED),
+          `Navigation from the application is blocked`,
+        );
+      },
+    );
+    return (): void => {
+      application.unblockNavigation();
+    };
+  }, [application]);
+
   return (
     <div className="data-cube relative flex h-full w-full flex-col bg-white">
       <DataCubeTitleBar view={view} />
@@ -149,6 +170,7 @@ export const DataCube = observer(() => {
       <DataCubeGrid view={view} />
       <DataCubeStatusBar view={view} />
 
+      {/* TODO: move this to upper layer component when we have multi-view support */}
       <DataCubeLayoutManager layout={application.layout} />
       <DataCubeBlockingActionAlert />
       <INTERNAL__MonacoEditorWidgetsRoot />

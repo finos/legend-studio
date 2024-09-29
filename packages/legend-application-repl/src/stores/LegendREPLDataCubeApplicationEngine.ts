@@ -58,6 +58,22 @@ export class LegendREPLDataCubeApplicationEngine extends DataCubeApplicationEngi
     this.application.layoutService.setWindowTitle(title);
   }
 
+  blockNavigation(
+    blockCheckers: (() => boolean)[],
+    onBlock?: ((onProceed: () => void) => void) | undefined,
+    onNativePlatformNavigationBlock?: (() => void) | undefined,
+  ) {
+    this.application.navigationService.navigator.blockNavigation(
+      blockCheckers,
+      onBlock,
+      onNativePlatformNavigationBlock,
+    );
+  }
+
+  unblockNavigation() {
+    this.application.navigationService.navigator.unblockNavigation();
+  }
+
   alertAction(alertInfo: ActionAlert | undefined) {
     this.currentActionAlert = alertInfo;
   }

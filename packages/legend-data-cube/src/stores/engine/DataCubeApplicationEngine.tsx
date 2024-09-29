@@ -55,6 +55,12 @@ export abstract class DataCubeApplicationEngine {
 
   abstract openLink(url: string): void;
   abstract setWindowTitle(title: string): void;
+  abstract blockNavigation(
+    blockCheckers: (() => boolean)[],
+    onBlock?: ((onProceed: () => void) => void) | undefined,
+    onNativePlatformNavigationBlock?: (() => void) | undefined,
+  ): void;
+  abstract unblockNavigation(): void;
 
   abstract logDebug(message: string, ...data: unknown[]): void;
   abstract debugProcess(processName: string, ...data: unknown[]): void;
