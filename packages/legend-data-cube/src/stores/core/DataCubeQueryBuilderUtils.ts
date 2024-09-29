@@ -247,11 +247,13 @@ export function _colSpec(
   name: string,
   function1?: V1_Lambda | undefined,
   function2?: V1_Lambda | undefined,
+  type?: string | undefined,
 ) {
   const colSpec = new V1_ColSpec();
   colSpec.name = name;
   colSpec.function1 = function1;
   colSpec.function2 = function2;
+  colSpec.type = type;
   return colSpec;
 }
 
@@ -376,7 +378,11 @@ export function _pivotAggCols(
 export function _castCols(columns: DataCubeQuerySnapshotColumn[]) {
   const genericType = new V1_GenericTypeInstance();
   genericType.fullPath = CORE_PURE_PATH.RELATION;
-  genericType.typeArguments = [_cols(columns)];
+  genericType.typeArguments = [
+    _cols(
+      columns.map((col) => _colSpec(col.name, undefined, undefined, col.type)),
+    ),
+  ];
   return genericType;
 }
 

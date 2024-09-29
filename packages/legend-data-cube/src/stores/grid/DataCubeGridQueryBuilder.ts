@@ -14,15 +14,29 @@
  * limitations under the License.
  */
 
-import { PRIMITIVE_TYPE, type V1_AppliedFunction } from '@finos/legend-graph';
+import {
+  PRIMITIVE_TYPE,
+  V1_ClassInstance,
+  V1_ColSpecArray,
+  V1_GenericTypeInstance,
+  type V1_ColSpec,
+  type V1_AppliedFunction,
+} from '@finos/legend-graph';
 import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import {
   DataCubeQueryFilterGroupOperator,
   DataCubeQueryFilterOperator,
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
+  isPivotResultColumnName,
+  PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
 } from '../core/DataCubeQueryEngine.js';
-import { guaranteeNonNullable, isNullable } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  guaranteeType,
+  isNullable,
+  uniq,
+} from '@finos/legend-shared';
 import {
   _groupByAggCols,
   _colSpec,
@@ -32,6 +46,7 @@ import {
   _lambda,
   _var,
   _functionCompositionUnProcessor,
+  _property,
 } from '../core/DataCubeQueryBuilderUtils.js';
 import {
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
@@ -40,6 +55,7 @@ import {
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import type { DataCubeQueryFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from '../core/aggregation/DataCubeQueryAggregateOperation.js';
+import { _colSpecArrayParam } from '../core/DataCubeQuerySnapshotBuilderUtils.js';
 
 /*****************************************************************************
  * [GRID]
@@ -52,7 +68,7 @@ import type { DataCubeQueryAggregateOperation } from '../core/aggregation/DataCu
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
-function _rowGroupingCountCol() {
+function _aggCountCol() {
   const variable = _var();
   return _colSpec(
     INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
@@ -60,6 +76,56 @@ function _rowGroupingCountCol() {
     _lambda([variable], [_function(DataCubeFunction.COUNT, [variable])]),
   );
 }
+
+function _aggCountCastCol(colName: string) {
+  const variable = _var();
+  return _colSpec(
+    colName,
+    _lambda([variable], [_property(colName, variable)]),
+    _lambda([variable], [_function(DataCubeFunction.SUM, [variable])]),
+  );
+}
+
+// if pivot is present, modify pivot and pivot cast expressions to include
+// count aggregation columns.
+function _addCountAggColumnToPivot(
+  funcMap: DataCubeQueryFunctionMap,
+  countAggColumns: V1_ColSpec[],
+): void {
+  if (funcMap.pivot && funcMap.pivotCast) {
+    _colSpecArrayParam(funcMap.pivot, 1).colSpecs.push(_aggCountCol());
+    const castColumns = guaranteeType(
+      guaranteeType(
+        guaranteeType(funcMap.pivotCast.parameters[0], V1_GenericTypeInstance)
+          .typeArguments[0],
+        V1_ClassInstance,
+      ).value,
+      V1_ColSpecArray,
+    ).colSpecs;
+    uniq(
+      castColumns
+        .filter((col) => isPivotResultColumnName(col.name))
+        .map((col) =>
+          col.name.substring(
+            0,
+            col.name.lastIndexOf(PIVOT_COLUMN_NAME_VALUE_SEPARATOR),
+          ),
+        ),
+    )
+      .map(
+        (col) =>
+          col +
+          PIVOT_COLUMN_NAME_VALUE_SEPARATOR +
+          INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
+      )
+      .map((col) => _colSpec(col, undefined, undefined, PRIMITIVE_TYPE.INTEGER))
+      .forEach((col) => {
+        castColumns.push(col);
+        countAggColumns.push(col);
+      });
+  }
+}
+
 // --------------------------------- MAIN ---------------------------------
 
 export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
@@ -162,6 +228,9 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
 
       // modify groupBy() based off the current drilldown level
       if (drilldownValues.length < groupBy.columns.length) {
+        const countAggColumns: V1_ColSpec[] = [];
+        _addCountAggColumnToPivot(funcMap, countAggColumns);
+
         const groupByIdx = sequence.indexOf(funcMap.groupBy);
         const groupByColumns = groupBy.columns.slice(
           0,
@@ -176,7 +245,13 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
               configuration,
               aggregateOperations,
             ),
-            _rowGroupingCountCol(), // get the count for each group
+
+            // if pivot is present, add sum aggregation columns for each
+            // count aggregation column from pivot aggregation
+            // else, simply add a count aggregation column
+            ...(countAggColumns.length
+              ? countAggColumns.map((col) => _aggCountCastCol(col.name))
+              : [_aggCountCol()]),
           ]),
         ]);
         sequence[groupByIdx] = groupByFunc;

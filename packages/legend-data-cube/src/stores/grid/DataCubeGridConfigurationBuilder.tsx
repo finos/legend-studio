@@ -850,7 +850,7 @@ export function generateGridOptionsFromSnapshot(
   configuration: DataCubeConfiguration,
   view: DataCubeViewState,
 ): GridOptions {
-  const gridOptions = {
+  return {
     isServerSideGroupOpenByDefault: (params) => {
       if (
         configuration.initialExpandLevel !== undefined &&
@@ -976,6 +976,4 @@ export function generateGridOptionsFromSnapshot(
       suppressSpanHeaderHeight: true,
     } satisfies ColDef,
   } satisfies GridOptions;
-
-  return gridOptions;
 }

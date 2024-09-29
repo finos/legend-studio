@@ -49,11 +49,15 @@ import {
   type DataCubeQuerySnapshotData,
 } from '../core/DataCubeQuerySnapshot.js';
 import type { DataCubeEngine } from '../engine/DataCubeEngine.js';
-import { type DataCubeQueryFunctionMap } from '../core/DataCubeQueryEngine.js';
+import {
+  isPivotResultColumnName,
+  type DataCubeQueryFunctionMap,
+} from '../core/DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from '../core/aggregation/DataCubeQueryAggregateOperation.js';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { AlertType } from '../../components/application/DataCubeAlert.js';
+import { sum } from 'mathjs';
 
 type GridClientCellValue = string | number | boolean | null | undefined;
 type GridClientRowData = {
@@ -212,10 +216,13 @@ export function computeHashCodeForDataFetchManualTrigger(
   );
 }
 
-function TDStoRowData(tds: TabularDataSet): GridClientRowData[] {
-  return tds.rows.map((_row, rowIdx) => {
+function buildRowData(
+  result: TabularDataSet,
+  snapshot: DataCubeQuerySnapshot,
+): GridClientRowData[] {
+  return result.rows.map((_row, rowIdx) => {
     const row: GridClientRowData = {};
-    const cols = tds.columns;
+    const cols = result.columns;
     _row.values.forEach((value, colIdx) => {
       // `ag-grid` shows `false` value as empty string so we have
       // call `.toString()` to avoid this behavior.
@@ -224,6 +231,21 @@ function TDStoRowData(tds: TabularDataSet): GridClientRowData[] {
         : isNonNullable(value)
           ? value
           : INTERNAL__GRID_CLIENT_MISSING_VALUE;
+      if (snapshot.data.pivot && snapshot.data.groupBy) {
+        row[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] = Number(
+          sum(
+            result.columns
+              .filter(
+                (col) =>
+                  isPivotResultColumnName(col) &&
+                  col.endsWith(
+                    INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
+                  ),
+              )
+              .map((col) => (row[col] as number | undefined) ?? 0),
+          ).toString(),
+        );
+      }
     });
     return row;
   });
@@ -393,7 +415,7 @@ export class DataCubeGridClientServerSideDataSource
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
       const result = await this.grid.view.engine.executeQuery(lambda);
-      const rowData = TDStoRowData(result.result.result);
+      const rowData = buildRowData(result.result.result, newSnapshot);
       if (this.grid.view.engine.enableDebugMode) {
         this.grid.view.application.debugProcess(
           `Execution`,
