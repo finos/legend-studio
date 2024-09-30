@@ -17,7 +17,7 @@ jobs:
     if: github.repository == 'finos/legend-studio' # prevent running this action in forks
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.0
         with:
           # fetch all Git history so that `changesets` can generate changelogs with the correct commits
           fetch-depth: 0
