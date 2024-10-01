@@ -209,24 +209,12 @@ export function generateMenuBuilder(
                     ),
                 },
                 {
-                  name: 'Ascending Absolute',
-                  menuItem: WIP_GridMenuItem,
-                  cssClasses: ['!opacity-100'],
-                  disabled: true,
-                },
-                {
                   name: 'Descending',
                   action: () =>
                     controller.setSortByColumn(
                       columnName,
                       DataCubeQuerySortDirection.DESCENDING,
                     ),
-                },
-                {
-                  name: 'Descending Absolute',
-                  menuItem: WIP_GridMenuItem,
-                  cssClasses: ['!opacity-100'],
-                  disabled: true,
                 },
                 {
                   name: 'Clear Sort',
@@ -252,12 +240,6 @@ export function generateMenuBuilder(
                     ),
                 },
                 {
-                  name: 'Add Ascending Absolute',
-                  menuItem: WIP_GridMenuItem,
-                  cssClasses: ['!opacity-100'],
-                  disabled: true,
-                },
-                {
                   name: 'Add Descending',
                   disabled: Boolean(
                     controller.sortColumns.find(
@@ -271,12 +253,6 @@ export function generateMenuBuilder(
                       columnName,
                       DataCubeQuerySortDirection.DESCENDING,
                     ),
-                },
-                {
-                  name: 'Add Descending Absolute',
-                  menuItem: WIP_GridMenuItem,
-                  cssClasses: ['!opacity-100'],
-                  disabled: true,
                 },
                 'separator',
               ]

@@ -49,10 +49,10 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
     const panel = view.editor.generalProperties;
     const configuration = panel.configuration;
     const [
-      openTreeColumnSortDirectionDropdown,
-      closeTreeColumnSortDirectionDropdown,
-      treeColumnSortDirectionDropdownProps,
-      treeColumnSortDirectionDropdownPropsOpen,
+      openTreeColumnSortOperatorDropdown,
+      closeTreeColumnSortOperatorDropdown,
+      treeColumnSortOperatorDropdownProps,
+      treeColumnSortOperatorDropdownPropsOpen,
     ] = useDropdownMenu();
     const [
       openInitialExpandLevelDropdown,
@@ -133,14 +133,14 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
               </div>
               <FormDropdownMenuTrigger
                 className="w-20"
-                onClick={openTreeColumnSortDirectionDropdown}
-                open={treeColumnSortDirectionDropdownPropsOpen}
+                onClick={openTreeColumnSortOperatorDropdown}
+                open={treeColumnSortOperatorDropdownPropsOpen}
               >
                 {configuration.treeColumnSortDirection}
               </FormDropdownMenuTrigger>
               <FormDropdownMenu
                 className="w-20"
-                {...treeColumnSortDirectionDropdownProps}
+                {...treeColumnSortOperatorDropdownProps}
               >
                 {[
                   DataCubeQuerySortDirection.ASCENDING,
@@ -150,7 +150,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
                     key={direction}
                     onClick={() => {
                       configuration.setTreeColumnSortDirection(direction);
-                      closeTreeColumnSortDirectionDropdown();
+                      closeTreeColumnSortOperatorDropdown();
                     }}
                     autoFocus={
                       direction === configuration.treeColumnSortDirection

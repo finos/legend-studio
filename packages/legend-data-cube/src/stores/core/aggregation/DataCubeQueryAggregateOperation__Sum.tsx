@@ -17,7 +17,7 @@
 import type { DataCubeQuerySnapshotColumn } from '../DataCubeQuerySnapshot.js';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
-  DataCubeAggregateOperator,
+  DataCubeQueryAggregateOperator,
   DataCubeColumnDataType,
   DataCubeFunction,
   ofDataType,
@@ -38,8 +38,8 @@ export class DataCubeQueryAggregateOperation__Sum extends DataCubeQueryAggregate
     return 'sum';
   }
 
-  override get operator(): string {
-    return DataCubeAggregateOperator.SUM;
+  override get operator() {
+    return DataCubeQueryAggregateOperator.SUM;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

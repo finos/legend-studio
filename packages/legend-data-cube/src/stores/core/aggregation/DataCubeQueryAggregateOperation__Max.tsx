@@ -17,7 +17,7 @@
 import type { DataCubeQuerySnapshotColumn } from '../DataCubeQuerySnapshot.js';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
-  DataCubeAggregateOperator,
+  DataCubeQueryAggregateOperator,
   DataCubeColumnDataType,
   DataCubeFunction,
   ofDataType,
@@ -38,8 +38,8 @@ export class DataCubeQueryAggregateOperation__Max extends DataCubeQueryAggregate
     return 'max';
   }
 
-  override get operator(): string {
-    return DataCubeAggregateOperator.MAX;
+  override get operator() {
+    return DataCubeQueryAggregateOperator.MAX;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

@@ -48,11 +48,11 @@ export class DataCubeQueryFilterOperation__NotContain extends DataCubeQueryFilte
     return '!contains';
   }
 
-  override get description(): string {
+  override get description() {
     return 'does not contain';
   }
 
-  override get operator(): string {
+  override get operator() {
     return DataCubeQueryFilterOperator.NOT_CONTAIN;
   }
 

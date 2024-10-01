@@ -507,12 +507,12 @@ export function _filter(
   } else {
     const filterCondition = filter;
     const operation = filterOperations.find(
-      (op) => op.operator === filterCondition.operation,
+      (op) => op.operator === filterCondition.operator,
     );
     const condition = operation?.buildConditionExpression(filterCondition);
     if (!condition) {
       throw new UnsupportedOperationError(
-        `Unsupported filter operation '${filterCondition.operation}'`,
+        `Unsupported filter operation '${filterCondition.operator}'`,
       );
     }
     return filterCondition.not ? _not(condition) : condition;

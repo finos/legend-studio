@@ -16,55 +16,42 @@
 
 import { observer } from 'mobx-react-lite';
 import { DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
-import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
-import type { DataCubeEditorColumnsSelectorState } from '../../stores/editor/DataCubeEditorColumnsSelectorState.js';
+import { DataCubeEditorColumnSelector } from './DataCubeEditorColumnSelector.js';
+import type { DataCubeEditorColumnSelectorState } from '../../stores/editor/DataCubeEditorColumnSelectorState.js';
 import type { DataCubeEditorSortColumnState } from '../../stores/editor/DataCubeEditorSortsPanelState.js';
 import {
   DataCubeQuerySortDirection,
   PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
 } from '../../stores/core/DataCubeQueryEngine.js';
-import { IllegalStateError } from '@finos/legend-shared';
 import {
-  FormBadge_WIP,
   FormDropdownMenu,
   FormDropdownMenuItem,
 } from '../shared/DataCubeFormUtils.js';
 import type { DataCubeViewState } from '../../stores/DataCubeViewState.js';
 
-function getSortDirectionLabel(operation: string) {
-  switch (operation) {
-    case DataCubeQuerySortDirection.ASCENDING:
-      return 'Ascending';
-    case DataCubeQuerySortDirection.DESCENDING:
-      return 'Descending';
-    default:
-      throw new IllegalStateError(`Unsupported sort operation '${operation}'`);
-  }
-}
-
 const SortDirectionDropdown = observer(
   (props: {
-    selector: DataCubeEditorColumnsSelectorState<DataCubeEditorSortColumnState>;
+    selector: DataCubeEditorColumnSelectorState<DataCubeEditorSortColumnState>;
     column: DataCubeEditorSortColumnState;
   }) => {
     const { column } = props;
     const [
-      openOpertionsDropdown,
-      closeOperationsDropdown,
-      operationsDropdownProps,
-      operationsDropdownPropsOpen,
+      openDirectionDropdown,
+      closeDirectionDropdown,
+      directionDropdownProps,
+      directionDropdownPropsOpen,
     ] = useDropdownMenu();
 
     return (
       <div className="group relative flex h-full items-center">
-        {!operationsDropdownPropsOpen && (
+        {!directionDropdownPropsOpen && (
           <div className="flex h-[18px] w-32 items-center border border-transparent px-2 text-sm text-neutral-400 group-hover:invisible">
-            {getSortDirectionLabel(column.direction)}
+            {column.direction}
           </div>
         )}
-        {operationsDropdownPropsOpen && (
+        {directionDropdownPropsOpen && (
           <div className="flex h-[18px] w-32 items-center justify-between border border-sky-600 bg-sky-50 pl-2 pr-0.5 text-sm">
-            <div>{getSortDirectionLabel(column.direction)}</div>
+            <div>{column.direction}</div>
             <div>
               <DataCubeIcon.CaretDown />
             </div>
@@ -79,46 +66,31 @@ const SortDirectionDropdown = observer(
            */
           onClickCapture={(event) => {
             event.stopPropagation();
-            openOpertionsDropdown(event);
+            openDirectionDropdown(event);
           }}
           onClick={(event) => event.stopPropagation()}
         >
-          <div>{getSortDirectionLabel(column.direction)}</div>
+          <div>{column.direction}</div>
           <div>
             <DataCubeIcon.CaretDown />
           </div>
         </button>
-        <FormDropdownMenu className="w-32" {...operationsDropdownProps}>
-          <FormDropdownMenuItem
-            onClick={() => {
-              column.setDirection(DataCubeQuerySortDirection.ASCENDING);
-              closeOperationsDropdown();
-            }}
-            autoFocus={
-              column.direction === DataCubeQuerySortDirection.ASCENDING
-            }
-          >
-            Ascending
-          </FormDropdownMenuItem>
-          <FormDropdownMenuItem disabled={true} autoFocus={false}>
-            {`Ascending (abs)`}
-            <FormBadge_WIP />
-          </FormDropdownMenuItem>
-          <FormDropdownMenuItem
-            onClick={() => {
-              column.setDirection(DataCubeQuerySortDirection.DESCENDING);
-              closeOperationsDropdown();
-            }}
-            autoFocus={
-              column.direction === DataCubeQuerySortDirection.DESCENDING
-            }
-          >
-            Descending
-          </FormDropdownMenuItem>
-          <FormDropdownMenuItem disabled={true} autoFocus={false}>
-            {`Descending (abs)`}
-            <FormBadge_WIP />
-          </FormDropdownMenuItem>
+        <FormDropdownMenu className="w-32" {...directionDropdownProps}>
+          {[
+            DataCubeQuerySortDirection.ASCENDING,
+            DataCubeQuerySortDirection.DESCENDING,
+          ].map((direction) => (
+            <FormDropdownMenuItem
+              key={direction}
+              onClick={() => {
+                column.setDirection(direction);
+                closeDirectionDropdown();
+              }}
+              autoFocus={column.direction === direction}
+            >
+              {direction}
+            </FormDropdownMenuItem>
+          ))}
         </FormDropdownMenu>
       </div>
     );
@@ -127,7 +99,7 @@ const SortDirectionDropdown = observer(
 
 const SortColumnLabel = observer(
   (props: {
-    selector: DataCubeEditorColumnsSelectorState<DataCubeEditorSortColumnState>;
+    selector: DataCubeEditorColumnSelectorState<DataCubeEditorSortColumnState>;
     column: DataCubeEditorSortColumnState;
   }) => {
     const { column } = props;
@@ -156,7 +128,7 @@ export const DataCubeEditorSortsPanel = observer(
           </div>
         </div>
         <div className="flex h-[calc(100%_-_24px)] w-full">
-          <DataCubeEditorColumnsSelector
+          <DataCubeEditorColumnSelector
             selector={panel.selector}
             columnLabelRenderer={(p) => <SortColumnLabel {...p} />}
             columnActionRenderer={(p) => <SortDirectionDropdown {...p} />}

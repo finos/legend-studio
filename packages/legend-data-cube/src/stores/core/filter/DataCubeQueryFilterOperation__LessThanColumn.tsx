@@ -46,11 +46,11 @@ export class DataCubeQueryFilterOperation__LessThanColumn extends DataCubeQueryF
     return '< value in column';
   }
 
-  override get description(): string {
+  override get description() {
     return 'is less than value in column';
   }
 
-  override get operator(): string {
+  override get operator() {
     return DataCubeQueryFilterOperator.LESS_THAN_COLUMN;
   }
 

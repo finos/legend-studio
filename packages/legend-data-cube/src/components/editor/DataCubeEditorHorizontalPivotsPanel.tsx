@@ -17,7 +17,7 @@
 import { DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { DataCubeViewState } from '../../stores/DataCubeViewState.js';
-import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
+import { DataCubeEditorColumnSelector } from './DataCubeEditorColumnSelector.js';
 import { useEffect } from 'react';
 import { FormBadge_WIP } from '../shared/DataCubeFormUtils.js';
 
@@ -48,7 +48,7 @@ export const DataCubeEditorHorizontalPivotsPanel = observer(
           </div>
         </div>
         <div className="flex h-[calc(100%_-_24px)] w-full">
-          <DataCubeEditorColumnsSelector
+          <DataCubeEditorColumnSelector
             selector={panel.selector}
             columnActionRenderer={(p) => (
               <PivotColumnSortDirectionDropdown {...p} />

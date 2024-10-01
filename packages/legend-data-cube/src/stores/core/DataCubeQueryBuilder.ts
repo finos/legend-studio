@@ -146,7 +146,7 @@ export function buildExecutableQuery(
       _function(DataCubeFunction.SORT, [
         _collection(
           data.pivot.columns.map((col) =>
-            _function(DataCubeFunction.ASC, [_col(col.name)]),
+            _function(DataCubeFunction.ASCENDING, [_col(col.name)]),
           ),
         ),
       ]),
@@ -201,8 +201,8 @@ export function buildExecutableQuery(
             _function(
               configuration.treeColumnSortDirection ===
                 DataCubeQuerySortDirection.ASCENDING
-                ? DataCubeFunction.ASC
-                : DataCubeFunction.DESC,
+                ? DataCubeFunction.ASCENDING
+                : DataCubeFunction.DESCENDING,
               [_col(col.name)],
             ),
           ),
@@ -242,8 +242,8 @@ export function buildExecutableQuery(
           data.sortColumns.map((col) =>
             _function(
               col.direction === DataCubeQuerySortDirection.ASCENDING
-                ? DataCubeFunction.ASC
-                : DataCubeFunction.DESC,
+                ? DataCubeFunction.ASCENDING
+                : DataCubeFunction.DESCENDING,
               [_col(col.name)],
             ),
           ),

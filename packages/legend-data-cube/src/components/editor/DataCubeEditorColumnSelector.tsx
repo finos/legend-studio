@@ -33,9 +33,9 @@ import {
 } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
-  type DataCubeEditorColumnsSelectorColumnState,
-  type DataCubeEditorColumnsSelectorState,
-} from '../../stores/editor/DataCubeEditorColumnsSelectorState.js';
+  type DataCubeEditorColumnSelectorColumnState,
+  type DataCubeEditorColumnSelectorState,
+} from '../../stores/editor/DataCubeEditorColumnSelectorState.js';
 import { isNonNullable } from '@finos/legend-shared';
 import {
   getDataForAllFilteredNodes,
@@ -43,7 +43,7 @@ import {
 } from '../../stores/grid/DataCubeGridClientEngine.js';
 
 function getBaseGridProps<
-  T extends DataCubeEditorColumnsSelectorColumnState,
+  T extends DataCubeEditorColumnSelectorColumnState,
 >(): AgGridReactProps<T> {
   return {
     modules: [ClientSideRowModelModule],
@@ -111,7 +111,7 @@ function getBaseGridProps<
 }
 
 function getBaseColumnDef<
-  T extends DataCubeEditorColumnsSelectorColumnState,
+  T extends DataCubeEditorColumnSelectorColumnState,
 >(): ColDef<T> {
   return {
     field: 'name' as ColDefField<T>,
@@ -131,9 +131,9 @@ function getBaseColumnDef<
  */
 const ColumnsSearchResultCountBadge = observer(
   function ColumnsSearchResultCountBadge<
-    T extends DataCubeEditorColumnsSelectorColumnState,
+    T extends DataCubeEditorColumnSelectorColumnState,
   >(props: {
-    selector: DataCubeEditorColumnsSelectorState<T>;
+    selector: DataCubeEditorColumnSelectorState<T>;
     gridApi: GridApi<T>;
     scope: 'available' | 'selected';
   }) {
@@ -152,20 +152,20 @@ const ColumnsSearchResultCountBadge = observer(
   },
 );
 
-export const DataCubeEditorColumnsSelector = observer(
-  function DataCubeEditorColumnsSelector<
-    T extends DataCubeEditorColumnsSelectorColumnState,
+export const DataCubeEditorColumnSelector = observer(
+  function DataCubeEditorColumnSelector<
+    T extends DataCubeEditorColumnSelectorColumnState,
   >(props: {
-    selector: DataCubeEditorColumnsSelectorState<T>;
+    selector: DataCubeEditorColumnSelectorState<T>;
     columnLabelRenderer?:
       | ((p: {
-          selector: DataCubeEditorColumnsSelectorState<T>;
+          selector: DataCubeEditorColumnSelectorState<T>;
           column: T;
         }) => React.ReactNode)
       | undefined;
     columnActionRenderer?:
       | ((p: {
-          selector: DataCubeEditorColumnsSelectorState<T>;
+          selector: DataCubeEditorColumnSelectorState<T>;
           column: T;
         }) => React.ReactNode)
       | undefined;

@@ -357,13 +357,13 @@ export function validateAndBuildQuerySnapshot(
     data.sortColumns = _param(funcMap.sort, 0, V1_Collection).values.map(
       (value) => {
         const sortColFunc = _funcMatch(value, [
-          DataCubeFunction.ASC,
-          DataCubeFunction.DESC,
+          DataCubeFunction.ASCENDING,
+          DataCubeFunction.DESCENDING,
         ]);
         return {
           ..._col(_colSpecParam(sortColFunc, 0)),
           direction:
-            _name(sortColFunc.function) === DataCubeFunction.ASC
+            _name(sortColFunc.function) === DataCubeFunction.ASCENDING
               ? DataCubeQuerySortDirection.ASCENDING
               : DataCubeQuerySortDirection.DESCENDING,
         };

@@ -29,7 +29,7 @@ import {
   FormDocumentation,
 } from '../shared/DataCubeFormUtils.js';
 import {
-  DataCubeClientSideAggregateOperator,
+  DataCubeQueryClientSideAggregateOperator,
   DataCubeColumnDataType,
   DataCubeColumnKind,
   DataCubeColumnPinPlacement,
@@ -54,10 +54,10 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
     const gridConfiguration = view.editor.generalProperties.configuration;
     const selectedColumn = panel.selectedColumn;
     const [
-      openColumnsDropdown,
-      closeColumnsDropdown,
-      columnsDropdownProps,
-      columnsDropPropsOpen,
+      openColumnDropdown,
+      closeColumnDropdown,
+      columnDropdownProps,
+      columnDropPropsOpen,
     ] = useDropdownMenu();
     const [
       openKindDropdown,
@@ -66,10 +66,10 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
       kindDropdownPropsOpen,
     ] = useDropdownMenu();
     const [
-      openAggregationTypeDropdown,
-      closeAggregationTypeDropdown,
-      aggregationTypeDropdownProps,
-      aggregationTypeDropdownPropsOpen,
+      openAggregationOperationDropdown,
+      closeAggregationOperationDropdown,
+      aggregationOperationDropdownProps,
+      aggregationOperationDropdownPropsOpen,
     ] = useDropdownMenu();
     const [
       openNumberScaleDropdown,
@@ -134,8 +134,8 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
               </div>
               <FormDropdownMenuTrigger
                 className="w-80"
-                onClick={openColumnsDropdown}
-                open={columnsDropPropsOpen}
+                onClick={openColumnDropdown}
+                open={columnDropPropsOpen}
               >
                 <div className="flex h-full w-full items-center">
                   <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">
@@ -168,7 +168,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                   )}
                 </div>
               </FormDropdownMenuTrigger>
-              <FormDropdownMenu className="w-80" {...columnsDropdownProps}>
+              <FormDropdownMenu className="w-80" {...columnDropdownProps}>
                 {panel.columns
                   .slice()
                   .sort(_sortByColName)
@@ -177,7 +177,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       key={column.name}
                       onClick={() => {
                         panel.setSelectedColumnName(column.name);
-                        closeColumnsDropdown();
+                        closeColumnDropdown();
                       }}
                       autoFocus={column.name === selectedColumn?.name}
                     >
@@ -253,7 +253,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                               selectedColumn.setPivotStatisticColumnFunction(
                                 kind === DataCubeColumnKind.DIMENSION
                                   ? undefined
-                                  : DataCubeClientSideAggregateOperator.SUM,
+                                  : DataCubeQueryClientSideAggregateOperator.SUM,
                               );
                             }
                             closeKindDropdown();
@@ -296,17 +296,17 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                   </div>
                   <FormDropdownMenuTrigger
                     className="w-32"
-                    onClick={openAggregationTypeDropdown}
+                    onClick={openAggregationOperationDropdown}
                     disabled={
                       selectedColumn.kind === DataCubeColumnKind.DIMENSION
                     }
-                    open={aggregationTypeDropdownPropsOpen}
+                    open={aggregationOperationDropdownPropsOpen}
                   >
                     {selectedColumn.aggregateOperation.operator}
                   </FormDropdownMenuTrigger>
                   <FormDropdownMenu
                     className="w-32"
-                    {...aggregationTypeDropdownProps}
+                    {...aggregationOperationDropdownProps}
                   >
                     {panel.view.engine.aggregateOperations
                       .filter((op) => op.isCompatibleWithColumn(selectedColumn))
@@ -315,7 +315,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                           key={op.operator}
                           onClick={() => {
                             selectedColumn.setAggregateOperation(op);
-                            closeAggregationTypeDropdown();
+                            closeAggregationOperationDropdown();
                           }}
                           autoFocus={op === selectedColumn.aggregateOperation}
                         >

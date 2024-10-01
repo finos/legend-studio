@@ -17,7 +17,7 @@
 import type { DataCubeQuerySnapshotColumn } from '../DataCubeQuerySnapshot.js';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
-  DataCubeAggregateOperator,
+  DataCubeQueryAggregateOperator,
   DataCubeColumnDataType,
   DataCubeFunction,
   ofDataType,
@@ -38,8 +38,8 @@ export class DataCubeQueryAggregateOperation__Last extends DataCubeQueryAggregat
     return 'last';
   }
 
-  override get operator(): string {
-    return DataCubeAggregateOperator.LAST;
+  override get operator() {
+    return DataCubeQueryAggregateOperator.LAST;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

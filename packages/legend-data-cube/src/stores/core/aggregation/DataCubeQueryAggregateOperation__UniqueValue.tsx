@@ -17,7 +17,7 @@
 import type { DataCubeQuerySnapshotColumn } from '../DataCubeQuerySnapshot.js';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
-  DataCubeAggregateOperator,
+  DataCubeQueryAggregateOperator,
   DataCubeColumnDataType,
   DataCubeFunction,
   ofDataType,
@@ -38,8 +38,8 @@ export class DataCubeQueryAggregateOperation__UniqueValue extends DataCubeQueryA
     return 'unique value';
   }
 
-  override get operator(): string {
-    return DataCubeAggregateOperator.UNIQUE;
+  override get operator() {
+    return DataCubeQueryAggregateOperator.UNIQUE;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

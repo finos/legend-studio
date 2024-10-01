@@ -16,24 +16,31 @@
 
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import { type DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
+import {
+  _toCol,
+  type DataCubeQuerySnapshot,
+} from '../core/DataCubeQuerySnapshot.js';
 import {
   DataCubeColumnKind,
   DataCubeQuerySortDirection,
 } from '../core/DataCubeQueryEngine.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import {
-  DataCubeEditorColumnsSelectorColumnState,
-  DataCubeEditorColumnsSelectorState,
-} from './DataCubeEditorColumnsSelectorState.js';
+  DataCubeEditorColumnSelectorColumnState,
+  DataCubeEditorColumnSelectorState,
+} from './DataCubeEditorColumnSelectorState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import type { DataCubeConfiguration } from '../core/DataCubeConfiguration.js';
 import { uniqBy } from '@finos/legend-shared';
 
-export class DataCubeEditorSortColumnState extends DataCubeEditorColumnsSelectorColumnState {
-  direction: string;
+export class DataCubeEditorSortColumnState extends DataCubeEditorColumnSelectorColumnState {
+  direction: DataCubeQuerySortDirection;
 
-  constructor(name: string, type: string, direction: string) {
+  constructor(
+    name: string,
+    type: string,
+    direction: DataCubeQuerySortDirection,
+  ) {
     super(name, type);
 
     makeObservable(this, {
@@ -49,7 +56,7 @@ export class DataCubeEditorSortColumnState extends DataCubeEditorColumnsSelector
   }
 }
 
-export class DataCubeEditorSortColumnsSelectorState extends DataCubeEditorColumnsSelectorState<DataCubeEditorSortColumnState> {
+export class DataCubeEditorSortColumnSelectorState extends DataCubeEditorColumnSelectorState<DataCubeEditorSortColumnState> {
   override cloneColumn(column: DataCubeEditorSortColumnState) {
     return new DataCubeEditorSortColumnState(
       column.name,
@@ -102,12 +109,12 @@ export class DataCubeEditorSortsPanelState
 {
   readonly view!: DataCubeViewState;
   readonly editor!: DataCubeEditorState;
-  readonly selector!: DataCubeEditorColumnsSelectorState<DataCubeEditorSortColumnState>;
+  readonly selector!: DataCubeEditorColumnSelectorState<DataCubeEditorSortColumnState>;
 
   constructor(editor: DataCubeEditorState) {
     this.editor = editor;
     this.view = editor.view;
-    this.selector = new DataCubeEditorSortColumnsSelectorState(editor);
+    this.selector = new DataCubeEditorSortColumnSelectorState(editor);
   }
 
   adaptPropagatedChanges(): void {
@@ -139,8 +146,7 @@ export class DataCubeEditorSortsPanelState
     baseSnapshot: DataCubeQuerySnapshot,
   ) {
     newSnapshot.data.sortColumns = this.selector.selectedColumns.map((col) => ({
-      name: col.name,
-      type: col.type,
+      ..._toCol(col),
       direction: col.direction,
     }));
   }

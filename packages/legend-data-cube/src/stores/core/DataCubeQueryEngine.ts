@@ -35,8 +35,9 @@ export enum DataCubeFunction {
   FROM = 'meta::pure::mapping::from',
 
   // sort
-  ASC = 'meta::pure::functions::relation::ascending',
-  DESC = 'meta::pure::functions::relation::descending',
+  ASCENDING = 'meta::pure::functions::relation::ascending',
+  DESCENDING = 'meta::pure::functions::relation::descending',
+  ABS = 'meta::pure::functions::math::abs',
 
   // filter
   AND = 'meta::pure::functions::boolean::and',
@@ -149,7 +150,7 @@ export type DataCubeOperationValue = {
   type: string;
 };
 
-export enum DataCubeAggregateOperator {
+export enum DataCubeQueryAggregateOperator {
   SUM = 'sum',
   AVERAGE = 'avg',
   COUNT = 'count',
@@ -183,7 +184,7 @@ export enum DataCubeAggregateOperator {
   // custom
 }
 
-export enum DataCubeClientSideAggregateOperator {
+export enum DataCubeQueryClientSideAggregateOperator {
   SUM = 'sum',
   AVERAGE = 'avg',
   MEDIAN = 'median',

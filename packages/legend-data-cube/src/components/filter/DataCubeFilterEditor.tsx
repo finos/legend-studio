@@ -293,10 +293,10 @@ const DataCubeEditorFilterConditionNodeColumnSelector = observer(
       (column) => column.name === value,
     );
     const [
-      openColumnsDropdown,
-      closeColumnsDropdown,
-      columnsDropdownProps,
-      columnsDropdownPropsOpen,
+      openColumnDropdown,
+      closeColumnDropdown,
+      columnDropdownProps,
+      columnDropdownPropsOpen,
     ] = useDropdownMenu();
 
     return (
@@ -304,12 +304,12 @@ const DataCubeEditorFilterConditionNodeColumnSelector = observer(
         <FormDropdownMenuTrigger
           ref={ref}
           className="relative mr-1 w-32"
-          onClick={openColumnsDropdown}
-          open={columnsDropdownPropsOpen}
+          onClick={openColumnDropdown}
+          open={columnDropdownPropsOpen}
         >
           {value}
         </FormDropdownMenuTrigger>
-        <FormDropdownMenu className="w-32" {...columnsDropdownProps}>
+        <FormDropdownMenu className="w-32" {...columnDropdownProps}>
           {editor.columns
             .filter(
               (column) =>
@@ -321,7 +321,7 @@ const DataCubeEditorFilterConditionNodeColumnSelector = observer(
                 key={column.name}
                 onClick={() => {
                   updateValue(column.name);
-                  closeColumnsDropdown();
+                  closeColumnDropdown();
                 }}
                 autoFocus={value === column.name}
               >
@@ -477,16 +477,16 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
     const nodeIdx = parentNode ? parentNode.children.indexOf(node) : undefined;
     const valueEditorRef = useRef<HTMLElement>(null);
     const [
-      openColumnsDropdown,
-      closeColumnsDropdown,
-      columnsDropdownProps,
-      columnsDropdownPropsOpen,
+      openColumnDropdown,
+      closeColumnDropdown,
+      columnDropdownProps,
+      columnDropdownPropsOpen,
     ] = useDropdownMenu();
     const [
-      openOperatorsDropdown,
-      closeOperatorsDropdown,
-      operatorsDropdownProps,
-      operatorsDropdownPropsOpen,
+      openOperationDropdown,
+      closeOperationDropdown,
+      operationDropdownProps,
+      operationDropdownPropsOpen,
     ] = useDropdownMenu();
     const focusOnValueEditor = useCallback(
       () => valueEditorRef.current?.focus(),
@@ -551,14 +551,14 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
         {node.not && <DataCubeEditorFilterNotLabel />}
         <FormDropdownMenuTrigger
           className="relative mr-1 w-32"
-          onClick={openColumnsDropdown}
-          open={columnsDropdownPropsOpen}
+          onClick={openColumnDropdown}
+          open={columnDropdownPropsOpen}
         >
           {node.column.name}
         </FormDropdownMenuTrigger>
         <FormDropdownMenu
           className="w-32"
-          {...columnsDropdownProps}
+          {...columnDropdownProps}
           onClosed={focusOnValueEditor}
         >
           {editor.columns.map((column) => (
@@ -579,7 +579,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
                     node.setValue(newOp.generateDefaultValue(column));
                   }
                 }
-                closeColumnsDropdown();
+                closeColumnDropdown();
               }}
               autoFocus={node.column.name === column.name}
             >
@@ -589,14 +589,14 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
         </FormDropdownMenu>
         <FormDropdownMenuTrigger
           className="relative mr-1 w-24"
-          onClick={openOperatorsDropdown}
-          open={operatorsDropdownPropsOpen}
+          onClick={openOperationDropdown}
+          open={operationDropdownPropsOpen}
         >
           {node.operation.label}
         </FormDropdownMenuTrigger>
         <FormDropdownMenu
           className="w-24"
-          {...operatorsDropdownProps}
+          {...operationDropdownProps}
           onClosed={focusOnValueEditor}
         >
           {editor.view.engine.filterOperations
@@ -611,7 +611,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
                       node.setValue(op.generateDefaultValue(node.column));
                     }
                   }
-                  closeOperatorsDropdown();
+                  closeOperationDropdown();
                 }}
                 autoFocus={node.operation.operator === op.operator}
               >
@@ -645,10 +645,10 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
     const parentNode = node.parent;
     const nodeIdx = parentNode ? parentNode.children.indexOf(node) : undefined;
     const [
-      openOperatorsDropdown,
-      closeOperatorsDropdown,
-      operatorsDropdownProps,
-      operatorsDropdownPropsOpen,
+      openOperationDropdown,
+      closeOperationDropdown,
+      operationDropdownProps,
+      operationDropdownPropsOpen,
     ] = useDropdownMenu();
 
     return (
@@ -713,18 +713,18 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
         )}
         <FormDropdownMenuTrigger
           className="relative w-14"
-          onClick={openOperatorsDropdown}
-          open={operatorsDropdownPropsOpen}
+          onClick={openOperationDropdown}
+          open={operationDropdownPropsOpen}
         >
           {node.operation === DataCubeQueryFilterGroupOperator.AND
             ? 'All of'
             : 'Any of'}
         </FormDropdownMenuTrigger>
-        <FormDropdownMenu className="w-14" {...operatorsDropdownProps}>
+        <FormDropdownMenu className="w-14" {...operationDropdownProps}>
           <FormDropdownMenuItem
             onClick={() => {
               node.setOperation(DataCubeQueryFilterGroupOperator.AND);
-              closeOperatorsDropdown();
+              closeOperationDropdown();
             }}
             autoFocus={node.operation === DataCubeQueryFilterGroupOperator.AND}
           >
@@ -733,7 +733,7 @@ const DataCubeEditorFilterGroupNodeDisplay = observer(
           <FormDropdownMenuItem
             onClick={() => {
               node.setOperation(DataCubeQueryFilterGroupOperator.OR);
-              closeOperatorsDropdown();
+              closeOperationDropdown();
             }}
             autoFocus={node.operation === DataCubeQueryFilterGroupOperator.OR}
           >

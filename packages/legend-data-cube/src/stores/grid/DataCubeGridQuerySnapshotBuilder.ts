@@ -108,14 +108,13 @@ export function buildQuerySnapshot(
     // the tree column, all groupBy columns will be sorted in that direction
     .filter((item) => item.colId !== INTERNAL__GRID_CLIENT_TREE_COLUMN_ID)
     .map((item) => ({
-      ..._toCol(
-        getColumnConfiguration(
-          isPivotResultColumnName(item.colId)
-            ? getPivotResultColumnBaseColumnName(item.colId)
-            : item.colId,
-          configuration,
-        ),
-      ),
+      name: item.colId,
+      type: getColumnConfiguration(
+        isPivotResultColumnName(item.colId)
+          ? getPivotResultColumnBaseColumnName(item.colId)
+          : item.colId,
+        configuration,
+      ).type,
       direction:
         item.sort === GridClientSortDirection.ASCENDING
           ? DataCubeQuerySortDirection.ASCENDING

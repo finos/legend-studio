@@ -17,7 +17,7 @@
 import type { DataCubeQuerySnapshotColumn } from '../DataCubeQuerySnapshot.js';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
-  DataCubeAggregateOperator,
+  DataCubeQueryAggregateOperator,
   DataCubeColumnDataType,
   DataCubeFunction,
   ofDataType,
@@ -38,8 +38,8 @@ export class DataCubeQueryAggregateOperation__Count extends DataCubeQueryAggrega
     return 'count';
   }
 
-  override get operator(): string {
-    return DataCubeAggregateOperator.COUNT;
+  override get operator() {
+    return DataCubeQueryAggregateOperator.COUNT;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

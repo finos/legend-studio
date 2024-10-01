@@ -47,11 +47,11 @@ export class DataCubeQueryFilterOperation__Equal extends DataCubeQueryFilterOper
     return '=';
   }
 
-  override get description(): string {
+  override get description() {
     return 'equals';
   }
 
-  override get operator(): string {
+  override get operator() {
     return DataCubeQueryFilterOperator.EQUAL;
   }
 
@@ -89,7 +89,7 @@ export class DataCubeQueryFilterOperation__Equal extends DataCubeQueryFilterOper
     // export const buildPostFilterConditionState = (
     //   postFilterState: QueryBuilderPostFilterState,
     //   expression: FunctionExpression,
-    //   operatorFunctionFullPath: string | undefined,
+    //   operatorFunctionFullPath | undefined,
     //   operator: QueryBuilderPostFilterOperator,
     // ): PostFilterConditionState | undefined => {
     //   let postConditionState: PostFilterConditionState | undefined;

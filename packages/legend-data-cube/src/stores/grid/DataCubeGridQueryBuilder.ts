@@ -168,13 +168,13 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
                       ) {
                         return {
                           ...groupByColumn,
-                          operation: DataCubeQueryFilterOperator.IS_NULL,
+                          operator: DataCubeQueryFilterOperator.IS_NULL,
                           value: undefined,
                         };
                       }
                       const condition = {
                         ...groupByColumn,
-                        operation: DataCubeQueryFilterOperator.EQUAL,
+                        operator: DataCubeQueryFilterOperator.EQUAL,
                         value: undefined,
                       };
                       switch (groupByColumn.type) {

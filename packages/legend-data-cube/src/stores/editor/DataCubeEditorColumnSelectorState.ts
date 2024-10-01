@@ -20,7 +20,7 @@ import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { _sortByColName } from '../core/DataCubeQuerySnapshot.js';
 
-export class DataCubeEditorColumnsSelectorColumnState {
+export class DataCubeEditorColumnSelectorColumnState {
   readonly name: string;
   readonly type: string;
 
@@ -30,8 +30,8 @@ export class DataCubeEditorColumnsSelectorColumnState {
   }
 }
 
-export abstract class DataCubeEditorColumnsSelectorState<
-  T extends DataCubeEditorColumnsSelectorColumnState,
+export abstract class DataCubeEditorColumnSelectorState<
+  T extends DataCubeEditorColumnSelectorColumnState,
 > {
   readonly view!: DataCubeViewState;
   readonly editor!: DataCubeEditorState;
@@ -42,14 +42,14 @@ export abstract class DataCubeEditorColumnsSelectorState<
   selectedColumnsSearchText = '';
 
   readonly onChange?:
-    | ((selector: DataCubeEditorColumnsSelectorState<T>) => void)
+    | ((selector: DataCubeEditorColumnSelectorState<T>) => void)
     | undefined;
 
   constructor(
     editor: DataCubeEditorState,
     options?: {
       onChange?:
-        | ((select: DataCubeEditorColumnsSelectorState<T>) => void)
+        | ((select: DataCubeEditorColumnSelectorState<T>) => void)
         | undefined;
     },
   ) {

@@ -16,19 +16,19 @@
 
 import { cn, DataCubeIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { DataCubeEditorColumnsSelector } from './DataCubeEditorColumnsSelector.js';
+import { DataCubeEditorColumnSelector } from './DataCubeEditorColumnSelector.js';
 import { useEffect } from 'react';
 import type { DataCubeViewState } from '../../stores/DataCubeViewState.js';
 import { FormCheckbox } from '../shared/DataCubeFormUtils.js';
 import type {
-  DataCubeEditorColumnsSelectorColumnState,
-  DataCubeEditorColumnsSelectorState,
-} from '../../stores/editor/DataCubeEditorColumnsSelectorState.js';
+  DataCubeEditorColumnSelectorColumnState,
+  DataCubeEditorColumnSelectorState,
+} from '../../stores/editor/DataCubeEditorColumnSelectorState.js';
 
-const ColumnsSelectorLabel = observer(
+const ColumnSelectorLabel = observer(
   (props: {
-    selector: DataCubeEditorColumnsSelectorState<DataCubeEditorColumnsSelectorColumnState>;
-    column: DataCubeEditorColumnsSelectorColumnState;
+    selector: DataCubeEditorColumnSelectorState<DataCubeEditorColumnSelectorColumnState>;
+    column: DataCubeEditorColumnSelectorColumnState;
   }) => {
     const { selector, column } = props;
     const showHiddenIndicator =
@@ -102,7 +102,7 @@ export const DataCubeEditorColumnsPanel = observer(
           </div>
         </div>
         <div className="flex h-[calc(100%_-_24px)] w-full">
-          <DataCubeEditorColumnsSelector
+          <DataCubeEditorColumnSelector
             selector={panel.selector}
             noColumnsSelectedRenderer={() => (
               <div className="flex items-center border-[1.5px] border-neutral-200 p-2 font-semibold text-neutral-400">
@@ -112,7 +112,7 @@ export const DataCubeEditorColumnsPanel = observer(
                 No columns selected
               </div>
             )}
-            columnLabelRenderer={(p) => <ColumnsSelectorLabel {...p} />}
+            columnLabelRenderer={(p) => <ColumnSelectorLabel {...p} />}
           />
         </div>
       </div>

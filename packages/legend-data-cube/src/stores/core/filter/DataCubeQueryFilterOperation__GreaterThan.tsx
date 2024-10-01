@@ -47,11 +47,11 @@ export class DataCubeQueryFilterOperation__GreaterThan extends DataCubeQueryFilt
     return '>';
   }
 
-  override get description(): string {
+  override get description() {
     return 'is greater than';
   }
 
-  override get operator(): string {
+  override get operator() {
     return DataCubeQueryFilterOperator.GREATER_THAN;
   }
 

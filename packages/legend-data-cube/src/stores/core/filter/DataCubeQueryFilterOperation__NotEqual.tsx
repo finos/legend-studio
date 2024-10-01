@@ -48,11 +48,11 @@ export class DataCubeQueryFilterOperation__NotEqual extends DataCubeQueryFilterO
     return '!=';
   }
 
-  override get description(): string {
+  override get description() {
     return 'does not equal';
   }
 
-  override get operator(): string {
+  override get operator() {
     return DataCubeQueryFilterOperator.NOT_EQUAL;
   }
 

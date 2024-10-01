@@ -48,11 +48,11 @@ export class DataCubeQueryFilterOperation__NotEndWith extends DataCubeQueryFilte
     return '!endsWith';
   }
 
-  override get description(): string {
+  override get description() {
     return 'does not end with';
   }
 
-  override get operator(): string {
+  override get operator() {
     return DataCubeQueryFilterOperator.NOT_END_WITH;
   }
 

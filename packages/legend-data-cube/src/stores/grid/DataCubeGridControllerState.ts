@@ -346,41 +346,26 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     ].find((col) => col.name === colName);
   }
 
-  private getActionableSortColumn(
-    colName: string,
-    direction: DataCubeQuerySortDirection,
-  ) {
-    const column = this.getSortableColumn(colName);
-    if (!column) {
-      return undefined;
-    }
-    const sortColumn = this.sortColumns.find((col) => col.name === colName);
-    if (sortColumn && sortColumn.direction !== direction) {
-      return sortColumn;
-    }
-    if (!sortColumn) {
-      return { ...column, direction };
-    }
-    return undefined;
-  }
-
   setSortByColumn(colName: string, direction: DataCubeQuerySortDirection) {
-    const column = this.getActionableSortColumn(colName, direction);
+    const column = this.getSortableColumn(colName);
     if (!column) {
       return;
     }
-    column.direction = direction;
-    this.sortColumns = [column];
+    this.sortColumns = [
+      {
+        ...column,
+        direction,
+      },
+    ];
     this.applyChanges();
   }
 
   addSortByColumn(colName: string, direction: DataCubeQuerySortDirection) {
-    const column = this.getActionableSortColumn(colName, direction);
+    const column = this.getSortableColumn(colName);
     if (!column) {
       return;
     }
-    column.direction = direction;
-    this.sortColumns = [...this.sortColumns, column];
+    this.sortColumns = [...this.sortColumns, { ...column, direction }];
     this.applyChanges();
   }
 

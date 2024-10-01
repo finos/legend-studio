@@ -47,11 +47,11 @@ export class DataCubeQueryFilterOperation__EndWith extends DataCubeQueryFilterOp
     return '!endsWith';
   }
 
-  override get description(): string {
+  override get description() {
     return 'ends with';
   }
 
-  override get operator(): string {
+  override get operator() {
     return DataCubeQueryFilterOperator.END_WITH;
   }
 
