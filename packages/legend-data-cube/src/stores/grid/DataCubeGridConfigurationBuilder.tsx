@@ -331,7 +331,6 @@ function _displaySpec(columnData: ColumnData) {
       params.value !== INTERNAL__GRID_CLIENT_MISSING_VALUE
         ? `Value = ${params.value === '' ? "''" : params.value === true ? 'TRUE' : params.value === false ? 'FALSE' : params.value}`
         : `Missing Value`,
-    loadingCellRenderer: DataCubeGridLoadingCellRenderer,
     cellRenderer: getCellRenderer(columnData),
   } satisfies ColDef;
 }
@@ -390,7 +389,6 @@ function _groupDisplaySpec(
       }
       return null;
     },
-    loadingCellRenderer: DataCubeGridLoadingCellRenderer,
   } satisfies ColDef;
 }
 
@@ -594,7 +592,12 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
     suppressDragLeaveHidesColumns: true, // disable this since it's quite easy to accidentally hide columns while moving
     // -------------------------------------- SERVER SIDE ROW MODEL --------------------------------------
     suppressScrollOnNewData: true,
-    suppressServerSideFullWidthLoadingRow: true, // make sure each column has its own loading indicator instead of the whole row
+    // NOTE: use row loader instead of showing loader in each cell to improve performance
+    // otherwise, when we have many columns (i.e. when pivoting), the app could freeze.
+    loadingCellRenderer: DataCubeGridLoadingCellRenderer,
+    // By default, when row-grouping is active, ag-grid's caching mechanism causes sort
+    // to not work properly for pivot result columns, so we must disable this mechanism.
+    serverSideSortAllLevels: true,
     // -------------------------------------- SELECTION --------------------------------------
     cellSelection: true,
     // -------------------------------------- SIDEBAR --------------------------------------
@@ -709,6 +712,7 @@ function generateDefinitionForPivotResultColumns(
             menuTabs: [],
 
             ..._displaySpec(columnData),
+            ..._sortSpec(columnData),
             ..._sizeSpec(columnData),
 
             // disallow pinning and moving pivot result columns
