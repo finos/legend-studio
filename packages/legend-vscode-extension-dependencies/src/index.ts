@@ -16,8 +16,6 @@
 
 import '../style/index.scss';
 
-export * from './graph-manager/index.js';
-
 export {
   type Diagram,
   DIAGRAM_ALIGNER_OPERATOR,
