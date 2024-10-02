@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.3.77
+
+### Patch Changes
+
+- [#3553](https://github.com/finos/legend-studio/pull/3553) [`ed4abf7`](https://github.com/finos/legend-studio/commit/ed4abf74e827d9fcefd4a835695c205aa7d96c7d) ([@travisstebbins](https://github.com/travisstebbins)) - Allow plugging in different engine implementations into into V1_PureGraphManager
+
 ## 10.3.76
 
 ## 10.3.75
