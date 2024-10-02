@@ -149,7 +149,12 @@ export { V1_ValueSpecification } from './graph-manager/protocol/pure/v1/model/va
 export { V1_Multiplicity } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_Multiplicity.js';
 export { V1_ExternalFormatDescription } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatDescription.js';
 export { V1_ExternalFormatModelGenerationInput } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatModelGeneration.js';
-export { V1_ExecuteInput } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecuteInput.js';
+export { V1_GenerateSchemaInput } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_GenerateSchemaInput.js';
+export {
+  V1_ExecuteInput,
+  V1_TestDataGenerationExecutionInput,
+  V1_TestDataGenerationExecutionWithSeedInput,
+} from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecuteInput.js';
 export { V1_LambdaPrefix } from './graph-manager/protocol/pure/v1/engine/lambda/V1_LambdaPrefix.js';
 export { V1_ExecutionError } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionError.js';
 export { V1_buildExecutionError } from './graph-manager/protocol/pure/v1/engine/V1_EngineHelper.js';
@@ -157,6 +162,7 @@ export {
   V1_buildExecutionResult,
   V1_serializeExecutionResult,
 } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionHelper.js';
+export { V1_RawSQLExecuteInput } from './graph-manager/protocol/pure/v1/engine/execution/V1_RawSQLExecuteInput.js';
 export * from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionResult.js';
 export { V1_CString } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CString.js';
 export { V1_CBoolean } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CBoolean.js';
@@ -181,6 +187,7 @@ export { V1_PropertyGraphFetchTree } from './graph-manager/protocol/pure/v1/mode
 export { V1_SubTypeGraphFetchTree } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/graph/V1_SubTypeGraphFetchTree.js';
 export { V1_GenericTypeInstance } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_GenericTypeInstance.js';
 export { V1_ParameterValue } from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_ParameterValue.js';
+export { V1_SourceInformation } from './graph-manager/protocol/pure/v1/model/V1_SourceInformation.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
@@ -199,6 +206,7 @@ export { ResultType } from './graph/metamodel/pure/executionPlan/result/ResultTy
 export { TDSResultType } from './graph/metamodel/pure/executionPlan/result/TDSResultType.js';
 export { PartialClassResultType } from './graph/metamodel/pure/executionPlan/result/PartialClassResultType.js';
 export { V1_PartialClassResultType } from './graph-manager/protocol/pure/v1/model/executionPlan/results/V1_PartialClassResultType.js';
+export { V1_ExecutionPlan } from './graph-manager/protocol/pure/v1/model/executionPlan/V1_ExecutionPlan.js';
 export { JavaPlatformImplementation } from './graph/metamodel/pure/executionPlan/nodes/JavaPlatformImplementation.js';
 export { DataTypeResultType } from './graph/metamodel/pure/executionPlan/result/DataTypeResultType.js';
 export { StoreMappingGlobalGraphFetchExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/StoreMappingGlobalGraphFetchExecutionNode.js';
@@ -273,7 +281,9 @@ export {
 export {
   AbstractPureGraphManagerExtension,
   AbstractPureGraphManager,
+  type ExecutionOptions,
   type GraphBuilderOptions,
+  type TEMPORARY__EngineSetupConfig,
 } from './graph-manager/AbstractPureGraphManager.js';
 export * from './graph-manager/GraphManagerStatistics.js';
 export * from './graph-manager/GraphManagerUtils.js';
@@ -314,6 +324,8 @@ export {
 } from './graph-manager/action/service/ServiceRegistrationResult.js';
 export { DEPRECATED__ServiceTestResult } from './graph-manager/action/service/DEPRECATED__ServiceTestResult.js';
 export { SourceInformation } from './graph-manager/action/SourceInformation.js';
+export { buildPureGraphManager } from './graph-manager/protocol/pure/PureGraphManagerBuilder.js';
+export { TEMPORARY__AbstractEngineConfig } from './graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 export * from './graph-manager/protocol/pure/PureProtocolProcessorPlugin.js';
 export * from './graph-manager/protocol/pure/extensions/DSL_ExternalFormat_PureProtocolProcessorPlugin.js';
 export * from './graph-manager/action/functionActivator/FunctionActivatorConfiguration.js';
@@ -359,8 +371,12 @@ export {
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 export { V1_transformPropertyReference } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_MappingTransformer.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer.js';
-export { V1_EngineServerClient } from './graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.js';
-export { V1_Engine } from './graph-manager/protocol/pure/v1/engine/V1_Engine.js';
+export {
+  type V1_GrammarParserBatchInputEntry,
+  V1_EngineServerClient,
+} from './graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.js';
+export { type V1_GraphManagerEngine } from './graph-manager/protocol/pure/v1/engine/V1_GraphManagerEngine.js';
+export { V1_RemoteEngine } from './graph-manager/protocol/pure/v1/engine/V1_RemoteEngine.js';
 export { V1_ParserError } from './graph-manager/protocol/pure/v1/engine/grammar/V1_ParserError.js';
 export {
   V1_PureModelContextType,
@@ -523,6 +539,11 @@ export { V1_ModelGenerationSpecification } from './graph-manager/protocol/pure/v
 
 export { V1_GenerationInput } from './graph-manager/protocol/pure/v1/engine/generation/V1_GenerationInput.js';
 export { V1_GenerationOutput } from './graph-manager/protocol/pure/v1/engine/generation/V1_GenerationOutput.js';
+export {
+  V1_ArtifactGenerationExtensionInput,
+  V1_ArtifactGenerationExtensionOutput,
+} from './graph-manager/protocol/pure/v1/engine/generation/V1_ArtifactGenerationExtensionApi.js';
+export { V1_DatabaseBuilderInput } from './graph-manager/protocol/pure/v1/engine/generation/V1_DatabaseBuilderInput.js';
 
 // ------------------------------------- DSL Mapping --------------------------------------------
 
@@ -621,6 +642,7 @@ export {
 } from './graph-manager/protocol/pure/v1/model/packageableElements/mapping/V1_MappingInclude.js';
 export { V1_PackageableRuntime } from './graph-manager/protocol/pure/v1/model/packageableElements/runtime/V1_PackageableRuntime.js';
 export { V1_Store } from './graph-manager/protocol/pure/v1/model/packageableElements/store/V1_Store.js';
+export { type V1_RawRelationalOperationElement } from './graph-manager/protocol/pure/v1/model/packageableElements/store/relational/model/V1_RawRelationalOperationElement.js';
 export {
   V1_EngineRuntime,
   V1_SingleConnectionEngineRuntime,
@@ -666,11 +688,40 @@ export {
   V1_EntitlementReportAnalyticsInput,
   V1_transformDatasetSpecification,
   V1_entitlementReportAnalyticsInputModelSchema,
+  V1_StoreEntitlementAnalysisInput,
 } from './graph-manager/protocol/pure/v1/engine/analytics/V1_StoreEntitlementAnalysis.js';
 export {
+  V1_MappingModelCoverageAnalysisInput,
   V1_MappingModelCoverageAnalysisResult,
   V1_buildModelCoverageAnalysisResult,
 } from './graph-manager/protocol/pure/v1/engine/analytics/V1_MappingModelCoverageAnalysis.js';
+export {
+  type V1_CompilationResult,
+  type V1_TextCompilationResult,
+} from './graph-manager/protocol/pure/v1/engine/compilation/V1_CompilationResult.js';
+export { V1_CompilationWarning } from './graph-manager/protocol/pure/v1/engine/compilation/V1_CompilationWarning.js';
+export { V1_CompilationError } from './graph-manager/protocol/pure/v1/engine/compilation/V1_CompilationError.js';
+export {
+  type V1_LambdaReturnTypeResult,
+  V1_LambdaReturnTypeInput,
+} from './graph-manager/protocol/pure/v1/engine/compilation/V1_LambdaReturnType.js';
+export { V1_RunTestsInput } from './graph-manager/protocol/pure/v1/engine/test/V1_RunTestsInput.js';
+export { V1_RunTestsResult } from './graph-manager/protocol/pure/v1/engine/test/V1_RunTestsResult.js';
+export { V1_DebugTestsResult } from './graph-manager/protocol/pure/v1/engine/test/V1_DebugTestsResult.js';
+export { V1_TestDataGenerationInput } from './graph-manager/protocol/pure/v1/engine/service/V1_TestDataGenerationInput.js';
+export { V1_TestDataGenerationResult } from './graph-manager/protocol/pure/v1/engine/service/V1_TestDataGenerationResult.js';
+export { V1_ServiceConfigurationInfo } from './graph-manager/protocol/pure/v1/engine/service/V1_ServiceConfiguration.js';
+export { V1_ServiceRegistrationResult } from './graph-manager/protocol/pure/v1/engine/service/V1_ServiceRegistrationResult.js';
+export { V1_ServiceStorage } from './graph-manager/protocol/pure/v1/engine/service/V1_ServiceStorage.js';
+export { V1_QuerySearchSpecification } from './graph-manager/protocol/pure/v1/engine/query/V1_QuerySearchSpecification.js';
+export {
+  V1_LightQuery,
+  V1_Query,
+} from './graph-manager/protocol/pure/v1/engine/query/V1_Query.js';
+export { V1_FunctionActivatorInfo } from './graph-manager/protocol/pure/v1/engine/functionActivator/V1_FunctionActivatorInfo.js';
+export { V1_FunctionActivatorInput } from './graph-manager/protocol/pure/v1/engine/functionActivator/V1_FunctionActivatorInput.js';
+export { V1_DatabaseToModelGenerationInput } from './graph-manager/protocol/pure/v1/engine/relational/V1_DatabaseToModelGenerationInput.js';
+export { V1_RelationalConnectionBuilder } from './graph-manager/protocol/pure/v1/engine/relational/V1_RelationalConnectionBuilder.js';
 
 // ------------------------------------- TO BE MODULARIZED --------------------------------------------
 /**

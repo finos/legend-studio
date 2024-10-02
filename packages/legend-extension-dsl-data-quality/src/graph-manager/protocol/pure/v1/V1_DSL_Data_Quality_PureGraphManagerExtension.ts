@@ -41,6 +41,7 @@ import {
   V1_serializeExecutionResult,
   V1_parameterValueModelSchema,
   V1_transformParameterValue,
+  V1_RemoteEngine,
 } from '@finos/legend-graph';
 import { createModelSchema, optional, primitive } from 'serializr';
 import {
@@ -120,7 +121,12 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       returnAsResponse?: boolean;
     },
   ): Promise<PlainObject<V1_ExecutionResult> | Response> => {
-    const engineServerClient = this.graphManager.engine.getEngineServerClient();
+    // TODO: improve abstraction so that we do not need to access the engine server client directly
+    const engineServerClient = guaranteeType(
+      this.graphManager.engine,
+      V1_RemoteEngine,
+      'executeValidation is only supported by remote engine',
+    ).getEngineServerClient();
     return engineServerClient.postWithTracing(
       engineServerClient.getTraceData(DQ_EXECUTE_PLAN),
       `${engineServerClient._pure()}/dataquality/execute`,
@@ -183,7 +189,12 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
 
-    const engineServerClient = this.graphManager.engine.getEngineServerClient();
+    // TODO: improve abstraction so that we do not need to access the engine server client directly
+    const engineServerClient = guaranteeType(
+      this.graphManager.engine,
+      V1_RemoteEngine,
+      'generatePlan is only supported by remote engine',
+    ).getEngineServerClient();
 
     return engineServerClient.postWithTracing(
       engineServerClient.getTraceData(DQ_GENERATE_EXECUTION_PLAN),
@@ -251,7 +262,12 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     );
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
-    const engineServerClient = this.graphManager.engine.getEngineServerClient();
+    // TODO: improve abstraction so that we do not need to access the engine server client directly
+    const engineServerClient = guaranteeType(
+      this.graphManager.engine,
+      V1_RemoteEngine,
+      'debugExecutionPlanGeneration is only supported by remote engine',
+    ).getEngineServerClient();
 
     const result: { plan: RawExecutionPlan; debug: string[] } =
       await engineServerClient.postWithTracing(
@@ -273,7 +289,12 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     graph: PureModel,
     packagePath: string,
   ): Promise<RootGraphFetchTree> => {
-    const engineServerClient = this.graphManager.engine.getEngineServerClient();
+    // TODO: improve abstraction so that we do not need to access the engine server client directly
+    const engineServerClient = guaranteeType(
+      this.graphManager.engine,
+      V1_RemoteEngine,
+      'fetchStructuralValidations is only supported by remote engine',
+    ).getEngineServerClient();
     const input = this.createExecutionInput(
       graph,
       [],

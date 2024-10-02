@@ -34,8 +34,8 @@ import type { RawLambda } from '../../../../../graph/metamodel/pure/rawValueSpec
 import {
   GenerationMode,
   type GenerationConfigurationDescription,
-} from '../../../../../graph-manager/action/generation/GenerationConfigurationDescription.js';
-import { TEMPORARY__AbstractEngineConfig } from '../../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
+} from '../../../../action/generation/GenerationConfigurationDescription.js';
+import { TEMPORARY__AbstractEngineConfig } from '../../../../action/TEMPORARY__AbstractEngineConfig.js';
 import {
   V1_EngineServerClient,
   type V1_GrammarParserBatchInputEntry,
@@ -52,11 +52,11 @@ import {
 } from '../transformation/pureProtocol/V1_PureProtocolSerialization.js';
 import { V1_serializeRawValueSpecification } from '../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 import { V1_transformRawLambda } from '../transformation/pureGraph/from/V1_RawValueSpecificationTransformer.js';
-import { V1_GenerateFileInput } from '../engine/generation/V1_FileGenerationInput.js';
-import { V1_GenerationConfigurationDescription } from '../engine/generation/V1_GenerationConfigurationDescription.js';
-import { V1_GenerationOutput } from '../engine/generation/V1_GenerationOutput.js';
-import { V1_ParserError } from '../engine/grammar/V1_ParserError.js';
-import { V1_CompilationError } from '../engine/compilation/V1_CompilationError.js';
+import { V1_GenerateFileInput } from './generation/V1_FileGenerationInput.js';
+import { V1_GenerationConfigurationDescription } from './generation/V1_GenerationConfigurationDescription.js';
+import { V1_GenerationOutput } from './generation/V1_GenerationOutput.js';
+import { V1_ParserError } from './grammar/V1_ParserError.js';
+import { V1_CompilationError } from './compilation/V1_CompilationError.js';
 import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement.js';
 import type { RawRelationalOperationElement } from '../../../../../graph/metamodel/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
 import { V1_GraphTransformerContextBuilder } from '../transformation/pureGraph/from/V1_GraphTransformerContext.js';
@@ -92,8 +92,11 @@ import { deserialize, serialize } from 'serializr';
 import { V1_ExecutionError } from './execution/V1_ExecutionError.js';
 import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText.js';
 import { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification.js';
-import type { ExecutionOptions } from '../../../../../graph-manager/AbstractPureGraphManager.js';
-import type { ExternalFormatDescription } from '../../../../../graph-manager/action/externalFormat/ExternalFormatDescription.js';
+import type {
+  ExecutionOptions,
+  TEMPORARY__EngineSetupConfig,
+} from '../../../../AbstractPureGraphManager.js';
+import type { ExternalFormatDescription } from '../../../../action/externalFormat/ExternalFormatDescription.js';
 import { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription.js';
 import { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration.js';
 import { GRAPH_MANAGER_EVENT } from '../../../../../__lib__/GraphManagerEvent.js';
@@ -151,9 +154,10 @@ import { V1_RelationalConnectionBuilder } from './relational/V1_RelationalConnec
 import { V1_DeploymentResult } from './functionActivator/V1_DeploymentResult.js';
 import type { PostValidationAssertionResult } from '../../../../../DSL_Service_Exports.js';
 import { V1_DebugTestsResult } from './test/V1_DebugTestsResult.js';
+import type { V1_GraphManagerEngine } from './V1_GraphManagerEngine.js';
 
-class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
-  private engine: V1_Engine;
+class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
+  private engine: V1_RemoteEngine;
 
   override setEnv(val: string | undefined): void {
     super.setEnv(val);
@@ -185,14 +189,14 @@ class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
     this.engine.getEngineServerClient().setDebugPayload(val);
   }
 
-  constructor(engine: V1_Engine) {
+  constructor(engine: V1_RemoteEngine) {
     super();
     this.engine = engine;
     this.baseUrl = this.engine.getEngineServerClient().baseUrl;
   }
 }
 
-interface V1_EngineSetupConfig {
+interface V1_RemoteEngineSetupConfig extends TEMPORARY__EngineSetupConfig {
   env: string;
   tabSize: number;
   clientConfig: ServerClientConfig;
@@ -204,14 +208,14 @@ interface V1_EngineSetupConfig {
  * However, this might change in the future if we ever bring some engine functionalities
  * to Studio. As such, we want to encapsulate engine client within this class.
  */
-export class V1_Engine {
+export class V1_RemoteEngine implements V1_GraphManagerEngine {
   private readonly engineServerClient: V1_EngineServerClient;
   readonly logService: LogService;
-  readonly config: V1_EngineConfig;
+  readonly config: V1_RemoteEngineConfig;
 
   constructor(clientConfig: ServerClientConfig, logService: LogService) {
     this.engineServerClient = new V1_EngineServerClient(clientConfig);
-    this.config = new V1_EngineConfig(this);
+    this.config = new V1_RemoteEngineConfig(this);
     this.config.setBaseUrl(this.engineServerClient.baseUrl);
     this.config.setUseClientRequestPayloadCompression(
       this.engineServerClient.enableCompression,
@@ -236,6 +240,19 @@ export class V1_Engine {
     return serializedGraph;
   };
 
+  async setup(config: V1_RemoteEngineSetupConfig): Promise<void> {
+    this.config.setEnv(config.env);
+    this.config.setTabSize(config.tabSize);
+    try {
+      this.config.setCurrentUserId(
+        await this.engineServerClient.getCurrentUserId(),
+      );
+    } catch {
+      // do nothing
+    }
+  }
+
+  // ----------------------------------------- Server Client ----------------------------------------
   /**
    * NOTE: ideally, we would not want to leak engine server client like this,
    * since the communication with engine client should only be done in this class
@@ -248,18 +265,6 @@ export class V1_Engine {
 
   getCurrentUserId(): string | undefined {
     return this.engineServerClient.currentUserId;
-  }
-
-  async setup(config: V1_EngineSetupConfig): Promise<void> {
-    this.config.setEnv(config.env);
-    this.config.setTabSize(config.tabSize);
-    try {
-      this.config.setCurrentUserId(
-        await this.engineServerClient.getCurrentUserId(),
-      );
-    } catch {
-      // do nothing
-    }
   }
 
   // ------------------------------------------- Protocol -------------------------------------------
