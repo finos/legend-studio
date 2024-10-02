@@ -584,6 +584,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     this.engine =
       options?.engine ??
       new V1_RemoteEngine(config.clientConfig, this.logService);
+    // TODO: improve abstraction so that we do not need to access the engine server client directly
     if (this.engine instanceof V1_RemoteEngine) {
       this.engine
         .getEngineServerClient()
@@ -3002,6 +3003,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         V1_transformQuerySearchSpecification(searchSpecification),
       )
     ).map((protocol) => {
+      // TODO: improve abstraction so that we can get the current user ID from any abstract engine
       const currentUserId =
         this.engine instanceof V1_RemoteEngine
           ? this.engine.getCurrentUserId()
@@ -3012,6 +3014,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   async getQueries(queryIds: string[]): Promise<LightQuery[]> {
     return (await this.engine.getQueries(queryIds)).map((protocol) => {
+      // TODO: improve abstraction so that we can get the current user ID from any abstract engine
       const currentUserId =
         this.engine instanceof V1_RemoteEngine
           ? this.engine.getCurrentUserId()
@@ -3021,6 +3024,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   async getLightQuery(queryId: string): Promise<LightQuery> {
+    // TODO: improve abstraction so that we can get the current user ID from any abstract engine
     const currentUserId =
       this.engine instanceof V1_RemoteEngine
         ? this.engine.getCurrentUserId()
@@ -3032,6 +3036,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   async getQuery(queryId: string, graph: PureModel): Promise<Query> {
+    // TODO: improve abstraction so that we can get the current user ID from any abstract engine
     const currentUserId =
       this.engine instanceof V1_RemoteEngine
         ? this.engine.getCurrentUserId()
@@ -3058,6 +3063,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   async createQuery(query: Query, graph: PureModel): Promise<Query> {
+    // TODO: improve abstraction so that we can get the current user ID from any abstract engine
     const currentUserId =
       this.engine instanceof V1_RemoteEngine
         ? this.engine.getCurrentUserId()
@@ -3070,6 +3076,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   async updateQuery(query: Query, graph: PureModel): Promise<Query> {
+    // TODO: improve abstraction so that we can get the current user ID from any abstract engine
     const currentUserId =
       this.engine instanceof V1_RemoteEngine
         ? this.engine.getCurrentUserId()
@@ -3082,6 +3089,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   async patchQuery(query: Partial<Query>, graph: PureModel): Promise<Query> {
+    // TODO: improve abstraction so that we can get the current user ID from any abstract engine
     const currentUserId =
       this.engine instanceof V1_RemoteEngine
         ? this.engine.getCurrentUserId()
@@ -3096,6 +3104,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async renameQuery(queryId: string, queryName: string): Promise<LightQuery> {
     const query = await this.engine.getQuery(queryId);
     query.name = queryName;
+    // TODO: improve abstraction so that we can get the current user ID from any abstract engine
     const currentUserId =
       this.engine instanceof V1_RemoteEngine
         ? this.engine.getCurrentUserId()
@@ -3779,6 +3788,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     webUrl: string | undefined;
     owner: string;
   }> {
+    // TODO: improve abstraction so that we do not need to access the engine server client directly
     const engine = guaranteeType(
       this.engine,
       V1_RemoteEngine,
@@ -3788,6 +3798,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   userHasPrototypeProjectAccess(userId: string): Promise<boolean> {
+    // TODO: improve abstraction so that we do not need to access the engine server client directly
     const engine = guaranteeType(
       this.engine,
       V1_RemoteEngine,

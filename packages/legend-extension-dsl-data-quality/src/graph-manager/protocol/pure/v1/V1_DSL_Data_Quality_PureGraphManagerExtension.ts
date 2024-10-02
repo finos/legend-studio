@@ -121,9 +121,11 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       returnAsResponse?: boolean;
     },
   ): Promise<PlainObject<V1_ExecutionResult> | Response> => {
+    // TODO: improve abstraction so that we do not need to access the engine server client directly
     const engineServerClient = guaranteeType(
       this.graphManager.engine,
       V1_RemoteEngine,
+      'executeValidation is only supported by remote engine',
     ).getEngineServerClient();
     return engineServerClient.postWithTracing(
       engineServerClient.getTraceData(DQ_EXECUTE_PLAN),
@@ -187,9 +189,11 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
 
+    // TODO: improve abstraction so that we do not need to access the engine server client directly
     const engineServerClient = guaranteeType(
       this.graphManager.engine,
       V1_RemoteEngine,
+      'generatePlan is only supported by remote engine',
     ).getEngineServerClient();
 
     return engineServerClient.postWithTracing(
@@ -258,9 +262,11 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     );
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
+    // TODO: improve abstraction so that we do not need to access the engine server client directly
     const engineServerClient = guaranteeType(
       this.graphManager.engine,
       V1_RemoteEngine,
+      'debugExecutionPlanGeneration is only supported by remote engine',
     ).getEngineServerClient();
 
     const result: { plan: RawExecutionPlan; debug: string[] } =
@@ -283,9 +289,11 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     graph: PureModel,
     packagePath: string,
   ): Promise<RootGraphFetchTree> => {
+    // TODO: improve abstraction so that we do not need to access the engine server client directly
     const engineServerClient = guaranteeType(
       this.graphManager.engine,
       V1_RemoteEngine,
+      'fetchStructuralValidations is only supported by remote engine',
     ).getEngineServerClient();
     const input = this.createExecutionInput(
       graph,

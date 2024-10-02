@@ -181,9 +181,11 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     const cacheResult = cacheRetriever
       ? await this.fetchDataSpaceAnalysisFromCache(cacheRetriever, actionState)
       : undefined;
+    // TODO: improve abstraction so that we do not need to access the engine server client directly
     const engineClient = guaranteeType(
       this.graphManager.engine,
       V1_RemoteEngine,
+      'analyzeDataSpace is only supported by remote engine',
     ).getEngineServerClient();
     let analysisResult: PlainObject<V1_DataSpaceAnalysisResult>;
     if (cacheResult) {
