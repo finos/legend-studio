@@ -92,10 +92,11 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     ].map((col) => col.name);
   }
 
-  openNewColumnEditor(
+  async openNewColumnEditor(
     referenceColumn?: DataCubeColumnConfiguration | undefined,
   ) {
     const editor = new DataCubeNewColumnState(this, referenceColumn);
+    await editor.initialize();
     this.newColumnEditors.push(editor);
     editor.display.open();
   }

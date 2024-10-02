@@ -50,7 +50,7 @@ import {
 } from '@finos/legend-graph';
 import type { DataCubeColumnConfiguration } from '../core/DataCubeConfiguration.js';
 
-export class DataCubeNewColumnState {
+export abstract class DataCubeColumnBaseEditorState {
   readonly uuid = uuid();
   readonly view: DataCubeViewState;
   readonly manager: DataCubeExtendManagerState;
@@ -67,7 +67,7 @@ export class DataCubeNewColumnState {
   isGroupLevel: boolean;
   columnKind?: DataCubeColumnKind | undefined;
 
-  code: string;
+  code = '';
   codePrefix: string;
   codeSuffix: string;
 
@@ -79,7 +79,10 @@ export class DataCubeNewColumnState {
 
   constructor(
     manager: DataCubeExtendManagerState,
-    referenceColumn?: DataCubeColumnConfiguration | undefined,
+    name: string,
+    expectedType: string,
+    isGroupLevel: boolean,
+    columnKind: DataCubeColumnKind | undefined,
   ) {
     makeObservable(this, {
       name: observable,
@@ -107,42 +110,34 @@ export class DataCubeNewColumnState {
 
     this.manager = manager;
     this.view = manager.view;
-    this.display = this.view.application.layout.newDisplay(
-      'Add New Column',
-      () => <DataCubeColumnCreator state={this} />,
-      {
-        x: 50,
-        y: 50,
-        width: 500,
-        height: 300,
-        minWidth: 300,
-        minHeight: 200,
-        center: false,
-      },
-    );
+    this.display = this.newDisplay(this);
 
-    this.name = `col_${manager.allColumnNames.length + 1}`;
-    this.expectedType = DataCubeColumnDataType.NUMBER;
-    this.isGroupLevel = false;
-    this.columnKind = DataCubeColumnKind.MEASURE;
+    this.name = name;
+    this.expectedType = expectedType;
+    this.isGroupLevel = isGroupLevel;
+    this.columnKind = columnKind;
 
-    this.code = `${DEFAULT_LAMBDA_VARIABLE_NAME}|`;
     this.codePrefix = `->extend(~${this._name}:`;
     this.codeSuffix = `)`;
 
-    if (referenceColumn) {
-      this.expectedType = getDataType(referenceColumn.type);
-      this.columnKind = referenceColumn.kind;
-      this.code = `${DEFAULT_LAMBDA_VARIABLE_NAME}|$${DEFAULT_LAMBDA_VARIABLE_NAME}.${referenceColumn.name}`;
-    }
-
     this.editorModelUri = Uri.file(`/${this.uuid}.pure`);
     this.editorModel = monacoEditorAPI.createModel(
-      this.code,
+      '',
       CODE_EDITOR_LANGUAGE.PURE,
       this.editorModelUri,
     );
   }
+
+  abstract getInitialCode(): Promise<string>;
+
+  async initialize() {
+    this.code = await this.getInitialCode();
+    this.editorModel.setValue(this.code);
+  }
+
+  protected abstract newDisplay(
+    state: DataCubeColumnBaseEditorState,
+  ): DisplayState;
 
   setName(value: string) {
     this.name = value;
@@ -169,10 +164,6 @@ export class DataCubeNewColumnState {
   ) {
     this.isGroupLevel = isGroupLevel;
     this.columnKind = columnKind;
-  }
-
-  setCode(value: string) {
-    this.code = value;
   }
 
   setEditor(editor: monacoEditorAPI.IStandaloneCodeEditor) {
@@ -298,7 +289,62 @@ export class DataCubeNewColumnState {
     return undefined;
   }
 
-  async applyChanges() {
+  abstract applyChanges(): Promise<void>;
+
+  close() {
+    // dispose the editor and its model to avoid memory leak
+    this.editorModel.dispose();
+    this.editor?.dispose();
+
+    this.display.close();
+  }
+}
+
+export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
+  private initialCode: string;
+
+  constructor(
+    manager: DataCubeExtendManagerState,
+    referenceColumn?: DataCubeColumnConfiguration | undefined,
+  ) {
+    const name = `col_${manager.allColumnNames.length + 1}`;
+    let expectedType = DataCubeColumnDataType.NUMBER;
+    const isGroupLevel = false;
+    let columnKind = DataCubeColumnKind.MEASURE;
+
+    if (referenceColumn) {
+      expectedType = getDataType(referenceColumn.type);
+      columnKind = referenceColumn.kind;
+    }
+
+    super(manager, name, expectedType, isGroupLevel, columnKind);
+
+    this.initialCode = referenceColumn
+      ? `${DEFAULT_LAMBDA_VARIABLE_NAME}|$${DEFAULT_LAMBDA_VARIABLE_NAME}.${referenceColumn.name}`
+      : `${DEFAULT_LAMBDA_VARIABLE_NAME}|`;
+  }
+
+  override async getInitialCode(): Promise<string> {
+    return this.initialCode;
+  }
+
+  override newDisplay(state: DataCubeColumnBaseEditorState): DisplayState {
+    return this.view.application.layout.newDisplay(
+      'Add New Column',
+      () => <DataCubeColumnCreator state={this} />,
+      {
+        x: 50,
+        y: 50,
+        width: 500,
+        height: 300,
+        minWidth: 300,
+        minHeight: 200,
+        center: false,
+      },
+    );
+  }
+
+  override async applyChanges() {
     if (
       !this.validationState.hasCompleted ||
       !this.isNameValid ||
@@ -342,7 +388,7 @@ export class DataCubeNewColumnState {
 
     this.manager.addNewColumn(
       {
-        _type: DataCubeExtendedColumnType.SIMPLE,
+        _type: DataCubeExtendedColumnType.STANDARD,
         name: this.name,
         type: returnType,
         lambda: V1_serializeValueSpecification(query, []),
@@ -354,12 +400,99 @@ export class DataCubeNewColumnState {
 
     this.close();
   }
+}
 
-  close() {
-    // dispose the editor and its model to avoid memory leak
-    this.editorModel.dispose();
-    this.editor?.dispose();
+export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorState {
+  constructor(
+    manager: DataCubeExtendManagerState,
+    columnConfiguration: DataCubeColumnConfiguration,
+    isGroupLevel: boolean,
+    code: string,
+  ) {
+    super(
+      manager,
+      columnConfiguration.name,
+      getDataType(columnConfiguration.type),
+      isGroupLevel,
+      columnConfiguration.kind,
+    );
+  }
 
-    this.display.close();
+  override async getInitialCode(): Promise<string> {
+    return '';
+  }
+
+  override newDisplay(state: DataCubeColumnBaseEditorState): DisplayState {
+    return this.view.application.layout.newDisplay(
+      'Edit Column',
+      // () => <DataCubeColumnCreator state={this} />,
+      () => null,
+      {
+        x: 50,
+        y: 50,
+        width: 500,
+        height: 300,
+        minWidth: 300,
+        minHeight: 200,
+        center: false,
+      },
+    );
+  }
+
+  override async applyChanges() {
+    if (
+      !this.validationState.hasCompleted ||
+      !this.isNameValid ||
+      !this.isTypeValid
+    ) {
+      return;
+    }
+
+    this.finalizationState.inProgress();
+
+    let query: V1_ValueSpecification;
+    let returnType: string | undefined;
+    try {
+      [query, returnType] = await Promise.all([
+        this.view.engine.parseQuery(this.code, false),
+        this.getReturnType(), // recompile to get the return type
+      ]);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.view.application.alertError(error, {
+        message: `Expression Validation Failure: ${error.message}`,
+      });
+      return;
+    } finally {
+      this.finalizationState.complete();
+    }
+
+    if (!(query instanceof V1_Lambda)) {
+      this.view.application.alertError(new Error(), {
+        message: `Expression Validation Failure: Expression must be a lambda.`,
+      });
+      return;
+    }
+
+    if (!returnType) {
+      this.view.application.alertError(new Error(), {
+        message: `Expression Validation Failure: Can't compute expression return type.`,
+      });
+      return;
+    }
+
+    // this.manager.addNewColumn(
+    //   {
+    //     _type: DataCubeExtendedColumnType.STANDARD,
+    //     name: this.name,
+    //     type: returnType,
+    //     lambda: V1_serializeValueSpecification(query, []),
+    //   },
+    //   this.isGroupLevel,
+    //   this.columnKind,
+    //   this,
+    // );
+
+    this.close();
   }
 }

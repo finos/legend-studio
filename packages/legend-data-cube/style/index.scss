@@ -300,6 +300,12 @@
   --ag-widget-vertical-spacing: 4px;
   --ag-wrapper-border-radius: 0;
 
+  // --------------------------------- Generic ---------------------------------
+
+  .ag-icon:hover {
+    box-shadow: none;
+  }
+
   // --------------------------------- Pinning ---------------------------------
   // Improve visibility of pinned columns
 

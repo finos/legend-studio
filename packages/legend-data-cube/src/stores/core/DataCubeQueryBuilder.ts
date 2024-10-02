@@ -100,7 +100,7 @@ export function buildExecutableQuery(
       _function(DataCubeFunction.EXTEND, [
         _cols(
           data.leafExtendedColumns.map((col) => {
-            if (col._type === DataCubeExtendedColumnType.SIMPLE) {
+            if (col._type === DataCubeExtendedColumnType.STANDARD) {
               const column = col as DataCubeQuerySnapshotSimpleExtendedColumn;
               return _colSpec(column.name, _deserializeToLambda(column.lambda));
             }
@@ -219,7 +219,7 @@ export function buildExecutableQuery(
       _function(DataCubeFunction.EXTEND, [
         _cols(
           data.groupExtendedColumns.map((col) => {
-            if (col._type === DataCubeExtendedColumnType.SIMPLE) {
+            if (col._type === DataCubeExtendedColumnType.STANDARD) {
               const column = col as DataCubeQuerySnapshotSimpleExtendedColumn;
               return _colSpec(column.name, _deserializeToLambda(column.lambda));
             }

@@ -101,7 +101,7 @@ enum _FUNCTION_SEQUENCE_COMPOSITION_PART {
 
 // This corresponds to the function sequence that we currently support:
 //
-// -> extend()
+// ->extend()
 // ->filter()
 // ->select()
 // ->sort()->pivot()->cast()

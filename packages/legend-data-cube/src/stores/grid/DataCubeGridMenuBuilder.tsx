@@ -584,13 +584,19 @@ export function generateMenuBuilder(
         subMenu: [
           {
             name: `Add New Column...`,
-            action: () => extend.openNewColumnEditor(),
+            action: () =>
+              extend
+                .openNewColumnEditor()
+                .catch((error) => application.alertUnhandledError(error)),
           },
           ...(columnConfiguration && columnName
             ? [
                 {
                   name: `Extend Column ${columnName}...`,
-                  action: () => extend.openNewColumnEditor(columnConfiguration),
+                  action: () =>
+                    extend
+                      .openNewColumnEditor(columnConfiguration)
+                      .catch((error) => application.alertUnhandledError(error)),
                 },
               ]
             : []),
@@ -611,32 +617,6 @@ export function generateMenuBuilder(
                 },
               ]
             : []),
-        ],
-      },
-      {
-        name: 'Custom Groupings',
-        menuItem: WIP_GridMenuItem,
-        cssClasses: ['!opacity-100'],
-        disabled: true,
-        subMenu: [
-          {
-            name: `Add New Grouping...`,
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
-          },
-          {
-            name: `Edit {column}`,
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
-          },
-          {
-            name: `Remove {column}`,
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
-          },
         ],
       },
       'separator',

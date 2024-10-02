@@ -249,10 +249,10 @@ export enum DataCubeColumnPinPlacement {
   RIGHT = 'Right',
 }
 
-// TODO: support more classifications of this column, it can also be aggregation with map/reduce or
-// OLAP window aggregation, or custom groupings, etc.
 export enum DataCubeExtendedColumnType {
-  SIMPLE = 'simple',
+  STANDARD = 'standard',
+  OLAP = 'olap',
+  // TODO?: custom groupings (i.e. multiple if(s) block with each return a value and a catch-all/else block)
 }
 
 export enum DataCubeColumnDataType {
