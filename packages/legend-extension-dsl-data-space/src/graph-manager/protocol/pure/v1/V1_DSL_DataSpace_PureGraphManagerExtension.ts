@@ -35,6 +35,7 @@ import {
   V1_buildModelCoverageAnalysisResult,
   V1_deserializePackageableElement,
   QueryDataSpaceExecutionContextInfo,
+  V1_RemoteEngine,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -180,7 +181,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     const cacheResult = cacheRetriever
       ? await this.fetchDataSpaceAnalysisFromCache(cacheRetriever, actionState)
       : undefined;
-    const engine = this.graphManager.engine;
+    const engine = guaranteeType(this.graphManager.engine, V1_RemoteEngine);
     let analysisResult: PlainObject<V1_DataSpaceAnalysisResult>;
     if (cacheResult) {
       analysisResult = cacheResult;
@@ -188,24 +189,24 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       actionState?.setMessage('Fetching project entities and dependencies...');
       const entities = await entitiesRetriever();
       actionState?.setMessage('Analyzing data space...');
-      analysisResult = await engine.serverClientPostWithTracing<
-        PlainObject<V1_DataSpaceAnalysisResult>
-      >(
-        engine.serverClientGetTraceData(ANALYZE_DATA_SPACE_TRACE),
-        `${engine.serverClientGetPureBaseUrl()}/analytics/dataSpace/render`,
-        {
-          clientVersion: V1_PureGraphManager.DEV_PROTOCOL_VERSION,
-          dataSpace: dataSpacePath,
-          model: {
-            _type: V1_PureModelContextType.DATA,
-            elements: entities.map((entity) => entity.content),
+      analysisResult = await engine
+        .getEngineServerClient()
+        .postWithTracing<PlainObject<V1_DataSpaceAnalysisResult>>(
+          engine.getEngineServerClient().getTraceData(ANALYZE_DATA_SPACE_TRACE),
+          `${engine.getEngineServerClient()._pure()}/analytics/dataSpace/render`,
+          {
+            clientVersion: V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+            dataSpace: dataSpacePath,
+            model: {
+              _type: V1_PureModelContextType.DATA,
+              elements: entities.map((entity) => entity.content),
+            },
           },
-        },
-        {},
-        undefined,
-        undefined,
-        { enableCompression: true },
-      );
+          {},
+          undefined,
+          undefined,
+          { enableCompression: true },
+        );
     }
     return this.buildDataSpaceAnalytics(
       analysisResult,

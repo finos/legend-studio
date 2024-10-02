@@ -16,14 +16,8 @@
 
 import {
   type LogService,
-  type Parameters,
   type PlainObject,
-  type RequestHeaders,
-  type RequestProcessConfig,
-  type ResponseProcessConfig,
   type ServerClientConfig,
-  type TraceData,
-  type TracerService,
   LogEvent,
   parseLosslessJSON,
   assertErrorThrown,
@@ -167,38 +161,38 @@ class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
 
   override setEnv(val: string | undefined): void {
     super.setEnv(val);
-    this.engine.serverClientSetEnv(val);
+    this.engine.getEngineServerClient().setEnv(val);
   }
 
   override setCurrentUserId(val: string | undefined): void {
     super.setCurrentUserId(val);
-    this.engine.serverClientSetCurrentUserId(val);
+    this.engine.getEngineServerClient().setCurrentUserId(val);
   }
 
   override setBaseUrl(val: string | undefined): void {
     super.setBaseUrl(val);
-    this.engine.serverClientSetBaseUrl(val);
+    this.engine.getEngineServerClient().setBaseUrl(val);
   }
 
   override setBaseUrlForServiceRegistration(val: string | undefined): void {
     super.setBaseUrlForServiceRegistration(val);
-    this.engine.serverClientSetBaseUrlForServiceRegistration(val);
+    this.engine.getEngineServerClient().setBaseUrlForServiceRegistration(val);
   }
 
   override setUseClientRequestPayloadCompression(val: boolean): void {
     super.setUseClientRequestPayloadCompression(val);
-    this.engine.serverClientSetUseClientRequestPayloadCompression(val);
+    this.engine.getEngineServerClient().setCompression(val);
   }
 
   override setEnableDebuggingPayload(val: boolean): void {
     super.setEnableDebuggingPayload(val);
-    this.engine.serverClientSetEnableDebuggingPayload(val);
+    this.engine.getEngineServerClient().setDebugPayload(val);
   }
 
   constructor(engine: V1_RemoteEngine) {
     super();
     this.engine = engine;
-    this.baseUrl = this.engine.serverClientGetBaseUrl();
+    this.baseUrl = this.engine.getEngineServerClient().baseUrl;
   }
 }
 
@@ -259,63 +253,19 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   }
 
   // ----------------------------------------- Server Client ----------------------------------------
-  getCurrentUserId = (): string | undefined =>
-    this.engineServerClient.currentUserId;
-  serverClientGetBaseUrl = (): string | undefined =>
-    this.engineServerClient.baseUrl;
-  serverClientGetPureBaseUrl = (): string => this.engineServerClient._pure();
-  serverClientGetTraceData = (
-    name: string,
-    tracingTags?: PlainObject,
-  ): TraceData => this.engineServerClient.getTraceData(name, tracingTags);
-  serverClientSetTracerService = (tracerService: TracerService) => {
-    this.engineServerClient.setTracerService(tracerService);
-  };
-  serverClientSetEnv = (val: string | undefined) => {
-    this.engineServerClient.setEnv(val);
-  };
-  serverClientSetCurrentUserId = (val: string | undefined) => {
-    this.engineServerClient.setCurrentUserId(val);
-  };
-  serverClientSetBaseUrl = (val: string | undefined) => {
-    this.engineServerClient.setBaseUrl(val);
-  };
-  serverClientSetBaseUrlForServiceRegistration = (val: string | undefined) => {
-    this.engineServerClient.setBaseUrlForServiceRegistration(val);
-  };
-  serverClientSetUseClientRequestPayloadCompression = (val: boolean) => {
-    this.engineServerClient.setCompression(val);
-  };
-  serverClientSetEnableDebuggingPayload = (val: boolean) => {
-    this.engineServerClient.setDebugPayload(val);
-  };
-  serverClientCreatePrototypeProject = (): Promise<{
-    projectId: string;
-    webUrl: string | undefined;
-    owner: string;
-  }> => this.engineServerClient.createPrototypeProject();
-  serverClientValidUserAccessRole = (userId: string): Promise<boolean> =>
-    this.engineServerClient.validUserAccessRole(userId);
-  serverClientPostWithTracing = <T>(
-    traceData: TraceData,
-    url: string,
-    data: unknown,
-    options: RequestInit,
-    headers?: RequestHeaders,
-    parameters?: Parameters,
-    requestProcessConfig?: RequestProcessConfig,
-    responseProcessConfig?: ResponseProcessConfig,
-  ): Promise<T> =>
-    this.engineServerClient.postWithTracing(
-      traceData,
-      url,
-      data,
-      options,
-      headers,
-      parameters,
-      requestProcessConfig,
-      responseProcessConfig,
-    );
+  /**
+   * NOTE: ideally, we would not want to leak engine server client like this,
+   * since the communication with engine client should only be done in this class
+   * alone. However, we need to expose the client for plugins, tests, and dev tool
+   * configurations.
+   */
+  getEngineServerClient(): V1_EngineServerClient {
+    return this.engineServerClient;
+  }
+
+  getCurrentUserId(): string | undefined {
+    return this.engineServerClient.currentUserId;
+  }
 
   // ------------------------------------------- Protocol -------------------------------------------
 

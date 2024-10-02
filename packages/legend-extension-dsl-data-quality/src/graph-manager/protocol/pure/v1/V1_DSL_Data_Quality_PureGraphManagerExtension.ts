@@ -41,6 +41,7 @@ import {
   V1_serializeExecutionResult,
   V1_parameterValueModelSchema,
   V1_transformParameterValue,
+  V1_RemoteEngine,
 } from '@finos/legend-graph';
 import { createModelSchema, optional, primitive } from 'serializr';
 import {
@@ -120,10 +121,10 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       returnAsResponse?: boolean;
     },
   ): Promise<PlainObject<V1_ExecutionResult> | Response> => {
-    const engine = this.graphManager.engine;
-    return engine.serverClientPostWithTracing(
-      engine.serverClientGetTraceData(DQ_EXECUTE_PLAN),
-      `${engine.serverClientGetPureBaseUrl()}/dataquality/execute`,
+    const engine = guaranteeType(this.graphManager.engine, V1_RemoteEngine);
+    return engine.getEngineServerClient().postWithTracing(
+      engine.getEngineServerClient().getTraceData(DQ_EXECUTE_PLAN),
+      `${engine.getEngineServerClient()._pure()}/dataquality/execute`,
       input,
       {},
       undefined,
@@ -183,17 +184,19 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
 
-    const engine = this.graphManager.engine;
+    const engine = guaranteeType(this.graphManager.engine, V1_RemoteEngine);
 
-    return engine.serverClientPostWithTracing(
-      engine.serverClientGetTraceData(DQ_GENERATE_EXECUTION_PLAN),
-      `${engine.serverClientGetPureBaseUrl()}/dataquality/generatePlan`,
-      serializedInput,
-      {},
-      undefined,
-      undefined,
-      { enableCompression: true },
-    );
+    return engine
+      .getEngineServerClient()
+      .postWithTracing(
+        engine.getEngineServerClient().getTraceData(DQ_GENERATE_EXECUTION_PLAN),
+        `${engine.getEngineServerClient()._pure()}/dataquality/generatePlan`,
+        serializedInput,
+        {},
+        undefined,
+        undefined,
+        { enableCompression: true },
+      );
   };
 
   execute = async (
@@ -251,12 +254,13 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     );
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
-    const engine = this.graphManager.engine;
+    const engine = guaranteeType(this.graphManager.engine, V1_RemoteEngine);
 
-    const result: { plan: RawExecutionPlan; debug: string[] } =
-      await engine.serverClientPostWithTracing(
-        engine.serverClientGetTraceData(DQ_DEBUG_EXECUTION_PLAN),
-        `${engine.serverClientGetPureBaseUrl()}/dataquality/debugPlan`,
+    const result: { plan: RawExecutionPlan; debug: string[] } = await engine
+      .getEngineServerClient()
+      .postWithTracing(
+        engine.getEngineServerClient().getTraceData(DQ_DEBUG_EXECUTION_PLAN),
+        `${engine.getEngineServerClient()._pure()}/dataquality/debugPlan`,
         serializedInput,
         {},
         undefined,
@@ -273,7 +277,7 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     graph: PureModel,
     packagePath: string,
   ): Promise<RootGraphFetchTree> => {
-    const engine = this.graphManager.engine;
+    const engine = guaranteeType(this.graphManager.engine, V1_RemoteEngine);
     const input = this.createExecutionInput(
       graph,
       [],
@@ -284,10 +288,13 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     );
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
-    const V1_rootGraphFetchTree: V1_RootGraphFetchTree =
-      await engine.serverClientPostWithTracing(
-        engine.serverClientGetTraceData(DQ_FETCH_PROPERTY_PATH_TREE),
-        `${engine.serverClientGetPureBaseUrl()}/dataquality/propertyPathTree`,
+    const V1_rootGraphFetchTree: V1_RootGraphFetchTree = await engine
+      .getEngineServerClient()
+      .postWithTracing(
+        engine
+          .getEngineServerClient()
+          .getTraceData(DQ_FETCH_PROPERTY_PATH_TREE),
+        `${engine.getEngineServerClient()._pure()}/dataquality/propertyPathTree`,
         serializedInput,
         {},
         undefined,

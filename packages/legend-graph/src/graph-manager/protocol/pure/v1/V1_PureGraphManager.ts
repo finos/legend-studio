@@ -38,6 +38,7 @@ import {
   isString,
   assertNonEmptyString,
   uniq,
+  guaranteeType,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -583,9 +584,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     this.engine =
       options?.engine ??
       new V1_RemoteEngine(config.clientConfig, this.logService);
-    this.engine.serverClientSetTracerService(
-      options?.tracerService ?? new TracerService(),
-    );
+    if (this.engine instanceof V1_RemoteEngine) {
+      this.engine
+        .getEngineServerClient()
+        .setTracerService(options?.tracerService ?? new TracerService());
+    }
     if (!options?.disableGraphConfiguration) {
       // TODO: should probably be moved into each store's own initialize method
       await Promise.all([
@@ -2998,29 +3001,45 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       await this.engine.searchQueries(
         V1_transformQuerySearchSpecification(searchSpecification),
       )
-    ).map((protocol) =>
-      V1_buildLightQuery(protocol, this.engine.getCurrentUserId()),
-    );
+    ).map((protocol) => {
+      const currentUserId =
+        this.engine instanceof V1_RemoteEngine
+          ? this.engine.getCurrentUserId()
+          : undefined;
+      return V1_buildLightQuery(protocol, currentUserId);
+    });
   }
 
   async getQueries(queryIds: string[]): Promise<LightQuery[]> {
-    return (await this.engine.getQueries(queryIds)).map((protocol) =>
-      V1_buildLightQuery(protocol, this.engine.getCurrentUserId()),
-    );
+    return (await this.engine.getQueries(queryIds)).map((protocol) => {
+      const currentUserId =
+        this.engine instanceof V1_RemoteEngine
+          ? this.engine.getCurrentUserId()
+          : undefined;
+      return V1_buildLightQuery(protocol, currentUserId);
+    });
   }
 
   async getLightQuery(queryId: string): Promise<LightQuery> {
+    const currentUserId =
+      this.engine instanceof V1_RemoteEngine
+        ? this.engine.getCurrentUserId()
+        : undefined;
     return V1_buildLightQuery(
       await this.engine.getQuery(queryId),
-      this.engine.getCurrentUserId(),
+      currentUserId,
     );
   }
 
   async getQuery(queryId: string, graph: PureModel): Promise<Query> {
+    const currentUserId =
+      this.engine instanceof V1_RemoteEngine
+        ? this.engine.getCurrentUserId()
+        : undefined;
     return V1_buildQuery(
       await this.engine.getQuery(queryId),
       graph,
-      this.engine.getCurrentUserId(),
+      currentUserId,
     );
   }
   async getQueryInfo(queryId: string): Promise<QueryInfo> {
@@ -3039,35 +3058,51 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   async createQuery(query: Query, graph: PureModel): Promise<Query> {
+    const currentUserId =
+      this.engine instanceof V1_RemoteEngine
+        ? this.engine.getCurrentUserId()
+        : undefined;
     return V1_buildQuery(
       await this.engine.createQuery(V1_transformQuery(query)),
       graph,
-      this.engine.getCurrentUserId(),
+      currentUserId,
     );
   }
 
   async updateQuery(query: Query, graph: PureModel): Promise<Query> {
+    const currentUserId =
+      this.engine instanceof V1_RemoteEngine
+        ? this.engine.getCurrentUserId()
+        : undefined;
     return V1_buildQuery(
       await this.engine.updateQuery(V1_transformQuery(query)),
       graph,
-      this.engine.getCurrentUserId(),
+      currentUserId,
     );
   }
 
   async patchQuery(query: Partial<Query>, graph: PureModel): Promise<Query> {
+    const currentUserId =
+      this.engine instanceof V1_RemoteEngine
+        ? this.engine.getCurrentUserId()
+        : undefined;
     return V1_buildQuery(
       await this.engine.patchQuery(V1_transformQuery(query)),
       graph,
-      this.engine.getCurrentUserId(),
+      currentUserId,
     );
   }
 
   async renameQuery(queryId: string, queryName: string): Promise<LightQuery> {
     const query = await this.engine.getQuery(queryId);
     query.name = queryName;
+    const currentUserId =
+      this.engine instanceof V1_RemoteEngine
+        ? this.engine.getCurrentUserId()
+        : undefined;
     return V1_buildLightQuery(
       await this.engine.updateQuery(query),
-      this.engine.getCurrentUserId(),
+      currentUserId,
     );
   }
 
@@ -3744,11 +3779,21 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     webUrl: string | undefined;
     owner: string;
   }> {
-    return this.engine.serverClientCreatePrototypeProject();
+    const engine = guaranteeType(
+      this.engine,
+      V1_RemoteEngine,
+      'createSandboxProject is only supported by remote engine',
+    );
+    return engine.getEngineServerClient().createPrototypeProject();
   }
 
   userHasPrototypeProjectAccess(userId: string): Promise<boolean> {
-    return this.engine.serverClientValidUserAccessRole(userId);
+    const engine = guaranteeType(
+      this.engine,
+      V1_RemoteEngine,
+      'userHasPrototypeProjectAccess is only supported by remote engine',
+    );
+    return engine.getEngineServerClient().validUserAccessRole(userId);
   }
 
   // --------------------------------------------- Change Detection ---------------------------------------------

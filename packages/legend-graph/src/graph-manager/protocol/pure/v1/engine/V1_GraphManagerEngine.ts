@@ -14,15 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type Parameters,
-  type PlainObject,
-  type RequestHeaders,
-  type RequestProcessConfig,
-  type ResponseProcessConfig,
-  type TraceData,
-  type TracerService,
-} from '@finos/legend-shared';
+import { type PlainObject } from '@finos/legend-shared';
 import type { RawLambda } from '../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import {
   type GenerationMode,
@@ -100,46 +92,6 @@ export interface V1_GraphManagerEngine {
   config: TEMPORARY__AbstractEngineConfig;
 
   setup: (config: TEMPORARY__EngineSetupConfig) => Promise<void>;
-
-  // ----------------------------------------- Server Client ----------------------------------------
-  /**
-   * NOTE: ideally, we would not want to leak engine server client like this,
-   * since the communication with engine client should only be done in this class
-   * alone. However, we need to expose the client for plugins, tests, and dev tool
-   * configurations.
-   */
-  getCurrentUserId: () => string | undefined;
-  serverClientGetBaseUrl: () => string | undefined;
-  serverClientGetPureBaseUrl: () => string;
-  serverClientGetTraceData: (
-    name: string,
-    tracingTags?: PlainObject,
-  ) => TraceData;
-  serverClientSetBaseUrl: (val: string | undefined) => void;
-  serverClientSetBaseUrlForServiceRegistration: (
-    val: string | undefined,
-  ) => void;
-  serverClientSetCurrentUserId: (val: string | undefined) => void;
-  serverClientSetEnableDebuggingPayload: (val: boolean) => void;
-  serverClientSetEnv: (val: string | undefined) => void;
-  serverClientSetTracerService: (tracerService: TracerService) => void;
-  serverClientSetUseClientRequestPayloadCompression: (val: boolean) => void;
-  serverClientCreatePrototypeProject: () => Promise<{
-    projectId: string;
-    webUrl: string | undefined;
-    owner: string;
-  }>;
-  serverClientPostWithTracing: <T>(
-    traceData: TraceData,
-    url: string,
-    data: unknown,
-    options: RequestInit,
-    headers?: RequestHeaders,
-    parameters?: Parameters,
-    requestProcessConfig?: RequestProcessConfig,
-    responseProcessConfig?: ResponseProcessConfig,
-  ) => Promise<T>;
-  serverClientValidUserAccessRole: (userId: string) => Promise<boolean>;
 
   // ------------------------------------------- Protocol -------------------------------------------
 
