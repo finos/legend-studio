@@ -181,7 +181,10 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     const cacheResult = cacheRetriever
       ? await this.fetchDataSpaceAnalysisFromCache(cacheRetriever, actionState)
       : undefined;
-    const engine = guaranteeType(this.graphManager.engine, V1_RemoteEngine);
+    const engineClient = guaranteeType(
+      this.graphManager.engine,
+      V1_RemoteEngine,
+    ).getEngineServerClient();
     let analysisResult: PlainObject<V1_DataSpaceAnalysisResult>;
     if (cacheResult) {
       analysisResult = cacheResult;
@@ -189,24 +192,24 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       actionState?.setMessage('Fetching project entities and dependencies...');
       const entities = await entitiesRetriever();
       actionState?.setMessage('Analyzing data space...');
-      analysisResult = await engine
-        .getEngineServerClient()
-        .postWithTracing<PlainObject<V1_DataSpaceAnalysisResult>>(
-          engine.getEngineServerClient().getTraceData(ANALYZE_DATA_SPACE_TRACE),
-          `${engine.getEngineServerClient()._pure()}/analytics/dataSpace/render`,
-          {
-            clientVersion: V1_PureGraphManager.DEV_PROTOCOL_VERSION,
-            dataSpace: dataSpacePath,
-            model: {
-              _type: V1_PureModelContextType.DATA,
-              elements: entities.map((entity) => entity.content),
-            },
+      analysisResult = await engineClient.postWithTracing<
+        PlainObject<V1_DataSpaceAnalysisResult>
+      >(
+        engineClient.getTraceData(ANALYZE_DATA_SPACE_TRACE),
+        `${engineClient._pure()}/analytics/dataSpace/render`,
+        {
+          clientVersion: V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+          dataSpace: dataSpacePath,
+          model: {
+            _type: V1_PureModelContextType.DATA,
+            elements: entities.map((entity) => entity.content),
           },
-          {},
-          undefined,
-          undefined,
-          { enableCompression: true },
-        );
+        },
+        {},
+        undefined,
+        undefined,
+        { enableCompression: true },
+      );
     }
     return this.buildDataSpaceAnalytics(
       analysisResult,

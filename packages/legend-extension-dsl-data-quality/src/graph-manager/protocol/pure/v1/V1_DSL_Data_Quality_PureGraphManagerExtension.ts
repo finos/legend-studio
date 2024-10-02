@@ -121,10 +121,13 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       returnAsResponse?: boolean;
     },
   ): Promise<PlainObject<V1_ExecutionResult> | Response> => {
-    const engine = guaranteeType(this.graphManager.engine, V1_RemoteEngine);
-    return engine.getEngineServerClient().postWithTracing(
-      engine.getEngineServerClient().getTraceData(DQ_EXECUTE_PLAN),
-      `${engine.getEngineServerClient()._pure()}/dataquality/execute`,
+    const engineServerClient = guaranteeType(
+      this.graphManager.engine,
+      V1_RemoteEngine,
+    ).getEngineServerClient();
+    return engineServerClient.postWithTracing(
+      engineServerClient.getTraceData(DQ_EXECUTE_PLAN),
+      `${engineServerClient._pure()}/dataquality/execute`,
       input,
       {},
       undefined,
@@ -184,19 +187,20 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
 
-    const engine = guaranteeType(this.graphManager.engine, V1_RemoteEngine);
+    const engineServerClient = guaranteeType(
+      this.graphManager.engine,
+      V1_RemoteEngine,
+    ).getEngineServerClient();
 
-    return engine
-      .getEngineServerClient()
-      .postWithTracing(
-        engine.getEngineServerClient().getTraceData(DQ_GENERATE_EXECUTION_PLAN),
-        `${engine.getEngineServerClient()._pure()}/dataquality/generatePlan`,
-        serializedInput,
-        {},
-        undefined,
-        undefined,
-        { enableCompression: true },
-      );
+    return engineServerClient.postWithTracing(
+      engineServerClient.getTraceData(DQ_GENERATE_EXECUTION_PLAN),
+      `${engineServerClient._pure()}/dataquality/generatePlan`,
+      serializedInput,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
   };
 
   execute = async (
@@ -254,13 +258,15 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     );
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
-    const engine = guaranteeType(this.graphManager.engine, V1_RemoteEngine);
+    const engineServerClient = guaranteeType(
+      this.graphManager.engine,
+      V1_RemoteEngine,
+    ).getEngineServerClient();
 
-    const result: { plan: RawExecutionPlan; debug: string[] } = await engine
-      .getEngineServerClient()
-      .postWithTracing(
-        engine.getEngineServerClient().getTraceData(DQ_DEBUG_EXECUTION_PLAN),
-        `${engine.getEngineServerClient()._pure()}/dataquality/debugPlan`,
+    const result: { plan: RawExecutionPlan; debug: string[] } =
+      await engineServerClient.postWithTracing(
+        engineServerClient.getTraceData(DQ_DEBUG_EXECUTION_PLAN),
+        `${engineServerClient._pure()}/dataquality/debugPlan`,
         serializedInput,
         {},
         undefined,
@@ -277,7 +283,10 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     graph: PureModel,
     packagePath: string,
   ): Promise<RootGraphFetchTree> => {
-    const engine = guaranteeType(this.graphManager.engine, V1_RemoteEngine);
+    const engineServerClient = guaranteeType(
+      this.graphManager.engine,
+      V1_RemoteEngine,
+    ).getEngineServerClient();
     const input = this.createExecutionInput(
       graph,
       [],
@@ -288,13 +297,10 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     );
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
-    const V1_rootGraphFetchTree: V1_RootGraphFetchTree = await engine
-      .getEngineServerClient()
-      .postWithTracing(
-        engine
-          .getEngineServerClient()
-          .getTraceData(DQ_FETCH_PROPERTY_PATH_TREE),
-        `${engine.getEngineServerClient()._pure()}/dataquality/propertyPathTree`,
+    const V1_rootGraphFetchTree: V1_RootGraphFetchTree =
+      await engineServerClient.postWithTracing(
+        engineServerClient.getTraceData(DQ_FETCH_PROPERTY_PATH_TREE),
+        `${engineServerClient._pure()}/dataquality/propertyPathTree`,
         serializedInput,
         {},
         undefined,
