@@ -89,6 +89,7 @@ export {
   PureExecution,
   RawLambda,
   Service,
+  ServiceExecution,
   ServiceExecutionMode,
   TEMPORARY__AbstractEngineConfig,
   V1_ArtifactGenerationExtensionInput,
@@ -115,6 +116,7 @@ export {
   V1_MappingModelCoverageAnalysisInput,
   V1_MappingModelCoverageAnalysisResult,
   V1_ParserError,
+  V1_PureExecution,
   V1_PureGraphManager,
   V1_PureModelContext,
   V1_PureModelContextData,
@@ -128,6 +130,7 @@ export {
   V1_serializePackageableElement,
   V1_Service,
   V1_ServiceConfigurationInfo,
+  V1_serviceModelSchema,
   V1_ServiceRegistrationResult,
   V1_ServiceStorage,
   V1_SourceInformation,
@@ -192,4 +195,7 @@ export {
   ServiceQueryBuilderState,
 } from '@finos/legend-query-builder';
 
-export { pureExecution_setFunction } from '@finos/legend-application-studio';
+export {
+  pureExecution_setFunction,
+  service_setExecution,
+} from '@finos/legend-application-studio';
