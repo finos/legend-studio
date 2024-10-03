@@ -28,6 +28,8 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  HttpStatus,
+  NetworkClientError,
 } from '@finos/legend-shared';
 import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGeneralPropertiesPanelState.js';
 import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumnPropertiesPanelState.js';
@@ -36,10 +38,10 @@ import { DataCubeConfiguration } from '../../core/DataCubeConfiguration.js';
 import { DataCubeEditorVerticalPivotsPanelState } from './DataCubeEditorVerticalPivotsPanelState.js';
 import type { DisplayState } from '../../core/DataCubeLayoutManagerState.js';
 import { DataCubeEditor } from '../../../components/view/editor/DataCubeEditor.js';
-import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
-import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 import { DataCubeEditorHorizontalPivotsPanelState } from './DataCubeEditorHorizontalPivotsPanelState.js';
 import { DataCubeEditorPivotLayoutPanelState } from './DataCubeEditorPivotLayoutPanelState.js';
+import type { DataCubeQueryBuilderError } from '../../core/DataCubeEngine.js';
+import { V1_deserializeValueSpecification } from '@finos/legend-graph';
 
 export enum DataCubeEditorTab {
   GENERAL_PROPERTIES = 'General Properties',
@@ -163,40 +165,53 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
       // where the consistency of the query might be thrown off by changes from various parts that the
       // editor does not have full control over (i.e. extended columns, pivot cast columns, etc.)
       // e.g. when a column that group-level extended columns' expressions depend on has been unselected.
+      const tempSnapshot = newSnapshot.clone();
+      // NOTE: in order to obtain the actual pivot result columns information, we need to execute
+      // the query which is expensive in certain cases, so here, we just compute the "optimistic" set
+      // of pivot result columns for casting to guarantee validation is not thronn off.
+      if (tempSnapshot.data.pivot) {
+        tempSnapshot.data.pivot.castColumns =
+          this.sorts.selector.availableColumns
+            .filter(
+              (col) =>
+                !tempSnapshot.data.groupExtendedColumns.find(
+                  (column) => column.name === col.name,
+                ),
+            )
+            .map(_toCol);
+      }
+
+      const codePrefix = `->`;
+      const code = await this.view.engine.getPartialQueryCode(
+        tempSnapshot,
+        true,
+      );
       try {
-        const tempSnapshot = newSnapshot.clone();
-        // NOTE: in order to obtain the actual pivot result columns information, we need to execute
-        // the query which is expensive in certain cases, so here, we just compute the "optimistic" set
-        // of pivot result columns for casting to guarantee validation is not thronn off.
-        if (tempSnapshot.data.pivot) {
-          tempSnapshot.data.pivot.castColumns =
-            this.sorts.selector.availableColumns
-              .filter(
-                (col) =>
-                  !tempSnapshot.data.groupExtendedColumns.find(
-                    (column) => column.name === col.name,
-                  ),
-              )
-              .map(_toCol);
-        }
-        await this.view.engine.getQueryRelationType(
-          _lambda(
-            [],
-            [
-              buildExecutableQuery(
-                tempSnapshot,
-                this.view.engine.filterOperations,
-                this.view.engine.aggregateOperations,
-              ),
-            ],
-          ),
+        await this.view.engine.getQueryCodeRelationReturnType(
+          codePrefix + code,
+          V1_deserializeValueSpecification(tempSnapshot.data.sourceQuery, []),
         );
       } catch (error) {
         assertErrorThrown(error);
-        this.view.application.alertError(error, {
-          message: `Query Validation Failure: ${error.message}`,
-        });
-        this.view.endTask(task);
+        if (
+          error instanceof NetworkClientError &&
+          error.response.status === HttpStatus.BAD_REQUEST
+        ) {
+          this.view.application.alertCodeCheckError(
+            error.payload as DataCubeQueryBuilderError,
+            code,
+            codePrefix,
+            {
+              message: `Query Validation Failure: Can't safely apply changes. Check the query code below for more details.`,
+              text: `Error: ${error.message}`,
+            },
+          );
+        } else {
+          this.view.application.alertError(error, {
+            message: `Query Validation Failure: Can't safely apply changes.`,
+            text: `Error: ${error.message}`,
+          });
+        }
         return;
       } finally {
         this.view.endTask(task);

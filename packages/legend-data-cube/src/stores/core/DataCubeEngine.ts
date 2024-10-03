@@ -20,6 +20,7 @@ import {
   type TDSExecutionResult,
   V1_deserializeValueSpecification,
   V1_serializeValueSpecification,
+  V1_CString,
 } from '@finos/legend-graph';
 import { getFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
 import { getAggregateOperation } from '../core/aggregation/DataCubeQueryAggregateOperation.js';
@@ -74,6 +75,8 @@ import { type DataCubeQueryColumn, DataCubeQuery } from './DataCubeQuery.js';
 import { DataCubeFont } from '../core/DataCubeQueryEngine.js';
 import { action, makeObservable, observable } from 'mobx';
 import type { GridApi } from '@ag-grid-community/core';
+import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
+import { buildExecutableQuery } from './DataCubeQueryBuilder.js';
 
 export type CompletionItem = {
   completion: string;
@@ -268,12 +271,12 @@ export abstract class DataCubeEngine {
 
   abstract parseQuery(
     code: string,
-    returnSourceInformation?: boolean,
+    returnSourceInformation?: boolean | undefined,
   ): Promise<V1_ValueSpecification>;
 
   abstract getQueryCode(
     query: V1_ValueSpecification,
-    pretty?: boolean,
+    pretty?: boolean | undefined,
   ): Promise<string>;
 
   abstract getBaseQuery(): Promise<DataCubeGetBaseQueryResult>;
@@ -292,4 +295,33 @@ export abstract class DataCubeEngine {
     executedQuery: string;
     executedSQL: string;
   }>;
+
+  /**
+   * By default, for a function chain, Pure grammar composer will extract the first parameter of the first function
+   * and render it as the caller of that function rather than a parameter
+   * e.g. fx(fy(p1, p2), p3) will be rendered as p1->fy(p2)->fx(p3) instead of fy(p1, p2)-> fx(p3)
+   *
+   * We do a hack to get around this by setting a dummy value as the first parameter of the first function in the chain.
+   * Then remove this dummy value from the final code.
+   */
+  async getPartialQueryCode(
+    snapshot: DataCubeQuerySnapshot,
+    pretty?: boolean | undefined,
+  ) {
+    const dummySourceQuery = new V1_CString();
+    dummySourceQuery.value = '';
+    return (
+      await this.getQueryCode(
+        buildExecutableQuery(
+          snapshot,
+          this.filterOperations,
+          this.aggregateOperations,
+          {
+            sourceQuery: dummySourceQuery,
+          },
+        ),
+        true,
+      )
+    ).substring(`''->`.length);
+  }
 }

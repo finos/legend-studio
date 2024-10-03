@@ -39,11 +39,7 @@ import {
 import { DataCubeNewColumnState } from './DataCubeColumnEditorState.js';
 import { DataCubeColumnKind } from '../../core/DataCubeQueryEngine.js';
 import { buildDefaultColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
-import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
-import {
-  V1_CString,
-  V1_deserializeValueSpecification,
-} from '@finos/legend-graph';
+import { V1_deserializeValueSpecification } from '@finos/legend-graph';
 import type { DataCubeQueryBuilderError } from '../../core/DataCubeEngine.js';
 
 export class DataCubeQueryExtendedColumnState {
@@ -177,31 +173,12 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
         .map((col) => col.serialize()),
     };
 
-    const baseQuery = V1_deserializeValueSpecification(
-      tempSnapshot.data.sourceQuery,
-      [],
-    );
     const codePrefix = `->`;
-    const dummySourceQuery = new V1_CString();
-    dummySourceQuery.value = '';
-    const code = (
-      await this.view.engine.getQueryCode(
-        buildExecutableQuery(
-          tempSnapshot,
-          this.view.engine.filterOperations,
-          this.view.engine.aggregateOperations,
-          {
-            sourceQuery: dummySourceQuery,
-          },
-        ),
-        true,
-      )
-    ).substring(`''->`.length);
-
+    const code = await this.view.engine.getPartialQueryCode(tempSnapshot, true);
     try {
       await this.view.engine.getQueryCodeRelationReturnType(
         codePrefix + code,
-        baseQuery,
+        V1_deserializeValueSpecification(tempSnapshot.data.sourceQuery, []),
       );
     } catch (error) {
       assertErrorThrown(error);
