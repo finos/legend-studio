@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-import { LegendStudioWebApplication } from '@finos/legend-application-studio-bootstrap';
-import '../lib/tailwind.css'; // eslint-disable-line @finos/legend-studio/no-cross-workspace-non-export-usage
-import config from '../studio.config.js';
-import './index.css';
+export class RelationTypeColumnMetadata {
+  type: string;
+  name: string;
 
-LegendStudioWebApplication.run(config.baseUrl);
+  constructor(type: string, name: string) {
+    this.type = type;
+    this.name = name;
+  }
+}
+
+export class RelationTypeMetadata {
+  columns: RelationTypeColumnMetadata[] = [];
+}

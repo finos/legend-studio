@@ -41,6 +41,7 @@ import { flowResult } from 'mobx';
 import { LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import { DataSpaceTemplateQueryCreator } from './data-space/DataSpaceTemplateQueryCreator.js';
 import { DataSpaceQueryCreator } from './data-space/DataSpaceQueryCreator.js';
+import { ExistingQueryDataCubeViewer } from './data-cube/ExistingQueryDataCubeViewer.js';
 
 const LegendQueryWebApplicationRouter = observer(() => {
   const applicationStore = useLegendQueryApplicationStore();
@@ -112,6 +113,14 @@ const LegendQueryWebApplicationRouter = observer(() => {
             component={
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               ExistingQueryEditor as TEMPORARY__ReactRouterComponentType
+            }
+          />
+          <Route
+            exact={true}
+            path={LEGEND_QUERY_ROUTE_PATTERN.DATA_CUBE_EXISTING_QUERY}
+            component={
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              ExistingQueryDataCubeViewer as TEMPORARY__ReactRouterComponentType
             }
           />
           <Route

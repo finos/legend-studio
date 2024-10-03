@@ -837,6 +837,27 @@ export const QueryBuilderResultPanel = observer(
                     </MenuContentItemIcon>
                     <MenuContentItemLabel>Others...</MenuContentItemLabel>
                   </MenuContentItem>
+                  {/* DISABLE FOR NOW */}
+                  {/* <MenuContentItem
+                    onClick={(): void =>
+                      queryBuilderState.setIsCubeEnabled(true)
+                    }
+                    disabled={
+                      !queryBuilderState.fetchStructureState.implementation
+                        .canBeExportedToCube ||
+                      !(
+                        queryBuilderState.executionContextState
+                          .runtimeValue instanceof RuntimePointer
+                      )
+                    }
+                  >
+                    <MenuContentItemIcon>
+                      <CubeIcon />
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      Data Cube (BETA)
+                    </MenuContentItemLabel>
+                  </MenuContentItem> */}
                   {extraExportMenuContentItems}
                 </MenuContent>
               }

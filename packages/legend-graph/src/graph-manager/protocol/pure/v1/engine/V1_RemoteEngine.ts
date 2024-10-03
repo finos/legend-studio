@@ -155,6 +155,13 @@ import { V1_DeploymentResult } from './functionActivator/V1_DeploymentResult.js'
 import type { PostValidationAssertionResult } from '../../../../../DSL_Service_Exports.js';
 import { V1_DebugTestsResult } from './test/V1_DebugTestsResult.js';
 import type { V1_GraphManagerEngine } from './V1_GraphManagerEngine.js';
+import { V1_RelationType } from '../model/relation/V1_RelationType.js';
+import {
+  RelationTypeColumnMetadata,
+  RelationTypeMetadata,
+} from '../../../../action/relation/RelationTypeMetadata.js';
+import { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
+import { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
 
 class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_RemoteEngine;
@@ -448,10 +455,17 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
 
   async transformCodeToValueSpec(
     input: string,
+    returnSourceInformation?: boolean,
   ): Promise<PlainObject<V1_ValueSpecification>> {
     try {
       const batchResults =
-        await this.engineServerClient.grammarToJSON_valueSpecification(input);
+        await this.engineServerClient.grammarToJSON_valueSpecification(
+          input,
+          undefined,
+          undefined,
+          undefined,
+          returnSourceInformation,
+        );
       return batchResults;
     } catch (error) {
       assertErrorThrown(error);
@@ -700,6 +714,32 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       }
       throw error;
     }
+  }
+
+  async getLambdaRelationTypeFromRawInput(
+    rawInput: V1_LambdaReturnTypeInput,
+  ): Promise<RelationTypeMetadata> {
+    const res = V1_RelationType.serialization.fromJson(
+      (await this.engineServerClient.lambdaRelationType(
+        V1_LambdaReturnTypeInput.serialization.toJson(rawInput),
+      )) as unknown as PlainObject<V1_RelationType>,
+    );
+    const result = new RelationTypeMetadata();
+    result.columns = res.columns.map(
+      (e) => new RelationTypeColumnMetadata(e.type, e.name),
+    );
+    return result;
+  }
+
+  async getCodeCompletion(
+    rawInput: V1_CompleteCodeInput,
+  ): Promise<CodeCompletionResult> {
+    const res = CodeCompletionResult.serialization.fromJson(
+      (await this.engineServerClient.completeCode(
+        V1_CompleteCodeInput.serialization.toJson(rawInput),
+      )) as unknown as PlainObject<CodeCompletionResult>,
+    );
+    return res;
   }
 
   // --------------------------------------------- Execution ---------------------------------------------

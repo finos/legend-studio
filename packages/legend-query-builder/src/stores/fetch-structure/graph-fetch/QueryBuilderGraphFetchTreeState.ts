@@ -309,6 +309,10 @@ export class QueryBuilderGraphFetchTreeState
     return 'Class Properties';
   }
 
+  override get canBeExportedToCube(): boolean {
+    return false;
+  }
+
   get usedExplorerTreePropertyNodeIDs(): string[] {
     if (!this.treeData) {
       return [];

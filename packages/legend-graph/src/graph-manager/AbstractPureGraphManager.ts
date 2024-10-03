@@ -110,6 +110,8 @@ import type { TestDataGenerationResult } from '../graph/metamodel/pure/packageab
 import type { TableRowIdentifiers } from '../graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
 import type { EngineError } from './action/EngineError.js';
 import type { TestDebug } from '../graph/metamodel/pure/test/result/DebugTestsResult.js';
+import type { RelationTypeMetadata } from './action/relation/RelationTypeMetadata.js';
+import type { CodeCompletionResult } from './action/compilation/Completion.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -343,7 +345,7 @@ export abstract class AbstractPureGraphManager {
 
   abstract pureCodeToValueSpecification(
     valSpec: string,
-    pretty?: boolean,
+    returnSourceInformation?: boolean,
   ): Promise<PlainObject<ValueSpecification>>;
 
   abstract pureCodeToValueSpecifications(
@@ -382,6 +384,18 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
     options?: { keepSourceInformation?: boolean },
   ): Promise<string>;
+
+  abstract getLambdaRelationType(
+    lambda: RawLambda,
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): Promise<RelationTypeMetadata>;
+
+  abstract getCodeComplete(
+    codeBlock: string,
+    graph: PureModel,
+    offset: number | undefined,
+  ): Promise<CodeCompletionResult>;
 
   abstract getLambdasReturnType(
     lambdas: Map<string, RawLambda>,
@@ -611,6 +625,11 @@ export abstract class AbstractPureGraphManager {
     },
     graph: Entity[],
   ): Promise<Entity>;
+
+  abstract resolveQueryInfoExecutionContext(
+    query: QueryInfo,
+    graphLoader: () => Promise<PlainObject<Entity>[]>,
+  ): Promise<{ mapping: string | undefined; runtime: string }>;
 
   // -------------------------------------- Analysis --------------------------------------
 

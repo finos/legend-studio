@@ -20,3 +20,6 @@ export * from './stores/engine/DataCubeApplicationEngine.js';
 export * from './components/application/DataCubeAlert.js';
 export * from './components/DataCube.js';
 export * from './components/DataCubeProvider.js';
+
+export * from './stores/engine/DataCubeQuery.js';
+export * from './stores/core/DataCubeQueryBuilderUtils.js';

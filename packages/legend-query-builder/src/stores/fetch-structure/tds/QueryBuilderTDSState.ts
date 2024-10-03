@@ -205,6 +205,10 @@ export class QueryBuilderTDSState
     return 'Columns';
   }
 
+  override get canBeExportedToCube(): boolean {
+    return true;
+  }
+
   override get TEMPORARY__showPostFetchStructurePanel(): boolean {
     return (
       this.queryBuilderState.filterState.showPanel ||

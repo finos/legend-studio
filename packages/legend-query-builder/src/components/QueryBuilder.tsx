@@ -88,6 +88,7 @@ import { onChangeFetchStructureImplementation } from '../stores/fetch-structure/
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
 import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
 import { QueryBuilderTelemetryHelper } from '../__lib__/QueryBuilderTelemetryHelper.js';
+import { QueryBuilderDataCubeDialog } from './data-cube/QueryBuilderDataCube.js';
 
 const QueryBuilderPostGraphFetchPanel = observer(
   (props: { graphFetchState: QueryBuilderGraphFetchTreeState }) => {
@@ -1117,6 +1118,9 @@ export const QueryBuilder = observer(
                 </ModalFooter>
               </Modal>
             </Dialog>
+          )}
+          {queryBuilderState.isCubeEnabled && (
+            <QueryBuilderDataCubeDialog queryBuilderState={queryBuilderState} />
           )}
         </div>
         {queryBuilderState.workflowState.showStatusBar ? (
