@@ -249,12 +249,6 @@ export enum DataCubeColumnPinPlacement {
   RIGHT = 'Right',
 }
 
-export enum DataCubeExtendedColumnType {
-  STANDARD = 'standard',
-  OLAP = 'olap',
-  // TODO?: custom groupings (i.e. multiple if(s) block with each return a value and a catch-all/else block)
-}
-
 export enum DataCubeColumnDataType {
   NUMBER = 'Numeric',
   TEXT = 'Text',

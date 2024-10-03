@@ -21,12 +21,17 @@ import {
   type DataCubeQuerySnapshotColumn,
   type DataCubeQuerySnapshotExtendedColumn,
 } from '../core/DataCubeQuerySnapshot.js';
-import { deleteEntry, guaranteeNonNullable, noop } from '@finos/legend-shared';
+import {
+  deleteEntry,
+  guaranteeNonNullable,
+  noop,
+  uniqBy,
+} from '@finos/legend-shared';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { DataCubeQuerySnapshotController } from '../core/DataCubeQuerySnapshotManager.js';
 import {
-  type DataCubeColumnConfiguration,
   DataCubeConfiguration,
+  type DataCubeColumnConfiguration,
 } from '../core/DataCubeConfiguration.js';
 import { DataCubeNewColumnState } from './DataCubeColumnEditorState.js';
 import { DataCubeColumnKind } from '../core/DataCubeQueryEngine.js';
@@ -58,6 +63,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
   columnConfigurations: DataCubeColumnConfiguration[] = [];
   selectedColumns: DataCubeQuerySnapshotColumn[] = [];
   sourceColumns: DataCubeQuerySnapshotColumn[] = [];
+  horizontalPivotCastColumns: DataCubeQuerySnapshotColumn[] = [];
 
   leafExtendedColumns: DataCubeQueryExtendedColumnState[] = [];
   groupExtendedColumns: DataCubeQueryExtendedColumnState[] = [];
@@ -72,6 +78,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
       columnConfigurations: observable.struct,
       selectedColumns: observable.struct,
       sourceColumns: observable.ref,
+      horizontalPivotCastColumns: observable.ref,
 
       leafExtendedColumns: observable,
       groupExtendedColumns: observable,
@@ -85,11 +92,15 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
   }
 
   get allColumnNames(): string[] {
-    return [
-      ...this.sourceColumns,
-      ...this.leafExtendedColumns,
-      ...this.groupExtendedColumns,
-    ].map((col) => col.name);
+    return uniqBy(
+      [
+        ...this.sourceColumns,
+        ...this.leafExtendedColumns,
+        ...this.groupExtendedColumns,
+        ...this.horizontalPivotCastColumns,
+      ],
+      (col) => col.name,
+    ).map((col) => col.name);
   }
 
   async openNewColumnEditor(
@@ -120,7 +131,9 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
 
     this.columnConfigurations.push(columnConfiguration);
     deleteEntry(this.newColumnEditors, editor);
-    this.selectedColumns.push(_toCol(column));
+    if (!isGroupLevel) {
+      this.selectedColumns.push(_toCol(column));
+    }
     this.applyChanges();
   }
 
@@ -139,6 +152,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     this.groupExtendedColumns = snapshot.data.groupExtendedColumns.map(
       (col) => new DataCubeQueryExtendedColumnState(col),
     );
+    this.horizontalPivotCastColumns = snapshot.data.pivot?.castColumns ?? [];
     this.selectedColumns = snapshot.data.selectColumns.map(_toCol);
 
     // trigger re-compile in each existing column editor as the base query has changed
@@ -154,7 +168,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
 
     newSnapshot.data.configuration = {
       ...baseSnapshot.data.configuration,
-      columns: this.columnConfigurations,
+      columns: this.columnConfigurations.map((col) => col.serialize()),
     };
 
     newSnapshot.data.leafExtendedColumns = this.leafExtendedColumns.map(

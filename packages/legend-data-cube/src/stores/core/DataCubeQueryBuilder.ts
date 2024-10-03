@@ -26,17 +26,9 @@ import {
   type V1_AppliedFunction,
   V1_deserializeValueSpecification,
 } from '@finos/legend-graph';
+import { type DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
+import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import {
-  type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotSimpleExtendedColumn,
-} from './DataCubeQuerySnapshot.js';
-import {
-  guaranteeNonNullable,
-  isNonNullable,
-  UnsupportedOperationError,
-} from '@finos/legend-shared';
-import {
-  DataCubeExtendedColumnType,
   DataCubeFunction,
   DataCubeQuerySortDirection,
   type DataCubeQueryFunctionMap,
@@ -48,7 +40,7 @@ import {
   _collection,
   _cols,
   _colSpec,
-  _deserializeToLambda,
+  _deserializeLambda,
   _elementPtr,
   _filter,
   _function,
@@ -95,22 +87,15 @@ export function buildExecutableQuery(
   // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
 
   if (data.leafExtendedColumns.length) {
-    _process(
-      'leafExtend',
+    const leafExtendedFuncs = data.leafExtendedColumns.map((col) =>
       _function(DataCubeFunction.EXTEND, [
-        _cols(
-          data.leafExtendedColumns.map((col) => {
-            if (col._type === DataCubeExtendedColumnType.STANDARD) {
-              const column = col as DataCubeQuerySnapshotSimpleExtendedColumn;
-              return _colSpec(column.name, _deserializeToLambda(column.lambda));
-            }
-            throw new UnsupportedOperationError(
-              `Can't build extended column of type '${col._type}'`,
-            );
-          }),
-        ),
+        _col(col.name, _deserializeLambda(col.mapFn)),
       ]),
     );
+    _process('leafExtend', guaranteeNonNullable(leafExtendedFuncs[0]));
+    leafExtendedFuncs.slice(1).forEach((func) => {
+      sequence.push(func);
+    });
   }
 
   // --------------------------------- FILTER ---------------------------------
@@ -214,22 +199,15 @@ export function buildExecutableQuery(
   // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
 
   if (data.groupExtendedColumns.length) {
-    _process(
-      'groupExtend',
+    const groupExtendedFuncs = data.groupExtendedColumns.map((col) =>
       _function(DataCubeFunction.EXTEND, [
-        _cols(
-          data.groupExtendedColumns.map((col) => {
-            if (col._type === DataCubeExtendedColumnType.STANDARD) {
-              const column = col as DataCubeQuerySnapshotSimpleExtendedColumn;
-              return _colSpec(column.name, _deserializeToLambda(column.lambda));
-            }
-            throw new UnsupportedOperationError(
-              `Can't build extended column of type '${col._type}'`,
-            );
-          }),
-        ),
+        _col(col.name, _deserializeLambda(col.mapFn)),
       ]),
     );
+    _process('groupExtend', guaranteeNonNullable(groupExtendedFuncs[0]));
+    groupExtendedFuncs.slice(1).forEach((func) => {
+      sequence.push(func);
+    });
   }
 
   // --------------------------------- SORT ---------------------------------

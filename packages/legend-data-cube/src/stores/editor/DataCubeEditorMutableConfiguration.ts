@@ -207,10 +207,6 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
     );
   }
 
-  serialize() {
-    return DataCubeColumnConfiguration.serialization.toJson(this);
-  }
-
   get isUsingDefaultStyling() {
     return (
       this.fontFamily === undefined &&
@@ -416,10 +412,6 @@ export class DataCubeEditorMutablePivotLayoutConfiguration extends DataCubePivot
     return configuration;
   }
 
-  serialize() {
-    return DataCubePivotLayoutConfiguration.serialization.toJson(this);
-  }
-
   setExpandedPaths(value: string[]) {
     this.expandedPaths = value;
   }
@@ -575,10 +567,6 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
     this.negativeBackgroundColor = DEFAULT_BACKGROUND_COLOR;
     this.zeroBackgroundColor = DEFAULT_BACKGROUND_COLOR;
     this.errorBackgroundColor = DEFAULT_BACKGROUND_COLOR;
-  }
-
-  serialize() {
-    return DataCubeConfiguration.serialization.toJson(this);
   }
 
   setDescription(value: string | undefined) {

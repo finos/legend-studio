@@ -108,8 +108,15 @@ export function _functionCompositionUnProcessor(
   };
 }
 
-export function _deserializeToLambda(json: PlainObject<V1_Lambda>) {
+export function _deserializeLambda(json: PlainObject<V1_Lambda>) {
   return guaranteeType(V1_deserializeValueSpecification(json, []), V1_Lambda);
+}
+
+export function _deserializeFunction(json: PlainObject<V1_Lambda>) {
+  return guaranteeType(
+    V1_deserializeValueSpecification(json, []),
+    V1_AppliedFunction,
+  );
 }
 
 export function _var(name?: string | undefined) {
@@ -443,9 +450,9 @@ export function _groupByAggCols(
       .map((column) => {
         const columnConfiguration =
           DataCubeColumnConfiguration.serialization.fromJson(
-            DataCubeColumnConfiguration.serialization.toJson(
-              guaranteeNonNullable(column.matchingColumnConfiguration),
-            ),
+            guaranteeNonNullable(
+              column.matchingColumnConfiguration,
+            ).serialize(),
           );
         columnConfiguration.name = column.name;
         const operation = aggregateOperations.find(

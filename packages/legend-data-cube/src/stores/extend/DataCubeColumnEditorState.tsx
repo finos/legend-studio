@@ -31,7 +31,6 @@ import { buildExecutableQuery } from '../core/DataCubeQueryBuilder.js';
 import {
   DataCubeColumnDataType,
   DataCubeColumnKind,
-  DataCubeExtendedColumnType,
   DEFAULT_LAMBDA_VARIABLE_NAME,
   getDataType,
 } from '../core/DataCubeQueryEngine.js';
@@ -307,17 +306,15 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
     manager: DataCubeExtendManagerState,
     referenceColumn?: DataCubeColumnConfiguration | undefined,
   ) {
-    const name = `col_${manager.allColumnNames.length + 1}`;
-    let expectedType = DataCubeColumnDataType.NUMBER;
-    const isGroupLevel = false;
-    let columnKind = DataCubeColumnKind.MEASURE;
-
-    if (referenceColumn) {
-      expectedType = getDataType(referenceColumn.type);
-      columnKind = referenceColumn.kind;
-    }
-
-    super(manager, name, expectedType, isGroupLevel, columnKind);
+    super(
+      manager,
+      `col_${manager.allColumnNames.length + 1}`,
+      referenceColumn
+        ? getDataType(referenceColumn.type)
+        : DataCubeColumnDataType.NUMBER,
+      false,
+      referenceColumn ? referenceColumn.kind : DataCubeColumnKind.MEASURE,
+    );
 
     this.initialCode = referenceColumn
       ? `${DEFAULT_LAMBDA_VARIABLE_NAME}|$${DEFAULT_LAMBDA_VARIABLE_NAME}.${referenceColumn.name}`
@@ -388,10 +385,9 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
 
     this.manager.addNewColumn(
       {
-        _type: DataCubeExtendedColumnType.STANDARD,
         name: this.name,
         type: returnType,
-        lambda: V1_serializeValueSpecification(query, []),
+        mapFn: V1_serializeValueSpecification(query, []),
       },
       this.isGroupLevel,
       this.columnKind,
@@ -407,7 +403,6 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
     manager: DataCubeExtendManagerState,
     columnConfiguration: DataCubeColumnConfiguration,
     isGroupLevel: boolean,
-    code: string,
   ) {
     super(
       manager,

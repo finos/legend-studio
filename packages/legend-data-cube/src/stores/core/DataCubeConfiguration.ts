@@ -157,6 +157,10 @@ export class DataCubeColumnConfiguration {
       zeroForegroundColor: optional(primitive()),
     }),
   );
+
+  serialize() {
+    return DataCubeColumnConfiguration.serialization.toJson(this);
+  }
 }
 
 export class DataCubePivotLayoutConfiguration {
@@ -167,6 +171,10 @@ export class DataCubePivotLayoutConfiguration {
       expandedPaths: list(primitive()),
     }),
   );
+
+  serialize() {
+    return DataCubePivotLayoutConfiguration.serialization.toJson(this);
+  }
 }
 
 export class DataCubeConfiguration {
@@ -255,4 +263,8 @@ export class DataCubeConfiguration {
       zeroForegroundColor: primitive(),
     }),
   );
+
+  serialize() {
+    return DataCubeConfiguration.serialization.toJson(this);
+  }
 }

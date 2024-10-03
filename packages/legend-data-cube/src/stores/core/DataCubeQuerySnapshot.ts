@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
+import type {
+  V1_AppliedFunction,
+  V1_Lambda,
+  V1_ValueSpecification,
+} from '@finos/legend-graph';
 import type { DataCubeConfiguration } from './DataCubeConfiguration.js';
 import {
   IllegalStateError,
@@ -52,12 +56,9 @@ export type DataCubeQuerySnapshotColumn = {
 
 export type DataCubeQuerySnapshotExtendedColumn =
   DataCubeQuerySnapshotColumn & {
-    _type: string;
-  };
-
-export type DataCubeQuerySnapshotSimpleExtendedColumn =
-  DataCubeQuerySnapshotExtendedColumn & {
-    lambda: PlainObject<V1_Lambda>;
+    windowFn?: PlainObject<V1_AppliedFunction> | undefined;
+    mapFn: PlainObject<V1_Lambda>;
+    reduceFn?: PlainObject<V1_Lambda> | undefined;
   };
 
 export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {

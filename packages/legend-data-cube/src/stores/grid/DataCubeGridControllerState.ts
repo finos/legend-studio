@@ -428,7 +428,13 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
     this.selectColumns = uniqBy(
       [
-        ...this.configuration.columns.filter((col) => col.isSelected),
+        ...this.configuration.columns.filter(
+          (col) =>
+            col.isSelected &&
+            !this.groupExtendedColumns.find(
+              (column) => column.name === col.name,
+            ),
+        ),
         ...this.horizontalPivotColumns,
         ...this.verticalPivotColumns,
       ],
@@ -473,9 +479,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
     this.propagateChanges(baseSnapshot);
 
-    snapshot.data.configuration = DataCubeConfiguration.serialization.toJson(
-      this.configuration,
-    );
+    snapshot.data.configuration = this.configuration.serialize();
 
     snapshot.data.filter = this.filterTree.root
       ? buildFilterQuerySnapshot(this.filterTree.root)

@@ -791,8 +791,12 @@ export function generateColumnDefs(
   // which are grouped must be present in the column definitions, so even
   // when some of these might not be selected explicitly by the users, they
   // must still be included in the column definitions, and made hidden instead.
-  const columns = configuration.columns.filter((col) =>
-    snapshot.data.selectColumns.find((column) => column.name === col.name),
+  const columns = configuration.columns.filter(
+    (col) =>
+      snapshot.data.selectColumns.find((column) => column.name === col.name) ??
+      snapshot.data.groupExtendedColumns.find(
+        (column) => column.name === col.name,
+      ),
   );
   let pivotResultColumns: DataCubeQuerySnapshotColumn[] = [];
 

@@ -64,7 +64,7 @@ export function buildQuerySnapshot(
 
   snapshot.data.selectColumns = uniqBy(
     [
-      ...configuration.columns.filter((col) => col.isSelected),
+      ...snapshot.data.selectColumns,
       ...request.pivotCols.map((col) =>
         getColumnConfiguration(col.id, configuration),
       ),
@@ -128,8 +128,7 @@ export function buildQuerySnapshot(
     snapshot.data.groupBy?.columns ?? [],
     configuration.pivotLayout.expandedPaths,
   );
-  snapshot.data.configuration =
-    DataCubeConfiguration.serialization.toJson(configuration);
+  snapshot.data.configuration = configuration.serialize();
 
   // --------------------------------- FINALIZE ---------------------------------
 
