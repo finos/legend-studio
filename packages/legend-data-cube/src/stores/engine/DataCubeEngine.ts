@@ -73,6 +73,7 @@ import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, custom, primitive } from 'serializr';
 import { type DataCubeQueryColumn, DataCubeQuery } from './DataCubeQuery.js';
 import { DataCubeFont } from '../core/DataCubeQueryEngine.js';
+import { action, makeObservable, observable } from 'mobx';
 
 export type CompletionItem = {
   completion: string;
@@ -121,8 +122,6 @@ export class DataCubeGetBaseQueryResult {
 }
 
 export const DEFAULT_ENABLE_DEBUG_MODE = false;
-export const DEFAULT_ENABLE_ENGINE_DEBUG_MODE = false;
-
 export const DEFAULT_GRID_CLIENT_ROW_BUFFER = 50;
 export const DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES = false;
 export const DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING = false;
@@ -182,12 +181,27 @@ export abstract class DataCubeEngine {
   ];
 
   enableDebugMode = DEFAULT_ENABLE_DEBUG_MODE;
-  enableEngineDebugMode = DEFAULT_ENABLE_ENGINE_DEBUG_MODE;
 
   gridClientRowBuffer = DEFAULT_GRID_CLIENT_ROW_BUFFER;
   gridClientPurgeClosedRowNodes = DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES;
   gridClientSuppressLargeDatasetWarning =
     DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING;
+
+  constructor() {
+    makeObservable(this, {
+      enableDebugMode: observable,
+      setEnableDebugMode: action,
+
+      gridClientRowBuffer: observable,
+      setGridClientRowBuffer: action,
+
+      gridClientPurgeClosedRowNodes: observable,
+      setGridClientPurgeClosedRowNodes: action,
+
+      gridClientSuppressLargeDatasetWarning: observable,
+      setGridClientSuppressLargeDatasetWarning: action,
+    });
+  }
 
   getFilterOperation(value: string) {
     return getFilterOperation(value, this.filterOperations);
@@ -201,9 +215,6 @@ export abstract class DataCubeEngine {
     this.enableDebugMode = value;
   }
 
-  setEnableEngineDebugMode(value: boolean) {
-    this.enableEngineDebugMode = value;
-  }
   setGridClientRowBuffer(value: number) {
     this.gridClientRowBuffer = value;
     this.propagateGridOptionUpdates();

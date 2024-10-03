@@ -122,4 +122,27 @@ export class LegendREPLDataCubeApplicationEngine extends DataCubeApplicationEngi
       error,
     );
   }
+
+  getPersistedNumericValue(key: string): number | undefined {
+    return this.application.settingService.getNumericValue(key);
+  }
+
+  getPersistedStringValue(key: string): string | undefined {
+    return this.application.settingService.getStringValue(key);
+  }
+
+  getPersistedBooleanValue(key: string): boolean | undefined {
+    return this.application.settingService.getBooleanValue(key);
+  }
+
+  getPersistedObjectValue(key: string): object | undefined {
+    return this.application.settingService.getObjectValue(key);
+  }
+
+  persistValue(
+    key: string,
+    value: string | number | boolean | object | undefined,
+  ): void {
+    this.application.settingService.persistValue(key, value);
+  }
 }

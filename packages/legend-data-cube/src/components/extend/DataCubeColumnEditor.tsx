@@ -45,7 +45,7 @@ import {
   DataCubeColumnDataType,
   DataCubeColumnKind,
 } from '../../stores/core/DataCubeQueryEngine.js';
-import { DocumentationKey } from '../../application/DataCubeDocumentation.js';
+import { DocumentationKey } from '../../__lib__/DataCubeDocumentation.js';
 
 enum DataCubeExtendedColumnKind {
   LEAF_LEVEL_MEASURE = 'Leaf Level Measure',

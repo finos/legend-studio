@@ -584,19 +584,21 @@ export function generateMenuBuilder(
         subMenu: [
           {
             name: `Add New Column...`,
-            action: () =>
+            action: () => {
               extend
                 .openNewColumnEditor()
-                .catch((error) => application.alertUnhandledError(error)),
+                .catch((error) => application.alertUnhandledError(error));
+            },
           },
           ...(columnConfiguration && columnName
             ? [
                 {
                   name: `Extend Column ${columnName}...`,
-                  action: () =>
+                  action: () => {
                     extend
                       .openNewColumnEditor(columnConfiguration)
-                      .catch((error) => application.alertUnhandledError(error)),
+                      .catch((error) => application.alertUnhandledError(error));
+                  },
                 },
               ]
             : []),

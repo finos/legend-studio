@@ -30,7 +30,7 @@ import { INTERNAL__MonacoEditorWidgetsRoot } from './shared/DataCubePureCodeEdit
 import { useDataCube } from './DataCubeProvider.js';
 import { DataCubeBlockingActionAlert } from './application/DataCubeAlert.js';
 import { LogEvent } from '@finos/legend-shared';
-import { DataCubeEvent } from '../application/DataCubeEvent.js';
+import { DataCubeEvent } from '../__lib__/DataCubeEvent.js';
 
 const DataCubeStatusBar = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;

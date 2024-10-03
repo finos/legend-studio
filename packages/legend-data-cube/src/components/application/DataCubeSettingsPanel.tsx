@@ -19,7 +19,6 @@ import { DataCubeIcon } from '@finos/legend-art';
 import { FormCheckbox, FormNumberInput } from '../shared/DataCubeFormUtils.js';
 import {
   DEFAULT_ENABLE_DEBUG_MODE,
-  DEFAULT_ENABLE_ENGINE_DEBUG_MODE,
   DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
   DEFAULT_GRID_CLIENT_ROW_BUFFER,
   DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
@@ -37,9 +36,6 @@ export const DataCubeSettingsPanel = observer(() => {
   const [enableDebugMode, setEnableDebugMode] = useState(
     engine.enableDebugMode,
   );
-  const [enableEngineDebugMode, setEnableEngineDebugMode] = useState(
-    engine.enableEngineDebugMode,
-  );
   const [gridClientRowBuffer, setGridClientRowBuffer] = useState(
     engine.gridClientRowBuffer,
   );
@@ -52,7 +48,6 @@ export const DataCubeSettingsPanel = observer(() => {
 
   const save = () => {
     engine.setEnableDebugMode(enableDebugMode);
-    engine.setEnableEngineDebugMode(enableEngineDebugMode);
     engine.setGridClientRowBuffer(gridClientRowBuffer);
     engine.setGridClientPurgeClosedRowNodes(gridClientPurgeClosedRowNodes);
     engine.setGridClientSuppressLargeDatasetWarning(
@@ -65,7 +60,6 @@ export const DataCubeSettingsPanel = observer(() => {
       DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
     );
     setEnableDebugMode(DEFAULT_ENABLE_DEBUG_MODE);
-    setEnableEngineDebugMode(DEFAULT_ENABLE_ENGINE_DEBUG_MODE);
     setGridClientSuppressLargeDatasetWarning(
       DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
     );
@@ -169,18 +163,6 @@ export const DataCubeSettingsPanel = observer(() => {
                 label="Enable debug logging when running data queries, updating snapshots, etc."
                 checked={enableDebugMode}
                 onChange={() => setEnableDebugMode(!enableDebugMode)}
-              />
-            </div>
-          </div>
-          <div className="mt-1.5">
-            <div className="font-medium">Engine Debug Mode: Enabled</div>
-            <div className="flex pr-2">
-              <FormCheckbox
-                label="Enable debug logging in the engine when running data queries, computing query analytics, etc."
-                checked={enableEngineDebugMode}
-                onChange={() =>
-                  setEnableEngineDebugMode(!enableEngineDebugMode)
-                }
               />
             </div>
           </div>

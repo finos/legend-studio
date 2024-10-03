@@ -43,7 +43,7 @@ import {
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_URL_LABEL_QUERY_PARAM,
 } from '../../stores/core/DataCubeQueryEngine.js';
-import { DocumentationKey } from '../../application/DataCubeDocumentation.js';
+import { DocumentationKey } from '../../__lib__/DataCubeDocumentation.js';
 import type { DataCubeViewState } from '../../stores/DataCubeViewState.js';
 import { _sortByColName } from '../../stores/core/DataCubeQuerySnapshot.js';
 

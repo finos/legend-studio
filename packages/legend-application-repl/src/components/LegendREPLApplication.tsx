@@ -44,6 +44,7 @@ const LegendREPLDataCube = observer(() => {
     [applicationStore],
   );
   const engine = new LegendREPLDataCubeEngine(
+    application,
     new LegendREPLServerClient(
       new NetworkClient({
         baseUrl: applicationStore.config.useDynamicREPLServer
