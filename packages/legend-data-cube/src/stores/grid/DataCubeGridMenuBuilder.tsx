@@ -613,9 +613,11 @@ export function generateMenuBuilder(
                 },
                 {
                   name: `Delete Column ${columnName}`,
-                  menuItem: WIP_GridMenuItem,
-                  cssClasses: ['!opacity-100'],
-                  disabled: true,
+                  action: () => {
+                    extend
+                      .deleteColumn(columnName)
+                      .catch((error) => application.alertUnhandledError(error));
+                  },
                 },
               ]
             : []),

@@ -22,8 +22,11 @@ import {
   type DataCubeQuerySnapshotExtendedColumn,
 } from '../core/DataCubeQuerySnapshot.js';
 import {
+  assertErrorThrown,
   deleteEntry,
   guaranteeNonNullable,
+  HttpStatus,
+  NetworkClientError,
   noop,
   uniqBy,
 } from '@finos/legend-shared';
@@ -36,6 +39,12 @@ import {
 import { DataCubeNewColumnState } from './DataCubeColumnEditorState.js';
 import { DataCubeColumnKind } from '../core/DataCubeQueryEngine.js';
 import { buildDefaultColumnConfiguration } from '../core/DataCubeConfigurationBuilder.js';
+import { buildExecutableQuery } from '../core/DataCubeQueryBuilder.js';
+import {
+  V1_CString,
+  V1_deserializeValueSpecification,
+} from '@finos/legend-graph';
+import type { DataCubeQueryBuilderError } from '../engine/DataCubeEngine.js';
 
 export class DataCubeQueryExtendedColumnState {
   name: string;
@@ -86,6 +95,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
       allColumnNames: computed,
 
       addNewColumn: action,
+      deleteColumn: action,
 
       applySnapshot: action,
     });
@@ -112,8 +122,8 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     editor.display.open();
   }
 
-  addNewColumn<T extends DataCubeQuerySnapshotExtendedColumn>(
-    column: T,
+  addNewColumn(
+    column: DataCubeQuerySnapshotExtendedColumn,
     isGroupLevel: boolean,
     columnKind: DataCubeColumnKind | undefined,
     editor: DataCubeNewColumnState,
@@ -134,6 +144,104 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     if (!isGroupLevel) {
       this.selectedColumns.push(_toCol(column));
     }
+    this.applyChanges();
+  }
+
+  async deleteColumn(columnName: string) {
+    if (
+      !this.leafExtendedColumns.find((col) => col.name === columnName) &&
+      !this.groupExtendedColumns.find((col) => col.name === columnName)
+    ) {
+      return;
+    }
+
+    const task = this.view.newTask('Column delete check');
+
+    const currentSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
+    const tempSnapshot = currentSnapshot.clone();
+    tempSnapshot.data.leafExtendedColumns =
+      tempSnapshot.data.leafExtendedColumns.filter(
+        (col) => col.name !== columnName,
+      );
+    tempSnapshot.data.groupExtendedColumns =
+      tempSnapshot.data.groupExtendedColumns.filter(
+        (col) => col.name !== columnName,
+      );
+    tempSnapshot.data.selectColumns = tempSnapshot.data.selectColumns.filter(
+      (col) => col.name !== columnName,
+    );
+    tempSnapshot.data.configuration = {
+      ...tempSnapshot.data.configuration,
+      columns: this.columnConfigurations
+        .filter((col) => col.name !== columnName)
+        .map((col) => col.serialize()),
+    };
+
+    const baseQuery = V1_deserializeValueSpecification(
+      tempSnapshot.data.sourceQuery,
+      [],
+    );
+    const codePrefix = `->`;
+    const dummySourceQuery = new V1_CString();
+    dummySourceQuery.value = '';
+    const code = (
+      await this.view.engine.getQueryCode(
+        buildExecutableQuery(
+          tempSnapshot,
+          this.view.engine.filterOperations,
+          this.view.engine.aggregateOperations,
+          {
+            sourceQuery: dummySourceQuery,
+          },
+        ),
+        true,
+      )
+    ).substring(`''->`.length);
+
+    try {
+      await this.view.engine.getQueryCodeRelationReturnType(
+        codePrefix + code,
+        baseQuery,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        this.view.application.alertCodeCheckError(
+          error.payload as DataCubeQueryBuilderError,
+          code,
+          codePrefix,
+          {
+            message: `Column Delete Check Failure: Can't safely delete column '${columnName}'. Check the query code below for more details`,
+            text: error.message,
+          },
+        );
+      } else {
+        this.view.application.alertError(error, {
+          message: `Column Delete Check Failure: Can't safely delete column '${columnName}'`,
+          text: error.message,
+        });
+      }
+      return;
+    } finally {
+      this.view.endTask(task);
+    }
+
+    this.leafExtendedColumns = this.leafExtendedColumns.filter(
+      (col) => col.name !== columnName,
+    );
+    this.groupExtendedColumns = this.groupExtendedColumns.filter(
+      (col) => col.name !== columnName,
+    );
+    this.columnConfigurations = this.configuration.columns.filter(
+      (col) => col.name !== columnName,
+    );
+    this.selectedColumns = this.selectedColumns.filter(
+      (col) => col.name !== columnName,
+    );
+    /** TODO: @datacube extend - remove editor state whose base column is deleted */
     this.applyChanges();
   }
 

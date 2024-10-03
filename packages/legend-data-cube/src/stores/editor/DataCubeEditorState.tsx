@@ -137,7 +137,6 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
   }
 
   async applyChanges(options?: { closeAfterApply?: boolean | undefined }) {
-    const task = this.view.newTask('Validate query');
     this.finalizationState.inProgress();
 
     const baseSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
@@ -159,6 +158,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     // finalize
     newSnapshot.finalize();
     if (newSnapshot.hashCode !== baseSnapshot.hashCode) {
+      const task = this.view.newTask('Validate query');
       // NOTE: Compile the query to validate. This is a helpful check for a lot of different scenarios
       // where the consistency of the query might be thrown off by changes from various parts that the
       // editor does not have full control over (i.e. extended columns, pivot cast columns, etc.)
@@ -199,6 +199,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
         this.view.endTask(task);
         return;
       } finally {
+        this.view.endTask(task);
         this.finalizationState.complete();
       }
 
@@ -210,6 +211,5 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     if (options?.closeAfterApply) {
       this.display.close();
     }
-    this.view.endTask(task);
   }
 }

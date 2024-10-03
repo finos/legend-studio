@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { LogEvent, DocumentationEntry } from '@finos/legend-shared';
+import {
+  type LogEvent,
+  type DocumentationEntry,
+  uuid,
+} from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import {
   Alert,
@@ -29,6 +33,10 @@ import {
   WindowState,
   type WindowConfiguration,
 } from './DataCubeLayoutManagerState.js';
+import type { DataCubeQueryBuilderError } from './DataCubeEngine.js';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { editor as monacoEditorAPI, Uri } from 'monaco-editor';
+import { DataCubeCodeCheckErrorAlert } from '../../components/application/DataCubeCodeCheckErrorAlert.js';
 
 export abstract class DataCubeApplicationEngine {
   readonly layout: LayoutManagerState;
@@ -73,8 +81,34 @@ export abstract class DataCubeApplicationEngine {
   abstract logUnhandledError(error: Error): void;
   abstract logIllegalStateError(message: string, error?: Error): void;
 
-  abstract alertAction(alertInfo: ActionAlert | undefined): void;
-  abstract alertUnhandledError(error: Error): void;
+  alert(options: {
+    message: string;
+    type: AlertType;
+    text?: string | undefined;
+    actions?: ActionAlertAction[] | undefined;
+    windowTitle?: string | undefined;
+    windowConfig?: WindowConfiguration | undefined;
+  }) {
+    const { message, type, text, actions, windowTitle, windowConfig } = options;
+    const window = new WindowState(
+      new LayoutConfiguration(windowTitle ?? '', () => (
+        <Alert
+          type={type}
+          message={message}
+          text={text}
+          actions={actions}
+          onClose={() => this.layout.closeWindow(window)}
+        />
+      )),
+    );
+    window.configuration.window =
+      windowConfig ?? DEFAULT_SMALL_ALERT_WINDOW_CONFIG;
+    this.layout.newWindow(window);
+  }
+
+  alertAction(alertInfo: ActionAlert | undefined) {
+    this.currentActionAlert = alertInfo;
+  }
 
   alertError(
     error: Error,
@@ -102,28 +136,71 @@ export abstract class DataCubeApplicationEngine {
     this.layout.newWindow(window);
   }
 
-  alert(options: {
-    message: string;
-    type: AlertType;
-    text?: string | undefined;
-    actions?: ActionAlertAction[] | undefined;
-    windowTitle?: string | undefined;
-    windowConfig?: WindowConfiguration | undefined;
-  }) {
-    const { message, type, text, actions, windowTitle, windowConfig } = options;
-    const window = new WindowState(
-      new LayoutConfiguration(windowTitle ?? '', () => (
-        <Alert
-          type={type}
-          message={message}
-          text={text}
-          actions={actions}
-          onClose={() => this.layout.closeWindow(window)}
-        />
-      )),
-    );
-    window.configuration.window =
-      windowConfig ?? DEFAULT_SMALL_ALERT_WINDOW_CONFIG;
-    this.layout.newWindow(window);
+  alertUnhandledError(error: Error) {
+    this.logUnhandledError(error);
+    this.alertError(error, {
+      message: error.message,
+    });
+  }
+
+  alertCodeCheckError(
+    error: DataCubeQueryBuilderError,
+    code: string,
+    codePrefix: string,
+    options: {
+      message: string;
+      text?: string | undefined;
+      actions?: ActionAlertAction[] | undefined;
+      windowTitle?: string | undefined;
+      windowConfig?: WindowConfiguration | undefined;
+    },
+  ) {
+    const { message, text, windowTitle, windowConfig } = options;
+    // correct the source information since we added prefix to the code
+    // and reveal error in the editor
+    if (error.sourceInformation) {
+      error.sourceInformation.startColumn -=
+        error.sourceInformation.startLine === 1 ? codePrefix.length : 0;
+      error.sourceInformation.endColumn -=
+        error.sourceInformation.endLine === 1 ? codePrefix.length : 0;
+      const editorModel = monacoEditorAPI.createModel(
+        code,
+        CODE_EDITOR_LANGUAGE.PURE,
+        Uri.file(`/${uuid()}.pure`),
+      );
+
+      const fullRange = editorModel.getFullModelRange();
+      if (
+        error.sourceInformation.startLine < 1 ||
+        (error.sourceInformation.startLine === 1 &&
+          error.sourceInformation.startColumn < 1) ||
+        error.sourceInformation.endLine > fullRange.endLineNumber ||
+        (error.sourceInformation.endLine === fullRange.endLineNumber &&
+          error.sourceInformation.endColumn > fullRange.endColumn)
+      ) {
+        error.sourceInformation.startColumn = fullRange.startColumn;
+        error.sourceInformation.startLine = fullRange.startLineNumber;
+        error.sourceInformation.endColumn = fullRange.endColumn;
+        error.sourceInformation.endLine = fullRange.endLineNumber;
+      }
+      const window = new WindowState(
+        new LayoutConfiguration(windowTitle ?? 'Error', () => (
+          <DataCubeCodeCheckErrorAlert
+            editorModel={editorModel}
+            error={error}
+            message={message}
+            text={text}
+          />
+        )),
+      );
+      window.configuration.window = windowConfig ?? {
+        width: 500,
+        height: 400,
+        minWidth: 300,
+        minHeight: 300,
+        center: true,
+      };
+      this.layout.newWindow(window);
+    }
   }
 }

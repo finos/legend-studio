@@ -126,6 +126,16 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     );
   }
 
+  override getQueryCode(
+    query: V1_ValueSpecification,
+    pretty?: boolean,
+  ): Promise<string> {
+    return this.client.getQueryCode({
+      query: V1_serializeValueSpecification(query, []),
+      pretty,
+    });
+  }
+
   async getBaseQuery(): Promise<DataCubeGetBaseQueryResult> {
     return DataCubeGetBaseQueryResult.serialization.fromJson(
       await this.client.getBaseQuery(),

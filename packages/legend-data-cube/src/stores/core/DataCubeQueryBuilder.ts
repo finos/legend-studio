@@ -24,6 +24,7 @@
 import {
   PRIMITIVE_TYPE,
   type V1_AppliedFunction,
+  type V1_ValueSpecification,
   V1_deserializeValueSpecification,
 } from '@finos/legend-graph';
 import { type DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
@@ -59,6 +60,7 @@ export function buildExecutableQuery(
   filterOperations: DataCubeQueryFilterOperation[],
   aggregateOperations: DataCubeQueryAggregateOperation[],
   options?: {
+    sourceQuery?: V1_ValueSpecification | null | undefined;
     postProcessor?: (
       snapshot: DataCubeQuerySnapshot,
       sequence: V1_AppliedFunction[],
@@ -278,9 +280,13 @@ export function buildExecutableQuery(
   if (!sequence.length) {
     return sourceQuery;
   }
-  for (let i = 0; i < sequence.length; i++) {
+
+  const omitSourceQuery = options?.sourceQuery === null;
+  for (let i = omitSourceQuery ? 1 : 0; i < sequence.length; i++) {
     guaranteeNonNullable(sequence[i]).parameters.unshift(
-      i === 0 ? sourceQuery : guaranteeNonNullable(sequence[i - 1]),
+      i === 0
+        ? (options?.sourceQuery ?? sourceQuery)
+        : guaranteeNonNullable(sequence[i - 1]),
     );
   }
   return guaranteeNonNullable(sequence[sequence.length - 1]);

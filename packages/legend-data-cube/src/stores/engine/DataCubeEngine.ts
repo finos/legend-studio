@@ -93,6 +93,8 @@ export type DataCubeQueryBuilderError = {
 
 export type DataCubeInfrastructureInfo = {
   gridClientLicense?: string | undefined;
+  simpleSampleDataTableName: string;
+  complexSampleDataTableName: string;
 };
 
 export type RelationType = {
@@ -258,6 +260,7 @@ export abstract class DataCubeEngine {
   }
 
   abstract getInfrastructureInfo(): Promise<DataCubeInfrastructureInfo>;
+
   abstract getQueryTypeahead(
     code: string,
     query: V1_ValueSpecification,
@@ -267,6 +270,11 @@ export abstract class DataCubeEngine {
     code: string,
     returnSourceInformation?: boolean,
   ): Promise<V1_ValueSpecification>;
+
+  abstract getQueryCode(
+    query: V1_ValueSpecification,
+    pretty?: boolean,
+  ): Promise<string>;
 
   abstract getBaseQuery(): Promise<DataCubeGetBaseQueryResult>;
 

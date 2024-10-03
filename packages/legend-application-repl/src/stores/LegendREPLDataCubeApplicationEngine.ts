@@ -19,10 +19,7 @@ import {
   APPLICATION_EVENT,
 } from '@finos/legend-application';
 import { type DocumentationEntry, LogEvent } from '@finos/legend-shared';
-import {
-  DataCubeApplicationEngine,
-  type ActionAlert,
-} from '@finos/legend-data-cube';
+import { DataCubeApplicationEngine } from '@finos/legend-data-cube';
 import type { LegendREPLApplicationStore } from '../application/LegendREPLApplicationStore.js';
 
 export class LegendREPLDataCubeApplicationEngine extends DataCubeApplicationEngine {
@@ -72,14 +69,6 @@ export class LegendREPLDataCubeApplicationEngine extends DataCubeApplicationEngi
 
   unblockNavigation() {
     this.application.navigationService.navigator.unblockNavigation();
-  }
-
-  alertAction(alertInfo: ActionAlert | undefined) {
-    this.currentActionAlert = alertInfo;
-  }
-
-  alertUnhandledError(error: Error) {
-    this.application.alertUnhandledError(error);
   }
 
   logDebug(message: string, ...data: unknown[]) {
