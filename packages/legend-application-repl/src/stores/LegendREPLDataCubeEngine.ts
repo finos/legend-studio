@@ -110,10 +110,10 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     code: string,
     query: V1_ValueSpecification,
   ): Promise<CompletionItem[]> {
-    return (await this.client.getQueryTypeahead({
+    return this.client.getQueryTypeahead({
       code,
       baseQuery: V1_serializeValueSpecification(query, []),
-    })) as CompletionItem[];
+    });
   }
 
   async parseQuery(

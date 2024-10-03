@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
-import { DataCubeGrid } from './grid/DataCubeGrid.js';
+import { DataCubeGrid } from './view/grid/DataCubeGrid.js';
 import {
   DataCubeIcon,
   DropdownMenu,
@@ -24,11 +24,11 @@ import {
   ProgressBar,
   useDropdownMenu,
 } from '@finos/legend-art';
-import { DataCubeLayoutManager } from './application/DataCubeLayoutManager.js';
-import type { DataCubeViewState } from '../stores/DataCubeViewState.js';
-import { INTERNAL__MonacoEditorWidgetsRoot } from './shared/DataCubePureCodeEditorUtils.js';
+import { DataCubeLayoutManager } from './core/DataCubeLayoutManager.js';
+import type { DataCubeViewState } from '../stores/view/DataCubeViewState.js';
+import { INTERNAL__MonacoEditorWidgetsRoot } from './core/DataCubePureCodeEditorUtils.js';
 import { useDataCube } from './DataCubeProvider.js';
-import { DataCubeBlockingActionAlert } from './application/DataCubeAlert.js';
+import { DataCubeBlockingActionAlert } from './core/DataCubeAlert.js';
 import { LogEvent } from '@finos/legend-shared';
 import { DataCubeEvent } from '../__lib__/DataCubeEvent.js';
 
