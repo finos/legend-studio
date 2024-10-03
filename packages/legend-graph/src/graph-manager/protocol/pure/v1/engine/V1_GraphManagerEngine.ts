@@ -87,6 +87,9 @@ import { type V1_RelationalConnectionBuilder } from './relational/V1_RelationalC
 import type { PostValidationAssertionResult } from '../../../../../DSL_Service_Exports.js';
 import { type V1_DebugTestsResult } from './test/V1_DebugTestsResult.js';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../action/TEMPORARY__AbstractEngineConfig.js';
+import type { RelationTypeMetadata } from '../../../../action/relation/RelationTypeMetadata.js';
+import type { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
+import type { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
 
 export interface V1_GraphManagerEngine {
   config: TEMPORARY__AbstractEngineConfig;
@@ -136,6 +139,7 @@ export interface V1_GraphManagerEngine {
 
   transformCodeToValueSpec: (
     input: string,
+    returnSourceInformation?: boolean,
   ) => Promise<PlainObject<V1_ValueSpecification>>;
 
   transformLambdaToCode: (
@@ -184,6 +188,14 @@ export interface V1_GraphManagerEngine {
   getLambdaReturnTypeFromRawInput: (
     rawInput: PlainObject<V1_LambdaReturnTypeInput>,
   ) => Promise<string>;
+
+  getLambdaRelationTypeFromRawInput(
+    rawInput: V1_LambdaReturnTypeInput,
+  ): Promise<RelationTypeMetadata>;
+
+  getCodeCompletion(
+    rawInput: V1_CompleteCodeInput,
+  ): Promise<CodeCompletionResult>;
 
   // --------------------------------------------- Execution ---------------------------------------------
 

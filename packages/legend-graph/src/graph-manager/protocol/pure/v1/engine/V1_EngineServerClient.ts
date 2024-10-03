@@ -84,6 +84,9 @@ import type { V1_RelationalConnectionBuilder } from './relational/V1_RelationalC
 import type { V1_LambdaPrefix } from './lambda/V1_LambdaPrefix.js';
 import type { V1_DeploymentResult } from './functionActivator/V1_DeploymentResult.js';
 import type { V1_DebugTestsResult } from './test/V1_DebugTestsResult.js';
+import type { V1_RelationType } from '../model/relation/V1_RelationType.js';
+import type { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
+import type { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -337,14 +340,25 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   grammarToJSON_valueSpecification = (
     input: string,
+    sourceId?: string | undefined,
+    lineOffset?: number | undefined,
+    columnOffset?: number | undefined,
+    returnSourceInformation?: boolean | undefined,
   ): Promise<PlainObject<V1_ValueSpecification>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GRAMMAR_TO_JSON),
       `${this._grammarToJSON()}/valueSpecification`,
       input,
       {},
-      undefined,
-      undefined,
+      {
+        [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
+      },
+      {
+        sourceId,
+        lineOffset,
+        columnOffset,
+        returnSourceInformation,
+      },
       { enableCompression: true },
     );
 
@@ -636,6 +650,32 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_LAMBDA_RETURN_TYPE),
       `${this._pure()}/compilation/lambdaReturnType`,
+      input,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+
+  lambdaRelationType = (
+    input: PlainObject<V1_LambdaReturnTypeInput>,
+  ): Promise<PlainObject<V1_RelationType>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_LAMBDA_RETURN_TYPE),
+      `${this._pure()}/compilation/lambdaRelationType`,
+      input,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+
+  completeCode = (
+    input: PlainObject<V1_CompleteCodeInput>,
+  ): Promise<PlainObject<CodeCompletionResult>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_LAMBDA_RETURN_TYPE),
+      `${this._pure()}/codeCompletion/completeCode`,
       input,
       {},
       undefined,

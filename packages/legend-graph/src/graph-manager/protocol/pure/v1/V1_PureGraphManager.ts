@@ -335,6 +335,9 @@ import { V1_RuntimePointer } from './model/packageableElements/runtime/V1_Runtim
 import type { TestDebug } from '../../../../graph/metamodel/pure/test/result/DebugTestsResult.js';
 import { V1_buildDebugTestsResult } from './engine/test/V1_DebugTestsResult.js';
 import type { V1_GraphManagerEngine } from './engine/V1_GraphManagerEngine.js';
+import type { RelationTypeMetadata } from '../../../action/relation/RelationTypeMetadata.js';
+import type { CodeCompletionResult } from '../../../action/compilation/Completion.js';
+import { V1_CompleteCodeInput } from './engine/compilation/V1_CompleteCodeInput.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -1881,8 +1884,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   async pureCodeToValueSpecification(
     valSpec: string,
+    returnSourceInformation?: boolean,
   ): Promise<PlainObject<ValueSpecification>> {
-    return this.engine.transformCodeToValueSpec(valSpec);
+    return this.engine.transformCodeToValueSpec(
+      valSpec,
+      returnSourceInformation,
+    );
   }
 
   async pureCodeToValueSpecifications(
@@ -2028,6 +2035,34 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.buildLambdaReturnTypeInput(lambda, graph, options),
     );
   }
+
+  getLambdaRelationType(
+    lambda: RawLambda,
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): Promise<RelationTypeMetadata> {
+    return this.engine.getLambdaRelationTypeFromRawInput(
+      this.buildLambdaReturnTypeInput(lambda, graph, options),
+    );
+  }
+
+  getCodeComplete(
+    codeBlock: string,
+    graph: PureModel,
+    offset: number | undefined,
+  ): Promise<CodeCompletionResult> {
+    return this.engine.getCodeCompletion(
+      new V1_CompleteCodeInput(
+        codeBlock,
+        this.getFullGraphModelContext(
+          graph,
+          V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+        ),
+        offset,
+      ),
+    );
+  }
+
   override async getLambdasReturnType(
     lambdas: Map<string, RawLambda>,
     graph: PureModel,
@@ -3176,6 +3211,46 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
     service.execution = pureExecution;
     return this.elementProtocolToEntity(service);
+  }
+
+  async resolveQueryInfoExecutionContext(
+    query: QueryInfo,
+    graphLoader: () => Promise<PlainObject<Entity>[]>,
+  ): Promise<{ mapping: string | undefined; runtime: string }> {
+    if (query.mapping && query.runtime) {
+      return {
+        mapping: query.mapping,
+        runtime: query.runtime,
+      };
+    } else if (
+      query.executionContext instanceof QueryExplicitExecutionContextInfo
+    ) {
+      return {
+        mapping: query.executionContext.mapping,
+        runtime: query.executionContext.runtime,
+      };
+    } else {
+      const graph = await graphLoader();
+      const extraExecutionBuilder = this.pluginManager
+        .getPureProtocolProcessorPlugins()
+        .flatMap(
+          (plugin) => plugin.V1_getExtraSavedQueryExecutionBuilder?.() ?? [],
+        );
+      const builder = extraExecutionBuilder
+        .map((_builder) =>
+          _builder(query.executionContext, graph as unknown as Entity[]),
+        )
+        .filter(isNonNullable);
+      if (builder.length === 1) {
+        return {
+          mapping: guaranteeNonNullable(builder[0]).mapping,
+          runtime: guaranteeNonNullable(builder[0]).runtime,
+        };
+      }
+      throw new UnsupportedOperationError(
+        `Unable to resolve execution context for query ${query.id}`,
+      );
+    }
   }
 
   // --------------------------------------------- Analysis ---------------------------------------------

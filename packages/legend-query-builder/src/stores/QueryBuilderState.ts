@@ -68,14 +68,10 @@ import {
   buildLambdaVariableExpressions,
   buildRawLambdaFromLambdaFunction,
   PrimitiveType,
-  SimpleFunctionExpression,
-  extractElementNameFromPath,
-  SUPPORTED_FUNCTIONS,
   PackageableElementExplicitReference,
-  InstanceValue,
-  Multiplicity,
   RuntimePointer,
   QueryExplicitExecutionContext,
+  attachFromQuery,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import type {
@@ -158,6 +154,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   isCheckingEntitlments = false;
   isCalendarEnabled = false;
   isLocalModeEnabled = false;
+  isCubeEnabled = false;
   INTERNAL__enableInitializingDefaultSimpleExpressionValue = false;
 
   lambdaWriteMode = QUERY_BUILDER_LAMBDA_WRITER_MODE.STANDARD;
@@ -208,6 +205,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       class: observable,
       isQueryChatOpened: observable,
       isLocalModeEnabled: observable,
+      isCubeEnabled: observable,
       getAllFunction: observable,
       lambdaWriteMode: observable,
       INTERNAL__enableInitializingDefaultSimpleExpressionValue: observable,
@@ -221,6 +219,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setShowParametersPanel: action,
       setIsEditingWatermark: action,
       setIsCalendarEnabled: action,
+      setIsCubeEnabled: action,
       setIsCheckingEntitlments: action,
       setClass: action,
       setIsQueryChatOpened: action,
@@ -381,6 +380,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setIsLocalModeEnabled(val: boolean): void {
     this.isLocalModeEnabled = val;
+  }
+
+  setIsCubeEnabled(val: boolean): void {
+    this.isCubeEnabled = val;
   }
 
   setInternalize(val: QueryBuilderInternalizeState | undefined): void {
@@ -601,28 +604,12 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       RuntimePointer,
     ).packageableRuntime;
     const lambdaFunc = buildLambdaFunction(this);
-    const currentExpression = guaranteeNonNullable(
-      lambdaFunc.expressionSequence[0],
+    const fromQuery = attachFromQuery(
+      lambdaFunc,
+      mapping,
+      runtimePointer.value,
     );
-    const _func = new SimpleFunctionExpression(
-      extractElementNameFromPath(SUPPORTED_FUNCTIONS.FROM),
-    );
-
-    const mappingInstance = new InstanceValue(Multiplicity.ONE, undefined);
-    mappingInstance.values = [
-      PackageableElementExplicitReference.create(mapping),
-    ];
-    const runtimeInstance = new InstanceValue(Multiplicity.ONE, undefined);
-    runtimeInstance.values = [
-      PackageableElementExplicitReference.create(runtimePointer.value),
-    ];
-    _func.parametersValues = [
-      currentExpression,
-      mappingInstance,
-      runtimeInstance,
-    ];
-    lambdaFunc.expressionSequence = [_func];
-    return buildRawLambdaFromLambdaFunction(lambdaFunc, this.graphManagerState);
+    return buildRawLambdaFromLambdaFunction(fromQuery, this.graphManagerState);
   }
 
   getQueryReturnType(): Type {

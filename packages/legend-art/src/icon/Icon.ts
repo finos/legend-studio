@@ -379,6 +379,7 @@ import {
   FaReadme,
   FaRedo,
   FaUndo,
+  FaCube,
 } from 'react-icons/fa';
 
 export const HistoryIcon = FaHistory;
@@ -514,7 +515,7 @@ export const CalculatorIcon = FaCalculator;
 export const ReadMeIcon = FaReadme;
 export const UndoIcon = FaUndo;
 export const RedoIcon = FaRedo;
-
+export const CubeIcon = FaCube;
 //======================================================= GI =======================================================
 import {
   GiWaterDrop,

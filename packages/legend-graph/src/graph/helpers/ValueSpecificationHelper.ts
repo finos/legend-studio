@@ -14,17 +14,32 @@
  * limitations under the License.
  */
 
-import { LambdaFunctionInstanceValue } from '../metamodel/pure/valueSpecification/LambdaFunction.js';
+import {
+  type LambdaFunction,
+  LambdaFunctionInstanceValue,
+} from '../metamodel/pure/valueSpecification/LambdaFunction.js';
 import type { ValueSpecification } from '../metamodel/pure/valueSpecification/ValueSpecification.js';
 import type { Type } from '../metamodel/pure/packageableElements/domain/Type.js';
 import { GenericTypeExplicitReference } from '../metamodel/pure/packageableElements/domain/GenericTypeReference.js';
-import { PrimitiveInstanceValue } from '../metamodel/pure/valueSpecification/InstanceValue.js';
+import {
+  InstanceValue,
+  PrimitiveInstanceValue,
+} from '../metamodel/pure/valueSpecification/InstanceValue.js';
 import { GenericType } from '../metamodel/pure/packageableElements/domain/GenericType.js';
 import { PrimitiveType } from '../metamodel/pure/packageableElements/domain/PrimitiveType.js';
 import { Relation_Relation } from '../metamodel/pure/packageableElements/relation/Relation_Relation.js';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { Relation_RelationType } from '../metamodel/pure/packageableElements/relation/Relation_RelationType.js';
-import { AbstractPropertyExpression } from '../metamodel/pure/valueSpecification/Expression.js';
+import {
+  AbstractPropertyExpression,
+  SimpleFunctionExpression,
+} from '../metamodel/pure/valueSpecification/Expression.js';
+import { SUPPORTED_FUNCTIONS } from '../MetaModelConst.js';
+import { extractElementNameFromPath } from '../MetaModelUtils.js';
+import { PackageableElementExplicitReference } from '../metamodel/pure/packageableElements/PackageableElementReference.js';
+import { Multiplicity } from '../metamodel/pure/packageableElements/domain/Multiplicity.js';
+import type { Mapping } from '../metamodel/pure/packageableElements/mapping/Mapping.js';
+import type { PackageableRuntime } from '../metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 
 const getRelationGenericType = (
   val: ValueSpecification,
@@ -88,4 +103,33 @@ export const createPrimitiveInstance_Integer = (
   );
   colInstanceValue.values = [val];
   return colInstanceValue;
+};
+
+export const attachFromQuery = (
+  lambdaFunc: LambdaFunction,
+  mapping: Mapping,
+  runtimePointer: PackageableRuntime,
+): LambdaFunction => {
+  const currentExpression = guaranteeNonNullable(
+    lambdaFunc.expressionSequence[0],
+  );
+  const _func = new SimpleFunctionExpression(
+    extractElementNameFromPath(SUPPORTED_FUNCTIONS.FROM),
+  );
+
+  const mappingInstance = new InstanceValue(Multiplicity.ONE, undefined);
+  mappingInstance.values = [
+    PackageableElementExplicitReference.create(mapping),
+  ];
+  const runtimeInstance = new InstanceValue(Multiplicity.ONE, undefined);
+  runtimeInstance.values = [
+    PackageableElementExplicitReference.create(runtimePointer),
+  ];
+  _func.parametersValues = [
+    currentExpression,
+    mappingInstance,
+    runtimeInstance,
+  ];
+  lambdaFunc.expressionSequence = [_func];
+  return lambdaFunc;
 };
