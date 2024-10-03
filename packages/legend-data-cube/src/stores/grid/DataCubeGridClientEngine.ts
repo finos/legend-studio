@@ -419,10 +419,13 @@ export class DataCubeGridClientServerSideDataSource
       if (this.grid.view.engine.enableDebugMode) {
         this.grid.view.application.debugProcess(
           `Execution`,
-          `\nQuery: ${result.executedQuery}`,
-          `\nConfig: pagination=${this.grid.isPaginationEnabled}`,
-          `\nStats: ${rowData.length} rows, ${result.result.result.columns.length} columns`,
-          `\nSQL: ${result.executedSQL}`,
+          ['Query', result.executedQuery],
+          ['Config', `pagination=${this.grid.isPaginationEnabled}`],
+          [
+            'Stats',
+            `${rowData.length} rows, ${result.result.result.columns.length} columns`,
+          ],
+          ['SQL', result.executedSQL],
         );
       }
 

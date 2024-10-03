@@ -114,6 +114,10 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     this._client = val;
   }
 
+  override getSnapshotSubscriberName() {
+    return 'grid';
+  }
+
   override async applySnapshot(
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,
@@ -130,7 +134,10 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
       this.view,
     );
     if (this.view.engine.enableDebugMode) {
-      this.view.application.debugProcess(`New Grid Options`, gridOptions);
+      this.view.application.debugProcess(`New Grid Options`, [
+        'Grid Options',
+        gridOptions,
+      ]);
     }
     this.client.updateGridOptions({
       ...gridOptions,

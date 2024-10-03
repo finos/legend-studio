@@ -28,6 +28,7 @@ import type { DataCubeQuery } from '../engine/DataCubeQuery.js';
 // const DATA_CUBE_MAX_SNAPSHOT_COUNT = 100;
 
 interface DataCubeQuerySnapshotSubscriber {
+  getSnapshotSubscriberName(): string;
   getLatestSnapshot(): DataCubeQuerySnapshot | undefined;
   receiveSnapshot(snapshot: DataCubeQuerySnapshot): Promise<void>;
 }
@@ -42,6 +43,8 @@ export abstract class DataCubeQuerySnapshotController
   constructor(view: DataCubeViewState) {
     this.view = view;
   }
+
+  abstract getSnapshotSubscriberName(): string;
 
   abstract applySnapshot(
     snapshot: DataCubeQuerySnapshot,
@@ -58,12 +61,10 @@ export abstract class DataCubeQuerySnapshotController
     if (this.view.engine.enableDebugMode) {
       this.view.application.debugProcess(
         `New Snapshot`,
-        '\nSnapshot',
-        snapshot,
-        '\nPrevious Snapshot',
-        this.latestSnapshot ?? {},
-        '\nDiff',
-        deepDiff(this.latestSnapshot ?? {}, snapshot),
+        ['Publisher', this.getSnapshotSubscriberName()],
+        ['Snapshot', snapshot],
+        ['Previous Snapshot', this.latestSnapshot ?? {}],
+        ['Diff', deepDiff(this.latestSnapshot ?? {}, snapshot)],
       );
     }
     this.latestSnapshot = snapshot;
@@ -92,6 +93,16 @@ export class DataCubeQuerySnapshotManager {
   }
 
   registerSubscriber(subscriber: DataCubeQuerySnapshotSubscriber) {
+    const existingSubscriber = this.subscribers.find(
+      (sub) =>
+        sub.getSnapshotSubscriberName() ===
+        subscriber.getSnapshotSubscriberName(),
+    );
+    if (existingSubscriber) {
+      throw new IllegalStateError(
+        `Subscriber with name '${subscriber.getSnapshotSubscriberName()}' already exists`,
+      );
+    }
     this.subscribers.push(subscriber);
   }
 

@@ -45,6 +45,10 @@ export class DataCubeInfoState extends DataCubeQuerySnapshotController {
     this.name = val;
   }
 
+  override getSnapshotSubscriberName() {
+    return 'info';
+  }
+
   override async applySnapshot(
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,

@@ -63,7 +63,10 @@ export abstract class DataCubeApplicationEngine {
   abstract unblockNavigation(): void;
 
   abstract logDebug(message: string, ...data: unknown[]): void;
-  abstract debugProcess(processName: string, ...data: unknown[]): void;
+  abstract debugProcess(
+    processName: string,
+    ...data: [string, unknown][]
+  ): void;
   abstract logInfo(event: LogEvent, ...data: unknown[]): void;
   abstract logWarning(event: LogEvent, ...data: unknown[]): void;
   abstract logError(event: LogEvent, ...data: unknown[]): void;

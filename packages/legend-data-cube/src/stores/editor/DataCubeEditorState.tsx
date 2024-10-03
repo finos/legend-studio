@@ -132,6 +132,10 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     this.sorts.applySnaphot(snapshot, configuration);
   }
 
+  override getSnapshotSubscriberName() {
+    return 'editor';
+  }
+
   async applyChanges(options?: { closeAfterApply?: boolean | undefined }) {
     const task = this.view.newTask('Validate query');
     this.finalizationState.inProgress();

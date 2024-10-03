@@ -90,12 +90,12 @@ export class LegendREPLDataCubeApplicationEngine extends DataCubeApplicationEngi
     );
   }
 
-  debugProcess(processName: string, ...data: unknown[]) {
+  debugProcess(processName: string, ...data: [string, unknown][]) {
     this.application.logService.debug(
       LogEvent.create(APPLICATION_EVENT.DEBUG),
-      `\n------ START DEBUG PROCESS: ${processName} ------\n`,
-      ...data,
-      `\n------- END DEBUG PROCESS: ${processName} -------\n`,
+      `\n------ START DEBUG PROCESS: ${processName} ------`,
+      ...data.flatMap(([key, value]) => [`\n[${key.toUpperCase()}]:`, value]),
+      `\n------- END DEBUG PROCESS: ${processName} -------\n\n`,
     );
   }
 

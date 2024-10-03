@@ -381,6 +381,10 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
   // --------------------------------- MAIN ---------------------------------
 
+  override getSnapshotSubscriberName() {
+    return 'grid-controller';
+  }
+
   override async applySnapshot(
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,

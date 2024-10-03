@@ -283,6 +283,10 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
     }
   }
 
+  override getSnapshotSubscriberName() {
+    return 'filter-editor';
+  }
+
   override async applySnapshot(
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,

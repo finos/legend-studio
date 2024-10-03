@@ -137,6 +137,10 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     this.applyChanges();
   }
 
+  override getSnapshotSubscriberName() {
+    return 'extend-manager';
+  }
+
   override async applySnapshot(
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,
