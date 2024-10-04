@@ -312,16 +312,39 @@ export abstract class LegendApplication {
     >,
   ): Promise<void>;
 
-  async start(): Promise<void> {
+  async start(providedConfig?: {
+    configData: LegendApplicationConfigurationData;
+    versionData: LegendApplicationVersionData;
+    extensionData?: ExtensionsConfigurationData | undefined;
+  }): Promise<void> {
     assertNonNullable(
       this._isConfigured,
       'Legend application has not been configured properly. Make sure to run setup() before start()',
     );
+    let extensionConfigData;
     try {
-      // fetch application config
-      const [config, extensionConfigData] =
-        await this.fetchApplicationConfiguration(this.baseAddress);
-      this.config = config;
+      // fetch application config or use provided config if present
+      if (providedConfig) {
+        assertNonNullable(
+          providedConfig.configData,
+          'Provided Legend application configData was null or undefined',
+        );
+        assertNonNullable(
+          providedConfig.versionData,
+          'Provided Legend application versionData was null or undefined',
+        );
+        this.config = await this.configureApplication({
+          configData: providedConfig.configData,
+          versionData: providedConfig.versionData,
+          baseAddress: this.baseAddress,
+        });
+        extensionConfigData = providedConfig.extensionData ?? {};
+      } else {
+        const [fetchedConfig, fetchedExtensionConfigData] =
+          await this.fetchApplicationConfiguration(this.baseAddress);
+        this.config = fetchedConfig;
+        extensionConfigData = fetchedExtensionConfigData;
+      }
 
       // setup plugins
       this.pluginRegister?.(this.pluginManager, this.config);
@@ -331,7 +354,7 @@ export abstract class LegendApplication {
       // other setups
       await Promise.all(
         // NOTE: to be done in parallel to save time
-        [this.loadDocumentationRegistryData(config)],
+        [this.loadDocumentationRegistryData(this.config)],
       );
 
       // setup application store
