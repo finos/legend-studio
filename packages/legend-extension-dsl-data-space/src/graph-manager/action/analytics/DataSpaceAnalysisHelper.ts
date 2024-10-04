@@ -14,13 +14,31 @@
  * limitations under the License.
  */
 
-import { getExpectedArtifactGenerationExtensionOutputPath } from '@finos/legend-graph';
+import {
+  type GraphManagerState,
+  ConcreteFunctionDefinition,
+  getExpectedArtifactGenerationExtensionOutputPath,
+  Service,
+} from '@finos/legend-graph';
 import type {
   DepotServerClient,
   StoreProjectData,
 } from '@finos/legend-server-depot';
-import type { PlainObject } from '@finos/legend-shared';
-import type { DataSpaceAnalysisResult } from './DataSpaceAnalysis.js';
+import { isNonNullable, type PlainObject } from '@finos/legend-shared';
+import {
+  type DataSpaceAnalysisResult,
+  DataSpaceExecutableAnalysisResult,
+  DataSpaceFunctionPointerExecutableInfo,
+  DataSpaceServiceExecutableInfo,
+  DataSpaceTemplateExecutableInfo,
+} from './DataSpaceAnalysis.js';
+import {
+  type DataSpaceExecutable,
+  type DataSpace,
+  DataSpaceExecutableTemplate,
+  DataSpacePackageableElementExecutable,
+} from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import { getQueryFromDataspaceExecutable } from '../../DSL_DataSpace_GraphManagerHelper.js';
 
 const DATASPACE_ANALYTICS_FILE_NAME = 'AnalyticsResult.json';
 const V1_DATASPACE_ANALYTICS_ARTIFACT_EXTENSION_KEY = 'dataSpace-analytics';
@@ -42,3 +60,55 @@ export const retrieveAnalyticsResultCache = async (
       ),
     ),
   );
+
+export const buildDataSpaceExecutableAnalysisResultFromExecutable = async (
+  dataspace: DataSpace,
+  executables: DataSpaceExecutable[],
+  graphManagerState: GraphManagerState,
+): Promise<DataSpaceExecutableAnalysisResult[]> =>
+  (
+    await Promise.all(
+      executables.map(async (ex) => {
+        const result = new DataSpaceExecutableAnalysisResult();
+        result.title = ex.title;
+        result.description = ex.description;
+        let info;
+        if (ex instanceof DataSpaceExecutableTemplate) {
+          info = new DataSpaceTemplateExecutableInfo();
+          if (ex.id) {
+            info.id = ex.id;
+          }
+          info.executionContextKey =
+            ex.executionContextKey ?? dataspace.defaultExecutionContext.name;
+          info.query = await graphManagerState.graphManager.lambdaToPureCode(
+            ex.query,
+          );
+        } else if (ex instanceof DataSpacePackageableElementExecutable) {
+          const query = getQueryFromDataspaceExecutable(ex, graphManagerState);
+          if (ex.executable.value instanceof Service) {
+            info = new DataSpaceServiceExecutableInfo();
+            info.id = ex.id ?? ex.executable.value.path;
+            info.executionContextKey =
+              ex.executionContextKey ?? dataspace.defaultExecutionContext.name;
+            if (query) {
+              info.query =
+                await graphManagerState.graphManager.lambdaToPureCode(query);
+            }
+          } else if (
+            ex.executable.value instanceof ConcreteFunctionDefinition
+          ) {
+            info = new DataSpaceFunctionPointerExecutableInfo();
+            info.id = ex.id ?? ex.executable.value.path;
+            info.executionContextKey =
+              ex.executionContextKey ?? dataspace.defaultExecutionContext.name;
+            if (query) {
+              info.query =
+                await graphManagerState.graphManager.lambdaToPureCode(query);
+            }
+          }
+        }
+        result.info = info;
+        return result;
+      }),
+    )
+  ).filter(isNonNullable);

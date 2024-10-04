@@ -15,17 +15,19 @@
  */
 
 import { LegendApplicationPlugin } from '@finos/legend-application';
-import type { Query } from '@finos/legend-graph';
 import type {
-  QueryBuilderState,
   QueryBuilder_LegendApplicationPlugin_Extension,
+  QueryBuilderState,
 } from '@finos/legend-query-builder';
+import type { GeneratorFn } from '@finos/legend-shared';
+import type React from 'react';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import {
-  type ExistingQueryEditorStore,
-  type QueryEditorStore,
+import type {
+  ExistingQueryEditorStore,
+  QueryEditorStore,
 } from './QueryEditorStore.js';
 import type { QuerySetupLandingPageStore } from './QuerySetupStore.js';
+import type { Query } from '@finos/legend-graph';
 
 export enum QuerySetupActionTag {
   PRODUCTIONIZATION = 'Productionization',
@@ -63,6 +65,10 @@ export type NewQueryNavigationPath = (
   editorStore: ExistingQueryEditorStore,
 ) => string | undefined;
 
+export type QueryGraphBuilderGetter = (
+  editorStore: QueryEditorStore,
+) => ((editorStore: QueryEditorStore) => GeneratorFn<void>) | undefined;
+
 export type QueryEditorActionConfiguration = {
   key: string;
   renderer: (
@@ -97,4 +103,9 @@ export class LegendQueryApplicationPlugin
    * Get the list of actions (configurations) for query setup.
    */
   getExtraQuerySetupActionConfigurations?(): QuerySetupActionConfiguration[];
+
+  /**
+   * Get the list of query graph builders
+   */
+  getExtraQueryGraphBuilderGetters?(): QueryGraphBuilderGetter[];
 }
