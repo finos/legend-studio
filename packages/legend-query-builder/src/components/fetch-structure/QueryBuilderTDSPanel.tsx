@@ -71,8 +71,7 @@ import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import {
-  type ConcreteFunctionDefinition,
-  generateFunctionCallString,
+  type ValueSpecification,
   LAMBDA_PIPE,
   VARIABLE_REFERENCE_TOKEN,
   AbstractPropertyExpression,
@@ -81,12 +80,12 @@ import {
   PropertyExplicitReference,
   VariableExpression,
   Multiplicity,
-  type ValueSpecification,
   PrimitiveType,
   GenericType,
   GenericTypeExplicitReference,
   observe_PrimitiveInstanceValue,
   PrimitiveInstanceValue,
+  generateFunctionCallStringFromFunctionAnalysisInfo,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderFunctionsExplorerDragSource,
@@ -239,13 +238,20 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
             }`,
           );
         } else if (type === QUERY_BUILDER_FUNCTION_DND_TYPE) {
+          const functionAnalysisInfo = (
+            item as QueryBuilderFunctionsExplorerDragSource
+          ).node.functionAnalysisInfo;
+          const functionPrettyName = functionAnalysisInfo
+            ? generateFunctionCallStringFromFunctionAnalysisInfo(
+                projectionColumnState.tdsState.queryBuilderState
+                  .graphManagerState.graph,
+                functionAnalysisInfo,
+              )
+            : '';
           projectionColumnState.derivationLambdaEditorState.setLambdaString(
             `${
               projectionColumnState.derivationLambdaEditorState.lambdaString
-            }${`${generateFunctionCallString(
-              (item as QueryBuilderFunctionsExplorerDragSource).node
-                .packageableElement as ConcreteFunctionDefinition,
-            )}`}`,
+            }${functionPrettyName}`,
           );
         } else {
           projectionColumnState.derivationLambdaEditorState.setLambdaString(
@@ -1262,11 +1268,17 @@ export const QueryBuilderTDSPanel = observer(
                   { addDummyParameter: true },
                 ),
               );
+            const functionAnalysisInfo = (
+              item as QueryBuilderFunctionsExplorerDragSource
+            ).node.functionAnalysisInfo;
+            const functionPrettyName = functionAnalysisInfo
+              ? generateFunctionCallStringFromFunctionAnalysisInfo(
+                  tdsState.queryBuilderState.graphManagerState.graph,
+                  functionAnalysisInfo,
+                )
+              : '';
             derivationProjectionColumn.derivationLambdaEditorState.setLambdaString(
-              `${DEFAULT_LAMBDA_VARIABLE_NAME}${LAMBDA_PIPE}${generateFunctionCallString(
-                (item as QueryBuilderFunctionsExplorerDragSource).node
-                  .packageableElement as ConcreteFunctionDefinition,
-              )}`,
+              `${DEFAULT_LAMBDA_VARIABLE_NAME}${LAMBDA_PIPE}${functionPrettyName} `,
             );
             tdsState.addColumn(derivationProjectionColumn);
             break;

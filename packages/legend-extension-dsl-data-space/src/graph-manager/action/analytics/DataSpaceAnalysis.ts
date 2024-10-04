@@ -21,6 +21,7 @@ import type {
   PureModel,
   DatasetSpecification,
   MappingModelCoverageAnalysisResult,
+  FunctionAnalysisInfo,
 } from '@finos/legend-graph';
 import { prettyCONSTName, uuid } from '@finos/legend-shared';
 import type { DataSpaceSupportInfo } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
@@ -220,6 +221,9 @@ export class DataSpaceAnalysisResult {
     string,
     MappingModelCoverageAnalysisResult
   >;
+
+  functionInfos?: Map<string, FunctionAnalysisInfo>;
+  dependencyFunctionInfos?: Map<string, FunctionAnalysisInfo>;
 
   get displayName(): string {
     return this.title ?? prettyCONSTName(this.name);

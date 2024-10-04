@@ -15,24 +15,28 @@
  */
 
 import {
-  LegendApplicationPlugin,
   type LegendApplicationSetup,
   type LegendApplicationPluginManager,
-  collectKeyedCommandConfigEntriesFromConfig,
   type KeyedCommandConfigEntry,
+  collectKeyedCommandConfigEntriesFromConfig,
+  LegendApplicationPlugin,
 } from '@finos/legend-application';
 import packageJson from '../../package.json' with { type: 'json' };
 import type {
   CuratedTemplateQuery,
   CuratedTemplateQuerySpecification,
   LoadQueryFilterOption,
+  QueryBuilderExtraFunctionHelper,
   QueryBuilderState,
   QueryBuilder_LegendApplicationPlugin_Extension,
   TemplateQueryPanelContentRenderer,
 } from '@finos/legend-query-builder';
 import { DataSpaceQueryBuilderState } from '../stores/query-builder/DataSpaceQueryBuilderState.js';
 import { DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_CONFIG } from '../__lib__/DSL_DataSpace_LegendApplicationCommand.js';
-import type { QuerySearchSpecification } from '@finos/legend-graph';
+import {
+  type FunctionAnalysisInfo,
+  type QuerySearchSpecification,
+} from '@finos/legend-graph';
 import { configureDataGridComponent } from '@finos/legend-lego/data-grid';
 import { DataSpaceExecutableTemplate } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { filterByType } from '@finos/legend-shared';
@@ -175,10 +179,10 @@ export class DSL_DataSpace_LegendApplicationPlugin
           }
           return [];
         },
-        loadCuratedTemplateQuery: (
+        loadCuratedTemplateQuery: async (
           templateQuery: CuratedTemplateQuery,
           queryBuilderState: QueryBuilderState,
-        ): void => {
+        ): Promise<void> => {
           if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
             if (
               queryBuilderState.executionContext.name !==
@@ -190,9 +194,7 @@ export class DSL_DataSpace_LegendApplicationPlugin
                 );
               if (executionContext) {
                 queryBuilderState.setExecutionContext(executionContext);
-                queryBuilderState.propagateExecutionContextChange(
-                  executionContext,
-                );
+                await queryBuilderState.propagateExecutionContextChange();
                 queryBuilderState.initializeWithQuery(templateQuery.query);
                 queryBuilderState.onExecutionContextChange?.(executionContext);
               }
@@ -203,5 +205,35 @@ export class DSL_DataSpace_LegendApplicationPlugin
         },
       },
     ];
+  }
+
+  getExtraQueryBuilderFunctionHelper(
+    queryBuilderState: QueryBuilderState,
+  ): QueryBuilderExtraFunctionHelper[] {
+    if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
+      let functionInfoMap: Map<string, FunctionAnalysisInfo> = new Map<
+        string,
+        FunctionAnalysisInfo
+      >();
+      let dependencyFunctionInfoMap: Map<string, FunctionAnalysisInfo> =
+        new Map<string, FunctionAnalysisInfo>();
+      const functionInfos =
+        queryBuilderState.dataSpaceAnalysisResult?.functionInfos;
+      if (functionInfos) {
+        functionInfoMap = functionInfos;
+      }
+      const dependencyFunctionInfos =
+        queryBuilderState.dataSpaceAnalysisResult?.dependencyFunctionInfos;
+      if (dependencyFunctionInfos) {
+        dependencyFunctionInfoMap = dependencyFunctionInfos;
+      }
+      return [
+        {
+          functionInfoMap: functionInfoMap,
+          dependencyFunctionInfoMap: dependencyFunctionInfoMap,
+        },
+      ];
+    }
+    return [];
   }
 }
