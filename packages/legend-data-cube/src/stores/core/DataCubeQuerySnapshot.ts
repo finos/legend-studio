@@ -93,9 +93,10 @@ export type DataCubeQuerySnapshotData = {
 
 export class DataCubeQuerySnapshot {
   readonly uuid = uuid();
-  timestamp = Date.now();
+  readonly timestamp = Date.now();
   readonly data: DataCubeQuerySnapshotData;
 
+  private _isPatchChange = false;
   private _finalized = false;
   private _hashCode?: string | undefined;
 
@@ -140,12 +141,21 @@ export class DataCubeQuerySnapshot {
     );
   }
 
-  clone() {
-    const clone = new DataCubeQuerySnapshot('', '', '', {}, {});
-    (clone.data as Writable<DataCubeQuerySnapshotData>) = JSON.parse(
-      JSON.stringify(this.data),
-    ) as DataCubeQuerySnapshotData;
-    return clone;
+  /**
+   * When we support undo/redo, patch changes should be grouped
+   * together with the most recent non-patch change snapshot and treated
+   * as a single step.
+   *
+   * e.g. if we have a stack of snapshots [A, B, C, D] where D is the current
+   * snapshot and C is a patch change. When undo, we should go back to C.
+   * When undo again, we should go back to A instead of B.
+   */
+  markAsPatchChange() {
+    this._isPatchChange = true;
+  }
+
+  isPatchChange() {
+    return this._isPatchChange;
   }
 
   isFinalized() {
@@ -174,6 +184,40 @@ export class DataCubeQuerySnapshot {
       throw new IllegalStateError('Snapshot is not finalized');
     }
     return this._hashCode;
+  }
+
+  clone() {
+    const clone = new DataCubeQuerySnapshot('', '', '', {}, {});
+    (clone.data as Writable<DataCubeQuerySnapshotData>) = JSON.parse(
+      JSON.stringify(this.data),
+    ) as DataCubeQuerySnapshotData;
+    return clone;
+  }
+
+  /**
+   * Only use this if an absolute identical clone is needed.
+   * This should rarely be used, and ideally by core engine only.
+   */
+  INTERNAL__fullClone() {
+    const clone = new DataCubeQuerySnapshot('', '', '', {}, {});
+    (clone.uuid as Writable<string>) = this.uuid;
+    (clone.timestamp as Writable<number>) = this.timestamp;
+    (clone.data as Writable<DataCubeQuerySnapshotData>) = JSON.parse(
+      JSON.stringify(this.data),
+    ) as DataCubeQuerySnapshotData;
+    clone._isPatchChange = this._isPatchChange;
+    clone._finalized = this._finalized;
+    clone._hashCode = this._hashCode;
+    return clone;
+  }
+
+  /**
+   * Only use this if programatic setting of timestamp is needed.
+   * e.g. for the first-ever snapshot where we want to sync the timestamp
+   * to the timestamp provided by the engine.
+   */
+  INTERNAL__setTimestamp(timestamp: number) {
+    (this.timestamp as Writable<number>) = timestamp;
   }
 }
 

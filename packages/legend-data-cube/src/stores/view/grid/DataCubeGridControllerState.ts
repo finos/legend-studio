@@ -389,8 +389,6 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,
   ) {
-    const newSnapshot = snapshot.clone();
-
     this.configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
     );
@@ -405,16 +403,16 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
         )
       : undefined;
 
-    this.selectColumns = newSnapshot.data.selectColumns;
-    this.leafExtendedColumns = newSnapshot.data.leafExtendedColumns;
-    this.groupExtendedColumns = newSnapshot.data.groupExtendedColumns;
+    this.selectColumns = snapshot.data.selectColumns;
+    this.leafExtendedColumns = snapshot.data.leafExtendedColumns;
+    this.groupExtendedColumns = snapshot.data.groupExtendedColumns;
 
-    this.horizontalPivotColumns = newSnapshot.data.pivot?.columns ?? [];
-    this.horizontalPivotCastColumns = newSnapshot.data.pivot?.castColumns ?? [];
+    this.horizontalPivotColumns = snapshot.data.pivot?.columns ?? [];
+    this.horizontalPivotCastColumns = snapshot.data.pivot?.castColumns ?? [];
 
-    this.verticalPivotColumns = newSnapshot.data.groupBy?.columns ?? [];
+    this.verticalPivotColumns = snapshot.data.groupBy?.columns ?? [];
 
-    this.sortColumns = newSnapshot.data.sortColumns;
+    this.sortColumns = snapshot.data.sortColumns;
 
     this.menuBuilder = generateMenuBuilder(this);
   }

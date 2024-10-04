@@ -607,9 +607,11 @@ export function generateMenuBuilder(
                 'separator',
                 {
                   name: `Edit Column ${columnName}...`,
-                  menuItem: WIP_GridMenuItem,
-                  cssClasses: ['!opacity-100'],
-                  disabled: true,
+                  action: () => {
+                    extend
+                      .openExistingColumnEditor(columnName)
+                      .catch((error) => application.alertUnhandledError(error));
+                  },
                 },
                 {
                   name: `Delete Column ${columnName}`,

@@ -112,7 +112,7 @@ export class DataCubeViewState {
         result.sourceQuery,
         result.query,
       );
-      initialSnapshot.timestamp = result.timestamp;
+      initialSnapshot.INTERNAL__setTimestamp(result.timestamp);
       this.snapshotManager.broadcastSnapshot(initialSnapshot);
     } catch (error: unknown) {
       assertErrorThrown(error);

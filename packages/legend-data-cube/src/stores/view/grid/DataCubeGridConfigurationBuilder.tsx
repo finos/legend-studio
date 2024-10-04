@@ -963,7 +963,6 @@ export function generateGridOptionsFromSnapshot(
       // See https://www.ag-grid.com/react-data-grid/grouping-custom-group-columns/
       colId: INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
       headerName: '',
-      cellRenderer: 'agGroupCellRenderer',
       cellRendererParams: {
         suppressCount: !configuration.showLeafCount,
       },
@@ -982,6 +981,6 @@ export function generateGridOptionsFromSnapshot(
       // aggregation
       showRowGroup: true,
       suppressSpanHeaderHeight: true,
-    } satisfies ColDef,
+    } as ColDef,
   } satisfies GridOptions;
 }

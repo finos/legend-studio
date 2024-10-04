@@ -54,20 +54,26 @@ export abstract class DataCubeQuerySnapshotController
   async receiveSnapshot(snapshot: DataCubeQuerySnapshot) {
     const previousSnapshot = this.latestSnapshot;
     this.latestSnapshot = snapshot;
-    await this.applySnapshot(snapshot, previousSnapshot);
+
+    // NOTE: fully clone the snapshot before applying it to avoid any potential
+    // mutation of the snapshot by the subscriber
+    await this.applySnapshot(snapshot.INTERNAL__fullClone(), previousSnapshot);
   }
 
   publishSnapshot(snapshot: DataCubeQuerySnapshot) {
+    const previousSnapshot = this.latestSnapshot;
+    this.latestSnapshot = snapshot;
+
     if (this.view.engine.enableDebugMode) {
       this.view.application.debugProcess(
         `New Snapshot`,
         ['Publisher', this.getSnapshotSubscriberName()],
         ['Snapshot', snapshot],
-        ['Previous Snapshot', this.latestSnapshot ?? {}],
-        ['Diff', deepDiff(this.latestSnapshot ?? {}, snapshot)],
+        ['Previous Snapshot', previousSnapshot],
+        ['Diff', deepDiff(previousSnapshot ?? {}, snapshot)],
       );
     }
-    this.latestSnapshot = snapshot;
+
     this.view.snapshotManager.broadcastSnapshot(snapshot);
   }
 

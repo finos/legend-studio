@@ -36,13 +36,20 @@ import {
   DataCubeConfiguration,
   type DataCubeColumnConfiguration,
 } from '../../core/DataCubeConfiguration.js';
-import { DataCubeNewColumnState } from './DataCubeColumnEditorState.js';
-import { DataCubeColumnKind } from '../../core/DataCubeQueryEngine.js';
+import {
+  DataCubeExistingColumnEditorState,
+  DataCubeNewColumnState,
+} from './DataCubeColumnEditorState.js';
+import {
+  DataCubeColumnDataType,
+  DataCubeColumnKind,
+  getDataType,
+} from '../../core/DataCubeQueryEngine.js';
 import { buildDefaultColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
 import { V1_deserializeValueSpecification } from '@finos/legend-graph';
 import type { DataCubeQueryBuilderError } from '../../core/DataCubeEngine.js';
 
-export class DataCubeQueryExtendedColumnState {
+class DataCubeQueryExtendedColumnState {
   name: string;
   type: string;
   data: DataCubeQuerySnapshotExtendedColumn;
@@ -63,10 +70,8 @@ export class DataCubeQueryExtendedColumnState {
  * This query editor state backs the form editor for extend columns, i.e. creating new columns.
  */
 export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController {
-  configuration = new DataCubeConfiguration();
-
   columnConfigurations: DataCubeColumnConfiguration[] = [];
-  selectedColumns: DataCubeQuerySnapshotColumn[] = [];
+  selectColumns: DataCubeQuerySnapshotColumn[] = [];
   sourceColumns: DataCubeQuerySnapshotColumn[] = [];
   horizontalPivotCastColumns: DataCubeQuerySnapshotColumn[] = [];
 
@@ -74,27 +79,37 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
   groupExtendedColumns: DataCubeQueryExtendedColumnState[] = [];
 
   newColumnEditors: DataCubeNewColumnState[] = [];
-  // TODO: existingColumnEditors
+  existingColumnEditors: DataCubeExistingColumnEditorState[] = [];
 
   constructor(view: DataCubeViewState) {
     super(view);
 
     makeObservable(this, {
-      columnConfigurations: observable.struct,
-      selectedColumns: observable.struct,
       sourceColumns: observable.ref,
       horizontalPivotCastColumns: observable.ref,
 
       leafExtendedColumns: observable,
+      setLeafExtendedColumns: action,
+
       groupExtendedColumns: observable,
+      setGroupExtendedColumns: action,
 
       allColumnNames: computed,
 
       addNewColumn: action,
+      updateColumn: action,
       deleteColumn: action,
 
       applySnapshot: action,
     });
+  }
+
+  setLeafExtendedColumns(val: DataCubeQueryExtendedColumnState[]): void {
+    this.leafExtendedColumns = val;
+  }
+
+  setGroupExtendedColumns(val: DataCubeQueryExtendedColumnState[]): void {
+    this.groupExtendedColumns = val;
   }
 
   get allColumnNames(): string[] {
@@ -118,28 +133,197 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     editor.display.open();
   }
 
+  async openExistingColumnEditor(columnName: string) {
+    const existingEditor = this.existingColumnEditors.find(
+      (editor) => editor.initialData.name === columnName,
+    );
+    if (existingEditor) {
+      existingEditor.display.open();
+      return;
+    }
+
+    if (
+      !this.leafExtendedColumns.find((col) => col.name === columnName) &&
+      !this.groupExtendedColumns.find((col) => col.name === columnName)
+    ) {
+      return;
+    }
+    const editor = new DataCubeExistingColumnEditorState(
+      this,
+      guaranteeNonNullable(
+        this.leafExtendedColumns.find((col) => col.name === columnName) ??
+          this.groupExtendedColumns.find((col) => col.name === columnName),
+      ).data,
+      guaranteeNonNullable(
+        this.columnConfigurations.find((col) => col.name === columnName),
+      ).kind,
+      Boolean(this.groupExtendedColumns.find((col) => col.name === columnName)),
+    );
+    await editor.initialize();
+    this.existingColumnEditors.push(editor);
+    editor.display.open();
+  }
+
   addNewColumn(
     column: DataCubeQuerySnapshotExtendedColumn,
     isGroupLevel: boolean,
     columnKind: DataCubeColumnKind | undefined,
     editor: DataCubeNewColumnState,
   ) {
-    (isGroupLevel ? this.groupExtendedColumns : this.leafExtendedColumns).push(
-      new DataCubeQueryExtendedColumnState(column),
-    );
-
     const columnConfiguration = buildDefaultColumnConfiguration(column);
     if (columnKind) {
       columnConfiguration.kind = columnKind;
       columnConfiguration.excludedFromPivot =
         columnKind === DataCubeColumnKind.DIMENSION;
     }
-
     this.columnConfigurations.push(columnConfiguration);
     deleteEntry(this.newColumnEditors, editor);
-    if (!isGroupLevel) {
-      this.selectedColumns.push(_toCol(column));
+    if (isGroupLevel) {
+      this.groupExtendedColumns.push(
+        new DataCubeQueryExtendedColumnState(column),
+      );
+    } else {
+      this.leafExtendedColumns.push(
+        new DataCubeQueryExtendedColumnState(column),
+      );
+      this.selectColumns.push(_toCol(column));
     }
+    this.applyChanges();
+  }
+
+  async updateColumn(
+    columnName: string,
+    updatedColumn: DataCubeQuerySnapshotExtendedColumn,
+    isGroupLevel: boolean,
+    columnKind: DataCubeColumnKind | undefined,
+  ) {
+    if (
+      !this.leafExtendedColumns.find((col) => col.name === columnName) &&
+      !this.groupExtendedColumns.find((col) => col.name === columnName)
+    ) {
+      return;
+    }
+
+    const columnConfiguration = guaranteeNonNullable(
+      this.columnConfigurations.find((col) => col.name === columnName),
+    );
+
+    const task = this.view.newTask('Column update check');
+
+    const currentSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
+    const tempSnapshot = currentSnapshot.clone();
+    tempSnapshot.data.leafExtendedColumns =
+      tempSnapshot.data.leafExtendedColumns.filter(
+        (col) => col.name !== columnName,
+      );
+    tempSnapshot.data.groupExtendedColumns =
+      tempSnapshot.data.groupExtendedColumns.filter(
+        (col) => col.name !== columnName,
+      );
+    tempSnapshot.data.selectColumns = tempSnapshot.data.selectColumns.filter(
+      (col) => col.name !== columnName,
+    );
+    if (isGroupLevel) {
+      tempSnapshot.data.groupExtendedColumns.push(updatedColumn);
+    } else {
+      tempSnapshot.data.leafExtendedColumns.push(updatedColumn);
+      if (columnConfiguration.isSelected) {
+        tempSnapshot.data.selectColumns.push(_toCol(updatedColumn));
+      }
+    }
+    tempSnapshot.data.configuration = {
+      ...tempSnapshot.data.configuration,
+      columns: this.columnConfigurations.map((col) => {
+        if (col.name === columnName) {
+          return {
+            ...col.serialize(),
+            ..._toCol(updatedColumn),
+            kind: columnKind,
+          };
+        }
+        return col.serialize();
+      }),
+    };
+
+    const codePrefix = `->`;
+    const code = await this.view.engine.getPartialQueryCode(tempSnapshot, true);
+    try {
+      await this.view.engine.getQueryCodeRelationReturnType(
+        codePrefix + code,
+        V1_deserializeValueSpecification(tempSnapshot.data.sourceQuery, []),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        this.view.application.alertCodeCheckError(
+          error.payload as DataCubeQueryBuilderError,
+          code,
+          codePrefix,
+          {
+            message: `Column Update Check Failure: Can't safely update column '${columnName}'. Check the query code below for more details.`,
+            text: `Error: ${error.message}`,
+          },
+        );
+      } else {
+        this.view.application.alertError(error, {
+          message: `Column Update Check Failure: Can't safely update column '${columnName}'.`,
+          text: `Error: ${error.message}`,
+        });
+      }
+      return;
+    } finally {
+      this.view.endTask(task);
+    }
+
+    this.setLeafExtendedColumns(
+      this.leafExtendedColumns.filter((col) => col.name !== columnName),
+    );
+    this.setGroupExtendedColumns(
+      this.groupExtendedColumns.filter((col) => col.name !== columnName),
+    );
+    this.selectColumns = this.selectColumns.filter(
+      (col) => col.name !== columnName,
+    );
+    if (isGroupLevel) {
+      this.setGroupExtendedColumns([
+        ...this.groupExtendedColumns,
+        new DataCubeQueryExtendedColumnState(updatedColumn),
+      ]);
+    } else {
+      this.setLeafExtendedColumns([
+        ...this.leafExtendedColumns,
+        new DataCubeQueryExtendedColumnState(updatedColumn),
+      ]);
+      if (columnConfiguration.isSelected) {
+        this.selectColumns.push(_toCol(updatedColumn));
+      }
+    }
+    this.columnConfigurations = this.columnConfigurations.map((col) => {
+      if (col.name === columnName) {
+        col.kind =
+          (columnKind ??
+          getDataType(updatedColumn.type) === DataCubeColumnDataType.NUMBER)
+            ? DataCubeColumnKind.MEASURE
+            : DataCubeColumnKind.DIMENSION;
+        col.name = updatedColumn.name;
+        col.type = updatedColumn.type;
+        col.excludedFromPivot = col.kind === DataCubeColumnKind.DIMENSION;
+      }
+      return col;
+    });
+
+    // close and remove editors for the updated column
+    const matchingEditors = this.existingColumnEditors.filter(
+      (editor) => editor.initialData.name === columnName,
+    );
+    matchingEditors.forEach((editor) => editor.display.close());
+    this.existingColumnEditors = this.existingColumnEditors.filter(
+      (editor) => editor.initialData.name !== columnName,
+    );
+
     this.applyChanges();
   }
 
@@ -206,19 +390,28 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
       this.view.endTask(task);
     }
 
-    this.leafExtendedColumns = this.leafExtendedColumns.filter(
+    this.setLeafExtendedColumns(
+      this.leafExtendedColumns.filter((col) => col.name !== columnName),
+    );
+    this.setGroupExtendedColumns(
+      this.groupExtendedColumns.filter((col) => col.name !== columnName),
+    );
+    this.columnConfigurations = this.columnConfigurations.filter(
       (col) => col.name !== columnName,
     );
-    this.groupExtendedColumns = this.groupExtendedColumns.filter(
+    this.selectColumns = this.selectColumns.filter(
       (col) => col.name !== columnName,
     );
-    this.columnConfigurations = this.configuration.columns.filter(
-      (col) => col.name !== columnName,
+
+    // close and remove editors for the deleted column
+    const matchingEditors = this.existingColumnEditors.filter(
+      (editor) => editor.initialData.name === columnName,
     );
-    this.selectedColumns = this.selectedColumns.filter(
-      (col) => col.name !== columnName,
+    matchingEditors.forEach((editor) => editor.display.close());
+    this.existingColumnEditors = this.existingColumnEditors.filter(
+      (editor) => editor.initialData.name !== columnName,
     );
-    /** TODO: @datacube extend - remove editor state whose base column is deleted */
+
     this.applyChanges();
   }
 
@@ -230,10 +423,10 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     snapshot: DataCubeQuerySnapshot,
     previousSnapshot: DataCubeQuerySnapshot | undefined,
   ): Promise<void> {
-    this.configuration = DataCubeConfiguration.serialization.fromJson(
+    const configuration = DataCubeConfiguration.serialization.fromJson(
       snapshot.data.configuration,
     );
-    this.columnConfigurations = this.configuration.columns;
+    this.columnConfigurations = configuration.columns;
     this.sourceColumns = snapshot.data.sourceColumns;
     this.leafExtendedColumns = snapshot.data.leafExtendedColumns.map(
       (col) => new DataCubeQueryExtendedColumnState(col),
@@ -242,13 +435,14 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
       (col) => new DataCubeQueryExtendedColumnState(col),
     );
     this.horizontalPivotCastColumns = snapshot.data.pivot?.castColumns ?? [];
-    this.selectedColumns = snapshot.data.selectColumns.map(_toCol);
+    this.selectColumns = snapshot.data.selectColumns.map(_toCol);
 
     // trigger re-compile in each existing column editor as the base query has changed
-    this.newColumnEditors.forEach((editor) => {
-      editor.getReturnType().catch(noop());
-    });
-    // TODO: existingColumnEditors
+    [...this.newColumnEditors, ...this.existingColumnEditors].forEach(
+      (editor) => {
+        editor.getReturnType().catch(noop());
+      },
+    );
   }
 
   applyChanges() {
@@ -266,10 +460,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     newSnapshot.data.groupExtendedColumns = this.groupExtendedColumns.map(
       (col) => col.data,
     );
-    newSnapshot.data.selectColumns = [...this.selectedColumns];
-
-    // TODO: support edition, so v-pivots/h-pivots or column configuration that
-    // depends on columns with name/type changed should be updated
+    newSnapshot.data.selectColumns = [...this.selectColumns];
 
     newSnapshot.finalize();
     if (newSnapshot.hashCode !== baseSnapshot.hashCode) {

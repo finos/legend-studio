@@ -381,9 +381,11 @@ export class DataCubeGridClientServerSideDataSource
 
       newSnapshot.finalize();
       if (newSnapshot.hashCode !== currentSnapshot.hashCode) {
-        // NOTE: if we mess up the computation of the snapshot, we run the risk
-        // of triggering an infinite loop, by keep updating the grid options
-        // so we need to be careful here when making this call!
+        // NOTE: we need to be careful with the computation of the snapshot
+        // here since we run the risk of triggering an multiple data-fetches,
+        // as applying snapshot to grid state could potentially update the grid
+        // options and set SSRM filter model.
+        newSnapshot.markAsPatchChange();
         await this.grid.applySnapshot(newSnapshot, currentSnapshot);
         this.grid.publishSnapshot(newSnapshot);
       }

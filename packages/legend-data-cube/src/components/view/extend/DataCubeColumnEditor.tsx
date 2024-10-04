@@ -15,7 +15,10 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { type DataCubeNewColumnState } from '../../../stores/view/extend/DataCubeColumnEditorState.js';
+import {
+  DataCubeExistingColumnEditorState,
+  type DataCubeColumnBaseEditorState,
+} from '../../../stores/view/extend/DataCubeColumnEditorState.js';
 import {
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
@@ -54,7 +57,7 @@ enum DataCubeExtendedColumnKind {
 }
 
 export const DataCubeColumnCreator = observer(
-  (props: { state: DataCubeNewColumnState }) => {
+  (props: { state: DataCubeColumnBaseEditorState }) => {
     const { state } = props;
     const view = state.view;
     const application = view.application;
@@ -353,6 +356,30 @@ export const DataCubeColumnCreator = observer(
           >
             OK
           </button>
+          {state instanceof DataCubeExistingColumnEditorState && (
+            <>
+              <button
+                className="ml-2 h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
+                onClick={() => {
+                  state.manager
+                    .deleteColumn(state.initialData.name)
+                    .catch((error) => application.alertUnhandledError(error));
+                }}
+              >
+                Delete
+              </button>
+              <button
+                className="ml-2 h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
+                onClick={() => {
+                  state
+                    .reset()
+                    .catch((error) => application.alertUnhandledError(error));
+                }}
+              >
+                Reset
+              </button>
+            </>
+          )}
           <button
             className="ml-2 h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
             onClick={() => state.close()}

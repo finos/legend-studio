@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, computed, makeObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable, override } from 'mobx';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import type { DisplayState } from '../../core/DataCubeLayoutManagerState.js';
 import { DataCubeColumnCreator } from '../../../components/view/extend/DataCubeColumnEditor.js';
@@ -26,6 +26,7 @@ import {
   HttpStatus,
   NetworkClientError,
   uuid,
+  type PlainObject,
 } from '@finos/legend-shared';
 import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
 import {
@@ -43,11 +44,13 @@ import type { DataCubeQueryBuilderError } from '../../core/DataCubeEngine.js';
 import type { DataCubeExtendManagerState } from './DataCubeExtendManagerState.js';
 import {
   PRIMITIVE_TYPE,
+  V1_deserializeValueSpecification,
   V1_Lambda,
   V1_serializeValueSpecification,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
 import type { DataCubeColumnConfiguration } from '../../core/DataCubeConfiguration.js';
+import type { DataCubeQuerySnapshotExtendedColumn } from '../../core/DataCubeQuerySnapshot.js';
 
 export abstract class DataCubeColumnBaseEditorState {
   readonly uuid = uuid();
@@ -399,29 +402,53 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
 }
 
 export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorState {
+  readonly initialData: {
+    name: string;
+    type: string;
+    kind: DataCubeColumnKind;
+    isGroupLevel: boolean;
+    mapFn: PlainObject<V1_Lambda>;
+  };
+
   constructor(
     manager: DataCubeExtendManagerState,
-    columnConfiguration: DataCubeColumnConfiguration,
+    column: DataCubeQuerySnapshotExtendedColumn,
+    kind: DataCubeColumnKind,
     isGroupLevel: boolean,
   ) {
-    super(
-      manager,
-      columnConfiguration.name,
-      getDataType(columnConfiguration.type),
-      isGroupLevel,
-      columnConfiguration.kind,
-    );
+    super(manager, column.name, getDataType(column.type), isGroupLevel, kind);
+
+    makeObservable(this, {
+      initialData: observable.ref,
+      isNameValid: override,
+    });
+
+    this.initialData = {
+      name: column.name,
+      type: column.type,
+      kind,
+      isGroupLevel: isGroupLevel,
+      mapFn: column.mapFn,
+    };
+  }
+
+  override get isNameValid(): boolean {
+    return !this.manager.allColumnNames
+      .filter((colName) => colName !== this.initialData.name)
+      .includes(this.name);
   }
 
   override async getInitialCode(): Promise<string> {
-    return '';
+    return this.view.engine.getQueryCode(
+      V1_deserializeValueSpecification(this.initialData.mapFn, []),
+      true,
+    );
   }
 
   override newDisplay(state: DataCubeColumnBaseEditorState): DisplayState {
     return this.view.application.layout.newDisplay(
       'Edit Column',
-      // () => <DataCubeColumnCreator state={this} />,
-      () => null,
+      () => <DataCubeColumnCreator state={this} />,
       {
         x: 50,
         y: 50,
@@ -432,6 +459,14 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
         center: false,
       },
     );
+  }
+
+  async reset() {
+    this.setName(this.initialData.name);
+    this.setExpectedType(getDataType(this.initialData.type));
+    this.setColumnKind(this.initialData.isGroupLevel, this.initialData.kind);
+    await this.initialize();
+    await this.getReturnType();
   }
 
   override async applyChanges() {
@@ -476,18 +511,15 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
       return;
     }
 
-    // this.manager.addNewColumn(
-    //   {
-    //     _type: DataCubeExtendedColumnType.STANDARD,
-    //     name: this.name,
-    //     type: returnType,
-    //     lambda: V1_serializeValueSpecification(query, []),
-    //   },
-    //   this.isGroupLevel,
-    //   this.columnKind,
-    //   this,
-    // );
-
-    this.close();
+    await this.manager.updateColumn(
+      this.initialData.name,
+      {
+        name: this.name,
+        type: returnType,
+        mapFn: V1_serializeValueSpecification(query, []),
+      },
+      this.isGroupLevel,
+      this.columnKind,
+    );
   }
 }
