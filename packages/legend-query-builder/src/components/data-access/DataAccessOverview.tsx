@@ -41,9 +41,12 @@ import {
   DatasetEntitlementAccessRequestedReport,
   DatasetEntitlementUnsupportedReport,
 } from '@finos/legend-graph';
+import { Chart as ChartJS, DoughnutController, ArcElement } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import { getNullableFirstEntry } from '@finos/legend-shared';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
+
+ChartJS.register(DoughnutController, ArcElement);
 
 const DataAccessOverviewChart = observer(
   (props: { dataAccessState: DataAccessState }) => {
