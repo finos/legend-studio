@@ -31,7 +31,7 @@ jobs:
           - group: repl
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
         with:
           fetch-depth: 2 # recommended for improving relevancy of test coverage reporting
       - name: Get Yarn cache directory path
