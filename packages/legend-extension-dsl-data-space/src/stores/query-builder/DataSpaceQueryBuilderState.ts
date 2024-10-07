@@ -25,14 +25,12 @@ import {
 import {
   type Class,
   type GraphManagerState,
-  getMappingCompatibleClasses,
-  RuntimePointer,
   type QueryExecutionContext,
   type Runtime,
   type Mapping,
+  getMappingCompatibleClasses,
   Package,
   QueryDataSpaceExecutionContext,
-  Service,
   elementBelongsToPackage,
 } from '@finos/legend-graph';
 import {
@@ -45,27 +43,30 @@ import {
   type GeneratorFn,
   ActionState,
   assertErrorThrown,
-  getNullableFirstEntry,
   filterByType,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query-builder/DataSpaceQueryBuilder.js';
 import {
+  type DataSpaceElement,
   type DataSpaceExecutionContext,
   type DataSpaceExecutable,
   DataSpace,
-  DataSpacePackageableElementExecutable,
-  type DataSpaceElement,
 } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceAdvancedSearchState } from '../query/DataSpaceAdvancedSearchState.js';
-import type { DataSpaceAnalysisResult } from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';
+import {
+  type DataSpaceExecutableAnalysisResult,
+  DataSpaceServiceExecutableInfo,
+  type DataSpaceAnalysisResult,
+} from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import {
   type DataSpaceInfo,
   extractDataSpaceInfo,
 } from '../shared/DataSpaceInfo.js';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/to-delete/DSL_DataSpace_LegendQueryNavigation_to_delete.js';
+import { buildDataSpaceExecutableAnalysisResultFromExecutable } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
 
 const matchesDataElement = (
   _class: Class,
@@ -84,11 +85,34 @@ export const resolveUsableDataSpaceClasses = (
   dataSpace: DataSpace,
   mapping: Mapping,
   graphManagerState: GraphManagerState,
+  queryBuilderState?: DataSpaceQueryBuilderState,
 ): Class[] => {
-  const compatibleClasses = getMappingCompatibleClasses(
+  let compatibleClasses = getMappingCompatibleClasses(
     mapping,
     graphManagerState.usableClasses,
   );
+  const mappingModelCoverageAnalysisResult =
+    queryBuilderState?.dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
+      mapping.path,
+    );
+  if (
+    // This check is to make sure that we have `info` field present in `MappedEntity` which
+    // contains information about the mapped class path
+    mappingModelCoverageAnalysisResult?.mappedEntities.some(
+      (m) => m.info !== undefined,
+    )
+  ) {
+    const compatibleClassPaths =
+      mappingModelCoverageAnalysisResult.mappedEntities.map(
+        (e) => e.info?.classPath,
+      );
+    const uniqueCompatibleClasses = compatibleClassPaths.filter(
+      (val, index) => compatibleClassPaths.indexOf(val) === index,
+    );
+    compatibleClasses = graphManagerState.graph.classes.filter((c) =>
+      uniqueCompatibleClasses.includes(c.path),
+    );
+  }
   if (dataSpace.elements?.length) {
     const elements = dataSpace.elements;
     return compatibleClasses.filter((_class) => {
@@ -106,6 +130,7 @@ export const resolveUsableDataSpaceClasses = (
   }
   return compatibleClasses;
 };
+
 export interface DataSpaceQuerySDLC extends QuerySDLC {
   groupId: string;
   artifactId: string;
@@ -142,7 +167,7 @@ export abstract class DataSpacesBuilderRepoistory {
   abstract loadDataSpaces(): GeneratorFn<void>;
   abstract visitTemplateQuery(
     dataSpace: DataSpace,
-    template: DataSpaceExecutable,
+    template: DataSpaceExecutableAnalysisResult,
   ): void;
 
   configureDataSpaceOptions(val: DataSpaceInfo[]): void {
@@ -183,7 +208,7 @@ export class DataSpacesGraphRepoistory extends DataSpacesBuilderRepoistory {
 
   override visitTemplateQuery(
     dataSpace: DataSpace,
-    template: DataSpaceExecutable,
+    template: DataSpaceExecutableAnalysisResult | DataSpaceExecutable,
   ): void {
     throw new Error('Method not implemented.');
   }
@@ -249,35 +274,40 @@ export class DataSpacesDepotRepository extends DataSpacesBuilderRepoistory {
 
   override visitTemplateQuery(
     dataSpace: DataSpace,
-    template: DataSpaceExecutable,
+    template: DataSpaceExecutableAnalysisResult,
   ): void {
-    if (template.id) {
-      this.applicationStore.navigationService.navigator.visitAddress(
-        this.applicationStore.navigationService.navigator.generateAddress(
-          generateDataSpaceTemplateQueryCreatorRoute(
-            this.project.groupId,
-            this.project.artifactId,
-            this.project.versionId,
-            dataSpace.path,
-            template.id,
+    if (template.info) {
+      if (template.info.id) {
+        this.applicationStore.navigationService.navigator.visitAddress(
+          this.applicationStore.navigationService.navigator.generateAddress(
+            generateDataSpaceTemplateQueryCreatorRoute(
+              this.project.groupId,
+              this.project.artifactId,
+              this.project.versionId,
+              dataSpace.path,
+              template.info.executionContextKey,
+              template.info.id,
+            ),
           ),
-        ),
-      );
-    } else if (
-      template instanceof DataSpacePackageableElementExecutable &&
-      template.executable.value instanceof Service
-    ) {
-      this.applicationStore.navigationService.navigator.visitAddress(
-        this.applicationStore.navigationService.navigator.generateAddress(
-          generateDataSpaceTemplateQueryCreatorRoute(
-            this.project.groupId,
-            this.project.artifactId,
-            this.project.versionId,
-            dataSpace.path,
-            template.executable.value.path,
+        );
+      } else if (template.info instanceof DataSpaceServiceExecutableInfo) {
+        this.applicationStore.navigationService.navigator.visitAddress(
+          this.applicationStore.navigationService.navigator.generateAddress(
+            generateDataSpaceTemplateQueryCreatorRoute(
+              this.project.groupId,
+              this.project.artifactId,
+              this.project.versionId,
+              dataSpace.path,
+              template.info.executionContextKey,
+              template.executable ?? template.info.pattern,
+            ),
           ),
-        ),
-      );
+        );
+      } else {
+        this.applicationStore.notificationService.notifyWarning(
+          `Can't visit tempalte query without a Id`,
+        );
+      }
     } else {
       this.applicationStore.notificationService.notifyWarning(
         `Can't visit tempalte query without a Id`,
@@ -337,7 +367,7 @@ export class DataSpacesDepotRepository extends DataSpacesBuilderRepoistory {
 }
 
 export class DataSpaceQueryBuilderState extends QueryBuilderState {
-  readonly onDataSpaceChange: (val: DataSpaceInfo) => void;
+  readonly onDataSpaceChange: (val: DataSpaceInfo) => Promise<void>;
   readonly onExecutionContextChange?:
     | ((val: DataSpaceExecutionContext) => void)
     | undefined;
@@ -353,6 +383,8 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   executionContext!: DataSpaceExecutionContext;
   showRuntimeSelector = false;
   isTemplateQueryDialogOpen = false;
+  isLightGraphEnabled!: boolean;
+  displayedTemplateQueries: DataSpaceExecutableAnalysisResult[] | undefined;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -361,8 +393,9 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     actionConfig: QueryBuilderActionConfig,
     dataSpace: DataSpace,
     executionContext: DataSpaceExecutionContext,
+    isLightGraphEnabled: boolean,
     dataSpaceRepo: DataSpacesBuilderRepoistory | undefined,
-    onDataSpaceChange: (val: DataSpaceInfo) => void,
+    onDataSpaceChange: (val: DataSpaceInfo) => Promise<void>,
     dataSpaceAnalysisResult?: DataSpaceAnalysisResult | undefined,
     onExecutionContextChange?:
       | ((val: DataSpaceExecutionContext) => void)
@@ -378,9 +411,13 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       executionContext: observable,
       showRuntimeSelector: observable,
       isTemplateQueryDialogOpen: observable,
+      isLightGraphEnabled: observable,
+      displayedTemplateQueries: observable,
       setExecutionContext: action,
       setShowRuntimeSelector: action,
       setTemplateQueryDialogOpen: action,
+      setIsLightGraphEnabled: action,
+      intialize: flow,
     });
 
     this.dataSpace = dataSpace;
@@ -424,40 +461,20 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     this.showRuntimeSelector = val;
   }
 
-  /**
-   * Propagation after changing the execution context:
-   * - The mapping will be updated to the mapping of the execution context
-   * - The runtime will be updated to the default runtime of the execution context
-   * - If no class is chosen, try to choose a compatible class
-   * - If the chosen class is compatible with the new selected execution context mapping, do nothing, otherwise, try to choose a compatible class
-   */
-  propagateExecutionContextChange(
-    executionContext: DataSpaceExecutionContext,
-  ): void {
-    const mapping = executionContext.mapping.value;
-    this.changeMapping(mapping);
-    const mappingModelCoverageAnalysisResult =
-      this.dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
-        mapping.path,
-      );
-    if (mappingModelCoverageAnalysisResult) {
-      this.explorerState.mappingModelCoverageAnalysisResult =
-        mappingModelCoverageAnalysisResult;
-    }
-    this.changeRuntime(new RuntimePointer(executionContext.defaultRuntime));
+  setIsLightGraphEnabled(val: boolean): void {
+    this.isLightGraphEnabled = val;
+  }
 
-    const compatibleClasses = resolveUsableDataSpaceClasses(
-      this.dataSpace,
-      mapping,
-      this.graphManagerState,
-    );
-    // if there is no chosen class or the chosen one is not compatible
-    // with the mapping then pick a compatible class if possible
-    if (!this.class || !compatibleClasses.includes(this.class)) {
-      const possibleNewClass = getNullableFirstEntry(compatibleClasses);
-      if (possibleNewClass) {
-        this.changeClass(possibleNewClass);
-      }
-    }
+  *intialize(): GeneratorFn<void> {
+    this.displayedTemplateQueries =
+      this.dataSpace.executables && this.dataSpace.executables.length > 0
+        ? ((yield buildDataSpaceExecutableAnalysisResultFromExecutable(
+            this.dataSpace,
+            this.dataSpace.executables,
+            this.graphManagerState,
+          )) as DataSpaceExecutableAnalysisResult[])
+        : this.dataSpaceAnalysisResult?.executables.filter(
+            (ex) => ex.info !== undefined,
+          );
   }
 }

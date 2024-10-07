@@ -86,6 +86,9 @@ class V1_DataSpaceExecutionContextAnalysisResult {
   mapping!: string;
   defaultRuntime!: string;
   compatibleRuntimes!: string[];
+  /**
+   * @deprecated
+   */
   mappingModelCoverageAnalysisResult?: V1_MappingModelCoverageAnalysisResult;
   datasets: V1_DatasetSpecification[] = [];
   runtimeMetadata?: V1_DataSpaceExecutionContextRuntimeMetadata;
@@ -294,6 +297,7 @@ const V1_DataSpaceTemplateExecutableInfoModelSchema =
       ),
       id: primitive(),
       executionContextKey: primitive(),
+      query: primitive(),
     });
 
 const V1_DataSpaceFunctionPointerExecutableInfoModelSchema =
@@ -305,6 +309,7 @@ const V1_DataSpaceFunctionPointerExecutableInfoModelSchema =
       id: primitive(),
       executionContextKey: primitive(),
       function: primitive(),
+      query: primitive(),
     });
 
 export class V1_DataSpaceServiceExecutableInfo extends V1_DataSpaceExecutableInfo {

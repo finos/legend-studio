@@ -82,14 +82,14 @@ const ServiceQueryBuilderSetupPanelContent = observer(
             queryBuilderState.selectedExecutionContext,
           )
         : null;
-    const onExecutionContextOptionChange = (
+    const onExecutionContextOptionChange = async (
       option: ExecutionContextOption,
-    ): void => {
+    ): Promise<void> => {
       if (option.value === queryBuilderState.selectedExecutionContext) {
         return;
       }
       queryBuilderState.setSelectedExecutionContext(option.value);
-      queryBuilderState.propagateExecutionContextChange(option.value);
+      await queryBuilderState.propagateExecutionContextChange();
       queryBuilderState.onExecutionContextChange?.(option.value);
     };
 

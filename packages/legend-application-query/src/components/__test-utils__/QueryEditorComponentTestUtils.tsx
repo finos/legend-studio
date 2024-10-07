@@ -19,11 +19,10 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { createMock, createSpy } from '@finos/legend-shared/test';
 import {
   type GraphManagerState,
+  type RawMappingModelCoverageAnalysisResult,
   Query,
   LightQuery,
   RawLambda,
-  PackageableElementExplicitReference,
-  type RawMappingModelCoverageAnalysisResult,
   QueryExplicitExecutionContext,
 } from '@finos/legend-graph';
 import { DepotServerClient } from '@finos/legend-server-depot';
@@ -132,11 +131,11 @@ export const TEST__setUpQueryEditor = async (
   query.owner = lightQuery.owner;
   query.isCurrentUserQuery = lightQuery.isCurrentUserQuery;
   const _mapping = graphManagerState.graph.getMapping(mappingPath);
+  query.mapping = mappingPath;
+  query.runtime = runtimePath;
   const execContext = new QueryExplicitExecutionContext();
-  execContext.mapping = PackageableElementExplicitReference.create(_mapping);
-  execContext.runtime = PackageableElementExplicitReference.create(
-    graphManagerState.graph.getRuntime(runtimePath),
-  );
+  execContext.mapping = mappingPath;
+  execContext.runtime = runtimePath;
   query.executionContext = execContext;
   query.content = 'some content';
   createSpy(

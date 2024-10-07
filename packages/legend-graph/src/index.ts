@@ -159,6 +159,10 @@ export { V1_LambdaPrefix } from './graph-manager/protocol/pure/v1/engine/lambda/
 export { V1_ExecutionError } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionError.js';
 export { V1_buildExecutionError } from './graph-manager/protocol/pure/v1/engine/V1_EngineHelper.js';
 export {
+  V1_buildFunctionPrettyName,
+  V1_buildFunctionInfoAnalysis,
+} from './graph-manager/protocol/pure/v1/helpers/V1_DomainHelper.js';
+export {
   V1_buildExecutionResult,
   V1_serializeExecutionResult,
 } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionHelper.js';
@@ -178,6 +182,7 @@ export { V1_ColSpec } from './graph-manager/protocol/pure/v1/model/valueSpecific
 export { V1_ColSpecArray } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_ColSpecArray.js';
 export { V1_PrimitiveValueSpecification } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_PrimitiveValueSpecification.js';
 export { V1_INTERNAL__UnknownFunctionActivator } from './graph-manager/protocol/pure/v1/model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
+export { V1_ConcreteFunctionDefinition } from './graph-manager/protocol/pure/v1/model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
 export {
   V1_GraphFetchTree,
   type V1_GraphFetchTreeVisitor,
@@ -628,6 +633,10 @@ export {
   DatasetEntitlementAccessApprovedReport,
   DatasetEntitlementUnsupportedReport,
 } from './graph-manager/action/analytics/StoreEntitlementAnalysis.js';
+export {
+  FunctionAnalysisInfo,
+  FunctionAnalysisParameterInfo,
+} from './graph/helpers/FunctionAnalysis.js';
 
 // protocols
 export {
