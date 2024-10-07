@@ -19,7 +19,12 @@ import { createModelSchema, optional, primitive } from 'serializr';
 
 export class QueryBuilderConfig {
   /**
-   * This flag is to disable query builder chat feature
+   * This flag is to enable export to cube
+   */
+  TEMPORARY__enableExportToCube = false;
+
+  /**
+   * This flag is to disable query builder chat features
    */
   TEMPORARY__disableQueryBuilderChat = false;
 
@@ -41,6 +46,7 @@ export class QueryBuilderConfig {
   static readonly serialization = new SerializationFactory(
     createModelSchema(QueryBuilderConfig, {
       TEMPORARY__disableQueryBuilderChat: optional(primitive()),
+      TEMPORARY__enableExportToCube: optional(primitive()),
       TEMPORARY__enableGridEnterpriseMode: optional(primitive()),
       legendAIServiceURL: optional(primitive()),
       zipkinTraceBaseURL: optional(primitive()),
