@@ -223,11 +223,16 @@ const QueryBuilderStatusBar = observer(
               openLambdaEditor(QueryBuilderTextEditorMode.TEXT)
             }
             tabIndex={-1}
-            disabled={!queryBuilderState.canBuildQuery}
+            disabled={
+              !queryBuilderState.canBuildQuery ||
+              queryBuilderState.config?.disableEditViewPure
+            }
             title={
               !queryBuilderState.canBuildQuery
                 ? 'Please fix query errors to edit in Pure'
-                : 'Edit Pure'
+                : queryBuilderState.config?.disableEditViewPure
+                  ? 'Edit Pure is disabled'
+                  : 'Edit Pure'
             }
           >
             <HackerIcon />
@@ -815,11 +820,16 @@ export const QueryBuilder = observer(
                       </MenuContentItem>
                       <MenuContentItem
                         onClick={editPure}
-                        disabled={!queryBuilderState.canBuildQuery}
+                        disabled={
+                          !queryBuilderState.canBuildQuery ||
+                          Boolean(queryBuilderState.config?.disableEditViewPure)
+                        }
                         title={
                           !queryBuilderState.canBuildQuery
                             ? 'Please fix query errors to edit in Pure'
-                            : undefined
+                            : queryBuilderState.config?.disableEditViewPure
+                              ? 'Edit Pure is disabled'
+                              : undefined
                         }
                       >
                         <MenuContentItemIcon>
