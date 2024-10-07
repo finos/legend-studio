@@ -265,7 +265,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
     this.workflowState = workflowState;
     this.sourceInfo = sourceInfo;
-    //extra check for only QA currently.
     this.isQueryChatOpened =
       (!this.config?.TEMPORARY__disableQueryBuilderChat &&
         this.applicationStore.settingService.getBooleanValue(

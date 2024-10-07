@@ -46,6 +46,7 @@ import {
   CubesLoadingIndicator,
   InfoCircleIcon,
   ShareBoxIcon,
+  CubeIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -56,6 +57,7 @@ import {
   TDSExecutionResult,
   RawExecutionResult,
   ExecutionError,
+  RuntimePointer,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -837,27 +839,28 @@ export const QueryBuilderResultPanel = observer(
                     </MenuContentItemIcon>
                     <MenuContentItemLabel>Others...</MenuContentItemLabel>
                   </MenuContentItem>
-                  {/* DISABLE FOR NOW */}
-                  {/* <MenuContentItem
-                    onClick={(): void =>
-                      queryBuilderState.setIsCubeEnabled(true)
-                    }
-                    disabled={
-                      !queryBuilderState.fetchStructureState.implementation
-                        .canBeExportedToCube ||
-                      !(
-                        queryBuilderState.executionContextState
-                          .runtimeValue instanceof RuntimePointer
-                      )
-                    }
-                  >
-                    <MenuContentItemIcon>
-                      <CubeIcon />
-                    </MenuContentItemIcon>
-                    <MenuContentItemLabel>
-                      Data Cube (BETA)
-                    </MenuContentItemLabel>
-                  </MenuContentItem> */}
+                  {queryBuilderState.config?.TEMPORARY__enableExportToCube && (
+                    <MenuContentItem
+                      onClick={(): void =>
+                        queryBuilderState.setIsCubeEnabled(true)
+                      }
+                      disabled={
+                        !queryBuilderState.fetchStructureState.implementation
+                          .canBeExportedToCube ||
+                        !(
+                          queryBuilderState.executionContextState
+                            .runtimeValue instanceof RuntimePointer
+                        )
+                      }
+                    >
+                      <MenuContentItemIcon>
+                        <CubeIcon />
+                      </MenuContentItemIcon>
+                      <MenuContentItemLabel>
+                        Data Cube (BETA)
+                      </MenuContentItemLabel>
+                    </MenuContentItem>
+                  )}
                   {extraExportMenuContentItems}
                 </MenuContent>
               }
