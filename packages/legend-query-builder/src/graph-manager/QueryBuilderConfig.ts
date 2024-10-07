@@ -44,10 +44,16 @@ export class QueryBuilderConfig {
   zipkinTraceBaseURL = '';
 
   /**
-   * This flag is to disable the "edit pure" and "view pure" buttons
-   * in cases where they are not needed (i.e., VS Code extension)
+   * This flag is to disable the "edit pure" button
+   * in cases where it is not needed (i.e., VS Code extension)
    */
-  disableEditViewPure = false;
+  disableEditPure = false;
+
+  /**
+   * This flag is to disable the "show pure" button
+   * in cases where it is not needed (i.e., VS Code extension)
+   */
+  disableShowPure = false;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(QueryBuilderConfig, {
