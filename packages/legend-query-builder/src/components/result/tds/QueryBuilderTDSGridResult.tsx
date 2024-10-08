@@ -346,7 +346,7 @@ export const QueryBuilderTDSGridResult = observer(
                   resultState.mousedOverCell,
                   true,
                   fetchStructureImplementation,
-                ).catch(queryBuilderState.applicationStore.alertUnhandledError);
+                );
               },
             },
             {
@@ -357,7 +357,7 @@ export const QueryBuilderTDSGridResult = observer(
                   resultState.mousedOverCell,
                   false,
                   fetchStructureImplementation,
-                ).catch(queryBuilderState.applicationStore.alertUnhandledError);
+                );
               },
             },
             'copy',
@@ -376,7 +376,6 @@ export const QueryBuilderTDSGridResult = observer(
         applicationStore,
         resultState.mousedOverCell,
         resultState.queryBuilderState.fetchStructureState.implementation,
-        queryBuilderState.applicationStore.alertUnhandledError,
       ],
     );
 

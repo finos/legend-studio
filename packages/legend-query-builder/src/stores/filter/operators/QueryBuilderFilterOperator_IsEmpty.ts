@@ -42,7 +42,7 @@ export class QueryBuilderFilterOperator_IsEmpty
   extends QueryBuilderFilterOperator
   implements Hashable
 {
-  getLabel(): string {
+  getLabel(filterConditionState: FilterConditionState): string {
     return 'is empty';
   }
 
@@ -110,7 +110,7 @@ export class QueryBuilderFilterOperator_IsEmpty
 }
 
 export class QueryBuilderFilterOperator_IsNotEmpty extends QueryBuilderFilterOperator_IsEmpty {
-  override getLabel(): string {
+  override getLabel(filterConditionState: FilterConditionState): string {
     return `is not empty`;
   }
 
