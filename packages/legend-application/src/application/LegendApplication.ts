@@ -184,16 +184,16 @@ export abstract class LegendApplication {
     }
   }
 
-  async fetchApplicationConfiguration(
-    baseUrl: string,
-  ): Promise<[LegendApplicationConfig, ExtensionsConfigurationData]> {
+  async fetchApplicationConfiguration(): Promise<
+    [LegendApplicationConfig, ExtensionsConfigurationData]
+  > {
     const client = new NetworkClient();
 
     // app config
     let configData: LegendApplicationConfigurationData | undefined;
     try {
       configData = await client.get<LegendApplicationConfigurationData>(
-        `${window.location.origin}${baseUrl}config.json`,
+        `${window.location.origin}${this.baseAddress}config.json`,
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -211,7 +211,7 @@ export abstract class LegendApplication {
     let versionData;
     try {
       versionData = await client.get<LegendApplicationVersionData>(
-        `${window.location.origin}${baseUrl}version.json`,
+        `${window.location.origin}${this.baseAddress}version.json`,
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -226,7 +226,7 @@ export abstract class LegendApplication {
       await this.configureApplication({
         configData,
         versionData,
-        baseAddress: baseUrl,
+        baseAddress: this.baseAddress,
       }),
       configData.extensions ?? {},
     ];
@@ -312,39 +312,16 @@ export abstract class LegendApplication {
     >,
   ): Promise<void>;
 
-  async start(providedConfig?: {
-    configData: LegendApplicationConfigurationData;
-    versionData: LegendApplicationVersionData;
-    extensionData?: ExtensionsConfigurationData | undefined;
-  }): Promise<void> {
+  async start(): Promise<void> {
     assertNonNullable(
       this._isConfigured,
       'Legend application has not been configured properly. Make sure to run setup() before start()',
     );
-    let extensionConfigData;
     try {
-      // fetch application config or use provided config if present
-      if (providedConfig) {
-        assertNonNullable(
-          providedConfig.configData,
-          'Provided Legend application configData was null or undefined',
-        );
-        assertNonNullable(
-          providedConfig.versionData,
-          'Provided Legend application versionData was null or undefined',
-        );
-        this.config = await this.configureApplication({
-          configData: providedConfig.configData,
-          versionData: providedConfig.versionData,
-          baseAddress: this.baseAddress,
-        });
-        extensionConfigData = providedConfig.extensionData ?? {};
-      } else {
-        const [fetchedConfig, fetchedExtensionConfigData] =
-          await this.fetchApplicationConfiguration(this.baseAddress);
-        this.config = fetchedConfig;
-        extensionConfigData = fetchedExtensionConfigData;
-      }
+      // fetch application config
+      const [config, extensionConfigData] =
+        await this.fetchApplicationConfiguration();
+      this.config = config;
 
       // setup plugins
       this.pluginRegister?.(this.pluginManager, this.config);
@@ -354,7 +331,7 @@ export abstract class LegendApplication {
       // other setups
       await Promise.all(
         // NOTE: to be done in parallel to save time
-        [this.loadDocumentationRegistryData(this.config)],
+        [this.loadDocumentationRegistryData(config)],
       );
 
       // setup application store
