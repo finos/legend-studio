@@ -39,6 +39,7 @@ import {
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import {
+  type PlainObject,
   ActionState,
   assertErrorThrown,
   filterByType,
@@ -48,7 +49,6 @@ import {
   isNonNullable,
   LogEvent,
   uniq,
-  type PlainObject,
 } from '@finos/legend-shared';
 import {
   DataSpaceSupportCombinedInfo,
@@ -410,14 +410,11 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       MappingModelCoverageAnalysisResult
     >();
     if (analysisResult.mappingToMappingCoverageResult) {
-      Object.entries(analysisResult.mappingToMappingCoverageResult).forEach(
-        (entry) => {
+      Array.from(analysisResult.mappingToMappingCoverageResult).forEach(
+        ([key, value]) => {
           mappingToMappingCoverageResult.set(
-            entry[0],
-            V1_buildModelCoverageAnalysisResult(
-              entry[1],
-              graph.getMapping(entry[0]),
-            ),
+            key,
+            V1_buildModelCoverageAnalysisResult(value, graph.getMapping(key)),
           );
         },
       );
@@ -618,6 +615,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
               executableProtocol.info.executionContextKey;
           }
           templateExecutableInfo.query = executableProtocol.info.query;
+          executable.info = templateExecutableInfo;
         } else if (
           executableProtocol.info instanceof
           V1_DataSpaceFunctionPointerExecutableInfo
@@ -632,6 +630,8 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
               executableProtocol.info.executionContextKey;
           }
           templateExecutableInfo.function = executableProtocol.info.function;
+          templateExecutableInfo.query = executableProtocol.info.query;
+          executable.info = templateExecutableInfo;
         } else if (
           executableProtocol.info instanceof V1_DataSpaceServiceExecutableInfo
         ) {
