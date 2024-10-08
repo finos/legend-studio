@@ -46,7 +46,6 @@ import { DEFAULT_LOCALE } from '../../../graph-manager/QueryBuilderConst.js';
 import {
   assertErrorThrown,
   isBoolean,
-  isNonNullable,
   isNumber,
   isString,
   isValidURL,
@@ -560,12 +559,6 @@ export const QueryBuilderTDSGridResult = observer(
                 selectedCells.forEach((cell) =>
                   resultState.addSelectedCell(cell),
                 );
-                if (
-                  resultState.mousedOverCell === null &&
-                  isNonNullable(selectedCells[0])
-                ) {
-                  resultState.setMouseOverCell(selectedCells[0]);
-                }
               }}
               suppressFieldDotNotation={true}
               suppressClipboardPaste={false}

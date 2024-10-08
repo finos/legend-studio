@@ -665,8 +665,10 @@ const filterByOrOutValue = async (
   tdsState: QueryBuilderTDSState,
 ): Promise<void> => {
   const tdsColState = data?.columnName
-    ? getTDSColumnState(tdsState, data.columnName)
-    : undefined;
+    ? getTDSColumnState(tdsState, _cellData.columnName)
+    : _cellData?.columnName
+      ? getTDSColumnState(tdsState, _cellData.columnName)
+      : undefined;
   if (
     tdsColState instanceof QueryBuilderDerivationProjectionColumnState ||
     tdsColState instanceof QueryBuilderAggregateColumnState ||
@@ -694,7 +696,7 @@ const filterByOrOutValue = async (
     );
   } else {
     applicationStore.notificationService.notifyError(
-      `Can't filter column '${data?.columnName}'`,
+      `Can't filter column '${data?.columnName ? data.columnName : _cellData?.columnName}'`,
     );
   }
 };
