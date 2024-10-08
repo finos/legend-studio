@@ -117,23 +117,21 @@ export const PanelHeaderActionItem: React.FC<{
 };
 
 export const PanelTabs: React.FC<{
-  tabTitles: string[];
-  changeTheTab: <T>(
-    tab: T,
-  ) => (event: React.MouseEvent<HTMLDivElement>) => void;
+  tabs: string[];
+  changeTab: (tab: string) => (event: React.MouseEvent<HTMLDivElement>) => void;
   selectedTab: string;
   className?: string;
   tabClassName: string;
 }> = (props) => {
-  const { tabTitles, changeTheTab, selectedTab, tabClassName } = props;
+  const { tabs, changeTab, selectedTab, tabClassName } = props;
 
   return (
     <div className="panel__header panel__header--dark">
       <div className="panel__header__tabs">
-        {tabTitles.map((tab) => (
+        {tabs.map((tab) => (
           <div
             key={tab}
-            onClick={changeTheTab(tab)}
+            onClick={changeTab(tab)}
             className={clsx(tabClassName, {
               [`${tabClassName}--active`]: tab === selectedTab,
             })}

@@ -59,6 +59,7 @@ export const getBaseJestConfig = (isGlobal) => {
     ],
   });
 
+  /** @type {import('jest').Config} */
   const config = {
     ...baseConfig,
     setupFiles: [
@@ -159,25 +160,26 @@ export const getBaseJestProjectConfig = (projectName, packageDir) => {
 };
 
 export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
-  const config = getBaseJestProjectConfig(projectName, packageDir);
+  const baseConfig = getBaseJestProjectConfig(projectName, packageDir);
 
-  return {
-    ...config,
+  /** @type {import('jest').Config} */
+  const config = {
+    ...baseConfig,
     testEnvironment: 'jsdom',
     setupFiles: [
-      ...config.setupFiles,
+      ...baseConfig.setupFiles,
       '@finos/legend-dev-utils/jest/setupDOMPolyfills',
       'jest-canvas-mock',
     ],
     setupFilesAfterEnv: [
-      ...config.setupFilesAfterEnv,
+      ...baseConfig.setupFilesAfterEnv,
       // NOTE: we need to call this before each test since there's an issue
       // with jest-canvas-mock and jest.resetAllMocks(), which is called when we set `restoreMocks: true`
       // See https://github.com/hustcc/jest-canvas-mock/issues/103
       '@finos/legend-dev-utils/jest/mockCanvas',
     ],
     moduleNameMapper: {
-      ...config.moduleNameMapper,
+      ...baseConfig.moduleNameMapper,
       '^monaco-editor$':
         '@finos/legend-lego/code-editor/test/MockedMonacoEditor.js',
       /**
@@ -201,4 +203,5 @@ export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
       AG_GRID_LICENSE: null,
     },
   };
+  return config;
 };

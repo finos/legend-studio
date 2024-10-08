@@ -1885,21 +1885,15 @@ export const RelationalDatabaseConnectionEditor = observer(
   }) => {
     const { connectionValueState, isReadOnly } = props;
     const selectedTab = connectionValueState.selectedTab;
-    const changeTab =
-      <T,>( // eslint-disable-line
-        tab: T,
-      ) =>
-      (): void => {
-        connectionValueState.setSelectedTab(
-          tab as unknown as RELATIONAL_DATABASE_TAB_TYPE,
-        );
-      };
+    const changeTab = (tab: string) => (): void => {
+      connectionValueState.setSelectedTab(tab as RELATIONAL_DATABASE_TAB_TYPE);
+    };
 
     return (
       <Panel>
         <PanelTabs
-          tabTitles={Object.values(RELATIONAL_DATABASE_TAB_TYPE)}
-          changeTheTab={changeTab}
+          tabs={Object.values(RELATIONAL_DATABASE_TAB_TYPE)}
+          changeTab={changeTab}
           selectedTab={selectedTab}
           tabClassName="relational-connection-editor__tab"
         />

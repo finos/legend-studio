@@ -48,7 +48,7 @@ export const generateCopyrightComment = ({
    * e.g. `html` comment is a tag `<!-- content -->`
    * e.g. `yaml` comment uses `#`
    */
-  file,
+  file, // eslint-disable-line no-unused-vars
 }) => {
   // TODO: depending on the file type, these params might differ
   const headerPrefix = '/**';

@@ -120,7 +120,7 @@ const concludeNewRelease = async () => {
           `\u2713 Created release for tag v${currentReleaseVersion}. Please add release note for this on Github.`,
         ),
       );
-    } catch (error) {
+    } catch {
       githubActionCore.error(
         `Failed to create release with tag v${currentReleaseVersion}. Please manually create this release tag on Github.`,
       );
@@ -151,7 +151,7 @@ const concludeNewRelease = async () => {
           `(skipped) Release branch 'release/${currentReleaseVersion}' already existed`,
         );
       }
-    } catch (error) {
+    } catch {
       githubActionCore.error(
         `Release tag 'v${currentReleaseVersion}' has not been created. Please make sure to manually create tag 'v${currentReleaseVersion}' and the release branch 'release/${currentReleaseVersion}' from that tag.`,
       );

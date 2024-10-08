@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+const import_plugin = require('eslint-plugin-import');
+const typescript_eslint_plugin = require('@typescript-eslint/eslint-plugin');
+const typescript_eslint_parser = require('@typescript-eslint/parser');
+
 const OFF = 0;
 const WARN = 1;
 const ERROR = 2;
@@ -62,7 +66,7 @@ const TYPESCRIPT_RULES = {
 };
 
 /**
- * The following rules are computationally expensive and should be turned off during development for better DX.
+ * This plugin consists of rules which are computationally expensive and should be turned off during development for better DX.
  *
  * There are a few major sources of performance hit for ESLint:
  * 1. Typescript type-ware check
@@ -71,19 +75,29 @@ const TYPESCRIPT_RULES = {
  * 4. Wide file scope (e.g. accidentally include `node_modules`)
  * See https://github.com/typescript-eslint/typescript-eslint/blob/master/docs/getting-started/linting/FAQ.md#my-linting-feels-really-slow
  */
-const rules = {
-  ...IMPORT_RULES,
-  ...TYPESCRIPT_RULES,
-};
-
-const config = {
-  parser: '@typescript-eslint/parser',
-  parserOptions: { sourceType: 'module' },
-  plugins: ['@typescript-eslint'],
-  rules,
+const buildConfig = (tsconfigRootDir) => {
+  /** @type {import('eslint').Linter.Config} */
+  const config = {
+    files: ['**/*.{ts,tsx,cts}'],
+    languageOptions: {
+      parser: typescript_eslint_parser,
+      parserOptions: {
+        tsconfigRootDir,
+        projectService: true,
+      },
+    },
+    plugins: {
+      '@typescript-eslint': typescript_eslint_plugin,
+      import: import_plugin,
+    },
+    rules: {
+      ...IMPORT_RULES,
+      ...TYPESCRIPT_RULES,
+    },
+  };
+  return config;
 };
 
 module.exports = {
-  rules,
-  config,
+  buildConfig,
 };

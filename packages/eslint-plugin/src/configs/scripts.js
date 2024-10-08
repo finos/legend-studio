@@ -14,12 +14,32 @@
  * limitations under the License.
  */
 
-module.exports = {
-  configs: {
-    computationally_expensive: require('./configs/computationally-expensive.js')
-      .buildConfig,
-    recommended: require('./configs/recommended.js').config,
-    scripts: require('./configs/scripts.js').config,
-    stylistic: require('./configs/stylistic.js').config,
+const globals = require('globals');
+const babel_parser = require('@babel/eslint-parser');
+const eslint_plugin = require('@eslint/js');
+
+/** @type {import('eslint').Linter.Config} */
+const config = {
+  rules: {
+    ...eslint_plugin.configs.recommended.rules,
   },
+  plugins: {
+    eslint: eslint_plugin,
+  },
+  files: ['**/*.{mjs,cjs,js}'],
+  languageOptions: {
+    parser: babel_parser,
+    parserOptions: { sourceType: 'module' },
+    globals: {
+      ...globals.browser,
+      ...globals.node,
+      ...globals.es6,
+      ...globals.amd,
+      ...globals.jest,
+    },
+  },
+};
+
+module.exports = {
+  config,
 };

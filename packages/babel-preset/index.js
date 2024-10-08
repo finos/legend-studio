@@ -32,6 +32,7 @@ module.exports = declare((api, opts) => {
     useReactFastRefresh = false,
   } = opts;
 
+  /** @type {import('@babel/core').TransformOptions} */
   const config = {
     presets: [
       [

@@ -75,7 +75,7 @@ const onboardNewIssue = async () => {
         },
       )
     ).data;
-  } catch (error) {
+  } catch {
     membership = undefined;
   }
   if (membership) {
@@ -113,7 +113,7 @@ const onboardNewIssue = async () => {
           ...github.context.repo,
         })
       ).data;
-    } catch (error) {
+    } catch {
       openMilestones = undefined;
     }
     if (openMilestones) {

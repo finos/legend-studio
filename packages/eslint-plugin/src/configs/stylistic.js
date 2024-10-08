@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
+const prettier_plugin = require('eslint-plugin-prettier/recommended');
+
 module.exports = {
-  configs: {
-    computationally_expensive: require('./configs/computationally-expensive.js')
-      .buildConfig,
-    recommended: require('./configs/recommended.js').config,
-    scripts: require('./configs/scripts.js').config,
-    stylistic: require('./configs/stylistic.js').config,
-  },
+  config: prettier_plugin,
 };

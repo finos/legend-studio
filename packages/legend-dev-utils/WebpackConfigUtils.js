@@ -259,6 +259,7 @@ export const getWebAppBaseWebpackConfig = (
   // NOTE: due to routes like `/v1.0.0` (with '.'), to refer to static resources, we move all static content to `/static`
   const staticPath = 'static';
 
+  /** @type {import('webpack').Configuration} */
   const config = {
     ...baseConfig,
     entry: {

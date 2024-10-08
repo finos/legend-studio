@@ -24,7 +24,7 @@ export default (env, arg) => {
   const baseConfig = getBaseWebpackConfig(env, arg, __dirname, {
     babelConfigPath: resolve(__dirname, '../../babel.config.cjs'),
   });
-
+  /** @type {import('webpack').Configuration} */
   const config = {
     ...baseConfig,
     entry: { index: resolve(__dirname, './lib/server.js') },

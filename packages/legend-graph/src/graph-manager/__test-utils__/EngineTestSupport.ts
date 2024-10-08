@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable @finos/legend-studio/enforce-module-import-hierarchy */
+/* eslint-disable @finos/legend/enforce-module-import-hierarchy */
 import type {
   ClassifierPathMapping,
   SubtypeInfo,

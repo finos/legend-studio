@@ -550,9 +550,9 @@ export const ServicePostValidationsEditor = observer(
             <ResizablePanel>
               <Panel className="service-test-editor">
                 <PanelTabs
-                  tabTitles={Object.keys(POST_VALIDATION_TAB)}
+                  tabs={Object.keys(POST_VALIDATION_TAB)}
                   selectedTab={selectedTab}
-                  changeTheTab={(tab) => () =>
+                  changeTab={(tab) => () =>
                     setSelectedTab(
                       POST_VALIDATION_TAB[
                         tab as keyof typeof POST_VALIDATION_TAB

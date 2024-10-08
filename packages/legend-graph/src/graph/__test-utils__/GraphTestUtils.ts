@@ -18,7 +18,7 @@ import type { Entity } from '@finos/legend-storage';
 // NOTE: technically, this is not a good thing to do since we're depending on graph manager in the graph module
 // however, this makes it more convenient to test since we can quickly setup the graph from entities test data
 // so we will leave this here for now
-// eslint-disable-next-line @finos/legend-studio/enforce-module-import-hierarchy
+// eslint-disable-next-line @finos/legend/enforce-module-import-hierarchy
 import { TEST__getTestGraphManagerState } from '../../graph-manager/__test-utils__/GraphManagerTestUtils.js';
 import type { PureModel } from '../PureModel.js';
 
