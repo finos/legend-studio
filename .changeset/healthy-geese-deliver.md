@@ -3,4 +3,4 @@
 '@finos/legend-application': patch
 ---
 
-Allow providing config to LegendApplication
+Allow injecting application configuration.
