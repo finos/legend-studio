@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.6.0
+
+### Minor Changes
+
+- [#3563](https://github.com/finos/legend-studio/pull/3563) [`7800906`](https://github.com/finos/legend-studio/commit/78009064cf30dc2b9a49e66877b58bde51f3e150) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Incorporate data cube viewer with route `/edit/{id}/cube`.
+
 ## 13.5.56
 
 ## 13.5.55

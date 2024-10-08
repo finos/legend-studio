@@ -1,5 +1,15 @@
 # @finos/legend-query-builder
 
+## 4.15.0
+
+### Minor Changes
+
+- [#3563](https://github.com/finos/legend-studio/pull/3563) [`7800906`](https://github.com/finos/legend-studio/commit/78009064cf30dc2b9a49e66877b58bde51f3e150) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add data cube engine and incoproate a data cube viewer
+
+### Patch Changes
+
+- [#3578](https://github.com/finos/legend-studio/pull/3578) [`8046b8b`](https://github.com/finos/legend-studio/commit/8046b8b2c3fc33bb1810ac7d9aa07a0ada608073) ([@travisstebbins](https://github.com/travisstebbins)) - Revert "Create pre-filter when right clicking simple projection column in grid output"
+
 ## 4.14.96
 
 ## 4.14.95
