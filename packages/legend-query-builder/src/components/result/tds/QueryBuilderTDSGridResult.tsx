@@ -562,7 +562,7 @@ export const QueryBuilderTDSGridResult = observer(
                 );
                 if (
                   resultState.mousedOverCell === null &&
-                  isNonNullable(selectedCells?.[0])
+                  isNonNullable(selectedCells[0])
                 ) {
                   resultState.setMouseOverCell(selectedCells[0]);
                 }
