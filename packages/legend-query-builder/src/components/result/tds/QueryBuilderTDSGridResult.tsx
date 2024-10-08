@@ -44,6 +44,7 @@ import { QueryBuilderTDSState } from '../../../stores/fetch-structure/tds/QueryB
 import { DEFAULT_LOCALE } from '../../../graph-manager/QueryBuilderConst.js';
 import {
   assertErrorThrown,
+  guaranteeNonNullable,
   isBoolean,
   isNumber,
   isString,
@@ -393,18 +394,22 @@ export const QueryBuilderTDSGridResult = observer(
         aggFuncParams.colDef.field,
       )
         ? {
-            label: resultState.wavgAggregationState.weightedColumnIdPairs.get(
-              aggFuncParams.colDef.field,
+            label: guaranteeNonNullable(
+              resultState.wavgAggregationState.weightedColumnIdPairs.get(
+                aggFuncParams.colDef.field,
+              ),
             ),
-            value: resultState.wavgAggregationState.weightedColumnIdPairs.get(
-              aggFuncParams.colDef.field,
+            value: guaranteeNonNullable(
+              resultState.wavgAggregationState.weightedColumnIdPairs.get(
+                aggFuncParams.colDef.field,
+              ),
             ),
           }
         : null;
 
-    const onWeightedColumnOptionChange = async (
+    const onWeightedColumnOptionChange = (
       option: { label: string; value: string } | null,
-    ): Promise<void> => {
+    ) => {
       if (aggFuncParams?.colDef.field && option?.value) {
         resultState.wavgAggregationState?.addWeightedColumnIdPair(
           aggFuncParams.colDef.field,

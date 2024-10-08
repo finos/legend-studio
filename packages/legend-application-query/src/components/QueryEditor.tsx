@@ -422,9 +422,7 @@ const QueryEditorExistingQueryInfoModal = observer(
     const selectedVersionOption = updateState.queryVersionId
       ? buildVersionOption(updateState.queryVersionId)
       : buildVersionOption(query.versionId);
-    const onVersionOptionChange = async (
-      option: VersionOption | null,
-    ): Promise<void> => {
+    const onVersionOptionChange = (option: VersionOption | null) => {
       if (option?.value && option.value !== updateState.queryVersionId) {
         updateState.setQueryVersionId(option.value);
       }

@@ -43,7 +43,8 @@ function QuickInputDialog<T>(props: {
   const filterOption = createFilter({
     ignoreCase: true,
     ignoreAccents: false,
-    stringify: (option) => getSearchValue(option),
+    stringify: (option: { label: string; data: QuickInputOption<T> }) =>
+      getSearchValue({ label: option.label, value: option.data.value }),
   });
   const onChange = (value: QuickInputOption<T>): void => {
     onSelect(value);
@@ -73,7 +74,7 @@ function QuickInputDialog<T>(props: {
       >
         <div className="quick-input">
           <CustomSelectorInput
-            ref={inputRef}
+            inputRef={inputRef}
             className="quick-input__input"
             options={options}
             onChange={onChange}

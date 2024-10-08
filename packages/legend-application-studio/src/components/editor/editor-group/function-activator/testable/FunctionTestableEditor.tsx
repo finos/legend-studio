@@ -555,7 +555,7 @@ const NewParameterModal = observer(
               !applicationStore.layoutService
                 .TEMPORARY__isLightColorThemeEnabled
             }
-            disable={isReadOnly}
+            disabled={isReadOnly}
           />
           <div className="search-modal__actions">
             <button className="btn btn--dark" disabled={isReadOnly}>

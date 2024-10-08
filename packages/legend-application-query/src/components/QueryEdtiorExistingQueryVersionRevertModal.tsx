@@ -49,9 +49,7 @@ export const QueryEditorExistingQueryVersionRevertModal = observer(
     const selectedVersionOption = queryVersion
       ? buildVersionOption(queryVersion)
       : null;
-    const onVersionOptionChange = async (
-      option: VersionOption | null,
-    ): Promise<void> => {
+    const onVersionOptionChange = (option: VersionOption | null) => {
       if (option?.value && option.value !== queryVersion) {
         setQueryVersion(option.value);
       }

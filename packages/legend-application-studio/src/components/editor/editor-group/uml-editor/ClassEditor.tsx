@@ -183,8 +183,8 @@ const PropertyBasicEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementOption<Type>): string =>
-        option.value.path,
+      stringify: (option: { data: PackageableElementOption<Type> }): string =>
+        option.data.value.path,
     });
     const selectedPropertyType = {
       value: propertyType,
@@ -530,8 +530,8 @@ const DerivedPropertyBasicEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementOption<Type>): string =>
-        option.value.path,
+      stringify: (option: { data: PackageableElementOption<Type> }): string =>
+        option.data.value.path,
     });
     const selectedPropertyType = {
       value: propertyType,
@@ -1103,10 +1103,13 @@ const SuperTypeEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementOption<Class>): string =>
-        option.value.path,
+      stringify: (option: { data: PackageableElementOption<Class> }): string =>
+        option.data.value.path,
     });
-    const selectedType = { value: rawType, label: rawType.name };
+    const selectedType = {
+      value: rawType,
+      label: rawType.name,
+    } as PackageableElementOption<Class>;
     const changeType = (val: PackageableElementOption<Class>): void =>
       setGenericTypeReferenceValue(superType, new GenericType(val.value));
     const visitDerivationSource = (): void =>

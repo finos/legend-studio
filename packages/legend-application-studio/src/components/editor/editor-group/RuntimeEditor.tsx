@@ -74,7 +74,7 @@ import {
   ElementDragSource,
 } from '../../../stores/editor/utils/DnDUtils.js';
 import { useDrop } from 'react-dnd';
-import { assertErrorThrown, guaranteeType } from '@finos/legend-shared';
+import { assertErrorThrown } from '@finos/legend-shared';
 import type { ConnectionEditorState } from '../../../stores/editor/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
@@ -504,7 +504,7 @@ const IdentifiedConnectionEditor = observer(
       ? []
       : ([{ label: embeddedConnectionLabel }] as {
           label: string | React.ReactNode;
-          value?: PackageableConnection;
+          value: PackageableConnection;
         }[]);
     connectionOptions = connectionOptions.concat(
       currentRuntimeEditorTabState.packageableConnections.map(
@@ -514,13 +514,16 @@ const IdentifiedConnectionEditor = observer(
         }),
       ),
     );
-    const selectedConnectionOption = {
-      value: identifiedConnection.connection,
-      label: isEmbeddedConnection
-        ? embeddedConnectionLabel
-        : guaranteeType(identifiedConnection.connection, ConnectionPointer)
-            .packageableConnection.value.path,
-    };
+    const selectedConnectionOption =
+      identifiedConnection.connection instanceof ConnectionPointer
+        ? {
+            value: identifiedConnection.connection.packageableConnection.value,
+            label: isEmbeddedConnection
+              ? embeddedConnectionLabel
+              : identifiedConnection.connection.packageableConnection.value
+                  .path,
+          }
+        : null;
     const editorStore = useEditorStore();
     const onConnectionSelectionChange = (val: {
       label: string | React.ReactNode;
@@ -823,11 +826,12 @@ const RuntimeMappingEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementOption<Mapping>): string =>
-        option.value.path,
+      stringify: (option: {
+        data: PackageableElementOption<Mapping>;
+      }): string => option.data.value.path,
     });
     const selectedMappingOption = {
-      value: mappingRef,
+      value: mappingRef.value,
       label: mappingRef.value.name,
     };
     const changeMapping = (val: PackageableElementOption<Mapping>): void =>

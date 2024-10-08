@@ -90,8 +90,9 @@ const ClassQueryBuilderSetupPanelContent = observer(
     const mappingFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementOption<Mapping>): string =>
-        option.value.path,
+      stringify: (option: {
+        data: PackageableElementOption<Mapping>;
+      }): string => option.data.value.path,
     });
 
     // runtime
@@ -124,9 +125,9 @@ const ClassQueryBuilderSetupPanelContent = observer(
     const runtimeFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: { value: Runtime }): string =>
-        option.value instanceof RuntimePointer
-          ? option.value.packageableRuntime.value.path
+      stringify: (option: { data: { value: Runtime } }): string =>
+        option.data.value instanceof RuntimePointer
+          ? option.data.value.packageableRuntime.value.path
           : 'custom',
     });
 

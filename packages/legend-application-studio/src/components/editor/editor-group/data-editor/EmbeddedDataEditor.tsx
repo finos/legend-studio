@@ -177,12 +177,13 @@ export const DataElementReferenceDataEditor = observer(
     const applicationStore = editorStore.applicationStore;
     const options =
       editorStore.graphManagerState.usableDataElements.map(buildElementOption);
-    const selectedOption = buildElementOption(dataElement);
-    const onDataElementChange = (val: {
-      label: string;
-      value?: DataElement;
-    }): void => {
-      if (val.value !== selectedOption.value && val.value) {
+    const selectedOption = buildElementOption(
+      dataElement,
+    ) as PackageableElementOption<DataElement>;
+    const onDataElementChange = (
+      val: PackageableElementOption<DataElement>,
+    ): void => {
+      if (val.value !== selectedOption.value) {
         dataElementReferenceState.setDataElement(val.value);
       }
     };
@@ -255,8 +256,8 @@ export const ModelEmbeddedDataEditor = observer(
     const elementFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementOption<Class>): string =>
-        option.value.path,
+      stringify: (option: { data: PackageableElementOption<Class> }): string =>
+        option.data.value.path,
     });
     const editorStore = modelStoreDataState.editorStore;
     const applicationStore = editorStore.applicationStore;
@@ -293,7 +294,7 @@ export const ModelEmbeddedDataEditor = observer(
               <PURE_ClassIcon />
             </div>
             <CustomSelectorInput
-              ref={classSelectorRef}
+              inputRef={classSelectorRef}
               className="sample-data-generator__controller__class-selector"
               options={classOptions}
               onChange={changeClass}

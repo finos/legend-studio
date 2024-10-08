@@ -314,7 +314,7 @@ const RegisterServiceModal = observer(() => {
                 Environment
               </div>
               <CustomSelectorInput
-                ref={envConfigSelectorRef}
+                inputRef={envConfigSelectorRef}
                 options={envConfigOptions}
                 onChange={onEnvConfigChange}
                 value={selectedEnvConfigOption}

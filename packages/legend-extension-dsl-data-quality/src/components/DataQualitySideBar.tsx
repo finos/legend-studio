@@ -27,10 +27,6 @@ import { DataQualityDataSpaceBuilderSetupPanelContent } from './DataQualityDataS
 import { DataQualityMappingAndRuntimeBuilder } from './DataQualityMappingAndRuntimeBuilder.js';
 import { ELEMENT_CREATION_BASIS } from './DSL_DataQuality_ClassElementDriver.js';
 import { type Class, isElementDeprecated } from '@finos/legend-graph';
-import {
-  getPackageableElementOptionFormatter,
-  type PackageableElementOption,
-} from '@finos/legend-lego/graph-editor';
 import type { DataQualityClassValidationState } from './states/DataQualityClassValidationState.js';
 import type { DataQualityServiceValidationState } from './states/DataQualityServiceValidationState.js';
 import { DATA_QUALITY_VALIDATION_TEST_ID } from './constants/DataQualityConstants.js';
@@ -72,8 +68,9 @@ export const DataQualityClassSelector = observer(
     const elementFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementOption<Class>): string =>
-        option.value.path,
+      stringify: (option: {
+        data: { label: React.ReactNode; value: Class };
+      }): string => option.data.value.path,
     });
 
     const classOptions = classes.map((_class) => ({
@@ -89,7 +86,10 @@ export const DataQualityClassSelector = observer(
           ),
         }
       : null;
-    const changeClass = (val: PackageableElementOption<Class>): void => {
+    const changeClass = (val: {
+      label: React.ReactNode;
+      value: Class;
+    }): void => {
       if (val.value === dataQualityQueryBuilderState.class) {
         return;
       }
@@ -128,11 +128,6 @@ export const DataQualityClassSelector = observer(
                   .TEMPORARY__isLightColorThemeEnabled
               }
               filterOption={elementFilterOption}
-              formatOptionLabel={getPackageableElementOptionFormatter({
-                darkMode:
-                  !applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled,
-              })}
             />
           </div>
         </div>

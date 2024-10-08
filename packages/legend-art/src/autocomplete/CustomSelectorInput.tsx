@@ -14,16 +14,9 @@
  * limitations under the License.
  */
 
-import {
-  type CSSProperties,
-  useRef,
-  useEffect,
-  forwardRef,
-  type LegacyRef,
-} from 'react';
+import React, { useRef, useEffect } from 'react';
 import { CaretDownIcon, TimesIcon, CircleNotchIcon } from '../icon/Icon.js';
 import { FixedSizeList } from 'react-window';
-import { type PlainObject } from '@finos/legend-shared';
 
 /**
  * Previously, these exports rely on ES module interop to expose `default` export
@@ -36,22 +29,29 @@ import { type PlainObject } from '@finos/legend-shared';
  * @workaround ESM
  * See https://github.com/microsoft/TypeScript/issues/49298
  */
-import { default as ReactSelect } from './CJS__ReactSelect.cjs';
-import type { default as CreatableSelect } from 'react-select/creatable';
-import type {
-  default as Select,
-  InputProps,
-  Props,
-  InputActionMeta,
-  ActionMeta,
-  OptionTypeBase,
+// import { default as ReactSelect } from './CJS__ReactSelect.cjs';
+import Select, {
+  type Props,
+  type PropsValue,
+  type OnChangeValue,
+  type InputProps,
+  type InputActionMeta,
+  type ActionMeta,
+  type OptionProps,
+  type SelectInstance,
+  components as ReactSelectComponents,
+  type MenuListProps,
+  type ClearIndicatorProps,
+  createFilter,
+  type CSSObjectWithLabel,
 } from 'react-select';
 import { clsx } from '../utils/ComponentUtils.js';
+import CreatableSelect, { type CreatableProps } from 'react-select/creatable';
 
 export type InputActionData = InputActionMeta;
-export type SelectActionData<T extends OptionTypeBase> = ActionMeta<T>;
+export type SelectActionData<T extends SelectOption> = ActionMeta<T>;
+export { createFilter };
 
-export const createFilter = ReactSelect.Select.createFilter;
 interface ListChildComponentProps {
   index: number;
   style: React.CSSProperties;
@@ -74,12 +74,12 @@ export const getSelectorInputOptionEmbeddedButtonProps = (): {
  * See https://github.com/bvaughn/react-window/issues/83
  * See https://react-window.now.sh/#/examples/list/fixed-size
  */
-const CustomMenuList: React.FC<{
-  options: PlainObject[];
-  children: React.Component<ListChildComponentProps>[];
-  getValue: () => [PlainObject];
-  selectProps: CustomSelectorInputProps;
-}> = (props) => {
+const CustomMenuList = <Option extends SelectOption, IsMulti extends boolean>(
+  props: MenuListProps<Option, IsMulti> & {
+    children: React.ReactNode;
+    selectProps: CustomSelectorInputProps<Option, IsMulti>;
+  },
+) => {
   const { options, children, getValue, selectProps } = props;
   // Get row height in pixel since `react-window` does not support `rem`
   // See https://stackoverflow.com/questions/45001097/convert-rem-to-px-without-reflow
@@ -89,10 +89,11 @@ const CustomMenuList: React.FC<{
   rowHeight = isNaN(rowHeight) ? 35 : rowHeight;
   const MAX_OPTIONS_LENGTH = 6;
   const [value] = getValue();
-  const initialOffset = options.indexOf(value) * rowHeight;
-  const scrollToIndex = children.length
-    ? children.findIndex((child) => child.props.isFocused)
-    : 0;
+  const initialOffset = value ? options.indexOf(value) * rowHeight : 0;
+  const scrollToIndex =
+    Array.isArray(children) && children.length
+      ? children.findIndex((child) => child.props.isFocused)
+      : 0;
   // We use `scrollToItem` function to make it possible for react-select to focus on item within `react-window`
   // If we don't have this, if we search and use up/down arrow and once we get past the initial view-able values
   // the list doesn't auto scroll
@@ -105,7 +106,7 @@ const CustomMenuList: React.FC<{
 
   // Checking for the children list in case there is no match and the list height shrinks down to 0
   // which causes `react-window` to throw an error
-  if (children.length) {
+  if (Array.isArray(children) && children.length) {
     return (
       <FixedSizeList
         className={
@@ -138,19 +139,14 @@ const CustomMenuList: React.FC<{
   );
 };
 
-const CustomOption: React.FC<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Select.OptionProps<any, false> & {
-    children: React.ReactNode;
-    innerProps: {
-      ref: React.RefObject<HTMLDivElement>;
-    };
-    selectProps: CustomSelectorInputProps;
-  }
-> = (props) => {
+const CustomOption = <Option extends SelectOption, IsMulti extends boolean>(
+  props: OptionProps<Option, IsMulti> & {
+    selectProps: CustomSelectorInputProps<Option, IsMulti>;
+  },
+) => {
   const { children, selectProps } = props;
   return (
-    <ReactSelect.SelectComponents.Option
+    <ReactSelectComponents.Option
       {...props}
       className={clsx(
         !selectProps.darkMode
@@ -172,7 +168,7 @@ const CustomOption: React.FC<
       )}
     >
       {children}
-    </ReactSelect.SelectComponents.Option>
+    </ReactSelectComponents.Option>
   );
 };
 
@@ -195,16 +191,14 @@ const DropdownIndicator: React.FC = () => (
   </div>
 );
 
-const ClearIndicator: React.FC<{
-  innerProps: {
-    ref: React.RefObject<HTMLDivElement>;
-  };
-}> = (props) => {
+const ClearIndicator = <Option extends SelectOption, IsMulti extends boolean>(
+  props: ClearIndicatorProps<Option, IsMulti>,
+) => {
   const {
-    innerProps: { ref, ...innerProps },
+    innerProps: { ref, ...restInnerProps },
   } = props;
   return (
-    <div {...innerProps} ref={ref}>
+    <div {...restInnerProps} ref={ref}>
       <div
         className={`${STYLE_PREFIX}__indicator ${STYLE_PREFIX}__clear-indicator`}
       >
@@ -216,56 +210,67 @@ const ClearIndicator: React.FC<{
 
 // Enable edit of the selected tag
 // See https://github.com/JedWatson/react-select/issues/1558
-const CustomInput: React.FC<
-  InputProps & {
-    selectProps: CustomSelectorInputProps;
-  }
-> = (props) => {
-  // We need to pass the additional props this way because we're using an old
-  // version of react-select where the InputProps interface doesn't include
-  // many expected props that can be passed to the Input component.
-  const additionalProps = {
-    onPaste: props.selectProps.onPaste,
-    placeholder: props.selectProps.inputPlaceholder,
-    name: props.selectProps.inputName,
-  };
-
+const CustomInput = <Option extends SelectOption, IsMulti extends boolean>(
+  props: InputProps<Option, IsMulti> & {
+    selectProps: CustomSelectorInputProps<Option, IsMulti>;
+  },
+) => {
   return (
-    <ReactSelect.Select.components.Input
+    <ReactSelectComponents.Input
       {...props}
-      {...additionalProps}
+      onPaste={props.selectProps.onPaste}
+      name={props.selectProps.inputName}
       isHidden={false}
     />
   );
 };
 
 export interface SelectOption {
-  label: string;
-  value?: string;
+  label: string | React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value: any;
 }
 
-interface CustomSelectorInputProps extends Props<SelectOption, true> {
-  className?: string;
-  allowCreating?: boolean;
-  noMatchMessage?: string;
-  disabled?: boolean;
-  darkMode?: boolean;
-  hasError?: boolean;
-  optionCustomization?: { rowHeight: number };
-  onPaste?: (event: React.ClipboardEvent<string>) => void;
-  placeholder?: string;
-  inputPlaceholder?: string;
-  inputName?: string;
-}
+type CustomSelectorInputProps<
+  Option extends SelectOption,
+  IsMulti extends boolean,
+> = Props<Option, IsMulti> &
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  CreatableProps<Option, IsMulti, any> & {
+    className?: string;
+    allowCreating?: boolean | undefined;
+    noMatchMessage?: string | undefined;
+    disabled?: boolean | undefined;
+    darkMode?: boolean | undefined;
+    hasError?: boolean | undefined;
+    optionCustomization?: { rowHeight?: number | undefined } | undefined;
+    onPaste?: React.ClipboardEventHandler<HTMLInputElement> | undefined;
+    inputName?: string | undefined;
+  };
 
-export type SelectComponent =
-  | CreatableSelect.default<SelectOption>
-  | Select.default;
+export type SelectComponent = SelectInstance<SelectOption>;
 
-export const CustomSelectorInput = forwardRef<
-  SelectComponent,
-  CustomSelectorInputProps
->(function CustomSelectorInput(props, ref) {
+export const CustomSelectorInput = <
+  Option extends SelectOption = SelectOption,
+  IsMulti extends boolean = false,
+>(
+  props: Omit<
+    CustomSelectorInputProps<Option, IsMulti>,
+    'value' | 'onChange'
+  > & {
+    inputRef?: React.Ref<SelectComponent>;
+    value?: PropsValue<Option> | undefined;
+    onChange:
+      | ((
+          newValue: OnChangeValue<Option, IsMulti>,
+          actionMeta: ActionMeta<Option>,
+        ) => void)
+      | ((
+          newValue: IsMulti extends true ? Option[] : Option,
+          actionMeta: ActionMeta<Option>,
+        ) => void);
+  },
+) => {
   const {
     allowCreating,
     noMatchMessage,
@@ -274,6 +279,9 @@ export const CustomSelectorInput = forwardRef<
     className,
     darkMode,
     hasError,
+    value,
+    onChange,
+    inputRef,
     ...innerProps
   } = props;
   // Typescript cannot union the 2 types due to many dissimilarities, this goes on to confuse React.createElement
@@ -287,17 +295,13 @@ export const CustomSelectorInput = forwardRef<
   // NOTE: since we're using an outdated version of `react-select`, we would get type issue
   // when we update to `react@18`
   // See https://github.com/finos/legend-studio/issues/615
-  const SelectComponent: React.ElementType = (
-    allowCreating
-      ? ReactSelect.CreatableSelect.default
-      : ReactSelect.Select.default
-  ) as React.ElementType;
+  const Component = allowCreating ? CreatableSelect : Select;
   const stylePrefix: string = darkMode ? STYLE_PREFIX__DARK : STYLE_PREFIX;
   return (
-    <SelectComponent
+    <Component<Option, IsMulti>
       // Make the menu always on top
       styles={{
-        menuPortal: (base: CSSProperties): CSSProperties => ({
+        menuPortal: (base: CSSObjectWithLabel): CSSObjectWithLabel => ({
           ...base,
           zIndex: 9999,
         }),
@@ -305,15 +309,20 @@ export const CustomSelectorInput = forwardRef<
       menuPortalTarget={document.body}
       // coercing a type for ref as we will eventually remove dependency on `react-select`
       // See https://github.com/finos/legend-studio/issues/615
-      ref={ref as LegacyRef<any>} // eslint-disable-line @typescript-eslint/no-explicit-any
+      ref={inputRef as any} // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+      value={value === undefined ? null : value}
+      onChange={
+        onChange as (
+          newValue: OnChangeValue<Option, IsMulti>,
+          actionMeta: ActionMeta<Option>,
+        ) => void
+      }
       isDisabled={Boolean(disabled)}
       className={clsx(stylePrefix, className, {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         'selector-input--has-error': hasError,
         'selector-input--custom': Boolean(props.optionCustomization),
       })}
       classNamePrefix={stylePrefix}
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       components={{
         Option: CustomOption,
         ClearIndicator,
@@ -325,14 +334,12 @@ export const CustomSelectorInput = forwardRef<
       }}
       {...{
         ...innerProps,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         darkMode,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         noMatchMessage,
       }}
     />
   );
-});
+};
 
 export const compareLabelFn = (
   a: { label: string },

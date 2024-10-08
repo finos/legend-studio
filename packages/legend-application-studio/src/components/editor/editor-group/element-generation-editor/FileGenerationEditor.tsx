@@ -455,7 +455,7 @@ const GenerationEnumPropertyEditor = observer(
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
-          disable={isReadOnly}
+          disabled={isReadOnly}
         />
       </div>
     );

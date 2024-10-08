@@ -753,7 +753,11 @@ const PatchEditor = observer(() => {
                       label: p.patchReleaseVersionId.id,
                       value: p,
                     }))}
-                    onChange={onPatchOptionChange}
+                    onChange={(val: PatchOption | null) => {
+                      onPatchOptionChange(val).catch(
+                        applicationStore.alertUnhandledError,
+                      );
+                    }}
                     value={selectedPatchOption}
                     placeholder={'Select patch you want to release'}
                     isClearable={true}

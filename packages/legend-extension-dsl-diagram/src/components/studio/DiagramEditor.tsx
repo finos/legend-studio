@@ -1075,8 +1075,8 @@ const DiagramEditorInlinePropertyEditorContent = observer(
     const propertyTypeFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementOption<Type>): string =>
-        option.value.path,
+      stringify: (option: { data: PackageableElementOption<Type> }): string =>
+        option.data.value.path,
     });
     const selectedPropertyType = {
       value: currentPropertyType,

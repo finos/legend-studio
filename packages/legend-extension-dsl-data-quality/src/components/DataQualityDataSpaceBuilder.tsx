@@ -76,7 +76,7 @@ export const DataQualityDataSpaceBuilderSetupPanelContent = observer(
         path: dataSpace.path,
         defaultExecutionContext: dataSpace.defaultExecutionContext.name,
       },
-    };
+    } as DataSpaceOption;
     const executionContextOptions = dataSpace.executionContexts.map(
       buildExecutionContextOption,
     );
@@ -136,9 +136,9 @@ export const DataQualityDataSpaceBuilderSetupPanelContent = observer(
     const runtimeFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: { value: Runtime }): string =>
-        guaranteeType(option.value, RuntimePointer).packageableRuntime.value
-          .path,
+      stringify: (option: { data: { value: Runtime } }): string =>
+        guaranteeType(option.data.value, RuntimePointer).packageableRuntime
+          .value.path,
     });
 
     useEffect(() => {

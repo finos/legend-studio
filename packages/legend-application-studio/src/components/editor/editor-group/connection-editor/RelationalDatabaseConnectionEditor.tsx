@@ -1162,7 +1162,7 @@ const RelationalConnectionStoreEditor = observer(
     const selectedStore = {
       value: store,
       label: isStoreEmpty ? noStoreLabel : store.path,
-    };
+    } as PackageableElementOption<Store>;
     const onStoreChange = (
       val: PackageableElementOption<Store> | null,
     ): void => {
@@ -1195,7 +1195,7 @@ const RelationalConnectionStoreEditor = observer(
                   .TEMPORARY__isLightColorThemeEnabled
               }
               disabled={isReadOnly}
-              hasError={isStoreEmpty}
+              hasError={Boolean(isStoreEmpty)}
             />
             <PanelDivider />
             <button

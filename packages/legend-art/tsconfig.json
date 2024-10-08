@@ -6,13 +6,6 @@
     "rootDir": "src",
     "jsx": "react-jsxdev"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.json",
-    // Limitation due to dependencies not ready for Typescript ESM
-    // See https://github.com/microsoft/TypeScript/issues/49298
-    "src/autocomplete/CJS__ReactSelect.cts"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
   "references": [{ "path": "../legend-shared" }]
 }

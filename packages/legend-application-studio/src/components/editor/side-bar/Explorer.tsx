@@ -317,8 +317,8 @@ const SampleDataGenerator = observer(() => {
   const elementFilterOption = createFilter({
     ignoreCase: true,
     ignoreAccents: false,
-    stringify: (option: PackageableElementOption<Class>): string =>
-      option.value.path,
+    stringify: (option: { data: PackageableElementOption<Class> }): string =>
+      option.data.value.path,
   });
   const classOptions = editorStore.graphManagerState.usableClasses.map(
     (_class) => ({
@@ -381,7 +381,7 @@ const SampleDataGenerator = observer(() => {
             <PURE_ClassIcon />
           </div>
           <CustomSelectorInput
-            ref={classSelectorRef}
+            inputRef={classSelectorRef}
             className="sample-data-generator__controller__class-selector"
             options={classOptions}
             onChange={changeClass}

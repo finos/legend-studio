@@ -98,10 +98,7 @@
     padding: 0 0.5rem;
   }
 
-  &__placeholder,
   &__single-value {
-    @include flexVCenter;
-
     margin-left: 0;
     margin-right: 0;
   }
@@ -283,12 +280,8 @@
     color: var(--color-light-grey-200) !important;
   }
 
-  &__single-value,
-  &__placeholder {
-    @include flexVCenter;
-
+  &__single-value {
     color: var(--color-light-grey-200);
-    width: 100%;
     margin-left: 0;
     margin-right: 0;
   }

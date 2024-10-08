@@ -365,7 +365,7 @@ const CreateTestModal = observer(
                   Mapped Class for which you would like to build test suite for
                 </div>
                 <CustomSelectorInput
-                  ref={mappedClassSelectorRef}
+                  inputRef={mappedClassSelectorRef}
                   options={mappedClassOptions}
                   onChange={changeClassOption}
                   value={selectedClassOption}
@@ -536,7 +536,7 @@ const CreateStoreTestDataModal = observer(
                 Store to add test data
               </div>
               <CustomSelectorInput
-                ref={mappedStoreRef}
+                inputRef={mappedStoreRef}
                 options={selectedStoreOptions}
                 onChange={changeStoreOption}
                 formatOptionLabel={getPackageableElementOptionFormatter({})}

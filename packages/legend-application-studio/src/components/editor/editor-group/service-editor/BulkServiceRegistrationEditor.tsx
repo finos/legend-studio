@@ -84,7 +84,7 @@ export const BulkServiceRegistrationEditor = observer(() => {
       }
     : null;
   const onServiceTypeSelectionChange = (
-    val: { label: ServiceExecutionMode; value: ServiceExecutionMode } | null,
+    val: { label: string; value: ServiceExecutionMode } | null,
   ): void => {
     globalBulkServiceRegistrationState.serviceConfigState.updateType(
       val?.value,

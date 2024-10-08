@@ -569,7 +569,6 @@ const QueryProductionizerContent = observer(() => {
                       className="query-productionizer___service-owner__selector"
                       placeholder="Enter an owner..."
                       isLoading={isLoadingUsers}
-                      spellCheck={false}
                       inputValue={searchText}
                       options={userOptions}
                       darkMode={

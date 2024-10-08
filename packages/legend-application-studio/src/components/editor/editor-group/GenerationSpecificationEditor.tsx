@@ -92,7 +92,10 @@ const ModelGenerationItem = observer(
     const applicationStore = editorStore.applicationStore;
     const modelGenerationRef = generationTreeNode.generationElement;
     const modelGeneration = modelGenerationRef.value;
-    const value = { label: modelGeneration.name, value: modelGeneration };
+    const value = {
+      label: modelGeneration.name,
+      value: modelGeneration,
+    } as PackageableElementOption<FileGenerationSpecification>;
     const onChange = (
       val: PackageableElementOption<FileGenerationSpecification> | null,
     ): void => {
@@ -202,7 +205,9 @@ const ModelGenerationItem = observer(
         />
         <CustomSelectorInput
           className="generation-spec-model-generation-editor__item__dropdown"
-          options={options}
+          options={
+            options as PackageableElementOption<FileGenerationSpecification>[]
+          }
           onChange={onChange}
           value={value}
           darkMode={

@@ -15,6 +15,7 @@
  */
 
 import {
+  type Database,
   type PackageableConnection,
   getMappingCompatibleClasses,
 } from '@finos/legend-graph';
@@ -86,7 +87,10 @@ const IsolatedDatabseQueryBuilderSetupPanelContext = observer(
               className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
               noMatchMessage="No compatible mapping found for specified class"
               disabled={true}
-              options={[]}
+              options={[] as { label: string; value: Database }[]}
+              onChange={() => {
+                // do nothing
+              }}
               value={databaseOption}
               darkMode={
                 !queryBuilderState.applicationStore.layoutService

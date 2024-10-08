@@ -105,7 +105,7 @@ const ColumnSortEditor = observer(
       }));
     const value = {
       label: sortState.columnState.columnName,
-      value: sortState,
+      value: sortState.columnState,
     };
     const sortType = sortState.sortType;
 

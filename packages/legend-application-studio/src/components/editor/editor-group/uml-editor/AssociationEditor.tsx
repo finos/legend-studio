@@ -148,13 +148,13 @@ const AssociationPropertyBasicEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementOption<Class>): string =>
-        option.value.path,
+      stringify: (option: { data: PackageableElementOption<Class> }): string =>
+        option.data.value.path,
     });
     const selectedPropertyType = {
       value: propertyType,
       label: propertyType.name,
-    };
+    } as PackageableElementOption<Class>;
     const changePropertyType = (val: PackageableElementOption<Class>): void => {
       association_changePropertyType(
         association,

@@ -1659,7 +1659,10 @@ describe(integrationTest('Post-filter default values are properly set'), () => {
         );
         expect(getByText(postFilterPanel, `"${valueToSet}"`)).not.toBeNull();
       } else {
-        const filterValueInput = getByRole(postFilterPanel, 'textbox');
+        const filterValueInput = getByRole(
+          postFilterPanel,
+          propertyType === PrimitiveType.STRING ? 'combobox' : 'textbox',
+        );
         fireEvent.change(filterValueInput, {
           target: { value: valueToSet },
         });
@@ -1674,7 +1677,7 @@ describe(integrationTest('Post-filter default values are properly set'), () => {
 
       if (allowEmptyValue) {
         // Delete value to set it to empty string
-        const filterValueInput = getByRole(postFilterPanel, 'textbox');
+        const filterValueInput = getByRole(postFilterPanel, 'combobox');
         fireEvent.change(filterValueInput, { target: { value: '' } });
         await findByDisplayValue(postFilterPanel, '');
 
@@ -1865,7 +1868,7 @@ test(
     fireEvent.click(getByText(postFilterPanel, 'List(empty)'));
     const valueInput = getByRole(
       guaranteeNonNullable(getByText(postFilterPanel, 'Add').parentElement),
-      'textbox',
+      'combobox',
     );
     fireEvent.change(valueInput, {
       target: { value: 'test1' },

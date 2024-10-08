@@ -131,7 +131,7 @@ const UpdateExistingServiceQuerySetupContent = observer(() => {
             <SearchIcon />
           </div>
           <CustomSelectorInput
-            ref={serviceSearchRef}
+            inputRef={serviceSearchRef}
             className="query-setup__wizard__selector"
             options={serviceOptions}
             isLoading={setupStore.loadServicesState.isInProgress}

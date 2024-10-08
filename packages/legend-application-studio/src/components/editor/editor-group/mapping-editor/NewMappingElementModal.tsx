@@ -88,11 +88,15 @@ export const NewMappingElementModal = observer(() => {
   const filterOption = createFilter({
     ignoreCase: true,
     ignoreAccents: false,
-    stringify: (option: PackageableElementOption<PackageableElement>): string =>
-      option.value.path,
+    stringify: (option: {
+      data: PackageableElementOption<PackageableElement>;
+    }): string => option.data.value.path,
   });
   const selectedOption = spec?.target
-    ? { label: spec.target.name, value: spec.target.path }
+    ? {
+        label: spec.target.name,
+        value: spec.target,
+      }
     : null;
   const handleTargetChange = (
     val: PackageableElementOption<PackageableElement> | null,
@@ -231,7 +235,7 @@ export const NewMappingElementModal = observer(() => {
           {titleText && <div className="modal__title">{titleText}</div>}
           {spec.showTarget && (
             <CustomSelectorInput
-              ref={targetSelectorRef}
+              inputRef={targetSelectorRef}
               options={options}
               filterOption={filterOption}
               onChange={handleTargetChange}
@@ -266,7 +270,7 @@ export const NewMappingElementModal = observer(() => {
             <>
               <PanelDivider />
               <CustomSelectorInput
-                ref={classMappingTypeSelectorRef}
+                inputRef={classMappingTypeSelectorRef}
                 options={classMappingTypeOptions}
                 onChange={changeClassMappingType}
                 value={classMappingType}

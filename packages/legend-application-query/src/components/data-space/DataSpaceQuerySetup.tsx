@@ -82,7 +82,7 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
             </label>
             <CustomSelectorInput
               inputId="query-builder__setup__data-space-selector"
-              ref={dataSpaceSearchRef}
+              inputRef={dataSpaceSearchRef}
               className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
               options={dataSpaceOptions}
               isLoading={queryBuilderState.loadDataSpacesState.isInProgress}

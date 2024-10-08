@@ -574,8 +574,8 @@ export const SQLPlaygroundPanel = observer(() => {
   const connectionFilterOption = createFilter({
     ignoreCase: true,
     ignoreAccents: false,
-    stringify: (option: RelationalDatabaseConnectionOption): string =>
-      option.value.path,
+    stringify: (option: { data: RelationalDatabaseConnectionOption }): string =>
+      option.data.value.path,
   });
   const connectionOptions = editorStore.graphManagerState.usableConnections
     .filter(
@@ -691,7 +691,7 @@ export const SQLPlaygroundPanel = observer(() => {
                       <PURE_ConnectionIcon />
                     </div>
                     <CustomSelectorInput
-                      ref={connectionSelectorRef}
+                      inputRef={connectionSelectorRef}
                       className="sql-playground__config__connection-selector__input"
                       options={connectionOptions}
                       onChange={changeConnection}
@@ -709,7 +709,7 @@ export const SQLPlaygroundPanel = observer(() => {
                       <PURE_DatabaseIcon />
                     </div>
                     <CustomSelectorInput
-                      ref={connectionSelectorRef}
+                      inputRef={connectionSelectorRef}
                       className="sql-playground__config__database-selector__input"
                       options={connectionOptions}
                       onChange={changeConnection}

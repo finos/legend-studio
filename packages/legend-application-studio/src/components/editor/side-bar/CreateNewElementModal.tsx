@@ -179,7 +179,9 @@ const NewRuntimeDriverEditor = observer(() => {
   const mapping = newRuntimeDriver.mapping;
   const mappingOptions =
     editorStore.graphManagerState.usableMappings.map(buildElementOption);
-  const selectedMappingOption = { label: mapping?.path ?? '', value: mapping };
+  const selectedMappingOption = mapping
+    ? { label: mapping.path, value: mapping }
+    : null;
   const onMappingSelectionChange = (
     val: PackageableElementOption<Mapping>,
   ): void => {
@@ -312,7 +314,7 @@ const NewConnectionDriverEditor = observer(() => {
 
   // store
   const store = newConnectionDriver.store;
-  let storeOptions: { label: string; value?: Store | undefined }[] = [
+  let storeOptions: { label: string; value: Store | undefined }[] = [
     { label: 'ModelStore', value: undefined },
   ];
   // TODO: we should think more about this and filter the store by the connection type
@@ -329,8 +331,14 @@ const NewConnectionDriverEditor = observer(() => {
     label: store.path,
     value: store,
   };
-  const onStoreSelectionChange = (val: { label: string; value: Store }): void =>
-    newConnectionDriver.setStore(val.value);
+  const onStoreSelectionChange = (val: {
+    label: string;
+    value: Store | undefined;
+  }): void => {
+    if (val.value) {
+      newConnectionDriver.setStore(val.value);
+    }
+  };
 
   return (
     <>
