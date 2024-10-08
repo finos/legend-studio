@@ -43,7 +43,7 @@ export class QueryBuilderFilterOperator_GreaterThan
   extends QueryBuilderFilterOperator
   implements Hashable
 {
-  getLabel(): string {
+  getLabel(filterConditionState: FilterConditionState): string {
     return '>';
   }
 
@@ -104,7 +104,9 @@ export class QueryBuilderFilterOperator_GreaterThan
       }
       default:
         throw new UnsupportedOperationError(
-          `Can't get default value for filter operator '${this.getLabel()}' when the LHS property is of type '${propertyType.path}'`,
+          `Can't get default value for filter operator '${this.getLabel(
+            filterConditionState,
+          )}' when the LHS property is of type '${propertyType.path}'`,
         );
     }
   }

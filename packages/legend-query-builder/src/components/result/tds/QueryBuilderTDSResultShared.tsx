@@ -22,13 +22,12 @@ import {
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import {
-  type AbstractPropertyExpression,
-  type Enumeration,
-  type ExecutionResult,
   type TDSExecutionResult,
-  EnumValueExplicitReference,
-  EnumValueInstanceValue,
+  type Enumeration,
   InstanceValue,
+  EnumValueInstanceValue,
+  EnumValueExplicitReference,
+  type ExecutionResult,
   RelationalExecutionActivities,
 } from '@finos/legend-graph';
 import { format as formatSQL } from 'sql-formatter';
@@ -48,7 +47,6 @@ import { forwardRef } from 'react';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderProjectionColumnState,
-  QueryBuilderSimpleProjectionColumnState,
 } from '../../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import {
   type QueryBuilderPostFilterTreeNodeData,
@@ -83,30 +81,6 @@ import {
 } from '../../../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_IsEmpty.js';
 import { getTDSColumnState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSHelper.js';
 import type { QueryBuilderTDSColumnState } from '../../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
-import {
-  type QueryBuilderFilterState,
-  type QueryBuilderFilterTreeNodeData,
-  FilterConditionState,
-  FilterValueSpecConditionValueState,
-  isCollectionProperty,
-  QueryBuilderFilterTreeConditionNodeData,
-} from '../../../stores/filter/QueryBuilderFilterState.js';
-import { QueryBuilderAggregateColumnState } from '../../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
-import type { QueryBuilderFilterOperator } from '../../../stores/filter/QueryBuilderFilterOperator.js';
-import {
-  QueryBuilderFilterOperator_Equal,
-  QueryBuilderFilterOperator_NotEqual,
-} from '../../../stores/filter/operators/QueryBuilderFilterOperator_Equal.js';
-import {
-  QueryBuilderFilterOperator_In,
-  QueryBuilderFilterOperator_NotIn,
-} from '../../../stores/filter/operators/QueryBuilderFilterOperator_In.js';
-import {
-  QueryBuilderFilterOperator_IsEmpty,
-  QueryBuilderFilterOperator_IsNotEmpty,
-} from '../../../stores/filter/operators/QueryBuilderFilterOperator_IsEmpty.js';
-import type { QueryBuilderState } from '../../../stores/QueryBuilderState.js';
-import type { QueryBuilderPropertyExpressionState } from '../../../stores/QueryBuilderPropertyEditorState.js';
 
 export const tryToFormatSql = (sql: string): string => {
   try {
@@ -165,13 +139,6 @@ export type IQueryRendererParamsWithGridType = DataGridCellRendererParams & {
   tdsExecutionResult: TDSExecutionResult;
 };
 
-const filterEqualOperator = new QueryBuilderFilterOperator_Equal();
-const filterNotEqualOperator = new QueryBuilderFilterOperator_NotEqual();
-const filterInOperator = new QueryBuilderFilterOperator_In();
-const filterNotInOperator = new QueryBuilderFilterOperator_NotIn();
-const filterEmptyOperator = new QueryBuilderFilterOperator_IsEmpty();
-const filterNotEmptyOperator = new QueryBuilderFilterOperator_IsNotEmpty();
-
 const postFilterEqualOperator = new QueryBuilderPostFilterOperator_Equal();
 const postFilterInOperator = new QueryBuilderPostFilterOperator_In();
 const postFilterEmptyOperator = new QueryBuilderPostFilterOperator_IsEmpty();
@@ -180,22 +147,6 @@ const postFilterNotEmptyOperator =
 const postFilterNotEqualOperator =
   new QueryBuilderPostFilterOperator_NotEqual();
 const postFilterNotInOperator = new QueryBuilderPostFilterOperator_NotIn();
-
-const getExistingFilterNode = (
-  operators: QueryBuilderFilterOperator[],
-  propertyExpressionState: QueryBuilderPropertyExpressionState | undefined,
-  filterState: QueryBuilderFilterState,
-): QueryBuilderFilterTreeNodeData | undefined =>
-  Array.from(filterState.nodes.values())
-    .filter(filterByType(QueryBuilderFilterTreeConditionNodeData))
-    .filter(
-      (node) =>
-        node.condition.propertyExpressionState.path ===
-          propertyExpressionState?.path &&
-        operators
-          .map((op) => op.getLabel())
-          .includes(node.condition.operator.getLabel()),
-    )[0];
 
 const getExistingPostFilterNode = (
   operators: QueryBuilderPostFilterOperator[],
@@ -222,7 +173,7 @@ const getExistingPostFilterNode = (
 const updateFilterConditionValue = (
   conditionValue: InstanceValue,
   _cellData: QueryBuilderTDSResultCellData,
-  queryBuilderState: QueryBuilderState,
+  tdsState: QueryBuilderTDSState,
 ): void => {
   if (_cellData.value) {
     instanceValue_setValue(
@@ -237,55 +188,8 @@ const updateFilterConditionValue = (
           )
         : _cellData.value,
       0,
-      queryBuilderState.observerContext,
+      tdsState.queryBuilderState.observerContext,
     );
-  }
-};
-
-const generateNewFilterConditionNodeData = (
-  applicationStore: ApplicationStore<
-    LegendApplicationConfig,
-    LegendApplicationPluginManager<LegendApplicationPlugin>
-  >,
-  operator: QueryBuilderFilterOperator,
-  _cellData: QueryBuilderTDSResultCellData,
-  filterState: QueryBuilderFilterState,
-  propertyExpression: AbstractPropertyExpression | undefined,
-): void => {
-  let filterConditionState: FilterConditionState;
-  try {
-    if (propertyExpression) {
-      filterConditionState = new FilterConditionState(
-        filterState,
-        propertyExpression,
-        operator,
-      );
-
-      const defaultFilterConditionValue =
-        filterConditionState.operator.getDefaultFilterConditionValue(
-          filterConditionState,
-        );
-
-      filterConditionState.buildRightConditionValueFromValueSpec(
-        defaultFilterConditionValue,
-      );
-      updateFilterConditionValue(
-        defaultFilterConditionValue as InstanceValue,
-        _cellData,
-        filterState.queryBuilderState,
-      );
-      filterState.addNodeFromNode(
-        new QueryBuilderFilterTreeConditionNodeData(
-          undefined,
-          filterConditionState,
-        ),
-        undefined,
-      );
-    }
-  } catch (error) {
-    assertErrorThrown(error);
-    applicationStore.notificationService.notifyWarning(error.message);
-    return;
   }
 };
 
@@ -331,7 +235,7 @@ const generateNewPostFilterConditionNodeData = async (
       updateFilterConditionValue(
         defaultFilterConditionValue as InstanceValue,
         _cellData,
-        tdsState.queryBuilderState,
+        tdsState,
       );
       tdsState.postFilterState.addNodeFromNode(
         new QueryBuilderPostFilterTreeConditionNodeData(
@@ -345,91 +249,6 @@ const generateNewPostFilterConditionNodeData = async (
     assertErrorThrown(error);
     applicationStore.notificationService.notifyWarning(error.message);
     return;
-  }
-};
-
-const updateExistingFilterConditionNodeData = (
-  existingPreFilterNode: QueryBuilderFilterTreeNodeData,
-  isFilterBy: boolean,
-  _cellData: QueryBuilderTDSResultCellData,
-  operator: QueryBuilderFilterOperator,
-  data: QueryBuilderTDSResultCellData | null,
-  queryBuilderState: QueryBuilderState,
-): void => {
-  if (operator === filterEmptyOperator || operator === filterNotEmptyOperator) {
-    const conditionState = (
-      existingPreFilterNode as QueryBuilderFilterTreeConditionNodeData
-    ).condition;
-    if (conditionState.operator.getLabel() !== operator.getLabel()) {
-      conditionState.changeOperator(
-        isFilterBy ? filterEmptyOperator : filterNotEmptyOperator,
-      );
-    }
-    return;
-  }
-  const conditionState = (
-    existingPreFilterNode as QueryBuilderFilterTreeConditionNodeData
-  ).condition;
-
-  const rightSide = conditionState.rightConditionValue;
-  if (rightSide instanceof FilterValueSpecConditionValueState) {
-    if (conditionState.operator.getLabel() === operator.getLabel()) {
-      const doesValueAlreadyExist =
-        rightSide.value instanceof InstanceValue &&
-        (rightSide.value instanceof EnumValueInstanceValue
-          ? rightSide.value.values.map((ef) => ef.value.name)
-          : rightSide.value.values
-        ).includes(_cellData.value);
-
-      if (!doesValueAlreadyExist) {
-        const currentValueSpecificaton = rightSide.value;
-        const newValueSpecification =
-          conditionState.operator.getDefaultFilterConditionValue(
-            conditionState,
-          );
-        updateFilterConditionValue(
-          newValueSpecification as InstanceValue,
-          _cellData,
-          queryBuilderState,
-        );
-        conditionState.changeOperator(
-          isFilterBy ? filterInOperator : filterNotInOperator,
-        );
-        instanceValue_setValues(
-          rightSide.value as InstanceValue,
-          [currentValueSpecificaton, newValueSpecification],
-          queryBuilderState.observerContext,
-        );
-      }
-    } else {
-      const doesValueAlreadyExist =
-        rightSide.value instanceof InstanceValue &&
-        rightSide.value.values
-          .filter((v) => v instanceof InstanceValue)
-          .map((v) =>
-            v instanceof EnumValueInstanceValue
-              ? v.values.map((ef) => ef.value.name)
-              : v.values,
-          )
-          .flat()
-          .includes(_cellData.value ?? data?.value);
-
-      if (!doesValueAlreadyExist) {
-        const newValueSpecification = (
-          isFilterBy ? filterEqualOperator : filterNotEqualOperator
-        ).getDefaultFilterConditionValue(conditionState);
-        updateFilterConditionValue(
-          newValueSpecification as InstanceValue,
-          _cellData,
-          queryBuilderState,
-        );
-        instanceValue_setValues(
-          rightSide.value as InstanceValue,
-          [...(rightSide.value as InstanceValue).values, newValueSpecification],
-          queryBuilderState.observerContext,
-        );
-      }
-    }
   }
 };
 
@@ -478,7 +297,7 @@ const updateExistingPostFilterConditionNodeData = (
         updateFilterConditionValue(
           newValueSpecification as InstanceValue,
           _cellData,
-          tdsState.queryBuilderState,
+          tdsState,
         );
         conditionState.changeOperator(
           isFilterBy ? postFilterInOperator : postFilterNotInOperator,
@@ -509,7 +328,7 @@ const updateExistingPostFilterConditionNodeData = (
         updateFilterConditionValue(
           newValueSpecification as InstanceValue,
           _cellData,
-          tdsState.queryBuilderState,
+          tdsState,
         );
         instanceValue_setValues(
           rightSide.value as InstanceValue,
@@ -522,25 +341,6 @@ const updateExistingPostFilterConditionNodeData = (
 };
 
 const getFilterOperator = (
-  isFilterBy: boolean,
-  _cellData: QueryBuilderTDSResultCellData,
-): QueryBuilderFilterOperator => {
-  if (isFilterBy) {
-    if (_cellData.value === null) {
-      return filterEmptyOperator;
-    } else {
-      return filterEqualOperator;
-    }
-  } else {
-    if (_cellData.value === null) {
-      return filterNotEmptyOperator;
-    } else {
-      return filterNotEqualOperator;
-    }
-  }
-};
-
-const getPostFilterOperator = (
   isFilterBy: boolean,
   _cellData: QueryBuilderTDSResultCellData,
 ): QueryBuilderPostFilterOperator => {
@@ -559,7 +359,7 @@ const getPostFilterOperator = (
   }
 };
 
-const preFilterByOrOutValue = (
+const filterByOrOutValue = (
   applicationStore: ApplicationStore<
     LegendApplicationConfig,
     LegendApplicationPluginManager<LegendApplicationPlugin>
@@ -567,58 +367,13 @@ const preFilterByOrOutValue = (
   isFilterBy: boolean,
   _cellData: QueryBuilderTDSResultCellData,
   data: QueryBuilderTDSResultCellData | null,
-  propertyExpressionState: QueryBuilderPropertyExpressionState,
-  queryBuilderState: QueryBuilderState,
-): void => {
-  queryBuilderState.filterState.setShowPanel(true);
-  const operator = getFilterOperator(isFilterBy, _cellData);
-  const existingPreFilterNode = getExistingFilterNode(
-    _cellData.value === null
-      ? [filterEmptyOperator, filterNotEmptyOperator]
-      : isFilterBy
-        ? [filterEqualOperator, filterInOperator]
-        : [filterNotEqualOperator, filterNotInOperator],
-    propertyExpressionState,
-    queryBuilderState.filterState,
-  );
-  if (existingPreFilterNode) {
-    updateExistingFilterConditionNodeData(
-      existingPreFilterNode,
-      isFilterBy,
-      _cellData,
-      operator,
-      data,
-      queryBuilderState,
-    );
-  } else {
-    try {
-      generateNewFilterConditionNodeData(
-        applicationStore,
-        operator,
-        _cellData,
-        queryBuilderState.filterState,
-        propertyExpressionState.propertyExpression,
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      applicationStore.alertUnhandledError(error);
-    }
-  }
-};
-
-const postFilterByOrOutValue = async (
-  applicationStore: ApplicationStore<
-    LegendApplicationConfig,
-    LegendApplicationPluginManager<LegendApplicationPlugin>
-  >,
-  isFilterBy: boolean,
-  _cellData: QueryBuilderTDSResultCellData,
-  data: QueryBuilderTDSResultCellData | null,
-  tdsColState: QueryBuilderTDSColumnState,
   tdsState: QueryBuilderTDSState,
-): Promise<void> => {
+): void => {
   tdsState.setShowPostFilterPanel(true);
-  const operator = getPostFilterOperator(isFilterBy, _cellData);
+  const operator = getFilterOperator(isFilterBy, _cellData);
+  const tdsColState = data?.columnName
+    ? getTDSColumnState(tdsState, data.columnName)
+    : undefined;
   const existingPostFilterNode = getExistingPostFilterNode(
     _cellData.value === null
       ? [postFilterEmptyOperator, postFilterNotEmptyOperator]
@@ -639,67 +394,17 @@ const postFilterByOrOutValue = async (
       tdsState,
     );
   } else {
-    try {
-      await generateNewPostFilterConditionNodeData(
-        applicationStore,
-        operator,
-        _cellData,
-        tdsState,
-        tdsColState,
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      applicationStore.alertUnhandledError(error);
-    }
-  }
-};
-
-const filterByOrOutValue = async (
-  applicationStore: ApplicationStore<
-    LegendApplicationConfig,
-    LegendApplicationPluginManager<LegendApplicationPlugin>
-  >,
-  isFilterBy: boolean,
-  _cellData: QueryBuilderTDSResultCellData,
-  data: QueryBuilderTDSResultCellData | null,
-  tdsState: QueryBuilderTDSState,
-): Promise<void> => {
-  const tdsColState = data?.columnName
-    ? getTDSColumnState(tdsState, data.columnName)
-    : undefined;
-  if (
-    tdsColState instanceof QueryBuilderDerivationProjectionColumnState ||
-    tdsColState instanceof QueryBuilderAggregateColumnState ||
-    (tdsColState instanceof QueryBuilderSimpleProjectionColumnState &&
-      isCollectionProperty(
-        tdsColState.propertyExpressionState.propertyExpression,
-      ))
-  ) {
-    await postFilterByOrOutValue(
+    generateNewPostFilterConditionNodeData(
       applicationStore,
-      isFilterBy,
+      operator,
       _cellData,
-      data,
+      tdsState,
       tdsColState,
-      tdsState,
-    );
-  } else if (tdsColState instanceof QueryBuilderSimpleProjectionColumnState) {
-    preFilterByOrOutValue(
-      applicationStore,
-      isFilterBy,
-      _cellData,
-      data,
-      tdsColState.propertyExpressionState,
-      tdsState.queryBuilderState,
-    );
-  } else {
-    applicationStore.notificationService.notifyError(
-      `Can't filter column '${data?.columnName}'`,
-    );
+    ).catch(applicationStore.alertUnhandledError);
   }
 };
 
-export const filterByOrOutValues = async (
+export const filterByOrOutValues = (
   applicationStore: ApplicationStore<
     LegendApplicationConfig,
     LegendApplicationPluginManager<LegendApplicationPlugin>
@@ -707,17 +412,10 @@ export const filterByOrOutValues = async (
   data: QueryBuilderTDSResultCellData | null,
   isFilterBy: boolean,
   tdsState: QueryBuilderTDSState,
-): Promise<void> => {
-  for (const _cellData of tdsState.queryBuilderState.resultState
-    .selectedCells) {
-    await filterByOrOutValue(
-      applicationStore,
-      isFilterBy,
-      _cellData,
-      data,
-      tdsState,
-    );
-  }
+): void => {
+  tdsState.queryBuilderState.resultState.selectedCells.forEach((_cellData) => {
+    filterByOrOutValue(applicationStore, isFilterBy, _cellData, data, tdsState);
+  });
 };
 
 export const QueryBuilderGridResultContextMenu = observer(
@@ -742,9 +440,7 @@ export const QueryBuilderGridResultContextMenu = observer(
         <MenuContentItem
           disabled={!tdsColState}
           onClick={(): void => {
-            filterByOrOutValues(applicationStore, data, true, tdsState).catch(
-              tdsState.queryBuilderState.applicationStore.alertUnhandledError,
-            );
+            filterByOrOutValues(applicationStore, data, true, tdsState);
           }}
         >
           Filter By
@@ -752,9 +448,7 @@ export const QueryBuilderGridResultContextMenu = observer(
         <MenuContentItem
           disabled={!tdsColState}
           onClick={(): void => {
-            filterByOrOutValues(applicationStore, data, false, tdsState).catch(
-              tdsState.queryBuilderState.applicationStore.alertUnhandledError,
-            );
+            filterByOrOutValues(applicationStore, data, false, tdsState);
           }}
         >
           Filter Out
