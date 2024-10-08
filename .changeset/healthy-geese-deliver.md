@@ -1,5 +1,4 @@
 ---
-'@finos/legend-vscode-extension-dependencies': patch
 '@finos/legend-application': patch
 ---
 
