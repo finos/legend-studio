@@ -41,7 +41,7 @@
   "dependencies": {
     "@finos/legend-application-repl": "workspace:*",
     "@finos/legend-art": "workspace:*",
-    "@types/react": "18.3.9",
+    "@types/react": "18.3.11",
     "react": "18.3.1"
   },
   "devDependencies": {
