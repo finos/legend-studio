@@ -2911,6 +2911,7 @@ __metadata:
     "@finos/legend-code-editor": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
     "@finos/legend-query-builder": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-server-sdlc": "workspace:*"

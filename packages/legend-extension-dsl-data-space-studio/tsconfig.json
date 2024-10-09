@@ -9,6 +9,7 @@
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
   "references": [
     { "path": "./tsconfig.package.json" },
+    { "path": "../legend-graph" },
     { "path": "../legend-application" },
     { "path": "../legend-application-studio" },
     { "path": "../legend-art" },

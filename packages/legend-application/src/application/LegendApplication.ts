@@ -184,16 +184,16 @@ export abstract class LegendApplication {
     }
   }
 
-  async fetchApplicationConfiguration(
-    baseUrl: string,
-  ): Promise<[LegendApplicationConfig, ExtensionsConfigurationData]> {
+  async fetchApplicationConfiguration(): Promise<
+    [LegendApplicationConfig, ExtensionsConfigurationData]
+  > {
     const client = new NetworkClient();
 
     // app config
     let configData: LegendApplicationConfigurationData | undefined;
     try {
       configData = await client.get<LegendApplicationConfigurationData>(
-        `${window.location.origin}${baseUrl}config.json`,
+        `${window.location.origin}${this.baseAddress}config.json`,
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -211,7 +211,7 @@ export abstract class LegendApplication {
     let versionData;
     try {
       versionData = await client.get<LegendApplicationVersionData>(
-        `${window.location.origin}${baseUrl}version.json`,
+        `${window.location.origin}${this.baseAddress}version.json`,
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -226,7 +226,7 @@ export abstract class LegendApplication {
       await this.configureApplication({
         configData,
         versionData,
-        baseAddress: baseUrl,
+        baseAddress: this.baseAddress,
       }),
       configData.extensions ?? {},
     ];
@@ -320,7 +320,7 @@ export abstract class LegendApplication {
     try {
       // fetch application config
       const [config, extensionConfigData] =
-        await this.fetchApplicationConfiguration(this.baseAddress);
+        await this.fetchApplicationConfiguration();
       this.config = config;
 
       // setup plugins

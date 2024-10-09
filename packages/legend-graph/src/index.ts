@@ -187,6 +187,7 @@ export { V1_PropertyGraphFetchTree } from './graph-manager/protocol/pure/v1/mode
 export { V1_SubTypeGraphFetchTree } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/graph/V1_SubTypeGraphFetchTree.js';
 export { V1_GenericTypeInstance } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_GenericTypeInstance.js';
 export { V1_ParameterValue } from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_ParameterValue.js';
+export { V1_PureExecution } from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_ServiceExecution.js';
 export { V1_SourceInformation } from './graph-manager/protocol/pure/v1/model/V1_SourceInformation.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
