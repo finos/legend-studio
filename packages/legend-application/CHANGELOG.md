@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.2
+
+### Patch Changes
+
+- [#3570](https://github.com/finos/legend-studio/pull/3570) [`9ef2efc`](https://github.com/finos/legend-studio/commit/9ef2efca9dbaf38c015510cce66284ee8b27aed8) ([@travisstebbins](https://github.com/travisstebbins)) - Allow injecting application configuration.
+
 ## 16.0.1
 
 ## 16.0.0
