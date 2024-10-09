@@ -59,7 +59,7 @@
     "pako": "2.1.0",
     "papaparse": "5.4.1",
     "pretty-format": "29.7.0",
-    "query-string": "9.1.0",
+    "query-string": "9.1.1",
     "seedrandom": "3.0.5",
     "serializr": "3.0.2",
     "uuid": "10.0.0"
