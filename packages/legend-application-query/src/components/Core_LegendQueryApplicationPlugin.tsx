@@ -109,28 +109,28 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
       {
         key: 'clone-service-query-setup-application-page',
         addressPatterns: [LEGEND_QUERY_ROUTE_PATTERN.CLONE_SERVICE_QUERY_SETUP],
-        renderer: CloneQueryServiceSetup,
+        renderer: () => <CloneQueryServiceSetup />,
       },
       {
         key: 'query-productionizer-setup-application-page',
         addressPatterns: [
           LEGEND_QUERY_ROUTE_PATTERN.QUERY_PRODUCTIONIZER_SETUP,
         ],
-        renderer: QueryProductionizerSetup,
+        renderer: () => <QueryProductionizerSetup />,
       },
       {
         key: 'update-existing-service-query-setup-application-page',
         addressPatterns: [
           LEGEND_QUERY_ROUTE_PATTERN.UPDATE_EXISTING_SERVICE_QUERY_SETUP,
         ],
-        renderer: UpdateExistingServiceQuerySetup,
+        renderer: () => <UpdateExistingServiceQuerySetup />,
       },
       {
         key: 'load-project-service-query-setup-application-page',
         addressPatterns: [
           LEGEND_QUERY_ROUTE_PATTERN.LOAD_PROJECT_SERVICE_QUERY_SETUP,
         ],
-        renderer: LoadProjectServiceQuerySetup,
+        renderer: () => <LoadProjectServiceQuerySetup />,
       },
     ];
   }

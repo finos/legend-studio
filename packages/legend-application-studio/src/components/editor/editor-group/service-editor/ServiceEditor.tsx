@@ -479,7 +479,6 @@ const ServiceGeneralEditor = observer(() => {
                           <CustomSelectorInput
                             className="service-editor__owner__selector"
                             placeholder="Enter an owner..."
-                            spellCheck={false}
                             inputValue={searchText}
                             options={userOptions}
                             allowCreating={true}
@@ -638,7 +637,6 @@ const ServiceGeneralEditor = observer(() => {
                     <CustomSelectorInput
                       className="service-editor__owner__selector"
                       placeholder="Enter an owner..."
-                      spellCheck={false}
                       inputValue={searchText}
                       options={userOptions}
                       allowCreating={true}

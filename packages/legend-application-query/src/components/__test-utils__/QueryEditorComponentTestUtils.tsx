@@ -44,6 +44,11 @@ import {
 import { LegendQueryFrameworkProvider } from '../LegendQueryFrameworkProvider.js';
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 import { Core_LegendQueryApplicationPlugin } from '../Core_LegendQueryApplicationPlugin.js';
+import { Route, Routes } from '@finos/legend-application/browser';
+import {
+  generateExistingQueryEditorRoute,
+  LEGEND_QUERY_ROUTE_PATTERN,
+} from '../../__lib__/LegendQueryNavigation.js';
 
 const TEST_QUERY_ID = 'test-query-id';
 export const TEST_QUERY_NAME = 'MyTestQuery';
@@ -170,9 +175,16 @@ export const TEST__setUpQueryEditor = async (
 
   const renderResult = render(
     <ApplicationStoreProvider store={MOCK__editorStore.applicationStore}>
-      <TEST__BrowserEnvironmentProvider>
+      <TEST__BrowserEnvironmentProvider
+        initialEntries={[generateExistingQueryEditorRoute(lightQuery.id)]}
+      >
         <LegendQueryFrameworkProvider>
-          <ExistingQueryEditor />
+          <Routes>
+            <Route
+              path={LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY}
+              element={<ExistingQueryEditor />}
+            />
+          </Routes>
         </LegendQueryFrameworkProvider>
       </TEST__BrowserEnvironmentProvider>
     </ApplicationStoreProvider>,

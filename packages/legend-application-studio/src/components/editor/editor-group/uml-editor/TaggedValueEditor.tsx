@@ -99,8 +99,9 @@ export const TaggedValueEditor = observer(
     const profileFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementOption<Profile>): string =>
-        option.value.path,
+      stringify: (option: {
+        data: PackageableElementOption<Profile>;
+      }): string => option.data.value.path,
     });
     const [selectedProfile, setSelectedProfile] = useState<
       PackageableElementOption<Profile>
@@ -125,7 +126,7 @@ export const TaggedValueEditor = observer(
     const tagFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: TagOption): string => option.label,
+      stringify: (option: { data: TagOption }): string => option.data.label,
     });
     const selectedTag = {
       value: inferableTag.value,

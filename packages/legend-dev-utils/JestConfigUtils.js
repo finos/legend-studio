@@ -28,6 +28,7 @@ export const getBaseConfig = ({
    */
   isGlobal,
 }) => {
+  /** @type {import('jest').Config} */
   const config = {
     transform: {
       // Since `babel-jest` will not do type checking for the test code.

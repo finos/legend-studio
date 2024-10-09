@@ -200,7 +200,7 @@ test(integrationTest('Test navigation of dependency tree'), async () => {
   );
   fireEvent.click(viewProject);
   expect(window.open).toHaveBeenCalledWith(
-    'http://localhost/view/archive/org.finos.legend:prod-1:2.0.0',
+    'http://localhost/test/view/archive/org.finos.legend:prod-1:2.0.0',
     '_blank',
   );
   fireEvent.click(viewProject);

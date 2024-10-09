@@ -116,7 +116,7 @@ const PureExecutionContextConfigurationEditor = observer(
     const selectedMappingOption = {
       value: mapping,
       label: isMappingEmpty ? noMappingLabel : mapping.path,
-    };
+    } as PackageableElementOption<Mapping>;
     const onMappingSelectionChange = (
       val: PackageableElementOption<Mapping>,
     ): void => {
@@ -143,7 +143,7 @@ const PureExecutionContextConfigurationEditor = observer(
       ? []
       : ([{ label: customRuntimeLabel }] as {
           label: string | React.ReactNode;
-          value?: Runtime;
+          value: Runtime | undefined;
         }[]);
     // NOTE: for now, only include runtime associated with the mapping
     // TODO?: Should we bring the runtime compatibility check from query to here?
@@ -197,7 +197,7 @@ const PureExecutionContextConfigurationEditor = observer(
     };
     const onRuntimeSelectionChange = (val: {
       label: string | React.ReactNode;
-      value?: Runtime;
+      value: Runtime | undefined;
     }): void => {
       if (val.value === undefined) {
         pureExecutionState.useCustomRuntime();
@@ -280,7 +280,7 @@ const PureExecutionContextConfigurationEditor = observer(
                   !applicationStore.layoutService
                     .TEMPORARY__isLightColorThemeEnabled
                 }
-                hasError={isMappingEmpty}
+                hasError={Boolean(isMappingEmpty)}
               />
               <button
                 className="btn--dark btn--sm service-execution-editor__configuration__item__btn"
@@ -406,7 +406,7 @@ export const ChangeExecutionModal = observer(
               !applicationStore.layoutService
                 .TEMPORARY__isLightColorThemeEnabled
             }
-            disable={isReadOnly}
+            disabled={isReadOnly}
           />
         );
       }

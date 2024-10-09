@@ -44,7 +44,7 @@ import {
   PackageableElement,
   FlatData,
 } from '@finos/legend-graph';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import { isNonNullable, UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
@@ -183,7 +183,9 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
                   mainTableAlias.name = mainTableAlias.relation.value.name;
                   return mainTableAlias;
                 })
-    ).map(buildMappingElementSourceOption);
+    )
+      .map(buildMappingElementSourceOption)
+      .filter(isNonNullable);
     const sourceFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
@@ -207,9 +209,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
           editorStore.pluginManager.getApplicationPlugins(),
         ),
     );
-    const changeSourceType = (
-      val: MappingElementSourceSelectOption | null,
-    ): Promise<void> =>
+    const changeSourceType = (val: MappingElementSourceSelectOption | null) => {
       flowResult(
         mappingEditorState.changeClassMappingSourceDriver(
           setImplementation,
@@ -218,6 +218,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
       )
         .then(() => closeModal())
         .catch(applicationStore.alertUnhandledError);
+    };
     const handleEnter = (): void => sourceSelectorRef.current?.focus();
 
     return (
@@ -244,7 +245,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
         >
           <ModalTitle title="Choose a Source" />
           <CustomSelectorInput
-            ref={sourceSelectorRef}
+            inputRef={sourceSelectorRef}
             options={options}
             onChange={changeSourceType}
             value={selectedSourceType}

@@ -36,7 +36,7 @@ export const BaseCard: React.FC<
     cardName: string;
     cardContent: React.ReactNode;
     cardActions?: MuiCardActionConfig[];
-    isDisable?: boolean;
+    disabled?: boolean;
     isActive?: boolean;
     isStable?: boolean;
   } & MuiCardProps
@@ -48,7 +48,7 @@ export const BaseCard: React.FC<
     cardName,
     cardContent,
     cardActions,
-    isDisable,
+    disabled: isDisable,
     isActive,
     isStable,
     ...otherProps

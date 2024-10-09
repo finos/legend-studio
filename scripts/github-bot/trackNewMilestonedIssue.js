@@ -89,7 +89,7 @@ const trackNewMilestonedIssue = async () => {
         `\u2713 Tracked milestoned issue ${issueEventPayload.html_url}`,
       ),
     );
-  } catch (error) {
+  } catch {
     githubActionCore.error(
       `Can't track milestoned issue ${issueEventPayload.html_url}`,
     );

@@ -38,7 +38,7 @@ export const NewDataQualityServiceValidationElementEditor = observer(() => {
   const selectedServiceOption = dataQualityServiceElementDriver.serviceSelected
     ? {
         label: dataQualityServiceElementDriver.serviceSelected.value.name,
-        value: dataQualityServiceElementDriver.serviceSelected,
+        value: dataQualityServiceElementDriver.serviceSelected.value,
       }
     : undefined;
 

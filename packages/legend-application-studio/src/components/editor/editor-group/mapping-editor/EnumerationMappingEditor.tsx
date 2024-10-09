@@ -101,9 +101,9 @@ const EnumerationMappingSourceSelectorModal = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (
-        option: PackageableElementOption<PackageableElement>,
-      ): string => option.value.path,
+      stringify: (option: {
+        data: PackageableElementOption<PackageableElement>;
+      }): string => option.data.value.path,
     });
     const sourceType = enumerationMapping.sourceType?.value;
     const selectedSourceType = sourceType
@@ -149,7 +149,7 @@ const EnumerationMappingSourceSelectorModal = observer(
         >
           <ModalTitle title="Choose a Source" />
           <CustomSelectorInput
-            ref={sourceSelectorRef}
+            inputRef={sourceSelectorRef}
             options={options}
             onChange={changeSourceType}
             value={selectedSourceType}

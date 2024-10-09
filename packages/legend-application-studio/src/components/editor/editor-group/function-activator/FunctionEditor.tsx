@@ -238,8 +238,8 @@ const ParameterBasicEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementOption<Type>): string =>
-        option.value.path,
+      stringify: (option: { data: PackageableElementOption<Type> }): string =>
+        option.data.value.path,
     });
     const selectedType = { value: paramType, label: paramType.name };
     const changeType = (val: PackageableElementOption<Type>): void => {
@@ -503,10 +503,13 @@ const ReturnTypeEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementOption<Type>): string =>
-        option.value.path,
+      stringify: (option: { data: PackageableElementOption<Type> }): string =>
+        option.data.value.path,
     });
-    const selectedType = { value: returnType, label: returnType.value.name };
+    const selectedType = {
+      value: returnType.value,
+      label: returnType.value.name,
+    };
     const changeType = (val: PackageableElementOption<Type>): void => {
       function_setReturnType(functionElement, val.value);
       setIsEditingType(false);
@@ -774,7 +777,7 @@ const FunctionPromoteEditor = observer(
               cardMedia={<div className="coming-soon-label">Coming Soon</div>}
               cardName={type}
               cardContent="Deploy the function in the definition of a Store persistence"
-              isDisable={true}
+              disabled={true}
               isActive={
                 activatorPromoteState.activateType ===
                 FUNCTION_ACTIVATE_TYPE.SERVICE_JAR
@@ -788,7 +791,7 @@ const FunctionPromoteEditor = observer(
               cardMedia={<div className="coming-soon-label">Coming Soon</div>}
               cardName={type}
               cardContent="Use the service in a refiner context"
-              isDisable={true}
+              disabled={true}
               isActive={
                 activatorPromoteState.activateType ===
                 FUNCTION_ACTIVATE_TYPE.REFINER
@@ -802,7 +805,7 @@ const FunctionPromoteEditor = observer(
               cardMedia={<div className="coming-soon-label">Coming Soon</div>}
               cardName={type}
               cardContent="Deploy the function as a UDTF(user-defined table function) in BigQuery"
-              isDisable={true}
+              disabled={true}
               isActive={
                 activatorPromoteState.activateType ===
                 FUNCTION_ACTIVATE_TYPE.BIG_QUERY_NATIVE_APP

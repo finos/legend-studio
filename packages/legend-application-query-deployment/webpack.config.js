@@ -42,6 +42,7 @@ export default (env, arg) => {
       import: resolve(__dirname, './ServiceWorker.js'),
     },
   });
+  /** @type {import('webpack').Configuration} */
   const config = {
     ...baseConfig,
     devServer: {

@@ -35,6 +35,7 @@ export default (env, arg) => {
     babelConfigPath: resolve(__dirname, '../../babel.config.cjs'),
     enableReactFastRefresh: isEnvDevelopment,
   });
+  /** @type {import('webpack').Configuration} */
   const config = {
     ...baseConfig,
     devServer: {

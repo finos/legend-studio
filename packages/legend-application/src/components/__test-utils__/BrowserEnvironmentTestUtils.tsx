@@ -14,33 +14,48 @@
  * limitations under the License.
  */
 
-import { createMemoryHistory, type History } from 'history';
 import { useLocalObservable } from 'mobx-react-lite';
-import { Router } from 'react-router';
 import { BrowserPlatform } from '../../stores/platform/BrowserPlatform.js';
 import { ApplicationPlatformContext } from '../ApplicationPlatformProvider.js';
 import { type GenericLegendApplicationStore } from '../../stores/ApplicationStore.js';
 import { useApplicationStore } from '../ApplicationStoreProvider.js';
 import { createMock } from '@finos/legend-shared/test';
+import { MemoryRouter } from 'react-router';
+import { BrowserNavigator } from '../../browser.js';
 
-export { createMemoryHistory };
+const TEST__APPLICATION_BASE_URL = '/test';
+
+class TEST__BrowserNavigator extends BrowserNavigator {
+  override getCurrentLocation(): string {
+    return TEST__APPLICATION_BASE_URL;
+  }
+}
+
+class TEST__BrowserPlatorm extends BrowserPlatform {
+  override getNavigator(): TEST__BrowserNavigator {
+    return new TEST__BrowserNavigator(() => {}, TEST__APPLICATION_BASE_URL);
+  }
+}
 
 export const TEST__BrowserEnvironmentProvider: React.FC<{
   children: React.ReactNode;
-  historyAPI?: History | undefined;
-}> = ({ children, historyAPI }) => {
+  initialEntries: string[];
+}> = ({ children, initialEntries }) => {
   const applicationStore = useApplicationStore();
-  const history = historyAPI ?? createMemoryHistory();
   const platform = useLocalObservable(
-    () => new BrowserPlatform(applicationStore, { historyAPI: history }),
+    () =>
+      new TEST__BrowserPlatorm(applicationStore, {
+        navigate: () => {},
+        baseUrl: TEST__APPLICATION_BASE_URL,
+      }),
   );
 
   return (
-    <Router history={history}>
+    <MemoryRouter initialEntries={initialEntries}>
       <ApplicationPlatformContext.Provider value={platform}>
         {children}
       </ApplicationPlatformContext.Provider>
-    </Router>
+    </MemoryRouter>
   );
 };
 
@@ -48,13 +63,13 @@ export const TEST__provideMockedBrowserPlatform = (
   applicationStore: GenericLegendApplicationStore,
   customization?: {
     mock?: BrowserPlatform;
-    historyAPI?: History;
   },
 ): BrowserPlatform => {
   const value =
     customization?.mock ??
-    new BrowserPlatform(applicationStore, {
-      historyAPI: customization?.historyAPI ?? createMemoryHistory(),
+    new TEST__BrowserPlatorm(applicationStore, {
+      navigate: () => {},
+      baseUrl: TEST__APPLICATION_BASE_URL,
     });
   const MOCK__BrowserPlatform = require('../ApplicationPlatformProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
   MOCK__BrowserPlatform.useApplicationPlatform = createMock();

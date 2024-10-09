@@ -233,9 +233,7 @@ const StringPrimitiveInstanceValueEditor = observer(
       selectorConfig?: BasicValueSpecificationEditorSelectorConfig | undefined;
       observerContext: ObserverContext;
       handleBlur?: (() => void) | undefined;
-      handleKeyDown?:
-        | ((event: React.KeyboardEvent<HTMLInputElement>) => void)
-        | undefined;
+      handleKeyDown?: React.KeyboardEventHandler<HTMLDivElement> | undefined;
     }
   >(function StringPrimitiveInstanceValueEditor(props, ref) {
     const {
@@ -261,7 +259,7 @@ const StringPrimitiveInstanceValueEditor = observer(
       updateValueSpec(event.target.value);
     };
     // custom select
-    const selectedValue = { value: value, label: value };
+    const selectedValue = value ? { value: value, label: value } : null;
     const reloadValuesFunc = selectorConfig?.reloadValues;
     const changeValue = (
       val: null | { value: number | string; label: string },
@@ -318,7 +316,7 @@ const StringPrimitiveInstanceValueEditor = observer(
             className="value-spec-editor__enum-selector"
             options={queryOptions}
             onChange={changeValue}
-            value={selectedValue.label === '' ? '' : selectedValue}
+            value={selectedValue}
             inputValue={value ?? ''}
             onInputChange={handleInputChange}
             darkMode={
@@ -333,8 +331,10 @@ const StringPrimitiveInstanceValueEditor = observer(
             }}
             hasError={!isValidInstanceValue(valueSpecification)}
             placeholder={value === '' ? '(empty)' : undefined}
-            ref={ref as React.Ref<SelectComponent>}
-            onKeyDown={handleKeyDown}
+            inputRef={ref as React.Ref<SelectComponent>}
+            onKeyDown={
+              handleKeyDown as React.KeyboardEventHandler<HTMLDivElement>
+            }
             inputName={inputName}
           />
         ) : (
@@ -911,14 +911,18 @@ const PrimitiveCollectionInstanceValueEditor = observer(
       saveEdit();
     };
 
-    const handleKeyDown = (event: KeyboardEvent): void => {
+    const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (
+      event,
+    ) => {
       if ((event.key === 'Enter' || event.key === ',') && !event.shiftKey) {
         addInputValueToSelectedOptions();
         event.preventDefault();
       }
     };
 
-    const handlePaste = (event: React.ClipboardEvent<string>): void => {
+    const handlePaste: React.ClipboardEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
       const pastedText = event.clipboardData.getData('text');
       const parsedData = parseCSVString(pastedText);
       if (!parsedData) {
@@ -982,8 +986,7 @@ const PrimitiveCollectionInstanceValueEditor = observer(
           }
           isLoading={isLoading}
           noMatchMessage={noMatchMessage}
-          placeholder={null}
-          inputPlaceholder={getPlaceHolder(expectedType)}
+          placeholder={getPlaceHolder(expectedType)}
           components={{
             DropdownIndicator: null,
           }}
@@ -1121,14 +1124,18 @@ const EnumCollectionInstanceValueEditor = observer(
       }
     };
 
-    const handleKeyDown = (event: KeyboardEvent): void => {
+    const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (
+      event,
+    ) => {
       if ((event.key === 'Enter' || event.key === ',') && !event.shiftKey) {
         addInputValueToSelectedOptions();
         event.preventDefault();
       }
     };
 
-    const handlePaste = (event: React.ClipboardEvent<string>): void => {
+    const handlePaste: React.ClipboardEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
       const pastedText = event.clipboardData.getData('text');
       const parsedData = parseCSVString(pastedText);
       if (!parsedData) {
@@ -1199,8 +1206,7 @@ const EnumCollectionInstanceValueEditor = observer(
           darkMode={
             !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
           }
-          placeholder={null}
-          inputPlaceholder="Add"
+          placeholder="Add"
           menuIsOpen={true}
           inputName={inputName}
         />

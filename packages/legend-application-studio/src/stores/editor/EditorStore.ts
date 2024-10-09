@@ -538,7 +538,7 @@ export class EditorStore implements CommandRegistrar {
     this.explorerTreeState = new ExplorerTreeState(this);
   }
 
-  internalizeEntityPath(params: WorkspaceEditorPathParams): void {
+  internalizeEntityPath(params: Partial<WorkspaceEditorPathParams>): void {
     const { projectId, entityPath } = params;
     const workspaceType = params.groupWorkspaceId
       ? WorkspaceType.GROUP
@@ -551,7 +551,7 @@ export class EditorStore implements CommandRegistrar {
       this.initialEntityPath = entityPath;
       this.applicationStore.navigationService.navigator.updateCurrentLocation(
         generateEditorRoute(
-          projectId,
+          guaranteeNonNullable(projectId),
           params.patchReleaseVersionId,
           workspaceId,
           workspaceType,

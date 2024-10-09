@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
+const globals = require('globals');
+const eslint_plugin = require('@eslint/js');
+const react_plugin = require('eslint-plugin-react');
+const react_hooks_plugin = require('eslint-plugin-react-hooks');
+const import_plugin = require('eslint-plugin-import');
+const typescript_eslint_plugin = require('@typescript-eslint/eslint-plugin');
+const typescript_eslint_parser = require('@typescript-eslint/parser');
+const custom_plugin = require('./custom');
+
 const OFF = 0;
 const WARN = 1;
 const ERROR = 2;
@@ -24,7 +33,7 @@ const ERROR = 2;
  */
 const ES_RULES = {
   'array-bracket-spacing': [ERROR, 'never'],
-  'arrow-body-style': [WARN, 'as-needed'],
+  'arrow-body-style': OFF,
   'array-callback-return': ERROR,
   'arrow-parens': WARN,
   'arrow-spacing': WARN,
@@ -177,58 +186,58 @@ const REACT_RULES = {
   'react/jsx-curly-spacing': [WARN, { when: 'never', allowMultiline: true }],
 };
 
-const STUDIO_RULES = {
-  '@finos/legend-studio/enforce-module-import-hierarchy': ERROR,
-  '@finos/legend-studio/enforce-protocol-export-prefix': ERROR,
-  '@finos/legend-studio/enforce-protocol-file-prefix': ERROR,
-  '@finos/legend-studio/no-cross-protocol-version-import': ERROR,
-  '@finos/legend-studio/no-cross-workspace-non-export-usage': ERROR,
-  '@finos/legend-studio/no-cross-workspace-source-usage': ERROR,
-  '@finos/legend-studio/no-same-workspace-absolute-import': ERROR,
-  '@finos/legend-studio/no-same-workspace-index-import': ERROR,
+const LEGEND_RULES = {
+  '@finos/legend/enforce-module-import-hierarchy': ERROR,
+  '@finos/legend/enforce-protocol-export-prefix': ERROR,
+  '@finos/legend/enforce-protocol-file-prefix': ERROR,
+  '@finos/legend/no-cross-protocol-version-import': ERROR,
+  '@finos/legend/no-cross-workspace-non-export-usage': ERROR,
+  '@finos/legend/no-cross-workspace-source-usage': ERROR,
+  '@finos/legend/no-same-workspace-absolute-import': ERROR,
+  '@finos/legend/no-same-workspace-index-import': ERROR,
 };
 
+/** @type {import('eslint').Linter.Config} */
 const config = {
-  parser: '@typescript-eslint/parser',
-  parserOptions: { extraFileExtensions: ['.mjs', '.cjs'] },
-  env: {
-    browser: true,
-    node: true,
-    es6: true,
-    amd: true,
-    jest: true,
+  files: ['**/*.{ts,tsx,cts}'],
+  languageOptions: {
+    parser: typescript_eslint_parser,
+    globals: {
+      ...globals.browser,
+      ...globals.node,
+      ...globals.es6,
+      ...globals.amd,
+      ...globals.jest,
+    },
   },
   settings: {
     react: {
       version: 'detect',
     },
   },
-  plugins: ['prettier', 'react-hooks', '@typescript-eslint'],
-  extends: [
-    'eslint:recommended',
-    'plugin:prettier/recommended',
-    'plugin:@typescript-eslint/eslint-recommended',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:react/recommended',
-    'plugin:import/errors', // See https://github.com/benmosher/eslint-plugin-import/blob/master/config/errors.js
-    'plugin:import/typescript', // See https://github.com/benmosher/eslint-plugin-import/blob/master/config/typescript.js
-  ],
+  plugins: {
+    eslint: eslint_plugin,
+    '@typescript-eslint': typescript_eslint_plugin,
+    react: react_plugin,
+    'react-hooks': react_hooks_plugin,
+    import: import_plugin,
+    '@finos/legend': custom_plugin,
+  },
   rules: {
     ...ES_RULES,
+    ...typescript_eslint_plugin.configs['eslint-recommended'].rules,
+    ...typescript_eslint_plugin.configs.recommended.rules,
     ...TYPESCRIPT_RULES,
-    ...IMPORT_RULES,
+    ...react_plugin.configs.flat.recommended.rules,
+    ...react_plugin.configs.flat['jsx-runtime'].rules,
     ...REACT_RULES,
-    ...STUDIO_RULES,
+    ...import_plugin.flatConfigs.errors.rules,
+    ...import_plugin.flatConfigs.typescript.rules,
+    ...IMPORT_RULES,
+    ...LEGEND_RULES,
   },
-};
-
-const recommendedRules = {
-  typescript: TYPESCRIPT_RULES,
-  studio: STUDIO_RULES,
-  react: REACT_RULES,
 };
 
 module.exports = {
   config,
-  recommendedRules,
 };

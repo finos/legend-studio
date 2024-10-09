@@ -46,6 +46,7 @@ import {
 } from '../editor/EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { useParams } from '@finos/legend-application/browser';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 const ProjectReviewerStatusBar = observer(() => {
   const reviewStore = useProjectReviewerStore();
@@ -185,8 +186,8 @@ export const ProjectReviewer = withEditorStore(
   withProjectReviewerStore(
     observer(() => {
       const params = useParams<ProjectReviewerPathParams>();
-      const projectId = params.projectId;
-      const reviewId = params.reviewId;
+      const projectId = guaranteeNonNullable(params.projectId);
+      const reviewId = guaranteeNonNullable(params.reviewId);
       const reviewStore = useProjectReviewerStore();
       const editorStore = useEditorStore();
       const changeActivity =

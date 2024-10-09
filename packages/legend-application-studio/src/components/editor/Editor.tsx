@@ -59,7 +59,7 @@ import { ShowcaseManager } from '../ShowcaseManager.js';
 export const Editor = withEditorStore(
   observer(() => {
     const params = useParams<WorkspaceEditorPathParams>();
-    const projectId = params.projectId;
+    const projectId = guaranteeNonNullable(params.projectId);
     const patchReleaseVersionId = params.patchReleaseVersionId;
     const workspaceType = params.groupWorkspaceId
       ? WorkspaceType.GROUP
@@ -147,6 +147,7 @@ export const Editor = withEditorStore(
     useEffect(() => {
       editorStore.internalizeEntityPath(params);
     }, [editorStore, params]);
+
     useEffect(() => {
       flowResult(
         editorStore.initialize(

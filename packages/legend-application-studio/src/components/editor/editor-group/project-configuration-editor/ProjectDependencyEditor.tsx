@@ -896,12 +896,16 @@ const ProjectVersionDependencyEditor = observer(
       <div className="project-dependency-editor">
         <CustomSelectorInput
           className="project-dependency-editor__selector"
-          ref={projectSelectorRef}
+          inputRef={projectSelectorRef}
           disabled={projectDisabled}
           options={projectsOptions}
           isClearable={true}
           escapeClearsValue={true}
-          onChange={onProjectSelectionChange}
+          onChange={(val: ProjectOption | null) => {
+            onProjectSelectionChange(val).catch(
+              applicationStore.alertUnhandledError,
+            );
+          }}
           value={selectedProjectOption}
           isLoading={configState.fetchingProjectVersionsState.isInProgress}
           formatOptionLabel={formatOptionLabel}
@@ -911,7 +915,7 @@ const ProjectVersionDependencyEditor = observer(
         />
         <CustomSelectorInput
           className="project-dependency-editor__selector"
-          ref={versionSelectorRef}
+          inputRef={versionSelectorRef}
           options={versionOptions}
           isClearable={true}
           escapeClearsValue={true}

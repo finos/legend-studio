@@ -17,8 +17,7 @@
 import {
   BrowserEnvironmentProvider,
   Route,
-  Switch,
-  type TEMPORARY__ReactRouterComponentType,
+  Routes,
 } from '@finos/legend-application/browser';
 import { observer } from 'mobx-react-lite';
 import { useMemo } from 'react';
@@ -71,16 +70,12 @@ export const LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN = Object.freeze({
 
 export const LegendREPLRouter = observer(() => (
   <div className="h-full">
-    <Switch>
+    <Routes>
       <Route
-        exact={true}
-        path={[LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN.DATA_CUBE]}
-        component={
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          LegendREPLDataCube as TEMPORARY__ReactRouterComponentType
-        }
+        path={LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN.DATA_CUBE}
+        element={<LegendREPLDataCube />}
       />
-    </Switch>
+    </Routes>
   </div>
 ));
 

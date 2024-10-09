@@ -64,7 +64,7 @@ test(
 
     const { queryByText } = render(
       <ApplicationStoreProvider store={baseStore.applicationStore}>
-        <TEST__BrowserEnvironmentProvider>
+        <TEST__BrowserEnvironmentProvider initialEntries={['/']}>
           <LegendStudioFrameworkProvider>
             <LegendStudioWebApplicationRouter />
           </LegendStudioFrameworkProvider>
@@ -111,7 +111,7 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
 
   render(
     <ApplicationStoreProvider store={baseStore.applicationStore}>
-      <TEST__BrowserEnvironmentProvider>
+      <TEST__BrowserEnvironmentProvider initialEntries={['/']}>
         <LegendStudioFrameworkProvider>
           <LegendStudioWebApplicationRouter />
         </LegendStudioFrameworkProvider>

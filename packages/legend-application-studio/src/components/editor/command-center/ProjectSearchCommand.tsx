@@ -67,8 +67,9 @@ export const ProjectSearchCommand = observer(() => {
   const filterOption = createFilter({
     ignoreCase: true,
     ignoreAccents: false,
-    stringify: (option: PackageableElementOption<PackageableElement>): string =>
-      option.value.path,
+    stringify: (option: {
+      data: PackageableElementOption<PackageableElement>;
+    }): string => option.data.value.path,
   });
   const openElement = (
     val: PackageableElementOption<PackageableElement> | null,
@@ -141,7 +142,7 @@ export const ProjectSearchCommand = observer(() => {
             </div>
           </ControlledDropdownMenu>
           <CustomSelectorInput
-            ref={selectorRef}
+            inputRef={selectorRef}
             className="project-search-command__input"
             options={options}
             onChange={openElement}

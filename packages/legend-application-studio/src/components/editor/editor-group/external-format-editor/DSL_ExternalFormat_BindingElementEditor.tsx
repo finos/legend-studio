@@ -205,21 +205,27 @@ const BindingGeneralEditor = observer(
         PackageableElementExplicitReference.create(val.value),
       );
     };
-    const selectedSchemaSet = {
-      value: binding.schemaSet,
-      label: binding.schemaSet?.valueForSerialization,
-    };
-    const schemaIdOptions = selectedSchemaSet.value?.value.schemas.map((e) => ({
-      value: e.id,
-      label: e.id,
-    }));
+    const selectedSchemaSet = binding.schemaSet
+      ? {
+          label: binding.schemaSet.valueForSerialization ?? '',
+          value: binding.schemaSet.value,
+        }
+      : null;
+    const schemaIdOptions = selectedSchemaSet?.value.schemas
+      .filter((e) => e.id)
+      .map((e) => ({
+        value: guaranteeNonNullable(e.id),
+        label: guaranteeNonNullable(e.id),
+      }));
     const onSchemaIdChange = (
       val: { label: string; value: string } | null,
     ): void => externalFormat_Binding_setSchemaId(binding, val?.value);
-    const selectedSchemaId = {
-      value: binding.schemaId,
-      label: binding.schemaId,
-    };
+    const selectedSchemaId = binding.schemaId
+      ? {
+          value: binding.schemaId,
+          label: binding.schemaId,
+        }
+      : null;
     const projectSelectorRef = useRef<SelectComponent>(null);
     const contentTypeOptions =
       editorStore.graphState.graphGenerationState.externalFormatState.formatContentTypes.map(
@@ -260,7 +266,7 @@ const BindingGeneralEditor = observer(
           <CustomSelectorInput
             className="binding-general-editor__section__dropdown"
             disabled={isReadOnly}
-            ref={projectSelectorRef}
+            inputRef={projectSelectorRef}
             options={schemaSetOptions}
             onChange={onSchemaSetChange}
             value={selectedSchemaSet}
@@ -279,7 +285,7 @@ const BindingGeneralEditor = observer(
           <CustomSelectorInput
             className="binding-general-editor__section__dropdown"
             disabled={isReadOnly}
-            ref={projectSelectorRef}
+            inputRef={projectSelectorRef}
             options={schemaIdOptions}
             onChange={onSchemaIdChange}
             value={selectedSchemaId}

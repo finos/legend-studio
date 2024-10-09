@@ -62,6 +62,9 @@ const MappingExecutionQueryBuilderSetupPanelContent = observer(
               className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
               disabled={true}
               options={[]}
+              onChange={() => {
+                // do nothing
+              }}
               value={selectedMappingOption}
               darkMode={
                 !applicationStore.layoutService

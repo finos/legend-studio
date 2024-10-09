@@ -31,7 +31,7 @@ import {
   LegendApplicationTelemetryHelper,
   APPLICATION_EVENT,
 } from '@finos/legend-application';
-import { matchPath } from '@finos/legend-application/browser';
+import { matchRoutes } from '@finos/legend-application/browser';
 import {
   action,
   computed,
@@ -118,14 +118,19 @@ export class LegendStudioBaseStore {
 
     // authorize SDLC, unless navigation location match SDLC-bypassed patterns
     if (
-      !matchPath(
-        this.applicationStore.navigationService.navigator.getCurrentLocation(),
+      !matchRoutes(
         [
-          LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
-          LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
-          LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.PREVIEW_BY_GAV_ENTITY,
-          LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.SHOWCASE_PROJECT,
+          { path: LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV },
+          {
+            path: LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+          },
+          {
+            path: LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.PREVIEW_BY_GAV_ENTITY,
+          },
+          { path: LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.SHOWCASE },
+          { path: LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.PCT_REPORT },
         ],
+        this.applicationStore.navigationService.navigator.getCurrentLocation(),
       )
     ) {
       // setup SDLC server client

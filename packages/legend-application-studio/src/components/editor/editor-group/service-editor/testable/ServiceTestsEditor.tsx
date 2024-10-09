@@ -127,7 +127,7 @@ export const NewParameterModal = observer(
               !applicationStore.layoutService
                 .TEMPORARY__isLightColorThemeEnabled
             }
-            disable={isReadOnly}
+            disabled={isReadOnly}
           />
           <div className="search-modal__actions">
             <button className="btn btn--dark" disabled={isReadOnly}>
@@ -374,7 +374,7 @@ const ServiceTestSetupEditor = observer(
                         !applicationStore.layoutService
                           .TEMPORARY__isLightColorThemeEnabled
                       }
-                      disable={isReadOnly}
+                      disabled={isReadOnly}
                     />
                   </div>
                   {setupState.testState.testable.execution instanceof
@@ -399,7 +399,7 @@ const ServiceTestSetupEditor = observer(
                             .TEMPORARY__isLightColorThemeEnabled
                         }
                         isMulti={true}
-                        disable={isReadOnly}
+                        disabled={isReadOnly}
                         placeholder="Choose keys..."
                       />
                     </div>

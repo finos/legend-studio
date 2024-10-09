@@ -9,8 +9,15 @@
     "typescript",
     "typescriptreact"
   ],
-  "eslint.options": { "overrideConfigFile": "./.eslintrc.cjs" },
-  "stylelint.configFile": "./.stylelintrc.json",
+  "eslint.options": {
+    "overrideConfigFile": "./eslint.config.js",
+    "overrideConfig": {
+      "linterOptions": {
+        "reportUnusedDisableDirectives": false // disable this as some rules are disabled in IDE for better performance
+      }
+    }
+  },
+  "eslint.useFlatConfig": true,
   "search.exclude": {
     "**/node_modules": true,
     "**/yarn.lock": true,

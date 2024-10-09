@@ -162,16 +162,9 @@ export const getBaseWebpackConfig = (
     optimization: isEnvDevelopment
       ? {
           // Keep runtime chunk minimal by enabling runtime chunk
-          // See https://webpack.js.org/guides/build-performance/#minimal-entry-chunk
-          runtimeChunk: {
-            name: (entrypoint) => {
-              if (entrypoint.name.startsWith('service-worker')) {
-                return null;
-              }
-
-              return `runtime~${entrypoint.name}`;
-            },
-          },
+          // and make sure we handle multiple entry points correctly
+          // See https://github.com/webpack/webpack-dev-server/issues/2792#issuecomment-806983882
+          runtimeChunk: 'single',
           // Avoid extra optimization step, turning off split-chunk optimization
           // See https://webpack.js.org/guides/build-performance/#avoid-extra-optimization-steps
           removeAvailableModules: false,
@@ -259,6 +252,7 @@ export const getWebAppBaseWebpackConfig = (
   // NOTE: due to routes like `/v1.0.0` (with '.'), to refer to static resources, we move all static content to `/static`
   const staticPath = 'static';
 
+  /** @type {import('webpack').Configuration} */
   const config = {
     ...baseConfig,
     entry: {

@@ -55,6 +55,7 @@ import {
 import { STYLE_PREFIX, STYLE_PREFIX__DARK } from '@finos/legend-art';
 import { expect } from '@jest/globals';
 import { QueryBuilderAdvancedWorkflowState } from '../../stores/query-workflow/QueryBuilderWorkFlowState.js';
+import { Route, Routes } from '@finos/legend-application/browser';
 
 const getSelectorContainerClassName = (lightMode?: boolean): string =>
   '.' + `${lightMode ? STYLE_PREFIX : STYLE_PREFIX__DARK}__value-container`;
@@ -254,9 +255,14 @@ export const TEST__setUpQueryBuilder = async (
 
   const renderResult = render(
     <ApplicationStoreProvider store={MOCK__applicationStore}>
-      <TEST__BrowserEnvironmentProvider>
+      <TEST__BrowserEnvironmentProvider initialEntries={['/']}>
         <ApplicationFrameworkProvider>
-          <QueryBuilder queryBuilderState={queryBuilderState} />
+          <Routes>
+            <Route
+              path="*"
+              element={<QueryBuilder queryBuilderState={queryBuilderState} />}
+            />
+          </Routes>
         </ApplicationFrameworkProvider>
       </TEST__BrowserEnvironmentProvider>
     </ApplicationStoreProvider>,

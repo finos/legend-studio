@@ -271,7 +271,7 @@ export const PropertyEditor = observer(
                       }
                       escapeClearsValue={true}
                       isClearable={true}
-                      disable={isReadOnly}
+                      disabled={isReadOnly}
                     />
                   </PanelFormSection>
                 </PanelForm>

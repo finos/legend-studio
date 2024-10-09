@@ -61,7 +61,7 @@ export const LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN = Object.freeze({
   VIEW_BY_GAV: `/view/archive/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.GAV}`,
   VIEW_BY_GAV_ENTITY: `/view/archive/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.GAV}/entity/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.ENTITY_PATH}`,
   PREVIEW_BY_GAV_ENTITY: `/view/archive/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.GAV}/entity/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.ENTITY_PATH}/preview`,
-  SHOWCASE_PROJECT: `/showcase/*`,
+  SHOWCASE: `/showcase/:${LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.SHOWCASE_PATH}`,
   PCT_REPORT: '/pct',
 });
 
@@ -79,7 +79,7 @@ export type ProjectViewerPathParams = {
 };
 
 export type ShowcaseViewerPathParams = {
-  [0]?: string;
+  [LEGEND_STUDIO_ROUTE_PATTERN_TOKEN.SHOWCASE_PATH]?: string;
 };
 
 export type WorkspaceEditorPathParams = {
@@ -363,7 +363,7 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl = (
     versionId,
   )}/${servicePath}`;
 
-export const generateShowcasePath = (projectPath: string): string =>
-  generatePath(LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.SHOWCASE_PROJECT, {
-    0: projectPath,
+export const generateShowcasePath = (showcasePath: string): string =>
+  generatePath(LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.SHOWCASE, {
+    showcasePath: encodeURIComponent(showcasePath),
   });

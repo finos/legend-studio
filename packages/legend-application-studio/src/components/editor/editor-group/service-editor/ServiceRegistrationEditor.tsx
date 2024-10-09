@@ -68,7 +68,7 @@ export const ServiceRegistrationEditor = observer(() => {
       }
     : null;
   const onServiceTypeSelectionChange = (
-    val: { label: ServiceExecutionMode; value: ServiceExecutionMode } | null,
+    val: { label: string; value: ServiceExecutionMode } | null,
   ): void => {
     registrationState.updateType(val?.value);
   };

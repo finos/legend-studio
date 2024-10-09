@@ -1007,11 +1007,8 @@ const CustomDateInstanceValueEditor: React.FC<{
             value: t.toString(),
             label: t.toString(),
           }))}
-          onChange={(val: {
-            label: string;
-            value: CUSTOM_DATE_OPTION_UNIT;
-          }): void => {
-            setUnitValue(val.value);
+          onChange={(val: { label: string; value: string }): void => {
+            setUnitValue(val.value as CUSTOM_DATE_OPTION_UNIT);
             changeValue(
               durationValue,
               val.value,
@@ -1032,11 +1029,8 @@ const CustomDateInstanceValueEditor: React.FC<{
             value: t.toString(),
             label: t.toString(),
           }))}
-          onChange={(val: {
-            label: string;
-            value: CUSTOM_DATE_OPTION_DIRECTION;
-          }): void => {
-            setDirectionValue(val.value);
+          onChange={(val: { label: string; value: string }): void => {
+            setDirectionValue(val.value as CUSTOM_DATE_OPTION_DIRECTION);
             changeValue(
               durationValue,
               unitValue,
@@ -1059,11 +1053,10 @@ const CustomDateInstanceValueEditor: React.FC<{
               label: t.toString(),
             }),
           )}
-          onChange={(val: {
-            label: string;
-            value: CUSTOM_DATE_OPTION_REFERENCE_MOMENT;
-          }): void => {
-            setReferenceMomentValueValue(val.value);
+          onChange={(val: { label: string; value: string }): void => {
+            setReferenceMomentValueValue(
+              val.value as CUSTOM_DATE_OPTION_REFERENCE_MOMENT,
+            );
             changeValue(durationValue, unitValue, directionValue, val.value);
           }}
           value={{ value: referenceMomentValue, label: referenceMomentValue }}
@@ -1128,7 +1121,7 @@ const CustomFirstDayOfValueSpecificationEditor: React.FC<{
     <div className="value-spec-editor__date-picker__custom-date">
       <div className="value-spec-editor__date-picker__custom-date__input">
         <CustomSelectorInput
-          ref={selectorRef}
+          inputRef={selectorRef}
           placeholder="Choose a unit..."
           className="value-spec-editor__date-picker__custom-date__input-dropdown value-spec-editor__date-picker__custom-date__input-dropdown--full"
           options={Object.values(CUSTOM_DATE_FIRST_DAY_OF_UNIT).map((t) => ({
@@ -1197,7 +1190,7 @@ const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
     <div className="value-spec-editor__date-picker__custom-date">
       <div className="value-spec-editor__date-picker__custom-date__input">
         <CustomSelectorInput
-          ref={selectorRef}
+          inputRef={selectorRef}
           placeholder="Choose a day..."
           className="value-spec-editor__date-picker__custom-date__input-dropdown value-spec-editor__date-picker__custom-date__input-dropdown--full"
           options={Object.values(CUSTOM_DATE_DAY_OF_WEEK).map((t) => ({

@@ -127,8 +127,8 @@ export const ClassMappingSelectorModal = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: ClassMappingSelectOption): string =>
-        getMappingElementLabel(option.value, editorStore).value,
+      stringify: (option: { data: ClassMappingSelectOption }): string =>
+        getMappingElementLabel(option.data.value, editorStore).value,
     });
     const classMappingOptions = uniq(
       getAllClassMappings(mappingEditorState.mapping)
@@ -164,7 +164,7 @@ export const ClassMappingSelectorModal = observer(
         >
           <ModalTitle title="Choose a class mapping" />
           <CustomSelectorInput
-            ref={classMappingSelectorRef}
+            inputRef={classMappingSelectorRef}
             options={classMappingOptions}
             onChange={changeClassMappingOption}
             value={null}

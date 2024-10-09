@@ -285,7 +285,6 @@ export const ServiceRegisterModal = observer(
                     <CustomSelectorInput
                       className="service-register-modal__input__service-owner__selector"
                       placeholder="Enter an owner..."
-                      spellCheck={false}
                       inputValue={text}
                       darkMode={darkMode}
                       onInputChange={onTextChange}

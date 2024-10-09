@@ -39,7 +39,7 @@ export type LegendApplicationSetup = (
 export type ApplicationPageEntry = {
   key: string;
   addressPatterns: string[];
-  renderer: React.FC | React.ReactElement;
+  renderer: () => React.ReactNode;
 };
 
 export type VirtualAssistantViewConfiguration = {

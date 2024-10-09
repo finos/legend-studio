@@ -2572,7 +2572,7 @@ test(
     ).toHaveProperty('disabled', true);
 
     // Enter value
-    let filterValueInput = getByRole(filterPanel, 'textbox');
+    let filterValueInput = getByRole(filterPanel, 'combobox');
     fireEvent.change(filterValueInput, { target: { value: 'test' } });
     await waitFor(() => getByDisplayValue(filterPanel, 'test'));
     fireEvent.blur(filterValueInput);
@@ -2586,7 +2586,7 @@ test(
 
     // Delete value to set it to empty string
     fireEvent.click(getByText(filterPanel, '"test"'));
-    filterValueInput = getByRole(filterPanel, 'textbox');
+    filterValueInput = getByRole(filterPanel, 'combobox');
     fireEvent.change(filterValueInput, { target: { value: '' } });
     fireEvent.blur(filterValueInput);
     await waitFor(() => getByText(filterPanel, '""'));
@@ -2599,7 +2599,7 @@ test(
 
     // Click reset button
     fireEvent.click(getByText(filterPanel, '""'));
-    filterValueInput = getByRole(filterPanel, 'textbox');
+    filterValueInput = getByRole(filterPanel, 'combobox');
     fireEvent.click(getByTitle(filterPanel, 'Reset'));
     fireEvent.blur(filterValueInput);
 
@@ -3164,7 +3164,7 @@ test(
     fireEvent.click(getByText(filterPanel, 'List(empty)'));
     const valueInput = getByRole(
       guaranteeNonNullable(getByText(filterPanel, 'Add').parentElement),
-      'textbox',
+      'combobox',
     );
     fireEvent.change(valueInput, {
       target: { value: 'test1' },

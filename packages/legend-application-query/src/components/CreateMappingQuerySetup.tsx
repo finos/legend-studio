@@ -279,7 +279,11 @@ const CreateMappingQuerySetupContent = observer(() => {
                 !projectOptions.length
               }
               isLoading={setupStore.loadProjectsState.isInProgress}
-              onChange={onProjectOptionChange}
+              onChange={(option: ProjectOption | null) => {
+                onProjectOptionChange(option).catch(
+                  applicationStore.alertUnhandledError,
+                );
+              }}
               value={selectedProjectOption}
               placeholder={projectSelectorPlaceholder}
               isClearable={true}
@@ -297,7 +301,11 @@ const CreateMappingQuerySetupContent = observer(() => {
               options={versionOptions}
               disabled={!setupStore.currentProject}
               isLoading={fetchSelectedProjectVersionsStatus.isInProgress}
-              onChange={onVersionOptionChange}
+              onChange={(option: VersionOption | null) => {
+                onVersionOptionChange(option).catch(
+                  applicationStore.alertUnhandledError,
+                );
+              }}
               value={selectedVersionOption}
               placeholder={
                 fetchSelectedProjectVersionsStatus.isInProgress

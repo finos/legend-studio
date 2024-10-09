@@ -131,7 +131,7 @@ export const DataSpaceAdvancedSearchModal = observer(
                 <SearchIcon />
               </div>
               <CustomSelectorInput
-                ref={dataSpaceSearchRef}
+                inputRef={dataSpaceSearchRef}
                 className="data-space-advanced-search__dialog__input__selector"
                 options={dataSpaceOptions}
                 isLoading={searchState.loadDataSpacesState.isInProgress}

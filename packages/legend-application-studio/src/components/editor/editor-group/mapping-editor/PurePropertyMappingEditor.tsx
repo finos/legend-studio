@@ -140,7 +140,6 @@ const EnumerationPropertyMappingEditor = observer(
       mappingEditorState.mapping,
       enumeration,
     ).map((em) => ({ value: em, label: em.id.value }));
-    const transformerLabel = propertyMapping.transformer?.valueForSerialization;
     const handleSelectionChange = (
       val: { label: string; value: EnumerationMapping } | null,
     ): void =>
@@ -197,7 +196,15 @@ const EnumerationPropertyMappingEditor = observer(
               disabled={options.length <= 1 || isReadOnly}
               options={options}
               onChange={handleSelectionChange}
-              value={{ value: transformerLabel, label: transformerLabel }}
+              value={
+                propertyMapping.transformer
+                  ? {
+                      label:
+                        propertyMapping.transformer.valueForSerialization ?? '',
+                      value: propertyMapping.transformer.value,
+                    }
+                  : null
+              }
               placeholder="Choose an existing enumeration mapping"
             />
             <button

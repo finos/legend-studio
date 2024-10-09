@@ -52,7 +52,7 @@ const prepareNewStandardRelease = async () => {
           ...github.context.repo,
         })
       ).data;
-    } catch (error) {
+    } catch {
       existingChangesetFile = undefined;
     }
     // this means there are no changes needed to be committed, hence skip
@@ -79,7 +79,7 @@ const prepareNewStandardRelease = async () => {
         ref: `heads/${CHANGESET_PR_BRANCH_NAME}`,
         ...github.context.repo,
       });
-    } catch (e) {
+    } catch {
       // do nothing
     }
     await octokit.rest.git.createRef({

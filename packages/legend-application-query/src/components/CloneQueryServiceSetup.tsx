@@ -260,7 +260,11 @@ const CloneQueryServiceSetupContent = observer(() => {
                 !projectOptions.length
               }
               isLoading={querySetupState.loadProjectsState.isInProgress}
-              onChange={onProjectOptionChange}
+              onChange={(option: ProjectOption | null) => {
+                onProjectOptionChange(option).catch(
+                  applicationStore.alertUnhandledError,
+                );
+              }}
               value={selectedProjectOption}
               placeholder={projectSelectorPlaceholder}
               isClearable={true}
@@ -278,7 +282,11 @@ const CloneQueryServiceSetupContent = observer(() => {
               options={versionOptions}
               disabled={!querySetupState.currentProject}
               isLoading={fetchSelectedProjectVersionsStatus.isInProgress}
-              onChange={onVersionOptionChange}
+              onChange={(option: VersionOption | null) => {
+                onVersionOptionChange(option).catch(
+                  applicationStore.alertUnhandledError,
+                );
+              }}
               value={selectedVersionOption}
               placeholder={
                 fetchSelectedProjectVersionsStatus.isInProgress

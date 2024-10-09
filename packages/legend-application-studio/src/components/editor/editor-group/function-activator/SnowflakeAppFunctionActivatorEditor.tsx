@@ -62,8 +62,8 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
   const connectionFilterOption = createFilter({
     ignoreCase: true,
     ignoreAccents: false,
-    stringify: (option: RelationalDatabaseConnectionOption): string =>
-      option.value.path,
+    stringify: (option: { data: RelationalDatabaseConnectionOption }): string =>
+      option.data.value.path,
   });
   const connectionOptions = editorStore.graphManagerState.usableConnections
     .filter(
@@ -230,7 +230,7 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
                   <PURE_ConnectionIcon />
                 </div>
                 <CustomSelectorInput
-                  ref={connectionSelectorRef}
+                  inputRef={connectionSelectorRef}
                   className="snowflake-app-function-activator-editor__config__connection-selector__input"
                   options={connectionOptions}
                   onChange={changeConnection}
@@ -286,10 +286,14 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
                   className="snowflake-app-function-activator-editor__config__connection-selector__input"
                   options={permissionSchemeOptions}
                   onChange={changePermissionScheme}
-                  value={{
-                    label: activator.permissionScheme,
-                    value: activator.permissionScheme,
-                  }}
+                  value={
+                    activator.permissionScheme
+                      ? {
+                          label: activator.permissionScheme,
+                          value: activator.permissionScheme,
+                        }
+                      : null
+                  }
                   darkMode={
                     !applicationStore.layoutService
                       .TEMPORARY__isLightColorThemeEnabled

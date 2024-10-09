@@ -210,9 +210,9 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     const runtimeFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: { value: Runtime }): string =>
-        guaranteeType(option.value, RuntimePointer).packageableRuntime.value
-          .path,
+      stringify: (option: { data: { value: Runtime } }): string =>
+        guaranteeType(option.data.value, RuntimePointer).packageableRuntime
+          .value.path,
     });
 
     // class
