@@ -62,13 +62,10 @@ import {
   ApplicationStoreProvider,
   ApplicationStore,
 } from '@finos/legend-application';
-import {
-  createMemoryHistory,
-  TEST__BrowserEnvironmentProvider,
-} from '@finos/legend-application/test';
+import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 import { type LegendStudioApplicationStore } from '../../../stores/LegendStudioBaseStore.js';
 import { TEST__getLegendStudioApplicationConfig } from '../../../stores/__test-utils__/LegendStudioApplicationTestUtils.js';
-import { Route } from '@finos/legend-application/browser';
+import { Route, Routes } from '@finos/legend-application/browser';
 import { ProjectViewer } from '../../project-view/ProjectViewer.js';
 
 export const TEST_DATA__DefaultSDLCInfo = {
@@ -345,34 +342,36 @@ export const TEST__setUpEditor = async (
     );
   }
 
-  const history = createMemoryHistory({
-    initialEntries: [
-      viewerMode
-        ? generateViewProjectRoute(
-            (workspace as unknown as Workspace).projectId,
-          )
-        : generateEditorRoute(
-            (workspace as unknown as Workspace).projectId,
-            undefined,
-            (workspace as unknown as Workspace).workspaceId,
-            WorkspaceType.USER,
-          ),
-    ],
-  });
-
   const renderResult = render(
     <ApplicationStoreProvider store={MOCK__editorStore.applicationStore}>
-      <TEST__BrowserEnvironmentProvider historyAPI={history}>
+      <TEST__BrowserEnvironmentProvider
+        initialEntries={[
+          viewerMode
+            ? generateViewProjectRoute(
+                (workspace as unknown as Workspace).projectId,
+              )
+            : generateEditorRoute(
+                (workspace as unknown as Workspace).projectId,
+                undefined,
+                (workspace as unknown as Workspace).workspaceId,
+                WorkspaceType.USER,
+              ),
+        ]}
+      >
         <LegendStudioFrameworkProvider>
-          {viewerMode ? (
-            <Route path={[LEGEND_STUDIO_ROUTE_PATTERN.VIEW]}>
-              <ProjectViewer />
-            </Route>
-          ) : (
-            <Route path={[LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE]}>
-              <Editor />
-            </Route>
-          )}
+          <Routes>
+            {viewerMode ? (
+              <Route
+                path={LEGEND_STUDIO_ROUTE_PATTERN.VIEW}
+                element={<ProjectViewer />}
+              />
+            ) : (
+              <Route
+                path={LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE}
+                element={<Editor />}
+              />
+            )}
+          </Routes>
         </LegendStudioFrameworkProvider>
       </TEST__BrowserEnvironmentProvider>
     </ApplicationStoreProvider>,

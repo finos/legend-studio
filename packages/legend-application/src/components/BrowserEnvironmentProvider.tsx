@@ -14,21 +14,26 @@
  * limitations under the License.
  */
 
-import { type History } from 'history';
 import { useLocalObservable } from 'mobx-react-lite';
-import { useHistory } from 'react-router';
+import { useNavigate } from 'react-router';
 import { BrowserRouter } from 'react-router-dom';
 import { BrowserPlatform } from '../stores/platform/BrowserPlatform.js';
 import { ApplicationPlatformContext } from './ApplicationPlatformProvider.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
+import { stripTrailingSlash } from '../stores/navigation/BrowserNavigator.js';
 
 const BrowserPlatformProvider: React.FC<{
   children: React.ReactNode;
-}> = ({ children }) => {
+  baseUrl: string;
+}> = ({ children, baseUrl }) => {
   const applicationStore = useApplicationStore();
-  const historyAPI = useHistory() as History; // TODO: this is a temporary hack until we upgrade react-router
+  const navigate = useNavigate();
   const platform = useLocalObservable(
-    () => new BrowserPlatform(applicationStore, { historyAPI }),
+    () =>
+      new BrowserPlatform(applicationStore, {
+        navigate,
+        baseUrl: stripTrailingSlash(baseUrl),
+      }),
   );
 
   return (
@@ -42,7 +47,9 @@ export const BrowserEnvironmentProvider: React.FC<{
   children: React.ReactNode;
   baseUrl: string;
 }> = ({ children, baseUrl }) => (
-  <BrowserRouter basename={baseUrl}>
-    <BrowserPlatformProvider>{children}</BrowserPlatformProvider>
+  <BrowserRouter basename={stripTrailingSlash(baseUrl)}>
+    <BrowserPlatformProvider baseUrl={baseUrl}>
+      {children}
+    </BrowserPlatformProvider>
   </BrowserRouter>
 );

@@ -23,6 +23,11 @@ import { ApplicationStoreProvider } from '@finos/legend-application';
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
 import { LegendStudioFrameworkProvider } from '../../LegendStudioFrameworkProvider.js';
 import { TEST__provideMockedLegendStudioBaseStore } from '../../__test-utils__/LegendStudioFrameworkTestUtils.js';
+import {
+  generateSetupRoute,
+  LEGEND_STUDIO_ROUTE_PATTERN,
+} from '../../../__lib__/LegendStudioNavigation.js';
+import { Route, Routes } from '@finos/legend-application/browser';
 
 test(integrationTest('Shows project searcher properly'), async () => {
   const baseStore = TEST__provideMockedLegendStudioBaseStore();
@@ -33,9 +38,21 @@ test(integrationTest('Shows project searcher properly'), async () => {
 
   const { queryByText } = render(
     <ApplicationStoreProvider store={baseStore.applicationStore}>
-      <TEST__BrowserEnvironmentProvider>
+      <TEST__BrowserEnvironmentProvider
+        initialEntries={[
+          generateSetupRoute(
+            TEST_DATA__DefaultSDLCInfo.project.projectId,
+            undefined,
+          ),
+        ]}
+      >
         <LegendStudioFrameworkProvider>
-          <WorkspaceSetup />
+          <Routes>
+            <Route
+              path={LEGEND_STUDIO_ROUTE_PATTERN.SETUP_WORKSPACE}
+              element={<WorkspaceSetup />}
+            />
+          </Routes>
         </LegendStudioFrameworkProvider>
       </TEST__BrowserEnvironmentProvider>
     </ApplicationStoreProvider>,

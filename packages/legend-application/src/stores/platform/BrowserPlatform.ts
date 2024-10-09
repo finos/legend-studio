@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-import type { History } from 'history';
 import { BrowserNavigator } from '../navigation/BrowserNavigator.js';
 import { ApplicationPlatform } from './ApplicationPlatform.js';
 import type { ApplicationNavigator } from '../navigation/NavigationService.js';
 import type { GenericLegendApplicationStore } from '../ApplicationStore.js';
 import { LEGEND_APPLICATION_PARAM_TOKEN } from '../../__lib__/LegendApplicationNavigation.js';
+import type { NavigateFunction } from 'react-router';
 
 export class BrowserPlatform extends ApplicationPlatform {
   readonly navigator: BrowserNavigator;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
-    config: { historyAPI: History },
+    config: { navigate: NavigateFunction; baseUrl: string },
   ) {
     super(applicationStore);
-    this.navigator = new BrowserNavigator(config.historyAPI);
+    this.navigator = new BrowserNavigator(config.navigate, config.baseUrl);
   }
 
   getNavigator(): ApplicationNavigator {

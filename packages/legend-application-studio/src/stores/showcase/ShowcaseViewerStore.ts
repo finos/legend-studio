@@ -82,7 +82,7 @@ export class ShowcaseViewerStore {
       return;
     }
 
-    const showcasePath = params[0];
+    const showcasePath = params.showcasePath;
     this.editorStore.initState.inProgress();
     const onLeave = (hasBuildSucceeded: boolean): void => {
       this.editorStore.initState.complete(hasBuildSucceeded);

@@ -36,8 +36,7 @@ import {
   BrowserEnvironmentProvider,
   generateExtensionUrlPattern,
   Route,
-  Switch,
-  type TEMPORARY__ReactRouterComponentType,
+  Routes,
 } from '@finos/legend-application/browser';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../__lib__/LegendStudioDocumentation.js';
 import { LazyTextEditor } from './lazy-text-editor/LazyTextEditor.js';
@@ -122,138 +121,160 @@ export const LegendStudioWebApplicationRouter = observer(() => {
         <>
           {baseStore.isSDLCAuthorized === undefined && (
             <>
-              <Switch>
+              <Routes>
                 <Route
-                  exact={true}
-                  path={[
-                    LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
-                    LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
-                  ]}
-                  component={
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    ProjectViewer as TEMPORARY__ReactRouterComponentType
-                  }
+                  path={LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV}
+                  element={<ProjectViewer />}
                 />
                 <Route
-                  exact={true}
                   path={
-                    LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.SHOWCASE_PROJECT
+                    LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY
                   }
-                  component={
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    ShowcaseViewer as TEMPORARY__ReactRouterComponentType
-                  }
+                  element={<ProjectViewer />}
                 />
+
                 <Route
-                  exact={true}
-                  path={LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.PCT_REPORT}
-                  component={
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    PureCompatibilityTestManager as TEMPORARY__ReactRouterComponentType
-                  }
+                  path={LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.SHOWCASE}
+                  element={<ShowcaseViewer />}
                 />
-                <Route>
-                  <NotFoundPage />
-                </Route>
-              </Switch>
+
+                <Route
+                  path={LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.PCT_REPORT}
+                  element={<PureCompatibilityTestManager />}
+                />
+
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
             </>
           )}
           {baseStore.isSDLCAuthorized && (
             <>
-              <Switch>
+              <Routes>
                 <Route
-                  exact={true}
-                  path={[
-                    LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
-                    LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
-                    LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
-                    LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
-                    LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
-                    LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
-                  ]}
-                  component={
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    ProjectViewer as TEMPORARY__ReactRouterComponentType
-                  }
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.VIEW}
+                  element={<ProjectViewer />}
                 />
                 <Route
-                  exact={true}
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY}
+                  element={<ProjectViewer />}
+                />
+                <Route
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION}
+                  element={<ProjectViewer />}
+                />
+                <Route
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION}
+                  element={<ProjectViewer />}
+                />
+                <Route
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY}
+                  element={<ProjectViewer />}
+                />
+                <Route
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY}
+                  element={<ProjectViewer />}
+                />
+
+                <Route
                   path={LEGEND_STUDIO_ROUTE_PATTERN.REVIEW}
-                  component={
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    ProjectReviewer as TEMPORARY__ReactRouterComponentType
-                  }
+                  element={<ProjectReviewer />}
+                />
+
+                <Route
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE}
+                  element={<Editor />}
                 />
                 <Route
-                  exact={true}
-                  strict={true}
-                  path={[
-                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE,
-                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_GROUP_WORKSPACE,
-                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE_ENTITY,
-                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_GROUP_WORKSPACE_ENTITY,
-                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE,
-                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_WORKSPACE,
-                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE_ENTITY,
-                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_WORKSPACE_ENTITY,
-                  ]}
-                  component={
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    Editor as TEMPORARY__ReactRouterComponentType
-                  }
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_GROUP_WORKSPACE}
+                  element={<Editor />}
                 />
                 <Route
-                  exact={true}
-                  strict={true}
-                  path={[
-                    LEGEND_STUDIO_ROUTE_PATTERN.TEXT_GROUP_WORKSPACE,
-                    LEGEND_STUDIO_ROUTE_PATTERN.TEXT_WORKSPACE,
-                  ]}
-                  component={
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    LazyTextEditor as TEMPORARY__ReactRouterComponentType
-                  }
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE_ENTITY}
+                  element={<Editor />}
                 />
                 <Route
-                  exact={true}
-                  path={[
-                    // root path will lead to setup page (home page)
-                    '/',
-                    LEGEND_STUDIO_ROUTE_PATTERN.SETUP_WORKSPACE,
-                    LEGEND_STUDIO_ROUTE_PATTERN.SETUP_PATCH_WORKSPACE,
-                    LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP_WORKSPACE,
-                    LEGEND_STUDIO_ROUTE_PATTERN.SETUP_PATCH_GROUP_WORKSPACE,
-                  ]}
-                  component={
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    WorkspaceSetup as TEMPORARY__ReactRouterComponentType
+                  path={
+                    LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_GROUP_WORKSPACE_ENTITY
                   }
+                  element={<Editor />}
                 />
                 <Route
-                  exact={true}
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE}
+                  element={<Editor />}
+                />
+                <Route
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_WORKSPACE}
+                  element={<Editor />}
+                />
+                <Route
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE_ENTITY}
+                  element={<Editor />}
+                />
+                <Route
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.EDIT_PATCH_WORKSPACE_ENTITY}
+                  element={<Editor />}
+                />
+
+                <Route
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.TEXT_GROUP_WORKSPACE}
+                  element={<LazyTextEditor />}
+                />
+                <Route
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.TEXT_WORKSPACE}
+                  element={<LazyTextEditor />}
+                />
+
+                <Route
+                  // root path will lead to setup page (home page)
+                  path=""
+                  element={<WorkspaceSetup />}
+                />
+                <Route
+                  // root path will lead to setup page (home page)
+                  path="/"
+                  element={<WorkspaceSetup />}
+                />
+                <Route
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.SETUP_WORKSPACE}
+                  element={<WorkspaceSetup />}
+                />
+                <Route
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.SETUP_PATCH_WORKSPACE}
+                  element={<WorkspaceSetup />}
+                />
+                <Route
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP_WORKSPACE}
+                  element={<WorkspaceSetup />}
+                />
+                <Route
+                  path={LEGEND_STUDIO_ROUTE_PATTERN.SETUP_PATCH_GROUP_WORKSPACE}
+                  element={<WorkspaceSetup />}
+                />
+
+                <Route
+                  path={LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.SHOWCASE}
+                  element={<ShowcaseViewer />}
+                />
+
+                <Route
                   path={LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.PCT_REPORT}
-                  component={
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    PureCompatibilityTestManager as TEMPORARY__ReactRouterComponentType
-                  }
+                  element={<PureCompatibilityTestManager />}
                 />
-                {extraApplicationPageEntries.map((entry) => (
-                  <Route
-                    key={entry.key}
-                    exact={true}
-                    path={entry.addressPatterns.map(
-                      generateExtensionUrlPattern,
-                    )}
-                    component={
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                      entry.renderer as TEMPORARY__ReactRouterComponentType
-                    }
-                  />
-                ))}
-                <Route>
-                  <NotFoundPage />
-                </Route>
-              </Switch>
+
+                {extraApplicationPageEntries.flatMap((entry) =>
+                  entry.addressPatterns
+                    .map(generateExtensionUrlPattern)
+                    .map((path) => (
+                      <Route
+                        key={entry.key}
+                        path={path}
+                        element={entry.renderer()}
+                      />
+                    )),
+                )}
+
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
             </>
           )}
         </>

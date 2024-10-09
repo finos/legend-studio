@@ -29,6 +29,7 @@ import { useEffect } from 'react';
 import { flowResult } from 'mobx';
 import { DataCube, DataCubeProvider } from '@finos/legend-data-cube';
 import { QueryBuilderDataCubeApplicationEngine } from '@finos/legend-query-builder';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export const DataCubeWrapper = observer(() => {
   const applicationStore = useApplicationStore();
@@ -44,6 +45,7 @@ export const DataCubeWrapper = observer(() => {
   const _appEngine = new QueryBuilderDataCubeApplicationEngine(
     applicationStore,
   );
+
   return (
     <DataCubeProvider application={_appEngine} engine={store.engine}>
       <DataCube />
@@ -53,7 +55,10 @@ export const DataCubeWrapper = observer(() => {
 
 export const ExistingQueryDataCubeViewer = observer(() => {
   const params = useParams<ExistingQueryEditorPathParams>();
-  const queryId = params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.QUERY_ID];
+  const queryId = guaranteeNonNullable(
+    params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.QUERY_ID],
+  );
+
   return (
     <ExistingQueryDataCubeEditorStoreProvider queryId={queryId}>
       <DataCubeWrapper />

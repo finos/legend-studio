@@ -89,7 +89,11 @@ import {
 import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
 import { buildVersionOption, type VersionOption } from './QuerySetup.js';
 import { QueryEditorExistingQueryVersionRevertModal } from './QueryEdtiorExistingQueryVersionRevertModal.js';
-import { debounce, compareSemVerVersions } from '@finos/legend-shared';
+import {
+  debounce,
+  compareSemVerVersions,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { LegendQueryInfo } from './LegendQueryAppInfo.js';
 import { QueryEditorDataspaceInfoModal } from './data-space/DataSpaceInfo.js';
 import { DataSpaceQueryBuilderState } from '@finos/legend-extension-dsl-data-space/application';
@@ -814,7 +818,9 @@ const processQueryParams = (
 export const ExistingQueryEditor = observer(() => {
   const applicationStore = useApplicationStore();
   const params = useParams<ExistingQueryEditorPathParams>();
-  const queryId = params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.QUERY_ID];
+  const queryId = guaranteeNonNullable(
+    params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.QUERY_ID],
+  );
   const queryParams =
     applicationStore.navigationService.navigator.getCurrentLocationParameters();
   const processed = processQueryParams(queryParams);
@@ -837,8 +843,12 @@ export const ExistingQueryEditor = observer(() => {
 export const ServiceQueryCreator = observer(() => {
   const applicationStore = useApplicationStore();
   const parameters = useParams<ServiceQueryCreatorPathParams>();
-  const gav = parameters[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.GAV];
-  const servicePath = parameters[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.SERVICE_PATH];
+  const gav = guaranteeNonNullable(
+    parameters[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.GAV],
+  );
+  const servicePath = guaranteeNonNullable(
+    parameters[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.SERVICE_PATH],
+  );
   const executionKey =
     applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
       LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY,
@@ -857,9 +867,15 @@ export const ServiceQueryCreator = observer(() => {
 
 export const MappingQueryCreator = observer(() => {
   const params = useParams<MappingQueryCreatorPathParams>();
-  const gav = params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.GAV];
-  const mappingPath = params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.MAPPING_PATH];
-  const runtimePath = params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.RUNTIME_PATH];
+  const gav = guaranteeNonNullable(
+    params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.GAV],
+  );
+  const mappingPath = guaranteeNonNullable(
+    params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.MAPPING_PATH],
+  );
+  const runtimePath = guaranteeNonNullable(
+    params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.RUNTIME_PATH],
+  );
 
   return (
     <MappingQueryCreatorStoreProvider

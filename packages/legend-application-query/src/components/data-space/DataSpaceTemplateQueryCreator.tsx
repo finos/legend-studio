@@ -28,6 +28,7 @@ import {
   type DataSpaceTemplateQueryCreatorPathParams,
 } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import { QueryEditor } from '../QueryEditor.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 const DataSpaceTemplateQueryCreatorStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -59,16 +60,19 @@ const DataSpaceTemplateQueryCreatorStoreProvider: React.FC<{
 
 export const DataSpaceTemplateQueryCreator = observer(() => {
   const parameters = useParams<DataSpaceTemplateQueryCreatorPathParams>();
-  const gav =
-    parameters[DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV];
-  const dataSpacePath =
+  const gav = guaranteeNonNullable(
+    parameters[DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV],
+  );
+  const dataSpacePath = guaranteeNonNullable(
     parameters[
       DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH
-    ];
-  const templateQueryId =
+    ],
+  );
+  const templateQueryId = guaranteeNonNullable(
     parameters[
       DATA_SPACE_TEMPLATE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.TEMPLATE_QUERY_ID
-    ];
+    ],
+  );
 
   return (
     <DataSpaceTemplateQueryCreatorStoreProvider

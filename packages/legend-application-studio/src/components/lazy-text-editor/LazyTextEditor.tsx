@@ -311,7 +311,7 @@ const LazyStatusBar = observer((props: { actionsDisabled: boolean }) => {
 export const LazyTextEditor = withEditorStore(
   observer(() => {
     const params = useParams<WorkspaceEditorPathParams>();
-    const projectId = params.projectId;
+    const projectId = guaranteeNonNullable(params.projectId);
     const patchReleaseVersionId = params.patchReleaseVersionId;
     const workspaceType = params.groupWorkspaceId
       ? WorkspaceType.GROUP
@@ -367,6 +367,7 @@ export const LazyTextEditor = withEditorStore(
     useEffect(() => {
       editorStore.internalizeEntityPath(params);
     }, [editorStore, params]);
+
     useEffect(() => {
       flowResult(
         editorStore.lazyTextEditorStore.init(

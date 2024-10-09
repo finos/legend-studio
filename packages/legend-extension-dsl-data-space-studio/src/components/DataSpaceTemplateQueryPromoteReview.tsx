@@ -272,14 +272,16 @@ const TemplateQueryPromotionReviewerContent = observer(() => {
 export const DataSpaceTemplateQueryPromotionReviewer = observer(() => {
   const parameters =
     useParams<DataSpaceTemplateQueryPromotionReviewerPathParams>();
-  const dataSpacePath =
+  const dataSpacePath = guaranteeNonNullable(
     parameters[
       DATA_SPACE_TEMPLATE_QUERY_PROMOTION_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH
-    ];
-  const queryId =
+    ],
+  );
+  const queryId = guaranteeNonNullable(
     parameters[
       DATA_SPACE_TEMPLATE_QUERY_PROMOTION_ROUTE_PATTERN_TOKEN.QUERY_ID
-    ];
+    ],
+  );
 
   return (
     <DataSpaceTemplateQueryPromotionReviewerStoreProvider

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { History } from 'history';
 import {
   addQueryParametersToUrl,
   getQueryParameterValue,
@@ -34,27 +33,20 @@ import {
 } from './NavigationService.js';
 import {
   Route,
-  Switch,
-  Redirect,
-  matchPath,
+  Routes,
+  matchRoutes,
   generatePath,
   useParams,
   useLocation,
+  type NavigateFunction,
 } from 'react-router';
 
 export { BrowserRouter } from 'react-router-dom';
-export { Route, Switch, Redirect, useParams, matchPath, generatePath };
+export { Route, Routes, useParams, matchRoutes, generatePath };
 export const useNavigationZone = (): NavigationZone => {
-  const location = useLocation() as { hash: string }; // TODO: this is a temporary hack until we upgrade react-router
+  const location = useLocation();
   return location.hash.substring(NAVIGATION_ZONE_PREFIX.length);
 };
-/**
- * This clashes between react-router (older version) and React typings, so this is the workaround
- * We will remove this when we move forward with our react-router upgrade
- * See https://github.com/finos/legend-studio/issues/688
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type TEMPORARY__ReactRouterComponentType = any;
 
 /**
  * Prefix URL patterns coming from extensions with `/extensions/`
@@ -63,8 +55,17 @@ export type TEMPORARY__ReactRouterComponentType = any;
 export const generateExtensionUrlPattern = (pattern: string): string =>
   `/extensions/${pattern}`.replace(/^\/extensions\/\//, '/extensions/');
 
+export function stripTrailingSlash(url: string): string {
+  let _url = url;
+  while (_url.endsWith('/')) {
+    _url = _url.slice(0, -1);
+  }
+  return _url;
+}
+
 export class BrowserNavigator implements ApplicationNavigator {
-  private readonly historyAPI: History;
+  private readonly navigate: NavigateFunction;
+  private readonly baseUrl: string;
   private _isNavigationBlocked = false;
   private _forceBypassNavigationBlocking = false;
   private _blockCheckers: (() => boolean)[] = [];
@@ -76,13 +77,14 @@ export class BrowserNavigator implements ApplicationNavigator {
       // NOTE: there is no way to customize the alert message for now since Chrome removed support for it due to security concerns
       // See https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload#Browser_compatibility
       event.returnValue = '';
+      event.preventDefault();
     }
   };
 
   onBlock?: ((onProceed: () => void) => void) | undefined;
   onNativePlatformNavigationBlock?: (() => void) | undefined;
 
-  constructor(historyApiClient: History) {
+  constructor(navigate: NavigateFunction, baseUrl: string) {
     makeObservable<BrowserNavigator, '_isNavigationBlocked'>(this, {
       _isNavigationBlocked: observable,
       isNavigationBlocked: computed,
@@ -90,7 +92,8 @@ export class BrowserNavigator implements ApplicationNavigator {
       unblockNavigation: action,
     });
 
-    this.historyAPI = historyApiClient;
+    this.navigate = navigate;
+    this.baseUrl = baseUrl;
   }
 
   private get window(): Window {
@@ -165,14 +168,11 @@ export class BrowserNavigator implements ApplicationNavigator {
   }
 
   generateAddress(location: NavigationLocation): string {
-    return (
-      this.window.location.origin +
-      this.historyAPI.createHref({ pathname: location })
-    );
+    return this.window.location.origin + this.baseUrl + location;
   }
 
   updateCurrentLocation(location: NavigationLocation): void {
-    this.historyAPI.push(location);
+    this.navigate(location);
   }
 
   updateCurrentZone(zone: NavigationZone): void {
@@ -197,7 +197,7 @@ export class BrowserNavigator implements ApplicationNavigator {
   }
 
   getCurrentLocation(): NavigationLocation {
-    return this.historyAPI.location.pathname;
+    return this.window.location.pathname.substring(this.baseUrl.length);
   }
 
   getCurrentLocationParameters<

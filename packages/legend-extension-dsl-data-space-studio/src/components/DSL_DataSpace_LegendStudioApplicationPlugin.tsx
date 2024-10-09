@@ -97,7 +97,7 @@ export class DSL_DataSpace_LegendStudioApplicationPlugin
         addressPatterns: [
           DATA_SPACE_STUDIO_ROUTE_PATTERN.PROMOTE_TEMPLATE_QUERY,
         ],
-        renderer: DataSpaceTemplateQueryPromotionReviewer,
+        renderer: () => <DataSpaceTemplateQueryPromotionReviewer />,
       },
     ];
   }

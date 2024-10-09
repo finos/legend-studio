@@ -25,9 +25,8 @@ import {
 import {
   BrowserEnvironmentProvider,
   Route,
-  Switch,
+  Routes,
   generateExtensionUrlPattern,
-  type TEMPORARY__ReactRouterComponentType,
 } from '@finos/legend-application/browser';
 import {
   LegendQueryFrameworkProvider,
@@ -59,125 +58,72 @@ const LegendQueryWebApplicationRouter = observer(() => {
   return (
     <div className="app">
       {baseStore.initState.hasCompleted && (
-        <Switch>
+        <Routes>
           <Route
-            exact={true}
             path={LEGEND_QUERY_ROUTE_PATTERN.DEFAULT}
-            component={
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              DataSpaceQueryCreator as TEMPORARY__ReactRouterComponentType
-            }
+            element={<DataSpaceQueryCreator />}
           />
           <Route
-            exact={true}
             path={LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY_SETUP}
-            component={
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              EditExistingQuerySetup as TEMPORARY__ReactRouterComponentType
-            }
+            element={<EditExistingQuerySetup />}
           />
 
           <Route
-            exact={true}
-            path={[
-              generateExtensionUrlPattern(
-                LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN.TEMPLATE_QUERY,
-              ),
-            ]}
-            component={
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              DataSpaceTemplateQueryCreator as TEMPORARY__ReactRouterComponentType
-            }
+            path={generateExtensionUrlPattern(
+              LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN.TEMPLATE_QUERY,
+            )}
+            element={<DataSpaceTemplateQueryCreator />}
           />
 
           <Route
-            exact={true}
             path={LEGEND_QUERY_ROUTE_PATTERN.SETUP}
-            component={
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              QuerySetupLandingPage as TEMPORARY__ReactRouterComponentType
-            }
+            element={<QuerySetupLandingPage />}
           />
 
           <Route
-            exact={true}
             path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_MAPPING_QUERY_SETUP}
-            component={
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              CreateMappingQuerySetup as TEMPORARY__ReactRouterComponentType
-            }
+            element={<CreateMappingQuerySetup />}
           />
           <Route
-            exact={true}
             path={LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY}
-            component={
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              ExistingQueryEditor as TEMPORARY__ReactRouterComponentType
-            }
+            element={<ExistingQueryEditor />}
           />
           <Route
-            exact={true}
             path={LEGEND_QUERY_ROUTE_PATTERN.DATA_CUBE_EXISTING_QUERY}
-            component={
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              ExistingQueryDataCubeViewer as TEMPORARY__ReactRouterComponentType
-            }
+            element={<ExistingQueryDataCubeViewer />}
           />
           <Route
-            exact={true}
             path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY}
-            component={
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              ServiceQueryCreator as TEMPORARY__ReactRouterComponentType
-            }
+            element={<ServiceQueryCreator />}
           />
           <Route
-            exact={true}
             path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_MAPPING_QUERY}
-            component={
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              MappingQueryCreator as TEMPORARY__ReactRouterComponentType
-            }
+            element={<MappingQueryCreator />}
           />
+
           {/* LEGACY DATA SPACE */}
           <Route
-            exact={true}
-            path={[
-              generateExtensionUrlPattern(
-                LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP,
-              ),
-            ]}
-            component={
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              DataSpaceQueryCreator as TEMPORARY__ReactRouterComponentType
-            }
+            path={generateExtensionUrlPattern(
+              LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP,
+            )}
+            element={<DataSpaceQueryCreator />}
           />
 
           <Route
-            exact={true}
-            path={[
-              generateExtensionUrlPattern(
-                LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE,
-              ),
-            ]}
-            component={
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              DataSpaceQueryCreator as TEMPORARY__ReactRouterComponentType
-            }
+            path={generateExtensionUrlPattern(
+              LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE,
+            )}
+            element={<DataSpaceQueryCreator />}
           />
 
-          {extraApplicationPageEntries.map((entry) => (
-            <Route
-              key={entry.key}
-              exact={true}
-              path={entry.addressPatterns.map(generateExtensionUrlPattern)}
-              component={
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                entry.renderer as TEMPORARY__ReactRouterComponentType
-              }
-            />
-          ))}
-        </Switch>
+          {extraApplicationPageEntries.flatMap((entry) =>
+            entry.addressPatterns
+              .map(generateExtensionUrlPattern)
+              .map((path) => (
+                <Route key={entry.key} path={path} element={entry.renderer()} />
+              )),
+          )}
+        </Routes>
       )}
     </div>
   );

@@ -88,14 +88,12 @@ const DataSpaceQueryCreatorStoreProvider: React.FC<{
 
 export const DataSpaceQueryCreator = observer(() => {
   const applicationStore = useApplicationStore();
-  const parameters = useParams<DataSpaceQueryCreatorPathParams | undefined>();
-  const gav = parameters?.[DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV];
+  const parameters = useParams<DataSpaceQueryCreatorPathParams>();
+  const gav = parameters[DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV];
   const dataSpacePath =
-    parameters?.[DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH];
+    parameters[DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH];
   const executionContext =
-    parameters?.[
-      DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.EXECUTION_CONTEXT
-    ];
+    parameters[DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.EXECUTION_CONTEXT];
   const runtimePath =
     applicationStore.navigationService.navigator.getCurrentLocationParameterValue(
       DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.RUNTIME_PATH,
