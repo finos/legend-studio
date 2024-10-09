@@ -1,5 +1,7 @@
 # @finos/stylelint-config-legend-studio
 
+## 3.0.46
+
 ## 3.0.45
 
 ## 3.0.44
