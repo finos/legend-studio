@@ -17,7 +17,7 @@
 import type { DataCubeQuerySnapshotColumn } from '../DataCubeQuerySnapshot.js';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
-  DataCubeAggregateOperator,
+  DataCubeQueryAggregateOperator,
   DataCubeColumnDataType,
   DataCubeFunction,
   ofDataType,
@@ -38,8 +38,8 @@ export class DataCubeQueryAggregateOperation__VariancePopulation extends DataCub
     return 'variance (population)';
   }
 
-  override get operator(): string {
-    return DataCubeAggregateOperator.VARIANCE_POPULATION;
+  override get operator() {
+    return DataCubeQueryAggregateOperator.VARIANCE_POPULATION;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

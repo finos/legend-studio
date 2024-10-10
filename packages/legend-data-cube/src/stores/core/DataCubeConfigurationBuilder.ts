@@ -20,7 +20,7 @@ import {
   DataCubeConfiguration,
 } from './DataCubeConfiguration.js';
 import {
-  DataCubeAggregateOperator,
+  DataCubeQueryAggregateOperator,
   DataCubeColumnKind,
   DataCubeFontTextAlignment,
 } from './DataCubeQueryEngine.js';
@@ -42,14 +42,14 @@ export function buildDefaultColumnConfiguration(column: {
       config.negativeNumberInParens = true;
       config.textAlign = DataCubeFontTextAlignment.RIGHT; // always align number to the right
       config.excludedFromPivot = false;
-      config.aggregateOperator = DataCubeAggregateOperator.SUM;
-      config.pivotStatisticColumnFunction = DataCubeAggregateOperator.SUM;
+      config.aggregateOperator = DataCubeQueryAggregateOperator.SUM;
+      config.pivotStatisticColumnFunction = DataCubeQueryAggregateOperator.SUM;
       break;
     }
     default: {
       config.kind = DataCubeColumnKind.DIMENSION;
       config.excludedFromPivot = true;
-      config.aggregateOperator = DataCubeAggregateOperator.UNIQUE;
+      config.aggregateOperator = DataCubeQueryAggregateOperator.UNIQUE;
       break;
     }
   }

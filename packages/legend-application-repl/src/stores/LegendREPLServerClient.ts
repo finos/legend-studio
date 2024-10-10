@@ -15,7 +15,9 @@
  */
 
 import {
+  ContentType,
   guaranteeNonNullable,
+  HttpHeader,
   type NetworkClient,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -29,7 +31,7 @@ import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
 
 type DataCubeGetQueryCodeInput = {
   query: PlainObject<V1_ValueSpecification>;
-  pretty?: boolean;
+  pretty?: boolean | undefined;
 };
 
 type DataCubeParseQueryInput = {
@@ -86,7 +88,7 @@ export class LegendREPLServerClient {
 
   async getQueryTypeahead(
     input: DataCubeQueryTypeaheadInput,
-  ): Promise<PlainObject<CompletionItem>[]> {
+  ): Promise<CompletionItem[]> {
     return this.networkClient.post(`${this.dataCube}/typeahead`, input);
   }
 
@@ -95,10 +97,14 @@ export class LegendREPLServerClient {
   ): Promise<PlainObject<V1_ValueSpecification>> {
     return this.networkClient.post(`${this.dataCube}/parseQuery`, input);
   }
-  async getQueryCode(
-    input: DataCubeGetQueryCodeInput,
-  ): Promise<PlainObject<string>> {
-    return this.networkClient.post(`${this.dataCube}/getQueryCode`, input);
+
+  async getQueryCode(input: DataCubeGetQueryCodeInput): Promise<string> {
+    return this.networkClient.post(
+      `${this.dataCube}/getQueryCode`,
+      input,
+      {},
+      { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
+    );
   }
 
   async getBaseQuery(): Promise<PlainObject<DataCubeGetBaseQueryResult>> {

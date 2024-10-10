@@ -62,7 +62,7 @@ module.exports = {
     }
     return {
       ExportNamedDeclaration(node) {
-        const fileProtocolVersion = getFileProtocolVersion(node);
+        const fileProtocolVersion = getFileProtocolVersion();
         if (!fileProtocolVersion) {
           return;
         }

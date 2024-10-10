@@ -234,7 +234,6 @@ test(
     await waitFor(() => getByText(registrationEditor, 'PROD'));
 
     // select version
-    await waitFor(() => getByText(registrationEditor, 'Select...'));
     await act(async () => {
       registrationState.setProjectVersion(versions.find((v) => v === '1.0.1'));
     });

@@ -17,7 +17,7 @@
 import type { DataCubeQuerySnapshotColumn } from '../DataCubeQuerySnapshot.js';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
-  DataCubeAggregateOperator,
+  DataCubeQueryAggregateOperator,
   DataCubeColumnDataType,
   DataCubeFunction,
   ofDataType,
@@ -38,8 +38,8 @@ export class DataCubeQueryAggregateOperation__Average extends DataCubeQueryAggre
     return 'average';
   }
 
-  override get operator(): string {
-    return DataCubeAggregateOperator.AVERAGE;
+  override get operator() {
+    return DataCubeQueryAggregateOperator.AVERAGE;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

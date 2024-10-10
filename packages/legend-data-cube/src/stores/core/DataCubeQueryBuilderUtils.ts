@@ -108,8 +108,15 @@ export function _functionCompositionUnProcessor(
   };
 }
 
-export function _deserializeToLambda(json: PlainObject<V1_Lambda>) {
+export function _deserializeLambda(json: PlainObject<V1_Lambda>) {
   return guaranteeType(V1_deserializeValueSpecification(json, []), V1_Lambda);
+}
+
+export function _deserializeFunction(json: PlainObject<V1_Lambda>) {
+  return guaranteeType(
+    V1_deserializeValueSpecification(json, []),
+    V1_AppliedFunction,
+  );
 }
 
 export function _var(name?: string | undefined) {
@@ -247,11 +254,13 @@ export function _colSpec(
   name: string,
   function1?: V1_Lambda | undefined,
   function2?: V1_Lambda | undefined,
+  type?: string | undefined,
 ) {
   const colSpec = new V1_ColSpec();
   colSpec.name = name;
   colSpec.function1 = function1;
   colSpec.function2 = function2;
+  colSpec.type = type;
   return colSpec;
 }
 
@@ -376,7 +385,11 @@ export function _pivotAggCols(
 export function _castCols(columns: DataCubeQuerySnapshotColumn[]) {
   const genericType = new V1_GenericTypeInstance();
   genericType.fullPath = CORE_PURE_PATH.RELATION;
-  genericType.typeArguments = [_cols(columns)];
+  genericType.typeArguments = [
+    _cols(
+      columns.map((col) => _colSpec(col.name, undefined, undefined, col.type)),
+    ),
+  ];
   return genericType;
 }
 
@@ -437,9 +450,9 @@ export function _groupByAggCols(
       .map((column) => {
         const columnConfiguration =
           DataCubeColumnConfiguration.serialization.fromJson(
-            DataCubeColumnConfiguration.serialization.toJson(
-              guaranteeNonNullable(column.matchingColumnConfiguration),
-            ),
+            guaranteeNonNullable(
+              column.matchingColumnConfiguration,
+            ).serialize(),
           );
         columnConfiguration.name = column.name;
         const operation = aggregateOperations.find(
@@ -501,12 +514,12 @@ export function _filter(
   } else {
     const filterCondition = filter;
     const operation = filterOperations.find(
-      (op) => op.operator === filterCondition.operation,
+      (op) => op.operator === filterCondition.operator,
     );
     const condition = operation?.buildConditionExpression(filterCondition);
     if (!condition) {
       throw new UnsupportedOperationError(
-        `Unsupported filter operation '${filterCondition.operation}'`,
+        `Unsupported filter operation '${filterCondition.operator}'`,
       );
     }
     return filterCondition.not ? _not(condition) : condition;

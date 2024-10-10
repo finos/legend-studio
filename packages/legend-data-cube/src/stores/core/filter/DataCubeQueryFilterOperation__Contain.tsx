@@ -47,11 +47,11 @@ export class DataCubeQueryFilterOperation__Contain extends DataCubeQueryFilterOp
     return 'contains';
   }
 
-  override get description(): string {
+  override get description() {
     return 'contains';
   }
 
-  override get operator(): string {
+  override get operator() {
     return DataCubeQueryFilterOperator.CONTAIN;
   }
 

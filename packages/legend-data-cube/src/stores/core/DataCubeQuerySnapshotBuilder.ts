@@ -32,7 +32,7 @@ import {
   matchFunctionName,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import type { DataCubeQuery } from '../engine/DataCubeQuery.js';
+import type { DataCubeQuery } from '../core/DataCubeQuery.js';
 import {
   _toCol,
   DataCubeQuerySnapshot,
@@ -59,7 +59,7 @@ const _SUPPORTED_TOP_LEVEL_FUNCTIONS: {
   func: string;
   parameters: number;
 }[] = [
-  { func: DataCubeFunction.EXTEND, parameters: 1 },
+  { func: DataCubeFunction.EXTEND, parameters: 2 }, // support both signatures of extend()
   { func: DataCubeFunction.FILTER, parameters: 1 },
   { func: DataCubeFunction.SELECT, parameters: 1 },
   { func: DataCubeFunction.GROUP_BY, parameters: 3 },
@@ -101,12 +101,12 @@ enum _FUNCTION_SEQUENCE_COMPOSITION_PART {
 
 // This corresponds to the function sequence that we currently support:
 //
-// -> extend()
+// ->extend()*
 // ->filter()
 // ->select()
 // ->sort()->pivot()->cast()
 // ->groupBy()->sort()
-// ->extend()
+// ->extend()*
 // ->sort()
 // ->limit()
 //
@@ -118,6 +118,7 @@ const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN: (
     // leaf-level extend
     name: _FUNCTION_SEQUENCE_COMPOSITION_PART.LEAF_EXTEND,
     func: DataCubeFunction.EXTEND,
+    repeat: true,
   },
   {
     name: _FUNCTION_SEQUENCE_COMPOSITION_PART.FILTER,
@@ -169,6 +170,7 @@ const _FUNCTION_SEQUENCE_COMPOSITION_PATTERN: (
     // group-level extend
     name: _FUNCTION_SEQUENCE_COMPOSITION_PART.GROUP_EXTEND,
     func: DataCubeFunction.EXTEND,
+    repeat: true,
   },
   {
     name: _FUNCTION_SEQUENCE_COMPOSITION_PART.SORT,
@@ -318,11 +320,7 @@ export function validateAndBuildQuerySnapshot(
   /** TODO: @datacube roundtrip */
 
   // --------------------------------- FILTER ---------------------------------
-
-  if (funcMap.filter) {
-    /** TODO: @datacube roundtrip */
-    data.filter = undefined;
-  }
+  /** TODO: @datacube roundtrip */
 
   // --------------------------------- SELECT ---------------------------------
 
@@ -357,13 +355,13 @@ export function validateAndBuildQuerySnapshot(
     data.sortColumns = _param(funcMap.sort, 0, V1_Collection).values.map(
       (value) => {
         const sortColFunc = _funcMatch(value, [
-          DataCubeFunction.ASC,
-          DataCubeFunction.DESC,
+          DataCubeFunction.ASCENDING,
+          DataCubeFunction.DESCENDING,
         ]);
         return {
           ..._col(_colSpecParam(sortColFunc, 0)),
           direction:
-            _name(sortColFunc.function) === DataCubeFunction.ASC
+            _name(sortColFunc.function) === DataCubeFunction.ASCENDING
               ? DataCubeQuerySortDirection.ASCENDING
               : DataCubeQuerySortDirection.DESCENDING,
         };
@@ -404,8 +402,7 @@ export function validateAndBuildQuerySnapshot(
         ...data.leafExtendedColumns,
         ...data.groupExtendedColumns,
       ]);
-  data.configuration =
-    DataCubeConfiguration.serialization.toJson(configuration);
+  data.configuration = configuration.serialize();
   /**
    * TODO: @datacube roundtrip - implement the logic to reconcile the configuration with the query
    * - [ ] columns (missing/extra columns - remove or generate default column configuration)

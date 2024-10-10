@@ -173,7 +173,7 @@ export function buildFilterQuerySnapshot(
         return {
           name: childNode.column.name,
           type: childNode.column.type,
-          operation: childNode.operation.operator,
+          operator: childNode.operation.operator,
           value: deepClone(childNode.value),
           not: childNode.not,
         } satisfies DataCubeQuerySnapshotFilterCondition;
@@ -213,7 +213,7 @@ export function buildFilterEditorTree(
       childNode = new DataCubeFilterEditorConditionTreeNode(
         node,
         { name: _childNode.name, type: _childNode.type },
-        operationGetter(_childNode.operation),
+        operationGetter(_childNode.operator),
         _childNode.value,
         _childNode.not,
       );

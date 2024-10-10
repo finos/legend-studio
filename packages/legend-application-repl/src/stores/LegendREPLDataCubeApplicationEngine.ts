@@ -19,10 +19,7 @@ import {
   APPLICATION_EVENT,
 } from '@finos/legend-application';
 import { type DocumentationEntry, LogEvent } from '@finos/legend-shared';
-import {
-  DataCubeApplicationEngine,
-  type ActionAlert,
-} from '@finos/legend-data-cube';
+import { DataCubeApplicationEngine } from '@finos/legend-data-cube';
 import type { LegendREPLApplicationStore } from '../application/LegendREPLApplicationStore.js';
 
 export class LegendREPLDataCubeApplicationEngine extends DataCubeApplicationEngine {
@@ -58,12 +55,20 @@ export class LegendREPLDataCubeApplicationEngine extends DataCubeApplicationEngi
     this.application.layoutService.setWindowTitle(title);
   }
 
-  alertAction(alertInfo: ActionAlert | undefined) {
-    this.currentActionAlert = alertInfo;
+  blockNavigation(
+    blockCheckers: (() => boolean)[],
+    onBlock?: ((onProceed: () => void) => void) | undefined,
+    onNativePlatformNavigationBlock?: (() => void) | undefined,
+  ) {
+    this.application.navigationService.navigator.blockNavigation(
+      blockCheckers,
+      onBlock,
+      onNativePlatformNavigationBlock,
+    );
   }
 
-  alertUnhandledError(error: Error) {
-    this.application.alertUnhandledError(error);
+  unblockNavigation() {
+    this.application.navigationService.navigator.unblockNavigation();
   }
 
   logDebug(message: string, ...data: unknown[]) {
@@ -74,12 +79,12 @@ export class LegendREPLDataCubeApplicationEngine extends DataCubeApplicationEngi
     );
   }
 
-  debugProcess(processName: string, ...data: unknown[]) {
+  debugProcess(processName: string, ...data: [string, unknown][]) {
     this.application.logService.debug(
       LogEvent.create(APPLICATION_EVENT.DEBUG),
-      `\n------ START DEBUG PROCESS: ${processName} ------\n`,
-      ...data,
-      `\n------- END DEBUG PROCESS: ${processName} -------\n`,
+      `\n------ START DEBUG PROCESS: ${processName} ------`,
+      ...data.flatMap(([key, value]) => [`\n[${key.toUpperCase()}]:`, value]),
+      `\n------- END DEBUG PROCESS: ${processName} -------\n\n`,
     );
   }
 
@@ -105,5 +110,28 @@ export class LegendREPLDataCubeApplicationEngine extends DataCubeApplicationEngi
       message,
       error,
     );
+  }
+
+  getPersistedNumericValue(key: string): number | undefined {
+    return this.application.settingService.getNumericValue(key);
+  }
+
+  getPersistedStringValue(key: string): string | undefined {
+    return this.application.settingService.getStringValue(key);
+  }
+
+  getPersistedBooleanValue(key: string): boolean | undefined {
+    return this.application.settingService.getBooleanValue(key);
+  }
+
+  getPersistedObjectValue(key: string): object | undefined {
+    return this.application.settingService.getObjectValue(key);
+  }
+
+  persistValue(
+    key: string,
+    value: string | number | boolean | object | undefined,
+  ): void {
+    this.application.settingService.persistValue(key, value);
   }
 }

@@ -17,7 +17,7 @@
 import type { DataCubeQuerySnapshotColumn } from '../DataCubeQuerySnapshot.js';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
-  DataCubeAggregateOperator,
+  DataCubeQueryAggregateOperator,
   DataCubeColumnDataType,
   DataCubeFunction,
   ofDataType,
@@ -38,8 +38,8 @@ export class DataCubeQueryAggregateOperation__Min extends DataCubeQueryAggregate
     return 'min';
   }
 
-  override get operator(): string {
-    return DataCubeAggregateOperator.MIN;
+  override get operator() {
+    return DataCubeQueryAggregateOperator.MIN;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

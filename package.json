@@ -93,7 +93,7 @@
   "devDependencies": {
     "@actions/core": "1.11.1",
     "@actions/github": "6.0.0",
-    "@babel/core": "7.25.7",
+    "@babel/core": "7.25.8",
     "@changesets/cli": "2.27.9",
     "@finos/babel-preset-legend-studio": "workspace:*",
     "@finos/eslint-plugin-legend-studio": "workspace:*",

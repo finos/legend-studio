@@ -18,7 +18,7 @@ import type { DataCubeQuerySnapshotColumn } from '../DataCubeQuerySnapshot.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
-  DataCubeAggregateOperator,
+  DataCubeQueryAggregateOperator,
   DataCubeColumnDataType,
   DataCubeFunction,
   ofDataType,
@@ -47,8 +47,8 @@ export class DataCubeQueryAggregateOperation__JoinStrings extends DataCubeQueryA
     return 'join strings';
   }
 
-  override get operator(): string {
-    return DataCubeAggregateOperator.JOIN_STRINGS;
+  override get operator() {
+    return DataCubeQueryAggregateOperator.JOIN_STRINGS;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

@@ -17,7 +17,7 @@
 import type { DataCubeQuerySnapshotColumn } from '../DataCubeQuerySnapshot.js';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
-  DataCubeAggregateOperator,
+  DataCubeQueryAggregateOperator,
   DataCubeColumnDataType,
   DataCubeFunction,
   ofDataType,
@@ -38,8 +38,8 @@ export class DataCubeQueryAggregateOperation__StdDevPopulation extends DataCubeQ
     return 'standard deviation (population)';
   }
 
-  override get operator(): string {
-    return DataCubeAggregateOperator.STANDARD_DEVIATION_POPULATION;
+  override get operator() {
+    return DataCubeQueryAggregateOperator.STANDARD_DEVIATION_POPULATION;
   }
 
   isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {

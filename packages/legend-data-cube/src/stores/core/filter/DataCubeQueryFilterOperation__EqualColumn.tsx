@@ -46,11 +46,11 @@ export class DataCubeQueryFilterOperation__EqualColumn extends DataCubeQueryFilt
     return '= value in column';
   }
 
-  override get description(): string {
+  override get description() {
     return 'equals to value in column';
   }
 
-  override get operator(): string {
+  override get operator() {
     return DataCubeQueryFilterOperator.EQUAL_COLUMN;
   }
 

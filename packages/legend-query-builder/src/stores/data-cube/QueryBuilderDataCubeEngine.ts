@@ -159,6 +159,8 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     // we return undefined as we assume the grid license is set at the application level where query builder is built
     return Promise.resolve({
       gridClientLicense: undefined,
+      simpleSampleDataTableName: '',
+      complexSampleDataTableName: '',
     });
   }
   override async getQueryTypeahead(
@@ -188,6 +190,16 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
         returnSourceInformation,
       ),
       [],
+    );
+  }
+
+  override getQueryCode(
+    query: V1_ValueSpecification,
+    pretty?: boolean | undefined,
+  ): Promise<string> {
+    return this.graphState.graphManager.valueSpecificationToPureCode(
+      V1_serializeValueSpecification(query, []),
+      pretty,
     );
   }
 

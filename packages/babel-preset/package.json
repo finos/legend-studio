@@ -30,10 +30,10 @@
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
-    "@babel/core": "7.25.7",
+    "@babel/core": "7.25.8",
     "@babel/helper-plugin-utils": "7.25.7",
     "@babel/plugin-syntax-import-attributes": "7.25.7",
-    "@babel/preset-env": "7.25.7",
+    "@babel/preset-env": "7.25.8",
     "@babel/preset-react": "7.25.7",
     "@babel/preset-typescript": "7.25.7",
     "@babel/runtime": "7.25.7",

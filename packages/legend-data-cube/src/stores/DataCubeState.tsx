@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { type DataCubeEngine } from './engine/DataCubeEngine.js';
-import { DataCubeViewState } from './DataCubeViewState.js';
-import type { DisplayState } from './engine/DataCubeLayoutManagerState.js';
-import { DocumentationPanel } from '../components/application/DataCubeDocumentationPanel.js';
-import { DataCubeSettingsPanel } from '../components/application/DataCubeSettingsPanel.js';
+import { type DataCubeEngine } from './core/DataCubeEngine.js';
+import { DataCubeViewState } from './view/DataCubeViewState.js';
+import type { DisplayState } from './core/DataCubeLayoutManagerState.js';
+import { DocumentationPanel } from '../components/core/DataCubeDocumentationPanel.js';
+import { DataCubeSettingsPanel } from '../components/core/DataCubeSettingsPanel.js';
 import { ActionState, assertErrorThrown } from '@finos/legend-shared';
-import { AlertType } from '../components/application/DataCubeAlert.js';
-import { type DataCubeApplicationEngine } from './engine/DataCubeApplicationEngine.js';
+import { AlertType } from '../components/core/DataCubeAlert.js';
+import { type DataCubeApplicationEngine } from './core/DataCubeApplicationEngine.js';
 
 export class DataCubeState {
   readonly application: DataCubeApplicationEngine;
@@ -39,7 +39,11 @@ export class DataCubeState {
   constructor(application: DataCubeApplicationEngine, engine: DataCubeEngine) {
     this.application = application;
     this.engine = engine;
-    this.engine.viewTaskRunner = (task) => this.runTaskForAllViews(task);
+    this.engine.gridClientTaskRunner = (task) => {
+      // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
+      // to traverse through and update the configurations of all of their grid clients
+      task(this.view.grid.client);
+    };
     this.view = new DataCubeViewState(this);
 
     this.settingsDisplay = this.application.layout.newDisplay(
@@ -68,12 +72,6 @@ export class DataCubeState {
         center: false,
       },
     );
-  }
-
-  private runTaskForAllViews(task: (view: DataCubeViewState) => void): void {
-    // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
-    // to traverse through and update the configurations of all of their grid clients
-    task(this.view);
   }
 
   async initialize() {

@@ -47,11 +47,11 @@ export class DataCubeQueryFilterOperation__NotEqualColumn extends DataCubeQueryF
     return '!= value in column';
   }
 
-  override get description(): string {
+  override get description() {
     return 'does not equal value in column';
   }
 
-  override get operator(): string {
+  override get operator() {
     return DataCubeQueryFilterOperator.NOT_EQUAL_COLUMN;
   }
 

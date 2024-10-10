@@ -20,13 +20,18 @@ import {
   Routes,
 } from '@finos/legend-application/browser';
 import { observer } from 'mobx-react-lite';
-import { useMemo } from 'react';
-import { guaranteeNonNullable, NetworkClient } from '@finos/legend-shared';
+import { useEffect, useMemo } from 'react';
+import {
+  guaranteeNonNullable,
+  LogEvent,
+  NetworkClient,
+} from '@finos/legend-shared';
 import { LegendREPLServerClient } from '../stores/LegendREPLServerClient.js';
 import { LegendREPLDataCubeApplicationEngine } from '../stores/LegendREPLDataCubeApplicationEngine.js';
 import { LegendREPLDataCubeEngine } from '../stores/LegendREPLDataCubeEngine.js';
 import { DataCube, DataCubeProvider } from '@finos/legend-data-cube';
 import {
+  APPLICATION_EVENT,
   ApplicationFrameworkProvider,
   useApplicationStore,
   type LegendApplicationPlugin,
@@ -44,6 +49,7 @@ const LegendREPLDataCube = observer(() => {
     [applicationStore],
   );
   const engine = new LegendREPLDataCubeEngine(
+    application,
     new LegendREPLServerClient(
       new NetworkClient({
         baseUrl: applicationStore.config.useDynamicREPLServer
@@ -56,6 +62,24 @@ const LegendREPLDataCube = observer(() => {
       }),
     ),
   );
+
+  useEffect(() => {
+    application.blockNavigation(
+      // Only block navigation in production
+      // eslint-disable-next-line no-process-env
+      [() => process.env.NODE_ENV === 'production'],
+      undefined,
+      () => {
+        application.logWarning(
+          LogEvent.create(APPLICATION_EVENT.NAVIGATION_BLOCKED),
+          `Navigation from the application is blocked`,
+        );
+      },
+    );
+    return (): void => {
+      application.unblockNavigation();
+    };
+  }, [application]);
 
   return (
     <DataCubeProvider application={application} engine={engine}>

@@ -49,11 +49,11 @@ export class DataCubeQueryFilterOperation__NotEqualCaseInsensitive extends DataC
     return '!= (case-insensitive)';
   }
 
-  override get description(): string {
+  override get description() {
     return 'does not equal (case-insensitive)';
   }
 
-  override get operator(): string {
+  override get operator() {
     return DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE;
   }
 

@@ -43,11 +43,11 @@ export class DataCubeQueryFilterOperation__IsNotNull extends DataCubeQueryFilter
     return '!= NULL';
   }
 
-  override get description(): string {
+  override get description() {
     return 'is not NULL';
   }
 
-  override get operator(): string {
+  override get operator() {
     return DataCubeQueryFilterOperator.IS_NOT_NULL;
   }
 

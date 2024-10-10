@@ -48,11 +48,11 @@ export class DataCubeQueryFilterOperation__NotStartWith extends DataCubeQueryFil
     return '!startsWith';
   }
 
-  override get description(): string {
+  override get description() {
     return 'does not start with';
   }
 
-  override get operator(): string {
+  override get operator() {
     return DataCubeQueryFilterOperator.NOT_START_WITH;
   }
 
