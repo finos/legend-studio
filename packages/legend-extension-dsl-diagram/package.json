@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-diagram",
-  "version": "8.1.17",
+  "version": "8.1.18",
   "description": "Legend extension for Diagram DSL",
   "keywords": [
     "legend",
