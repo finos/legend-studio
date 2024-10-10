@@ -86,8 +86,10 @@ export class ExistingQueryDataCubeEditorStore {
         (yield this.graphManagerState.graphManager.pureCodeToLambda(
           content,
         )) as unknown as RawLambda;
+      // TODO: we should be able to call engine and convert lambda to relation if not one.
       const engine = new QueryBuilderDataCubeEngine(
         lambda,
+        undefined,
         execConext.mapping,
         execConext.runtime,
         this.graphManagerState,

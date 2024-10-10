@@ -15,9 +15,13 @@
  */
 
 import { type DataCubeEngine } from '@finos/legend-data-cube';
-import type { QueryBuilderState } from '../QueryBuilderState.js';
+import {
+  QUERY_BUILDER_LAMBDA_WRITER_MODE,
+  type QueryBuilderState,
+} from '../QueryBuilderState.js';
 import { RuntimePointer } from '@finos/legend-graph';
 import { QueryBuilderDataCubeEngine } from './QueryBuilderDataCubeEngine.js';
+import { buildExecutionParameterValues } from '../shared/LambdaParameterState.js';
 
 export const createDataCubeEngineFromQueryBuilder = (
   queryBuilderState: QueryBuilderState,
@@ -31,11 +35,22 @@ export const createDataCubeEngineFromQueryBuilder = (
   if (!runtime) {
     return undefined;
   }
+  const currentLambdaWriterMode = queryBuilderState.lambdaWriteMode;
+  // ensure we write in new tds mode
+  queryBuilderState.setLambdaWriteMode(
+    QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
+  );
+  const parameterValues = buildExecutionParameterValues(
+    queryBuilderState.parametersState.parameterStates,
+    queryBuilderState.graphManagerState,
+  );
   const queryBuilderEngine = new QueryBuilderDataCubeEngine(
     queryBuilderState.buildQuery(),
+    parameterValues,
     queryBuilderState.executionContextState.mapping?.path,
     runtime,
     queryBuilderState.graphManagerState,
   );
+  queryBuilderState.setLambdaWriteMode(currentLambdaWriterMode);
   return queryBuilderEngine;
 };

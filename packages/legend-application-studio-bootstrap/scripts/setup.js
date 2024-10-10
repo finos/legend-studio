@@ -101,6 +101,9 @@ export const setup = (outputDir) => {
             // ],
             TEMPORARY__enableLocalConnectionBuilder: false,
             NonProductionFeatureFlag: true,
+            queryBuilderConfig: {
+              TEMPORARY__enableExportToCube: true,
+            },
           },
         },
       },
