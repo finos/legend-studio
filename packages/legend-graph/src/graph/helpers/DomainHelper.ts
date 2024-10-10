@@ -69,6 +69,11 @@ import { Multiplicity } from '../metamodel/pure/packageableElements/domain/Multi
 import type { AnnotatedElement } from '../metamodel/pure/packageableElements/domain/AnnotatedElement.js';
 import type { ConcreteFunctionDefinition } from '../metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import { extractDependencyGACoordinateFromRootPackageName } from '../DependencyManager.js';
+import {
+  FunctionAnalysisInfo,
+  FunctionAnalysisParameterInfo,
+} from './FunctionAnalysis.js';
+import { generateFunctionPrettyName } from './PureLanguageHelper.js';
 
 export const addElementToPackage = (
   parent: Package,
@@ -739,6 +744,36 @@ export const getFunctionName = (
 export const getFunctionNameWithPath = (
   func: ConcreteFunctionDefinition,
 ): string => func.package?.path + ELEMENT_PATH_DELIMITER + func.functionName;
+
+export const buildFunctionAnalysisInfoFromConcreteFunctionDefinition = (
+  funcs: ConcreteFunctionDefinition[],
+  graph: PureModel,
+): FunctionAnalysisInfo[] => {
+  const functionInfos = funcs.map((func) => {
+    const functionInfo = new FunctionAnalysisInfo();
+    functionInfo.functionPath = func.path;
+    functionInfo.name = func.name;
+    functionInfo.functionName = func.functionName;
+    functionInfo.functionPrettyName = generateFunctionPrettyName(func, {
+      fullPath: true,
+      spacing: false,
+    });
+    functionInfo.packagePath = func.package?.path ?? '';
+    functionInfo.returnType = func.returnType.value.name;
+    functionInfo.parameterInfoList = func.parameters.map((param) => {
+      const paramInfo = new FunctionAnalysisParameterInfo();
+      paramInfo.multiplicity = graph.getMultiplicity(
+        param.multiplicity.lowerBound,
+        param.multiplicity.upperBound,
+      );
+      paramInfo.name = param.name;
+      paramInfo.type = param.type.value.name;
+      return paramInfo;
+    });
+    return functionInfo;
+  });
+  return functionInfos;
+};
 
 const _classHasCycle = (
   _class: Class,

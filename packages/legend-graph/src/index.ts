@@ -628,6 +628,10 @@ export {
   DatasetEntitlementAccessApprovedReport,
   DatasetEntitlementUnsupportedReport,
 } from './graph-manager/action/analytics/StoreEntitlementAnalysis.js';
+export {
+  FunctionAnalysisInfo,
+  FunctionAnalysisParameterInfo,
+} from './graph/helpers/FunctionAnalysis.js';
 
 // protocols
 export {
