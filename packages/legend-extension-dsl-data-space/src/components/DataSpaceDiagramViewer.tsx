@@ -38,6 +38,7 @@ import {
   ZoomOutIcon,
   clsx,
   useResizeDetector,
+  createFilter,
 } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { observer } from 'mobx-react-lite';
@@ -249,6 +250,11 @@ const DataSpaceDiagramViewerHeader = observer(
         diagramViewerState.setCurrentDiagram(option.value);
       }
     };
+    const diagramFilterOption = createFilter({
+      ignoreCase: true,
+      ignoreAccents: false,
+      stringify: (option: { data: DiagramOption }) => option.data.value.title,
+    });
     const createModeSwitcher =
       (
         editMode: DIAGRAM_INTERACTION_MODE,
@@ -280,6 +286,7 @@ const DataSpaceDiagramViewerHeader = observer(
               !applicationStore.layoutService
                 .TEMPORARY__isLightColorThemeEnabled
             }
+            filterOption={diagramFilterOption}
           />
           <div className="data-space__viewer__diagram-viewer__header__navigation__pager">
             <input

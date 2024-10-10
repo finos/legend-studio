@@ -46,6 +46,7 @@ export enum APPLICATION_EVENT {
   APPLICATION_CONTEXT__ACCESS = 'application.context.access',
 
   APPLICATION_USAGE__INTERRUPT = 'application.usage.interrupt',
+  NAVIGATION_BLOCKED = 'application.usage.navigation-blocked',
 
   APPLICATION_TELEMETRY_EVENT__FAILURE = 'application.telemetry-event.failure',
 

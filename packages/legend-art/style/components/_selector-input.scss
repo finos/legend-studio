@@ -92,8 +92,6 @@
   }
 
   &__value-container {
-    @include flexVCenter;
-
     height: 2.6rem;
     padding: 0 0.5rem;
   }
@@ -269,8 +267,6 @@
   }
 
   &__value-container {
-    @include flexVCenter;
-
     height: 2.6rem;
     padding: 0 0.5rem;
     color: var(--color-light-grey-200);

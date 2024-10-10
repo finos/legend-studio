@@ -282,6 +282,7 @@ export const CustomSelectorInput = <
     value,
     onChange,
     inputRef,
+    placeholder,
     ...innerProps
   } = props;
   // Typescript cannot union the 2 types due to many dissimilarities, this goes on to confuse React.createElement
@@ -332,6 +333,7 @@ export const CustomSelectorInput = <
         Input: CustomInput,
         ...components,
       }}
+      placeholder={placeholder ?? ''}
       {...{
         ...innerProps,
         darkMode,

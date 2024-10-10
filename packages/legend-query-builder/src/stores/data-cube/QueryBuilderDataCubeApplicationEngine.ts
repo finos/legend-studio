@@ -19,10 +19,7 @@ import {
   shouldDisplayVirtualAssistantDocumentationEntry,
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
-import {
-  DataCubeApplicationEngine,
-  type ActionAlert,
-} from '@finos/legend-data-cube';
+import { DataCubeApplicationEngine } from '@finos/legend-data-cube';
 import { LogEvent, type DocumentationEntry } from '@finos/legend-shared';
 
 export class QueryBuilderDataCubeApplicationEngine extends DataCubeApplicationEngine {
@@ -56,14 +53,6 @@ export class QueryBuilderDataCubeApplicationEngine extends DataCubeApplicationEn
 
   setWindowTitle(title: string) {
     this.application.layoutService.setWindowTitle(title);
-  }
-
-  alertAction(alertInfo: ActionAlert | undefined) {
-    this.currentActionAlert = alertInfo;
-  }
-
-  alertUnhandledError(error: Error) {
-    this.application.alertUnhandledError(error);
   }
 
   logDebug(message: string, ...data: unknown[]) {

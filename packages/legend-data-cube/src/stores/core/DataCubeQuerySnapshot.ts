@@ -200,9 +200,9 @@ export class DataCubeQuerySnapshot {
    */
   INTERNAL__fullClone() {
     const clone = new DataCubeQuerySnapshot('', '', '', {}, {});
-    (clone.uuid as Writable<string>) = this.uuid;
-    (clone.timestamp as Writable<number>) = this.timestamp;
-    (clone.data as Writable<DataCubeQuerySnapshotData>) = JSON.parse(
+    (clone as Writable<DataCubeQuerySnapshot>).uuid = this.uuid;
+    (clone as Writable<DataCubeQuerySnapshot>).timestamp = this.timestamp;
+    (clone as Writable<DataCubeQuerySnapshot>).data = JSON.parse(
       JSON.stringify(this.data),
     ) as DataCubeQuerySnapshotData;
     clone._isPatchChange = this._isPatchChange;
@@ -217,7 +217,7 @@ export class DataCubeQuerySnapshot {
    * to the timestamp provided by the engine.
    */
   INTERNAL__setTimestamp(timestamp: number) {
-    (this.timestamp as Writable<number>) = timestamp;
+    (this as Writable<DataCubeQuerySnapshot>).timestamp = timestamp;
   }
 }
 
