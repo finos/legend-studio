@@ -53,6 +53,8 @@ export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER_PARAMETERS = 'query-builder__parameters',
   // constant panel
   QUERY_BUILDER_CONSTANTS = 'query-builder__constants',
+  // function panel
+  QUERY_BUILDER_FUNCTIONS = 'query-builder__functions',
   // other
   QUERY_BUILDER_TOOLTIP_ICON = 'query-builder__tooltip__icon',
   // result panel
