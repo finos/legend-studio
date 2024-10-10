@@ -52,7 +52,6 @@ import { useDrag } from 'react-dnd';
 import {
   type FunctionAnalysisInfo,
   getElementRootPackage,
-  Package,
   ROOT_PACKAGE_NAME,
   getMultiplicityDescription,
   CORE_PURE_PATH,
