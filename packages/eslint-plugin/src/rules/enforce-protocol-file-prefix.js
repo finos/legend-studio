@@ -46,8 +46,8 @@ module.exports = {
       );
     }
     return {
-      Program(node) {
-        const fileProtocolVersion = getFileProtocolVersion(node);
+      Program() {
+        const fileProtocolVersion = getFileProtocolVersion();
         if (!fileProtocolVersion) {
           return;
         }
