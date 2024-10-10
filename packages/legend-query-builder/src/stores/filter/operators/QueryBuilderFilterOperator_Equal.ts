@@ -44,7 +44,7 @@ export class QueryBuilderFilterOperator_Equal
   extends QueryBuilderFilterOperator
   implements Hashable
 {
-  getLabel(filterConditionState: FilterConditionState): string {
+  getLabel(): string {
     return 'is';
   }
 
@@ -143,7 +143,7 @@ export class QueryBuilderFilterOperator_Equal
 }
 
 export class QueryBuilderFilterOperator_NotEqual extends QueryBuilderFilterOperator_Equal {
-  override getLabel(filterConditionState: FilterConditionState): string {
+  override getLabel(): string {
     return `is not`;
   }
 

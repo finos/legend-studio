@@ -29,6 +29,7 @@ import { SideBarModule } from '@ag-grid-enterprise/side-bar';
 import { StatusBarModule } from '@ag-grid-enterprise/status-bar';
 import {
   type CellRange,
+  type CellSelectionChangedEvent,
   type CellMouseOverEvent,
   type ICellRendererParams,
   type GridOptions,
@@ -86,6 +87,7 @@ export const configureDataGridComponent = (): void => {
 export type {
   CellRange as DataGridCellRange,
   CellMouseOverEvent as DataGridCellMouseOverEvent,
+  CellSelectionChangedEvent as DataGridCellSelectionChangedEvent,
   ICellRendererParams as DataGridCellRendererParams,
   GridOptions as DataGridOptions,
   ColDef as DataGridColumnDefinition,

@@ -1110,7 +1110,7 @@ const QueryBuilderFilterConditionEditor = observer(
                       className="query-builder-filter-tree__condition-node__operator__dropdown__option"
                       onClick={changeOperator(op)}
                     >
-                      {op.getLabel(node.condition)}
+                      {op.getLabel()}
                     </MenuContentItem>
                   ))}
                 </MenuContent>
@@ -1122,7 +1122,7 @@ const QueryBuilderFilterConditionEditor = observer(
               }}
             >
               <div className="query-builder-filter-tree__condition-node__operator__label">
-                {node.condition.operator.getLabel(node.condition)}
+                {node.condition.operator.getLabel()}
               </div>
               <div className="query-builder-filter-tree__condition-node__operator__dropdown__trigger">
                 <CaretDownIcon />

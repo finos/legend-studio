@@ -332,7 +332,7 @@ const processFilterTree = (
         assertTrue(
           parentLambdaVariableName === variableName,
           `Can't process ${extractElementNameFromPath(
-            filterConditionState.operator.getLabel(filterConditionState),
+            filterConditionState.operator.getLabel(),
           )}() expression: expects variable used in lambda body '${variableName}' to match lambda parameter '${parentLambdaVariableName}'`,
         );
         filterState.addNodeFromNode(

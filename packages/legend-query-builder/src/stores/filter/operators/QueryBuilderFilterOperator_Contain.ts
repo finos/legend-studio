@@ -46,7 +46,7 @@ export class QueryBuilderFilterOperator_Contain
   extends QueryBuilderFilterOperator
   implements Hashable
 {
-  getLabel(filterConditionState: FilterConditionState): string {
+  getLabel(): string {
     return 'contains';
   }
 
@@ -90,9 +90,7 @@ export class QueryBuilderFilterOperator_Contain
       }
       default:
         throw new UnsupportedOperationError(
-          `Can't get default value for filter operator '${this.getLabel(
-            filterConditionState,
-          )}' when the LHS property is of type '${propertyType.path}'`,
+          `Can't get default value for filter operator '${this.getLabel()}' when the LHS property is of type '${propertyType.path}'`,
         );
     }
   }
@@ -128,7 +126,7 @@ export class QueryBuilderFilterOperator_Contain
 }
 
 export class QueryBuilderFilterOperator_NotContain extends QueryBuilderFilterOperator_Contain {
-  override getLabel(filterConditionState: FilterConditionState): string {
+  override getLabel(): string {
     return `doesn't contain`;
   }
 
