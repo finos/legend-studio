@@ -408,6 +408,28 @@ export const QueryBuilderResultPanel = observer(
       }
       resultState.pressedRunQuery.complete();
     };
+
+    const openDataCube = (): void => {
+      if (
+        queryParametersState.parameterStates.length &&
+        queryParametersState.parameterStates.find(
+          (param) =>
+            !queryBuilderState.milestoningState.isMilestoningParameter(
+              param.parameter,
+            ),
+        )
+      ) {
+        queryParametersState.parameterValuesEditorState.open(
+          (): Promise<void> => {
+            queryBuilderState.setIsCubeEnabled(true);
+            return Promise.resolve();
+          },
+          PARAMETER_SUBMIT_ACTION.DATA_CUBE,
+        );
+      } else {
+        queryBuilderState.setIsCubeEnabled(true);
+      }
+    };
     const cancelQuery = applicationStore.guardUnhandledError(() =>
       flowResult(resultState.cancelQuery()),
     );
@@ -841,9 +863,7 @@ export const QueryBuilderResultPanel = observer(
                   </MenuContentItem>
                   {queryBuilderState.config?.TEMPORARY__enableExportToCube && (
                     <MenuContentItem
-                      onClick={(): void =>
-                        queryBuilderState.setIsCubeEnabled(true)
-                      }
+                      onClick={openDataCube}
                       disabled={
                         !queryBuilderState.fetchStructureState.implementation
                           .canBeExportedToCube ||

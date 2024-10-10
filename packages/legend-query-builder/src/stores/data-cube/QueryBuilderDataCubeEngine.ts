@@ -28,6 +28,7 @@ import {
   type GraphManagerState,
   type PureModel,
   type V1_ValueSpecification,
+  type ParameterValue,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -67,9 +68,13 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   readonly graphState: GraphManagerState;
   readonly selectInitialQuery: RawLambda;
   readonly mappingPath: string | undefined;
+  readonly parameterValues: ParameterValue[] | undefined;
   readonly runtimePath: string;
+  _parameters: object | undefined;
+
   constructor(
     selectQuery: RawLambda,
+    parameterValues: ParameterValue[] | undefined,
     mappingPath: string | undefined,
     runtimePath: string,
     graphManagerState: GraphManagerState,
@@ -79,6 +84,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     this.selectInitialQuery = selectQuery;
     this.mappingPath = mappingPath;
     this.runtimePath = runtimePath;
+    this.parameterValues = parameterValues;
   }
 
   get sourceLabel(): string {
@@ -105,6 +111,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     ) {
       srcFuncExp = srcFuncExp.body[0];
     }
+    this._parameters = this.selectInitialQuery.parameters;
     const fromFuncExp = new V1_AppliedFunction();
     fromFuncExp.function = _functionName(SUPPORTED_FUNCTIONS.FROM);
     fromFuncExp.parameters = [srcFuncExp];
@@ -239,12 +246,16 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     executedSQL: string;
   }> {
     const lambda = this.buildRawLambdaFromValueSpec(query);
+    lambda.parameters = this._parameters;
     const [executionWithMetadata, queryString] = await Promise.all([
       this.graphState.graphManager.runQuery(
         lambda,
         undefined,
         undefined,
         this.graph,
+        {
+          parameterValues: this.parameterValues ?? [],
+        },
       ),
       this.graphState.graphManager.lambdaToPureCode(lambda),
     ]);

@@ -27,8 +27,7 @@ import {
   WindowMaximizeIcon,
 } from '@finos/legend-art';
 import { useState } from 'react';
-import { RuntimePointer } from '@finos/legend-graph';
-import { QueryBuilderDataCubeEngine } from '../../stores/data-cube/QueryBuilderDataCubeEngine.js';
+import { createDataCubeEngineFromQueryBuilder } from '../../stores/data-cube/QueryBuilderDataCubeEngineHelper.js';
 
 const QueryBuilderDataCube = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -36,22 +35,11 @@ const QueryBuilderDataCube = observer(
     const applicationStore = new QueryBuilderDataCubeApplicationEngine(
       queryBuilderState.applicationStore,
     );
-    const runtime =
-      queryBuilderState.executionContextState.runtimeValue instanceof
-      RuntimePointer
-        ? queryBuilderState.executionContextState.runtimeValue
-            .packageableRuntime.value.path
-        : undefined;
-    if (!runtime) {
-      // TODO: add better message
+    const queryBuilderEngine =
+      createDataCubeEngineFromQueryBuilder(queryBuilderState);
+    if (!queryBuilderEngine) {
       return null;
     }
-    const queryBuilderEngine = new QueryBuilderDataCubeEngine(
-      queryBuilderState.buildQuery(),
-      queryBuilderState.executionContextState.mapping?.path,
-      runtime,
-      queryBuilderState.graphManagerState,
-    );
 
     return (
       <DataCubeProvider
