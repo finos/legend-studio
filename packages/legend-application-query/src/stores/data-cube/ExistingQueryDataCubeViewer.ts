@@ -24,6 +24,7 @@ import {
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { assertErrorThrown, type GeneratorFn } from '@finos/legend-shared';
 import { QueryBuilderDataCubeEngine } from '@finos/legend-query-builder';
+import { flow, makeObservable, observable } from 'mobx';
 
 export class ExistingQueryDataCubeEditorStore {
   readonly applicationStore: LegendQueryApplicationStore;
@@ -37,6 +38,10 @@ export class ExistingQueryDataCubeEditorStore {
     depotServerClient: DepotServerClient,
     queryId: string,
   ) {
+    makeObservable(this, {
+      initialize: flow,
+      engine: observable,
+    });
     this.applicationStore = applicationStore;
     this.depotServerClient = depotServerClient;
     this.graphManagerState = new GraphManagerState(
