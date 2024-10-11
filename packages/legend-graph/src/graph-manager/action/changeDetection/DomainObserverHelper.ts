@@ -595,7 +595,11 @@ export const observe_HostedService = skipObserved(
       ownership: observable,
       activationConfiguration: observable,
       _elementHashCode: override,
+      stereotypes: observable,
+      taggedValues: observable,
     });
+    metamodel.stereotypes.forEach(observe_StereotypeReference);
+    metamodel.taggedValues.forEach(observe_TaggedValue);
     observe_FunctionActivatorOwnership(metamodel.ownership);
     if (metamodel.activationConfiguration) {
       observe_HostedServiceDeploymentConfiguration(
