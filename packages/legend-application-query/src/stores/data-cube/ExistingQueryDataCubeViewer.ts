@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-import type { DepotServerClient } from '@finos/legend-server-depot';
+import {
+  resolveVersion,
+  type DepotServerClient,
+} from '@finos/legend-server-depot';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 import {
   GraphManagerState,
   type RawLambda,
   type QueryInfo,
+  LegendSDLC,
 } from '@finos/legend-graph';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { assertErrorThrown, type GeneratorFn } from '@finos/legend-shared';
@@ -86,6 +90,13 @@ export class ExistingQueryDataCubeEditorStore {
         (yield this.graphManagerState.graphManager.pureCodeToLambda(
           content,
         )) as unknown as RawLambda;
+      this.graphManagerState.graph.setOrigin(
+        new LegendSDLC(
+          queryInfo.groupId,
+          queryInfo.artifactId,
+          resolveVersion(queryInfo.versionId),
+        ),
+      );
       // TODO: we should be able to call engine and convert lambda to relation if not one.
       const engine = new QueryBuilderDataCubeEngine(
         lambda,
