@@ -311,6 +311,7 @@ export * from './graph-manager/action/query/QuerySearchSpecification.js';
 export * from './graph-manager/action/EngineError.js';
 export * from './graph-manager/action/compilation/CompilationWarning.js';
 export * from './graph-manager/action/compilation/CompilationResult.js';
+export { CodeCompletionResult } from './graph-manager/action/compilation/Completion.js';
 
 export * from './graph-manager/action/protocol/ProtocolInfo.js';
 export * from './graph-manager/action/SourceInformationHelper.js';
@@ -331,6 +332,7 @@ export * from './graph-manager/protocol/pure/PureProtocolProcessorPlugin.js';
 export * from './graph-manager/protocol/pure/extensions/DSL_ExternalFormat_PureProtocolProcessorPlugin.js';
 export * from './graph-manager/action/functionActivator/FunctionActivatorConfiguration.js';
 export * from './graph-manager/action/relational/RelationalDatabaseTypeConfiguration.js';
+export { RelationTypeMetadata } from './graph-manager/action/relation/RelationTypeMetadata.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
 
@@ -706,6 +708,7 @@ export {
   type V1_LambdaReturnTypeResult,
   V1_LambdaReturnTypeInput,
 } from './graph-manager/protocol/pure/v1/engine/compilation/V1_LambdaReturnType.js';
+export { V1_CompleteCodeInput } from './graph-manager/protocol/pure/v1/engine/compilation/V1_CompleteCodeInput.js';
 export { V1_RunTestsInput } from './graph-manager/protocol/pure/v1/engine/test/V1_RunTestsInput.js';
 export { V1_RunTestsResult } from './graph-manager/protocol/pure/v1/engine/test/V1_RunTestsResult.js';
 export { V1_DebugTestsResult } from './graph-manager/protocol/pure/v1/engine/test/V1_DebugTestsResult.js';

@@ -79,6 +79,7 @@ export {
   type V1_TextCompilationResult,
   buildPureGraphManager,
   Class,
+  CodeCompletionResult,
   Core_GraphManagerPreset,
   CORE_PURE_PATH,
   ExternalFormatDescription,
@@ -88,12 +89,14 @@ export {
   PostValidationAssertionResult,
   PureExecution,
   RawLambda,
+  RelationTypeMetadata,
   Service,
   ServiceExecution,
   ServiceExecutionMode,
   TEMPORARY__AbstractEngineConfig,
   V1_ArtifactGenerationExtensionInput,
   V1_ArtifactGenerationExtensionOutput,
+  V1_CompleteCodeInput,
   V1_CompilationError,
   V1_CompilationWarning,
   V1_DatabaseBuilderInput,
@@ -145,6 +148,7 @@ export {
 export type { Entity } from '@finos/legend-storage';
 
 export {
+  type ExtensionsConfigurationData,
   type GeneratorFn,
   type Parameters,
   type PlainObject,
