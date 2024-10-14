@@ -20,6 +20,7 @@ import { PRIMITIVE_TYPE, type TDSExecutionResult } from '@finos/legend-graph';
 import { useState, useCallback, useEffect } from 'react';
 import {
   DataGrid,
+  type DataGridCellSelectionChangedEvent,
   type DataGridApi,
   type DataGridCellRange,
   type DataGridColumnDefinition,
@@ -347,7 +348,7 @@ export const QueryBuilderTDSGridResult = observer(
                   resultState.mousedOverCell,
                   true,
                   fetchStructureImplementation,
-                );
+                ).catch(queryBuilderState.applicationStore.alertUnhandledError);
               },
             },
             {
@@ -358,7 +359,7 @@ export const QueryBuilderTDSGridResult = observer(
                   resultState.mousedOverCell,
                   false,
                   fetchStructureImplementation,
-                );
+                ).catch(queryBuilderState.applicationStore.alertUnhandledError);
               },
             },
             'copy',
@@ -377,6 +378,7 @@ export const QueryBuilderTDSGridResult = observer(
         applicationStore,
         resultState.mousedOverCell,
         resultState.queryBuilderState.fetchStructureState.implementation,
+        queryBuilderState.applicationStore.alertUnhandledError,
       ],
     );
 
@@ -554,7 +556,9 @@ export const QueryBuilderTDSGridResult = observer(
               onRowDataUpdated={(params) => {
                 params.api.refreshCells({ force: true });
               }}
-              onRangeSelectionChanged={(event) => {
+              onCellSelectionChanged={(
+                event: DataGridCellSelectionChangedEvent<QueryBuilderTDSRowDataType>,
+              ) => {
                 const selectedCells = getSelectedCells(event.api);
                 resultState.setSelectedCells([]);
                 selectedCells.forEach((cell) =>
