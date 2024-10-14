@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.43
+
+### Patch Changes
+
+- [#3598](https://github.com/finos/legend-studio/pull/3598) [`b5b32c7`](https://github.com/finos/legend-studio/commit/b5b32c782dfb59bbe9286e9f8fa5acf6e95f3ffc) ([@kelly-thai](https://github.com/kelly-thai)) - Adding ability to add stereotypes and tagged values to function activators. New tabs have been added to the activator form and changes from text mode will be reflected as well.
+
 ## 28.18.42
 
 ## 28.18.41
