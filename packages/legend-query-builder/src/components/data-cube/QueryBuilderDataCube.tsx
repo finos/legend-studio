@@ -21,12 +21,11 @@ import { QueryBuilderDataCubeApplicationEngine } from '../../stores/data-cube/Qu
 import {
   clsx,
   Dialog,
-  EmptyWindowRestoreIcon,
   Modal,
+  ModalFooter,
+  ModalFooterButton,
   TimesIcon,
-  WindowMaximizeIcon,
 } from '@finos/legend-art';
-import { useState } from 'react';
 import { createDataCubeEngineFromQueryBuilder } from '../../stores/data-cube/QueryBuilderDataCubeEngineHelper.js';
 
 const QueryBuilderDataCube = observer(
@@ -55,37 +54,25 @@ const QueryBuilderDataCube = observer(
 export const QueryBuilderDataCubeDialog = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const [isMaximized, setIsMaximized] = useState(false);
-    const toggleMaximize = (): void => setIsMaximized(!isMaximized);
     const closeModal = () => queryBuilderState.setIsCubeEnabled(false);
     return (
       <Dialog
         open={true}
         onClose={closeModal}
-        classes={{ container: 'dataspace-info-modal__container' }}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
       >
         <Modal
           darkMode={false}
-          className={clsx('editor-modal query-builder__dialog', {
-            'query-builder__dialog--expanded': isMaximized,
-          })}
+          className={clsx('editor-modal query-builder-data-cube__dialog')}
         >
-          <div className="query-builder__dialog__header">
-            <div className="query-builder__dialog__header__actions">
+          <div className="query-builder-data-cube__dialog__header">
+            <div className="query-builder-data-cube__dialog__header__actions">
               <button
-                className="query-builder__dialog__header__action"
-                tabIndex={-1}
-                onClick={toggleMaximize}
-                title={isMaximized ? 'Minimize' : 'Maximize'}
-              >
-                {isMaximized ? (
-                  <EmptyWindowRestoreIcon />
-                ) : (
-                  <WindowMaximizeIcon />
-                )}
-              </button>
-              <button
-                className="query-builder__dialog__header__action"
+                className="query-builder-data-cube__dialog__header__action"
                 tabIndex={-1}
                 onClick={closeModal}
                 title="Close"
@@ -94,9 +81,12 @@ export const QueryBuilderDataCubeDialog = observer(
               </button>
             </div>
           </div>
-          <div className="query-builder__dialog__content">
+          <div className="query-builder-data-cube__dialog__content">
             <QueryBuilderDataCube queryBuilderState={queryBuilderState} />
           </div>
+          <ModalFooter>
+            <ModalFooterButton onClick={closeModal}>Close</ModalFooterButton>
+          </ModalFooter>
         </Modal>
       </Dialog>
     );
