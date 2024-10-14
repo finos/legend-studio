@@ -85,10 +85,11 @@ export const DataQualityConstraintsTreeNodeContainer = observer(
     const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
     const { dataQualityState, isReadOnly, removeNode } = innerProps;
     const { dataQualityGraphFetchTreeState } = dataQualityState;
-    let property, type: Type | undefined;
+    let property, type: Type | undefined, subType: Type | undefined;
     if (node.tree instanceof PropertyGraphFetchTree) {
       property = node.tree.property.value;
       type = property.genericType.value.rawType;
+      subType = node.tree.subType?.value;
     } else if (node.tree instanceof RootGraphFetchTree) {
       type = node.tree.class.value;
     }
@@ -209,6 +210,13 @@ export const DataQualityConstraintsTreeNodeContainer = observer(
               onClick={toggleExpandNode}
             >
               {node.label}
+              {subType && (
+                <div className="data-quality-validation-graph-fetch-tree__node__sub-type">
+                  <div className="data-quality-validation-graph-fetch-tree__node__sub-type__label">
+                    {subType.name}
+                  </div>
+                </div>
+              )}
               {
                 <div className="data-quality-validation-graph-fetch-tree__node__type">
                   <div className="data-quality-validation-graph-fetch-tree__node__type__label">

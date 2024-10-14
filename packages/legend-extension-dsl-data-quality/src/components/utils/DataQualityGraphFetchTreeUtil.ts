@@ -278,7 +278,9 @@ const buildGraphFetchSubTree = (
     tree,
   );
   node.setIsReadOnly(isReadOnly);
-  if (node.type instanceof Class && fetchConstraints && !isReadOnly) {
+  if (subType) {
+    node.setConstraintsForClass(subType, tree.constraints);
+  } else if (node.type instanceof Class && fetchConstraints && !isReadOnly) {
     node.setConstraintsForClass(node.type, tree.constraints);
   }
   tree.subTrees.forEach((subTree) => {
@@ -407,7 +409,8 @@ export const addQueryBuilderPropertyNode = (
   explorerTreeData: TreeData<QueryBuilderExplorerTreeNodeData>,
   node:
     | QueryBuilderExplorerTreePropertyNodeData
-    | QueryBuilderExplorerTreeRootNodeData,
+    | QueryBuilderExplorerTreeRootNodeData
+    | QueryBuilderExplorerTreeSubTypeNodeData,
   dataQualityState: DataQualityState,
 ): void => {
   const editorStore = dataQualityState.editorStore;
@@ -417,23 +420,33 @@ export const addQueryBuilderPropertyNode = (
   );
   //root node and property node handled differently
   //handling property node
-  if (node instanceof QueryBuilderExplorerTreePropertyNodeData) {
+  if (
+    node instanceof QueryBuilderExplorerTreePropertyNodeData ||
+    node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+  ) {
     // traverse the property node all the way to the root and resolve the
     // chain of property that leads to this property node
-    const propertyGraphFetchTrees: DataQualityPropertyGraphFetchTree[] = [
-      new DataQualityPropertyGraphFetchTree(
-        PropertyExplicitReference.create(node.property),
-        undefined,
-      ),
-    ];
+    const propertyGraphFetchTrees: DataQualityPropertyGraphFetchTree[] = [];
+    if (node instanceof QueryBuilderExplorerTreePropertyNodeData) {
+      propertyGraphFetchTrees.push(
+        new DataQualityPropertyGraphFetchTree(
+          PropertyExplicitReference.create(node.property),
+          undefined,
+        ),
+      );
+    }
     let parentExplorerTreeNode = explorerTreeData.nodes.get(node.parentId);
     while (
       parentExplorerTreeNode instanceof
         QueryBuilderExplorerTreePropertyNodeData ||
       parentExplorerTreeNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
     ) {
-      let subType = undefined;
-      let subtypeAssigned = false;
+      let subType =
+        node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+          ? PackageableElementExplicitReference.create(node.subclass)
+          : undefined;
+      let subtypeAssigned =
+        node instanceof QueryBuilderExplorerTreeSubTypeNodeData;
       while (
         parentExplorerTreeNode instanceof
         QueryBuilderExplorerTreeSubTypeNodeData
@@ -466,9 +479,11 @@ export const addQueryBuilderPropertyNode = (
           PropertyExplicitReference.create(parentExplorerTreeNode.property),
           subType,
         );
-        propertyGraphFetchTree.subTrees.push(
-          propertyGraphFetchTrees[0] as DataQualityPropertyGraphFetchTree,
-        );
+        if (propertyGraphFetchTrees.length > 0) {
+          propertyGraphFetchTree.subTrees.push(
+            propertyGraphFetchTrees[0] as DataQualityPropertyGraphFetchTree,
+          );
+        }
         propertyGraphFetchTrees.unshift(propertyGraphFetchTree);
         parentExplorerTreeNode = explorerTreeData.nodes.get(
           parentExplorerTreeNode.parentId,
