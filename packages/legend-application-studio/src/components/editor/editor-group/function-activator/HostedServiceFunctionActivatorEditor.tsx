@@ -28,11 +28,21 @@ import {
   CustomSelectorInput,
   PencilIcon,
   ErrorIcon,
+  clsx,
+  PlusIcon,
 } from '@finos/legend-art';
 import {
   DeploymentOwner,
+  Profile,
+  StereotypeExplicitReference,
+  type StereotypeReference,
+  type TaggedValue,
   UserList,
   generateFunctionPrettyName,
+  stub_Profile,
+  stub_Stereotype,
+  stub_Tag,
+  stub_TaggedValue,
   validate_ServicePattern,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
@@ -43,6 +53,7 @@ import {
   OWNERSHIP_OPTIONS,
   type HostedServiceOwnerOption,
   MINIMUM_HOSTED_SERVICE_OWNERS,
+  ACTIVATOR_EDITOR_TAB,
 } from '../../../../stores/editor/editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';
 import {
   hostedService_setAutoActivateUpdates,
@@ -56,10 +67,30 @@ import {
   activator_deleteValueFromUserOwnership,
   activator_addUserOwner,
 } from '../../../../stores/graph-modifier/DSL_FunctionActivator_GraphModifierHelper.js';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
-import { debounce } from '@finos/legend-shared';
+import { debounce, prettyCONSTName } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
+import {
+  annotatedElement_addStereotype,
+  annotatedElement_addTaggedValue,
+  annotatedElement_deleteStereotype,
+  annotatedElement_deleteTaggedValue,
+} from '../../../../stores/graph-modifier/DomainGraphModifierHelper.js';
+import {
+  CORE_DND_TYPE,
+  type ElementDragSource,
+  type UMLEditorElementDropTarget,
+} from '../../../../stores/editor/utils/DnDUtils.js';
+import { useDrop } from 'react-dnd';
+import {
+  TaggedValueDragPreviewLayer,
+  TaggedValueEditor,
+} from '../uml-editor/TaggedValueEditor.js';
+import {
+  StereotypeDragPreviewLayer,
+  StereotypeSelector,
+} from '../uml-editor/StereotypeSelector.js';
 
 type UserOption = { label: string; value: string };
 
@@ -69,7 +100,102 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
   const editorState = editorStore.tabManagerState.getCurrentEditorState(
     HostedServiceFunctionActivatorEditorState,
   );
+  const activatorElement = editorState.element;
   const isReadOnly = editorState.isReadOnly;
+  const selectedTab = editorState.selectedTab;
+  let addButtonTitle = '';
+  switch (selectedTab) {
+    case ACTIVATOR_EDITOR_TAB.TAGGED_VALUES:
+      addButtonTitle = 'Add tagged value';
+      break;
+    case ACTIVATOR_EDITOR_TAB.STEREOTYPES:
+      addButtonTitle = 'Add stereotype';
+      break;
+    default:
+      break;
+  }
+
+  // Tagged Values and Stereotype
+  const add = (): void => {
+    if (!isReadOnly) {
+      if (selectedTab === ACTIVATOR_EDITOR_TAB.TAGGED_VALUES) {
+        annotatedElement_addTaggedValue(
+          activatorElement,
+          stub_TaggedValue(stub_Tag(stub_Profile())),
+        );
+      } else if (selectedTab === ACTIVATOR_EDITOR_TAB.STEREOTYPES) {
+        annotatedElement_addStereotype(
+          activatorElement,
+          StereotypeExplicitReference.create(stub_Stereotype(stub_Profile())),
+        );
+      }
+    }
+  };
+  const handleDropTaggedValue = useCallback(
+    (item: UMLEditorElementDropTarget): void => {
+      if (!isReadOnly && item.data.packageableElement instanceof Profile) {
+        annotatedElement_addTaggedValue(
+          activatorElement,
+          stub_TaggedValue(stub_Tag(item.data.packageableElement)),
+        );
+      }
+    },
+    [activatorElement, isReadOnly],
+  );
+  const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+    ElementDragSource,
+    void,
+    { isTaggedValueDragOver: boolean }
+  >(
+    () => ({
+      accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
+      drop: (item) => handleDropTaggedValue(item),
+      collect: (monitor) => ({
+        isTaggedValueDragOver: monitor.isOver({ shallow: true }),
+      }),
+    }),
+    [handleDropTaggedValue],
+  );
+  const handleDropStereotype = useCallback(
+    (item: UMLEditorElementDropTarget): void => {
+      if (!isReadOnly && item.data.packageableElement instanceof Profile) {
+        annotatedElement_addStereotype(
+          activatorElement,
+          StereotypeExplicitReference.create(
+            stub_Stereotype(item.data.packageableElement),
+          ),
+        );
+      }
+    },
+    [activatorElement, isReadOnly],
+  );
+  const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+    ElementDragSource,
+    void,
+    { isStereotypeDragOver: boolean }
+  >(
+    () => ({
+      accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
+      drop: (item) => handleDropStereotype(item),
+      collect: (monitor) => ({
+        isStereotypeDragOver: monitor.isOver({ shallow: true }),
+      }),
+    }),
+    [handleDropStereotype],
+  );
+  const _deleteStereotype =
+    (val: StereotypeReference): (() => void) =>
+    (): void =>
+      annotatedElement_deleteStereotype(activatorElement, val);
+  const _deleteTaggedValue =
+    (val: TaggedValue): (() => void) =>
+    (): void =>
+      annotatedElement_deleteTaggedValue(activatorElement, val);
+  const changeTab =
+    (tab: ACTIVATOR_EDITOR_TAB): (() => void) =>
+    (): void =>
+      editorState.setSelectedTab(tab);
+
   const activator = editorState.activator;
   const ownership = activator.ownership;
   const visitFunction = (): void =>
@@ -269,250 +395,358 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
               editorState.deployState.isInProgress,
           )}
         />
-        <PanelContent>
-          <div className="hosted-service-function-activator-editor__header">
-            <div className="hosted-service-function-activator-editor__header__label">
-              Rest Service Activator
-            </div>
-            <div className="hosted-service-function-activator-editor__header__actions">
-              <button
-                className="hosted-service-function-activator-editor__header__actions__action hosted-service-function-activator-editor__header__actions__action--primary"
-                onClick={validate}
-                disabled={editorState.validateState.isInProgress}
-                tabIndex={-1}
-                title="Click Validate to verify your activator before deployment"
+        <div className="panel__header function-editor__tabs__header">
+          <div className="function-editor__tabs">
+            {Object.values(ACTIVATOR_EDITOR_TAB).map((tab) => (
+              <div
+                key={tab}
+                onClick={changeTab(tab)}
+                className={clsx('function-editor__tab', {
+                  'function-editor__tab--active': tab === selectedTab,
+                })}
               >
-                Validate
-              </button>
-              <button
-                className="hosted-service-function-activator-editor__header__actions__action hosted-service-function-activator-editor__header__actions__action--primary"
-                onClick={deploy}
-                disabled={editorState.deployState.isInProgress}
-                title="Deploy to sandbox"
-                tabIndex={-1}
-              >
-                Deploy to Sandbox
-              </button>
-            </div>
+                {prettyCONSTName(tab)}
+              </div>
+            ))}
           </div>
-          <PanelForm>
-            <PanelFormValidatedTextField
-              ref={patternRef}
-              name="URL Pattern"
-              isReadOnly={isReadOnly}
-              className="service-editor__pattern__input"
-              errorMessageClassName="service-editor__pattern__input"
-              prompt={
-                <>
-                  Specifies the URL pattern of the service (e.g. /myService/
-                  <span className="service-editor__pattern__example__param">{`{param}`}</span>
-                  )
-                </>
-              }
-              update={(value: string | undefined): void => {
-                updatePattern(value ?? '');
-              }}
-              validate={getValidationMessage}
-              value={pattern}
-            />
-          </PanelForm>
-          <PanelForm>
-            <div className="panel__content__form__section service-editor__parameters">
-              <div className="panel__content__form__section__header__label">
-                Parameters
-              </div>
-              <div className="panel__content__form__section__header__prompt">
-                URL parameters (each must be surrounded by curly braces) will be
-                passed as arguments for the execution query. Note that if the
-                service is configured to use multi-execution, one of the URL
-                parameters must be chosen as the execution key.
-              </div>
-              <div className="service-editor__parameters__list">
-                {!activator.patternParameters.length && (
-                  <div className="service-editor__parameters__list__empty">
-                    No parameter
-                  </div>
-                )}
-                {Boolean(activator.patternParameters.length) &&
-                  activator.patternParameters.map((parameter) => (
-                    <div key={parameter} className="service-editor__parameter">
-                      <div className="service-editor__parameter__text">
-                        {parameter}
-                      </div>
-                      <div className="service-editor__parameter__actions">
-                        <button
-                          className="service-editor__parameter__action"
-                          disabled={isReadOnly}
-                          onClick={removePatternParameter(parameter)}
-                          title="Remove parameter"
-                          tabIndex={-1}
-                        >
-                          <TimesIcon />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          </PanelForm>
-          <PanelForm>
-            <div className="panel__content__form__section">
-              <div className="panel__content__form__section__header__label">
-                Function
-              </div>
-            </div>
-            <div className="hosted-service-function-activator-editor__configuration__items">
-              <div className="hosted-service-function-activator-editor__configuration__item">
-                <div className="btn--sm hosted-service-function-activator-editor__configuration__item__label">
-                  <PURE_FunctionIcon />
+          {selectedTab !== ACTIVATOR_EDITOR_TAB.DEFINITION && (
+            <button
+              className="panel__header__action"
+              disabled={isReadOnly}
+              onClick={add}
+              tabIndex={-1}
+              title={addButtonTitle}
+            >
+              <PlusIcon />
+            </button>
+          )}
+        </div>
+        <PanelContent>
+          {selectedTab === ACTIVATOR_EDITOR_TAB.DEFINITION && (
+            <div>
+              <div className="hosted-service-function-activator-editor__header">
+                <div className="hosted-service-function-activator-editor__header__label">
+                  Rest Service Activator
                 </div>
-                <input
-                  className="panel__content__form__section__input"
-                  spellCheck={false}
-                  disabled={true}
-                  value={generateFunctionPrettyName(activator.function.value, {
-                    fullPath: true,
-                    spacing: false,
-                  })}
+                <div className="hosted-service-function-activator-editor__header__actions">
+                  <button
+                    className="hosted-service-function-activator-editor__header__actions__action hosted-service-function-activator-editor__header__actions__action--primary"
+                    onClick={validate}
+                    disabled={editorState.validateState.isInProgress}
+                    tabIndex={-1}
+                    title="Click Validate to verify your activator before deployment"
+                  >
+                    Validate
+                  </button>
+                  <button
+                    className="hosted-service-function-activator-editor__header__actions__action hosted-service-function-activator-editor__header__actions__action--primary"
+                    onClick={deploy}
+                    disabled={editorState.deployState.isInProgress}
+                    title="Deploy to sandbox"
+                    tabIndex={-1}
+                  >
+                    Deploy to Sandbox
+                  </button>
+                </div>
+              </div>
+              <PanelForm>
+                <PanelFormValidatedTextField
+                  ref={patternRef}
+                  name="URL Pattern"
+                  isReadOnly={isReadOnly}
+                  className="service-editor__pattern__input"
+                  errorMessageClassName="service-editor__pattern__input"
+                  prompt={
+                    <>
+                      Specifies the URL pattern of the service (e.g. /myService/
+                      <span className="service-editor__pattern__example__param">{`{param}`}</span>
+                      )
+                    </>
+                  }
+                  update={(value: string | undefined): void => {
+                    updatePattern(value ?? '');
+                  }}
+                  validate={getValidationMessage}
+                  value={pattern}
                 />
-                <button
-                  className="btn--dark btn--sm hosted-service-function-activator-editor__configuration__item__btn"
-                  onClick={visitFunction}
-                  tabIndex={-1}
-                  title="See Function"
-                >
-                  <LongArrowRightIcon />
-                </button>
-              </div>
-            </div>
-          </PanelForm>
-          <PanelForm>
-            <div className="panel__content__form__section">
-              <div className="panel__content__form__section__header__label">
-                Documentation
-              </div>
-              <div className="panel__content__form__section__header__prompt">{`Provide a brief description of the service's functionalities and usage`}</div>
-              <textarea
-                className="panel__content__form__section__textarea service-editor__documentation__input"
-                spellCheck={false}
-                disabled={isReadOnly}
-                value={activator.documentation}
-                onChange={changeDocumentation}
-              />
-            </div>
-          </PanelForm>
-          <PanelForm>
-            <PanelFormBooleanField
-              isReadOnly={isReadOnly}
-              value={activator.autoActivateUpdates}
-              name="Auto Activate Updates"
-              prompt="Specifies if the new generation should be automatically activated;
-          only valid when latest revision is selected upon service
-          registration"
-              update={toggleAutoActivateUpdates}
-            />
-          </PanelForm>
-          <PanelForm>
-            <PanelFormBooleanField
-              isReadOnly={isReadOnly}
-              value={activator.storeModel}
-              name="Store Model"
-              prompt="Use Store Model (slower)"
-              update={toggleUseStoreModel}
-            />
-          </PanelForm>
-          <PanelForm>
-            <PanelFormBooleanField
-              isReadOnly={isReadOnly}
-              value={activator.generateLineage}
-              name="Generate Lineage"
-              prompt="Generate Lineage (slower)"
-              update={toggleGenerateLineage}
-            />
-          </PanelForm>
-          <PanelForm>
-            {
-              <div>
-                <div className="panel__content__form__section">
+              </PanelForm>
+              <PanelForm>
+                <div className="panel__content__form__section service-editor__parameters">
                   <div className="panel__content__form__section__header__label">
-                    Ownership
+                    Parameters
                   </div>
                   <div className="panel__content__form__section__header__prompt">
-                    The ownership model you want to use to control your service.
+                    URL parameters (each must be surrounded by curly braces)
+                    will be passed as arguments for the execution query. Note
+                    that if the service is configured to use multi-execution,
+                    one of the URL parameters must be chosen as the execution
+                    key.
                   </div>
-                  <CustomSelectorInput
-                    options={OWNERSHIP_OPTIONS}
-                    onChange={onOwnershipChange}
-                    value={editorState.selectedOwnership}
-                    darkMode={
-                      !applicationStore.layoutService
-                        .TEMPORARY__isLightColorThemeEnabled
-                    }
+                  <div className="service-editor__parameters__list">
+                    {!activator.patternParameters.length && (
+                      <div className="service-editor__parameters__list__empty">
+                        No parameter
+                      </div>
+                    )}
+                    {Boolean(activator.patternParameters.length) &&
+                      activator.patternParameters.map((parameter) => (
+                        <div
+                          key={parameter}
+                          className="service-editor__parameter"
+                        >
+                          <div className="service-editor__parameter__text">
+                            {parameter}
+                          </div>
+                          <div className="service-editor__parameter__actions">
+                            <button
+                              className="service-editor__parameter__action"
+                              disabled={isReadOnly}
+                              onClick={removePatternParameter(parameter)}
+                              title="Remove parameter"
+                              tabIndex={-1}
+                            >
+                              <TimesIcon />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </PanelForm>
+              <PanelForm>
+                <div className="panel__content__form__section">
+                  <div className="panel__content__form__section__header__label">
+                    Function
+                  </div>
+                </div>
+                <div className="hosted-service-function-activator-editor__configuration__items">
+                  <div className="hosted-service-function-activator-editor__configuration__item">
+                    <div className="btn--sm hosted-service-function-activator-editor__configuration__item__label">
+                      <PURE_FunctionIcon />
+                    </div>
+                    <input
+                      className="panel__content__form__section__input"
+                      spellCheck={false}
+                      disabled={true}
+                      value={generateFunctionPrettyName(
+                        activator.function.value,
+                        {
+                          fullPath: true,
+                          spacing: false,
+                        },
+                      )}
+                    />
+                    <button
+                      className="btn--dark btn--sm hosted-service-function-activator-editor__configuration__item__btn"
+                      onClick={visitFunction}
+                      tabIndex={-1}
+                      title="See Function"
+                    >
+                      <LongArrowRightIcon />
+                    </button>
+                  </div>
+                </div>
+              </PanelForm>
+              <PanelForm>
+                <div className="panel__content__form__section">
+                  <div className="panel__content__form__section__header__label">
+                    Documentation
+                  </div>
+                  <div className="panel__content__form__section__header__prompt">{`Provide a brief description of the service's functionalities and usage`}</div>
+                  <textarea
+                    className="panel__content__form__section__textarea service-editor__documentation__input"
+                    spellCheck={false}
+                    disabled={isReadOnly}
+                    value={activator.documentation}
+                    onChange={changeDocumentation}
                   />
                 </div>
-                {ownership instanceof DeploymentOwner && (
-                  <div className="panel__content__form__section">
-                    <div>
+              </PanelForm>
+              <PanelForm>
+                <PanelFormBooleanField
+                  isReadOnly={isReadOnly}
+                  value={activator.autoActivateUpdates}
+                  name="Auto Activate Updates"
+                  prompt="Specifies if the new generation should be automatically activated;
+          only valid when latest revision is selected upon service
+          registration"
+                  update={toggleAutoActivateUpdates}
+                />
+              </PanelForm>
+              <PanelForm>
+                <PanelFormBooleanField
+                  isReadOnly={isReadOnly}
+                  value={activator.storeModel}
+                  name="Store Model"
+                  prompt="Use Store Model (slower)"
+                  update={toggleUseStoreModel}
+                />
+              </PanelForm>
+              <PanelForm>
+                <PanelFormBooleanField
+                  isReadOnly={isReadOnly}
+                  value={activator.generateLineage}
+                  name="Generate Lineage"
+                  prompt="Generate Lineage (slower)"
+                  update={toggleGenerateLineage}
+                />
+              </PanelForm>
+              <PanelForm>
+                {
+                  <div>
+                    <div className="panel__content__form__section">
                       <div className="panel__content__form__section__header__label">
-                        Deployment Identifier :
+                        Ownership
                       </div>
-                      <input
-                        className="panel__content__form__section__input"
-                        spellCheck={false}
-                        disabled={isReadOnly}
-                        value={ownership.id}
-                        onChange={updateDeploymentIdentifier}
+                      <div className="panel__content__form__section__header__prompt">
+                        The ownership model you want to use to control your
+                        service.
+                      </div>
+                      <CustomSelectorInput
+                        options={OWNERSHIP_OPTIONS}
+                        onChange={onOwnershipChange}
+                        value={editorState.selectedOwnership}
+                        darkMode={
+                          !applicationStore.layoutService
+                            .TEMPORARY__isLightColorThemeEnabled
+                        }
                       />
                     </div>
-                  </div>
-                )}
-                {ownership instanceof UserList && (
-                  <div className="panel__content__form__section">
-                    <div>
-                      <div className="panel__content__form__section__header__label">
-                        Users :
+                    {ownership instanceof DeploymentOwner && (
+                      <div className="panel__content__form__section">
+                        <div>
+                          <div className="panel__content__form__section__header__label">
+                            Deployment Identifier :
+                          </div>
+                          <input
+                            className="panel__content__form__section__input"
+                            spellCheck={false}
+                            disabled={isReadOnly}
+                            value={ownership.id}
+                            onChange={updateDeploymentIdentifier}
+                          />
+                        </div>
                       </div>
-                      <div className="panel__content__form__section__list">
-                        <div
-                          className="panel__content__form__section__list__items"
-                          data-testid={
-                            LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
-                          }
-                        >
-                          {ownership.users.map((value, idx) => (
+                    )}
+                    {ownership instanceof UserList && (
+                      <div className="panel__content__form__section">
+                        <div>
+                          <div className="panel__content__form__section__header__label">
+                            Users :
+                          </div>
+                          <div className="panel__content__form__section__list">
                             <div
-                              key={value}
-                              className={
-                                showOwnerEditInput === idx
-                                  ? 'panel__content__form__section__list__new-item'
-                                  : 'panel__content__form__section__list__item'
+                              className="panel__content__form__section__list__items"
+                              data-testid={
+                                LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
                               }
                             >
-                              {showOwnerEditInput === idx ? (
-                                <>
-                                  <input
-                                    className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
-                                    spellCheck={false}
+                              {ownership.users.map((value, idx) => (
+                                <div
+                                  key={value}
+                                  className={
+                                    showOwnerEditInput === idx
+                                      ? 'panel__content__form__section__list__new-item'
+                                      : 'panel__content__form__section__list__item'
+                                  }
+                                >
+                                  {showOwnerEditInput === idx ? (
+                                    <>
+                                      <input
+                                        className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
+                                        spellCheck={false}
+                                        disabled={isReadOnly}
+                                        value={ownerInputValue}
+                                        onChange={changeUserOwnerInputValue}
+                                      />
+                                      <div className="panel__content__form__section__list__new-item__actions">
+                                        <button
+                                          className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                                          disabled={
+                                            isReadOnly ||
+                                            ownership.users.includes(
+                                              ownerInputValue,
+                                            )
+                                          }
+                                          onClick={updateUser(idx)}
+                                          tabIndex={-1}
+                                        >
+                                          Save
+                                        </button>
+                                        <button
+                                          className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
+                                          disabled={isReadOnly}
+                                          onClick={hideAddOrEditOwnerInput}
+                                          tabIndex={-1}
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div className="panel__content__form__section__list__item__value">
+                                        {value}
+                                      </div>
+                                      <div className="panel__content__form__section__list__item__actions">
+                                        <button
+                                          className="panel__content__form__section__list__item__edit-btn"
+                                          disabled={isReadOnly}
+                                          onClick={showEditOwnerInput(
+                                            value,
+                                            idx,
+                                          )}
+                                          tabIndex={-1}
+                                        >
+                                          <PencilIcon />
+                                        </button>
+                                        <button
+                                          className="panel__content__form__section__list__item__remove-btn"
+                                          disabled={isReadOnly}
+                                          onClick={deleteUser(idx)}
+                                          tabIndex={-1}
+                                        >
+                                          <TimesIcon />
+                                        </button>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              ))}
+                              {showOwnerEditInput === true && (
+                                <div className="panel__content__form__section__list__new-item">
+                                  <CustomSelectorInput
+                                    className="service-editor__owner__selector"
+                                    placeholder="Enter an owner..."
+                                    inputValue={searchText}
+                                    options={userOptions}
+                                    allowCreating={true}
+                                    isLoading={isLoadingUsers}
                                     disabled={isReadOnly}
-                                    value={ownerInputValue}
-                                    onChange={changeUserOwnerInputValue}
+                                    darkMode={
+                                      !applicationStore.layoutService
+                                        .TEMPORARY__isLightColorThemeEnabled
+                                    }
+                                    onInputChange={onSearchTextChange}
+                                    onChange={onUserOptionChange}
+                                    isMulti={true}
                                   />
                                   <div className="panel__content__form__section__list__new-item__actions">
                                     <button
-                                      className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                                      className="panel__content__form__section__list__new-item__add-btn btn btn--dark service-editor__owner__action"
                                       disabled={
                                         isReadOnly ||
-                                        ownership.users.includes(
-                                          ownerInputValue,
+                                        ownerInputs.some((i) =>
+                                          ownership.users.includes(i),
                                         )
                                       }
-                                      onClick={updateUser(idx)}
+                                      onClick={addUser}
                                       tabIndex={-1}
                                     >
                                       Save
                                     </button>
                                     <button
-                                      className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
+                                      className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark service-editor__owner__action"
                                       disabled={isReadOnly}
                                       onClick={hideAddOrEditOwnerInput}
                                       tabIndex={-1}
@@ -520,112 +754,87 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
                                       Cancel
                                     </button>
                                   </div>
-                                </>
-                              ) : (
-                                <>
-                                  <div className="panel__content__form__section__list__item__value">
-                                    {value}
-                                  </div>
-                                  <div className="panel__content__form__section__list__item__actions">
-                                    <button
-                                      className="panel__content__form__section__list__item__edit-btn"
-                                      disabled={isReadOnly}
-                                      onClick={showEditOwnerInput(value, idx)}
-                                      tabIndex={-1}
-                                    >
-                                      <PencilIcon />
-                                    </button>
-                                    <button
-                                      className="panel__content__form__section__list__item__remove-btn"
-                                      disabled={isReadOnly}
-                                      onClick={deleteUser(idx)}
-                                      tabIndex={-1}
-                                    >
-                                      <TimesIcon />
-                                    </button>
-                                  </div>
-                                </>
+                                </div>
                               )}
                             </div>
-                          ))}
-                          {showOwnerEditInput === true && (
-                            <div className="panel__content__form__section__list__new-item">
-                              <CustomSelectorInput
-                                className="service-editor__owner__selector"
-                                placeholder="Enter an owner..."
-                                inputValue={searchText}
-                                options={userOptions}
-                                allowCreating={true}
-                                isLoading={isLoadingUsers}
-                                disabled={isReadOnly}
-                                darkMode={
-                                  !applicationStore.layoutService
-                                    .TEMPORARY__isLightColorThemeEnabled
-                                }
-                                onInputChange={onSearchTextChange}
-                                onChange={onUserOptionChange}
-                                isMulti={true}
-                              />
-                              <div className="panel__content__form__section__list__new-item__actions">
-                                <button
-                                  className="panel__content__form__section__list__new-item__add-btn btn btn--dark service-editor__owner__action"
-                                  disabled={
-                                    isReadOnly ||
-                                    ownerInputs.some((i) =>
-                                      ownership.users.includes(i),
-                                    )
-                                  }
-                                  onClick={addUser}
-                                  tabIndex={-1}
+                            {ownership.users.length <
+                              MINIMUM_HOSTED_SERVICE_OWNERS &&
+                              showOwnerEditInput !== true && (
+                                <div
+                                  className="service-editor__owner__validation"
+                                  title={`${MINIMUM_HOSTED_SERVICE_OWNERS} owners required`}
                                 >
-                                  Save
-                                </button>
+                                  <ErrorIcon />
+                                  <div className="service-editor__owner__validation-label">
+                                    Service requires at least{' '}
+                                    {MINIMUM_HOSTED_SERVICE_OWNERS} owners
+                                  </div>
+                                </div>
+                              )}
+                            {showOwnerEditInput !== true && (
+                              <div className="panel__content__form__section__list__new-item__add">
                                 <button
-                                  className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark service-editor__owner__action"
+                                  className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
                                   disabled={isReadOnly}
-                                  onClick={hideAddOrEditOwnerInput}
+                                  onClick={showAddOwnerInput}
                                   tabIndex={-1}
+                                  title="Add owner"
                                 >
-                                  Cancel
+                                  Add Value
                                 </button>
                               </div>
-                            </div>
-                          )}
-                        </div>
-                        {ownership.users.length <
-                          MINIMUM_HOSTED_SERVICE_OWNERS &&
-                          showOwnerEditInput !== true && (
-                            <div
-                              className="service-editor__owner__validation"
-                              title={`${MINIMUM_HOSTED_SERVICE_OWNERS} owners required`}
-                            >
-                              <ErrorIcon />
-                              <div className="service-editor__owner__validation-label">
-                                Service requires at least{' '}
-                                {MINIMUM_HOSTED_SERVICE_OWNERS} owners
-                              </div>
-                            </div>
-                          )}
-                        {showOwnerEditInput !== true && (
-                          <div className="panel__content__form__section__list__new-item__add">
-                            <button
-                              className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                              disabled={isReadOnly}
-                              onClick={showAddOwnerInput}
-                              tabIndex={-1}
-                              title="Add owner"
-                            >
-                              Add Value
-                            </button>
+                            )}
                           </div>
-                        )}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
-                )}
-              </div>
-            }
-          </PanelForm>
+                }
+              </PanelForm>
+            </div>
+          )}
+          {selectedTab === ACTIVATOR_EDITOR_TAB.TAGGED_VALUES && (
+            <div
+              ref={dropTaggedValueRef}
+              className={clsx('panel__content__lists', {
+                'panel__content__lists--dnd-over':
+                  isTaggedValueDragOver && !isReadOnly,
+              })}
+            >
+              <TaggedValueDragPreviewLayer />
+              {activatorElement.taggedValues.map((taggedValue) => (
+                <TaggedValueEditor
+                  annotatedElement={activatorElement}
+                  key={taggedValue._UUID}
+                  taggedValue={taggedValue}
+                  deleteValue={_deleteTaggedValue(taggedValue)}
+                  isReadOnly={isReadOnly}
+                  darkTheme={true}
+                />
+              ))}
+            </div>
+          )}
+          {selectedTab === ACTIVATOR_EDITOR_TAB.STEREOTYPES && (
+            <div
+              ref={dropStereotypeRef}
+              className={clsx('panel__content__lists', {
+                'panel__content__lists--dnd-over':
+                  isStereotypeDragOver && !isReadOnly,
+              })}
+            >
+              <StereotypeDragPreviewLayer />
+              {activatorElement.stereotypes.map((stereotype) => (
+                <StereotypeSelector
+                  key={stereotype.value._UUID}
+                  annotatedElement={activatorElement}
+                  stereotype={stereotype}
+                  deleteStereotype={_deleteStereotype(stereotype)}
+                  isReadOnly={isReadOnly}
+                  darkTheme={true}
+                />
+              ))}
+            </div>
+          )}
         </PanelContent>
       </Panel>
     </div>

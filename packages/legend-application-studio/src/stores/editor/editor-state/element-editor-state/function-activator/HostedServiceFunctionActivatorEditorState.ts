@@ -28,7 +28,7 @@ import {
   guaranteeType,
   type PlainObject,
 } from '@finos/legend-shared';
-import { makeObservable, action, flow, computed } from 'mobx';
+import { makeObservable, action, flow, computed, observable } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
 import { activator_setOwnership } from '../../../../graph-modifier/DSL_FunctionActivator_GraphModifierHelper.js';
@@ -54,6 +54,12 @@ export const OWNERSHIP_OPTIONS = [
   },
 ];
 
+export enum ACTIVATOR_EDITOR_TAB {
+  DEFINITION = 'DEFINITION',
+  TAGGED_VALUES = 'TAGGED_VALUES',
+  STEREOTYPES = 'STEREOTYPES',
+}
+
 export type HostedServiceOwnerOption = {
   label: string;
   value: string;
@@ -62,6 +68,8 @@ export type HostedServiceOwnerOption = {
 export class HostedServiceFunctionActivatorEditorState extends ElementEditorState {
   readonly validateState = ActionState.create();
   readonly deployState = ActionState.create();
+
+  selectedTab: ACTIVATOR_EDITOR_TAB;
 
   constructor(editorStore: EditorStore, element: HostedService) {
     super(editorStore, element);
@@ -74,11 +82,18 @@ export class HostedServiceFunctionActivatorEditorState extends ElementEditorStat
       setSelectedOwnership: action,
       selectedOwnership: computed,
       storeModel: action,
-      generateLineage: action,
       validate: flow,
       deployToSandbox: flow,
       searchUsers: flow,
+      selectedTab: observable,
+      setSelectedTab: action,
     });
+
+    this.selectedTab = ACTIVATOR_EDITOR_TAB.DEFINITION;
+  }
+
+  setSelectedTab(tab: ACTIVATOR_EDITOR_TAB): void {
+    this.selectedTab = tab;
   }
 
   get activator(): HostedService {
@@ -101,10 +116,6 @@ export class HostedServiceFunctionActivatorEditorState extends ElementEditorStat
 
   storeModel(val: boolean): void {
     this.activator.storeModel = val;
-  }
-
-  generateLineage(val: boolean): void {
-    this.activator.generateLineage = val;
   }
 
   get selectedOwnership(): HostedServiceOwnerOption | undefined {
