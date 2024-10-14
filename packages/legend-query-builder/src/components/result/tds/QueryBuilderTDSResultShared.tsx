@@ -666,7 +666,7 @@ const filterByOrOutValue = async (
 ): Promise<void> => {
   const tdsColState = data?.columnName
     ? getTDSColumnState(tdsState, _cellData.columnName)
-    : _cellData?.columnName
+    : _cellData.columnName
       ? getTDSColumnState(tdsState, _cellData.columnName)
       : undefined;
   if (
@@ -696,7 +696,7 @@ const filterByOrOutValue = async (
     );
   } else {
     applicationStore.notificationService.notifyError(
-      `Can't filter column '${data?.columnName ? data.columnName : _cellData?.columnName}'`,
+      `Can't filter column '${data?.columnName ? data.columnName : _cellData.columnName}'`,
     );
   }
 };
