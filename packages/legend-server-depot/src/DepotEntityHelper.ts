@@ -36,3 +36,26 @@ export const retrieveProjectEntitiesWithDependencies = async (
     .flat()
     .concat(entities as unknown as Entity[]);
 };
+
+export const retrieveProjectEntitiesWithClassifier = async (
+  project: StoreProjectData,
+  versionId: string,
+  classifier: string,
+  depotServerClient: DepotServerClient,
+): Promise<[PlainObject<Entity>[], PlainObject<Entity>[]]> => {
+  const [entities, dependencyEntities]: [
+    PlainObject<Entity>[],
+    PlainObject<Entity>[],
+  ] = await Promise.all([
+    depotServerClient.getEntities(project, versionId, classifier),
+    depotServerClient.getDependencyEntities(
+      project.groupId,
+      project.artifactId,
+      versionId,
+      false,
+      false,
+      classifier,
+    ),
+  ]);
+  return [entities, dependencyEntities];
+};
