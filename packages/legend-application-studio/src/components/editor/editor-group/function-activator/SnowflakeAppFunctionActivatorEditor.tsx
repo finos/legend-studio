@@ -34,7 +34,6 @@ import {
   generateFunctionPrettyName,
   RelationalDatabaseConnection,
   DatabaseType,
-  DeploymentOwner,
   SnowflakePermissionScheme,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
@@ -42,12 +41,12 @@ import { useApplicationStore } from '@finos/legend-application';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { SnowflakeAppFunctionActivatorEdtiorState } from '../../../../stores/editor/editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
 import { flowResult } from 'mobx';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import {
   type RelationalDatabaseConnectionOption,
   buildRelationalDatabaseConnectionOption,
 } from '../connection-editor/RelationalDatabaseConnectionEditor.js';
-import { activator_setDeploymentOwner } from '../../../../stores/graph-modifier/DSL_FunctionActivator_GraphModifierHelper.js';
+import { ActivatorOwnershipForm } from './ActivatorFormComponents.js';
 
 export const SnowflakeAppFunctionActivatorEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -57,7 +56,7 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
   );
   const isReadOnly = editorState.isReadOnly;
   const activator = editorState.activator;
-  const ownership = activator.ownership;
+
   const connectionSelectorRef = useRef<SelectComponent>(null);
   const connectionFilterOption = createFilter({
     ignoreCase: true,
@@ -138,17 +137,6 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
     flowResult(editorState.deployToSandbox()).catch(
       applicationStore.alertUnhandledError,
     );
-  };
-
-  //Ownership
-  const [ownerInputValue, setOwner] = useState<string>(activator.ownership.id);
-  const updateDeploymentIdentifier: React.ChangeEventHandler<
-    HTMLInputElement
-  > = (event) => {
-    if (!isReadOnly) {
-      setOwner(event.target.value);
-      activator_setDeploymentOwner(ownership, event.target.value);
-    }
   };
 
   return (
@@ -330,33 +318,10 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
             </div>
           </PanelForm>
           <PanelForm>
-            <div>
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  Ownership
-                </div>
-                <div className="panel__content__form__section__header__prompt">
-                  The ownership model you want to use to control your snowflake
-                  app.
-                </div>
-              </div>
-              {ownership instanceof DeploymentOwner && (
-                <div className="panel__content__form__section">
-                  <div>
-                    <div className="panel__content__form__section__header__label">
-                      Deployment Identifier :
-                    </div>
-                    <input
-                      className="panel__content__form__section__input"
-                      spellCheck={false}
-                      disabled={isReadOnly}
-                      value={ownerInputValue}
-                      onChange={updateDeploymentIdentifier}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
+            <ActivatorOwnershipForm
+              activator={activator}
+              isReadOnly={isReadOnly}
+            />
           </PanelForm>
         </PanelContent>
       </Panel>

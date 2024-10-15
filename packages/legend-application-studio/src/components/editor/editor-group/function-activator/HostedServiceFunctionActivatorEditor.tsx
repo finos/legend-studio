@@ -25,19 +25,14 @@ import {
   PanelFormBooleanField,
   PanelFormValidatedTextField,
   TimesIcon,
-  CustomSelectorInput,
-  PencilIcon,
-  ErrorIcon,
   clsx,
   PlusIcon,
 } from '@finos/legend-art';
 import {
-  DeploymentOwner,
   Profile,
   StereotypeExplicitReference,
   type StereotypeReference,
   type TaggedValue,
-  UserList,
   generateFunctionPrettyName,
   stub_Profile,
   stub_Stereotype,
@@ -50,9 +45,6 @@ import { useApplicationStore } from '@finos/legend-application';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   HostedServiceFunctionActivatorEditorState,
-  OWNERSHIP_OPTIONS,
-  type HostedServiceOwnerOption,
-  MINIMUM_HOSTED_SERVICE_OWNERS,
   ACTIVATOR_EDITOR_TAB,
 } from '../../../../stores/editor/editor-state/element-editor-state/function-activator/HostedServiceFunctionActivatorEditorState.js';
 import {
@@ -61,16 +53,11 @@ import {
   hostedService_setPattern,
   hostedService_removePatternParameter,
   hostedService_setStoreModel,
-  hostedService_setGenerateLineage,
-  activator_setDeploymentOwner,
-  activator_updateUserOwnership,
-  activator_deleteValueFromUserOwnership,
-  activator_addUserOwner,
 } from '../../../../stores/graph-modifier/DSL_FunctionActivator_GraphModifierHelper.js';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
-import { debounce, prettyCONSTName } from '@finos/legend-shared';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
+import { ActivatorOwnershipForm } from './ActivatorFormComponents.js';
 import {
   annotatedElement_addStereotype,
   annotatedElement_addTaggedValue,
@@ -91,8 +78,6 @@ import {
   StereotypeDragPreviewLayer,
   StereotypeSelector,
 } from '../uml-editor/StereotypeSelector.js';
-
-type UserOption = { label: string; value: string };
 
 export const HostedServiceFunctionActivatorEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -197,7 +182,6 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
       editorState.setSelectedTab(tab);
 
   const activator = editorState.activator;
-  const ownership = activator.ownership;
   const visitFunction = (): void =>
     editorState.editorStore.graphEditorMode.openElement(
       activator.function.value,
@@ -225,10 +209,6 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
     hostedService_setStoreModel(activator, !activator.storeModel);
   };
 
-  const toggleGenerateLineage = (): void => {
-    hostedService_setGenerateLineage(activator, !activator.generateLineage);
-  };
-
   const toggleAutoActivateUpdates = (): void => {
     hostedService_setAutoActivateUpdates(
       activator,
@@ -241,127 +221,6 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
     return patternValidationResult
       ? patternValidationResult.messages[0]
       : undefined;
-  };
-
-  //Ownership
-  const [showOwnerEditInput, setShowOwnerEditInput] = useState<
-    boolean | number
-  >(false);
-  const [ownerInputValue, setOwnerInputValue] = useState<string>('');
-  const [searchText, setSearchText] = useState('');
-  const [userOptions, setUserOptions] = useState<UserOption[]>([]);
-  const [isLoadingUsers, setIsLoadingUsers] = useState<boolean>(false);
-  const [ownerInputs, setOwnerInputs] = useState<string[]>([]);
-  const showAddOwnerInput = (): void => setShowOwnerEditInput(true);
-
-  const onOwnershipChange = (
-    val: HostedServiceOwnerOption | undefined,
-  ): void => {
-    if (val) {
-      editorState.setSelectedOwnership(val);
-    }
-  };
-
-  const updateDeploymentIdentifier: React.ChangeEventHandler<
-    HTMLInputElement
-  > = (event) => {
-    if (!isReadOnly && ownership instanceof DeploymentOwner) {
-      activator_setDeploymentOwner(ownership, event.target.value);
-    }
-  };
-
-  const changeUserOwnerInputValue: React.ChangeEventHandler<
-    HTMLInputElement
-  > = (event) => setOwnerInputValue(event.target.value);
-
-  const updateUser =
-    (idx: number): (() => void) =>
-    (): void => {
-      if (
-        ownerInputValue &&
-        ownership instanceof UserList &&
-        !ownership.users.includes(ownerInputValue)
-      ) {
-        activator_updateUserOwnership(ownership, ownerInputValue, idx);
-      }
-    };
-
-  const showEditOwnerInput =
-    (value: string, idx: number): (() => void) =>
-    (): void => {
-      setOwnerInputValue(value);
-      setShowOwnerEditInput(idx);
-    };
-
-  const hideAddOrEditOwnerInput = (): void => {
-    setShowOwnerEditInput(false);
-    setOwnerInputValue('');
-  };
-
-  const deleteUser =
-    (idx: number): (() => void) =>
-    (): void => {
-      if (!isReadOnly && ownership instanceof UserList) {
-        activator_deleteValueFromUserOwnership(ownership, idx);
-        if (
-          typeof showOwnerEditInput === 'number' &&
-          showOwnerEditInput > idx
-        ) {
-          setShowOwnerEditInput(showOwnerEditInput - 1);
-        }
-      }
-    };
-
-  const debouncedSearchUsers = useMemo(
-    () =>
-      debounce((input: string): void => {
-        setIsLoadingUsers(true);
-        flowResult(editorState.searchUsers(input))
-          .then((users) =>
-            setUserOptions(
-              users.map((u) => ({
-                value: u.userId,
-                label: u.userId,
-              })),
-            ),
-          )
-          .then(() => setIsLoadingUsers(false))
-          .catch(editorState.editorStore.applicationStore.alertUnhandledError);
-      }, 500),
-    [editorState],
-  );
-
-  const onSearchTextChange = (value: string): void => {
-    if (value !== searchText) {
-      setSearchText(value);
-      debouncedSearchUsers.cancel();
-      if (value.length >= 3) {
-        debouncedSearchUsers(value);
-      } else if (value.length === 0) {
-        setUserOptions([]);
-        setIsLoadingUsers(false);
-      }
-    }
-  };
-
-  const onUserOptionChange = (options: UserOption[]): void => {
-    setOwnerInputs(options.map((op) => op.label));
-    setUserOptions([]);
-    debouncedSearchUsers.cancel();
-    setIsLoadingUsers(false);
-  };
-
-  const addUser = (): void => {
-    ownerInputs.forEach((value) => {
-      if (
-        value &&
-        ownership instanceof UserList &&
-        !ownership.users.includes(value)
-      ) {
-        activator_addUserOwner(ownership, value);
-      }
-    });
-    hideAddOrEditOwnerInput();
   };
 
   //Pattern
@@ -583,213 +442,10 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
                 />
               </PanelForm>
               <PanelForm>
-                <PanelFormBooleanField
+                <ActivatorOwnershipForm
+                  activator={activator}
                   isReadOnly={isReadOnly}
-                  value={activator.generateLineage}
-                  name="Generate Lineage"
-                  prompt="Generate Lineage (slower)"
-                  update={toggleGenerateLineage}
                 />
-              </PanelForm>
-              <PanelForm>
-                {
-                  <div>
-                    <div className="panel__content__form__section">
-                      <div className="panel__content__form__section__header__label">
-                        Ownership
-                      </div>
-                      <div className="panel__content__form__section__header__prompt">
-                        The ownership model you want to use to control your
-                        service.
-                      </div>
-                      <CustomSelectorInput
-                        options={OWNERSHIP_OPTIONS}
-                        onChange={onOwnershipChange}
-                        value={editorState.selectedOwnership}
-                        darkMode={
-                          !applicationStore.layoutService
-                            .TEMPORARY__isLightColorThemeEnabled
-                        }
-                      />
-                    </div>
-                    {ownership instanceof DeploymentOwner && (
-                      <div className="panel__content__form__section">
-                        <div>
-                          <div className="panel__content__form__section__header__label">
-                            Deployment Identifier :
-                          </div>
-                          <input
-                            className="panel__content__form__section__input"
-                            spellCheck={false}
-                            disabled={isReadOnly}
-                            value={ownership.id}
-                            onChange={updateDeploymentIdentifier}
-                          />
-                        </div>
-                      </div>
-                    )}
-                    {ownership instanceof UserList && (
-                      <div className="panel__content__form__section">
-                        <div>
-                          <div className="panel__content__form__section__header__label">
-                            Users :
-                          </div>
-                          <div className="panel__content__form__section__list">
-                            <div
-                              className="panel__content__form__section__list__items"
-                              data-testid={
-                                LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
-                              }
-                            >
-                              {ownership.users.map((value, idx) => (
-                                <div
-                                  key={value}
-                                  className={
-                                    showOwnerEditInput === idx
-                                      ? 'panel__content__form__section__list__new-item'
-                                      : 'panel__content__form__section__list__item'
-                                  }
-                                >
-                                  {showOwnerEditInput === idx ? (
-                                    <>
-                                      <input
-                                        className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
-                                        spellCheck={false}
-                                        disabled={isReadOnly}
-                                        value={ownerInputValue}
-                                        onChange={changeUserOwnerInputValue}
-                                      />
-                                      <div className="panel__content__form__section__list__new-item__actions">
-                                        <button
-                                          className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                                          disabled={
-                                            isReadOnly ||
-                                            ownership.users.includes(
-                                              ownerInputValue,
-                                            )
-                                          }
-                                          onClick={updateUser(idx)}
-                                          tabIndex={-1}
-                                        >
-                                          Save
-                                        </button>
-                                        <button
-                                          className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
-                                          disabled={isReadOnly}
-                                          onClick={hideAddOrEditOwnerInput}
-                                          tabIndex={-1}
-                                        >
-                                          Cancel
-                                        </button>
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <div className="panel__content__form__section__list__item__value">
-                                        {value}
-                                      </div>
-                                      <div className="panel__content__form__section__list__item__actions">
-                                        <button
-                                          className="panel__content__form__section__list__item__edit-btn"
-                                          disabled={isReadOnly}
-                                          onClick={showEditOwnerInput(
-                                            value,
-                                            idx,
-                                          )}
-                                          tabIndex={-1}
-                                        >
-                                          <PencilIcon />
-                                        </button>
-                                        <button
-                                          className="panel__content__form__section__list__item__remove-btn"
-                                          disabled={isReadOnly}
-                                          onClick={deleteUser(idx)}
-                                          tabIndex={-1}
-                                        >
-                                          <TimesIcon />
-                                        </button>
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
-                              ))}
-                              {showOwnerEditInput === true && (
-                                <div className="panel__content__form__section__list__new-item">
-                                  <CustomSelectorInput
-                                    className="service-editor__owner__selector"
-                                    placeholder="Enter an owner..."
-                                    inputValue={searchText}
-                                    options={userOptions}
-                                    allowCreating={true}
-                                    isLoading={isLoadingUsers}
-                                    disabled={isReadOnly}
-                                    darkMode={
-                                      !applicationStore.layoutService
-                                        .TEMPORARY__isLightColorThemeEnabled
-                                    }
-                                    onInputChange={onSearchTextChange}
-                                    onChange={onUserOptionChange}
-                                    isMulti={true}
-                                  />
-                                  <div className="panel__content__form__section__list__new-item__actions">
-                                    <button
-                                      className="panel__content__form__section__list__new-item__add-btn btn btn--dark service-editor__owner__action"
-                                      disabled={
-                                        isReadOnly ||
-                                        ownerInputs.some((i) =>
-                                          ownership.users.includes(i),
-                                        )
-                                      }
-                                      onClick={addUser}
-                                      tabIndex={-1}
-                                    >
-                                      Save
-                                    </button>
-                                    <button
-                                      className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark service-editor__owner__action"
-                                      disabled={isReadOnly}
-                                      onClick={hideAddOrEditOwnerInput}
-                                      tabIndex={-1}
-                                    >
-                                      Cancel
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                            {ownership.users.length <
-                              MINIMUM_HOSTED_SERVICE_OWNERS &&
-                              showOwnerEditInput !== true && (
-                                <div
-                                  className="service-editor__owner__validation"
-                                  title={`${MINIMUM_HOSTED_SERVICE_OWNERS} owners required`}
-                                >
-                                  <ErrorIcon />
-                                  <div className="service-editor__owner__validation-label">
-                                    Service requires at least{' '}
-                                    {MINIMUM_HOSTED_SERVICE_OWNERS} owners
-                                  </div>
-                                </div>
-                              )}
-                            {showOwnerEditInput !== true && (
-                              <div className="panel__content__form__section__list__new-item__add">
-                                <button
-                                  className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                                  disabled={isReadOnly}
-                                  onClick={showAddOwnerInput}
-                                  tabIndex={-1}
-                                  title="Add owner"
-                                >
-                                  Add Value
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                }
               </PanelForm>
             </div>
           )}
