@@ -26,6 +26,8 @@ import type { Type } from '../metamodel/pure/packageableElements/domain/Type.js'
 import { PrimitiveType } from '../metamodel/pure/packageableElements/domain/PrimitiveType.js';
 import { Enumeration } from '../metamodel/pure/packageableElements/domain/Enumeration.js';
 import { formatDate } from '@finos/legend-shared';
+import type { PureModel } from '../PureModel.js';
+import type { FunctionAnalysisInfo } from './FunctionAnalysis.js';
 
 export enum PURE_ELEMENT_NAME {
   PROFILE = 'Profile',
@@ -134,6 +136,32 @@ export const generateFunctionCallString = (
     }
   }
   return `${element.package?.path}${ELEMENT_PATH_DELIMITER}${element.functionName}(${lambdaString})`;
+};
+
+export const generateFunctionCallStringFromFunctionAnalysisInfo = (
+  graph: PureModel,
+  functionInfo: FunctionAnalysisInfo,
+): string => {
+  let lambdaString = '';
+  const parameterLength = functionInfo.parameterInfoList.length;
+  if (parameterLength > 0) {
+    for (let i = 0; i < parameterLength; i++) {
+      let paramType;
+      if (functionInfo.parameterInfoList[i] !== undefined) {
+        try {
+          paramType = graph.getType(functionInfo.parameterInfoList[i]!.type);
+        } catch {
+          // graph might not contain classes used as type, set it to undefine
+        }
+      }
+      const separator = i !== parameterLength - 1 ? ', ' : '';
+      lambdaString =
+        lambdaString +
+        generateDefaultParameterValueForType(paramType, i) +
+        separator;
+    }
+  }
+  return `${functionInfo.packagePath}${ELEMENT_PATH_DELIMITER}${functionInfo.functionName}(${lambdaString})`;
 };
 
 export const generateFunctionPrettyName = (

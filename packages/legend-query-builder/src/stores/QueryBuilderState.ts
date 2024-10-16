@@ -56,6 +56,7 @@ import {
   type Type,
   type QueryGridConfig,
   type QueryExecutionContext,
+  type FunctionAnalysisInfo,
   GRAPH_MANAGER_EVENT,
   CompilationError,
   extractSourceInformationCoordinates,
@@ -115,6 +116,11 @@ export type QueryableClassMappingRuntimeInfo = QueryableSourceInfo & {
   class: string;
   mapping: string;
   runtime: string;
+};
+
+export type QueryBuilderExtraFunctionAnalysisInfo = {
+  functionInfoMap: Map<string, FunctionAnalysisInfo>;
+  dependencyFunctionInfoMap: Map<string, FunctionAnalysisInfo>;
 };
 
 export enum QUERY_BUILDER_LAMBDA_WRITER_MODE {
@@ -830,6 +836,12 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       !this.fetchStructureState.implementation
         .hasInvalidDerivedPropertyParameters
     );
+  }
+
+  buildFunctionAnalysisInfo():
+    | QueryBuilderExtraFunctionAnalysisInfo
+    | undefined {
+    return undefined;
   }
 
   /**

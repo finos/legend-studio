@@ -34,6 +34,7 @@ export { QueryBuilder } from './components/QueryBuilder.js';
 export { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './components/QueryBuilderComponentElement.js';
 export {
   type QueryableSourceInfo as QuerySDLC,
+  type QueryBuilderExtraFunctionAnalysisInfo,
   QueryBuilderState,
   QUERY_BUILDER_LAMBDA_WRITER_MODE,
   INTERNAL__BasicQueryBuilderState,
