@@ -24,11 +24,8 @@ import {
   _lambda,
   DataCubeEngine,
   DataCubeFunction,
+  type DataCubeAPI,
   type DataCubeSource,
-  DEFAULT_ENABLE_DEBUG_MODE,
-  DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
-  DEFAULT_GRID_CLIENT_ROW_BUFFER,
-  DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
 } from '@finos/legend-data-cube';
 import {
   TDSExecutionResult,
@@ -40,72 +37,64 @@ import {
   type V1_Lambda,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import { guaranteeType, isNonNullable } from '@finos/legend-shared';
-import type { LegendREPLDataCubeApplicationEngine } from './LegendREPLDataCubeApplicationEngine.js';
-import { LEGEND_REPL_SETTING_KEY } from '../__lib__/LegendREPLSetting.js';
+import {
+  type DocumentationEntry,
+  guaranteeType,
+  isNonNullable,
+  LogEvent,
+  type PlainObject,
+} from '@finos/legend-shared';
 import { LegendREPLDataCubeSource } from './LegendREPLDataCubeSource.js';
+import type { LegendREPLApplicationStore } from '../application/LegendREPLApplicationStore.js';
+import {
+  APPLICATION_EVENT,
+  shouldDisplayVirtualAssistantDocumentationEntry,
+} from '@finos/legend-application';
 
 export class LegendREPLDataCubeEngine extends DataCubeEngine {
-  readonly application: LegendREPLDataCubeApplicationEngine;
+  readonly application: LegendREPLApplicationStore;
   readonly client: LegendREPLServerClient;
 
   constructor(
-    application: LegendREPLDataCubeApplicationEngine,
+    application: LegendREPLApplicationStore,
     client: LegendREPLServerClient,
   ) {
     super();
 
     this.application = application;
     this.client = client;
-
-    this.enableDebugMode =
-      this.application.getPersistedBooleanSettingValue(
-        LEGEND_REPL_SETTING_KEY.ENABLE_DEBUG_MODE,
-      ) ?? DEFAULT_ENABLE_DEBUG_MODE;
-    this.gridClientRowBuffer =
-      this.application.getPersistedNumericSettingValue(
-        LEGEND_REPL_SETTING_KEY.GRID_CLIENT_ROW_BUFFER,
-      ) ?? DEFAULT_GRID_CLIENT_ROW_BUFFER;
-    this.gridClientPurgeClosedRowNodes =
-      this.application.getPersistedBooleanSettingValue(
-        LEGEND_REPL_SETTING_KEY.GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
-      ) ?? DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES;
-    this.gridClientSuppressLargeDatasetWarning =
-      this.application.getPersistedBooleanSettingValue(
-        LEGEND_REPL_SETTING_KEY.GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
-      ) ?? DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING;
   }
 
-  override setEnableDebugMode(value: boolean) {
-    super.setEnableDebugMode(value);
-    this.application.persistSettingValue(
-      LEGEND_REPL_SETTING_KEY.ENABLE_DEBUG_MODE,
-      value,
+  blockNavigation(
+    blockCheckers: (() => boolean)[],
+    onBlock?: ((onProceed: () => void) => void) | undefined,
+    onNativePlatformNavigationBlock?: (() => void) | undefined,
+  ) {
+    this.application.navigationService.navigator.blockNavigation(
+      blockCheckers,
+      onBlock,
+      onNativePlatformNavigationBlock,
     );
   }
 
-  override setGridClientRowBuffer(value: number) {
-    super.setGridClientRowBuffer(value);
-    this.application.persistSettingValue(
-      LEGEND_REPL_SETTING_KEY.GRID_CLIENT_ROW_BUFFER,
-      value,
-    );
+  unblockNavigation() {
+    this.application.navigationService.navigator.unblockNavigation();
   }
 
-  override setGridClientPurgeClosedRowNodes(value: boolean) {
-    super.setGridClientPurgeClosedRowNodes(value);
-    this.application.persistSettingValue(
-      LEGEND_REPL_SETTING_KEY.GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
-      value,
-    );
+  persistSettingValue(
+    key: string,
+    value: string | number | boolean | object | undefined,
+  ): void {
+    this.application.settingService.persistValue(key, value);
   }
 
-  override setGridClientSuppressLargeDatasetWarning(value: boolean) {
-    super.setGridClientSuppressLargeDatasetWarning(value);
-    this.application.persistSettingValue(
-      LEGEND_REPL_SETTING_KEY.GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
-      value,
-    );
+  // ---------------------------------- IMPLEMENTATION ----------------------------------
+
+  override async fetchConfiguration() {
+    const info = await this.client.getInfrastructureInfo();
+    return {
+      gridClientLicense: info.gridClientLicense,
+    };
   }
 
   override async getInitialInput() {
@@ -127,13 +116,6 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     return {
       query: baseQuery.query,
       source,
-    };
-  }
-
-  async fetchConfiguration() {
-    const info = await this.client.getInfrastructureInfo();
-    return {
-      gridClientLicense: info.gridClientLicense,
     };
   }
 
@@ -188,10 +170,14 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     });
   }
 
-  async executeQuery(query: V1_Lambda, source: DataCubeSource) {
+  async executeQuery(
+    query: V1_Lambda,
+    source: DataCubeSource,
+    api: DataCubeAPI,
+  ) {
     const result = await this.client.executeQuery({
       query: V1_serializeValueSpecification(query, []),
-      debug: this.enableDebugMode,
+      debug: api.getSettings().enableDebugMode,
     });
     return {
       result: guaranteeType(
@@ -218,5 +204,66 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
       );
     }
     return undefined;
+  }
+
+  override getDocumentationURL(): string | undefined {
+    return this.application.documentationService.url;
+  }
+
+  override getDocumentationEntry(key: string) {
+    return this.application.documentationService.getDocEntry(key);
+  }
+
+  override shouldDisplayDocumentationEntry(entry: DocumentationEntry) {
+    return shouldDisplayVirtualAssistantDocumentationEntry(entry);
+  }
+
+  override openLink(url: string) {
+    this.application.navigationService.navigator.visitAddress(url);
+  }
+
+  override sendTelemetry(event: string, data: PlainObject) {
+    this.application.telemetryService.logEvent(event, data);
+  }
+
+  override logDebug(message: string, ...data: unknown[]) {
+    this.application.logService.debug(
+      LogEvent.create(APPLICATION_EVENT.DEBUG),
+      message,
+      ...data,
+    );
+  }
+
+  override debugProcess(processName: string, ...data: [string, unknown][]) {
+    this.application.logService.debug(
+      LogEvent.create(APPLICATION_EVENT.DEBUG),
+      `\n------ START DEBUG PROCESS: ${processName} ------`,
+      ...data.flatMap(([key, value]) => [`\n[${key.toUpperCase()}]:`, value]),
+      `\n------- END DEBUG PROCESS: ${processName} -------\n\n`,
+    );
+  }
+
+  override logInfo(event: LogEvent, ...data: unknown[]) {
+    this.application.logService.info(event, ...data);
+  }
+
+  override logWarning(event: LogEvent, ...data: unknown[]) {
+    this.application.logService.warn(event, ...data);
+  }
+
+  override logError(event: LogEvent, ...data: unknown[]) {
+    this.application.logService.error(event, ...data);
+  }
+
+  override logUnhandledError(error: Error) {
+    this.application.logUnhandledError(error);
+  }
+
+  override logIllegalStateError(message: string, error?: Error) {
+    this.logError(
+      LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
+      message,
+      error,
+    );
   }
 }

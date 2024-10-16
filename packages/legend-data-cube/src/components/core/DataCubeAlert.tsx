@@ -100,7 +100,6 @@ const BlockingActionAlertContent = observer((props: { alert: ActionAlert }) => {
   const { title, message, prompt, type, onClose, actions } = alert;
   const ref = useRef<HTMLDivElement>(null);
   const dataCube = useDataCube();
-  const application = dataCube.application;
 
   // set the width and height of the dialog to make sure content overflow works properly
   const handleEnter = () => {
@@ -151,7 +150,7 @@ const BlockingActionAlertContent = observer((props: { alert: ActionAlert }) => {
               handler: () => {
                 action.handler();
                 onClose?.();
-                application.alertAction(undefined);
+                dataCube.alertAction(undefined);
               },
             }))}
           />
@@ -163,8 +162,7 @@ const BlockingActionAlertContent = observer((props: { alert: ActionAlert }) => {
 
 export const DataCubeBlockingActionAlert = observer(() => {
   const dataCube = useDataCube();
-  const application = dataCube.application;
-  const actionAlert = application.currentActionAlert;
+  const actionAlert = dataCube.currentActionAlert;
 
   if (!actionAlert) {
     return null;

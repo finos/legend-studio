@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observer } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
   DataCubeIcon,
   DropdownMenu,
@@ -23,14 +23,17 @@ import {
 } from '@finos/legend-art';
 import { DataCubeLayoutManager } from './core/DataCubeLayoutManager.js';
 import { INTERNAL__MonacoEditorWidgetsRoot } from './core/DataCubePureCodeEditorUtils.js';
-import { useDataCube } from './DataCubeProvider.js';
 import { DataCubeBlockingActionAlert } from './core/DataCubeAlert.js';
 import { DataCubeView } from './DataCubeView.js';
 import { useEffect } from 'react';
+import type { DataCubeEngine } from '../stores/core/DataCubeEngine.js';
+import { DataCubeState } from '../stores/DataCubeState.js';
+import { type DataCubeOptions } from '../stores/DataCubeOptions.js';
+import { DataCubeContextProvider, useDataCube } from './DataCubeProvider.js';
 
 const DataCubeTitleBar = observer(() => {
   const dataCube = useDataCube();
-  const application = dataCube.application;
+  const engine = dataCube.engine;
   const view = dataCube.view;
   const [openMenuDropdown, closeMenuDropdown, menuDropdownProps] =
     useDropdownMenu();
@@ -62,9 +65,9 @@ const DataCubeTitleBar = observer(() => {
           <DropdownMenuItem
             className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
             onClick={() => {
-              const url = application.getDocumentationURL();
+              const url = engine.getDocumentationURL();
               if (url) {
-                application.openLink(url);
+                engine.openLink(url);
               }
               closeMenuDropdown();
             }}
@@ -88,14 +91,16 @@ const DataCubeTitleBar = observer(() => {
   );
 });
 
-export const DataCube = observer(() => {
+const DataCubeRoot = observer(() => {
   const dataCube = useDataCube();
-  const application = dataCube.application;
+  const engine = dataCube.engine;
   const view = dataCube.view;
 
   useEffect(() => {
-    view.initialize().catch((error) => application.logUnhandledError(error));
-  }, [view, application]);
+    dataCube.view
+      .initialize()
+      .catch((error) => dataCube.engine.logUnhandledError(error));
+  }, [dataCube]);
 
   return (
     <div className="data-cube relative flex h-full w-full flex-col bg-white">
@@ -103,9 +108,34 @@ export const DataCube = observer(() => {
 
       <DataCubeView view={view} />
 
-      <DataCubeLayoutManager layout={application.layout} />
+      <DataCubeLayoutManager layout={engine.layout} />
       <DataCubeBlockingActionAlert />
       <INTERNAL__MonacoEditorWidgetsRoot />
     </div>
   );
 });
+
+export const DataCube = observer(
+  (props: {
+    engine: DataCubeEngine;
+    options?: DataCubeOptions | undefined;
+  }): React.ReactElement => {
+    const { engine, options } = props;
+    const state = useLocalObservable(() => new DataCubeState(engine, options));
+
+    useEffect(() => {
+      state
+        .initialize()
+        .catch((error) => state.engine.logUnhandledError(error));
+    }, [state]);
+
+    if (!state.initState.hasSucceeded) {
+      return <></>;
+    }
+    return (
+      <DataCubeContextProvider value={state}>
+        <DataCubeRoot />
+      </DataCubeContextProvider>
+    );
+  },
+);

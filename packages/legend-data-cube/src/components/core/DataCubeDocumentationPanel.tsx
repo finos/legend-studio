@@ -21,8 +21,7 @@ import { useDataCube } from '../DataCubeProvider.js';
 
 export const DocumentationPanel = observer(() => {
   const dataCube = useDataCube();
-  const application = dataCube.application;
-  const entry = application.currentDocumentationEntry;
+  const entry = dataCube.currentDocumentationEntry;
 
   if (!entry) {
     return null;

@@ -139,12 +139,6 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     return new RawLambda(json.parameters, json.body);
   }
 
-  override async fetchConfiguration() {
-    return {
-      gridClientLicense: undefined,
-    };
-  }
-
   async getQueryTypeahead(
     code: string,
     baseQuery: V1_Lambda,

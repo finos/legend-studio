@@ -32,7 +32,6 @@ import type {
   DataCubeEngine,
   DataCubeInitialInput,
 } from '../core/DataCubeEngine.js';
-import { type DataCubeApplicationEngine } from '../core/DataCubeApplicationEngine.js';
 import { AlertType } from '../../components/core/DataCubeAlert.js';
 import type { DataCubeSource } from '../core/models/DataCubeSource.js';
 
@@ -53,7 +52,6 @@ class DataCubeTask {
 
 export class DataCubeViewState {
   readonly dataCube: DataCubeState;
-  readonly application: DataCubeApplicationEngine;
   readonly engine: DataCubeEngine;
 
   readonly snapshotManager: DataCubeQuerySnapshotManager;
@@ -76,7 +74,7 @@ export class DataCubeViewState {
     });
 
     this.dataCube = dataCube;
-    this.application = dataCube.application;
+    this.engine = dataCube.engine;
     this.engine = dataCube.engine;
 
     // NOTE: snapshot manager must be instantiated before subscribers
@@ -125,7 +123,7 @@ export class DataCubeViewState {
       );
       const input = initialInput ?? (await this.engine.getInitialInput());
       if (!input) {
-        this.application.alertAction({
+        this.dataCube.alertAction({
           message: `Initialization Failure: No initial input provided`,
           prompt: `Make sure to either specify the initial input when setting up DataCube or the initial input getter in engine.`,
           type: AlertType.ERROR,
@@ -145,9 +143,9 @@ export class DataCubeViewState {
       this.snapshotManager.broadcastSnapshot(initialSnapshot);
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.application.alertAction({
+      this.dataCube.alertAction({
         message: `Initialization Failure: ${error.message}`,
-        prompt: `Resolve the issue and reload the application.`,
+        prompt: `Resolve the issue and reload the engine.`,
         type: AlertType.ERROR,
         actions: [],
       });

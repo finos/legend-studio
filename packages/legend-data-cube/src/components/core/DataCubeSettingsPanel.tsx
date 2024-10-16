@@ -17,51 +17,54 @@
 import { observer } from 'mobx-react-lite';
 import { DataCubeIcon } from '@finos/legend-art';
 import { FormCheckbox, FormNumberInput } from './DataCubeFormUtils.js';
-import {
-  DEFAULT_ENABLE_DEBUG_MODE,
-  DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
-  DEFAULT_GRID_CLIENT_ROW_BUFFER,
-  DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
-} from '../../stores/core/DataCubeEngine.js';
 import { useState } from 'react';
 import { useDataCube } from '../DataCubeProvider.js';
+import {
+  DataCubeSettingKey,
+  DEFAULT_SETTINGS,
+} from '../../stores/DataCubeSettings.js';
 
 export const DataCubeSettingsPanel = observer(() => {
   const dataCube = useDataCube();
-  const engine = dataCube.engine;
 
   // NOTE: this makes sure the changes are not applied until saved, but it generates
   // a lot of boilerplate code, consider using a more ergonomic approach when we need
   // to scale this to more settings.
   const [enableDebugMode, setEnableDebugMode] = useState(
-    engine.enableDebugMode,
+    dataCube.settings.enableDebugMode,
   );
   const [gridClientRowBuffer, setGridClientRowBuffer] = useState(
-    engine.gridClientRowBuffer,
+    dataCube.settings.gridClientRowBuffer,
   );
   const [gridClientPurgeClosedRowNodes, setGridClientPurgeClosedRowNodes] =
-    useState(engine.gridClientPurgeClosedRowNodes);
+    useState(dataCube.settings.gridClientPurgeClosedRowNodes);
   const [
     gridClientSuppressLargeDatasetWarning,
     setGridClientSuppressLargeDatasetWarning,
-  ] = useState(engine.gridClientSuppressLargeDatasetWarning);
+  ] = useState(dataCube.settings.gridClientSuppressLargeDatasetWarning);
 
   const save = () => {
-    engine.setEnableDebugMode(enableDebugMode);
-    engine.setGridClientRowBuffer(gridClientRowBuffer);
-    engine.setGridClientPurgeClosedRowNodes(gridClientPurgeClosedRowNodes);
-    engine.setGridClientSuppressLargeDatasetWarning(
+    dataCube.settings.setEnableDebugMode(enableDebugMode);
+    dataCube.settings.setGridClientRowBuffer(gridClientRowBuffer);
+    dataCube.settings.setGridClientPurgeClosedRowNodes(
+      gridClientPurgeClosedRowNodes,
+    );
+    dataCube.settings.setGridClientSuppressLargeDatasetWarning(
       gridClientSuppressLargeDatasetWarning,
     );
   };
   const restoreDefaults = () => {
-    setGridClientRowBuffer(DEFAULT_GRID_CLIENT_ROW_BUFFER);
-    setGridClientPurgeClosedRowNodes(
-      DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
+    setEnableDebugMode(DEFAULT_SETTINGS[DataCubeSettingKey.ENABLE_DEBUG_MODE]);
+    setGridClientRowBuffer(
+      DEFAULT_SETTINGS[DataCubeSettingKey.GRID_CLIENT_ROW_BUFFER],
     );
-    setEnableDebugMode(DEFAULT_ENABLE_DEBUG_MODE);
+    setGridClientPurgeClosedRowNodes(
+      DEFAULT_SETTINGS[DataCubeSettingKey.GRID_CLIENT_PURGE_CLOSED_ROW_NODES],
+    );
     setGridClientSuppressLargeDatasetWarning(
-      DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
+      DEFAULT_SETTINGS[
+        DataCubeSettingKey.GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING
+      ],
     );
     save();
   };
@@ -102,7 +105,7 @@ export const DataCubeSettingsPanel = observer(() => {
             <div className="flex pr-2">
               <button
                 className="ml-2 h-5 min-w-16 border border-neutral-400 bg-neutral-300 px-2 text-sm first-of-type:ml-0 hover:brightness-95"
-                onClick={() => engine.refreshFailedDataFetches()}
+                onClick={() => dataCube.refreshFailedDataFetches()}
               >
                 Run Action
               </button>
@@ -132,11 +135,16 @@ export const DataCubeSettingsPanel = observer(() => {
                 className="w-16 text-sm"
                 min={10}
                 step={10}
-                defaultValue={DEFAULT_GRID_CLIENT_ROW_BUFFER}
+                defaultValue={
+                  DEFAULT_SETTINGS[DataCubeSettingKey.GRID_CLIENT_ROW_BUFFER]
+                }
                 value={gridClientRowBuffer}
                 setValue={(value) => {
                   setGridClientRowBuffer(
-                    value ?? DEFAULT_GRID_CLIENT_ROW_BUFFER,
+                    value ??
+                      DEFAULT_SETTINGS[
+                        DataCubeSettingKey.GRID_CLIENT_ROW_BUFFER
+                      ],
                   );
                 }}
               />

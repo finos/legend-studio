@@ -64,8 +64,8 @@ export abstract class DataCubeQuerySnapshotController
     const previousSnapshot = this.latestSnapshot;
     this.latestSnapshot = snapshot;
 
-    if (this.view.engine.enableDebugMode) {
-      this.view.application.debugProcess(
+    if (this.view.dataCube.settings.enableDebugMode) {
+      this.view.engine.debugProcess(
         `New Snapshot`,
         ['Publisher', this.getSnapshotSubscriberName()],
         ['Snapshot', snapshot],
@@ -141,7 +141,7 @@ export class DataCubeQuerySnapshotManager {
 
   broadcastSnapshot(snapshot: DataCubeQuerySnapshot) {
     if (!snapshot.isFinalized()) {
-      this.view.application.logIllegalStateError(
+      this.view.engine.logIllegalStateError(
         `Snapshot must be finalized before broadcasting`,
       );
       return;
@@ -152,7 +152,7 @@ export class DataCubeQuerySnapshotManager {
       if (currentSnapshot?.uuid !== snapshot.uuid) {
         subscriber.receiveSnapshot(snapshot).catch((error: unknown) => {
           assertErrorThrown(error);
-          this.view.application.logIllegalStateError(
+          this.view.engine.logIllegalStateError(
             `Error occured while subscribers receiving and applying new snapshot should be handled gracefully`,
             error,
           );

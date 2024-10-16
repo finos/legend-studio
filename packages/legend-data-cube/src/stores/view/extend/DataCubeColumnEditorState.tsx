@@ -289,7 +289,7 @@ export abstract class DataCubeColumnBaseEditorState {
         this.showError(err.payload as DataCubeQueryBuilderError);
         return undefined;
       }
-      this.view.application.alertError(err, {
+      this.view.engine.alertError(err, {
         message: `Expression Validation Failure: ${err.message}`,
       });
     } finally {
@@ -337,7 +337,7 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
   }
 
   override newDisplay(state: DataCubeColumnBaseEditorState): DisplayState {
-    return this.view.application.layout.newDisplay(
+    return this.view.engine.layout.newDisplay(
       'Add New Column',
       () => <DataCubeColumnCreator state={this} />,
       {
@@ -372,7 +372,7 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
       ]);
     } catch (error) {
       assertErrorThrown(error);
-      this.view.application.alertError(error, {
+      this.view.engine.alertError(error, {
         message: `Expression Validation Failure: ${error.message}`,
       });
       return;
@@ -381,14 +381,14 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
     }
 
     if (!(query instanceof V1_Lambda)) {
-      this.view.application.alertError(new Error(), {
+      this.view.engine.alertError(new Error(), {
         message: `Expression Validation Failure: Expression must be a lambda.`,
       });
       return;
     }
 
     if (!returnType) {
-      this.view.application.alertError(new Error(), {
+      this.view.engine.alertError(new Error(), {
         message: `Expression Validation Failure: Can't compute expression return type.`,
       });
       return;
@@ -454,7 +454,7 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
   }
 
   override newDisplay(state: DataCubeColumnBaseEditorState): DisplayState {
-    return this.view.application.layout.newDisplay(
+    return this.view.engine.layout.newDisplay(
       'Edit Column',
       () => <DataCubeColumnCreator state={this} />,
       {
@@ -497,7 +497,7 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
       ]);
     } catch (error) {
       assertErrorThrown(error);
-      this.view.application.alertError(error, {
+      this.view.engine.alertError(error, {
         message: `Expression Validation Failure: ${error.message}`,
       });
       return;
@@ -506,14 +506,14 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
     }
 
     if (!(query instanceof V1_Lambda)) {
-      this.view.application.alertError(new Error(), {
+      this.view.engine.alertError(new Error(), {
         message: `Expression Validation Failure: Expression must be a lambda.`,
       });
       return;
     }
 
     if (!returnType) {
-      this.view.application.alertError(new Error(), {
+      this.view.engine.alertError(new Error(), {
         message: `Expression Validation Failure: Can't compute expression return type.`,
       });
       return;

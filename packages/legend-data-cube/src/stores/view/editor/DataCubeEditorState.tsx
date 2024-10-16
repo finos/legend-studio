@@ -43,6 +43,7 @@ import { DataCubeEditor } from '../../../components/view/editor/DataCubeEditor.j
 import { DataCubeEditorHorizontalPivotsPanelState } from './DataCubeEditorHorizontalPivotsPanelState.js';
 import { DataCubeEditorPivotLayoutPanelState } from './DataCubeEditorPivotLayoutPanelState.js';
 import type { DataCubeQueryBuilderError } from '../../core/DataCubeEngine.js';
+import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 
 export enum DataCubeEditorTab {
   GENERAL_PROPERTIES = 'General Properties',
@@ -55,7 +56,7 @@ export enum DataCubeEditorTab {
 
 /**
  * This query editor state backs the main form editor of data cube. It supports
- * batching changes before application, i.e. allowing user to make multiple edits before
+ * batching changes before engine, i.e. allowing user to make multiple edits before
  * applying and propgating them.
  *
  * NOTE: It allows almost FULL 1-1 control over the data cube query state.
@@ -96,7 +97,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
       applyChanges: action,
     });
 
-    this.display = this.view.application.layout.newDisplay('Properties', () => (
+    this.display = this.view.engine.layout.newDisplay('Properties', () => (
       <DataCubeEditor view={this.view} />
     ));
     this.generalProperties = new DataCubeEditorGeneralPropertiesPanelState(
@@ -190,7 +191,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
       try {
         await this.view.engine.getQueryCodeRelationReturnType(
           codePrefix + code,
-          this.view.source.query,
+          _lambda([], [this.view.source.query]),
           this.view.source,
         );
       } catch (error) {
@@ -199,7 +200,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
           error instanceof NetworkClientError &&
           error.response.status === HttpStatus.BAD_REQUEST
         ) {
-          this.view.application.alertCodeCheckError(
+          this.view.engine.alertCodeCheckError(
             error.payload as DataCubeQueryBuilderError,
             code,
             codePrefix,
@@ -209,7 +210,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
             },
           );
         } else {
-          this.view.application.alertError(error, {
+          this.view.engine.alertError(error, {
             message: `Query Validation Failure: Can't safely apply changes.`,
             text: `Error: ${error.message}`,
           });

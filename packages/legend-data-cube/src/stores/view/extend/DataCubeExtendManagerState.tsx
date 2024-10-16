@@ -49,6 +49,7 @@ import {
 } from '../../core/DataCubeQueryEngine.js';
 import { buildDefaultColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
 import type { DataCubeQueryBuilderError } from '../../core/DataCubeEngine.js';
+import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 
 class DataCubeQueryExtendedColumnState {
   name: string;
@@ -251,7 +252,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     try {
       await this.view.engine.getQueryCodeRelationReturnType(
         codePrefix + code,
-        this.view.source.query,
+        _lambda([], [this.view.source.query]),
         this.view.source,
       );
     } catch (error) {
@@ -260,7 +261,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.BAD_REQUEST
       ) {
-        this.view.application.alertCodeCheckError(
+        this.view.engine.alertCodeCheckError(
           error.payload as DataCubeQueryBuilderError,
           code,
           codePrefix,
@@ -270,7 +271,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
           },
         );
       } else {
-        this.view.application.alertError(error, {
+        this.view.engine.alertError(error, {
           message: `Column Update Check Failure: Can't safely update column '${columnName}'.`,
           text: `Error: ${error.message}`,
         });
@@ -364,7 +365,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     try {
       await this.view.engine.getQueryCodeRelationReturnType(
         codePrefix + code,
-        this.view.source.query,
+        _lambda([], [this.view.source.query]),
         this.view.source,
       );
     } catch (error) {
@@ -373,7 +374,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.BAD_REQUEST
       ) {
-        this.view.application.alertCodeCheckError(
+        this.view.engine.alertCodeCheckError(
           error.payload as DataCubeQueryBuilderError,
           code,
           codePrefix,
@@ -383,7 +384,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
           },
         );
       } else {
-        this.view.application.alertError(error, {
+        this.view.engine.alertError(error, {
           message: `Column Delete Check Failure: Can't safely delete column '${columnName}'.`,
           text: `Error: ${error.message}`,
         });

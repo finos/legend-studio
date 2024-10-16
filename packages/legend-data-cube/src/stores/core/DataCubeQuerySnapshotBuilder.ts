@@ -18,7 +18,7 @@
  * [CORE]
  *
  * This and its corresponding utilitites are used to build the query snapshot from the
- * executable query. This is needed when we initialize the application by loading a
+ * executable query. This is needed when we initialize the engine by loading a
  * persisted query.
  ***************************************************************************************/
 

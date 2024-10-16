@@ -52,9 +52,11 @@ export class DataCubeInfoState extends DataCubeQuerySnapshotController {
       data.configuration,
     );
 
-    this.name = configuration.name;
-    // TODO: make sure we only call this for the main view of data cube when we support multi views
-    this.view.application.onNameChange(this.name, this.view.source);
+    if (configuration.name !== this.name) {
+      this.name = configuration.name;
+      // TODO: make sure we only call this for the main view of data cube when we support multi views
+      this.view.dataCube.onNameChanged?.(this.name, this.view.source);
+    }
 
     // TODO: filter preview text
   }

@@ -14,17 +14,9 @@
  * limitations under the License.
  */
 
-import { createContext, useContext } from 'react';
-import { guaranteeNonNullable } from '@finos/legend-shared';
-import { type DataCubeState } from '../stores/DataCubeState.js';
+import type { DataCubeSettings } from './DataCubeSettings.js';
 
-const DataCubeStateContext = createContext<DataCubeState | undefined>(
-  undefined,
-);
-
-export const DataCubeContextProvider = DataCubeStateContext.Provider;
-export const useDataCube = () =>
-  guaranteeNonNullable(
-    useContext(DataCubeStateContext),
-    `Can't find Data Cube in context`,
-  );
+export interface DataCubeAPI {
+  getSettings(): DataCubeSettings;
+  refreshFailedDataFetches(): void;
+}
