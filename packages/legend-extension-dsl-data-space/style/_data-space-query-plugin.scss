@@ -280,6 +280,9 @@
     }
 
     &__share {
+      @include flexVCenter;
+
+      flex-direction: column;
       width: 10%;
       color: var(--color-blue-50);
       margin-right: 1rem;
