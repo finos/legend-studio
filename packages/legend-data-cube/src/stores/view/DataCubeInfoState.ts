@@ -18,9 +18,7 @@ import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeViewState } from './DataCubeViewState.js';
 import { DataCubeQuerySnapshotController } from './DataCubeQuerySnapshotManager.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
-import type { DataCubeQuery } from '../core/DataCubeQuery.js';
-import { formatDate } from '@finos/legend-shared';
-import { DEFAULT_REPORT_NAME } from '../core/DataCubeQueryEngine.js';
+import { DataCubeConfiguration } from '../core/models/DataCubeConfiguration.js';
 
 /**
  * Unlike other query editor state, this state does not support making any
@@ -28,21 +26,17 @@ import { DEFAULT_REPORT_NAME } from '../core/DataCubeQueryEngine.js';
  * from the latest snapshot to help display latest static info about the query.
  */
 export class DataCubeInfoState extends DataCubeQuerySnapshotController {
-  baseQuery!: DataCubeQuery;
-  name = DEFAULT_REPORT_NAME;
-  private editionStartTime?: number | undefined;
+  name = '';
+  // TODO: filter preview text
 
   constructor(view: DataCubeViewState) {
     super(view);
 
-    makeObservable<DataCubeInfoState, 'setName'>(this, {
+    makeObservable(this, {
       name: observable,
-      setName: action,
-    });
-  }
 
-  private setName(val: string) {
-    this.name = val;
+      applySnapshot: action,
+    });
   }
 
   override getSnapshotSubscriberName() {
@@ -54,12 +48,16 @@ export class DataCubeInfoState extends DataCubeQuerySnapshotController {
     previousSnapshot: DataCubeQuerySnapshot | undefined,
   ) {
     const data = snapshot.data;
-    this.setName(data.name);
-    if (!this.editionStartTime) {
-      this.editionStartTime = snapshot.timestamp;
-    }
-    this.view.application.setWindowTitle(
-      `\u229E ${data.name}${this.editionStartTime ? ` - ${formatDate(new Date(this.editionStartTime), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
+    const configuration = DataCubeConfiguration.serialization.fromJson(
+      data.configuration,
     );
+
+    if (configuration.name !== this.name) {
+      this.name = configuration.name;
+      // TODO: make sure we only call this for the main view of data cube when we support multi views
+      this.view.dataCube.onNameChanged?.(this.name, this.view.source);
+    }
+
+    // TODO: filter preview text
   }
 }

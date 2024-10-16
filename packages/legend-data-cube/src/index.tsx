@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-export * from './stores/core/DataCubeEngine.js';
-export * from './stores/core/DataCubeApplicationEngine.js';
-export * from './stores/core/DataCubeQuery.js';
-export * from './stores/core/DataCubeQueryBuilderUtils.js';
+export * from './stores/core/models/DataCubeQuery.js';
+export * from './stores/core/models/DataCubeSource.js';
 
+export * from './stores/core/DataCubeEngine.js';
+export * from './stores/core/DataCubeQueryEngine.js';
+export * from './stores/core/DataCubeQueryBuilderUtils.js';
 export * from './components/core/DataCubeAlert.js';
+
 export * from './components/DataCube.js';
-export * from './components/DataCubeProvider.js';
+export * from './stores/DataCubeAPI.js';
+export * from './stores/DataCubeOptions.js';
+export { DataCubeSettingKey } from './stores/DataCubeSettings.js';

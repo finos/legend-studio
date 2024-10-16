@@ -60,7 +60,7 @@ export const DataCubeColumnCreator = observer(
   (props: { state: DataCubeColumnBaseEditorState }) => {
     const { state } = props;
     const view = state.view;
-    const application = view.application;
+    const engine = view.engine;
 
     const nameInputRef = useRef<HTMLInputElement>(null);
     const currentColumnKind = state.isGroupLevel
@@ -91,9 +91,9 @@ export const DataCubeColumnCreator = observer(
         debounce((): void => {
           state
             .getReturnType()
-            .catch((error) => application.alertUnhandledError(error));
+            .catch((error) => engine.alertUnhandledError(error));
         }, 500),
-      [state, application],
+      [state, engine],
     );
 
     useEffect(() => {
@@ -136,7 +136,7 @@ export const DataCubeColumnCreator = observer(
                       position,
                       model,
                       state.codePrefix,
-                      view.engine,
+                      view,
                       () => state.buildExtendBaseQuery(),
                     ),
                   );
@@ -351,7 +351,7 @@ export const DataCubeColumnCreator = observer(
             onClick={() => {
               state
                 .applyChanges()
-                .catch((error) => application.alertUnhandledError(error));
+                .catch((error) => engine.alertUnhandledError(error));
             }}
           >
             OK
@@ -363,7 +363,7 @@ export const DataCubeColumnCreator = observer(
                 onClick={() => {
                   state.manager
                     .deleteColumn(state.initialData.name)
-                    .catch((error) => application.alertUnhandledError(error));
+                    .catch((error) => engine.alertUnhandledError(error));
                 }}
               >
                 Delete
@@ -373,7 +373,7 @@ export const DataCubeColumnCreator = observer(
                 onClick={() => {
                   state
                     .reset()
-                    .catch((error) => application.alertUnhandledError(error));
+                    .catch((error) => engine.alertUnhandledError(error));
                 }}
               >
                 Reset

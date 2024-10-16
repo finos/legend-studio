@@ -14,43 +14,15 @@
  * limitations under the License.
  */
 
-import { createContext, useContext, useEffect } from 'react';
-import { observer, useLocalObservable } from 'mobx-react-lite';
+import { createContext, useContext } from 'react';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { DataCubeState } from '../stores/DataCubeState.js';
-import type { DataCubeApplicationEngine } from '../stores/core/DataCubeApplicationEngine.js';
-import type { DataCubeEngine } from '../stores/core/DataCubeEngine.js';
+import { type DataCubeState } from '../stores/DataCubeState.js';
 
 const DataCubeStateContext = createContext<DataCubeState | undefined>(
   undefined,
 );
 
-export const DataCubeProvider = observer(
-  (props: {
-    children: React.ReactNode;
-    application: DataCubeApplicationEngine;
-    engine: DataCubeEngine;
-  }): React.ReactElement => {
-    const { children, application, engine } = props;
-    const store = useLocalObservable(
-      () => new DataCubeState(application, engine),
-    );
-
-    useEffect(() => {
-      store.initialize().catch((error) => application.logUnhandledError(error));
-    }, [store, application]);
-
-    if (!store.initState.hasSucceeded) {
-      return <></>;
-    }
-    return (
-      <DataCubeStateContext.Provider value={store}>
-        {children}
-      </DataCubeStateContext.Provider>
-    );
-  },
-);
-
+export const DataCubeContextProvider = DataCubeStateContext.Provider;
 export const useDataCube = () =>
   guaranteeNonNullable(
     useContext(DataCubeStateContext),

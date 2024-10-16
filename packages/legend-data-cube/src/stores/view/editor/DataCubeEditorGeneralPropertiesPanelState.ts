@@ -20,7 +20,7 @@ import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js'
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { DataCubeEditorMutableConfiguration } from './DataCubeEditorMutableConfiguration.js';
-import type { DataCubeConfiguration } from '../../core/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
 
 export class DataCubeEditorGeneralPropertiesPanelState
   implements DataCubeQueryEditorPanelState
@@ -28,16 +28,12 @@ export class DataCubeEditorGeneralPropertiesPanelState
   readonly view!: DataCubeViewState;
   readonly editor!: DataCubeEditorState;
 
-  name = '';
   limit = -1;
   configuration = new DataCubeEditorMutableConfiguration();
 
   constructor(editor: DataCubeEditorState) {
     makeObservable(this, {
       configuration: observable,
-
-      name: observable,
-      setName: action,
 
       limit: observable,
       setLimit: action,
@@ -49,10 +45,6 @@ export class DataCubeEditorGeneralPropertiesPanelState
     this.view = editor.view;
   }
 
-  setName(val: string) {
-    this.name = val;
-  }
-
   setLimit(val: number) {
     this.limit = val;
   }
@@ -61,7 +53,6 @@ export class DataCubeEditorGeneralPropertiesPanelState
     snapshot: DataCubeQuerySnapshot,
     configuration: DataCubeConfiguration,
   ) {
-    this.setName(snapshot.data.name);
     this.setLimit(
       snapshot.data.limit !== undefined && snapshot.data.limit >= 0
         ? snapshot.data.limit
@@ -77,7 +68,6 @@ export class DataCubeEditorGeneralPropertiesPanelState
     baseSnapshot: DataCubeQuerySnapshot,
   ) {
     const data = newSnapshot.data;
-    data.name = this.name;
     data.limit = this.limit < 0 ? undefined : this.limit;
     data.configuration = this.configuration.serialize();
   }

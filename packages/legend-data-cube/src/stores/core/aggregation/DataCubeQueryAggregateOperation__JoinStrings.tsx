@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DataCubeQuerySnapshotColumn } from '../DataCubeQuerySnapshot.js';
+import type { DataCubeColumn } from '../models/DataCubeColumn.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
@@ -32,7 +32,7 @@ import {
   _property,
   _var,
 } from '../DataCubeQueryBuilderUtils.js';
-import type { DataCubeColumnConfiguration } from '../DataCubeConfiguration.js';
+import type { DataCubeColumnConfiguration } from '../models/DataCubeConfiguration.js';
 
 export class DataCubeQueryAggregateOperation__JoinStrings extends DataCubeQueryAggregateOperation {
   override get label() {
@@ -51,7 +51,7 @@ export class DataCubeQueryAggregateOperation__JoinStrings extends DataCubeQueryA
     return DataCubeQueryAggregateOperator.JOIN_STRINGS;
   }
 
-  isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {
+  isCompatibleWithColumn(column: DataCubeColumn) {
     return ofDataType(column.type, [
       // NOTE: technically all data types should be suported,
       // i.e. we can use meta::pure::functions::string::makeString

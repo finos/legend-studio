@@ -28,7 +28,7 @@ import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.j
 export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
   const editor = view.editor;
-  const application = view.application;
+  const engine = view.engine;
   const selectedTab = editor.currentTab;
   const tabs = [
     DataCubeEditorTab.COLUMNS,
@@ -86,7 +86,7 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
           onClick={() => {
             editor
               .applyChanges({ closeAfterApply: true })
-              .catch((error) => application.alertUnhandledError(error));
+              .catch((error) => engine.alertUnhandledError(error));
           }}
         >
           OK
@@ -103,7 +103,7 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
           onClick={() => {
             editor
               .applyChanges()
-              .catch((error) => application.alertUnhandledError(error));
+              .catch((error) => engine.alertUnhandledError(error));
           }}
         >
           Apply

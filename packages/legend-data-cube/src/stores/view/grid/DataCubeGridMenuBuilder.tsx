@@ -42,7 +42,7 @@ import {
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
-import type { DataCubeColumnConfiguration } from '../../core/DataCubeConfiguration.js';
+import type { DataCubeColumnConfiguration } from '../../core/models/DataCubeConfiguration.js';
 import { DataCubeFilterEditorConditionTreeNode } from '../../core/filter/DataCubeQueryFilterEditorState.js';
 import { DataCubeEditorTab } from '../editor/DataCubeEditorState.js';
 
@@ -163,7 +163,7 @@ export function generateMenuBuilder(
   fromHeader: boolean,
 ) => (string | MenuItemDef)[] {
   const view = controller.view;
-  const application = view.application;
+  const engine = view.engine;
 
   // NOTE: we need to minimize the usage of these states
   // since the grid context-menu should be solely driven
@@ -421,7 +421,7 @@ export function generateMenuBuilder(
             action: () => {
               view.grid.exportEngine
                 .exportEmail(DataCubeGridClientExportFormat.EXCEL)
-                .catch((error) => application.logUnhandledError(error));
+                .catch((error) => engine.logUnhandledError(error));
             },
           },
           {
@@ -429,7 +429,7 @@ export function generateMenuBuilder(
             action: () => {
               view.grid.exportEngine
                 .exportEmail(DataCubeGridClientExportFormat.CSV)
-                .catch((error) => application.logUnhandledError(error));
+                .catch((error) => engine.logUnhandledError(error));
             },
           },
           {
@@ -587,7 +587,7 @@ export function generateMenuBuilder(
             action: () => {
               extend
                 .openNewColumnEditor()
-                .catch((error) => application.alertUnhandledError(error));
+                .catch((error) => engine.alertUnhandledError(error));
             },
           },
           ...(columnConfiguration && columnName
@@ -597,7 +597,7 @@ export function generateMenuBuilder(
                   action: () => {
                     extend
                       .openNewColumnEditor(columnConfiguration)
-                      .catch((error) => application.alertUnhandledError(error));
+                      .catch((error) => engine.alertUnhandledError(error));
                   },
                 },
               ]
@@ -610,7 +610,7 @@ export function generateMenuBuilder(
                   action: () => {
                     extend
                       .openExistingColumnEditor(columnName)
-                      .catch((error) => application.alertUnhandledError(error));
+                      .catch((error) => engine.alertUnhandledError(error));
                   },
                 },
                 {
@@ -618,7 +618,7 @@ export function generateMenuBuilder(
                   action: () => {
                     extend
                       .deleteColumn(columnName)
-                      .catch((error) => application.alertUnhandledError(error));
+                      .catch((error) => engine.alertUnhandledError(error));
                   },
                 },
               ]

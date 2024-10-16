@@ -18,17 +18,17 @@ import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
-} from './DataCubeConfiguration.js';
+} from './models/DataCubeConfiguration.js';
 import {
   DataCubeQueryAggregateOperator,
   DataCubeColumnKind,
   DataCubeFontTextAlignment,
 } from './DataCubeQueryEngine.js';
+import type { DataCubeColumn } from './models/DataCubeColumn.js';
 
-export function buildDefaultColumnConfiguration(column: {
-  name: string;
-  type: string;
-}): DataCubeColumnConfiguration {
+export function buildDefaultColumnConfiguration(
+  column: DataCubeColumn,
+): DataCubeColumnConfiguration {
   const { name, type } = column;
   const config = new DataCubeColumnConfiguration(name, type);
   switch (type) {
@@ -57,7 +57,7 @@ export function buildDefaultColumnConfiguration(column: {
 }
 
 export function buildDefaultConfiguration(
-  columns: { name: string; type: string }[],
+  columns: DataCubeColumn[],
 ): DataCubeConfiguration {
   const configuration = new DataCubeConfiguration();
   configuration.columns = columns.map((column) =>

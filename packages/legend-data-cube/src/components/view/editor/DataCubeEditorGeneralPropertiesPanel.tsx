@@ -98,9 +98,9 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
               </div>
               <FormTextInput
                 className="h-6 w-96 text-lg font-semibold"
-                value={panel.name}
+                value={configuration.name}
                 onChange={(event) => {
-                  panel.setName(event.target.value);
+                  configuration.setName(event.target.value);
                 }}
               />
             </div>

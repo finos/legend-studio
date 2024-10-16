@@ -19,10 +19,8 @@ import {
   DataCubeQueryFilterOperation,
   generateDefaultFilterConditionPrimitiveTypeValue,
 } from './DataCubeQueryFilterOperation.js';
-import type {
-  DataCubeQuerySnapshotColumn,
-  DataCubeQuerySnapshotFilterCondition,
-} from '../DataCubeQuerySnapshot.js';
+import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
+import type { DataCubeColumn } from '../models/DataCubeColumn.js';
 import {
   DataCubeColumnDataType,
   DataCubeFunction,
@@ -56,7 +54,7 @@ export class DataCubeQueryFilterOperation__NotEqual extends DataCubeQueryFilterO
     return DataCubeQueryFilterOperator.NOT_EQUAL;
   }
 
-  isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {
+  isCompatibleWithColumn(column: DataCubeColumn) {
     return ofDataType(column.type, [
       DataCubeColumnDataType.TEXT,
       DataCubeColumnDataType.NUMBER,
@@ -78,7 +76,7 @@ export class DataCubeQueryFilterOperation__NotEqual extends DataCubeQueryFilterO
     );
   }
 
-  generateDefaultValue(column: DataCubeQuerySnapshotColumn) {
+  generateDefaultValue(column: DataCubeColumn) {
     return {
       type: column.type,
       value: generateDefaultFilterConditionPrimitiveTypeValue(column.type),

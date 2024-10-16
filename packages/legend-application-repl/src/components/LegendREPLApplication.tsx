@@ -22,14 +22,14 @@ import {
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo } from 'react';
 import {
+  formatDate,
   guaranteeNonNullable,
   LogEvent,
   NetworkClient,
 } from '@finos/legend-shared';
 import { LegendREPLServerClient } from '../stores/LegendREPLServerClient.js';
-import { LegendREPLDataCubeApplicationEngine } from '../stores/LegendREPLDataCubeApplicationEngine.js';
 import { LegendREPLDataCubeEngine } from '../stores/LegendREPLDataCubeEngine.js';
-import { DataCube, DataCubeProvider } from '@finos/legend-data-cube';
+import { DataCube, DataCubeSettingKey } from '@finos/legend-data-cube';
 import {
   APPLICATION_EVENT,
   ApplicationFrameworkProvider,
@@ -38,53 +38,81 @@ import {
   type LegendApplicationPluginManager,
 } from '@finos/legend-application';
 import type { LegendREPLApplicationConfig } from '../application/LegendREPLApplicationConfig.js';
+import { LegendREPLDataCubeSource } from '../stores/LegendREPLDataCubeSource.js';
 
 const LegendREPLDataCube = observer(() => {
-  const applicationStore = useApplicationStore<
+  const application = useApplicationStore<
     LegendREPLApplicationConfig,
     LegendApplicationPluginManager<LegendApplicationPlugin>
   >();
-  const application = useMemo(
-    () => new LegendREPLDataCubeApplicationEngine(applicationStore),
-    [applicationStore],
-  );
-  const engine = new LegendREPLDataCubeEngine(
-    application,
-    new LegendREPLServerClient(
-      new NetworkClient({
-        baseUrl: applicationStore.config.useDynamicREPLServer
-          ? window.location.origin +
-            guaranteeNonNullable(applicationStore.config.baseAddress).replace(
-              '/repl/',
-              '',
-            )
-          : applicationStore.config.replUrl,
-      }),
-    ),
+  const config = application.config;
+  const engine = useMemo(
+    () =>
+      new LegendREPLDataCubeEngine(
+        application,
+        new LegendREPLServerClient(
+          new NetworkClient({
+            baseUrl: config.useDynamicREPLServer
+              ? window.location.origin +
+                guaranteeNonNullable(config.baseAddress).replace('/repl/', '')
+              : config.replUrl,
+          }),
+        ),
+      ),
+    [application, config],
   );
 
   useEffect(() => {
-    application.blockNavigation(
+    engine.blockNavigation(
       // Only block navigation in production
       // eslint-disable-next-line no-process-env
       [() => process.env.NODE_ENV === 'production'],
       undefined,
       () => {
-        application.logWarning(
+        engine.logWarning(
           LogEvent.create(APPLICATION_EVENT.NAVIGATION_BLOCKED),
           `Navigation from the application is blocked`,
         );
       },
     );
     return (): void => {
-      application.unblockNavigation();
+      engine.unblockNavigation();
     };
-  }, [application]);
+  }, [engine]);
 
   return (
-    <DataCubeProvider application={application} engine={engine}>
-      <DataCube />
-    </DataCubeProvider>
+    <DataCube
+      engine={engine}
+      options={{
+        onNameChanged(name, source) {
+          const timestamp =
+            source instanceof LegendREPLDataCubeSource
+              ? source.timestamp
+              : undefined;
+          application.layoutService.setWindowTitle(
+            `\u229E ${name}${timestamp ? ` - ${formatDate(new Date(timestamp), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
+          );
+        },
+        onSettingChanged(key, value) {
+          engine.persistSettingValue(key, value);
+        },
+
+        enableDebugMode: application.settingService.getBooleanValue(
+          DataCubeSettingKey.ENABLE_DEBUG_MODE,
+        ),
+        gridClientRowBuffer: application.settingService.getNumericValue(
+          DataCubeSettingKey.GRID_CLIENT_ROW_BUFFER,
+        ),
+        gridClientPurgeClosedRowNodes:
+          application.settingService.getBooleanValue(
+            DataCubeSettingKey.GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
+          ),
+        gridClientSuppressLargeDatasetWarning:
+          application.settingService.getBooleanValue(
+            DataCubeSettingKey.GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
+          ),
+      }}
+    />
   );
 });
 

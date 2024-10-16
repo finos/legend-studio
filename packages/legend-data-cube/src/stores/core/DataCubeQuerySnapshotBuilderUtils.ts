@@ -23,7 +23,7 @@ import {
   matchFunctionName,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import { type DataCubeQuerySnapshotColumn } from './DataCubeQuerySnapshot.js';
+import { type DataCubeColumn } from './models/DataCubeColumn.js';
 import {
   assertTrue,
   assertType,
@@ -94,8 +94,8 @@ export function _funcMatch(
  * prune the expanded paths beyond that point.
  */
 export function _pruneExpandedPaths(
-  prevGroupByCols: DataCubeQuerySnapshotColumn[],
-  currentGroupByCols: DataCubeQuerySnapshotColumn[],
+  prevGroupByCols: DataCubeColumn[],
+  currentGroupByCols: DataCubeColumn[],
   expandedPaths: string[],
 ) {
   const length = Math.min(prevGroupByCols.length, currentGroupByCols.length);

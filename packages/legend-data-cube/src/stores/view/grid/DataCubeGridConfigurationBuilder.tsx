@@ -21,11 +21,11 @@
  * AG Grid, from the query snapshot.
  ***************************************************************************************/
 
+import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import {
   _findCol,
-  type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotColumn,
-} from '../../core/DataCubeQuerySnapshot.js';
+  type DataCubeColumn,
+} from '../../core/models/DataCubeColumn.js';
 import type {
   ColDef,
   ColGroupDef,
@@ -69,7 +69,7 @@ import {
 import type {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
-} from '../../core/DataCubeConfiguration.js';
+} from '../../core/models/DataCubeConfiguration.js';
 import {
   DataCubeColumnDataType,
   DataCubeColumnPinPlacement,
@@ -659,7 +659,7 @@ function generatePivotResultColumnHeaderTooltip(
 }
 
 function generateDefinitionForPivotResultColumns(
-  pivotResultColumns: DataCubeQuerySnapshotColumn[],
+  pivotResultColumns: DataCubeColumn[],
   snapshot: DataCubeQuerySnapshot,
   configuration: DataCubeConfiguration,
   view: DataCubeViewState,
@@ -798,7 +798,7 @@ export function generateColumnDefs(
         (column) => column.name === col.name,
       ),
   );
-  let pivotResultColumns: DataCubeQuerySnapshotColumn[] = [];
+  let pivotResultColumns: DataCubeColumn[] = [];
 
   if (snapshot.data.pivot) {
     const castColumns = snapshot.data.pivot.castColumns;

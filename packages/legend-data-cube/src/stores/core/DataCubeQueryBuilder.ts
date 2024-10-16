@@ -21,20 +21,15 @@
  * the query snapshot. The executable query is then used to fetch data.
  ***************************************************************************************/
 
-import {
-  PRIMITIVE_TYPE,
-  type V1_AppliedFunction,
-  type V1_ValueSpecification,
-  V1_deserializeValueSpecification,
-} from '@finos/legend-graph';
+import { PRIMITIVE_TYPE, type V1_AppliedFunction } from '@finos/legend-graph';
 import { type DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
-import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   DataCubeFunction,
   DataCubeQuerySortDirection,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
-import { DataCubeConfiguration } from './DataCubeConfiguration.js';
+import { DataCubeConfiguration } from './models/DataCubeConfiguration.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import {
   _col,
@@ -42,7 +37,6 @@ import {
   _cols,
   _colSpec,
   _deserializeLambda,
-  _elementPtr,
   _filter,
   _function,
   _groupByAggCols,
@@ -54,13 +48,17 @@ import {
   _functionCompositionProcessor,
 } from './DataCubeQueryBuilderUtils.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
+import type { DataCubeSource } from './models/DataCubeSource.js';
 
 export function buildExecutableQuery(
   snapshot: DataCubeQuerySnapshot,
+  source: DataCubeSource,
+  executionContextBuilder: (
+    source: DataCubeSource,
+  ) => V1_AppliedFunction | undefined,
   filterOperations: DataCubeQueryFilterOperation[],
   aggregateOperations: DataCubeQueryAggregateOperation[],
   options?: {
-    sourceQuery?: V1_ValueSpecification | null | undefined;
     postProcessor?: (
       snapshot: DataCubeQuerySnapshot,
       sequence: V1_AppliedFunction[],
@@ -78,7 +76,6 @@ export function buildExecutableQuery(
   },
 ) {
   const data = snapshot.data;
-  const sourceQuery = V1_deserializeValueSpecification(data.sourceQuery, []);
   const configuration = DataCubeConfiguration.serialization.fromJson(
     data.configuration,
   );
@@ -254,19 +251,12 @@ export function buildExecutableQuery(
     );
   }
 
-  // --------------------------------- FROM ---------------------------------
-
-  sequence.push(
-    _function(
-      DataCubeFunction.FROM,
-      [
-        data.mapping ? _elementPtr(data.mapping) : undefined,
-        _elementPtr(data.runtime),
-      ].filter(isNonNullable),
-    ),
-  );
-
   // --------------------------------- FINALIZE ---------------------------------
+
+  const executionContext = executionContextBuilder(source);
+  if (executionContext) {
+    sequence.push(executionContext);
+  }
 
   options?.postProcessor?.(
     snapshot,
@@ -277,16 +267,12 @@ export function buildExecutableQuery(
     aggregateOperations,
   );
 
-  if (!sequence.length) {
-    return sourceQuery;
+  if (sequence.length === 0) {
+    return source.query;
   }
-
-  const omitSourceQuery = options?.sourceQuery === null;
-  for (let i = omitSourceQuery ? 1 : 0; i < sequence.length; i++) {
+  for (let i = 0; i < sequence.length; i++) {
     guaranteeNonNullable(sequence[i]).parameters.unshift(
-      i === 0
-        ? (options?.sourceQuery ?? sourceQuery)
-        : guaranteeNonNullable(sequence[i - 1]),
+      i === 0 ? source.query : guaranteeNonNullable(sequence[i - 1]),
     );
   }
   return guaranteeNonNullable(sequence[sequence.length - 1]);

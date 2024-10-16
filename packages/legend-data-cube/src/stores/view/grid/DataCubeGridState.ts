@@ -29,7 +29,7 @@ import {
 import { DataCubeQuerySnapshotController } from '../DataCubeQuerySnapshotManager.js';
 import type { DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import { generateGridOptionsFromSnapshot } from './DataCubeGridConfigurationBuilder.js';
-import { DataCubeConfiguration } from '../../core/DataCubeConfiguration.js';
+import { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
 import { DataCubeGridControllerState } from './DataCubeGridControllerState.js';
 import { DataCubeGridClientExportEngine } from './DataCubeGridClientExportEngine.js';
 
@@ -133,15 +133,15 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
       configuration,
       this.view,
     );
-    if (this.view.engine.enableDebugMode) {
-      this.view.application.debugProcess(`New Grid Options`, [
+    if (this.view.dataCube.settings.enableDebugMode) {
+      this.view.engine.debugProcess(`New Grid Options`, [
         'Grid Options',
         gridOptions,
       ]);
     }
     this.client.updateGridOptions({
       ...gridOptions,
-      rowBuffer: this.view.engine.gridClientRowBuffer,
+      rowBuffer: this.view.dataCube.settings.gridClientRowBuffer,
       // NOTE: ag-grid uses the cache block size as page size, so it's important to set this
       // in corresponding to the pagination setting, else it would cause unexpected scrolling behavior
       cacheBlockSize: this.isPaginationEnabled

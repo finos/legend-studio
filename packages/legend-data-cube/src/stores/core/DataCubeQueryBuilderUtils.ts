@@ -53,9 +53,9 @@ import {
 import {
   type DataCubeQuerySnapshotFilterCondition,
   type DataCubeQuerySnapshotFilter,
-  type DataCubeQuerySnapshotColumn,
   type DataCubeQuerySnapshot,
 } from './DataCubeQuerySnapshot.js';
+import { type DataCubeColumn } from './models/DataCubeColumn.js';
 import {
   guaranteeNonNullable,
   guaranteeIsString,
@@ -81,7 +81,7 @@ import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQuer
 import {
   DataCubeColumnConfiguration,
   type DataCubeConfiguration,
-} from './DataCubeConfiguration.js';
+} from './models/DataCubeConfiguration.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -336,10 +336,7 @@ function fixEmptyAggCols(aggCols: V1_ColSpec[]) {
       ];
 }
 
-export function _aggCol_basic(
-  column: DataCubeQuerySnapshotColumn,
-  func: string,
-) {
+export function _aggCol_basic(column: DataCubeColumn, func: string) {
   const variable = _var();
   return _colSpec(
     column.name,
@@ -349,7 +346,7 @@ export function _aggCol_basic(
 }
 
 export function _pivotAggCols(
-  pivotColumns: DataCubeQuerySnapshotColumn[],
+  pivotColumns: DataCubeColumn[],
   snapshot: DataCubeQuerySnapshot,
   configuration: DataCubeConfiguration,
   aggregateOperations: DataCubeQueryAggregateOperation[],
@@ -382,7 +379,7 @@ export function _pivotAggCols(
   );
 }
 
-export function _castCols(columns: DataCubeQuerySnapshotColumn[]) {
+export function _castCols(columns: DataCubeColumn[]) {
   const genericType = new V1_GenericTypeInstance();
   genericType.fullPath = CORE_PURE_PATH.RELATION;
   genericType.typeArguments = [
@@ -394,7 +391,7 @@ export function _castCols(columns: DataCubeQuerySnapshotColumn[]) {
 }
 
 export function _groupByAggCols(
-  groupByColumns: DataCubeQuerySnapshotColumn[],
+  groupByColumns: DataCubeColumn[],
   snapshot: DataCubeQuerySnapshot,
   configuration: DataCubeConfiguration,
   aggregateOperations: DataCubeQueryAggregateOperation[],

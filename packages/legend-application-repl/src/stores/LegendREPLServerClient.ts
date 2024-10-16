@@ -18,51 +18,85 @@ import {
   ContentType,
   guaranteeNonNullable,
   HttpHeader,
+  SerializationFactory,
+  usingModelSchema,
   type NetworkClient,
   type PlainObject,
 } from '@finos/legend-shared';
-import type {
-  CompletionItem,
-  RelationType,
-  DataCubeGetBaseQueryResult,
-  DataCubeInfrastructureInfo,
+import {
+  DataCubeQuery,
+  type CompletionItem,
+  type RelationType,
 } from '@finos/legend-data-cube';
 import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
+import { createModelSchema, optional, primitive } from 'serializr';
 
-type DataCubeGetQueryCodeInput = {
-  query: PlainObject<V1_ValueSpecification>;
+type GetValueSpecificationCodeInput = {
+  value: PlainObject<V1_ValueSpecification>;
   pretty?: boolean | undefined;
 };
 
-type DataCubeParseQueryInput = {
+type ParseValueSpecificationInput = {
   code: string;
   returnSourceInformation?: boolean | undefined;
 };
 
-type DataCubeQueryTypeaheadInput = {
+type QueryTypeaheadInput = {
   code: string;
-  baseQuery?: PlainObject<V1_ValueSpecification>;
+  baseQuery?: PlainObject<V1_Lambda>;
 };
 
-type DataCubeGetQueryRelationReturnTypeInput = {
+type GetQueryRelationReturnTypeInput = {
   query: PlainObject<V1_Lambda>;
 };
 
-type DataCubeGetQueryCodeRelationReturnTypeInput = {
+type GetQueryCodeRelationReturnTypeInput = {
   code: string;
   baseQuery?: PlainObject<V1_ValueSpecification>;
 };
 
-type DataCubeExecutionInput = {
+type ExecutionInput = {
   query: PlainObject<V1_Lambda>;
   debug?: boolean | undefined;
 };
 
-type DataCubeExecutionResult = {
+type ExecutionResult = {
   result: string;
   executedQuery: string;
   executedSQL: string;
 };
+
+type InfrastructureInfo = {
+  gridClientLicense?: string | undefined;
+};
+
+class QuerySource {
+  runtime!: string;
+  mapping?: string | undefined;
+  query!: string;
+  timestamp!: number;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(QuerySource, {
+      mapping: optional(primitive()),
+      query: primitive(),
+      runtime: primitive(),
+      timestamp: primitive(),
+    }),
+  );
+}
+
+export class GetBaseQueryResult {
+  query!: DataCubeQuery;
+  source!: QuerySource;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(GetBaseQueryResult, {
+      query: usingModelSchema(DataCubeQuery.serialization.schema),
+      source: usingModelSchema(QuerySource.serialization.schema),
+    }),
+  );
+}
 
 export class LegendREPLServerClient {
   private readonly networkClient: NetworkClient;
@@ -82,37 +116,42 @@ export class LegendREPLServerClient {
     return `${this.baseUrl}/api/dataCube`;
   }
 
-  async getInfrastructureInfo(): Promise<DataCubeInfrastructureInfo> {
+  async getInfrastructureInfo(): Promise<InfrastructureInfo> {
     return this.networkClient.get(`${this.dataCube}/infrastructureInfo`);
   }
 
   async getQueryTypeahead(
-    input: DataCubeQueryTypeaheadInput,
+    input: QueryTypeaheadInput,
   ): Promise<CompletionItem[]> {
     return this.networkClient.post(`${this.dataCube}/typeahead`, input);
   }
 
-  async parseQuery(
-    input: DataCubeParseQueryInput,
+  async parseValueSpecification(
+    input: ParseValueSpecificationInput,
   ): Promise<PlainObject<V1_ValueSpecification>> {
-    return this.networkClient.post(`${this.dataCube}/parseQuery`, input);
+    return this.networkClient.post(
+      `${this.dataCube}/parseValueSpecification`,
+      input,
+    );
   }
 
-  async getQueryCode(input: DataCubeGetQueryCodeInput): Promise<string> {
+  async getValueSpecificationCode(
+    input: GetValueSpecificationCodeInput,
+  ): Promise<string> {
     return this.networkClient.post(
-      `${this.dataCube}/getQueryCode`,
+      `${this.dataCube}/getValueSpecificationCode`,
       input,
       {},
       { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
     );
   }
 
-  async getBaseQuery(): Promise<PlainObject<DataCubeGetBaseQueryResult>> {
+  async getBaseQuery(): Promise<PlainObject<GetBaseQueryResult>> {
     return this.networkClient.get(`${this.dataCube}/getBaseQuery`);
   }
 
   async getQueryRelationReturnType(
-    input: DataCubeGetQueryRelationReturnTypeInput,
+    input: GetQueryRelationReturnTypeInput,
   ): Promise<RelationType> {
     return this.networkClient.post(
       `${this.dataCube}/getRelationReturnType`,
@@ -121,7 +160,7 @@ export class LegendREPLServerClient {
   }
 
   async getQueryCodeRelationReturnType(
-    input: DataCubeGetQueryCodeRelationReturnTypeInput,
+    input: GetQueryCodeRelationReturnTypeInput,
   ): Promise<RelationType> {
     return this.networkClient.post(
       `${this.dataCube}/getRelationReturnType/code`,
@@ -130,8 +169,8 @@ export class LegendREPLServerClient {
   }
 
   async executeQuery(
-    input: PlainObject<DataCubeExecutionInput>,
-  ): Promise<DataCubeExecutionResult> {
+    input: PlainObject<ExecutionInput>,
+  ): Promise<ExecutionResult> {
     return this.networkClient.post(`${this.dataCube}/executeQuery`, input);
   }
 }

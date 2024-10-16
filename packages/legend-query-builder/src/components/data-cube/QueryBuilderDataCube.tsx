@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { DataCube, DataCubeProvider } from '@finos/legend-data-cube';
+import { DataCube } from '@finos/legend-data-cube';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { observer } from 'mobx-react-lite';
-import { QueryBuilderDataCubeApplicationEngine } from '../../stores/data-cube/QueryBuilderDataCubeApplicationEngine.js';
 import {
   clsx,
   Dialog,
@@ -31,23 +30,12 @@ import { createDataCubeEngineFromQueryBuilder } from '../../stores/data-cube/Que
 const QueryBuilderDataCube = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const applicationStore = new QueryBuilderDataCubeApplicationEngine(
-      queryBuilderState.applicationStore,
-    );
-    const queryBuilderEngine =
-      createDataCubeEngineFromQueryBuilder(queryBuilderState);
-    if (!queryBuilderEngine) {
+    const engine = createDataCubeEngineFromQueryBuilder(queryBuilderState);
+
+    if (!engine) {
       return null;
     }
-
-    return (
-      <DataCubeProvider
-        application={applicationStore}
-        engine={queryBuilderEngine}
-      >
-        <DataCube />
-      </DataCubeProvider>
-    );
+    return <DataCube engine={engine} />;
   },
 );
 

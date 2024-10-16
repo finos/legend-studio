@@ -16,11 +16,13 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
-  _toCol,
   type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotColumn,
   type DataCubeQuerySnapshotExtendedColumn,
 } from '../../core/DataCubeQuerySnapshot.js';
+import {
+  _toCol,
+  type DataCubeColumn,
+} from '../../core/models/DataCubeColumn.js';
 import {
   assertErrorThrown,
   deleteEntry,
@@ -35,7 +37,7 @@ import { DataCubeQuerySnapshotController } from '../DataCubeQuerySnapshotManager
 import {
   DataCubeConfiguration,
   type DataCubeColumnConfiguration,
-} from '../../core/DataCubeConfiguration.js';
+} from '../../core/models/DataCubeConfiguration.js';
 import {
   DataCubeExistingColumnEditorState,
   DataCubeNewColumnState,
@@ -46,8 +48,8 @@ import {
   getDataType,
 } from '../../core/DataCubeQueryEngine.js';
 import { buildDefaultColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
-import { V1_deserializeValueSpecification } from '@finos/legend-graph';
 import type { DataCubeQueryBuilderError } from '../../core/DataCubeEngine.js';
+import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 
 class DataCubeQueryExtendedColumnState {
   name: string;
@@ -71,9 +73,9 @@ class DataCubeQueryExtendedColumnState {
  */
 export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController {
   columnConfigurations: DataCubeColumnConfiguration[] = [];
-  selectColumns: DataCubeQuerySnapshotColumn[] = [];
-  sourceColumns: DataCubeQuerySnapshotColumn[] = [];
-  horizontalPivotCastColumns: DataCubeQuerySnapshotColumn[] = [];
+  selectColumns: DataCubeColumn[] = [];
+  sourceColumns: DataCubeColumn[] = [];
+  horizontalPivotCastColumns: DataCubeColumn[] = [];
 
   leafExtendedColumns: DataCubeQueryExtendedColumnState[] = [];
   groupExtendedColumns: DataCubeQueryExtendedColumnState[] = [];
@@ -250,7 +252,8 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     try {
       await this.view.engine.getQueryCodeRelationReturnType(
         codePrefix + code,
-        V1_deserializeValueSpecification(tempSnapshot.data.sourceQuery, []),
+        _lambda([], [this.view.source.query]),
+        this.view.source,
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -258,7 +261,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.BAD_REQUEST
       ) {
-        this.view.application.alertCodeCheckError(
+        this.view.engine.alertCodeCheckError(
           error.payload as DataCubeQueryBuilderError,
           code,
           codePrefix,
@@ -268,7 +271,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
           },
         );
       } else {
-        this.view.application.alertError(error, {
+        this.view.engine.alertError(error, {
           message: `Column Update Check Failure: Can't safely update column '${columnName}'.`,
           text: `Error: ${error.message}`,
         });
@@ -362,7 +365,8 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     try {
       await this.view.engine.getQueryCodeRelationReturnType(
         codePrefix + code,
-        V1_deserializeValueSpecification(tempSnapshot.data.sourceQuery, []),
+        _lambda([], [this.view.source.query]),
+        this.view.source,
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -370,7 +374,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.BAD_REQUEST
       ) {
-        this.view.application.alertCodeCheckError(
+        this.view.engine.alertCodeCheckError(
           error.payload as DataCubeQueryBuilderError,
           code,
           codePrefix,
@@ -380,7 +384,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
           },
         );
       } else {
-        this.view.application.alertError(error, {
+        this.view.engine.alertError(error, {
           message: `Column Delete Check Failure: Can't safely delete column '${columnName}'.`,
           text: `Error: ${error.message}`,
         });

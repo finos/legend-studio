@@ -20,13 +20,15 @@ import {
   uniq,
   uniqBy,
 } from '@finos/legend-shared';
-import { DataCubeConfiguration } from '../../core/DataCubeConfiguration.js';
+import { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
 import {
-  _toCol,
   type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotColumn,
   type DataCubeQuerySnapshotSortColumn,
 } from '../../core/DataCubeQuerySnapshot.js';
+import {
+  _toCol,
+  type DataCubeColumn,
+} from '../../core/models/DataCubeColumn.js';
 import { DataCubeQuerySnapshotController } from '../DataCubeQuerySnapshotManager.js';
 import {
   type DataCubeQuerySortDirection,
@@ -146,9 +148,9 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
   // --------------------------------- COLUMNS ---------------------------------
 
-  selectColumns: DataCubeQuerySnapshotColumn[] = [];
-  leafExtendedColumns: DataCubeQuerySnapshotColumn[] = [];
-  groupExtendedColumns: DataCubeQuerySnapshotColumn[] = [];
+  selectColumns: DataCubeColumn[] = [];
+  leafExtendedColumns: DataCubeColumn[] = [];
+  groupExtendedColumns: DataCubeColumn[] = [];
 
   pinColumn(
     colName: string | undefined,
@@ -200,8 +202,8 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
   // --------------------------------- PIVOT ---------------------------------
 
-  horizontalPivotColumns: DataCubeQuerySnapshotColumn[] = [];
-  horizontalPivotCastColumns: DataCubeQuerySnapshotColumn[] = [];
+  horizontalPivotColumns: DataCubeColumn[] = [];
+  horizontalPivotCastColumns: DataCubeColumn[] = [];
 
   private get horizontalPivotResultColumns() {
     return this.horizontalPivotCastColumns
@@ -263,7 +265,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
 
   // --------------------------------- GROUP BY ---------------------------------
 
-  verticalPivotColumns: DataCubeQuerySnapshotColumn[] = [];
+  verticalPivotColumns: DataCubeColumn[] = [];
 
   getVerticalPivotableColumn(colName: string) {
     return this.configuration.columns

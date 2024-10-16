@@ -127,5 +127,4 @@ export * from './stores/filter/QueryBuilderFilterValueSpecificationBuilder.js';
 export * from './stores/QueryBuilderValueSpecificationHelper.js';
 export * from './stores/filter/QueryBuilderFilterState.js';
 export * from './stores/filter/QueryBuilderFilterStateBuilder.js';
-export * from './stores/data-cube/QueryBuilderDataCubeApplicationEngine.js';
 export * from './stores/data-cube/QueryBuilderDataCubeEngine.js';

@@ -49,8 +49,9 @@ import {
   V1_serializeValueSpecification,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import type { DataCubeColumnConfiguration } from '../../core/DataCubeConfiguration.js';
+import type { DataCubeColumnConfiguration } from '../../core/models/DataCubeConfiguration.js';
 import type { DataCubeQuerySnapshotExtendedColumn } from '../../core/DataCubeQuerySnapshot.js';
+import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 
 export abstract class DataCubeColumnBaseEditorState {
   readonly uuid = uuid();
@@ -215,15 +216,21 @@ export abstract class DataCubeColumnBaseEditorState {
     snapshot.data.groupExtendedColumns = [];
     snapshot.data.sortColumns = [];
     snapshot.data.limit = undefined;
-    return buildExecutableQuery(
-      snapshot,
-      this.manager.view.engine.filterOperations,
-      this.manager.view.engine.aggregateOperations,
+    return _lambda(
+      [],
+      [
+        buildExecutableQuery(
+          snapshot,
+          this.manager.view.source,
+          () => undefined,
+          this.manager.view.engine.filterOperations,
+          this.manager.view.engine.aggregateOperations,
+        ),
+      ],
     );
   }
 
   async getReturnType() {
-    const baseQuery = this.buildExtendBaseQuery();
     this.validationState.inProgress();
 
     // properly reset the error state before revalidating
@@ -234,7 +241,8 @@ export abstract class DataCubeColumnBaseEditorState {
       const returnRelationType =
         await this.view.engine.getQueryCodeRelationReturnType(
           this.codePrefix + this.code + this.codeSuffix,
-          baseQuery,
+          this.buildExtendBaseQuery(),
+          this.view.source,
         );
       let returnType = returnRelationType.columns.find(
         (col) => col.name === this._name,
@@ -281,7 +289,7 @@ export abstract class DataCubeColumnBaseEditorState {
         this.showError(err.payload as DataCubeQueryBuilderError);
         return undefined;
       }
-      this.view.application.alertError(err, {
+      this.view.engine.alertError(err, {
         message: `Expression Validation Failure: ${err.message}`,
       });
     } finally {
@@ -329,7 +337,7 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
   }
 
   override newDisplay(state: DataCubeColumnBaseEditorState): DisplayState {
-    return this.view.application.layout.newDisplay(
+    return this.view.engine.layout.newDisplay(
       'Add New Column',
       () => <DataCubeColumnCreator state={this} />,
       {
@@ -359,12 +367,12 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
     let returnType: string | undefined;
     try {
       [query, returnType] = await Promise.all([
-        this.view.engine.parseQuery(this.code, false),
+        this.view.engine.parseValueSpecification(this.code, false),
         this.getReturnType(), // recompile to get the return type
       ]);
     } catch (error) {
       assertErrorThrown(error);
-      this.view.application.alertError(error, {
+      this.view.engine.alertError(error, {
         message: `Expression Validation Failure: ${error.message}`,
       });
       return;
@@ -373,14 +381,14 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
     }
 
     if (!(query instanceof V1_Lambda)) {
-      this.view.application.alertError(new Error(), {
+      this.view.engine.alertError(new Error(), {
         message: `Expression Validation Failure: Expression must be a lambda.`,
       });
       return;
     }
 
     if (!returnType) {
-      this.view.application.alertError(new Error(), {
+      this.view.engine.alertError(new Error(), {
         message: `Expression Validation Failure: Can't compute expression return type.`,
       });
       return;
@@ -439,14 +447,14 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
   }
 
   override async getInitialCode(): Promise<string> {
-    return this.view.engine.getQueryCode(
+    return this.view.engine.getValueSpecificationCode(
       V1_deserializeValueSpecification(this.initialData.mapFn, []),
       true,
     );
   }
 
   override newDisplay(state: DataCubeColumnBaseEditorState): DisplayState {
-    return this.view.application.layout.newDisplay(
+    return this.view.engine.layout.newDisplay(
       'Edit Column',
       () => <DataCubeColumnCreator state={this} />,
       {
@@ -484,12 +492,12 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
     let returnType: string | undefined;
     try {
       [query, returnType] = await Promise.all([
-        this.view.engine.parseQuery(this.code, false),
+        this.view.engine.parseValueSpecification(this.code, false),
         this.getReturnType(), // recompile to get the return type
       ]);
     } catch (error) {
       assertErrorThrown(error);
-      this.view.application.alertError(error, {
+      this.view.engine.alertError(error, {
         message: `Expression Validation Failure: ${error.message}`,
       });
       return;
@@ -498,14 +506,14 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
     }
 
     if (!(query instanceof V1_Lambda)) {
-      this.view.application.alertError(new Error(), {
+      this.view.engine.alertError(new Error(), {
         message: `Expression Validation Failure: Expression must be a lambda.`,
       });
       return;
     }
 
     if (!returnType) {
-      this.view.application.alertError(new Error(), {
+      this.view.engine.alertError(new Error(), {
         message: `Expression Validation Failure: Can't compute expression return type.`,
       });
       return;

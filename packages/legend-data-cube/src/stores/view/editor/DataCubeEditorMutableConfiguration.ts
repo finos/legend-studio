@@ -45,7 +45,7 @@ import {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
   DataCubePivotLayoutConfiguration,
-} from '../../core/DataCubeConfiguration.js';
+} from '../../core/models/DataCubeConfiguration.js';
 import { buildDefaultColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import {
@@ -428,6 +428,9 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
     configuration.columns = [];
 
     makeObservable(configuration, {
+      name: observable,
+      setName: action,
+
       description: observable,
       setDescription: action,
 
@@ -567,6 +570,10 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
     this.negativeBackgroundColor = DEFAULT_BACKGROUND_COLOR;
     this.zeroBackgroundColor = DEFAULT_BACKGROUND_COLOR;
     this.errorBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+  }
+
+  setName(value: string) {
+    this.name = value;
   }
 
   setDescription(value: string | undefined) {

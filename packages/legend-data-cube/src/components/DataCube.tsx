@@ -14,70 +14,27 @@
  * limitations under the License.
  */
 
-import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
-import { DataCubeGrid } from './view/grid/DataCubeGrid.js';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
   DataCubeIcon,
   DropdownMenu,
   DropdownMenuItem,
-  ProgressBar,
   useDropdownMenu,
 } from '@finos/legend-art';
 import { DataCubeLayoutManager } from './core/DataCubeLayoutManager.js';
-import type { DataCubeViewState } from '../stores/view/DataCubeViewState.js';
 import { INTERNAL__MonacoEditorWidgetsRoot } from './core/DataCubePureCodeEditorUtils.js';
-import { useDataCube } from './DataCubeProvider.js';
 import { DataCubeBlockingActionAlert } from './core/DataCubeAlert.js';
+import { DataCubeView } from './DataCubeView.js';
+import { useEffect } from 'react';
+import type { DataCubeEngine } from '../stores/core/DataCubeEngine.js';
+import { DataCubeState } from '../stores/DataCubeState.js';
+import { type DataCubeOptions } from '../stores/DataCubeOptions.js';
+import { DataCubeContextProvider, useDataCube } from './DataCubeProvider.js';
 
-const DataCubeStatusBar = observer((props: { view: DataCubeViewState }) => {
-  const { view } = props;
-
-  return (
-    <div className="flex h-5 w-full justify-between bg-neutral-100">
-      <div className="flex">
-        <button
-          className="flex items-center px-2 text-sky-600 hover:text-sky-700"
-          onClick={() => view.editor.display.open()}
-        >
-          <DataCubeIcon.Settings className="text-xl" />
-          <div className="pl-0.5 underline">Properties</div>
-        </button>
-        <div className="flex">
-          <button
-            className="flex items-center text-sky-600 hover:text-sky-700"
-            onClick={() => {
-              view.filter.display.open();
-            }}
-          >
-            <DataCubeIcon.TableFilter className="text-lg" />
-            <div className="pl-0.5 underline">Filter</div>
-          </button>
-        </div>
-      </div>
-      <div className="flex items-center px-2">
-        <div className="flex h-3.5 w-48 border-[0.5px] border-neutral-300">
-          {view.runningTasks.size > 0 && (
-            <ProgressBar
-              classes={{
-                root: 'h-3.5 w-full bg-transparent',
-                bar1Indeterminate: 'bg-green-500',
-                bar2Indeterminate: 'bg-green-500',
-              }}
-              variant="indeterminate"
-            />
-          )}
-        </div>
-      </div>
-    </div>
-  );
-});
-
-// TODO?: we might need to move this up a level to accomondate for multi-view use case
-// as only the top-level view should have their own title bar
-const DataCubeTitleBar = observer((props: { view: DataCubeViewState }) => {
-  const { view } = props;
-  const application = view.application;
+const DataCubeTitleBar = observer(() => {
+  const dataCube = useDataCube();
+  const engine = dataCube.engine;
+  const view = dataCube.view;
   const [openMenuDropdown, closeMenuDropdown, menuDropdownProps] =
     useDropdownMenu();
 
@@ -108,8 +65,9 @@ const DataCubeTitleBar = observer((props: { view: DataCubeViewState }) => {
           <DropdownMenuItem
             className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
             onClick={() => {
-              if (application.documentationUrl) {
-                application.openLink(application.documentationUrl);
+              const url = engine.getDocumentationURL();
+              if (url) {
+                engine.openLink(url);
               }
               closeMenuDropdown();
             }}
@@ -133,26 +91,51 @@ const DataCubeTitleBar = observer((props: { view: DataCubeViewState }) => {
   );
 });
 
-export const DataCube = observer(() => {
+const DataCubeRoot = observer(() => {
   const dataCube = useDataCube();
-  const application = dataCube.application;
+  const engine = dataCube.engine;
   const view = dataCube.view;
 
   useEffect(() => {
-    view.initialize().catch((error) => application.logUnhandledError(error));
-  }, [view, application]);
+    dataCube.view
+      .initialize()
+      .catch((error) => dataCube.engine.logUnhandledError(error));
+  }, [dataCube]);
 
   return (
     <div className="data-cube relative flex h-full w-full flex-col bg-white">
-      <DataCubeTitleBar view={view} />
+      <DataCubeTitleBar />
 
-      <DataCubeGrid view={view} />
-      <DataCubeStatusBar view={view} />
+      <DataCubeView view={view} />
 
-      {/* TODO: move this to upper layer component when we have multi-view support */}
-      <DataCubeLayoutManager layout={application.layout} />
+      <DataCubeLayoutManager layout={engine.layout} />
       <DataCubeBlockingActionAlert />
       <INTERNAL__MonacoEditorWidgetsRoot />
     </div>
   );
 });
+
+export const DataCube = observer(
+  (props: {
+    engine: DataCubeEngine;
+    options?: DataCubeOptions | undefined;
+  }): React.ReactElement => {
+    const { engine, options } = props;
+    const state = useLocalObservable(() => new DataCubeState(engine, options));
+
+    useEffect(() => {
+      state
+        .initialize()
+        .catch((error) => state.engine.logUnhandledError(error));
+    }, [state]);
+
+    if (!state.initState.hasSucceeded) {
+      return <></>;
+    }
+    return (
+      <DataCubeContextProvider value={state}>
+        <DataCubeRoot />
+      </DataCubeContextProvider>
+    );
+  },
+);

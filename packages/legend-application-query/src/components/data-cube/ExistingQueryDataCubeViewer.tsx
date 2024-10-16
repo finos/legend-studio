@@ -27,8 +27,7 @@ import {
 } from './ExistingQueryEditorStoreProviderProvider.js';
 import { useEffect } from 'react';
 import { flowResult } from 'mobx';
-import { DataCube, DataCubeProvider } from '@finos/legend-data-cube';
-import { QueryBuilderDataCubeApplicationEngine } from '@finos/legend-query-builder';
+import { DataCube } from '@finos/legend-data-cube';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export const DataCubeWrapper = observer(() => {
@@ -42,15 +41,7 @@ export const DataCubeWrapper = observer(() => {
   if (!store.engine) {
     return null;
   }
-  const _appEngine = new QueryBuilderDataCubeApplicationEngine(
-    applicationStore,
-  );
-
-  return (
-    <DataCubeProvider application={_appEngine} engine={store.engine}>
-      <DataCube />
-    </DataCubeProvider>
-  );
+  return <DataCube engine={store.engine} />;
 });
 
 export const ExistingQueryDataCubeViewer = observer(() => {

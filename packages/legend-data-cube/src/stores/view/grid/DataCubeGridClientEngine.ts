@@ -31,33 +31,24 @@ import {
   pruneObject,
 } from '@finos/legend-shared';
 import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
-import {
-  type TabularDataSet,
-  type V1_AppliedFunction,
-  V1_Lambda,
-} from '@finos/legend-graph';
+import { type TabularDataSet, V1_Lambda } from '@finos/legend-graph';
 import { generateRowGroupingDrilldownExecutableQueryPostProcessor } from './DataCubeGridQueryBuilder.js';
 import { makeObservable, observable, runInAction } from 'mobx';
 import type {
   DataCubeConfiguration,
   DataCubeConfigurationColorKey,
-} from '../../core/DataCubeConfiguration.js';
+} from '../../core/models/DataCubeConfiguration.js';
 import { DEFAULT_LARGE_ALERT_WINDOW_CONFIG } from '../../core/DataCubeLayoutManagerState.js';
-import {
-  _sortByColName,
-  type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotData,
-} from '../../core/DataCubeQuerySnapshot.js';
-import type { DataCubeEngine } from '../../core/DataCubeEngine.js';
+import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { _sortByColName } from '../../core/models/DataCubeColumn.js';
 import {
   isPivotResultColumnName,
   type DataCubeQueryFunctionMap,
 } from '../../core/DataCubeQueryEngine.js';
-import type { DataCubeQueryFilterOperation } from '../../core/filter/DataCubeQueryFilterOperation.js';
-import type { DataCubeQueryAggregateOperation } from '../../core/aggregation/DataCubeQueryAggregateOperation.js';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { AlertType } from '../../../components/core/DataCubeAlert.js';
 import { sum } from 'mathjs';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 
 type GridClientCellValue = string | number | boolean | null | undefined;
 type GridClientRowData = {
@@ -125,7 +116,7 @@ export const generateBackgroundColorUtilityClassName = (
 export const INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE = 500;
 export const INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_PAGINATION = true;
 // NOTE: The cache block size is used by ag-grid to pre-allocate memory for the grid
-// so the value set must be reasonable, or else it can crash the application!
+// so the value set must be reasonable, or else it can crash the engine!
 export const INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE = 1e4;
 
 export const INTERNAL__GRID_CLIENT_PIVOT_COLUMN_GROUP_COLOR_ROTATION_SIZE = 5;
@@ -186,8 +177,6 @@ export function computeHashCodeForDataFetchManualTrigger(
 ) {
   return hashObject(
     pruneObject({
-      ...snapshot.data,
-      name: '', // name change should not trigger data fetching
       configuration: {
         showRootAggregation: configuration.showRootAggregation,
         pivotStatisticColumnPlacement:
@@ -208,11 +197,12 @@ export function computeHashCodeForDataFetchManualTrigger(
           }))
           .sort(_sortByColName), // sort to make sure column reordering does not trigger data fetching
       },
+      leafExtendedColumns: snapshot.data.leafExtendedColumns,
+      filter: snapshot.data.filter,
       selectColumns: snapshot.data.selectColumns.slice().sort(_sortByColName), // sort to make sure column reordering does not trigger data fetching
-      pivot: undefined,
-      groupBy: undefined,
-      sortColumns: [],
-    } satisfies DataCubeQuerySnapshotData),
+      groupExtendedColumns: snapshot.data.groupExtendedColumns,
+      limit: snapshot.data.limit,
+    }),
   );
 }
 
@@ -253,7 +243,7 @@ function buildRowData(
 
 async function getCastColumns(
   currentSnapshot: DataCubeQuerySnapshot,
-  engine: DataCubeEngine,
+  view: DataCubeViewState,
 ) {
   if (!currentSnapshot.data.pivot) {
     throw new IllegalStateError(
@@ -267,16 +257,18 @@ async function getCastColumns(
   snapshot.data.limit = 0;
   const query = buildExecutableQuery(
     snapshot,
-    engine.filterOperations,
-    engine.aggregateOperations,
+    view.source,
+    (source) => view.engine.buildExecutionContext(source),
+    view.engine.filterOperations,
+    view.engine.aggregateOperations,
     {
       postProcessor: (
-        _snapshot: DataCubeQuerySnapshot,
-        sequence: V1_AppliedFunction[],
-        funcMap: DataCubeQueryFunctionMap,
-        configuration: DataCubeConfiguration,
-        filterOperations: DataCubeQueryFilterOperation[],
-        aggregateOperations: DataCubeQueryAggregateOperation[],
+        _snapshot,
+        sequence,
+        funcMap,
+        configuration,
+        filterOperations,
+        aggregateOperations,
       ) => {
         const _unprocess = (funcMapKey: keyof DataCubeQueryFunctionMap) => {
           const func = funcMap[funcMapKey];
@@ -295,7 +287,11 @@ async function getCastColumns(
 
   const lambda = new V1_Lambda();
   lambda.body.push(query);
-  const result = await engine.executeQuery(lambda);
+  const result = await view.engine.executeQuery(
+    lambda,
+    view.source,
+    view.dataCube,
+  );
 
   return result.result.builder.columns.map((column) => ({
     name: column.name,
@@ -357,7 +353,7 @@ export class DataCubeGridClientServerSideDataSource
           try {
             const castColumns = await getCastColumns(
               newSnapshot,
-              this.grid.view.engine,
+              this.grid.view,
             );
             newSnapshot.data.pivot.castColumns = castColumns;
             newSnapshot.data.sortColumns = newSnapshot.data.sortColumns.filter(
@@ -368,7 +364,7 @@ export class DataCubeGridClientServerSideDataSource
             );
           } catch (error) {
             assertErrorThrown(error);
-            this.grid.view.application.alertError(error, {
+            this.grid.view.engine.alertError(error, {
               message: `Query Validation Failure: Can't retrieve pivot results column metadata. ${error.message}`,
             });
             // fail early since we can't proceed without the cast columns validated
@@ -396,6 +392,8 @@ export class DataCubeGridClientServerSideDataSource
     try {
       const executableQuery = buildExecutableQuery(
         newSnapshot,
+        this.grid.view.source,
+        (source) => this.grid.view.engine.buildExecutionContext(source),
         this.grid.view.engine.filterOperations,
         this.grid.view.engine.aggregateOperations,
         {
@@ -416,10 +414,14 @@ export class DataCubeGridClientServerSideDataSource
       );
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
-      const result = await this.grid.view.engine.executeQuery(lambda);
+      const result = await this.grid.view.engine.executeQuery(
+        lambda,
+        this.grid.view.source,
+        this.grid.view.dataCube,
+      );
       const rowData = buildRowData(result.result.result, newSnapshot);
-      if (this.grid.view.engine.enableDebugMode) {
-        this.grid.view.application.debugProcess(
+      if (this.grid.view.dataCube.settings.enableDebugMode) {
+        this.grid.view.engine.debugProcess(
           `Execution`,
           ['Query', result.executedQuery],
           ['Config', `pagination=${this.grid.isPaginationEnabled}`],
@@ -464,10 +466,13 @@ export class DataCubeGridClientServerSideDataSource
         // When there are just too many rows (exceeding the maximum cache block size), we will fallback to a slightly less ideal
         // behavior by forcing a scroll top for every data fetch and also reset the cache block size to the default value to save memory
         if (rowData.length > INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE) {
-          if (!this.grid.view.engine.gridClientSuppressLargeDatasetWarning) {
-            this.grid.view.application.alert({
+          if (
+            !this.grid.view.dataCube.settings
+              .gridClientSuppressLargeDatasetWarning
+          ) {
+            this.grid.view.engine.alert({
               message: `Large dataset (>${INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE} rows) detected!`,
-              text: `Overall app performance can be impacted by large dataset due to longer query execution time and increased memory usage. At its limit, the application can crash!\nTo boost performance, consider enabling pagination while working with large dataset.`,
+              text: `Overall app performance can be impacted by large dataset due to longer query execution time and increased memory usage. At its limit, the engine can crash!\nTo boost performance, consider enabling pagination while working with large dataset.`,
               type: AlertType.WARNING,
               actions: [
                 {
@@ -479,7 +484,7 @@ export class DataCubeGridClientServerSideDataSource
                 {
                   label: 'Dismiss Warning',
                   handler: () => {
-                    this.grid.view.engine.setGridClientSuppressLargeDatasetWarning(
+                    this.grid.view.dataCube.settings.setGridClientSuppressLargeDatasetWarning(
                       true,
                     );
                   },
@@ -516,7 +521,7 @@ export class DataCubeGridClientServerSideDataSource
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.grid.view.application.alertError(error, {
+      this.grid.view.engine.alertError(error, {
         message: `Data Fetch Failure: ${error.message}`,
       });
       params.fail();
@@ -528,7 +533,7 @@ export class DataCubeGridClientServerSideDataSource
   getRows(params: IServerSideGetRowsParams<unknown, unknown>) {
     this.fetchRows(params).catch((error: unknown) => {
       assertErrorThrown(error);
-      this.grid.view.application.logIllegalStateError(
+      this.grid.view.engine.logIllegalStateError(
         `Error ocurred while fetching data for grid should have been handled gracefully`,
         error,
       );

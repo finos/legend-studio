@@ -49,7 +49,7 @@ import { isNonNullable } from '@finos/legend-shared';
 import type {
   DataCubeConfiguration,
   DataCubeConfigurationColorKey,
-} from '../../../stores/core/DataCubeConfiguration.js';
+} from '../../../stores/core/models/DataCubeConfiguration.js';
 import { generateBaseGridOptions } from '../../../stores/view/grid/DataCubeGridConfigurationBuilder.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
 
@@ -58,10 +58,13 @@ import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.j
 // We MUST NEVER completely surpress this warning in production, else it's a violation of the ag-grid license!
 // See https://www.ag-grid.com/react-data-grid/licensing/
 const __INTERNAL__original_console_error = console.error; // eslint-disable-line no-console
-// eslint-disable-next-line no-console
-console.error = (message?: unknown, ...agrs: unknown[]) => {
-  console.debug(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
-};
+// eslint-disable-next-line no-process-env
+if (process.env.NODE_ENV === 'development') {
+  // eslint-disable-next-line no-console
+  console.error = (message?: unknown, ...agrs: unknown[]) => {
+    console.debug(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
+  };
+}
 
 function textColorStyle(
   key: DataCubeConfigurationColorKey,
@@ -348,8 +351,11 @@ const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
         }}
         onGridReady={(params) => {
           grid.configureClient(params.api);
-          // restore original error logging
-          console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
+          // eslint-disable-next-line no-process-env
+          if (process.env.NODE_ENV === 'development') {
+            // restore original error logging
+            console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
+          }
         }}
         modules={[
           // community

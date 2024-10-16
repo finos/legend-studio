@@ -14,39 +14,65 @@
  * limitations under the License.
  */
 
-import { type DataCubeEngine } from './core/DataCubeEngine.js';
+import {
+  type DataCubeEngine,
+  type DataCubeInitialInput,
+} from './core/DataCubeEngine.js';
 import { DataCubeViewState } from './view/DataCubeViewState.js';
 import type { DisplayState } from './core/DataCubeLayoutManagerState.js';
 import { DocumentationPanel } from '../components/core/DataCubeDocumentationPanel.js';
 import { DataCubeSettingsPanel } from '../components/core/DataCubeSettingsPanel.js';
-import { ActionState, assertErrorThrown } from '@finos/legend-shared';
-import { AlertType } from '../components/core/DataCubeAlert.js';
-import { type DataCubeApplicationEngine } from './core/DataCubeApplicationEngine.js';
+import {
+  ActionState,
+  assertErrorThrown,
+  type DocumentationEntry,
+} from '@finos/legend-shared';
+import {
+  AlertType,
+  type ActionAlert,
+} from '../components/core/DataCubeAlert.js';
+import type { DataCubeSource } from './core/models/DataCubeSource.js';
+import { action, makeObservable, observable } from 'mobx';
+import { DataCubeSettings } from './DataCubeSettings.js';
+import type { DataCubeAPI } from './DataCubeAPI.js';
+import type { DataCubeOptions } from './DataCubeOptions.js';
 
-export class DataCubeState {
-  readonly application: DataCubeApplicationEngine;
+export class DataCubeState implements DataCubeAPI {
   readonly engine: DataCubeEngine;
-
+  readonly settings!: DataCubeSettings;
   readonly initState = ActionState.create();
-
   readonly settingsDisplay: DisplayState;
   readonly documentationDisplay: DisplayState;
-
   // NOTE: when we support multiview, there can be multiple view states to support
   // the first one in that list will be taken as the main view state
   readonly view: DataCubeViewState;
 
-  constructor(application: DataCubeApplicationEngine, engine: DataCubeEngine) {
-    this.application = application;
+  onNameChanged?: ((name: string, source: DataCubeSource) => void) | undefined;
+  onSettingChanged?:
+    | ((
+        key: string,
+        value: string | number | boolean | object | undefined,
+      ) => void)
+    | undefined;
+
+  initialInput?: DataCubeInitialInput | undefined;
+  currentDocumentationEntry?: DocumentationEntry | undefined;
+  currentActionAlert?: ActionAlert | undefined;
+
+  constructor(engine: DataCubeEngine, options?: DataCubeOptions | undefined) {
+    makeObservable(this, {
+      currentDocumentationEntry: observable,
+      openDocumentationEntry: action,
+
+      currentActionAlert: observable,
+      alertAction: action,
+    });
+
     this.engine = engine;
-    this.engine.gridClientTaskRunner = (task) => {
-      // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
-      // to traverse through and update the configurations of all of their grid clients
-      task(this.view.grid.client);
-    };
+    this.settings = new DataCubeSettings(this);
     this.view = new DataCubeViewState(this);
 
-    this.settingsDisplay = this.application.layout.newDisplay(
+    this.settingsDisplay = this.engine.layout.newDisplay(
       'Settings',
       () => <DataCubeSettingsPanel />,
       {
@@ -59,7 +85,7 @@ export class DataCubeState {
         center: false,
       },
     );
-    this.documentationDisplay = this.application.layout.newDisplay(
+    this.documentationDisplay = this.engine.layout.newDisplay(
       'Documentation',
       () => <DocumentationPanel />,
       {
@@ -72,11 +98,56 @@ export class DataCubeState {
         center: false,
       },
     );
+
+    this.onNameChanged = options?.onNameChanged;
+    this.onSettingChanged = options?.onSettingChanged;
+    this.initialInput = options?.initialInput;
+
+    this.settings.enableDebugMode =
+      options?.enableDebugMode !== undefined
+        ? options.enableDebugMode
+        : this.settings.enableDebugMode;
+    this.settings.gridClientRowBuffer =
+      options?.gridClientRowBuffer !== undefined
+        ? options.gridClientRowBuffer
+        : this.settings.gridClientRowBuffer;
+    this.settings.gridClientPurgeClosedRowNodes =
+      options?.gridClientPurgeClosedRowNodes !== undefined
+        ? options.gridClientPurgeClosedRowNodes
+        : this.settings.gridClientPurgeClosedRowNodes;
+    this.settings.gridClientSuppressLargeDatasetWarning =
+      options?.gridClientSuppressLargeDatasetWarning !== undefined
+        ? options.gridClientSuppressLargeDatasetWarning
+        : this.settings.gridClientSuppressLargeDatasetWarning;
+  }
+
+  getSettings() {
+    return this.settings;
+  }
+
+  openDocumentationEntry(entry: DocumentationEntry | undefined) {
+    this.currentDocumentationEntry = entry;
+  }
+
+  alertAction(alert: ActionAlert | undefined) {
+    this.currentActionAlert = alert;
+  }
+
+  refreshFailedDataFetches() {
+    this.runTaskForEachView((view) => {
+      view.grid.client.retryServerSideLoads();
+    });
+  }
+
+  runTaskForEachView(runner: (view: DataCubeViewState) => void) {
+    // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
+    // to traverse through and update the configurations of all of their grid clients
+    runner(this.view);
   }
 
   async initialize() {
     if (!this.initState.isInInitialState) {
-      this.application.logDebug('REPL store is re-initialized');
+      this.engine.logDebug('REPL store is re-initialized');
       return;
     }
     this.initState.inProgress();
@@ -86,9 +157,9 @@ export class DataCubeState {
       this.initState.pass();
     } catch (error: unknown) {
       assertErrorThrown(error);
-      this.application.alertAction({
+      this.alertAction({
         message: `Initialization Failure: ${error.message}`,
-        prompt: `Resolve the issue and reload the application.`,
+        prompt: `Resolve the issue and reload the engine.`,
         type: AlertType.ERROR,
         actions: [],
       });

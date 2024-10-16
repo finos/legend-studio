@@ -19,10 +19,8 @@ import {
   DataCubeQueryFilterOperation,
   generateDefaultFilterConditionPrimitiveTypeValue,
 } from './DataCubeQueryFilterOperation.js';
-import type {
-  DataCubeQuerySnapshotColumn,
-  DataCubeQuerySnapshotFilterCondition,
-} from '../DataCubeQuerySnapshot.js';
+import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
+import type { DataCubeColumn } from '../models/DataCubeColumn.js';
 import {
   DataCubeColumnDataType,
   DataCubeFunction,
@@ -57,7 +55,7 @@ export class DataCubeQueryFilterOperation__NotEqualCaseInsensitive extends DataC
     return DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE;
   }
 
-  isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {
+  isCompatibleWithColumn(column: DataCubeColumn) {
     return ofDataType(column.type, [DataCubeColumnDataType.TEXT]);
   }
 
@@ -69,7 +67,7 @@ export class DataCubeQueryFilterOperation__NotEqualCaseInsensitive extends DataC
     );
   }
 
-  generateDefaultValue(column: DataCubeQuerySnapshotColumn) {
+  generateDefaultValue(column: DataCubeColumn) {
     return {
       type: column.type,
       value: generateDefaultFilterConditionPrimitiveTypeValue(column.type),
