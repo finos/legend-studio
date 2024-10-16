@@ -17,11 +17,12 @@
 @use 'mixins' as *;
 
 .undo-redo {
-  @include flexVCenter;
-
   &__button {
+    @include flexVCenter;
+
     color: var(--color-light-blue-50);
     margin: 0 0.5rem;
+    flex-direction: column;
 
     svg {
       font-size: 1.1rem;
