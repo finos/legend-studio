@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-export * from './stores/core/models/DataCubeQuery.js';
-export * from './stores/core/models/DataCubeSource.js';
+import type { V1_ValueSpecification } from '@finos/legend-graph';
+import type { DataCubeColumn } from './DataCubeColumn.js';
 
-export * from './stores/core/DataCubeEngine.js';
-export * from './stores/core/DataCubeQueryEngine.js';
-export * from './stores/core/DataCubeApplicationEngine.js';
-export * from './stores/core/DataCubeQueryBuilderUtils.js';
+export abstract class DataCubeSource {
+  sourceColumns: DataCubeColumn[] = [];
+  query!: V1_ValueSpecification;
+}
 
-export * from './components/core/DataCubeAlert.js';
-export * from './components/DataCube.js';
-export * from './components/DataCubeProvider.js';
+export class INTERNAL__DataCubeSource extends DataCubeSource {}

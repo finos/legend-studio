@@ -22,7 +22,7 @@ import {
   deepDiff,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { DataCubeQuery } from '../core/DataCubeQuery.js';
+import type { DataCubeQuery } from '../core/models/DataCubeQuery.js';
 
 // TODO: set a stack depth when we implement undo/redo
 // const DATA_CUBE_MAX_SNAPSHOT_COUNT = 100;

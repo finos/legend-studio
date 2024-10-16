@@ -42,7 +42,7 @@ import {
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
-import type { DataCubeColumnConfiguration } from '../../core/DataCubeConfiguration.js';
+import type { DataCubeColumnConfiguration } from '../../core/models/DataCubeConfiguration.js';
 import { DataCubeFilterEditorConditionTreeNode } from '../../core/filter/DataCubeQueryFilterEditorState.js';
 import { DataCubeEditorTab } from '../editor/DataCubeEditorState.js';
 

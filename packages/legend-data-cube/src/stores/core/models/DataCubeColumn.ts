@@ -14,14 +14,21 @@
  * limitations under the License.
  */
 
-export * from './stores/core/models/DataCubeQuery.js';
-export * from './stores/core/models/DataCubeSource.js';
+export type DataCubeColumn = {
+  name: string;
+  type: string;
+};
 
-export * from './stores/core/DataCubeEngine.js';
-export * from './stores/core/DataCubeQueryEngine.js';
-export * from './stores/core/DataCubeApplicationEngine.js';
-export * from './stores/core/DataCubeQueryBuilderUtils.js';
+export function _findCol<T extends DataCubeColumn>(
+  cols: T[] | undefined,
+  name: string,
+): T | undefined {
+  return cols?.find((c) => c.name === name);
+}
 
-export * from './components/core/DataCubeAlert.js';
-export * from './components/DataCube.js';
-export * from './components/DataCubeProvider.js';
+export function _toCol(col: { name: string; type: string }): DataCubeColumn {
+  return { name: col.name, type: col.type };
+}
+
+export const _sortByColName = (a: { name: string }, b: { name: string }) =>
+  a.name.localeCompare(b.name);

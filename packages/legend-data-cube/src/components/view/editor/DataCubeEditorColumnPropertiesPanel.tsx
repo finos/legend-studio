@@ -45,7 +45,7 @@ import {
 } from '../../../stores/core/DataCubeQueryEngine.js';
 import { DocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
-import { _sortByColName } from '../../../stores/core/DataCubeQuerySnapshot.js';
+import { _sortByColName } from '../../../stores/core/models/DataCubeColumn.js';
 
 export const DataCubeEditorColumnPropertiesPanel = observer(
   (props: { view: DataCubeViewState }) => {

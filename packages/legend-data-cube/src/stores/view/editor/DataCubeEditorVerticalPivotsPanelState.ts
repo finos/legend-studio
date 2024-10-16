@@ -16,12 +16,10 @@
 
 import { uniqBy } from '@finos/legend-shared';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import type { DataCubeConfiguration } from '../../core/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
 import { DataCubeColumnKind } from '../../core/DataCubeQueryEngine.js';
-import {
-  _toCol,
-  type DataCubeQuerySnapshot,
-} from '../../core/DataCubeQuerySnapshot.js';
+import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { _toCol } from '../../core/models/DataCubeColumn.js';
 import {
   DataCubeEditorColumnSelectorColumnState,
   DataCubeEditorColumnSelectorState,

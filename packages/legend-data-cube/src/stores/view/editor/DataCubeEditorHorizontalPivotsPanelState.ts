@@ -16,16 +16,16 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import type { DataCubeConfiguration } from '../../core/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
 import {
   DataCubeColumnKind,
   isPivotResultColumnName,
 } from '../../core/DataCubeQueryEngine.js';
+import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import {
   _toCol,
-  type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotColumn,
-} from '../../core/DataCubeQuerySnapshot.js';
+  type DataCubeColumn,
+} from '../../core/models/DataCubeColumn.js';
 import {
   DataCubeEditorColumnSelectorColumnState,
   DataCubeEditorColumnSelectorState,
@@ -68,7 +68,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
   readonly editor!: DataCubeEditorState;
   readonly selector!: DataCubeEditorHorizontalPivotColumnSelectorState;
 
-  castColumns: DataCubeQuerySnapshotColumn[] = [];
+  castColumns: DataCubeColumn[] = [];
 
   constructor(editor: DataCubeEditorState) {
     makeObservable(this, {
@@ -86,13 +86,13 @@ export class DataCubeEditorHorizontalPivotsPanelState
     );
   }
 
-  get pivotResultColumns(): DataCubeQuerySnapshotColumn[] {
+  get pivotResultColumns(): DataCubeColumn[] {
     return this.castColumns
       .filter((col) => isPivotResultColumnName(col.name))
       .map(_toCol);
   }
 
-  setCastColumns(value: DataCubeQuerySnapshotColumn[]) {
+  setCastColumns(value: DataCubeColumn[]) {
     this.castColumns = value;
   }
 

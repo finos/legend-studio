@@ -31,20 +31,16 @@ import { createDataCubeEngineFromQueryBuilder } from '../../stores/data-cube/Que
 const QueryBuilderDataCube = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const applicationStore = new QueryBuilderDataCubeApplicationEngine(
+    const application = new QueryBuilderDataCubeApplicationEngine(
       queryBuilderState.applicationStore,
     );
-    const queryBuilderEngine =
-      createDataCubeEngineFromQueryBuilder(queryBuilderState);
-    if (!queryBuilderEngine) {
+    const engine = createDataCubeEngineFromQueryBuilder(queryBuilderState);
+    if (!engine) {
       return null;
     }
 
     return (
-      <DataCubeProvider
-        application={applicationStore}
-        engine={queryBuilderEngine}
-      >
+      <DataCubeProvider application={application} engine={engine}>
         <DataCube />
       </DataCubeProvider>
     );

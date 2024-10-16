@@ -49,7 +49,7 @@ import { isNonNullable } from '@finos/legend-shared';
 import type {
   DataCubeConfiguration,
   DataCubeConfigurationColorKey,
-} from '../../../stores/core/DataCubeConfiguration.js';
+} from '../../../stores/core/models/DataCubeConfiguration.js';
 import { generateBaseGridOptions } from '../../../stores/view/grid/DataCubeGridConfigurationBuilder.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
 

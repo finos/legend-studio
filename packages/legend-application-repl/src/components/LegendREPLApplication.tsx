@@ -44,23 +44,25 @@ const LegendREPLDataCube = observer(() => {
     LegendREPLApplicationConfig,
     LegendApplicationPluginManager<LegendApplicationPlugin>
   >();
+  const config = applicationStore.config;
   const application = useMemo(
     () => new LegendREPLDataCubeApplicationEngine(applicationStore),
     [applicationStore],
   );
-  const engine = new LegendREPLDataCubeEngine(
-    application,
-    new LegendREPLServerClient(
-      new NetworkClient({
-        baseUrl: applicationStore.config.useDynamicREPLServer
-          ? window.location.origin +
-            guaranteeNonNullable(applicationStore.config.baseAddress).replace(
-              '/repl/',
-              '',
-            )
-          : applicationStore.config.replUrl,
-      }),
-    ),
+  const engine = useMemo(
+    () =>
+      new LegendREPLDataCubeEngine(
+        application,
+        new LegendREPLServerClient(
+          new NetworkClient({
+            baseUrl: config.useDynamicREPLServer
+              ? window.location.origin +
+                guaranteeNonNullable(config.baseAddress).replace('/repl/', '')
+              : config.replUrl,
+          }),
+        ),
+      ),
+    [application, config],
   );
 
   useEffect(() => {

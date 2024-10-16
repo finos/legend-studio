@@ -29,7 +29,7 @@ import {
 import { DataCubeQuerySnapshotController } from '../DataCubeQuerySnapshotManager.js';
 import type { DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import { generateGridOptionsFromSnapshot } from './DataCubeGridConfigurationBuilder.js';
-import { DataCubeConfiguration } from '../../core/DataCubeConfiguration.js';
+import { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
 import { DataCubeGridControllerState } from './DataCubeGridControllerState.js';
 import { DataCubeGridClientExportEngine } from './DataCubeGridClientExportEngine.js';
 

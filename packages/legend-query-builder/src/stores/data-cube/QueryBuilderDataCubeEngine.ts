@@ -33,36 +33,22 @@ import {
 import {
   _elementPtr,
   _functionName,
-  DataCubeGetBaseQueryResult,
   DataCubeEngine,
-  type CompletionItem,
-  DataCubeQuerySource,
-  type DataCubeInfrastructureInfo,
+  DataCubeSource,
   type RelationType,
   DataCubeQuery,
+  type DataCubeInitialInput,
+  type CompletionItem,
+  _function,
+  DataCubeFunction,
 } from '@finos/legend-data-cube';
-import { guaranteeType, LogService } from '@finos/legend-shared';
+import { guaranteeType, isNonNullable, LogService } from '@finos/legend-shared';
 
-export class _DataCubeQuery {
-  name: string;
-  query: string;
-  partialQuery: string;
-  source: DataCubeQuerySource;
-
-  constructor(
-    name: string,
-    query: string,
-    partialQuery: string,
-    source: DataCubeQuerySource,
-  ) {
-    this.name = name;
-    this.query = query;
-    this.partialQuery = partialQuery;
-    this.source = source;
-  }
+class QueryBuilderDataCubeSource extends DataCubeSource {
+  mapping?: string | undefined;
+  runtime!: string;
 }
 
-export class QueryBuilderDataCubeQuerySource extends DataCubeQuerySource {}
 export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   readonly logService = new LogService();
   readonly graphState: GraphManagerState;
@@ -90,12 +76,12 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   get sourceLabel(): string {
     return `Query Builder Report`;
   }
-  override getBaseQuery(): Promise<DataCubeGetBaseQueryResult> {
+
+  override getInitialInput(): Promise<DataCubeInitialInput> {
     return this.buildBaseQuery();
   }
 
-  async buildBaseQuery(): Promise<DataCubeGetBaseQueryResult> {
-    const timestamp = Date.now();
+  async buildBaseQuery(): Promise<DataCubeInitialInput> {
     let srcFuncExp = V1_deserializeValueSpecification(
       this.graphState.graphManager.serializeRawValueSpecification(
         this.selectInitialQuery,
@@ -121,60 +107,50 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     if (this.runtimePath) {
       fromFuncExp.parameters.push(_elementPtr(this.runtimePath));
     }
-    const [relationType, queryString, fromQuerystring] = await Promise.all([
-      this.getRelationalType(this.selectInitialQuery),
-      this.graphState.graphManager.valueSpecificationToPureCode(
-        V1_serializeValueSpecification(srcFuncExp, []),
-      ),
-      this.graphState.graphManager.valueSpecificationToPureCode(
-        V1_serializeValueSpecification(fromFuncExp, []),
-      ),
-    ]);
-    const columns = relationType.columns;
-    const source = new QueryBuilderDataCubeQuerySource();
-    source.columns = columns;
+    const columns = (await this.getRelationalType(this.selectInitialQuery))
+      .columns;
+    const query = new DataCubeQuery();
+    query.query = `~[${columns.map((e) => `'${e.name}'`)}]->select()`;
+    const source = new QueryBuilderDataCubeSource();
+    source.sourceColumns = columns;
     source.mapping = this.mappingPath;
     source.runtime = this.runtimePath;
-    source.query = queryString;
-    const partialQuery = `~[${columns.map((e) => `'${e.name}'`)}]->select()`;
-    const result = new DataCubeQuery(this.sourceLabel, fromQuerystring);
-    result.partialQuery = partialQuery;
-    result.source = source;
-    const baseQueryResult = new DataCubeGetBaseQueryResult();
-    baseQueryResult.timestamp = timestamp;
-    baseQueryResult.query = result;
-    baseQueryResult.partialQuery = await this.parseQuery(partialQuery);
-    baseQueryResult.sourceQuery = srcFuncExp;
-    return baseQueryResult;
+    source.query = srcFuncExp;
+    return {
+      query,
+      source,
+    };
   }
 
   get graph(): PureModel {
     return this.graphState.graph;
   }
 
-  private buildRawLambdaFromValueSpec(query: V1_ValueSpecification): RawLambda {
+  private buildRawLambdaFromValueSpec(query: V1_Lambda): RawLambda {
     const json = guaranteeType(
       V1_deserializeRawValueSpecification(
-        V1_serializeValueSpecification(query, []),
+        V1_serializeValueSpecification(
+          query.body[0] as V1_ValueSpecification,
+          [],
+        ),
       ),
       V1_RawLambda,
     );
     return new RawLambda(json.parameters, json.body);
   }
 
-  override getInfrastructureInfo(): Promise<DataCubeInfrastructureInfo> {
-    // we return undefined as we assume the grid license is set at the application level where query builder is built
-    return Promise.resolve({
+  override async fetchConfiguration() {
+    return {
       gridClientLicense: undefined,
-      simpleSampleDataTableName: '',
-      complexSampleDataTableName: '',
-    });
+    };
   }
-  override async getQueryTypeahead(
+
+  async getQueryTypeahead(
     code: string,
-    query: V1_ValueSpecification,
-  ): Promise<CompletionItem[]> {
-    const lambda = this.buildRawLambdaFromValueSpec(query);
+    baseQuery: V1_Lambda,
+    source: DataCubeSource,
+  ) {
+    const lambda = this.buildRawLambdaFromValueSpec(baseQuery);
     const queryString =
       await this.graphState.graphManager.lambdaToPureCode(lambda);
     const offset = queryString.length;
@@ -184,13 +160,13 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
       this.graph,
       offset,
     );
-    return result.completions;
+    return result.completions as CompletionItem[];
   }
 
-  override async parseQuery(
+  override async parseValueSpecification(
     code: string,
     returnSourceInformation?: boolean,
-  ): Promise<V1_ValueSpecification> {
+  ) {
     return V1_deserializeValueSpecification(
       await this.graphState.graphManager.pureCodeToValueSpecification(
         code,
@@ -200,36 +176,35 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     );
   }
 
-  override getQueryCode(
-    query: V1_ValueSpecification,
+  override getValueSpecificationCode(
+    value: V1_ValueSpecification,
     pretty?: boolean | undefined,
-  ): Promise<string> {
+  ) {
     return this.graphState.graphManager.valueSpecificationToPureCode(
-      V1_serializeValueSpecification(query, []),
+      V1_serializeValueSpecification(value, []),
       pretty,
     );
   }
 
-  override getQueryRelationType(
-    query: V1_ValueSpecification,
-  ): Promise<RelationType> {
-    const lambda = this.buildRawLambdaFromValueSpec(query);
-    return this.getRelationalType(lambda);
-  }
-
-  async getRelationalType(query: RawLambda): Promise<RelationType> {
-    const realtion_type =
+  private async getRelationalType(query: RawLambda): Promise<RelationType> {
+    const relationType =
       await this.graphState.graphManager.getLambdaRelationType(
         query,
         this.graph,
       );
-    return realtion_type;
+    return relationType;
+  }
+
+  override getQueryRelationType(query: V1_Lambda, source: DataCubeSource) {
+    const lambda = this.buildRawLambdaFromValueSpec(query);
+    return this.getRelationalType(lambda);
   }
 
   override async getQueryCodeRelationReturnType(
     code: string,
     baseQuery: V1_ValueSpecification,
-  ): Promise<RelationType> {
+    source: DataCubeSource,
+  ) {
     const queryString =
       await this.graphState.graphManager.valueSpecificationToPureCode(
         V1_serializeValueSpecification(baseQuery, []),
@@ -240,11 +215,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     );
   }
 
-  override async executeQuery(query: V1_Lambda): Promise<{
-    result: TDSExecutionResult;
-    executedQuery: string;
-    executedSQL: string;
-  }> {
+  override async executeQuery(query: V1_Lambda, source: DataCubeSource) {
     const lambda = this.buildRawLambdaFromValueSpec(query);
     lambda.parameters = this._parameters;
     const [executionWithMetadata, queryString] = await Promise.all([
@@ -274,5 +245,20 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
       executedQuery: queryString,
       executedSQL: sqlString,
     };
+  }
+
+  override buildExecutionContext(
+    source: DataCubeSource,
+  ): V1_AppliedFunction | undefined {
+    if (source instanceof QueryBuilderDataCubeSource) {
+      return _function(
+        DataCubeFunction.FROM,
+        [
+          source.mapping ? _elementPtr(source.mapping) : undefined,
+          _elementPtr(source.runtime),
+        ].filter(isNonNullable),
+      );
+    }
+    return undefined;
   }
 }

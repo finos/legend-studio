@@ -27,24 +27,20 @@ import {
   V1_CInteger,
   type V1_ColSpec,
   V1_Collection,
-  V1_serializeValueSpecification,
   extractElementNameFromPath as _name,
   matchFunctionName,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import type { DataCubeQuery } from '../core/DataCubeQuery.js';
-import {
-  _toCol,
-  DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotColumn,
-} from './DataCubeQuerySnapshot.js';
+import type { DataCubeQuery } from './models/DataCubeQuery.js';
+import { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
+import { _toCol, type DataCubeColumn } from './models/DataCubeColumn.js';
 import { assertType, guaranteeNonNullable } from '@finos/legend-shared';
 import {
   DataCubeQuerySortDirection,
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
-import { DataCubeConfiguration } from './DataCubeConfiguration.js';
+import { DataCubeConfiguration } from './models/DataCubeConfiguration.js';
 import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
 import {
   _colSpecArrayParam,
@@ -52,6 +48,7 @@ import {
   _funcMatch,
   _param,
 } from './DataCubeQuerySnapshotBuilderUtils.js';
+import type { DataCubeSource } from './models/DataCubeSource.js';
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
@@ -286,7 +283,7 @@ function extractFunctionMap(
  */
 export function validateAndBuildQuerySnapshot(
   partialQuery: V1_ValueSpecification,
-  sourceQuery: V1_ValueSpecification,
+  source: DataCubeSource,
   baseQuery: DataCubeQuery,
 ) {
   // --------------------------------- BASE ---------------------------------
@@ -294,15 +291,9 @@ export function validateAndBuildQuerySnapshot(
   // analysis more ergonomic
 
   const funcMap = extractFunctionMap(partialQuery);
-  const snapshot = DataCubeQuerySnapshot.create(
-    baseQuery.name,
-    baseQuery.source.runtime,
-    baseQuery.source.mapping,
-    V1_serializeValueSpecification(sourceQuery, []),
-    {},
-  );
+  const snapshot = DataCubeQuerySnapshot.create({});
   const data = snapshot.data;
-  const colsMap = new Map<string, DataCubeQuerySnapshotColumn>();
+  const colsMap = new Map<string, DataCubeColumn>();
   const _col = (colSpec: V1_ColSpec) => {
     const column = guaranteeNonNullable(
       colsMap.get(colSpec.name),
@@ -313,7 +304,7 @@ export function validateAndBuildQuerySnapshot(
 
   // --------------------------------- SOURCE ---------------------------------
 
-  data.sourceColumns = baseQuery.source.columns.map(_toCol);
+  data.sourceColumns = source.sourceColumns;
   data.sourceColumns.map((col) => colsMap.set(col.name, col));
 
   // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
@@ -398,7 +389,7 @@ export function validateAndBuildQuerySnapshot(
   const configuration = baseQuery.configuration
     ? DataCubeConfiguration.serialization.fromJson(baseQuery.configuration)
     : buildDefaultConfiguration([
-        ...baseQuery.source.columns,
+        ...source.sourceColumns,
         ...data.leafExtendedColumns,
         ...data.groupExtendedColumns,
       ]);

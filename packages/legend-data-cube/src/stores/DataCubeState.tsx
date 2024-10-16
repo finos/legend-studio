@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { type DataCubeEngine } from './core/DataCubeEngine.js';
+import {
+  type DataCubeEngine,
+  type DataCubeInitialInput,
+} from './core/DataCubeEngine.js';
 import { DataCubeViewState } from './view/DataCubeViewState.js';
 import type { DisplayState } from './core/DataCubeLayoutManagerState.js';
 import { DocumentationPanel } from '../components/core/DataCubeDocumentationPanel.js';
@@ -39,11 +42,11 @@ export class DataCubeState {
   constructor(application: DataCubeApplicationEngine, engine: DataCubeEngine) {
     this.application = application;
     this.engine = engine;
-    this.engine.gridClientTaskRunner = (task) => {
+    this.engine.setGridClientTaskRunner((task) => {
       // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
       // to traverse through and update the configurations of all of their grid clients
       task(this.view.grid.client);
-    };
+    });
     this.view = new DataCubeViewState(this);
 
     this.settingsDisplay = this.application.layout.newDisplay(
@@ -74,7 +77,7 @@ export class DataCubeState {
     );
   }
 
-  async initialize() {
+  async initialize(initialInput?: DataCubeInitialInput | undefined) {
     if (!this.initState.isInInitialState) {
       this.application.logDebug('REPL store is re-initialized');
       return;

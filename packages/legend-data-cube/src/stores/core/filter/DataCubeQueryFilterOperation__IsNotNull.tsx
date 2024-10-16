@@ -16,10 +16,8 @@
 
 import { type V1_AppliedFunction } from '@finos/legend-graph';
 import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
-import type {
-  DataCubeQuerySnapshotColumn,
-  DataCubeQuerySnapshotFilterCondition,
-} from '../DataCubeQuerySnapshot.js';
+import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
+import type { DataCubeColumn } from '../models/DataCubeColumn.js';
 import {
   DataCubeColumnDataType,
   DataCubeFunction,
@@ -51,7 +49,7 @@ export class DataCubeQueryFilterOperation__IsNotNull extends DataCubeQueryFilter
     return DataCubeQueryFilterOperator.IS_NOT_NULL;
   }
 
-  isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {
+  isCompatibleWithColumn(column: DataCubeColumn) {
     return ofDataType(column.type, [
       DataCubeColumnDataType.TEXT,
       DataCubeColumnDataType.NUMBER,
@@ -73,7 +71,7 @@ export class DataCubeQueryFilterOperation__IsNotNull extends DataCubeQueryFilter
     );
   }
 
-  generateDefaultValue(column: DataCubeQuerySnapshotColumn) {
+  generateDefaultValue(column: DataCubeColumn) {
     return undefined;
   }
 

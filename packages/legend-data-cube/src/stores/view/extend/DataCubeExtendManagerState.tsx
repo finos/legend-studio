@@ -16,11 +16,13 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
-  _toCol,
   type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotColumn,
   type DataCubeQuerySnapshotExtendedColumn,
 } from '../../core/DataCubeQuerySnapshot.js';
+import {
+  _toCol,
+  type DataCubeColumn,
+} from '../../core/models/DataCubeColumn.js';
 import {
   assertErrorThrown,
   deleteEntry,
@@ -35,7 +37,7 @@ import { DataCubeQuerySnapshotController } from '../DataCubeQuerySnapshotManager
 import {
   DataCubeConfiguration,
   type DataCubeColumnConfiguration,
-} from '../../core/DataCubeConfiguration.js';
+} from '../../core/models/DataCubeConfiguration.js';
 import {
   DataCubeExistingColumnEditorState,
   DataCubeNewColumnState,
@@ -46,7 +48,6 @@ import {
   getDataType,
 } from '../../core/DataCubeQueryEngine.js';
 import { buildDefaultColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
-import { V1_deserializeValueSpecification } from '@finos/legend-graph';
 import type { DataCubeQueryBuilderError } from '../../core/DataCubeEngine.js';
 
 class DataCubeQueryExtendedColumnState {
@@ -71,9 +72,9 @@ class DataCubeQueryExtendedColumnState {
  */
 export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController {
   columnConfigurations: DataCubeColumnConfiguration[] = [];
-  selectColumns: DataCubeQuerySnapshotColumn[] = [];
-  sourceColumns: DataCubeQuerySnapshotColumn[] = [];
-  horizontalPivotCastColumns: DataCubeQuerySnapshotColumn[] = [];
+  selectColumns: DataCubeColumn[] = [];
+  sourceColumns: DataCubeColumn[] = [];
+  horizontalPivotCastColumns: DataCubeColumn[] = [];
 
   leafExtendedColumns: DataCubeQueryExtendedColumnState[] = [];
   groupExtendedColumns: DataCubeQueryExtendedColumnState[] = [];
@@ -250,7 +251,8 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     try {
       await this.view.engine.getQueryCodeRelationReturnType(
         codePrefix + code,
-        V1_deserializeValueSpecification(tempSnapshot.data.sourceQuery, []),
+        this.view.source.query,
+        this.view.source,
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -362,7 +364,8 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     try {
       await this.view.engine.getQueryCodeRelationReturnType(
         codePrefix + code,
-        V1_deserializeValueSpecification(tempSnapshot.data.sourceQuery, []),
+        this.view.source.query,
+        this.view.source,
       );
     } catch (error) {
       assertErrorThrown(error);

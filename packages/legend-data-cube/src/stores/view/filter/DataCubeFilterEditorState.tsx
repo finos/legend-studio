@@ -38,7 +38,7 @@ import { DataCubeQuerySnapshotController } from '../DataCubeQuerySnapshotManager
 import {
   DataCubeConfiguration,
   type DataCubeColumnConfiguration,
-} from '../../core/DataCubeConfiguration.js';
+} from '../../core/models/DataCubeConfiguration.js';
 import type { DisplayState } from '../../core/DataCubeLayoutManagerState.js';
 import { DataCubeFilterEditor } from '../../../components/view/filter/DataCubeFilterEditor.js';
 

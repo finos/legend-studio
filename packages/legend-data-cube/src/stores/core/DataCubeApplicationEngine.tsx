@@ -18,6 +18,7 @@ import {
   type LogEvent,
   type DocumentationEntry,
   uuid,
+  type PlainObject,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import {
@@ -37,6 +38,7 @@ import type { DataCubeQueryBuilderError } from './DataCubeEngine.js';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { editor as monacoEditorAPI, Uri } from 'monaco-editor';
 import { DataCubeCodeCheckErrorAlert } from '../../components/core/DataCubeCodeCheckErrorAlert.js';
+import type { DataCubeSource } from './models/DataCubeSource.js';
 
 export abstract class DataCubeApplicationEngine {
   readonly layout: LayoutManagerState;
@@ -56,13 +58,18 @@ export abstract class DataCubeApplicationEngine {
     this.layout = new LayoutManagerState();
   }
 
-  abstract get documentationUrl(): string | undefined;
+  // ---------------------------------- API ----------------------------------
+
+  openDocumentationEntry(entry: DocumentationEntry) {
+    this.currentDocumentationEntry = entry;
+  }
+
+  abstract getDocumentationURL(): string | undefined;
   abstract getDocumentationEntry(key: string): DocumentationEntry | undefined;
-  abstract openDocumentationEntry(entry: DocumentationEntry): void;
   abstract shouldDisplayDocumentationEntry(entry: DocumentationEntry): boolean;
 
   abstract openLink(url: string): void;
-  abstract setWindowTitle(title: string): void;
+  abstract sendTelemetry(event: string, data: PlainObject): void;
 
   abstract logDebug(message: string, ...data: unknown[]): void;
   abstract debugProcess(
@@ -196,5 +203,11 @@ export abstract class DataCubeApplicationEngine {
       };
       this.layout.newWindow(window);
     }
+  }
+
+  // ---------------------------------- EVENT HANDLER ----------------------------------
+
+  onNameChange(name: string, source: DataCubeSource) {
+    // do nothing
   }
 }

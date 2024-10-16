@@ -25,10 +25,10 @@ import {
   DataCubeQueryFilterGroupOperator,
 } from '../DataCubeQueryEngine.js';
 import type {
-  DataCubeQuerySnapshotColumn,
   DataCubeQuerySnapshotFilter,
   DataCubeQuerySnapshotFilterCondition,
 } from '../DataCubeQuerySnapshot.js';
+import type { DataCubeColumn } from '../models/DataCubeColumn.js';
 import type { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
 
 export abstract class DataCubeFilterEditorTreeNode {
@@ -62,13 +62,13 @@ export abstract class DataCubeFilterEditorTreeNode {
 }
 
 export class DataCubeFilterEditorConditionTreeNode extends DataCubeFilterEditorTreeNode {
-  column: DataCubeQuerySnapshotColumn;
+  column: DataCubeColumn;
   operation: DataCubeQueryFilterOperation;
   value: DataCubeOperationValue | undefined;
 
   constructor(
     parent: DataCubeFilterEditorConditionGroupTreeNode | undefined,
-    column: DataCubeQuerySnapshotColumn,
+    column: DataCubeColumn,
     operation: DataCubeQueryFilterOperation,
     value: DataCubeOperationValue | undefined,
     not: boolean | undefined,
@@ -92,7 +92,7 @@ export class DataCubeFilterEditorConditionTreeNode extends DataCubeFilterEditorT
     this.setValue(value);
   }
 
-  setColumn(col: DataCubeQuerySnapshotColumn) {
+  setColumn(col: DataCubeColumn) {
     this.column = col;
   }
 

@@ -20,10 +20,8 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { DataCubeOperationValue } from '../DataCubeQueryEngine.js';
-import type {
-  DataCubeQuerySnapshotColumn,
-  DataCubeQuerySnapshotFilterCondition,
-} from '../DataCubeQuerySnapshot.js';
+import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
+import type { DataCubeColumn } from '../models/DataCubeColumn.js';
 import {
   DATE_FORMAT,
   DATE_TIME_FORMAT,
@@ -79,11 +77,11 @@ export abstract class DataCubeQueryFilterOperation {
   abstract get description(): string;
   abstract get operator(): string;
 
-  abstract isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn): boolean;
+  abstract isCompatibleWithColumn(column: DataCubeColumn): boolean;
   abstract isCompatibleWithValue(value: DataCubeOperationValue): boolean;
 
   abstract generateDefaultValue(
-    column: DataCubeQuerySnapshotColumn,
+    column: DataCubeColumn,
   ): DataCubeOperationValue | undefined;
 
   abstract buildConditionSnapshot(

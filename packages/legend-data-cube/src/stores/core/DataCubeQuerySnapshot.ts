@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-import type {
-  V1_AppliedFunction,
-  V1_Lambda,
-  V1_ValueSpecification,
-} from '@finos/legend-graph';
-import type { DataCubeConfiguration } from './DataCubeConfiguration.js';
+import type { V1_AppliedFunction, V1_Lambda } from '@finos/legend-graph';
+import type { DataCubeConfiguration } from './models/DataCubeConfiguration.js';
 import {
   IllegalStateError,
   hashObject,
@@ -32,13 +28,13 @@ import type {
   DataCubeOperationValue,
   DataCubeQuerySortDirection,
 } from './DataCubeQueryEngine.js';
+import type { DataCubeColumn } from './models/DataCubeColumn.js';
 
-export type DataCubeQuerySnapshotFilterCondition =
-  DataCubeQuerySnapshotColumn & {
-    value: DataCubeOperationValue | undefined;
-    operator: string;
-    not?: boolean | undefined;
-  };
+export type DataCubeQuerySnapshotFilterCondition = DataCubeColumn & {
+  value: DataCubeOperationValue | undefined;
+  operator: string;
+  not?: boolean | undefined;
+};
 
 export type DataCubeQuerySnapshotFilter = {
   groupOperator: string;
@@ -49,41 +45,31 @@ export type DataCubeQuerySnapshotFilter = {
   not?: boolean | undefined;
 };
 
-export type DataCubeQuerySnapshotColumn = {
-  name: string;
-  type: string;
+export type DataCubeQuerySnapshotExtendedColumn = DataCubeColumn & {
+  windowFn?: PlainObject<V1_AppliedFunction> | undefined;
+  mapFn: PlainObject<V1_Lambda>;
+  reduceFn?: PlainObject<V1_Lambda> | undefined;
 };
 
-export type DataCubeQuerySnapshotExtendedColumn =
-  DataCubeQuerySnapshotColumn & {
-    windowFn?: PlainObject<V1_AppliedFunction> | undefined;
-    mapFn: PlainObject<V1_Lambda>;
-    reduceFn?: PlainObject<V1_Lambda> | undefined;
-  };
-
-export type DataCubeQuerySnapshotSortColumn = DataCubeQuerySnapshotColumn & {
+export type DataCubeQuerySnapshotSortColumn = DataCubeColumn & {
   direction: DataCubeQuerySortDirection;
 };
 
 export type DataCubeQuerySnapshotGroupBy = {
-  columns: DataCubeQuerySnapshotColumn[];
+  columns: DataCubeColumn[];
 };
 
 export type DataCubeQuerySnapshotPivot = {
-  columns: DataCubeQuerySnapshotColumn[];
-  castColumns: DataCubeQuerySnapshotColumn[];
+  columns: DataCubeColumn[];
+  castColumns: DataCubeColumn[];
 };
 
 export type DataCubeQuerySnapshotData = {
-  name: string;
-  runtime: string;
-  mapping: string | undefined;
-  sourceQuery: PlainObject<V1_ValueSpecification>;
   configuration: PlainObject<DataCubeConfiguration>;
-  sourceColumns: DataCubeQuerySnapshotColumn[];
+  sourceColumns: DataCubeColumn[];
   leafExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
   filter?: DataCubeQuerySnapshotFilter | undefined;
-  selectColumns: DataCubeQuerySnapshotColumn[];
+  selectColumns: DataCubeColumn[];
   groupBy?: DataCubeQuerySnapshotGroupBy | undefined;
   pivot?: DataCubeQuerySnapshotPivot | undefined;
   groupExtendedColumns: DataCubeQuerySnapshotExtendedColumn[];
@@ -93,25 +79,14 @@ export type DataCubeQuerySnapshotData = {
 
 export class DataCubeQuerySnapshot {
   readonly uuid = uuid();
-  readonly timestamp = Date.now();
   readonly data: DataCubeQuerySnapshotData;
 
   private _isPatchChange = false;
   private _finalized = false;
   private _hashCode?: string | undefined;
 
-  private constructor(
-    name: string,
-    runtime: string,
-    mapping: string | undefined,
-    sourceQuery: PlainObject<V1_ValueSpecification>,
-    configuration: PlainObject<DataCubeConfiguration>,
-  ) {
+  private constructor(configuration: PlainObject<DataCubeConfiguration>) {
     this.data = {
-      name,
-      runtime,
-      mapping,
-      sourceQuery,
       configuration,
       sourceColumns: [],
       leafExtendedColumns: [],
@@ -125,20 +100,8 @@ export class DataCubeQuerySnapshot {
     };
   }
 
-  static create(
-    name: string,
-    runtime: string,
-    mapping: string | undefined,
-    sourceQuery: PlainObject<V1_ValueSpecification>,
-    configuration: PlainObject<DataCubeConfiguration>,
-  ) {
-    return new DataCubeQuerySnapshot(
-      name,
-      runtime,
-      mapping,
-      sourceQuery,
-      configuration,
-    );
+  static create(configuration: PlainObject<DataCubeConfiguration>) {
+    return new DataCubeQuerySnapshot(configuration);
   }
 
   /**
@@ -187,7 +150,7 @@ export class DataCubeQuerySnapshot {
   }
 
   clone() {
-    const clone = new DataCubeQuerySnapshot('', '', '', {}, {});
+    const clone = new DataCubeQuerySnapshot({});
     (clone.data as Writable<DataCubeQuerySnapshotData>) = JSON.parse(
       JSON.stringify(this.data),
     ) as DataCubeQuerySnapshotData;
@@ -199,9 +162,8 @@ export class DataCubeQuerySnapshot {
    * This should rarely be used, and ideally by core engine only.
    */
   INTERNAL__fullClone() {
-    const clone = new DataCubeQuerySnapshot('', '', '', {}, {});
+    const clone = new DataCubeQuerySnapshot({});
     (clone as Writable<DataCubeQuerySnapshot>).uuid = this.uuid;
-    (clone as Writable<DataCubeQuerySnapshot>).timestamp = this.timestamp;
     (clone as Writable<DataCubeQuerySnapshot>).data = JSON.parse(
       JSON.stringify(this.data),
     ) as DataCubeQuerySnapshotData;
@@ -210,30 +172,4 @@ export class DataCubeQuerySnapshot {
     clone._hashCode = this._hashCode;
     return clone;
   }
-
-  /**
-   * Only use this if programatic setting of timestamp is needed.
-   * e.g. for the first-ever snapshot where we want to sync the timestamp
-   * to the timestamp provided by the engine.
-   */
-  INTERNAL__setTimestamp(timestamp: number) {
-    (this as Writable<DataCubeQuerySnapshot>).timestamp = timestamp;
-  }
 }
-
-export function _findCol<T extends DataCubeQuerySnapshotColumn>(
-  cols: T[] | undefined,
-  name: string,
-): T | undefined {
-  return cols?.find((c) => c.name === name);
-}
-
-export function _toCol(col: {
-  name: string;
-  type: string;
-}): DataCubeQuerySnapshotColumn {
-  return { name: col.name, type: col.type };
-}
-
-export const _sortByColName = (a: { name: string }, b: { name: string }) =>
-  a.name.localeCompare(b.name);

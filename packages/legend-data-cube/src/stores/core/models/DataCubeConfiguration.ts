@@ -40,7 +40,8 @@ import {
   type DataCubeOperationValue,
   DEFAULT_PIVOT_STATISTIC_COLUMN_NAME,
   DEFAULT_TREE_COLUMN_SORT_DIRECTION,
-} from './DataCubeQueryEngine.js';
+  DEFAULT_REPORT_NAME,
+} from '../DataCubeQueryEngine.js';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, list, optional, primitive, raw } from 'serializr';
 
@@ -178,6 +179,7 @@ export class DataCubePivotLayoutConfiguration {
 }
 
 export class DataCubeConfiguration {
+  name = DEFAULT_REPORT_NAME;
   description?: string | undefined;
   columns: DataCubeColumnConfiguration[] = [];
 
@@ -242,6 +244,7 @@ export class DataCubeConfiguration {
       fontUnderline: optional(primitive()),
       gridLineColor: primitive(),
       initialExpandLevel: optional(primitive()),
+      name: primitive(),
       negativeBackgroundColor: primitive(),
       negativeForegroundColor: primitive(),
       normalBackgroundColor: primitive(),

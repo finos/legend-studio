@@ -20,7 +20,11 @@ import {
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import { DataCubeApplicationEngine } from '@finos/legend-data-cube';
-import { LogEvent, type DocumentationEntry } from '@finos/legend-shared';
+import {
+  LogEvent,
+  type DocumentationEntry,
+  type PlainObject,
+} from '@finos/legend-shared';
 
 export class QueryBuilderDataCubeApplicationEngine extends DataCubeApplicationEngine {
   private readonly application: GenericLegendApplicationStore;
@@ -31,16 +35,14 @@ export class QueryBuilderDataCubeApplicationEngine extends DataCubeApplicationEn
     this.application = application;
   }
 
-  get documentationUrl(): string | undefined {
+  // ---------------------------------- API ----------------------------------
+
+  getDocumentationURL(): string | undefined {
     return this.application.documentationService.url;
   }
 
   getDocumentationEntry(key: string) {
     return this.application.documentationService.getDocEntry(key);
-  }
-
-  openDocumentationEntry(entry: DocumentationEntry) {
-    this.currentDocumentationEntry = entry;
   }
 
   shouldDisplayDocumentationEntry(entry: DocumentationEntry) {
@@ -51,8 +53,8 @@ export class QueryBuilderDataCubeApplicationEngine extends DataCubeApplicationEn
     this.application.navigationService.navigator.visitAddress(url);
   }
 
-  setWindowTitle(title: string) {
-    this.application.layoutService.setWindowTitle(title);
+  sendTelemetry(event: string, data: PlainObject): void {
+    this.application.telemetryService.logEvent(event, data);
   }
 
   logDebug(message: string, ...data: unknown[]) {

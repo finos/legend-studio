@@ -18,9 +18,18 @@ import {
   shouldDisplayVirtualAssistantDocumentationEntry,
   APPLICATION_EVENT,
 } from '@finos/legend-application';
-import { type DocumentationEntry, LogEvent } from '@finos/legend-shared';
-import { DataCubeApplicationEngine } from '@finos/legend-data-cube';
+import {
+  type DocumentationEntry,
+  formatDate,
+  LogEvent,
+  type PlainObject,
+} from '@finos/legend-shared';
+import {
+  DataCubeApplicationEngine,
+  type DataCubeSource,
+} from '@finos/legend-data-cube';
 import type { LegendREPLApplicationStore } from '../application/LegendREPLApplicationStore.js';
+import { LegendREPLDataCubeSource } from './LegendREPLDataCubeSource.js';
 
 export class LegendREPLDataCubeApplicationEngine extends DataCubeApplicationEngine {
   private readonly application: LegendREPLApplicationStore;
@@ -29,30 +38,6 @@ export class LegendREPLDataCubeApplicationEngine extends DataCubeApplicationEngi
     super();
 
     this.application = application;
-  }
-
-  get documentationUrl(): string | undefined {
-    return this.application.documentationService.url;
-  }
-
-  getDocumentationEntry(key: string) {
-    return this.application.documentationService.getDocEntry(key);
-  }
-
-  openDocumentationEntry(entry: DocumentationEntry) {
-    this.currentDocumentationEntry = entry;
-  }
-
-  shouldDisplayDocumentationEntry(entry: DocumentationEntry) {
-    return shouldDisplayVirtualAssistantDocumentationEntry(entry);
-  }
-
-  openLink(url: string) {
-    this.application.navigationService.navigator.visitAddress(url);
-  }
-
-  setWindowTitle(title: string) {
-    this.application.layoutService.setWindowTitle(title);
   }
 
   blockNavigation(
@@ -69,6 +54,51 @@ export class LegendREPLDataCubeApplicationEngine extends DataCubeApplicationEngi
 
   unblockNavigation() {
     this.application.navigationService.navigator.unblockNavigation();
+  }
+
+  getPersistedNumericSettingValue(key: string): number | undefined {
+    return this.application.settingService.getNumericValue(key);
+  }
+
+  getPersistedStringSettingValue(key: string): string | undefined {
+    return this.application.settingService.getStringValue(key);
+  }
+
+  getPersistedBooleanSettingValue(key: string): boolean | undefined {
+    return this.application.settingService.getBooleanValue(key);
+  }
+
+  getPersistedObjectSettingValue(key: string): object | undefined {
+    return this.application.settingService.getObjectValue(key);
+  }
+
+  persistSettingValue(
+    key: string,
+    value: string | number | boolean | object | undefined,
+  ): void {
+    this.application.settingService.persistValue(key, value);
+  }
+
+  // ---------------------------------- API ----------------------------------
+
+  getDocumentationURL(): string | undefined {
+    return this.application.documentationService.url;
+  }
+
+  getDocumentationEntry(key: string) {
+    return this.application.documentationService.getDocEntry(key);
+  }
+
+  shouldDisplayDocumentationEntry(entry: DocumentationEntry) {
+    return shouldDisplayVirtualAssistantDocumentationEntry(entry);
+  }
+
+  openLink(url: string) {
+    this.application.navigationService.navigator.visitAddress(url);
+  }
+
+  sendTelemetry(event: string, data: PlainObject) {
+    this.application.telemetryService.logEvent(event, data);
   }
 
   logDebug(message: string, ...data: unknown[]) {
@@ -112,26 +142,13 @@ export class LegendREPLDataCubeApplicationEngine extends DataCubeApplicationEngi
     );
   }
 
-  getPersistedNumericValue(key: string): number | undefined {
-    return this.application.settingService.getNumericValue(key);
-  }
+  // ---------------------------------- EVENT HANDLER ----------------------------------
 
-  getPersistedStringValue(key: string): string | undefined {
-    return this.application.settingService.getStringValue(key);
-  }
-
-  getPersistedBooleanValue(key: string): boolean | undefined {
-    return this.application.settingService.getBooleanValue(key);
-  }
-
-  getPersistedObjectValue(key: string): object | undefined {
-    return this.application.settingService.getObjectValue(key);
-  }
-
-  persistValue(
-    key: string,
-    value: string | number | boolean | object | undefined,
-  ): void {
-    this.application.settingService.persistValue(key, value);
+  override onNameChange(name: string, source: DataCubeSource) {
+    const timestamp =
+      source instanceof LegendREPLDataCubeSource ? source.timestamp : undefined;
+    this.application.layoutService.setWindowTitle(
+      `\u229E ${name}${timestamp ? ` - ${formatDate(new Date(timestamp), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
+    );
   }
 }

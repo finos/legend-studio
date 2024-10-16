@@ -16,17 +16,15 @@
 
 import { action, makeObservable, observable, override } from 'mobx';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import {
-  _toCol,
-  type DataCubeQuerySnapshot,
-} from '../../core/DataCubeQuerySnapshot.js';
+import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { _toCol } from '../../core/models/DataCubeColumn.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import {
   DataCubeEditorColumnSelectorColumnState,
   DataCubeEditorColumnSelectorState,
 } from './DataCubeEditorColumnSelectorState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
-import { type DataCubeConfiguration } from '../../core/DataCubeConfiguration.js';
+import { type DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
 
 export class DataCubeEditorBasicColumnSelectorState extends DataCubeEditorColumnSelectorState<DataCubeEditorColumnSelectorColumnState> {
   showHiddenColumns = false;

@@ -19,11 +19,13 @@ import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { DataCubeEditorSortsPanelState } from './DataCubeEditorSortsPanelState.js';
 import { DataCubeQuerySnapshotController } from '../DataCubeQuerySnapshotManager.js';
 import {
-  _toCol,
   type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotColumn,
   type DataCubeQuerySnapshotExtendedColumn,
 } from '../../core/DataCubeQuerySnapshot.js';
+import {
+  _toCol,
+  type DataCubeColumn,
+} from '../../core/models/DataCubeColumn.js';
 import {
   ActionState,
   assertErrorThrown,
@@ -34,14 +36,13 @@ import {
 import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGeneralPropertiesPanelState.js';
 import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumnPropertiesPanelState.js';
 import { DataCubeEditorColumnsPanelState } from './DataCubeEditorColumnsPanelState.js';
-import { DataCubeConfiguration } from '../../core/DataCubeConfiguration.js';
+import { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
 import { DataCubeEditorVerticalPivotsPanelState } from './DataCubeEditorVerticalPivotsPanelState.js';
 import type { DisplayState } from '../../core/DataCubeLayoutManagerState.js';
 import { DataCubeEditor } from '../../../components/view/editor/DataCubeEditor.js';
 import { DataCubeEditorHorizontalPivotsPanelState } from './DataCubeEditorHorizontalPivotsPanelState.js';
 import { DataCubeEditorPivotLayoutPanelState } from './DataCubeEditorPivotLayoutPanelState.js';
 import type { DataCubeQueryBuilderError } from '../../core/DataCubeEngine.js';
-import { V1_deserializeValueSpecification } from '@finos/legend-graph';
 
 export enum DataCubeEditorTab {
   GENERAL_PROPERTIES = 'General Properties',
@@ -76,7 +77,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
 
   currentTab = DataCubeEditorTab.GENERAL_PROPERTIES;
 
-  sourceColumns: DataCubeQuerySnapshotColumn[] = [];
+  sourceColumns: DataCubeColumn[] = [];
   leafExtendColumns: DataCubeQuerySnapshotExtendedColumn[] = [];
   groupExtendColumns: DataCubeQuerySnapshotExtendedColumn[] = [];
 
@@ -189,7 +190,8 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
       try {
         await this.view.engine.getQueryCodeRelationReturnType(
           codePrefix + code,
-          V1_deserializeValueSpecification(tempSnapshot.data.sourceQuery, []),
+          this.view.source.query,
+          this.view.source,
         );
       } catch (error) {
         assertErrorThrown(error);

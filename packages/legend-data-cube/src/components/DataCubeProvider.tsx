@@ -19,7 +19,10 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { DataCubeState } from '../stores/DataCubeState.js';
 import type { DataCubeApplicationEngine } from '../stores/core/DataCubeApplicationEngine.js';
-import type { DataCubeEngine } from '../stores/core/DataCubeEngine.js';
+import type {
+  DataCubeEngine,
+  DataCubeInitialInput,
+} from '../stores/core/DataCubeEngine.js';
 
 const DataCubeStateContext = createContext<DataCubeState | undefined>(
   undefined,
@@ -30,21 +33,24 @@ export const DataCubeProvider = observer(
     children: React.ReactNode;
     application: DataCubeApplicationEngine;
     engine: DataCubeEngine;
+    initialInput?: DataCubeInitialInput | undefined;
   }): React.ReactElement => {
-    const { children, application, engine } = props;
-    const store = useLocalObservable(
+    const { children, application, engine, initialInput } = props;
+    const state = useLocalObservable(
       () => new DataCubeState(application, engine),
     );
 
     useEffect(() => {
-      store.initialize().catch((error) => application.logUnhandledError(error));
-    }, [store, application]);
+      state
+        .initialize(initialInput)
+        .catch((error) => application.logUnhandledError(error));
+    }, [state, application, initialInput]);
 
-    if (!store.initState.hasSucceeded) {
+    if (!state.initState.hasSucceeded) {
       return <></>;
     }
     return (
-      <DataCubeStateContext.Provider value={store}>
+      <DataCubeStateContext.Provider value={state}>
         {children}
       </DataCubeStateContext.Provider>
     );

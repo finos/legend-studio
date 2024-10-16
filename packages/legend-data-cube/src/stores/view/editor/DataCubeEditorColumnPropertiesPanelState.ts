@@ -25,7 +25,7 @@ import {
   guaranteeNonNullable,
   type PlainObject,
 } from '@finos/legend-shared';
-import type { DataCubeConfiguration } from '../../core/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
 
 export class DataCubeEditorColumnPropertiesPanelState
   implements DataCubeQueryEditorPanelState

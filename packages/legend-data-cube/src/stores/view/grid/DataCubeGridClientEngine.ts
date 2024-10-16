@@ -31,33 +31,24 @@ import {
   pruneObject,
 } from '@finos/legend-shared';
 import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
-import {
-  type TabularDataSet,
-  type V1_AppliedFunction,
-  V1_Lambda,
-} from '@finos/legend-graph';
+import { type TabularDataSet, V1_Lambda } from '@finos/legend-graph';
 import { generateRowGroupingDrilldownExecutableQueryPostProcessor } from './DataCubeGridQueryBuilder.js';
 import { makeObservable, observable, runInAction } from 'mobx';
 import type {
   DataCubeConfiguration,
   DataCubeConfigurationColorKey,
-} from '../../core/DataCubeConfiguration.js';
+} from '../../core/models/DataCubeConfiguration.js';
 import { DEFAULT_LARGE_ALERT_WINDOW_CONFIG } from '../../core/DataCubeLayoutManagerState.js';
-import {
-  _sortByColName,
-  type DataCubeQuerySnapshot,
-  type DataCubeQuerySnapshotData,
-} from '../../core/DataCubeQuerySnapshot.js';
-import type { DataCubeEngine } from '../../core/DataCubeEngine.js';
+import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
+import { _sortByColName } from '../../core/models/DataCubeColumn.js';
 import {
   isPivotResultColumnName,
   type DataCubeQueryFunctionMap,
 } from '../../core/DataCubeQueryEngine.js';
-import type { DataCubeQueryFilterOperation } from '../../core/filter/DataCubeQueryFilterOperation.js';
-import type { DataCubeQueryAggregateOperation } from '../../core/aggregation/DataCubeQueryAggregateOperation.js';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { AlertType } from '../../../components/core/DataCubeAlert.js';
 import { sum } from 'mathjs';
+import type { DataCubeViewState } from '../DataCubeViewState.js';
 
 type GridClientCellValue = string | number | boolean | null | undefined;
 type GridClientRowData = {
@@ -186,8 +177,6 @@ export function computeHashCodeForDataFetchManualTrigger(
 ) {
   return hashObject(
     pruneObject({
-      ...snapshot.data,
-      name: '', // name change should not trigger data fetching
       configuration: {
         showRootAggregation: configuration.showRootAggregation,
         pivotStatisticColumnPlacement:
@@ -208,11 +197,12 @@ export function computeHashCodeForDataFetchManualTrigger(
           }))
           .sort(_sortByColName), // sort to make sure column reordering does not trigger data fetching
       },
+      leafExtendedColumns: snapshot.data.leafExtendedColumns,
+      filter: snapshot.data.filter,
       selectColumns: snapshot.data.selectColumns.slice().sort(_sortByColName), // sort to make sure column reordering does not trigger data fetching
-      pivot: undefined,
-      groupBy: undefined,
-      sortColumns: [],
-    } satisfies DataCubeQuerySnapshotData),
+      groupExtendedColumns: snapshot.data.groupExtendedColumns,
+      limit: snapshot.data.limit,
+    }),
   );
 }
 
@@ -253,7 +243,7 @@ function buildRowData(
 
 async function getCastColumns(
   currentSnapshot: DataCubeQuerySnapshot,
-  engine: DataCubeEngine,
+  view: DataCubeViewState,
 ) {
   if (!currentSnapshot.data.pivot) {
     throw new IllegalStateError(
@@ -267,16 +257,18 @@ async function getCastColumns(
   snapshot.data.limit = 0;
   const query = buildExecutableQuery(
     snapshot,
-    engine.filterOperations,
-    engine.aggregateOperations,
+    view.source,
+    (source) => view.engine.buildExecutionContext(source),
+    view.engine.filterOperations,
+    view.engine.aggregateOperations,
     {
       postProcessor: (
-        _snapshot: DataCubeQuerySnapshot,
-        sequence: V1_AppliedFunction[],
-        funcMap: DataCubeQueryFunctionMap,
-        configuration: DataCubeConfiguration,
-        filterOperations: DataCubeQueryFilterOperation[],
-        aggregateOperations: DataCubeQueryAggregateOperation[],
+        _snapshot,
+        sequence,
+        funcMap,
+        configuration,
+        filterOperations,
+        aggregateOperations,
       ) => {
         const _unprocess = (funcMapKey: keyof DataCubeQueryFunctionMap) => {
           const func = funcMap[funcMapKey];
@@ -295,7 +287,7 @@ async function getCastColumns(
 
   const lambda = new V1_Lambda();
   lambda.body.push(query);
-  const result = await engine.executeQuery(lambda);
+  const result = await view.engine.executeQuery(lambda, view.source);
 
   return result.result.builder.columns.map((column) => ({
     name: column.name,
@@ -357,7 +349,7 @@ export class DataCubeGridClientServerSideDataSource
           try {
             const castColumns = await getCastColumns(
               newSnapshot,
-              this.grid.view.engine,
+              this.grid.view,
             );
             newSnapshot.data.pivot.castColumns = castColumns;
             newSnapshot.data.sortColumns = newSnapshot.data.sortColumns.filter(
@@ -396,6 +388,8 @@ export class DataCubeGridClientServerSideDataSource
     try {
       const executableQuery = buildExecutableQuery(
         newSnapshot,
+        this.grid.view.source,
+        (source) => this.grid.view.engine.buildExecutionContext(source),
         this.grid.view.engine.filterOperations,
         this.grid.view.engine.aggregateOperations,
         {
@@ -416,7 +410,10 @@ export class DataCubeGridClientServerSideDataSource
       );
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
-      const result = await this.grid.view.engine.executeQuery(lambda);
+      const result = await this.grid.view.engine.executeQuery(
+        lambda,
+        this.grid.view.source,
+      );
       const rowData = buildRowData(result.result.result, newSnapshot);
       if (this.grid.view.engine.enableDebugMode) {
         this.grid.view.application.debugProcess(

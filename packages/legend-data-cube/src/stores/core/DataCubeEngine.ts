@@ -18,9 +18,8 @@ import {
   type V1_ValueSpecification,
   type V1_Lambda,
   type TDSExecutionResult,
-  V1_deserializeValueSpecification,
-  V1_serializeValueSpecification,
-  V1_CString,
+  type V1_AppliedFunction,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import { getFilterOperation } from '../core/filter/DataCubeQueryFilterOperation.js';
 import { getAggregateOperation } from '../core/aggregation/DataCubeQueryAggregateOperation.js';
@@ -64,23 +63,31 @@ import { DataCubeQueryFilterOperation__EndWithCaseInsensitive } from '../core/fi
 import { DataCubeQueryFilterOperation__NotEndWith } from '../core/filter/DataCubeQueryFilterOperation__NotEndWith.js';
 import { DataCubeQueryFilterOperation__IsNull } from '../core/filter/DataCubeQueryFilterOperation__IsNull.js';
 import { DataCubeQueryFilterOperation__IsNotNull } from '../core/filter/DataCubeQueryFilterOperation__IsNotNull.js';
-import { LicenseManager } from '@ag-grid-enterprise/core';
 import {
   configureCodeEditor,
   setupPureLanguageService,
 } from '@finos/legend-code-editor';
-import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import { createModelSchema, custom, primitive } from 'serializr';
-import { type DataCubeQueryColumn, DataCubeQuery } from './DataCubeQuery.js';
 import { DataCubeFont } from '../core/DataCubeQueryEngine.js';
 import { action, makeObservable, observable } from 'mobx';
 import type { GridApi } from '@ag-grid-community/core';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import { buildExecutableQuery } from './DataCubeQueryBuilder.js';
+import type { DataCubeColumn } from './models/DataCubeColumn.js';
+import { LicenseManager } from '@ag-grid-enterprise/core';
+import type { DataCubeQuery } from './models/DataCubeQuery.js';
+import {
+  type DataCubeSource,
+  INTERNAL__DataCubeSource,
+} from './models/DataCubeSource.js';
+import { _primitiveValue } from './DataCubeQueryBuilderUtils.js';
 
 export type CompletionItem = {
   completion: string;
   display: string;
+};
+
+export type RelationType = {
+  columns: DataCubeColumn[];
 };
 
 export type DataCubeQueryBuilderError = {
@@ -94,37 +101,20 @@ export type DataCubeQueryBuilderError = {
   };
 };
 
-export type DataCubeInfrastructureInfo = {
+type DataCubeExecutionResult = {
+  result: TDSExecutionResult;
+  executedQuery: string;
+  executedSQL: string;
+};
+
+export type DataCubeInitialInput = {
+  query: DataCubeQuery;
+  source: DataCubeSource;
+};
+
+export type DataCubeEngineConfiguration = {
   gridClientLicense?: string | undefined;
-  simpleSampleDataTableName: string;
-  complexSampleDataTableName: string;
 };
-
-export type RelationType = {
-  columns: DataCubeQueryColumn[];
-};
-
-export class DataCubeGetBaseQueryResult {
-  query!: DataCubeQuery;
-  timestamp!: number;
-  partialQuery!: V1_ValueSpecification;
-  sourceQuery!: V1_ValueSpecification;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(DataCubeGetBaseQueryResult, {
-      partialQuery: custom(
-        (val) => V1_serializeValueSpecification(val, []),
-        (val) => V1_deserializeValueSpecification(val, []),
-      ),
-      query: usingModelSchema(DataCubeQuery.serialization.schema),
-      sourceQuery: custom(
-        (val) => V1_serializeValueSpecification(val, []),
-        (val) => V1_deserializeValueSpecification(val, []),
-      ),
-      timestamp: primitive(),
-    }),
-  );
-}
 
 export const DEFAULT_ENABLE_DEBUG_MODE = false;
 export const DEFAULT_GRID_CLIENT_ROW_BUFFER = 50;
@@ -132,8 +122,7 @@ export const DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES = false;
 export const DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING = false;
 
 export abstract class DataCubeEngine {
-  gridClientLicense?: string | undefined;
-  gridClientTaskRunner?:
+  private gridClientTaskRunner?:
     | ((task: (gridClient: GridApi) => void) => void)
     | undefined;
 
@@ -234,19 +223,6 @@ export abstract class DataCubeEngine {
     this.gridClientSuppressLargeDatasetWarning = value;
   }
 
-  async initialize(): Promise<void> {
-    const info = await this.getInfrastructureInfo();
-    if (info.gridClientLicense) {
-      this.gridClientLicense = info.gridClientLicense;
-      LicenseManager.setLicenseKey(info.gridClientLicense);
-    }
-
-    await configureCodeEditor(DataCubeFont.ROBOTO_MONO, (error) => {
-      throw error;
-    });
-    setupPureLanguageService({});
-  }
-
   private propagateGridOptionUpdates() {
     this.gridClientTaskRunner?.((client) => {
       client.updateGridOptions({
@@ -262,39 +238,64 @@ export abstract class DataCubeEngine {
     });
   }
 
-  abstract getInfrastructureInfo(): Promise<DataCubeInfrastructureInfo>;
+  setGridClientTaskRunner(
+    runner: (task: (gridClient: GridApi) => void) => void,
+  ) {
+    this.gridClientTaskRunner = runner;
+  }
 
-  abstract getQueryTypeahead(
-    code: string,
-    query: V1_ValueSpecification,
-  ): Promise<CompletionItem[]>;
+  async initialize(): Promise<void> {
+    const config = await this.fetchConfiguration();
+    if (config.gridClientLicense) {
+      LicenseManager.setLicenseKey(config.gridClientLicense);
+    }
+    await configureCodeEditor(DataCubeFont.ROBOTO_MONO, (error) => {
+      throw error;
+    });
+    setupPureLanguageService({});
+  }
 
-  abstract parseQuery(
+  protected abstract fetchConfiguration(): Promise<DataCubeEngineConfiguration>;
+
+  async getInitialInput(): Promise<DataCubeInitialInput | undefined> {
+    return undefined;
+  }
+
+  abstract parseValueSpecification(
     code: string,
     returnSourceInformation?: boolean | undefined,
   ): Promise<V1_ValueSpecification>;
 
-  abstract getQueryCode(
-    query: V1_ValueSpecification,
+  abstract getValueSpecificationCode(
+    value: V1_ValueSpecification,
     pretty?: boolean | undefined,
   ): Promise<string>;
 
-  abstract getBaseQuery(): Promise<DataCubeGetBaseQueryResult>;
+  abstract getQueryTypeahead(
+    code: string,
+    baseQuery: V1_Lambda,
+    source: DataCubeSource,
+  ): Promise<CompletionItem[]>;
 
   abstract getQueryRelationType(
-    query: V1_ValueSpecification,
+    query: V1_Lambda,
+    source: DataCubeSource,
   ): Promise<RelationType>;
 
   abstract getQueryCodeRelationReturnType(
     code: string,
     baseQuery: V1_ValueSpecification,
+    source: DataCubeSource,
   ): Promise<RelationType>;
 
-  abstract executeQuery(query: V1_Lambda): Promise<{
-    result: TDSExecutionResult;
-    executedQuery: string;
-    executedSQL: string;
-  }>;
+  abstract executeQuery(
+    query: V1_Lambda,
+    source: DataCubeSource,
+  ): Promise<DataCubeExecutionResult>;
+
+  abstract buildExecutionContext(
+    source: DataCubeSource,
+  ): V1_AppliedFunction | undefined;
 
   /**
    * By default, for a function chain, Pure grammar composer will extract the first parameter of the first function
@@ -308,19 +309,18 @@ export abstract class DataCubeEngine {
     snapshot: DataCubeQuerySnapshot,
     pretty?: boolean | undefined,
   ) {
-    const dummySourceQuery = new V1_CString();
-    dummySourceQuery.value = '';
+    const source = new INTERNAL__DataCubeSource();
+    source.query = _primitiveValue(PRIMITIVE_TYPE.STRING, '');
     return (
-      await this.getQueryCode(
+      await this.getValueSpecificationCode(
         buildExecutableQuery(
           snapshot,
+          source,
+          () => undefined,
           this.filterOperations,
           this.aggregateOperations,
-          {
-            sourceQuery: dummySourceQuery,
-          },
         ),
-        true,
+        pretty,
       )
     ).substring(`''->`.length);
   }

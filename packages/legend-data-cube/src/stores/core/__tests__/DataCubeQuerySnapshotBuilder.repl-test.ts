@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-import {
-  V1_Lambda,
-  V1_deserializeValueSpecification,
-} from '@finos/legend-graph';
+import { V1_deserializeValueSpecification } from '@finos/legend-graph';
 import { ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification } from '@finos/legend-graph/test';
 import { unitTest } from '@finos/legend-shared/test';
 import { describe, expect, test } from '@jest/globals';
 import { validateAndBuildQuerySnapshot } from '../DataCubeQuerySnapshotBuilder.js';
 import { assertErrorThrown } from '@finos/legend-shared';
-import {
-  DataCubeQuery,
-  DataCubeQuerySourceREPLExecutedQuery,
-} from '../DataCubeQuery.js';
+import { DataCubeQuery } from '../models/DataCubeQuery.js';
+import { INTERNAL__DataCubeSource } from '../models/DataCubeSource.js';
 
 type BaseSnapshotAnalysisTestCase = [
   string, // name
@@ -139,12 +134,9 @@ describe(unitTest('Analyze and build base snapshot'), () => {
         await ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(code),
         [],
       );
-      const baseQuery = new DataCubeQuery('', '', undefined);
-      baseQuery.source = new DataCubeQuerySourceREPLExecutedQuery();
-      baseQuery.partialQuery = code;
-      baseQuery.source.query = '';
-      baseQuery.source.runtime = 'local::TestRuntime';
-      baseQuery.source.columns = columns.map((entry) => {
+      const baseQuery = new DataCubeQuery(undefined);
+      const source = new INTERNAL__DataCubeSource();
+      source.sourceColumns = columns.map((entry) => {
         const parts = entry.split(':');
         return {
           name: parts[0] as string,
@@ -152,7 +144,7 @@ describe(unitTest('Analyze and build base snapshot'), () => {
         };
       });
       try {
-        validateAndBuildQuerySnapshot(partialQuery, new V1_Lambda(), baseQuery);
+        validateAndBuildQuerySnapshot(partialQuery, source, baseQuery);
         expect('').toEqual(problem);
       } catch (error: unknown) {
         assertErrorThrown(error);

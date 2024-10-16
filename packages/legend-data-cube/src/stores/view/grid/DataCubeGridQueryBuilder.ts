@@ -52,7 +52,7 @@ import {
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
   INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
-import type { DataCubeConfiguration } from '../../core/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
 import type { DataCubeQueryFilterOperation } from '../../core/filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from '../../core/aggregation/DataCubeQueryAggregateOperation.js';
 import { _colSpecArrayParam } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';

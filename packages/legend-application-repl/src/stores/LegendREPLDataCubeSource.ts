@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-export * from './stores/core/models/DataCubeQuery.js';
-export * from './stores/core/models/DataCubeSource.js';
+import { DataCubeSource } from '@finos/legend-data-cube';
 
-export * from './stores/core/DataCubeEngine.js';
-export * from './stores/core/DataCubeQueryEngine.js';
-export * from './stores/core/DataCubeApplicationEngine.js';
-export * from './stores/core/DataCubeQueryBuilderUtils.js';
-
-export * from './components/core/DataCubeAlert.js';
-export * from './components/DataCube.js';
-export * from './components/DataCubeProvider.js';
+export class LegendREPLDataCubeSource extends DataCubeSource {
+  runtime!: string;
+  mapping?: string | undefined;
+  timestamp!: number;
+}

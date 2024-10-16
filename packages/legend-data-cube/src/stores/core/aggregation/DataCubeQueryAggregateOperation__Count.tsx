@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DataCubeQuerySnapshotColumn } from '../DataCubeQuerySnapshot.js';
+import type { DataCubeColumn } from '../models/DataCubeColumn.js';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
   DataCubeQueryAggregateOperator,
@@ -23,7 +23,7 @@ import {
   ofDataType,
 } from '../DataCubeQueryEngine.js';
 import { _aggCol_basic } from '../DataCubeQueryBuilderUtils.js';
-import type { DataCubeColumnConfiguration } from '../DataCubeConfiguration.js';
+import type { DataCubeColumnConfiguration } from '../models/DataCubeConfiguration.js';
 
 export class DataCubeQueryAggregateOperation__Count extends DataCubeQueryAggregateOperation {
   override get label() {
@@ -42,7 +42,7 @@ export class DataCubeQueryAggregateOperation__Count extends DataCubeQueryAggrega
     return DataCubeQueryAggregateOperator.COUNT;
   }
 
-  isCompatibleWithColumn(column: DataCubeQuerySnapshotColumn) {
+  isCompatibleWithColumn(column: DataCubeColumn) {
     return ofDataType(column.type, [
       // NOTE: technically all data types are suported,
       // but we can't because we must preserve the type

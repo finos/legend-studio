@@ -14,20 +14,25 @@
  * limitations under the License.
  */
 
-import type { LegendREPLServerClient } from './LegendREPLServerClient.js';
 import {
+  GetBaseQueryResult,
+  type LegendREPLServerClient,
+} from './LegendREPLServerClient.js';
+import {
+  _elementPtr,
+  _function,
+  _lambda,
   DataCubeEngine,
-  DataCubeGetBaseQueryResult,
+  DataCubeFunction,
+  type DataCubeSource,
   DEFAULT_ENABLE_DEBUG_MODE,
   DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
   DEFAULT_GRID_CLIENT_ROW_BUFFER,
   DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
-  type CompletionItem,
-  type DataCubeInfrastructureInfo,
-  type RelationType,
 } from '@finos/legend-data-cube';
 import {
   TDSExecutionResult,
+  type V1_AppliedFunction,
   V1_buildExecutionResult,
   V1_deserializeValueSpecification,
   V1_serializeExecutionResult,
@@ -35,9 +40,10 @@ import {
   type V1_Lambda,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import { guaranteeType } from '@finos/legend-shared';
+import { guaranteeType, isNonNullable } from '@finos/legend-shared';
 import type { LegendREPLDataCubeApplicationEngine } from './LegendREPLDataCubeApplicationEngine.js';
 import { LEGEND_REPL_SETTING_KEY } from '../__lib__/LegendREPLSetting.js';
+import { LegendREPLDataCubeSource } from './LegendREPLDataCubeSource.js';
 
 export class LegendREPLDataCubeEngine extends DataCubeEngine {
   readonly application: LegendREPLDataCubeApplicationEngine;
@@ -53,26 +59,26 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     this.client = client;
 
     this.enableDebugMode =
-      this.application.getPersistedBooleanValue(
+      this.application.getPersistedBooleanSettingValue(
         LEGEND_REPL_SETTING_KEY.ENABLE_DEBUG_MODE,
       ) ?? DEFAULT_ENABLE_DEBUG_MODE;
     this.gridClientRowBuffer =
-      this.application.getPersistedNumericValue(
+      this.application.getPersistedNumericSettingValue(
         LEGEND_REPL_SETTING_KEY.GRID_CLIENT_ROW_BUFFER,
       ) ?? DEFAULT_GRID_CLIENT_ROW_BUFFER;
     this.gridClientPurgeClosedRowNodes =
-      this.application.getPersistedBooleanValue(
+      this.application.getPersistedBooleanSettingValue(
         LEGEND_REPL_SETTING_KEY.GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
       ) ?? DEFAULT_GRID_CLIENT_PURGE_CLOSED_ROW_NODES;
     this.gridClientSuppressLargeDatasetWarning =
-      this.application.getPersistedBooleanValue(
+      this.application.getPersistedBooleanSettingValue(
         LEGEND_REPL_SETTING_KEY.GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
       ) ?? DEFAULT_GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING;
   }
 
   override setEnableDebugMode(value: boolean) {
     super.setEnableDebugMode(value);
-    this.application.persistValue(
+    this.application.persistSettingValue(
       LEGEND_REPL_SETTING_KEY.ENABLE_DEBUG_MODE,
       value,
     );
@@ -80,7 +86,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
 
   override setGridClientRowBuffer(value: number) {
     super.setGridClientRowBuffer(value);
-    this.application.persistValue(
+    this.application.persistSettingValue(
       LEGEND_REPL_SETTING_KEY.GRID_CLIENT_ROW_BUFFER,
       value,
     );
@@ -88,7 +94,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
 
   override setGridClientPurgeClosedRowNodes(value: boolean) {
     super.setGridClientPurgeClosedRowNodes(value);
-    this.application.persistValue(
+    this.application.persistSettingValue(
       LEGEND_REPL_SETTING_KEY.GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
       value,
     );
@@ -96,55 +102,76 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
 
   override setGridClientSuppressLargeDatasetWarning(value: boolean) {
     super.setGridClientSuppressLargeDatasetWarning(value);
-    this.application.persistValue(
+    this.application.persistSettingValue(
       LEGEND_REPL_SETTING_KEY.GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
       value,
     );
   }
 
-  async getInfrastructureInfo(): Promise<DataCubeInfrastructureInfo> {
-    return this.client.getInfrastructureInfo();
+  override async getInitialInput() {
+    const baseQuery = GetBaseQueryResult.serialization.fromJson(
+      await this.client.getBaseQuery(),
+    );
+    const source = new LegendREPLDataCubeSource();
+    source.mapping = baseQuery.source.mapping;
+    source.query = await this.parseValueSpecification(
+      baseQuery.source.query,
+      false,
+    );
+    source.runtime = baseQuery.source.runtime;
+    source.timestamp = baseQuery.source.timestamp;
+    source.sourceColumns = (
+      await this.getQueryRelationType(_lambda([], [source.query]), source)
+    ).columns;
+
+    return {
+      query: baseQuery.query,
+      source,
+    };
   }
 
-  async getQueryTypeahead(
-    code: string,
-    query: V1_ValueSpecification,
-  ): Promise<CompletionItem[]> {
-    return this.client.getQueryTypeahead({
-      code,
-      baseQuery: V1_serializeValueSpecification(query, []),
-    });
+  async fetchConfiguration() {
+    const info = await this.client.getInfrastructureInfo();
+    return {
+      gridClientLicense: info.gridClientLicense,
+    };
   }
 
-  async parseQuery(
+  async parseValueSpecification(
     code: string,
     returnSourceInformation?: boolean,
   ): Promise<V1_ValueSpecification> {
     return V1_deserializeValueSpecification(
-      await this.client.parseQuery({ code, returnSourceInformation }),
+      await this.client.parseValueSpecification({
+        code,
+        returnSourceInformation,
+      }),
       [],
     );
   }
 
-  override getQueryCode(
-    query: V1_ValueSpecification,
+  override getValueSpecificationCode(
+    value: V1_ValueSpecification,
     pretty?: boolean,
-  ): Promise<string> {
-    return this.client.getQueryCode({
-      query: V1_serializeValueSpecification(query, []),
+  ) {
+    return this.client.getValueSpecificationCode({
+      value: V1_serializeValueSpecification(value, []),
       pretty,
     });
   }
 
-  async getBaseQuery(): Promise<DataCubeGetBaseQueryResult> {
-    return DataCubeGetBaseQueryResult.serialization.fromJson(
-      await this.client.getBaseQuery(),
-    );
+  async getQueryTypeahead(
+    code: string,
+    baseQuery: V1_Lambda,
+    source: DataCubeSource,
+  ) {
+    return this.client.getQueryTypeahead({
+      code,
+      baseQuery: V1_serializeValueSpecification(baseQuery, []),
+    });
   }
 
-  async getQueryRelationType(
-    query: V1_ValueSpecification,
-  ): Promise<RelationType> {
+  async getQueryRelationType(query: V1_Lambda, source: DataCubeSource) {
     return this.client.getQueryRelationReturnType({
       query: V1_serializeValueSpecification(query, []),
     });
@@ -153,18 +180,15 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   async getQueryCodeRelationReturnType(
     code: string,
     baseQuery: V1_ValueSpecification,
-  ): Promise<RelationType> {
+    source: DataCubeSource,
+  ) {
     return this.client.getQueryCodeRelationReturnType({
       code,
       baseQuery: V1_serializeValueSpecification(baseQuery, []),
     });
   }
 
-  async executeQuery(query: V1_Lambda): Promise<{
-    result: TDSExecutionResult;
-    executedQuery: string;
-    executedSQL: string;
-  }> {
+  async executeQuery(query: V1_Lambda, source: DataCubeSource) {
     const result = await this.client.executeQuery({
       query: V1_serializeValueSpecification(query, []),
       debug: this.enableDebugMode,
@@ -179,5 +203,20 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
       executedQuery: result.executedQuery,
       executedSQL: result.executedSQL,
     };
+  }
+
+  override buildExecutionContext(
+    source: DataCubeSource,
+  ): V1_AppliedFunction | undefined {
+    if (source instanceof LegendREPLDataCubeSource) {
+      return _function(
+        DataCubeFunction.FROM,
+        [
+          source.mapping ? _elementPtr(source.mapping) : undefined,
+          _elementPtr(source.runtime),
+        ].filter(isNonNullable),
+      );
+    }
+    return undefined;
   }
 }
