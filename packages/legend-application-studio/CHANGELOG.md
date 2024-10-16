@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.18.44
+
+### Patch Changes
+
+- [#3602](https://github.com/finos/legend-studio/pull/3602) [`b452026`](https://github.com/finos/legend-studio/commit/b45202646258dff30e5b38dbf06db76ad92bcc7e) ([@kelly-thai](https://github.com/kelly-thai)) - Changed ownership form on function activators so that the ownership type will default to deployment, and if it is of type user list a button has been added to change directly to deployment. There is no longer a dropdown and only a textbox for the deployment ID.
+
 ## 28.18.43
 
 ### Patch Changes

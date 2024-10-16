@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.15.4
+
+### Patch Changes
+
+- [#3583](https://github.com/finos/legend-studio/pull/3583) [`ec95430`](https://github.com/finos/legend-studio/commit/ec95430ef049ab98448791602269f6e1af1143c6) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Render function explorer tree from function analysis info and dataspace executable from dataspace analytics result
+
 ## 4.15.3
 
 ### Patch Changes
