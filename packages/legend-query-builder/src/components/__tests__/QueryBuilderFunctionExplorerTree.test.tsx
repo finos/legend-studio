@@ -19,7 +19,6 @@ import { integrationTest } from '@finos/legend-shared/test';
 import TEST_DATA_SimpleCalendarModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Calendar.json' with { type: 'json' };
 import { expect, test } from '@jest/globals';
 import {
-  findByText,
   fireEvent,
   getByText,
   getByTitle,
@@ -33,12 +32,34 @@ import {
   TEST__setUpQueryBuilder,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
 import type { EntitiesWithOrigin } from '@finos/legend-storage';
+import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
+import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+import { QueryBuilderDerivationProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 
 const firstDependencyEntities = {
   groupId: 'group-1',
   artifactId: 'artifact-1',
   versionId: '1.0.0',
   entities: [
+    {
+      path: 'test::Address',
+      content: {
+        _type: 'class',
+        name: 'Address',
+        package: 'test',
+        properties: [
+          {
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            name: 'zipCode',
+            type: 'String',
+          },
+        ],
+      },
+      classifierPath: 'meta::pure::metamodel::type::Class',
+    },
     {
       classifierPath:
         'meta::pure::metamodel::function::ConcreteFunctionDefinition',
@@ -75,9 +96,28 @@ const firstDependencyEntities = {
             value: '',
           },
         ],
-        name: 'testFunction2__String_1_',
+        name: 'testFunction2_String_1__Address_1__String_1_',
         package: 'domain::my',
-        parameters: [],
+        parameters: [
+          {
+            _type: 'var',
+            class: 'String',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            name: 'name',
+          },
+          {
+            _type: 'var',
+            class: 'test::Address',
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+            name: 'address',
+          },
+        ],
         postConstraints: [],
         preConstraints: [],
         returnMultiplicity: {
@@ -123,9 +163,8 @@ test(
     await act(async () => {
       queryBuilderState.changeClass(employeeClass);
     });
-    await act(async () => {
-      queryBuilderState.setShowFunctionsExplorerPanel(true);
-    });
+    fireEvent.click(renderResult.getByText('Advanced'));
+    fireEvent.click(renderResult.getByText('Show Function(s)'));
     const queryBuilderFunctionPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FUNCTIONS),
     );
@@ -144,7 +183,7 @@ test(
     expect(
       getByText(
         queryBuilderFunctionPanel,
-        'domain::my::testFunction2():String[1]',
+        'domain::my::testFunction2(name:String[1],address:Address[1]):String[1]',
       ),
     ).not.toBeNull();
     fireEvent.click(getByTitle(queryBuilderFunctionPanel, 'View as Tree'));
@@ -160,10 +199,16 @@ test(
     ).not.toBeNull();
     fireEvent.click(getByTitle(queryBuilderFunctionPanel, 'my'));
     expect(
-      getByText(queryBuilderFunctionPanel, 'testFunction2():String[1]'),
+      getByText(
+        queryBuilderFunctionPanel,
+        'testFunction2(name:String[1],address:Address[1]):String[1]',
+      ),
     ).not.toBeNull();
 
     //drag and drop
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
     fireEvent.click(getByTitle(queryBuilderFunctionPanel, 'View as List'));
     const tdsProjectionPanel = await waitFor(() =>
       renderResult.getByTestId(
@@ -173,15 +218,28 @@ test(
     const tdsProjectionDropZone = await waitFor(() =>
       getByText(tdsProjectionPanel, 'Add a projection column'),
     );
-    const ytdFunction = await waitFor(() =>
-      getByText(queryBuilderFunctionPanel, 'test::testYtd():Any[*]'),
+    const test2Function = await waitFor(() =>
+      getByText(
+        queryBuilderFunctionPanel,
+        'domain::my::testFunction2(name:String[1],address:Address[1]):String[1]',
+      ),
     );
     await dragAndDrop(
-      ytdFunction,
+      test2Function,
       tdsProjectionDropZone,
       tdsProjectionPanel,
       'Add a projection column',
     );
-    await waitFor(() => getByText(tdsProjectionPanel, 'x|test::testYtd()'));
+    // ToDo: figure out how to correctly mock MonacoEditor so that the lambda string
+    // will display
+    // below logic also tests function call string is generated as expected
+    const lambdaString = (
+      queryBuilderState.fetchStructureState
+        .implementation as QueryBuilderTDSState
+    ).tdsColumns
+      .filter((t) => t instanceof QueryBuilderDerivationProjectionColumnState)
+      .map((t) => t.derivationLambdaEditorState.lambdaString);
+    expect(lambdaString.length).toBe(1);
+    expect(lambdaString[0]).toBe("x|domain::my::testFunction2('', param1) ");
   },
 );

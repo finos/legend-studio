@@ -25,6 +25,7 @@ import {
   getOrCreateGraphPackage,
 } from '@finos/legend-graph';
 import {
+  ActionState,
   addUniqueEntry,
   guaranteeNonNullable,
   isNonNullable,
@@ -266,12 +267,14 @@ export class QueryFunctionExplorerState {
 }
 
 export class QueryFunctionsExplorerState {
+  readonly initState = ActionState.create();
+
   queryBuilderState: QueryBuilderState;
   treeData?: TreeData<QueryBuilderFunctionsExplorerTreeNodeData> | undefined;
   dependencyTreeData?:
     | TreeData<QueryBuilderFunctionsExplorerTreeNodeData>
     | undefined;
-  graph: PureModel;
+  _functionGraph: PureModel;
   functionExplorerStates: QueryFunctionExplorerState[] = [];
   dependencyFunctionExplorerStates: QueryFunctionExplorerState[] = [];
   displayablePackagesSet: Set<Package> = new Set<Package>();
@@ -286,7 +289,7 @@ export class QueryFunctionsExplorerState {
       dependencyFunctionExplorerStates: observable.ref,
       treeData: observable.ref,
       dependencyTreeData: observable.ref,
-      graph: observable,
+      _functionGraph: observable,
       functionInfoMap: observable,
       dependencyFunctionInfoMap: observable,
       packagePathToFunctionInfoMap: observable,
@@ -300,7 +303,8 @@ export class QueryFunctionsExplorerState {
       initializeTreeData: action,
     });
     this.queryBuilderState = queryBuilderState;
-    this.graph = this.queryBuilderState.graphManagerState.createNewGraph();
+    this._functionGraph =
+      this.queryBuilderState.graphManagerState.createNewGraph();
   }
 
   getTreeData(
@@ -330,7 +334,11 @@ export class QueryFunctionsExplorerState {
     if (this.functionInfoMap) {
       Array.from(this.functionInfoMap.values())
         .map((info) =>
-          getOrCreateGraphPackage(this.graph, info.packagePath, undefined),
+          getOrCreateGraphPackage(
+            this._functionGraph,
+            info.packagePath,
+            undefined,
+          ),
         )
         .map((f) => getAllPackagesFromElement(f))
         .flat()
@@ -342,7 +350,11 @@ export class QueryFunctionsExplorerState {
     if (this.dependencyFunctionInfoMap) {
       Array.from(this.dependencyFunctionInfoMap.values())
         .map((info) =>
-          getOrCreateGraphPackage(this.graph, info.packagePath, undefined),
+          getOrCreateGraphPackage(
+            this._functionGraph,
+            info.packagePath,
+            undefined,
+          ),
         )
         .map((f) => getAllPackagesFromElement(f))
         .flat()
@@ -410,7 +422,7 @@ export class QueryFunctionsExplorerState {
     const functionInfos =
       buildFunctionAnalysisInfoFromConcreteFunctionDefinition(
         this.queryBuilderState.graphManagerState.graph.ownFunctions,
-        this.graph,
+        this._functionGraph,
       );
     functionInfos.forEach((info) =>
       functionInfoMap.set(info.functionPath, info),
@@ -425,7 +437,7 @@ export class QueryFunctionsExplorerState {
       const dependencyFunctionInfos =
         buildFunctionAnalysisInfoFromConcreteFunctionDefinition(
           dependencyFunctions,
-          this.graph,
+          this._functionGraph,
         );
       dependencyFunctionInfos.forEach((info) =>
         dependencyFunctionInfoMap.set(info.functionPath, info),
@@ -463,13 +475,18 @@ export class QueryFunctionsExplorerState {
   }
 
   initializeTreeData(): void {
+    if (!this.initState.isInInitialState) {
+      return;
+    }
+
+    this.initState.inProgress();
     this.initializeFunctionInfoMap();
     this.initializeDisplayablePackagesSet()
       .catch(noop())
       .finally(() => {
         this.setTreeData(
           getFunctionsExplorerTreeData(
-            [this.graph.root],
+            [this._functionGraph.root],
             this.queryBuilderState,
             ROOT_PACKAGE_NAME.MAIN,
           ),
@@ -486,7 +503,7 @@ export class QueryFunctionsExplorerState {
         .finally(() => {
           this.setDependencyTreeData(
             getFunctionsExplorerTreeData(
-              [this.graph.root],
+              [this._functionGraph.root],
               this.queryBuilderState,
               ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT,
             ),
@@ -498,5 +515,6 @@ export class QueryFunctionsExplorerState {
             : [];
         });
     }
+    this.initState.pass();
   }
 }

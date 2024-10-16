@@ -148,7 +148,11 @@ export const generateFunctionCallStringFromFunctionAnalysisInfo = (
     for (let i = 0; i < parameterLength; i++) {
       let paramType;
       if (functionInfo.parameterInfoList[i] !== undefined) {
-        paramType = graph.getType(functionInfo.parameterInfoList[i]!.type);
+        try {
+          paramType = graph.getType(functionInfo.parameterInfoList[i]!.type);
+        } catch {
+          // graph might not contain classes used as type, set it to undefine
+        }
       }
       const separator = i !== parameterLength - 1 ? ', ' : '';
       lambdaString =
