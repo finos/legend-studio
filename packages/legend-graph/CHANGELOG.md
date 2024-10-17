@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.10.40
+
+### Patch Changes
+
+- [#3612](https://github.com/finos/legend-studio/pull/3612) [`5f661e5`](https://github.com/finos/legend-studio/commit/5f661e5c223d08b3d4c9cec5b550ad1fa93d1c52) ([@kelly-thai](https://github.com/kelly-thai)) - Successfully deployed activators will now receive a pop-up alert that includes the link to the deployed activator.
+
 ## 31.10.39
 
 ## 31.10.38
