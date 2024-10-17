@@ -223,6 +223,7 @@
   height: 50vh;
   width: 20vw;
   pointer-events: all;
+  overflow: scroll;
 
   &__container {
     &__root {
