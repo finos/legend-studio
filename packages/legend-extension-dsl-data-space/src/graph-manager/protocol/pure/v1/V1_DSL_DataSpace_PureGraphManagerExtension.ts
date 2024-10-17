@@ -255,7 +255,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     return cacheResult;
   }
 
-  private async buildDataSpaceAnalytics(
+  async buildDataSpaceAnalytics(
     json: PlainObject<V1_DataSpaceAnalysisResult>,
     plugins: PureProtocolProcessorPlugin[],
   ): Promise<DataSpaceAnalysisResult> {
