@@ -1,0 +1,324 @@
+{
+  "defaultExecutionContext": "dummyContext",
+  "description": "Not over yet?",
+  "diagrams": [],
+  "elementDocs": [],
+  "elements": [],
+  "executables": [
+    {
+      "description": "Some more exec description",
+      "executable": "domain::COVIDData_QueryFunction__TabularDataSet_1_",
+      "info": {
+        "_type": "functionPointerExecutableInfo",
+        "function": "domain::COVIDData_QueryFunction__TabularDataSet_1_",
+        "query": "|domain::COVIDData.all()->project([x: domain::COVIDData[1]|$x.cases], ['Cases'])->from(mapping::CovidDataMapping, runtime::H2Runtime)"
+      },
+      "result": {
+        "_type": "tds",
+        "columns": [
+          {
+            "name": "Cases",
+            "relationalType": "FLOAT",
+            "type": "Float"
+          }
+        ]
+      },
+      "title": "this is template with function pointer"
+    },
+    {
+      "description": "Some more exec description",
+      "executable": "mapping::CovidDataMappingService",
+      "info": {
+        "_type": "service",
+        "datasets": [
+          {
+            "_type": "relationalDatabaseTable",
+            "database": "CovidDataStore",
+            "name": "default.DEMOGRAPHICS",
+            "schema": "default",
+            "table": "DEMOGRAPHICS",
+            "type": "H2"
+          },
+          {
+            "_type": "relationalDatabaseTable",
+            "database": "CovidDataStore",
+            "name": "default.COVID_DATA",
+            "schema": "default",
+            "table": "COVID_DATA",
+            "type": "H2"
+          }
+        ],
+        "mapping": "mapping::CovidDataMapping",
+        "pattern": "/f5dc285f-6886-4b97-9f37-749289917c6a",
+        "query": "|domain::COVIDData.all()->project(\n  [\n    x: domain::COVIDData[1]|$x.caseType\n  ],\n  ['Case Type']\n)",
+        "runtime": "runtime::H2Runtime"
+      },
+      "result": {
+        "_type": "tds",
+        "columns": [
+          {
+            "name": "Case Type",
+            "relationalType": "VARCHAR(200)",
+            "type": "String"
+          }
+        ]
+      },
+      "title": "this is template with service"
+    },
+    {
+      "info": {
+        "_type": "templateExecutableInfo",
+        "executionContextKey": "dummyContext",
+        "id": "2",
+        "query": "|domain::COVIDData.all()->project([x: domain::COVIDData[1]|$x.fips], ['Fips'])"
+      },
+      "result": {
+        "_type": "tds",
+        "columns": [
+          {
+            "name": "Fips",
+            "relationalType": "VARCHAR(200)",
+            "type": "String"
+          }
+        ]
+      },
+      "title": "this is template with inline query"
+    }
+  ],
+  "executionContexts": [
+    {
+      "compatibleRuntimes": ["runtime::H2Runtime"],
+      "datasets": [
+        {
+          "_type": "relationalDatabaseTable",
+          "database": "CovidDataStore",
+          "name": "default.DEMOGRAPHICS",
+          "schema": "default",
+          "table": "DEMOGRAPHICS",
+          "type": "H2"
+        },
+        {
+          "_type": "relationalDatabaseTable",
+          "database": "CovidDataStore",
+          "name": "default.COVID_DATA",
+          "schema": "default",
+          "table": "COVID_DATA",
+          "type": "H2"
+        }
+      ],
+      "defaultRuntime": "runtime::H2Runtime",
+      "mapping": "mapping::CovidDataMapping",
+      "name": "dummyContext",
+      "runtimeMetadata": {
+        "connectionPath": "runtime::connection::H2Connection",
+        "connectionType": "H2",
+        "storePath": "store::CovidDataStore"
+      }
+    },
+    {
+      "compatibleRuntimes": ["runtime::H2Runtime"],
+      "defaultRuntime": "runtime::H2Runtime",
+      "mapping": "mapping::CovidDataMapping",
+      "name": "dummyContext2",
+      "runtimeMetadata": {
+        "connectionPath": "runtime::connection::H2Connection",
+        "connectionType": "H2",
+        "storePath": "store::CovidDataStore"
+      }
+    }
+  ],
+  "mappingToMappingCoverageResult": {
+    "mapping::CovidDataMapping": {
+      "mappedEntities": [
+        {
+          "info": {
+            "classPath": "domain::COVIDData",
+            "isRootEntity": true,
+            "subClasses": []
+          },
+          "path": "domain::COVIDData",
+          "properties": [
+            {
+              "_type": "MappedProperty",
+              "name": "caseType"
+            },
+            {
+              "_type": "MappedProperty",
+              "name": "cases"
+            },
+            {
+              "_type": "MappedProperty",
+              "name": "date"
+            },
+            {
+              "_type": "entity",
+              "entityPath": "domain::Demographics",
+              "name": "demographics"
+            },
+            {
+              "_type": "MappedProperty",
+              "name": "fips"
+            },
+            {
+              "_type": "MappedProperty",
+              "name": "id"
+            },
+            {
+              "_type": "MappedProperty",
+              "name": "lastReportedFlag"
+            }
+          ]
+        },
+        {
+          "info": {
+            "classPath": "domain::Demographics",
+            "isRootEntity": true,
+            "subClasses": []
+          },
+          "path": "domain::Demographics",
+          "properties": [
+            {
+              "_type": "MappedProperty",
+              "name": "fips"
+            },
+            {
+              "_type": "MappedProperty",
+              "name": "state"
+            }
+          ]
+        }
+      ],
+      "model": {
+        "_type": "data",
+        "elements": [
+          {
+            "_type": "class",
+            "constraints": [],
+            "name": "COVIDData",
+            "originalMilestonedProperties": [],
+            "package": "domain",
+            "properties": [
+              {
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                },
+                "name": "id",
+                "stereotypes": [],
+                "taggedValues": [],
+                "type": "Integer"
+              },
+              {
+                "multiplicity": {
+                  "lowerBound": 0,
+                  "upperBound": 1
+                },
+                "name": "fips",
+                "stereotypes": [],
+                "taggedValues": [],
+                "type": "String"
+              },
+              {
+                "multiplicity": {
+                  "lowerBound": 0,
+                  "upperBound": 1
+                },
+                "name": "date",
+                "stereotypes": [],
+                "taggedValues": [],
+                "type": "StrictDate"
+              },
+              {
+                "multiplicity": {
+                  "lowerBound": 0,
+                  "upperBound": 1
+                },
+                "name": "caseType",
+                "stereotypes": [],
+                "taggedValues": [],
+                "type": "String"
+              },
+              {
+                "multiplicity": {
+                  "lowerBound": 0,
+                  "upperBound": 1
+                },
+                "name": "cases",
+                "stereotypes": [],
+                "taggedValues": [],
+                "type": "Float"
+              },
+              {
+                "multiplicity": {
+                  "lowerBound": 0,
+                  "upperBound": 1
+                },
+                "name": "lastReportedFlag",
+                "stereotypes": [],
+                "taggedValues": [],
+                "type": "Boolean"
+              },
+              {
+                "multiplicity": {
+                  "lowerBound": 0,
+                  "upperBound": 1
+                },
+                "name": "demographics",
+                "stereotypes": [],
+                "taggedValues": [],
+                "type": "domain::Demographics"
+              }
+            ],
+            "qualifiedProperties": [],
+            "stereotypes": [],
+            "superTypes": ["meta::pure::metamodel::type::Any"],
+            "taggedValues": []
+          },
+          {
+            "_type": "class",
+            "constraints": [],
+            "name": "Demographics",
+            "originalMilestonedProperties": [],
+            "package": "domain",
+            "properties": [
+              {
+                "multiplicity": {
+                  "lowerBound": 0,
+                  "upperBound": 1
+                },
+                "name": "fips",
+                "stereotypes": [],
+                "taggedValues": [],
+                "type": "String"
+              },
+              {
+                "multiplicity": {
+                  "lowerBound": 0,
+                  "upperBound": 1
+                },
+                "name": "state",
+                "stereotypes": [],
+                "taggedValues": [],
+                "type": "String"
+              }
+            ],
+            "qualifiedProperties": [],
+            "stereotypes": [],
+            "superTypes": ["meta::pure::metamodel::type::Any"],
+            "taggedValues": []
+          }
+        ]
+      }
+    }
+  },
+  "model": {
+    "_type": "data",
+    "elements": []
+  },
+  "name": "COVIDDatapace",
+  "package": "domain",
+  "path": "domain::COVIDDatapace",
+  "stereotypes": [],
+  "taggedValues": [],
+  "title": "COVID Sample Data"
+}

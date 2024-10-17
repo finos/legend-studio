@@ -396,7 +396,10 @@ export const QueryBuilderSidebar = observer(
             )}
           </div>
         </div>
-        <div className="query-builder__template-query">
+        <div
+          data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TEMPLATE_QUERY_PANE}
+          className="query-builder__template-query"
+        >
           {templateQueryPanelContentTab}
         </div>
         <div className="query-builder__side-bar__content">{children}</div>
