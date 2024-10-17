@@ -33,6 +33,10 @@ import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
 import { activator_setOwnership } from '../../../../graph-modifier/DSL_FunctionActivator_GraphModifierHelper.js';
 import { User } from '@finos/legend-server-sdlc';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+} from '@finos/legend-application';
 
 //Ownership
 export enum HostedServiceOwnershipType {
@@ -178,13 +182,40 @@ export class HostedServiceFunctionActivatorEditorState extends ElementEditorStat
   *deployToSandbox(): GeneratorFn<void> {
     this.deployState.inProgress();
     try {
-      yield this.editorStore.graphManagerState.graphManager.publishFunctionActivatorToSandbox(
-        this.activator,
-        new InMemoryGraphData(this.editorStore.graphManagerState.graph),
-      );
-      this.editorStore.applicationStore.notificationService.notifySuccess(
-        'Hosted Service Function Activator has been deployed successfully',
-      );
+      yield this.editorStore.graphManagerState.graphManager
+        .publishFunctionActivatorToSandbox(
+          this.activator,
+          new InMemoryGraphData(this.editorStore.graphManagerState.graph),
+        )
+        .then((response) =>
+          this.editorStore.applicationStore.alertService.setActionAlertInfo({
+            message: `Hosted Service Function Activator has been deployed successfully`,
+            prompt: response.deploymentLocation
+              ? 'You can now launch and monitor the operation of your function activator'
+              : undefined,
+            type: ActionAlertType.STANDARD,
+            actions: [
+              ...(response.deploymentLocation !== undefined
+                ? [
+                    {
+                      label: 'Launch Service',
+                      type: ActionAlertActionType.PROCEED,
+                      handler: (): void => {
+                        this.editorStore.applicationStore.navigationService.navigator.visitAddress(
+                          response.deploymentLocation ?? '',
+                        );
+                      },
+                      default: true,
+                    },
+                  ]
+                : []),
+              {
+                label: 'Close',
+                type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              },
+            ],
+          }),
+        );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);

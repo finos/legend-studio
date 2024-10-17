@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-import { primitive, createModelSchema, list } from 'serializr';
+import { primitive, createModelSchema, list, optional } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
 
-export class V1_DeploymentResult {
+export class DeploymentResult {
   activatorIdentifier!: string;
   successful!: boolean;
   errors: string[] = [];
-  deploymentLocation!: string;
+  deploymentLocation: string | undefined;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_DeploymentResult, {
+    createModelSchema(DeploymentResult, {
       activatorIdentifier: primitive(),
       successful: primitive(),
       errors: list(primitive()),
-      deploymentLocation: primitive(),
+      deploymentLocation: optional(primitive()),
     }),
   );
 }

@@ -151,7 +151,6 @@ import {
   V1_testDataGenerationResultModelSchema,
 } from './service/V1_TestDataGenerationResult.js';
 import { V1_RelationalConnectionBuilder } from './relational/V1_RelationalConnectionBuilder.js';
-import { V1_DeploymentResult } from './functionActivator/V1_DeploymentResult.js';
 import type { PostValidationAssertionResult } from '../../../../../DSL_Service_Exports.js';
 import { V1_DebugTestsResult } from './test/V1_DebugTestsResult.js';
 import type { V1_GraphManagerEngine } from './V1_GraphManagerEngine.js';
@@ -162,6 +161,7 @@ import {
 } from '../../../../action/relation/RelationTypeMetadata.js';
 import { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
+import { DeploymentResult } from '../../../../action/DeploymentResult.js';
 
 class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_RemoteEngine;
@@ -1251,17 +1251,18 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
 
   async publishFunctionActivatorToSandbox(
     input: V1_FunctionActivatorInput,
-  ): Promise<void> {
-    const error = V1_DeploymentResult.serialization.fromJson(
+  ): Promise<DeploymentResult> {
+    const deploymentResult = DeploymentResult.serialization.fromJson(
       await this.engineServerClient.publishFunctionActivatorToSandbox(
         V1_FunctionActivatorInput.serialization.toJson(input),
       ),
     );
-    if (!error.successful) {
+    if (!deploymentResult.successful) {
       throw new Error(
-        `Function activator validation failed: ${error.errors.join('\n')}`,
+        `Function activator validation failed: ${deploymentResult.errors.join('\n')}`,
       );
     }
+    return deploymentResult;
   }
 
   // ------------------------------------------- Relational -------------------------------------------
