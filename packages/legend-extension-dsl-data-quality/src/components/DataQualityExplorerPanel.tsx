@@ -24,7 +24,7 @@ import { flowResult } from 'mobx';
 import { DATA_QUALITY_VALIDATION_TEST_ID } from './constants/DataQualityConstants.js';
 import {
   type QueryBuilderExplorerTreeDragSource,
-  type QueryBuilderExplorerTreeNodeData,
+  QueryBuilderExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
   QueryBuilderExplorerTreePropertyNodeData,
   QueryBuilderExplorerTreeRootNodeData,
@@ -71,6 +71,7 @@ import {
   TYPE_CAST_TOKEN,
   getAllClassDerivedProperties,
   getAllClassProperties,
+  getAllOwnClassProperties,
 } from '@finos/legend-graph';
 
 export const QueryBuilderExplorerTreeNodeContainer = observer(
@@ -98,9 +99,7 @@ export const QueryBuilderExplorerTreeNodeContainer = observer(
               ? QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY
               : QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
         item: () =>
-          node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-            ? {}
-            : { node },
+          node instanceof QueryBuilderExplorerTreeNodeData ? { node } : {},
       }),
       [node],
     );
@@ -373,26 +372,27 @@ const QueryBuilderExplorerTree = observer(
         node.isOpen = !node.isOpen;
         if (
           node.isOpen &&
-          node instanceof QueryBuilderExplorerTreePropertyNodeData &&
+          (node instanceof QueryBuilderExplorerTreePropertyNodeData ||
+            node instanceof QueryBuilderExplorerTreeSubTypeNodeData) &&
           node.type instanceof Class
         ) {
-          getAllClassProperties(node.type)
-            .concat(getAllClassDerivedProperties(node.type))
-            .forEach((property) => {
-              const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
-                property,
-                node,
-                guaranteeNonNullable(
-                  explorerState.mappingModelCoverageAnalysisResult,
-                ),
-              );
-              if (propertyTreeNodeData) {
-                treeData.nodes.set(
-                  propertyTreeNodeData.id,
-                  propertyTreeNodeData,
-                );
-              }
-            });
+          (node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+            ? getAllOwnClassProperties(node.type)
+            : getAllClassProperties(node.type).concat(
+                getAllClassDerivedProperties(node.type),
+              )
+          ).forEach((property) => {
+            const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
+              property,
+              node,
+              guaranteeNonNullable(
+                explorerState.mappingModelCoverageAnalysisResult,
+              ),
+            );
+            if (propertyTreeNodeData) {
+              treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
+            }
+          });
           node.type._subclasses.forEach((subclass) => {
             const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
               subclass,

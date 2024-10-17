@@ -87,4 +87,5 @@ export const V1_propertyGraphFetchTreeModelSchema = (
         (val) => V1_deserializeGraphFetchTree(val, plugins),
       ),
     ),
+    subType: optional(primitive()),
   });
