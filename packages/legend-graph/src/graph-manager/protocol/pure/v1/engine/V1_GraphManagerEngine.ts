@@ -90,6 +90,7 @@ import type { TEMPORARY__AbstractEngineConfig } from '../../../../action/TEMPORA
 import type { RelationTypeMetadata } from '../../../../action/relation/RelationTypeMetadata.js';
 import type { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import type { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
+import type { DeploymentResult } from '../../../../action/DeploymentResult.js';
 
 export interface V1_GraphManagerEngine {
   config: TEMPORARY__AbstractEngineConfig;
@@ -369,7 +370,7 @@ export interface V1_GraphManagerEngine {
 
   publishFunctionActivatorToSandbox: (
     input: V1_FunctionActivatorInput,
-  ) => Promise<void>;
+  ) => Promise<DeploymentResult>;
 
   // ------------------------------------------- Relational -------------------------------------------
 

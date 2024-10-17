@@ -112,6 +112,7 @@ import type { EngineError } from './action/EngineError.js';
 import type { TestDebug } from '../graph/metamodel/pure/test/result/DebugTestsResult.js';
 import type { RelationTypeMetadata } from './action/relation/RelationTypeMetadata.js';
 import type { CodeCompletionResult } from './action/compilation/Completion.js';
+import type { DeploymentResult } from './action/DeploymentResult.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -685,7 +686,7 @@ export abstract class AbstractPureGraphManager {
   abstract publishFunctionActivatorToSandbox(
     functionActivator: FunctionActivator,
     graphData: GraphData,
-  ): Promise<void>;
+  ): Promise<DeploymentResult>;
 
   // --------------------------------------------- Relational ---------------------------------------------
 

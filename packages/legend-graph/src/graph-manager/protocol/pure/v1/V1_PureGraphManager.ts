@@ -338,6 +338,7 @@ import type { V1_GraphManagerEngine } from './engine/V1_GraphManagerEngine.js';
 import type { RelationTypeMetadata } from '../../../action/relation/RelationTypeMetadata.js';
 import type { CodeCompletionResult } from '../../../action/compilation/Completion.js';
 import { V1_CompleteCodeInput } from './engine/compilation/V1_CompleteCodeInput.js';
+import type { DeploymentResult } from '../../../action/DeploymentResult.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -3497,12 +3498,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async publishFunctionActivatorToSandbox(
     functionActivator: FunctionActivator,
     graphData: GraphData,
-  ): Promise<void> {
+  ): Promise<DeploymentResult> {
     const input = new V1_FunctionActivatorInput();
     input.clientVersion = V1_PureGraphManager.PROD_PROTOCOL_VERSION;
     input.functionActivator = functionActivator.path;
     input.model = this.prepareExecutionContextGraphData(graphData);
-    await this.engine.publishFunctionActivatorToSandbox(input);
+    const result = await this.engine.publishFunctionActivatorToSandbox(input);
+    return result;
   }
 
   // --------------------------------------------- Relational ---------------------------------------------
