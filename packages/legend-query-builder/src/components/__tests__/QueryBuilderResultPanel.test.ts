@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { test, describe, expect } from '@jest/globals';
+import { Response } from 'whatwg-fetch';
+import { test, describe, expect, jest } from '@jest/globals';
 import { createMock, integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -53,6 +54,13 @@ import {
 } from '@finos/legend-lego/code-editor/test';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_QueryExecution_Entities } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import * as legendApplication from '@finos/legend-application';
+
+jest.mock('@finos/legend-application', () => ({
+  ...jest.requireActual('@finos/legend-application'),
+  downloadStream: jest.fn(),
+}));
 
 type ResultStateTestCase = [
   string,
@@ -328,6 +336,43 @@ describe(integrationTest('Query builder export button'), () => {
     );
     expect(viewQueryUsageButton).not.toBeNull();
     expect(viewQueryUsageButton!.getAttribute('disabled')).toBeDefined();
+  });
+
+  test('Check that downloadStream function is called if x-legend-delegated-export header is absent or false', async () => {
+    const { renderResult, queryBuilderState } =
+      await testQueryBuilderStateSetup();
+    const executionResult = V1_buildExecutionResult(
+      V1_serializeExecutionResult(TEST_DATA__result),
+    );
+    await act(async () => {
+      queryBuilderState.resultState.setExecutionResult(executionResult);
+    });
+
+    const exportButton = await waitFor(() => renderResult.getByText('Export'));
+    jest
+      .spyOn(queryBuilderState.graphManagerState.graphManager, 'exportData')
+      .mockImplementationOnce(() => {
+        const response = new Response();
+        response.body = '';
+        return Promise.resolve(response);
+      });
+    legendApplication.downloadStream.mockResolvedValue(new Response());
+    await act(async () => {
+      fireEvent.click(exportButton);
+    });
+    const exportCSVButton = guaranteeNonNullable(
+      (await renderResult.findByText('CSV')).closest('button'),
+    );
+    await act(async () => {
+      fireEvent.click(exportCSVButton);
+    });
+    const acceptButton = await renderResult.findByText('Accept');
+    await act(async () => {
+      fireEvent.click(acceptButton);
+    });
+    await waitFor(() =>
+      expect(legendApplication.downloadStream).toHaveBeenCalled(),
+    );
   });
 });
 
