@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.18.45
+
+### Patch Changes
+
+- [#3612](https://github.com/finos/legend-studio/pull/3612) [`5f661e5`](https://github.com/finos/legend-studio/commit/5f661e5c223d08b3d4c9cec5b550ad1fa93d1c52) ([@kelly-thai](https://github.com/kelly-thai)) - Successfully deployed activators will now receive a pop-up alert that includes the link to the deployed activator.
+
+- [#3614](https://github.com/finos/legend-studio/pull/3614) [`b475c57`](https://github.com/finos/legend-studio/commit/b475c57fc4737d127d43d73aa93163da0b1fdc8e) ([@kelly-thai](https://github.com/kelly-thai)) - Added a new tab for Lambdas in function editor that displays all the lambdas for that function as well as navigation to those lambdas.
+
 ## 28.18.44
 
 ### Patch Changes
