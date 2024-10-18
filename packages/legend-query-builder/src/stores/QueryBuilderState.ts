@@ -72,6 +72,7 @@ import {
   RuntimePointer,
   QueryExplicitExecutionContext,
   attachFromQuery,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import type {
@@ -343,8 +344,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.executionContextState.mapping,
       'Query required mapping to update',
     );
-    queryExeContext.mapping = this.executionContextState.mapping.path;
-    queryExeContext.runtime = runtimeValue.packageableRuntime.value.path;
+    queryExeContext.mapping = PackageableElementExplicitReference.create(
+      this.executionContextState.mapping,
+    );
+    queryExeContext.runtime = runtimeValue.packageableRuntime;
     return queryExeContext;
   }
 

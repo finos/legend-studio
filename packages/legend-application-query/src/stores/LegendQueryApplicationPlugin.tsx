@@ -19,7 +19,6 @@ import type {
   QueryBuilder_LegendApplicationPlugin_Extension,
   QueryBuilderState,
 } from '@finos/legend-query-builder';
-import type { GeneratorFn } from '@finos/legend-shared';
 import type React from 'react';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type {
@@ -65,10 +64,6 @@ export type NewQueryNavigationPath = (
   editorStore: ExistingQueryEditorStore,
 ) => string | undefined;
 
-export type QueryGraphBuilderGetter = (
-  editorStore: QueryEditorStore,
-) => ((editorStore: QueryEditorStore) => GeneratorFn<void>) | undefined;
-
 export type QueryEditorActionConfiguration = {
   key: string;
   renderer: (
@@ -103,9 +98,4 @@ export class LegendQueryApplicationPlugin
    * Get the list of actions (configurations) for query setup.
    */
   getExtraQuerySetupActionConfigurations?(): QuerySetupActionConfiguration[];
-
-  /**
-   * Get the list of query graph builders
-   */
-  getExtraQueryGraphBuilderGetters?(): QueryGraphBuilderGetter[];
 }

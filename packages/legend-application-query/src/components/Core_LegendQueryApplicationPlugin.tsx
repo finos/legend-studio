@@ -15,7 +15,6 @@
  */
 
 import {
-  type QueryGraphBuilderGetter,
   type QuerySetupActionConfiguration,
   LegendQueryApplicationPlugin,
   QuerySetupActionTag,
@@ -73,7 +72,6 @@ import {
   QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
 } from '@finos/legend-query-builder';
 import {
-  type QueryEditorStore,
   ExistingQueryEditorStore,
   QueryBuilderActionConfig_QueryApplication,
 } from '../stores/QueryEditorStore.js';
@@ -85,11 +83,8 @@ import {
 import {
   createGraphBuilderReport,
   GRAPH_MANAGER_EVENT,
-  isValidFullPath,
   LegendSDLC,
   PackageableElementPointerType,
-  QUERY_PROFILE_PATH,
-  QueryDataSpaceExecutionContext,
   resolvePackagePathAndElementName,
   RuntimePointer,
   V1_EngineRuntime,
@@ -101,7 +96,6 @@ import {
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 import { resolveVersion, StoreProjectData } from '@finos/legend-server-depot';
 import {
-  type GeneratorFn,
   ActionState,
   assertErrorThrown,
   buildUrl,
@@ -119,7 +113,6 @@ import { createViewSDLCProjectHandler } from '../stores/data-space/DataSpaceQuer
 import { DataSpaceQueryCreatorStore } from '../stores/data-space/DataSpaceQueryCreatorStore.js';
 import { configureCodeEditorComponent } from '@finos/legend-lego/code-editor';
 import {
-  QUERY_PROFILE_TAG_DATA_SPACE,
   resolveUsableDataSpaceClasses,
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
@@ -763,34 +756,6 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         return undefined;
       },
     };
-  }
-
-  override getExtraQueryGraphBuilderGetters(): QueryGraphBuilderGetter[] {
-    return [
-      (
-        editorStore: QueryEditorStore,
-      ): ((editorStore: QueryEditorStore) => GeneratorFn<void>) | undefined => {
-        function* buildGraph(): GeneratorFn<void> {
-          // do nothing
-        }
-        if (editorStore instanceof ExistingQueryEditorStore) {
-          const query = editorStore.query;
-          const dataSpaceTaggedValue = query?.taggedValues?.find(
-            (taggedValue) =>
-              taggedValue.profile === QUERY_PROFILE_PATH &&
-              taggedValue.tag === QUERY_PROFILE_TAG_DATA_SPACE &&
-              isValidFullPath(taggedValue.value),
-          );
-          if (
-            dataSpaceTaggedValue ||
-            query?.executionContext instanceof QueryDataSpaceExecutionContext
-          ) {
-            return buildGraph;
-          }
-        }
-        return undefined;
-      },
-    ];
   }
 
   getExtraQueryBuilderPropagateExecutionContextChangeHelper?(): QueryBuilderPropagateExecutionContextChangeHelper[] {

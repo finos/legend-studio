@@ -30,6 +30,7 @@ import {
   RawLambda,
   QueryExplicitExecutionContext,
   QueryDataSpaceExecutionContext,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import {
@@ -154,11 +155,11 @@ export const TEST__setUpQueryEditor = async (
   query.owner = lightQuery.owner;
   query.isCurrentUserQuery = lightQuery.isCurrentUserQuery;
   const _mapping = graphManagerState.graph.getMapping(mappingPath);
-  query.mapping = mappingPath;
-  query.runtime = runtimePath;
   const execContext = new QueryExplicitExecutionContext();
-  execContext.mapping = mappingPath;
-  execContext.runtime = runtimePath;
+  execContext.mapping = PackageableElementExplicitReference.create(_mapping);
+  execContext.runtime = PackageableElementExplicitReference.create(
+    graphManagerState.graph.getRuntime(runtimePath),
+  );
   query.executionContext = execContext;
   query.content = 'some content';
   createSpy(

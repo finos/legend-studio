@@ -83,6 +83,7 @@ import { ExternalFormatDescription } from '../../../../../graph-manager/action/e
 import type { Service } from '../../../../../graph/metamodel/pure/packageableElements/service/Service.js';
 import { QUERY_PROFILE_PATH } from '../../../../../graph/MetaModelConst.js';
 import { isValidFullPath } from '../../../../../graph/MetaModelUtils.js';
+import { PackageableElementExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 
 export const V1_buildLightQuery = (
   protocol: V1_LightQuery,
@@ -143,15 +144,43 @@ export const V1_buildExecutionContext = (
     return exec;
   } else if (protocolQuery.mapping && protocolQuery.runtime) {
     const exec = new QueryExplicitExecutionContext();
-    exec.mapping = protocolQuery.mapping;
-    exec.runtime = protocolQuery.runtime;
-    metamodel.mapping = protocolQuery.mapping;
-    metamodel.runtime = protocolQuery.runtime;
+    exec.mapping = PackageableElementExplicitReference.create(
+      graph.getMapping(
+        guaranteeNonNullable(
+          protocolQuery.mapping,
+          `Query 'mapping' field is missing`,
+        ),
+      ),
+    );
+    exec.runtime = PackageableElementExplicitReference.create(
+      graph.getRuntime(
+        guaranteeNonNullable(
+          protocolQuery.runtime,
+          `Query 'runtime' field is missing`,
+        ),
+      ),
+    );
+    metamodel.mapping = exec.mapping;
+    metamodel.runtime = exec.runtime;
     return exec;
   } else if (protocolExecContext instanceof V1_QueryExplicitExecutionContext) {
     const exec = new QueryExplicitExecutionContext();
-    exec.mapping = protocolExecContext.mapping;
-    exec.runtime = protocolExecContext.runtime;
+    exec.mapping = PackageableElementExplicitReference.create(
+      graph.getMapping(
+        guaranteeNonNullable(
+          protocolExecContext.mapping,
+          `Query 'mapping' field is missing`,
+        ),
+      ),
+    );
+    exec.runtime = PackageableElementExplicitReference.create(
+      graph.getRuntime(
+        guaranteeNonNullable(
+          protocolExecContext.runtime,
+          `Query 'runtime' field is missing`,
+        ),
+      ),
+    );
     return exec;
   } else if (protocolExecContext instanceof V1_QueryDataSpaceExecutionContext) {
     const exec = new QueryDataSpaceExecutionContext();
@@ -216,8 +245,6 @@ export const V1_buildQuery = (
     protocol.artifactId,
     `Query 'artifactId' field is missing`,
   );
-  metamodel.mapping = protocol.mapping;
-  metamodel.runtime = protocol.runtime;
   metamodel.executionContext = V1_buildExecutionContext(
     protocol,
     graph,
@@ -286,8 +313,8 @@ export const V1_transformQueryExecutionContext = (
 ): V1_QueryExecutionContext => {
   if (execContext instanceof QueryExplicitExecutionContext) {
     const protocol = new V1_QueryExplicitExecutionContext();
-    protocol.mapping = execContext.mapping;
-    protocol.runtime = execContext.runtime;
+    protocol.mapping = execContext.mapping.valueForSerialization ?? '';
+    protocol.runtime = execContext.runtime.valueForSerialization ?? '';
     return protocol;
   } else if (execContext instanceof QueryDataSpaceExecutionContext) {
     const protocol = new V1_QueryDataSpaceExecutionContext();
@@ -315,8 +342,6 @@ export const V1_transformQuery = (metamodel: Partial<Query>): V1_Query => {
   if (metamodel.artifactId) {
     protocol.artifactId = metamodel.artifactId;
   }
-  protocol.mapping = metamodel.mapping;
-  protocol.runtime = metamodel.runtime;
   protocol.originalVersionId = metamodel.originalVersionId;
   if (metamodel.executionContext) {
     protocol.executionContext = V1_transformQueryExecutionContext(
