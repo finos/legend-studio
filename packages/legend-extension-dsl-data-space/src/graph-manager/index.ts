@@ -21,6 +21,8 @@ export * from '../graph/DSL_DataSpace_MetaModelConst.js';
 
 export * from './DSL_DataSpace_GraphManagerPreset.js';
 
+export { V1_DataSpaceAnalysisResult } from './protocol/pure/v1/engine/analytics/V1_DataSpaceAnalysis.js';
+
 export {
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   DATA_SPACE_ELEMENT_POINTER,
