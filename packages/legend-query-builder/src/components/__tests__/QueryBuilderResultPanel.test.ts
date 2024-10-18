@@ -15,7 +15,7 @@
  */
 
 import { Response } from 'whatwg-fetch';
-import { test, describe, expect, jest } from '@jest/globals';
+import { test, describe, expect, jest, afterEach } from '@jest/globals';
 import { createMock, integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -24,6 +24,7 @@ import {
   extractElementNameFromPath,
   stub_RawLambda,
   V1_buildExecutionResult,
+  V1_DELEGATED_EXPORT_HEADER,
   V1_serializeExecutionResult,
 } from '@finos/legend-graph';
 import {
@@ -317,6 +318,10 @@ test(
 );
 
 describe(integrationTest('Query builder export button'), () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   test('Check that "Others..." button is disabled if no plugins with extraQueryUsageConfigurations are present', async () => {
     const { renderResult, queryBuilderState } =
       await testQueryBuilderStateSetup();
@@ -338,7 +343,37 @@ describe(integrationTest('Query builder export button'), () => {
     expect(viewQueryUsageButton!.getAttribute('disabled')).toBeDefined();
   });
 
-  test('Check that downloadStream function is called if x-legend-delegated-export header is absent or false', async () => {
+  test('Check that downloadStream function is called if x-legend-delegated-export header is absent', async () => {
+    const { renderResult, queryBuilderState } =
+      await testQueryBuilderStateSetup();
+    const executionResult = V1_buildExecutionResult(
+      V1_serializeExecutionResult(TEST_DATA__result),
+    );
+    await act(async () => {
+      queryBuilderState.resultState.setExecutionResult(executionResult);
+    });
+
+    const exportButton = await waitFor(() => renderResult.getByText('Export'));
+    jest
+      .spyOn(queryBuilderState.graphManagerState.graphManager, 'exportData')
+      .mockImplementationOnce(() => Promise.resolve(new Response()));
+    await act(async () => {
+      fireEvent.click(exportButton);
+    });
+    const exportCSVButton = guaranteeNonNullable(
+      (await renderResult.findByText('CSV')).closest('button'),
+    );
+    await act(async () => {
+      fireEvent.click(exportCSVButton);
+    });
+    const acceptButton = await renderResult.findByText('Accept');
+    await act(async () => {
+      fireEvent.click(acceptButton);
+    });
+    expect(legendApplication.downloadStream).toHaveBeenCalled();
+  });
+
+  test('Check that downloadStream function is called if x-legend-delegated-export header is false', async () => {
     const { renderResult, queryBuilderState } =
       await testQueryBuilderStateSetup();
     const executionResult = V1_buildExecutionResult(
@@ -353,10 +388,9 @@ describe(integrationTest('Query builder export button'), () => {
       .spyOn(queryBuilderState.graphManagerState.graphManager, 'exportData')
       .mockImplementationOnce(() => {
         const response = new Response();
-        response.body = '';
+        response.headers.set(V1_DELEGATED_EXPORT_HEADER, false);
         return Promise.resolve(response);
       });
-    legendApplication.downloadStream.mockResolvedValue(new Response());
     await act(async () => {
       fireEvent.click(exportButton);
     });
@@ -370,9 +404,41 @@ describe(integrationTest('Query builder export button'), () => {
     await act(async () => {
       fireEvent.click(acceptButton);
     });
-    await waitFor(() =>
-      expect(legendApplication.downloadStream).toHaveBeenCalled(),
+    expect(legendApplication.downloadStream).toHaveBeenCalled();
+  });
+
+  test('Check that downloadStream function is not called if x-legend-delegated-export header is true', async () => {
+    const { renderResult, queryBuilderState } =
+      await testQueryBuilderStateSetup();
+    const executionResult = V1_buildExecutionResult(
+      V1_serializeExecutionResult(TEST_DATA__result),
     );
+    await act(async () => {
+      queryBuilderState.resultState.setExecutionResult(executionResult);
+    });
+
+    const exportButton = await waitFor(() => renderResult.getByText('Export'));
+    jest
+      .spyOn(queryBuilderState.graphManagerState.graphManager, 'exportData')
+      .mockImplementationOnce(() => {
+        const response = new Response();
+        response.headers.set(V1_DELEGATED_EXPORT_HEADER, true);
+        return Promise.resolve(response);
+      });
+    await act(async () => {
+      fireEvent.click(exportButton);
+    });
+    const exportCSVButton = guaranteeNonNullable(
+      (await renderResult.findByText('CSV')).closest('button'),
+    );
+    await act(async () => {
+      fireEvent.click(exportCSVButton);
+    });
+    const acceptButton = await renderResult.findByText('Accept');
+    await act(async () => {
+      fireEvent.click(acceptButton);
+    });
+    expect(legendApplication.downloadStream).not.toHaveBeenCalled();
   });
 });
 
