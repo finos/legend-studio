@@ -156,7 +156,7 @@ export interface QueryInfo {
   name: string;
   id: string;
   versionId: string;
-  origignalVersionId?: string | undefined;
+  originalVersionId?: string | undefined;
   groupId: string;
   artifactId: string;
   executionContext: QueryExecutionContextInfo;

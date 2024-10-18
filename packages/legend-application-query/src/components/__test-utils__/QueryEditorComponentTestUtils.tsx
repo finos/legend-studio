@@ -25,12 +25,13 @@ import { createMock, createSpy } from '@finos/legend-shared/test';
 import {
   type GraphManagerState,
   type RawMappingModelCoverageAnalysisResult,
+  type QueryInfo,
   Query,
   LightQuery,
   RawLambda,
-  PackageableElementExplicitReference,
   QueryExplicitExecutionContext,
   QueryDataSpaceExecutionContext,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import {
@@ -104,7 +105,7 @@ export const TEST__provideMockedQueryEditorStore = (customization?: {
 
 export const TEST__setUpQueryEditor = async (
   MOCK__editorStore: ExistingQueryEditorStore,
-  entities: Entity[],
+  entities: PlainObject<Entity>[],
   lambda: RawLambda,
   mappingPath: string,
   runtimePath: string,
@@ -142,7 +143,7 @@ export const TEST__setUpQueryEditor = async (
   await graphManagerState.initializeSystem();
   await graphManagerState.graphManager.buildGraph(
     graphManagerState.graph,
-    entities,
+    entities as unknown as Entity[],
     graphManagerState.graphBuildState,
   );
 
@@ -162,12 +163,30 @@ export const TEST__setUpQueryEditor = async (
   );
   query.executionContext = execContext;
   query.content = 'some content';
+
+  const queryInfo: QueryInfo = {
+    name: TEST_QUERY_NAME,
+    id: TEST_QUERY_ID,
+    versionId: '0.0.0',
+    groupId: 'test.group',
+    artifactId: 'test-artifact',
+    executionContext: execContext,
+    content: 'some content',
+  };
+
   createSpy(
     MOCK__editorStore.depotServerClient,
     'getProject',
   ).mockResolvedValue(projectData);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getEntities',
+  ).mockResolvedValue(entities);
   createSpy(graphManagerState.graphManager, 'getLightQuery').mockResolvedValue(
     lightQuery,
+  );
+  createSpy(graphManagerState.graphManager, 'getQueryInfo').mockResolvedValue(
+    queryInfo,
   );
   createSpy(
     graphManagerState.graphManager,
@@ -227,7 +246,7 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
   executionContext: string,
   lambda: RawLambda,
   mappingPath: string,
-  entities: Entity[],
+  entities: PlainObject<Entity>[],
 ): Promise<{
   renderResult: RenderResult;
   queryBuilderState: QueryBuilderState;
@@ -259,11 +278,6 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
   });
 
   await graphManagerState.initializeSystem();
-  await graphManagerState.graphManager.buildGraph(
-    graphManagerState.graph,
-    entities,
-    graphManagerState.graphBuildState,
-  );
 
   const query = new Query();
   query.name = lightQuery.name;
@@ -278,6 +292,17 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
   execContext.executionKey = executionContext;
   query.executionContext = execContext;
   query.content = 'some content';
+
+  const queryInfo: QueryInfo = {
+    name: TEST_QUERY_NAME,
+    id: TEST_QUERY_ID,
+    versionId: '0.0.0',
+    groupId: 'test.group',
+    artifactId: 'test-artifact',
+    executionContext: execContext,
+    content: 'some content',
+  };
+
   createSpy(
     MOCK__editorStore.depotServerClient,
     'getProject',
@@ -285,7 +310,7 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
   createSpy(
     MOCK__editorStore.depotServerClient,
     'getEntities',
-  ).mockResolvedValue([]);
+  ).mockResolvedValue(entities);
   createSpy(
     MOCK__editorStore.depotServerClient,
     'getIndexedDependencyEntities',
@@ -308,10 +333,9 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
   createSpy(graphManagerState.graphManager, 'getQuery').mockResolvedValue(
     query,
   );
-  createSpy(
-    MOCK__editorStore.depotServerClient,
-    'getGenerationContentByPath',
-  ).mockResolvedValue('');
+  createSpy(graphManagerState.graphManager, 'getQueryInfo').mockResolvedValue(
+    queryInfo,
+  );
   createSpy(graphManagerState.graphManager, 'surveyDatasets').mockResolvedValue(
     [],
   );
