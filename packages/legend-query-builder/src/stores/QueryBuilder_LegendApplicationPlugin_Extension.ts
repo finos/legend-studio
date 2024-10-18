@@ -16,7 +16,11 @@
 
 import type { LegendApplicationPlugin } from '@finos/legend-application';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import type { QuerySearchSpecification, RawLambda } from '@finos/legend-graph';
+import type {
+  FunctionAnalysisInfo,
+  QuerySearchSpecification,
+  RawLambda,
+} from '@finos/legend-graph';
 import type {
   DataAccessState,
   DatasetAccessInfo,
@@ -37,7 +41,7 @@ export type CuratedTemplateQuerySpecification = {
   loadCuratedTemplateQuery(
     templateQuery: CuratedTemplateQuery,
     queryBuilderState: QueryBuilderState,
-  ): void;
+  ): Promise<void>;
 };
 
 export type LoadQueryFilterOption = {
@@ -93,6 +97,16 @@ export type QueryBuilderMenuActionConfiguration = {
   renderExtraComponent?: (
     queryBuilderState: QueryBuilderState,
   ) => React.ReactNode;
+};
+
+export type QueryBuilderPropagateExecutionContextChangeHelper = (
+  queryBuilderState: QueryBuilderState,
+  isGraphBuildingNotRequired?: boolean,
+) => (() => Promise<void>) | undefined;
+
+export type QueryBuilderExtraFunctionHelper = {
+  functionInfoMap: Map<string, FunctionAnalysisInfo>;
+  dependencyFunctionInfoMap: Map<string, FunctionAnalysisInfo>;
 };
 
 export interface QueryBuilder_LegendApplicationPlugin_Extension
@@ -158,4 +172,16 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
    * Get the list of export menu action configurations
    */
   getExtraQueryBuilderExportMenuActionConfigurations?(): QueryBuilderMenuActionConfiguration[];
+
+  /**
+   * Get the list of Query Builder Propagate Execution Context Change Helper
+   */
+  getExtraQueryBuilderPropagateExecutionContextChangeHelper?(): QueryBuilderPropagateExecutionContextChangeHelper[];
+
+  /**
+   * Get the list of extra functions rendered in query builder function explorer
+   */
+  getExtraQueryBuilderFunctionHelper?(
+    queryBuilderState: QueryBuilderState,
+  ): QueryBuilderExtraFunctionHelper[];
 }
