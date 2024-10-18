@@ -39,6 +39,7 @@ import {
   TDSExecutionResult,
   V1_ZIPKIN_TRACE_HEADER,
   ExecutionError,
+  V1_DELEGATED_EXPORT_HEADER,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import {
@@ -418,6 +419,14 @@ export class QueryBuilderResultState {
             ),
           },
         )) as Response;
+      if (Boolean(result.headers.get(V1_DELEGATED_EXPORT_HEADER))) {
+        if (result.status === 200) {
+          this.exportState.pass();
+        } else {
+          this.exportState.fail();
+        }
+        return;
+      }
       const report = reportGraphAnalytics(
         this.queryBuilderState.graphManagerState.graph,
       );
