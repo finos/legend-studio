@@ -88,6 +88,11 @@
   &__caution:hover {
     background: var(--color-yellow-300);
   }
+
+  &--dark {
+    background: var(--color-blue-200);
+    color: var(--color-light-grey-50);
+  }
 }
 
 .btn--important {
