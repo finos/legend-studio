@@ -41,7 +41,7 @@
   "dependencies": {
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
-    "serializr": "3.0.2"
+    "serializr": "3.0.3"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

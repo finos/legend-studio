@@ -199,12 +199,10 @@ export const TEST__setUpQueryBuilder = async (
   renderResult: RenderResult;
   queryBuilderState: QueryBuilderState;
 }> => {
-  const MOCK__pluginManager = TEST__LegendApplicationPluginManager.create();
-  MOCK__pluginManager.usePresets([
-    new QueryBuilder_GraphManagerPreset(),
-  ]).install();
+  const pluginManager = TEST__LegendApplicationPluginManager.create();
+  pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
   const graphManagerState = new GraphManagerState(
-    MOCK__pluginManager,
+    pluginManager,
     new LogService(),
   );
 
@@ -222,7 +220,7 @@ export const TEST__setUpQueryBuilder = async (
 
   const MOCK__applicationStore = new ApplicationStore(
     TEST__getGenericApplicationConfig(),
-    MOCK__pluginManager,
+    pluginManager,
   );
 
   const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
