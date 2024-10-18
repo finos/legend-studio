@@ -419,7 +419,7 @@ export class QueryBuilderResultState {
             ),
           },
         )) as Response;
-      if (Boolean(result.headers.get(V1_DELEGATED_EXPORT_HEADER))) {
+      if (result.headers.get(V1_DELEGATED_EXPORT_HEADER) === 'true') {
         if (result.status === 200) {
           this.exportState.pass();
         } else {
