@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 1.0.50
+
+### Patch Changes
+
+- [#3610](https://github.com/finos/legend-studio/pull/3610) [`12ae1f7`](https://github.com/finos/legend-studio/commit/12ae1f70f47a133ee38b3fe89b769009b82577ae) ([@viju4076](https://github.com/viju4076)) - subtypes support in data quality class validation
+
 ## 1.0.49
 
 ## 1.0.48

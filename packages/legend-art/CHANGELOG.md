@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.63
+
+### Patch Changes
+
+- [#3614](https://github.com/finos/legend-studio/pull/3614) [`b475c57`](https://github.com/finos/legend-studio/commit/b475c57fc4737d127d43d73aa93163da0b1fdc8e) ([@kelly-thai](https://github.com/kelly-thai)) - Added a new tab for Lambdas in function editor that displays all the lambdas for that function as well as navigation to those lambdas.
+
 ## 7.1.62
 
 ## 7.1.61

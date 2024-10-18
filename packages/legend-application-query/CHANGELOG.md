@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.6.6
+
+### Patch Changes
+
+- [#3611](https://github.com/finos/legend-studio/pull/3611) [`850de72`](https://github.com/finos/legend-studio/commit/850de72098173a36371d1c22835191c6c23e92dd) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add test coverage for dataspace analytics result
+
 ## 13.6.5
 
 ## 13.6.4

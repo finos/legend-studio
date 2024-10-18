@@ -1,5 +1,7 @@
 # @finos/legend-application-studio-bootstrap
 
+## 12.54.0
+
 ## 12.53.0
 
 ## 12.52.0
