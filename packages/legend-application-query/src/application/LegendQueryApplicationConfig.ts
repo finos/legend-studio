@@ -65,6 +65,8 @@ class LegendQueryApplicationCoreOptions {
   TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvironmentConfig[] =
     [];
 
+  TEMPORARY__enableMinimalGraph = true;
+
   /**
    * Config specific to query builder
    */
@@ -78,6 +80,7 @@ class LegendQueryApplicationCoreOptions {
       queryBuilderConfig: optional(
         usingModelSchema(QueryBuilderConfig.serialization.schema),
       ),
+      TEMPORARY__enableMinimalGraph: optional(primitive()),
     }),
   );
 

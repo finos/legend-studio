@@ -70,7 +70,7 @@ const DataSpaceTemplateQueryDialog = observer(
           executionContext.name !== queryBuilderState.executionContext.name
         ) {
           queryBuilderState.setExecutionContext(executionContext);
-          queryBuilderState.propagateExecutionContextChange(executionContext);
+          await queryBuilderState.propagateExecutionContextChange();
           queryBuilderState.initializeWithQuery(query);
           queryBuilderState.onExecutionContextChange?.(executionContext);
         } else {

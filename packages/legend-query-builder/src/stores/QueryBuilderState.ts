@@ -69,7 +69,6 @@ import {
   buildLambdaVariableExpressions,
   buildRawLambdaFromLambdaFunction,
   PrimitiveType,
-  PackageableElementExplicitReference,
   RuntimePointer,
   QueryExplicitExecutionContext,
   attachFromQuery,
@@ -108,6 +107,7 @@ import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QueryBuilderChangeHistoryState } from './QueryBuilderChangeHistoryState.js';
 import { type QueryBuilderWorkflowState } from './query-workflow/QueryBuilderWorkFlowState.js';
+import type { QueryBuilder_LegendApplicationPlugin_Extension } from './QueryBuilder_LegendApplicationPlugin_Extension.js';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface QueryableSourceInfo {}
@@ -343,11 +343,29 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.executionContextState.mapping,
       'Query required mapping to update',
     );
-    queryExeContext.mapping = PackageableElementExplicitReference.create(
-      this.executionContextState.mapping,
-    );
-    queryExeContext.runtime = runtimeValue.packageableRuntime;
+    queryExeContext.mapping = this.executionContextState.mapping.path;
+    queryExeContext.runtime = runtimeValue.packageableRuntime.value.path;
     return queryExeContext;
+  }
+
+  async propagateExecutionContextChange(
+    isGraphBuildingNotRequired?: boolean,
+  ): Promise<void> {
+    const propagateFuncHelpers = this.applicationStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as QueryBuilder_LegendApplicationPlugin_Extension
+          ).getExtraQueryBuilderPropagateExecutionContextChangeHelper?.() ?? [],
+      );
+    for (const helper of propagateFuncHelpers) {
+      const propagateFuncHelper = helper(this, isGraphBuildingNotRequired);
+      if (propagateFuncHelper) {
+        await propagateFuncHelper();
+        return;
+      }
+    }
   }
 
   /**
