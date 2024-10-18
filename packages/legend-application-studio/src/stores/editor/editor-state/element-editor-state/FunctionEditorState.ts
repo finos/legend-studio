@@ -54,6 +54,7 @@ import {
   observe_ValueSpecification,
   generateFunctionPrettyName,
   RawVariableExpression,
+  type FunctionActivator,
 } from '@finos/legend-graph';
 import {
   ExecutionPlanState,
@@ -74,6 +75,7 @@ export enum FUNCTION_EDITOR_TAB {
   TAGGED_VALUES = 'TAGGED_VALUES',
   STEREOTYPES = 'STEREOTYPES',
   TEST_SUITES = 'TEST_SUITES',
+  LAMBDAS = 'LAMBDAS',
 }
 
 export class FunctionDefinitionEditorState extends LambdaEditorState {
@@ -311,6 +313,15 @@ export class FunctionEditorState extends ElementEditorState {
       this.element,
       ConcreteFunctionDefinition,
       'Element inside function editor state must be a function',
+    );
+  }
+
+  get activators(): FunctionActivator[] {
+    const allActivators =
+      this.editorStore.graphManagerState.graph.functionActivators;
+    return allActivators.filter(
+      (activator: FunctionActivator) =>
+        activator.function.value === this.element,
     );
   }
 

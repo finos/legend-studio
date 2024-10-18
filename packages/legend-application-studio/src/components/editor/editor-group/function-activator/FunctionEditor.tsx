@@ -65,6 +65,7 @@ import {
   BaseCard,
   Snowflake_BrandIcon,
   InputWithInlineValidation,
+  LongArrowRightIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import {
@@ -102,6 +103,7 @@ import {
   RawLambda,
   DatabaseType,
   RelationalDatabaseConnection,
+  type FunctionActivator,
 } from '@finos/legend-graph';
 import {
   type ApplicationStore,
@@ -1291,6 +1293,9 @@ export const FunctionEditor = observer(() => {
       }
     });
 
+  const visitActivator = (activator: FunctionActivator): void =>
+    functionEditorState.editorStore.graphEditorMode.openElement(activator);
+
   const openFunctionActivateModal = (): void => {
     functionEditorState.activatorPromoteState.showFunctionActivateModal();
   };
@@ -1431,7 +1436,9 @@ export const FunctionEditor = observer(() => {
             <button
               className="panel__header__action"
               disabled={
-                isReadOnly || selectedTab === FUNCTION_EDITOR_TAB.DEFINITION
+                isReadOnly ||
+                selectedTab === FUNCTION_EDITOR_TAB.DEFINITION ||
+                selectedTab === FUNCTION_EDITOR_TAB.LAMBDAS
               }
               onClick={add}
               tabIndex={-1}
@@ -1496,6 +1503,36 @@ export const FunctionEditor = observer(() => {
                 functionEditorState.functionTestableEditorState
               }
             />
+          )}
+          {selectedTab === FUNCTION_EDITOR_TAB.LAMBDAS && (
+            <div>
+              <div className="hosted-service-function-activator-editor__configuration__items">
+                {functionEditorState.activators.map((activator) => (
+                  <div
+                    key={activator.name}
+                    className="hosted-service-function-activator-editor__configuration__item"
+                  >
+                    <div className="btn--sm btn--icon--dark hosted-service-function-activator-editor__configuration__item__label">
+                      {getElementIcon(activator, editorStore)}
+                    </div>
+                    <input
+                      className="panel__content__form__section__input"
+                      spellCheck={false}
+                      disabled={true}
+                      value={activator.path}
+                    />
+                    <button
+                      className="btn--dark btn--sm hosted-service-function-activator-editor__configuration__item__btn"
+                      onClick={() => visitActivator(activator)}
+                      tabIndex={-1}
+                      title="See Lambda"
+                    >
+                      <LongArrowRightIcon />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
           <ExecutionPlanViewer
             executionPlanState={functionEditorState.executionPlanState}
