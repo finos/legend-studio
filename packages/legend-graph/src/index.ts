@@ -157,7 +157,11 @@ export {
 } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecuteInput.js';
 export { V1_LambdaPrefix } from './graph-manager/protocol/pure/v1/engine/lambda/V1_LambdaPrefix.js';
 export { V1_ExecutionError } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionError.js';
-export { V1_buildExecutionError } from './graph-manager/protocol/pure/v1/engine/V1_EngineHelper.js';
+export {
+  V1_buildCompilationError,
+  V1_buildExecutionError,
+  V1_buildParserError,
+} from './graph-manager/protocol/pure/v1/engine/V1_EngineHelper.js';
 export {
   V1_buildExecutionResult,
   V1_serializeExecutionResult,
@@ -311,6 +315,7 @@ export * from './graph-manager/action/query/QuerySearchSpecification.js';
 export * from './graph-manager/action/EngineError.js';
 export * from './graph-manager/action/compilation/CompilationWarning.js';
 export * from './graph-manager/action/compilation/CompilationResult.js';
+export { CodeCompletionResult } from './graph-manager/action/compilation/Completion.js';
 
 export * from './graph-manager/action/protocol/ProtocolInfo.js';
 export * from './graph-manager/action/SourceInformationHelper.js';
@@ -331,6 +336,7 @@ export * from './graph-manager/protocol/pure/PureProtocolProcessorPlugin.js';
 export * from './graph-manager/protocol/pure/extensions/DSL_ExternalFormat_PureProtocolProcessorPlugin.js';
 export * from './graph-manager/action/functionActivator/FunctionActivatorConfiguration.js';
 export * from './graph-manager/action/relational/RelationalDatabaseTypeConfiguration.js';
+export { RelationTypeMetadata } from './graph-manager/action/relation/RelationTypeMetadata.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
 
@@ -357,6 +363,7 @@ export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/V1_G
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationPathResolver.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/V1_ElementBuilder.js';
 export { V1_RawLambda } from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawLambda.js';
+export { V1_RawExecutionContext } from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawExecutionContext.js';
 export { V1_ProcessingContext } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ProcessingContext.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
@@ -365,6 +372,7 @@ export {
   V1_transformRawLambda,
 } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_RawValueSpecificationTransformer.js';
 export {
+  V1_rawBaseExecutionContextModelSchema,
   V1_rawLambdaModelSchema,
   V1_deserializeRawValueSpecification,
   V1_serializeRawValueSpecification,
@@ -379,6 +387,7 @@ export {
 export { type V1_GraphManagerEngine } from './graph-manager/protocol/pure/v1/engine/V1_GraphManagerEngine.js';
 export { V1_RemoteEngine } from './graph-manager/protocol/pure/v1/engine/V1_RemoteEngine.js';
 export { V1_ParserError } from './graph-manager/protocol/pure/v1/engine/grammar/V1_ParserError.js';
+export { V1_RenderStyle } from './graph-manager/protocol/pure/v1/engine/grammar/V1_RenderStyle.js';
 export {
   V1_PureModelContextType,
   V1_pureModelContextPropSchema,
@@ -710,6 +719,7 @@ export {
   type V1_LambdaReturnTypeResult,
   V1_LambdaReturnTypeInput,
 } from './graph-manager/protocol/pure/v1/engine/compilation/V1_LambdaReturnType.js';
+export { V1_CompleteCodeInput } from './graph-manager/protocol/pure/v1/engine/compilation/V1_CompleteCodeInput.js';
 export { V1_RunTestsInput } from './graph-manager/protocol/pure/v1/engine/test/V1_RunTestsInput.js';
 export { V1_RunTestsResult } from './graph-manager/protocol/pure/v1/engine/test/V1_RunTestsResult.js';
 export { V1_DebugTestsResult } from './graph-manager/protocol/pure/v1/engine/test/V1_DebugTestsResult.js';
