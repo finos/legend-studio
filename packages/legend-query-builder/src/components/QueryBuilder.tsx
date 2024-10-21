@@ -949,7 +949,19 @@ export const QueryBuilder = observer(
                           </MenuContentItemLabel>
                         </MenuContentItem>
                       )}
-                      <MenuContentItem onClick={toggleAssistant}>
+                      <MenuContentItem
+                        onClick={toggleAssistant}
+                        disabled={
+                          applicationStore.config
+                            .TEMPORARY__disableVirtualAssistant
+                        }
+                        title={
+                          applicationStore.config
+                            .TEMPORARY__disableVirtualAssistant
+                            ? 'Virtual Assistant is disabled'
+                            : ''
+                        }
+                      >
                         <MenuContentItemIcon>
                           {!applicationStore.assistantService.isHidden ? (
                             <CheckIcon />
