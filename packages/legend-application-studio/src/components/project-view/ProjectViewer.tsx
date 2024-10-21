@@ -252,7 +252,12 @@ const ProjectViewerStatusBar = observer(() => {
           )}
           onClick={toggleAssistant}
           tabIndex={-1}
-          title="Toggle assistant"
+          disabled={applicationStore.config.TEMPORARY__disableVirtualAssistant}
+          title={
+            applicationStore.config.TEMPORARY__disableVirtualAssistant
+              ? 'Virtual Assistant is disabled'
+              : 'Toggle assistant'
+          }
         >
           <AssistantIcon />
         </button>
