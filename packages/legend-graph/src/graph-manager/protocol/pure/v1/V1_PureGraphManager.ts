@@ -21,6 +21,7 @@ import {
 } from '../../../../graph/MetaModelConst.js';
 import {
   type Clazz,
+  type ContentType,
   type LogService,
   type PlainObject,
   type ServerClientConfig,
@@ -2703,8 +2704,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping,
     runtime: Runtime,
     graph: PureModel,
-    options?: ExecutionOptions,
-    _report?: GraphManagerOperationReport,
+    options?: ExecutionOptions | undefined,
+    _report?: GraphManagerOperationReport | undefined,
+    contentType?: ContentType | undefined,
   ): Promise<Response> {
     const report = _report ?? createGraphManagerOperationReport();
     const stopWatch = new StopWatch();
@@ -2720,7 +2722,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       options?.parameterValues,
     );
     stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
-    const stream = await this.engine.exportData(input, options);
+    const stream = await this.engine.exportData(input, options, contentType);
     stopWatch.record(
       GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,
     );

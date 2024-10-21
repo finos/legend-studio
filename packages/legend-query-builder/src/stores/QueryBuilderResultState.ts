@@ -418,6 +418,8 @@ export class QueryBuilderResultState {
               this.queryBuilderState.graphManagerState,
             ),
           },
+          undefined,
+          contentType,
         )) as Response;
       if (result.headers.get(V1_DELEGATED_EXPORT_HEADER) === 'true') {
         if (result.status === 200) {
