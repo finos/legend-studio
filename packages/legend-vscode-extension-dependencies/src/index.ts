@@ -101,6 +101,7 @@ export {
   V1_DatasetEntitlementReport,
   V1_DatasetSpecification,
   V1_DebugTestsResult,
+  V1_DELEGATED_EXPORT_HEADER,
   V1_EntitlementReportAnalyticsInput,
   V1_ExecuteInput,
   V1_ExecutionError,
