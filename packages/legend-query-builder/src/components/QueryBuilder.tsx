@@ -223,16 +223,11 @@ const QueryBuilderStatusBar = observer(
               openLambdaEditor(QueryBuilderTextEditorMode.TEXT)
             }
             tabIndex={-1}
-            disabled={
-              !queryBuilderState.canBuildQuery ||
-              queryBuilderState.config?.disableEditPure
-            }
+            disabled={!queryBuilderState.canBuildQuery}
             title={
               !queryBuilderState.canBuildQuery
                 ? 'Please fix query errors to edit in Pure'
-                : queryBuilderState.config?.disableEditPure
-                  ? 'Edit Pure is disabled'
-                  : 'Edit Pure'
+                : 'Edit Pure'
             }
           >
             <HackerIcon />
@@ -820,16 +815,11 @@ export const QueryBuilder = observer(
                       </MenuContentItem>
                       <MenuContentItem
                         onClick={editPure}
-                        disabled={
-                          !queryBuilderState.canBuildQuery ||
-                          Boolean(queryBuilderState.config?.disableEditPure)
-                        }
+                        disabled={!queryBuilderState.canBuildQuery}
                         title={
                           !queryBuilderState.canBuildQuery
                             ? 'Please fix query errors to edit in Pure'
-                            : queryBuilderState.config?.disableEditPure
-                              ? 'Edit Pure is disabled'
-                              : undefined
+                            : undefined
                         }
                       >
                         <MenuContentItemIcon>
@@ -839,16 +829,11 @@ export const QueryBuilder = observer(
                       </MenuContentItem>
                       <MenuContentItem
                         onClick={showPure}
-                        disabled={
-                          !queryBuilderState.canBuildQuery ||
-                          Boolean(queryBuilderState.config?.disableShowPure)
-                        }
+                        disabled={!queryBuilderState.canBuildQuery}
                         title={
                           !queryBuilderState.canBuildQuery
                             ? 'Please fix query errors to edit in Pure'
-                            : queryBuilderState.config?.disableShowPure
-                              ? 'Show Pure is disabled'
-                              : undefined
+                            : undefined
                         }
                       >
                         <MenuContentItemIcon>
