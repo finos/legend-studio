@@ -58,7 +58,6 @@ export interface LegendApplicationConfigurationData {
   application?: {
     storageKey?: string;
     settingsOverrides?: SettingOverrideConfigData;
-    TEMPORARY__disableVirtualAssistant?: boolean;
   };
   // TODO: when we support vault-like settings, we could support `settingOverrides`
   // See https://github.com/finos/legend-studio/issues/407
@@ -83,9 +82,6 @@ export abstract class LegendApplicationConfig {
   readonly appVersion: string;
   readonly appVersionBuildTime: string | undefined;
   readonly appVersionCommitId: string | undefined;
-
-  // flags
-  readonly TEMPORARY__disableVirtualAssistant: boolean;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendApplicationConfigurationData>,
@@ -124,10 +120,6 @@ export abstract class LegendApplicationConfig {
     );
     this.appVersionBuildTime = input.versionData.buildTime;
     this.appVersionCommitId = input.versionData.commitSHA;
-
-    // Flags
-    this.TEMPORARY__disableVirtualAssistant =
-      input.configData.application?.TEMPORARY__disableVirtualAssistant ?? false;
   }
 
   protected static resolveAbsoluteUrl(url: string): string {

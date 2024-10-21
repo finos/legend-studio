@@ -243,10 +243,10 @@ const QueryBuilderStatusBar = observer(
             onClick={toggleAssistant}
             tabIndex={-1}
             disabled={
-              applicationStore.config.TEMPORARY__disableVirtualAssistant
+              queryBuilderState.config?.TEMPORARY__disableVirtualAssistant
             }
             title={
-              applicationStore.config.TEMPORARY__disableVirtualAssistant
+              queryBuilderState.config?.TEMPORARY__disableVirtualAssistant
                 ? 'Virtual Assistant is disabled'
                 : 'Toggle assistant'
             }
@@ -944,12 +944,12 @@ export const QueryBuilder = observer(
                       <MenuContentItem
                         onClick={toggleAssistant}
                         disabled={
-                          applicationStore.config
-                            .TEMPORARY__disableVirtualAssistant
+                          queryBuilderState.config
+                            ?.TEMPORARY__disableVirtualAssistant ?? false
                         }
                         title={
-                          applicationStore.config
-                            .TEMPORARY__disableVirtualAssistant
+                          queryBuilderState.config
+                            ?.TEMPORARY__disableVirtualAssistant
                             ? 'Virtual Assistant is disabled'
                             : ''
                         }
