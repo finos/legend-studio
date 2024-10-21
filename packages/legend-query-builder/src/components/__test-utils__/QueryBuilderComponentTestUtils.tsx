@@ -56,6 +56,7 @@ import { STYLE_PREFIX, STYLE_PREFIX__DARK } from '@finos/legend-art';
 import { expect } from '@jest/globals';
 import { QueryBuilderAdvancedWorkflowState } from '../../stores/query-workflow/QueryBuilderWorkFlowState.js';
 import { Route, Routes } from '@finos/legend-application/browser';
+import type { QueryBuilderConfig } from '../../graph-manager/QueryBuilderConfig.js';
 
 const getSelectorContainerClassName = (lightMode?: boolean): string =>
   '.' + `${lightMode ? STYLE_PREFIX : STYLE_PREFIX__DARK}__value-container`;
@@ -195,6 +196,7 @@ export const TEST__setUpQueryBuilder = async (
   mappingPath: string,
   runtimePath: string,
   rawMappingModelCoverageAnalysisResult?: RawMappingModelCoverageAnalysisResult,
+  queryBuilderConfig?: QueryBuilderConfig,
 ): Promise<{
   renderResult: RenderResult;
   queryBuilderState: QueryBuilderState;
@@ -227,7 +229,7 @@ export const TEST__setUpQueryBuilder = async (
     MOCK__applicationStore,
     graphManagerState,
     QueryBuilderAdvancedWorkflowState.INSTANCE,
-    undefined,
+    queryBuilderConfig,
   );
   const mapping = graphManagerState.graph.getMapping(mappingPath);
   queryBuilderState.executionContextState.setMapping(mapping);
