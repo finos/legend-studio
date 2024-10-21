@@ -3346,7 +3346,6 @@ __metadata:
     "@testing-library/react": "npm:16.0.1"
     "@types/react": "npm:18.3.11"
     "@types/react-dom": "npm:18.3.1"
-    "@types/whatwg-fetch": "npm:^0.0.33"
     chart.js: "npm:4.4.5"
     cross-env: "npm:7.0.3"
     eslint: "npm:9.12.0"
@@ -3365,7 +3364,6 @@ __metadata:
     serializr: "npm:3.0.3"
     sql-formatter: "npm:15.4.4"
     typescript: "npm:5.6.3"
-    whatwg-fetch: "npm:^3.6.20"
   peerDependencies:
     react: ^18.0.0
   languageName: unknown
@@ -5773,22 +5771,6 @@ __metadata:
   version: 10.0.0
   resolution: "@types/uuid@npm:10.0.0"
   checksum: 10/e3958f8b0fe551c86c14431f5940c3470127293280830684154b91dc7eb3514aeb79fe3216968833cf79d4d1c67f580f054b5be2cd562bebf4f728913e73e944
-  languageName: node
-  linkType: hard
-
-"@types/whatwg-fetch@npm:^0.0.33":
-  version: 0.0.33
-  resolution: "@types/whatwg-fetch@npm:0.0.33"
-  dependencies:
-    "@types/whatwg-streams": "npm:*"
-  checksum: 10/431c407a72f5d5098e55361f159027137239df495c930d3f35f231d7375d34423d015d0cc1e391bf73af4dafb757e80a8ff33951972325e402dbea3b4934f6a0
-  languageName: node
-  linkType: hard
-
-"@types/whatwg-streams@npm:*":
-  version: 0.0.7
-  resolution: "@types/whatwg-streams@npm:0.0.7"
-  checksum: 10/63ffdd1493cfcaf6f5ce99f865d9a7b921335c046ef8b8f0e37aacfa17672174606321da0f8d9ab9e4bfa26bd90c80529463f3651f1b202028debabdadf13fe8
   languageName: node
   linkType: hard
 
@@ -19757,13 +19739,6 @@ __metadata:
   dependencies:
     iconv-lite: "npm:0.6.3"
   checksum: 10/162d712d88fd134a4fe587e53302da812eb4215a1baa4c394dfd86eff31d0a079ff932c05233857997de07481093358d6e7587997358f49b8a580a777be22089
-  languageName: node
-  linkType: hard
-
-"whatwg-fetch@npm:^3.6.20":
-  version: 3.6.20
-  resolution: "whatwg-fetch@npm:3.6.20"
-  checksum: 10/2b4ed92acd6a7ad4f626a6cb18b14ec982bbcaf1093e6fe903b131a9c6decd14d7f9c9ca3532663c2759d1bdf01d004c77a0adfb2716a5105465c20755a8c57c
   languageName: node
   linkType: hard
 

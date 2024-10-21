@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { Response } from 'whatwg-fetch';
 import { test, describe, expect, jest, afterEach } from '@jest/globals';
 import { createMock, integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
@@ -59,7 +58,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import * as legendApplication from '@finos/legend-application';
 
 jest.mock('@finos/legend-application', () => ({
-  ...jest.requireActual('@finos/legend-application'),
+  ...jest.requireActual<object>('@finos/legend-application'),
   downloadStream: jest.fn(),
 }));
 
@@ -356,7 +355,10 @@ describe(integrationTest('Query builder export button'), () => {
     const exportButton = await waitFor(() => renderResult.getByText('Export'));
     jest
       .spyOn(queryBuilderState.graphManagerState.graphManager, 'exportData')
-      .mockImplementationOnce(() => Promise.resolve(new Response()));
+      .mockResolvedValue({
+        headers: new Map<string, string>(),
+      } as Response);
+    jest.spyOn(legendApplication, 'downloadStream').mockResolvedValue();
     await act(async () => {
       fireEvent.click(exportButton);
     });
@@ -386,11 +388,11 @@ describe(integrationTest('Query builder export button'), () => {
     const exportButton = await waitFor(() => renderResult.getByText('Export'));
     jest
       .spyOn(queryBuilderState.graphManagerState.graphManager, 'exportData')
-      .mockImplementationOnce(() => {
-        const response = new Response();
-        response.headers.set(V1_DELEGATED_EXPORT_HEADER, false);
-        return Promise.resolve(response);
-      });
+      .mockResolvedValue({
+        headers: new Map<string, string>([
+          [V1_DELEGATED_EXPORT_HEADER, 'false'],
+        ]),
+      } as Response);
     await act(async () => {
       fireEvent.click(exportButton);
     });
@@ -420,11 +422,11 @@ describe(integrationTest('Query builder export button'), () => {
     const exportButton = await waitFor(() => renderResult.getByText('Export'));
     jest
       .spyOn(queryBuilderState.graphManagerState.graphManager, 'exportData')
-      .mockImplementationOnce(() => {
-        const response = new Response();
-        response.headers.set(V1_DELEGATED_EXPORT_HEADER, true);
-        return Promise.resolve(response);
-      });
+      .mockResolvedValue({
+        headers: new Map<string, string>([
+          [V1_DELEGATED_EXPORT_HEADER, 'true'],
+        ]),
+      } as Response);
     await act(async () => {
       fireEvent.click(exportButton);
     });
