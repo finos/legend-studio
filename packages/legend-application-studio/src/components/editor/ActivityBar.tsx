@@ -162,19 +162,7 @@ export const ActivityBarMenu: React.FC<{
                   {entry.label}
                 </MenuContentItem>
               ))}
-              <MenuContentItem
-                onClick={openHelp}
-                disabled={
-                  applicationStore.config.TEMPORARY__disableVirtualAssistant
-                }
-                title={
-                  applicationStore.config.TEMPORARY__disableVirtualAssistant
-                    ? 'Virtual Assistant is disabled'
-                    : ''
-                }
-              >
-                Help...
-              </MenuContentItem>
+              <MenuContentItem onClick={openHelp}>Help...</MenuContentItem>
               <MenuContentDivider />
               <MenuContentItem onClick={goToWorkspaceSetup}>
                 Back to workspace setup

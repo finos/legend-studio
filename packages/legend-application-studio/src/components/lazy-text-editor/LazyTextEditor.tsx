@@ -299,12 +299,7 @@ const LazyStatusBar = observer((props: { actionsDisabled: boolean }) => {
           )}
           onClick={toggleAssistant}
           tabIndex={-1}
-          disabled={applicationStore.config.TEMPORARY__disableVirtualAssistant}
-          title={
-            applicationStore.config.TEMPORARY__disableVirtualAssistant
-              ? 'Virtual Assistant is disabled'
-              : 'Toggle assistant'
-          }
+          title="Toggle assistant"
         >
           <AssistantIcon />
         </button>

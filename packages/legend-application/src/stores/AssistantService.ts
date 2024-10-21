@@ -242,11 +242,7 @@ export class AssistantService {
   }
 
   setIsHidden(val: boolean): void {
-    if (this.applicationStore.config.TEMPORARY__disableVirtualAssistant) {
-      this.isHidden = true;
-    } else {
-      this.isHidden = val;
-    }
+    this.isHidden = val;
   }
 
   setIsPanelMaximized(val: boolean): void {
