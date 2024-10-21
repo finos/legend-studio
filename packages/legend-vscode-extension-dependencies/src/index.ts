@@ -158,6 +158,7 @@ export {
   assertErrorThrown,
   assertNonNullable,
   deserializeMap,
+  getContentTypeFileExtension,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
   guaranteeType,
