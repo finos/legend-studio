@@ -357,7 +357,7 @@ describe(integrationTest('Query builder export button'), () => {
       .spyOn(queryBuilderState.graphManagerState.graphManager, 'exportData')
       .mockResolvedValue({
         headers: new Map<string, string>(),
-      } as Response);
+      } as unknown as Response);
     jest.spyOn(legendApplication, 'downloadStream').mockResolvedValue();
     await act(async () => {
       fireEvent.click(exportButton);
@@ -392,7 +392,7 @@ describe(integrationTest('Query builder export button'), () => {
         headers: new Map<string, string>([
           [V1_DELEGATED_EXPORT_HEADER, 'false'],
         ]),
-      } as Response);
+      } as unknown as Response);
     await act(async () => {
       fireEvent.click(exportButton);
     });
@@ -426,7 +426,7 @@ describe(integrationTest('Query builder export button'), () => {
         headers: new Map<string, string>([
           [V1_DELEGATED_EXPORT_HEADER, 'true'],
         ]),
-      } as Response);
+      } as unknown as Response);
     await act(async () => {
       fireEvent.click(exportButton);
     });
