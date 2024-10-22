@@ -98,13 +98,17 @@ test(
   ),
 
   async () => {
-    const { renderResult } = await TEST__setUpQueryBuilder(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
       TEST_DATA__QueryBuilder_Model_SimpleRelational,
       stub_RawLambda(),
       'execution::RelationalMapping',
       'execution::Runtime',
       TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
     );
+
+    await act(async () => {
+      queryBuilderState.applicationStore.assistantService.setIsDisabled(false);
+    });
 
     // Verify help menu button is enabled
     fireEvent.click(renderResult.getByRole('button', { name: 'Help...' }));
@@ -127,21 +131,17 @@ test(
   ),
 
   async () => {
-    const { renderResult } = await TEST__setUpQueryBuilder(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
       TEST_DATA__QueryBuilder_Model_SimpleRelational,
       stub_RawLambda(),
       'execution::RelationalMapping',
       'execution::Runtime',
       TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
-      {
-        TEMPORARY__enableExportToCube: false,
-        TEMPORARY__disableQueryBuilderChat: false,
-        TEMPORARY__enableGridEnterpriseMode: false,
-        TEMPORARY__disableVirtualAssistant: true,
-        legendAIServiceURL: '',
-        zipkinTraceBaseURL: '',
-      },
     );
+
+    await act(async () => {
+      queryBuilderState.applicationStore.assistantService.setIsDisabled(true);
+    });
 
     // Verify status bar button is disabled
     expect(

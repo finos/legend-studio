@@ -34,12 +34,6 @@ export class QueryBuilderConfig {
   TEMPORARY__enableGridEnterpriseMode = false;
 
   /**
-   * This flag is to disable the "Show Virtual Assistant" button
-   * in Query Builder
-   */
-  TEMPORARY__disableVirtualAssistant = false;
-
-  /**
    * This is the URL of the LegendAI service
    */
   legendAIServiceURL = '';
@@ -54,7 +48,6 @@ export class QueryBuilderConfig {
       TEMPORARY__disableQueryBuilderChat: optional(primitive()),
       TEMPORARY__enableExportToCube: optional(primitive()),
       TEMPORARY__enableGridEnterpriseMode: optional(primitive()),
-      TEMPORARY__disableVirtualAssistant: optional(primitive()),
       legendAIServiceURL: optional(primitive()),
       zipkinTraceBaseURL: optional(primitive()),
     }),
