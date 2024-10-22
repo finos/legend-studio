@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.10.41
+
+### Patch Changes
+
+- [#3616](https://github.com/finos/legend-studio/pull/3616) [`c261d6c`](https://github.com/finos/legend-studio/commit/c261d6cda6a3ce4e01c2abb9429e979c1a8516a2) ([@travisstebbins](https://github.com/travisstebbins)) - Additional legend-vscode-extension-dependencies exports
+
 ## 31.10.40
 
 ### Patch Changes
