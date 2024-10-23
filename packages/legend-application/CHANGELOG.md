@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.6
+
+### Patch Changes
+
+- [#3620](https://github.com/finos/legend-studio/pull/3620) [`fc4ea53`](https://github.com/finos/legend-studio/commit/fc4ea536c3c94892108ea5d51f903c902feeb339) ([@travisstebbins](https://github.com/travisstebbins)) - Add flags to disable QueryBuilder buttons not needed in Legend VS Code extension
+
 ## 16.0.5
 
 ## 16.0.4

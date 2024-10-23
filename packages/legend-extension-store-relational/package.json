@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-store-relational",
-  "version": "0.0.308",
+  "version": "0.0.309",
   "description": "Legend extension for Relational store",
   "keywords": [
     "legend",
