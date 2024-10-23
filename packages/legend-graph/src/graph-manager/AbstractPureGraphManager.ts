@@ -54,11 +54,12 @@ import type {
 } from '../graph/metamodel/pure/executionPlan/ExecutionPlan.js';
 import type { ExecutionNode } from '../graph/metamodel/pure/executionPlan/nodes/ExecutionNode.js';
 import {
-  ActionState,
-  type PlainObject,
+  type ContentType,
   type LogService,
+  type PlainObject,
   type ServerClientConfig,
   type TracerService,
+  ActionState,
 } from '@finos/legend-shared';
 import type { LightQuery, Query, QueryInfo } from './action/query/Query.js';
 import type { EntitiesWithOrigin, Entity } from '@finos/legend-storage';
@@ -527,8 +528,9 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping | undefined,
     runtime: Runtime | undefined,
     graph: PureModel,
-    options?: ExecutionOptions,
-    report?: GraphManagerOperationReport,
+    options?: ExecutionOptions | undefined,
+    report?: GraphManagerOperationReport | undefined,
+    contentType?: ContentType | undefined,
   ): Promise<Response>;
 
   abstract cancelUserExecutions(broadcastToCluster: boolean): Promise<string>;

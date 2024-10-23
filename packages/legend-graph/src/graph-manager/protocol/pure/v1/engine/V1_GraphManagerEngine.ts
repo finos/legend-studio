@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type PlainObject } from '@finos/legend-shared';
+import { type ContentType, type PlainObject } from '@finos/legend-shared';
 import type { RawLambda } from '../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import {
   type GenerationMode,
@@ -211,6 +211,7 @@ export interface V1_GraphManagerEngine {
   exportData: (
     input: V1_ExecuteInput,
     options?: ExecutionOptions,
+    contentType?: ContentType,
   ) => Promise<Response>;
 
   runQueryAndReturnMap: (

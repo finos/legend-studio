@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { test, describe, expect } from '@jest/globals';
+import { test, describe, expect, jest, afterEach } from '@jest/globals';
 import { createMock, integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -23,6 +23,7 @@ import {
   extractElementNameFromPath,
   stub_RawLambda,
   V1_buildExecutionResult,
+  V1_DELEGATED_EXPORT_HEADER,
   V1_serializeExecutionResult,
 } from '@finos/legend-graph';
 import {
@@ -53,6 +54,13 @@ import {
 } from '@finos/legend-lego/code-editor/test';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_QueryExecution_Entities } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import * as legendApplication from '@finos/legend-application';
+
+jest.mock('@finos/legend-application', () => ({
+  ...jest.requireActual<object>('@finos/legend-application'),
+  downloadStream: jest.fn(),
+}));
 
 type ResultStateTestCase = [
   string,
@@ -309,6 +317,10 @@ test(
 );
 
 describe(integrationTest('Query builder export button'), () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   test('Check that "Others..." button is disabled if no plugins with extraQueryUsageConfigurations are present', async () => {
     const { renderResult, queryBuilderState } =
       await testQueryBuilderStateSetup();
@@ -328,6 +340,107 @@ describe(integrationTest('Query builder export button'), () => {
     );
     expect(viewQueryUsageButton).not.toBeNull();
     expect(viewQueryUsageButton!.getAttribute('disabled')).toBeDefined();
+  });
+
+  test('Check that downloadStream function is called if x-legend-delegated-export header is absent', async () => {
+    const { renderResult, queryBuilderState } =
+      await testQueryBuilderStateSetup();
+    const executionResult = V1_buildExecutionResult(
+      V1_serializeExecutionResult(TEST_DATA__result),
+    );
+    await act(async () => {
+      queryBuilderState.resultState.setExecutionResult(executionResult);
+    });
+
+    const exportButton = await waitFor(() => renderResult.getByText('Export'));
+    jest
+      .spyOn(queryBuilderState.graphManagerState.graphManager, 'exportData')
+      .mockResolvedValue({
+        headers: new Map<string, string>(),
+      } as unknown as Response);
+    jest.spyOn(legendApplication, 'downloadStream').mockResolvedValue();
+    await act(async () => {
+      fireEvent.click(exportButton);
+    });
+    const exportCSVButton = guaranteeNonNullable(
+      (await renderResult.findByText('CSV')).closest('button'),
+    );
+    await act(async () => {
+      fireEvent.click(exportCSVButton);
+    });
+    const acceptButton = await renderResult.findByText('Accept');
+    await act(async () => {
+      fireEvent.click(acceptButton);
+    });
+    expect(legendApplication.downloadStream).toHaveBeenCalled();
+  });
+
+  test('Check that downloadStream function is called if x-legend-delegated-export header is false', async () => {
+    const { renderResult, queryBuilderState } =
+      await testQueryBuilderStateSetup();
+    const executionResult = V1_buildExecutionResult(
+      V1_serializeExecutionResult(TEST_DATA__result),
+    );
+    await act(async () => {
+      queryBuilderState.resultState.setExecutionResult(executionResult);
+    });
+
+    const exportButton = await waitFor(() => renderResult.getByText('Export'));
+    jest
+      .spyOn(queryBuilderState.graphManagerState.graphManager, 'exportData')
+      .mockResolvedValue({
+        headers: new Map<string, string>([
+          [V1_DELEGATED_EXPORT_HEADER, 'false'],
+        ]),
+      } as unknown as Response);
+    await act(async () => {
+      fireEvent.click(exportButton);
+    });
+    const exportCSVButton = guaranteeNonNullable(
+      (await renderResult.findByText('CSV')).closest('button'),
+    );
+    await act(async () => {
+      fireEvent.click(exportCSVButton);
+    });
+    const acceptButton = await renderResult.findByText('Accept');
+    await act(async () => {
+      fireEvent.click(acceptButton);
+    });
+    expect(legendApplication.downloadStream).toHaveBeenCalled();
+  });
+
+  test('Check that downloadStream function is not called if x-legend-delegated-export header is true', async () => {
+    const { renderResult, queryBuilderState } =
+      await testQueryBuilderStateSetup();
+    const executionResult = V1_buildExecutionResult(
+      V1_serializeExecutionResult(TEST_DATA__result),
+    );
+    await act(async () => {
+      queryBuilderState.resultState.setExecutionResult(executionResult);
+    });
+
+    const exportButton = await waitFor(() => renderResult.getByText('Export'));
+    jest
+      .spyOn(queryBuilderState.graphManagerState.graphManager, 'exportData')
+      .mockResolvedValue({
+        headers: new Map<string, string>([
+          [V1_DELEGATED_EXPORT_HEADER, 'true'],
+        ]),
+      } as unknown as Response);
+    await act(async () => {
+      fireEvent.click(exportButton);
+    });
+    const exportCSVButton = guaranteeNonNullable(
+      (await renderResult.findByText('CSV')).closest('button'),
+    );
+    await act(async () => {
+      fireEvent.click(exportCSVButton);
+    });
+    const acceptButton = await renderResult.findByText('Accept');
+    await act(async () => {
+      fireEvent.click(acceptButton);
+    });
+    expect(legendApplication.downloadStream).not.toHaveBeenCalled();
   });
 });
 
