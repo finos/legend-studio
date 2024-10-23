@@ -91,3 +91,77 @@ test(
     ).toHaveProperty('disabled', true);
   },
 );
+
+test(
+  integrationTest(
+    `Query builder doesn't disable "Show Virtual Assistant" button if flag is false`,
+  ),
+
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    await act(async () => {
+      queryBuilderState.applicationStore.assistantService.setIsDisabled(false);
+    });
+
+    // Verify help menu button is enabled
+    fireEvent.click(renderResult.getByRole('button', { name: 'Help...' }));
+    expect(
+      await renderResult.findByRole('button', {
+        name: 'Show Virtual Assistant',
+      }),
+    ).not.toBeNull();
+    expect(
+      await renderResult.findByRole('button', {
+        name: 'Show Virtual Assistant',
+      }),
+    ).toHaveProperty('disabled', false);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder disables "Show Virtual Assistant" button if flag is true',
+  ),
+
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__QueryBuilder_Model_SimpleRelational,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
+    );
+
+    await act(async () => {
+      queryBuilderState.applicationStore.assistantService.setIsDisabled(true);
+    });
+
+    // Verify status bar button is disabled
+    expect(
+      await renderResult.findByTitle('Virtual Assistant is disabled'),
+    ).not.toBeNull();
+    expect(
+      await renderResult.findByTitle('Virtual Assistant is disabled'),
+    ).toHaveProperty('disabled', true);
+
+    // Verify help menu button is disabled
+    fireEvent.click(renderResult.getByRole('button', { name: 'Help...' }));
+    expect(
+      await renderResult.findByRole('button', {
+        name: 'Show Virtual Assistant',
+      }),
+    ).not.toBeNull();
+    expect(
+      await renderResult.findByRole('button', {
+        name: 'Show Virtual Assistant',
+      }),
+    ).toHaveProperty('disabled', true);
+  },
+);

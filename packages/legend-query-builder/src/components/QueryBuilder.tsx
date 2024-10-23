@@ -242,7 +242,14 @@ const QueryBuilderStatusBar = observer(
             )}
             onClick={toggleAssistant}
             tabIndex={-1}
-            title="Toggle assistant"
+            disabled={
+              queryBuilderState.applicationStore.assistantService.isDisabled
+            }
+            title={
+              queryBuilderState.applicationStore.assistantService.isDisabled
+                ? 'Virtual Assistant is disabled'
+                : 'Toggle assistant'
+            }
           >
             <AssistantIcon />
           </button>
@@ -934,7 +941,19 @@ export const QueryBuilder = observer(
                           </MenuContentItemLabel>
                         </MenuContentItem>
                       )}
-                      <MenuContentItem onClick={toggleAssistant}>
+                      <MenuContentItem
+                        onClick={toggleAssistant}
+                        disabled={
+                          queryBuilderState.applicationStore.assistantService
+                            .isDisabled
+                        }
+                        title={
+                          queryBuilderState.applicationStore.assistantService
+                            .isDisabled
+                            ? 'Virtual Assistant is disabled'
+                            : ''
+                        }
+                      >
                         <MenuContentItemIcon>
                           {!applicationStore.assistantService.isHidden ? (
                             <CheckIcon />

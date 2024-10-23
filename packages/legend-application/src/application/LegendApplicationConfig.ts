@@ -112,6 +112,7 @@ export abstract class LegendApplicationConfig {
     this.contextualDocEntries = collectContextualDocumentationEntries(
       input.configData.documentation?.contextualEntries ?? {},
     );
+
     // Version
     this.appVersion = guaranteeNonNullable(
       input.versionData.version,
