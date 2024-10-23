@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
+import type { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
+import type { PackageableRuntime } from '../../../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
+
 export class QueryTaggedValue {
   profile!: string;
   tag!: string;
@@ -33,9 +37,8 @@ export class QueryParameterValue {
 export abstract class QueryExecutionContext {}
 
 export class QueryExplicitExecutionContext extends QueryExecutionContext {
-  // NOTE: Query can be built before the actual graph is built so we can't have the reference of metamodels here
-  mapping!: string;
-  runtime!: string;
+  mapping!: PackageableElementReference<Mapping>;
+  runtime!: PackageableElementReference<PackageableRuntime>;
 }
 
 export class QueryDataSpaceExecutionContext extends QueryExecutionContext {
@@ -72,17 +75,16 @@ export class Query {
   content!: string;
   executionContext!: QueryExecutionContext;
 
-  // NOTE: Query can be built before the actual graph is built so we can't have the reference of metamodels here
   /**
    * mapping, runtime have been deprecated in favor of `V1_QueryExecutionContext`
    * @deprecated
    */
-  mapping?: string | undefined;
+  mapping?: PackageableElementReference<Mapping> | undefined;
   /**
    * mapping, runtime have been deprecated in favor of `V1_QueryExecutionContext`
    * @deprecated
    */
-  runtime?: string | undefined;
+  runtime?: PackageableElementReference<PackageableRuntime> | undefined;
 
   lastUpdatedAt?: number | undefined;
   createdAt?: number | undefined;
@@ -154,11 +156,13 @@ export interface QueryInfo {
   name: string;
   id: string;
   versionId: string;
-  origignalVersionId?: string | undefined;
+  originalVersionId?: string | undefined;
   groupId: string;
   artifactId: string;
   executionContext: QueryExecutionContextInfo;
   mapping?: string | undefined;
   runtime?: string | undefined;
   content: string;
+  isCurrentUserQuery: boolean;
+  taggedValues?: QueryTaggedValue[] | undefined;
 }

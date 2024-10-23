@@ -49,6 +49,7 @@ import {
   type ValueSpecification,
   type GraphInitializationReport,
   type PackageableRuntime,
+  type QueryInfo,
   GraphManagerState,
   Query,
   PureExecution,
@@ -65,13 +66,15 @@ import {
   reportGraphAnalytics,
   cloneQueryStereotype,
   cloneQueryTaggedValue,
-  QueryDataSpaceExecutionContext,
-  QueryExplicitExecutionContext,
   QueryProjectCoordinates,
   buildLambdaVariableExpressions,
   VariableExpression,
   PrimitiveType,
   CORE_PURE_PATH,
+  isValidFullPath,
+  QUERY_PROFILE_PATH,
+  QueryDataSpaceExecutionContextInfo,
+  QueryExplicitExecutionContextInfo,
 } from '@finos/legend-graph';
 import {
   generateExistingQueryEditorRoute,
@@ -126,6 +129,7 @@ import {
   type DataSpaceExecutionContext,
   DSL_DataSpace_getGraphManagerExtension,
   getOwnDataSpace,
+  QUERY_PROFILE_TAG_DATA_SPACE,
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { generateDataSpaceQueryCreatorRoute } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
@@ -436,13 +440,6 @@ export abstract class QueryEditorStore {
         this.queryBuilderState.executionContextState.mapping,
         'Query required mapping to update',
       );
-      const runtimeValue = guaranteeType(
-        this.queryBuilderState.executionContextState.runtimeValue,
-        RuntimePointer,
-        'Query runtime must be of type runtime pointer',
-      );
-      query.mapping = this.queryBuilderState.executionContextState.mapping.path;
-      query.runtime = runtimeValue.packageableRuntime.value.path;
       query.executionContext =
         this.queryBuilderState.getQueryExecutionContext();
       query.content =
@@ -685,16 +682,6 @@ export abstract class QueryEditorStore {
   }
 
   *buildGraph(): GeneratorFn<void> {
-    const queryGraphBuilderGetters = this.applicationStore.pluginManager
-      .getApplicationPlugins()
-      .flatMap((plugin) => plugin.getExtraQueryGraphBuilderGetters?.() ?? []);
-    for (const getter of queryGraphBuilderGetters) {
-      const builderFunction = getter(this);
-      if (builderFunction) {
-        yield flowResult(builderFunction(this));
-        return;
-      }
-    }
     yield flowResult(this.buildFullGraph());
   }
 }
@@ -1217,6 +1204,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   private queryId: string;
   private _lightQuery?: LightQuery | undefined;
   query: Query | undefined;
+  queryInfo: QueryInfo | undefined;
   urlQueryParamValues: Record<string, string> | undefined;
   updateState: ExistingQueryUpdateState;
 
@@ -1230,11 +1218,13 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
 
     makeObservable<ExistingQueryEditorStore, '_lightQuery'>(this, {
       query: observable,
+      queryInfo: observable,
       updateState: observable,
       _lightQuery: observable,
       lightQuery: computed,
       setLightQuery: action,
       setQuery: action,
+      setQueryInfo: action,
       isPerformingBlockingAction: override,
     });
 
@@ -1281,6 +1271,10 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     this.query = val;
   }
 
+  setQueryInfo(val: QueryInfo): void {
+    this.queryInfo = val;
+  }
+
   getProjectInfo(): ProjectGAVCoordinates {
     return {
       groupId: this.lightQuery.groupId,
@@ -1289,22 +1283,44 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     };
   }
 
-  override async setUpEditorState(): Promise<void> {
-    const query = await this.graphManagerState.graphManager.getQuery(
-      this.queryId,
-      this.graphManagerState.graph,
+  override *buildGraph(): GeneratorFn<void> {
+    const queryInfo = this.queryInfo;
+    const dataSpaceTaggedValue = queryInfo?.taggedValues?.find(
+      (taggedValue) =>
+        taggedValue.profile === QUERY_PROFILE_PATH &&
+        taggedValue.tag === QUERY_PROFILE_TAG_DATA_SPACE &&
+        isValidFullPath(taggedValue.value),
     );
-    this.setQuery(query);
-    this.setLightQuery(toLightQuery(query));
+    if (
+      !(
+        dataSpaceTaggedValue ||
+        queryInfo?.executionContext instanceof
+          QueryDataSpaceExecutionContextInfo
+      )
+    ) {
+      yield flowResult(this.buildFullGraph());
+    }
+  }
+
+  override async setUpEditorState(): Promise<void> {
+    const queryInfo = await this.graphManagerState.graphManager.getQueryInfo(
+      this.queryId,
+    );
+    this.setLightQuery(
+      await this.graphManagerState.graphManager.getLightQuery(this.queryId),
+    );
+    this.setQueryInfo(queryInfo);
     LegendQueryUserDataHelper.addRecentlyViewedQuery(
       this.applicationStore.userDataService,
-      query.id,
+      queryInfo.id,
     );
   }
 
-  async initQueryBuildStateFromQuery(query: Query): Promise<QueryBuilderState> {
-    const exec = query.executionContext;
-    if (exec instanceof QueryDataSpaceExecutionContext) {
+  async initQueryBuildStateFromQuery(
+    queryInfo: QueryInfo,
+  ): Promise<QueryBuilderState> {
+    const exec = queryInfo.executionContext;
+    if (exec instanceof QueryDataSpaceExecutionContextInfo) {
       let dataSpaceAnalysisResult;
       let buildFullGraph = false;
       let isLightGraphEnabled = true;
@@ -1318,8 +1334,8 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
           this.initState.setMessage('Fetching dataspace analysis result...');
           const project = StoreProjectData.serialization.fromJson(
             await this.depotServerClient.getProject(
-              query.groupId,
-              query.artifactId,
+              queryInfo.groupId,
+              queryInfo.artifactId,
             ),
           );
           const graph_buildReport = createGraphBuilderReport();
@@ -1339,20 +1355,20 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
               () =>
                 retrieveProjectEntitiesWithDependencies(
                   project,
-                  query.versionId,
+                  queryInfo.versionId,
                   this.depotServerClient,
                 ),
               () =>
                 retrieveProjectEntitiesWithClassifier(
                   project,
-                  query.versionId,
+                  queryInfo.versionId,
                   CORE_PURE_PATH.FUNCTION,
                   this.depotServerClient,
                 ),
               () =>
                 retrieveAnalyticsResultCache(
                   project,
-                  query.versionId,
+                  queryInfo.versionId,
                   exec.dataSpacePath,
                   this.depotServerClient,
                 ),
@@ -1399,8 +1415,8 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         try {
           const project = StoreProjectData.serialization.fromJson(
             await this.depotServerClient.getProject(
-              query.groupId,
-              query.artifactId,
+              queryInfo.groupId,
+              queryInfo.artifactId,
             ),
           );
           dataSpaceAnalysisResult =
@@ -1409,7 +1425,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
             ).retrieveDataSpaceAnalysisFromCache(() =>
               retrieveAnalyticsResultCache(
                 project,
-                query.versionId,
+                queryInfo.versionId,
                 exec.dataSpacePath,
                 this.depotServerClient,
               ),
@@ -1423,11 +1439,11 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         exec.dataSpacePath,
         this.graphManagerState.graph,
       );
-      const mapping = query.mapping
-        ? this.graphManagerState.graph.getMapping(query.mapping)
+      const mapping = queryInfo.mapping
+        ? this.graphManagerState.graph.getMapping(queryInfo.mapping)
         : undefined;
-      const runtime = query.runtime
-        ? this.graphManagerState.graph.getRuntime(query.runtime)
+      const runtime = queryInfo.runtime
+        ? this.graphManagerState.graph.getRuntime(queryInfo.runtime)
         : undefined;
       const matchingExecutionContext = resolveExecutionContext(
         dataSpace,
@@ -1437,9 +1453,9 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       );
       if (matchingExecutionContext) {
         const sourceInfo = {
-          groupId: query.groupId,
-          artifactId: query.artifactId,
-          versionId: query.versionId,
+          groupId: queryInfo.groupId,
+          artifactId: queryInfo.artifactId,
+          versionId: queryInfo.versionId,
           dataSpace: dataSpace.path,
         };
         const visitedDataSpaces =
@@ -1456,9 +1472,9 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
           isLightGraphEnabled,
           createDataSpaceDepoRepo(
             this,
-            query.groupId,
-            query.artifactId,
-            query.versionId,
+            queryInfo.groupId,
+            queryInfo.artifactId,
+            queryInfo.versionId,
             (dataSpaceInfo: DataSpaceInfo) =>
               hasDataSpaceInfoBeenVisited(dataSpaceInfo, visitedDataSpaces),
           ),
@@ -1492,7 +1508,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
                 }
               };
               if (
-                !query.isCurrentUserQuery ||
+                !queryInfo.isCurrentUserQuery ||
                 !this.queryBuilderState?.changeDetectionState.hasChanged
               ) {
                 proceed();
@@ -1556,7 +1572,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
           `Unsupported execution context ${exec.executionKey}`,
         );
       }
-    } else if (exec instanceof QueryExplicitExecutionContext) {
+    } else if (exec instanceof QueryExplicitExecutionContextInfo) {
       const projectInfo = this.getProjectInfo();
       const sourceInfo = {
         groupId: projectInfo.groupId,
@@ -1595,6 +1611,14 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   async initializeQueryBuilderState(
     stopWatch: StopWatch,
   ): Promise<QueryBuilderState> {
+    // if no extension found, fall back to basic `class -> mapping -> runtime` mode
+    const queryBuilderState = await this.initQueryBuildStateFromQuery(
+      this.queryInfo!,
+    );
+    const initailizeQueryStateStopWatch = new StopWatch();
+    const initailizeQueryStateReport = reportGraphAnalytics(
+      this.graphManagerState.graph,
+    );
     const query = await this.graphManagerState.graphManager.getQuery(
       this.queryId,
       this.graphManagerState.graph,
@@ -1603,14 +1627,6 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     LegendQueryUserDataHelper.addRecentlyViewedQuery(
       this.applicationStore.userDataService,
       query.id,
-    );
-
-    // if no extension found, fall back to basic `class -> mapping -> runtime` mode
-    const queryBuilderState = await this.initQueryBuildStateFromQuery(query);
-
-    const initailizeQueryStateStopWatch = new StopWatch();
-    const initailizeQueryStateReport = reportGraphAnalytics(
-      this.graphManagerState.graph,
     );
     const existingQueryLambda =
       await this.graphManagerState.graphManager.pureCodeToLambda(query.content);

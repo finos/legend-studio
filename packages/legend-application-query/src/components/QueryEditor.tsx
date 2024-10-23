@@ -472,13 +472,13 @@ const QueryEditorExistingQueryInfoModal = observer(
                   <div className="query-preview__field">
                     <div className="query-preview__field__label">Mapping</div>
                     <div className="query-preview__field__value">
-                      {executionContext.mapping}
+                      {executionContext.mapping.value.name}
                     </div>
                   </div>
                   <div className="query-preview__field">
                     <div className="query-preview__field__label">Runtime</div>
                     <div className="query-preview__field__value">
-                      {executionContext.runtime}
+                      {executionContext.runtime.value.name}
                     </div>
                   </div>
                 </>

@@ -39,6 +39,7 @@ import {
   assertNonEmptyString,
   uniq,
   guaranteeType,
+  guaranteeNonEmptyString,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -191,6 +192,7 @@ import {
   type Query,
   QueryExplicitExecutionContextInfo,
   type QueryInfo,
+  QueryTaggedValue,
 } from '../../../../graph-manager/action/query/Query.js';
 import {
   V1_buildQuery,
@@ -3084,6 +3086,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
   async getQueryInfo(queryId: string): Promise<QueryInfo> {
+    const currentUserId =
+      this.engine instanceof V1_RemoteEngine
+        ? this.engine.getCurrentUserId()
+        : undefined;
+
     const query = await this.engine.getQuery(queryId);
     return {
       name: query.name,
@@ -3095,6 +3102,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       runtime: query.runtime,
       executionContext: V1_buildExecutionContextInfo(query),
       content: query.content,
+      isCurrentUserQuery:
+        currentUserId !== undefined && query.owner === currentUserId,
+      taggedValues: query.taggedValues?.map((taggedValueProtocol) => {
+        const taggedValue = new QueryTaggedValue();
+        taggedValue.profile = guaranteeNonEmptyString(
+          taggedValueProtocol.tag.profile,
+          `Tagged value 'tag.profile' field is missing or empty`,
+        );
+        taggedValue.tag = guaranteeNonEmptyString(
+          taggedValueProtocol.tag.value,
+          `Tagged value 'tag.value' field is missing or empty`,
+        );
+        taggedValue.value = guaranteeNonEmptyString(
+          taggedValueProtocol.value,
+          `Tagged value 'value' field is missing or empty`,
+        );
+        return taggedValue;
+      }),
     };
   }
 

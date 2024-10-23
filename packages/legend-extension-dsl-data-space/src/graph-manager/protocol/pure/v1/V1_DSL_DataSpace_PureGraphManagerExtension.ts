@@ -459,6 +459,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
 
     let graphEntities;
     let graph: PureModel;
+    let minialGraph = false;
     if (pureGraph) {
       graph = pureGraph;
     } else {
@@ -583,6 +584,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           //do nothing
         }
       }
+      minialGraph = true;
     } else {
       const elements = analysisResult.model.elements
         // NOTE: this is a temporary hack to fix a problem with data space analytics
@@ -829,13 +831,15 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     });
 
     // diagrams
-    result.diagrams = analysisResult.diagrams.map((diagramProtocol) => {
-      const diagram = new DataSpaceDiagramAnalysisResult();
-      diagram.title = diagramProtocol.title;
-      diagram.description = diagramProtocol.description;
-      diagram.diagram = getDiagram(diagramProtocol.diagram, graph);
-      return diagram;
-    });
+    result.diagrams = (minialGraph ? [] : analysisResult.diagrams).map(
+      (diagramProtocol) => {
+        const diagram = new DataSpaceDiagramAnalysisResult();
+        diagram.title = diagramProtocol.title;
+        diagram.description = diagramProtocol.description;
+        diagram.diagram = getDiagram(diagramProtocol.diagram, graph);
+        return diagram;
+      },
+    );
 
     // executables
     result.executables = analysisResult.executables.map(
