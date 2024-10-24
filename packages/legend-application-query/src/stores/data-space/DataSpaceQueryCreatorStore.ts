@@ -22,20 +22,13 @@ import {
   RuntimePointer,
   PackageableElementExplicitReference,
   QueryProjectCoordinates,
-  createGraphBuilderReport,
-  GRAPH_MANAGER_EVENT,
-  CORE_PURE_PATH,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
-  StoreProjectData,
   LATEST_VERSION_ALIAS,
-  retrieveProjectEntitiesWithDependencies,
-  retrieveProjectEntitiesWithClassifier,
 } from '@finos/legend-server-depot';
 import {
   LogEvent,
-  StopWatch,
   assertErrorThrown,
   assertTrue,
   guaranteeNonNullable,
@@ -54,9 +47,7 @@ import {
 } from '@finos/legend-storage';
 import {
   type DataSpaceExecutionContext,
-  DSL_DataSpace_getGraphManagerExtension,
   getDataSpace,
-  retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   QueryBuilderActionConfig_QueryApplication,
@@ -283,128 +274,14 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
   async initializeQueryBuilderStateWithQueryableDataSpace(
     queryableDataSpace: QueryableDataSpace,
   ): Promise<QueryBuilderState> {
-    let dataSpaceAnalysisResult;
-    let buildFullGraph = false;
-    let isLightGraphEnabled = true;
-    const supportBuildMinimalGraph =
-      this.applicationStore.config.options.TEMPORARY__enableMinimalGraph;
-    if (
-      this.enableMinialGraphForDataSpaceLoadingPerformance &&
-      supportBuildMinimalGraph
-    ) {
-      try {
-        const stopWatch = new StopWatch();
-        const project = StoreProjectData.serialization.fromJson(
-          await this.depotServerClient.getProject(
-            queryableDataSpace.groupId,
-            queryableDataSpace.artifactId,
-          ),
-        );
-        this.initState.setMessage('Fetching dataspace analysis result...');
-        // initialize system
-        stopWatch.record();
-        await this.graphManagerState.initializeSystem();
-        stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH_SYSTEM__SUCCESS);
-        const graph_buildReport = createGraphBuilderReport();
-        const dependency_buildReport = createGraphBuilderReport();
-        dataSpaceAnalysisResult = await DSL_DataSpace_getGraphManagerExtension(
-          this.graphManagerState.graphManager,
-        ).analyzeDataSpaceCoverage(
-          queryableDataSpace.dataSpacePath,
-          () =>
-            retrieveProjectEntitiesWithDependencies(
-              project,
-              queryableDataSpace.versionId,
-              this.depotServerClient,
-            ),
-          () =>
-            retrieveProjectEntitiesWithClassifier(
-              project,
-              queryableDataSpace.versionId,
-              CORE_PURE_PATH.FUNCTION,
-              this.depotServerClient,
-            ),
-          () =>
-            retrieveAnalyticsResultCache(
-              project,
-              queryableDataSpace.versionId,
-              queryableDataSpace.dataSpacePath,
-              this.depotServerClient,
-            ),
-          undefined,
-          graph_buildReport,
-          this.graphManagerState.graph,
-          queryableDataSpace.executionContext,
-          undefined,
-          this.getProjectInfo(),
-        );
-        const mappingPath = dataSpaceAnalysisResult.executionContextsIndex.get(
-          queryableDataSpace.executionContext,
-        )?.mapping.path;
-        if (mappingPath) {
-          const pmcd =
-            dataSpaceAnalysisResult.mappingToMappingCoverageResult?.get(
-              mappingPath,
-            )?.entities;
-          if (pmcd) {
-            // report
-            stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS);
-            const graphBuilderReportData = {
-              timings:
-                this.applicationStore.timeService.finalizeTimingsRecord(
-                  stopWatch,
-                ),
-              dependencies: dependency_buildReport,
-              dependenciesCount:
-                this.graphManagerState.graph.dependencyManager
-                  .numberOfDependencies,
-              graph: graph_buildReport,
-            };
-            this.applicationStore.logService.info(
-              LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
-              graphBuilderReportData,
-            );
-          } else {
-            buildFullGraph = true;
-          }
-        }
-      } catch (error) {
-        buildFullGraph = true;
-        this.applicationStore.logService.error(
-          LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
-          error,
-        );
-      }
-    }
-    if (
-      !this.enableMinialGraphForDataSpaceLoadingPerformance ||
-      buildFullGraph ||
-      !supportBuildMinimalGraph
-    ) {
-      this.graphManagerState.graph = this.graphManagerState.createNewGraph();
-      await flowResult(this.buildFullGraph());
-      try {
-        const project = StoreProjectData.serialization.fromJson(
-          await this.depotServerClient.getProject(
-            queryableDataSpace.groupId,
-            queryableDataSpace.artifactId,
-          ),
-        );
-        dataSpaceAnalysisResult = await DSL_DataSpace_getGraphManagerExtension(
-          this.graphManagerState.graphManager,
-        ).retrieveDataSpaceAnalysisFromCache(() =>
-          retrieveAnalyticsResultCache(
-            project,
-            queryableDataSpace.versionId,
-            queryableDataSpace.dataSpacePath,
-            this.depotServerClient,
-          ),
-        );
-      } catch {
-        // do nothing
-      }
-      isLightGraphEnabled = false;
-    }
+    const { dataSpaceAnalysisResult, isLightGraphEnabled } =
+      await this.buildGraphAndDataspaceAnalyticsResult(
+        queryableDataSpace.groupId,
+        queryableDataSpace.artifactId,
+        queryableDataSpace.versionId,
+        queryableDataSpace.executionContext,
+        queryableDataSpace.dataSpacePath,
+      );
     const dataSpace = getDataSpace(
       queryableDataSpace.dataSpacePath,
       this.graphManagerState.graph,
