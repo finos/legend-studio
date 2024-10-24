@@ -16,11 +16,7 @@
 
 import type { LegendApplicationPlugin } from '@finos/legend-application';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import type {
-  FunctionAnalysisInfo,
-  QuerySearchSpecification,
-  RawLambda,
-} from '@finos/legend-graph';
+import type { QuerySearchSpecification, RawLambda } from '@finos/legend-graph';
 import type {
   DataAccessState,
   DatasetAccessInfo,
@@ -104,11 +100,6 @@ export type QueryBuilderPropagateExecutionContextChangeHelper = (
   isGraphBuildingNotRequired?: boolean,
 ) => (() => Promise<void>) | undefined;
 
-export type QueryBuilderExtraFunctionHelper = {
-  functionInfoMap: Map<string, FunctionAnalysisInfo>;
-  dependencyFunctionInfoMap: Map<string, FunctionAnalysisInfo>;
-};
-
 export interface QueryBuilder_LegendApplicationPlugin_Extension
   extends LegendApplicationPlugin {
   /**
@@ -177,11 +168,4 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
    * Get the list of Query Builder Propagate Execution Context Change Helper
    */
   getExtraQueryBuilderPropagateExecutionContextChangeHelper?(): QueryBuilderPropagateExecutionContextChangeHelper[];
-
-  /**
-   * Get the list of extra functions rendered in query builder function explorer
-   */
-  getExtraQueryBuilderFunctionHelper?(
-    queryBuilderState: QueryBuilderState,
-  ): QueryBuilderExtraFunctionHelper[];
 }
