@@ -671,6 +671,7 @@ export abstract class QueryEditorStore {
         dependenciesCount:
           this.graphManagerState.graph.dependencyManager.numberOfDependencies,
         graph: graph_buildReport,
+        isLightGraphEnabled: false,
       };
       this.logBuildGraphMetrics(graphBuilderReportData);
 
@@ -1391,6 +1392,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
               this.graphManagerState.graph.dependencyManager
                 .numberOfDependencies,
             graph: graph_buildReport,
+            isLightGraphEnabled: true,
           };
           this.logBuildGraphMetrics(graphBuilderReportData);
           this.applicationStore.logService.info(
@@ -1612,9 +1614,14 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     stopWatch: StopWatch,
   ): Promise<QueryBuilderState> {
     // if no extension found, fall back to basic `class -> mapping -> runtime` mode
-    const queryBuilderState = await this.initQueryBuildStateFromQuery(
-      this.queryInfo!,
-    );
+    let queryInfo = this.queryInfo;
+    if (!queryInfo) {
+      queryInfo = await this.graphManagerState.graphManager.getQueryInfo(
+        this.queryId,
+      );
+    }
+    const queryBuilderState =
+      await this.initQueryBuildStateFromQuery(queryInfo);
     const initailizeQueryStateStopWatch = new StopWatch();
     const initailizeQueryStateReport = reportGraphAnalytics(
       this.graphManagerState.graph,

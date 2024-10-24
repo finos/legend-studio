@@ -199,6 +199,9 @@ export const V1_buildExecutionContextInfo = (
   if (dataspace) {
     const exec = new QueryDataSpaceExecutionContextInfo();
     exec.dataSpacePath = dataspace;
+    if (v1_execContext instanceof V1_QueryDataSpaceExecutionContext) {
+      exec.executionKey = v1_execContext.executionKey;
+    }
     return exec;
   } else if (protocol.mapping && protocol.runtime) {
     const exec = new QueryExplicitExecutionContextInfo();
