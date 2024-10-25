@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.15.7
+
+### Patch Changes
+
+- [#3620](https://github.com/finos/legend-studio/pull/3620) [`fc4ea53`](https://github.com/finos/legend-studio/commit/fc4ea536c3c94892108ea5d51f903c902feeb339) ([@travisstebbins](https://github.com/travisstebbins)) - Add flags to disable QueryBuilder buttons not needed in Legend VS Code extension
+
+- [#3619](https://github.com/finos/legend-studio/pull/3619) [`3b4b12f`](https://github.com/finos/legend-studio/commit/3b4b12f9aed41d81aa9f906b7f7bb2f7a371b589) ([@travisstebbins](https://github.com/travisstebbins)) - Handle export data download being handled by external source
+
 ## 4.15.6
 
 ## 4.15.5
