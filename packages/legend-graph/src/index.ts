@@ -328,6 +328,7 @@ export {
   ServiceRegistrationFail,
   ServiceRegistrationSuccess,
 } from './graph-manager/action/service/ServiceRegistrationResult.js';
+export { DeploymentResult } from './graph-manager/action/DeploymentResult.js';
 export { DEPRECATED__ServiceTestResult } from './graph-manager/action/service/DEPRECATED__ServiceTestResult.js';
 export { SourceInformation } from './graph-manager/action/SourceInformation.js';
 export { buildPureGraphManager } from './graph-manager/protocol/pure/PureGraphManagerBuilder.js';

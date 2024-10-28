@@ -82,6 +82,7 @@ export {
   CodeCompletionResult,
   Core_GraphManagerPreset,
   CORE_PURE_PATH,
+  DeploymentResult,
   EXECUTION_SERIALIZATION_FORMAT,
   ExternalFormatDescription,
   GenerationConfigurationDescription,
