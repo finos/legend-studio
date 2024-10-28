@@ -56,6 +56,7 @@ export class HostedService extends FunctionActivator {
       this.generateLineage ?? '',
       this.activationConfiguration,
       this.ownership,
+      hashArray(this.actions),
     ]);
   }
 }

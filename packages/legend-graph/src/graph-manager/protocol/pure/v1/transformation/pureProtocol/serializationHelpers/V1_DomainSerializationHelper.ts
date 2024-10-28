@@ -67,6 +67,7 @@ import {
   V1_serializeDeploymentOwership,
   V1_serializeOwnership,
   V1_deserializeOwnership,
+  V1_PostDeploymentActionSchema,
 } from './V1_FunctionActivatorSerializationHelper.js';
 import {
   V1_deserializeTestSuite,
@@ -171,6 +172,7 @@ export const V1_snowflakeAppModelSchema = createModelSchema(V1_SnowflakeApp, {
   name: primitive(),
   package: primitive(),
   permissionScheme: optional(primitive()),
+  actions: list(usingModelSchema(V1_PostDeploymentActionSchema)),
   usageRole: optional(primitive()),
   stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
@@ -207,6 +209,7 @@ export const V1_HostedServiceModelSchema = createModelSchema(V1_HostedService, {
     (val) => V1_serializeOwnership(val),
     (val) => V1_deserializeOwnership(val),
   ),
+  actions: list(usingModelSchema(V1_PostDeploymentActionSchema)),
   activationConfiguration: optional(
     usingModelSchema(V1_HostedServiceDeploymentConfigurationAppModelSchema),
   ),
