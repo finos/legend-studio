@@ -144,7 +144,7 @@ export const V1_deserializeDatasetSpecification = (
   }
 };
 
-const V1_serializeDatasetSpecification = (
+export const V1_serializeDatasetSpecification = (
   protocol: V1_DatasetSpecification,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_DatasetSpecification> => {
@@ -346,7 +346,7 @@ const V1_datasetEntitlementUnsupportedReportModelSchema = (
     ),
   });
 
-const V1_deserializeDatasetEntitlementReport = (
+export const V1_deserializeDatasetEntitlementReport = (
   json: PlainObject<V1_DatasetEntitlementReport>,
   plugins: PureProtocolProcessorPlugin[],
 ): V1_DatasetEntitlementReport => {
