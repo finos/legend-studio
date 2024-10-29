@@ -47,6 +47,7 @@ export class V1_SnowflakeApp extends V1_FunctionActivator {
       this.activationConfiguration,
       hashArray(this.taggedValues),
       hashArray(this.stereotypes),
+      hashArray(this.actions),
     ]);
   }
 }

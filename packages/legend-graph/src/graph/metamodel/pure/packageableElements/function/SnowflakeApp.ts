@@ -49,6 +49,7 @@ export class SnowflakeApp extends FunctionActivator {
       this.activationConfiguration,
       hashArray(this.taggedValues),
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
+      hashArray(this.actions),
     ]);
   }
 }

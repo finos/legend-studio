@@ -25,6 +25,7 @@ import {
   createModelSchema,
   deserialize,
   list,
+  optional,
   primitive,
   serialize,
 } from 'serializr';
@@ -35,6 +36,8 @@ import {
   type V1_Ownership,
 } from '../../../model/packageableElements/function/V1_Ownership.js';
 import { V1_HostedServiceDeploymentConfiguration } from '../../../engine/functionActivator/V1_HostedServiceDeploymentConfiguration.js';
+import { V1_PostDeploymentAction } from '../../../engine/functionActivator/V1_PostDeploymentAction.js';
+import { V1_PostDeploymentProperties } from '../../../engine/functionActivator/V1_PostDeploymentProperties.js';
 
 const V1_SNOWFLAKE_APP_DEPLOYMENT_CONFIGURATION_APP_TYPE =
   'snowflakeDeploymentConfiguration';
@@ -111,3 +114,16 @@ export const V1_deserializeOwnership = (
       );
   }
 };
+
+export const V1_PostDeploymentPropertiesSchema = createModelSchema(
+  V1_PostDeploymentProperties,
+  {},
+);
+
+export const V1_PostDeploymentActionSchema = createModelSchema(
+  V1_PostDeploymentAction,
+  {
+    automated: optional(primitive()),
+    properties: usingModelSchema(V1_PostDeploymentPropertiesSchema),
+  },
+);

@@ -20,6 +20,7 @@ import type { PackageableElementReference } from '../PackageableElementReference
 import type { ConcreteFunctionDefinition } from './ConcreteFunctionDefinition.js';
 import type { DeploymentConfiguration } from '../../functionActivator/DeploymentConfiguration.js';
 import type { Ownership } from './Ownership.js';
+import type { PostDeploymentAction } from '../../functionActivator/PostDeploymentAction.js';
 
 export abstract class FunctionActivator
   extends PackageableElement
@@ -34,4 +35,5 @@ export abstract class FunctionActivator
   function!: PackageableElementReference<ConcreteFunctionDefinition>;
   activationConfiguration: DeploymentConfiguration | undefined;
   ownership!: Ownership;
+  actions: PostDeploymentAction[] = [];
 }
