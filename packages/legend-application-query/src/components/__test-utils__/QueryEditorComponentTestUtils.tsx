@@ -248,16 +248,22 @@ export const TEST__setUpQueryEditor = async (
 
 export const TEST__setUpDataSpaceExistingQueryEditor = async (
   MOCK__editorStore: ExistingQueryEditorStore,
-  v1_dataspaceAnalyticsResult: PlainObject<V1_DataSpaceAnalysisResult>,
+  V1_dataspaceAnalyticsResult: PlainObject<V1_DataSpaceAnalysisResult>,
   dataSpacePath: string,
   executionContext: string,
   lambda: RawLambda,
   mappingPath: string,
   entities: PlainObject<Entity>[],
+  buildWithMinimalGraph = false,
 ): Promise<{
   renderResult: RenderResult;
   queryBuilderState: QueryBuilderState;
 }> => {
+  if (buildWithMinimalGraph) {
+    MOCK__editorStore.applicationStore.config.options.TEMPORARY__enableMinimalGraph =
+      true;
+  }
+
   const projectData = {
     id: 'test-id',
     groupId: 'test.group',
@@ -322,7 +328,7 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
   createSpy(
     MOCK__editorStore.depotServerClient,
     'getEntities',
-  ).mockResolvedValue(entities);
+  ).mockResolvedValue(buildWithMinimalGraph ? [] : entities);
   createSpy(
     MOCK__editorStore.depotServerClient,
     'getIndexedDependencyEntities',
@@ -331,6 +337,10 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
     MOCK__editorStore.depotServerClient,
     'getEntitiesByClassifier',
   ).mockResolvedValue([]);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getGenerationContentByPath',
+  ).mockResolvedValue(JSON.stringify(V1_dataspaceAnalyticsResult));
   createSpy(graphManagerState.graphManager, 'getLightQuery').mockResolvedValue(
     lightQuery,
   );
@@ -361,20 +371,12 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
   );
   const dataspaceAnalyticsResult =
     await graphManagerExtension.buildDataSpaceAnalytics(
-      v1_dataspaceAnalyticsResult,
+      V1_dataspaceAnalyticsResult,
       graphManagerState.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
     );
   createSpy(graphManagerExtension, 'analyzeDataSpace').mockResolvedValue(
     dataspaceAnalyticsResult,
   );
-  const mappingAnalyticsResult =
-    dataspaceAnalyticsResult.mappingToMappingCoverageResult?.get(mappingPath);
-  if (mappingAnalyticsResult) {
-    createSpy(
-      graphManagerState.graphManager,
-      'analyzeMappingModelCoverage',
-    ).mockResolvedValue(mappingAnalyticsResult);
-  }
 
   MOCK__editorStore.buildGraph = createMock();
   graphManagerState.graphManager.initialize = createMock();
