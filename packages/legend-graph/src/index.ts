@@ -328,6 +328,7 @@ export {
   ServiceRegistrationFail,
   ServiceRegistrationSuccess,
 } from './graph-manager/action/service/ServiceRegistrationResult.js';
+export { DeploymentResult } from './graph-manager/action/DeploymentResult.js';
 export { DEPRECATED__ServiceTestResult } from './graph-manager/action/service/DEPRECATED__ServiceTestResult.js';
 export { SourceInformation } from './graph-manager/action/SourceInformation.js';
 export { buildPureGraphManager } from './graph-manager/protocol/pure/PureGraphManagerBuilder.js';
@@ -697,9 +698,13 @@ export {
   V1_DatasetEntitlementAccessRequestedReport,
   V1_DatasetEntitlementAccessApprovedReport,
   V1_DatasetEntitlementUnsupportedReport,
+  V1_deserializeDatasetEntitlementReport,
   V1_deserializeDatasetSpecification,
   V1_buildDatasetSpecification,
+  V1_checkEntitlementsResultModelSchema,
+  V1_CheckEntitlementsResult,
   V1_EntitlementReportAnalyticsInput,
+  V1_serializeDatasetSpecification,
   V1_transformDatasetSpecification,
   V1_entitlementReportAnalyticsInputModelSchema,
   V1_StoreEntitlementAnalysisInput,
