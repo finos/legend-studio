@@ -334,6 +334,8 @@ export interface V1_GraphManagerEngine {
 
   cancelUserExecutions: (broadcastToCluster: boolean) => Promise<string>;
 
+  getCurrentUserId: () => string | undefined;
+
   // ------------------------------------------ Analysis ------------------------------------------
 
   analyzeMappingModelCoverage: (
