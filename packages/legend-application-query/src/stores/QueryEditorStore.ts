@@ -693,6 +693,7 @@ export abstract class QueryEditorStore {
     versionId: string,
     executionContext: string | undefined,
     dataSpacePath: string,
+    templateQueryId?: string | undefined,
   ): Promise<{
     dataSpaceAnalysisResult: DataSpaceAnalysisResult | undefined;
     isLightGraphEnabled: boolean;
@@ -748,6 +749,7 @@ export abstract class QueryEditorStore {
           executionContext,
           undefined,
           this.getProjectInfo(),
+          templateQueryId,
         );
         const mappingPath = executionContext
           ? dataSpaceAnalysisResult.executionContextsIndex.get(executionContext)

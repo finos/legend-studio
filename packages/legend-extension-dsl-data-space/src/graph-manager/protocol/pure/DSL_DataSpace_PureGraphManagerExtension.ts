@@ -57,6 +57,7 @@ export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPu
     executionContext?: string | undefined,
     mappingPath?: string | undefined,
     projectInfo?: ProjectGAVCoordinates,
+    templateQueryId?: string,
   ): Promise<DataSpaceAnalysisResult>;
 
   abstract addNewExecutableToDataSpaceEntity(

@@ -60,7 +60,6 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
   readonly artifactId: string;
   readonly versionId: string;
   readonly dataSpacePath: string;
-  readonly executionContext: string;
   readonly templateQueryId: string;
   templateQueryTitle?: string;
 
@@ -71,7 +70,6 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     artifactId: string,
     versionId: string,
     dataSpacePath: string,
-    executionContext: string,
     templateQueryId: string,
   ) {
     super(applicationStore, depotServerClient);
@@ -80,7 +78,6 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
     this.artifactId = artifactId;
     this.versionId = versionId;
     this.dataSpacePath = dataSpacePath;
-    this.executionContext = executionContext;
     this.templateQueryId = templateQueryId;
   }
 
@@ -102,8 +99,9 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
         this.groupId,
         this.artifactId,
         this.versionId,
-        this.executionContext,
+        undefined,
         this.dataSpacePath,
+        this.templateQueryId,
       );
     const dataSpace = getDataSpace(
       this.dataSpacePath,

@@ -297,8 +297,6 @@ export class DataSpacesDepotRepository extends DataSpacesBuilderRepoistory {
             this.project.artifactId,
             this.project.versionId,
             dataSpace.path,
-            template.info?.executionContextKey ??
-              dataSpace.defaultExecutionContext.name,
             templateId,
           ),
         ),

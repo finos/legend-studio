@@ -228,6 +228,26 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     );
   }
 
+  retrieveExecutionContextFromTemplateQueryId(
+    dataSpaceAnalysisResult: PlainObject<V1_DataSpaceAnalysisResult>,
+    templateQueryId: string,
+    plugins: PureProtocolProcessorPlugin[],
+  ): string | undefined {
+    const analysisResult = V1_deserializeDataSpaceAnalysisResult(
+      dataSpaceAnalysisResult,
+      plugins,
+    );
+    let execContext = undefined;
+    const info = analysisResult.executables.find(
+      (ex) => ex.info?.id === templateQueryId,
+    )?.info;
+    if (info) {
+      execContext =
+        info.executionContextKey ?? analysisResult.defaultExecutionContext;
+    }
+    return execContext;
+  }
+
   async analyzeDataSpaceCoverage(
     dataSpacePath: string,
     entitiesRetriever: () => Promise<Entity[]>,
@@ -241,6 +261,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     executionContext?: string | undefined,
     mappingPath?: string | undefined,
     projectInfo?: ProjectGAVCoordinates,
+    templateQueryId?: string,
   ): Promise<DataSpaceAnalysisResult> {
     const cacheResult = cacheRetriever
       ? await this.fetchDataSpaceAnalysisFromCache(cacheRetriever, actionState)
@@ -291,12 +312,22 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         { enableCompression: true },
       );
     }
+    const plugins =
+      this.graphManager.pluginManager.getPureProtocolProcessorPlugins();
     return this.buildDataSpaceAnalytics(
       analysisResult,
-      this.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+      plugins,
       graphReport,
       pureGraph,
-      executionContext,
+      executionContext
+        ? executionContext
+        : templateQueryId
+          ? this.retrieveExecutionContextFromTemplateQueryId(
+              analysisResult,
+              templateQueryId,
+              plugins,
+            )
+          : undefined,
       mappingPath,
       projectInfo,
       entitiesWithClassifierRetriever,
