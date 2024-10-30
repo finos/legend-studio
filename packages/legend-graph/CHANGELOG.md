@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 31.10.43
+
+### Patch Changes
+
+- [#3627](https://github.com/finos/legend-studio/pull/3627) [`dee130c`](https://github.com/finos/legend-studio/commit/dee130ce2715ae136ad4e2438ef9a33a02c97b9b) ([@travisstebbins](https://github.com/travisstebbins)) - Additional legend-vscode-extension-dependencies exports
+
+- [#3628](https://github.com/finos/legend-studio/pull/3628) [`3d68ae4`](https://github.com/finos/legend-studio/commit/3d68ae4b2aeeae0ea6a1b19999f1d73e0475cb7d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Update snowflakeapp metamodel
+
 ## 31.10.42
 
 ### Patch Changes
