@@ -162,6 +162,7 @@ export {
   V1_buildExecutionError,
   V1_buildParserError,
 } from './graph-manager/protocol/pure/v1/engine/V1_EngineHelper.js';
+export { V1_buildFunctionInfoAnalysis } from './graph-manager/protocol/pure/v1/helpers/V1_DomainHelper.js';
 export {
   V1_buildExecutionResult,
   V1_serializeExecutionResult,
@@ -182,6 +183,7 @@ export { V1_ColSpec } from './graph-manager/protocol/pure/v1/model/valueSpecific
 export { V1_ColSpecArray } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_ColSpecArray.js';
 export { V1_PrimitiveValueSpecification } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_PrimitiveValueSpecification.js';
 export { V1_INTERNAL__UnknownFunctionActivator } from './graph-manager/protocol/pure/v1/model/packageableElements/function/V1_INTERNAL__UnknownFunctionActivator.js';
+export { V1_ConcreteFunctionDefinition } from './graph-manager/protocol/pure/v1/model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
 export {
   V1_GraphFetchTree,
   type V1_GraphFetchTreeVisitor,

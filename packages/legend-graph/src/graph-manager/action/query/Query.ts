@@ -156,11 +156,13 @@ export interface QueryInfo {
   name: string;
   id: string;
   versionId: string;
-  origignalVersionId?: string | undefined;
+  originalVersionId?: string | undefined;
   groupId: string;
   artifactId: string;
   executionContext: QueryExecutionContextInfo;
   mapping?: string | undefined;
   runtime?: string | undefined;
   content: string;
+  isCurrentUserQuery: boolean;
+  taggedValues?: QueryTaggedValue[] | undefined;
 }

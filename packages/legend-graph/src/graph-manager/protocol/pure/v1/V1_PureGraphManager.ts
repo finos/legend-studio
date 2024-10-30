@@ -40,6 +40,7 @@ import {
   assertNonEmptyString,
   uniq,
   guaranteeType,
+  guaranteeNonEmptyString,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -192,6 +193,7 @@ import {
   type Query,
   QueryExplicitExecutionContextInfo,
   type QueryInfo,
+  QueryTaggedValue,
 } from '../../../../graph-manager/action/query/Query.js';
 import {
   V1_buildQuery,
@@ -3042,50 +3044,39 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       )
     ).map((protocol) => {
       // TODO: improve abstraction so that we can get the current user ID from any abstract engine
-      const currentUserId =
-        this.engine instanceof V1_RemoteEngine
-          ? this.engine.getCurrentUserId()
-          : undefined;
-      return V1_buildLightQuery(protocol, currentUserId);
+      return V1_buildLightQuery(protocol, this.engine.getCurrentUserId());
     });
   }
 
   async getQueries(queryIds: string[]): Promise<LightQuery[]> {
     return (await this.engine.getQueries(queryIds)).map((protocol) => {
       // TODO: improve abstraction so that we can get the current user ID from any abstract engine
-      const currentUserId =
-        this.engine instanceof V1_RemoteEngine
-          ? this.engine.getCurrentUserId()
-          : undefined;
-      return V1_buildLightQuery(protocol, currentUserId);
+      return V1_buildLightQuery(protocol, this.engine.getCurrentUserId());
     });
   }
 
   async getLightQuery(queryId: string): Promise<LightQuery> {
     // TODO: improve abstraction so that we can get the current user ID from any abstract engine
-    const currentUserId =
-      this.engine instanceof V1_RemoteEngine
-        ? this.engine.getCurrentUserId()
-        : undefined;
     return V1_buildLightQuery(
       await this.engine.getQuery(queryId),
-      currentUserId,
+      this.engine.getCurrentUserId(),
     );
   }
 
   async getQuery(queryId: string, graph: PureModel): Promise<Query> {
     // TODO: improve abstraction so that we can get the current user ID from any abstract engine
+    return V1_buildQuery(
+      await this.engine.getQuery(queryId),
+      graph,
+      this.engine.getCurrentUserId(),
+    );
+  }
+  async getQueryInfo(queryId: string): Promise<QueryInfo> {
     const currentUserId =
       this.engine instanceof V1_RemoteEngine
         ? this.engine.getCurrentUserId()
         : undefined;
-    return V1_buildQuery(
-      await this.engine.getQuery(queryId),
-      graph,
-      currentUserId,
-    );
-  }
-  async getQueryInfo(queryId: string): Promise<QueryInfo> {
+
     const query = await this.engine.getQuery(queryId);
     return {
       name: query.name,
@@ -3097,45 +3088,51 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       runtime: query.runtime,
       executionContext: V1_buildExecutionContextInfo(query),
       content: query.content,
+      isCurrentUserQuery:
+        currentUserId !== undefined && query.owner === currentUserId,
+      taggedValues: query.taggedValues?.map((taggedValueProtocol) => {
+        const taggedValue = new QueryTaggedValue();
+        taggedValue.profile = guaranteeNonEmptyString(
+          taggedValueProtocol.tag.profile,
+          `Tagged value 'tag.profile' field is missing or empty`,
+        );
+        taggedValue.tag = guaranteeNonEmptyString(
+          taggedValueProtocol.tag.value,
+          `Tagged value 'tag.value' field is missing or empty`,
+        );
+        taggedValue.value = guaranteeNonEmptyString(
+          taggedValueProtocol.value,
+          `Tagged value 'value' field is missing or empty`,
+        );
+        return taggedValue;
+      }),
     };
   }
 
   async createQuery(query: Query, graph: PureModel): Promise<Query> {
     // TODO: improve abstraction so that we can get the current user ID from any abstract engine
-    const currentUserId =
-      this.engine instanceof V1_RemoteEngine
-        ? this.engine.getCurrentUserId()
-        : undefined;
     return V1_buildQuery(
       await this.engine.createQuery(V1_transformQuery(query)),
       graph,
-      currentUserId,
+      this.engine.getCurrentUserId(),
     );
   }
 
   async updateQuery(query: Query, graph: PureModel): Promise<Query> {
     // TODO: improve abstraction so that we can get the current user ID from any abstract engine
-    const currentUserId =
-      this.engine instanceof V1_RemoteEngine
-        ? this.engine.getCurrentUserId()
-        : undefined;
     return V1_buildQuery(
       await this.engine.updateQuery(V1_transformQuery(query)),
       graph,
-      currentUserId,
+      this.engine.getCurrentUserId(),
     );
   }
 
   async patchQuery(query: Partial<Query>, graph: PureModel): Promise<Query> {
     // TODO: improve abstraction so that we can get the current user ID from any abstract engine
-    const currentUserId =
-      this.engine instanceof V1_RemoteEngine
-        ? this.engine.getCurrentUserId()
-        : undefined;
     return V1_buildQuery(
       await this.engine.patchQuery(V1_transformQuery(query)),
       graph,
-      currentUserId,
+      this.engine.getCurrentUserId(),
     );
   }
 
@@ -3143,13 +3140,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const query = await this.engine.getQuery(queryId);
     query.name = queryName;
     // TODO: improve abstraction so that we can get the current user ID from any abstract engine
-    const currentUserId =
-      this.engine instanceof V1_RemoteEngine
-        ? this.engine.getCurrentUserId()
-        : undefined;
     return V1_buildLightQuery(
       await this.engine.updateQuery(query),
-      currentUserId,
+      this.engine.getCurrentUserId(),
     );
   }
 
@@ -3270,6 +3263,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       : this.getFullGraphModelData(graph);
     return V1_buildModelCoverageAnalysisResult(
       await this.engine.analyzeMappingModelCoverage(input),
+      this,
       mapping,
     );
   }
@@ -3283,6 +3277,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         V1_MappingModelCoverageAnalysisResult,
         input as PlainObject<V1_MappingModelCoverageAnalysisResult>,
       ),
+      this,
       mapping,
     );
   }
