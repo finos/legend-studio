@@ -573,7 +573,9 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     const resolvedMappingPath =
       mappingPath ??
       analysisResult.executionContexts.find(
-        (value) => value.name === executionContext,
+        (value) =>
+          value.name ===
+          (executionContext ?? analysisResult.defaultExecutionContext),
       )?.mapping;
     let pmcd;
     if (resolvedMappingPath) {
