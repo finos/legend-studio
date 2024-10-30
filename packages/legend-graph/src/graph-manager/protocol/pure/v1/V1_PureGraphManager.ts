@@ -3516,7 +3516,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     targetPackage: undefined | string,
     graph: PureModel,
   ): Promise<Entity[]> {
-    const graphData = this.graphToPureModelContextData(graph);
+    const graphData = new V1_PureModelContextData();
+    graphData.elements = [this.elementToProtocol(graph.getStore(databasePath))];
     const input = new V1_DatabaseToModelGenerationInput();
     input.databasePath = databasePath;
     input.modelData = graphData;
