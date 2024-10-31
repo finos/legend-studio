@@ -81,6 +81,7 @@ export {
   SnowflakeApp,
 } from './graph/metamodel/pure/packageableElements/function/SnowflakeApp.js';
 export { SnowflakeAppDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/SnowflakeAppDeploymentConfiguration.js';
+export { PostDeploymentProperties } from './graph/metamodel/pure/functionActivator/PostDeploymentProperties.js';
 export { INTERNAL__UnknownElement } from './graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
 export {
   Ownership,
@@ -742,6 +743,7 @@ export {
 } from './graph-manager/protocol/pure/v1/engine/query/V1_Query.js';
 export { V1_FunctionActivatorInfo } from './graph-manager/protocol/pure/v1/engine/functionActivator/V1_FunctionActivatorInfo.js';
 export { V1_FunctionActivatorInput } from './graph-manager/protocol/pure/v1/engine/functionActivator/V1_FunctionActivatorInput.js';
+export { V1_PostDeploymentProperties } from './graph-manager/protocol/pure/v1/engine/functionActivator/V1_PostDeploymentProperties.js';
 export { V1_DatabaseToModelGenerationInput } from './graph-manager/protocol/pure/v1/engine/relational/V1_DatabaseToModelGenerationInput.js';
 export { V1_RelationalConnectionBuilder } from './graph-manager/protocol/pure/v1/engine/relational/V1_RelationalConnectionBuilder.js';
 

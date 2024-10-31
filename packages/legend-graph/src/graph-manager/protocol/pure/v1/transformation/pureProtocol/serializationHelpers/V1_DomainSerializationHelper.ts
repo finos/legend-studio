@@ -172,7 +172,9 @@ export const V1_snowflakeAppModelSchema = createModelSchema(V1_SnowflakeApp, {
   name: primitive(),
   package: primitive(),
   permissionScheme: optional(primitive()),
-  actions: list(usingModelSchema(V1_PostDeploymentActionSchema)),
+  actions: customListWithSchema(V1_PostDeploymentActionSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
   usageRole: optional(primitive()),
   stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
@@ -209,7 +211,9 @@ export const V1_HostedServiceModelSchema = createModelSchema(V1_HostedService, {
     (val) => V1_serializeOwnership(val),
     (val) => V1_deserializeOwnership(val),
   ),
-  actions: list(usingModelSchema(V1_PostDeploymentActionSchema)),
+  actions: customListWithSchema(V1_PostDeploymentActionSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
   activationConfiguration: optional(
     usingModelSchema(V1_HostedServiceDeploymentConfigurationAppModelSchema),
   ),

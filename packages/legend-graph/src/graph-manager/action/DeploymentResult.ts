@@ -15,13 +15,18 @@
  */
 
 import { primitive, createModelSchema, list, optional } from 'serializr';
-import { SerializationFactory } from '@finos/legend-shared';
+import {
+  optionalCustomUsingModelSchema,
+  SerializationFactory,
+} from '@finos/legend-shared';
+import { PostDeploymentActionResult } from './PostDeploymentActionResult.js';
 
 export class DeploymentResult {
   activatorIdentifier!: string;
   successful!: boolean;
   errors: string[] = [];
   deploymentLocation: string | undefined;
+  actionResults: PostDeploymentActionResult | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DeploymentResult, {
@@ -29,6 +34,9 @@ export class DeploymentResult {
       successful: primitive(),
       errors: list(primitive()),
       deploymentLocation: optional(primitive()),
+      actionResults: optionalCustomUsingModelSchema(
+        PostDeploymentActionResult.serialization.schema,
+      ),
     }),
   );
 }
