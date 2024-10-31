@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.10.44
+
+### Patch Changes
+
+- [#3632](https://github.com/finos/legend-studio/pull/3632) [`0162292`](https://github.com/finos/legend-studio/commit/01622924b257112bc950b78df5aaa024b5d7aedf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Send only store element when building model from store.
+
 ## 31.10.43
 
 ### Patch Changes

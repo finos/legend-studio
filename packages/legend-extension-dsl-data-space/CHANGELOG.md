@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.0
+
+### Minor Changes
+
+- [#3488](https://github.com/finos/legend-studio/pull/3488) [`2fa496b`](https://github.com/finos/legend-studio/commit/2fa496bfce04a1bc42d75f2c31febc48a938bcbc) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Use PMCD returned by mapping analysis to build minimal graph for query
+
 ## 10.3.86
 
 ## 10.3.85
