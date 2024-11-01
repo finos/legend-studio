@@ -14,40 +14,19 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@finos/legend-storage';
 import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 
 export type RawMappingModelCoverageAnalysisResult = object;
-
-export class MappedEntityInfo {
-  readonly __PROPERTIES_INDEX = new Map<string, MappedProperty>();
-
-  classPath: string;
-  isRootEntity: boolean;
-  subClasses: string[];
-
-  constructor(classPath: string, isRootEntity: boolean, subClasses: string[]) {
-    this.isRootEntity = isRootEntity;
-    this.subClasses = subClasses;
-    this.classPath = classPath;
-  }
-}
 
 export class MappedEntity {
   readonly __PROPERTIES_INDEX = new Map<string, MappedProperty>();
 
   path: string;
   properties: MappedProperty[];
-  info?: MappedEntityInfo | undefined;
 
-  constructor(
-    path: string,
-    properties: MappedProperty[],
-    info?: MappedEntityInfo | undefined,
-  ) {
+  constructor(path: string, properties: MappedProperty[]) {
     this.path = path;
     this.properties = properties;
-    this.info = info;
     properties.forEach((property) =>
       this.__PROPERTIES_INDEX.set(property.name, property),
     );
@@ -94,18 +73,12 @@ export class MappingModelCoverageAnalysisResult {
   readonly mapping: Mapping;
 
   mappedEntities: MappedEntity[];
-  entities?: Entity[] | undefined;
 
-  constructor(
-    mappedEntities: MappedEntity[],
-    mapping: Mapping,
-    entities?: Entity[] | undefined,
-  ) {
+  constructor(mappedEntities: MappedEntity[], mapping: Mapping) {
     this.mappedEntities = mappedEntities;
     this.mapping = mapping;
     mappedEntities.forEach((entity) =>
       this.__ENTITIES_INDEX.set(entity.path, entity),
     );
-    this.entities = entities;
   }
 }

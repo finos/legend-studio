@@ -33,7 +33,6 @@ export type GraphInitializationReport = {
   graph: GraphManagerOperationReport;
   generations?: GraphManagerOperationReport;
   generationCount?: number;
-  isLightGraphEnabled?: boolean;
 };
 
 export const createGraphManagerOperationReport =

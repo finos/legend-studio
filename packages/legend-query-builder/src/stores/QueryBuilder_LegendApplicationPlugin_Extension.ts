@@ -37,7 +37,7 @@ export type CuratedTemplateQuerySpecification = {
   loadCuratedTemplateQuery(
     templateQuery: CuratedTemplateQuery,
     queryBuilderState: QueryBuilderState,
-  ): Promise<void>;
+  ): void;
 };
 
 export type LoadQueryFilterOption = {
@@ -94,11 +94,6 @@ export type QueryBuilderMenuActionConfiguration = {
     queryBuilderState: QueryBuilderState,
   ) => React.ReactNode;
 };
-
-export type QueryBuilderPropagateExecutionContextChangeHelper = (
-  queryBuilderState: QueryBuilderState,
-  isGraphBuildingNotRequired?: boolean,
-) => (() => Promise<void>) | undefined;
 
 export interface QueryBuilder_LegendApplicationPlugin_Extension
   extends LegendApplicationPlugin {
@@ -163,9 +158,4 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
    * Get the list of export menu action configurations
    */
   getExtraQueryBuilderExportMenuActionConfigurations?(): QueryBuilderMenuActionConfiguration[];
-
-  /**
-   * Get the list of Query Builder Propagate Execution Context Change Helper
-   */
-  getExtraQueryBuilderPropagateExecutionContextChangeHelper?(): QueryBuilderPropagateExecutionContextChangeHelper[];
 }

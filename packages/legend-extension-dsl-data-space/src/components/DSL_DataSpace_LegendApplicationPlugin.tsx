@@ -15,11 +15,11 @@
  */
 
 import {
+  LegendApplicationPlugin,
   type LegendApplicationSetup,
   type LegendApplicationPluginManager,
-  type KeyedCommandConfigEntry,
   collectKeyedCommandConfigEntriesFromConfig,
-  LegendApplicationPlugin,
+  type KeyedCommandConfigEntry,
 } from '@finos/legend-application';
 import packageJson from '../../package.json' with { type: 'json' };
 import type {
@@ -32,7 +32,7 @@ import type {
 } from '@finos/legend-query-builder';
 import { DataSpaceQueryBuilderState } from '../stores/query-builder/DataSpaceQueryBuilderState.js';
 import { DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_CONFIG } from '../__lib__/DSL_DataSpace_LegendApplicationCommand.js';
-import { type QuerySearchSpecification } from '@finos/legend-graph';
+import type { QuerySearchSpecification } from '@finos/legend-graph';
 import { configureDataGridComponent } from '@finos/legend-lego/data-grid';
 import { DataSpaceExecutableTemplate } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { filterByType } from '@finos/legend-shared';
@@ -175,10 +175,10 @@ export class DSL_DataSpace_LegendApplicationPlugin
           }
           return [];
         },
-        loadCuratedTemplateQuery: async (
+        loadCuratedTemplateQuery: (
           templateQuery: CuratedTemplateQuery,
           queryBuilderState: QueryBuilderState,
-        ): Promise<void> => {
+        ): void => {
           if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
             if (
               queryBuilderState.executionContext.name !==
@@ -190,7 +190,9 @@ export class DSL_DataSpace_LegendApplicationPlugin
                 );
               if (executionContext) {
                 queryBuilderState.setExecutionContext(executionContext);
-                await queryBuilderState.propagateExecutionContextChange();
+                queryBuilderState.propagateExecutionContextChange(
+                  executionContext,
+                );
                 queryBuilderState.initializeWithQuery(templateQuery.query);
                 queryBuilderState.onExecutionContextChange?.(executionContext);
               }

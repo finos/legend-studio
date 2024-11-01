@@ -45,7 +45,6 @@ import {
 } from '@finos/legend-query-builder';
 import {
   type Runtime,
-  type PackageableRuntime,
   getMappingCompatibleRuntimes,
   PackageableElementExplicitReference,
   RuntimePointer,
@@ -89,25 +88,6 @@ export const formatDataSpaceOptionLabel = (
     </div>
   </div>
 );
-
-const resolveExecutionContextRuntimes = (
-  queryBuilderState: DataSpaceQueryBuilderState,
-): PackageableRuntime[] => {
-  if (queryBuilderState.dataSpaceAnalysisResult) {
-    const executionContext = Array.from(
-      queryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
-    ).find(
-      (e) =>
-        e.mapping.path ===
-        queryBuilderState.executionContext.mapping.value.path,
-    );
-    return guaranteeNonNullable(executionContext).compatibleRuntimes;
-  }
-  return getMappingCompatibleRuntimes(
-    queryBuilderState.executionContext.mapping.value,
-    queryBuilderState.graphManagerState.usableRuntimes,
-  );
-};
 
 export type ExecutionContextOption = {
   label: string;
@@ -172,9 +152,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       },
     };
     const onDataSpaceOptionChange = (option: DataSpaceOption): void => {
-      queryBuilderState
-        .onDataSpaceChange(option.value)
-        .catch(queryBuilderState.applicationStore.alertUnhandledError);
+      queryBuilderState.onDataSpaceChange(option.value);
     };
 
     const openDataSpaceAdvancedSearch = (): void => {
@@ -192,30 +170,22 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     const selectedExecutionContextOption = buildExecutionContextOption(
       queryBuilderState.executionContext,
     );
-
-    const onExecutionContextOptionChange = async (
+    const onExecutionContextOptionChange = (
       option: ExecutionContextOption,
-    ): Promise<void> => {
+    ): void => {
       if (option.value === queryBuilderState.executionContext) {
         return;
       }
-      const currentMapping =
-        queryBuilderState.executionContext.mapping.value.path;
       queryBuilderState.setExecutionContext(option.value);
-      await queryBuilderState.propagateExecutionContextChange(
-        currentMapping === option.value.mapping.value.path,
-      );
+      queryBuilderState.propagateExecutionContextChange(option.value);
       queryBuilderState.onExecutionContextChange?.(option.value);
     };
 
-    const handleExecutionContextOptionChange = (
-      option: ExecutionContextOption,
-    ): void => {
-      flowResult(onExecutionContextOptionChange(option));
-    };
-
     // runtime
-    const runtimeOptions = resolveExecutionContextRuntimes(queryBuilderState)
+    const runtimeOptions = getMappingCompatibleRuntimes(
+      queryBuilderState.executionContext.mapping.value,
+      queryBuilderState.graphManagerState.usableRuntimes,
+    )
       .map(
         (rt) =>
           new RuntimePointer(PackageableElementExplicitReference.create(rt)),
@@ -250,7 +220,6 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       queryBuilderState.dataSpace,
       queryBuilderState.executionContext.mapping.value,
       queryBuilderState.graphManagerState,
-      queryBuilderState,
     );
 
     useEffect(() => {
@@ -404,7 +373,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                   (executionContextOptions.length === 1 &&
                     Boolean(selectedExecutionContextOption))
                 }
-                onChange={handleExecutionContextOptionChange}
+                onChange={onExecutionContextOptionChange}
                 value={selectedExecutionContextOption}
                 darkMode={
                   !applicationStore.layoutService

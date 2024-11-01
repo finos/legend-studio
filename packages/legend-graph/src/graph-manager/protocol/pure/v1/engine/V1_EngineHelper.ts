@@ -42,6 +42,7 @@ import {
   type V1_QueryExecutionContext,
 } from './query/V1_Query.js';
 import type { PureModel } from '../../../../../graph/PureModel.js';
+import { PackageableElementExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { DEPRECATED__ServiceTestResult } from '../../../../../graph-manager/action/service/DEPRECATED__ServiceTestResult.js';
 import type { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult.js';
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
@@ -83,7 +84,6 @@ import { ExternalFormatDescription } from '../../../../../graph-manager/action/e
 import type { Service } from '../../../../../graph/metamodel/pure/packageableElements/service/Service.js';
 import { QUERY_PROFILE_PATH } from '../../../../../graph/MetaModelConst.js';
 import { isValidFullPath } from '../../../../../graph/MetaModelUtils.js';
-import { PackageableElementExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 
 export const V1_buildLightQuery = (
   protocol: V1_LightQuery,
@@ -199,9 +199,6 @@ export const V1_buildExecutionContextInfo = (
   if (dataspace) {
     const exec = new QueryDataSpaceExecutionContextInfo();
     exec.dataSpacePath = dataspace;
-    if (v1_execContext instanceof V1_QueryDataSpaceExecutionContext) {
-      exec.executionKey = v1_execContext.executionKey;
-    }
     return exec;
   } else if (protocol.mapping && protocol.runtime) {
     const exec = new QueryExplicitExecutionContextInfo();
@@ -248,6 +245,7 @@ export const V1_buildQuery = (
     protocol.artifactId,
     `Query 'artifactId' field is missing`,
   );
+
   metamodel.executionContext = V1_buildExecutionContext(
     protocol,
     graph,

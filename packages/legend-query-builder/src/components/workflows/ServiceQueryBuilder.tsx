@@ -31,7 +31,6 @@ import {
   buildElementOption,
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
-import { flowResult } from 'mobx';
 
 type ExecutionContextOption = {
   label: string;
@@ -83,20 +82,15 @@ const ServiceQueryBuilderSetupPanelContent = observer(
             queryBuilderState.selectedExecutionContext,
           )
         : null;
-    const onExecutionContextOptionChange = async (
+    const onExecutionContextOptionChange = (
       option: ExecutionContextOption,
-    ): Promise<void> => {
+    ): void => {
       if (option.value === queryBuilderState.selectedExecutionContext) {
         return;
       }
       queryBuilderState.setSelectedExecutionContext(option.value);
-      await queryBuilderState.propagateExecutionContextChange();
+      queryBuilderState.propagateExecutionContextChange(option.value);
       queryBuilderState.onExecutionContextChange?.(option.value);
-    };
-    const handleExecutionContextOptionChange = (
-      option: ExecutionContextOption,
-    ): void => {
-      flowResult(onExecutionContextOptionChange(option));
     };
 
     // class
@@ -157,7 +151,7 @@ const ServiceQueryBuilderSetupPanelContent = observer(
                     (executionContextOptions.length === 1 &&
                       Boolean(selectedExecutionContextOption))
                   }
-                  onChange={handleExecutionContextOptionChange}
+                  onChange={onExecutionContextOptionChange}
                   value={selectedExecutionContextOption}
                   darkMode={
                     !applicationStore.layoutService

@@ -226,7 +226,7 @@ export class QueryDatabaseState {
       );
       yield flowResult(
         embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
-          setupQueryBuilderState: async () => queryBuilderState,
+          setupQueryBuilderState: () => queryBuilderState,
           actionConfigs: [],
         }),
       );

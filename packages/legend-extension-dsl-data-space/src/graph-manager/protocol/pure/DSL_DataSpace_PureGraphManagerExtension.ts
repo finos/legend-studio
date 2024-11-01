@@ -19,10 +19,8 @@ import {
   type PureProtocolProcessorPlugin,
   AbstractPureGraphManagerExtension,
   type QueryInfo,
-  type PureModel,
-  type GraphManagerOperationReport,
 } from '@finos/legend-graph';
-import type { Entity, ProjectGAVCoordinates } from '@finos/legend-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   guaranteeNonNullable,
   type ActionState,
@@ -43,22 +41,6 @@ export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPu
     cacheRetriever: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
     actionState?: ActionState,
   ): Promise<DataSpaceAnalysisResult | undefined>;
-
-  abstract analyzeDataSpaceCoverage(
-    dataSpacePath: string,
-    entitiesRetriever: () => Promise<Entity[]>,
-    entitiesWithClassifierRetriever: () => Promise<
-      [PlainObject<Entity>[], PlainObject<Entity>[]]
-    >,
-    cacheRetriever?: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
-    actionState?: ActionState,
-    graphReport?: GraphManagerOperationReport | undefined,
-    pureGraph?: PureModel | undefined,
-    executionContext?: string | undefined,
-    mappingPath?: string | undefined,
-    projectInfo?: ProjectGAVCoordinates,
-    templateQueryId?: string,
-  ): Promise<DataSpaceAnalysisResult>;
 
   abstract addNewExecutableToDataSpaceEntity(
     dataSpaceEntity: Entity,
