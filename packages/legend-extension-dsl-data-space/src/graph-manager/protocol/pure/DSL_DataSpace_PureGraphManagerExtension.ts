@@ -45,8 +45,6 @@ export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPu
   ): Promise<DataSpaceAnalysisResult | undefined>;
 
   abstract analyzeDataSpaceCoverage(
-    dataSpacePath: string,
-    entitiesRetriever: () => Promise<Entity[]>,
     entitiesWithClassifierRetriever: () => Promise<
       [PlainObject<Entity>[], PlainObject<Entity>[]]
     >,

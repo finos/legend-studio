@@ -94,7 +94,6 @@ import {
   StoreProjectData,
   LATEST_VERSION_ALIAS,
   VersionedProjectData,
-  retrieveProjectEntitiesWithDependencies,
   retrieveProjectEntitiesWithClassifier,
 } from '@finos/legend-server-depot';
 import {
@@ -722,13 +721,6 @@ export abstract class QueryEditorStore {
         dataSpaceAnalysisResult = await DSL_DataSpace_getGraphManagerExtension(
           this.graphManagerState.graphManager,
         ).analyzeDataSpaceCoverage(
-          dataSpacePath,
-          () =>
-            retrieveProjectEntitiesWithDependencies(
-              project,
-              versionId,
-              this.depotServerClient,
-            ),
           () =>
             retrieveProjectEntitiesWithClassifier(
               project,

@@ -43,6 +43,7 @@ import {
   V1_PackageableElementPointer,
   V1_ConcreteFunctionDefinition,
   V1_buildFunctionInfoAnalysis,
+  GraphBuilderError,
 } from '@finos/legend-graph';
 import type { Entity, ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
@@ -249,8 +250,6 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
   }
 
   async analyzeDataSpaceCoverage(
-    dataSpacePath: string,
-    entitiesRetriever: () => Promise<Entity[]>,
     entitiesWithClassifierRetriever: () => Promise<
       [PlainObject<Entity>[], PlainObject<Entity>[]]
     >,
@@ -266,11 +265,6 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     const cacheResult = cacheRetriever
       ? await this.fetchDataSpaceAnalysisFromCache(cacheRetriever, actionState)
       : undefined;
-    const engineClient = guaranteeType(
-      this.graphManager.engine,
-      V1_RemoteEngine,
-      'analyzeDataSpaceCoverage is only supported by remote engine',
-    ).getEngineServerClient();
     let analysisResult: PlainObject<V1_DataSpaceAnalysisResult>;
     let cachedAnalysisResult;
     if (cacheResult) {
@@ -290,26 +284,8 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     ) {
       analysisResult = cacheResult;
     } else {
-      actionState?.setMessage('Fetching project entities and dependencies...');
-      const entities = await entitiesRetriever();
-      actionState?.setMessage('Analyzing data space...');
-      analysisResult = await engineClient.postWithTracing<
-        PlainObject<V1_DataSpaceAnalysisResult>
-      >(
-        engineClient.getTraceData(ANALYZE_DATA_SPACE_TRACE),
-        `${engineClient._pure()}/analytics/dataSpace/coverage`,
-        {
-          clientVersion: V1_PureGraphManager.DEV_PROTOCOL_VERSION,
-          dataSpace: dataSpacePath,
-          model: {
-            _type: V1_PureModelContextType.DATA,
-            elements: entities.map((entity) => entity.content),
-          },
-        },
-        {},
-        undefined,
-        undefined,
-        { enableCompression: true },
+      throw new GraphBuilderError(
+        'Fail to get a valid dataspace analytics json from metadata, start building full graph',
       );
     }
     const plugins =
@@ -317,6 +293,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     return this.buildDataSpaceAnalytics(
       analysisResult,
       plugins,
+      true,
       graphReport,
       pureGraph,
       executionContext
@@ -346,6 +323,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       ? this.buildDataSpaceAnalytics(
           cacheResult,
           this.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
+          false,
         )
       : undefined;
   }
@@ -429,6 +407,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
   async buildDataSpaceAnalytics(
     analytics: PlainObject<V1_DataSpaceAnalysisResult>,
     plugins: PureProtocolProcessorPlugin[],
+    buildMinimalGraph = false,
     graphReport?: GraphManagerOperationReport | undefined,
     pureGraph?: PureModel | undefined,
     executionContext?: string | undefined,
@@ -490,7 +469,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
 
     let graphEntities;
     let graph: PureModel;
-    let minialGraph = false;
+    let isMiniGraphSuccess = false;
     if (pureGraph) {
       graph = pureGraph;
     } else {
@@ -617,7 +596,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           //do nothing
         }
       }
-      minialGraph = true;
+      isMiniGraphSuccess = true;
     } else {
       const elements = analysisResult.model.elements
         // NOTE: this is a temporary hack to fix a problem with data space analytics
@@ -864,15 +843,15 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     });
 
     // diagrams
-    result.diagrams = (minialGraph ? [] : analysisResult.diagrams).map(
-      (diagramProtocol) => {
-        const diagram = new DataSpaceDiagramAnalysisResult();
-        diagram.title = diagramProtocol.title;
-        diagram.description = diagramProtocol.description;
-        diagram.diagram = getDiagram(diagramProtocol.diagram, graph);
-        return diagram;
-      },
-    );
+    result.diagrams = (
+      buildMinimalGraph && isMiniGraphSuccess ? [] : analysisResult.diagrams
+    ).map((diagramProtocol) => {
+      const diagram = new DataSpaceDiagramAnalysisResult();
+      diagram.title = diagramProtocol.title;
+      diagram.description = diagramProtocol.description;
+      diagram.diagram = getDiagram(diagramProtocol.diagram, graph);
+      return diagram;
+    });
 
     // executables
     result.executables = analysisResult.executables.map(
