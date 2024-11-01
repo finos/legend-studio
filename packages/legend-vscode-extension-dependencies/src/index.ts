@@ -23,6 +23,7 @@ export {
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
   DIAGRAM_ZOOM_LEVELS,
   DiagramRenderer,
+  DSL_Diagram_GraphManagerPreset,
   getDiagram,
   Point,
   V1_diagramModelSchema,
