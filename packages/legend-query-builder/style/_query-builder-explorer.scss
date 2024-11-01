@@ -200,6 +200,16 @@
     svg {
       font-size: 1.3rem;
     }
+
+    &--assistant-disabled {
+      cursor: default;
+
+      &:hover {
+        svg {
+          color: var(--color-light-grey-50);
+        }
+      }
+    }
   }
 
   &__variable {
