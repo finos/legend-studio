@@ -1,5 +1,7 @@
 # @finos/eslint-plugin-legend-studio
 
+## 3.0.3
+
 ## 3.0.2
 
 ## 3.0.1
