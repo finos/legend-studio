@@ -74,32 +74,6 @@
   .code-editor__body {
     background: var(--color-dark-grey-100);
   }
-
-  .monaco-menu-container {
-    .monaco-scrollable-element {
-      border-radius: 0.2rem !important;
-    }
-
-    .monaco-menu {
-      background: var(--color-dark-grey-100);
-      color: var(--color-light-grey-400);
-      border-radius: 0.2rem;
-
-      .monaco-action-bar.vertical {
-        padding: 0.5rem 0;
-
-        .action-label.separator {
-          border-bottom: 1px solid var(--color-dark-grey-250) !important;
-          border-bottom-color: var(--color-dark-grey-250) !important;
-        }
-      }
-
-      .action-item.focused:hover > a,
-      .action-item.focused > a {
-        background: var(--color-light-blue-450) !important;
-      }
-    }
-  }
 }
 
 .file-editor__status-bar {

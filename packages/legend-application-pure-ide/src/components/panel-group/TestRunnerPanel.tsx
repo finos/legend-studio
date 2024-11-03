@@ -564,6 +564,10 @@ const TestRunnerResultDisplay = observer(
     const ideStore = usePureIDEStore();
     const applicationStore = useApplicationStore();
     const numberOfTests = testRunnerState.testExecutionResult.count;
+    const pctAdapter = ideStore.PCTAdapters.find(
+      (adapter) =>
+        adapter.func === testRunnerState.testExecutionResult.pctAdapter,
+    );
     const testResultInfo = testRunnerState.testResultInfo;
     const overallResult = testResultInfo?.suiteStatus ?? TestSuiteStatus.NONE;
     const runPercentage = testResultInfo?.runPercentage ?? 0;
@@ -618,6 +622,9 @@ const TestRunnerResultDisplay = observer(
                       <div className="test-runner-panel__explorer__report__time">
                         {testResultInfo.time}ms
                       </div>
+                    )}
+                    {pctAdapter !== undefined && (
+                      <div className="test-runner-panel__explorer__report__pct">{`PCT: ${pctAdapter.name}`}</div>
                     )}
                   </div>
                 </div>

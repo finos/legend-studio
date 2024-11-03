@@ -30,9 +30,9 @@ import type {
   SearchResultCoordinate,
   SearchResultEntry,
 } from '../server/models/SearchEntry.js';
-import type {
-  AbstractTestRunnerCheckResult,
-  TestRunnerCancelResult,
+import {
+  type AbstractTestRunnerCheckResult,
+  type TestRunnerCancelResult,
 } from '../server/models/Test.js';
 import {
   type Usage,
@@ -167,7 +167,7 @@ export class PureServerClient {
     searchText: string,
     isCaseSensitive: boolean,
     isRegExp: boolean,
-    limit = 2000,
+    limit = 100,
   ): Promise<PlainObject<SearchResultEntry>[]> =>
     this.networkClient.get(
       `${this.baseUrl}/findInSources`,
@@ -214,6 +214,18 @@ export class PureServerClient {
         testRunnerId,
       },
     );
+
+  getPCTAdapters = async (): Promise<PlainObject<Usage>[]> => {
+    const result = await this.networkClient.get(
+      `${this.baseUrl}/execute`,
+      undefined,
+      undefined,
+      {
+        func: 'meta::pure::ide::testing::getPCTAdapters__Pair_MANY_',
+      },
+    );
+    return Array.isArray(result) ? result : [result];
+  };
 
   // ------------------------------------------- Concept -------------------------------------------
 

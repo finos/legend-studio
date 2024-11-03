@@ -54,7 +54,7 @@ import {
   getIncompletePathSuggestions,
   getVariableSuggestions,
 } from '../../stores/PureFileEditorUtils.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { FileCoordinate } from '../../server/models/File.js';
 import { LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY } from '../../__lib__/LegendPureIDECommand.js';
@@ -146,6 +146,7 @@ export const PureFileEditor = observer(
     const definitionProviderDisposer = useRef<IDisposable | undefined>(
       undefined,
     );
+    const hoverProviderDisposer = useRef<IDisposable | undefined>(undefined);
     const pureConstructSuggestionProviderDisposer = useRef<
       IDisposable | undefined
     >(undefined);
@@ -171,12 +172,6 @@ export const PureFileEditor = observer(
           wordWrap: editorState.textEditorState.wrapText ? 'on' : 'off',
           readOnly: editorState.file.RO,
           contextmenu: true,
-          // NOTE: since things like context-menus, tooltips are mounted into Shadow DOM
-          // by default, we can't override their CSS by design, we need to disable Shadow DOM
-          // to style them to our needs
-          // See https://github.com/microsoft/monaco-editor/issues/2396
-          // See https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM
-          useShadowDOM: false,
         });
         // NOTE: (hacky) hijack the editor service so we can alternate the behavior of goto definition
         // since we cannot really override the editor service anymore, but must provide a full editor service
@@ -264,7 +259,7 @@ export const PureFileEditor = observer(
         newEditor.addAction({
           id: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT,
           label: 'Rename',
-          contextMenuGroupId: 'navigation',
+          contextMenuGroupId: '1_modification',
           contextMenuOrder: 1000,
           run: function (_editor) {
             const currentPosition = _editor.getPosition();
@@ -287,6 +282,25 @@ export const PureFileEditor = observer(
             }
           },
         });
+        newEditor.addAction({
+          id: LEGEND_PURE_IDE_PURE_FILE_EDITOR_COMMAND_KEY.RENAME_CONCEPT,
+          label: 'Run Test',
+          contextMenuGroupId: 'navigation',
+          contextMenuOrder: 1000,
+          run: function (_editor) {
+            const currentPosition = _editor.getPosition();
+            if (currentPosition) {
+              const coordinate = new FileCoordinate(
+                editorState.filePath,
+                currentPosition.lineNumber,
+                currentPosition.column,
+              );
+              flowResult(editorState.runTest(coordinate)).catch(
+                ideStore.applicationStore.alertUnhandledError,
+              );
+            }
+          },
+        });
 
         newEditor.onDidChangeModelContent(() => {
           const currentVal = newEditor.getValue();
@@ -296,6 +310,7 @@ export const PureFileEditor = observer(
           }
           editorState.file.setContent(currentVal);
         });
+
         // manual trigger to support cursor observability
         newEditor.onDidChangeCursorPosition(() => {
           editorState.textEditorState.notifyCursorObserver();
@@ -337,15 +352,15 @@ export const PureFileEditor = observer(
               let currentToken: Token | undefined = undefined;
               let currentTokenRange: IRange | undefined = undefined;
               for (let i = 1; i <= lineTokens.length; ++i) {
-                // NOTE: here we have to account for the fact that the last token
-                // extends to the end of the line, and it could be a meaninful token
+                // account for the fact that the last token
+                // extends to the end of the line, and it could be a meaningful token
                 const tokenOffset =
                   i === lineTokens.length
                     ? lineContent.length
                     : guaranteeNonNullable(lineTokens[i]).offset;
                 if (tokenOffset + 1 > position.column) {
                   currentToken = guaranteeNonNullable(lineTokens[i - 1]);
-                  // this is the selection of text from another file for peeking/preview the definition
+                  // since this is the selection of text from another file for peeking/preview the definition
                   // We can't really do much here since we do goto-definition asynchronously, we will
                   // show the token itself
                   currentTokenRange = {
@@ -360,7 +375,7 @@ export const PureFileEditor = observer(
               if (
                 currentToken &&
                 currentTokenRange &&
-                // NOTE: only allow goto definition for these tokens
+                // only allow goto definition for these tokens
                 isTokenOneOf(currentToken.type, [
                   PURE_GRAMMAR_TOKEN.TYPE,
                   PURE_GRAMMAR_TOKEN.VARIABLE,
@@ -380,6 +395,98 @@ export const PureFileEditor = observer(
             },
           },
         );
+
+      // hover
+      hoverProviderDisposer.current?.dispose();
+      hoverProviderDisposer.current = monacoLanguagesAPI.registerHoverProvider(
+        CODE_EDITOR_LANGUAGE.PURE,
+        {
+          provideHover: async (model, position) => {
+            // NOTE: there is a quirky problem with monaco-editor or our integration with it
+            // where sometimes, hovering the mouse on the right half of the last character of a definition token
+            // and then hitting Ctrl/Cmd key will not be trigger definition provider. We're not quite sure what
+            // to do with that for the time being.
+            const lineContent = model.getLineContent(position.lineNumber);
+            const lineTokens = monacoEditorAPI.tokenize(
+              lineContent,
+              CODE_EDITOR_LANGUAGE.PURE,
+            )[0];
+            if (!lineTokens) {
+              return { contents: [] };
+            }
+            let currentToken: Token | undefined = undefined;
+            let currentTokenRange: IRange | undefined = undefined;
+            for (let i = 1; i <= lineTokens.length; ++i) {
+              // here we have to account for the fact that the last token
+              // extends to the end of the line, and it could be a meaningful token
+              const tokenOffset =
+                i === lineTokens.length
+                  ? lineContent.length
+                  : guaranteeNonNullable(lineTokens[i]).offset;
+              if (tokenOffset + 1 > position.column) {
+                currentToken = guaranteeNonNullable(lineTokens[i - 1]);
+                currentTokenRange = {
+                  startLineNumber: position.lineNumber,
+                  startColumn: currentToken.offset + 1,
+                  endLineNumber: position.lineNumber,
+                  endColumn: tokenOffset + 1, // NOTE: seems like this needs to be exclusive
+                };
+                break;
+              }
+            }
+            if (
+              currentToken &&
+              currentTokenRange &&
+              // only allow these tokens to show documentation
+              isTokenOneOf(currentToken.type, [
+                PURE_GRAMMAR_TOKEN.TYPE,
+                PURE_GRAMMAR_TOKEN.PROPERTY,
+                PURE_GRAMMAR_TOKEN.PARAMETER,
+                PURE_GRAMMAR_TOKEN.IDENTIFIER,
+              ])
+            ) {
+              const concept = await ideStore.getConceptInfo(
+                new FileCoordinate(
+                  editorState.filePath,
+                  position.lineNumber,
+                  position.column,
+                ),
+                {
+                  silent: true,
+                },
+              );
+              if (concept) {
+                return {
+                  contents: [
+                    concept.doc
+                      ? {
+                          value: concept.doc,
+                        }
+                      : undefined,
+                    concept.grammarChars
+                      ? {
+                          value: `**Syntax:** \`${concept.grammarChars}\``,
+                        }
+                      : undefined,
+                    concept.grammarDoc
+                      ? {
+                          value: `**Usage:** ${concept.grammarDoc}`,
+                        }
+                      : undefined,
+                    concept.signature
+                      ? {
+                          value: `**Signature:** \`\`\`${concept.signature}\`\`\``,
+                        }
+                      : undefined,
+                  ].filter(isNonNullable),
+                  range: currentTokenRange,
+                };
+              }
+            }
+            return { contents: [] };
+          },
+        },
+      );
 
       // suggestions
       pureConstructSuggestionProviderDisposer.current?.dispose();
@@ -545,22 +652,42 @@ export const PureFileEditor = observer(
     useCommands(editorState);
 
     useEffect(() => {
-      // NOTE: we have tried to remove the DOM node, but since the context-menu height is computed
-      // this causes a problem with the UI, so we just can disable the item until an official API
-      // is supported and we can removed this hack
-      // See https://github.com/microsoft/monaco-editor/issues/1567
-      // See https://github.com/microsoft/monaco-editor/issues/1280
       if (isContextMenuOpen) {
-        const contextMenuNode = document.querySelector(
-          '.file-editor .monaco-menu',
-        );
-        if (contextMenuNode) {
+        const shadowRoot = editor
+          ?.getDomNode()
+          ?.querySelector('.shadow-root-host')?.shadowRoot;
+        if (shadowRoot) {
+          const shadowRootStyleSheet = document.createElement('style');
+          shadowRootStyleSheet.innerHTML = `
+            .monaco-scrollable-element {
+              background: var(--color-dark-grey-100) !important;
+              color: var(--color-light-grey-400);
+              border-radius: 0.2rem !important;
+            }
+
+            .monaco-action-bar.vertical {
+              padding: 0.5rem 0;
+            }
+
+            .action-label.separator {
+              border-bottom: 1px solid var(--color-dark-grey-300) !important;
+              border-bottom-color: var(--color-dark-grey-300) !important;
+            }
+
+            .action-item.focused:hover > a,
+            .action-item.focused > a {
+              background: var(--color-light-blue-450) !important;
+            }
+          `;
+          shadowRoot.appendChild(shadowRootStyleSheet);
+
+          // NOTE: we have tried to remove the DOM node, but since the context-menu height is computed
+          // this causes a problem with the UI, so we just can disable the item until an official API
+          // is supported and we can removed this hack
+          // See https://github.com/microsoft/monaco-editor/issues/1567
+          // See https://github.com/microsoft/monaco-editor/issues/1280
           const MENU_ITEMS_TO_DISABLE = ['Peek'];
-          Array.from(
-            document.querySelectorAll(
-              '.file-editor .monaco-menu .action-label',
-            ),
-          )
+          Array.from(shadowRoot.querySelectorAll('.action-label'))
             .filter((element) =>
               MENU_ITEMS_TO_DISABLE.includes(element.innerHTML),
             )
@@ -574,10 +701,10 @@ export const PureFileEditor = observer(
                 menuItem.style.pointerEvents = 'none';
               }
             });
+          setIsContextMenuOpen(false);
         }
-        setIsContextMenuOpen(false);
       }
-    }, [isContextMenuOpen]);
+    }, [editor, isContextMenuOpen]);
 
     useEffect(() => {
       if (editor) {
@@ -602,7 +729,7 @@ export const PureFileEditor = observer(
           editor.dispose();
 
           definitionProviderDisposer.current?.dispose();
-
+          hoverProviderDisposer.current?.dispose();
           pureConstructSuggestionProviderDisposer.current?.dispose();
           pureIdentifierSuggestionProviderDisposer.current?.dispose();
         }

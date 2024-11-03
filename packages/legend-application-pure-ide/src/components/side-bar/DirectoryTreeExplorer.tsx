@@ -86,26 +86,32 @@ const FileExplorerContextMenu = observer(
     return (
       <MenuContent ref={ref}>
         <MenuContentItem onClick={copyPath}>Copy Path</MenuContentItem>
-        <MenuContentDivider />
-        {isDir && (
-          <MenuContentItem onClick={createNewFile}>New File</MenuContentItem>
+        {!node.data.li_attr.RO && (
+          <>
+            <MenuContentDivider />
+            {isDir && (
+              <MenuContentItem onClick={createNewFile}>
+                New File
+              </MenuContentItem>
+            )}
+            {isDir && (
+              <MenuContentItem onClick={createNewDirectory}>
+                New Directory
+              </MenuContentItem>
+            )}
+            {!isDir && (
+              <MenuContentItem onClick={renameFile}>Rename</MenuContentItem>
+            )}
+            <MenuContentItem
+              disabled={Boolean(
+                node.data instanceof DirectoryNode && node.data.children,
+              )}
+              onClick={deleteFileOrDirectory}
+            >
+              Delete
+            </MenuContentItem>
+          </>
         )}
-        {isDir && (
-          <MenuContentItem onClick={createNewDirectory}>
-            New Directory
-          </MenuContentItem>
-        )}
-        {!isDir && (
-          <MenuContentItem onClick={renameFile}>Rename</MenuContentItem>
-        )}
-        <MenuContentItem
-          disabled={Boolean(
-            node.data instanceof DirectoryNode && node.data.children,
-          )}
-          onClick={deleteFileOrDirectory}
-        >
-          Delete
-        </MenuContentItem>
       </MenuContent>
     );
   }),

@@ -191,6 +191,7 @@ export class TestExecutionResult extends ExecutionResult {
   count!: number;
   filterPaths: string[] = [];
   path!: string;
+  pctAdapter?: string | undefined;
   relevantTestsOnly!: boolean;
   runnerId!: number;
   tests: TestInfo[] = [];
@@ -200,6 +201,7 @@ createModelSchema(TestExecutionResult, {
   count: primitive(),
   filterPaths: list(primitive()),
   path: primitive(),
+  pctAdapter: optional(primitive()),
   relevantTestsOnly: primitive(),
   runnerId: primitive(),
   tests: list(object(TestInfo)),

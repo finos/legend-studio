@@ -104,7 +104,7 @@ export class TextSearchState {
   }
 
   *search(): GeneratorFn<void> {
-    if (this.loadState.isInProgress) {
+    if (this.loadState.isInProgress || this.text.length <= 3) {
       return;
     }
     this.loadState.inProgress();

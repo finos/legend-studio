@@ -403,7 +403,6 @@ export const getWebAppBaseWebpackConfig = (
           'snippet',
           'snippetController2',
           'suggest',
-          'wordHighlighter',
           'gotoSymbol',
         ],
       }),

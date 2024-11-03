@@ -30,6 +30,7 @@ import {
   type DataCubeQueryFunctionMap,
   isPivotResultColumnName,
   PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
+  DataCubeQuerySortDirection,
 } from '../../core/DataCubeQueryEngine.js';
 import {
   guaranteeNonNullable,
@@ -47,6 +48,8 @@ import {
   _var,
   _functionCompositionUnProcessor,
   _property,
+  _collection,
+  _col,
 } from '../../core/DataCubeQueryBuilderUtils.js';
 import {
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
@@ -256,10 +259,25 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
         ]);
         sequence[groupByIdx] = groupByFunc;
         funcMap.groupBy = groupByFunc;
+
+        // update sort accordingly
+        const groupBySort = guaranteeNonNullable(funcMap.groupBySort);
+        groupBySort.parameters[0] = _collection(
+          groupByColumns.map((col) =>
+            _function(
+              configuration.treeColumnSortDirection ===
+                DataCubeQuerySortDirection.ASCENDING
+                ? DataCubeFunction.ASCENDING
+                : DataCubeFunction.DESCENDING,
+              [_col(col.name)],
+            ),
+          ),
+        );
       } else {
         // when maximum level of drilldown is reached, we simply just need to
         // filter the data to match drilldown values, no groupBy() is needed.
         _unprocess('groupBy');
+        _unprocess('groupBySort');
       }
     }
   };

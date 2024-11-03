@@ -18,9 +18,15 @@ import { createModelSchema, list, object, primitive } from 'serializr';
 
 export interface ConceptInfo {
   path: string;
-  owner?: string;
+  owner?: string | undefined;
   pureName: string;
   pureType: string;
+  signature?: string | undefined;
+  test?: boolean | undefined;
+  pct?: boolean | undefined;
+  doc?: string | undefined;
+  grammarDoc?: string | undefined;
+  grammarChars?: string | undefined;
 }
 
 export enum FIND_USAGE_FUNCTION_PATH {

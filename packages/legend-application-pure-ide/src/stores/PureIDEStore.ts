@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, flow, flowResult, makeObservable, observable } from 'mobx';
+import {
+  action,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+  runInAction,
+} from 'mobx';
 import {
   ACTIVITY_MODE,
   PANEL_MODE,
@@ -103,6 +110,7 @@ import {
 import { ReferenceUsageResult } from './ReferenceUsageResult.js';
 import { TextSearchState } from './TextSearchState.js';
 import type { TabState } from '@finos/legend-lego/application';
+import { PCTAdapter } from '../server/models/Test.js';
 
 export class PureIDEStore implements CommandRegistrar {
   readonly applicationStore: LegendPureIDEApplicationStore;
@@ -149,6 +157,9 @@ export class PureIDEStore implements CommandRegistrar {
   // Test Runner Panel
   readonly testRunState = ActionState.create();
   testRunnerState?: TestRunnerState | undefined;
+  PCTAdapters: PCTAdapter[] = [];
+  selectedPCTAdapter?: PCTAdapter | undefined;
+  PCTRunPath?: string | undefined;
 
   constructor(applicationStore: LegendPureIDEApplicationStore) {
     makeObservable(this, {
@@ -162,6 +173,13 @@ export class PureIDEStore implements CommandRegistrar {
       codeFixSuggestion: observable,
       referenceUsageResult: observable,
       testRunnerState: observable,
+
+      PCTAdapters: observable.struct,
+      selectedPCTAdapter: observable,
+      setSelectedPCTAdapter: action,
+      PCTRunPath: observable,
+      setPCTRunPath: action,
+
       setCodeFixSuggestion: action,
       setReferenceUsageResult: action,
 
@@ -219,6 +237,14 @@ export class PureIDEStore implements CommandRegistrar {
 
   setOpenFileSearchCommand(val: boolean): void {
     this.openFileSearchCommand = val;
+  }
+
+  setSelectedPCTAdapter(val: PCTAdapter | undefined): void {
+    this.selectedPCTAdapter = val;
+  }
+
+  setPCTRunPath(val: string | undefined): void {
+    this.PCTRunPath = val;
   }
 
   setActivePanelMode(val: PANEL_MODE): void {
@@ -305,6 +331,19 @@ export class PureIDEStore implements CommandRegistrar {
       });
       const directoryTreeInitPromise = this.directoryTreeState.initialize();
       const conceptTreeInitPromise = this.conceptTreeState.initialize();
+      const getPCTAdaptersPromise = this.client
+        .getPCTAdapters()
+        .then((result) => {
+          runInAction(() => {
+            this.PCTAdapters = (
+              result as { first: string; second: string }[]
+            ).map((adapter) => new PCTAdapter(adapter.first, adapter.second));
+            this.selectedPCTAdapter =
+              this.PCTAdapters.find(
+                (adapter) => adapter.name === 'In-Memory',
+              ) ?? (this.PCTAdapters.length ? this.PCTAdapters[0] : undefined);
+          });
+        });
       const result = deserializeInitializationnResult(
         (yield initializationPromise) as PlainObject<InitializationResult>,
       );
@@ -344,6 +383,7 @@ export class PureIDEStore implements CommandRegistrar {
           openWelcomeFilePromise,
           directoryTreeInitPromise,
           conceptTreeInitPromise,
+          getPCTAdaptersPromise,
         ]);
       }
       this.initState.pass();
@@ -902,7 +942,11 @@ export class PureIDEStore implements CommandRegistrar {
     yield refreshTreesPromise;
   }
 
-  *executeTests(path: string, relevantTestsOnly?: boolean): GeneratorFn<void> {
+  *executeTests(
+    path: string,
+    relevantTestsOnly?: boolean | undefined,
+    pctAdapter?: string | undefined,
+  ): GeneratorFn<void> {
     if (relevantTestsOnly) {
       this.applicationStore.notificationService.notifyUnsupportedFeature(
         `Run relevant tests! (reason: VCS required)`,
@@ -921,6 +965,7 @@ export class PureIDEStore implements CommandRegistrar {
         'executeTests',
         {
           path,
+          pctAdapter,
           relevantTestsOnly,
         },
         false,
@@ -951,6 +996,9 @@ export class PureIDEStore implements CommandRegistrar {
             const testRunnerState = new TestRunnerState(this, result);
             this.setTestRunnerState(testRunnerState);
             await flowResult(testRunnerState.buildTestTreeData());
+            if (testRunnerState.testExecutionResult.count <= 100) {
+              testRunnerState.expandTree();
+            }
             // make sure we refresh tree so it is shown in the explorer panel
             // NOTE: we could potentially expand the tree here, but this operation is expensive since we have all nodes observable
             // so it will lag the UI if we have too many nodes open
@@ -1077,6 +1125,23 @@ export class PureIDEStore implements CommandRegistrar {
       this.directoryTreeState.refreshTreeData(),
       this.conceptTreeState.refreshTreeData(),
     ]);
+
+    if (this.directoryTreeState.selectedNode) {
+      document
+        .getElementById(this.directoryTreeState.selectedNode.id)
+        ?.scrollIntoView({
+          behavior: 'instant',
+          block: 'center',
+        });
+    }
+    if (this.conceptTreeState.selectedNode) {
+      document
+        .getElementById(this.conceptTreeState.selectedNode.id)
+        ?.scrollIntoView({
+          behavior: 'instant',
+          block: 'center',
+        });
+    }
   }
 
   async revealConceptInTree(coordinate: FileCoordinate): Promise<void> {
@@ -1165,6 +1230,9 @@ export class PureIDEStore implements CommandRegistrar {
 
   async getConceptInfo(
     coordinate: FileCoordinate,
+    options?: {
+      silent?: boolean | undefined;
+    },
   ): Promise<ConceptInfo | undefined> {
     try {
       const concept = await this.client.getConceptInfo(
@@ -1174,9 +1242,11 @@ export class PureIDEStore implements CommandRegistrar {
       );
       return concept;
     } catch {
-      this.applicationStore.notificationService.notifyWarning(
-        `Can't find concept info. Please make sure that the code compiles and that you are looking for references of non primitive types!`,
-      );
+      if (!options?.silent) {
+        this.applicationStore.notificationService.notifyWarning(
+          `Can't find concept info. Please make sure that the code compiles and that you are looking for references of non primitive types!`,
+        );
+      }
       return undefined;
     }
   }
@@ -1376,7 +1446,10 @@ export class PureIDEStore implements CommandRegistrar {
   }
 
   *searchFile(): GeneratorFn<void> {
-    if (this.fileSearchCommandLoadState.isInProgress) {
+    if (
+      this.fileSearchCommandLoadState.isInProgress ||
+      this.fileSearchCommandState.text.length <= 3
+    ) {
       return;
     }
     this.fileSearchCommandLoadState.inProgress();

@@ -19,8 +19,10 @@ import {
   Terminal as XTermTerminal,
   type ITheme as XTermTheme,
   type IDisposable as XTermDisposable,
+  type IBufferCellPosition,
+  type ILink,
+  type ILinkProvider,
 } from 'xterm';
-import { WebLinksAddon as XTermWebLinksAddon } from 'xterm-addon-web-links';
 import { FitAddon as XTermFitAddon } from 'xterm-addon-fit';
 import {
   type ISearchDecorationOptions as XTermSearchDecorationOptions,
@@ -161,13 +163,160 @@ ${DISPLAY_ANSI_ESCAPE.BOLD}${DISPLAY_ANSI_ESCAPE.BRIGHT_BLUE}$${DEFAULT_USER}${D
 ${DISPLAY_ANSI_ESCAPE.BOLD}${DISPLAY_ANSI_ESCAPE.MAGENTA}\u276f${DISPLAY_ANSI_ESCAPE.RESET} `;
 const COMMAND_START = '\u276f ';
 
+/**
+ * Custom link provider for xterm. As the weblink addon provided by xterm
+ * only supports URLs, not any arbitrary patterns.
+ * See https://github.com/xtermjs/xterm.js/tree/master/addons/addon-web-links
+ *
+ * Extracted code from https://github.com/LabhanshAgrawal/xterm-link-provider
+ */
+class RegexLinkProvider implements ILinkProvider {
+  constructor(
+    private readonly terminal: XTermTerminal,
+    private readonly regex: RegExp,
+    private readonly handler: ILink['activate'],
+  ) {}
+
+  provideLinks(
+    lineNumber: number,
+    callback: (links: ILink[] | undefined) => void,
+  ): void {
+    const links = this.computeLink(lineNumber).map(
+      (link): ILink => ({
+        range: link.range,
+        text: link.text,
+        activate: this.handler,
+      }),
+    );
+    callback(links);
+  }
+
+  private computeLink(lineNumber: number) {
+    const [line, startLineIndex] = this.translateBufferLineToStringWithWrap(
+      lineNumber - 1,
+    );
+
+    const rex = new RegExp(this.regex.source, `${this.regex.flags || ''}g`);
+    let match;
+    let stringIndex = -1;
+    const result: Pick<ILink, 'range' | 'text'>[] = [];
+
+    while ((match = rex.exec(line)) !== null) {
+      const text = match[0]; // match_index=0, i.e. get the full match, not a particular group in the regex pattern
+      if (!text) {
+        // something matched but does not comply with the given match_index=0
+        // since this is most likely a bug the regex itself we simply do nothing here
+        break;
+      }
+
+      // Get index, match.index is for the outer match which includes negated chars
+      // therefore we cannot use match.index directly, instead we search the position
+      // of the match group in text again
+      // also correct regex and string search offsets for the next loop run
+      stringIndex = line.indexOf(text, stringIndex + 1);
+      rex.lastIndex = stringIndex + text.length;
+      if (stringIndex < 0) {
+        // invalid stringIndex (should not have happened)
+        break;
+      }
+
+      result.push({
+        text,
+        range: {
+          start: this.stringIndexToBufferPosition(
+            stringIndex,
+            startLineIndex,
+            false,
+          ),
+          end: this.stringIndexToBufferPosition(
+            stringIndex + text.length - 1,
+            startLineIndex,
+            true,
+          ),
+        },
+      });
+    }
+
+    return result;
+  }
+
+  /**
+   * Given a line, walk upward or downward to get all wrapped line that includes the current line
+   * Make sure matching accounts for text content split by wrapping.
+   */
+  private translateBufferLineToStringWithWrap(
+    lineIndex: number,
+  ): [string, number] {
+    let lineString = '';
+    let lineWrapsToNext: boolean;
+    let prevLinesToWrap: boolean;
+
+    do {
+      const line = this.terminal.buffer.active.getLine(lineIndex);
+      if (!line) {
+        break;
+      }
+      if (line.isWrapped) {
+        lineIndex--;
+      }
+      prevLinesToWrap = line.isWrapped;
+    } while (prevLinesToWrap);
+
+    const startLineIndex = lineIndex;
+
+    do {
+      const nextLine = this.terminal.buffer.active.getLine(lineIndex + 1);
+      lineWrapsToNext = nextLine ? nextLine.isWrapped : false;
+      const line = this.terminal.buffer.active.getLine(lineIndex);
+      if (!line) {
+        break;
+      }
+      lineString += line
+        .translateToString(true)
+        .substring(0, this.terminal.cols);
+      lineIndex++;
+    } while (lineWrapsToNext);
+
+    return [lineString, startLineIndex];
+  }
+
+  private stringIndexToBufferPosition(
+    stringIndex: number,
+    lineIndex: number,
+    reportLastCell: boolean,
+  ): IBufferCellPosition {
+    const cell = this.terminal.buffer.active.getNullCell();
+    while (stringIndex) {
+      const line = this.terminal.buffer.active.getLine(lineIndex);
+      if (!line) {
+        return { x: 0, y: 0 };
+      }
+      const length = line.length;
+      let i = 0;
+      while (i < length) {
+        line.getCell(i, cell);
+        stringIndex -= cell.getChars().length;
+        if (stringIndex < 0) {
+          return {
+            x: i + (reportLastCell ? cell.getWidth() : 1),
+            y: lineIndex + 1,
+          };
+        }
+        i += cell.getWidth();
+      }
+      lineIndex++;
+    }
+    return { x: 1, y: lineIndex + 1 };
+  }
+}
+
 export class XTerm extends Terminal {
-  private readonly instance: XTermTerminal;
+  private instance: XTermTerminal;
   private readonly resizer: XTermFitAddon;
   private readonly renderer: XTermWebglAddon;
   private readonly searcher: XTermSearchAddon;
-  private webLinkProvider?: XTermWebLinksAddon;
 
+  private linkProvider?: XTermDisposable | undefined;
   private _TEMPORARY__onKeyListener?: XTermDisposable;
   private _TEMPORARY__onDataListener?: XTermDisposable;
 
@@ -258,12 +407,15 @@ export class XTerm extends Terminal {
       },
     );
 
-    this.webLinkProvider = configuration?.webLinkProvider
-      ? new XTermWebLinksAddon(configuration.webLinkProvider.handler, {
-          urlRegex: configuration.webLinkProvider.regex,
-        })
-      : new XTermWebLinksAddon();
-    this.instance.loadAddon(this.webLinkProvider);
+    if (configuration?.webLinkProvider) {
+      this.linkProvider = this.instance.registerLinkProvider(
+        new RegexLinkProvider(
+          this.instance,
+          configuration.webLinkProvider.regex,
+          configuration.webLinkProvider.handler,
+        ),
+      );
+    }
 
     (configuration?.commands ?? []).forEach((commandConfig) => {
       [commandConfig.command, ...(commandConfig.aliases ?? [])].forEach(
@@ -667,7 +819,7 @@ export class XTerm extends Terminal {
     this.searcher.dispose();
     this.resizer.dispose();
     this.renderer.dispose();
-    this.webLinkProvider?.dispose();
+    this.linkProvider?.dispose();
     this._TEMPORARY__onKeyListener?.dispose();
     this._TEMPORARY__onDataListener?.dispose();
     this.instance.dispose();
@@ -824,9 +976,7 @@ export class XTerm extends Terminal {
       this.newSystemCommand(opts.systemCommand);
     }
 
-    this.instance.write(
-      `\n${DISPLAY_ANSI_ESCAPE.RED}${error}${DISPLAY_ANSI_ESCAPE.RED}`,
-    );
+    this.instance.write(`\n${error}`);
     this.abort();
   }
 
