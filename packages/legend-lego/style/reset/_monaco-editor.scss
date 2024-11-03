@@ -18,6 +18,14 @@
   font-size: 1.4rem;
 }
 
+.monaco-editor em {
+  font-style: italic;
+}
+
+.monaco-editor strong {
+  font-weight: bold;
+}
+
 .monaco-editor--small-font * {
   font-size: 1.2rem;
 }

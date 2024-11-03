@@ -124,6 +124,8 @@ export class ConceptNode {
   li_attr!: ConceptAttribute;
   id!: string;
   text!: string;
+  test?: boolean;
+  pct?: boolean;
   icon?: string;
   children?: boolean;
   state?: string;
@@ -152,6 +154,8 @@ createModelSchema(ConceptNode, {
   ),
   id: primitive(),
   text: primitive(),
+  test: optional(primitive()),
+  pct: optional(primitive()),
   icon: primitive(),
   children: primitive(),
   state: primitive(),

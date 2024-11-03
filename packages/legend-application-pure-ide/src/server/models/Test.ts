@@ -24,6 +24,16 @@ import {
   SKIP,
 } from 'serializr';
 
+export class PCTAdapter {
+  name: string;
+  func: string;
+
+  constructor(name: string, func: string) {
+    this.name = name;
+    this.func = func;
+  }
+}
+
 export enum TestResultStatus {
   // PASSED = 'passed',
   PASSED = 'Success',

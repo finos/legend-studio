@@ -35,6 +35,7 @@ import {
   getCollapsiblePanelGroupProps,
 } from '@finos/legend-art';
 import { LEGEND_PURE_IDE_ROUTE_PATTERN_TOKEN } from '../__lib__/LegendPureIDENavigation.js';
+import { SelectPCTAdapterCommand } from './command-center/SelectPCTAdapterCommand.js';
 
 export const Editor = withEditorStore(
   observer(() => {
@@ -171,6 +172,7 @@ export const Editor = withEditorStore(
         </div>
         <StatusBar />
         <FileSearchCommand />
+        <SelectPCTAdapterCommand />
       </div>
     );
   }),

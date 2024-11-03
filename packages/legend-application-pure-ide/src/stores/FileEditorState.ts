@@ -42,6 +42,7 @@ import {
 } from 'mobx';
 import {
   editor as monacoEditorAPI,
+  Uri,
   type Position,
   type Selection,
 } from 'monaco-editor';
@@ -115,8 +116,9 @@ class FileTextEditorState {
 
     this.language = getFileEditorLanguage(fileEditorState.filePath);
     this.model = monacoEditorAPI.createModel(
-      fileEditorState.uuid,
+      '',
       this.language,
+      Uri.file(`/${fileEditorState.uuid}.pure`),
     );
     this.model.setValue(fileEditorState.file.content);
   }
@@ -208,6 +210,7 @@ export class FileEditorState
       setFile: action,
       setShowGoToLinePrompt: action,
       setConceptToRenameState: flow,
+      runTest: flow,
     });
 
     this.file = file;
@@ -278,6 +281,38 @@ export class FileEditorState
     this.renameConceptState = concept
       ? new FileEditorRenameConceptState(this, concept, coordinate)
       : undefined;
+  }
+
+  *runTest(coordinate: FileCoordinate | undefined): GeneratorFn<void> {
+    if (!coordinate) {
+      return;
+    }
+    if (this.hasChanged) {
+      this.ideStore.applicationStore.notificationService.notifyWarning(
+        `Can't run test: source is not compiled`,
+      );
+      return;
+    }
+    const concept = (yield this.ideStore.getConceptInfo(coordinate)) as
+      | ConceptInfo
+      | undefined;
+    if (concept?.pureType === ConceptType.FUNCTION) {
+      if (concept.pct) {
+        this.ideStore.setPCTRunPath(concept.path);
+      } else if (concept.test) {
+        flowResult(this.ideStore.executeTests(concept.path, false)).catch(
+          this.ideStore.applicationStore.alertUnhandledError,
+        );
+      } else {
+        this.ideStore.applicationStore.notificationService.notifyWarning(
+          `Can't run test: function not marked as test`,
+        );
+      }
+    } else {
+      this.ideStore.applicationStore.notificationService.notifyWarning(
+        `Can't run test: not a function`,
+      );
+    }
   }
 
   showError(coordinate: FileErrorCoordinate): void {
