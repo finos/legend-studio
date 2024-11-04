@@ -1,5 +1,11 @@
 # @finos/legend-vscode-extension-dependencies
 
+## 4.0.24
+
+### Patch Changes
+
+- [#3641](https://github.com/finos/legend-studio/pull/3641) [`25d7f81`](https://github.com/finos/legend-studio/commit/25d7f8171c83836f9ebb1e77879f07170b69c816) ([@travisstebbins](https://github.com/travisstebbins)) - Export DSL_Diagram_GraphManagerPreset from legend-vscode-extension-dependencies
+
 ## 4.0.23
 
 ## 4.0.22
