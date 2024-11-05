@@ -27,10 +27,12 @@ import {
   type DataCubeColumn,
 } from '../../core/models/DataCubeColumn.js';
 import type {
+  AgEventType,
   ColDef,
   ColGroupDef,
   GridOptions,
   ICellRendererParams,
+  RowEvent,
 } from '@ag-grid-community/core';
 import {
   GridClientSortDirection,
@@ -83,9 +85,13 @@ import {
   isPivotResultColumnName,
   TREE_COLUMN_VALUE_SEPARATOR,
 } from '../../core/DataCubeQueryEngine.js';
-import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
+import type {
+  CustomCellRendererProps,
+  CustomLoadingCellRendererProps,
+} from '@ag-grid-community/react';
 import { DataCubeIcon } from '@finos/legend-art';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
+import { useCallback, useEffect, useState } from 'react';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -487,7 +493,7 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
     rowGroupPanelShow: 'always',
     // use the auto-generated group column to make it work with pivot mode
     // See https://github.com/ag-grid/ag-grid/issues/8088
-    groupDisplayType: 'singleColumn',
+    groupDisplayType: 'custom',
     suppressRowGroupHidesColumns: true, // keeps the column set stable even when row grouping is used
     suppressAggFuncInHeader: true, //  keeps the columns stable when aggregation is used
     getChildCount: (data) =>
@@ -780,6 +786,76 @@ function generateDefinitionForPivotResultColumns(
   return columnDefs;
 }
 
+export const CustomGroupCellRenderer = (
+  props: CustomCellRendererProps & {
+    snapshot: DataCubeQuerySnapshot;
+    grouping: string[];
+  },
+) => {
+  const { node, snapshot, grouping } = props;
+  const groupByCols = snapshot.data.groupBy?.columns ?? [];
+  // const [expanded, setExpanded] = useState(node.expanded);
+  // // console.log(levels);
+
+  // useEffect(() => {
+  //   const expandListener = (event: RowEvent<AgEventType>) => {
+  //     setExpanded(event.node.expanded);
+  //   };
+
+  //   node.addEventListener('expandedChanged', expandListener as any);
+
+  //   return () => {
+  //     node.removeEventListener('expandedChanged', expandListener as any);
+  //   };
+  // }, [node]);
+
+  const onClick = useCallback(() => node.setExpanded(!node.expanded), [node]);
+  const col =
+    node.level < groupByCols.length ? groupByCols[node.level] : undefined;
+
+  // console.log(node, props, levels, node.level);
+  const value = col
+    ? grouping.includes(col.name)
+      ? node.data[col.name]
+      : undefined
+    : undefined;
+
+  return (
+    <div
+      style={{
+        paddingLeft: `${node.level * 15}px`,
+      }}
+      onDoubleClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onClick();
+      }}
+    >
+      {value !== undefined && (
+        <>
+          {node.group && (
+            <div
+              className="inline-flex h-full cursor-pointer items-center"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onClick();
+              }}
+            >
+              {node.expanded ? (
+                <DataCubeIcon.ChevronDown />
+              ) : (
+                <DataCubeIcon.ChevronRight />
+              )}
+            </div>
+          )}
+          {`${value} (${node.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID]})`}
+        </>
+      )}
+    </div>
+  );
+};
+
 export function generateColumnDefs(
   snapshot: DataCubeQuerySnapshot,
   configuration: DataCubeConfiguration,
@@ -808,6 +884,74 @@ export function generateColumnDefs(
   }
 
   return [
+    {
+      headerName: '',
+      colId: 'col1',
+      cellRenderer: CustomGroupCellRenderer,
+      cellRendererParams: {
+        snapshot,
+        grouping: ['Country', 'Athlete'],
+      },
+      tooltipValueGetter: (params) => {
+        if (
+          isNonNullable(params.value) &&
+          params.value !== INTERNAL__GRID_CLIENT_MISSING_VALUE
+        ) {
+          return (
+            `Group Value = ${params.value === '' ? "''" : params.value === true ? 'TRUE' : params.value === false ? 'FALSE' : params.value}` +
+            `${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] !== undefined ? ` (${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID]})` : ''}`
+          );
+        }
+        return null;
+      },
+      // showRowGroup: 'Country',
+      hide: !snapshot.data.groupBy,
+      lockPinned: true,
+      lockPosition: true,
+      pinned: GridClientPinnedAlignement.LEFT,
+      suppressSpanHeaderHeight: true,
+      cellDataType: false,
+      minWidth: 200,
+      suppressAutoSize: true,
+      suppressSizeToFit: true,
+      loadingCellRenderer: DataCubeGridLoadingCellRenderer,
+      // TODO: we can support this in the configuration (support sorting by tree-column?)
+      sortable: true,
+    } satisfies ColDef,
+    {
+      headerName: '',
+      colId: 'col2',
+      cellRenderer: CustomGroupCellRenderer,
+      cellRendererParams: {
+        snapshot,
+        grouping: ['Sport'],
+      },
+      tooltipValueGetter: (params) => {
+        if (
+          isNonNullable(params.value) &&
+          params.value !== INTERNAL__GRID_CLIENT_MISSING_VALUE
+        ) {
+          return (
+            `Group Value = ${params.value === '' ? "''" : params.value === true ? 'TRUE' : params.value === false ? 'FALSE' : params.value}` +
+            `${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID] !== undefined ? ` (${params.data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID]})` : ''}`
+          );
+        }
+        return null;
+      },
+      // showRowGroup: 'Sport',
+      hide: !snapshot.data.groupBy,
+      lockPinned: true,
+      lockPosition: true,
+      pinned: GridClientPinnedAlignement.LEFT,
+      suppressSpanHeaderHeight: true,
+      cellDataType: false,
+      minWidth: 200,
+      suppressAutoSize: true,
+      suppressSizeToFit: true,
+      loadingCellRenderer: DataCubeGridLoadingCellRenderer,
+      // TODO: we can support this in the configuration (support sorting by tree-column?)
+      sortable: true,
+    } satisfies ColDef,
     // NOTE: Internal column used for programatically trigger data fetch when filter is modified
     {
       colId: INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
@@ -956,31 +1100,31 @@ export function generateGridOptionsFromSnapshot(
     // -------------------------------------- COLUMNS --------------------------------------
 
     columnDefs: generateColumnDefs(snapshot, configuration, view),
-    autoGroupColumnDef: {
-      // NOTE: the column ID here is set for explicitness, but this is not something ag-grid
-      // allows setting for auto-group column, for more advanced use cases, we might want to
-      // look into custom group columns
-      // See https://www.ag-grid.com/react-data-grid/grouping-custom-group-columns/
-      colId: INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
-      headerName: '',
-      cellRendererParams: {
-        suppressCount: !configuration.showLeafCount,
-      },
+    // autoGroupColumnDef: {
+    //   // NOTE: the column ID here is set for explicitness, but this is not something ag-grid
+    //   // allows setting for auto-group column, for more advanced use cases, we might want to
+    //   // look into custom group columns
+    //   // See https://www.ag-grid.com/react-data-grid/grouping-custom-group-columns/
+    //   colId: INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
+    //   headerName: '',
+    //   cellRendererParams: {
+    //     suppressCount: !configuration.showLeafCount,
+    //   },
 
-      // display
-      ..._groupDisplaySpec(snapshot, configuration),
+    //   // display
+    //   ..._groupDisplaySpec(snapshot, configuration),
 
-      // size
-      suppressAutoSize: true,
-      suppressSizeToFit: true,
-      minWidth: 200,
+    //   // size
+    //   suppressAutoSize: true,
+    //   suppressSizeToFit: true,
+    //   minWidth: 200,
 
-      // sorting
-      sortable: true,
+    //   // sorting
+    //   sortable: true,
 
-      // aggregation
-      showRowGroup: true,
-      suppressSpanHeaderHeight: true,
-    } as ColDef,
+    //   // aggregation
+    //   showRowGroup: true,
+    //   suppressSpanHeaderHeight: true,
+    // } as ColDef,
   } satisfies GridOptions;
 }
