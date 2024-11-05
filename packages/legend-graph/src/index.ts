@@ -351,7 +351,10 @@ export {
   V1_transformStereotype,
   V1_transformTaggedValue,
 } from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_DomainTransformer.js';
-export { V1_buildTaggedValue } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_DomainBuilderHelper.js';
+export {
+  V1_buildTaggedValue,
+  V1_buildVariable,
+} from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_DomainBuilderHelper.js';
 export { V1_PureModelContextData } from './graph-manager/protocol/pure/v1/model/context/V1_PureModelContextData.js';
 export { V1_PureModelContext } from './graph-manager/protocol/pure/v1/model/context/V1_PureModelContext.js';
 export { V1_PureModelContextText } from './graph-manager/protocol/pure/v1/model/context/V1_PureModelContextText.js';
