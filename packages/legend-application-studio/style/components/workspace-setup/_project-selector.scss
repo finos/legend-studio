@@ -45,6 +45,7 @@
     display: flex;
     width: 6rem;
     margin: 0 0.5rem;
+    z-index: 1;
 
     &__label {
       @include flexCenter;
