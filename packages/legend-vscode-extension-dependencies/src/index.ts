@@ -89,6 +89,9 @@ export {
   ExternalFormatDescription,
   GenerationConfigurationDescription,
   GenerationMode,
+  getFunctionName,
+  getFunctionNameWithPath,
+  getFunctionSignature,
   GraphManagerState,
   PackageableElementExplicitReference,
   PostValidationAssertionResult,
@@ -132,12 +135,14 @@ export {
   V1_FunctionActivatorInput,
   V1_GenerateSchemaInput,
   V1_GenerationOutput,
+  V1_getFunctionNameWithoutSignature,
   V1_GraphBuilderContextBuilder,
   V1_GraphTransformerContextBuilder,
   V1_LambdaReturnTypeInput,
   V1_LightQuery,
   V1_MappingModelCoverageAnalysisInput,
   V1_MappingModelCoverageAnalysisResult,
+  V1_Multiplicity,
   V1_ParameterValue,
   V1_parameterValueModelSchema,
   V1_ParserError,
@@ -152,6 +157,7 @@ export {
   V1_RawLambda,
   V1_rawLambdaModelSchema,
   V1_RawSQLExecuteInput,
+  V1_RawVariable,
   V1_RelationalConnectionBuilder,
   V1_RenderStyle,
   V1_RunTestsInput,
@@ -241,6 +247,7 @@ export {
 } from '@finos/legend-query-builder';
 
 export {
+  graph_renameElement,
   pureExecution_setFunction,
   service_setExecution,
 } from '@finos/legend-application-studio';
