@@ -65,7 +65,10 @@ interface ListChildComponentProps {
 export const getSelectorInputOptionEmbeddedButtonProps = (): {
   onMouseDown: React.MouseEventHandler;
 } => ({
-  onMouseDown: (event) => event.stopPropagation(),
+  onMouseDown: (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+  },
 });
 
 /**
