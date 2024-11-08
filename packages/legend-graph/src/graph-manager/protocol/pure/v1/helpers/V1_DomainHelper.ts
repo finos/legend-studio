@@ -67,6 +67,15 @@ export const V1_buildFunctionSignature = (
     : func.name + functionSignature;
 };
 
+export const V1_getFunctionNameWithoutSignature = (
+  func: V1_ConcreteFunctionDefinition,
+): string => {
+  const signatureSuffix = V1_buildFunctionSignatureSuffix(func);
+  return func.name.endsWith(signatureSuffix)
+    ? func.name.substring(0, func.name.length - signatureSuffix.length)
+    : func.name;
+};
+
 const V1_buildFunctionPrettyName = (
   element: V1_ConcreteFunctionDefinition,
   options?: {
