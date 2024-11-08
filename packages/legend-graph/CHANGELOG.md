@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.10.46
+
+### Patch Changes
+
+- [#3650](https://github.com/finos/legend-studio/pull/3650) [`982b805`](https://github.com/finos/legend-studio/commit/982b805041184ae14cac565d302b71b440894d56) ([@travisstebbins](https://github.com/travisstebbins)) - Add V1_getFunctionNameWithoutSignature function and additional exports for vscode extension function query builder
+
 ## 31.10.45
 
 ## 31.10.44

@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.66
+
+### Patch Changes
+
+- [#3649](https://github.com/finos/legend-studio/pull/3649) [`eb47276`](https://github.com/finos/legend-studio/commit/eb47276e446c5291fe94a5fff8f0e7cdfbf0533a) ([@travisstebbins](https://github.com/travisstebbins)) - Fix project setup view button
+
 ## 7.1.65
 
 ## 7.1.64
