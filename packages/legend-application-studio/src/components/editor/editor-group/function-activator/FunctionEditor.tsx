@@ -1239,7 +1239,7 @@ export const FunctionEditor = observer(() => {
         );
         await flowResult(
           embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
-            setupQueryBuilderState: async (): Promise<QueryBuilderState> =>
+            setupQueryBuilderState: (): QueryBuilderState =>
               functionQueryBuilderState,
             actionConfigs: [
               {

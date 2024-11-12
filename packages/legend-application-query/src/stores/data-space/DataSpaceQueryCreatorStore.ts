@@ -25,6 +25,7 @@ import {
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
+  StoreProjectData,
   LATEST_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
 import {
@@ -47,7 +48,9 @@ import {
 } from '@finos/legend-storage';
 import {
   type DataSpaceExecutionContext,
+  DSL_DataSpace_getGraphManagerExtension,
   getDataSpace,
+  retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   QueryBuilderActionConfig_QueryApplication,
@@ -56,17 +59,17 @@ import {
 } from '../QueryEditorStore.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 import {
-  type DataSpaceInfo,
   DataSpaceQueryBuilderState,
   createQueryClassTaggedValue,
   createQueryDataSpaceTaggedValue,
+  type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
 import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
 import {
-  type VisitedDataspace,
   createVisitedDataSpaceId,
   hasDataSpaceInfoBeenVisited,
   createSimpleVisitedDataspace,
+  type VisitedDataspace,
 } from '../../__lib__/LegendQueryUserDataSpaceHelper.js';
 import { LEGEND_QUERY_APP_EVENT } from '../../__lib__/LegendQueryEvent.js';
 import {
@@ -274,14 +277,6 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
   async initializeQueryBuilderStateWithQueryableDataSpace(
     queryableDataSpace: QueryableDataSpace,
   ): Promise<QueryBuilderState> {
-    const { dataSpaceAnalysisResult, isLightGraphEnabled } =
-      await this.buildGraphAndDataspaceAnalyticsResult(
-        queryableDataSpace.groupId,
-        queryableDataSpace.artifactId,
-        queryableDataSpace.versionId,
-        queryableDataSpace.executionContext,
-        queryableDataSpace.dataSpacePath,
-      );
     const dataSpace = getDataSpace(
       queryableDataSpace.dataSpacePath,
       this.graphManagerState.graph,
@@ -292,6 +287,27 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       ),
       `Can't find execution context '${queryableDataSpace.executionContext}'`,
     );
+    let dataSpaceAnalysisResult;
+    try {
+      const project = StoreProjectData.serialization.fromJson(
+        await this.depotServerClient.getProject(
+          queryableDataSpace.groupId,
+          queryableDataSpace.artifactId,
+        ),
+      );
+      dataSpaceAnalysisResult = await DSL_DataSpace_getGraphManagerExtension(
+        this.graphManagerState.graphManager,
+      ).retrieveDataSpaceAnalysisFromCache(() =>
+        retrieveAnalyticsResultCache(
+          project,
+          queryableDataSpace.versionId,
+          dataSpace.path,
+          this.depotServerClient,
+        ),
+      );
+    } catch {
+      // do nothing
+    }
     const sourceInfo = {
       groupId: queryableDataSpace.groupId,
       artifactId: queryableDataSpace.artifactId,
@@ -309,7 +325,6 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       new QueryBuilderActionConfig_QueryApplication(this),
       dataSpace,
       executionContext,
-      isLightGraphEnabled,
       createDataSpaceDepoRepo(
         this,
         queryableDataSpace.groupId,
@@ -318,7 +333,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
         (dataSpaceInfo: DataSpaceInfo) =>
           hasDataSpaceInfoBeenVisited(dataSpaceInfo, visitedDataSpaces),
       ),
-      async (dataSpaceInfo: DataSpaceInfo) => {
+      (dataSpaceInfo: DataSpaceInfo) => {
         flowResult(this.changeDataSpace(dataSpaceInfo)).catch(
           this.applicationStore.alertUnhandledError,
         );
@@ -346,7 +361,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       );
     }
     queryBuilderState.setExecutionContext(executionContext);
-    await queryBuilderState.propagateExecutionContextChange(true);
+    queryBuilderState.propagateExecutionContextChange(executionContext);
 
     // set runtime if already chosen
     if (queryableDataSpace.runtimePath) {
@@ -400,10 +415,6 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       this.onInitializeFailure();
       this.initState.fail();
     }
-  }
-
-  override *buildGraph(): GeneratorFn<void> {
-    // do nothing
   }
 
   addVisitedDataSpace(queryableDataSpace: QueryableDataSpace): void {

@@ -156,25 +156,23 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
    * - If no class is chosen, try to choose a compatible class
    * - If the chosen class is compatible with the new chosen mapping, do nothing, otherwise, try to choose a compatible class
    */
-  override async propagateExecutionContextChange(
-    isGraphBuildingNotRequired?: boolean,
-  ): Promise<void> {
-    if (this.selectedExecutionContext) {
-      const mapping = this.selectedExecutionContext.mapping;
-      this.changeMapping(mapping, { keepQueryContent: true });
-      this.changeRuntime(this.selectedExecutionContext.runtimeValue);
+  propagateExecutionContextChange(
+    executionContext: ServiceExecutionContext,
+  ): void {
+    const mapping = executionContext.mapping;
+    this.changeMapping(mapping, { keepQueryContent: true });
+    this.changeRuntime(executionContext.runtimeValue);
 
-      const compatibleClasses = getMappingCompatibleClasses(
-        mapping,
-        this.graphManagerState.usableClasses,
-      );
-      // if there is no chosen class or the chosen one is not compatible
-      // with the mapping then pick a compatible class if possible
-      if (!this.class || !compatibleClasses.includes(this.class)) {
-        const possibleNewClass = getNullableFirstEntry(compatibleClasses);
-        if (possibleNewClass) {
-          this.changeClass(possibleNewClass);
-        }
+    const compatibleClasses = getMappingCompatibleClasses(
+      mapping,
+      this.graphManagerState.usableClasses,
+    );
+    // if there is no chosen class or the chosen one is not compatible
+    // with the mapping then pick a compatible class if possible
+    if (!this.class || !compatibleClasses.includes(this.class)) {
+      const possibleNewClass = getNullableFirstEntry(compatibleClasses);
+      if (possibleNewClass) {
+        this.changeClass(possibleNewClass);
       }
     }
   }

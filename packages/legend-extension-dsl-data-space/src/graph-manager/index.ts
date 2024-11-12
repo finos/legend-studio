@@ -39,7 +39,3 @@ export * from '../stores/shared/DataSpaceInfo.js';
 export * from '../stores/query-builder/DataSpaceQueryBuilderState.js';
 
 export { observe_DataSpace } from '../graph-manager/action/changeDetection/DSL_DataSpace_ObserverHelper.js';
-export {
-  V1_DataSpaceExecutionContext,
-  V1_DataSpace,
-} from '../graph-manager/protocol/pure/v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';

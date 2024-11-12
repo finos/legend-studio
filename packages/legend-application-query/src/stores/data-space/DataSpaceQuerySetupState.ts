@@ -67,7 +67,6 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
   dataSpaces: DataSpaceInfo[] = [];
   showRuntimeSelector = false;
   advancedSearchState?: DataSpaceAdvancedSearchState | undefined;
-  isLightGraphEnabled!: boolean;
 
   constructor(
     editorStore: QueryEditorStore,

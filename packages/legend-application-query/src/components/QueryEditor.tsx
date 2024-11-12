@@ -605,12 +605,6 @@ export const QueryEditor = observer(() => {
       !engineConfig.useClientRequestPayloadCompression,
     );
 
-  const toggleEnableMinialGraphForDataSpaceLoadingPerformance = (): void => {
-    editorStore.setEnableMinialGraphForDataSpaceLoadingPerformance(
-      !editorStore.enableMinialGraphForDataSpaceLoadingPerformance,
-    );
-  };
-
   const TEMPORARY__toggleLightDarkMode = (): void => {
     applicationStore.layoutService.setColorTheme(
       applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
@@ -635,11 +629,7 @@ export const QueryEditor = observer(() => {
       applicationStore.alertUnhandledError,
     );
     applicationStore.releaseNotesService.updateViewedVersion();
-  }, [
-    editorStore,
-    applicationStore,
-    editorStore.enableMinialGraphForDataSpaceLoadingPerformance,
-  ]);
+  }, [editorStore, applicationStore]);
 
   return (
     <div className="query-editor">
@@ -684,20 +674,6 @@ export const QueryEditor = observer(() => {
                     </MenuContentItemIcon>
                     <MenuContentItemLabel>
                       Compress request payload
-                    </MenuContentItemLabel>
-                  </MenuContentItem>
-                  <MenuContentItem
-                    onClick={
-                      toggleEnableMinialGraphForDataSpaceLoadingPerformance
-                    }
-                  >
-                    <MenuContentItemIcon>
-                      {editorStore.enableMinialGraphForDataSpaceLoadingPerformance ? (
-                        <CheckIcon />
-                      ) : null}
-                    </MenuContentItemIcon>
-                    <MenuContentItemLabel>
-                      Enable minimal graph
                     </MenuContentItemLabel>
                   </MenuContentItem>
                 </MenuContent>

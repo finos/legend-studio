@@ -17,7 +17,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  type DEPRECATED__MappingTestState,
+  type DEPRECATED__MappingTestState as DEPRECATED__MappingTestState,
   MAPPING_TEST_EDITOR_TAB_TYPE,
   TEST_RESULT,
   MappingTestObjectInputDataState,
@@ -109,7 +109,7 @@ const MappingTestQueryEditor = observer(
         const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
         await flowResult(
           embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
-            setupQueryBuilderState: async (): Promise<QueryBuilderState> => {
+            setupQueryBuilderState: (): QueryBuilderState => {
               const queryBuilderState = new MappingExecutionQueryBuilderState(
                 embeddedQueryBuilderState.editorStore.applicationStore,
                 embeddedQueryBuilderState.editorStore.graphManagerState,
