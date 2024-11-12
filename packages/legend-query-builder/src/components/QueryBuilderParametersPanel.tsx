@@ -30,6 +30,7 @@ import {
   PanelFormValidatedTextField,
   QuestionCircleIcon,
   PanelFormSection,
+  clsx,
 } from '@finos/legend-art';
 import {
   type Type,
@@ -348,8 +349,16 @@ export const QueryBuilderParametersPanel = observer(
           <div className="panel__header__title">
             <div className="panel__header__title__label">parameters</div>
             <div
-              onClick={seeDocumentation}
-              className="query-builder__variables__info"
+              onClick={
+                !queryBuilderState.applicationStore.assistantService.isDisabled
+                  ? seeDocumentation
+                  : undefined
+              }
+              className={clsx('query-builder__variables__info', {
+                'query-builder__variables__info--assistant-disabled':
+                  queryBuilderState.applicationStore.assistantService
+                    .isDisabled,
+              })}
               title={`Parameters are variables assigned to your query. They are dynamic in nature and can change for each execution.`}
             >
               <QuestionCircleIcon />
