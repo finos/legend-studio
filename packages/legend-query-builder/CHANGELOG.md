@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.15.12
+
+### Patch Changes
+
+- [#3639](https://github.com/finos/legend-studio/pull/3639) [`66e4313`](https://github.com/finos/legend-studio/commit/66e4313eb8c7615aab62ff829975cf1d83b40050) ([@travisstebbins](https://github.com/travisstebbins)) - Restyle parameter info tooltip and disable click handler if assistant is disabled
+
 ## 4.15.11
 
 ## 4.15.10
