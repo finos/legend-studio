@@ -80,19 +80,19 @@
     "jest-watch-typeahead": "2.2.2",
     "jsonc-parser": "3.3.1",
     "micromatch": "4.0.8",
-    "mini-css-extract-plugin": "2.9.1",
+    "mini-css-extract-plugin": "2.9.2",
     "monaco-editor": "0.52.0",
     "monaco-editor-webpack-plugin": "7.1.0",
-    "postcss": "8.4.47",
+    "postcss": "8.4.49",
     "postcss-loader": "8.1.1",
     "react-refresh": "0.14.2",
     "resolve": "1.22.8",
     "typescript": "5.6.3",
-    "webpack": "5.95.0"
+    "webpack": "5.96.1"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "9.13.0",
+    "eslint": "9.14.0",
     "rimraf": "6.0.1"
   },
   "publishConfig": {
