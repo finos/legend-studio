@@ -18,15 +18,35 @@ import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/
 
 export type RawMappingModelCoverageAnalysisResult = object;
 
+export class MappedEntityInfo {
+  readonly __PROPERTIES_INDEX = new Map<string, MappedProperty>();
+
+  classPath: string;
+  isRootEntity: boolean;
+  subClasses: string[];
+
+  constructor(classPath: string, isRootEntity: boolean, subClasses: string[]) {
+    this.isRootEntity = isRootEntity;
+    this.subClasses = subClasses;
+    this.classPath = classPath;
+  }
+}
+
 export class MappedEntity {
   readonly __PROPERTIES_INDEX = new Map<string, MappedProperty>();
 
   path: string;
   properties: MappedProperty[];
+  info?: MappedEntityInfo | undefined;
 
-  constructor(path: string, properties: MappedProperty[]) {
+  constructor(
+    path: string,
+    properties: MappedProperty[],
+    info?: MappedEntityInfo | undefined,
+  ) {
     this.path = path;
     this.properties = properties;
+    this.info = info;
     properties.forEach((property) =>
       this.__PROPERTIES_INDEX.set(property.name, property),
     );

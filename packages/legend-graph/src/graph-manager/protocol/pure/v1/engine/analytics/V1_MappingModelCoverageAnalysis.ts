@@ -33,6 +33,7 @@ import {
   EntityMappedProperty,
   EnumMappedProperty,
   MappedEntity,
+  MappedEntityInfo,
   MappedProperty,
   MappingModelCoverageAnalysisResult,
 } from '../../../../../../graph-manager/action/analytics/MappingModelCoverageAnalysis.js';
@@ -101,13 +102,31 @@ const V1_deserializeMappedProperty = (
   }
 };
 
+class V1_MappedEntityInfo {
+  classPath!: string;
+  isRootEntity!: boolean;
+  subClasses: string[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_MappedEntityInfo, {
+      classPath: primitive(),
+      isRootEntity: primitive(),
+      subClasses: list(primitive()),
+    }),
+  );
+}
+
 class V1_MappedEntity {
   path!: string;
   properties: V1_MappedProperty[] = [];
+  info?: V1_MappedEntityInfo | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_MappedEntity, {
       path: primitive(),
+      info: optional(
+        usingModelSchema(V1_MappedEntityInfo.serialization.schema),
+      ),
       properties: list(
         custom(
           (prop) => V1_serializeMappedProperty(prop),
@@ -155,17 +174,32 @@ const buildMappedProperty = (protocol: V1_MappedProperty): MappedProperty =>
       ? new EnumMappedProperty(protocol.name, protocol.enumPath)
       : new MappedProperty(protocol.name);
 
-const buildMappedEntity = (protocol: V1_MappedEntity): MappedEntity =>
-  new MappedEntity(
+const buildMappedEntityInfo = (
+  protocol: V1_MappedEntityInfo,
+): MappedEntityInfo =>
+  new MappedEntityInfo(
+    protocol.classPath,
+    protocol.isRootEntity,
+    protocol.subClasses,
+  );
+
+export const V1_buildMappedEntity = (
+  protocol: V1_MappedEntity,
+): MappedEntity => {
+  const info = protocol.info ? buildMappedEntityInfo(protocol.info) : undefined;
+  return new MappedEntity(
     protocol.path,
     protocol.properties.map((p) => buildMappedProperty(p)),
+    info,
   );
+};
 
 export const V1_buildModelCoverageAnalysisResult = (
   protocol: V1_MappingModelCoverageAnalysisResult,
   mapping: Mapping,
-): MappingModelCoverageAnalysisResult =>
-  new MappingModelCoverageAnalysisResult(
-    protocol.mappedEntities.map((p) => buildMappedEntity(p)),
+): MappingModelCoverageAnalysisResult => {
+  return new MappingModelCoverageAnalysisResult(
+    protocol.mappedEntities.map((p) => V1_buildMappedEntity(p)),
     mapping,
   );
+};

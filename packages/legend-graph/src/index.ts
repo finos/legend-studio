@@ -722,6 +722,7 @@ export {
   V1_MappingModelCoverageAnalysisInput,
   V1_MappingModelCoverageAnalysisResult,
   V1_buildModelCoverageAnalysisResult,
+  V1_buildMappedEntity,
 } from './graph-manager/protocol/pure/v1/engine/analytics/V1_MappingModelCoverageAnalysis.js';
 export {
   type V1_CompilationResult,

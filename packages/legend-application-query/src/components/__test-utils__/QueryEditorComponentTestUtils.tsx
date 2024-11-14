@@ -25,12 +25,15 @@ import { createMock, createSpy } from '@finos/legend-shared/test';
 import {
   type GraphManagerState,
   type RawMappingModelCoverageAnalysisResult,
+  type QueryInfo,
   Query,
   LightQuery,
   RawLambda,
-  PackageableElementExplicitReference,
   QueryExplicitExecutionContext,
   QueryDataSpaceExecutionContext,
+  PackageableElementExplicitReference,
+  QueryDataSpaceExecutionContextInfo,
+  QueryExplicitExecutionContextInfo,
 } from '@finos/legend-graph';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import {
@@ -104,7 +107,7 @@ export const TEST__provideMockedQueryEditorStore = (customization?: {
 
 export const TEST__setUpQueryEditor = async (
   MOCK__editorStore: ExistingQueryEditorStore,
-  entities: Entity[],
+  entities: PlainObject<Entity>[],
   lambda: RawLambda,
   mappingPath: string,
   runtimePath: string,
@@ -142,7 +145,7 @@ export const TEST__setUpQueryEditor = async (
   await graphManagerState.initializeSystem();
   await graphManagerState.graphManager.buildGraph(
     graphManagerState.graph,
-    entities,
+    entities as unknown as Entity[],
     graphManagerState.graphBuildState,
   );
 
@@ -162,12 +165,35 @@ export const TEST__setUpQueryEditor = async (
   );
   query.executionContext = execContext;
   query.content = 'some content';
+
+  const execContextInfo = new QueryExplicitExecutionContextInfo();
+  execContextInfo.mapping = mappingPath;
+  execContextInfo.runtime = runtimePath;
+
+  const queryInfo: QueryInfo = {
+    name: TEST_QUERY_NAME,
+    id: TEST_QUERY_ID,
+    versionId: '0.0.0',
+    groupId: 'test.group',
+    artifactId: 'test-artifact',
+    executionContext: execContextInfo,
+    content: 'some content',
+    isCurrentUserQuery: true,
+  };
+
   createSpy(
     MOCK__editorStore.depotServerClient,
     'getProject',
   ).mockResolvedValue(projectData);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getEntities',
+  ).mockResolvedValue(entities);
   createSpy(graphManagerState.graphManager, 'getLightQuery').mockResolvedValue(
     lightQuery,
+  );
+  createSpy(graphManagerState.graphManager, 'getQueryInfo').mockResolvedValue(
+    queryInfo,
   );
   createSpy(
     graphManagerState.graphManager,
@@ -222,16 +248,22 @@ export const TEST__setUpQueryEditor = async (
 
 export const TEST__setUpDataSpaceExistingQueryEditor = async (
   MOCK__editorStore: ExistingQueryEditorStore,
-  v1_dataspaceAnalyticsResult: PlainObject<V1_DataSpaceAnalysisResult>,
+  V1_dataspaceAnalyticsResult: PlainObject<V1_DataSpaceAnalysisResult>,
   dataSpacePath: string,
   executionContext: string,
   lambda: RawLambda,
   mappingPath: string,
-  entities: Entity[],
+  entities: PlainObject<Entity>[],
+  buildWithMinimalGraph = false,
 ): Promise<{
   renderResult: RenderResult;
   queryBuilderState: QueryBuilderState;
 }> => {
+  if (buildWithMinimalGraph) {
+    MOCK__editorStore.applicationStore.config.options.TEMPORARY__enableMinimalGraph =
+      true;
+  }
+
   const projectData = {
     id: 'test-id',
     groupId: 'test.group',
@@ -259,11 +291,6 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
   });
 
   await graphManagerState.initializeSystem();
-  await graphManagerState.graphManager.buildGraph(
-    graphManagerState.graph,
-    entities,
-    graphManagerState.graphBuildState,
-  );
 
   const query = new Query();
   query.name = lightQuery.name;
@@ -278,6 +305,22 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
   execContext.executionKey = executionContext;
   query.executionContext = execContext;
   query.content = 'some content';
+
+  const execContextInfo = new QueryDataSpaceExecutionContextInfo();
+  execContextInfo.dataSpacePath = dataSpacePath;
+  execContextInfo.executionKey = executionContext;
+
+  const queryInfo: QueryInfo = {
+    name: TEST_QUERY_NAME,
+    id: TEST_QUERY_ID,
+    versionId: '0.0.0',
+    groupId: 'test.group',
+    artifactId: 'test-artifact',
+    executionContext: execContextInfo,
+    content: 'some content',
+    isCurrentUserQuery: true,
+  };
+
   createSpy(
     MOCK__editorStore.depotServerClient,
     'getProject',
@@ -285,7 +328,7 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
   createSpy(
     MOCK__editorStore.depotServerClient,
     'getEntities',
-  ).mockResolvedValue([]);
+  ).mockResolvedValue(buildWithMinimalGraph ? [] : entities);
   createSpy(
     MOCK__editorStore.depotServerClient,
     'getIndexedDependencyEntities',
@@ -294,6 +337,10 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
     MOCK__editorStore.depotServerClient,
     'getEntitiesByClassifier',
   ).mockResolvedValue([]);
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getGenerationContentByPath',
+  ).mockResolvedValue(JSON.stringify(V1_dataspaceAnalyticsResult));
   createSpy(graphManagerState.graphManager, 'getLightQuery').mockResolvedValue(
     lightQuery,
   );
@@ -308,10 +355,9 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
   createSpy(graphManagerState.graphManager, 'getQuery').mockResolvedValue(
     query,
   );
-  createSpy(
-    MOCK__editorStore.depotServerClient,
-    'getGenerationContentByPath',
-  ).mockResolvedValue('');
+  createSpy(graphManagerState.graphManager, 'getQueryInfo').mockResolvedValue(
+    queryInfo,
+  );
   createSpy(graphManagerState.graphManager, 'surveyDatasets').mockResolvedValue(
     [],
   );
@@ -323,22 +369,15 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
   const graphManagerExtension = DSL_DataSpace_getGraphManagerExtension(
     graphManagerState.graphManager,
   );
-  const dataspaceAnalyticsResult =
+  const dataspaceAnalyticsResult = (
     await graphManagerExtension.buildDataSpaceAnalytics(
-      v1_dataspaceAnalyticsResult,
+      V1_dataspaceAnalyticsResult,
       graphManagerState.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
-    );
+    )
+  ).dataSpaceAnalysisResult;
   createSpy(graphManagerExtension, 'analyzeDataSpace').mockResolvedValue(
     dataspaceAnalyticsResult,
   );
-  const mappingAnalyticsResult =
-    dataspaceAnalyticsResult.mappingToMappingCoverageResult?.get(mappingPath);
-  if (mappingAnalyticsResult) {
-    createSpy(
-      graphManagerState.graphManager,
-      'analyzeMappingModelCoverage',
-    ).mockResolvedValue(mappingAnalyticsResult);
-  }
 
   MOCK__editorStore.buildGraph = createMock();
   graphManagerState.graphManager.initialize = createMock();
