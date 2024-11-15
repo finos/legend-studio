@@ -3274,6 +3274,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  async buildEntityFromMappingAnalyticsResult(
+    analyticsResult: V1_MappingModelCoverageAnalysisResult,
+    graph: PureModel,
+    buildActionState: ActionState,
+  ): Promise<Entity[]> {
+    return [];
+  }
+
   buildMappingModelCoverageAnalysisResult(
     input: RawMappingModelCoverageAnalysisResult,
     mapping: Mapping,
