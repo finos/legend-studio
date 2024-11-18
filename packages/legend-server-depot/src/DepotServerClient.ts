@@ -32,6 +32,7 @@ import type { ProjectVersionPlatformDependency } from './models/ProjectVersionPl
 import type { VersionedProjectData } from './models/VersionedProjectData.js';
 import type { StoreProjectData } from './models/StoreProjectData.js';
 import { resolveVersion } from './DepotVersionAliases.js';
+import type { StoredFileGeneration } from './models/StoredFileGeneration.js';
 
 export interface DepotServerClientConfig {
   serverUrl: string;
@@ -299,6 +300,8 @@ export class DepotServerClient extends AbstractServerClient {
   private _generationContent = (): string =>
     `${this.baseUrl}/generationFileContent`;
 
+  private _generations = (): string => `${this.baseUrl}/generations`;
+
   private _generationContentByGAV = (
     groupId: string,
     artifactId: string,
@@ -309,6 +312,15 @@ export class DepotServerClient extends AbstractServerClient {
     )}/${encodeURIComponent(artifactId)}/versions/${encodeURIComponent(
       versionId,
     )}`;
+
+  private _generationsByGAV = (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+  ): string =>
+    `${this._generations()}/${encodeURIComponent(
+      groupId,
+    )}/${encodeURIComponent(artifactId)}/${encodeURIComponent(versionId)}`;
 
   getGenerationContentByPath = async (
     project: StoreProjectData,
@@ -323,6 +335,19 @@ export class DepotServerClient extends AbstractServerClient {
       )}/file/${encodeURIComponent(filePath)}`,
       {},
       { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
+    );
+
+  getGenerationFilesByType = async (
+    project: StoreProjectData,
+    versionId: string,
+    type: string,
+  ): Promise<PlainObject<StoredFileGeneration>[]> =>
+    this.get(
+      `${this._generationsByGAV(
+        project.groupId,
+        project.artifactId,
+        resolveVersion(versionId),
+      )}/types/${encodeURIComponent(type)}`,
     );
 
   // ------------------------------------------- Versions -------------------------------------------
