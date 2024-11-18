@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 1.0.58
+
 ## 1.0.57
 
 ## 1.0.56

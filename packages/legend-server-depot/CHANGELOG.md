@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 6.0.67
+
+### Patch Changes
+
+- [#3659](https://github.com/finos/legend-studio/pull/3659) [`58b2047`](https://github.com/finos/legend-studio/commit/58b2047fb98506332dc19ab243504ecbc9164413) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add depot get version file generations by type API
+
 ## 6.0.66
 
 ## 6.0.65
