@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { type Entity, EntitiesWithOrigin } from '@finos/legend-storage';
+import {
+  type Entity,
+  type StoredFileGeneration,
+  EntitiesWithOrigin,
+} from '@finos/legend-storage';
 import {
   type PlainObject,
   AbstractServerClient,
@@ -32,7 +36,6 @@ import type { ProjectVersionPlatformDependency } from './models/ProjectVersionPl
 import type { VersionedProjectData } from './models/VersionedProjectData.js';
 import type { StoreProjectData } from './models/StoreProjectData.js';
 import { resolveVersion } from './DepotVersionAliases.js';
-import type { StoredFileGeneration } from './models/StoredFileGeneration.js';
 
 export interface DepotServerClientConfig {
   serverUrl: string;
@@ -351,7 +354,6 @@ export class DepotServerClient extends AbstractServerClient {
     );
 
   // ------------------------------------------- Versions -------------------------------------------
-
   private _versionedStoreProjectData = (
     groupId: string,
     artifactId: string,

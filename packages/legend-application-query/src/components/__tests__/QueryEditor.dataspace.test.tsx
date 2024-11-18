@@ -19,6 +19,7 @@ import { integrationTest } from '@finos/legend-shared/test';
 import { test } from '@jest/globals';
 import TEST_DATA__DSL_DataSpace_AnalyticsResult from './TEST_DATA__DSL_DataSpace_AnalyticsResult.json' with { type: 'json' };
 import TEST_DATA__DSL_DataSpace_Entities from './TEST_DATA__DSL_DataSpace_Entities.json' with { type: 'json' };
+import TEST_DATA__DSL_DataSpace_Artifacts from './TEST_DATA__DSL_DataSpace_Artifacts.json' with { type: 'json' };
 import {
   TEST__provideMockedQueryEditorStore,
   TEST_QUERY_NAME,
@@ -104,5 +105,73 @@ test(
     // await waitFor(() => getByText(dataspaceViewModal, 'this is template with function pointer'));
     // await waitFor(() => getByText(dataspaceViewModal, 'this is template with service'));
     // await waitFor(() => getByText(dataspaceViewModal, 'this is template with inline query'));
+  },
+);
+
+test(
+  integrationTest(
+    'Load Existing DataSpace Query with minimal graph in Query Editor',
+  ),
+  async () => {
+    const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore({
+      extraPlugins: [new DSL_DataSpace_LegendApplicationPlugin()],
+      extraPresets: [new DSL_DataSpace_GraphManagerPreset()],
+    });
+    mockedQueryEditorStore.setExistingQueryName(TEST_QUERY_NAME);
+    const { renderResult, queryBuilderState } =
+      await TEST__setUpDataSpaceExistingQueryEditor(
+        mockedQueryEditorStore,
+        TEST_DATA__DSL_DataSpace_AnalyticsResult,
+        'domain::COVIDDatapace',
+        'dummyContext',
+        stub_RawLambda(),
+        'mapping::CovidDataMapping',
+        [],
+        true,
+        TEST_DATA__DSL_DataSpace_Artifacts,
+      );
+
+    const _class = 'domain::COVIDData';
+    const _modelClass =
+      queryBuilderState.graphManagerState.graph.getClass(_class);
+    await act(async () => {
+      queryBuilderState.changeClass(_modelClass);
+    });
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+    await waitFor(() => getByText(explorerPanel, 'Cases'));
+    await waitFor(() => getByText(explorerPanel, 'Case Type'));
+    const templateQueryPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TEMPLATE_QUERY_PANE,
+      ),
+    );
+    const templateQueryIndicator = await waitFor(() =>
+      getByText(templateQueryPanel, /Templates\s*\(\s*3\s*\)/),
+    );
+    fireEvent.click(templateQueryIndicator);
+    await waitFor(() =>
+      renderResult.getByText('this is template with function pointer'),
+    );
+    await waitFor(() =>
+      renderResult.getByText('this is template with service'),
+    );
+    await waitFor(() =>
+      renderResult.getByText('this is template with inline query'),
+    );
+    await act(async () => {
+      fireEvent.click(renderResult.getByTitle('See more options'));
+    });
+    await act(async () => {
+      fireEvent.click(renderResult.getByText('About Dataspace'));
+    });
+    const aboutDataSpaceModal = await waitFor(() =>
+      renderResult.getByRole('dialog'),
+    );
+    await waitFor(() => getByText(aboutDataSpaceModal, 'COVID Sample Data'));
+    await waitFor(() => getByText(aboutDataSpaceModal, 'dummyContext'));
+    await waitFor(() => getByText(aboutDataSpaceModal, 'CovidDataMapping'));
+    await waitFor(() => getByText(aboutDataSpaceModal, 'H2Runtime'));
   },
 );

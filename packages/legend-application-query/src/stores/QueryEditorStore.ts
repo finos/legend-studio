@@ -49,6 +49,7 @@ import {
   type ValueSpecification,
   type GraphInitializationReport,
   type PackageableRuntime,
+  type QueryInfo,
   GraphManagerState,
   Query,
   PureExecution,
@@ -65,12 +66,15 @@ import {
   reportGraphAnalytics,
   cloneQueryStereotype,
   cloneQueryTaggedValue,
-  QueryDataSpaceExecutionContext,
-  QueryExplicitExecutionContext,
   QueryProjectCoordinates,
   buildLambdaVariableExpressions,
   VariableExpression,
   PrimitiveType,
+  CORE_PURE_PATH,
+  isValidFullPath,
+  QUERY_PROFILE_PATH,
+  QueryDataSpaceExecutionContextInfo,
+  QueryExplicitExecutionContextInfo,
 } from '@finos/legend-graph';
 import {
   generateExistingQueryEditorRoute,
@@ -90,6 +94,7 @@ import {
   StoreProjectData,
   LATEST_VERSION_ALIAS,
   VersionedProjectData,
+  retrieveProjectEntitiesWithClassifier,
 } from '@finos/legend-server-depot';
 import {
   ActionAlertActionType,
@@ -119,11 +124,14 @@ import {
   type DataSpaceInfo,
 } from '@finos/legend-extension-dsl-data-space/application';
 import {
-  DSL_DataSpace_getGraphManagerExtension,
   type DataSpace,
   type DataSpaceExecutionContext,
+  type DataSpaceAnalysisResult,
+  DSL_DataSpace_getGraphManagerExtension,
   getOwnDataSpace,
+  QUERY_PROFILE_TAG_DATA_SPACE,
   retrieveAnalyticsResultCache,
+  retrieveDataspaceArtifactsCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { generateDataSpaceQueryCreatorRoute } from '../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import { hasDataSpaceInfoBeenVisited } from '../__lib__/LegendQueryUserDataSpaceHelper.js';
@@ -269,6 +277,7 @@ export abstract class QueryEditorStore {
   showRegisterServiceModal = false;
   showAppInfo = false;
   showDataspaceInfo = false;
+  enableMinialGraphForDataSpaceLoadingPerformance = true;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -282,13 +291,16 @@ export abstract class QueryEditorStore {
       showAppInfo: observable,
       showDataspaceInfo: observable,
       queryBuilderState: observable,
+      enableMinialGraphForDataSpaceLoadingPerformance: observable,
       isPerformingBlockingAction: computed,
       setExistingQueryName: action,
       setShowRegisterServiceModal: action,
       setShowAppInfo: action,
       setShowDataspaceInfo: action,
+      setEnableMinialGraphForDataSpaceLoadingPerformance: action,
       initialize: flow,
       buildGraph: flow,
+      buildFullGraph: flow,
       searchExistingQueryName: flow,
     });
 
@@ -390,6 +402,10 @@ export abstract class QueryEditorStore {
     this.showRegisterServiceModal = val;
   }
 
+  setEnableMinialGraphForDataSpaceLoadingPerformance(val: boolean): void {
+    this.enableMinialGraphForDataSpaceLoadingPerformance = val;
+  }
+
   get isPerformingBlockingAction(): boolean {
     return this.queryCreatorState.createQueryState.isInProgress;
   }
@@ -480,7 +496,10 @@ export abstract class QueryEditorStore {
   ): QueryPersistConfiguration | undefined;
 
   *initialize(): GeneratorFn<void> {
-    if (!this.initState.isInInitialState) {
+    if (
+      !this.initState.isInInitialState &&
+      this.enableMinialGraphForDataSpaceLoadingPerformance
+    ) {
       return;
     }
 
@@ -563,7 +582,7 @@ export abstract class QueryEditorStore {
     );
   }
 
-  *buildGraph(): GeneratorFn<void> {
+  *buildFullGraph(): GeneratorFn<void> {
     const stopWatch = new StopWatch();
 
     const projectInfo = this.getProjectInfo();
@@ -653,6 +672,7 @@ export abstract class QueryEditorStore {
         dependenciesCount:
           this.graphManagerState.graph.dependencyManager.numberOfDependencies,
         graph: graph_buildReport,
+        isLightGraphEnabled: false,
       };
       this.logBuildGraphMetrics(graphBuilderReportData);
 
@@ -661,6 +681,140 @@ export abstract class QueryEditorStore {
         graphBuilderReportData,
       );
     }
+  }
+
+  *buildGraph(): GeneratorFn<void> {
+    yield flowResult(this.buildFullGraph());
+  }
+
+  async buildGraphAndDataspaceAnalyticsResult(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    executionContext: string | undefined,
+    dataSpacePath: string,
+    templateQueryId?: string | undefined,
+  ): Promise<{
+    dataSpaceAnalysisResult: DataSpaceAnalysisResult | undefined;
+    isLightGraphEnabled: boolean;
+  }> {
+    let dataSpaceAnalysisResult;
+    let buildFullGraph = false;
+    let isLightGraphEnabled = true;
+    const supportBuildMinimalGraph =
+      this.applicationStore.config.options.TEMPORARY__enableMinimalGraph;
+    if (
+      this.enableMinialGraphForDataSpaceLoadingPerformance &&
+      supportBuildMinimalGraph
+    ) {
+      try {
+        this.initState.setMessage('Fetching dataspace analysis result...');
+        const project = StoreProjectData.serialization.fromJson(
+          await this.depotServerClient.getProject(groupId, artifactId),
+        );
+        const graph_buildReport = createGraphBuilderReport();
+        const stopWatch = new StopWatch();
+        // initialize system
+        stopWatch.record();
+        await this.graphManagerState.initializeSystem();
+        stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH_SYSTEM__SUCCESS);
+        const dependency_buildReport = createGraphBuilderReport();
+        dataSpaceAnalysisResult = await DSL_DataSpace_getGraphManagerExtension(
+          this.graphManagerState.graphManager,
+        ).analyzeDataSpaceCoverage(
+          dataSpacePath,
+          () =>
+            retrieveProjectEntitiesWithClassifier(
+              project,
+              versionId,
+              CORE_PURE_PATH.FUNCTION,
+              this.depotServerClient,
+            ),
+          () =>
+            retrieveDataspaceArtifactsCache(
+              project,
+              versionId,
+              this.depotServerClient,
+            ),
+          undefined,
+          graph_buildReport,
+          this.graphManagerState.graph,
+          executionContext,
+          undefined,
+          this.getProjectInfo(),
+          templateQueryId,
+        );
+        const mappingPath = executionContext
+          ? dataSpaceAnalysisResult.executionContextsIndex.get(executionContext)
+              ?.mapping.path
+          : undefined;
+        if (mappingPath) {
+          const pmcd =
+            dataSpaceAnalysisResult.mappingToMappingCoverageResult?.get(
+              mappingPath,
+            )?.entities;
+          if (pmcd) {
+            // report
+            stopWatch.record(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS);
+            const graphBuilderReportData = {
+              timings:
+                this.applicationStore.timeService.finalizeTimingsRecord(
+                  stopWatch,
+                ),
+              dependencies: dependency_buildReport,
+              dependenciesCount:
+                this.graphManagerState.graph.dependencyManager
+                  .numberOfDependencies,
+              graph: graph_buildReport,
+              isLightGraphEnabled: true,
+            };
+            this.logBuildGraphMetrics(graphBuilderReportData);
+            this.applicationStore.logService.info(
+              LogEvent.create(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS),
+              graphBuilderReportData,
+            );
+          } else {
+            buildFullGraph = true;
+          }
+        }
+      } catch (error) {
+        buildFullGraph = true;
+        this.applicationStore.logService.error(
+          LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
+          error,
+        );
+      }
+    }
+    if (
+      !this.enableMinialGraphForDataSpaceLoadingPerformance ||
+      buildFullGraph ||
+      !supportBuildMinimalGraph
+    ) {
+      this.graphManagerState.graph = this.graphManagerState.createNewGraph();
+      await flowResult(this.buildFullGraph());
+      try {
+        const project = StoreProjectData.serialization.fromJson(
+          await this.depotServerClient.getProject(groupId, artifactId),
+        );
+        dataSpaceAnalysisResult = await DSL_DataSpace_getGraphManagerExtension(
+          this.graphManagerState.graphManager,
+        ).retrieveDataSpaceAnalysisFromCache(() =>
+          retrieveAnalyticsResultCache(
+            project,
+            versionId,
+            dataSpacePath,
+            this.depotServerClient,
+          ),
+        );
+      } catch {
+        // do nothing
+      }
+      isLightGraphEnabled = false;
+    }
+    return {
+      dataSpaceAnalysisResult,
+      isLightGraphEnabled,
+    };
   }
 }
 
@@ -1182,6 +1336,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   private queryId: string;
   private _lightQuery?: LightQuery | undefined;
   query: Query | undefined;
+  queryInfo: QueryInfo | undefined;
   urlQueryParamValues: Record<string, string> | undefined;
   updateState: ExistingQueryUpdateState;
 
@@ -1195,11 +1350,13 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
 
     makeObservable<ExistingQueryEditorStore, '_lightQuery'>(this, {
       query: observable,
+      queryInfo: observable,
       updateState: observable,
       _lightQuery: observable,
       lightQuery: computed,
       setLightQuery: action,
       setQuery: action,
+      setQueryInfo: action,
       isPerformingBlockingAction: override,
     });
 
@@ -1246,6 +1403,10 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     this.query = val;
   }
 
+  setQueryInfo(val: QueryInfo): void {
+    this.queryInfo = val;
+  }
+
   getProjectInfo(): ProjectGAVCoordinates {
     return {
       groupId: this.lightQuery.groupId,
@@ -1254,52 +1415,73 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     };
   }
 
+  override *buildGraph(): GeneratorFn<void> {
+    const queryInfo = this.queryInfo;
+    const dataSpaceTaggedValue = queryInfo?.taggedValues?.find(
+      (taggedValue) =>
+        taggedValue.profile === QUERY_PROFILE_PATH &&
+        taggedValue.tag === QUERY_PROFILE_TAG_DATA_SPACE &&
+        isValidFullPath(taggedValue.value),
+    );
+    if (
+      !(
+        dataSpaceTaggedValue !== undefined ||
+        queryInfo?.executionContext instanceof
+          QueryDataSpaceExecutionContextInfo
+      )
+    ) {
+      yield flowResult(this.buildFullGraph());
+    }
+  }
+
   override async setUpEditorState(): Promise<void> {
+    const queryInfo = await this.graphManagerState.graphManager.getQueryInfo(
+      this.queryId,
+    );
     this.setLightQuery(
       await this.graphManagerState.graphManager.getLightQuery(this.queryId),
     );
+    this.setQueryInfo(queryInfo);
+    LegendQueryUserDataHelper.addRecentlyViewedQuery(
+      this.applicationStore.userDataService,
+      queryInfo.id,
+    );
   }
 
-  async initQueryBuildStateFromQuery(query: Query): Promise<QueryBuilderState> {
-    const exec = query.executionContext;
-    if (exec instanceof QueryDataSpaceExecutionContext) {
+  async initQueryBuildStateFromQuery(
+    queryInfo: QueryInfo,
+  ): Promise<QueryBuilderState> {
+    const exec = queryInfo.executionContext;
+    if (exec instanceof QueryDataSpaceExecutionContextInfo) {
+      const { dataSpaceAnalysisResult, isLightGraphEnabled } =
+        await this.buildGraphAndDataspaceAnalyticsResult(
+          queryInfo.groupId,
+          queryInfo.artifactId,
+          queryInfo.versionId,
+          exec.executionKey,
+          exec.dataSpacePath,
+        );
       const dataSpace = getOwnDataSpace(
         exec.dataSpacePath,
         this.graphManagerState.graph,
       );
+      const mapping = queryInfo.mapping
+        ? this.graphManagerState.graph.getMapping(queryInfo.mapping)
+        : undefined;
+      const runtime = queryInfo.runtime
+        ? this.graphManagerState.graph.getRuntime(queryInfo.runtime)
+        : undefined;
       const matchingExecutionContext = resolveExecutionContext(
         dataSpace,
         exec.executionKey,
-        query.mapping?.value,
-        query.runtime?.value,
+        mapping,
+        runtime,
       );
       if (matchingExecutionContext) {
-        let dataSpaceAnalysisResult;
-        try {
-          const project = StoreProjectData.serialization.fromJson(
-            await this.depotServerClient.getProject(
-              query.groupId,
-              query.artifactId,
-            ),
-          );
-          dataSpaceAnalysisResult =
-            await DSL_DataSpace_getGraphManagerExtension(
-              this.graphManagerState.graphManager,
-            ).retrieveDataSpaceAnalysisFromCache(() =>
-              retrieveAnalyticsResultCache(
-                project,
-                query.versionId,
-                dataSpace.path,
-                this.depotServerClient,
-              ),
-            );
-        } catch {
-          // do nothing
-        }
         const sourceInfo = {
-          groupId: query.groupId,
-          artifactId: query.artifactId,
-          versionId: query.versionId,
+          groupId: queryInfo.groupId,
+          artifactId: queryInfo.artifactId,
+          versionId: queryInfo.versionId,
           dataSpace: dataSpace.path,
         };
         const visitedDataSpaces =
@@ -1313,15 +1495,16 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
           new QueryBuilderActionConfig_QueryApplication(this),
           dataSpace,
           matchingExecutionContext,
+          isLightGraphEnabled,
           createDataSpaceDepoRepo(
             this,
-            query.groupId,
-            query.artifactId,
-            query.versionId,
+            queryInfo.groupId,
+            queryInfo.artifactId,
+            queryInfo.versionId,
             (dataSpaceInfo: DataSpaceInfo) =>
               hasDataSpaceInfoBeenVisited(dataSpaceInfo, visitedDataSpaces),
           ),
-          (dataSpaceInfo: DataSpaceInfo) => {
+          async (dataSpaceInfo: DataSpaceInfo) => {
             if (dataSpaceInfo.defaultExecutionContext) {
               const proceed = (): void =>
                 this.applicationStore.navigationService.navigator.goToLocation(
@@ -1351,7 +1534,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
                 }
               };
               if (
-                !query.isCurrentUserQuery ||
+                !queryInfo.isCurrentUserQuery ||
                 !this.queryBuilderState?.changeDetectionState.hasChanged
               ) {
                 proceed();
@@ -1415,7 +1598,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
           `Unsupported execution context ${exec.executionKey}`,
         );
       }
-    } else if (exec instanceof QueryExplicitExecutionContext) {
+    } else if (exec instanceof QueryExplicitExecutionContextInfo) {
       const projectInfo = this.getProjectInfo();
       const sourceInfo = {
         groupId: projectInfo.groupId,
@@ -1433,12 +1616,18 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         new QueryBuilderActionConfig_QueryApplication(this),
       );
       classQueryBuilderState.executionContextState.setMapping(
-        exec.mapping.value,
+        exec.mapping
+          ? this.graphManagerState.graph.getMapping(exec.mapping)
+          : undefined,
       );
       classQueryBuilderState.executionContextState.setRuntimeValue(
-        new RuntimePointer(
-          PackageableElementExplicitReference.create(exec.runtime.value),
-        ),
+        exec.runtime
+          ? new RuntimePointer(
+              PackageableElementExplicitReference.create(
+                this.graphManagerState.graph.getRuntime(exec.runtime),
+              ),
+            )
+          : undefined,
       );
       return classQueryBuilderState;
     }
@@ -1448,6 +1637,19 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   async initializeQueryBuilderState(
     stopWatch: StopWatch,
   ): Promise<QueryBuilderState> {
+    // if no extension found, fall back to basic `class -> mapping -> runtime` mode
+    let queryInfo = this.queryInfo;
+    if (!queryInfo) {
+      queryInfo = await this.graphManagerState.graphManager.getQueryInfo(
+        this.queryId,
+      );
+    }
+    const queryBuilderState =
+      await this.initQueryBuildStateFromQuery(queryInfo);
+    const initailizeQueryStateStopWatch = new StopWatch();
+    const initailizeQueryStateReport = reportGraphAnalytics(
+      this.graphManagerState.graph,
+    );
     const query = await this.graphManagerState.graphManager.getQuery(
       this.queryId,
       this.graphManagerState.graph,
@@ -1456,14 +1658,6 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     LegendQueryUserDataHelper.addRecentlyViewedQuery(
       this.applicationStore.userDataService,
       query.id,
-    );
-
-    // if no extension found, fall back to basic `class -> mapping -> runtime` mode
-    const queryBuilderState = await this.initQueryBuildStateFromQuery(query);
-
-    const initailizeQueryStateStopWatch = new StopWatch();
-    const initailizeQueryStateReport = reportGraphAnalytics(
-      this.graphManagerState.graph,
     );
     const existingQueryLambda =
       await this.graphManagerState.graphManager.pureCodeToLambda(query.content);
