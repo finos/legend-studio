@@ -572,10 +572,12 @@ export const QueryLoader = observer(
                         title={`Click to ${loadActionLabel}...`}
                         key={templateQuery.title}
                         onClick={() => {
-                          loadCuratedTemplateQuery()(
-                            templateQuery,
-                            guaranteeNonNullable(
-                              queryLoaderState.queryBuilderState,
+                          flowResult(
+                            loadCuratedTemplateQuery()(
+                              templateQuery,
+                              guaranteeNonNullable(
+                                queryLoaderState.queryBuilderState,
+                              ),
                             ),
                           );
                           queryLoaderState.setQueryLoaderDialogOpen(false);

@@ -34,7 +34,6 @@ import {
   Package,
   QueryDataSpaceExecutionContext,
   elementBelongsToPackage,
-  RuntimePointer,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
@@ -47,7 +46,6 @@ import {
   ActionState,
   assertErrorThrown,
   filterByType,
-  getNullableFirstEntry,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query-builder/DataSpaceQueryBuilder.js';
@@ -88,11 +86,34 @@ export const resolveUsableDataSpaceClasses = (
   dataSpace: DataSpace,
   mapping: Mapping,
   graphManagerState: GraphManagerState,
+  queryBuilderState?: DataSpaceQueryBuilderState,
 ): Class[] => {
-  const compatibleClasses = getMappingCompatibleClasses(
+  let compatibleClasses = getMappingCompatibleClasses(
     mapping,
     graphManagerState.usableClasses,
   );
+  const mappingModelCoverageAnalysisResult =
+    queryBuilderState?.dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
+      mapping.path,
+    );
+  if (
+    // This check is to make sure that we have `info` field present in `MappedEntity` which
+    // contains information about the mapped class path
+    mappingModelCoverageAnalysisResult?.mappedEntities.some(
+      (m) => m.info !== undefined,
+    )
+  ) {
+    const compatibleClassPaths =
+      mappingModelCoverageAnalysisResult.mappedEntities.map(
+        (e) => e.info?.classPath,
+      );
+    const uniqueCompatibleClasses = compatibleClassPaths.filter(
+      (val, index) => compatibleClassPaths.indexOf(val) === index,
+    );
+    compatibleClasses = graphManagerState.graph.classes.filter((c) =>
+      uniqueCompatibleClasses.includes(c.path),
+    );
+  }
   if (dataSpace.elements?.length) {
     const elements = dataSpace.elements;
     return compatibleClasses.filter((_class) => {
@@ -335,7 +356,7 @@ export class DataSpacesDepotRepository extends DataSpacesBuilderRepoistory {
 }
 
 export class DataSpaceQueryBuilderState extends QueryBuilderState {
-  readonly onDataSpaceChange: (val: DataSpaceInfo) => void;
+  readonly onDataSpaceChange: (val: DataSpaceInfo) => Promise<void>;
   readonly onExecutionContextChange?:
     | ((val: DataSpaceExecutionContext) => void)
     | undefined;
@@ -351,6 +372,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   executionContext!: DataSpaceExecutionContext;
   showRuntimeSelector = false;
   isTemplateQueryDialogOpen = false;
+  isLightGraphEnabled!: boolean;
   displayedTemplateQueries: DataSpaceExecutableAnalysisResult[] | undefined;
 
   constructor(
@@ -360,8 +382,9 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     actionConfig: QueryBuilderActionConfig,
     dataSpace: DataSpace,
     executionContext: DataSpaceExecutionContext,
+    isLightGraphEnabled: boolean,
     dataSpaceRepo: DataSpacesBuilderRepoistory | undefined,
-    onDataSpaceChange: (val: DataSpaceInfo) => void,
+    onDataSpaceChange: (val: DataSpaceInfo) => Promise<void>,
     dataSpaceAnalysisResult?: DataSpaceAnalysisResult | undefined,
     onExecutionContextChange?:
       | ((val: DataSpaceExecutionContext) => void)
@@ -377,10 +400,12 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       executionContext: observable,
       showRuntimeSelector: observable,
       isTemplateQueryDialogOpen: observable,
+      isLightGraphEnabled: observable,
       displayedTemplateQueries: observable,
       setExecutionContext: action,
       setShowRuntimeSelector: action,
       setTemplateQueryDialogOpen: action,
+      setIsLightGraphEnabled: action,
       intialize: flow,
     });
 
@@ -425,41 +450,8 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     this.showRuntimeSelector = val;
   }
 
-  /**
-   * Propagation after changing the execution context:
-   * - The mapping will be updated to the mapping of the execution context
-   * - The runtime will be updated to the default runtime of the execution context
-   * - If no class is chosen, try to choose a compatible class
-   * - If the chosen class is compatible with the new selected execution context mapping, do nothing, otherwise, try to choose a compatible class
-   */
-  propagateExecutionContextChange(
-    executionContext: DataSpaceExecutionContext,
-  ): void {
-    const mapping = executionContext.mapping.value;
-    this.changeMapping(mapping);
-    const mappingModelCoverageAnalysisResult =
-      this.dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
-        mapping.path,
-      );
-    if (mappingModelCoverageAnalysisResult) {
-      this.explorerState.mappingModelCoverageAnalysisResult =
-        mappingModelCoverageAnalysisResult;
-    }
-    this.changeRuntime(new RuntimePointer(executionContext.defaultRuntime));
-
-    const compatibleClasses = resolveUsableDataSpaceClasses(
-      this.dataSpace,
-      mapping,
-      this.graphManagerState,
-    );
-    // if there is no chosen class or the chosen one is not compatible
-    // with the mapping then pick a compatible class if possible
-    if (!this.class || !compatibleClasses.includes(this.class)) {
-      const possibleNewClass = getNullableFirstEntry(compatibleClasses);
-      if (possibleNewClass) {
-        this.changeClass(possibleNewClass);
-      }
-    }
+  setIsLightGraphEnabled(val: boolean): void {
+    this.isLightGraphEnabled = val;
   }
 
   override buildFunctionAnalysisInfo():

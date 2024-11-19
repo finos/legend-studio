@@ -15,17 +15,18 @@
  */
 
 import { LegendApplicationPlugin } from '@finos/legend-application';
-import type { Query } from '@finos/legend-graph';
 import type {
-  QueryBuilderState,
   QueryBuilder_LegendApplicationPlugin_Extension,
+  QueryBuilderState,
 } from '@finos/legend-query-builder';
+import type React from 'react';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import {
-  type ExistingQueryEditorStore,
-  type QueryEditorStore,
+import type {
+  ExistingQueryEditorStore,
+  QueryEditorStore,
 } from './QueryEditorStore.js';
 import type { QuerySetupLandingPageStore } from './QuerySetupStore.js';
+import type { Query } from '@finos/legend-graph';
 
 export enum QuerySetupActionTag {
   PRODUCTIONIZATION = 'Productionization',

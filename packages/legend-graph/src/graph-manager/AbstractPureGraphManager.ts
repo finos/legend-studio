@@ -71,6 +71,7 @@ import type { RunTestsTestableInput } from '../graph/metamodel/pure/test/result/
 import type { TestResult } from '../graph/metamodel/pure/test/result/TestResult.js';
 import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
 import type {
+  MappedEntity,
   MappingModelCoverageAnalysisResult,
   RawMappingModelCoverageAnalysisResult,
 } from './action/analytics/MappingModelCoverageAnalysis.js';
@@ -289,6 +290,12 @@ export abstract class AbstractPureGraphManager {
     options?: GraphBuilderOptions,
     report?: GraphManagerOperationReport,
   ): Promise<void>;
+
+  abstract buildEntityFromMappingAnalyticsResult(
+    mappedEntities: MappedEntity[],
+    graph: PureModel,
+    buildActionState: ActionState,
+  ): Promise<Entity[]>;
 
   abstract buildGenerations(
     graph: PureModel,

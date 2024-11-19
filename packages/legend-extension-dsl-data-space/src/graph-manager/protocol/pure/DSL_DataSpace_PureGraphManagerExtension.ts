@@ -19,8 +19,10 @@ import {
   type PureProtocolProcessorPlugin,
   AbstractPureGraphManagerExtension,
   type QueryInfo,
+  type PureModel,
+  type GraphManagerOperationReport,
 } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-storage';
+import type { Entity, ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
   guaranteeNonNullable,
   type ActionState,
@@ -42,6 +44,23 @@ export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPu
     actionState?: ActionState,
   ): Promise<DataSpaceAnalysisResult | undefined>;
 
+  abstract analyzeDataSpaceCoverage(
+    entitiesWithClassifierRetriever: () => Promise<
+      [PlainObject<Entity>[], PlainObject<Entity>[]]
+    >,
+    cacheRetriever?: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
+    actionState?: ActionState,
+    graphReport?: GraphManagerOperationReport | undefined,
+    pureGraph?: PureModel | undefined,
+    executionContext?: string | undefined,
+    mappingPath?: string | undefined,
+    projectInfo?: ProjectGAVCoordinates,
+    templateQueryId?: string,
+  ): Promise<{
+    dataSpaceAnalysisResult: DataSpaceAnalysisResult;
+    isMiniGraphSuccess: boolean;
+  }>;
+
   abstract addNewExecutableToDataSpaceEntity(
     dataSpaceEntity: Entity,
     currentQuery: QueryInfo,
@@ -57,7 +76,10 @@ export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPu
   abstract buildDataSpaceAnalytics(
     json: PlainObject<V1_DataSpaceAnalysisResult>,
     plugins: PureProtocolProcessorPlugin[],
-  ): Promise<DataSpaceAnalysisResult>;
+  ): Promise<{
+    dataSpaceAnalysisResult: DataSpaceAnalysisResult;
+    isMiniGraphSuccess: boolean;
+  }>;
 }
 
 export const DSL_DataSpace_getGraphManagerExtension = (
