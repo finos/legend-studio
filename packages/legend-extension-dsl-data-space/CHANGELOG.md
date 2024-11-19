@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.5
+
+### Patch Changes
+
+- [#3660](https://github.com/finos/legend-studio/pull/3660) [`9dd4bf6`](https://github.com/finos/legend-studio/commit/9dd4bf64fdbcfb16e010c9aa6bf89e79aa3c3109) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - leverage minimal graph to build query builder with datsapaces
+
 ## 10.4.4
 
 ## 10.4.3
