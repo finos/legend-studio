@@ -209,7 +209,7 @@ export class QueryConnectionConfirmationAndGrammarEditorStepperState extends Con
       yield flowResult(
         this.editorStore.embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
           {
-            setupQueryBuilderState: () => queryBuilderState,
+            setupQueryBuilderState: async () => queryBuilderState,
             actionConfigs: [],
           },
         ),

@@ -39,7 +39,7 @@ export const queryDataSpace = async (
   const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
   await flowResult(
     embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
-      setupQueryBuilderState: () => {
+      setupQueryBuilderState: async () => {
         const sourceInfo = Object.assign(
           {},
           editorStore.editorMode.getSourceInfo(),
@@ -54,8 +54,9 @@ export const queryDataSpace = async (
           QueryBuilderActionConfig.INSTANCE,
           dataSpace,
           dataSpace.defaultExecutionContext,
+          false,
           undefined,
-          (dataSpaceInfo: DataSpaceInfo) => {
+          async (dataSpaceInfo: DataSpaceInfo) => {
             queryBuilderState.dataSpace = guaranteeType(
               queryBuilderState.graphManagerState.graph.getElement(
                 dataSpaceInfo.path,
@@ -65,9 +66,7 @@ export const queryDataSpace = async (
             queryBuilderState.setExecutionContext(
               queryBuilderState.dataSpace.defaultExecutionContext,
             );
-            queryBuilderState.propagateExecutionContextChange(
-              queryBuilderState.dataSpace.defaultExecutionContext,
-            );
+            await queryBuilderState.propagateExecutionContextChange();
           },
           undefined,
           undefined,
@@ -79,9 +78,7 @@ export const queryDataSpace = async (
         queryBuilderState.setExecutionContext(
           dataSpace.defaultExecutionContext,
         );
-        queryBuilderState.propagateExecutionContextChange(
-          dataSpace.defaultExecutionContext,
-        );
+        await queryBuilderState.propagateExecutionContextChange();
         return queryBuilderState;
       },
       actionConfigs: [],

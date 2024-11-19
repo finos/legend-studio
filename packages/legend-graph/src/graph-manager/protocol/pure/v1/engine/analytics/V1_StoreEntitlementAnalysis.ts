@@ -15,13 +15,13 @@
  */
 
 import {
+  type ModelSchema,
   SKIP,
   createModelSchema,
   custom,
   deserialize,
   optional,
   primitive,
-  type ModelSchema,
   serialize,
   list,
 } from 'serializr';
