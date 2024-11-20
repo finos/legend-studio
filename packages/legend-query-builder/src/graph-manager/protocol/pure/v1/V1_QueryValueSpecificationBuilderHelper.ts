@@ -494,7 +494,7 @@ export const V1_buildExistsFunctionExpression = (
   const lambda = parameters[1];
   if (lambda instanceof V1_Lambda) {
     lambda.parameters.forEach((variable): void => {
-      if (variable.name && !variable.class) {
+      if (variable.name && !variable.genericType) {
         const variableExpression = new VariableExpression(
           variable.name,
           Multiplicity.ONE,
@@ -548,7 +548,7 @@ export const V1_buildFilterFunctionExpression = (
     const lambda = parameters[1];
     if (lambda instanceof V1_Lambda) {
       lambda.parameters.forEach((variable): void => {
-        if (variable.name && !variable.class) {
+        if (variable.name && !variable.genericType) {
           const variableExpression = new VariableExpression(
             variable.name,
             precedingExpression.multiplicity,
@@ -634,7 +634,7 @@ const V1_buildTypedProjectFunctionExpression = (
   const variables = new Set<string>();
   // Make sure top-level lambdas have their lambda parameter types set properly
   topLevelLambdaParameters.forEach((variable) => {
-    if (!variables.has(variable.name) && !variable.class) {
+    if (!variables.has(variable.name) && !variable.genericType) {
       const variableExpression = new VariableExpression(
         variable.name,
         precedingExperession.multiplicity,
@@ -731,7 +731,7 @@ const V1_buildColFunctionExpression = (
   let lambda: ValueSpecification;
   try {
     colLambda.parameters.forEach((variable): void => {
-      if (variable.name && !variable.class) {
+      if (variable.name && !variable.genericType) {
         const variableExpression = new VariableExpression(
           variable.name,
           Multiplicity.ONE,
@@ -917,7 +917,7 @@ export const V1_buildProjectFunctionExpression = (
   const variables = new Set<string>();
   // Make sure top-level lambdas have their lambda parameter types set properly
   topLevelLambdaParameters.forEach((variable) => {
-    if (!variables.has(variable.name) && !variable.class) {
+    if (!variables.has(variable.name) && !variable.genericType) {
       const variableExpression = new VariableExpression(
         variable.name,
         precedingExperession.multiplicity,
@@ -1048,7 +1048,7 @@ export const V1_buildGroupByFunctionExpression = (
   // Make sure top-level lambdas have their lambda parameter types set properly
   const variables = new Set<string>();
   topLevelLambdaParameters.forEach((variable) => {
-    if (!variables.has(variable.name) && !variable.class) {
+    if (!variables.has(variable.name) && !variable.genericType) {
       const variableExpression = new VariableExpression(
         variable.name,
         precedingExperession.multiplicity,
@@ -1153,7 +1153,7 @@ export const V1_buildWatermarkFunctionExpression = (
   const lambda = parameters[1];
   if (lambda instanceof V1_Lambda) {
     lambda.parameters.forEach((variable): void => {
-      if (variable.name && !variable.class) {
+      if (variable.name && !variable.genericType) {
         const variableExpression = new VariableExpression(
           variable.name,
           precedingExpression.multiplicity,
@@ -1278,7 +1278,7 @@ export const V1_buildOLAPGroupByFunctionExpression = (
   const olapOperationParameters = olapOperationLambda.parameters;
   const variables = new Set<string>();
   olapOperationParameters.forEach((variable) => {
-    if (!variables.has(variable.name) && !variable.class) {
+    if (!variables.has(variable.name) && !variable.genericType) {
       const variableExpression = new VariableExpression(
         variable.name,
         precedingExperession.multiplicity,

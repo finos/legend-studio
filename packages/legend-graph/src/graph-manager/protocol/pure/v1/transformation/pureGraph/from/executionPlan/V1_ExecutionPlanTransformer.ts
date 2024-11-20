@@ -111,6 +111,7 @@ import { RelationalCrossRootQueryTempTableGraphFetchExecutionNode } from '../../
 import { V1_RelationalCrossRootQueryTempTableGraphFetchExecutionNode } from '../../../../model/executionPlan/nodes/V1_RelationalCrossRootQueryTempTableGraphFetchExecutionNode.js';
 import type { LocalGraphFetchExecutionNode } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/LocalGraphFetchExecutionNode.js';
 import { RelationalGraphFetchExecutionNode } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/RelationalGraphFetchExecutionNode.js';
+import { V1_createGenericTypeWithElementPath } from '../V1_DomainTransformer.js';
 
 // ---------------------------------------- Result Type ----------------------------------------
 
@@ -253,7 +254,10 @@ const transformFunctionParameters = (
   const protocol = new V1_Variable();
   protocol.name = metamodel.name;
   protocol.multiplicity = V1_transformMultiplicity(metamodel.multiplicity);
-  protocol.class = metamodel.genericType?.value.rawType.name;
+  const _class = metamodel.genericType?.value.rawType.name;
+  if (_class) {
+    protocol.genericType = V1_createGenericTypeWithElementPath(_class);
+  }
   return protocol;
 };
 

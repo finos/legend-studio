@@ -90,6 +90,7 @@ import type { ColSpecArrayInstance } from '../../../../../../../graph/metamodel/
 import { V1_ColSpecArray } from '../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpecArray.js';
 import { V1_ColSpec } from '../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
 import { Relation_RelationalColumn } from '../../../../../../../graph/metamodel/pure/packageableElements/relation/Relation_RelationType.js';
+import { V1_createGenericTypeWithElementPath } from './V1_DomainTransformer.js';
 
 class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
@@ -193,7 +194,9 @@ class V1_ValueSpecificationTransformer
         valueSpecification.multiplicity.upperBound,
       );
       _variable.multiplicity = multiplicity;
-      _variable.class = genericType.value.rawType.path;
+      _variable.genericType = V1_createGenericTypeWithElementPath(
+        genericType.value.rawType.path,
+      );
     }
     return _variable;
   }

@@ -23,13 +23,14 @@ import {
   optional,
   SKIP,
   type ModelSchema,
+  serialize,
+  custom,
 } from 'serializr';
 import {
   customEquivalentList,
   customList,
   customListWithSchema,
   optionalCustom,
-  optionalCustomList,
   usingConstantValueSchema,
   usingModelSchema,
 } from '@finos/legend-shared';
@@ -77,6 +78,10 @@ import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProces
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
 import { V1_DefaultValue } from '../../../model/packageableElements/domain/V1_DefaultValue.js';
 import { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
+import {
+  V1_deserializeGenericType,
+  V1_GenericTypeModelSchema,
+} from './V1_TypeSerializationHelper.js';
 
 export const V1_CLASS_ELEMENT_PROTOCOL_TYPE = 'class';
 export const V1_PROFILE_ELEMENT_PROTOCOL_TYPE = 'profile';
@@ -231,7 +236,27 @@ export const V1_propertyModelSchema = createModelSchema(V1_Property, {
   taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
-  type: primitive(),
+  genericType: custom(
+    (val) => serialize(V1_GenericTypeModelSchema, val),
+    (val) => V1_deserializeGenericType(val),
+    {
+      beforeDeserialize: function (callback, jsonValue, jsonParentValue) {
+        const parentVal = jsonParentValue as {
+          type: string | undefined;
+          genericType: string | undefined;
+        };
+        // backward compatible
+        if (
+          parentVal.type !== undefined &&
+          parentVal.genericType === undefined
+        ) {
+          callback(null, parentVal.type);
+        } else {
+          callback(null, parentVal.genericType);
+        }
+      },
+    },
+  ),
 });
 
 export const V1_derivedPropertyModelSchema = createModelSchema(
@@ -241,7 +266,27 @@ export const V1_derivedPropertyModelSchema = createModelSchema(
     name: primitive(),
     parameters: raw(),
     returnMultiplicity: usingModelSchema(V1_multiplicityModelSchema),
-    returnType: primitive(),
+    returnGenericType: custom(
+      (val) => serialize(V1_GenericTypeModelSchema, val),
+      (val) => V1_deserializeGenericType(val),
+      {
+        beforeDeserialize: function (callback, jsonValue, jsonParentValue) {
+          const parentVal = jsonParentValue as {
+            returnType: string | undefined;
+            returnGenericType: string | undefined;
+          };
+          // backward compatible
+          if (
+            parentVal.returnType !== undefined &&
+            parentVal.returnGenericType === undefined
+          ) {
+            callback(null, parentVal.returnType);
+          } else {
+            callback(null, parentVal.returnGenericType);
+          }
+        },
+      },
+    ),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
@@ -351,16 +396,35 @@ export const V1_functionModelSchema = (
     postConstraints: list(primitive()), // NOTE: these are not currently supported and just added to pass roundtrip test
     preConstraints: list(primitive()), // NOTE: these are not currently supported and just added to pass roundtrip test
     returnMultiplicity: usingModelSchema(V1_multiplicityModelSchema),
-    returnType: primitive(),
+    returnGenericType: custom(
+      (val) => serialize(V1_GenericTypeModelSchema, val),
+      (val) => V1_deserializeGenericType(val),
+      {
+        beforeDeserialize: function (callback, jsonValue, jsonParentValue) {
+          const parentVal = jsonParentValue as {
+            returnType: string | undefined;
+            returnGenericType: string | undefined;
+          };
+          if (parentVal.returnType && !parentVal.returnGenericType) {
+            callback(null, parentVal.returnType);
+          } else {
+            callback(null, jsonValue);
+          }
+        },
+      },
+    ),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
     taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
-    tests: optionalCustomList(
+    tests: customList(
       (value: V1_TestSuite) => V1_serializeTestSuite(value, plugins),
       (value) => V1_deserializeTestSuite(value, plugins),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
     ),
   });
 

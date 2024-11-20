@@ -74,6 +74,8 @@ import type { V1_GenericTypeInstance } from '../../../../model/valueSpecificatio
 import type { V1_ClassInstance } from '../../../../model/valueSpecification/raw/V1_ClassInstance.js';
 import type { V1_GraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_GraphFetchTree.js';
 import type { V1_CByteArray } from '../../../../model/valueSpecification/raw/V1_CByteArray.js';
+import { V1_createGenericTypeWithElementPath } from '../../from/V1_DomainTransformer.js';
+import { V1_getGenericTypeFullPath } from '../../../../helpers/V1_DomainHelper.js';
 
 class V1_ValueSpecificationPathResolver
   implements V1_ValueSpecificationVisitor<V1_ValueSpecification>
@@ -96,12 +98,15 @@ class V1_ValueSpecificationPathResolver
   }
 
   visit_Variable(spec: V1_Variable): V1_ValueSpecification {
-    const classPath = spec.class;
+    const classPath = spec.genericType
+      ? V1_getGenericTypeFullPath(spec.genericType)
+      : undefined;
     if (classPath && !isValidFullPath(classPath)) {
-      spec.class =
+      const _newPath =
         returnUndefOnError(() =>
           V1_resolveElementPath(classPath, this.context.resolveClass, this),
         ) ?? classPath;
+      spec.genericType = V1_createGenericTypeWithElementPath(_newPath);
     }
     return spec;
   }

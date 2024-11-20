@@ -19,6 +19,7 @@ import {
   V1_ValueSpecification,
 } from '../../../model/valueSpecification/V1_ValueSpecification.js';
 import { V1_Multiplicity } from '../../packageableElements/domain/V1_Multiplicity.js';
+import type { V1_Type } from '../../packageableElements/type/V1_Type.js';
 
 export class V1_PackageableElementPtr extends V1_ValueSpecification {
   readonly multiplicity = V1_Multiplicity.ONE;
@@ -28,5 +29,14 @@ export class V1_PackageableElementPtr extends V1_ValueSpecification {
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_PackageableElementPtr(this);
+  }
+}
+
+export class V1_PackageableType
+  extends V1_PackageableElementPtr
+  implements V1_Type
+{
+  get hashCode(): string {
+    return this.fullPath;
   }
 }
