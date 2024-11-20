@@ -101,7 +101,6 @@ export const createGraphManagerStateFromGrammar = async (
   const grammarText = fs.readFileSync(modelFilePath, { encoding: 'utf-8' });
   const transformGrammarToJsonResult =
     await ENGINE_TEST_SUPPORT__grammarToJSON_model(grammarText);
-
   const entities = graphManagerState.graphManager.pureProtocolTextToEntities(
     JSON.stringify(transformGrammarToJsonResult),
   );

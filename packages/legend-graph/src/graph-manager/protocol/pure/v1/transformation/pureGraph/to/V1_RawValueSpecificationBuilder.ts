@@ -41,7 +41,9 @@ export class V1_RawValueSpecificationBuilder
   }
 
   visit_Variable(valueSpecification: V1_RawVariable): RawValueSpecification {
-    const type = this.context.resolveType(valueSpecification.class);
+    const type = this.context.resolveType(
+      valueSpecification.genericType.rawType.fullPath,
+    );
     return new RawVariableExpression(
       valueSpecification.name,
       this.context.graph.getMultiplicity(

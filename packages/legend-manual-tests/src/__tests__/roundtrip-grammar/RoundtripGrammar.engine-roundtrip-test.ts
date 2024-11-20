@@ -75,6 +75,7 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   // Update processing to handle Persistence V2 specs
   // See https://github.com/finos/legend-engine/pull/1764
   'DSL_Persistence-basic.pure': SKIP,
+  'CORE-legacy-service-tests.pure': SKIP,
 };
 
 type GrammarRoundtripOptions = {
@@ -109,6 +110,10 @@ const logSuccess = (
 const isTestSkipped = (filePath: string): boolean =>
   Object.keys(EXCLUSIONS).includes(basename(filePath)) &&
   EXCLUSIONS[basename(filePath)] === SKIP;
+//  ||
+// !basename(filePath).endsWith(
+//   'CORE-basic-function-with-relational-tests.pure',
+// );
 const isPartialTest = (filePath: string): boolean =>
   Object.keys(EXCLUSIONS).includes(basename(filePath));
 

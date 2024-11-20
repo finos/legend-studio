@@ -39,6 +39,7 @@ import { V1_serializeValueSpecification } from '../../../pureProtocol/serializat
 import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
 import { Multiplicity } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import { PrimitiveType } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+import { V1_createGenericTypeWithElementPath } from '../../from/V1_DomainTransformer.js';
 
 const buildMilestoningParameter = (
   parameterName: string,
@@ -47,7 +48,9 @@ const buildMilestoningParameter = (
   const milestoningParameter = new V1_Variable();
   milestoningParameter.name = parameterName;
   milestoningParameter.multiplicity = V1_Multiplicity.ONE;
-  milestoningParameter.class = PRIMITIVE_TYPE.DATE;
+  milestoningParameter.genericType = V1_createGenericTypeWithElementPath(
+    PRIMITIVE_TYPE.DATE,
+  );
   const json = V1_serializeValueSpecification(milestoningParameter, plugins);
   return json;
 };

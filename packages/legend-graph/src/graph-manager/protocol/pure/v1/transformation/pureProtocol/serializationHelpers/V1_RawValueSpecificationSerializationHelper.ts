@@ -40,6 +40,10 @@ import { V1_multiplicityModelSchema } from '../../../transformation/pureProtocol
 import { V1_RawBaseExecutionContext } from '../../../model/rawValueSpecification/V1_RawExecutionContext.js';
 import { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue.js';
 import { PRIMITIVE_TYPE } from '../../../../../../../graph/MetaModelConst.js';
+import {
+  V1_deserializeRawGenericType,
+  V1_RawGenricTypeSchemaModel,
+} from './V1_TypeSerializationHelper.js';
 
 enum V1_RawExecutionContextType {
   BASE_EXECUTION_CONTEXT = 'BaseExecutionContext',
@@ -79,9 +83,25 @@ export const V1_rawLambdaModelSchema = createModelSchema(V1_RawLambda, {
 
 export const V1_rawVariableModelSchema = createModelSchema(V1_RawVariable, {
   _type: usingConstantValueSchema(V1_RawValueSpecificationType.VARIABLE),
-  class: primitive(),
   multiplicity: usingModelSchema(V1_multiplicityModelSchema),
   name: primitive(),
+  genericType: custom(
+    (val) => serialize(V1_RawGenricTypeSchemaModel, val),
+    (val) => V1_deserializeRawGenericType(val),
+    {
+      beforeDeserialize: function (callback, jsonValue, jsonParentValue) {
+        const parentVal = jsonParentValue as {
+          class: string | undefined;
+          genericType: string | undefined;
+        };
+        if (parentVal.class && !parentVal.genericType) {
+          callback(null, parentVal.class);
+        } else {
+          callback(null, jsonValue);
+        }
+      },
+    },
+  ),
 });
 
 const V1_rawPrimitiveInstanceValueSchema = createModelSchema(

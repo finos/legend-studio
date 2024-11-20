@@ -166,6 +166,7 @@ export {
 export {
   V1_buildFunctionInfoAnalysis,
   V1_getFunctionNameWithoutSignature,
+  V1_getGenericTypeFullPath as V1_getFullReturnTypePath,
 } from './graph-manager/protocol/pure/v1/helpers/V1_DomainHelper.js';
 export {
   V1_buildExecutionResult,

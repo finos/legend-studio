@@ -22,10 +22,12 @@ import {
 import type { V1_Multiplicity } from './V1_Multiplicity.js';
 import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
 import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
+import type { V1_GenericType } from '../type/V1_GenericType.js';
+import { V1_PackageableType } from '../../valueSpecification/raw/V1_PackageableElementPtr.js';
 
 export class V1_DerivedProperty implements Hashable {
   name!: string;
-  returnType!: string;
+  returnGenericType!: V1_GenericType;
   returnMultiplicity!: V1_Multiplicity;
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
@@ -47,7 +49,9 @@ export class V1_DerivedProperty implements Hashable {
       CORE_HASH_STRUCTURE.DERIVED_PROPERTY,
       this.name,
       this.returnMultiplicity,
-      this.returnType,
+      this.returnGenericType.rawType instanceof V1_PackageableType
+        ? this.returnGenericType.rawType.fullPath
+        : '',
       hashArray(this.stereotypes),
       hashArray(this.taggedValues),
       hashRawLambda(this.parameters, this.body),

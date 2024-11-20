@@ -699,7 +699,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       }
       this.resetQueryResult({ preserveResult: options?.preserveResult });
       this.resetQueryContent();
-
       if (!isStubbed_RawLambda(query)) {
         const valueSpec = observe_ValueSpecification(
           this.graphManagerState.graphManager.buildValueSpecification(

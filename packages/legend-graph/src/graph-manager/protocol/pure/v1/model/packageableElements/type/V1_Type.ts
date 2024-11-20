@@ -14,21 +14,6 @@
  * limitations under the License.
  */
 
-import {
-  V1_ValueSpecification,
-  type V1_ValueSpecificationVisitor,
-} from '../../model/valueSpecification/V1_ValueSpecification.js';
-import type { V1_Multiplicity } from '../../model/packageableElements/domain/V1_Multiplicity.js';
-import type { V1_GenericType } from '../packageableElements/type/V1_GenericType.js';
+import type { Hashable } from '@finos/legend-shared';
 
-export class V1_Variable extends V1_ValueSpecification {
-  name!: string;
-  multiplicity!: V1_Multiplicity;
-  genericType: V1_GenericType | undefined;
-
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_Variable(this);
-  }
-}
+export type V1_Type = Hashable;
