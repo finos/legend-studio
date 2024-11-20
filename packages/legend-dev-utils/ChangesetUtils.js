@@ -78,7 +78,7 @@ export async function validateChangesets(cwd, sinceRef) {
     .filter((pkg) => isListablePackage(config, pkg))
     .map((pkg) => pkg.packageJson.name);
 
-  // Check for packages listeded in changeset(s) but no longer exists
+  // Check for packages listed in changeset(s) but no longer exists
   // This is useful in case the current PR deletes some packages
   // making some changesets invalid and can potentially break the release
   const knownPackages = packages.packages.map((pkg) => pkg.packageJson.name);
