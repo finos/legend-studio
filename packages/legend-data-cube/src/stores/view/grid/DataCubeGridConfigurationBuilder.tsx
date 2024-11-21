@@ -413,11 +413,6 @@ function _sizeSpec(columnData: ColumnData) {
       INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
     ),
     maxWidth: column.maxWidth,
-    // Make sure the column spans the width if possible so when total width
-    // is less than grid width, removing/adding one column will cause the other
-    // columns to take/give up space
-    flex:
-      column.fixedWidth === undefined ? 1 : (undefined as unknown as number),
   } as ColDef;
 }
 
@@ -546,8 +541,6 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
       event.api.hidePopupMenu(); // hide context-menu while scrolling
     },
     onBodyScrollEnd: () => grid.setScrollHintText(undefined),
-    scrollbarWidth: 10,
-    alwaysShowVerticalScroll: true, // this is needed to ensure column resize calculation is accurate
     // -------------------------------------- CONTEXT MENU --------------------------------------
     preventDefaultOnContextMenu: true, // prevent showing the browser's context menu
     columnMenu: 'new', // ensure context menu works on header
@@ -572,16 +565,8 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
     },
     // -------------------------------------- COLUMN SIZING --------------------------------------
     autoSizePadding: INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING,
-    // ensure columns are resized to fit the grid width initially and on window resize
-    // NOTE: this has to be used with `alwaysShowVerticalScroll` to ensure accurate sizing
-    // otherwise on initial load, the computation will be done when no data is rendered,
-    // so when data is rendered and the vertical scrollbar shows up, it will block a part of
-    // the last column.
     autoSizeStrategy: {
-      type: 'fitGridWidth',
-    },
-    onGridSizeChanged: (event) => {
-      event.api.sizeColumnsToFit();
+      type: 'fitCellContents',
     },
     // -------------------------------------- TOOLTIP --------------------------------------
     tooltipShowDelay: INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY,
@@ -594,6 +579,10 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
     suppressScrollOnNewData: true,
     // NOTE: use row loader instead of showing loader in each cell to improve performance
     // otherwise, when we have many columns (i.e. when pivoting), the app could freeze.
+    //
+    // This would render the loading cell as the full-width row, which, in combination with
+    // fit cell content auto-sizing strategy creates an unwanted row flashing effect while loading.
+    // To compensate for that, we modify the styling to make sure the full-width row has a blank background
     loadingCellRenderer: DataCubeGridLoadingCellRenderer,
     // By default, when row-grouping is active, ag-grid's caching mechanism causes sort
     // to not work properly for pivot result columns, so we must disable this mechanism.
@@ -953,6 +942,14 @@ export function generateGridOptionsFromSnapshot(
       }
     },
 
+    // Virtual columns when being rendered (as user scrolls horizontally) would get resized
+    // to fit their content dynamically. This can potentially cause some performance issues,
+    // so we debounce the resize operation.
+    onVirtualColumnsChanged: () => {
+      view.grid.debouncedAutoResizeColumns?.cancel();
+      view.grid.debouncedAutoResizeColumns?.();
+    },
+
     // -------------------------------------- COLUMNS --------------------------------------
 
     columnDefs: generateColumnDefs(snapshot, configuration, view),
@@ -971,8 +968,6 @@ export function generateGridOptionsFromSnapshot(
       ..._groupDisplaySpec(snapshot, configuration),
 
       // size
-      suppressAutoSize: true,
-      suppressSizeToFit: true,
       minWidth: 200,
 
       // sorting

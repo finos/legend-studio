@@ -519,6 +519,15 @@ export class DataCubeGridClientServerSideDataSource
           this.grid.client.hideOverlay();
         }
       }
+
+      // Resize columns to fit content on all actions (drilldown, changing queries, fetching new page, etc.)
+      // NOTE: we might want to restrict this to only happen on certain actions
+      //
+      // `setTimeout()` is need to ensure this runs after the grid has been updated with the new data
+      // since ag-grid does not provide an event hook for this action for server-side row model.
+      setTimeout(() => {
+        this.grid.client.autoSizeAllColumns();
+      }, 0);
     } catch (error) {
       assertErrorThrown(error);
       this.grid.view.engine.alertError(error, {
