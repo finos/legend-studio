@@ -14,4 +14,31 @@
  * limitations under the License.
  */
 
-export class V1_PostDeploymentProperties {}
+import {
+  hashArray,
+  type Hashable,
+  type PlainObject,
+} from '@finos/legend-shared';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../../../graph/Core_HashUtils.js';
+
+export class V1_PostDeploymentProperties implements Hashable {
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.FUNCTION_ACTIVATOR_POST_DEPLOYMENT_PROPERTIES,
+    ]);
+  }
+}
+
+export class V1_INTERNAL__UnknownPostDeploymentProperties extends V1_PostDeploymentProperties {
+  content!: PlainObject;
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.FUNCTION_ACTIVATOR_POST_DEPLOYMENT_PROPERTIES,
+      hashObjectWithoutSourceInformation(this.content),
+    ]);
+  }
+}

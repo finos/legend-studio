@@ -22,6 +22,6 @@ export class V1_PostDeploymentAction implements Hashable {
   automated: boolean | undefined;
 
   get hashCode(): string {
-    return hashArray([this.automated ?? '']);
+    return hashArray([this.properties ?? '', this.automated ?? '']);
   }
 }
