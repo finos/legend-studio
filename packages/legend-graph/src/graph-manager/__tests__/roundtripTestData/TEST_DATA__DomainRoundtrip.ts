@@ -170,7 +170,14 @@ export const TEST_DATA__ClassRoundtrip = [
               value: 'bla',
             },
           ],
-          type: 'B',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'B',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -187,7 +194,14 @@ export const TEST_DATA__ClassRoundtrip = [
               value: 'bla',
             },
           ],
-          type: 'A',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'A',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -195,7 +209,14 @@ export const TEST_DATA__ClassRoundtrip = [
             upperBound: 2,
           },
           name: 'dance',
-          type: 'tEnum',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'tEnum',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       qualifiedProperties: [
@@ -239,7 +260,14 @@ export const TEST_DATA__ClassRoundtrip = [
           parameters: [
             {
               _type: 'var',
-              class: 'B',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'B',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
@@ -251,7 +279,14 @@ export const TEST_DATA__ClassRoundtrip = [
             lowerBound: 1,
             upperBound: 1,
           },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
           stereotypes: [
             {
               profile: 'tProf',
@@ -293,7 +328,14 @@ export const TEST_DATA__ClassRoundtrip = [
             lowerBound: 1,
             upperBound: 1,
           },
-          returnType: 'B',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'B',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       stereotypes: [
@@ -328,7 +370,14 @@ export const TEST_DATA__ClassRoundtrip = [
             upperBound: 1,
           },
           name: 'z',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -485,7 +534,14 @@ export const TEST_DATA__ClassWithComplexConstraint = [
             upperBound: 2,
           },
           name: 'ok',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -658,7 +714,14 @@ export const TEST_DATA__AssociationRoundtrip = [
               value: 'Tag Value for assoc prop',
             },
           ],
-          type: 'tClass',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'tClass',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -681,7 +744,14 @@ export const TEST_DATA__AssociationRoundtrip = [
               value: 'Tag Value for assoc prop',
             },
           ],
-          type: 'tClass',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'tClass',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       stereotypes: [
@@ -786,7 +856,14 @@ export const TEST_DATA__FunctionRoundtrip = [
       parameters: [
         {
           _type: 'var',
-          class: 'tClass',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'tClass',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
@@ -795,7 +872,14 @@ export const TEST_DATA__FunctionRoundtrip = [
         },
         {
           _type: 'var',
-          class: 'tClass',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'tClass',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
@@ -809,7 +893,14 @@ export const TEST_DATA__FunctionRoundtrip = [
         lowerBound: 1,
         upperBound: 1,
       },
-      returnType: 'tClass',
+      returnGenericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'tClass',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       stereotypes: [
         {
           profile: 'tProf',
@@ -974,7 +1065,14 @@ export const TEST_DATA__OverloadedFunctionsRoundtrip = [
       parameters: [
         {
           _type: 'var',
-          class: 'Boolean',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
@@ -988,7 +1086,14 @@ export const TEST_DATA__OverloadedFunctionsRoundtrip = [
         lowerBound: 1,
         upperBound: 1,
       },
-      returnType: 'String',
+      returnGenericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'String',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
     },
     classifierPath:
       'meta::pure::metamodel::function::ConcreteFunctionDefinition',
@@ -1012,7 +1117,14 @@ export const TEST_DATA__OverloadedFunctionsRoundtrip = [
       parameters: [
         {
           _type: 'var',
-          class: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
@@ -1026,7 +1138,14 @@ export const TEST_DATA__OverloadedFunctionsRoundtrip = [
         lowerBound: 1,
         upperBound: 1,
       },
-      returnType: 'String',
+      returnGenericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'String',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
     },
     classifierPath:
       'meta::pure::metamodel::function::ConcreteFunctionDefinition',

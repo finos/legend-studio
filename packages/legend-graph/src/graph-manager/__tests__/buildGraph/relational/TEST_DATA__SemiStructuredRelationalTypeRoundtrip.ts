@@ -28,7 +28,14 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
             upperBound: 1,
           },
           name: 'legalName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -48,7 +55,14 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
             upperBound: 1,
           },
           name: 'firstName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -56,7 +70,14 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
             upperBound: 1,
           },
           name: 'lastName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -64,7 +85,14 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
             upperBound: 1,
           },
           name: 'manager',
-          type: 'joinChain::model::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'joinChain::model::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -72,7 +100,14 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
             upperBound: 1,
           },
           name: 'managerFirm',
-          type: 'joinChain::model::Firm',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'joinChain::model::Firm',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -80,7 +115,14 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
             upperBound: 1,
           },
           name: 'managerManagerFirm',
-          type: 'joinChain::model::Firm',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'joinChain::model::Firm',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -88,7 +130,14 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
             upperBound: 1,
           },
           name: 'managerManagerFirmDup1',
-          type: 'joinChain::model::Firm',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'joinChain::model::Firm',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -96,7 +145,14 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
             upperBound: 1,
           },
           name: 'managerManagerFirmDup2',
-          type: 'joinChain::model::Firm',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'joinChain::model::Firm',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },

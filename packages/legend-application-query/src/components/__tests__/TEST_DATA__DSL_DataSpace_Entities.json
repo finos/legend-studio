@@ -79,7 +79,14 @@
             "upperBound": 1
           },
           "name": "lastReportedFlag",
-          "type": "Boolean"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Boolean"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": {
@@ -181,7 +188,14 @@
         "lowerBound": 1,
         "upperBound": 1
       },
-      "returnType": "meta::pure::tds::TabularDataSet"
+      "returnGenericType": {
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "meta::pure::tds::TabularDataSet"
+        },
+        "typeArguments": [],
+        "typeVariableValues": []
+      }
     },
     "classifierPath": "meta::pure::metamodel::function::ConcreteFunctionDefinition"
   },

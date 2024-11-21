@@ -374,7 +374,14 @@ export const TEST_DATA__lambda_filterWithSingleExists = {
   parameters: [
     {
       _type: 'var',
-      class: 'StrictDate',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'StrictDate',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -681,7 +688,14 @@ export const TEST_DATA__lambda_filterWithNestedExists = {
   parameters: [
     {
       _type: 'var',
-      class: 'StrictDate',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'StrictDate',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -935,7 +949,14 @@ export const TEST_DATA__lambda_filterWithMultipleGroupConditionsInExists = {
   parameters: [
     {
       _type: 'var',
-      class: 'StrictDate',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'StrictDate',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -1268,7 +1289,14 @@ export const TEST_DATA__lambda_filterWithTwoExistsInSingleGroupCondition = {
   parameters: [
     {
       _type: 'var',
-      class: 'StrictDate',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'StrictDate',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,

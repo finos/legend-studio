@@ -28,7 +28,14 @@ export const TEST_DATA__roundtrip_append_only_allow_duplicates = [
             upperBound: 1,
           },
           name: 'name',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -47,7 +54,14 @@ export const TEST_DATA__roundtrip_append_only_allow_duplicates = [
             upperBound: 1,
           },
           name: 'ID',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -55,7 +69,14 @@ export const TEST_DATA__roundtrip_append_only_allow_duplicates = [
             upperBound: 1,
           },
           name: 'NAME',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -289,7 +310,14 @@ export const TEST_DATA__roundtrip_bitemporal_no_del_ind_user_specifies_from = [
             upperBound: 1,
           },
           name: 'name',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -308,7 +336,14 @@ export const TEST_DATA__roundtrip_bitemporal_no_del_ind_user_specifies_from = [
             upperBound: 1,
           },
           name: 'ID',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -316,7 +351,14 @@ export const TEST_DATA__roundtrip_bitemporal_no_del_ind_user_specifies_from = [
             upperBound: 1,
           },
           name: 'AMOUNT',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -324,7 +366,14 @@ export const TEST_DATA__roundtrip_bitemporal_no_del_ind_user_specifies_from = [
             upperBound: 1,
           },
           name: 'SOURCE_FROM',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -436,7 +485,14 @@ export const TEST_DATA__roundtrip_bitemporal_no_del_ind_user_specifies_from = [
           parameters: [
             {
               _type: 'var',
-              class: 'test::Person',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'test::Person',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
@@ -595,7 +651,14 @@ export const TEST_DATA__roundtrip_non_temporal_snapshot_date_time_audit = [
             upperBound: 1,
           },
           name: 'name',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -614,7 +677,14 @@ export const TEST_DATA__roundtrip_non_temporal_snapshot_date_time_audit = [
             upperBound: 1,
           },
           name: 'ID',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -622,7 +692,14 @@ export const TEST_DATA__roundtrip_non_temporal_snapshot_date_time_audit = [
             upperBound: 1,
           },
           name: 'NAME',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -714,7 +791,14 @@ export const TEST_DATA__roundtrip_non_temporal_snapshot_date_time_audit = [
           parameters: [
             {
               _type: 'var',
-              class: 'test::Person',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'test::Person',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
@@ -868,7 +952,14 @@ export const TEST_DATA__roundtrip_graph_fetch_basic = [
             lowerBound: 1,
           },
           name: 'employees',
-          type: 'test::model::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'test::model::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -876,7 +967,14 @@ export const TEST_DATA__roundtrip_graph_fetch_basic = [
             upperBound: 1,
           },
           name: 'legalName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -895,7 +993,14 @@ export const TEST_DATA__roundtrip_graph_fetch_basic = [
             upperBound: 1,
           },
           name: 'firstName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -903,7 +1008,14 @@ export const TEST_DATA__roundtrip_graph_fetch_basic = [
             upperBound: 1,
           },
           name: 'lastName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -911,7 +1023,14 @@ export const TEST_DATA__roundtrip_graph_fetch_basic = [
             upperBound: 1,
           },
           name: 'isDeleted',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -929,7 +1048,14 @@ export const TEST_DATA__roundtrip_graph_fetch_basic = [
             lowerBound: 1,
           },
           name: 'employees',
-          type: 'test::store::S_Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'test::store::S_Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -937,7 +1063,14 @@ export const TEST_DATA__roundtrip_graph_fetch_basic = [
             upperBound: 1,
           },
           name: 'legalName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -956,7 +1089,14 @@ export const TEST_DATA__roundtrip_graph_fetch_basic = [
             upperBound: 1,
           },
           name: 'firstName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -964,7 +1104,14 @@ export const TEST_DATA__roundtrip_graph_fetch_basic = [
             upperBound: 1,
           },
           name: 'lastName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -1324,7 +1471,14 @@ export const TEST_DATA__roundtrip_graph_fetch_basic = [
           parameters: [
             {
               _type: 'var',
-              class: 'String',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'String',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,

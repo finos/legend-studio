@@ -20,15 +20,40 @@ export const TEST_DATA__result = {
     columns: [
       {
         name: 'Employees/First Name',
-        type: 'String',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'String',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         relationalType: 'VARCHAR(200)',
       },
       {
         name: 'Employees/Last Name',
-        type: 'String',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'String',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         relationalType: 'VARCHAR(200)',
       },
-      { name: 'Legal Namer', type: 'String', relationalType: 'VARCHAR(200)' },
+      {
+        name: 'Legal Namer',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'String',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
+        relationalType: 'VARCHAR(200)',
+      },
     ],
   },
   activities: [
@@ -339,14 +364,28 @@ export const TEST_DATA__ResultState_entities = [
             upperBound: 1,
           },
           name: 'legalName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
             lowerBound: 0,
           },
           name: 'employees',
-          type: 'model::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'model::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       stereotypes: [
@@ -371,7 +410,14 @@ export const TEST_DATA__ResultState_entities = [
             upperBound: 1,
           },
           name: 'firstName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -379,7 +425,14 @@ export const TEST_DATA__ResultState_entities = [
             upperBound: 1,
           },
           name: 'lastName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       stereotypes: [

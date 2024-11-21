@@ -86,8 +86,8 @@ export const V1_GenericTypeModelSchema = createModelSchema(V1_GenericType, {
     (val) => V1_serializeType(val),
     (val) => V1_deserializeType(val),
   ),
-  typeVariableValues: optional(list(primitive())),
   typeArguments: optional(list(primitive())),
+  typeVariableValues: optional(list(primitive())),
 });
 
 const appendAnyGenericType = (current: V1_GenericType): void => {
@@ -145,8 +145,8 @@ const V1_RawGenricTypeSchemaModelInner = createModelSchema(V1_RawGenricType, {
     },
   ),
   rawType: usingConstantValueSchema(V1_RawRawTypeSchemaModel),
-  typeVariableValues: optional(list(primitive())),
   typeArguments: optional(list(primitive())),
+  typeVariableValues: optional(list(primitive())),
 });
 
 export const V1_RawGenricTypeSchemaModel = createModelSchema(V1_RawGenricType, {
@@ -158,10 +158,10 @@ export const V1_RawGenricTypeSchemaModel = createModelSchema(V1_RawGenricType, {
     },
   ),
   rawType: usingModelSchema(V1_RawRawTypeSchemaModel),
-  typeVariableValues: optional(list(primitive())),
   typeArguments: optional(
     list(usingModelSchema(V1_RawGenricTypeSchemaModelInner)),
   ),
+  typeVariableValues: optional(list(primitive())),
 });
 
 export const V1_deserializeRawGenericType = (

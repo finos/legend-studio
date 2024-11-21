@@ -169,7 +169,14 @@
             "upperBound": 1
           },
           "name": "time",
-          "type": "StrictTime"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "StrictTime"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": {
@@ -192,14 +199,28 @@
               "value": "lets write a tag"
             }
           ],
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": {
             "lowerBound": 0
           },
           "name": "name",
-          "type": "Boolean"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Boolean"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": {
@@ -207,7 +228,14 @@
             "upperBound": 1
           },
           "name": "person",
-          "type": "ui::test2::Person"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "ui::test2::Person"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "qualifiedProperties": [
@@ -263,7 +291,14 @@
             "lowerBound": 1,
             "upperBound": 1
           },
-          "returnType": "Integer"
+          "returnGenericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "superTypes": ["ui::test1::Animal"],
@@ -298,7 +333,14 @@
             "upperBound": 1
           },
           "name": "anythingGoes",
-          "type": "Boolean"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Boolean"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ]
     },
@@ -317,7 +359,14 @@
             "upperBound": 1
           },
           "name": "legs",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": {
@@ -325,7 +374,14 @@
             "upperBound": 1
           },
           "name": "arms",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "superTypes": ["ui::test1::Organism"]
@@ -345,7 +401,14 @@
             "upperBound": 1
           },
           "name": "legs",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": {
@@ -353,7 +416,14 @@
             "upperBound": 1
           },
           "name": "arms",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "superTypes": ["ui::test1::Human"],
@@ -389,7 +459,14 @@
             "lowerBound": 0
           },
           "name": "parents",
-          "type": "ui::test1::Dog"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "ui::test1::Dog"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "superTypes": ["ui::test1::Pet"]
@@ -416,7 +493,14 @@
             "lowerBound": 0
           },
           "name": "parents",
-          "type": "ui::test1::Dog"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "ui::test1::Dog"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "superTypes": ["ui::test1::Pet"]
@@ -435,14 +519,28 @@
             "lowerBound": 0
           },
           "name": "parents",
-          "type": "ui::test1::Human"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "ui::test1::Human"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": {
             "lowerBound": 0
           },
           "name": "siblings",
-          "type": "ui::test1::Human"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "ui::test1::Human"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "superTypes": ["ui::test1::Organism"]
@@ -478,7 +576,14 @@
             "upperBound": 1
           },
           "name": "founder",
-          "type": "ui::test1::Human"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "ui::test1::Human"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ]
     },
@@ -496,14 +601,28 @@
             "lowerBound": 0
           },
           "name": "friend",
-          "type": "ui::test1::Something"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "ui::test1::Something"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": {
             "lowerBound": 0
           },
           "name": "otherFriend",
-          "type": "ui::test1::Anyone"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "ui::test1::Anyone"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ]
     },
@@ -542,7 +661,14 @@
             "upperBound": 1
           },
           "name": "legs",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": {
@@ -550,7 +676,14 @@
             "upperBound": 1
           },
           "name": "arms",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "superTypes": ["ui::test1::Human"]
@@ -583,7 +716,14 @@
             "lowerBound": 0
           },
           "name": "age",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ]
     },
@@ -608,7 +748,14 @@
             "lowerBound": 0
           },
           "name": "age",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": {
@@ -719,7 +866,14 @@
             "lowerBound": 0
           },
           "name": "applicants",
-          "type": "ui::test2::Person"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "ui::test2::Person"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ]
     },
@@ -845,7 +999,14 @@
             "upperBound": 1
           },
           "name": "firm",
-          "type": "ui::test2::Firm"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "ui::test2::Firm"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "superTypes": ["ui::test2::Person"]
@@ -1108,7 +1269,14 @@
             "upperBound": 1
           },
           "name": "application",
-          "type": "ui::test2::Firm"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "ui::test2::Firm"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "superTypes": ["ui::test2::PersonWithoutConstraints"],
@@ -1161,7 +1329,14 @@
             "upperBound": 1
           },
           "name": "age",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": {
@@ -1169,14 +1344,28 @@
             "upperBound": 1
           },
           "name": "isSmart",
-          "type": "Boolean"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Boolean"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": {
             "lowerBound": 0
           },
           "name": "degreesHeld",
-          "type": "ui::test2::Degree"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "ui::test2::Degree"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "qualifiedProperties": [
@@ -1231,7 +1420,14 @@
             "upperBound": 1
           },
           "name": "testClassProp",
-          "type": "ui::TestClass"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "ui::TestClass"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": {
@@ -1254,7 +1450,14 @@
             }
           ],
           "name": "testClassSibling",
-          "type": "ui::TestClassSibling"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "ui::TestClassSibling"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ]
     },

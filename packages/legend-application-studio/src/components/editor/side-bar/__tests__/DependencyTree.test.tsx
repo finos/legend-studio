@@ -99,7 +99,14 @@ const TEST_DATA__DependencyEntities = [
                 upperBound: 1,
               },
               name: 'prop1',
-              type: 'String',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'String',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
             },
           ],
         },
@@ -126,7 +133,14 @@ const TEST_DATA__DependencyEntities = [
                 upperBound: 1,
               },
               name: 'prop',
-              type: 'String',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'String',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
             },
           ],
         },

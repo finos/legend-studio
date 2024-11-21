@@ -685,7 +685,14 @@ export const TEST_DATA__lambda_typeahead_simple_postFilter_milestoning = {
   parameters: [
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
