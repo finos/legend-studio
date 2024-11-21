@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { DataQualityState } from './states/DataQualityState.js';
 import {
   type ExecutionResult,
   extractExecutionResultValues,
@@ -26,10 +25,7 @@ import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 
 export const DataQualityResultValues = observer(
-  (props: {
-    executionResult: ExecutionResult;
-    dataQualityState: DataQualityState;
-  }) => {
+  (props: { executionResult: ExecutionResult }) => {
     const { executionResult } = props;
     if (executionResult instanceof RawExecutionResult) {
       const inputValue =

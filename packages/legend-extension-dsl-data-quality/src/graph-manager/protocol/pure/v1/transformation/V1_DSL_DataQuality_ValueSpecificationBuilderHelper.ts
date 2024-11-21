@@ -26,11 +26,17 @@ import {
 } from '../../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
 import {
   type V1_DataQualityExecutionContext,
+  type V1_DataQualityClassValidationsConfiguration,
+  type V1_DataQualityRelationValidation,
+  type V1_DataQualityRelationValidationsConfiguration,
+  type V1_DataQualityServiceValidationsConfiguration,
   V1_DataSpaceDataQualityExecutionContext,
   V1_MappingAndRuntimeDataQualityExecutionContext,
-} from '../V1_DataQualityConstraintsConfiguration.js';
+} from '../V1_DataQualityValidationConfiguration.js';
 import {
   type DataQualityExecutionContext,
+  DataQualityRelationQueryLambda,
+  DataQualityRelationValidation,
   DataSpaceDataQualityExecutionContext,
   MappingAndRuntimeDataQualityExecutionContext,
 } from '../../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
@@ -44,13 +50,21 @@ import {
   type PropertyGraphFetchTree,
   type RootGraphFetchTree,
   type V1_GraphFetchTree,
-  type V1_ProcessingContext,
   type V1_PropertyGraphFetchTree,
   type V1_RootGraphFetchTree,
+  V1_ProcessingContext,
   V1_buildPropertyGraphFetchTree,
   V1_buildRootGraphFetchTree,
+  V1_buildRawLambdaWithResolvedPaths,
+  V1_buildFullPath,
+  V1_buildVariable,
 } from '@finos/legend-graph';
 import type { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  getOwnDataQualityClassValidationsConfiguration,
+  getOwnDataQualityServiceValidationsConfiguration,
+  getOwnDataQualityRelationValidationsConfiguration,
+} from '../../../../DSL_DataQuality_GraphManagerHelper.js';
 
 export function V1_buildDataQualityExecutionContext(
   dataQualityExecutionContext: V1_DataQualityExecutionContext,
@@ -146,6 +160,30 @@ export function V1_buildDataQualityGraphFetchTree(
   );
 }
 
+export function V1_buildDataQualityRelationValidation(
+  validation: V1_DataQualityRelationValidation,
+  context: V1_GraphBuilderContext,
+): DataQualityRelationValidation {
+  const _validation = new DataQualityRelationValidation(
+    validation.name,
+    V1_buildRawLambdaWithResolvedPaths(
+      validation.assertion.parameters,
+      validation.assertion.body,
+      context,
+    ),
+  );
+  _validation.description = validation.description;
+  _validation.type = validation.type;
+  _validation.rowMapFunction = validation.rowMapFunction
+    ? V1_buildRawLambdaWithResolvedPaths(
+        validation.rowMapFunction.parameters,
+        validation.rowMapFunction.body,
+        context,
+      )
+    : validation.rowMapFunction;
+  return _validation;
+}
+
 function transformGraphFetchTreeToDataQualityGraphFetchTree(
   graphFetchTree: GraphFetchTree,
   V1_graphFetchTree: V1_GraphFetchTree,
@@ -238,4 +276,80 @@ function V1_transformPropertyGraphFetchTreeToDataQualityPropertyGraphFetchTree(
       ),
   );
   return dataQualityPropertyGraphFetchTree;
+}
+
+export function V1_buildDataQualityClassValidationConfiguration(
+  elementProtocol: V1_DataQualityClassValidationsConfiguration,
+  context: V1_GraphBuilderContext,
+): void {
+  const path = V1_buildFullPath(elementProtocol.package, elementProtocol.name);
+  const element = getOwnDataQualityClassValidationsConfiguration(
+    path,
+    context.currentSubGraph,
+  );
+  element.context = V1_buildDataQualityExecutionContext(
+    elementProtocol.context,
+    context,
+  );
+  element.dataQualityRootGraphFetchTree =
+    elementProtocol.dataQualityRootGraphFetchTree
+      ? (V1_buildDataQualityGraphFetchTree(
+          elementProtocol.dataQualityRootGraphFetchTree,
+          context,
+          undefined,
+          [],
+          new V1_ProcessingContext(''),
+          true,
+        ) as DataQualityRootGraphFetchTree)
+      : undefined;
+  element.filter = elementProtocol.filter
+    ? V1_buildRawLambdaWithResolvedPaths(
+        elementProtocol.filter.parameters,
+        elementProtocol.filter.body,
+        context,
+      )
+    : undefined;
+}
+
+export function V1_buildDataQualityRelationValidationConfiguration(
+  elementProtocol: V1_DataQualityRelationValidationsConfiguration,
+  context: V1_GraphBuilderContext,
+): void {
+  const path = V1_buildFullPath(elementProtocol.package, elementProtocol.name);
+  const element = getOwnDataQualityRelationValidationsConfiguration(
+    path,
+    context.currentSubGraph,
+  );
+  element.query = new DataQualityRelationQueryLambda();
+  element.query.body = elementProtocol.query.body;
+  element.query.parameters = elementProtocol.query.parameters.map((param) =>
+    V1_buildVariable(param, context),
+  );
+  element.validations = elementProtocol.validations.map((validation) =>
+    V1_buildDataQualityRelationValidation(validation, context),
+  );
+}
+
+export function V1_buildDataQualityServiceValidationConfiguration(
+  elementProtocol: V1_DataQualityServiceValidationsConfiguration,
+  context: V1_GraphBuilderContext,
+): void {
+  const path = V1_buildFullPath(elementProtocol.package, elementProtocol.name);
+  const element = getOwnDataQualityServiceValidationsConfiguration(
+    path,
+    context.currentSubGraph,
+  );
+  element.contextName = elementProtocol.contextName;
+  element.serviceName = elementProtocol.serviceName;
+  element.dataQualityRootGraphFetchTree =
+    elementProtocol.dataQualityRootGraphFetchTree
+      ? (V1_buildDataQualityGraphFetchTree(
+          elementProtocol.dataQualityRootGraphFetchTree,
+          context,
+          undefined,
+          [],
+          new V1_ProcessingContext(''),
+          true,
+        ) as DataQualityRootGraphFetchTree)
+      : undefined;
 }

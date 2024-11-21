@@ -20,32 +20,34 @@ import {
   type ExecutionResult,
   type PureModel,
   type RootGraphFetchTree,
-  type ParameterValue,
   AbstractPureGraphManagerExtension,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import type { DQExecuteInputOptions } from '../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 
 export abstract class DSL_DataQuality_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
   abstract generatePlan(
     graph: PureModel,
     packagePath: string,
+    options: DQExecuteInputOptions,
   ): Promise<RawExecutionPlan>;
 
   abstract execute(
     graph: PureModel,
-    lambdaParameterValues: ParameterValue[],
     packagePath: string,
-    previewLimit: number,
+    options: DQExecuteInputOptions,
   ): Promise<ExecutionResult>;
 
   abstract debugExecutionPlanGeneration(
     graph: PureModel,
     packagePath: string,
+    options: DQExecuteInputOptions,
   ): Promise<{ plan: RawExecutionPlan; debug: string }>;
 
   abstract fetchStructuralValidations(
     graph: PureModel,
     packagePath: string,
+    options: DQExecuteInputOptions,
   ): Promise<RootGraphFetchTree>;
 }
 

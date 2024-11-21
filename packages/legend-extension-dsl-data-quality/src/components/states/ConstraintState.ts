@@ -23,6 +23,8 @@ import { action, makeObservable, observable } from 'mobx';
 import { uuid } from '@finos/legend-shared';
 
 export const CONSTRAINT_SOURCE_ID_LABEL = 'constraint';
+export const VALIDATION_SOURCE_ID_LABEL = 'validation';
+export const VALIDATION_ROW_MAP_ID_LABEL = 'validation_row_map';
 
 export class ConstraintState {
   readonly uuid = uuid();

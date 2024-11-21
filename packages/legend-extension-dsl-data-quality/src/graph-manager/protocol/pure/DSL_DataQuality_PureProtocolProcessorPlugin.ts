@@ -19,30 +19,33 @@ import { type PlainObject, assertType } from '@finos/legend-shared';
 import {
   V1_DataQualityClassValidationsConfiguration,
   V1_DataQualityServiceValidationsConfiguration,
-} from './v1/V1_DataQualityConstraintsConfiguration.js';
+  V1_DataQualityRelationValidationsConfiguration,
+  V1_DataQualityValidationsConfiguration,
+} from './v1/V1_DataQualityValidationConfiguration.js';
 import {
   DataQualityClassValidationsConfiguration,
   DataQualityServiceValidationConfiguration,
+  DataQualityRelationValidationConfiguration,
 } from '../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
-import {
-  getOwnDataQualityClassValidationsConfiguration,
-  getOwnDataQualityServiceValidationsConfiguration,
-} from '../../DSL_DataQuality_GraphManagerHelper.js';
 import {
   V1_DATA_QUALITY_PROTOCOL_TYPE,
   V1_DATA_QUALITY_SERVICE_PROTOCOL_TYPE,
+  V1_DATA_QUALITY_RELATION_PROTOCOL_TYPE,
   V1_deserializeDataQualityClassValidation,
   V1_deserializeDataQualityServiceValidation,
+  V1_deserializeDataQualityRelationValidation,
   V1_serializeDataQualityClassValidation,
   V1_serializeDataQualityServiceValidation,
+  V1_serializeDataQualityRelationValidation,
 } from './v1/transformation/pureProtocol/V1_DSL_DataQuality_ProtocolHelper.js';
 import {
-  V1_transformDataQualityExecutionContext,
-  V1_transformDataQualityGraphFetchTree,
+  V1_transformDataQualityClassValidationConfiguration,
+  V1_transformDataQualityRelationValidationConfiguration,
 } from './v1/transformation/V1_DSL_DataQuality_ValueSpecificationTransformer.js';
 import {
-  V1_buildDataQualityExecutionContext,
-  V1_buildDataQualityGraphFetchTree,
+  V1_buildDataQualityClassValidationConfiguration,
+  V1_buildDataQualityRelationValidationConfiguration,
+  V1_buildDataQualityServiceValidationConfiguration,
 } from './v1/transformation/V1_DSL_DataQuality_ValueSpecificationBuilderHelper.js';
 import { V1_DataQualityRootGraphFetchTree } from './v1/model/graphFetch/V1_DataQualityRootGraphFetchTree.js';
 import {
@@ -55,17 +58,12 @@ import {
   type V1_PackageableElement,
   type PackageableElement,
   type V1_GraphFetchTree,
-  V1_buildFullPath,
-  V1_buildRawLambdaWithResolvedPaths,
-  V1_initPackageableElement,
-  V1_transformRawLambda,
-  V1_ElementBuilder,
-  V1_ProcessingContext,
-  PureProtocolProcessorPlugin,
   type V1_GraphFetchSerializer,
   type V1_GraphFetchDeserializer,
+  V1_buildFullPath,
+  V1_ElementBuilder,
+  PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
-import type { DataQualityRootGraphFetchTree } from '../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
 import { V1_DataQualityPropertyGraphFetchTree } from './v1/model/graphFetch/V1_DataQualityPropertyGraphFetchTree.js';
 import { deserialize, serialize } from 'serializr';
 import {
@@ -121,41 +119,54 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
             elementProtocol,
             V1_DataQualityClassValidationsConfiguration,
           );
+          V1_buildDataQualityClassValidationConfiguration(
+            elementProtocol,
+            context,
+          );
+        },
+      }),
+      new V1_ElementBuilder<V1_DataQualityRelationValidationsConfiguration>({
+        elementClassName: V1_DATA_QUALITY_RELATION_PROTOCOL_TYPE,
+        _class: V1_DataQualityRelationValidationsConfiguration,
+        firstPass: (
+          elementProtocol: V1_PackageableElement,
+          context: V1_GraphBuilderContext,
+        ): PackageableElement => {
+          assertType(
+            elementProtocol,
+            V1_DataQualityRelationValidationsConfiguration,
+          );
+          const element = new DataQualityRelationValidationConfiguration(
+            elementProtocol.name,
+          );
           const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getOwnDataQualityClassValidationsConfiguration(
+          context.currentSubGraph.setOwnElementInExtension(
             path,
-            context.currentSubGraph,
+            element,
+            DataQualityRelationValidationConfiguration,
           );
-          element.context = V1_buildDataQualityExecutionContext(
-            elementProtocol.context,
+          return element;
+        },
+        secondPass: (
+          elementProtocol: V1_PackageableElement,
+          context: V1_GraphBuilderContext,
+        ): void => {
+          assertType(
+            elementProtocol,
+            V1_DataQualityRelationValidationsConfiguration,
+          );
+          V1_buildDataQualityRelationValidationConfiguration(
+            elementProtocol,
             context,
           );
-          element.dataQualityRootGraphFetchTree =
-            elementProtocol.dataQualityRootGraphFetchTree
-              ? (V1_buildDataQualityGraphFetchTree(
-                  elementProtocol.dataQualityRootGraphFetchTree,
-                  context,
-                  undefined,
-                  [],
-                  new V1_ProcessingContext(''),
-                  true,
-                ) as DataQualityRootGraphFetchTree)
-              : undefined;
-          element.filter = elementProtocol.filter
-            ? V1_buildRawLambdaWithResolvedPaths(
-                elementProtocol.filter.parameters,
-                elementProtocol.filter.body,
-                context,
-              )
-            : undefined;
         },
       }),
-      //TODO handle service validations
+
       new V1_ElementBuilder<V1_DataQualityServiceValidationsConfiguration>({
-        elementClassName: 'dataQualityServiceValidations',
+        elementClassName: V1_DATA_QUALITY_SERVICE_PROTOCOL_TYPE,
         _class: V1_DataQualityServiceValidationsConfiguration,
         firstPass: (
           elementProtocol: V1_PackageableElement,
@@ -187,27 +198,10 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
             elementProtocol,
             V1_DataQualityServiceValidationsConfiguration,
           );
-          const path = V1_buildFullPath(
-            elementProtocol.package,
-            elementProtocol.name,
+          V1_buildDataQualityServiceValidationConfiguration(
+            elementProtocol,
+            context,
           );
-          const element = getOwnDataQualityServiceValidationsConfiguration(
-            path,
-            context.currentSubGraph,
-          );
-          element.contextName = elementProtocol.contextName;
-          element.serviceName = elementProtocol.serviceName;
-          element.dataQualityRootGraphFetchTree =
-            elementProtocol.dataQualityRootGraphFetchTree
-              ? (V1_buildDataQualityGraphFetchTree(
-                  elementProtocol.dataQualityRootGraphFetchTree,
-                  context,
-                  undefined,
-                  [],
-                  new V1_ProcessingContext(''),
-                  true,
-                ) as DataQualityRootGraphFetchTree)
-              : undefined;
         },
       }),
     ];
@@ -216,7 +210,7 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
   override V1_getExtraElementClassifierPathGetters(): V1_ElementProtocolClassifierPathGetter[] {
     return [
       (protocol: V1_PackageableElement): string | undefined => {
-        if (protocol instanceof V1_DataQualityClassValidationsConfiguration) {
+        if (protocol instanceof V1_DataQualityValidationsConfiguration) {
           return DATA_QUALITY_CLASSIFIER_PATH;
         }
         return undefined;
@@ -235,6 +229,11 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
         }
         if (protocol instanceof V1_DataQualityServiceValidationsConfiguration) {
           return V1_serializeDataQualityServiceValidation(protocol, plugins);
+        }
+        if (
+          protocol instanceof V1_DataQualityRelationValidationsConfiguration
+        ) {
+          return V1_serializeDataQualityRelationValidation(protocol, plugins);
         }
         return undefined;
       },
@@ -292,6 +291,9 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
         if (json._type === V1_DATA_QUALITY_SERVICE_PROTOCOL_TYPE) {
           return V1_deserializeDataQualityServiceValidation(json, plugins);
         }
+        if (json._type === V1_DATA_QUALITY_RELATION_PROTOCOL_TYPE) {
+          return V1_deserializeDataQualityRelationValidation(json, plugins);
+        }
         return undefined;
       },
     ];
@@ -304,27 +306,16 @@ export class DSL_DataQuality_PureProtocolProcessorPlugin extends PureProtocolPro
         context: V1_GraphTransformerContext,
       ): V1_PackageableElement | undefined => {
         if (metamodel instanceof DataQualityClassValidationsConfiguration) {
-          const protocol = new V1_DataQualityClassValidationsConfiguration();
-          V1_initPackageableElement(protocol, metamodel);
-          protocol.name = metamodel.name;
-          protocol.package = metamodel.package?.path ?? '';
-          protocol.dataQualityRootGraphFetchTree =
-            metamodel.dataQualityRootGraphFetchTree
-              ? (V1_transformDataQualityGraphFetchTree(
-                  metamodel.dataQualityRootGraphFetchTree,
-                  [],
-                  new Map<string, unknown[]>(),
-                  false,
-                  false,
-                ) as V1_DataQualityRootGraphFetchTree)
-              : undefined;
-          protocol.context = V1_transformDataQualityExecutionContext(
-            metamodel.context,
+          return V1_transformDataQualityClassValidationConfiguration(
+            metamodel,
+            context,
           );
-          protocol.filter = metamodel.filter
-            ? V1_transformRawLambda(metamodel.filter, context)
-            : undefined;
-          return protocol;
+        }
+        if (metamodel instanceof DataQualityRelationValidationConfiguration) {
+          return V1_transformDataQualityRelationValidationConfiguration(
+            metamodel,
+            context,
+          );
         }
         return undefined;
       },

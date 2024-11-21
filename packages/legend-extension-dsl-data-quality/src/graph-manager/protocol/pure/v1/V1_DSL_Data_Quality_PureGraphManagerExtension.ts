@@ -24,7 +24,6 @@ import {
   type V1_ExecutionResult,
   type V1_PureModelContext,
   type V1_RootGraphFetchTree,
-  type ParameterValue,
   type V1_ParameterValue,
   LegendSDLC,
   PureClientVersion,
@@ -60,6 +59,7 @@ import {
   V1_transformRootGraphFetchTreeToDataQualityRootGraphFetchTree,
 } from './transformation/V1_DSL_DataQuality_ValueSpecificationBuilderHelper.js';
 import type { DataQualityRootGraphFetchTree } from '../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
+import type { DQExecuteInputOptions } from '../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 
 const DQ_GENERATE_EXECUTION_PLAN = 'generate execution plan';
 const DQ_EXECUTE_PLAN = 'execute plan';
@@ -72,6 +72,7 @@ export class V1_DQExecuteInput {
   lambdaParameterValues: V1_ParameterValue[] = [];
   packagePath!: string;
   queryLimit: number | undefined;
+  validationName: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_DQExecuteInput, {
@@ -80,6 +81,7 @@ export class V1_DQExecuteInput {
       lambdaParameterValues: customListWithSchema(V1_parameterValueModelSchema),
       packagePath: primitive(),
       queryLimit: optional(primitive()),
+      validationName: optional(primitive()),
     }),
   );
 }
@@ -156,35 +158,35 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
 
   createExecutionInput(
     graph: PureModel,
-    lambdaParameterValues: ParameterValue[],
     packagePath: string,
-    clientVersion: string | undefined,
-    previewLimit: number | undefined,
     dqExecuteInput: V1_DQExecuteInput,
+    options: DQExecuteInputOptions,
   ): V1_DQExecuteInput {
-    dqExecuteInput.clientVersion = clientVersion;
+    dqExecuteInput.clientVersion =
+      options.clientVersion ??
+      V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION;
     dqExecuteInput.model = graph.origin
       ? this.buildPureModelSDLCPointer(graph.origin, undefined)
       : this.graphManager.getFullGraphModelData(graph);
-    dqExecuteInput.lambdaParameterValues = lambdaParameterValues.map(
-      V1_transformParameterValue,
-    );
+    dqExecuteInput.lambdaParameterValues = options.lambdaParameterValues
+      ? options.lambdaParameterValues.map(V1_transformParameterValue)
+      : [];
     dqExecuteInput.packagePath = packagePath;
-    dqExecuteInput.queryLimit = previewLimit;
+    dqExecuteInput.queryLimit = options.previewLimit;
+    dqExecuteInput.validationName = options.validationName;
     return dqExecuteInput;
   }
 
   generatePlan = async (
     graph: PureModel,
     packagePath: string,
+    options: DQExecuteInputOptions,
   ): Promise<RawExecutionPlan> => {
     const input = this.createExecutionInput(
       graph,
-      [],
       packagePath,
-      V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION,
-      undefined,
       new V1_DQExecuteInput(),
+      options,
     );
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
@@ -209,17 +211,14 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
 
   execute = async (
     graph: PureModel,
-    lambdaParameterValues: ParameterValue[],
     packagePath: string,
-    previewLimit: number,
+    options: DQExecuteInputOptions,
   ): Promise<ExecutionResult> => {
     const input = this.createExecutionInput(
       graph,
-      lambdaParameterValues,
       packagePath,
-      V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION,
-      previewLimit,
       new V1_DQExecuteInput(),
+      options,
     );
 
     try {
@@ -251,14 +250,13 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
   debugExecutionPlanGeneration = async (
     graph: PureModel,
     packagePath: string,
+    options: DQExecuteInputOptions,
   ): Promise<{ plan: RawExecutionPlan; debug: string }> => {
     const input = this.createExecutionInput(
       graph,
-      [],
       packagePath,
-      V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION,
-      undefined,
       new V1_DQExecuteInput(),
+      options,
     );
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);
@@ -288,6 +286,7 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
   fetchStructuralValidations = async (
     graph: PureModel,
     packagePath: string,
+    options: DQExecuteInputOptions,
   ): Promise<RootGraphFetchTree> => {
     // TODO: improve abstraction so that we do not need to access the engine server client directly
     const engineServerClient = guaranteeType(
@@ -297,11 +296,9 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     ).getEngineServerClient();
     const input = this.createExecutionInput(
       graph,
-      [],
       packagePath,
-      V1_DSL_Data_Quality_PureGraphManagerExtension.DEV_PROTOCOL_VERSION,
-      undefined,
       new V1_DQExecuteInput(),
+      options,
     );
 
     const serializedInput = V1_DQExecuteInput.serialization.toJson(input);

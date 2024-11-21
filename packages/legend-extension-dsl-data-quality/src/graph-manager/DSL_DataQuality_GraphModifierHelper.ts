@@ -18,6 +18,9 @@ import { action } from 'mobx';
 import {
   type DataQualityClassValidationsConfiguration,
   type DataQualityExecutionContext,
+  type DataQualityRelationValidation,
+  type DataQualityRelationValidationConfiguration,
+  type RelationValidationType,
   DataSpaceDataQualityExecutionContext,
   MappingAndRuntimeDataQualityExecutionContext,
 } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
@@ -28,15 +31,19 @@ import {
   type PackageableRuntime,
   type RawLambda,
   type ObserverContext,
+  type RawVariableExpression,
   observe_PackageableRuntime,
   observe_RawLambda,
   PackageableElementExplicitReference,
+  observe_RawVariableExpression,
 } from '@finos/legend-graph';
 import {
   observe_DataQualityRootGraphFetchTree,
+  observe_DataQualityRelationValidation,
   observe_DataSpaceDataQualityExecutionContext,
   observe_MappingAndRuntimeDataQualityExecutionContext,
 } from './action/changeDetection/DSL_DataQuality_ObserverHelper.js';
+import { addUniqueEntry, deleteEntry, swapEntry } from '@finos/legend-shared';
 
 export const dataQualityClassValidation_setDataQualityGraphFetchTree = action(
   (
@@ -109,5 +116,105 @@ export const dataQualityGraphFetchTree_removeConstraints = action(
     if (target instanceof DataQualityRootGraphFetchTree) {
       target.constraints = [];
     }
+  },
+);
+
+export const dataQualityRelationValidation_setAssertion = action(
+  (_constraint: DataQualityRelationValidation, assertion: RawLambda): void => {
+    _constraint.assertion = observe_RawLambda(assertion);
+  },
+);
+
+export const dataQualityRelationValidation_setName = action(
+  (_constraint: DataQualityRelationValidation, name: string): void => {
+    _constraint.name = name;
+  },
+);
+
+export const dataQualityRelationValidation_setDescription = action(
+  (_constraint: DataQualityRelationValidation, description: string): void => {
+    _constraint.description = description;
+  },
+);
+
+export const dataQualityRelationValidation_setType = action(
+  (
+    _constraint: DataQualityRelationValidation,
+    type: RelationValidationType,
+  ): void => {
+    _constraint.type = type;
+  },
+);
+
+export const dataQualityRelationValidation_setRowMapFunction = action(
+  (
+    _constraint: DataQualityRelationValidation,
+    rowMapFunction: RawLambda,
+  ): void => {
+    _constraint.rowMapFunction = observe_RawLambda(rowMapFunction);
+  },
+);
+
+export const dataQualityRelationValidation_addValidation = action(
+  (
+    _relationValidation: DataQualityRelationValidationConfiguration,
+    val: DataQualityRelationValidation,
+  ): void => {
+    addUniqueEntry(
+      _relationValidation.validations,
+      observe_DataQualityRelationValidation(val),
+    );
+  },
+);
+
+export const dataQualityRelationValidation_deleteValidation = action(
+  (
+    _relationValidation: DataQualityRelationValidationConfiguration,
+    val: DataQualityRelationValidation,
+  ): void => {
+    deleteEntry(
+      _relationValidation.validations,
+      observe_DataQualityRelationValidation(val),
+    );
+  },
+);
+
+export const dataQualityRelationValidation_swapValidations = action(
+  (
+    _relationValidation: DataQualityRelationValidationConfiguration,
+    sourceValidation: DataQualityRelationValidation,
+    targetValidation: DataQualityRelationValidation,
+  ): void => {
+    swapEntry(
+      _relationValidation.validations,
+      sourceValidation,
+      targetValidation,
+    );
+  },
+);
+
+export const dataQualityRelationValidation_addParameter = action(
+  (_parameters: RawVariableExpression[], val: RawVariableExpression): void => {
+    addUniqueEntry(_parameters, observe_RawVariableExpression(val));
+  },
+);
+
+export const dataQualityRelationValidation_deleteParameter = action(
+  (_parameters: RawVariableExpression[], val: RawVariableExpression): void => {
+    deleteEntry(_parameters, val);
+  },
+);
+
+export const dataQualityRelationValidation_swapParameters = action(
+  (
+    _parameters: RawVariableExpression[],
+    sourceParameter: RawVariableExpression,
+    targetParameter: RawVariableExpression,
+  ): void => {
+    swapEntry(
+      _parameters,
+      observe_RawVariableExpression(sourceParameter),
+      observe_RawVariableExpression(targetParameter),
+    );
   },
 );

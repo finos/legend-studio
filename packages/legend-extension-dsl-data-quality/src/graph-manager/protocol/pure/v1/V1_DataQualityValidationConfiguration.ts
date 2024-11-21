@@ -15,16 +15,19 @@
  */
 
 import {
-  type V1_PackageableElementVisitor,
   type V1_PackageableElementPointer,
+  type V1_PackageableElementVisitor,
   type V1_RawLambda,
-  type V1_TaggedValue,
   type V1_StereotypePtr,
+  type V1_TaggedValue,
+  type V1_RawVariable,
+  hashRawLambda,
   V1_PackageableElement,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { DATA_QUALITY_HASH_STRUCTURE } from '../../../../graph/metamodel/DSL_DataQuality_HashUtils.js';
 import { type V1_DataQualityRootGraphFetchTree } from './model/graphFetch/V1_DataQualityRootGraphFetchTree.js';
+import { RelationValidationType } from '../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 
 export abstract class V1_DataQualityExecutionContext implements Hashable {
   abstract get hashCode(): string;
@@ -56,8 +59,29 @@ export class V1_MappingAndRuntimeDataQualityExecutionContext extends V1_DataQual
   }
 }
 
+export class V1_DataQualityRelationValidation implements Hashable {
+  name!: string;
+  description: string | undefined;
+  assertion!: V1_RawLambda;
+  type: RelationValidationType = RelationValidationType.ROW_LEVEL;
+  rowMapFunction: V1_RawLambda | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_VALIDATION,
+      this.name,
+      this.type,
+      this.description ?? '',
+      this.assertion,
+      this.rowMapFunction ?? '',
+    ]);
+  }
+}
+
+export abstract class V1_DataQualityValidationsConfiguration extends V1_PackageableElement {}
+
 export class V1_DataQualityClassValidationsConfiguration
-  extends V1_PackageableElement
+  extends V1_DataQualityValidationsConfiguration
   implements Hashable
 {
   context!: V1_DataQualityExecutionContext;
@@ -83,7 +107,7 @@ export class V1_DataQualityClassValidationsConfiguration
 }
 
 export class V1_DataQualityServiceValidationsConfiguration
-  extends V1_PackageableElement
+  extends V1_DataQualityValidationsConfiguration
   implements Hashable
 {
   contextName?: string | undefined;
@@ -96,6 +120,41 @@ export class V1_DataQualityServiceValidationsConfiguration
       this.contextName ?? '',
       this.serviceName ?? '',
       this.dataQualityRootGraphFetchTree ?? '',
+    ]);
+  }
+
+  accept_PackageableElementVisitor<T>(
+    visitor: V1_PackageableElementVisitor<T>,
+  ): T {
+    return visitor.visit_PackageableElement(this);
+  }
+}
+
+export class V1_DataQualityRelationQueryLambda implements Hashable {
+  body?: object | undefined;
+  parameters: V1_RawVariable[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_VALIDATION_QUERY,
+      hashArray(this.parameters),
+      hashRawLambda(undefined, this.body),
+    ]);
+  }
+}
+
+export class V1_DataQualityRelationValidationsConfiguration
+  extends V1_DataQualityValidationsConfiguration
+  implements Hashable
+{
+  query!: V1_DataQualityRelationQueryLambda;
+  validations: V1_DataQualityRelationValidation[] = [];
+
+  override get hashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_VALIDATION_CONFIGURATION,
+      this.query,
+      hashArray(this.validations),
     ]);
   }
 
