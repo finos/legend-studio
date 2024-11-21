@@ -138,7 +138,14 @@ export const TEST_DATA__simpleSingleConditionMilestoningFilter = {
   parameters: [
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -1155,7 +1162,14 @@ export const TEST_DATA__lambda_simpleSingleConditionFilterWithParameter = {
   parameters: [
     {
       _type: 'var',
-      class: 'String',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'String',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       name: 'case',
       multiplicity: {
         lowerBound: 1,

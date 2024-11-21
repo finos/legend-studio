@@ -228,14 +228,6 @@ export const V1_defaultValueModelSchema = createModelSchema(V1_DefaultValue, {
 export const V1_propertyModelSchema = createModelSchema(V1_Property, {
   aggregation: optional(primitive()),
   defaultValue: optional(usingModelSchema(V1_defaultValueModelSchema)),
-  multiplicity: usingModelSchema(V1_multiplicityModelSchema),
-  name: primitive(),
-  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
-    INTERNAL__forceReturnEmptyInTest: true,
-  }),
-  taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
-    INTERNAL__forceReturnEmptyInTest: true,
-  }),
   genericType: custom(
     (val) => serialize(V1_GenericTypeModelSchema, val),
     (val) => V1_deserializeGenericType(val),
@@ -257,6 +249,14 @@ export const V1_propertyModelSchema = createModelSchema(V1_Property, {
       },
     },
   ),
+  multiplicity: usingModelSchema(V1_multiplicityModelSchema),
+  name: primitive(),
+  stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
+  taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
+    INTERNAL__forceReturnEmptyInTest: true,
+  }),
 });
 
 export const V1_derivedPropertyModelSchema = createModelSchema(
@@ -265,7 +265,6 @@ export const V1_derivedPropertyModelSchema = createModelSchema(
     body: raw(),
     name: primitive(),
     parameters: raw(),
-    returnMultiplicity: usingModelSchema(V1_multiplicityModelSchema),
     returnGenericType: custom(
       (val) => serialize(V1_GenericTypeModelSchema, val),
       (val) => V1_deserializeGenericType(val),
@@ -287,6 +286,7 @@ export const V1_derivedPropertyModelSchema = createModelSchema(
         },
       },
     ),
+    returnMultiplicity: usingModelSchema(V1_multiplicityModelSchema),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
@@ -395,7 +395,6 @@ export const V1_functionModelSchema = (
     parameters: list(usingModelSchema(V1_rawVariableModelSchema)),
     postConstraints: list(primitive()), // NOTE: these are not currently supported and just added to pass roundtrip test
     preConstraints: list(primitive()), // NOTE: these are not currently supported and just added to pass roundtrip test
-    returnMultiplicity: usingModelSchema(V1_multiplicityModelSchema),
     returnGenericType: custom(
       (val) => serialize(V1_GenericTypeModelSchema, val),
       (val) => V1_deserializeGenericType(val),
@@ -413,6 +412,7 @@ export const V1_functionModelSchema = (
         },
       },
     ),
+    returnMultiplicity: usingModelSchema(V1_multiplicityModelSchema),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),

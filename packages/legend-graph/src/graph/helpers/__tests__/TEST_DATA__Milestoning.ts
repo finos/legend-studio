@@ -45,7 +45,14 @@ export const TEST_DATA__Milestoning = [
             upperBound: 1,
           },
           name: 'z',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       stereotypes: [
@@ -70,7 +77,14 @@ export const TEST_DATA__Milestoning = [
             upperBound: 1,
           },
           name: 'z',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       superTypes: ['C'],

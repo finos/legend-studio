@@ -25,27 +25,62 @@ export const TEST_DATA__roundtrip_case1 = [
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'name',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'zookeeper',
-          type: 'org::dxl::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'org::dxl::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'owner',
-          type: 'org::dxl::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'org::dxl::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'admin',
-          type: 'org::dxl::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'org::dxl::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 0 },
           name: 'animals',
-          type: 'org::dxl::Animal',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'org::dxl::Animal',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -61,17 +96,38 @@ export const TEST_DATA__roundtrip_case1 = [
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'name',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'effectiveDateFrom',
-          type: 'DateTime',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'DateTime',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'effectiveDateThru',
-          type: 'DateTime',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'DateTime',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -87,7 +143,14 @@ export const TEST_DATA__roundtrip_case1 = [
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'name',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -154,7 +217,14 @@ export const TEST_DATA__roundtrip_case1 = [
           parameters: [
             {
               _type: 'var',
-              class: 'org::dxl::Zoo',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'org::dxl::Zoo',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
               multiplicity: { lowerBound: 1, upperBound: 1 },
               name: 'src',
             },
@@ -340,7 +410,14 @@ export const TEST_DATA__roundtrip_case2 = [
             upperBound: 1,
           },
           name: 'name',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -359,7 +436,14 @@ export const TEST_DATA__roundtrip_case2 = [
             upperBound: 1,
           },
           name: 'deleted',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -367,7 +451,14 @@ export const TEST_DATA__roundtrip_case2 = [
             upperBound: 1,
           },
           name: 'dateTimeIn',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -473,7 +564,14 @@ export const TEST_DATA__roundtrip_case2 = [
           parameters: [
             {
               _type: 'var',
-              class: 'org::dxl::Zoo',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'org::dxl::Zoo',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
@@ -616,7 +714,14 @@ export const TEST_DATA__cloud__roundtrip = [
             upperBound: 1,
           },
           name: 'name',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -624,7 +729,14 @@ export const TEST_DATA__cloud__roundtrip = [
             upperBound: 1,
           },
           name: 'zookeeper',
-          type: 'org::dxl::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'org::dxl::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -632,7 +744,14 @@ export const TEST_DATA__cloud__roundtrip = [
             upperBound: 1,
           },
           name: 'owner',
-          type: 'org::dxl::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'org::dxl::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -640,14 +759,28 @@ export const TEST_DATA__cloud__roundtrip = [
             upperBound: 1,
           },
           name: 'admin',
-          type: 'org::dxl::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'org::dxl::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
             lowerBound: 0,
           },
           name: 'animals',
-          type: 'org::dxl::Animal',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'org::dxl::Animal',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -666,7 +799,14 @@ export const TEST_DATA__cloud__roundtrip = [
             upperBound: 1,
           },
           name: 'name',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -674,7 +814,14 @@ export const TEST_DATA__cloud__roundtrip = [
             upperBound: 1,
           },
           name: 'effectiveDateFrom',
-          type: 'DateTime',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'DateTime',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -682,7 +829,14 @@ export const TEST_DATA__cloud__roundtrip = [
             upperBound: 1,
           },
           name: 'effectiveDateThru',
-          type: 'DateTime',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'DateTime',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -701,7 +855,14 @@ export const TEST_DATA__cloud__roundtrip = [
             upperBound: 1,
           },
           name: 'name',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -773,7 +934,14 @@ export const TEST_DATA__cloud__roundtrip = [
           parameters: [
             {
               _type: 'var',
-              class: 'org::dxl::Zoo',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'org::dxl::Zoo',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,

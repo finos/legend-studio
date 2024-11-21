@@ -140,7 +140,14 @@ export const TEST_DATA__DSL_DataSpace_Model = [
             upperBound: 1,
           },
           name: 'fips',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -148,7 +155,14 @@ export const TEST_DATA__DSL_DataSpace_Model = [
             upperBound: 1,
           },
           name: 'state',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -167,7 +181,14 @@ export const TEST_DATA__DSL_DataSpace_Model = [
             upperBound: 1,
           },
           name: 'id',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -175,7 +196,14 @@ export const TEST_DATA__DSL_DataSpace_Model = [
             upperBound: 1,
           },
           name: 'fips',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -183,7 +211,14 @@ export const TEST_DATA__DSL_DataSpace_Model = [
             upperBound: 1,
           },
           name: 'date',
-          type: 'StrictDate',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'StrictDate',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -191,7 +226,14 @@ export const TEST_DATA__DSL_DataSpace_Model = [
             upperBound: 1,
           },
           name: 'caseType',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -199,7 +241,14 @@ export const TEST_DATA__DSL_DataSpace_Model = [
             upperBound: 1,
           },
           name: 'cases',
-          type: 'Float',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Float',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -207,7 +256,14 @@ export const TEST_DATA__DSL_DataSpace_Model = [
             upperBound: 1,
           },
           name: 'lastReportedFlag',
-          type: 'Boolean',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {

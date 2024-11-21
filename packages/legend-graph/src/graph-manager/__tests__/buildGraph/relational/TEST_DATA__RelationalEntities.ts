@@ -46,7 +46,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
           name: 'age',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
@@ -56,7 +63,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
           name: 'activeEmployment',
-          type: 'Boolean',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       qualifiedProperties: [
@@ -93,7 +107,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'name',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -141,7 +162,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             },
           ],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -455,7 +483,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             },
           ],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -543,7 +578,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             },
           ],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -656,7 +698,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             },
           ],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -716,7 +765,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'constant',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -812,7 +868,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'averageEmployeesAge',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'Float',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Float',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -837,7 +900,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'sumEmployeesAge',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'Integer',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -862,7 +932,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'maxEmployeesAge',
           parameters: [],
           returnMultiplicity: { lowerBound: 0, upperBound: 1 },
-          returnType: 'Integer',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -909,7 +986,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'nameAndAddress',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -967,7 +1051,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'isfirmX',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -1072,7 +1163,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'nameAndMaskedAddress',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -1178,7 +1276,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             },
           ],
           returnMultiplicity: { lowerBound: 0, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -1522,7 +1627,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             },
           ],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'Boolean',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -1729,7 +1841,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             },
           ],
           returnMultiplicity: { lowerBound: 0, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -1860,7 +1979,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'isfirmXGroup',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'Boolean',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       superTypes: ['EntityWithAddress'],
@@ -1877,7 +2003,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'establishedDate',
-          type: 'Date',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Date',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 0 },
@@ -1903,7 +2036,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'establishedYear',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'Integer',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -1933,7 +2073,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'allEmployeesLastName',
           parameters: [],
           returnMultiplicity: { lowerBound: 0, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       superTypes: ['Firm'],
@@ -1992,7 +2139,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'description',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       superTypes: ['GeographicEntity'],
@@ -2014,7 +2168,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
           name: 'censusdate',
-          type: 'Date',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Date',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       superTypes: ['GeographicEntity'],
@@ -2047,7 +2208,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
           name: 'birthdate',
-          type: 'Date',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Date',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       qualifiedProperties: [
@@ -2068,7 +2236,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'birthYear',
           parameters: [],
           returnMultiplicity: { lowerBound: 0, upperBound: 1 },
-          returnType: 'Integer',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       superTypes: ['meta::pure::tests::model::simple::Person'],
@@ -2123,7 +2298,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'cusip',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -2154,7 +2336,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'isin',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -2246,17 +2435,38 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'id',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'date',
-          type: 'StrictDate',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'StrictDate',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'quantity',
-          type: 'Float',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Float',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
@@ -2266,12 +2476,26 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
           name: 'settlementDateTime',
-          type: 'DateTime',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'DateTime',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
           name: 'latestEventDate',
-          type: 'StrictDate',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'StrictDate',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         { multiplicity: { lowerBound: 0 }, name: 'events', type: 'TradeEvent' },
       ],
@@ -2389,7 +2613,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'productIdentifier',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -2529,7 +2760,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'classificationType',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -2588,7 +2826,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'productDescription',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -2647,7 +2892,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'accountDescription',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -2746,7 +2998,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'productIdentifierWithNull',
           parameters: [],
           returnMultiplicity: { lowerBound: 0, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -2765,7 +3024,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'customerQuantity',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'Float',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Float',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -2805,7 +3071,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'daysToLastEvent',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'Integer',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -2934,7 +3207,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'tradeDateEventType',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -3019,7 +3299,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'tradeDateEventTypeInlined',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -3181,27 +3468,62 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'id',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'date',
-          type: 'StrictDate',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'StrictDate',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'quantity',
-          type: 'Float',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Float',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
           name: 'settlementDateTime',
-          type: 'DateTime',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'DateTime',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
           name: 'pnl',
-          type: 'Float',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Float',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
@@ -3211,7 +3533,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'zeroPnl',
-          type: 'Boolean',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -3227,7 +3556,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'pnl',
-          type: 'Float',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Float',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
@@ -3253,7 +3589,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'pnl',
-          type: 'Float',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Float',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -3274,7 +3617,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'date',
-          type: 'StrictDate',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'StrictDate',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
@@ -3305,7 +3655,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'createDate',
-          type: 'StrictDate',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'StrictDate',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       qualifiedProperties: [
@@ -3370,7 +3727,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'accountCategory',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -3422,7 +3786,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           name: 'isTypeA',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'Boolean',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -3453,17 +3824,38 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'active',
-          type: 'Boolean',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'time',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'longestInteractionBetweenSourceAndTarget',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -3867,7 +4259,14 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'lastNameFirst',
-          type: 'Boolean',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
@@ -8941,7 +9340,14 @@ export const TEST_DATA__targetSetImplementationThroughAssociation = [
             upperBound: 1,
           },
           name: 'activeEmployment',
-          type: 'Boolean',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -9530,7 +9936,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
           name: 'age',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
@@ -9540,7 +9953,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
           name: 'activeEmployment',
-          type: 'Boolean',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       qualifiedProperties: [
@@ -9577,7 +9997,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
           name: 'name',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -9625,7 +10052,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
             },
           ],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -9939,7 +10373,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
             },
           ],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -10027,7 +10468,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
             },
           ],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -10140,7 +10588,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
             },
           ],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -10200,7 +10655,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
           name: 'constant',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -10289,7 +10751,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
           name: 'description',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       superTypes: ['GeographicEntity'],
@@ -10355,7 +10824,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
           name: 'averageEmployeesAge',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'Float',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Float',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -10380,7 +10856,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
           name: 'sumEmployeesAge',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'Integer',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -10405,7 +10888,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
           name: 'maxEmployeesAge',
           parameters: [],
           returnMultiplicity: { lowerBound: 0, upperBound: 1 },
-          returnType: 'Integer',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -10452,7 +10942,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
           name: 'nameAndAddress',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -10510,7 +11007,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
           name: 'isfirmX',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -10615,7 +11119,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
           name: 'nameAndMaskedAddress',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -10721,7 +11232,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
             },
           ],
           returnMultiplicity: { lowerBound: 0, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -11065,7 +11583,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
             },
           ],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'Boolean',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -11272,7 +11797,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
             },
           ],
           returnMultiplicity: { lowerBound: 0, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -11403,7 +11935,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
           name: 'isfirmXGroup',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'Boolean',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       superTypes: ['EntityWithAddress'],
@@ -11537,7 +12076,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
           name: 'birthdate',
-          type: 'Date',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Date',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       qualifiedProperties: [
@@ -11558,7 +12104,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
           name: 'birthYear',
           parameters: [],
           returnMultiplicity: { lowerBound: 0, upperBound: 1 },
-          returnType: 'Integer',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       superTypes: ['meta::pure::tests::model::simple::Person'],
@@ -11595,7 +12148,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'establishedDate',
-          type: 'Date',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Date',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 0 },
@@ -11621,7 +12181,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
           name: 'establishedYear',
           parameters: [],
           returnMultiplicity: { lowerBound: 1, upperBound: 1 },
-          returnType: 'Integer',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           body: [
@@ -11651,7 +12218,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
           name: 'allEmployeesLastName',
           parameters: [],
           returnMultiplicity: { lowerBound: 0, upperBound: 1 },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       superTypes: ['Firm'],
@@ -11909,7 +12483,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'lastNameFirst',
-          type: 'Boolean',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: { lowerBound: 1, upperBound: 1 },
@@ -11935,7 +12516,14 @@ export const TEST_DATA__embeddedRelationalTestData = [
         {
           multiplicity: { lowerBound: 0, upperBound: 1 },
           name: 'censusdate',
-          type: 'Date',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Date',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       superTypes: ['GeographicEntity'],

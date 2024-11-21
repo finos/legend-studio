@@ -107,7 +107,14 @@ export const TEST_DATA__simpleProjection = {
   parameters: [
     {
       _type: 'var',
-      class: 'String',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'String',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: { lowerBound: 0, upperBound: 1 },
       name: 'var_1',
     },
@@ -283,7 +290,14 @@ export const TEST_DATA__simpleProjectionWithPreviewLimit = {
   parameters: [
     {
       _type: 'var',
-      class: 'String',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'String',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: { lowerBound: 0, upperBound: 1 },
       name: 'var_1',
     },
@@ -380,7 +394,14 @@ export const TEST_DATA__simpleProjectionWithOutPreviewLimit = {
   parameters: [
     {
       _type: 'var',
-      class: 'String',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'String',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: { lowerBound: 0, upperBound: 1 },
       name: 'var_1',
     },
@@ -3865,7 +3886,14 @@ export const TEST_DATA__simpleProjectionWithConstantsAndParameters = {
   parameters: [
     {
       _type: 'var',
-      class: 'String',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'String',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 0,
         upperBound: 1,
@@ -4353,7 +4381,14 @@ export const TEST_DATA__simpeFilterWithMilestonedExists = {
   parameters: [
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -5104,7 +5139,14 @@ export const TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted = {
   parameters: [
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -5354,7 +5396,14 @@ export const TEST_DATA__lambda_WithDerivedProjectColumnsUsingConstAndParams = {
         lowerBound: 1,
         upperBound: 1,
       },
-      class: 'String',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'String',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
     },
   ],
 };
@@ -5431,13 +5480,27 @@ export const TEST_DATA__lambda_returnTypeSimple = {
   parameters: [
     {
       _type: 'var',
-      class: 'model::Person',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'model::Person',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: { lowerBound: 1, upperBound: 1 },
       name: 'x',
     },
     {
       _type: 'var',
-      class: 'String',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'String',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: { lowerBound: 1, upperBound: 1 },
       name: 'testing',
     },
@@ -5535,7 +5598,14 @@ export const TEST_DATA__lambda_returnTypeWithConst = {
   parameters: [
     {
       _type: 'var',
-      class: 'model::Person',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'model::Person',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -5544,7 +5614,14 @@ export const TEST_DATA__lambda_returnTypeWithConst = {
     },
     {
       _type: 'var',
-      class: 'String',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'String',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -5645,7 +5722,14 @@ export const TEST_DATA__lambda_returnTypeWithParam = {
   parameters: [
     {
       _type: 'var',
-      class: 'model::Person',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'model::Person',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -5654,7 +5738,14 @@ export const TEST_DATA__lambda_returnTypeWithParam = {
     },
     {
       _type: 'var',
-      class: 'String',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'String',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -5774,7 +5865,14 @@ export const TEST_DATA__lambda_returnTypeWithConstAndParam = {
   parameters: [
     {
       _type: 'var',
-      class: 'model::Person',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'model::Person',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -5783,7 +5881,14 @@ export const TEST_DATA__lambda_returnTypeWithConstAndParam = {
     },
     {
       _type: 'var',
-      class: 'String',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'String',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -6367,7 +6472,14 @@ export const TEST_DATA__lambda_builtPostFilterQuery = {
   parameters: [
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -6898,7 +7010,14 @@ export const TEST_DATA__lambda_expectedModifiedPostFilterQuery = {
   parameters: [
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,

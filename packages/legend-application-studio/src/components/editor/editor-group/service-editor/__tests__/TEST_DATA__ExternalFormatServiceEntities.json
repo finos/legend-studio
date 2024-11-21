@@ -316,7 +316,14 @@
           "parameters": [
             {
               "_type": "var",
-              "class": "String",
+              "genericType": {
+                "rawType": {
+                  "_type": "packageableType",
+                  "fullPath": "String"
+                },
+                "typeArguments": [],
+                "typeVariableValues": []
+              },
               "multiplicity": {
                 "lowerBound": 1,
                 "upperBound": 1
@@ -325,7 +332,14 @@
             },
             {
               "_type": "var",
-              "class": "String",
+              "genericType": {
+                "rawType": {
+                  "_type": "packageableType",
+                  "fullPath": "String"
+                },
+                "typeArguments": [],
+                "typeVariableValues": []
+              },
               "multiplicity": {
                 "lowerBound": 1,
                 "upperBound": 1
@@ -633,7 +647,14 @@
             },
             {
               "_type": "var",
-              "class": "String",
+              "genericType": {
+                "rawType": {
+                  "_type": "packageableType",
+                  "fullPath": "String"
+                },
+                "typeArguments": [],
+                "typeVariableValues": []
+              },
               "multiplicity": {
                 "lowerBound": 1,
                 "upperBound": 1

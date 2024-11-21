@@ -137,7 +137,14 @@ export const TEST_DATA__simpleFlowControlExecutionPlan = {
               lowerBound: 0,
             },
             name: 'employees',
-            type: 'model::Person',
+            genericType: {
+              rawType: {
+                _type: 'packageableType',
+                fullPath: 'model::Person',
+              },
+              typeArguments: [],
+              typeVariableValues: [],
+            },
           },
         ],
       },
@@ -227,7 +234,14 @@ export const TEST_DATA__simpleFlowControlExecutionPlan = {
               upperBound: 1,
             },
             name: 'quantity',
-            type: 'Integer',
+            genericType: {
+              rawType: {
+                _type: 'packageableType',
+                fullPath: 'Integer',
+              },
+              typeArguments: [],
+              typeVariableValues: [],
+            },
           },
         ],
       },

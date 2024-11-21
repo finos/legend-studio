@@ -229,7 +229,14 @@
         "lowerBound": 1,
         "upperBound": 1
       },
-      "returnType": "meta::pure::tds::TabularDataSet"
+      "returnGenericType": {
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "meta::pure::tds::TabularDataSet"
+        },
+        "typeArguments": [],
+        "typeVariableValues": []
+      }
     },
     "classifierPath": "meta::pure::metamodel::function::ConcreteFunctionDefinition"
   },

@@ -142,7 +142,14 @@
             "lowerBound": 0,
             "upperBound": 1
           },
-          "returnType": "Integer"
+          "returnGenericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "superTypes": ["model::pure::tests::model::simple::Person"]
@@ -2300,7 +2307,14 @@
             "lowerBound": 1,
             "upperBound": 1
           },
-          "returnType": "Integer"
+          "returnGenericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "body": [
@@ -2333,7 +2347,14 @@
             "lowerBound": 0,
             "upperBound": 1
           },
-          "returnType": "Integer"
+          "returnGenericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "body": [
@@ -4474,7 +4495,14 @@
             "lowerBound": 1,
             "upperBound": 1
           },
-          "returnType": "Integer"
+          "returnGenericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "body": [
@@ -4605,7 +4633,14 @@
                 "lowerBound": 1,
                 "upperBound": 1
               },
-              "class": "Date"
+              "genericType": {
+                "rawType": {
+                  "_type": "packageableType",
+                  "fullPath": "Date"
+                },
+                "typeArguments": [],
+                "typeVariableValues": []
+              }
             }
           ],
           "returnMultiplicity": {
@@ -5122,7 +5157,14 @@
             "lowerBound": 1,
             "upperBound": 1
           },
-          "returnType": "Integer"
+          "returnGenericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "body": [

@@ -54,13 +54,35 @@ const mockedResult = {
   builder: {
     _type: 'tdsBuilder',
     columns: [
-      { name: 'Age', type: 'Integer', relationalType: 'INTEGER' },
+      {
+        name: 'Age',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Integer',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
+        relationalType: 'INTEGER',
+      },
       {
         name: 'Edited First Name',
         type: 'String',
         relationalType: 'VARCHAR(200)',
       },
-      { name: 'Last Reported Flag', type: 'Boolean', relationalType: 'BIT' },
+      {
+        name: 'Last Reported Flag',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Boolean',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
+        relationalType: 'BIT',
+      },
     ],
   },
   activities: [{ _type: 'relational', comment: '', sql: 'select' }],
@@ -194,7 +216,18 @@ const mockedResultForFilterTest = {
   builder: {
     _type: 'tdsBuilder',
     columns: [
-      { name: 'Id', type: 'Integer', relationalType: 'INTEGER' },
+      {
+        name: 'Id',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Integer',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
+        relationalType: 'INTEGER',
+      },
       { name: '(derivation)', type: 'String', relationalType: 'VARCHAR(200)' },
       {
         name: 'Employees/First Name',
@@ -203,7 +236,14 @@ const mockedResultForFilterTest = {
       },
       {
         name: 'Id (sum)',
-        type: 'Integer',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Integer',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         relationalType: 'INTEGER',
       },
     ],

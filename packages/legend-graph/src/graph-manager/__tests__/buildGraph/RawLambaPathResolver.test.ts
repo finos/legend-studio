@@ -32,7 +32,14 @@ const getClassEntity = (enumPath: string): Entity => ({
           upperBound: 1,
         },
         name: 'firstName',
-        type: 'String',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'String',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
       },
     ],
     qualifiedProperties: [
@@ -61,7 +68,14 @@ const getClassEntity = (enumPath: string): Entity => ({
           lowerBound: 1,
           upperBound: 1,
         },
-        returnType: 'String',
+        returnGenericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'String',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
       },
     ],
   },

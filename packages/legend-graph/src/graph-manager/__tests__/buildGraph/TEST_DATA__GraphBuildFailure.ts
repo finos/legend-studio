@@ -29,7 +29,14 @@ export const TEST_DATA__MissingSuperType = [
             upperBound: 1,
           },
           name: 'legs',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -37,7 +44,14 @@ export const TEST_DATA__MissingSuperType = [
             upperBound: 1,
           },
           name: 'arms',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       superTypes: ['ui::test1::Organism'],
@@ -60,7 +74,14 @@ export const TEST_DATA__MissingProfile = [
             upperBound: 1,
           },
           name: 'legs',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -68,7 +89,14 @@ export const TEST_DATA__MissingProfile = [
             upperBound: 1,
           },
           name: 'arms',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       superTypes: [],
@@ -100,7 +128,14 @@ export const TEST_DATA__MissingStereoType = [
             upperBound: 1,
           },
           name: 'id',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -155,7 +190,14 @@ export const TEST_DATA__MissingTagValue = [
             upperBound: 1,
           },
           name: 'id',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -238,7 +280,14 @@ export const TEST_DATA__MissingProperty = [
             upperBound: 1,
           },
           name: 'legs',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -491,7 +540,14 @@ export const TEST_DATA__MissingClassMappingWithTargetId = [
           name: 'employees',
           stereotypes: [],
           taggedValues: [],
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       qualifiedProperties: [],

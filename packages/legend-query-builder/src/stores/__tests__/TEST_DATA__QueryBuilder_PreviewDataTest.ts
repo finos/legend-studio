@@ -44,7 +44,14 @@ export const TEST_DATA__PreviewData_entities = [
             upperBound: 1,
           },
           name: 'age',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       qualifiedProperties: [
@@ -803,7 +810,14 @@ export const TEST_DATA__Milestoning_PreviewData_entities = [
             lowerBound: 0,
           },
           name: 'employees',
-          type: 'model::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'model::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       stereotypes: [

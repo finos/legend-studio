@@ -103,7 +103,14 @@ export const TEST_DATA__ModelToModelMapping = [
             lowerBound: 1,
           },
           name: 'employees',
-          type: 'model::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'model::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -214,7 +221,14 @@ export const TEST_DATA__ModelToModelMapping = [
             lowerBound: 1,
             upperBound: 1,
           },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },

@@ -55,7 +55,14 @@ export const testConnectionRoundtrip = [
             upperBound: 1,
           },
           name: 'name',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },

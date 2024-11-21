@@ -83,8 +83,6 @@ export const V1_rawLambdaModelSchema = createModelSchema(V1_RawLambda, {
 
 export const V1_rawVariableModelSchema = createModelSchema(V1_RawVariable, {
   _type: usingConstantValueSchema(V1_RawValueSpecificationType.VARIABLE),
-  multiplicity: usingModelSchema(V1_multiplicityModelSchema),
-  name: primitive(),
   genericType: custom(
     (val) => serialize(V1_RawGenricTypeSchemaModel, val),
     (val) => V1_deserializeRawGenericType(val),
@@ -102,6 +100,8 @@ export const V1_rawVariableModelSchema = createModelSchema(V1_RawVariable, {
       },
     },
   ),
+  multiplicity: usingModelSchema(V1_multiplicityModelSchema),
+  name: primitive(),
 });
 
 const V1_rawPrimitiveInstanceValueSchema = createModelSchema(
