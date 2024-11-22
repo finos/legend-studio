@@ -465,7 +465,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     }
     if (dependencyFunctionInfos.length > 0) {
       const dependencyFunctionInfoMap = new Map<string, FunctionAnalysisInfo>();
-      functionInfos.forEach((funcInfo) => {
+      dependencyFunctionInfos.forEach((funcInfo) => {
         dependencyFunctionInfoMap.set(funcInfo.functionPath, funcInfo);
       });
       dataSpaceAnalysisResult.dependencyFunctionInfos =
