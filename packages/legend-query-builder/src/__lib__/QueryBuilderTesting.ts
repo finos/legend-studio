@@ -47,6 +47,7 @@ export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER_EXPLORER = 'query__builder__explorer',
   QUERY_BUILDER_PROPERTY_SEARCH_PANEL = 'query__builder__property__search__panel',
   QUERY_BUILDER_PERCENTILE_PANEL = 'query__builder__percentile__panel',
+  QUERY_BUILDER_WAVG_DROPZONE = 'query__builder__wavg__dropzone',
   //preview data modal
   QUERY_BUILDER_PREVIEW_DATA_MODAL = 'query__builder__preview-data__modal',
   // parameter panel

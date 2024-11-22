@@ -60,6 +60,7 @@ import { processFilterExpression } from './filter/QueryBuilderFilterStateBuilder
 import {
   processTDSAggregateExpression,
   processTDSGroupByExpression,
+  processWAVGRowMapperExpression,
 } from './fetch-structure/tds/aggregation/QueryBuilderAggregationStateBuilder.js';
 import {
   processGraphFetchExpression,
@@ -834,6 +835,19 @@ export class QueryBuilderValueSpecificationProcessor
         this.queryBuilderState,
       );
       return;
+    } else if (
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.WAVG_ROW_MAPPER,
+      )
+    ) {
+      processWAVGRowMapperExpression(
+        valueSpecification,
+        this.parentExpression,
+        this.queryBuilderState,
+        this.parentLambda,
+      );
+      return;
     }
     throw new UnsupportedOperationError(
       `Can't process expression of function ${functionName}()`,
@@ -851,13 +865,13 @@ export class QueryBuilderValueSpecificationProcessor
       this.parentExpression,
       `Can't process property expression: parent expression cannot be retrieved`,
     );
-
     if (
       matchFunctionName(this.parentExpression.functionName, [
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_PROJECT,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.WAVG_ROW_MAPPER,
         ...Object.values(
           QUERY_BUILDER_SUPPORTED_CALENDAR_AGGREGATION_FUNCTIONS,
         ),

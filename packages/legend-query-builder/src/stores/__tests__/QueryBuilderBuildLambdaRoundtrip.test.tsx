@@ -39,6 +39,7 @@ import {
   TEST_DATA__simpleProjectionWithSlice,
   TEST_DATA_simpleTypedRelationProjection,
   TEST_DATA__projectionWithPercentileAggregation,
+  TEST_DATA__projectionWithWAVGAggregation,
 } from './TEST_DATA__QueryBuilder_Generic.js';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json' with { type: 'json' };
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json' with { type: 'json' };
@@ -282,6 +283,12 @@ const cases: RoundtripTestCase[] = [
     'Projection column with precentile aggregation',
     projectionCtx,
     TEST_DATA__projectionWithPercentileAggregation,
+    undefined,
+  ],
+  [
+    'Projection column with wavg aggregation',
+    projectionCtx,
+    TEST_DATA__projectionWithWAVGAggregation,
     undefined,
   ],
   // graph fetch

@@ -86,7 +86,6 @@ const buildProjectionColumnLambda = (
     V1_Lambda,
     `Can't build projection column: only support lambda`,
   );
-
   // lambda parameter
   assertTrue(
     valueSpecification.parameters.length === 1,
@@ -105,6 +104,24 @@ const buildProjectionColumnLambda = (
   );
   let currentPropertyExpression: V1_ValueSpecification = valueSpecification
     .body[0] as V1_ValueSpecification;
+
+  //catch if wavg row mapper
+  if (
+    currentPropertyExpression instanceof V1_AppliedFunction &&
+    currentPropertyExpression.parameters.length === 2 &&
+    matchFunctionName(
+      currentPropertyExpression.function,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.WAVG_ROW_MAPPER,
+    )
+  ) {
+    return valueSpecification.accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
+      ),
+    );
+  }
 
   assertType(
     currentPropertyExpression,

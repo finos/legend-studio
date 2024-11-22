@@ -102,6 +102,13 @@ const TEST_CASES: QueryTestCase[] = [
     convertedRelation:
       "|showcase::northwind::model::crm::Customer.all()->filter(x|$x.companyTitle == 'company title')->project(~['Company Name':x|$x.companyName, 'Company Title':x|$x.companyTitle])->filter(row|$row.'Company Name' == 'company name')",
   },
+  //aggregation
+  {
+    testName: '[AGGREGATION] Simple wavg query',
+    model: 'Northwind',
+    queryGrammar:
+      "|showcase::northwind::model::OrderLineItem.all()->groupBy([], [agg(x|$x.quantity->meta::pure::functions::math::wavgUtility::wavgRowMapper($x.unitPrice), y|$y->wavg())], ['Quantity (wavg)'])",
+  },
 ];
 
 const globalGraphManagerStates = new Map<string, GraphManagerState>();

@@ -42,6 +42,7 @@ import {
 } from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip.js';
 import TEST_DATA__BindingM2MModel from './TEST_DATA__QueryBuilder_Model_BindingM2M.json' with { type: 'json' };
 import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json' with { type: 'json' };
+import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json' with { type: 'json' };
 import TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M from './TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M.json' with { type: 'json' };
 import {
   simpleDerivationProjection,
@@ -71,6 +72,7 @@ import {
 } from './TEST_DATA__QueryBuilder_GraphFetch.js';
 import { TEST__LegendApplicationPluginManager } from '../__test-utils__/QueryBuilderStateTestUtils.js';
 import { TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVariables } from './TEST_DATA__QueryBuilder_ConstantExpression.js';
+import { TEST_DATA__projectionWithWAVGAggregation } from './TEST_DATA__QueryBuilder_Generic.js';
 
 const pluginManager = TEST__LegendApplicationPluginManager.create();
 pluginManager
@@ -114,6 +116,10 @@ const bindingM2MCtx = {
 
 const identitfyM2MCtx = {
   entities: TEST_DATA__QueryBuilder_Model_SimpleIdentityM2M,
+};
+
+const projectionCtx = {
+  entities: TEST_DATA__ComplexRelationalModel,
 };
 
 const cases: RoundtripTestCase[] = [
@@ -241,6 +247,8 @@ const cases: RoundtripTestCase[] = [
   ],
   // slice
   ['Simple slice() function', relationalCtx, TEST_DATA__projectWithSlice],
+  // aggregation
+  ['wavg() function', projectionCtx, TEST_DATA__projectionWithWAVGAggregation],
 ];
 
 describe(unitTest('Lambda processing roundtrip'), () => {
