@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.0.2
+
+### Patch Changes
+
+- [#3683](https://github.com/finos/legend-studio/pull/3683) [`42b374c`](https://github.com/finos/legend-studio/commit/42b374c56646f89003d49201efcafb69f5555d1d) ([@kelly-thai](https://github.com/kelly-thai)) - Changing instances of Data Space to Data Product in UI
+
 ## 2.0.1
 
 ## 2.0.0
