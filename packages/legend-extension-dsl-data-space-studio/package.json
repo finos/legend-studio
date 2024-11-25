@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-data-space-studio",
-  "version": "0.1.89",
+  "version": "0.1.94",
   "description": "Legend extension for Data Space DSL - Studio",
   "keywords": [
     "legend",
@@ -61,11 +61,11 @@
     "@finos/legend-dev-utils": "workspace:*",
     "@jest/globals": "29.7.0",
     "cross-env": "7.0.3",
-    "eslint": "9.13.0",
+    "eslint": "9.15.0",
     "jest": "29.7.0",
     "npm-run-all": "4.1.5",
     "rimraf": "6.0.1",
-    "sass": "1.80.5",
+    "sass": "1.81.0",
     "typescript": "5.6.3"
   },
   "peerDependencies": {

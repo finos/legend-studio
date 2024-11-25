@@ -19,11 +19,12 @@ import {
   type V1_ValueSpecificationVisitor,
 } from '../../model/valueSpecification/V1_ValueSpecification.js';
 import type { V1_Multiplicity } from '../../model/packageableElements/domain/V1_Multiplicity.js';
+import type { V1_GenericType } from '../packageableElements/type/V1_GenericType.js';
 
 export class V1_Variable extends V1_ValueSpecification {
   name!: string;
   multiplicity!: V1_Multiplicity;
-  class?: string | undefined;
+  genericType: V1_GenericType | undefined;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,

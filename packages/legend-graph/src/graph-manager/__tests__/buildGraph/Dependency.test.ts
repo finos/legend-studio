@@ -37,7 +37,14 @@ const entities = [
             upperBound: 1,
           },
           name: 'prop',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       superTypes: ['model::ClassB'],
@@ -64,7 +71,14 @@ const firstDependencyEntities = {
               upperBound: 1,
             },
             name: 'prop1',
-            type: 'String',
+            genericType: {
+              rawType: {
+                _type: 'packageableType',
+                fullPath: 'String',
+              },
+              typeArguments: [],
+              typeVariableValues: [],
+            },
           },
         ],
       },
@@ -91,7 +105,14 @@ const secondDependencyEntities = {
               upperBound: 1,
             },
             name: 'prop',
-            type: 'String',
+            genericType: {
+              rawType: {
+                _type: 'packageableType',
+                fullPath: 'String',
+              },
+              typeArguments: [],
+              typeVariableValues: [],
+            },
           },
         ],
       },
@@ -118,7 +139,14 @@ const thirdDependencyEntities = {
               upperBound: 1,
             },
             name: 'prop',
-            type: 'String',
+            genericType: {
+              rawType: {
+                _type: 'packageableType',
+                fullPath: 'String',
+              },
+              typeArguments: [],
+              typeVariableValues: [],
+            },
           },
         ],
       },

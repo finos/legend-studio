@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-dev-utils",
-  "version": "2.1.27",
+  "version": "2.1.29",
   "description": "Legend Studio development utilities, helpers, and scripts",
   "keywords": [
     "legend",
@@ -51,13 +51,13 @@
   },
   "dependencies": {
     "@babel/core": "7.26.0",
-    "@changesets/assemble-release-plan": "6.0.4",
+    "@changesets/assemble-release-plan": "6.0.5",
     "@changesets/changelog-github": "0.5.0",
-    "@changesets/config": "3.0.3",
-    "@changesets/get-release-plan": "4.0.4",
-    "@changesets/git": "3.0.1",
+    "@changesets/config": "3.0.4",
+    "@changesets/get-release-plan": "4.0.5",
+    "@changesets/git": "3.0.2",
     "@changesets/logger": "0.1.1",
-    "@changesets/read": "0.6.1",
+    "@changesets/read": "0.6.2",
     "@changesets/write": "0.3.2",
     "@jest/globals": "29.7.0",
     "@juggle/resize-observer": "3.4.0",
@@ -80,19 +80,19 @@
     "jest-watch-typeahead": "2.2.2",
     "jsonc-parser": "3.3.1",
     "micromatch": "4.0.8",
-    "mini-css-extract-plugin": "2.9.1",
+    "mini-css-extract-plugin": "2.9.2",
     "monaco-editor": "0.52.0",
     "monaco-editor-webpack-plugin": "7.1.0",
-    "postcss": "8.4.47",
+    "postcss": "8.4.49",
     "postcss-loader": "8.1.1",
     "react-refresh": "0.14.2",
     "resolve": "1.22.8",
     "typescript": "5.6.3",
-    "webpack": "5.95.0"
+    "webpack": "5.96.1"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "9.13.0",
+    "eslint": "9.15.0",
     "rimraf": "6.0.1"
   },
   "publishConfig": {

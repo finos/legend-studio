@@ -110,6 +110,8 @@ import { V1_SubTypeGraphFetchTree } from '../../../../model/valueSpecification/r
 import { findMappingLocalProperty } from '../../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
 import { getRelationTypeGenericType } from '../../../../../../../../graph/helpers/ValueSpecificationHelper.js';
 import { Relation_RelationType } from '../../../../../../../../graph/metamodel/pure/packageableElements/relation/Relation_RelationType.js';
+import { V1_getGenericTypeFullPath } from '../../../../helpers/V1_DomainHelper.js';
+import { V1_createGenericTypeWithElementPath } from '../../from/V1_DomainTransformer.js';
 
 const buildPrimtiveInstanceValue = (
   type: PRIMITIVE_TYPE,
@@ -153,13 +155,15 @@ export class V1_ValueSpecificationBuilder
 
   visit_Variable(variable: V1_Variable): ValueSpecification {
     this.openVariables.push(variable.name);
-    if (variable.class) {
+    if (variable.genericType) {
       const multiplicity = this.context.graph.getMultiplicity(
         variable.multiplicity.lowerBound,
         variable.multiplicity.upperBound,
       );
       const ve = new VariableExpression(variable.name, multiplicity);
-      ve.genericType = this.context.resolveGenericType(variable.class);
+      ve.genericType = this.context.resolveGenericType(
+        V1_getGenericTypeFullPath(variable.genericType),
+      );
       this.processingContext.addInferredVariables(variable.name, ve);
       return ve;
     } else {
@@ -851,7 +855,9 @@ export function V1_buildPropertyGraphFetchTree(
   if (propertyGraphFetchTree.parameters.length) {
     const thisVariable = new V1_Variable();
     thisVariable.name = 'this';
-    thisVariable.class = parentClass.path;
+    thisVariable.genericType = V1_createGenericTypeWithElementPath(
+      parentClass.path,
+    );
     thisVariable.multiplicity = V1_Multiplicity.ONE;
     const parameters: V1_ValueSpecification[] =
       propertyGraphFetchTree.parameters.concat([thisVariable]);

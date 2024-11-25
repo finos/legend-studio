@@ -81,7 +81,14 @@ const firstDependencyEntities = {
           lowerBound: 1,
           upperBound: 1,
         },
-        returnType: 'String',
+        returnGenericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'String',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
       },
     },
     {
@@ -124,7 +131,14 @@ const firstDependencyEntities = {
           lowerBound: 1,
           upperBound: 1,
         },
-        returnType: 'String',
+        returnGenericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'String',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
       },
     },
   ],

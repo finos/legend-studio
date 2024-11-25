@@ -25,6 +25,7 @@ import type { V1_RawValueSpecification } from '../../../model/rawValueSpecificat
 import { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue.js';
 import type { RawPrimitiveInstanceValue } from '../../../../../../../graph/metamodel/pure/rawValueSpecification/RawPrimitiveInstanceValue.js';
 import { pruneSourceInformation } from '../../../../../../../graph/MetaModelUtils.js';
+import { V1_createRawGenericTypeWithElementPath } from './V1_DomainTransformer.js';
 
 export class V1_RawValueSpecificationTransformer
   implements RawValueSpecificationVisitor<V1_RawValueSpecification>
@@ -58,7 +59,9 @@ export class V1_RawValueSpecificationTransformer
     rawValueSpecification: RawVariableExpression,
   ): V1_RawValueSpecification {
     const rawVariable = new V1_RawVariable();
-    rawVariable.class = rawValueSpecification.type.valueForSerialization ?? '';
+    rawVariable.genericType = V1_createRawGenericTypeWithElementPath(
+      rawValueSpecification.type.valueForSerialization ?? '',
+    );
     rawVariable.multiplicity = V1_transformMultiplicity(
       rawValueSpecification.multiplicity,
     );

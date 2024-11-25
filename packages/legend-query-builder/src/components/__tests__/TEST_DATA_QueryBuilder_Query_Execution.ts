@@ -150,7 +150,14 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
           {
             multiplicity: { lowerBound: 1 },
             name: 'employees',
-            type: 'model::Person',
+            genericType: {
+              rawType: {
+                _type: 'packageableType',
+                fullPath: 'model::Person',
+              },
+              typeArguments: [],
+              typeVariableValues: [],
+            },
           },
           {
             multiplicity: { lowerBound: 1, upperBound: 1 },
@@ -160,7 +167,14 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
           {
             multiplicity: { lowerBound: 1, upperBound: 1 },
             name: 'isApple',
-            type: 'Boolean',
+            genericType: {
+              rawType: {
+                _type: 'packageableType',
+                fullPath: 'Boolean',
+              },
+              typeArguments: [],
+              typeVariableValues: [],
+            },
           },
         ],
         qualifiedProperties: [

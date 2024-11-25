@@ -185,7 +185,14 @@
       "parameters": [
         {
           "_type": "var",
-          "class": "model::Firm",
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "model::Firm"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
           "multiplicity": {
             "lowerBound": 1,
             "upperBound": 1
@@ -194,7 +201,14 @@
         },
         {
           "_type": "var",
-          "class": "model::Firm",
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "model::Firm"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
           "multiplicity": {
             "lowerBound": 0
           },
@@ -202,7 +216,14 @@
         },
         {
           "_type": "var",
-          "class": "model::Firm",
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "model::Firm"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
           "multiplicity": {
             "lowerBound": 1
           },
@@ -210,7 +231,14 @@
         },
         {
           "_type": "var",
-          "class": "String",
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
           "multiplicity": {
             "lowerBound": 1,
             "upperBound": 1

@@ -40,7 +40,14 @@ const entities = [
             upperBound: 1,
           },
           name: 'prop',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },

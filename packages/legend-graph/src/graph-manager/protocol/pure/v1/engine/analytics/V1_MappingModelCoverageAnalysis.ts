@@ -33,11 +33,18 @@ import {
   EntityMappedProperty,
   EnumMappedProperty,
   MappedEntity,
+  MappedEntityInfo,
   MappedProperty,
   MappingModelCoverageAnalysisResult,
 } from '../../../../../../graph-manager/action/analytics/MappingModelCoverageAnalysis.js';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
-import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
+import {
+  V1_deserializePureModelContextData,
+  V1_pureModelContextPropSchema,
+  V1_serializePureModelContextData,
+} from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
+import type { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
+import type { V1_PureGraphManager } from '../../V1_PureGraphManager.js';
 
 enum V1_MappedPropertyType {
   ENUM = 'enum',
@@ -101,13 +108,31 @@ const V1_deserializeMappedProperty = (
   }
 };
 
+class V1_MappedEntityInfo {
+  classPath!: string;
+  isRootEntity!: boolean;
+  subClasses: string[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_MappedEntityInfo, {
+      classPath: primitive(),
+      isRootEntity: primitive(),
+      subClasses: list(primitive()),
+    }),
+  );
+}
+
 class V1_MappedEntity {
   path!: string;
   properties: V1_MappedProperty[] = [];
+  info?: V1_MappedEntityInfo | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_MappedEntity, {
       path: primitive(),
+      info: optional(
+        usingModelSchema(V1_MappedEntityInfo.serialization.schema),
+      ),
       properties: list(
         custom(
           (prop) => V1_serializeMappedProperty(prop),
@@ -134,11 +159,18 @@ export class V1_MappingModelCoverageAnalysisInput {
 
 export class V1_MappingModelCoverageAnalysisResult {
   mappedEntities: V1_MappedEntity[] = [];
+  model?: V1_PureModelContextData | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_MappingModelCoverageAnalysisResult, {
       mappedEntities: list(
         usingModelSchema(V1_MappedEntity.serialization.schema),
+      ),
+      model: optional(
+        custom(
+          (val) => V1_serializePureModelContextData(val),
+          (val) => V1_deserializePureModelContextData(val),
+        ),
       ),
     }),
   );
@@ -155,17 +187,36 @@ const buildMappedProperty = (protocol: V1_MappedProperty): MappedProperty =>
       ? new EnumMappedProperty(protocol.name, protocol.enumPath)
       : new MappedProperty(protocol.name);
 
-const buildMappedEntity = (protocol: V1_MappedEntity): MappedEntity =>
-  new MappedEntity(
+const buildMappedEntityInfo = (
+  protocol: V1_MappedEntityInfo,
+): MappedEntityInfo =>
+  new MappedEntityInfo(
+    protocol.classPath,
+    protocol.isRootEntity,
+    protocol.subClasses,
+  );
+
+const buildMappedEntity = (protocol: V1_MappedEntity): MappedEntity => {
+  const info = protocol.info ? buildMappedEntityInfo(protocol.info) : undefined;
+  return new MappedEntity(
     protocol.path,
     protocol.properties.map((p) => buildMappedProperty(p)),
+    info,
   );
+};
 
 export const V1_buildModelCoverageAnalysisResult = (
   protocol: V1_MappingModelCoverageAnalysisResult,
+  graphManager: V1_PureGraphManager,
   mapping: Mapping,
-): MappingModelCoverageAnalysisResult =>
-  new MappingModelCoverageAnalysisResult(
+  pmcd?: V1_PureModelContextData,
+): MappingModelCoverageAnalysisResult => {
+  const entities = (pmcd ? pmcd : protocol.model)?.elements.map((el) =>
+    graphManager.elementProtocolToEntity(el),
+  );
+  return new MappingModelCoverageAnalysisResult(
     protocol.mappedEntities.map((p) => buildMappedEntity(p)),
     mapping,
+    entities,
   );
+};

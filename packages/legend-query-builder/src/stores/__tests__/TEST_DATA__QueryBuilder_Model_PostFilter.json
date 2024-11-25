@@ -93,7 +93,14 @@
             "upperBound": 1
           },
           "name": "myStrictTime",
-          "type": "StrictTime"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "StrictTime"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": {

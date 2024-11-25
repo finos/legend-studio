@@ -95,7 +95,14 @@
       "parameters": [
         {
           "_type": "var",
-          "class": "String",
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
           "multiplicity": {
             "lowerBound": 1,
             "upperBound": 1
@@ -104,7 +111,14 @@
         },
         {
           "_type": "var",
-          "class": "model::IncType",
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "model::IncType"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
           "multiplicity": {
             "lowerBound": 1,
             "upperBound": 1
@@ -113,7 +127,14 @@
         },
         {
           "_type": "var",
-          "class": "Date",
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Date"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
           "multiplicity": {
             "lowerBound": 1,
             "upperBound": 1
@@ -122,7 +143,14 @@
         },
         {
           "_type": "var",
-          "class": "DateTime",
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "DateTime"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
           "multiplicity": {
             "lowerBound": 1,
             "upperBound": 1

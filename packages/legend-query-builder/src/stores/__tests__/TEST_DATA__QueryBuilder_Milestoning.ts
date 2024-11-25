@@ -95,7 +95,14 @@ export const TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndProcessingT
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'businessDate',
         multiplicity: {
           lowerBound: 1,
@@ -104,7 +111,14 @@ export const TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndProcessingT
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'processingDate',
         multiplicity: {
           lowerBound: 1,
@@ -191,7 +205,14 @@ export const TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBusinessTem
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'businessDate',
         multiplicity: {
           lowerBound: 1,
@@ -282,7 +303,14 @@ export const TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBiTemporalT
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'businessDate',
         multiplicity: {
           lowerBound: 1,
@@ -291,7 +319,14 @@ export const TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBiTemporalT
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'processingDate',
         multiplicity: {
           lowerBound: 1,
@@ -382,7 +417,14 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget 
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -391,7 +433,14 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget 
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -478,7 +527,14 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalT
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'businessDate',
         multiplicity: {
           lowerBound: 1,
@@ -487,7 +543,14 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalT
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'processingDate',
         multiplicity: {
           lowerBound: 1,
@@ -578,7 +641,14 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndProcessingTempora
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'businessDate',
         multiplicity: {
           lowerBound: 1,
@@ -587,7 +657,14 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndProcessingTempora
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'processingDate',
         multiplicity: {
           lowerBound: 1,
@@ -682,7 +759,14 @@ export const TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBiTempora
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'businessDate',
         multiplicity: {
           lowerBound: 1,
@@ -691,7 +775,14 @@ export const TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBiTempora
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'processingDate',
         multiplicity: {
           lowerBound: 1,
@@ -782,7 +873,14 @@ export const TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessT
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'businessDate',
         multiplicity: {
           lowerBound: 1,
@@ -791,7 +889,14 @@ export const TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessT
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'processingDate',
         multiplicity: {
           lowerBound: 1,
@@ -878,7 +983,14 @@ export const TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndProcessin
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'processingDate',
         multiplicity: {
           lowerBound: 1,
@@ -965,7 +1077,14 @@ export const TEST_DATA__simpleProjectionWithNonTemporalSourceAndProcessingTempor
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'processingDate',
         multiplicity: {
           lowerBound: 1,
@@ -1056,7 +1175,14 @@ export const TEST_DATA__simpleProjectionWithNonTemporalSourceAndBiTemporalTarget
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'processingDate',
         multiplicity: {
           lowerBound: 1,
@@ -1065,7 +1191,14 @@ export const TEST_DATA__simpleProjectionWithNonTemporalSourceAndBiTemporalTarget
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'businessDate',
         multiplicity: {
           lowerBound: 1,
@@ -1152,7 +1285,14 @@ export const TEST_DATA__simpleProjectionWithNonTemporalSourceAndBusinessTemporal
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         name: 'businessDate',
         multiplicity: {
           lowerBound: 1,
@@ -1353,7 +1493,14 @@ export const TEST_DATA__simpleProjectionWithAggregationInput = {
   parameters: [
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       name: 'businessDate',
       multiplicity: {
         lowerBound: 1,
@@ -1479,7 +1626,14 @@ export const TEST_DATA__simpleProjectionWithAggregationOutput = {
   parameters: [
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       name: 'businessDate',
       multiplicity: {
         lowerBound: 1,
@@ -1783,7 +1937,14 @@ export const TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBusinessTempora
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -1862,7 +2023,14 @@ export const TEST_DATA__simpleFilterWithBusinessTemporalSourceAndProcessingTempo
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -1871,7 +2039,14 @@ export const TEST_DATA__simpleFilterWithBusinessTemporalSourceAndProcessingTempo
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -1954,7 +2129,14 @@ export const TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBiTemporalTarge
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -1963,7 +2145,14 @@ export const TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBiTemporalTarge
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -2042,7 +2231,14 @@ export const TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBusinessTempo
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -2051,7 +2247,14 @@ export const TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBusinessTempo
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -2126,7 +2329,14 @@ export const TEST_DATA__simpleFilterWithProcessingTemporalSourceAndProcessingTem
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -2209,7 +2419,14 @@ export const TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBiTemporalTar
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -2218,7 +2435,14 @@ export const TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBiTemporalTar
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -2297,7 +2521,14 @@ export const TEST_DATA__simpleFilterWithBiTemporalSourceAndBusinessTemporalTarge
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -2306,7 +2537,14 @@ export const TEST_DATA__simpleFilterWithBiTemporalSourceAndBusinessTemporalTarge
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -2385,7 +2623,14 @@ export const TEST_DATA__simpleFilterWithBiTemporalSourceAndProcessingTemporalTar
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -2394,7 +2639,14 @@ export const TEST_DATA__simpleFilterWithBiTemporalSourceAndProcessingTemporalTar
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -2472,7 +2724,14 @@ export const TEST_DATA__simpleFilterWithBiTemporalSourceAndBiTemporalTarget = {
   parameters: [
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -2481,7 +2740,14 @@ export const TEST_DATA__simpleFilterWithBiTemporalSourceAndBiTemporalTarget = {
     },
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -2556,7 +2822,14 @@ export const TEST_DATA__simpleFilterWithNonTemporalSourceAndBusinessTemporalTarg
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -2631,7 +2904,14 @@ export const TEST_DATA__simpleFilterWithNonTemporalSourceAndProcessingTemporalTa
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -2709,7 +2989,14 @@ export const TEST_DATA__simpleFilterWithNonTemporalSourceAndBiTemporalTarget = {
   parameters: [
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -2718,7 +3005,14 @@ export const TEST_DATA__simpleFilterWithNonTemporalSourceAndBiTemporalTarget = {
     },
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -2821,7 +3115,14 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithBusinessTemporalClass = {
   parameters: [
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -2830,7 +3131,14 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithBusinessTemporalClass = {
     },
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -2865,7 +3173,14 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithBiTemporalClass = {
   parameters: [
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -2874,7 +3189,14 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithBiTemporalClass = {
     },
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -2910,7 +3232,14 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithProcessingTemporalClass =
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -2919,7 +3248,14 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithProcessingTemporalClass =
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -2954,7 +3290,14 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithNonTemporalClass = {
   parameters: [
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -2963,7 +3306,14 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithNonTemporalClass = {
     },
     {
       _type: 'var',
-      class: 'Date',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Date',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       multiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -3050,7 +3400,14 @@ export const TEST_DATA__simpleGetAllVersionsWithBusinessTemporalSourceAndBusines
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -3141,7 +3498,14 @@ export const TEST_DATA__simpleGetAllVersionsWithBiTemporalSourceAndBiTemporalTar
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -3150,7 +3514,14 @@ export const TEST_DATA__simpleGetAllVersionsWithBiTemporalSourceAndBiTemporalTar
       },
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -3237,7 +3608,14 @@ export const TEST_DATA__simpleGetAllVersionsWithProcessingTemporalSourceAndProce
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
@@ -3324,7 +3702,14 @@ export const TEST_DATA__simpleGetAllVersionsWithProcessingTemporalSourceAndBusin
     parameters: [
       {
         _type: 'var',
-        class: 'Date',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+          typeArguments: [],
+          typeVariableValues: [],
+        },
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,

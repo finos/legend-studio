@@ -31,7 +31,14 @@ export const TEST_DATA__ServiceRoundtrip = [
             upperBound: 1,
           },
           name: 'name',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -49,7 +56,14 @@ export const TEST_DATA__ServiceRoundtrip = [
             lowerBound: 0,
           },
           name: 'givenNames',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -500,7 +514,14 @@ export const TEST_DATA__ServiceRoundtrip = [
           parameters: [
             {
               _type: 'var',
-              class: 'test::tClass',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'test::tClass',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
@@ -565,7 +586,14 @@ export const TEST_DATA__ServiceRoundtrip = [
               parameters: [
                 {
                   _type: 'var',
-                  class: 'test::tClass',
+                  genericType: {
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'test::tClass',
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [],
+                  },
                   multiplicity: {
                     lowerBound: 1,
                     upperBound: 1,
@@ -606,7 +634,14 @@ export const TEST_DATA__ServiceRoundtrip = [
           parameters: [
             {
               _type: 'var',
-              class: 'Byte',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'Byte',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
               multiplicity: {
                 lowerBound: 0,
               },
@@ -672,7 +707,14 @@ export const TEST_DATA__ServiceRoundtrip = [
           parameters: [
             {
               _type: 'var',
-              class: 'test::tClass',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'est::tClass',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
@@ -719,7 +761,14 @@ export const TEST_DATA__ServiceRoundtrip = [
                   parameters: [
                     {
                       _type: 'var',
-                      class: 'test::tClass',
+                      genericType: {
+                        rawType: {
+                          _type: 'packageableType',
+                          fullPath: 'est::tClass',
+                        },
+                        typeArguments: [],
+                        typeVariableValues: [],
+                      },
                       multiplicity: {
                         lowerBound: 1,
                         upperBound: 1,
@@ -1108,7 +1157,14 @@ export const TEST_DATA__ServiceRoundtrip = [
           parameters: [
             {
               _type: 'var',
-              class: 'test::tClass',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'est::tClass',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
@@ -1234,7 +1290,14 @@ export const TEST_DATA__SERVICE_WITH_ONLY_QUERY_Roundtrip = [
             upperBound: 1,
           },
           name: 'firstName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -1242,7 +1305,14 @@ export const TEST_DATA__SERVICE_WITH_ONLY_QUERY_Roundtrip = [
             upperBound: 1,
           },
           name: 'lastName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -1250,7 +1320,14 @@ export const TEST_DATA__SERVICE_WITH_ONLY_QUERY_Roundtrip = [
             upperBound: 1,
           },
           name: 'employeeType',
-          type: 'model::EmployeeType',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'model::EmployeeType',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -1269,14 +1346,28 @@ export const TEST_DATA__SERVICE_WITH_ONLY_QUERY_Roundtrip = [
             upperBound: 1,
           },
           name: 'legalName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
             lowerBound: 0,
           },
           name: 'employees',
-          type: 'model::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'model::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   FunctionAnalysisInfo,
   FunctionAnalysisParameterInfo,
@@ -26,7 +27,18 @@ import {
 import type { PureModel } from '../../../../../graph/PureModel.js';
 import type { V1_Multiplicity } from '../model/packageableElements/domain/V1_Multiplicity.js';
 import type { V1_ConcreteFunctionDefinition } from '../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
+import type { V1_GenericType } from '../model/packageableElements/type/V1_GenericType.js';
 import type { V1_RawVariable } from '../model/rawValueSpecification/V1_RawVariable.js';
+import { V1_PackageableType } from '../model/valueSpecification/raw/V1_PackageableElementPtr.js';
+
+export const V1_getGenericTypeFullPath = (val: V1_GenericType): string => {
+  if (val.rawType instanceof V1_PackageableType) {
+    return val.rawType.fullPath;
+  }
+  throw new UnsupportedOperationError(
+    'Failed to get full path from generic type',
+  );
+};
 
 const V1_buildFunctionMultiplicitySignature = (
   multiplicity: V1_Multiplicity,
@@ -45,7 +57,7 @@ const V1_buildFunctionMultiplicitySignature = (
 };
 
 const V1_buildFunctionParameterSignature = (variable: V1_RawVariable): string =>
-  `${variable.class
+  `${variable.genericType.rawType.fullPath
     .split(ELEMENT_PATH_DELIMITER)
     .pop()}_${V1_buildFunctionMultiplicitySignature(variable.multiplicity)}_`;
 
@@ -54,7 +66,7 @@ const V1_buildFunctionSignatureSuffix = (
 ): string =>
   `_${func.parameters
     .map((p) => V1_buildFunctionParameterSignature(p))
-    .join('_')}_${func.returnType
+    .join('_')}_${V1_getGenericTypeFullPath(func.returnGenericType)
     .split(ELEMENT_PATH_DELIMITER)
     .pop()}_${V1_buildFunctionMultiplicitySignature(func.returnMultiplicity)}_`;
 
@@ -89,16 +101,18 @@ const V1_buildFunctionPrettyName = (
   }${element.name.substring(0, element.name.indexOf(V1_buildFunctionSignatureSuffix(element)))}(${element.parameters
     .map((p) =>
       !options?.notIncludeParamName
-        ? `${p.name}: ${p.class}[${generateMultiplicityString(
+        ? `${p.name}: ${p.genericType.rawType.fullPath}[${generateMultiplicityString(
             p.multiplicity.lowerBound,
             p.multiplicity.upperBound,
           )}]`
-        : `${p.class}[${generateMultiplicityString(
+        : `${p.genericType.rawType.fullPath}[${generateMultiplicityString(
             p.multiplicity.lowerBound,
             p.multiplicity.upperBound,
           )}]`,
     )
-    .join(', ')}): ${element.returnType}[${generateMultiplicityString(
+    .join(
+      ', ',
+    )}): ${V1_getGenericTypeFullPath(element.returnGenericType)}[${generateMultiplicityString(
     element.returnMultiplicity.lowerBound,
     element.returnMultiplicity.upperBound,
   )}]`.replaceAll(/\s*/gu, (val) => {
@@ -122,7 +136,7 @@ export const V1_buildFunctionInfoAnalysis = (
       fullPath: true,
     });
     functionInfo.packagePath = func.package;
-    functionInfo.returnType = func.returnType;
+    functionInfo.returnType = V1_getGenericTypeFullPath(func.returnGenericType);
     functionInfo.parameterInfoList = func.parameters.map((param) => {
       const paramInfo = new FunctionAnalysisParameterInfo();
       paramInfo.multiplicity = graph.getMultiplicity(
@@ -130,7 +144,7 @@ export const V1_buildFunctionInfoAnalysis = (
         param.multiplicity.upperBound,
       );
       paramInfo.name = param.name;
-      paramInfo.type = param.class;
+      paramInfo.type = param.genericType.rawType.fullPath;
       return paramInfo;
     });
     return functionInfo;

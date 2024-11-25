@@ -28,6 +28,8 @@ import {
   V1_PackageableElement,
 } from '../../../model/packageableElements/V1_PackageableElement.js';
 import type { V1_FunctionTestSuite } from './test/V1_FunctionTestSuite.js';
+import type { V1_GenericType } from '../type/V1_GenericType.js';
+import { V1_PackageableType } from '../../valueSpecification/raw/V1_PackageableElementPtr.js';
 
 export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
   /**
@@ -54,7 +56,7 @@ export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
    * @discrepancy model
    */
   postConstraints = [];
-  returnType!: string;
+  returnGenericType!: V1_GenericType;
   returnMultiplicity!: V1_Multiplicity;
   taggedValues: V1_TaggedValue[] = [];
   stereotypes: V1_StereotypePtr[] = [];
@@ -65,7 +67,9 @@ export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
       CORE_HASH_STRUCTURE.FUNCTION,
       this.path,
       hashArray(this.parameters),
-      this.returnType,
+      this.returnGenericType.rawType instanceof V1_PackageableType
+        ? this.returnGenericType.rawType.fullPath
+        : '',
       hashArray(this.taggedValues),
       hashArray(this.stereotypes),
       hashRawLambda(undefined, this.body),

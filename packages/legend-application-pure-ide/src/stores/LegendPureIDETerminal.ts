@@ -218,7 +218,7 @@ export const setupTerminal = (ideStore: PureIDEStore): void => {
           const path = args[0];
           if (
             !path ||
-            !(path.match(FILE_PATH_PATTERN) || path.match(PACKAGE_PATH_PATTERN))
+            !(path.match(FILE_PATH_PATTERN) ?? path.match(PACKAGE_PATH_PATTERN))
           ) {
             ideStore.applicationStore.terminalService.terminal.fail(
               `command requires a valid directory or concept path`,
@@ -260,8 +260,8 @@ export const setupTerminal = (ideStore: PureIDEStore): void => {
           if (
             !path ||
             !(
-              path.match(FILE_PATH_PATTERN) ||
-              path.match(PACKAGE_PATH_PATTERN) ||
+              path.match(FILE_PATH_PATTERN) ??
+              path.match(PACKAGE_PATH_PATTERN) ??
               [HOME_DIRECTORY_PATH, ROOT_PACKAGE_PATH].includes(path)
             )
           ) {

@@ -34,14 +34,6 @@ Service model::ModelToModelMappingService
   [
 
   ]
-  test: Single
-  {
-    data: '';
-    asserts:
-    [
-      { [], res: meta::pure::mapping::Result[1]|$res.values->toOne()->toString()->equalJsonStrings('') }
-    ];
-  }
 }
 
 

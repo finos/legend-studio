@@ -30,7 +30,14 @@ export const TEST_DATA__dependencyMainGraphEntities = [
         },
         {
           name: 'mainPerson',
-          type: 'model::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'model::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
           multiplicity: { lowerBound: 1, upperBound: 1 },
           stereotypes: [],
           taggedValues: [],
@@ -62,7 +69,14 @@ export const TEST_DATA__dependencyMainGraphEntities2 = [
         },
         {
           name: 'mainPerson',
-          type: 'model::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'model::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
           multiplicity: { lowerBound: 1, upperBound: 1 },
           stereotypes: [],
           taggedValues: [],
@@ -91,7 +105,14 @@ export const TEST_DATA__dependencyMainGraphEntities2 = [
         },
         {
           name: 'mainPerson2',
-          type: 'model::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'model::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
           multiplicity: { lowerBound: 1, upperBound: 1 },
           stereotypes: [],
           taggedValues: [],
@@ -231,14 +252,28 @@ export const TEST_DATA__projectVersionDependencyEntities = [
               name: 'firstName',
               stereotypes: [],
               taggedValues: [],
-              type: 'String',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'String',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
             },
             {
               multiplicity: { lowerBound: 1, upperBound: 1 },
               name: 'lastName',
               stereotypes: [],
               taggedValues: [],
-              type: 'String',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'String',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
             },
           ],
           qualifiedProperties: [],
@@ -285,7 +320,14 @@ export const TEST_DATA__projectVersionDependencyEntities = [
               name: 'legalName',
               stereotypes: [],
               taggedValues: [],
-              type: 'String',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'String',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
             },
           ],
           qualifiedProperties: [],
@@ -335,7 +377,14 @@ export const TEST_DATA__projectVersionDependencyEntities = [
               name: 'employees',
               stereotypes: [],
               taggedValues: [],
-              type: 'model::Person',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'model::Person',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
             },
             {
               multiplicity: { lowerBound: 1, upperBound: 1 },
@@ -349,7 +398,14 @@ export const TEST_DATA__projectVersionDependencyEntities = [
               name: 'isApple',
               stereotypes: [],
               taggedValues: [],
-              type: 'Boolean',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'Boolean',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
             },
           ],
           qualifiedProperties: [

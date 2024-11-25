@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { type Entity, EntitiesWithOrigin } from '@finos/legend-storage';
+import {
+  type Entity,
+  type StoredFileGeneration,
+  EntitiesWithOrigin,
+} from '@finos/legend-storage';
 import {
   type PlainObject,
   AbstractServerClient,
@@ -299,6 +303,8 @@ export class DepotServerClient extends AbstractServerClient {
   private _generationContent = (): string =>
     `${this.baseUrl}/generationFileContent`;
 
+  private _generations = (): string => `${this.baseUrl}/generations`;
+
   private _generationContentByGAV = (
     groupId: string,
     artifactId: string,
@@ -309,6 +315,15 @@ export class DepotServerClient extends AbstractServerClient {
     )}/${encodeURIComponent(artifactId)}/versions/${encodeURIComponent(
       versionId,
     )}`;
+
+  private _generationsByGAV = (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+  ): string =>
+    `${this._generations()}/${encodeURIComponent(
+      groupId,
+    )}/${encodeURIComponent(artifactId)}/${encodeURIComponent(versionId)}`;
 
   getGenerationContentByPath = async (
     project: StoreProjectData,
@@ -325,8 +340,20 @@ export class DepotServerClient extends AbstractServerClient {
       { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
     );
 
-  // ------------------------------------------- Versions -------------------------------------------
+  getGenerationFilesByType = async (
+    project: StoreProjectData,
+    versionId: string,
+    type: string,
+  ): Promise<PlainObject<StoredFileGeneration>[]> =>
+    this.get(
+      `${this._generationsByGAV(
+        project.groupId,
+        project.artifactId,
+        resolveVersion(versionId),
+      )}/types/${encodeURIComponent(type)}`,
+    );
 
+  // ------------------------------------------- Versions -------------------------------------------
   private _versionedStoreProjectData = (
     groupId: string,
     artifactId: string,

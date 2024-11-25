@@ -15,7 +15,14 @@
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
           "name": "boolean",
-          "type": "Boolean"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Boolean"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
@@ -35,7 +42,14 @@
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
           "name": "integer",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
@@ -81,7 +95,14 @@
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
           "name": "zipCode",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ]
     }
@@ -145,7 +166,14 @@
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
           "name": "salary",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "superTypes": ["myPackage::test::shared::src::User"]
@@ -183,7 +211,14 @@
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
           "name": "memberShipFee",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "superTypes": ["myPackage::test::shared::src::User"]
@@ -273,7 +308,14 @@
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
           "name": "time",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ]
     }
@@ -335,7 +377,14 @@
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
           "name": "roadster",
-          "type": "Boolean"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Boolean"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "superTypes": ["myPackage::test::shared::src::_RoadVehicle"]
@@ -352,7 +401,14 @@
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
           "name": "engine",
-          "type": "Boolean"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Boolean"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ],
       "superTypes": ["myPackage::test::shared::src::_RoadVehicle"]
@@ -543,7 +599,14 @@
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
           "name": "wheelCount",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ]
     }
@@ -575,7 +638,14 @@
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
           "name": "side",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
@@ -690,7 +760,14 @@
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
           "name": "count",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ]
     }
@@ -856,17 +933,38 @@
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
           "name": "wheelCount",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
           "name": "engine",
-          "type": "Boolean"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Boolean"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": { "lowerBound": 1, "upperBound": 1 },
           "name": "roadster",
-          "type": "Boolean"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Boolean"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         }
       ]
     }
@@ -884,7 +982,14 @@
             "upperBound": 1
           },
           "name": "id",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer"
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          }
         },
         {
           "multiplicity": {

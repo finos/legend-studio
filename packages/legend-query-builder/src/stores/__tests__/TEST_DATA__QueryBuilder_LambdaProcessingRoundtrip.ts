@@ -52,7 +52,14 @@ export const TEST_DATA__allFuncOnBusinessTemporalMilestonedClass = {
   parameters: [
     {
       _type: 'var',
-      class: 'StrictDate',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'StrictDate',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       name: 'businessDate',
       multiplicity: {
         lowerBound: '1',
@@ -83,7 +90,14 @@ export const TEST_DATA__allFuncOnProcessingTemporalMilestonedClass = {
   parameters: [
     {
       _type: 'var',
-      class: 'StrictDate',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'StrictDate',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       name: 'processingDate',
       multiplicity: {
         lowerBound: '1',
@@ -118,7 +132,14 @@ export const TEST_DATA__allFuncOnBiTemporalMilestonedClass = {
   parameters: [
     {
       _type: 'var',
-      class: 'StrictDate',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'StrictDate',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       name: 'processingDate',
       multiplicity: {
         lowerBound: '1',
@@ -127,7 +148,14 @@ export const TEST_DATA__allFuncOnBiTemporalMilestonedClass = {
     },
     {
       _type: 'var',
-      class: 'StrictDate',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'StrictDate',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       name: 'businessDate',
       multiplicity: {
         lowerBound: '1',
@@ -778,7 +806,14 @@ export const TEST_DATA__temporalModel = [
             upperBound: 1,
           },
           name: 'firmID',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -786,7 +821,14 @@ export const TEST_DATA__temporalModel = [
             upperBound: 1,
           },
           name: 'date',
-          type: 'StrictDate',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'StrictDate',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       stereotypes: [
@@ -819,7 +861,14 @@ export const TEST_DATA__temporalModel = [
             upperBound: 1,
           },
           name: 'firmID',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -827,7 +876,14 @@ export const TEST_DATA__temporalModel = [
             upperBound: 1,
           },
           name: 'date',
-          type: 'StrictDate',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'StrictDate',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       stereotypes: [
@@ -860,7 +916,14 @@ export const TEST_DATA__temporalModel = [
             upperBound: 1,
           },
           name: 'firmID',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -868,7 +931,14 @@ export const TEST_DATA__temporalModel = [
             upperBound: 1,
           },
           name: 'date',
-          type: 'StrictDate',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'StrictDate',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
       stereotypes: [
@@ -1486,7 +1556,14 @@ export const TEST_DATA__personWithParameter = {
   parameters: [
     {
       _type: 'var',
-      class: 'String',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'String',
+        },
+        typeArguments: [],
+        typeVariableValues: [],
+      },
       name: 'firstName',
       multiplicity: {
         lowerBound: 1,
@@ -1818,7 +1895,14 @@ export const TEST_DATA__M2MModel = [
             upperBound: 1,
           },
           name: 'age',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -1954,13 +2038,27 @@ export const TEST_DATA__M2MModel = [
           parameters: [
             {
               _type: 'var',
-              class: 'String',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'String',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
 
               name: 'suffix',
             },
             {
               _type: 'var',
-              class: 'String',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'String',
+                },
+                typeArguments: [],
+                typeVariableValues: [],
+              },
 
               name: 'prefix',
             },
@@ -1969,7 +2067,14 @@ export const TEST_DATA__M2MModel = [
             lowerBound: 1,
             upperBound: 1,
           },
-          returnType: 'String',
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },

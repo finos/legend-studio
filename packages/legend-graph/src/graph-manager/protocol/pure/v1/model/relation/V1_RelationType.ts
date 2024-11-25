@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 
-import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import {
+  hashArray,
+  SerializationFactory,
+  usingModelSchema,
+  type Hashable,
+} from '@finos/legend-shared';
 import { createModelSchema, list, primitive } from 'serializr';
+import type { V1_Type } from '../packageableElements/type/V1_Type.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../graph/Core_HashUtils.js';
 
-export class V1_RelationTypeColumn {
+export class V1_RelationTypeColumn implements Hashable {
   name!: string;
   type!: string;
   static readonly serialization = new SerializationFactory(
@@ -26,9 +33,13 @@ export class V1_RelationTypeColumn {
       type: primitive(),
     }),
   );
+
+  get hashCode(): string {
+    return hashArray([CORE_HASH_STRUCTURE.REALTION_TYPE, this.name, this.type]);
+  }
 }
 
-export class V1_RelationType {
+export class V1_RelationType implements V1_Type {
   columns: V1_RelationTypeColumn[] = [];
 
   static readonly serialization = new SerializationFactory(
@@ -38,4 +49,11 @@ export class V1_RelationType {
       ),
     }),
   );
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.REALTION_TYPE,
+      hashArray(this.columns),
+    ]);
+  }
 }

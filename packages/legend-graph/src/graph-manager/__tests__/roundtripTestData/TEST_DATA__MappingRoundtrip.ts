@@ -39,14 +39,28 @@ export const TEST_DATA__MappingRoundtrip = [
             upperBound: 1,
           },
           name: 'fullName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
             lowerBound: 0,
           },
           name: 'name',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -484,7 +498,14 @@ export const TEST_DATA__LocalPropertyMapping = [
             upperBound: 1,
           },
           name: 'id',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -492,7 +513,14 @@ export const TEST_DATA__LocalPropertyMapping = [
             upperBound: 1,
           },
           name: 'legalName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -511,7 +539,14 @@ export const TEST_DATA__LocalPropertyMapping = [
             upperBound: 1,
           },
           name: 'name',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -530,14 +565,28 @@ export const TEST_DATA__LocalPropertyMapping = [
             upperBound: 1,
           },
           name: 'employer',
-          type: 'test::Firm',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'test::Firm',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
             lowerBound: 0,
           },
           name: 'employees',
-          type: 'test::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'test::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -636,7 +685,14 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
             upperBound: 1,
           },
           name: 'date',
-          type: 'Date',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Date',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -644,7 +700,14 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
             upperBound: 1,
           },
           name: 'fiscalYear',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -652,7 +715,14 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
             upperBound: 1,
           },
           name: 'fiscalMonth',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -660,7 +730,14 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
             upperBound: 1,
           },
           name: 'fiscalQtr',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -679,7 +756,14 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
             upperBound: 1,
           },
           name: 'id',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -687,7 +771,14 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
             upperBound: 1,
           },
           name: 'salesDate',
-          type: 'test::FiscalCalendar',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'test::FiscalCalendar',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -695,7 +786,14 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
             upperBound: 1,
           },
           name: 'revenue',
-          type: 'Float',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Float',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -714,7 +812,14 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
             upperBound: 1,
           },
           name: 'salesDate',
-          type: 'test::FiscalCalendar',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'test::FiscalCalendar',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -722,7 +827,14 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
             upperBound: 1,
           },
           name: 'netRevenue',
-          type: 'Float',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Float',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -1103,7 +1215,14 @@ export const TEST_DATA__Relational_LocalPropertyMappingRoundtrip = [
             upperBound: 1,
           },
           name: 'productId',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -1111,7 +1230,14 @@ export const TEST_DATA__Relational_LocalPropertyMappingRoundtrip = [
             upperBound: 1,
           },
           name: 'productName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -1119,7 +1245,14 @@ export const TEST_DATA__Relational_LocalPropertyMappingRoundtrip = [
             upperBound: 1,
           },
           name: 'description',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -1659,14 +1792,28 @@ export const TEST_DATA__MappingTestSuiteRoundtrip = [
             upperBound: 1,
           },
           name: 'legalName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
             lowerBound: 0,
           },
           name: 'employees',
-          type: 'model::Person',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'model::Person',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -1685,7 +1832,14 @@ export const TEST_DATA__MappingTestSuiteRoundtrip = [
             upperBound: 1,
           },
           name: 'firstName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -1693,7 +1847,14 @@ export const TEST_DATA__MappingTestSuiteRoundtrip = [
             upperBound: 1,
           },
           name: 'lastName',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -1826,7 +1987,14 @@ export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
             upperBound: 1,
           },
           name: 'complexProperty',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -1845,7 +2013,14 @@ export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
             upperBound: 1,
           },
           name: 'fips',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -1853,7 +2028,14 @@ export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
             upperBound: 1,
           },
           name: 'state',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -1861,7 +2043,14 @@ export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
             upperBound: 1,
           },
           name: 'propertyBelongsinDemographicsAndNotComplexxClass',
-          type: 'domain::ComplexClassTypeOfPropertyBelongs',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'domain::ComplexClassTypeOfPropertyBelongs',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },
@@ -1880,7 +2069,14 @@ export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
             upperBound: 1,
           },
           name: 'id',
-          type: 'Integer',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Integer',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -1888,7 +2084,14 @@ export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
             upperBound: 1,
           },
           name: 'fips',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -1896,7 +2099,14 @@ export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
             upperBound: 1,
           },
           name: 'date',
-          type: 'StrictDate',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'StrictDate',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -1904,7 +2114,14 @@ export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
             upperBound: 1,
           },
           name: 'caseType',
-          type: 'String',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -1912,7 +2129,14 @@ export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
             upperBound: 1,
           },
           name: 'cases',
-          type: 'Float',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Float',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -1920,7 +2144,14 @@ export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
             upperBound: 1,
           },
           name: 'lastReportedFlag',
-          type: 'Boolean',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Boolean',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
         {
           multiplicity: {
@@ -1928,7 +2159,14 @@ export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
             upperBound: 1,
           },
           name: 'demographicsPropertyInCovidData',
-          type: 'domain::ComplicatedDemographics',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'domain::ComplicatedDemographics',
+            },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
         },
       ],
     },

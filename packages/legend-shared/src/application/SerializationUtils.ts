@@ -18,6 +18,7 @@ import { type PlainObject, pruneNullValues } from '../CommonUtils.js';
 import {
   type ModelSchema,
   type PropSchema,
+  type AdditionalPropArgs,
   custom,
   SKIP,
   deserialize,
@@ -122,10 +123,12 @@ export const optionalCustom = (
   serializer: (val: any) => any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   deserializer: (val: any) => any,
+  additionalArgs?: AdditionalPropArgs,
 ): PropSchema =>
   custom(
     (val) => (val ? serializer(val) : SKIP),
     (val) => (val ? deserializer(val) : SKIP),
+    additionalArgs,
   );
 
 export const optionalCustomUsingModelSchema = <T>(

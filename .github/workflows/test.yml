@@ -63,7 +63,7 @@ jobs:
       # Codecov will take care of merging the result from different test groups
       # See https://about.codecov.io/product/feature/report-merging/
       - name: Upload test coverage report
-        uses: codecov/codecov-action@v4.6.0
+        uses: codecov/codecov-action@v5.0.2
         with:
           directory: ./build/coverage
           token: ${{ secrets.CODECOV_TOKEN }}
