@@ -64,7 +64,7 @@ export const DataQualityDataSpaceBuilderSetupPanelContent = observer(
     }
     const applicationStore = useApplicationStore();
 
-    // data space
+    // data product
     const dataSpaceOptions =
       dataQualityState.dataSpaces.map(buildDataSpaceOption);
 
@@ -152,7 +152,7 @@ export const DataQualityDataSpaceBuilderSetupPanelContent = observer(
         <div className="data-quality-validation__setup__config-group">
           <div className="data-quality-validation__setup__config-group__header">
             <div className="data-quality-validation__setup__config-group__header__title">
-              data space execution context
+              data product execution context
             </div>
             <ControlledDropdownMenu
               className="data-quality-validation__setup__config-group__header__dropdown-trigger"
@@ -189,7 +189,7 @@ export const DataQualityDataSpaceBuilderSetupPanelContent = observer(
             <div className="data-quality-validation__setup__config-group__item">
               <div
                 className="btn--sm data-quality-validation__setup__config-group__item__label"
-                title="data space"
+                title="data product"
               >
                 <DataSpaceIcon />
               </div>
@@ -199,7 +199,7 @@ export const DataQualityDataSpaceBuilderSetupPanelContent = observer(
                 isLoading={dataQualityState.loadDataSpacesState.isInProgress}
                 onChange={onDataSpaceOptionChange}
                 value={selectedDataSpaceOption}
-                placeholder="Search for data space..."
+                placeholder="Search for data product..."
                 escapeClearsValue={true}
                 darkMode={
                   !applicationStore.layoutService

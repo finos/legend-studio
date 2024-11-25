@@ -67,7 +67,7 @@ export const DataSpaceAdvancedSearchModal = observer(
       );
     };
 
-    // data space
+    // data product
     const dataSpaceOptions = searchState.dataSpaces.map(buildDataSpaceOption);
     const selectedDataSpaceOption = searchState.currentDataSpace
       ? buildDataSpaceOption(searchState.currentDataSpace)
@@ -114,7 +114,7 @@ export const DataSpaceAdvancedSearchModal = observer(
           className="editor-modal data-space-advanced-search__dialog"
         >
           <ModalHeader className="data-space-advanced-search__dialog__header">
-            <ModalTitle title="Search for data space " />
+            <ModalTitle title="Search for data product " />
             <ModalHeaderActions>
               <button
                 className="modal__header__action"
@@ -137,7 +137,7 @@ export const DataSpaceAdvancedSearchModal = observer(
                 isLoading={searchState.loadDataSpacesState.isInProgress}
                 onChange={onDataSpaceOptionChange}
                 value={selectedDataSpaceOption}
-                placeholder="Search for data space by name..."
+                placeholder="Search for data product by name..."
                 isClearable={true}
                 escapeClearsValue={true}
                 darkMode={
@@ -157,7 +157,7 @@ export const DataSpaceAdvancedSearchModal = observer(
                 tabIndex={-1}
                 title={`[${
                   searchState.toGetSnapShot ? 'on' : 'off'
-                }] Toggle show data spaces from snapshot releases instead of latest releases`}
+                }] Toggle show data products from snapshot releases instead of latest releases`}
                 onClick={toggleGetSnapshot}
               >
                 <BoltIcon />
@@ -194,7 +194,7 @@ export const DataSpaceAdvancedSearchModal = observer(
                           <TimesCircleIcon />
                         </div>
                         <div className="data-space-advanced-search__dialog__view--failed__text">
-                          {`Can't load data space`}
+                          {`Can't load data product`}
                         </div>
                       </div>
                     </BlankPanelContent>

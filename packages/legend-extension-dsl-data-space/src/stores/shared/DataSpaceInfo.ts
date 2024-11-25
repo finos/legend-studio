@@ -48,7 +48,7 @@ export const extractDataSpaceInfo = (
     ? storedEntity.entity.content.title
     : undefined,
   // NOTE: we don't want to assert the existence of this field even when it
-  // is required in the specification of data space, so we don't throw error here
+  // is required in the specification of data product, so we don't throw error here
   defaultExecutionContext: isString(
     storedEntity.entity.content.defaultExecutionContext,
   )

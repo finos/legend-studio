@@ -89,5 +89,5 @@ export const DSL_DataSpace_getGraphManagerExtension = (
       (extension) =>
         extension instanceof DSL_DataSpace_PureGraphManagerExtension,
     ),
-    `Can't find DSL Data Space Pure graph manager extension`,
+    `Can't find DSL Data Product Pure graph manager extension`,
   );

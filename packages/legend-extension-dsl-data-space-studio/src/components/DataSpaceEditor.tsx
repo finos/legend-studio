@@ -44,9 +44,9 @@ export const DataSpaceEditor = observer(() => {
       <div className="panel__content__form">
         <div className="panel__content__form__section">
           <PanelFormTextField
-            name="Data Space Title"
+            name="Data Product Title"
             value={formElement.title ?? ''}
-            prompt="Data Space title is the user facing name for the Data Space. It used in downstream applications as the default identifier for this Data Space. When not provided, the DataSpace name property is used"
+            prompt="Data Product title is the user facing name for the Data Product. It used in downstream applications as the default identifier for this Data Product. When not provided, the DataProduct name property is used"
             update={handleTitleChange}
             placeholder="Enter title"
           />
@@ -55,7 +55,7 @@ export const DataSpaceEditor = observer(() => {
       <div className="panel__content__form">
         <div className="panel__content__form__section">
           <PanelFormTextField
-            name="Data Space Description"
+            name="Data Product Description"
             value={formElement.description ?? ''}
             update={handleDescriptionChange}
             placeholder="Enter Description"

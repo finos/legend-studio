@@ -1540,7 +1540,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
                 proceed();
               } else {
                 this.applicationStore.alertService.setActionAlertInfo({
-                  message: `To change the data space, you need to save the current query
+                  message: `To change the data product, you need to save the current query
                      to proceed`,
                   type: ActionAlertType.CAUTION,
                   actions: [
@@ -1563,7 +1563,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
               }
             } else {
               this.applicationStore.notificationService.notifyWarning(
-                `Can't switch data space: default execution context not specified`,
+                `Can't switch data product: default execution context not specified`,
               );
             }
           },

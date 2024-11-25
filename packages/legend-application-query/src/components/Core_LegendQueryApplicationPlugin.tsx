@@ -253,7 +253,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         className: 'query-setup__landing-page__action--productionize-query',
         icon: <ArrowCircleUpIcon />,
       },
-      // data space
+      // data product
       {
         key: 'create-query-from-data-space',
         isAdvanced: false,
@@ -263,7 +263,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             generateDataSpaceQuerySetupRoute(),
           );
         },
-        label: 'Create query from data space',
+        label: 'Create query from data product',
         className: 'query-setup__landing-page__action--data-space',
         icon: (
           <SquareIcon className="query-setup__landing-page__icon--data-space" />
@@ -451,8 +451,8 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
       },
       {
         key: 'about-dataspace',
-        title: 'About Dataspace',
-        label: 'About Dataspace',
+        title: 'About Data Product',
+        label: 'About Data Product',
         disableFunc: (queryBuilderState): boolean => {
           if (
             queryBuilderState.workflowState.actionConfig instanceof

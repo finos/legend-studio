@@ -78,7 +78,7 @@ export class DSL_DataSpace_LegendApplicationPlugin
         key: 'data-space-filter-option',
         label: (queryBuilderState): string | undefined => {
           if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
-            return 'Current Data Space';
+            return 'Current Data Product';
           }
           return undefined;
         },
@@ -127,7 +127,7 @@ export class DSL_DataSpace_LegendApplicationPlugin
   ) => string[] {
     return (queryBuilderState): string[] => {
       if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
-        return ['Current Data Space'];
+        return ['Current Data Product'];
       }
       return [];
     };

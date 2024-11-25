@@ -191,7 +191,7 @@ export class DataSpaceTemplateQueryCreatorStore extends QueryEditorStore {
       ),
       async (dataSpaceInfo: DataSpaceInfo) => {
         this.applicationStore.notificationService.notifyWarning(
-          `Can't switch data space to visit current template query`,
+          `Can't switch data product to visit current template query`,
         );
       },
       dataSpaceAnalysisResult,
