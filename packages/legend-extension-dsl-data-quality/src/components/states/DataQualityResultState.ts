@@ -116,12 +116,10 @@ export class DataQualityResultState {
 
       promise = getDataQualityPureGraphManagerExtension(
         this.dataQualityState.graphManagerState.graphManager,
-      ).execute(
-        model,
-        this.dataQualityState.lambdaParameterValues,
-        packagePath,
-        this.previewLimit,
-      );
+      ).execute(model, packagePath, {
+        lambdaParameterValues: this.dataQualityState.lambdaParameterValues,
+        previewLimit: this.previewLimit,
+      });
 
       this.setQueryRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
@@ -179,7 +177,7 @@ export class DataQualityResultState {
       if (debug) {
         const debugResult = (yield getDataQualityPureGraphManagerExtension(
           this.dataQualityState.graphManagerState.graphManager,
-        ).debugExecutionPlanGeneration(model, packagePath)) as {
+        ).debugExecutionPlanGeneration(model, packagePath, {})) as {
           plan: RawExecutionPlan;
           debug: string;
         };
@@ -191,7 +189,7 @@ export class DataQualityResultState {
         );
         rawPlan = (yield getDataQualityPureGraphManagerExtension(
           this.dataQualityState.graphManagerState.graphManager,
-        ).generatePlan(model, packagePath)) as RawExecutionPlan;
+        ).generatePlan(model, packagePath, {})) as RawExecutionPlan;
       }
 
       stopWatch.record();

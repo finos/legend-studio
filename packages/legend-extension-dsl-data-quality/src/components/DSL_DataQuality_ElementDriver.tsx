@@ -19,9 +19,13 @@ import {
   NewElementDriver,
 } from '@finos/legend-application-studio';
 import {
+  type DataQualityValidationConfiguration,
   DataQualityClassValidationsConfiguration,
+  DataQualityServiceValidationConfiguration,
+  DataQualityRelationValidationConfiguration,
   DataSpaceDataQualityExecutionContext,
   MappingAndRuntimeDataQualityExecutionContext,
+  DataQualityRelationQueryLambda,
 } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
@@ -53,13 +57,20 @@ export type RuntimeOption = {
   value: PackageableRuntime | undefined;
 };
 
-export enum ELEMENT_CREATION_BASIS {
+export enum CLASS_ELEMENT_CREATION_BASIS {
   MAPPING_RUNTIME_BASED = 'Mapping/Runtime',
   DATASPACE_BASED = 'DataSpace',
 }
 
-export class DataQuality_ClassElementDriver extends NewElementDriver<DataQualityClassValidationsConfiguration> {
-  dqElementCreationBasis: ELEMENT_CREATION_BASIS;
+export enum DQ_VALIDATION_ELEMENT_TYPE {
+  CLASS_VALIDATION = 'ClassValidation',
+  SERVICE_VALIDATION = 'ServiceValidation',
+  RELATION_VALIDATION = 'RelationValidation',
+}
+
+export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValidationConfiguration> {
+  dqValidationElementType: DQ_VALIDATION_ELEMENT_TYPE;
+  dqClassElementCreationBasis: CLASS_ELEMENT_CREATION_BASIS;
   dataSpaceSelected: PackageableElementOption<DataSpace> | undefined;
   mappingSelected: PackageableElementOption<Mapping> | undefined;
   runtimeSelected: RuntimeOption | undefined;
@@ -71,14 +82,18 @@ export class DataQuality_ClassElementDriver extends NewElementDriver<DataQuality
       dataSpaceSelected: observable,
       mappingSelected: observable,
       runtimeSelected: observable,
-      dqElementCreationBasis: observable,
+      dqValidationElementType: observable,
+      dqClassElementCreationBasis: observable,
       setDataSpaceSelected: action,
       setMappingSelected: action,
       setRuntimeSelected: action,
-      setDqElementCreationBasis: action,
+      setDqClassElementCreationBasis: action,
+      setDqValidationElementType: action,
       runtimeOptions: computed,
     });
-    this.dqElementCreationBasis = ELEMENT_CREATION_BASIS.DATASPACE_BASED;
+    this.dqValidationElementType = DQ_VALIDATION_ELEMENT_TYPE.CLASS_VALIDATION;
+    this.dqClassElementCreationBasis =
+      CLASS_ELEMENT_CREATION_BASIS.DATASPACE_BASED;
     this.dataSpaceSelected = getNullableFirstEntry(this.dataSpaceOptions);
     this.mappingSelected = getNullableFirstEntry(this.mappingOptions);
     this.runtimeSelected = getNullableFirstEntry(this.runtimeOptions);
@@ -127,27 +142,64 @@ export class DataQuality_ClassElementDriver extends NewElementDriver<DataQuality
     this.runtimeSelected = runtimeSelected;
   }
 
-  setDqElementCreationBasis(
-    dqElementCreationBasis: ELEMENT_CREATION_BASIS,
+  setDqClassElementCreationBasis(
+    dqClassElementCreationBasis: CLASS_ELEMENT_CREATION_BASIS,
   ): void {
-    this.dqElementCreationBasis = dqElementCreationBasis;
+    this.dqClassElementCreationBasis = dqClassElementCreationBasis;
+  }
+
+  setDqValidationElementType(
+    dqValidationElementType: DQ_VALIDATION_ELEMENT_TYPE,
+  ): void {
+    this.dqValidationElementType = dqValidationElementType;
   }
 
   get isValid(): boolean {
     if (
-      this.dqElementCreationBasis === ELEMENT_CREATION_BASIS.DATASPACE_BASED
+      this.dqValidationElementType ===
+        DQ_VALIDATION_ELEMENT_TYPE.RELATION_VALIDATION ||
+      this.dqValidationElementType ===
+        DQ_VALIDATION_ELEMENT_TYPE.SERVICE_VALIDATION
+    ) {
+      return true;
+    }
+    if (
+      this.dqClassElementCreationBasis ===
+      CLASS_ELEMENT_CREATION_BASIS.DATASPACE_BASED
     ) {
       return Boolean(this.dataSpaceSelected);
     }
     return Boolean(this.mappingSelected && this.runtimeSelected);
   }
 
-  createElement(name: string): DataQualityClassValidationsConfiguration {
+  createRelationValidationElement(
+    name: string,
+  ): DataQualityValidationConfiguration {
+    const relationValidationConfiguration =
+      new DataQualityRelationValidationConfiguration(name);
+    relationValidationConfiguration.query =
+      new DataQualityRelationQueryLambda();
+    relationValidationConfiguration.query.body =
+      this.editorStore.graphManagerState.graphManager.createDefaultBasicRawLambda().body;
+    this.editorStore.graphManagerState.graphManager.createDefaultBasicRawLambda();
+    return relationValidationConfiguration;
+  }
+
+  createServiceValidationElement(
+    name: string,
+  ): DataQualityValidationConfiguration {
+    return new DataQualityServiceValidationConfiguration(name);
+  }
+
+  createClassValidationElement(
+    name: string,
+  ): DataQualityValidationConfiguration {
     let usableClasses: Class[] = [];
-    const dataQualityConstraintsConfiguration =
+    const dataQualityClassConstraintsConfiguration =
       new DataQualityClassValidationsConfiguration(name);
     if (
-      this.dqElementCreationBasis === ELEMENT_CREATION_BASIS.DATASPACE_BASED
+      this.dqClassElementCreationBasis ===
+      CLASS_ELEMENT_CREATION_BASIS.DATASPACE_BASED
     ) {
       const dataSpaceToSet = PackageableElementExplicitReference.create(
         this.dataSpaceSelected!.value,
@@ -157,8 +209,9 @@ export class DataQuality_ClassElementDriver extends NewElementDriver<DataQuality
       dataSpaceExecutionContext.context =
         dataSpaceToSet.value.defaultExecutionContext.name;
       dataSpaceExecutionContext.dataSpace = dataSpaceToSet;
-      dataQualityConstraintsConfiguration.context = dataSpaceExecutionContext;
-      dataQualityConstraintsConfiguration.dataQualityRootGraphFetchTree =
+      dataQualityClassConstraintsConfiguration.context =
+        dataSpaceExecutionContext;
+      dataQualityClassConstraintsConfiguration.dataQualityRootGraphFetchTree =
         undefined;
       usableClasses = resolveUsableDataSpaceClasses(
         dataSpaceToSet.value,
@@ -177,7 +230,7 @@ export class DataQuality_ClassElementDriver extends NewElementDriver<DataQuality
           new MappingAndRuntimeDataQualityExecutionContext();
         mappingAndRuntimeExecutionContext.mapping = mapping;
         mappingAndRuntimeExecutionContext.runtime = runtimeValue;
-        dataQualityConstraintsConfiguration.context =
+        dataQualityClassConstraintsConfiguration.context =
           mappingAndRuntimeExecutionContext;
         usableClasses = getMappingCompatibleClasses(
           mapping.value,
@@ -190,8 +243,24 @@ export class DataQuality_ClassElementDriver extends NewElementDriver<DataQuality
         'Must have at least one usable class with given mapping',
       );
     }
-    dataQualityConstraintsConfiguration.dataQualityRootGraphFetchTree =
+    dataQualityClassConstraintsConfiguration.dataQualityRootGraphFetchTree =
       buildDefaultDataQualityRootGraphFetchTree(usableClasses[0]!);
-    return dataQualityConstraintsConfiguration;
+    return dataQualityClassConstraintsConfiguration;
+  }
+
+  createElement(name: string): DataQualityValidationConfiguration {
+    switch (this.dqValidationElementType) {
+      case DQ_VALIDATION_ELEMENT_TYPE.RELATION_VALIDATION:
+        return this.createRelationValidationElement(name);
+      case DQ_VALIDATION_ELEMENT_TYPE.SERVICE_VALIDATION:
+        return this.createServiceValidationElement(name);
+      case DQ_VALIDATION_ELEMENT_TYPE.CLASS_VALIDATION:
+        return this.createClassValidationElement(name);
+
+      default:
+        throw new UnsupportedOperationError(
+          `Can't create data quality validation configuration of type '${this.dqValidationElementType}'`,
+        );
+    }
   }
 }

@@ -15,17 +15,22 @@
  */
 
 import {
+  type ObserverContext,
   observe_Abstract_PackageableElement,
   observe_Class,
   observe_PackageableElementReference,
   observe_PropertyReference,
   observe_RawLambda,
   skipObserved,
+  skipObservedWithContext,
 } from '@finos/legend-graph';
-import { makeObservable, observable, override } from 'mobx';
+import { computed, makeObservable, observable, override } from 'mobx';
 import {
   type DataQualityClassValidationsConfiguration,
   type DataQualityServiceValidationConfiguration,
+  type DataQualityRelationValidation,
+  type DataQualityRelationValidationConfiguration,
+  type DataQualityRelationQueryLambda,
   DataSpaceDataQualityExecutionContext,
   MappingAndRuntimeDataQualityExecutionContext,
 } from '../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
@@ -151,3 +156,51 @@ export const observe_DataQualityServiceValidationConfiguration = skipObserved(
     return metamodel;
   },
 );
+
+export const observe_DataQualityRelationValidation = skipObserved(
+  (metamodel: DataQualityRelationValidation): DataQualityRelationValidation => {
+    makeObservable(metamodel, {
+      name: observable,
+      assertion: observable,
+      description: observable,
+      type: observable,
+      rowMapFunction: observable,
+    });
+
+    observe_RawLambda(metamodel.assertion);
+    return metamodel;
+  },
+);
+
+export const observe_DataQualityRelationQueryLambda = skipObserved(
+  (metamodel: DataQualityRelationQueryLambda): DataQualityRelationQueryLambda =>
+    makeObservable(metamodel, {
+      body: observable.ref, // only observe the reference, the object itself is not observed
+      parameters: observable,
+      hashCode: computed,
+    }),
+);
+
+export const observe_DataQualityRelationValidationConfiguration =
+  skipObservedWithContext(
+    (
+      metamodel: DataQualityRelationValidationConfiguration,
+      context: ObserverContext,
+    ): DataQualityRelationValidationConfiguration => {
+      observe_Abstract_PackageableElement(metamodel);
+
+      makeObservable<
+        DataQualityRelationValidationConfiguration,
+        '_elementHashCode'
+      >(metamodel, {
+        _elementHashCode: override,
+        query: observable,
+        validations: observable,
+      });
+      metamodel.validations.forEach((value) =>
+        observe_DataQualityRelationValidation(value),
+      );
+      observe_DataQualityRelationQueryLambda(metamodel.query);
+      return metamodel;
+    },
+  );

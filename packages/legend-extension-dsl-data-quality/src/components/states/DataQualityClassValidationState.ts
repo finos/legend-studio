@@ -40,7 +40,7 @@ import {
   DataSpace,
   resolveUsableDataSpaceClasses,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import { ELEMENT_CREATION_BASIS } from '../DSL_DataQuality_ClassElementDriver.js';
+import { CLASS_ELEMENT_CREATION_BASIS } from '../DSL_DataQuality_ElementDriver.js';
 import {
   type GeneratorFn,
   assertType,
@@ -62,8 +62,8 @@ import { DataQualityResultState } from './DataQualityResultState.js';
 export class DataQualityClassValidationState extends DataQualityState {
   dataSpace?: DataSpace | undefined;
   dataSpaces: DataSpaceInfo[] = [];
-  validationElementCreationBasis: ELEMENT_CREATION_BASIS =
-    ELEMENT_CREATION_BASIS.MAPPING_RUNTIME_BASED;
+  validationElementCreationBasis: CLASS_ELEMENT_CREATION_BASIS =
+    CLASS_ELEMENT_CREATION_BASIS.MAPPING_RUNTIME_BASED;
 
   constructor(
     editorStore: EditorStore,
@@ -112,7 +112,7 @@ export class DataQualityClassValidationState extends DataQualityState {
       MappingAndRuntimeDataQualityExecutionContext
     ) {
       this.validationElementCreationBasis =
-        ELEMENT_CREATION_BASIS.MAPPING_RUNTIME_BASED;
+        CLASS_ELEMENT_CREATION_BASIS.MAPPING_RUNTIME_BASED;
       this.dataQualityQueryBuilderState.executionContextState.setMapping(
         this.constraintsConfigurationElement.context.mapping.value,
       );
@@ -130,7 +130,7 @@ export class DataQualityClassValidationState extends DataQualityState {
       DataSpaceDataQualityExecutionContext
     ) {
       this.validationElementCreationBasis =
-        ELEMENT_CREATION_BASIS.DATASPACE_BASED;
+        CLASS_ELEMENT_CREATION_BASIS.DATASPACE_BASED;
       this.dataSpace =
         this.constraintsConfigurationElement.context.dataSpace.value;
       this.executionContext = this.dataSpace.defaultExecutionContext;

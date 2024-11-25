@@ -25,6 +25,7 @@ export {
   generateViewProjectRoute,
 } from './__lib__/LegendStudioNavigation.js';
 export * from './__lib__/LegendStudioTesting.js';
+export * from './__lib__/LegendStudioApplicationNavigationContext.js';
 export {
   useLegendStudioApplicationStore,
   useLegendStudioBaseStore,
@@ -39,6 +40,7 @@ export * from './stores/editor/EditorConfig.js';
 export * from './stores/editor/editor-state/ModelImporterState.js';
 export * from './stores/workspace-setup/ProjectConfigurationStatus.js';
 export { ClassEditorState } from './stores/editor/editor-state/element-editor-state/ClassEditorState.js';
+export { ConstraintState } from './stores/editor/editor-state/element-editor-state/ClassState.js';
 export { ElementEditorState } from './stores/editor/editor-state/element-editor-state/ElementEditorState.js';
 export { UnsupportedElementEditorState } from './stores/editor/editor-state/UnsupportedElementEditorState.js';
 export {
@@ -58,6 +60,7 @@ export * from './stores/graph-modifier/GraphModifierHelper.js';
 export * from './stores/graph-modifier/DomainGraphModifierHelper.js';
 export * from './stores/graph-modifier/DSL_Generation_GraphModifierHelper.js';
 export * from './stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
+export * from './stores/graph-modifier/RawValueSpecificationGraphModifierHelper.js';
 export * from './stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';

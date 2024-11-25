@@ -21,6 +21,9 @@ import {
   custom,
   deserialize,
   serialize,
+  list,
+  optional,
+  raw,
 } from 'serializr';
 import {
   type V1_DataQualityExecutionContext,
@@ -28,7 +31,10 @@ import {
   V1_DataQualityServiceValidationsConfiguration,
   V1_DataSpaceDataQualityExecutionContext,
   V1_MappingAndRuntimeDataQualityExecutionContext,
-} from '../../V1_DataQualityConstraintsConfiguration.js';
+  V1_DataQualityRelationValidationsConfiguration,
+  V1_DataQualityRelationValidation,
+  V1_DataQualityRelationQueryLambda,
+} from '../../V1_DataQualityValidationConfiguration.js';
 import {
   type PlainObject,
   optionalCustom,
@@ -45,9 +51,13 @@ import {
   V1_deserializeGraphFetchTree,
   V1_stereotypePtrModelSchema,
   V1_taggedValueModelSchema,
+  V1_RawValueSpecificationType,
+  V1_rawVariableModelSchema,
 } from '@finos/legend-graph';
 
 export const V1_DATA_QUALITY_PROTOCOL_TYPE = 'dataQualityValidation';
+export const V1_DATA_QUALITY_RELATION_PROTOCOL_TYPE =
+  'dataqualityRelationValidation';
 export const V1_DATA_QUALITY_SERVICE_PROTOCOL_TYPE =
   'dataQualityServiceValidations';
 const V1_DATA_QUALITY_DATASPACE_EXECUTION_CONTEXT =
@@ -125,6 +135,19 @@ export function V1_deserializeDataQualityExecutionContext(
   }
 }
 
+const V1_relationValidationModelSchema = createModelSchema(
+  V1_DataQualityRelationValidation,
+  {
+    _type: usingConstantValueSchema(V1_RawValueSpecificationType.LAMBDA),
+    name: primitive(),
+    description: primitive(),
+    assertion: usingModelSchema(V1_rawLambdaModelSchema),
+    rowMapFunction: optional(usingModelSchema(V1_rawLambdaModelSchema)),
+    expected: optional(primitive()),
+    buffer: optional(primitive()),
+  },
+);
+
 const V1_dataQualityClassValidationModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_DataQualityClassValidationsConfiguration> =>
@@ -147,6 +170,26 @@ const V1_dataQualityClassValidationModelSchema = (
     taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
+  });
+
+export const V1_rawLambdaModelSchemaParameters = createModelSchema(
+  V1_DataQualityRelationQueryLambda,
+  {
+    _type: usingConstantValueSchema(V1_RawValueSpecificationType.LAMBDA),
+    body: raw(),
+    parameters: list(usingModelSchema(V1_rawVariableModelSchema)),
+  },
+);
+
+const V1_dataQualityRelationValidationModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataQualityRelationValidationsConfiguration> =>
+  createModelSchema(V1_DataQualityRelationValidationsConfiguration, {
+    _type: usingConstantValueSchema(V1_DATA_QUALITY_RELATION_PROTOCOL_TYPE),
+    name: primitive(),
+    package: primitive(),
+    query: usingModelSchema(V1_rawLambdaModelSchemaParameters),
+    validations: list(usingModelSchema(V1_relationValidationModelSchema)),
   });
 
 const V1_dataQualityServiceValidationModelSchema = (
@@ -176,6 +219,12 @@ export const V1_serializeDataQualityServiceValidation = (
 ): PlainObject<V1_DataQualityServiceValidationsConfiguration> =>
   serialize(V1_dataQualityServiceValidationModelSchema(plugins), protocol);
 
+export const V1_serializeDataQualityRelationValidation = (
+  protocol: V1_DataQualityRelationValidationsConfiguration,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_DataQualityRelationValidationsConfiguration> =>
+  serialize(V1_dataQualityRelationValidationModelSchema(plugins), protocol);
+
 export const V1_deserializeDataQualityClassValidation = (
   json: PlainObject<V1_DataQualityClassValidationsConfiguration>,
   plugins: PureProtocolProcessorPlugin[],
@@ -188,10 +237,8 @@ export const V1_deserializeDataQualityServiceValidation = (
 ): V1_DataQualityServiceValidationsConfiguration =>
   deserialize(V1_dataQualityServiceValidationModelSchema(plugins), json);
 
-export const V1_dataQualityServiceValidationsConfigurationModelSchema =
-  createModelSchema(V1_DataQualityServiceValidationsConfiguration, {
-    _type: usingConstantValueSchema(V1_DATA_QUALITY_SERVICE_PROTOCOL_TYPE),
-    contextName: primitive(),
-    serviceName: primitive(),
-    dataQualityGraphFetchTree: primitive(),
-  });
+export const V1_deserializeDataQualityRelationValidation = (
+  json: PlainObject<V1_DataQualityRelationValidationsConfiguration>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_DataQualityRelationValidationsConfiguration =>
+  deserialize(V1_dataQualityRelationValidationModelSchema(plugins), json);

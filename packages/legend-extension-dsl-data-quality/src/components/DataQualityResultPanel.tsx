@@ -362,10 +362,7 @@ export const DataQualityResultPanel = observer(
           )}
           {executionResult && !isLoading && (
             <div className="data-quality-validation__result__values">
-              <DataQualityResultValues
-                executionResult={executionResult}
-                dataQualityState={dataQualityState}
-              />
+              <DataQualityResultValues executionResult={executionResult} />
             </div>
           )}
         </PanelContent>

@@ -25,7 +25,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import type { DataQualityState } from './states/DataQualityState.js';
 import { DataQualityDataSpaceBuilderSetupPanelContent } from './DataQualityDataSpaceBuilder.js';
 import { DataQualityMappingAndRuntimeBuilder } from './DataQualityMappingAndRuntimeBuilder.js';
-import { ELEMENT_CREATION_BASIS } from './DSL_DataQuality_ClassElementDriver.js';
+import { CLASS_ELEMENT_CREATION_BASIS } from './DSL_DataQuality_ElementDriver.js';
 import { type Class, isElementDeprecated } from '@finos/legend-graph';
 import type { DataQualityClassValidationState } from './states/DataQualityClassValidationState.js';
 import type { DataQualityServiceValidationState } from './states/DataQualityServiceValidationState.js';
@@ -191,7 +191,7 @@ export const DataQualityClassValidationSideBar = observer(
         >
           <div className="panel__content data-quality-validation__setup__content">
             {validationElementCreationBasis ===
-            ELEMENT_CREATION_BASIS.DATASPACE_BASED ? (
+            CLASS_ELEMENT_CREATION_BASIS.DATASPACE_BASED ? (
               <DataQualityDataSpaceBuilderSetupPanelContent
                 dataQualityState={dataQualityClassValidationState}
               />

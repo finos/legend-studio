@@ -20,6 +20,7 @@ import packageJson from '../../../package.json';
 import {
   DataQualityClassValidationsConfiguration,
   DataQualityServiceValidationConfiguration,
+  DataQualityRelationValidationConfiguration,
 } from './pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 
 export class DSL_DataQuality_PureGraphPlugin extends PureGraphPlugin {
@@ -31,6 +32,7 @@ export class DSL_DataQuality_PureGraphPlugin extends PureGraphPlugin {
     return [
       DataQualityClassValidationsConfiguration,
       DataQualityServiceValidationConfiguration,
+      DataQualityRelationValidationConfiguration,
     ];
   }
 }

@@ -80,6 +80,7 @@ import type { V1_INTERNAL__UnknownElement } from '../../../model/packageableElem
 import { INTERNAL__UnknownElement } from '../../../../../../../graph/metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
 import type { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 import { HostedService } from '../../../../../../../graph/metamodel/pure/packageableElements/function/HostedService.js';
+import { V1_buildFunctionActivatorActions } from './helpers/V1_LegendLambdaHelper.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -198,6 +199,7 @@ export class V1_ElementFirstPassBuilder
     }
 
     metamodel.description = element.description;
+    V1_buildFunctionActivatorActions(element, metamodel);
     return metamodel;
   }
 
@@ -227,6 +229,7 @@ export class V1_ElementFirstPassBuilder
     metamodel.autoActivateUpdates = element.autoActivateUpdates;
     metamodel.storeModel = element.storeModel;
     metamodel.generateLineage = element.generateLineage;
+    V1_buildFunctionActivatorActions(element, metamodel);
     return metamodel;
   }
 
