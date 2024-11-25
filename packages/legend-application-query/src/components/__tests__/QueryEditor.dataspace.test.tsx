@@ -82,7 +82,7 @@ test(
       fireEvent.click(renderResult.getByTitle('See more options'));
     });
     await act(async () => {
-      fireEvent.click(renderResult.getByText('About Dataspace'));
+      fireEvent.click(renderResult.getByText('About Data Product'));
     });
     const aboutDataSpaceModal = await waitFor(() =>
       renderResult.getByRole('dialog'),
@@ -94,7 +94,7 @@ test(
 
     // TODO: below is for testing dataspace quick start module
     // const openDataSpaceButton = await waitFor(() =>
-    //   renderResult.getByTitle('Open advanced search for data space...'),
+    //   renderResult.getByTitle('Open advanced search for data product...'),
     // );
     // await waitFor(() => fireEvent.click(openDataSpaceButton));
     // const dataspaceViewModal = await waitFor(() =>
@@ -164,7 +164,7 @@ test(
       fireEvent.click(renderResult.getByTitle('See more options'));
     });
     await act(async () => {
-      fireEvent.click(renderResult.getByText('About Dataspace'));
+      fireEvent.click(renderResult.getByText('About Data Product'));
     });
     const aboutDataSpaceModal = await waitFor(() =>
       renderResult.getByRole('dialog'),

@@ -36,12 +36,16 @@ import {
 } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 
 export const getDataSpace = (path: string, graph: PureModel): DataSpace =>
-  graph.getExtensionElement(path, DataSpace, `Can't find data space '${path}'`);
+  graph.getExtensionElement(
+    path,
+    DataSpace,
+    `Can't find data product '${path}'`,
+  );
 
 export const getOwnDataSpace = (path: string, graph: BasicModel): DataSpace =>
   guaranteeNonNullable(
     graph.getOwnNullableExtensionElement(path, DataSpace),
-    `Can't find data space '${path}'`,
+    `Can't find data product '${path}'`,
   );
 
 export const getExecutionContextFromDataspaceExecutable = (

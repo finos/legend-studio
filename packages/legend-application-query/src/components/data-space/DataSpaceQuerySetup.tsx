@@ -48,7 +48,7 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
     const dataSpaceSearchRef = useRef<SelectComponent>(null);
-    // data space
+    // data product
     const dataSpaceOptions = queryBuilderState.dataSpaces
       .map(buildDataSpaceOption)
       .sort(compareLabelFn);
@@ -75,10 +75,10 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
           <div className="query-builder__setup__config-group__item">
             <label
               className="btn--sm query-builder__setup__config-group__item__label"
-              title="data space"
+              title="data product"
               htmlFor="query-builder__setup__data-space-selector"
             >
-              Data Space
+              Data Product
             </label>
             <CustomSelectorInput
               inputId="query-builder__setup__data-space-selector"
@@ -88,7 +88,7 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
               isLoading={queryBuilderState.loadDataSpacesState.isInProgress}
               onChange={onDataSpaceOptionChange}
               value={selectedDataSpaceOption}
-              placeholder="Search for data space..."
+              placeholder="Search for data product..."
               escapeClearsValue={true}
               darkMode={
                 !applicationStore.layoutService
@@ -100,7 +100,7 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
               tabIndex={-1}
               className="query-builder__setup__data-space-searcher__btn btn--dark"
               onClick={openDataSpaceAdvancedSearch}
-              title="Open advanced search for data space..."
+              title="Open advanced search for data product..."
             >
               <SearchIcon />
             </button>

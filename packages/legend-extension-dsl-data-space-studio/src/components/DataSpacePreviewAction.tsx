@@ -88,7 +88,7 @@ export const DataSpacePreviewDialog = observer(() => {
         className="editor-modal data-space-preview__dialog"
       >
         <ModalHeader className="data-space-preview__dialog__header">
-          <ModalTitle title="Preview Data Space" />
+          <ModalTitle title="Preview Data Product" />
           <ModalHeaderActions>
             <button
               className="modal__header__action"
@@ -122,7 +122,7 @@ export const DataSpacePreviewDialog = observer(() => {
                       <TimesCircleIcon />
                     </div>
                     <div className="data-space-preview__dialog__content--failed__text">
-                      {`Can't load data space`}
+                      {`Can't load data product`}
                     </div>
                   </div>
                 </BlankPanelContent>

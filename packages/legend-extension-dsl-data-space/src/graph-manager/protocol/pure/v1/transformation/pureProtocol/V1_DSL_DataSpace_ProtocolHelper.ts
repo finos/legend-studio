@@ -176,7 +176,7 @@ const V1_serializeDataspaceExecutable = (
     );
   }
   throw new UnsupportedOperationError(
-    `Can't serialize data space executable`,
+    `Can't serialize data product executable`,
     protocol,
   );
 };

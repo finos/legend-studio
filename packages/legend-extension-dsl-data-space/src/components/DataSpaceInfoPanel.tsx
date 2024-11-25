@@ -71,12 +71,12 @@ export const DataSpaceInfoPanel = observer(
               </div>
               <div className="data-space__viewer__info__section__entry">
                 <div className="data-space__viewer__info__project-info__label">
-                  Data Space
+                  Data Product
                 </div>
                 <button
                   className="data-space__viewer__info__project-info__value"
                   tabIndex={-1}
-                  title="Click to View Data Space"
+                  title="Click to View Data Product"
                   onClick={viewDataSpaceInProject}
                 >
                   {analysisResult.path}
@@ -84,7 +84,7 @@ export const DataSpaceInfoPanel = observer(
                 <button
                   className="data-space__viewer__info__project-info__link"
                   tabIndex={-1}
-                  title="Edit Data Space"
+                  title="Edit Data Product"
                   onClick={viewDataSpaceInSDLCProject}
                 >
                   <PencilIcon />
@@ -92,7 +92,7 @@ export const DataSpaceInfoPanel = observer(
                 <button
                   className="data-space__viewer__info__project-info__link"
                   tabIndex={-1}
-                  title="View Data Space"
+                  title="View Data Product"
                   onClick={viewDataSpaceInProject}
                 >
                   <ExternalLinkIcon />

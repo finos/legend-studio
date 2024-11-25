@@ -68,7 +68,7 @@ import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import { DataSpaceEditor } from './DataSpaceEditor.js';
 import type { DocumentationEntry } from '@finos/legend-shared';
 
-const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
+const DATA_SPACE_ELEMENT_TYPE = 'DATA PRODUCT';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_DATA_SPACE';
 

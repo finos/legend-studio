@@ -166,7 +166,7 @@ export class DataSpaceAdvancedSearchState {
           this.depotServerClient.getProject(groupId, artifactId),
         )) as PlainObject<StoreProjectData>,
       );
-      // analyze data space
+      // analyze data product
       const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
         this.graphManagerState.graphManager,
       ).analyzeDataSpace(

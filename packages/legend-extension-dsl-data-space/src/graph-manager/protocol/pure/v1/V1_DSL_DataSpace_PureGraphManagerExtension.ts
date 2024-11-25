@@ -116,7 +116,7 @@ import { getDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { resolveVersion } from '@finos/legend-server-depot';
 import { DATASPACE_ANALYTICS_FILE_NAME } from '../../../action/analytics/DataSpaceAnalysisHelper.js';
 
-const ANALYZE_DATA_SPACE_TRACE = 'analyze data space';
+const ANALYZE_DATA_SPACE_TRACE = 'analyze data product';
 const TEMPORARY__TDS_SAMPLE_VALUES__DELIMETER = '-- e.g.';
 
 export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_PureGraphManagerExtension {
@@ -212,7 +212,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     } else {
       actionState?.setMessage('Fetching project entities and dependencies...');
       const entities = await entitiesRetriever();
-      actionState?.setMessage('Analyzing data space...');
+      actionState?.setMessage('Analyzing data product...');
       analysisResult = await engineClient.postWithTracing<
         PlainObject<V1_DataSpaceAnalysisResult>
       >(
@@ -282,7 +282,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     projectInfo?: ProjectGAVCoordinates,
     templateQueryId?: string,
   ): Promise<DataSpaceAnalysisResult> {
-    // reterieve data space artifacts (more than one file) from cache
+    // reterieve data product artifacts (more than one file) from cache
     const dataspaceArtifacts = cacheRetriever
       ? (
           await this.fetchDataSpaceArtifactsFromCache(
@@ -298,7 +298,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       [];
     let mappingModelCoveragePartition: V1_MappingModelCoveragePartition[] = [];
 
-    // build the data space analytics result from the file generation
+    // build the data product analytics result from the file generation
     const result = this.retrieveDataSpaceAnalysisFromFileGeneration(
       dataspaceArtifacts as unknown as StoredFileGeneration[],
     );
@@ -323,7 +323,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     }
 
     // when trying to build a minimal graph, we need to make sure that there is associated mapping model coverage
-    // for every mapping in the data space analytics result otherwise we will have to build the full graph
+    // for every mapping in the data product analytics result otherwise we will have to build the full graph
     if (
       result &&
       cachedAnalysisResult?.executionContexts.every(
@@ -386,14 +386,14 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     let cacheResult: PlainObject<V1_DataSpaceAnalysisResult> | undefined;
     try {
       actionState?.setMessage(
-        'Fetching data space analysis result from cache...',
+        'Fetching data product analysis result from cache...',
       );
       cacheResult = await cacheRetriever();
     } catch (error) {
       assertErrorThrown(error);
       this.graphManager.logService.warn(
         LogEvent.create(GRAPH_MANAGER_EVENT.CACHE_MANAGER_FAILURE),
-        `Can't fetch data space analysis result cache: ${error.message}`,
+        `Can't fetch data product analysis result cache: ${error.message}`,
       );
     }
     return cacheResult;
@@ -405,13 +405,13 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
   ): Promise<PlainObject<StoredFileGeneration>[]> {
     let cacheResult: PlainObject<StoredFileGeneration>[] = [];
     try {
-      actionState?.setMessage('Fetching data space artifacts from cache...');
+      actionState?.setMessage('Fetching data product artifacts from cache...');
       cacheResult = await cacheRetriever();
     } catch (error) {
       assertErrorThrown(error);
       this.graphManager.logService.warn(
         LogEvent.create(GRAPH_MANAGER_EVENT.CACHE_MANAGER_FAILURE),
-        `Can't fetch data space artifacts cache: ${error.message}`,
+        `Can't fetch data product artifacts cache: ${error.message}`,
       );
     }
     return cacheResult;
@@ -538,7 +538,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           analysisResult.supportInfo.documentationUrl;
         supportEmail.address = guaranteeNonEmptyString(
           analysisResult.supportInfo.address,
-          `Data space support email 'address' field is missing or empty`,
+          `Data product support email 'address' field is missing or empty`,
         );
         result.supportInfo = supportEmail;
       } else if (
@@ -695,7 +695,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       isMiniGraphSuccess = true;
     } else {
       const elements = analysisResult.model.elements
-        // NOTE: this is a temporary hack to fix a problem with data space analytics
+        // NOTE: this is a temporary hack to fix a problem with data product analytics
         // where the classes for properties are not properly surveyed
         // We need to wait for the actual fix in backend to be merged and released
         // See https://github.com/finos/legend-engine/pull/836

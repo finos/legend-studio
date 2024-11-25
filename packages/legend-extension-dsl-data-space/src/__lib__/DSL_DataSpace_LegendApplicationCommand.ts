@@ -30,43 +30,43 @@ export enum DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY {
 export const DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_CONFIG: CommandConfigData =
   {
     [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.RECENTER_DIAGRAM]: {
-      title: 'Data Space Diagram Viewer: Recenter',
+      title: 'Data Product Diagram Viewer: Recenter',
       defaultKeyboardShortcut: 'KeyR',
       when: 'When diagram viewer is active',
     },
     [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.USE_ZOOM_TOOL]: {
-      title: 'Data Space Diagram Viewer: Use zoom tool',
+      title: 'Data Product Diagram Viewer: Use zoom tool',
       defaultKeyboardShortcut: 'KeyZ',
       when: 'When diagram viewer is active',
     },
     [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.USE_VIEW_TOOL]: {
-      title: 'Data Space Diagram Viewer: Use view tool',
+      title: 'Data Product Diagram Viewer: Use view tool',
       defaultKeyboardShortcut: 'KeyV',
       when: 'When diagram viewer is active',
     },
     [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.USE_PAN_TOOL]: {
-      title: 'Data Space Diagram Viewer: Use pan tool',
+      title: 'Data Product Diagram Viewer: Use pan tool',
       defaultKeyboardShortcut: 'KeyM',
       when: 'When diagram viewer is active',
     },
     [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.GO_TO_NEXT_DIAGRAM]: {
-      title: 'Data Space Diagram Viewer: Next Diagram',
+      title: 'Data Product Diagram Viewer: Next Diagram',
       defaultKeyboardShortcut: 'ArrowRight',
       when: 'When diagram viewer is active',
     },
     [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.GO_TO_PREVIOUS_DIAGRAM]: {
-      title: 'Data Space Diagram Viewer: Previous Diagram',
+      title: 'Data Product Diagram Viewer: Previous Diagram',
       defaultKeyboardShortcut: 'ArrowLeft',
       when: 'When viewing diagram',
     },
     [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.TOGGLE_DIAGRAM_DESCRIPTION]:
       {
-        title: 'Data Space Diagram Viewer: Toggle Description',
+        title: 'Data Product Diagram Viewer: Toggle Description',
         defaultKeyboardShortcut: 'KeyD',
         when: 'When diagram viewer is active',
       },
     [DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_KEY.SEARCH_DOCUMENTATION]: {
-      title: 'Data Space Models Documentation: Search',
+      title: 'Data Product Models Documentation: Search',
       defaultKeyboardShortcut: 'Control+Shift+KeyF',
       additionalKeyboardShortcuts: ['Meta+Shift+KeyF'],
       when: 'When models documentation viewer is active',

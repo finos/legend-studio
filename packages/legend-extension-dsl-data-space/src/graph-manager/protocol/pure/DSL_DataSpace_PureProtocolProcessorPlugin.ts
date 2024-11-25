@@ -146,12 +146,12 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
           );
           element.executionContexts = guaranteeNonNullable(
             elementProtocol.executionContexts,
-            `Data space 'executionContexts' field is missing`,
+            `Data product 'executionContexts' field is missing`,
           ).map((contextProtocol) => {
             const execContext = new DataSpaceExecutionContext();
             execContext.name = guaranteeNonEmptyString(
               contextProtocol.name,
-              `Data space execution context 'name' field is missing or empty`,
+              `Data product execution context 'name' field is missing or empty`,
             );
             execContext.title = contextProtocol.title;
             execContext.description = contextProtocol.description;
@@ -176,7 +176,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                 execContext.name ===
                 guaranteeNonEmptyString(
                   elementProtocol.defaultExecutionContext,
-                  `Data space 'defaultExecutionContext' field is missing or empty`,
+                  `Data product 'defaultExecutionContext' field is missing or empty`,
                 ),
             ),
             `Can't find default execution context '${elementProtocol.defaultExecutionContext}'`,
@@ -225,7 +225,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                 return elementPointer;
               }
               throw new UnsupportedOperationError(
-                `Can't find data space element (only allow packages, classes, enumerations, and associations) '${pointer.path}'`,
+                `Can't find data product element (only allow packages, classes, enumerations, and associations) '${pointer.path}'`,
               );
             });
           }
@@ -292,7 +292,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                         );
                     } catch {
                       throw new UnsupportedOperationError(
-                        `Can't analyze data space executable with element in path: ${executableProtocol.executable.path}`,
+                        `Can't analyze data product executable with element in path: ${executableProtocol.executable.path}`,
                         executableProtocol,
                       );
                     }
@@ -300,7 +300,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                   return executable;
                 } else {
                   throw new UnsupportedOperationError(
-                    `Can't build data space executable`,
+                    `Can't build data product executable`,
                     executableProtocol,
                   );
                 }
@@ -330,7 +330,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                 elementProtocol.supportInfo.documentationUrl;
               supportEmail.address = guaranteeNonEmptyString(
                 elementProtocol.supportInfo.address,
-                `Data space support email 'address' field is missing or empty`,
+                `Data product support email 'address' field is missing or empty`,
               );
               element.supportInfo = supportEmail;
             } else if (
@@ -347,7 +347,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
               element.supportInfo = combinedInfo;
             } else {
               throw new UnsupportedOperationError(
-                `Can't build data space support info`,
+                `Can't build data product support info`,
                 elementProtocol.supportInfo,
               );
             }
@@ -513,7 +513,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
               return executableProtocol;
             } else {
               throw new UnsupportedOperationError(
-                `Can't transform data space executable`,
+                `Can't transform data product executable`,
                 executable,
               );
             }
@@ -548,7 +548,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
               protocol.supportInfo = combinedInfo;
             } else {
               throw new UnsupportedOperationError(
-                `Can't transform data space support info`,
+                `Can't transform data product support info`,
                 metamodel.supportInfo,
               );
             }

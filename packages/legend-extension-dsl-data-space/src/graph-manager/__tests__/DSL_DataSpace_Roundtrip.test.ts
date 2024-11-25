@@ -35,7 +35,7 @@ import { getExecutionContextFromDataspaceExecutable } from '../DSL_DataSpace_Gra
 const pluginManager = new TEST__GraphManagerPluginManager();
 pluginManager.usePresets([new DSL_DataSpace_GraphManagerPreset()]).install();
 
-test(unitTest('Data space import resolution roundtrip'), async () => {
+test(unitTest('Data product import resolution roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(
     TEST_DATA__roundtrip as Entity[],
     pluginManager,
@@ -43,7 +43,7 @@ test(unitTest('Data space import resolution roundtrip'), async () => {
 });
 
 test(
-  unitTest('Get execution context from data space executables'),
+  unitTest('Get execution context from data product executables'),
   async () => {
     const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
     await TEST__buildGraphWithEntities(

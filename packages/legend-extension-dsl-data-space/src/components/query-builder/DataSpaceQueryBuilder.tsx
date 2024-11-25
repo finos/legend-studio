@@ -139,7 +139,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       repo instanceof DataSpacesDepotRepository ? repo : undefined;
     const project = depotRepo?.project;
 
-    // data space
+    // data product
     const prioritizeDataSpaceFunc =
       queryBuilderState.dataSpaceRepo.prioritizeDataSpaceFunc;
     const sortedAllOptions = (queryBuilderState.dataSpaceRepo.dataSpaces ?? [])
@@ -262,7 +262,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     const copyDataSpaceLinkToClipboard = (): void => {
       const nonNullableProject = guaranteeNonNullable(
         project,
-        'Unable to copy data space query set up link to clipboard because project is null',
+        'Unable to copy data product query set up link to clipboard because project is null',
       );
       const dataSpace = queryBuilderState.dataSpace;
       const executionContext = queryBuilderState.executionContext;
@@ -289,12 +289,12 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
         .writeText(route)
         .catch(() =>
           applicationStore.notificationService.notifyError(
-            'Error copying data space query set up link to clipboard',
+            'Error copying data product query set up link to clipboard',
           ),
         );
 
       applicationStore.notificationService.notifySuccess(
-        'Copied data space query set up link to clipboard',
+        'Copied data product query set up link to clipboard',
       );
     };
 
@@ -303,7 +303,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
         <PanelHeader title="properties">
           <PanelHeaderActions>
             <PanelHeaderActionItem
-              title="copy data space query set up link to clipboard"
+              title="copy data product query set up link to clipboard"
               onClick={copyDataSpaceLinkToClipboard}
             >
               <AnchorLinkIcon />
@@ -344,10 +344,10 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
           <div className="query-builder__setup__config-group__item">
             <label
               className="btn--sm query-builder__setup__config-group__item__label"
-              title="data space"
+              title="data product"
               htmlFor="query-builder__setup__data-space-selector"
             >
-              Data Space
+              Data Product
             </label>
             <CustomSelectorInput
               inputId="query-builder__setup__data-space-selector"
@@ -358,7 +358,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
               }
               onChange={onDataSpaceOptionChange}
               value={selectedDataSpaceOption}
-              placeholder="Search for data space..."
+              placeholder="Search for data product..."
               escapeClearsValue={true}
               darkMode={
                 !applicationStore.layoutService
@@ -372,7 +372,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                   tabIndex={-1}
                   className="query-builder__setup__data-space-searcher__btn btn--dark"
                   onClick={openDataSpaceAdvancedSearch}
-                  title="Open advanced search for data space..."
+                  title="Open advanced search for data product..."
                 >
                   <SearchIcon />
                 </button>

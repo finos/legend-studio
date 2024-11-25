@@ -159,7 +159,7 @@ export const QueryEditorDataspaceInfoModal = observer(
           className="dataspace-info-modal"
         >
           <div className="dataspace-info-modal__header">
-            <ModalTitle title="About Dataspace" />
+            <ModalTitle title="About Data Product" />
             <button
               className="btn--dark dataspace-info-modal__header__open-btn"
               title="Close"
@@ -171,7 +171,7 @@ export const QueryEditorDataspaceInfoModal = observer(
               }
               onClick={openInTaxonomy}
             >
-              Open Dataspace
+              Open Data Product
             </button>
           </div>
 
@@ -286,7 +286,7 @@ export const QueryEditorDataspaceInfoModal = observer(
                   className="dataspace-info-modal__field__value dataspace-info-modal__field__value--linkable"
                   onClick={() => flowResult(visitElement(dataspace.path))}
                 >
-                  Show Dataspace Configuration
+                  Show Data Product Configuration
                 </div>
               </div>
               {dataspace.supportInfo instanceof DataSpaceSupportEmail && (

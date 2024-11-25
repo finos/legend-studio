@@ -81,7 +81,7 @@ const DataSpaceHeader = observer(
             {dataSpaceViewerState.isVerified && (
               <div
                 className="data-space__viewer__header__title__verified-badge"
-                title="Verified Data Space"
+                title="Verified Data Product"
               >
                 <VerifiedIcon />
               </div>
@@ -150,7 +150,7 @@ const DataSpaceHeader = observer(
                       )
                     }
                   >
-                    Query Data Space
+                    Query Data Product
                   </MenuContentItem>
                   <MenuContentDivider />
                   <MenuContentItem

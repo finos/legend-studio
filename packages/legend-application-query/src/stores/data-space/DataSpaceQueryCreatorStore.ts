@@ -195,7 +195,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
             this.changeDataSpace(dataSpaceInfo);
           } else {
             this.applicationStore.notificationService.notifyWarning(
-              `Can't switch data space: default execution context not specified`,
+              `Can't switch data product: default execution context not specified`,
             );
           }
         },
@@ -377,7 +377,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     try {
       assertTrue(
         this.reConfigureWithDataSpaceInfo(val),
-        'Dataspace selected does not contain valid inputs, groupId, artifactId, and version',
+        'Data product selected does not contain valid inputs, groupId, artifactId, and version',
       );
       this.initState.inProgress();
       if (

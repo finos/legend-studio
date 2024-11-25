@@ -411,7 +411,7 @@ const V1_deserializeDataSpaceExecutableInfo = (
       );
     default:
       throw new UnsupportedOperationError(
-        `Can't deserialize data space executable info of type '${json._type}'`,
+        `Can't deserialize data product executable info of type '${json._type}'`,
       );
   }
 };
@@ -462,7 +462,7 @@ const V1_deserializeDataSpaceExecutableResult = (
       );
     default:
       throw new UnsupportedOperationError(
-        `Can't deserialize data space executable result of type '${json._type}'`,
+        `Can't deserialize data product executable result of type '${json._type}'`,
       );
   }
 };
