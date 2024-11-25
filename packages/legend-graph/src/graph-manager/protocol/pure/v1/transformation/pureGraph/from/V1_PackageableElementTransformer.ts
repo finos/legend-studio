@@ -94,6 +94,7 @@ import type { INTERNAL__UnknownElement } from '../../../../../../../graph/metamo
 import { V1_INTERNAL__UnknownElement } from '../../../model/packageableElements/V1_INTERNAL__UnknownElement.js';
 import type { HostedService } from '../../../../../../../graph/metamodel/pure/packageableElements/function/HostedService.js';
 import { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
+import { V1_transformFunctionActivatorActions } from '../to/helpers/V1_LegendLambdaTransformerHelper.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -186,6 +187,7 @@ class V1_PackageableElementTransformer
       );
     protocol.stereotypes = element.stereotypes.map(V1_transformStereotype);
     protocol.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
+    V1_transformFunctionActivatorActions(protocol, element);
     return protocol;
   }
 
@@ -214,6 +216,7 @@ class V1_PackageableElementTransformer
     }
     protocol.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
     protocol.stereotypes = element.stereotypes.map(V1_transformStereotype);
+    V1_transformFunctionActivatorActions(protocol, element);
     return protocol;
   }
 

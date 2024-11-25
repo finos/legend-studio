@@ -19,6 +19,7 @@ import {
   usingModelSchema,
   type PlainObject,
   UnsupportedOperationError,
+  optionalCustom,
 } from '@finos/legend-shared';
 import { V1_SnowflakeAppDeploymentConfiguration } from '../../../engine/functionActivator/V1_SnowflakeAppDeploymentConfiguration.js';
 import {
@@ -37,7 +38,10 @@ import {
 } from '../../../model/packageableElements/function/V1_Ownership.js';
 import { V1_HostedServiceDeploymentConfiguration } from '../../../engine/functionActivator/V1_HostedServiceDeploymentConfiguration.js';
 import { V1_PostDeploymentAction } from '../../../engine/functionActivator/V1_PostDeploymentAction.js';
-import { V1_PostDeploymentProperties } from '../../../engine/functionActivator/V1_PostDeploymentProperties.js';
+import {
+  V1_INTERNAL__UnknownPostDeploymentProperties,
+  V1_PostDeploymentProperties,
+} from '../../../engine/functionActivator/V1_PostDeploymentProperties.js';
 
 const V1_SNOWFLAKE_APP_DEPLOYMENT_CONFIGURATION_APP_TYPE =
   'snowflakeDeploymentConfiguration';
@@ -115,15 +119,40 @@ export const V1_deserializeOwnership = (
   }
 };
 
+export const V1_deserializePostDeploymentProperties = (
+  json: PlainObject<V1_PostDeploymentProperties>,
+): V1_PostDeploymentProperties => {
+  switch (json._type) {
+    // we can add known post actions here
+    default:
+      // Fall back to unknown
+      const protocol = new V1_INTERNAL__UnknownPostDeploymentProperties();
+      protocol.content = json;
+      return protocol;
+  }
+};
+
 export const V1_PostDeploymentPropertiesSchema = createModelSchema(
   V1_PostDeploymentProperties,
   {},
 );
 
+export const V1_serializePostDeploymentProperties = (
+  protocol: V1_PostDeploymentProperties,
+): PlainObject<V1_PostDeploymentProperties> => {
+  if (protocol instanceof V1_INTERNAL__UnknownPostDeploymentProperties) {
+    return protocol.content;
+  }
+  return serialize(V1_PostDeploymentPropertiesSchema, undefined);
+};
+
 export const V1_PostDeploymentActionSchema = createModelSchema(
   V1_PostDeploymentAction,
   {
     automated: optional(primitive()),
-    properties: usingModelSchema(V1_PostDeploymentPropertiesSchema),
+    properties: optionalCustom(
+      (val) => V1_serializePostDeploymentProperties(val),
+      (val) => V1_deserializePostDeploymentProperties(val),
+    ),
   },
 );
