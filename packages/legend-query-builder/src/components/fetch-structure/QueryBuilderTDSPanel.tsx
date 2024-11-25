@@ -127,6 +127,8 @@ import {
 } from '../../stores/filter/QueryBuilderFilterState.js';
 import { cloneAbstractPropertyExpression } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 import { buildPropertyExpressionFromExistsNode } from '../filter/QueryBuilderFilterPanel.js';
+import { QueryBuilderAggregateOperator_Wavg } from '../../stores/fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_Wavg.js';
+import { WavgParamDNDZone } from './QueryBuilderAggParam.js';
 
 const CAN_DROP_MAIN_GROUP_DND_TYPES = [
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
@@ -143,8 +145,7 @@ const CAN_DROP_DERIVATION_PROJECTION_COLUMN_DND_TYPES = [
   QUERY_BUILDER_VARIABLE_DND_TYPE,
   QUERY_BUILDER_FUNCTION_DND_TYPE,
 ];
-
-type QueryBuilderTDSPanelDropTarget =
+export type QueryBuilderTDSPanelDropTarget =
   | QueryBuilderExplorerTreeDragSource
   | QueryBuilderFunctionsExplorerDragSource
   | QueryBuilderFilterConditionDragSource;
@@ -898,6 +899,13 @@ const QueryBuilderProjectionColumnEditor = observer(
                     <div className="query-builder__projection__column__aggregate__operator__label">
                       {aggregateColumnState.operator.getLabel(
                         projectionColumnState,
+                      )}
+                      {aggregateColumnState.operator instanceof
+                        QueryBuilderAggregateOperator_Wavg && (
+                        <WavgParamDNDZone
+                          column={aggregateColumnState.operator}
+                          tdsState={tdsState}
+                        />
                       )}
                       {aggregateColumnState.operator instanceof
                         QueryBuilderAggregateOperator_Percentile && (

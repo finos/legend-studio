@@ -1926,6 +1926,100 @@ test(
 );
 
 test(
+  integrationTest('Query builder wavg aggregation loads correctly'),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+    await act(async () => {
+      queryBuilderState.changeClass(_personClass);
+    });
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    await waitFor(() =>
+      getByText(queryBuilderSetup, 'simpleRelationalMapping'),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+
+    const projectionPanel = await waitFor(() =>
+      renderResult.getByTestId(
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS_PROJECTION,
+      ),
+    );
+
+    // Drag and drop to the projection panel
+    let dropZone = await waitFor(() =>
+      getByText(projectionPanel, 'Add a projection column'),
+    );
+    let dragSource = await waitFor(() => getByText(explorerPanel, 'Age'));
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      projectionPanel,
+      'Add a projection column',
+    );
+    await waitFor(() => getByText(projectionPanel, 'Age'));
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    expect(tdsState.projectionColumns.length).toBe(1);
+    fireEvent.click(renderResult.getByTitle('Choose Aggregate Operator...'));
+    fireEvent.click(renderResult.getByText('wavg'));
+
+    const weightDropZone = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WAVG_DROPZONE,
+    );
+
+    expect(getByText(projectionPanel, 'wavg')).not.toBeNull();
+    expect(getByText(weightDropZone, 'Drop weight value')).not.toBeNull();
+    // Drag and drop wavg weight param
+    dropZone = await waitFor(() =>
+      getByText(projectionPanel, 'Drop weight value'),
+    );
+
+    // Expand explorer tree node
+    fireEvent.click(await findByText(explorerPanel, 'Firm'));
+
+    // Drag weight parameter
+    dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Average Employees Age'),
+    );
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      projectionPanel,
+      'Drop Numeric Property',
+    );
+    expect(getByText(weightDropZone, 'averageEmployeesAge')).not.toBeNull();
+
+    // Test changing weight
+    dragSource = await waitFor(() =>
+      getByText(explorerPanel, 'Sum Employees Age'),
+    );
+    await dragAndDrop(
+      dragSource,
+      dropZone,
+      projectionPanel,
+      'Drop Numeric Property',
+    );
+    expect(getByText(weightDropZone, 'sumEmployeesAge')).not.toBeNull();
+  },
+);
+
+test(
   integrationTest(
     'Query builder allows DND filter panel node to TDS fetch structure panel and keeps derived parameters independent',
   ),

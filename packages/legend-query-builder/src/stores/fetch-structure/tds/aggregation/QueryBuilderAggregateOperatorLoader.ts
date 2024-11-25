@@ -26,6 +26,7 @@ import { QueryBuilderAggregateOperator_Max } from './operators/QueryBuilderAggre
 import { QueryBuilderAggregateOperator_JoinString } from './operators/QueryBuilderAggregateOperator_JoinString.js';
 import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregateOperator.js';
 import { QueryBuilderAggregateOperator_Percentile } from './operators/QueryBuilderAggregateOperator_Percentile.js';
+import { QueryBuilderAggregateOperator_Wavg } from './operators/QueryBuilderAggregateOperator_Wavg.js';
 
 export const getQueryBuilderCoreAggregrationOperators =
   (): QueryBuilderAggregateOperator[] => [
@@ -40,4 +41,5 @@ export const getQueryBuilderCoreAggregrationOperators =
     new QueryBuilderAggregateOperator_StdDev_Population(),
     new QueryBuilderAggregateOperator_StdDev_Sample(),
     new QueryBuilderAggregateOperator_JoinString(),
+    new QueryBuilderAggregateOperator_Wavg(),
   ];

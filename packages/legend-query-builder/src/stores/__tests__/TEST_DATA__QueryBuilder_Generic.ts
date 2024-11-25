@@ -2093,6 +2093,124 @@ export const TEST_DATA__projectionWithPercentileAggregation = {
   parameters: [],
 };
 
+export const TEST_DATA__projectionWithWAVGAggregation = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'groupBy',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::pure::tests::model::simple::Order',
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 0,
+            upperBound: 0,
+          },
+          values: [],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          values: [
+            {
+              _type: 'func',
+              function: 'agg',
+              parameters: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'func',
+                      function:
+                        'meta::pure::functions::math::wavgUtility::wavgRowMapper',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'quantity',
+                        },
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'id',
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'wavg',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'y',
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'y',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          values: [
+            {
+              _type: 'string',
+              value: 'Quantity (wavg)',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__getAllWithOneConditionFilter = {
   _type: 'lambda',
   body: [

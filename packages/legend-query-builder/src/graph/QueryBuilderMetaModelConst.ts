@@ -147,6 +147,8 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   STD_DEV_SAMPLE = 'meta::pure::functions::math::stdDevSample',
   SUM = 'meta::pure::functions::math::sum',
   UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
+  WAVG = 'meta::pure::functions::math::wavg',
+  WAVG_ROW_MAPPER = 'meta::pure::functions::math::wavgUtility::wavgRowMapper',
 
   // watermark
   WATERMARK = 'meta::datalake::functions::forWatermark',

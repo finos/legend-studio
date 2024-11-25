@@ -29,6 +29,7 @@ import {
   V1_GraphTransformerContextBuilder,
   matchFunctionName,
   PrimitiveType,
+  LambdaFunctionInstanceValue,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -54,6 +55,7 @@ import { appendOLAPGroupByState } from '../window/QueryBuilderWindowValueSpecifi
 import { appendPostFilter } from '../post-filter/QueryBuilderPostFilterValueSpecificationBuilder.js';
 import { buildTDSSortTypeExpression } from '../QueryBuilderTDSHelper.js';
 import { buildRelationProjection } from './QueryBuilderRelationProjectValueSpecBuidler.js';
+import { QueryBuilderAggregateOperator_Wavg } from '../aggregation/operators/QueryBuilderAggregateOperator_Wavg.js';
 
 const buildSortExpression = (
   sortColumnState: SortColumnState,
@@ -340,6 +342,12 @@ export const appendProjection = (
 
       // column aggregation
       if (aggregateColumnState) {
+        if (
+          aggregateColumnState.operator instanceof
+          QueryBuilderAggregateOperator_Wavg
+        ) {
+          aggregateColumnState.setLambdaParameterName('y');
+        }
         const aggregateFunctionExpression = new SimpleFunctionExpression(
           extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG),
         );
@@ -370,6 +378,35 @@ export const appendProjection = (
             aggregateColumnState.aggregationState.tdsState.queryBuilderState
               .graphManagerState.graph,
           );
+        }
+        //TODO support wavg on non SimpleProjectionColumnStates as well
+        if (
+          aggregateColumnState.operator instanceof
+            QueryBuilderAggregateOperator_Wavg &&
+          aggregateColumnState.operator.weight &&
+          aggregateColumnState.projectionColumnState instanceof
+            QueryBuilderSimpleProjectionColumnState &&
+          columnLambda instanceof LambdaFunctionInstanceValue
+        ) {
+          //build row mapper
+          const wavgRowMapper = new SimpleFunctionExpression(
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.WAVG_ROW_MAPPER,
+          );
+          //add params
+          const quantity =
+            aggregateColumnState.projectionColumnState.propertyExpressionState
+              .propertyExpression;
+          const weight = aggregateColumnState.operator.weight;
+          wavgRowMapper.parametersValues = [quantity, weight];
+          if (
+            aggregateCalendarLambda &&
+            aggregateCalendarLambda instanceof LambdaFunctionInstanceValue
+          ) {
+            aggregateCalendarLambda.values[0]!.expressionSequence[0] =
+              wavgRowMapper;
+          } else if (columnLambda instanceof LambdaFunctionInstanceValue) {
+            columnLambda.values[0]!.expressionSequence[0] = wavgRowMapper;
+          }
         }
         aggregateFunctionExpression.parametersValues = [
           aggregateCalendarLambda ?? columnLambda,

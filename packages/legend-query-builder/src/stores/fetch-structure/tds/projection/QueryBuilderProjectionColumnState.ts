@@ -79,6 +79,7 @@ export abstract class QueryBuilderProjectionColumnState
 {
   tdsState: QueryBuilderTDSState;
   columnName: string;
+  wavgWeight: AbstractPropertyExpression | undefined;
 
   constructor(tdsState: QueryBuilderTDSState, columnName: string) {
     super();
@@ -86,7 +87,9 @@ export abstract class QueryBuilderProjectionColumnState
       uuid: false,
       tdsState: false,
       columnName: observable,
+      wavgWeight: observable,
       setColumnName: action,
+      setWavgWeight: action,
       hashCode: computed,
     });
     this.tdsState = tdsState;
@@ -95,6 +98,10 @@ export abstract class QueryBuilderProjectionColumnState
 
   setColumnName(val: string): void {
     this.columnName = val;
+  }
+
+  setWavgWeight(val: AbstractPropertyExpression): void {
+    this.wavgWeight = val;
   }
 }
 
