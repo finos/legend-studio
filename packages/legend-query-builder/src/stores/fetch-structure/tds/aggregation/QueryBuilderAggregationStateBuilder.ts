@@ -21,6 +21,7 @@ import {
   matchFunctionName,
   SimpleFunctionExpression,
   VariableExpression,
+  AbstractPropertyExpression,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -40,6 +41,8 @@ import { QueryBuilderValueSpecificationProcessor } from '../../../QueryBuilderSt
 import { extractNullableStringFromInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../../QueryBuilderFetchStructureImplementationState.js';
 import { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
+
+import { QueryBuilderAggregateOperator_Wavg } from './operators/QueryBuilderAggregateOperator_Wavg.js';
 
 export const processTDSAggregateExpression = (
   expression: SimpleFunctionExpression,
@@ -151,6 +154,16 @@ export const processTDSAggregateExpression = (
           projectionColumnState,
         ),
       );
+      if (
+        projectionColumnState.wavgWeight &&
+        aggregateColumnState &&
+        aggregateColumnState.operator instanceof
+          QueryBuilderAggregateOperator_Wavg
+      ) {
+        aggregateColumnState.operator.setWeight(
+          projectionColumnState.wavgWeight,
+        );
+      }
       if (aggregateColumnState) {
         aggregationState.addColumn(aggregateColumnState);
         if (
@@ -177,6 +190,62 @@ export const processTDSAggregateExpression = (
     }
     throw new UnsupportedOperationError(
       `Can't process aggregate expression function: no compatible aggregate operator processer available from plugins`,
+    );
+  }
+};
+
+export const processWAVGRowMapperExpression = (
+  expression: SimpleFunctionExpression,
+  parentExpression: SimpleFunctionExpression | undefined,
+  queryBuilderState: QueryBuilderState,
+  parentLambda: LambdaFunction,
+): void => {
+  // check parent expression is agg
+  assertTrue(
+    Boolean(
+      parentExpression &&
+        matchFunctionName(
+          parentExpression.functionName,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG,
+        ),
+    ),
+    `Can't process wavgRowMapper() expression: only support wavgRowMapper() used within an agg() expression`,
+  );
+
+  // check number of parameters
+  assertTrue(
+    expression.parametersValues.length === 2,
+    `Can't process wavgRowMapper() expression: wavgRowMapper() expects 2 arguments`,
+  );
+
+  //checking type of parameters
+  const wavgInput = expression.parametersValues;
+  wavgInput.map((p) =>
+    assertType(
+      p,
+      AbstractPropertyExpression,
+      `Can't process wavgRowMapper() expression: wavgRowMapper() expects arguments to be Property Expressions`,
+    ),
+  );
+
+  QueryBuilderValueSpecificationProcessor.processChild(
+    guaranteeNonNullable(expression.parametersValues[0]),
+    expression,
+    parentLambda,
+    queryBuilderState,
+  );
+
+  //setting weight here then build when agg is built
+  if (
+    queryBuilderState.fetchStructureState.implementation instanceof
+    QueryBuilderTDSState
+  ) {
+    const tdsState = queryBuilderState.fetchStructureState.implementation;
+    const projectionColumnState = guaranteeNonNullable(
+      tdsState.projectionColumns[tdsState.projectionColumns.length - 1],
+    );
+    projectionColumnState.setWavgWeight(
+      expression.parametersValues[1] as AbstractPropertyExpression,
     );
   }
 };
