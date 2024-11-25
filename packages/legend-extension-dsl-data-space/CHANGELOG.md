@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.8
+
+### Patch Changes
+
+- [#3677](https://github.com/finos/legend-studio/pull/3677) [`9f921df`](https://github.com/finos/legend-studio/commit/9f921df1ca814e464e09a7e76c37d65a7b850ce7) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix rendering dependency funtions when loading using minimal graph
+
 ## 10.4.7
 
 ## 10.4.6
