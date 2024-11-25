@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.15.18
+
+### Patch Changes
+
+- [#3681](https://github.com/finos/legend-studio/pull/3681) [`6bbfb70`](https://github.com/finos/legend-studio/commit/6bbfb70df6b858ff865978d27b1896bf93f31231) ([@kelly-thai](https://github.com/kelly-thai)) - Added UI support for wavg aggregation. It has been added as an aggregate operator and a drop zone has been added for weights to be used as the parameter.
+
 ## 4.15.17
 
 ## 4.15.16
