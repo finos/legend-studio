@@ -356,7 +356,10 @@ export * from './graph-manager/protocol/pure/PureProtocolProcessorPlugin.js';
 export * from './graph-manager/protocol/pure/extensions/DSL_ExternalFormat_PureProtocolProcessorPlugin.js';
 export * from './graph-manager/action/functionActivator/FunctionActivatorConfiguration.js';
 export * from './graph-manager/action/relational/RelationalDatabaseTypeConfiguration.js';
-export { RelationTypeMetadata } from './graph-manager/action/relation/RelationTypeMetadata.js';
+export {
+  RelationTypeColumnMetadata,
+  RelationTypeMetadata,
+} from './graph-manager/action/relation/RelationTypeMetadata.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
 
@@ -388,6 +391,10 @@ export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/V1_E
 export { V1_RawLambda } from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawLambda.js';
 export { V1_RawExecutionContext } from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawExecutionContext.js';
 export { V1_RawVariable } from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawVariable.js';
+export {
+  V1_RelationType,
+  V1_RelationTypeColumn,
+} from './graph-manager/protocol/pure/v1/model/relation/V1_RelationType.js';
 export { V1_ProcessingContext } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ProcessingContext.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
