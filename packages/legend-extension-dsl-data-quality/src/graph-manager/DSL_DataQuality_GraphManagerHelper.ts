@@ -19,6 +19,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   DataQualityClassValidationsConfiguration,
   DataQualityServiceValidationConfiguration,
+  DataQualityRelationValidationConfiguration,
 } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 
 export const getOwnDataQualityClassValidationsConfiguration = (
@@ -43,4 +44,16 @@ export const getOwnDataQualityServiceValidationsConfiguration = (
       DataQualityServiceValidationConfiguration,
     ),
     `Can't find data quality service validation element on '${path}'`,
+  );
+
+export const getOwnDataQualityRelationValidationsConfiguration = (
+  path: string,
+  graph: BasicModel,
+): DataQualityRelationValidationConfiguration =>
+  guaranteeNonNullable(
+    graph.getOwnNullableExtensionElement(
+      path,
+      DataQualityRelationValidationConfiguration,
+    ),
+    `Can't find data quality tds validation element on '${path}'`,
   );

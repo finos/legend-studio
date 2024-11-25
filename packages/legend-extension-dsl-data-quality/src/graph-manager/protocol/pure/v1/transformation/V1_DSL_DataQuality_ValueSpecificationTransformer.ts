@@ -17,11 +17,16 @@
 import {
   type GraphFetchTree,
   type V1_GraphFetchTree,
+  type V1_GraphTransformerContext,
+  type V1_RawVariable,
   PackageableElementPointerType,
   V1_PackageableElementPointer,
   V1_PropertyGraphFetchTree,
   V1_RootGraphFetchTree,
   V1_transformGraphFetchTree,
+  V1_transformRawLambda,
+  V1_initPackageableElement,
+  V1_RawValueSpecificationTransformer,
 } from '@finos/legend-graph';
 import { V1_DataQualityRootGraphFetchTree } from '../model/graphFetch/V1_DataQualityRootGraphFetchTree.js';
 import { assertType, UnsupportedOperationError } from '@finos/legend-shared';
@@ -32,14 +37,21 @@ import {
 } from '../../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
 import {
   type DataQualityExecutionContext,
+  type DataQualityRelationValidation,
+  type DataQualityRelationValidationConfiguration,
+  type DataQualityClassValidationsConfiguration,
   DataSpaceDataQualityExecutionContext,
   MappingAndRuntimeDataQualityExecutionContext,
 } from '../../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import {
   type V1_DataQualityExecutionContext,
+  V1_DataQualityClassValidationsConfiguration,
+  V1_DataQualityRelationValidation,
+  V1_DataQualityRelationValidationsConfiguration,
   V1_DataSpaceDataQualityExecutionContext,
   V1_MappingAndRuntimeDataQualityExecutionContext,
-} from '../V1_DataQualityConstraintsConfiguration.js';
+  V1_DataQualityRelationQueryLambda,
+} from '../V1_DataQualityValidationConfiguration.js';
 import { DATA_SPACE_ELEMENT_POINTER } from '@finos/legend-extension-dsl-data-space/graph';
 
 export function V1_transformDataQualityGraphFetchTree(
@@ -136,4 +148,69 @@ export function V1_transformDataQualityExecutionContext(
   throw new UnsupportedOperationError(
     `Can't build data quality execution context '${value.toString()}'`,
   );
+}
+
+export function V1_transformDataQualityRelationValidation(
+  value: DataQualityRelationValidation,
+  context: V1_GraphTransformerContext,
+): V1_DataQualityRelationValidation {
+  const relationConstraint = new V1_DataQualityRelationValidation();
+  relationConstraint.name = value.name;
+  relationConstraint.description = value.description;
+  relationConstraint.assertion = V1_transformRawLambda(
+    value.assertion,
+    context,
+  );
+  relationConstraint.type = value.type;
+  relationConstraint.rowMapFunction = value.rowMapFunction
+    ? V1_transformRawLambda(value.rowMapFunction, context)
+    : value.rowMapFunction;
+  return relationConstraint;
+}
+
+export function V1_transformDataQualityClassValidationConfiguration(
+  metamodel: DataQualityClassValidationsConfiguration,
+  context: V1_GraphTransformerContext,
+): V1_DataQualityClassValidationsConfiguration {
+  const protocol = new V1_DataQualityClassValidationsConfiguration();
+  V1_initPackageableElement(protocol, metamodel);
+  protocol.name = metamodel.name;
+  protocol.package = metamodel.package?.path ?? '';
+  protocol.dataQualityRootGraphFetchTree =
+    metamodel.dataQualityRootGraphFetchTree
+      ? (V1_transformDataQualityGraphFetchTree(
+          metamodel.dataQualityRootGraphFetchTree,
+          [],
+          new Map<string, unknown[]>(),
+          false,
+          false,
+        ) as V1_DataQualityRootGraphFetchTree)
+      : undefined;
+  protocol.context = V1_transformDataQualityExecutionContext(metamodel.context);
+  protocol.filter = metamodel.filter
+    ? V1_transformRawLambda(metamodel.filter, context)
+    : undefined;
+  return protocol;
+}
+
+export function V1_transformDataQualityRelationValidationConfiguration(
+  metamodel: DataQualityRelationValidationConfiguration,
+  context: V1_GraphTransformerContext,
+): V1_DataQualityRelationValidationsConfiguration {
+  const protocol = new V1_DataQualityRelationValidationsConfiguration();
+  V1_initPackageableElement(protocol, metamodel);
+  protocol.name = metamodel.name;
+  protocol.package = metamodel.package?.path ?? '';
+  protocol.validations = metamodel.validations.map((validation) =>
+    V1_transformDataQualityRelationValidation(validation, context),
+  );
+  protocol.query = new V1_DataQualityRelationQueryLambda();
+  protocol.query.body = metamodel.query.body;
+  protocol.query.parameters = metamodel.query.parameters.map(
+    (v) =>
+      v.accept_RawValueSpecificationVisitor(
+        new V1_RawValueSpecificationTransformer(context),
+      ) as V1_RawVariable,
+  );
+  return protocol;
 }

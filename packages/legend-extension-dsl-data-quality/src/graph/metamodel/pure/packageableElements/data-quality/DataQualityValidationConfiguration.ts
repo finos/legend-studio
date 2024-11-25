@@ -21,12 +21,26 @@ import {
   type PackageableElementReference,
   type PackageableRuntime,
   type RawLambda,
+  type ParameterValue,
+  type RawVariableExpression,
   PackageableElement,
+  hashRawLambda,
 } from '@finos/legend-graph';
-import { type Hashable, hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
 import { DATA_QUALITY_HASH_STRUCTURE } from '../../../DSL_DataQuality_HashUtils.js';
 import type { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
 import type { DataQualityRootGraphFetchTree } from './DataQualityGraphFetchTree.js';
+
+export enum RelationValidationType {
+  ROW_LEVEL = 'ROW_LEVEL',
+  AGGREGATE = 'AGGREGATE',
+}
+export interface DQExecuteInputOptions {
+  lambdaParameterValues?: ParameterValue[];
+  clientVersion?: string | undefined;
+  validationName?: string | undefined;
+  previewLimit?: number | undefined;
+}
 
 export abstract class DataQualityExecutionContext implements Hashable {
   abstract get hashCode(): string;
@@ -58,8 +72,10 @@ export class MappingAndRuntimeDataQualityExecutionContext extends DataQualityExe
   }
 }
 
+export abstract class DataQualityValidationConfiguration extends PackageableElement {}
+
 export class DataQualityClassValidationsConfiguration
-  extends PackageableElement
+  extends DataQualityValidationConfiguration
   implements Hashable
 {
   context!: DataQualityExecutionContext;
@@ -83,7 +99,7 @@ export class DataQualityClassValidationsConfiguration
 }
 
 export class DataQualityServiceValidationConfiguration
-  extends PackageableElement
+  extends DataQualityValidationConfiguration
   implements Hashable
 {
   serviceName: string | undefined;
@@ -96,6 +112,66 @@ export class DataQualityServiceValidationConfiguration
       this.serviceName ?? '',
       this.contextName ?? '',
       this.dataQualityRootGraphFetchTree ?? '',
+    ]);
+  }
+
+  accept_PackageableElementVisitor<T>(
+    visitor: PackageableElementVisitor<T>,
+  ): T {
+    return visitor.visit_PackageableElement(this);
+  }
+}
+
+export class DataQualityRelationQueryLambda implements Hashable {
+  body?: object | undefined;
+  parameters: RawVariableExpression[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_VALIDATION_QUERY,
+      hashArray(this.parameters),
+      hashRawLambda(undefined, this.body),
+    ]);
+  }
+}
+
+export class DataQualityRelationValidation implements Hashable {
+  readonly _UUID = uuid();
+  name: string;
+  description: string | undefined;
+  assertion: RawLambda;
+  type: RelationValidationType = RelationValidationType.ROW_LEVEL;
+  rowMapFunction: RawLambda | undefined;
+
+  constructor(name: string, assertion: RawLambda) {
+    this.name = name;
+    this.assertion = assertion;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_VALIDATION,
+      this.name,
+      this.type,
+      this.description ?? '',
+      this.assertion,
+      this.rowMapFunction ?? '',
+    ]);
+  }
+}
+
+export class DataQualityRelationValidationConfiguration
+  extends DataQualityValidationConfiguration
+  implements Hashable
+{
+  query!: DataQualityRelationQueryLambda;
+  validations: DataQualityRelationValidation[] = [];
+
+  protected override get _elementHashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_VALIDATION_CONFIGURATION,
+      this.query,
+      hashArray(this.validations),
     ]);
   }
 

@@ -24,10 +24,12 @@ import {
 import {
   DataQualityClassValidationsConfiguration,
   DataQualityServiceValidationConfiguration,
+  DataQualityRelationValidationConfiguration,
 } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import {
   observe_DataQualityConstraintsConfiguration,
   observe_DataQualityServiceValidationConfiguration,
+  observe_DataQualityRelationValidationConfiguration,
 } from './action/changeDetection/DSL_DataQuality_ObserverHelper.js';
 import { DSL_DataQuality_buildGraphManagerExtension } from './protocol/pure/DSL_DataQuality_buildGraphManagerExtension.js';
 
@@ -47,6 +49,12 @@ export class DSL_DataQuality_PureGraphManagerPlugin extends PureGraphManagerPlug
         }
         if (element instanceof DataQualityServiceValidationConfiguration) {
           return observe_DataQualityServiceValidationConfiguration(element);
+        }
+        if (element instanceof DataQualityRelationValidationConfiguration) {
+          return observe_DataQualityRelationValidationConfiguration(
+            element,
+            context,
+          );
         }
         return undefined;
       },

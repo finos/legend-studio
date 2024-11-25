@@ -271,7 +271,7 @@ export abstract class DataQualityState extends ElementEditorState {
     const model = this.graphManagerState.graph;
     const rootGraphFetchTree = (yield getDataQualityPureGraphManagerExtension(
       this.graphManagerState.graphManager,
-    ).fetchStructuralValidations(model, packagePath)) as RootGraphFetchTree;
+    ).fetchStructuralValidations(model, packagePath, {})) as RootGraphFetchTree;
     this.initializeStructuralValidationsGraphFetchTreeState(
       rootGraphFetchTree as DataQualityRootGraphFetchTree,
     );

@@ -386,6 +386,7 @@ export {
 export {
   V1_rawBaseExecutionContextModelSchema,
   V1_rawLambdaModelSchema,
+  V1_rawVariableModelSchema,
   V1_deserializeRawValueSpecification,
   V1_serializeRawValueSpecification,
   V1_RawValueSpecificationType,

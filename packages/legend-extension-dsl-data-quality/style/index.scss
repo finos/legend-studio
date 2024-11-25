@@ -16,6 +16,7 @@
 
 @use 'mixins' as *;
 @forward 'data-quality-validation-builder';
+@forward 'data-quality-relation-validation-builder';
 
 .data-quality-constraints {
   display: flex;
@@ -29,6 +30,11 @@
 
 .element-creation-basis {
   width: 50%;
+  margin-top: 1rem;
+}
+
+.dq-validation-element-type {
+  margin-bottom: 1rem;
 }
 
 .data-quality-explorer {

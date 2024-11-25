@@ -15,134 +15,63 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { DataQualityState } from './states/DataQualityState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { flowResult } from 'mobx';
 import {
-  type QueryBuilderState,
-  buildFilterConditionExpression,
   ExecutionPlanViewer,
+  LambdaParameterValuesEditor,
 } from '@finos/legend-query-builder';
-import {
-  type ExecutionResult,
-  MILESTONING_STEREOTYPE,
-  buildRawLambdaFromLambdaFunction,
-  CORE_PURE_PATH,
-  FunctionType,
-  GenericType,
-  GenericTypeExplicitReference,
-  LambdaFunction,
-  Multiplicity,
-  PackageableElementExplicitReference,
-  VariableExpression,
-} from '@finos/legend-graph';
-import {
-  guaranteeNonNullable,
-  isNonNullable,
-  prettyDuration,
-} from '@finos/legend-shared';
-import { useRef, useState } from 'react';
+import { type ExecutionResult } from '@finos/legend-graph';
+import { prettyDuration } from '@finos/legend-shared';
+import React, { useRef, useState } from 'react';
 import { DATA_QUALITY_VALIDATION_TEST_ID } from './constants/DataQualityConstants.js';
 import {
   BlankPanelContent,
+  CaretDownIcon,
+  ControlledDropdownMenu,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  DebugIcon,
+  ExclamationTriangleIcon,
   MenuContent,
   MenuContentItem,
-  PanelContent,
-  ExclamationTriangleIcon,
-  DebugIcon,
-  CaretDownIcon,
   MenuContentItemIcon,
   MenuContentItemLabel,
+  PanelContent,
   PauseCircleIcon,
   PlayIcon,
   ReportIcon,
-  ControlledDropdownMenu,
 } from '@finos/legend-art';
 import { DataQualityResultValues } from './DataQualityResultValues.js';
-import { dataQualityClassValidation_setFilter } from '../graph-manager/DSL_DataQuality_GraphModifierHelper.js';
-import type { DataQualityClassValidationsConfiguration } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
-import { DataQualityDateSelectionPanel } from './DataQualityDateSelectionPanel.js';
+import type { DataQualityRelationValidationConfigurationState } from './states/DataQualityRelationValidationConfigurationState.js';
 
-export const DataQualityResultPanel = observer(
-  (props: { dataQualityState: DataQualityState }) => {
-    const { dataQualityState } = props;
+export const DataQualityRelationTrialRuns = observer(
+  (props: {
+    dataQualityRelationValidationConfigurationState: DataQualityRelationValidationConfigurationState;
+  }) => {
+    const { dataQualityRelationValidationConfigurationState } = props;
     const applicationStore = useApplicationStore();
-    const resultState = dataQualityState.resultState;
+    const resultState =
+      dataQualityRelationValidationConfigurationState.resultState;
     const executionResult = resultState.executionResult;
 
-    const buildFilterExpression = (
-      queryBuilderState: QueryBuilderState,
-    ): void => {
-      const { filterState } = queryBuilderState;
-      const filterConditionExpressions = filterState.rootIds
-        .map((e) => guaranteeNonNullable(filterState.nodes.get(e)))
-        .map((e) => buildFilterConditionExpression(filterState, e))
-        .filter(isNonNullable);
-      if (!filterConditionExpressions.length) {
-        dataQualityClassValidation_setFilter(
-          dataQualityState.constraintsConfigurationElement as DataQualityClassValidationsConfiguration,
-          undefined,
-        );
-        return;
-      }
-      const genericType = new GenericType(queryBuilderState.class!);
-      const genericTypeReference =
-        GenericTypeExplicitReference.create(genericType);
-
-      const functionType = new FunctionType(
-        PackageableElementExplicitReference.create(
-          queryBuilderState.graphManagerState.graph.getType(CORE_PURE_PATH.ANY),
-        ),
-        Multiplicity.ONE,
-      );
-      functionType.parameters.push(
-        new VariableExpression(
-          filterState.lambdaParameterName,
-          Multiplicity.ONE,
-          genericTypeReference,
-        ),
-      );
-
-      const lambdaFunction = new LambdaFunction(functionType);
-      lambdaFunction.expressionSequence = filterConditionExpressions;
-      dataQualityClassValidation_setFilter(
-        dataQualityState.constraintsConfigurationElement as DataQualityClassValidationsConfiguration,
-        buildRawLambdaFromLambdaFunction(
-          lambdaFunction,
-          queryBuilderState.graphManagerState,
-        ),
-      );
-    };
-
     const runQuery = (): void => {
-      resultState.pressedRunQuery.inProgress();
-      flowResult(resultState.runQuery()).catch(
-        applicationStore.alertUnhandledError,
-      );
-      resultState.pressedRunQuery.complete();
+      resultState.handleRunValidation();
     };
 
     const cancelQuery = applicationStore.guardUnhandledError(() =>
-      flowResult(resultState.cancelQuery()),
+      flowResult(resultState.cancelValidation()),
     );
 
     const generatePlan = applicationStore.guardUnhandledError(() => {
-      buildFilterExpression(dataQualityState.dataQualityQueryBuilderState);
       return flowResult(resultState.generatePlan(false));
     });
     const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
       flowResult(resultState.generatePlan(true)),
     );
 
-    const allowSettingPreviewLimit = dataQualityState.isQuerySupported;
-
     const isRunQueryDisabled =
-      resultState.isGeneratingPlan ||
-      resultState.pressedRunQuery.isInProgress ||
-      dataQualityState.dataQualityQueryBuilderState.filterState
-        .allValidationIssues.length !== 0;
+      resultState.isGeneratingPlan || resultState.isRunningValidation;
 
     const getResultSetDescription = (
       _executionResult: ExecutionResult,
@@ -157,9 +86,10 @@ export const DataQualityResultPanel = observer(
       }
       return `validation ran in ${queryDuration}`;
     };
-    const resultDescription = executionResult
-      ? getResultSetDescription(executionResult)
-      : undefined;
+    const resultDescription =
+      !resultState.isRunningValidation && executionResult
+        ? getResultSetDescription(executionResult)
+        : undefined;
 
     const [previewLimitValue, setPreviewLimitValue] = useState(
       resultState.previewLimit,
@@ -176,9 +106,13 @@ export const DataQualityResultPanel = observer(
     const getPreviewLimit = (): void => {
       if (isNaN(previewLimitValue) || previewLimitValue === 0) {
         setPreviewLimitValue(1);
-        dataQualityState.resultState.setPreviewLimit(1);
+        dataQualityRelationValidationConfigurationState.resultState.setPreviewLimit(
+          1,
+        );
       } else {
-        dataQualityState.resultState.setPreviewLimit(previewLimitValue);
+        dataQualityRelationValidationConfigurationState.resultState.setPreviewLimit(
+          previewLimitValue,
+        );
       }
     };
 
@@ -192,18 +126,7 @@ export const DataQualityResultPanel = observer(
     };
 
     const isLoading =
-      resultState.isRunningQuery || resultState.isGeneratingPlan;
-
-    const currentClassMilestoningStrategy =
-      dataQualityState.currentClassMilestoningStrategy;
-    const showProcessingDate =
-      currentClassMilestoningStrategy ===
-        MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL ||
-      currentClassMilestoningStrategy === MILESTONING_STEREOTYPE.BITEMPORAL;
-    const showBusinessDate =
-      currentClassMilestoningStrategy ===
-        MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL ||
-      currentClassMilestoningStrategy === MILESTONING_STEREOTYPE.BITEMPORAL;
+      resultState.isRunningValidation || resultState.isGeneratingPlan;
 
     return (
       <div
@@ -215,7 +138,12 @@ export const DataQualityResultPanel = observer(
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">results</div>
-            {resultState.pressedRunQuery.isInProgress && (
+            {resultState.validationToRun && (
+              <div className="panel__header__title__label">
+                {resultState.validationToRun.name}
+              </div>
+            )}
+            {resultState.isRunningValidation && (
               <div className="panel__header__title__label__status">
                 Running Validation...
               </div>
@@ -240,55 +168,24 @@ export const DataQualityResultPanel = observer(
             )}
           </div>
           <div className="panel__header__actions data-quality-validation__result__header__actions">
-            {showProcessingDate && (
-              <div className="trial-runs-result-modifier-prompt__group">
-                <div className="trial-runs-result-modifier-prompt__group__label">
-                  Processing Date
-                </div>
-                <button
-                  className="trial-runs-result-modifier-prompt__header__label editable-value"
-                  onClick={() => dataQualityState.setShowDateSelection(true)}
-                >
-                  <div className="trial-runs-result-modifier-prompt__header__label__title">
-                    {dataQualityState.processingDate}
-                  </div>
-                </button>
+            <div className="data-quality-validation__result__limit">
+              <div className="data-quality-validation__result__limit__label">
+                preview row limit
               </div>
-            )}
-            {showBusinessDate && (
-              <div className="trial-runs-result-modifier-prompt__group">
-                <div className="trial-runs-result-modifier-prompt__group__label">
-                  Business Date
-                </div>
-                <button
-                  className="trial-runs-result-modifier-prompt__header__label editable-value"
-                  onClick={() => dataQualityState.setShowDateSelection(true)}
-                >
-                  <div className="trial-runs-result-modifier-prompt__header__label__title">
-                    {dataQualityState.businessDate}
-                  </div>
-                </button>
-              </div>
-            )}
-            {allowSettingPreviewLimit && (
-              <div className="data-quality-validation__result__limit">
-                <div className="data-quality-validation__result__limit__label">
-                  preview row limit
-                </div>
-                <input
-                  ref={inputRef}
-                  className="input--dark data-quality-validation__result__limit__input"
-                  spellCheck={false}
-                  type="number"
-                  value={previewLimitValue}
-                  onChange={changePreviewLimit}
-                  onBlur={getPreviewLimit}
-                  onKeyDown={onKeyDown}
-                />
-              </div>
-            )}
+              <input
+                ref={inputRef}
+                className="input--dark data-quality-validation__result__limit__input"
+                spellCheck={false}
+                type="number"
+                value={previewLimitValue}
+                onChange={changePreviewLimit}
+                onBlur={getPreviewLimit}
+                onKeyDown={onKeyDown}
+              />
+            </div>
+
             <div className="data-quality-validation__result__execute-btn btn__dropdown-combo btn__dropdown-combo--primary">
-              {resultState.isRunningQuery ? (
+              {resultState.isRunningValidation ? (
                 <button
                   className="btn__dropdown-combo__canceler data-quality-validation__result__execute-btn__btn"
                   onClick={cancelQuery}
@@ -357,7 +254,7 @@ export const DataQualityResultPanel = observer(
           </CubesLoadingIndicator>
           {!executionResult && !isLoading && (
             <BlankPanelContent>
-              Click on run validation to see the constraints validation results
+              Click on run validation to see the validation results
             </BlankPanelContent>
           )}
           {executionResult && !isLoading && (
@@ -369,7 +266,22 @@ export const DataQualityResultPanel = observer(
         <ExecutionPlanViewer
           executionPlanState={resultState.executionPlanState}
         />
-        <DataQualityDateSelectionPanel dataQualityState={dataQualityState} />
+        {dataQualityRelationValidationConfigurationState.parametersState
+          .parameterValuesEditorState.showModal && (
+          <LambdaParameterValuesEditor
+            graph={
+              dataQualityRelationValidationConfigurationState.editorStore
+                .graphManagerState.graph
+            }
+            observerContext={
+              dataQualityRelationValidationConfigurationState.editorStore
+                .changeDetectionState.observerContext
+            }
+            lambdaParametersState={
+              dataQualityRelationValidationConfigurationState.parametersState
+            }
+          />
+        )}
       </div>
     );
   },
