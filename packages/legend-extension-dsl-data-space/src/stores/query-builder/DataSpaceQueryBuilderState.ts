@@ -423,6 +423,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       );
     this.dataSpaceAnalysisResult = dataSpaceAnalysisResult;
     this.workflowState.updateActionConfig(actionConfig);
+    this.isLightGraphEnabled = isLightGraphEnabled;
   }
 
   override get sideBarClassName(): string | undefined {

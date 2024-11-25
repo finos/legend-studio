@@ -18,6 +18,7 @@ import type { StoreProjectData } from './models/StoreProjectData.js';
 import type { EntitiesWithOrigin, Entity } from '@finos/legend-storage';
 import type { DepotServerClient } from './DepotServerClient.js';
 import type { PlainObject } from '@finos/legend-shared';
+import type { ProjectVersionEntities } from './models/ProjectVersionEntities.js';
 
 export const retrieveProjectEntitiesWithDependencies = async (
   project: StoreProjectData,
@@ -45,7 +46,7 @@ export const retrieveProjectEntitiesWithClassifier = async (
 ): Promise<[PlainObject<Entity>[], PlainObject<Entity>[]]> => {
   const [entities, dependencyEntities]: [
     PlainObject<Entity>[],
-    PlainObject<Entity>[],
+    PlainObject<ProjectVersionEntities>[],
   ] = await Promise.all([
     depotServerClient.getEntities(project, versionId, classifier),
     depotServerClient.getDependencyEntities(
@@ -57,5 +58,9 @@ export const retrieveProjectEntitiesWithClassifier = async (
       classifier,
     ),
   ]);
-  return [entities, dependencyEntities];
+
+  return [
+    entities,
+    dependencyEntities.map((e) => e.entities).flat() as PlainObject<Entity>[],
+  ];
 };
