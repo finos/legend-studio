@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.7.11
+
+### Patch Changes
+
+- [#3688](https://github.com/finos/legend-studio/pull/3688) [`2e059b8`](https://github.com/finos/legend-studio/commit/2e059b89c7777d64c74024ae055054549be137e5) ([@kelly-thai](https://github.com/kelly-thai)) - Data Product now on one line
+
 ## 13.7.10
 
 ### Patch Changes

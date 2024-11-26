@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.15.19
+
+### Patch Changes
+
+- [#3691](https://github.com/finos/legend-studio/pull/3691) [`348e1e3`](https://github.com/finos/legend-studio/commit/348e1e31b02edb190ef83a80933ad2812a984bda) ([@travisstebbins](https://github.com/travisstebbins)) - Fix QueryBuilderDataCubeEngine buildBaseQuery
+
+- [#3688](https://github.com/finos/legend-studio/pull/3688) [`2e059b8`](https://github.com/finos/legend-studio/commit/2e059b89c7777d64c74024ae055054549be137e5) ([@kelly-thai](https://github.com/kelly-thai)) - Data Product now on one line
+
 ## 4.15.18
 
 ### Patch Changes
