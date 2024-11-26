@@ -110,7 +110,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     const columns = (await this.getRelationalType(this.selectInitialQuery))
       .columns;
     const query = new DataCubeQuery();
-    query.query = `~[${columns.map((e) => `'${e.name}'`)}]->select()`;
+    query.query = `|~[${columns.map((e) => `'${e.name}'`)}]->select()`;
     const source = new QueryBuilderDataCubeSource();
     source.sourceColumns = columns;
     source.mapping = this.mappingPath;
