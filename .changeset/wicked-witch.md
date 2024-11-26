@@ -1,5 +1,5 @@
 ---
-'@legend-application-query': patch
-'@legend-query-builder': patch
+'@finos/legend-application-query': patch
+'@finos/legend-query-builder': patch
 ---
 Data Product now on one line
