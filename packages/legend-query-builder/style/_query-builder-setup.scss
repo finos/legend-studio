@@ -67,6 +67,18 @@
       font-weight: bold;
     }
 
+    &__data-product {
+      @include flexVCenter;
+
+      width: 8rem;
+      color: var(--color-dark-grey-300);
+      margin-right: 1rem;
+      justify-content: right;
+      text-align: right;
+      font-weight: bold;
+      font-size: 1.3rem !important;
+    }
+
     &__item__selector {
       flex: 1;
       max-width: unset;
