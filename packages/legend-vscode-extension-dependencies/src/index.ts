@@ -150,6 +150,7 @@ export {
   V1_PureGraphManager,
   V1_PureModelContext,
   V1_PureModelContextData,
+  V1_PureSingleExecution,
   V1_Query,
   V1_QuerySearchSpecification,
   V1_rawBaseExecutionContextModelSchema,
