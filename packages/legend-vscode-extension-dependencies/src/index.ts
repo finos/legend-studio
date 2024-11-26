@@ -156,6 +156,7 @@ export {
   V1_PackageableElement,
   V1_PackageableElementPtr,
   V1_PackageableRuntime,
+  V1_PackageableType,
   V1_ParameterValue,
   V1_parameterValueModelSchema,
   V1_ParserError,
