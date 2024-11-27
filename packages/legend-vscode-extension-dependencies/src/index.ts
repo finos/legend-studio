@@ -135,6 +135,8 @@ export {
   V1_FunctionActivatorInput,
   V1_GenerateSchemaInput,
   V1_GenerationOutput,
+  V1_GenericType,
+  V1_getFullReturnTypePath,
   V1_getFunctionNameWithoutSignature,
   V1_GraphBuilderContextBuilder,
   V1_GraphTransformerContextBuilder,
@@ -216,6 +218,7 @@ export {
   SerializationFactory,
   serializeMap,
   TracerService,
+  uniq,
   usingModelSchema,
 } from '@finos/legend-shared';
 
