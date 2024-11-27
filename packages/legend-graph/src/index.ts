@@ -574,6 +574,7 @@ export { V1_GenerationOutput } from './graph-manager/protocol/pure/v1/engine/gen
 export {
   V1_ArtifactGenerationExtensionInput,
   V1_ArtifactGenerationExtensionOutput,
+  V1_buildArtifactsByExtensionElement,
 } from './graph-manager/protocol/pure/v1/engine/generation/V1_ArtifactGenerationExtensionApi.js';
 export { V1_DatabaseBuilderInput } from './graph-manager/protocol/pure/v1/engine/generation/V1_DatabaseBuilderInput.js';
 

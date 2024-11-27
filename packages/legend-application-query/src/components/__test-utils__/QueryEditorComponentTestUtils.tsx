@@ -256,7 +256,6 @@ export const TEST__setUpDataSpaceExistingQueryEditor = async (
   dataSpacePath: string,
   executionContext: string,
   lambda: RawLambda,
-  mappingPath: string,
   entities: PlainObject<Entity>[],
   buildWithMinimalGraph = false,
   V1_dataspaceArtifacts: PlainObject<StoredFileGeneration>[] = [],

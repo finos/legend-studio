@@ -3302,6 +3302,7 @@ __metadata:
   resolution: "@finos/legend-manual-tests@workspace:packages/legend-manual-tests"
   dependencies:
     "@finos/legend-application": "workspace:*"
+    "@finos/legend-application-query": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-quality": "workspace:*"
@@ -3313,6 +3314,7 @@ __metadata:
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-query-builder": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@jest/globals": "npm:29.7.0"
     "@testing-library/dom": "npm:10.4.0"
     "@testing-library/react": "npm:16.0.1"
