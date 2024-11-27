@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-query": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-extension-dsl-data-quality": "workspace:*",
     "@finos/legend-extension-dsl-data-space": "workspace:*",
@@ -33,6 +34,7 @@
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-query-builder": "workspace:*",
     "@finos/legend-shared": "workspace:*",
+    "@finos/legend-storage": "workspace:*",
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.0.1",
     "@types/react": "18.3.12",
