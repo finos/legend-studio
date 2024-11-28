@@ -108,7 +108,7 @@ import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QueryBuilderChangeHistoryState } from './QueryBuilderChangeHistoryState.js';
 import { type QueryBuilderWorkflowState } from './query-workflow/QueryBuilderWorkFlowState.js';
-import { QueryChatState } from './QueryChatState.js';
+import { type QueryChatState } from './QueryChatState.js';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from './QueryBuilder_LegendApplicationPlugin_Extension.js';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
