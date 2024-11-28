@@ -54,6 +54,7 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
       .sort(compareLabelFn);
     const selectedDataSpaceOption = null;
     const onDataSpaceOptionChange = (option: DataSpaceOption): void => {
+      queryBuilderState.queryChatState?.abort();
       queryBuilderState.onDataSpaceChange(option.value);
     };
 

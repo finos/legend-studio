@@ -108,6 +108,7 @@ import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QueryBuilderChangeHistoryState } from './QueryBuilderChangeHistoryState.js';
 import { type QueryBuilderWorkflowState } from './query-workflow/QueryBuilderWorkFlowState.js';
+import { QueryChatState } from './QueryChatState.js';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from './QueryBuilder_LegendApplicationPlugin_Extension.js';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -171,6 +172,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL;
   executionContextState: QueryBuilderExecutionContextState;
   internalizeState?: QueryBuilderInternalizeState | undefined;
+  queryChatState?: QueryChatState | undefined;
 
   // NOTE: This property contains information about workflow used
   // to create this state. This should only be used to add additional
@@ -210,6 +212,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       changeHistoryState: observable,
       executionContextState: observable,
       class: observable,
+      queryChatState: observable,
       isQueryChatOpened: observable,
       isLocalModeEnabled: observable,
       isCubeEnabled: observable,
@@ -240,6 +243,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       changeClass: action,
       changeMapping: action,
       setExecutionContextState: action,
+      setQueryChatState: action,
 
       rebuildWithQuery: action,
       compileQuery: flow,
@@ -414,6 +418,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setInternalize(val: QueryBuilderInternalizeState | undefined): void {
     this.internalizeState = val;
+  }
+
+  setQueryChatState(val: QueryChatState | undefined): void {
+    this.queryChatState = val;
   }
 
   setShowFunctionsExplorerPanel(val: boolean): void {

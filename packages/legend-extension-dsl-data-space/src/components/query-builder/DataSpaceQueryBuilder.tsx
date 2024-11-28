@@ -172,6 +172,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       },
     };
     const onDataSpaceOptionChange = (option: DataSpaceOption): void => {
+      queryBuilderState.queryChatState?.abort();
       queryBuilderState
         .onDataSpaceChange(option.value)
         .catch(queryBuilderState.applicationStore.alertUnhandledError);
