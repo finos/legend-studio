@@ -19,7 +19,7 @@ import { hideBin } from 'yargs/helpers';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
-import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
+import { assembleDocumentation } from '@finos/legend-dev-utils/DocumentationUtils';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -56,7 +56,9 @@ const setup = (outputDir) => {
         documentation: {
           url: 'https://legend.finos.org',
           registry: [],
-          ...loadJSON(resolve(__dirname, '../documentation.json')),
+          ...assembleDocumentation([
+            resolve(__dirname, '../../legend-data-cube/docs'),
+          ]),
         },
       },
       undefined,

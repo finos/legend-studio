@@ -29,6 +29,7 @@ import {
   DEFAULT_NEGATIVE_FOREGROUND_COLOR,
   DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR,
   DEFAULT_ZERO_FOREGROUND_COLOR,
+  EMPTY_VALUE_PLACEHOLDER,
 } from '../../../stores/core/DataCubeQueryEngine.js';
 import {
   FormCheckbox,
@@ -40,8 +41,10 @@ import {
   FormTextInput,
   FormNumberInput,
   FormBadge_WIP,
+  FormDocumentation,
 } from '../../core/DataCubeFormUtils.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
+import { DocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
 
 export const DataCubeEditorGeneralPropertiesPanel = observer(
   (props: { view: DataCubeViewState }) => {
@@ -128,7 +131,11 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
                   configuration.setShowLeafCount(!configuration.showLeafCount)
                 }
               />
-              <div className="ml-3 mr-1.5 flex h-full flex-shrink-0 items-center text-sm">
+            </div>
+
+            <div className="mt-2 flex h-5 w-full items-center">
+              <div className="flex h-full w-32 flex-shrink-0 items-center text-sm" />
+              <div className="mr-1 flex h-full flex-shrink-0 items-center text-sm">
                 Sort:
               </div>
               <FormDropdownMenuTrigger
@@ -160,19 +167,18 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
                   </FormDropdownMenuItem>
                 ))}
               </FormDropdownMenu>
-            </div>
-
-            <div className="mt-2 flex h-5 w-full items-center">
-              <div className="flex h-full w-32 flex-shrink-0 items-center text-sm" />
-              <div className="mr-1.5 flex h-full flex-shrink-0 items-center text-sm">
+              <div className="ml-3 mr-1 flex h-full flex-shrink-0 items-center text-sm">
                 Initially expand to level:
               </div>
               <FormDropdownMenuTrigger
                 className="w-16"
                 onClick={openInitialExpandLevelDropdown}
                 open={initialExpandLevelDropdownPropsOpen}
+                showAsPlaceholder={
+                  configuration.initialExpandLevel === undefined
+                }
               >
-                {configuration.initialExpandLevel ?? '(None)'}
+                {configuration.initialExpandLevel ?? EMPTY_VALUE_PLACEHOLDER}
               </FormDropdownMenuTrigger>
               <FormDropdownMenu
                 className="w-16"
@@ -187,7 +193,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
                     }}
                     autoFocus={level === configuration.initialExpandLevel}
                   >
-                    {level ?? '(None)'}
+                    {level ?? EMPTY_VALUE_PLACEHOLDER}
                   </FormDropdownMenuItem>
                 ))}
               </FormDropdownMenu>
@@ -196,20 +202,22 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
             <div className="mt-2 flex h-5 w-full items-center">
               <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                 Row Limit:
+                <FormDocumentation
+                  className="ml-1"
+                  documentationKey={
+                    DocumentationKey.DATA_CUBE_GRID_CONFIGURATION_ROW_LIMIT
+                  }
+                />
               </div>
               <FormNumberInput
                 className="w-16 text-sm"
                 value={panel.limit}
-                min={-1}
+                min={0}
                 step={1}
-                defaultValue={-1}
-                isValid={(value) => value !== undefined && value >= -1}
-                setValue={(value) => panel.setLimit(value ?? -1)}
+                defaultValue={undefined}
+                placeholder={EMPTY_VALUE_PLACEHOLDER}
+                setValue={(value) => panel.setLimit(value)}
               />
-              <div className="flex-shrink-0 pl-1 text-sm italic text-neutral-500">
-                Truncate result to this many rows at every level. Use -1 for
-                unlimited.
-              </div>
             </div>
 
             <div className="mt-2 flex h-5 w-full items-center">
@@ -264,9 +272,10 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
                   )
                 }
               />
-              <div className="ml-2 h-[1px] w-2 flex-shrink-0 bg-neutral-400" />
+              <div className="ml-3 mr-1 flex h-full flex-shrink-0 items-center text-sm">
+                Color:
+              </div>
               <FormColorPickerButton
-                className="ml-2"
                 color={configuration.gridLineColor}
                 defaultColor={DEFAULT_GRID_LINE_COLOR}
                 onChange={(value) => configuration.setGridLineColor(value)}
@@ -291,7 +300,6 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
               />
               <FormCheckbox
                 className="ml-3"
-                label="Custom: Alternate color every"
                 checked={configuration.alternateRows}
                 onChange={() => {
                   if (configuration.alternateRows) {
@@ -302,8 +310,20 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
                   }
                 }}
               />
+              <div className="ml-1 mr-1 flex h-full flex-shrink-0 items-center text-sm">
+                Custom: Alternate color:
+              </div>
+              <FormColorPickerButton
+                disabled={!configuration.alternateRows}
+                color={configuration.alternateRowsColor}
+                defaultColor={DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR}
+                onChange={(value) => configuration.setAlternateRowsColor(value)}
+              />
+              <div className="ml-1 flex h-full flex-shrink-0 items-center text-sm">
+                every:
+              </div>
               <FormNumberInput
-                className="ml-1.5 w-16 text-sm"
+                className="ml-1 w-16 text-sm"
                 disabled={!configuration.alternateRows}
                 min={1}
                 step={1}
@@ -314,14 +334,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
                   configuration.setAlternateRowsCount(value ?? 1)
                 }
               />
-              <div className="ml-1.5 flex-shrink-0 text-sm">{`row(s)`}</div>
-              <FormColorPickerButton
-                className="ml-[5px]"
-                disabled={!configuration.alternateRows}
-                color={configuration.alternateRowsColor}
-                defaultColor={DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR}
-                onChange={(value) => configuration.setAlternateRowsColor(value)}
-              />
+              <div className="ml-1 flex-shrink-0 text-sm">rows</div>
             </div>
 
             <div className="my-2 h-[1px] w-full bg-neutral-200" />

@@ -16,7 +16,9 @@
 
 export enum DocumentationKey {
   DATA_CUBE_EXTENDED_COLUMN_LEVELS = 'data-cube.extended-column.levels',
-  DATA_CUBE_COLUMN_KINDS = 'data-cube.column.kinds',
-  DATA_CUBE_COLUMN_DISPLAY_AS_LINK = 'data-cube.column.display-as-link',
-  DATA_CUBE_COLUMN_MISSING_VALUE_FORMAT = 'data-cube.column.missing-value-format',
+  DATA_CUBE_GRID_CONFIGURATION_ROW_LIMIT = 'data-cube.grid-configuration.row-limit',
+  DATA_CUBE_COLUMN_CONFIGURATION_KIND = 'data-cube.column-configuration.kind',
+  DATA_CUBE_COLUMN_CONFIGURATION_UNIT = 'data-cube.column-configuration.unit',
+  DATA_CUBE_COLUMN_CONFIGURATION_DISPLAY_AS_LINK = 'data-cube.column-configuration.display-value-as-link',
+  DATA_CUBE_COLUMN_CONFIGURATION_MISSING_VALUE_FORMAT = 'data-cube.column-configuration.missing-value-format',
 }

@@ -42,6 +42,7 @@ import {
   DEFAULT_COLUMN_MIN_WIDTH,
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_URL_LABEL_QUERY_PARAM,
+  EMPTY_VALUE_PLACEHOLDER,
 } from '../../../stores/core/DataCubeQueryEngine.js';
 import { DocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
@@ -139,7 +140,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
               >
                 <div className="flex h-full w-full items-center">
                   <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">
-                    {selectedColumn?.name ?? '(None)'}
+                    {selectedColumn?.name ?? EMPTY_VALUE_PLACEHOLDER}
                   </div>
                   {selectedColumn && (
                     <>
@@ -217,7 +218,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       <FormDocumentation
                         className="ml-1"
                         documentationKey={
-                          DocumentationKey.DATA_CUBE_COLUMN_KINDS
+                          DocumentationKey.DATA_CUBE_COLUMN_CONFIGURATION_KIND
                         }
                       />
                     </div>
@@ -326,7 +327,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
 
                   <FormCheckbox
                     className="ml-3"
-                    label="Exclude from H-Pivot"
+                    label="Exclude from horizontal pivot"
                     checked={selectedColumn.excludedFromPivot}
                     onChange={() =>
                       selectedColumn.setExcludedFromPivot(
@@ -355,7 +356,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         }}
                       />
                       <div className="ml-1 flex-shrink-0 text-sm">
-                        Decimal places
+                        decimal places
                       </div>
                       <FormCheckbox
                         className="ml-3"
@@ -380,15 +381,19 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     </div>
 
                     <div className="mt-2 flex h-5 w-full items-center">
-                      <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-                        Number Scale:
+                      <div className="flex h-full w-32 flex-shrink-0 items-center text-sm" />
+                      <div className="mr-1 flex h-full flex-shrink-0 items-center text-sm">
+                        Scale:
                       </div>
                       <FormDropdownMenuTrigger
                         className="w-32"
                         onClick={openNumberScaleDropdown}
                         open={numberScaleDropdownPropsOpen}
+                        showAsPlaceholder={
+                          selectedColumn.numberScale === undefined
+                        }
                       >
-                        {selectedColumn.numberScale ?? '(None)'}
+                        {selectedColumn.numberScale ?? EMPTY_VALUE_PLACEHOLDER}
                       </FormDropdownMenuTrigger>
                       <FormDropdownMenu
                         className="w-32"
@@ -412,10 +417,30 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                             }}
                             autoFocus={scale === selectedColumn.numberScale}
                           >
-                            {scale ?? '(None)'}
+                            {scale ?? EMPTY_VALUE_PLACEHOLDER}
                           </FormDropdownMenuItem>
                         ))}
                       </FormDropdownMenu>
+                      <div className="ml-3 mr-1 flex h-full flex-shrink-0 items-center text-sm">
+                        Unit:
+                        <FormDocumentation
+                          className="ml-1"
+                          documentationKey={
+                            DocumentationKey.DATA_CUBE_COLUMN_CONFIGURATION_UNIT
+                          }
+                        />
+                      </div>
+                      <FormTextInput
+                        className="w-16"
+                        value={selectedColumn.unit ?? ''}
+                        onChange={(event) => {
+                          const value = event.target.value.trim();
+                          selectedColumn.setUnit(
+                            value.trim() !== '' ? value.trim() : undefined,
+                          );
+                        }}
+                        placeholder={EMPTY_VALUE_PLACEHOLDER}
+                      />
                     </div>
                   </>
                 )}
@@ -428,7 +453,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         <FormDocumentation
                           className="ml-1"
                           documentationKey={
-                            DocumentationKey.DATA_CUBE_COLUMN_DISPLAY_AS_LINK
+                            DocumentationKey.DATA_CUBE_COLUMN_CONFIGURATION_DISPLAY_AS_LINK
                           }
                         />
                       </div>
@@ -461,11 +486,11 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
 
                 <div className="mt-2 flex h-5 w-full items-center">
                   <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
-                    {`Missing Value Format:`}
+                    Missing Value Format:
                     <FormDocumentation
                       className="ml-1"
                       documentationKey={
-                        DocumentationKey.DATA_CUBE_COLUMN_MISSING_VALUE_FORMAT
+                        DocumentationKey.DATA_CUBE_COLUMN_CONFIGURATION_MISSING_VALUE_FORMAT
                       }
                     />
                   </div>
@@ -478,7 +503,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         value !== '' ? value : undefined,
                       );
                     }}
-                    placeholder="(empty)"
+                    placeholder={EMPTY_VALUE_PLACEHOLDER}
                   />
                 </div>
 
@@ -514,8 +539,9 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     className="w-16"
                     onClick={openColumnPinDropdown}
                     open={columnPinDropdownPropsOpen}
+                    showAsPlaceholder={selectedColumn.pinned === undefined}
                   >
-                    {selectedColumn.pinned ?? '(None)'}
+                    {selectedColumn.pinned ?? EMPTY_VALUE_PLACEHOLDER}
                   </FormDropdownMenuTrigger>
                   <FormDropdownMenu
                     className="w-16"
@@ -534,7 +560,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         }}
                         autoFocus={placement === selectedColumn.pinned}
                       >
-                        {placement ?? '(None)'}
+                        {placement ?? EMPTY_VALUE_PLACEHOLDER}
                       </FormDropdownMenuItem>
                     ))}
                   </FormDropdownMenu>

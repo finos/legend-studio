@@ -313,13 +313,18 @@ function _displaySpec(columnData: ColumnData) {
                   }
                 : {}),
             });
-            // 3. add the parentheses (and then the unit)
-            return (
+            // 3. add the parentheses, scale unit, unit, etc.
+            let displayValue =
               (showNegativeNumberInParens
                 ? `(${formattedValue})`
                 : formattedValue) +
-              (scaledNumber.unit ? ` ${scaledNumber.unit}` : '')
-            );
+              (scaledNumber.unit ? ` ${scaledNumber.unit}` : '');
+            if (column.unit) {
+              displayValue = !column.unit.startsWith('_')
+                ? `${displayValue}${column.unit}`
+                : `${column.unit.substring(1)}${displayValue}`;
+            }
+            return displayValue;
           }
         : (params) =>
             params.value === INTERNAL__GRID_CLIENT_MISSING_VALUE

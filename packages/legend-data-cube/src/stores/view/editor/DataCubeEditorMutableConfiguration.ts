@@ -96,6 +96,9 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
       missingValueDisplayText: observable,
       setMissingValueDisplayText: action,
 
+      unit: observable,
+      setUnit: action,
+
       fontFamily: observable,
       setFontFamily: action,
 
@@ -271,6 +274,10 @@ export class DataCubeEditorMutableColumnConfiguration extends DataCubeColumnConf
 
   setMissingValueDisplayText(value: string | undefined) {
     this.missingValueDisplayText = value;
+  }
+
+  setUnit(value: string | undefined) {
+    this.unit = value;
   }
 
   setFontFamily(value: DataCubeFont | undefined) {
