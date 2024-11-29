@@ -345,7 +345,10 @@ export const QueryEditorExistingQueryHeader = observer(
                   )}
                   onChange={changeQueryName}
                   onKeyDown={(event) => {
-                    if (event.code === 'Enter') {
+                    if (
+                      event.code === 'Enter' ||
+                      event.code === 'NumpadEnter'
+                    ) {
                       event.stopPropagation();
                       updateState.setQueryRenamer(false);
                       existingEditorStore.setExistingQueryName(undefined);

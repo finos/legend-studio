@@ -158,38 +158,64 @@ export const QueryBuilderTextEditor = observer(
               </ModalFooterStatus>
             )}
             {isEditingPure ? (
-              <ModalFooterButton
-                className="btn--caution"
-                onClick={discardChanges}
-                text="Discard Changes"
-              />
+              <>
+                <ModalFooterButton
+                  onClick={close}
+                  disabled={
+                    Boolean(queryTextEditorState.parserError) ||
+                    queryBuilderState.textEditorState.closingQueryState
+                      .isInProgress
+                  }
+                >
+                  {queryBuilderState.textEditorState.closingQueryState
+                    .isInProgress ? (
+                    <>
+                      <div className="loading-icon__container--spinning">
+                        <RefreshIcon />
+                        Proceeding
+                      </div>
+                    </>
+                  ) : (
+                    <> Proceed </>
+                  )}
+                </ModalFooterButton>
+                <ModalFooterButton
+                  className="btn--caution"
+                  onClick={discardChanges}
+                  type="secondary"
+                  text="Cancel"
+                />
+              </>
             ) : (
-              <ModalFooterButton
-                formatText={false}
-                onClick={copyExpression}
-                text="Copy to Clipboard"
-              />
+              <>
+                <ModalFooterButton
+                  formatText={false}
+                  onClick={copyExpression}
+                  text="Copy to Clipboard"
+                />
+                <ModalFooterButton
+                  onClick={close}
+                  disabled={
+                    Boolean(queryTextEditorState.parserError) ||
+                    queryBuilderState.textEditorState.closingQueryState
+                      .isInProgress
+                  }
+                  type="secondary"
+                >
+                  {queryBuilderState.textEditorState.closingQueryState
+                    .isInProgress ? (
+                    <>
+                      <div className="loading-icon__container--spinning">
+                        <RefreshIcon />
+                        Closing
+                      </div>
+                    </>
+                  ) : (
+                    <> Close </>
+                  )}
+                </ModalFooterButton>
+              </>
             )}
-            <ModalFooterButton
-              onClick={close}
-              disabled={
-                Boolean(queryTextEditorState.parserError) ||
-                queryBuilderState.textEditorState.closingQueryState.isInProgress
-              }
-              type="secondary"
-            >
-              {queryBuilderState.textEditorState.closingQueryState
-                .isInProgress ? (
-                <>
-                  <div className="loading-icon__container--spinning">
-                    <RefreshIcon />
-                    Closing
-                  </div>
-                </>
-              ) : (
-                <> Close </>
-              )}
-            </ModalFooterButton>
           </ModalFooter>
         </Modal>
       </Dialog>
