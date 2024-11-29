@@ -370,6 +370,29 @@ export const QueryEditorExistingQueryHeader = observer(
                   </div>
                 )}
               </div>
+              <div className="query-editor__header__content__title__actions">
+                <button
+                  className="query-editor__header__content__title__actions__action"
+                  tabIndex={-1}
+                  onClick={() => {
+                    updateState.setQueryRenamer(false);
+                    existingEditorStore.setExistingQueryName(undefined);
+                    renameQuery(queryRenameName);
+                  }}
+                >
+                  <CheckIcon />
+                </button>
+                <button
+                  className="query-editor__header__content__title__actions__action"
+                  tabIndex={-1}
+                  onClick={() => {
+                    updateState.setQueryRenamer(false);
+                    existingEditorStore.setExistingQueryName(undefined);
+                  }}
+                >
+                  <TimesIcon />
+                </button>
+              </div>
             </PanelListItem>
           </div>
         ) : (
