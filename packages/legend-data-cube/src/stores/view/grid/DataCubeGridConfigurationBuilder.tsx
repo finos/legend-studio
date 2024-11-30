@@ -33,7 +33,7 @@ import type {
   ICellRendererParams,
 } from '@ag-grid-community/core';
 import {
-  GridClientSortDirection,
+  DataCubeGridClientSortDirection,
   INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
   INTERNAL__GridClientUtilityCssClassName,
   generateFontFamilyUtilityClassName,
@@ -43,7 +43,7 @@ import {
   generateTextColorUtilityClassName,
   generateBackgroundColorUtilityClassName,
   generateFontCaseUtilityClassName,
-  GridClientPinnedAlignement,
+  DataCubeGridClientPinnedAlignement,
   INTERNAL__GRID_CLIENT_ROW_HEIGHT,
   INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING,
   INTERNAL__GRID_CLIENT_HEADER_HEIGHT,
@@ -54,6 +54,7 @@ import {
   INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
   INTERNAL__GRID_CLIENT_PIVOT_COLUMN_GROUP_COLOR_ROTATION_SIZE,
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
+  INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import {
   getNonNullableEntry,
@@ -82,6 +83,7 @@ import {
   PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
   isPivotResultColumnName,
   TREE_COLUMN_VALUE_SEPARATOR,
+  DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE,
 } from '../../core/DataCubeQueryEngine.js';
 import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
 import { DataCubeIcon } from '@finos/legend-art';
@@ -226,8 +228,8 @@ function _displaySpec(columnData: ColumnData) {
     pinned:
       column.pinned !== undefined
         ? column.pinned === DataCubeColumnPinPlacement.RIGHT
-          ? GridClientPinnedAlignement.RIGHT
-          : GridClientPinnedAlignement.LEFT
+          ? DataCubeGridClientPinnedAlignement.RIGHT
+          : DataCubeGridClientPinnedAlignement.LEFT
         : null,
     headerClass: isPivotResultColumnName(name)
       ? 'pl-1 border border-neutral-300'
@@ -362,7 +364,7 @@ function _groupDisplaySpec(
     hide: !snapshot.data.groupBy,
     lockPosition: true,
     lockPinned: true,
-    pinned: GridClientPinnedAlignement.LEFT,
+    pinned: DataCubeGridClientPinnedAlignement.LEFT,
     cellClassRules: {
       [generateFontFamilyUtilityClassName(fontFamily)]: () => true,
       [generateFontSizeUtilityClassName(fontSize)]: () => true,
@@ -429,28 +431,34 @@ function _sortSpec(columnData: ColumnData) {
     sortable: true, // if this is pivot column, no sorting is supported yet
     sort: sortCol
       ? sortCol.direction === DataCubeQuerySortDirection.ASCENDING
-        ? GridClientSortDirection.ASCENDING
-        : GridClientSortDirection.DESCENDING
+        ? DataCubeGridClientSortDirection.ASCENDING
+        : DataCubeGridClientSortDirection.DESCENDING
       : null,
     sortIndex: sortCol ? sortColumns.indexOf(sortCol) : null,
   } satisfies ColDef;
 }
 
 function _aggregationSpec(columnData: ColumnData) {
-  const { name, snapshot, column } = columnData;
+  const { name, snapshot, column, configuration } = columnData;
   const data = snapshot.data;
   const pivotCol = _findCol(data.pivot?.columns, name);
   const groupByCol = _findCol(data.groupBy?.columns, name);
   const isGroupExtendedColumn = Boolean(
     _findCol(data.groupExtendedColumns, name),
   );
+  const rowGroupIndex =
+    !isGroupExtendedColumn && groupByCol
+      ? (data.groupBy?.columns.indexOf(groupByCol) ?? null)
+      : null;
   return {
     enableRowGroup:
       !isGroupExtendedColumn && column.kind === DataCubeColumnKind.DIMENSION,
     rowGroup: !isGroupExtendedColumn && Boolean(groupByCol),
     rowGroupIndex:
-      !isGroupExtendedColumn && groupByCol
-        ? (data.groupBy?.columns.indexOf(groupByCol) ?? null)
+      rowGroupIndex !== null
+        ? configuration.showRootAggregation
+          ? rowGroupIndex + 1
+          : rowGroupIndex
         : null,
     enablePivot:
       !isGroupExtendedColumn && column.kind === DataCubeColumnKind.DIMENSION,
@@ -813,6 +821,24 @@ export function generateColumnDefs(
       filter: 'agTextColumnFilter',
       suppressColumnsToolPanel: true,
     },
+    ...(configuration.showRootAggregation
+      ? [
+          {
+            colId: INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
+            headerName: 'Root',
+            field: INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
+            hide: true,
+            enableValue: false, // disable GUI interactions to modify this column's aggregate function
+            allowedAggFuncs: [], // disable GUI for options of the agg functions
+            enablePivot: false,
+            enableRowGroup: false,
+
+            suppressColumnsToolPanel: true,
+            rowGroup: true,
+            rowGroupIndex: 0,
+          } satisfies ColDef,
+        ]
+      : []),
     ...generateDefinitionForPivotResultColumns(
       pivotResultColumns,
       snapshot,
@@ -857,14 +883,35 @@ export function generateGridOptionsFromSnapshot(
       if (
         configuration.initialExpandLevel !== undefined &&
         configuration.initialExpandLevel > 0 &&
-        params.rowNode.level <= configuration.initialExpandLevel - 1
+        params.rowNode.level <=
+          // root aggregation (if enabled) should not be counted when applying initial expand level
+          (configuration.showRootAggregation
+            ? configuration.initialExpandLevel + 1
+            : configuration.initialExpandLevel) -
+            1
       ) {
         return true;
       }
 
-      const routes = params.rowNode.getRoute();
-      if (!routes) {
+      const routes = params.rowNode.getRoute() ?? [];
+      if (!routes.length) {
         return false;
+      }
+
+      // when root aggregation is enabled, the root node should be
+      // expanded automatically by default
+      if (
+        configuration.showRootAggregation &&
+        routes.length === 1 &&
+        routes[0] === DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE
+      ) {
+        return true;
+      }
+
+      // when root aggregation is enabled, the root node should not be removed
+      // from path when matching against all expanded paths
+      if (configuration.showRootAggregation) {
+        routes.shift();
       }
       const path = routes.join(TREE_COLUMN_VALUE_SEPARATOR);
       if (configuration.pivotLayout.expandedPaths.includes(path)) {
@@ -903,7 +950,7 @@ export function generateGridOptionsFromSnapshot(
           column.getColId(),
           pinned === null
             ? undefined
-            : pinned === GridClientPinnedAlignement.LEFT
+            : pinned === DataCubeGridClientPinnedAlignement.LEFT
               ? DataCubeColumnPinPlacement.LEFT
               : DataCubeColumnPinPlacement.RIGHT,
         );
@@ -935,7 +982,13 @@ export function generateGridOptionsFromSnapshot(
       // expanded-to-level is specified, causing the groups to be automatically drilled down, resultant
       // expanded paths will not be kept for record.
       if (event.event) {
-        const path = event.node.getRoute()?.join(TREE_COLUMN_VALUE_SEPARATOR);
+        const routes = event.node.getRoute() ?? [];
+        // when root aggregation is enabled, the root node should not be counted
+        // when formulating the expanded path
+        if (routes.length && configuration.showRootAggregation) {
+          routes.shift();
+        }
+        const path = routes.join(TREE_COLUMN_VALUE_SEPARATOR);
         if (!path) {
           return;
         }

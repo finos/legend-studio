@@ -75,6 +75,7 @@ import {
   type DataCubeQueryFunctionMap,
   isPivotResultColumnName,
   getPivotResultColumnBaseColumnName,
+  DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE,
 } from './DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
@@ -484,6 +485,23 @@ export function _groupByAggCols(
         }
         return aggCol;
       }),
+  ]);
+}
+
+export function _extendRootAggregation(columnName: string) {
+  return _function(DataCubeFunction.EXTEND, [
+    _col(
+      columnName,
+      _lambda(
+        [_var()],
+        [
+          _primitiveValue(
+            PRIMITIVE_TYPE.STRING,
+            DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE,
+          ),
+        ],
+      ),
+    ),
   ]);
 }
 

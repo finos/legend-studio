@@ -21,12 +21,13 @@
  * of the grid client, AG Grid.
  ***************************************************************************************/
 
-import type { IServerSideGetRowsRequest } from '@ag-grid-community/core';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import { _toCol } from '../../core/models/DataCubeColumn.js';
 import {
-  GridClientSortDirection,
+  DataCubeGridClientSortDirection,
+  INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
+  type DataCubeGridClientDataFetchRequest,
 } from './DataCubeGridClientEngine.js';
 import {
   DataCubeQuerySortDirection,
@@ -50,12 +51,15 @@ export function getColumnConfiguration(
 // --------------------------------- MAIN ---------------------------------
 
 export function buildQuerySnapshot(
-  request: IServerSideGetRowsRequest,
+  request: DataCubeGridClientDataFetchRequest,
   baseSnapshot: DataCubeQuerySnapshot,
 ) {
   const snapshot = baseSnapshot.clone();
   const configuration = DataCubeConfiguration.serialization.fromJson(
     snapshot.data.configuration,
+  );
+  const rowGroupColumns = request.rowGroupColumns.filter(
+    (col) => col !== INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
   );
 
   // --------------------------------- SELECT ---------------------------------
@@ -63,11 +67,11 @@ export function buildQuerySnapshot(
   snapshot.data.selectColumns = uniqBy(
     [
       ...snapshot.data.selectColumns,
-      ...request.pivotCols.map((col) =>
-        getColumnConfiguration(col.id, configuration),
+      ...request.pivotColumns.map((col) =>
+        getColumnConfiguration(col, configuration),
       ),
-      ...request.rowGroupCols.map((col) =>
-        getColumnConfiguration(col.id, configuration),
+      ...rowGroupColumns.map((col) =>
+        getColumnConfiguration(col, configuration),
       ),
     ],
     (col) => col.name,
@@ -75,10 +79,10 @@ export function buildQuerySnapshot(
 
   // --------------------------------- PIVOT ---------------------------------
 
-  snapshot.data.pivot = request.pivotCols.length
+  snapshot.data.pivot = request.pivotColumns.length
     ? {
-        columns: request.pivotCols.map((col) =>
-          _toCol(getColumnConfiguration(col.id, configuration)),
+        columns: request.pivotColumns.map((col) =>
+          _toCol(getColumnConfiguration(col, configuration)),
         ),
         // NOTE: since we re-fetch the cast columns anyway in this flow, we just
         // reuse the current cast columns
@@ -88,33 +92,39 @@ export function buildQuerySnapshot(
 
   // --------------------------------- GROUP BY ---------------------------------
 
-  snapshot.data.groupBy = request.rowGroupCols.length
+  snapshot.data.groupBy = rowGroupColumns.length
     ? {
-        columns: request.rowGroupCols.map((col) =>
-          _toCol(getColumnConfiguration(col.id, configuration)),
+        columns: rowGroupColumns.map((col) =>
+          _toCol(getColumnConfiguration(col, configuration)),
         ),
       }
     : undefined;
 
   // --------------------------------- SORT ---------------------------------
 
-  snapshot.data.sortColumns = request.sortModel
+  snapshot.data.sortColumns = request.sortColumns
     // Make sure the tree column is not being sorted since it's a synthetic column
     // the sorting state of this special column is `synthesized` by ag-grid
     // so when all group by columns are sorted in the same direction, the tree group
     // column will be sorted in that direction, and vice versa, when user sorts
     // the tree column, all groupBy columns will be sorted in that direction
-    .filter((item) => item.colId !== INTERNAL__GRID_CLIENT_TREE_COLUMN_ID)
+    .filter(
+      (item) =>
+        ![
+          INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
+          INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
+        ].includes(item.name),
+    )
     .map((item) => ({
-      name: item.colId,
+      name: item.name,
       type: getColumnConfiguration(
-        isPivotResultColumnName(item.colId)
-          ? getPivotResultColumnBaseColumnName(item.colId)
-          : item.colId,
+        isPivotResultColumnName(item.name)
+          ? getPivotResultColumnBaseColumnName(item.name)
+          : item.name,
         configuration,
       ).type,
       direction:
-        item.sort === GridClientSortDirection.ASCENDING
+        item.direction === DataCubeGridClientSortDirection.ASCENDING
           ? DataCubeQuerySortDirection.ASCENDING
           : DataCubeQuerySortDirection.DESCENDING,
     }));
@@ -126,6 +136,16 @@ export function buildQuerySnapshot(
     snapshot.data.groupBy?.columns ?? [],
     configuration.pivotLayout.expandedPaths,
   );
+  // if root aggregation synthetic column has been removed
+  // pdate the configuration to disable root aggregation
+  if (
+    !request.rowGroupColumns.includes(
+      INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
+    ) &&
+    configuration.showRootAggregation
+  ) {
+    configuration.showRootAggregation = false;
+  }
   snapshot.data.configuration = configuration.serialize();
 
   // --------------------------------- FINALIZE ---------------------------------

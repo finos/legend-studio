@@ -120,9 +120,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
                     !configuration.showRootAggregation,
                   )
                 }
-                disabled={true}
               />
-              <FormBadge_WIP />
               <FormCheckbox
                 className="ml-3"
                 label="Show leaf count"

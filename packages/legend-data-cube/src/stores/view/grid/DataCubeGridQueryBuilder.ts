@@ -53,12 +53,16 @@ import {
 } from '../../core/DataCubeQueryBuilderUtils.js';
 import {
   INTERNAL__GRID_CLIENT_MISSING_VALUE,
+  INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
   INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
+  type DataCubeGridClientDataFetchRequest,
 } from './DataCubeGridClientEngine.js';
-import type { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
 import type { DataCubeQueryFilterOperation } from '../../core/filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from '../../core/aggregation/DataCubeQueryAggregateOperation.js';
 import { _colSpecArrayParam } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';
+import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
+import type { DataCubeSource } from '../../core/models/DataCubeSource.js';
 
 /*****************************************************************************
  * [GRID]
@@ -131,8 +135,58 @@ function _addCountAggColumnToPivot(
 
 // --------------------------------- MAIN ---------------------------------
 
-export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
-  drilldownValues: (string | null | undefined)[],
+export function buildGridDataFetchExecutableQuery(
+  request: DataCubeGridClientDataFetchRequest,
+  snapshot: DataCubeQuerySnapshot,
+  source: DataCubeSource,
+  executionContextBuilder: (
+    source: DataCubeSource,
+  ) => V1_AppliedFunction | undefined,
+  filterOperations: DataCubeQueryFilterOperation[],
+  aggregateOperations: DataCubeQueryAggregateOperation[],
+  enablePagination: boolean,
+) {
+  const processedSnapshot = snapshot.clone();
+  const configuration = DataCubeConfiguration.serialization.fromJson(
+    processedSnapshot.data.configuration,
+  );
+  if (configuration.showRootAggregation) {
+    processedSnapshot.data.groupBy = {
+      columns: [
+        {
+          name: INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
+          type: PRIMITIVE_TYPE.STRING,
+        },
+        ...(processedSnapshot.data.groupBy?.columns ?? []),
+      ],
+    };
+  }
+  return buildExecutableQuery(
+    processedSnapshot,
+    source,
+    executionContextBuilder,
+    filterOperations,
+    aggregateOperations,
+    {
+      postProcessor: generateGridDataFetchExecutableQueryPostProcessor(request),
+      rootAggregation: {
+        columnName: INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
+      },
+      pagination:
+        enablePagination &&
+        request.startRow !== undefined &&
+        request.endRow !== undefined
+          ? {
+              start: request.startRow,
+              end: request.endRow,
+            }
+          : undefined,
+    },
+  );
+}
+
+function generateGridDataFetchExecutableQueryPostProcessor(
+  request: DataCubeGridClientDataFetchRequest,
 ) {
   return (
     snapshot: DataCubeQuerySnapshot,
@@ -151,7 +205,7 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
 
       // if any level of drilldown has been done
       // add a pre-filter to groupBy()
-      if (drilldownValues.length) {
+      if (request.groupKeys.length) {
         sequence.splice(
           sequence.indexOf(funcMap.groupBy),
           0,
@@ -161,7 +215,7 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
               [
                 _filter(
                   {
-                    conditions: drilldownValues.map((value, i) => {
+                    conditions: request.groupKeys.map((value, i) => {
                       const groupByColumn = guaranteeNonNullable(
                         groupBy.columns[i],
                       );
@@ -230,14 +284,14 @@ export function generateRowGroupingDrilldownExecutableQueryPostProcessor(
       }
 
       // modify groupBy() based off the current drilldown level
-      if (drilldownValues.length < groupBy.columns.length) {
+      if (request.groupKeys.length < groupBy.columns.length) {
         const countAggColumns: V1_ColSpec[] = [];
         _addCountAggColumnToPivot(funcMap, countAggColumns);
 
         const groupByIdx = sequence.indexOf(funcMap.groupBy);
         const groupByColumns = groupBy.columns.slice(
           0,
-          drilldownValues.length + 1,
+          request.groupKeys.length + 1,
         );
         const groupByFunc = _function(DataCubeFunction.GROUP_BY, [
           _cols(groupByColumns.map((col) => _colSpec(col.name))),

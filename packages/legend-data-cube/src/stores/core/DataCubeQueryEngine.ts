@@ -305,6 +305,7 @@ export const DEFAULT_REPORT_NAME = 'New Report';
 export const DEFAULT_TREE_COLUMN_SORT_DIRECTION =
   DataCubeQuerySortDirection.ASCENDING;
 export const DEFAULT_PIVOT_STATISTIC_COLUMN_NAME = 'Total';
+export const DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE = '[ROOT]';
 
 export const DEFAULT_URL_LABEL_QUERY_PARAM = 'dataCube.linkLabel';
 export const DEFAULT_MISSING_VALUE_DISPLAY_TEXT = '';
