@@ -1222,9 +1222,7 @@ const V1_deserializeMappingInclude = (
   if (!json._type || json._type === V1_MAPPING_INCLUDE_MAPPING_TYPE) {
     return deserialize(V1_mappingIncludeMappingModelSchema, {
       ...json,
-      /**
-       * @backwardCompatibility
-       */
+      /** @backwardCompatibility */
       includedMapping:
         json.includedMapping ??
         `${json.includedMappingPackage}${ELEMENT_PATH_DELIMITER}${json.includedMappingName}`,

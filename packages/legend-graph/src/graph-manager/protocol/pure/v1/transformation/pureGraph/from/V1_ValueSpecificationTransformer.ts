@@ -90,7 +90,7 @@ import type { ColSpecArrayInstance } from '../../../../../../../graph/metamodel/
 import { V1_ColSpecArray } from '../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpecArray.js';
 import { V1_ColSpec } from '../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
 import { Relation_RelationalColumn } from '../../../../../../../graph/metamodel/pure/packageableElements/relation/Relation_RelationType.js';
-import { V1_createGenericTypeWithElementPath } from './V1_DomainTransformer.js';
+import { V1_createGenericTypeWithElementPath } from '../../../helpers/V1_DomainHelper.js';
 
 class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
@@ -239,9 +239,10 @@ class V1_ValueSpecificationTransformer
         valueSpecification.genericType.value.rawType instanceof Class)
     ) {
       const protocol = new V1_GenericTypeInstance();
-      protocol.fullPath =
+      protocol.genericType = V1_createGenericTypeWithElementPath(
         valueSpecification.genericType.ownerReference.valueForSerialization ??
-        '';
+          '',
+      );
       return protocol;
     }
     throw new UnsupportedOperationError(

@@ -23,7 +23,7 @@ import type { V1_Multiplicity } from './V1_Multiplicity.js';
 import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
 import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
 import type { V1_GenericType } from '../type/V1_GenericType.js';
-import { V1_PackageableType } from '../../valueSpecification/raw/V1_PackageableElementPtr.js';
+import { V1_PackageableType } from '../type/V1_PackageableType.js';
 
 export class V1_DerivedProperty implements Hashable {
   name!: string;

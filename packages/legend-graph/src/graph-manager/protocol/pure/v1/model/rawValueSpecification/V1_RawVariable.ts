@@ -25,10 +25,11 @@ import type { V1_Multiplicity } from '../../model/packageableElements/domain/V1_
 export class V1_RawRawType {
   fullPath!: string;
 }
-export class V1_RawGenricType {
+
+export class V1_RawGenericType {
   rawType!: V1_RawRawType;
   multiplicityArguments: V1_Multiplicity[] = [];
-  typeArguments: V1_RawGenricType[] = [];
+  typeArguments: V1_RawGenericType[] = [];
   typeVariableValues: unknown[] = [];
 }
 
@@ -36,7 +37,7 @@ export class V1_RawVariable
   extends V1_RawValueSpecification
   implements Hashable
 {
-  genericType!: V1_RawGenricType;
+  genericType!: V1_RawGenericType;
   name!: string;
   multiplicity!: V1_Multiplicity;
 

@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-import { V1_Multiplicity } from '../../packageableElements/domain/V1_Multiplicity.js';
-import type { V1_GenericType } from '../../packageableElements/type/V1_GenericType.js';
-import {
-  V1_ValueSpecification,
-  type V1_ValueSpecificationVisitor,
-} from '../V1_ValueSpecification.js';
+import { V1_PackageableElementPtr } from '../../valueSpecification/raw/V1_PackageableElementPtr.js';
+import type { V1_Type } from './V1_Type.js';
 
-export class V1_GenericTypeInstance extends V1_ValueSpecification {
-  readonly multiplicity = V1_Multiplicity.ONE;
-  genericType!: V1_GenericType;
-
-  override accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_GenericTypeInstance(this);
+export class V1_PackageableType
+  extends V1_PackageableElementPtr
+  implements V1_Type
+{
+  get hashCode(): string {
+    return this.fullPath;
   }
 }

@@ -83,7 +83,7 @@ import type { V1_TestDataGenerationResult } from './service/V1_TestDataGeneratio
 import type { V1_RelationalConnectionBuilder } from './relational/V1_RelationalConnectionBuilder.js';
 import type { V1_LambdaPrefix } from './lambda/V1_LambdaPrefix.js';
 import type { V1_DebugTestsResult } from './test/V1_DebugTestsResult.js';
-import type { V1_RelationType } from '../model/relation/V1_RelationType.js';
+import type { V1_RelationType } from '../model/packageableElements/type/V1_RelationType.js';
 import type { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
 import type { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import type { DeploymentResult } from '../../../../action/DeploymentResult.js';

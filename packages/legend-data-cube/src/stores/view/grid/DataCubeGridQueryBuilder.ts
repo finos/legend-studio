@@ -16,11 +16,11 @@
 
 import {
   PRIMITIVE_TYPE,
-  V1_ClassInstance,
-  V1_ColSpecArray,
   V1_GenericTypeInstance,
   type V1_ColSpec,
   type V1_AppliedFunction,
+  V1_GenericType,
+  V1_RelationType,
 } from '@finos/legend-graph';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import {
@@ -104,11 +104,13 @@ function _addCountAggColumnToPivot(
     const castColumns = guaranteeType(
       guaranteeType(
         guaranteeType(funcMap.pivotCast.parameters[0], V1_GenericTypeInstance)
-          .typeArguments[0],
-        V1_ClassInstance,
-      ).value,
-      V1_ColSpecArray,
-    ).colSpecs;
+          .genericType.typeArguments[0],
+        V1_GenericType,
+      ).rawType,
+      V1_RelationType,
+    ).columns.map((column) =>
+      _colSpec(column.name, undefined, undefined, column.type),
+    );
     uniq(
       castColumns
         .filter((col) => isPivotResultColumnName(col.name))

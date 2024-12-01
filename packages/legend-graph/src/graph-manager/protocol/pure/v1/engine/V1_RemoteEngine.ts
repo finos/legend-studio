@@ -154,7 +154,7 @@ import { V1_RelationalConnectionBuilder } from './relational/V1_RelationalConnec
 import type { PostValidationAssertionResult } from '../../../../../DSL_Service_Exports.js';
 import { V1_DebugTestsResult } from './test/V1_DebugTestsResult.js';
 import type { V1_GraphManagerEngine } from './V1_GraphManagerEngine.js';
-import { V1_RelationType } from '../model/relation/V1_RelationType.js';
+import { V1_RelationType } from '../model/packageableElements/type/V1_RelationType.js';
 import {
   RelationTypeColumnMetadata,
   RelationTypeMetadata,

@@ -21,7 +21,7 @@ import type { V1_StereotypePtr } from '../../../model/packageableElements/domain
 import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
 import type { V1_DefaultValue } from './V1_DefaultValue.js';
 import type { V1_GenericType } from '../type/V1_GenericType.js';
-import { V1_PackageableType } from '../../valueSpecification/raw/V1_PackageableElementPtr.js';
+import { V1_PackageableType } from '../type/V1_PackageableType.js';
 
 export class V1_Property implements Hashable {
   name!: string;

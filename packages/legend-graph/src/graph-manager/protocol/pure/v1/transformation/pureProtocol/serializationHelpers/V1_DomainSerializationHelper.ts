@@ -233,18 +233,14 @@ export const V1_propertyModelSchema = createModelSchema(V1_Property, {
     (val) => V1_deserializeGenericType(val),
     {
       beforeDeserialize: function (callback, jsonValue, jsonParentValue) {
-        const parentVal = jsonParentValue as {
-          type: string | undefined;
-          genericType: string | undefined;
-        };
-        // backward compatible
+        /** @backwardCompatibility */
         if (
-          parentVal.type !== undefined &&
-          parentVal.genericType === undefined
+          jsonParentValue.type !== undefined &&
+          jsonParentValue.genericType === undefined
         ) {
-          callback(null, parentVal.type);
+          callback(null, jsonParentValue.type);
         } else {
-          callback(null, parentVal.genericType);
+          callback(null, jsonParentValue.genericType);
         }
       },
     },
@@ -270,18 +266,14 @@ export const V1_derivedPropertyModelSchema = createModelSchema(
       (val) => V1_deserializeGenericType(val),
       {
         beforeDeserialize: function (callback, jsonValue, jsonParentValue) {
-          const parentVal = jsonParentValue as {
-            returnType: string | undefined;
-            returnGenericType: string | undefined;
-          };
-          // backward compatible
+          /** @backwardCompatibility */
           if (
-            parentVal.returnType !== undefined &&
-            parentVal.returnGenericType === undefined
+            jsonParentValue.returnType !== undefined &&
+            jsonParentValue.returnGenericType === undefined
           ) {
-            callback(null, parentVal.returnType);
+            callback(null, jsonParentValue.returnType);
           } else {
-            callback(null, parentVal.returnGenericType);
+            callback(null, jsonParentValue.returnGenericType);
           }
         },
       },
@@ -400,12 +392,12 @@ export const V1_functionModelSchema = (
       (val) => V1_deserializeGenericType(val),
       {
         beforeDeserialize: function (callback, jsonValue, jsonParentValue) {
-          const parentVal = jsonParentValue as {
-            returnType: string | undefined;
-            returnGenericType: string | undefined;
-          };
-          if (parentVal.returnType && !parentVal.returnGenericType) {
-            callback(null, parentVal.returnType);
+          /** @backwardCompatibility */
+          if (
+            jsonParentValue.returnType !== undefined &&
+            jsonParentValue.returnGenericType === undefined
+          ) {
+            callback(null, jsonParentValue.returnType);
           } else {
             callback(null, jsonValue);
           }

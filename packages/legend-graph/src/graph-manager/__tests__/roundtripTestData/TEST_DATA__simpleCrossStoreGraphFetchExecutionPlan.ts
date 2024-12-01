@@ -431,7 +431,7 @@ export const TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan = {
                     },
                     {
                       _type: 'var',
-                      genricType: {
+                      genericType: {
                         rawType: {
                           _type: 'packageableType',
                           fullPath: 'entity::model::LegalEntity',

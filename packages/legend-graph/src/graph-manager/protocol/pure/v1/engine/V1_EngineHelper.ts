@@ -84,6 +84,16 @@ import type { Service } from '../../../../../graph/metamodel/pure/packageableEle
 import { QUERY_PROFILE_PATH } from '../../../../../graph/MetaModelConst.js';
 import { isValidFullPath } from '../../../../../graph/MetaModelUtils.js';
 import { PackageableElementExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
+import {
+  FunctionAnalysisInfo,
+  FunctionAnalysisParameterInfo,
+} from '../../../../../graph/helpers/FunctionAnalysis.js';
+import {
+  V1_buildFunctionSignatureSuffix,
+  V1_buildFunctionPrettyName,
+  V1_getGenericTypeFullPath,
+} from '../helpers/V1_DomainHelper.js';
+import type { V1_ConcreteFunctionDefinition } from '../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
 
 export const V1_buildLightQuery = (
   protocol: V1_LightQuery,
@@ -604,4 +614,34 @@ export const V1_buildExecutionError = (
   const executionError = new ExecutionError(protocol.message);
   executionError.stack = protocol.trace;
   return executionError;
+};
+
+export const V1_buildFunctionInfoAnalysis = (
+  functionProtocols: V1_ConcreteFunctionDefinition[],
+  graph: PureModel,
+): FunctionAnalysisInfo[] => {
+  const functionInfos = functionProtocols.map((func) => {
+    const functionInfo = new FunctionAnalysisInfo();
+    functionInfo.functionPath = func.path;
+    functionInfo.name = func.name;
+    functionInfo.functionName =
+      func.name.split(V1_buildFunctionSignatureSuffix(func))[0] ?? func.name;
+    functionInfo.functionPrettyName = V1_buildFunctionPrettyName(func, {
+      fullPath: true,
+    });
+    functionInfo.packagePath = func.package;
+    functionInfo.returnType = V1_getGenericTypeFullPath(func.returnGenericType);
+    functionInfo.parameterInfoList = func.parameters.map((param) => {
+      const paramInfo = new FunctionAnalysisParameterInfo();
+      paramInfo.multiplicity = graph.getMultiplicity(
+        param.multiplicity.lowerBound,
+        param.multiplicity.upperBound,
+      );
+      paramInfo.name = param.name;
+      paramInfo.type = param.genericType.rawType.fullPath;
+      return paramInfo;
+    });
+    return functionInfo;
+  });
+  return functionInfos;
 };

@@ -15,21 +15,21 @@
  */
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import {
-  FunctionAnalysisInfo,
-  FunctionAnalysisParameterInfo,
-} from '../../../../../graph/helpers/FunctionAnalysis.js';
 import { generateMultiplicityString } from '../../../../../graph/helpers/PureLanguageHelper.js';
 import {
   ELEMENT_PATH_DELIMITER,
   FUNCTION_SIGNATURE_MULTIPLICITY_INFINITE_TOKEN,
 } from '../../../../../graph/MetaModelConst.js';
-import type { PureModel } from '../../../../../graph/PureModel.js';
 import type { V1_Multiplicity } from '../model/packageableElements/domain/V1_Multiplicity.js';
 import type { V1_ConcreteFunctionDefinition } from '../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
-import type { V1_GenericType } from '../model/packageableElements/type/V1_GenericType.js';
+import { V1_GenericType } from '../model/packageableElements/type/V1_GenericType.js';
 import type { V1_RawVariable } from '../model/rawValueSpecification/V1_RawVariable.js';
-import { V1_PackageableType } from '../model/valueSpecification/raw/V1_PackageableElementPtr.js';
+import { V1_PackageableType } from '../model/packageableElements/type/V1_PackageableType.js';
+import {
+  V1_RelationType,
+  V1_RelationTypeColumn,
+} from '../model/packageableElements/type/V1_RelationType.js';
+import type { V1_Type } from '../model/packageableElements/type/V1_Type.js';
 
 export const V1_getGenericTypeFullPath = (val: V1_GenericType): string => {
   if (val.rawType instanceof V1_PackageableType) {
@@ -61,7 +61,7 @@ const V1_buildFunctionParameterSignature = (variable: V1_RawVariable): string =>
     .split(ELEMENT_PATH_DELIMITER)
     .pop()}_${V1_buildFunctionMultiplicitySignature(variable.multiplicity)}_`;
 
-const V1_buildFunctionSignatureSuffix = (
+export const V1_buildFunctionSignatureSuffix = (
   func: V1_ConcreteFunctionDefinition,
 ): string =>
   `_${func.parameters
@@ -88,7 +88,7 @@ export const V1_getFunctionNameWithoutSignature = (
     : func.name;
 };
 
-const V1_buildFunctionPrettyName = (
+export const V1_buildFunctionPrettyName = (
   element: V1_ConcreteFunctionDefinition,
   options?: {
     fullPath?: boolean;
@@ -122,32 +122,36 @@ const V1_buildFunctionPrettyName = (
     return '';
   });
 
-export const V1_buildFunctionInfoAnalysis = (
-  functionProtocols: V1_ConcreteFunctionDefinition[],
-  graph: PureModel,
-): FunctionAnalysisInfo[] => {
-  const functionInfos = functionProtocols.map((func) => {
-    const functionInfo = new FunctionAnalysisInfo();
-    functionInfo.functionPath = func.path;
-    functionInfo.name = func.name;
-    functionInfo.functionName =
-      func.name.split(V1_buildFunctionSignatureSuffix(func))[0] ?? func.name;
-    functionInfo.functionPrettyName = V1_buildFunctionPrettyName(func, {
-      fullPath: true,
-    });
-    functionInfo.packagePath = func.package;
-    functionInfo.returnType = V1_getGenericTypeFullPath(func.returnGenericType);
-    functionInfo.parameterInfoList = func.parameters.map((param) => {
-      const paramInfo = new FunctionAnalysisParameterInfo();
-      paramInfo.multiplicity = graph.getMultiplicity(
-        param.multiplicity.lowerBound,
-        param.multiplicity.upperBound,
-      );
-      paramInfo.name = param.name;
-      paramInfo.type = param.genericType.rawType.fullPath;
-      return paramInfo;
-    });
-    return functionInfo;
-  });
-  return functionInfos;
-};
+export function V1_createGenericTypeWithElementPath(
+  path: string,
+): V1_GenericType {
+  const genType = new V1_GenericType();
+  const pType = new V1_PackageableType();
+  pType.fullPath = path;
+  genType.rawType = pType;
+  return genType;
+}
+
+export function V1_createGenericTypeWithRawType(type: V1_Type): V1_GenericType {
+  const genType = new V1_GenericType();
+  genType.rawType = type;
+  return genType;
+}
+
+export function V1_createRelationType(
+  columns: V1_RelationTypeColumn[],
+): V1_RelationType {
+  const relationType = new V1_RelationType();
+  relationType.columns = columns;
+  return relationType;
+}
+
+export function V1_createRelationTypeColumn(
+  name: string,
+  type: string,
+): V1_RelationTypeColumn {
+  const column = new V1_RelationTypeColumn();
+  column.name = name;
+  column.type = type;
+  return column;
+}
