@@ -75,7 +75,7 @@ import type { DataCubeSource } from '../../core/models/DataCubeSource.js';
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
-function _aggCountCol() {
+export function _aggCountCol() {
   const variable = _var();
   return _colSpec(
     INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
