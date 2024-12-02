@@ -150,8 +150,7 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                         {!hadResolvedAllConflicts && (
                           <>
                             {conflicts
-                              .slice()
-                              .sort((a, b) =>
+                              .toSorted((a, b) =>
                                 a.entityName.localeCompare(b.entityName),
                               )
                               .map((conflict) => (
@@ -166,23 +165,19 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                               Boolean(changes.length) && (
                                 <div className="diff-panel__item-section-separator" />
                               )}
-                            {changes
-                              .slice()
-                              .sort(entityDiffSorter)
-                              .map((diff) => (
-                                <EntityDiffSideBarItem
-                                  key={diff.key}
-                                  diff={diff}
-                                  isSelected={isSelectedDiff(diff)}
-                                  openDiff={openChange(diff)}
-                                />
-                              ))}
+                            {changes.toSorted(entityDiffSorter).map((diff) => (
+                              <EntityDiffSideBarItem
+                                key={diff.key}
+                                diff={diff}
+                                isSelected={isSelectedDiff(diff)}
+                                openDiff={openChange(diff)}
+                              />
+                            ))}
                           </>
                         )}
                         {hadResolvedAllConflicts &&
                           changes
-                            .slice()
-                            .sort(entityDiffSorter)
+                            .toSorted(entityDiffSorter)
                             .map((diff) => (
                               <EntityDiffSideBarItem
                                 key={diff.key}

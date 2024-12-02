@@ -821,8 +821,7 @@ const ProjectVersionDependencyEditor = observer(
     // version
     const version = projectDependency.versionId;
     const versionOptions = versions
-      .slice()
-      .sort((v1, v2) => compareSemVerVersions(v2, v1))
+      .toSorted((v1, v2) => compareSemVerVersions(v2, v1))
       .map((v) => {
         if (v === MASTER_SNAPSHOT_ALIAS) {
           return { value: v, label: SNAPSHOT_VERSION_ALIAS };

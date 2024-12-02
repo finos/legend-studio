@@ -103,8 +103,7 @@ export class DEPREACTED_GlobalFileGenerationState {
 
   get fileGenerationConfigurationOptions(): GenerationTypeOption[] {
     return this.fileGenerationConfigurations
-      .slice()
-      .sort((a, b): number => a.label.localeCompare(b.label))
+      .toSorted((a, b): number => a.label.localeCompare(b.label))
       .map((config) => ({
         label: config.label,
         value: config.key,

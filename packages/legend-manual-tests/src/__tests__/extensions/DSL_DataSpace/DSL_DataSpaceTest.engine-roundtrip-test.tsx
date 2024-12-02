@@ -65,7 +65,7 @@ test(integrationTest('TEST_DATA_Dataspace-Executables'), async () => {
     'showcase::northwind::model::Order',
   ];
 
-  expect(expectedClasses.sort()).toEqual(
+  expect(expectedClasses.toSorted()).toEqual(
     usableClasses.map((e) => e.path).sort(),
   );
   // 1. include package
@@ -86,7 +86,7 @@ test(integrationTest('TEST_DATA_Dataspace-Executables'), async () => {
     'showcase::northwind::model::inventory::ProductCategory',
     'showcase::northwind::model::inventory::Supplier',
   ];
-  expect(expectedClasses.sort()).toEqual(
+  expect(expectedClasses.toSorted()).toEqual(
     usableClasses.map((e) => e.path).sort(),
   );
   // 2. include package and class
@@ -102,7 +102,7 @@ test(integrationTest('TEST_DATA_Dataspace-Executables'), async () => {
     defaultMapping,
     graphManagerState,
   );
-  expect(expectedClasses.sort()).toEqual(
+  expect(expectedClasses.toSorted()).toEqual(
     usableClasses.map((e) => e.path).sort(),
   );
   // 3. include package and exclude class
@@ -117,7 +117,7 @@ test(integrationTest('TEST_DATA_Dataspace-Executables'), async () => {
     'showcase::northwind::model::inventory::ProductCategory',
     'showcase::northwind::model::inventory::Supplier',
   ];
-  expect(expectedClasses.sort()).toEqual(
+  expect(expectedClasses.toSorted()).toEqual(
     usableClasses.map((e) => e.path).sort(),
   );
   // 4 filter by model package, then add a package included in the node as an exclude, then add a class as includes. We respect the more explicit declaration here.
@@ -147,7 +147,7 @@ test(integrationTest('TEST_DATA_Dataspace-Executables'), async () => {
     'showcase::northwind::model::Order',
   ];
 
-  expect(expectedClasses.sort()).toEqual(
+  expect(expectedClasses.toSorted()).toEqual(
     usableClasses.map((e) => e.path).sort(),
   );
   const inventoryPackage = guaranteeNonNullable(

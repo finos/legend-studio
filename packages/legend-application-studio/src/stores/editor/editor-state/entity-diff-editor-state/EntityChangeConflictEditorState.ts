@@ -286,9 +286,9 @@ export class EntityChangeConflictEditorState extends EntityDiffViewerState {
   }
 
   private get sortedMergedConflicts(): MergeConflict[] {
-    return this.mergeConflicts
-      .slice()
-      .sort((a, b) => a.startHeader - b.startHeader);
+    return this.mergeConflicts.toSorted(
+      (a, b) => a.startHeader - b.startHeader,
+    );
   }
 
   get canUseTheirs(): boolean {

@@ -222,14 +222,13 @@ export const EditorGroup = observer(() => {
     currentTabState instanceof ElementEditorState
       ? editorStore.graphState.graphGenerationState.externalFormatState.externalFormatDescriptions
           .filter((f) => f.supportsSchemaGeneration)
-          .slice()
-          .sort((a, b): number => a.name.localeCompare(b.name))
+          .toSorted((a, b): number => a.name.localeCompare(b.name))
       : [];
   const generationViewModes = (
     currentTabState instanceof ElementEditorState
-      ? editorStore.graphState.graphGenerationState.globalFileGenerationState.fileGenerationConfigurations
-          .slice()
-          .sort((a, b): number => a.label.localeCompare(b.label))
+      ? editorStore.graphState.graphGenerationState.globalFileGenerationState.fileGenerationConfigurations.toSorted(
+          (a, b): number => a.label.localeCompare(b.label),
+        )
       : []
   ).filter(
     (file) =>
