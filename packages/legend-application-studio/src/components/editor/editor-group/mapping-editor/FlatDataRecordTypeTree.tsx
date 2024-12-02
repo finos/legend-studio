@@ -55,8 +55,7 @@ const getRecordTypeTreeData = (
   const rootIds: string[] = [];
   const nodes = new Map<string, FlatDataRecordTypeTreeNodeData>();
   recordType.fields
-    .slice()
-    .sort((a, b) => a.label.toString().localeCompare(b.label.toString()))
+    .toSorted((a, b) => a.label.toString().localeCompare(b.label.toString()))
     .forEach((field) => {
       const recordTypeTreeNodeData = getRecordTypeTreeNodeData(
         field,

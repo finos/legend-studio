@@ -328,17 +328,14 @@ export const LocalChanges = observer(() => {
                 </div>
               </div>
               <PanelContent>
-                {changes
-                  .slice()
-                  .sort(entityDiffSorter)
-                  .map((diff) => (
-                    <EntityDiffSideBarItem
-                      key={diff.key}
-                      diff={diff}
-                      isSelected={isSelectedDiff(diff)}
-                      openDiff={openChange(diff)}
-                    />
-                  ))}
+                {changes.toSorted(entityDiffSorter).map((diff) => (
+                  <EntityDiffSideBarItem
+                    key={diff.key}
+                    diff={diff}
+                    isSelected={isSelectedDiff(diff)}
+                    openDiff={openChange(diff)}
+                  />
+                ))}
               </PanelContent>
             </div>
           </ResizablePanel>
@@ -411,8 +408,7 @@ export const LocalChanges = observer(() => {
               </div>
               <PanelContent>
                 {conflicts
-                  .slice()
-                  .sort((a, b) => a.entityName.localeCompare(b.entityName))
+                  .toSorted((a, b) => a.entityName.localeCompare(b.entityName))
                   .map((conflict) => (
                     <EntityChangeConflictSideBarItem
                       key={`conflict-${conflict.entityPath}`}
@@ -426,8 +422,7 @@ export const LocalChanges = observer(() => {
                     <div className="diff-panel__item-section-separator" />
                   )}
                 {changesWithoutConflicts
-                  .slice()
-                  .sort(entityDiffSorter)
+                  .toSorted(entityDiffSorter)
                   .map((diff) => (
                     <EntityDiffSideBarItem
                       key={diff.key}

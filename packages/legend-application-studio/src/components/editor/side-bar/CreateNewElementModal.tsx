@@ -218,8 +218,7 @@ const NewPureModelConnectionDriverEditor = observer(
     const _class = newConnectionValueDriver.class;
     const classOptions = editorStore.graphManagerState.usableClasses
       .map(buildElementOption)
-      .slice()
-      .sort(compareLabelFn);
+      .toSorted(compareLabelFn);
     const selectedClassOption = _class
       ? { label: _class.path, value: _class }
       : null;
@@ -324,8 +323,7 @@ const NewConnectionDriverEditor = observer(() => {
   storeOptions = storeOptions.concat(
     editorStore.graphManagerState.usableStores
       .map(buildElementOption)
-      .slice()
-      .sort(compareLabelFn),
+      .toSorted(compareLabelFn),
   );
   const selectedStoreOption = {
     label: store.path,

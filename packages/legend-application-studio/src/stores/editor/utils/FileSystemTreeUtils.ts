@@ -187,8 +187,7 @@ export const getFileSystemTreeData = (
     nodes.set(rootNode.id, rootNode);
   } else {
     dir.children
-      .slice()
-      .sort((a, b) => a.name.localeCompare(b.name))
+      .toSorted((a, b) => a.name.localeCompare(b.name))
       .sort(
         (a, b) =>
           (b instanceof FileSystem_Directory ? 1 : 0) -
