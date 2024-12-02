@@ -658,14 +658,14 @@ const LambdaEditor_PopUp = observer(
           </ModalBody>
           <ModalFooter>
             <ModalFooterButton
-              className="btn--caution"
-              text="Discard changes"
-              onClick={discardChanges}
-            />
-            <ModalFooterButton
-              text="Close"
+              text="Proceed"
               onClick={onClose}
               disabled={Boolean(lambdaEditorState.parserError)}
+            />
+            <ModalFooterButton
+              className="btn--caution"
+              text="Cancel"
+              onClick={discardChanges}
               type="secondary"
             />
           </ModalFooter>

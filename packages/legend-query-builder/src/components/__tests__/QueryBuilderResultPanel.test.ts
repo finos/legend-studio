@@ -231,7 +231,7 @@ describe(integrationTest('Query builder result state'), () => {
       );
 
       await act(async () => {
-        fireEvent.click(getByText(lambdaEditor, 'Close'));
+        fireEvent.click(getByText(lambdaEditor, 'Proceed'));
       });
       expect(queryBuilderState.resultState.executionResult).toEqual(
         executionResult,
