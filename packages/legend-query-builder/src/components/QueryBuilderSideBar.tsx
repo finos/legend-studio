@@ -110,7 +110,7 @@ export const QueryBuilderClassSelector = observer(
     });
 
     const classOptions = classes
-      .sort((a, b) => a.name.localeCompare(b.name))
+      .toSorted((a, b) => a.name.localeCompare(b.name))
       .map((_class) => ({
         value: _class,
         label: generateClassLabel(_class, queryBuilderState),

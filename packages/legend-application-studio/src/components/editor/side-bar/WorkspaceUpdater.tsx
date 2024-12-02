@@ -165,8 +165,7 @@ export const WorkspaceUpdater = observer(() => {
               </div>
               <PanelContent>
                 {conflicts
-                  .slice()
-                  .sort((a, b) => a.entityName.localeCompare(b.entityName))
+                  .toSorted((a, b) => a.entityName.localeCompare(b.entityName))
                   .map((conflict) => (
                     <EntityChangeConflictSideBarItem
                       key={`conflict-${conflict.entityPath}`}
@@ -180,8 +179,7 @@ export const WorkspaceUpdater = observer(() => {
                     <div className="diff-panel__item-section-separator" />
                   )}
                 {changesWithoutConflicts
-                  .slice()
-                  .sort(entityDiffSorter)
+                  .toSorted(entityDiffSorter)
                   .map((diff) => (
                     <EntityDiffSideBarItem
                       key={diff.key}

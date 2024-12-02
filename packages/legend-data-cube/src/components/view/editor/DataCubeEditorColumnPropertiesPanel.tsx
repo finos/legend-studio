@@ -170,44 +170,41 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                 </div>
               </FormDropdownMenuTrigger>
               <FormDropdownMenu className="w-80" {...columnDropdownProps}>
-                {panel.columns
-                  .slice()
-                  .sort(_sortByColName)
-                  .map((column) => (
-                    <FormDropdownMenuItem
-                      key={column.name}
-                      onClick={() => {
-                        panel.setSelectedColumnName(column.name);
-                        closeColumnDropdown();
-                      }}
-                      autoFocus={column.name === selectedColumn?.name}
-                    >
-                      <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">
-                        {column.name}
+                {panel.columns.toSorted(_sortByColName).map((column) => (
+                  <FormDropdownMenuItem
+                    key={column.name}
+                    onClick={() => {
+                      panel.setSelectedColumnName(column.name);
+                      closeColumnDropdown();
+                    }}
+                    autoFocus={column.name === selectedColumn?.name}
+                  >
+                    <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">
+                      {column.name}
+                    </div>
+                    <div className="ml-1.5 mr-0.5 flex h-3.5 w-12 flex-shrink-0 items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-xs font-medium uppercase text-neutral-600">
+                      {column.dataType}
+                    </div>
+                    {Boolean(
+                      panel.editor.leafExtendColumns.find(
+                        (col) => col.name === column.name,
+                      ),
+                    ) && (
+                      <div className="mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
+                        {`Extended (Leaf Level)`}
                       </div>
-                      <div className="ml-1.5 mr-0.5 flex h-3.5 w-12 flex-shrink-0 items-center justify-center rounded-sm border border-neutral-300 bg-neutral-100 text-xs font-medium uppercase text-neutral-600">
-                        {column.dataType}
+                    )}
+                    {Boolean(
+                      panel.editor.groupExtendColumns.find(
+                        (col) => col.name === column.name,
+                      ),
+                    ) && (
+                      <div className="mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
+                        {`Extended (Group Level)`}
                       </div>
-                      {Boolean(
-                        panel.editor.leafExtendColumns.find(
-                          (col) => col.name === column.name,
-                        ),
-                      ) && (
-                        <div className="mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
-                          {`Extended (Leaf Level)`}
-                        </div>
-                      )}
-                      {Boolean(
-                        panel.editor.groupExtendColumns.find(
-                          (col) => col.name === column.name,
-                        ),
-                      ) && (
-                        <div className="mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
-                          {`Extended (Group Level)`}
-                        </div>
-                      )}
-                    </FormDropdownMenuItem>
-                  ))}
+                    )}
+                  </FormDropdownMenuItem>
+                ))}
               </FormDropdownMenu>
               {panel.showAdvancedSettings && selectedColumn && (
                 <>
