@@ -288,8 +288,8 @@ export class V1_EngineServerClient extends AbstractServerClient {
     lineOffset?: number | undefined,
     columnOffset?: number | undefined,
     returnSourceInformation?: boolean | undefined,
-  ): Promise<PlainObject<V1_RawLambda>> =>
-    this.postWithTracing(
+  ): Promise<PlainObject<V1_RawLambda>> => {
+    return this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GRAMMAR_TO_JSON),
       `${this._grammarToJSON()}/lambda`,
       input,
@@ -305,6 +305,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       },
       { enableCompression: true },
     );
+  };
 
   grammarToJSON_lambda_batch = (
     input: Record<string, V1_GrammarParserBatchInputEntry>,

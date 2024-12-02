@@ -43,6 +43,8 @@ jobs:
             package: '@finos/legend-application-studio-deployment'
           - image: local/legend-query
             package: '@finos/legend-application-query-deployment'
+          - image: local/legend-data-cube
+            package: '@finos/legend-application-data-cube-deployment'
           - image: local/legend-showcase-server
             package: '@finos/legend-server-showcase-deployment'
     steps:

@@ -110,7 +110,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     const columns = (await this.getRelationalType(this.selectInitialQuery))
       .columns;
     const query = new DataCubeQuery();
-    query.query = `~[${columns.map((e) => `'${e.name}'`)}]->select()`;
+    query.query = `|~[${columns.map((e) => `'${e.name}'`)}]->select()`;
     const source = new QueryBuilderDataCubeSource();
     source.sourceColumns = columns;
     source.mapping = this.mappingPath;
@@ -129,10 +129,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   private buildRawLambdaFromValueSpec(query: V1_Lambda): RawLambda {
     const json = guaranteeType(
       V1_deserializeRawValueSpecification(
-        V1_serializeValueSpecification(
-          query.body[0] as V1_ValueSpecification,
-          [],
-        ),
+        V1_serializeValueSpecification(query, []),
       ),
       V1_RawLambda,
     );
@@ -147,12 +144,14 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     const lambda = this.buildRawLambdaFromValueSpec(baseQuery);
     const queryString =
       await this.graphState.graphManager.lambdaToPureCode(lambda);
-    const offset = queryString.length;
-    const codeBlock = queryString + code;
+    let codeBlock = queryString + code;
+    if (codeBlock[0] === '|') {
+      codeBlock = codeBlock.substring(1);
+    }
     const result = await this.graphState.graphManager.getCodeComplete(
       codeBlock,
       this.graph,
-      offset,
+      undefined,
     );
     return result.completions as CompletionItem[];
   }
@@ -203,7 +202,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
       await this.graphState.graphManager.valueSpecificationToPureCode(
         V1_serializeValueSpecification(baseQuery, []),
       );
-    const fullQuery = code + queryString;
+    const fullQuery = queryString + code;
     return this.getRelationalType(
       await this.graphState.graphManager.pureCodeToLambda(fullQuery),
     );

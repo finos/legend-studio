@@ -24,6 +24,8 @@ jobs:
             package: '@finos/legend-application-studio-deployment'
           - image: finos/legend-query
             package: '@finos/legend-application-query-deployment'
+          - image: finos/legend-data-cube
+            package: '@finos/legend-application-data-cube-deployment'
           - image: local/legend-showcase-server
             package: '@finos/legend-server-showcase-deployment'
     steps:

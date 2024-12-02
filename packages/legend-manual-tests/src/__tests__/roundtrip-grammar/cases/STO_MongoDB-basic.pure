@@ -186,14 +186,6 @@ MongoDBConnection model::store::mongodb::connection::testConnection
 {
   database: userDatabase;
   store: model::store::mongodb::store::mydatabase;
-  serverURLs: [localhost:27017];
-  authentication: # UserPassword {
-    username: 'sa';
-    password: SystemPropertiesSecret
-    {
-      systemPropertyName: 'mongo_pwd';
-    };
-  }#;
 }
 
 
