@@ -145,8 +145,6 @@ export const TEST_DATA__DSL_DataSpace_Model = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -160,8 +158,6 @@ export const TEST_DATA__DSL_DataSpace_Model = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -186,8 +182,6 @@ export const TEST_DATA__DSL_DataSpace_Model = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -201,8 +195,6 @@ export const TEST_DATA__DSL_DataSpace_Model = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -216,8 +208,6 @@ export const TEST_DATA__DSL_DataSpace_Model = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -231,8 +221,6 @@ export const TEST_DATA__DSL_DataSpace_Model = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -246,8 +234,6 @@ export const TEST_DATA__DSL_DataSpace_Model = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -261,8 +247,6 @@ export const TEST_DATA__DSL_DataSpace_Model = [
               _type: 'packageableType',
               fullPath: 'Boolean',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {

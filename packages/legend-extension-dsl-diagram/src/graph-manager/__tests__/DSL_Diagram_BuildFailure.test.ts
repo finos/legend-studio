@@ -43,8 +43,6 @@ const TEST_DATA__MissingClassInDiagram = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -57,8 +55,6 @@ const TEST_DATA__MissingClassInDiagram = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],

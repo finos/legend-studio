@@ -46,8 +46,6 @@ const TEST_DATA__dummyModel = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],

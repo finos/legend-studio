@@ -100,8 +100,6 @@ export const TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndProcessingT
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'businessDate',
         multiplicity: {
@@ -116,8 +114,6 @@ export const TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndProcessingT
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'processingDate',
         multiplicity: {
@@ -210,8 +206,6 @@ export const TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBusinessTem
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'businessDate',
         multiplicity: {
@@ -308,8 +302,6 @@ export const TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBiTemporalT
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'businessDate',
         multiplicity: {
@@ -324,8 +316,6 @@ export const TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBiTemporalT
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'processingDate',
         multiplicity: {
@@ -422,8 +412,6 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget 
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -438,8 +426,6 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget 
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -532,8 +518,6 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalT
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'businessDate',
         multiplicity: {
@@ -548,8 +532,6 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalT
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'processingDate',
         multiplicity: {
@@ -646,8 +628,6 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndProcessingTempora
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'businessDate',
         multiplicity: {
@@ -662,8 +642,6 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndProcessingTempora
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'processingDate',
         multiplicity: {
@@ -764,8 +742,6 @@ export const TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBiTempora
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'businessDate',
         multiplicity: {
@@ -780,8 +756,6 @@ export const TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBiTempora
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'processingDate',
         multiplicity: {
@@ -878,8 +852,6 @@ export const TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessT
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'businessDate',
         multiplicity: {
@@ -894,8 +866,6 @@ export const TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessT
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'processingDate',
         multiplicity: {
@@ -988,8 +958,6 @@ export const TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndProcessin
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'processingDate',
         multiplicity: {
@@ -1082,8 +1050,6 @@ export const TEST_DATA__simpleProjectionWithNonTemporalSourceAndProcessingTempor
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'processingDate',
         multiplicity: {
@@ -1180,8 +1146,6 @@ export const TEST_DATA__simpleProjectionWithNonTemporalSourceAndBiTemporalTarget
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'processingDate',
         multiplicity: {
@@ -1196,8 +1160,6 @@ export const TEST_DATA__simpleProjectionWithNonTemporalSourceAndBiTemporalTarget
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'businessDate',
         multiplicity: {
@@ -1290,8 +1252,6 @@ export const TEST_DATA__simpleProjectionWithNonTemporalSourceAndBusinessTemporal
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         name: 'businessDate',
         multiplicity: {
@@ -1498,8 +1458,6 @@ export const TEST_DATA__simpleProjectionWithAggregationInput = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       name: 'businessDate',
       multiplicity: {
@@ -1631,8 +1589,6 @@ export const TEST_DATA__simpleProjectionWithAggregationOutput = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       name: 'businessDate',
       multiplicity: {
@@ -1942,8 +1898,6 @@ export const TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBusinessTempora
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2028,8 +1982,6 @@ export const TEST_DATA__simpleFilterWithBusinessTemporalSourceAndProcessingTempo
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2044,8 +1996,6 @@ export const TEST_DATA__simpleFilterWithBusinessTemporalSourceAndProcessingTempo
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2134,8 +2084,6 @@ export const TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBiTemporalTarge
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2150,8 +2098,6 @@ export const TEST_DATA__simpleFilterWithBusinessTemporalSourceAndBiTemporalTarge
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2236,8 +2182,6 @@ export const TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBusinessTempo
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2252,8 +2196,6 @@ export const TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBusinessTempo
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2334,8 +2276,6 @@ export const TEST_DATA__simpleFilterWithProcessingTemporalSourceAndProcessingTem
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2424,8 +2364,6 @@ export const TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBiTemporalTar
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2440,8 +2378,6 @@ export const TEST_DATA__simpleFilterWithProcessingTemporalSourceAndBiTemporalTar
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2526,8 +2462,6 @@ export const TEST_DATA__simpleFilterWithBiTemporalSourceAndBusinessTemporalTarge
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2542,8 +2476,6 @@ export const TEST_DATA__simpleFilterWithBiTemporalSourceAndBusinessTemporalTarge
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2628,8 +2560,6 @@ export const TEST_DATA__simpleFilterWithBiTemporalSourceAndProcessingTemporalTar
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2644,8 +2574,6 @@ export const TEST_DATA__simpleFilterWithBiTemporalSourceAndProcessingTemporalTar
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2729,8 +2657,6 @@ export const TEST_DATA__simpleFilterWithBiTemporalSourceAndBiTemporalTarget = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -2745,8 +2671,6 @@ export const TEST_DATA__simpleFilterWithBiTemporalSourceAndBiTemporalTarget = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -2827,8 +2751,6 @@ export const TEST_DATA__simpleFilterWithNonTemporalSourceAndBusinessTemporalTarg
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2909,8 +2831,6 @@ export const TEST_DATA__simpleFilterWithNonTemporalSourceAndProcessingTemporalTa
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -2994,8 +2914,6 @@ export const TEST_DATA__simpleFilterWithNonTemporalSourceAndBiTemporalTarget = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -3010,8 +2928,6 @@ export const TEST_DATA__simpleFilterWithNonTemporalSourceAndBiTemporalTarget = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -3120,8 +3036,6 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithBusinessTemporalClass = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -3136,8 +3050,6 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithBusinessTemporalClass = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -3178,8 +3090,6 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithBiTemporalClass = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -3194,8 +3104,6 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithBiTemporalClass = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -3237,8 +3145,6 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithProcessingTemporalClass =
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -3253,8 +3159,6 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithProcessingTemporalClass =
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -3295,8 +3199,6 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithNonTemporalClass = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -3311,8 +3213,6 @@ export const TEST_DATA__simpleGetAllVersionsInRangeWithNonTemporalClass = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -3405,8 +3305,6 @@ export const TEST_DATA__simpleGetAllVersionsWithBusinessTemporalSourceAndBusines
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -3503,8 +3401,6 @@ export const TEST_DATA__simpleGetAllVersionsWithBiTemporalSourceAndBiTemporalTar
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -3519,8 +3415,6 @@ export const TEST_DATA__simpleGetAllVersionsWithBiTemporalSourceAndBiTemporalTar
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -3613,8 +3507,6 @@ export const TEST_DATA__simpleGetAllVersionsWithProcessingTemporalSourceAndProce
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,
@@ -3707,8 +3599,6 @@ export const TEST_DATA__simpleGetAllVersionsWithProcessingTemporalSourceAndBusin
             _type: 'packageableType',
             fullPath: 'Date',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
         multiplicity: {
           lowerBound: 1,

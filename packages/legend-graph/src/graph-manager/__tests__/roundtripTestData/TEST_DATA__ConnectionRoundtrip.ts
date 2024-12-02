@@ -60,8 +60,6 @@ export const testConnectionRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],

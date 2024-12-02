@@ -37,8 +37,6 @@ export const TEST_DATA__RuntimeRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],

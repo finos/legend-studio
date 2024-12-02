@@ -99,9 +99,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "String"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           },
           "multiplicity": {
             "lowerBound": 1,
@@ -115,9 +113,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "model::IncType"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           },
           "multiplicity": {
             "lowerBound": 1,
@@ -131,9 +127,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Date"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           },
           "multiplicity": {
             "lowerBound": 1,
@@ -147,9 +141,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "DateTime"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           },
           "multiplicity": {
             "lowerBound": 1,
