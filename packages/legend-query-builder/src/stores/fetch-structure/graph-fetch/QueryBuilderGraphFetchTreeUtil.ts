@@ -178,7 +178,7 @@ const buildRootGraphFetchSubTree = (
  */
 export const buildGraphFetchTreeData = (
   tree: RootGraphFetchTree,
-  displayRoot: boolean = false,
+  displayRoot = false,
 ): QueryBuilderGraphFetchTreeData => {
   const rootIds: string[] = [];
   const nodes = new Map<string, QueryBuilderGraphFetchTreeNodeData>();

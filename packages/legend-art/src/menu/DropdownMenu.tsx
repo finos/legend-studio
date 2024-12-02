@@ -121,7 +121,7 @@ export const ControlledDropdownMenu: React.FC<{
 export function useDropdownMenu() {
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   return [
-    (event: React.MouseEvent<Element>) => setAnchorEl(event.currentTarget),
+    (event: React.MouseEvent) => setAnchorEl(event.currentTarget),
     () => setAnchorEl(null),
     {
       anchorEl,

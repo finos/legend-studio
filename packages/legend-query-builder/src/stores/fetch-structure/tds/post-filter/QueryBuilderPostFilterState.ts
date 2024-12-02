@@ -474,7 +474,6 @@ export class PostFilterConditionState implements Hashable {
       this.rightConditionValue instanceof PostFilterValueSpecConditionValueState
     ) {
       this.rightConditionValue.setValue(val);
-      return;
     } else {
       this.setRightConditionVal(
         new PostFilterValueSpecConditionValueState(this, val),
