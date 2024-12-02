@@ -110,10 +110,6 @@ const logSuccess = (
 const isTestSkipped = (filePath: string): boolean =>
   Object.keys(EXCLUSIONS).includes(basename(filePath)) &&
   EXCLUSIONS[basename(filePath)] === SKIP;
-//  ||
-// !basename(filePath).endsWith(
-//   'CORE-basic-function-with-relational-tests.pure',
-// );
 const isPartialTest = (filePath: string): boolean =>
   Object.keys(EXCLUSIONS).includes(basename(filePath));
 

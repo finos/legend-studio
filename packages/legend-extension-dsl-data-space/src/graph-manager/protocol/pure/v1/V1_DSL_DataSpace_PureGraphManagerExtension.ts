@@ -47,7 +47,7 @@ import {
   V1_MappingAnalysisCoveragePartition,
   V1_deserializeDataspaceCoveragePartition,
   V1_MappingModelCoveragePartition,
-  V1_getFullReturnTypePath,
+  V1_getGenericTypeFullPath,
 } from '@finos/legend-graph';
 import type {
   Entity,
@@ -705,11 +705,11 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
               if (element instanceof V1_Class) {
                 return element.derivedProperties
                   .map((prop) =>
-                    V1_getFullReturnTypePath(prop.returnGenericType),
+                    V1_getGenericTypeFullPath(prop.returnGenericType),
                   )
                   .concat(
                     element.properties.map((prop) =>
-                      V1_getFullReturnTypePath(prop.genericType),
+                      V1_getGenericTypeFullPath(prop.genericType),
                     ),
                   );
               }

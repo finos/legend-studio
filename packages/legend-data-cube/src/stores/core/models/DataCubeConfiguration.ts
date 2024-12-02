@@ -63,6 +63,7 @@ export class DataCubeColumnConfiguration {
   negativeNumberInParens = false;
   numberScale?: DataCubeNumberScale | undefined;
   missingValueDisplayText?: string | undefined;
+  unit?: string | undefined;
 
   fontFamily?: DataCubeFont | undefined;
   fontSize?: number | undefined;
@@ -154,6 +155,7 @@ export class DataCubeColumnConfiguration {
       pivotStatisticColumnFunction: optional(primitive()),
       textAlign: optional(primitive()),
       type: primitive(),
+      unit: optional(primitive()),
       zeroBackgroundColor: optional(primitive()),
       zeroForegroundColor: optional(primitive()),
     }),

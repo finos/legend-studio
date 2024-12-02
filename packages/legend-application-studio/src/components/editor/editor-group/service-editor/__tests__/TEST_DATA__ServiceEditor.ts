@@ -469,8 +469,6 @@ export const TEST_DATA__multiEXecutionService = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -484,8 +482,6 @@ export const TEST_DATA__multiEXecutionService = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -499,8 +495,6 @@ export const TEST_DATA__multiEXecutionService = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -514,8 +508,6 @@ export const TEST_DATA__multiEXecutionService = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -556,8 +548,6 @@ export const TEST_DATA__multiEXecutionService = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -577,8 +567,6 @@ export const TEST_DATA__multiEXecutionService = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -592,8 +580,6 @@ export const TEST_DATA__multiEXecutionService = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -607,8 +593,6 @@ export const TEST_DATA__multiEXecutionService = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -668,8 +652,6 @@ export const TEST_DATA__multiEXecutionService = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -683,8 +665,6 @@ export const TEST_DATA__multiEXecutionService = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -698,8 +678,6 @@ export const TEST_DATA__multiEXecutionService = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -773,8 +751,6 @@ export const TEST_DATA__multiEXecutionService = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -788,8 +764,6 @@ export const TEST_DATA__multiEXecutionService = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -803,8 +777,6 @@ export const TEST_DATA__multiEXecutionService = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],

@@ -305,6 +305,7 @@ export const DEFAULT_REPORT_NAME = 'New Report';
 export const DEFAULT_TREE_COLUMN_SORT_DIRECTION =
   DataCubeQuerySortDirection.ASCENDING;
 export const DEFAULT_PIVOT_STATISTIC_COLUMN_NAME = 'Total';
+export const DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE = '[ROOT]';
 
 export const DEFAULT_URL_LABEL_QUERY_PARAM = 'dataCube.linkLabel';
 export const DEFAULT_MISSING_VALUE_DISPLAY_TEXT = '';
@@ -330,3 +331,10 @@ export const DEFAULT_ROW_BACKGROUND_COLOR = TailwindCSSPalette.white;
 export const DEFAULT_NEGATIVE_FOREGROUND_COLOR = TailwindCSSPalette.red[500];
 export const DEFAULT_ZERO_FOREGROUND_COLOR = TailwindCSSPalette.neutral[400];
 export const DEFAULT_ERROR_FOREGROUND_COLOR = TailwindCSSPalette.blue[600];
+
+// settings
+export const TAB_SIZE = 2;
+export const DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+export const TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH = 3;
+export const TYPEAHEAD_SEARCH_LIMIT = 10;
+export const EMPTY_VALUE_PLACEHOLDER = '(None)';

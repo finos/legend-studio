@@ -357,8 +357,8 @@ export enum CORE_HASH_STRUCTURE {
   HOSTED_SERVICE_OWNER = 'HOSTED_SERVICE_OWNER',
 
   // ---------------------------------- Relation --------------------------------------
-  REALTION_TYPE = 'REALTION_TYPE',
-  REALTION_COLUMN = 'REALTION_COLUMN',
+  RELATION_TYPE = 'RELATION_TYPE',
+  RELATION_COLUMN = 'RELATION_COLUMN',
 }
 
 export const hashObjectWithoutSourceInformation = (val: object): string =>

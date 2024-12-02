@@ -155,8 +155,6 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
                 _type: 'packageableType',
                 fullPath: 'model::Person',
               },
-              typeArguments: [],
-              typeVariableValues: [],
             },
           },
           {
@@ -172,8 +170,6 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
                 _type: 'packageableType',
                 fullPath: 'Boolean',
               },
-              typeArguments: [],
-              typeVariableValues: [],
             },
           },
         ],

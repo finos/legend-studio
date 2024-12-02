@@ -173,9 +173,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "StrictTime"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {
@@ -203,9 +201,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {
@@ -217,9 +213,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Boolean"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {
@@ -232,9 +226,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "ui::test2::Person"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ],
@@ -295,9 +287,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ],
@@ -337,9 +327,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Boolean"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ]
@@ -363,9 +351,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {
@@ -378,9 +364,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ],
@@ -405,9 +389,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {
@@ -420,9 +402,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ],
@@ -463,9 +443,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "ui::test1::Dog"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ],
@@ -497,9 +475,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "ui::test1::Dog"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ],
@@ -523,9 +499,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "ui::test1::Human"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {
@@ -537,9 +511,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "ui::test1::Human"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ],
@@ -580,9 +552,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "ui::test1::Human"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ]
@@ -605,9 +575,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "ui::test1::Something"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {
@@ -619,9 +587,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "ui::test1::Anyone"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ]
@@ -665,9 +631,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {
@@ -680,9 +644,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ],
@@ -720,9 +682,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ]
@@ -752,9 +712,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {
@@ -870,9 +828,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "ui::test2::Person"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ]
@@ -1003,9 +959,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "ui::test2::Firm"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ],
@@ -1273,9 +1227,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "ui::test2::Firm"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ],
@@ -1333,9 +1285,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {
@@ -1348,9 +1298,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Boolean"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {
@@ -1362,9 +1310,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "ui::test2::Degree"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ],
@@ -1424,9 +1370,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "ui::TestClass"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {
@@ -1454,9 +1398,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "ui::TestClassSibling"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ]

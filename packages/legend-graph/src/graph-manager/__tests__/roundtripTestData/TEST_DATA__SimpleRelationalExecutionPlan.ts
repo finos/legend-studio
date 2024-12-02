@@ -197,8 +197,6 @@ export const TEST_DATA__simpleRelationalExecutionPlan = {
                 _type: 'packageableType',
                 fullPath: 'model::Person',
               },
-              typeArguments: [],
-              typeVariableValues: [],
             },
           },
           {

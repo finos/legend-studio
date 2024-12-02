@@ -286,7 +286,11 @@ export class QueryFunctionsExplorerState {
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
       functionExplorerStates: observable.ref,
+      setFunctionExplorerStates: action,
+
       dependencyFunctionExplorerStates: observable.ref,
+      setDependencyFunctionExplorerStates: action,
+
       treeData: observable.ref,
       dependencyTreeData: observable.ref,
       _functionGraph: observable,
@@ -316,6 +320,14 @@ export class QueryFunctionsExplorerState {
       default:
         return this.treeData;
     }
+  }
+
+  setFunctionExplorerStates(val: QueryFunctionExplorerState[]): void {
+    this.functionExplorerStates = val;
+  }
+
+  setDependencyFunctionExplorerStates(val: QueryFunctionExplorerState[]): void {
+    this.dependencyFunctionExplorerStates = val;
   }
 
   setFunctionInfoMap(info: Map<string, FunctionAnalysisInfo>) {
@@ -491,11 +503,13 @@ export class QueryFunctionsExplorerState {
             ROOT_PACKAGE_NAME.MAIN,
           ),
         );
-        this.functionExplorerStates = this.functionInfoMap
-          ? Array.from(this.functionInfoMap.values()).map(
-              (info) => new QueryFunctionExplorerState(this, info),
-            )
-          : [];
+        this.setFunctionExplorerStates(
+          this.functionInfoMap
+            ? Array.from(this.functionInfoMap.values()).map(
+                (info) => new QueryFunctionExplorerState(this, info),
+              )
+            : [],
+        );
       });
     if (this.dependencyFunctionInfoMap) {
       this.initializeDependencyDisplayablePackagesSet()
@@ -508,11 +522,13 @@ export class QueryFunctionsExplorerState {
               ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT,
             ),
           );
-          this.dependencyFunctionExplorerStates = this.dependencyFunctionInfoMap
-            ? Array.from(this.dependencyFunctionInfoMap.values()).map(
-                (info) => new QueryFunctionExplorerState(this, info),
-              )
-            : [];
+          this.setDependencyFunctionExplorerStates(
+            this.dependencyFunctionInfoMap
+              ? Array.from(this.dependencyFunctionInfoMap.values()).map(
+                  (info) => new QueryFunctionExplorerState(this, info),
+                )
+              : [],
+          );
         });
     }
     this.initState.pass();

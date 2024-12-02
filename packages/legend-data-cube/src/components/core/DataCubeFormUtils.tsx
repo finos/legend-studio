@@ -83,6 +83,7 @@ export const FormNumberInput = forwardRef(function FormNumberInput(
     defaultValue,
     disabled,
     className,
+    ...innerProps
   } = props;
   const [inputValue, setInputValue] = useState<string | number>(value ?? '');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -99,6 +100,7 @@ export const FormNumberInput = forwardRef(function FormNumberInput(
         className,
       )}
       ref={handleRef}
+      {...innerProps}
       inputMode="numeric"
       type="number"
       min={min}
@@ -247,9 +249,10 @@ export const FormDropdownMenuTrigger = forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & {
     open?: boolean | undefined;
+    showAsPlaceholder?: boolean | undefined;
   }
 >(function FormDropdownMenuTrigger(props, ref) {
-  const { children, className, open, ...otherProps } = props;
+  const { children, className, open, showAsPlaceholder, ...otherProps } = props;
   return (
     <button
       ref={ref}
@@ -258,6 +261,7 @@ export const FormDropdownMenuTrigger = forwardRef<
         {
           'border-sky-600': Boolean(open),
           'bg-sky-100': Boolean(open),
+          'text-neutral-400': Boolean(showAsPlaceholder),
         },
         className,
       )}

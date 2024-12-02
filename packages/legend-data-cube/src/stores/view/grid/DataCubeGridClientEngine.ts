@@ -32,7 +32,6 @@ import {
 } from '@finos/legend-shared';
 import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
 import { type TabularDataSet, V1_Lambda } from '@finos/legend-graph';
-import { generateRowGroupingDrilldownExecutableQueryPostProcessor } from './DataCubeGridQueryBuilder.js';
 import { makeObservable, observable, runInAction } from 'mobx';
 import type {
   DataCubeConfiguration,
@@ -49,10 +48,11 @@ import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { AlertType } from '../../../components/core/DataCubeAlert.js';
 import { sum } from 'mathjs';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
+import { buildGridDataFetchExecutableQuery } from './DataCubeGridQueryBuilder.js';
 
-type GridClientCellValue = string | number | boolean | null | undefined;
-type GridClientRowData = {
-  [key: string]: GridClientCellValue;
+type DataCubeGridClientCellValue = string | number | boolean | null | undefined;
+type DataCubeGridClientRowData = {
+  [key: string]: DataCubeGridClientCellValue;
 };
 
 export enum DataCubeGridClientExportFormat {
@@ -128,17 +128,19 @@ export const INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY = 1500;
 export const INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING = 10;
 export const INTERNAL__GRID_CLIENT_MISSING_VALUE = '__MISSING';
 export const INTERNAL__GRID_CLIENT_TREE_COLUMN_ID = 'ag-Grid-AutoColumn';
+export const INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID =
+  'INTERNAL__rootAggregation';
 export const INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID =
   'INTERNAL__dataFetchManualTrigger';
 export const INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID =
   'INTERNAL__count';
 
-export enum GridClientPinnedAlignement {
+export enum DataCubeGridClientPinnedAlignement {
   LEFT = 'left',
   RIGHT = 'right',
 }
 
-export enum GridClientSortDirection {
+export enum DataCubeGridClientSortDirection {
   ASCENDING = 'asc',
   DESCENDING = 'desc',
 }
@@ -209,9 +211,9 @@ export function computeHashCodeForDataFetchManualTrigger(
 function buildRowData(
   result: TabularDataSet,
   snapshot: DataCubeQuerySnapshot,
-): GridClientRowData[] {
+): DataCubeGridClientRowData[] {
   return result.rows.map((_row, rowIdx) => {
-    const row: GridClientRowData = {};
+    const row: DataCubeGridClientRowData = {};
     const cols = result.columns;
     _row.values.forEach((value, colIdx) => {
       // `ag-grid` shows `false` value as empty string so we have
@@ -299,6 +301,18 @@ async function getCastColumns(
   }));
 }
 
+export type DataCubeGridClientDataFetchRequest = {
+  startRow: number | undefined;
+  endRow: number | undefined;
+  rowGroupColumns: string[];
+  groupKeys: (string | null | undefined)[]; // NOTE: it's possible for these values to be nullish depending on row data
+  pivotColumns: string[];
+  sortColumns: {
+    name: string;
+    direction: DataCubeGridClientSortDirection;
+  }[];
+};
+
 export class DataCubeGridClientServerSideDataSource
   implements IServerSideDatasource
 {
@@ -316,39 +330,34 @@ export class DataCubeGridClientServerSideDataSource
   async fetchRows(params: IServerSideGetRowsParams<unknown, unknown>) {
     const task = this.grid.view.newTask('Fetching data');
 
-    // ------------------------------ GRID OPTIONS ------------------------------
-    // Here, we make adjustments to the grid display in response to the new
-    // request, in case the grid action has not impacted the layout in an
-    // adequate way.
-
-    // Toggle the visibility of the tree column based on the presence of row-group columns
-    if (params.request.rowGroupCols.length) {
-      params.api.setColumnsVisible(
-        [INTERNAL__GRID_CLIENT_TREE_COLUMN_ID],
-        true,
-      );
-    } else {
-      params.api.setColumnsVisible(
-        [INTERNAL__GRID_CLIENT_TREE_COLUMN_ID],
-        false,
-      );
-    }
-
     // ------------------------------ SNAPSHOT ------------------------------
 
     const currentSnapshot = guaranteeNonNullable(this.grid.getLatestSnapshot());
+    const request: DataCubeGridClientDataFetchRequest = {
+      startRow: params.request.startRow,
+      endRow: params.request.endRow,
+      rowGroupColumns: params.request.rowGroupCols.map((col) => col.id),
+      groupKeys: params.request.groupKeys.map((key) => key),
+      pivotColumns: params.request.pivotCols.map((col) => col.id),
+      sortColumns: params.request.sortModel.map((item) => ({
+        name: item.colId,
+        direction: item.sort as DataCubeGridClientSortDirection,
+      })),
+    };
+    const isTopLevelRequest = request.groupKeys.length === 0;
+
     let newSnapshot = currentSnapshot;
 
     // only recompute the snapshot if this is not a drilldown request
-    if (params.request.groupKeys.length === 0) {
-      newSnapshot = buildQuerySnapshot(params.request, currentSnapshot);
+    if (isTopLevelRequest) {
+      newSnapshot = buildQuerySnapshot(request, currentSnapshot);
 
       // NOTE: if h-pivot is enabled, update the cast columns
       // and panels which might be affected by this (e.g. sorts)
       // Because is an expensive operation in certain case, we only
       // recompute when it's not a drilldown or paging request,
       // but we could still optimize further if needed.
-      if (!this.grid.isPaginationEnabled || params.request.startRow === 0) {
+      if (!this.grid.isPaginationEnabled || request.startRow === 0) {
         if (newSnapshot.data.pivot) {
           try {
             const castColumns = await getCastColumns(
@@ -390,27 +399,14 @@ export class DataCubeGridClientServerSideDataSource
     // ------------------------------ DATA ------------------------------
 
     try {
-      const executableQuery = buildExecutableQuery(
+      const executableQuery = buildGridDataFetchExecutableQuery(
+        request,
         newSnapshot,
         this.grid.view.source,
         (source) => this.grid.view.engine.buildExecutionContext(source),
         this.grid.view.engine.filterOperations,
         this.grid.view.engine.aggregateOperations,
-        {
-          postProcessor:
-            generateRowGroupingDrilldownExecutableQueryPostProcessor(
-              params.request.groupKeys,
-            ),
-          pagination:
-            this.grid.isPaginationEnabled &&
-            params.request.startRow !== undefined &&
-            params.request.endRow !== undefined
-              ? {
-                  start: params.request.startRow,
-                  end: params.request.endRow,
-                }
-              : undefined,
-        },
+        this.grid.isPaginationEnabled,
       );
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
@@ -436,16 +432,16 @@ export class DataCubeGridClientServerSideDataSource
       if (this.grid.isPaginationEnabled) {
         params.success({ rowData });
         // only update row count when loading the top-level drilldown data
-        if (params.request.groupKeys.length === 0) {
+        if (isTopLevelRequest) {
           runInAction(() => {
-            this.rowCount = (params.request.startRow ?? 0) + rowData.length;
+            this.rowCount = (request.startRow ?? 0) + rowData.length;
           });
         }
 
         // toggle no-rows overlay
         if (
-          params.request.groupKeys.length === 0 &&
-          params.request.startRow === 0 &&
+          isTopLevelRequest &&
+          request.startRow === 0 &&
           rowData.length === 0
         ) {
           this.grid.client.showNoRowsOverlay();
@@ -506,19 +502,28 @@ export class DataCubeGridClientServerSideDataSource
         });
 
         // only update row count when loading the top-level drilldown data
-        if (params.request.groupKeys.length === 0) {
+        if (isTopLevelRequest) {
           runInAction(() => {
             this.rowCount = rowData.length;
           });
         }
 
         // toggle no-rows overlay
-        if (params.request.groupKeys.length === 0 && rowData.length === 0) {
+        if (isTopLevelRequest && rowData.length === 0) {
           this.grid.client.showNoRowsOverlay();
         } else {
           this.grid.client.hideOverlay();
         }
       }
+
+      // Resize columns to fit content on all actions (drilldown, changing queries, fetching new page, etc.)
+      // NOTE: we might want to restrict this to only happen on certain actions
+      //
+      // `setTimeout()` is need to ensure this runs after the grid has been updated with the new data
+      // since ag-grid does not provide an event hook for this action for server-side row model.
+      setTimeout(() => {
+        this.grid.client.autoSizeAllColumns();
+      }, 0);
     } catch (error) {
       assertErrorThrown(error);
       this.grid.view.engine.alertError(error, {

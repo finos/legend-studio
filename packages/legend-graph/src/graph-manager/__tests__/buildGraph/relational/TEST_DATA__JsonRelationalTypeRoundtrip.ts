@@ -33,8 +33,6 @@ export const TEST_DATA__JsonRelationalTypeRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -60,8 +58,6 @@ export const TEST_DATA__JsonRelationalTypeRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -75,8 +71,6 @@ export const TEST_DATA__JsonRelationalTypeRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -90,8 +84,6 @@ export const TEST_DATA__JsonRelationalTypeRoundtrip = [
               _type: 'packageableType',
               fullPath: 'joinChain::model::Person',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -105,8 +97,6 @@ export const TEST_DATA__JsonRelationalTypeRoundtrip = [
               _type: 'packageableType',
               fullPath: 'joinChain::model::Firm',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -120,8 +110,6 @@ export const TEST_DATA__JsonRelationalTypeRoundtrip = [
               _type: 'packageableType',
               fullPath: 'joinChain::model::Firm',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -135,8 +123,6 @@ export const TEST_DATA__JsonRelationalTypeRoundtrip = [
               _type: 'packageableType',
               fullPath: 'joinChain::model::Firm',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -150,8 +136,6 @@ export const TEST_DATA__JsonRelationalTypeRoundtrip = [
               _type: 'packageableType',
               fullPath: 'joinChain::model::Firm',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],

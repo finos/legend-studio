@@ -57,8 +57,6 @@ export const TEST_DATA__allFuncOnBusinessTemporalMilestonedClass = {
           _type: 'packageableType',
           fullPath: 'StrictDate',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       name: 'businessDate',
       multiplicity: {
@@ -95,8 +93,6 @@ export const TEST_DATA__allFuncOnProcessingTemporalMilestonedClass = {
           _type: 'packageableType',
           fullPath: 'StrictDate',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       name: 'processingDate',
       multiplicity: {
@@ -137,8 +133,6 @@ export const TEST_DATA__allFuncOnBiTemporalMilestonedClass = {
           _type: 'packageableType',
           fullPath: 'StrictDate',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       name: 'processingDate',
       multiplicity: {
@@ -153,8 +147,6 @@ export const TEST_DATA__allFuncOnBiTemporalMilestonedClass = {
           _type: 'packageableType',
           fullPath: 'StrictDate',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       name: 'businessDate',
       multiplicity: {
@@ -811,8 +803,6 @@ export const TEST_DATA__temporalModel = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -826,8 +816,6 @@ export const TEST_DATA__temporalModel = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -866,8 +854,6 @@ export const TEST_DATA__temporalModel = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -881,8 +867,6 @@ export const TEST_DATA__temporalModel = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -921,8 +905,6 @@ export const TEST_DATA__temporalModel = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -936,8 +918,6 @@ export const TEST_DATA__temporalModel = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -1561,8 +1541,6 @@ export const TEST_DATA__personWithParameter = {
           _type: 'packageableType',
           fullPath: 'String',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       name: 'firstName',
       multiplicity: {
@@ -1715,7 +1693,12 @@ export const TEST_DATA__personWithSubType = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath: 'test::Person',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath: 'test::Person',
+                            },
+                          },
                         },
                       ],
                     },
@@ -1900,8 +1883,6 @@ export const TEST_DATA__M2MModel = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -2043,8 +2024,6 @@ export const TEST_DATA__M2MModel = [
                   _type: 'packageableType',
                   fullPath: 'String',
                 },
-                typeArguments: [],
-                typeVariableValues: [],
               },
 
               name: 'suffix',
@@ -2056,8 +2035,6 @@ export const TEST_DATA__M2MModel = [
                   _type: 'packageableType',
                   fullPath: 'String',
                 },
-                typeArguments: [],
-                typeVariableValues: [],
               },
 
               name: 'prefix',
@@ -2072,8 +2049,6 @@ export const TEST_DATA__M2MModel = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],

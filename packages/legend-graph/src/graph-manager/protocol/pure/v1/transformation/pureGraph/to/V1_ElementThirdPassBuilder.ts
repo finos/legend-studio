@@ -136,11 +136,11 @@ export class V1_ElementThirdPassBuilder
       // supertype `Any` will not be processed
       if (type !== CORE_PURE_PATH.ANY) {
         try {
-          const genricTypeReference = this.context.resolveGenericType(type);
-          addUniqueEntry(_class.generalizations, genricTypeReference);
-          if (genricTypeReference.ownerReference.value instanceof Class) {
+          const genericTypeReference = this.context.resolveGenericType(type);
+          addUniqueEntry(_class.generalizations, genericTypeReference);
+          if (genericTypeReference.ownerReference.value instanceof Class) {
             addUniqueEntry(
-              genricTypeReference.ownerReference.value._subclasses,
+              genericTypeReference.ownerReference.value._subclasses,
               _class,
             );
           }

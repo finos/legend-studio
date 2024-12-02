@@ -108,8 +108,6 @@ export const TEST_DATA__ModelToModelMapping = [
               _type: 'packageableType',
               fullPath: 'model::Person',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -226,8 +224,6 @@ export const TEST_DATA__ModelToModelMapping = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],

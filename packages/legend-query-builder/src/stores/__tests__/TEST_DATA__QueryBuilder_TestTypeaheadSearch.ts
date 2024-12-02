@@ -690,8 +690,6 @@ export const TEST_DATA__lambda_typeahead_simple_postFilter_milestoning = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,

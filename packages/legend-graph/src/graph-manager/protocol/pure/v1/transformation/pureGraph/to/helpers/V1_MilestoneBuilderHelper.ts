@@ -39,7 +39,7 @@ import { V1_serializeValueSpecification } from '../../../pureProtocol/serializat
 import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
 import { Multiplicity } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import { PrimitiveType } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
-import { V1_createGenericTypeWithElementPath } from '../../from/V1_DomainTransformer.js';
+import { V1_createGenericTypeWithElementPath } from '../../../../helpers/V1_DomainHelper.js';
 
 const buildMilestoningParameter = (
   parameterName: string,

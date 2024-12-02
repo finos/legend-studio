@@ -6758,8 +6758,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -6773,8 +6771,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'test::Firm',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -6788,8 +6784,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -6803,8 +6797,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -6818,8 +6810,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Boolean',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -6833,8 +6823,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Boolean',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -6848,8 +6836,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -6863,8 +6849,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -6878,8 +6862,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'test::Title',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -6904,8 +6886,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -6930,8 +6910,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -6945,8 +6923,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -6960,8 +6936,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'test::Trade',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -6987,8 +6961,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -7002,8 +6974,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -7017,8 +6987,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -7032,8 +7000,6 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'test::Person',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -7708,8 +7674,6 @@ export const TEST_DATA__FlatDataAssociationMapping = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -7734,8 +7698,6 @@ export const TEST_DATA__FlatDataAssociationMapping = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -7749,8 +7711,6 @@ export const TEST_DATA__FlatDataAssociationMapping = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -7774,8 +7734,6 @@ export const TEST_DATA__FlatDataAssociationMapping = [
               _type: 'packageableType',
               fullPath: 'model::person',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -7789,8 +7747,6 @@ export const TEST_DATA__FlatDataAssociationMapping = [
               _type: 'packageableType',
               fullPath: 'model::firm',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -8186,8 +8142,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8210,8 +8164,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8235,8 +8187,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8260,8 +8210,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8284,8 +8232,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8308,8 +8254,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8333,8 +8277,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8357,8 +8299,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8381,8 +8321,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8406,8 +8344,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8431,8 +8367,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Boolean',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8455,8 +8389,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8479,8 +8411,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Boolean',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8503,8 +8433,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8527,8 +8455,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8552,8 +8478,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Boolean',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8576,8 +8500,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8601,8 +8523,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Boolean',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8625,8 +8545,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8650,8 +8568,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8675,8 +8591,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8700,8 +8614,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8724,8 +8636,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8748,8 +8658,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8773,8 +8681,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Boolean',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8797,8 +8703,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8822,8 +8726,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8846,8 +8748,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8871,8 +8771,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8895,8 +8793,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8919,8 +8815,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8944,8 +8838,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8968,8 +8860,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Boolean',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -8992,8 +8882,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9016,8 +8904,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9041,8 +8927,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9065,8 +8949,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9090,8 +8972,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9114,8 +8994,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9138,8 +9016,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9162,8 +9038,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9187,8 +9061,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9211,8 +9083,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9236,8 +9106,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9260,8 +9128,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9284,8 +9150,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9308,8 +9172,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9332,8 +9194,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9357,8 +9217,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9381,8 +9239,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9405,8 +9261,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9429,8 +9283,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9453,8 +9305,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9477,8 +9327,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9502,8 +9350,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9527,8 +9373,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9551,8 +9395,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9575,8 +9417,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9600,8 +9440,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -9635,8 +9473,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9659,8 +9495,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9683,8 +9517,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9708,8 +9540,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Boolean',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9733,8 +9563,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'StrictDate',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9757,8 +9585,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9781,8 +9607,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9805,8 +9629,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9829,8 +9651,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9853,8 +9673,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9868,8 +9686,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'myFlatDataTest::entity::Address',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9883,8 +9699,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9908,8 +9722,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9932,8 +9744,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9957,8 +9767,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -9981,8 +9789,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Float',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10005,8 +9811,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Boolean',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -10031,8 +9835,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10046,8 +9848,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'myFlatDataTest::Origination',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -10082,8 +9882,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10097,8 +9895,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10112,8 +9908,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10127,8 +9921,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10142,8 +9934,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10157,8 +9947,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10172,8 +9960,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10187,8 +9973,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'myFlatDataTest::geography::State',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10202,8 +9986,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'myFlatDataTest::geography::Country',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -10247,8 +10029,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10271,8 +10051,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10295,8 +10073,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10319,8 +10095,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -10363,8 +10137,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10387,8 +10159,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10411,8 +10181,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -10435,8 +10203,6 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],

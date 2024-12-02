@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  debounce,
+  guaranteeNonNullable,
+  type DebouncedFunc,
+} from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import type { GridApi } from '@ag-grid-community/core';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
@@ -59,6 +63,9 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
   rowLimit?: number | undefined;
   isPaginationEnabled = INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_PAGINATION;
   scrollHintText?: string | undefined;
+  // As we resize columns dynamically to fit their content, virtual columns are being rendered
+  // and resized as user scrolls horizontally, this can cause performance issues, so we debounce.
+  debouncedAutoResizeColumns?: DebouncedFunc<() => void>;
 
   constructor(view: DataCubeViewState) {
     super(view);
@@ -112,6 +119,10 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
 
   configureClient(val: GridApi | undefined) {
     this._client = val;
+    this.debouncedAutoResizeColumns = debounce(
+      () => val?.autoSizeAllColumns(),
+      100,
+    );
   }
 
   override getSnapshotSubscriberName() {

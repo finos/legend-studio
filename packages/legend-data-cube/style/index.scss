@@ -306,6 +306,13 @@
     box-shadow: none;
   }
 
+  // Make sure the full-width loader is not causing the grid to jump when its width
+  // not spanning the full width of the screen
+  // See https://www.ag-grid.com/javascript-data-grid/component-loading-cell-renderer/#full-width-loading-row
+  .ag-full-width-row {
+    background-color: transparent;
+  }
+
   // --------------------------------- Pinning ---------------------------------
   // Improve visibility of pinned columns
 

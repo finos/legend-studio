@@ -53,7 +53,7 @@ import { V1_Constraint } from '../../../model/packageableElements/domain/V1_Cons
 import { V1_Property } from '../../../model/packageableElements/domain/V1_Property.js';
 import { V1_DerivedProperty } from '../../../model/packageableElements/domain/V1_DerivedProperty.js';
 import {
-  V1_RawGenricType,
+  V1_RawGenericType,
   V1_RawRawType,
   type V1_RawVariable,
 } from '../../../model/rawValueSpecification/V1_RawVariable.js';
@@ -72,23 +72,12 @@ import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
 import { V1_transformTestAssertion } from './V1_TestTransformer.js';
 import { V1_DefaultValue } from '../../../model/packageableElements/domain/V1_DefaultValue.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
-import { V1_PackageableType } from '../../../model/valueSpecification/raw/V1_PackageableElementPtr.js';
-import { V1_GenericType } from '../../../model/packageableElements/type/V1_GenericType.js';
-
-export const V1_createGenericTypeWithElementPath = (
-  path: string,
-): V1_GenericType => {
-  const genType = new V1_GenericType();
-  const pType = new V1_PackageableType();
-  pType.fullPath = path;
-  genType.rawType = pType;
-  return genType;
-};
+import { V1_createGenericTypeWithElementPath } from '../../../helpers/V1_DomainHelper.js';
 
 export const V1_createRawGenericTypeWithElementPath = (
   path: string,
-): V1_RawGenricType => {
-  const genType = new V1_RawGenricType();
+): V1_RawGenericType => {
+  const genType = new V1_RawGenericType();
   const pType = new V1_RawRawType();
   pType.fullPath = path;
   genType.rawType = pType;

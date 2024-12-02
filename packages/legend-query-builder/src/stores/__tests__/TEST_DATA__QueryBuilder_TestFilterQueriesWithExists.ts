@@ -379,8 +379,6 @@ export const TEST_DATA__lambda_filterWithSingleExists = {
           _type: 'packageableType',
           fullPath: 'StrictDate',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -693,8 +691,6 @@ export const TEST_DATA__lambda_filterWithNestedExists = {
           _type: 'packageableType',
           fullPath: 'StrictDate',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -954,8 +950,6 @@ export const TEST_DATA__lambda_filterWithMultipleGroupConditionsInExists = {
           _type: 'packageableType',
           fullPath: 'StrictDate',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -1294,8 +1288,6 @@ export const TEST_DATA__lambda_filterWithTwoExistsInSingleGroupCondition = {
           _type: 'packageableType',
           fullPath: 'StrictDate',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,

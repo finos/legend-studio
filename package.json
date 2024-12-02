@@ -88,7 +88,8 @@
     "last 2 Chrome versions"
   ],
   "resolutions": {
-    "glob-parent": "^6.0.1"
+    "glob-parent": "^6.0.1",
+    "whatwg-url": "^14.0.0"
   },
   "devDependencies": {
     "@actions/core": "1.11.1",
