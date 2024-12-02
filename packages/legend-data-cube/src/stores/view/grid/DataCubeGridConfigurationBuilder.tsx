@@ -215,16 +215,18 @@ function _displaySpec(columnData: ColumnData) {
     hide:
       column.hideFromView ||
       !column.isSelected ||
-      Boolean(
+      (Boolean(
         snapshot.data.pivot &&
           !snapshot.data.pivot.castColumns.find((col) => col.name === name),
-      ),
+      ) &&
+        !snapshot.data.groupExtendedColumns.find((col) => col.name === name)),
     lockVisible:
       !column.isSelected ||
-      Boolean(
+      (Boolean(
         snapshot.data.pivot &&
           !snapshot.data.pivot.castColumns.find((col) => col.name === name),
-      ),
+      ) &&
+        !snapshot.data.groupExtendedColumns.find((col) => col.name === name)),
     pinned:
       column.pinned !== undefined
         ? column.pinned === DataCubeColumnPinPlacement.RIGHT
@@ -809,7 +811,7 @@ export function generateColumnDefs(
     );
   }
 
-  return [
+  const columnDefs = [
     // NOTE: Internal column used for programatically trigger data fetch when filter is modified
     {
       colId: INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
@@ -871,6 +873,8 @@ export function generateColumnDefs(
       } satisfies ColDef;
     }),
   ] satisfies (ColDef | ColGroupDef)[];
+
+  return columnDefs;
 }
 
 export function generateGridOptionsFromSnapshot(

@@ -48,7 +48,11 @@ import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
 import { AlertType } from '../../../components/core/DataCubeAlert.js';
 import { sum } from 'mathjs';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import { buildGridDataFetchExecutableQuery } from './DataCubeGridQueryBuilder.js';
+import {
+  _aggCountCol,
+  buildGridDataFetchExecutableQuery,
+} from './DataCubeGridQueryBuilder.js';
+import { _colSpecArrayParam } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';
 
 type DataCubeGridClientCellValue = string | number | boolean | null | undefined;
 type DataCubeGridClientRowData = {
@@ -282,6 +286,12 @@ async function getCastColumns(
 
         if (funcMap.groupExtend) {
           _unprocess('groupExtend');
+        }
+
+        // when both pivot and groupBy present, we need to account for the count column
+        // in the cast expression
+        if (funcMap.pivot && currentSnapshot.data.groupBy) {
+          _colSpecArrayParam(funcMap.pivot, 1).colSpecs.push(_aggCountCol());
         }
       },
     },

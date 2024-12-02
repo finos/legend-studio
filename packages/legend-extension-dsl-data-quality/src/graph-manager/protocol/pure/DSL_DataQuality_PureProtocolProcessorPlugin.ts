@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../../../package.json';
+import packageJson from '../../../../package.json' with { type: 'json' };
 import { type PlainObject, assertType } from '@finos/legend-shared';
 import {
   V1_DataQualityClassValidationsConfiguration,

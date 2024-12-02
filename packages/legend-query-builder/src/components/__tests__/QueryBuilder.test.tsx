@@ -26,9 +26,9 @@ import { integrationTest } from '@finos/legend-shared/test';
 import { create_RawLambda, stub_RawLambda } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import { TEST__setUpQueryBuilder } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
-import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
-import { TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
-import { TEST_DATA__simpeFilterWithMilestonedExists } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
+import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json' with { type: 'json' };
+import { TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js' with { type: 'json' };
+import { TEST_DATA__simpeFilterWithMilestonedExists } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js' with { type: 'json' };
 
 test(
   integrationTest(

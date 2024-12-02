@@ -29,7 +29,7 @@ import {
   TEST_DATA__projectionWithSimpleDerivationAndAggregation,
   TEST_DATA__simpleProjection,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
-import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
+import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json' with { type: 'json' };
 import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalWithExists,
