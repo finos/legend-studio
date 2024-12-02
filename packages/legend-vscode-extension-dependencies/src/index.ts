@@ -142,6 +142,7 @@ export {
   V1_GraphTransformerContextBuilder,
   V1_LambdaReturnTypeInput,
   V1_LightQuery,
+  V1_MappedEntity,
   V1_MappingModelCoverageAnalysisInput,
   V1_MappingModelCoverageAnalysisResult,
   V1_Multiplicity,

@@ -122,7 +122,7 @@ class V1_MappedEntityInfo {
   );
 }
 
-class V1_MappedEntity {
+export class V1_MappedEntity {
   path!: string;
   properties: V1_MappedProperty[] = [];
   info?: V1_MappedEntityInfo | undefined;

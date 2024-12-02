@@ -732,6 +732,7 @@ export {
   V1_StoreEntitlementAnalysisInput,
 } from './graph-manager/protocol/pure/v1/engine/analytics/V1_StoreEntitlementAnalysis.js';
 export {
+  V1_MappedEntity,
   V1_MappingModelCoverageAnalysisInput,
   V1_MappingModelCoverageAnalysisResult,
   V1_buildModelCoverageAnalysisResult,
