@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import packageJson from '../../package.json';
+import packageJson from '../../package.json' with { type: 'json' };
 import {
   type ElementObserver,
   type PureGraphManagerExtensionBuilder,

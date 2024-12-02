@@ -23,7 +23,7 @@ import {
   queryByText,
   waitFor,
 } from '@testing-library/react';
-import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json';
+import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json' with { type: 'json' };
 import {
   TEST_DATA__projectWithColFunctionCollection,
   TEST_DATA__projectWithColumnNameNotCollection,

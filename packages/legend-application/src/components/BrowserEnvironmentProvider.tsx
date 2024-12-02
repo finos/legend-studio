@@ -47,15 +47,7 @@ export const BrowserEnvironmentProvider: React.FC<{
   children: React.ReactNode;
   baseUrl: string;
 }> = ({ children, baseUrl }) => (
-  <BrowserRouter
-    basename={stripTrailingSlash(baseUrl)}
-    future={{
-      // See https://reactrouter.com/en/6.28.0/upgrading/future#v7_relativesplatpath
-      v7_relativeSplatPath: true,
-      // See https://reactrouter.com/en/6.28.0/upgrading/future#v7_starttransition
-      v7_startTransition: true,
-    }}
-  >
+  <BrowserRouter basename={stripTrailingSlash(baseUrl)}>
     <BrowserPlatformProvider baseUrl={baseUrl}>
       {children}
     </BrowserPlatformProvider>

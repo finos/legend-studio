@@ -51,15 +51,7 @@ export const TEST__BrowserEnvironmentProvider: React.FC<{
   );
 
   return (
-    <MemoryRouter
-      initialEntries={initialEntries}
-      future={{
-        // See https://reactrouter.com/en/6.28.0/upgrading/future#v7_relativesplatpath
-        v7_relativeSplatPath: true,
-        // See https://reactrouter.com/en/6.28.0/upgrading/future#v7_starttransition
-        v7_startTransition: true,
-      }}
-    >
+    <MemoryRouter initialEntries={initialEntries}>
       <ApplicationPlatformContext.Provider value={platform}>
         {children}
       </ApplicationPlatformContext.Provider>
