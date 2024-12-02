@@ -73,6 +73,7 @@ export class V1_DQExecuteInput {
   packagePath!: string;
   queryLimit: number | undefined;
   validationName: string | undefined;
+  runQuery: boolean | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_DQExecuteInput, {
@@ -82,6 +83,7 @@ export class V1_DQExecuteInput {
       packagePath: primitive(),
       queryLimit: optional(primitive()),
       validationName: optional(primitive()),
+      runQuery: optional(primitive()),
     }),
   );
 }
@@ -174,6 +176,7 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     dqExecuteInput.packagePath = packagePath;
     dqExecuteInput.queryLimit = options.previewLimit;
     dqExecuteInput.validationName = options.validationName;
+    dqExecuteInput.runQuery = options.runQuery;
     return dqExecuteInput;
   }
 

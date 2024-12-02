@@ -42,7 +42,7 @@ export class DataQualityRelationValidationLambdaEditorState extends LambdaEditor
     relationValidation: DataQualityRelationValidation,
     editorStore: EditorStore,
   ) {
-    super('true', '|');
+    super('', '|');
 
     makeObservable(this, {
       relationValidation: observable,
