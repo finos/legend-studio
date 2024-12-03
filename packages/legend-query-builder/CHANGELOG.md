@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.15.22
+
+### Patch Changes
+
+- [#3695](https://github.com/finos/legend-studio/pull/3695) [`1e2a720`](https://github.com/finos/legend-studio/commit/1e2a7204332e3b10d61064bbe42a35dc594764c1) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - minor improvements
+
 ## 4.15.21
 
 ## 4.15.20
