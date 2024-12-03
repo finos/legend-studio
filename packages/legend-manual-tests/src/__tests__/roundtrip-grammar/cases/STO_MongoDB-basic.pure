@@ -1,0 +1,214 @@
+###Service
+Service model::store::mongodb::service::PersonService
+{
+  pattern: '/api/allPersons';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |model::store::mongodb::domain::Person.all()->graphFetch(#{model::store::mongodb::domain::Person{firstName,lastName,firm{legalName}}}#)->serialize(#{model::store::mongodb::domain::Person{firstName,lastName,firm{legalName}}}#);
+    mapping: model::store::mongodb::mapping::TestPersonMapping;
+    runtime: model::store::mongodb::runtime::TestMongoDBRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      tests:
+      [
+        test_1:
+        {
+          asserts:
+          [
+            assertion_1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+###MongoDB
+Database model::store::mongodb::store::mydatabase
+(
+  Collection person
+  (
+    validationLevel: strict;
+    validationAction: warn;
+    jsonSchema: {
+      "bsonType": "object",
+      "title": "Record of Firm",
+      "properties": {
+        "firstName": {
+          "bsonType": "string",
+          "description": "firstName of the person",
+          "minLength": 2
+        },
+        "lastName": {
+          "bsonType": "string",
+          "description": "lastName of the person",
+          "minLength": 2
+        },
+        "age": {
+          "bsonType": "int",
+          "description": "age of the person"
+        },
+        "firm": {
+          "bsonType": "object",
+          "description": "firm of the person",
+          "properties": {
+            "legalName": {
+              "bsonType": "string",
+              "description": "legal name of the firm"
+            },
+            "address": {
+              "bsonType": "string",
+              "description": "address of the firm"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    };
+  )
+)
+
+
+###ExternalFormat
+Binding model::store::mongodb::binding::PersonCollectionBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    model::store::mongodb::domain::Person,
+    model::store::mongodb::domain::Firm,
+    model::store::mongodb::domain::Address,
+    model::store::mongodb::domain::Country,
+    model::store::mongodb::domain::Car,
+    model::store::mongodb::domain::Manufacturer
+  ];
+}
+
+
+###Pure
+Class model::store::mongodb::domain::Country
+{
+  continent: String[0..1];
+  countryCode: String[1];
+}
+
+Class model::store::mongodb::domain::Firm
+{
+  legalName: String[0..1];
+  dateFounded: DateTime[1];
+  industrySectors: String[*];
+  address: model::store::mongodb::domain::Address[1];
+}
+
+Class model::store::mongodb::domain::Car
+{
+  model: String[1];
+}
+
+Class model::store::mongodb::domain::Manufacturer
+{
+  name: String[0..1];
+}
+
+Class model::store::mongodb::domain::Address
+{
+  street: String[1];
+  city: String[0..1];
+  postalCode: String[1];
+  country: model::store::mongodb::domain::Country[0..1];
+}
+
+Class model::store::mongodb::domain::Person
+{
+  firstName: String[0..1];
+  lastName: String[1];
+  age: Integer[0..1];
+  birthDate: DateTime[1];
+  phoneNumber: String[1];
+  otherPhoneNumbers: String[*];
+  email: String[1];
+  address: model::store::mongodb::domain::Address[0..1];
+}
+
+Association model::store::mongodb::domain::Person_Car
+{
+  person: model::store::mongodb::domain::Person[1];
+  car: model::store::mongodb::domain::Car[1..*];
+}
+
+Association model::store::mongodb::domain::Person_Firm
+{
+  person: model::store::mongodb::domain::Person[1];
+  firm: model::store::mongodb::domain::Firm[0..1];
+}
+
+Association model::store::mongodb::domain::Country_Manufacturer
+{
+  manufacturer: model::store::mongodb::domain::Manufacturer[0..1];
+  country: model::store::mongodb::domain::Country[1];
+}
+
+Association model::store::mongodb::domain::Car_Manufacturer
+{
+  manufacturer: model::store::mongodb::domain::Manufacturer[1];
+  car: model::store::mongodb::domain::Car[1];
+}
+
+
+###Mapping
+Mapping model::store::mongodb::mapping::TestPersonMapping
+(
+  *model::store::mongodb::domain::Person[Person]: MongoDB
+  {
+    ~mainCollection [model::store::mongodb::store::mydatabase] person
+    ~binding model::store::mongodb::binding::PersonCollectionBinding
+  }
+)
+
+
+###Connection
+MongoDBConnection model::store::mongodb::connection::testConnection
+{
+  database: userDatabase;
+  store: model::store::mongodb::store::mydatabase;
+  serverURLs: [localhost:27017];
+  authentication: # UserPassword {
+    username: 'sa';
+    password: SystemPropertiesSecret
+    {
+      systemPropertyName: 'mongo_pwd';
+    };
+  }#;
+}
+
+
+###Runtime
+Runtime model::store::mongodb::runtime::TestMongoDBRuntime
+{
+  mappings:
+  [
+    model::store::mongodb::mapping::TestPersonMapping
+  ];
+  connections:
+  [
+    model::store::mongodb::store::mydatabase:
+    [
+      connection_1: model::store::mongodb::connection::testConnection
+    ]
+  ];
+}
