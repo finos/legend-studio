@@ -17,15 +17,16 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import type { V1_EmbeddedData } from '../../data/V1_EmbeddedData.js';
+import type { V1_PackageableElementPointer } from '../V1_PackageableElement.js';
 
 export class V1_MappingStoreTestData implements Hashable {
-  store!: string;
+  store!: V1_PackageableElementPointer;
   data!: V1_EmbeddedData;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.STORE_TEST_DATA,
-      this.store,
+      this.store.path,
       this.data,
     ]);
   }

@@ -23,6 +23,7 @@ import {
   custom,
   alias,
   optional,
+  SKIP,
 } from 'serializr';
 import {
   type PlainObject,
@@ -98,7 +99,14 @@ const V1_RawGenericTypeSchemaModelInner = createModelSchema(V1_RawGenericType, {
       INTERNAL__forceReturnEmptyInTest: true,
     },
   ),
-  // typeVariableValues: TODO
+  typeVariableValues: optionalCustomList(
+    // TODO
+    (value) => SKIP,
+    (value) => SKIP,
+    {
+      INTERNAL__forceReturnEmptyInTest: true,
+    },
+  ),
 });
 
 const V1_RawGenericTypeSchemaModel = createModelSchema(V1_RawGenericType, {
@@ -116,7 +124,14 @@ const V1_RawGenericTypeSchemaModel = createModelSchema(V1_RawGenericType, {
       INTERNAL__forceReturnEmptyInTest: true,
     },
   ),
-  // typeVariableValues: TODO
+  typeVariableValues: optionalCustomList(
+    // TODO
+    (value) => SKIP,
+    (value) => SKIP,
+    {
+      INTERNAL__forceReturnEmptyInTest: true,
+    },
+  ),
 });
 
 const V1_deserializeRawGenericType = (

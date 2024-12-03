@@ -97,6 +97,12 @@ import {
   V1_serializeDatasourceSpecification,
 } from './V1_ConnectionSerializationHelper.js';
 import { V1_stereotypePtrModelSchema } from './V1_DomainSerializationHelper.js';
+import type { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
+import {
+  V1_packageableElementPointerModelSchema,
+  V1_serializePackageableElementPointer,
+} from './V1_CoreSerializationHelper.js';
+import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 
 export const V1_DATABASE_ELEMENT_PROTOCOL_TYPE = 'relational';
 
@@ -547,6 +553,9 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
     postProcessors: customList(
       (value: V1_PostProcessor) => V1_serializePostProcessor(value, plugins),
       (value) => V1_deserializePostProcessor(value, plugins),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
     ),
     postProcessorWithParameter: customEquivalentList({
       INTERNAL__forceReturnEmptyInTest: true,
@@ -565,7 +574,17 @@ export const V1_setupDatabaseSerialization = (
 export const V1_databaseModelSchema = createModelSchema(V1_Database, {
   _type: usingConstantValueSchema(V1_DATABASE_ELEMENT_PROTOCOL_TYPE),
   filters: list(usingModelSchema(V1_filterModelSchema)),
-  includedStores: list(primitive()),
+  includedStores: customList(
+    (val: V1_PackageableElementPointer) =>
+      serialize(V1_packageableElementPointerModelSchema, val),
+    (val) =>
+      V1_serializePackageableElementPointer(
+        val,
+        PackageableElementPointerType.STORE,
+      ),
+
+    { INTERNAL__forceReturnEmptyInTest: true },
+  ),
   joins: list(usingModelSchema(V1_joinModelSchema)),
   name: primitive(),
   package: primitive(),

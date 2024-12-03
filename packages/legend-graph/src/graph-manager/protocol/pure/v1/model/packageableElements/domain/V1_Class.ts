@@ -20,6 +20,7 @@ import type { V1_Property } from '../../../model/packageableElements/domain/V1_P
 import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
 import {
   type V1_PackageableElementVisitor,
+  type V1_PackageableElementPointer,
   V1_PackageableElement,
 } from '../../../model/packageableElements/V1_PackageableElement.js';
 import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
@@ -27,7 +28,7 @@ import type { V1_Constraint } from '../../../model/packageableElements/domain/V1
 import type { V1_DerivedProperty } from './V1_DerivedProperty.js';
 
 export class V1_Class extends V1_PackageableElement implements Hashable {
-  superTypes: string[] = [];
+  superTypes: V1_PackageableElementPointer[] = [];
   properties: V1_Property[] = [];
   derivedProperties: V1_DerivedProperty[] = [];
   stereotypes: V1_StereotypePtr[] = [];
@@ -40,7 +41,7 @@ export class V1_Class extends V1_PackageableElement implements Hashable {
       this.path,
       hashArray(this.properties),
       hashArray(this.derivedProperties),
-      hashArray(this.superTypes),
+      hashArray(this.superTypes.map((e) => e.path)),
       hashArray(this.constraints),
       hashArray(this.stereotypes),
       hashArray(this.taggedValues),

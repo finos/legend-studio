@@ -19,6 +19,7 @@ import type { V1_Persister } from './V1_DSL_Persistence_Persister.js';
 import type { V1_Trigger } from './V1_DSL_Persistence_Trigger.js';
 import {
   V1_PackageableElement,
+  type V1_PackageableElementPointer,
   type V1_PackageableElementVisitor,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
@@ -29,7 +30,7 @@ import type { V1_ServiceOutputTarget as V1_ServiceOutputTarget } from './V1_DSL_
 export class V1_Persistence extends V1_PackageableElement implements Hashable {
   documentation!: string;
   trigger!: V1_Trigger;
-  service!: string;
+  service!: V1_PackageableElementPointer;
   persister?: V1_Persister | undefined;
   serviceOutputTargets?: V1_ServiceOutputTarget[] | undefined;
   notifier!: V1_Notifier;
@@ -40,7 +41,7 @@ export class V1_Persistence extends V1_PackageableElement implements Hashable {
       PERSISTENCE_HASH_STRUCTURE.PERSISTENCE,
       this.documentation,
       this.trigger,
-      this.service,
+      this.service.path,
       hashArray(this.serviceOutputTargets ?? []),
       this.persister ?? '',
       this.notifier,
