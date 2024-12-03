@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.15.23
+
+### Patch Changes
+
+- [#3710](https://github.com/finos/legend-studio/pull/3710) [`58df540`](https://github.com/finos/legend-studio/commit/58df540c31c8293bb3d23de36edf8a56e5d0cc4b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add query timeout to database connection
+
 ## 4.15.22
 
 ### Patch Changes
