@@ -163,7 +163,6 @@ import {
   relationalDatabaseConnection_deletePostProcessor,
   snowflakeDatasourceSpec_setTempTableDb,
   snowflakeDatasourceSpec_setTempTableSchema,
-  dBConnection_clearQueryTimeOut,
   dBConnection_setQueryTimeOut,
 } from '../../../../stores/graph-modifier/STO_Relational_GraphModifierHelper.js';
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
@@ -1664,17 +1663,6 @@ export const RelationalConnectionGeneralEditor = observer(
       value: connection.type,
       label: connection.type,
     };
-
-    // const changeTimeOut: React.ChangeEventHandler<HTMLInputElement> = (
-    //   event,
-    // ) => {
-    //   const val = event.target.value;
-    //   if (val === '') {
-    //     dBConnection_clearQueryTimeOut(connection);
-    //   } else {
-    //     dBConnection_setQueryTimeOut(connection, parseInt(val, 10));
-    //   }
-    // };
 
     const changeTimeOut: React.ChangeEventHandler<HTMLInputElement> = (
       event,
