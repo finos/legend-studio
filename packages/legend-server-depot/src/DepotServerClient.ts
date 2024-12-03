@@ -91,8 +91,9 @@ export class DepotServerClient extends AbstractServerClient {
     artifactId: string,
     version: string,
     classifier?: string,
-  ): Promise<PlainObject<Entity>[]> =>
-    this.get(this._version(groupId, artifactId, version, classifier));
+  ): Promise<PlainObject<Entity>[]> => {
+    return this.get(this._version(groupId, artifactId, version, classifier));
+  };
 
   getEntities(
     project: StoreProjectData,

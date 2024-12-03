@@ -39,6 +39,10 @@
     { "path": "packages/legend-application-query" },
     { "path": "packages/legend-application-query-bootstrap" },
     { "path": "packages/legend-application-query-deployment" },
+    // data cube
+    { "path": "packages/legend-application-data-cube" },
+    { "path": "packages/legend-application-data-cube-bootstrap" },
+    { "path": "packages/legend-application-data-cube-deployment" },
     // pure ide
     { "path": "packages/legend-application-pure-ide" },
     { "path": "packages/legend-application-pure-ide-deployment" },

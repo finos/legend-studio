@@ -41,7 +41,7 @@ const argv = yargs.default(hideBin(process.argv)).argv;
  *
  * Of course, we can allow a workaround for people who work directly `master` branch.
  */
-const DEFAULT_BRANCH_NAME = 'master';
+const DEFAULT_BRANCH_NAME = 'finos-master';
 const useOrigin = argv.useOrigin;
 const generateForBranch = argv.branch;
 const message = argv.m;
