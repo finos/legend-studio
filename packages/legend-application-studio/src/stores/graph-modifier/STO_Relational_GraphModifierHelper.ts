@@ -82,18 +82,6 @@ export const dBConnection_setQueryTimeOut = action(
   },
 );
 
-// export const dBConnection_setQueryTimeOut = action(
-//   (con: DatabaseConnection, val: number | undefined): void => {
-//     con.queryTimeOutInSeconds = val;
-//   },
-// );
-
-export const dBConnection_clearQueryTimeOut = action(
-  (con: DatabaseConnection): void => {
-    con.queryTimeOutInSeconds = undefined;
-  },
-);
-
 export const relationDbConnection_setLocalMode = action(
   (con: RelationalDatabaseConnection, val: boolean | undefined): void => {
     con.localMode = val;
