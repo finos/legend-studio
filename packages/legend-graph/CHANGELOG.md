@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.10.57
+
+### Patch Changes
+
+- [#3710](https://github.com/finos/legend-studio/pull/3710) [`58df540`](https://github.com/finos/legend-studio/commit/58df540c31c8293bb3d23de36edf8a56e5d0cc4b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add query timeout to database connection
+
 ## 31.10.56
 
 ## 31.10.55
