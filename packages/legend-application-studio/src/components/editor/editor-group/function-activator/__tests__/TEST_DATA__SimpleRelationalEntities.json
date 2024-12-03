@@ -233,9 +233,7 @@
         "rawType": {
           "_type": "packageableType",
           "fullPath": "meta::pure::tds::TabularDataSet"
-        },
-        "typeArguments": [],
-        "typeVariableValues": []
+        }
       }
     },
     "classifierPath": "meta::pure::metamodel::function::ConcreteFunctionDefinition"

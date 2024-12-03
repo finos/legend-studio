@@ -162,11 +162,15 @@ export {
   V1_buildCompilationError,
   V1_buildExecutionError,
   V1_buildParserError,
+  V1_buildFunctionInfoAnalysis,
 } from './graph-manager/protocol/pure/v1/engine/V1_EngineHelper.js';
 export {
-  V1_buildFunctionInfoAnalysis,
   V1_getFunctionNameWithoutSignature,
-  V1_getGenericTypeFullPath as V1_getFullReturnTypePath,
+  V1_getGenericTypeFullPath,
+  V1_createGenericTypeWithElementPath,
+  V1_createGenericTypeWithRawType,
+  V1_createRelationType,
+  V1_createRelationTypeColumn,
 } from './graph-manager/protocol/pure/v1/helpers/V1_DomainHelper.js';
 export {
   V1_buildExecutionResult,
@@ -200,6 +204,11 @@ export { V1_GenericTypeInstance } from './graph-manager/protocol/pure/v1/model/v
 export { V1_ParameterValue } from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_ParameterValue.js';
 export { V1_PureExecution } from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_ServiceExecution.js';
 export { V1_SourceInformation } from './graph-manager/protocol/pure/v1/model/V1_SourceInformation.js';
+export {
+  V1_RelationType,
+  V1_RelationTypeColumn,
+} from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_RelationType.js';
+export { V1_GenericType } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_GenericType.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 

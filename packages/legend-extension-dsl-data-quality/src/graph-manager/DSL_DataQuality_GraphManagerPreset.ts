@@ -15,7 +15,7 @@
  */
 
 import { AbstractPreset } from '@finos/legend-shared';
-import packageJson from '../../package.json';
+import packageJson from '../../package.json' with { type: 'json' };
 import { DSL_DataQuality_PureGraphPlugin } from '../graph/metamodel/DSL_DataQuality_PureGraphPlugin.js';
 import { DSL_DataQuality_PureGraphManagerPlugin } from './DSL_DataQuality_PureGraphManagerPlugin.js';
 import { DSL_DataQuality_PureProtocolProcessorPlugin } from './protocol/pure/DSL_DataQuality_PureProtocolProcessorPlugin.js';

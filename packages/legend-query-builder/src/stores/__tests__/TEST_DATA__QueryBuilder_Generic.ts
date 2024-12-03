@@ -112,8 +112,6 @@ export const TEST_DATA__simpleProjection = {
           _type: 'packageableType',
           fullPath: 'String',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: { lowerBound: 0, upperBound: 1 },
       name: 'var_1',
@@ -295,8 +293,6 @@ export const TEST_DATA__simpleProjectionWithPreviewLimit = {
           _type: 'packageableType',
           fullPath: 'String',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: { lowerBound: 0, upperBound: 1 },
       name: 'var_1',
@@ -399,8 +395,6 @@ export const TEST_DATA__simpleProjectionWithOutPreviewLimit = {
           _type: 'packageableType',
           fullPath: 'String',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: { lowerBound: 0, upperBound: 1 },
       name: 'var_1',
@@ -901,7 +895,12 @@ export const TEST_DATA__simpleProjectWithSubtype = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath: 'model::Colony',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath: 'model::Colony',
+                            },
+                          },
                         },
                       ],
                     },
@@ -938,7 +937,12 @@ export const TEST_DATA__simpleProjectWithSubtype = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath: 'model::Colony',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath: 'model::Colony',
+                            },
+                          },
                         },
                       ],
                     },
@@ -975,7 +979,12 @@ export const TEST_DATA__simpleProjectWithSubtype = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath: 'model::Colony',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath: 'model::Colony',
+                            },
+                          },
                         },
                       ],
                     },
@@ -1055,7 +1064,13 @@ export const TEST_DATA__simpleProjectionWithSubtype = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath: 'model::pure::tests::model::simple::Person',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath:
+                                'model::pure::tests::model::simple::Person',
+                            },
+                          },
                         },
                       ],
                     },
@@ -1147,7 +1162,12 @@ export const TEST_DATA__simpleProjectionWithSubtypesInDeepLevel = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath: 'model::Colony',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath: 'model::Colony',
+                            },
+                          },
                         },
                       ],
                     },
@@ -1190,7 +1210,12 @@ export const TEST_DATA__simpleProjectionWithSubtypesInDeepLevel = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath: 'model::Colony',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath: 'model::Colony',
+                            },
+                          },
                         },
                       ],
                     },
@@ -1233,7 +1258,12 @@ export const TEST_DATA__simpleProjectionWithSubtypesInDeepLevel = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath: 'model::Colony',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath: 'model::Colony',
+                            },
+                          },
                         },
                       ],
                     },
@@ -2487,8 +2517,13 @@ export const TEST_DATA__filterQueryWithSubtypeWithoutExists = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath:
-                            'model::pure::tests::model::simple::PersonExtension',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath:
+                                'model::pure::tests::model::simple::PersonExtension',
+                            },
+                          },
                         },
                       ],
                     },
@@ -2558,8 +2593,13 @@ export const TEST_DATA__filterQueryWithSubtypeWithExists = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath:
-                            'model::pure::tests::model::simple::FirmExtension',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath:
+                                'model::pure::tests::model::simple::FirmExtension',
+                            },
+                          },
                         },
                       ],
                     },
@@ -2662,8 +2702,13 @@ export const TEST_DATA__filterQueryWithSubtypeWithExistsChain = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath:
-                            'model::pure::tests::model::simple::FirmExtension',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath:
+                                'model::pure::tests::model::simple::FirmExtension',
+                            },
+                          },
                         },
                       ],
                     },
@@ -3583,7 +3628,12 @@ export const TEST_DATA__simpleProjectionWithSubType = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath: 'model::Colony',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath: 'model::Colony',
+                            },
+                          },
                         },
                       ],
                     },
@@ -3614,7 +3664,12 @@ export const TEST_DATA__simpleProjectionWithSubType = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath: 'model::Colony',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath: 'model::Colony',
+                            },
+                          },
                         },
                       ],
                     },
@@ -3645,7 +3700,12 @@ export const TEST_DATA__simpleProjectionWithSubType = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath: 'model::Colony',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath: 'model::Colony',
+                            },
+                          },
                         },
                       ],
                     },
@@ -3728,7 +3788,12 @@ export const TEST_DATA__simpleProjectionWithSubtypeFromSubtypeModel = {
                             },
                             {
                               _type: 'genericTypeInstance',
-                              fullPath: 'model::Firm',
+                              genericType: {
+                                rawType: {
+                                  _type: 'packageableType',
+                                  fullPath: 'model::Firm',
+                                },
+                              },
                             },
                           ],
                         },
@@ -4009,8 +4074,6 @@ export const TEST_DATA__simpleProjectionWithConstantsAndParameters = {
           _type: 'packageableType',
           fullPath: 'String',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 0,
@@ -4504,8 +4567,6 @@ export const TEST_DATA__simpeFilterWithMilestonedExists = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -5262,8 +5323,6 @@ export const TEST_DATA__lambda_simpleConstantWithDatesAndCalcualted = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -5519,8 +5578,6 @@ export const TEST_DATA__lambda_WithDerivedProjectColumnsUsingConstAndParams = {
           _type: 'packageableType',
           fullPath: 'String',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
     },
   ],
@@ -5603,8 +5660,6 @@ export const TEST_DATA__lambda_returnTypeSimple = {
           _type: 'packageableType',
           fullPath: 'model::Person',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: { lowerBound: 1, upperBound: 1 },
       name: 'x',
@@ -5616,8 +5671,6 @@ export const TEST_DATA__lambda_returnTypeSimple = {
           _type: 'packageableType',
           fullPath: 'String',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: { lowerBound: 1, upperBound: 1 },
       name: 'testing',
@@ -5721,8 +5774,6 @@ export const TEST_DATA__lambda_returnTypeWithConst = {
           _type: 'packageableType',
           fullPath: 'model::Person',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -5737,8 +5788,6 @@ export const TEST_DATA__lambda_returnTypeWithConst = {
           _type: 'packageableType',
           fullPath: 'String',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -5845,8 +5894,6 @@ export const TEST_DATA__lambda_returnTypeWithParam = {
           _type: 'packageableType',
           fullPath: 'model::Person',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -5861,8 +5908,6 @@ export const TEST_DATA__lambda_returnTypeWithParam = {
           _type: 'packageableType',
           fullPath: 'String',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -5988,8 +6033,6 @@ export const TEST_DATA__lambda_returnTypeWithConstAndParam = {
           _type: 'packageableType',
           fullPath: 'model::Person',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -6004,8 +6047,6 @@ export const TEST_DATA__lambda_returnTypeWithConstAndParam = {
           _type: 'packageableType',
           fullPath: 'String',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -6595,8 +6636,6 @@ export const TEST_DATA__lambda_builtPostFilterQuery = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -7133,8 +7172,6 @@ export const TEST_DATA__lambda_expectedModifiedPostFilterQuery = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,

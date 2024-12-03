@@ -110,10 +110,6 @@ const logSuccess = (
 const isTestSkipped = (filePath: string): boolean =>
   Object.keys(EXCLUSIONS).includes(basename(filePath)) &&
   EXCLUSIONS[basename(filePath)] === SKIP;
-//  ||
-// !basename(filePath).endsWith(
-//   'CORE-basic-function-with-relational-tests.pure',
-// );
 const isPartialTest = (filePath: string): boolean =>
   Object.keys(EXCLUSIONS).includes(basename(filePath));
 
@@ -309,6 +305,7 @@ const cases: [string, string, boolean][] = fs
   .readdirSync(TEST_CASE_DIR)
   .map((caseName) => resolve(TEST_CASE_DIR, caseName))
   .filter((filePath) => fs.statSync(filePath).isFile())
+  // .filter((filePath) => basename(filePath) === 'DSL_PersistenceV2-basic.pure')
   .map((filePath) => [
     testNameFrom(filePath),
     filePath,
@@ -319,7 +316,7 @@ describe('Grammar roundtrip test', () => {
   test.each(cases)('%s', async (testName, filePath, isSkipped) => {
     if (!isSkipped) {
       await checkGrammarRoundtrip(testName, filePath, {
-        debug: false,
+        debug: true,
       });
     }
   });

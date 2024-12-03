@@ -320,9 +320,7 @@
                 "rawType": {
                   "_type": "packageableType",
                   "fullPath": "String"
-                },
-                "typeArguments": [],
-                "typeVariableValues": []
+                }
               },
               "multiplicity": {
                 "lowerBound": 1,
@@ -336,9 +334,7 @@
                 "rawType": {
                   "_type": "packageableType",
                   "fullPath": "String"
-                },
-                "typeArguments": [],
-                "typeVariableValues": []
+                }
               },
               "multiplicity": {
                 "lowerBound": 1,
@@ -651,9 +647,7 @@
                 "rawType": {
                   "_type": "packageableType",
                   "fullPath": "String"
-                },
-                "typeArguments": [],
-                "typeVariableValues": []
+                }
               },
               "multiplicity": {
                 "lowerBound": 1,

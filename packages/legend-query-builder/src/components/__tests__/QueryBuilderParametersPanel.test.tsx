@@ -707,7 +707,7 @@ test(
       fireEvent.click(renderResult.getByText('Edit Pure'));
     });
     const lambdaEditor = await waitFor(() => renderResult.getByRole('dialog'));
-    fireEvent.click(getByText(lambdaEditor, 'Close'));
+    fireEvent.click(getByText(lambdaEditor, 'Proceed'));
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
     );
@@ -851,7 +851,7 @@ test(
       fireEvent.click(renderResult.getByText('Edit Pure'));
     });
     const lambdaEditor = await waitFor(() => renderResult.getByRole('dialog'));
-    fireEvent.click(getByText(lambdaEditor, 'Close'));
+    fireEvent.click(getByText(lambdaEditor, 'Proceed'));
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
     );

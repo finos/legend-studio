@@ -49,6 +49,10 @@ import {
   extractPackagePathFromPath,
   CORE_PURE_PATH,
   V1_GenericTypeInstance,
+  V1_createGenericTypeWithElementPath,
+  V1_createGenericTypeWithRawType,
+  V1_createRelationType,
+  V1_createRelationTypeColumn,
 } from '@finos/legend-graph';
 import {
   type DataCubeQuerySnapshotFilterCondition,
@@ -75,6 +79,7 @@ import {
   type DataCubeQueryFunctionMap,
   isPivotResultColumnName,
   getPivotResultColumnBaseColumnName,
+  DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE,
 } from './DataCubeQueryEngine.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
@@ -380,14 +385,18 @@ export function _pivotAggCols(
 }
 
 export function _castCols(columns: DataCubeColumn[]) {
-  const genericType = new V1_GenericTypeInstance();
-  genericType.fullPath = CORE_PURE_PATH.RELATION;
-  genericType.typeArguments = [
-    _cols(
-      columns.map((col) => _colSpec(col.name, undefined, undefined, col.type)),
+  const genericTypeInstance = new V1_GenericTypeInstance();
+  genericTypeInstance.genericType = V1_createGenericTypeWithElementPath(
+    CORE_PURE_PATH.RELATION,
+  );
+  genericTypeInstance.genericType.typeArguments = [
+    V1_createGenericTypeWithRawType(
+      V1_createRelationType(
+        columns.map((col) => V1_createRelationTypeColumn(col.name, col.type)),
+      ),
     ),
   ];
-  return genericType;
+  return genericTypeInstance;
 }
 
 export function _groupByAggCols(
@@ -484,6 +493,23 @@ export function _groupByAggCols(
         }
         return aggCol;
       }),
+  ]);
+}
+
+export function _extendRootAggregation(columnName: string) {
+  return _function(DataCubeFunction.EXTEND, [
+    _col(
+      columnName,
+      _lambda(
+        [_var()],
+        [
+          _primitiveValue(
+            PRIMITIVE_TYPE.STRING,
+            DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE,
+          ),
+        ],
+      ),
+    ),
   ]);
 }
 

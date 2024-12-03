@@ -143,8 +143,6 @@ export const TEST_DATA__simpleSingleConditionMilestoningFilter = {
           _type: 'packageableType',
           fullPath: 'Date',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -1167,8 +1165,6 @@ export const TEST_DATA__lambda_simpleSingleConditionFilterWithParameter = {
           _type: 'packageableType',
           fullPath: 'String',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       name: 'case',
       multiplicity: {
@@ -1414,7 +1410,12 @@ export const TEST_DATA__simpleFilterWithSubType = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath: 'model::Colony',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath: 'model::Colony',
+                            },
+                          },
                         },
                       ],
                     },
@@ -1484,7 +1485,12 @@ export const TEST_DATA__nestedFilterWithSubType = {
                         },
                         {
                           _type: 'genericTypeInstance',
-                          fullPath: 'model::AddressType1',
+                          genericType: {
+                            rawType: {
+                              _type: 'packageableType',
+                              fullPath: 'model::AddressType1',
+                            },
+                          },
                         },
                       ],
                     },

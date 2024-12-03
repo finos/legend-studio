@@ -16,7 +16,7 @@
 
 import { type Clazz } from '@finos/legend-shared';
 import { type PackageableElement, PureGraphPlugin } from '@finos/legend-graph';
-import packageJson from '../../../package.json';
+import packageJson from '../../../package.json' with { type: 'json' };
 import {
   DataQualityClassValidationsConfiguration,
   DataQualityServiceValidationConfiguration,

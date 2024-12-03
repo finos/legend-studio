@@ -19,6 +19,7 @@ import {
   getQueryParameterValue,
   getQueryParameters,
   guaranteeNonNullable,
+  noop,
   sanitizeURL,
   stringifyQueryParams,
 } from '@finos/legend-shared';
@@ -172,7 +173,10 @@ export class BrowserNavigator implements ApplicationNavigator {
   }
 
   updateCurrentLocation(location: NavigationLocation): void {
-    this.navigate(location);
+    // `react-router` NavigateFunction returns promise and non-promise type, so we need to wrap it
+    // to avoid unhandled promise rejection if any. This might get resolved in the future.
+    // See https://github.com/remix-run/react-router/issues/12348
+    Promise.resolve(this.navigate(location)).catch(noop());
   }
 
   updateCurrentZone(zone: NavigationZone): void {

@@ -28,7 +28,7 @@ export class DataCubeEditorGeneralPropertiesPanelState
   readonly view!: DataCubeViewState;
   readonly editor!: DataCubeEditorState;
 
-  limit = -1;
+  limit: number | undefined = undefined;
   configuration = new DataCubeEditorMutableConfiguration();
 
   constructor(editor: DataCubeEditorState) {
@@ -45,7 +45,7 @@ export class DataCubeEditorGeneralPropertiesPanelState
     this.view = editor.view;
   }
 
-  setLimit(val: number) {
+  setLimit(val: number | undefined): void {
     this.limit = val;
   }
 
@@ -56,7 +56,7 @@ export class DataCubeEditorGeneralPropertiesPanelState
     this.setLimit(
       snapshot.data.limit !== undefined && snapshot.data.limit >= 0
         ? snapshot.data.limit
-        : -1,
+        : undefined,
     );
     this.configuration = DataCubeEditorMutableConfiguration.create(
       snapshot.data.configuration,
@@ -68,7 +68,8 @@ export class DataCubeEditorGeneralPropertiesPanelState
     baseSnapshot: DataCubeQuerySnapshot,
   ) {
     const data = newSnapshot.data;
-    data.limit = this.limit < 0 ? undefined : this.limit;
+    data.limit =
+      this.limit === undefined || this.limit < 0 ? undefined : this.limit;
     data.configuration = this.configuration.serialize();
   }
 }

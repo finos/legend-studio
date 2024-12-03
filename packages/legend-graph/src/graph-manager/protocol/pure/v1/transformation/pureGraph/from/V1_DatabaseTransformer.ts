@@ -48,6 +48,7 @@ import {
   RelationalOperationElementWithJoin,
   extractLine,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/RelationalOperationElement.js';
+import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 import type { Table } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Table.js';
 import type { Column } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Column.js';
 import type { Filter } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Filter.js';
@@ -107,6 +108,7 @@ import { V1_FilterMapping } from '../../../model/packageableElements/store/relat
 import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer.js';
 import type { TablePtr } from '../../../../../../../graph/metamodel/pure/packageableElements/service/TablePtr.js';
 import { V1_transformStereotype } from './V1_DomainTransformer.js';
+import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 
 const transformRelationalDataType = (
   type: RelationalDataType,
@@ -429,7 +431,11 @@ export const V1_transformDatabase = (
     V1_transformStereotype(stereotype),
   );
   database.includedStores = element.includes.map(
-    (store) => store.valueForSerialization ?? '',
+    (store) =>
+      new V1_PackageableElementPointer(
+        PackageableElementPointerType.STORE,
+        store.valueForSerialization ?? '',
+      ),
   );
   return database;
 };

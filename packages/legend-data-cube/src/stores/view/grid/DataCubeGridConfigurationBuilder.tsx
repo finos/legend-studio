@@ -33,7 +33,7 @@ import type {
   ICellRendererParams,
 } from '@ag-grid-community/core';
 import {
-  GridClientSortDirection,
+  DataCubeGridClientSortDirection,
   INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
   INTERNAL__GridClientUtilityCssClassName,
   generateFontFamilyUtilityClassName,
@@ -43,7 +43,7 @@ import {
   generateTextColorUtilityClassName,
   generateBackgroundColorUtilityClassName,
   generateFontCaseUtilityClassName,
-  GridClientPinnedAlignement,
+  DataCubeGridClientPinnedAlignement,
   INTERNAL__GRID_CLIENT_ROW_HEIGHT,
   INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING,
   INTERNAL__GRID_CLIENT_HEADER_HEIGHT,
@@ -54,6 +54,7 @@ import {
   INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
   INTERNAL__GRID_CLIENT_PIVOT_COLUMN_GROUP_COLOR_ROTATION_SIZE,
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
+  INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import {
   getNonNullableEntry,
@@ -82,6 +83,7 @@ import {
   PIVOT_COLUMN_NAME_VALUE_SEPARATOR,
   isPivotResultColumnName,
   TREE_COLUMN_VALUE_SEPARATOR,
+  DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE,
 } from '../../core/DataCubeQueryEngine.js';
 import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
 import { DataCubeIcon } from '@finos/legend-art';
@@ -213,21 +215,23 @@ function _displaySpec(columnData: ColumnData) {
     hide:
       column.hideFromView ||
       !column.isSelected ||
-      Boolean(
+      (Boolean(
         snapshot.data.pivot &&
           !snapshot.data.pivot.castColumns.find((col) => col.name === name),
-      ),
+      ) &&
+        !snapshot.data.groupExtendedColumns.find((col) => col.name === name)),
     lockVisible:
       !column.isSelected ||
-      Boolean(
+      (Boolean(
         snapshot.data.pivot &&
           !snapshot.data.pivot.castColumns.find((col) => col.name === name),
-      ),
+      ) &&
+        !snapshot.data.groupExtendedColumns.find((col) => col.name === name)),
     pinned:
       column.pinned !== undefined
         ? column.pinned === DataCubeColumnPinPlacement.RIGHT
-          ? GridClientPinnedAlignement.RIGHT
-          : GridClientPinnedAlignement.LEFT
+          ? DataCubeGridClientPinnedAlignement.RIGHT
+          : DataCubeGridClientPinnedAlignement.LEFT
         : null,
     headerClass: isPivotResultColumnName(name)
       ? 'pl-1 border border-neutral-300'
@@ -313,13 +317,18 @@ function _displaySpec(columnData: ColumnData) {
                   }
                 : {}),
             });
-            // 3. add the parentheses (and then the unit)
-            return (
+            // 3. add the parentheses, scale unit, unit, etc.
+            let displayValue =
               (showNegativeNumberInParens
                 ? `(${formattedValue})`
                 : formattedValue) +
-              (scaledNumber.unit ? ` ${scaledNumber.unit}` : '')
-            );
+              (scaledNumber.unit ? ` ${scaledNumber.unit}` : '');
+            if (column.unit) {
+              displayValue = !column.unit.startsWith('_')
+                ? `${displayValue}${column.unit}`
+                : `${column.unit.substring(1)}${displayValue}`;
+            }
+            return displayValue;
           }
         : (params) =>
             params.value === INTERNAL__GRID_CLIENT_MISSING_VALUE
@@ -357,7 +366,7 @@ function _groupDisplaySpec(
     hide: !snapshot.data.groupBy,
     lockPosition: true,
     lockPinned: true,
-    pinned: GridClientPinnedAlignement.LEFT,
+    pinned: DataCubeGridClientPinnedAlignement.LEFT,
     cellClassRules: {
       [generateFontFamilyUtilityClassName(fontFamily)]: () => true,
       [generateFontSizeUtilityClassName(fontSize)]: () => true,
@@ -413,11 +422,6 @@ function _sizeSpec(columnData: ColumnData) {
       INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
     ),
     maxWidth: column.maxWidth,
-    // Make sure the column spans the width if possible so when total width
-    // is less than grid width, removing/adding one column will cause the other
-    // columns to take/give up space
-    flex:
-      column.fixedWidth === undefined ? 1 : (undefined as unknown as number),
   } as ColDef;
 }
 
@@ -429,28 +433,34 @@ function _sortSpec(columnData: ColumnData) {
     sortable: true, // if this is pivot column, no sorting is supported yet
     sort: sortCol
       ? sortCol.direction === DataCubeQuerySortDirection.ASCENDING
-        ? GridClientSortDirection.ASCENDING
-        : GridClientSortDirection.DESCENDING
+        ? DataCubeGridClientSortDirection.ASCENDING
+        : DataCubeGridClientSortDirection.DESCENDING
       : null,
     sortIndex: sortCol ? sortColumns.indexOf(sortCol) : null,
   } satisfies ColDef;
 }
 
 function _aggregationSpec(columnData: ColumnData) {
-  const { name, snapshot, column } = columnData;
+  const { name, snapshot, column, configuration } = columnData;
   const data = snapshot.data;
   const pivotCol = _findCol(data.pivot?.columns, name);
   const groupByCol = _findCol(data.groupBy?.columns, name);
   const isGroupExtendedColumn = Boolean(
     _findCol(data.groupExtendedColumns, name),
   );
+  const rowGroupIndex =
+    !isGroupExtendedColumn && groupByCol
+      ? (data.groupBy?.columns.indexOf(groupByCol) ?? null)
+      : null;
   return {
     enableRowGroup:
       !isGroupExtendedColumn && column.kind === DataCubeColumnKind.DIMENSION,
     rowGroup: !isGroupExtendedColumn && Boolean(groupByCol),
     rowGroupIndex:
-      !isGroupExtendedColumn && groupByCol
-        ? (data.groupBy?.columns.indexOf(groupByCol) ?? null)
+      rowGroupIndex !== null
+        ? configuration.showRootAggregation
+          ? rowGroupIndex + 1
+          : rowGroupIndex
         : null,
     enablePivot:
       !isGroupExtendedColumn && column.kind === DataCubeColumnKind.DIMENSION,
@@ -546,8 +556,6 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
       event.api.hidePopupMenu(); // hide context-menu while scrolling
     },
     onBodyScrollEnd: () => grid.setScrollHintText(undefined),
-    scrollbarWidth: 10,
-    alwaysShowVerticalScroll: true, // this is needed to ensure column resize calculation is accurate
     // -------------------------------------- CONTEXT MENU --------------------------------------
     preventDefaultOnContextMenu: true, // prevent showing the browser's context menu
     columnMenu: 'new', // ensure context menu works on header
@@ -572,16 +580,8 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
     },
     // -------------------------------------- COLUMN SIZING --------------------------------------
     autoSizePadding: INTERNAL__GRID_CLIENT_AUTO_RESIZE_PADDING,
-    // ensure columns are resized to fit the grid width initially and on window resize
-    // NOTE: this has to be used with `alwaysShowVerticalScroll` to ensure accurate sizing
-    // otherwise on initial load, the computation will be done when no data is rendered,
-    // so when data is rendered and the vertical scrollbar shows up, it will block a part of
-    // the last column.
     autoSizeStrategy: {
-      type: 'fitGridWidth',
-    },
-    onGridSizeChanged: (event) => {
-      event.api.sizeColumnsToFit();
+      type: 'fitCellContents',
     },
     // -------------------------------------- TOOLTIP --------------------------------------
     tooltipShowDelay: INTERNAL__GRID_CLIENT_TOOLTIP_SHOW_DELAY,
@@ -594,6 +594,10 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
     suppressScrollOnNewData: true,
     // NOTE: use row loader instead of showing loader in each cell to improve performance
     // otherwise, when we have many columns (i.e. when pivoting), the app could freeze.
+    //
+    // This would render the loading cell as the full-width row, which, in combination with
+    // fit cell content auto-sizing strategy creates an unwanted row flashing effect while loading.
+    // To compensate for that, we modify the styling to make sure the full-width row has a blank background
     loadingCellRenderer: DataCubeGridLoadingCellRenderer,
     // By default, when row-grouping is active, ag-grid's caching mechanism causes sort
     // to not work properly for pivot result columns, so we must disable this mechanism.
@@ -807,7 +811,7 @@ export function generateColumnDefs(
     );
   }
 
-  return [
+  const columnDefs = [
     // NOTE: Internal column used for programatically trigger data fetch when filter is modified
     {
       colId: INTERNAL__GRID_CLIENT_DATA_FETCH_MANUAL_TRIGGER_COLUMN_ID,
@@ -819,6 +823,24 @@ export function generateColumnDefs(
       filter: 'agTextColumnFilter',
       suppressColumnsToolPanel: true,
     },
+    ...(configuration.showRootAggregation
+      ? [
+          {
+            colId: INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
+            headerName: 'Root',
+            field: INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
+            hide: true,
+            enableValue: false, // disable GUI interactions to modify this column's aggregate function
+            allowedAggFuncs: [], // disable GUI for options of the agg functions
+            enablePivot: false,
+            enableRowGroup: false,
+
+            suppressColumnsToolPanel: true,
+            rowGroup: true,
+            rowGroupIndex: 0,
+          } satisfies ColDef,
+        ]
+      : []),
     ...generateDefinitionForPivotResultColumns(
       pivotResultColumns,
       snapshot,
@@ -851,6 +873,8 @@ export function generateColumnDefs(
       } satisfies ColDef;
     }),
   ] satisfies (ColDef | ColGroupDef)[];
+
+  return columnDefs;
 }
 
 export function generateGridOptionsFromSnapshot(
@@ -863,14 +887,35 @@ export function generateGridOptionsFromSnapshot(
       if (
         configuration.initialExpandLevel !== undefined &&
         configuration.initialExpandLevel > 0 &&
-        params.rowNode.level <= configuration.initialExpandLevel - 1
+        params.rowNode.level <=
+          // root aggregation (if enabled) should not be counted when applying initial expand level
+          (configuration.showRootAggregation
+            ? configuration.initialExpandLevel + 1
+            : configuration.initialExpandLevel) -
+            1
       ) {
         return true;
       }
 
-      const routes = params.rowNode.getRoute();
-      if (!routes) {
+      const routes = params.rowNode.getRoute() ?? [];
+      if (!routes.length) {
         return false;
+      }
+
+      // when root aggregation is enabled, the root node should be
+      // expanded automatically by default
+      if (
+        configuration.showRootAggregation &&
+        routes.length === 1 &&
+        routes[0] === DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE
+      ) {
+        return true;
+      }
+
+      // when root aggregation is enabled, the root node should not be removed
+      // from path when matching against all expanded paths
+      if (configuration.showRootAggregation) {
+        routes.shift();
       }
       const path = routes.join(TREE_COLUMN_VALUE_SEPARATOR);
       if (configuration.pivotLayout.expandedPaths.includes(path)) {
@@ -909,7 +954,7 @@ export function generateGridOptionsFromSnapshot(
           column.getColId(),
           pinned === null
             ? undefined
-            : pinned === GridClientPinnedAlignement.LEFT
+            : pinned === DataCubeGridClientPinnedAlignement.LEFT
               ? DataCubeColumnPinPlacement.LEFT
               : DataCubeColumnPinPlacement.RIGHT,
         );
@@ -941,7 +986,13 @@ export function generateGridOptionsFromSnapshot(
       // expanded-to-level is specified, causing the groups to be automatically drilled down, resultant
       // expanded paths will not be kept for record.
       if (event.event) {
-        const path = event.node.getRoute()?.join(TREE_COLUMN_VALUE_SEPARATOR);
+        const routes = event.node.getRoute() ?? [];
+        // when root aggregation is enabled, the root node should not be counted
+        // when formulating the expanded path
+        if (routes.length && configuration.showRootAggregation) {
+          routes.shift();
+        }
+        const path = routes.join(TREE_COLUMN_VALUE_SEPARATOR);
         if (!path) {
           return;
         }
@@ -951,6 +1002,14 @@ export function generateGridOptionsFromSnapshot(
           view.grid.controller.collapsePath(path);
         }
       }
+    },
+
+    // Virtual columns when being rendered (as user scrolls horizontally) would get resized
+    // to fit their content dynamically. This can potentially cause some performance issues,
+    // so we debounce the resize operation.
+    onVirtualColumnsChanged: () => {
+      view.grid.debouncedAutoResizeColumns?.cancel();
+      view.grid.debouncedAutoResizeColumns?.();
     },
 
     // -------------------------------------- COLUMNS --------------------------------------
@@ -971,8 +1030,6 @@ export function generateGridOptionsFromSnapshot(
       ..._groupDisplaySpec(snapshot, configuration),
 
       // size
-      suppressAutoSize: true,
-      suppressSizeToFit: true,
       minWidth: 200,
 
       // sorting

@@ -33,7 +33,6 @@ import {
   guaranteeIsString,
   isString,
   isPlainObject,
-  optionalCustomList,
   optionalCustom,
 } from '@finos/legend-shared';
 import { V1_Variable } from '../../../model/valueSpecification/V1_Variable.js';
@@ -95,6 +94,7 @@ import {
   V1_deserializeGenericType,
   V1_GenericTypeModelSchema,
 } from './V1_TypeSerializationHelper.js';
+import { V1_createGenericTypeWithElementPath } from '../../../helpers/V1_DomainHelper.js';
 
 enum V1_ExecutionContextType {
   BASE_EXECUTION_CONTEXT = 'BaseExecutionContext',
@@ -177,18 +177,14 @@ export const V1_variableModelSchema = createModelSchema(V1_Variable, {
     (val) => V1_deserializeGenericType(val),
     {
       beforeDeserialize: function (callback, jsonValue, jsonParentValue) {
-        const parentVal = jsonParentValue as {
-          class: string | undefined;
-          genericType: string | undefined;
-        };
-        // backward compatible
+        /** @backwardCompatibility */
         if (
-          parentVal.class !== undefined &&
-          parentVal.genericType === undefined
+          jsonParentValue.class !== undefined &&
+          jsonParentValue.genericType === undefined
         ) {
-          callback(null, parentVal.class);
+          callback(null, jsonParentValue.class);
         } else {
-          callback(null, parentVal.genericType);
+          callback(null, jsonParentValue.genericType);
         }
       },
     },
@@ -269,41 +265,49 @@ const genericTypeInstanceSchema = (plugins: PureProtocolProcessorPlugin[]) =>
     _type: usingConstantValueSchema(
       V1_ValueSpecificationType.GENERIC_TYPE_INSTANCE,
     ),
-    fullPath: primitive(),
-    typeArguments: optionalCustomList(
-      (val: V1_ValueSpecification) =>
-        V1_serializeValueSpecification(val, plugins),
-      (val) => V1_deserializeValueSpecification(val, plugins),
+    genericType: custom(
+      (val) => serialize(V1_GenericTypeModelSchema, val),
+      (val) => V1_deserializeGenericType(val),
       {
-        INTERNAL__forceReturnEmptyInTest: true,
+        beforeDeserialize: function (callback, jsonValue, jsonParentValue) {
+          /** @backwardCompatibility */
+          if (
+            jsonParentValue.fullPath !== undefined &&
+            jsonParentValue.genericType === undefined
+          ) {
+            callback(null, jsonParentValue.fullPath);
+          } else {
+            callback(null, jsonParentValue.genericType);
+          }
+        },
       },
     ),
   });
 
-/**
- * @backwardCompatibility
- */
+/** @backwardCompatibility */
 const deserializeHackedUnit = (json: PlainObject): V1_GenericTypeInstance => {
   const protocol = new V1_GenericTypeInstance();
   if (isString(json.unitType)) {
-    protocol.fullPath = json.unitType;
+    protocol.genericType = V1_createGenericTypeWithElementPath(json.unitType);
   } else {
-    protocol.fullPath = guaranteeIsString(
-      json.fullPath,
-      `Can't deserialize hacked unit: either field 'fullPath' or 'unitType' must be a non-empty string`,
+    protocol.genericType = V1_createGenericTypeWithElementPath(
+      guaranteeIsString(
+        json.fullPath,
+        `Can't deserialize hacked unit: either field 'fullPath' or 'unitType' must be a non-empty string`,
+      ),
     );
   }
   return protocol;
 };
 
-/**
- * @backwardCompatibility
- */
+/** @backwardCompatibility */
 const deserializeHackedClass = (json: PlainObject): V1_GenericTypeInstance => {
   const protocol = new V1_GenericTypeInstance();
-  protocol.fullPath = guaranteeIsString(
-    json.fullPath,
-    `Can't deserialize hacked class: field 'fullPath' must be a non-empty string`,
+  protocol.genericType = V1_createGenericTypeWithElementPath(
+    guaranteeIsString(
+      json.fullPath,
+      `Can't deserialize hacked class: field 'fullPath' must be a non-empty string`,
+    ),
   );
   return protocol;
 };
@@ -377,9 +381,7 @@ const CByteArrayModelSchema = createModelSchema(V1_CByteArray, {
   value: primitive(),
 });
 
-/**
- * @backwardCompatibility
- */
+/** @backwardCompatibility */
 const deserializePrimitiveValueSpecification = <
   T extends V1_PrimitiveValueSpecification,
 >(

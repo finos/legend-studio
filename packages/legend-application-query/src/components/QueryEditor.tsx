@@ -345,7 +345,10 @@ export const QueryEditorExistingQueryHeader = observer(
                   )}
                   onChange={changeQueryName}
                   onKeyDown={(event) => {
-                    if (event.code === 'Enter') {
+                    if (
+                      event.code === 'Enter' ||
+                      event.code === 'NumpadEnter'
+                    ) {
                       event.stopPropagation();
                       updateState.setQueryRenamer(false);
                       existingEditorStore.setExistingQueryName(undefined);
@@ -366,6 +369,29 @@ export const QueryEditorExistingQueryHeader = observer(
                     <ExclamationTriangleIcon className="input--with-validation__caution__indicator" />
                   </div>
                 )}
+              </div>
+              <div className="query-editor__header__content__title__actions">
+                <button
+                  className="query-editor__header__content__title__actions__action"
+                  tabIndex={-1}
+                  onClick={() => {
+                    updateState.setQueryRenamer(false);
+                    existingEditorStore.setExistingQueryName(undefined);
+                    renameQuery(queryRenameName);
+                  }}
+                >
+                  <CheckIcon />
+                </button>
+                <button
+                  className="query-editor__header__content__title__actions__action"
+                  tabIndex={-1}
+                  onClick={() => {
+                    updateState.setQueryRenamer(false);
+                    existingEditorStore.setExistingQueryName(undefined);
+                  }}
+                >
+                  <TimesIcon />
+                </button>
               </div>
             </PanelListItem>
           </div>

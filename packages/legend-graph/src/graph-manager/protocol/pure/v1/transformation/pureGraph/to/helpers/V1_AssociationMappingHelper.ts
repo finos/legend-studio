@@ -55,7 +55,7 @@ const buildRelationalAssociationMapping = (
   ]
     .map((m) => m.classMappings)
     .flat();
-  const association = context.resolveAssociation(element.association);
+  const association = context.resolveAssociation(element.association.path);
   const relationalAssociationImplementation =
     new RelationalAssociationImplementation(
       getInferredAssociationMappingId(association.value, element),
@@ -92,7 +92,7 @@ const buildFlatDataAssociationMapping = (
   ]
     .map((m) => m.classMappings)
     .flat();
-  const association = context.resolveAssociation(element.association);
+  const association = context.resolveAssociation(element.association.path);
   const flatDataAssociationImplementation =
     new FlatDataAssociationImplementation(
       getInferredAssociationMappingId(association.value, element),
@@ -129,7 +129,7 @@ const buildXStoreAssociationMapping = (
   ]
     .map((m) => m.classMappings)
     .flat();
-  const association = context.resolveAssociation(element.association);
+  const association = context.resolveAssociation(element.association.path);
   const xStoreAssociationImplementation = new XStoreAssociationImplementation(
     getInferredAssociationMappingId(association.value, element),
     parentMapping,

@@ -45,8 +45,6 @@ const entities = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],

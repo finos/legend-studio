@@ -75,8 +75,6 @@ export const TEST_DATA__DataRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],

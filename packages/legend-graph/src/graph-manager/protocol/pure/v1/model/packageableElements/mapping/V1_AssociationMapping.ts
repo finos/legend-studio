@@ -16,16 +16,17 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
+import type { V1_PackageableElementPointer } from '../V1_PackageableElement.js';
 
 export abstract class V1_AssociationMapping implements Hashable {
   id?: string | undefined;
-  association!: string;
+  association!: V1_PackageableElementPointer;
   stores: string[] = [];
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.ASSOCIATION_IMPLEMENTATION,
-      this.association,
+      this.association.path,
       this.id ?? '',
       hashArray(this.stores),
     ]);

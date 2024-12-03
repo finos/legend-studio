@@ -21,7 +21,7 @@ import TEST_DATA__NestedSubTypeModel from './TEST_DATA__QueryBuilder_Model_Neste
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json' with { type: 'json' };
 import TEST_DATA__AssociationMappingModel from './TEST_DATA__QueryBuilder_Model_AssociationMappingModel.json' with { type: 'json' };
 import TEST_DATA__M2MAutoMapped from './TEST_DATA__QueryBuilder_Model_M2MAutoMapped.json' with { type: 'json' };
-import TEST_DATA__RelationalInline from './TEST_DATA__QueryBuilder_Model_RelationalInline.json';
+import TEST_DATA__RelationalInline from './TEST_DATA__QueryBuilder_Model_RelationalInline.json' with { type: 'json' };
 import TEST_DATA__QueryBuilder_Model_MultiClassNestedSubType from './TEST_DATA__QueryBuilder_Model_MultiClassNestedSubType.json' with { type: 'json' };
 import { type PlainObject } from '@finos/legend-shared';
 import {

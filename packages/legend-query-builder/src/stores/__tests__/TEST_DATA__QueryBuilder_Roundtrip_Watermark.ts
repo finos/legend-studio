@@ -73,8 +73,6 @@ export const TEST_DATA_lambda_watermark_Parameter = {
           _type: 'packageableType',
           fullPath: 'String',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,
@@ -89,8 +87,6 @@ export const TEST_DATA_lambda_watermark_Parameter = {
           _type: 'packageableType',
           fullPath: 'String',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       multiplicity: {
         lowerBound: 1,

@@ -29,7 +29,7 @@ import {
 } from '../../../model/packageableElements/V1_PackageableElement.js';
 import type { V1_FunctionTestSuite } from './test/V1_FunctionTestSuite.js';
 import type { V1_GenericType } from '../type/V1_GenericType.js';
-import { V1_PackageableType } from '../../valueSpecification/raw/V1_PackageableElementPtr.js';
+import { V1_PackageableType } from '../type/V1_PackageableType.js';
 
 export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
   /**

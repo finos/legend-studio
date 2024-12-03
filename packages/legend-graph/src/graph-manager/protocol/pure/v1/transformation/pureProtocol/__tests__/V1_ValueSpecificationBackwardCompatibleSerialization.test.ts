@@ -229,7 +229,12 @@ const cases: TestCase[] = [
     },
     {
       _type: 'genericTypeInstance',
-      fullPath: 'Integer',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Integer',
+        },
+      },
     },
   ],
 ];

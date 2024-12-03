@@ -195,7 +195,7 @@ export const DataCubeEditorColumnSelector = observer(
     /**
      * Since we use managed row dragging for selected columns,
      * we just need to sync the row data with the state.
-     * Dragging (multiple) row(s) to specific position have been
+     * Dragging (multiple) rows to specific position have been
      * handled by ag-grid.
      */
     const onSelectedColumnsDragStop = useCallback(
@@ -223,7 +223,7 @@ export const DataCubeEditorColumnSelector = observer(
     /**
      * Since we use managed row dragging for selected columns,
      * we just need to sync the row data with the state
-     * Dragging (multiple) row(s) to specific position have been
+     * Dragging (multiple) rows to specific position have been
      * handled by ag-grid.
      */
     const onSelectedColumnsDragEnd = useCallback(

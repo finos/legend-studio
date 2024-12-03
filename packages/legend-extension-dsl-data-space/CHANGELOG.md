@@ -1,5 +1,15 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.14
+
+## 10.4.13
+
+## 10.4.12
+
+### Patch Changes
+
+- [#3693](https://github.com/finos/legend-studio/pull/3693) [`85053ba`](https://github.com/finos/legend-studio/commit/85053ba06ef38f4017499b09e0b78fda1e12e6b8) ([@pragyasri-gs](https://github.com/pragyasri-gs)) - Add queryChatState in QueryBuilderState for aborting previous API requests
+
 ## 10.4.11
 
 ## 10.4.10

@@ -1,5 +1,15 @@
 # @finos/legend-application-query
 
+## 13.7.14
+
+## 13.7.13
+
+## 13.7.12
+
+### Patch Changes
+
+- [#3693](https://github.com/finos/legend-studio/pull/3693) [`85053ba`](https://github.com/finos/legend-studio/commit/85053ba06ef38f4017499b09e0b78fda1e12e6b8) ([@pragyasri-gs](https://github.com/pragyasri-gs)) - Add queryChatState in QueryBuilderState for aborting previous API requests
+
 ## 13.7.11
 
 ### Patch Changes

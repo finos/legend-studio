@@ -452,7 +452,7 @@ export function generateMenuBuilder(
             disabled: true,
           },
           {
-            name: 'Selected Row(s) as Plain Text',
+            name: 'Selected Rows as Plain Text',
             menuItem: WIP_GridMenuItem,
             cssClasses: ['!opacity-100'],
             disabled: true,

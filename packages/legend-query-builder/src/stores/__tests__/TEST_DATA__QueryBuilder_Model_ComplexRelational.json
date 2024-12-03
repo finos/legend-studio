@@ -146,9 +146,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         }
       ],
@@ -2311,9 +2309,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {
@@ -2351,9 +2347,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {
@@ -4499,9 +4493,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {
@@ -4637,9 +4629,7 @@
                 "rawType": {
                   "_type": "packageableType",
                   "fullPath": "Date"
-                },
-                "typeArguments": [],
-                "typeVariableValues": []
+                }
               }
             }
           ],
@@ -5161,9 +5151,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "Integer"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {

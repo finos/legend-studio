@@ -110,8 +110,10 @@ import { V1_SubTypeGraphFetchTree } from '../../../../model/valueSpecification/r
 import { findMappingLocalProperty } from '../../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
 import { getRelationTypeGenericType } from '../../../../../../../../graph/helpers/ValueSpecificationHelper.js';
 import { Relation_RelationType } from '../../../../../../../../graph/metamodel/pure/packageableElements/relation/Relation_RelationType.js';
-import { V1_getGenericTypeFullPath } from '../../../../helpers/V1_DomainHelper.js';
-import { V1_createGenericTypeWithElementPath } from '../../from/V1_DomainTransformer.js';
+import {
+  V1_getGenericTypeFullPath,
+  V1_createGenericTypeWithElementPath,
+} from '../../../../helpers/V1_DomainHelper.js';
 
 const buildPrimtiveInstanceValue = (
   type: PRIMITIVE_TYPE,
@@ -304,7 +306,9 @@ export class V1_ValueSpecificationBuilder
   ): ValueSpecification {
     const instanceValue = new InstanceValue(
       Multiplicity.ONE,
-      this.context.resolveGenericType(valueSpecification.fullPath),
+      this.context.resolveGenericType(
+        V1_getGenericTypeFullPath(valueSpecification.genericType),
+      ),
     );
     return instanceValue;
   }

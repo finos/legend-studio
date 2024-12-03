@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { V1_PackageableElementPointer } from '@finos/legend-graph';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
@@ -22,23 +23,23 @@ export abstract class V1_Sink implements Hashable {
 }
 
 export class V1_RelationalSink extends V1_Sink implements Hashable {
-  database!: string;
+  database!: V1_PackageableElementPointer;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.RELATIONAL_SINK,
-      this.database,
+      this.database.path,
     ]);
   }
 }
 
 export class V1_ObjectStorageSink extends V1_Sink implements Hashable {
-  binding!: string;
+  binding!: V1_PackageableElementPointer;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.OBJECT_STORAGE_SINK,
-      this.binding,
+      this.binding.path,
     ]);
   }
 }

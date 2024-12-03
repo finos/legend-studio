@@ -21,12 +21,13 @@ import {
   type Hashable,
 } from '@finos/legend-shared';
 import { createModelSchema, list, primitive } from 'serializr';
-import type { V1_Type } from '../packageableElements/type/V1_Type.js';
-import { CORE_HASH_STRUCTURE } from '../../../../../../graph/Core_HashUtils.js';
+import type { V1_Type } from './V1_Type.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 
 export class V1_RelationTypeColumn implements Hashable {
   name!: string;
   type!: string;
+
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_RelationTypeColumn, {
       name: primitive(),
@@ -35,7 +36,7 @@ export class V1_RelationTypeColumn implements Hashable {
   );
 
   get hashCode(): string {
-    return hashArray([CORE_HASH_STRUCTURE.REALTION_TYPE, this.name, this.type]);
+    return hashArray([CORE_HASH_STRUCTURE.RELATION_TYPE, this.name, this.type]);
   }
 }
 
@@ -52,7 +53,7 @@ export class V1_RelationType implements V1_Type {
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.REALTION_TYPE,
+      CORE_HASH_STRUCTURE.RELATION_TYPE,
       hashArray(this.columns),
     ]);
   }

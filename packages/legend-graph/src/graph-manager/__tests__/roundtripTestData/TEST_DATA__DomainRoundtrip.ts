@@ -175,8 +175,6 @@ export const TEST_DATA__ClassRoundtrip = [
               _type: 'packageableType',
               fullPath: 'B',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -199,8 +197,6 @@ export const TEST_DATA__ClassRoundtrip = [
               _type: 'packageableType',
               fullPath: 'A',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -214,8 +210,6 @@ export const TEST_DATA__ClassRoundtrip = [
               _type: 'packageableType',
               fullPath: 'tEnum',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -265,8 +259,6 @@ export const TEST_DATA__ClassRoundtrip = [
                   _type: 'packageableType',
                   fullPath: 'B',
                 },
-                typeArguments: [],
-                typeVariableValues: [],
               },
               multiplicity: {
                 lowerBound: 1,
@@ -284,8 +276,6 @@ export const TEST_DATA__ClassRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
           stereotypes: [
             {
@@ -333,8 +323,6 @@ export const TEST_DATA__ClassRoundtrip = [
               _type: 'packageableType',
               fullPath: 'B',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -375,8 +363,6 @@ export const TEST_DATA__ClassRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -539,8 +525,6 @@ export const TEST_DATA__ClassWithComplexConstraint = [
               _type: 'packageableType',
               fullPath: 'Integer',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -719,8 +703,6 @@ export const TEST_DATA__AssociationRoundtrip = [
               _type: 'packageableType',
               fullPath: 'tClass',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
         {
@@ -749,8 +731,6 @@ export const TEST_DATA__AssociationRoundtrip = [
               _type: 'packageableType',
               fullPath: 'tClass',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
         },
       ],
@@ -861,8 +841,6 @@ export const TEST_DATA__FunctionRoundtrip = [
               _type: 'packageableType',
               fullPath: 'tClass',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
           multiplicity: {
             lowerBound: 1,
@@ -877,8 +855,6 @@ export const TEST_DATA__FunctionRoundtrip = [
               _type: 'packageableType',
               fullPath: 'tClass',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
           multiplicity: {
             lowerBound: 1,
@@ -898,8 +874,6 @@ export const TEST_DATA__FunctionRoundtrip = [
           _type: 'packageableType',
           fullPath: 'tClass',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
       stereotypes: [
         {
@@ -1070,8 +1044,6 @@ export const TEST_DATA__OverloadedFunctionsRoundtrip = [
               _type: 'packageableType',
               fullPath: 'Boolean',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
           multiplicity: {
             lowerBound: 1,
@@ -1091,8 +1063,6 @@ export const TEST_DATA__OverloadedFunctionsRoundtrip = [
           _type: 'packageableType',
           fullPath: 'String',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
     },
     classifierPath:
@@ -1122,8 +1092,6 @@ export const TEST_DATA__OverloadedFunctionsRoundtrip = [
               _type: 'packageableType',
               fullPath: 'String',
             },
-            typeArguments: [],
-            typeVariableValues: [],
           },
           multiplicity: {
             lowerBound: 1,
@@ -1143,8 +1111,6 @@ export const TEST_DATA__OverloadedFunctionsRoundtrip = [
           _type: 'packageableType',
           fullPath: 'String',
         },
-        typeArguments: [],
-        typeVariableValues: [],
       },
     },
     classifierPath:

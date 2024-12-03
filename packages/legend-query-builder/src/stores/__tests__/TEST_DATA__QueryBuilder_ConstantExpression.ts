@@ -549,8 +549,6 @@ export const TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVaria
             _type: 'packageableType',
             fullPath: 'String',
           },
-          typeArguments: [],
-          typeVariableValues: [],
         },
       },
     ],

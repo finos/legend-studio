@@ -46,6 +46,7 @@ import {
   _primitiveValue,
   _var,
   _functionCompositionProcessor,
+  _extendRootAggregation,
 } from './DataCubeQueryBuilderUtils.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 import type { DataCubeSource } from './models/DataCubeSource.js';
@@ -67,6 +68,11 @@ export function buildExecutableQuery(
       filterOperations: DataCubeQueryFilterOperation[],
       aggregateOperations: DataCubeQueryAggregateOperation[],
     ) => void;
+    rootAggregation?:
+      | {
+          columnName: string;
+        }
+      | undefined;
     pagination?:
       | {
           start: number;
@@ -91,6 +97,8 @@ export function buildExecutableQuery(
         _col(col.name, _deserializeLambda(col.mapFn)),
       ]),
     );
+    // instead of batching all the extend() functions, we sequence them, and reference the first one
+    // in the function map
     _process('leafExtend', guaranteeNonNullable(leafExtendedFuncs[0]));
     leafExtendedFuncs.slice(1).forEach((func) => {
       sequence.push(func);
@@ -163,6 +171,9 @@ export function buildExecutableQuery(
 
   if (data.groupBy) {
     const groupBy = data.groupBy;
+    if (configuration.showRootAggregation && options?.rootAggregation) {
+      sequence.push(_extendRootAggregation(options.rootAggregation.columnName));
+    }
     _process(
       'groupBy',
       _function(DataCubeFunction.GROUP_BY, [
@@ -203,6 +214,8 @@ export function buildExecutableQuery(
         _col(col.name, _deserializeLambda(col.mapFn)),
       ]),
     );
+    // instead of batching all the extend() functions, we sequence them, and reference the first one
+    // in the function map
     _process('groupExtend', guaranteeNonNullable(groupExtendedFuncs[0]));
     groupExtendedFuncs.slice(1).forEach((func) => {
       sequence.push(func);

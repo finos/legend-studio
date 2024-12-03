@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-diagram",
-  "version": "8.1.35",
+  "version": "8.1.38",
   "description": "Legend extension for Diagram DSL",
   "keywords": [
     "legend",
@@ -67,12 +67,12 @@
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.0.1",
     "cross-env": "7.0.3",
-    "eslint": "9.15.0",
+    "eslint": "9.16.0",
     "jest": "29.7.0",
     "npm-run-all": "4.1.5",
     "rimraf": "6.0.1",
     "sass": "1.81.0",
-    "typescript": "5.6.3"
+    "typescript": "5.7.2"
   },
   "peerDependencies": {
     "react": "^18.0.0"

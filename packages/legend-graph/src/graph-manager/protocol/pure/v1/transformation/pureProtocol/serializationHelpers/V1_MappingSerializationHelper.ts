@@ -46,6 +46,7 @@ import {
   ATOMIC_TEST_TYPE,
   PRIMITIVE_TYPE,
   ELEMENT_PATH_DELIMITER,
+  PackageableElementPointerType,
 } from '../../../../../../../graph/MetaModelConst.js';
 import { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping.js';
 import {
@@ -60,6 +61,7 @@ import {
 import {
   V1_multiplicityModelSchema,
   V1_packageableElementPointerModelSchema,
+  V1_serializePackageableElementPointer,
 } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import { V1_propertyPointerModelSchema } from './V1_DomainSerializationHelper.js';
 import type { V1_AssociationMapping } from '../../../model/packageableElements/mapping/V1_AssociationMapping.js';
@@ -878,7 +880,14 @@ export const V1_mappingStoreTestDataModelSchema = (
       (val) => V1_serializeEmbeddedDataType(val, plugins),
       (val) => V1_deserializeEmbeddedDataType(val, plugins),
     ),
-    store: primitive(),
+    store: custom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) =>
+        V1_serializePackageableElementPointer(
+          val,
+          PackageableElementPointerType.STORE,
+        ),
+    ),
   });
 
 export const V1_mappingTestModelSchema = (
@@ -952,7 +961,14 @@ const relationalAssociationMappingModelschema = createModelSchema(
   V1_RelationalAssociationMapping,
   {
     _type: usingConstantValueSchema(V1_AssociationMappingType.RELATIONAL),
-    association: primitive(),
+    association: custom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) =>
+        V1_serializePackageableElementPointer(
+          val,
+          PackageableElementPointerType.ASSOCIATION,
+        ),
+    ),
     id: optional(primitive()),
     propertyMappings: list(
       custom(
@@ -968,7 +984,14 @@ const flatDataAssociationMappingModelschema = createModelSchema(
   V1_FlatDataAssociationMapping,
   {
     _type: usingConstantValueSchema(V1_AssociationMappingType.FLAT_DATA),
-    association: primitive(),
+    association: custom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) =>
+        V1_serializePackageableElementPointer(
+          val,
+          PackageableElementPointerType.ASSOCIATION,
+        ),
+    ),
     id: optional(primitive()),
     propertyMappings: list(
       custom(
@@ -984,7 +1007,14 @@ const xStoreAssociationMappingModelschema = createModelSchema(
   V1_XStoreAssociationMapping,
   {
     _type: usingConstantValueSchema(V1_AssociationMappingType.XSTORE),
-    association: primitive(),
+    association: custom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) =>
+        V1_serializePackageableElementPointer(
+          val,
+          PackageableElementPointerType.ASSOCIATION,
+        ),
+    ),
     id: optional(primitive()),
     propertyMappings: list(
       custom(
@@ -1167,7 +1197,14 @@ const V1_enumerationMappingModelSchema = createModelSchema(
           ),
       ),
     ),
-    enumeration: primitive(),
+    enumeration: custom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) =>
+        V1_serializePackageableElementPointer(
+          val,
+          PackageableElementPointerType.ENUMERATION,
+        ),
+    ),
     id: optional(primitive()),
   },
 );
@@ -1222,9 +1259,7 @@ const V1_deserializeMappingInclude = (
   if (!json._type || json._type === V1_MAPPING_INCLUDE_MAPPING_TYPE) {
     return deserialize(V1_mappingIncludeMappingModelSchema, {
       ...json,
-      /**
-       * @backwardCompatibility
-       */
+      /** @backwardCompatibility */
       includedMapping:
         json.includedMapping ??
         `${json.includedMappingPackage}${ELEMENT_PATH_DELIMITER}${json.includedMappingName}`,

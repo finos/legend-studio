@@ -132,15 +132,16 @@ export class V1_ElementThirdPassBuilder
     const _class = this.context.currentSubGraph.getOwnClass(
       V1_buildFullPath(element.package, element.name),
     );
-    element.superTypes.forEach((type) => {
+    element.superTypes.forEach((pointer) => {
+      const type = pointer.path;
       // supertype `Any` will not be processed
       if (type !== CORE_PURE_PATH.ANY) {
         try {
-          const genricTypeReference = this.context.resolveGenericType(type);
-          addUniqueEntry(_class.generalizations, genricTypeReference);
-          if (genricTypeReference.ownerReference.value instanceof Class) {
+          const genericTypeReference = this.context.resolveGenericType(type);
+          addUniqueEntry(_class.generalizations, genericTypeReference);
+          if (genericTypeReference.ownerReference.value instanceof Class) {
             addUniqueEntry(
-              genricTypeReference.ownerReference.value._subclasses,
+              genericTypeReference.ownerReference.value._subclasses,
               _class,
             );
           }

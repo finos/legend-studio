@@ -97,9 +97,7 @@
             "rawType": {
               "_type": "packageableType",
               "fullPath": "StrictTime"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
+            }
           }
         },
         {

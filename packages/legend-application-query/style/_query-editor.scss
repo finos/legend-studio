@@ -109,6 +109,29 @@
       &__title__text--unsaved {
         margin: 0;
       }
+
+      &__title__actions {
+        @include flexVCenter;
+
+        height: 100%;
+        width: 3.4rem;
+        margin-left: 0.5rem;
+
+        &__action {
+          @include flexCenter;
+
+          height: 3.4rem;
+          width: 3.4rem;
+
+          svg {
+            color: var(--color-light-grey-400);
+          }
+
+          &:hover svg {
+            color: var(--color-light-grey-100);
+          }
+        }
+      }
     }
 
     &__actions {

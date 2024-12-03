@@ -111,7 +111,7 @@ import { RelationalCrossRootQueryTempTableGraphFetchExecutionNode } from '../../
 import { V1_RelationalCrossRootQueryTempTableGraphFetchExecutionNode } from '../../../../model/executionPlan/nodes/V1_RelationalCrossRootQueryTempTableGraphFetchExecutionNode.js';
 import type { LocalGraphFetchExecutionNode } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/LocalGraphFetchExecutionNode.js';
 import { RelationalGraphFetchExecutionNode } from '../../../../../../../../graph/metamodel/pure/executionPlan/nodes/RelationalGraphFetchExecutionNode.js';
-import { V1_createGenericTypeWithElementPath } from '../V1_DomainTransformer.js';
+import { V1_createGenericTypeWithElementPath } from '../../../../helpers/V1_DomainHelper.js';
 
 // ---------------------------------------- Result Type ----------------------------------------
 

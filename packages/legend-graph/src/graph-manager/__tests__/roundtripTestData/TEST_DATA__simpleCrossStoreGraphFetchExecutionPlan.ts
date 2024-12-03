@@ -431,13 +431,11 @@ export const TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan = {
                     },
                     {
                       _type: 'var',
-                      genricType: {
+                      genericType: {
                         rawType: {
                           _type: 'packageableType',
                           fullPath: 'entity::model::LegalEntity',
                         },
-                        typeArguments: [],
-                        typeVariableValues: [],
                       },
                       multiplicity: {
                         lowerBound: 1,
@@ -797,8 +795,6 @@ export const TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan = {
                 _type: 'packageableType',
                 fullPath: 'model::Person',
               },
-              typeArguments: [],
-              typeVariableValues: [],
             },
           },
         ],
@@ -894,8 +890,6 @@ export const TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan = {
                 _type: 'packageableType',
                 fullPath: 'Integer',
               },
-              typeArguments: [],
-              typeVariableValues: [],
             },
           },
         ],
@@ -1800,8 +1794,6 @@ export const TEST_DATA__simpleCrossStoreGraphFetchExecutionPlan = {
                     _type: 'packageableType',
                     fullPath: 'String',
                   },
-                  typeArguments: [],
-                  typeVariableValues: [],
                 },
               },
             ],
