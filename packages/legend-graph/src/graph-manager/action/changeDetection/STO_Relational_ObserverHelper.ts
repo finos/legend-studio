@@ -1203,6 +1203,7 @@ const observe_Abstract_DatabaseConnection = (
     type: observable,
     timeZone: observable,
     quoteIdentifiers: observable,
+    queryTimeOutInSeconds: observable,
   });
 };
 

@@ -548,6 +548,7 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
     ),
     localMode: optional(primitive()),
     store: alias('element', primitive()),
+    queryTimeOutInSeconds: optional(primitive()),
     quoteIdentifiers: optional(primitive()),
     timeZone: optional(primitive()),
     postProcessors: customList(

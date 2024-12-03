@@ -163,6 +163,7 @@ import {
   relationalDatabaseConnection_deletePostProcessor,
   snowflakeDatasourceSpec_setTempTableDb,
   snowflakeDatasourceSpec_setTempTableSchema,
+  dBConnection_setQueryTimeOut,
 } from '../../../../stores/graph-modifier/STO_Relational_GraphModifierHelper.js';
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
@@ -1663,6 +1664,13 @@ export const RelationalConnectionGeneralEditor = observer(
       label: connection.type,
     };
 
+    const changeTimeOut: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      const val = event.target.value;
+      dBConnection_setQueryTimeOut(connection, val === '' ? undefined: parseInt(val, 10));
+    };
+
     const onTypeChange = (
       val: { label: string; value: string } | null,
     ): void => {
@@ -1789,6 +1797,19 @@ export const RelationalConnectionGeneralEditor = observer(
                     dBConnection_setQuoteIdentifiers(connection, Boolean(value))
                   }
                 />
+                <div className="panel__content__form__section">
+                  <div className="panel__content__form__section__header__label">
+                    Query timeout (in seconds)
+                  </div>
+                  <input
+                    className="panel__content__form__section__input panel__content__form__section__number-input"
+                    spellCheck={false}
+                    type="number"
+                    disabled={isReadOnly}
+                    value={connection.queryTimeOutInSeconds}
+                    onChange={changeTimeOut}
+                  />
+                </div>
               </PanelContent>
             </Panel>
           </ResizablePanel>

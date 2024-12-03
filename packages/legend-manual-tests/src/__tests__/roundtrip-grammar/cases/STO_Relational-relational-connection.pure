@@ -184,6 +184,21 @@ RelationalDatabaseConnection connection::relational::H2ConnectionWithQuoteIdenti
   auth: DefaultH2;
 }
 
+RelationalDatabaseConnection connection::relational::H2ConnectionWithQueryTimeOut
+{
+  store: store::db;
+  type: H2;
+  timezone: +3000;
+  queryTimeOutInSeconds: 2000;
+  specification: Static
+  {
+    name: 'myDb';
+    host: 'somehost';
+    port: 999;
+  };
+  auth: DefaultH2;
+}
+
 RelationalDatabaseConnection connection::relational::H2ConnectionWithCsvData
 {
   store: store::db;
