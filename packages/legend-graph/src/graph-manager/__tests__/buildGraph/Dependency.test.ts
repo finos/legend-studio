@@ -45,7 +45,7 @@ const entities = [
           },
         },
       ],
-      superTypes: ['model::ClassB'],
+      superTypes: [{ path: 'model::ClassB', type: 'CLASS' }],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },

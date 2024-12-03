@@ -1352,7 +1352,6 @@ export const TEST_DATA__SERVICE_WITH_ONLY_QUERY_Roundtrip = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: [],
       joins: [
         {
           name: 'FirmPerson',
@@ -1650,7 +1649,10 @@ export const TEST_DATA__SERVICE_WITH_ONLY_QUERY_Roundtrip = [
               ],
             },
           ],
-          enumeration: 'model::EmployeeType',
+          enumeration: {
+            path: 'model::EmployeeType',
+            type: 'ENUMERATION',
+          },
           id: 'EmployeeTypeMapping',
         },
       ],

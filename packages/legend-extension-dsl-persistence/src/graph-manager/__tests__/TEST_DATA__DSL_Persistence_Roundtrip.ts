@@ -158,7 +158,6 @@ export const TEST_DATA__roundtrip_case1 = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: [],
       joins: [],
       name: 'ZooDb',
       package: 'org::dxl',
@@ -283,7 +282,13 @@ export const TEST_DATA__roundtrip_case1 = [
             },
           },
         },
-        sink: { _type: 'objectStorageSink', binding: 'org::dxl::ZooBinding' },
+        sink: {
+          _type: 'objectStorageSink',
+          binding: {
+            path: 'org::dxl::ZooBinding',
+            type: 'BINDING',
+          },
+        },
         targetShape: {
           _type: 'multiFlatTarget',
           modelClass: 'org::dxl::Zoo',
@@ -316,7 +321,10 @@ export const TEST_DATA__roundtrip_case1 = [
           transactionScope: 'ALL_TARGETS',
         },
       },
-      service: 'org::dxl::ZooService',
+      service: {
+        path: 'org::dxl::ZooService',
+        type: 'SERVICE',
+      },
       trigger: { _type: 'manualTrigger' },
     },
     path: 'org::dxl::ZooPersistence',
@@ -443,7 +451,6 @@ export const TEST_DATA__roundtrip_case2 = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: [],
       joins: [],
       name: 'TestDatabase',
       package: 'org::legend',
@@ -596,7 +603,10 @@ export const TEST_DATA__roundtrip_case2 = [
         },
         sink: {
           _type: 'relationalSink',
-          database: 'org::legend::TestDatabase',
+          database: {
+            path: 'org::legend::TestDatabase',
+            type: 'STORE',
+          },
         },
         targetShape: {
           _type: 'flatTarget',
@@ -608,7 +618,10 @@ export const TEST_DATA__roundtrip_case2 = [
           targetName: 'personTable',
         },
       },
-      service: 'org::dxl::ZooService',
+      service: {
+        path: 'org::dxl::ZooService',
+        type: 'SERVICE',
+      },
       trigger: {
         _type: 'manualTrigger',
       },
@@ -842,7 +855,6 @@ export const TEST_DATA__cloud__roundtrip = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: [],
       joins: [],
       name: 'ZooDb',
       package: 'org::dxl',
@@ -996,7 +1008,10 @@ export const TEST_DATA__cloud__roundtrip = [
         },
         sink: {
           _type: 'objectStorageSink',
-          binding: 'org::dxl::ZooBinding',
+          binding: {
+            path: 'org::dxl::ZooBinding',
+            type: 'BINDING',
+          },
         },
         targetShape: {
           _type: 'multiFlatTarget',
@@ -1032,7 +1047,10 @@ export const TEST_DATA__cloud__roundtrip = [
           transactionScope: 'ALL_TARGETS',
         },
       },
-      service: 'org::dxl::ZooService',
+      service: {
+        path: 'org::dxl::ZooService',
+        type: 'SERVICE',
+      },
       trigger: {
         _type: 'manualTrigger',
       },

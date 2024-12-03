@@ -81,7 +81,6 @@ export const TEST_DATA__roundtrip_append_only_allow_duplicates = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: [],
       joins: [],
       name: 'TestDatabase',
       package: 'test',
@@ -210,7 +209,10 @@ export const TEST_DATA__roundtrip_append_only_allow_duplicates = [
           persistenceTarget: {
             _type: 'relationalPersistenceTarget',
             table: 'personTable',
-            database: 'test::TestDatabase',
+            database: {
+              path: 'org::legend::TestDatabase',
+              type: 'STORE',
+            },
             temporality: {
               _type: 'none',
               auditing: {
@@ -226,7 +228,10 @@ export const TEST_DATA__roundtrip_append_only_allow_duplicates = [
           },
         },
       ],
-      service: 'test::Service',
+      service: {
+        path: 'test::Service',
+        type: 'SERVICE',
+      },
       tests: [
         {
           _type: 'test',
@@ -370,7 +375,6 @@ export const TEST_DATA__roundtrip_bitemporal_no_del_ind_user_specifies_from = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: [],
       joins: [],
       name: 'TestDatabase',
       package: 'test',
@@ -536,7 +540,10 @@ export const TEST_DATA__roundtrip_bitemporal_no_del_ind_user_specifies_from = [
           persistenceTarget: {
             _type: 'relationalPersistenceTarget',
             table: 'personTable',
-            database: 'test::TestDatabase',
+            database: {
+              path: 'org::legend::TestDatabase',
+              type: 'STORE',
+            },
             temporality: {
               _type: 'bitemporalTemporality',
               processingDimension: {
@@ -557,7 +564,10 @@ export const TEST_DATA__roundtrip_bitemporal_no_del_ind_user_specifies_from = [
           },
         },
       ],
-      service: 'test::Service',
+      service: {
+        path: 'test::Service',
+        type: 'SERVICE',
+      },
       tests: [
         {
           _type: 'test',
@@ -688,7 +698,6 @@ export const TEST_DATA__roundtrip_non_temporal_snapshot_date_time_audit = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: [],
       joins: [],
       name: 'TestDatabase',
       package: 'test',
@@ -837,7 +846,10 @@ export const TEST_DATA__roundtrip_non_temporal_snapshot_date_time_audit = [
           persistenceTarget: {
             _type: 'relationalPersistenceTarget',
             table: 'personTable',
-            database: 'test::TestDatabase',
+            database: {
+              path: 'org::legend::TestDatabase',
+              type: 'STORE',
+            },
             temporality: {
               _type: 'none',
               auditing: {
@@ -851,7 +863,10 @@ export const TEST_DATA__roundtrip_non_temporal_snapshot_date_time_audit = [
           },
         },
       ],
-      service: 'test::Service',
+      service: {
+        path: 'test::Service',
+        type: 'SERVICE',
+      },
       tests: [
         {
           _type: 'test',
@@ -1080,7 +1095,6 @@ export const TEST_DATA__roundtrip_graph_fetch_basic = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: [],
       joins: [],
       name: 'myDatabase',
       package: 'test',
@@ -1573,12 +1587,18 @@ export const TEST_DATA__roundtrip_graph_fetch_basic = [
       name: 'TestPersistence',
       notifier: {},
       package: 'test',
-      service: 'test::service::FirmService',
+      service: {
+        path: 'test::service::FirmService',
+        type: 'SERVICE',
+      },
       serviceOutputTargets: [
         {
           persistenceTarget: {
             _type: 'relationalPersistenceTarget',
-            database: 'test::myDatabase',
+            database: {
+              path: 'org::legend::TestDatabase',
+              type: 'STORE',
+            },
             table: 'bitempPersonTable',
             temporality: {
               _type: 'bitemporalTemporality',

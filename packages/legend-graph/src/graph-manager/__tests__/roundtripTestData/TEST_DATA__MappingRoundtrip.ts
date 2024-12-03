@@ -364,7 +364,10 @@ export const TEST_DATA__MappingRoundtrip = [
               ],
             },
           ],
-          enumeration: 'tEnum',
+          enumeration: {
+            path: 'tEnum',
+            type: 'ENUMERATION',
+          },
           id: 'TargetTradeTypeMapping2',
         },
       ],
@@ -1225,7 +1228,6 @@ export const TEST_DATA__Relational_LocalPropertyMappingRoundtrip = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: [],
       joins: [],
       name: 'inMemoryAndRelationalDb',
       package: 'my::database',
@@ -1819,7 +1821,6 @@ export const TEST_DATA__MappingTestSuiteRoundtrip = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: [],
       joins: [
         {
           name: 'FirmPerson',
@@ -2109,7 +2110,6 @@ export const TEST_DATA__MappingOtherwisePropertyRoundtrip = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: [],
       joins: [
         {
           name: 'CovidDataDemographicsJoin',
