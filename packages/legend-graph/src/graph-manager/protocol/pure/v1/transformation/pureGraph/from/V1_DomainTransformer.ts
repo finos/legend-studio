@@ -29,7 +29,11 @@ import type { Class } from '../../../../../../../graph/metamodel/pure/packageabl
 import type { Association } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Association.js';
 import type { ConcreteFunctionDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import type { Property } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Property.js';
-import { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile.js';
+import {
+  V1_Profile,
+  V1_ProfileStereotype,
+  V1_ProfileTag,
+} from '../../../model/packageableElements/domain/V1_Profile.js';
 import { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
 import {
   V1_initPackageableElement,
@@ -73,6 +77,7 @@ import { V1_transformTestAssertion } from './V1_TestTransformer.js';
 import { V1_DefaultValue } from '../../../model/packageableElements/domain/V1_DefaultValue.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 import { V1_createGenericTypeWithElementPath } from '../../../helpers/V1_DomainHelper.js';
+import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 
 export const V1_createRawGenericTypeWithElementPath = (
   path: string,
@@ -87,8 +92,10 @@ export const V1_createRawGenericTypeWithElementPath = (
 export const V1_transformProfile = (element: Profile): V1_Profile => {
   const profile = new V1_Profile();
   V1_initPackageableElement(profile, element);
-  profile.stereotypes = element.p_stereotypes.map((s) => s.value);
-  profile.tags = element.p_tags.map((t) => t.value);
+  profile.stereotypes = element.p_stereotypes.map(
+    (s) => new V1_ProfileStereotype(s.value),
+  );
+  profile.tags = element.p_tags.map((t) => new V1_ProfileTag(t.value));
   return profile;
 };
 
@@ -238,7 +245,11 @@ export const V1_transformClass = (
   _class.stereotypes = element.stereotypes.map(V1_transformStereotype);
   _class.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
   _class.superTypes = element.generalizations.map(
-    (e) => e.ownerReference.valueForSerialization ?? '',
+    (e) =>
+      new V1_PackageableElementPointer(
+        PackageableElementPointerType.CLASS,
+        e.ownerReference.valueForSerialization ?? '',
+      ),
   );
   _class.derivedProperties = element.derivedProperties.map((dp) =>
     transformDerivedProperty(dp, context),

@@ -132,7 +132,8 @@ export class V1_ElementThirdPassBuilder
     const _class = this.context.currentSubGraph.getOwnClass(
       V1_buildFullPath(element.package, element.name),
     );
-    element.superTypes.forEach((type) => {
+    element.superTypes.forEach((pointer) => {
+      const type = pointer.path;
       // supertype `Any` will not be processed
       if (type !== CORE_PURE_PATH.ANY) {
         try {

@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-import { primitive, createModelSchema, optional } from 'serializr';
+import { primitive, createModelSchema, optional, deserialize } from 'serializr';
 import {
   SerializationFactory,
+  isString,
   optionalCustomUsingModelSchema,
+  type PlainObject,
 } from '@finos/legend-shared';
 import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
@@ -61,3 +63,14 @@ export const V1_multiplicityModelSchema = createModelSchema(V1_Multiplicity, {
   lowerBound: primitive(),
   upperBound: optional(primitive()),
 });
+
+export const V1_serializePackageableElementPointer = (
+  json: PlainObject<V1_PackageableElementPointer> | string,
+  type?: string | undefined,
+): V1_PackageableElementPointer => {
+  // For backward compatible: see https://github.com/finos/legend-engine/pull/2621
+  if (isString(json)) {
+    return new V1_PackageableElementPointer(type, json);
+  }
+  return deserialize(V1_packageableElementPointerModelSchema, json);
+};

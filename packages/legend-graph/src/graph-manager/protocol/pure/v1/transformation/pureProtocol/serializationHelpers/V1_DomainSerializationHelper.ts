@@ -25,21 +25,28 @@ import {
   type ModelSchema,
   serialize,
   custom,
+  deserialize,
 } from 'serializr';
 import {
-  customEquivalentList,
   customList,
   customListWithSchema,
   optionalCustom,
   usingConstantValueSchema,
   usingModelSchema,
+  isString,
+  type PlainObject,
 } from '@finos/legend-shared';
 import {
   V1_multiplicityModelSchema,
   V1_packageableElementPointerModelSchema,
+  V1_serializePackageableElementPointer,
 } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration.js';
-import { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile.js';
+import {
+  V1_Profile,
+  V1_ProfileStereotype,
+  V1_ProfileTag,
+} from '../../../model/packageableElements/domain/V1_Profile.js';
 import {
   V1_Measure,
   V1_Unit,
@@ -82,6 +89,8 @@ import {
   V1_deserializeGenericType,
   V1_GenericTypeModelSchema,
 } from './V1_TypeSerializationHelper.js';
+import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
+import type { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 
 export const V1_CLASS_ELEMENT_PROTOCOL_TYPE = 'class';
 export const V1_PROFILE_ELEMENT_PROTOCOL_TYPE = 'profile';
@@ -118,12 +127,48 @@ export const V1_taggedValueModelSchema = createModelSchema(V1_TaggedValue, {
   value: primitive(),
 });
 
+const V1_ProfileStereotypeSchema = createModelSchema(V1_ProfileStereotype, {
+  value: primitive(),
+});
+
+const V1_ProfileTagSchema = createModelSchema(V1_ProfileTag, {
+  value: primitive(),
+});
+
+export const V1_serializeProfileStereotypeSchema = (
+  json: PlainObject<V1_ProfileStereotype> | string,
+): V1_ProfileTag => {
+  if (isString(json)) {
+    return new V1_ProfileStereotype(json);
+  }
+  return deserialize(V1_ProfileStereotypeSchema, json);
+};
+
+export const V1_serializeProfileTagSchema = (
+  json: PlainObject<V1_ProfileTag> | string,
+): V1_ProfileTag => {
+  if (isString(json)) {
+    return new V1_ProfileTag(json);
+  }
+  return deserialize(V1_ProfileTagSchema, json);
+};
+
 export const V1_profileModelSchema = createModelSchema(V1_Profile, {
   _type: usingConstantValueSchema(V1_PROFILE_ELEMENT_PROTOCOL_TYPE),
   name: primitive(),
   package: primitive(),
-  stereotypes: list(primitive()),
-  tags: list(primitive()),
+  stereotypes: customList(
+    (val: V1_ProfileStereotype) => serialize(V1_ProfileStereotypeSchema, val),
+    (val) => V1_serializeProfileStereotypeSchema(val),
+
+    { INTERNAL__forceReturnEmptyInTest: true },
+  ),
+  tags: customList(
+    (val: V1_ProfileTag) => serialize(V1_ProfileTagSchema, val),
+    (val) => V1_serializeProfileTagSchema(val),
+
+    { INTERNAL__forceReturnEmptyInTest: true },
+  ),
 });
 
 // ------------------------------------- Enumeration -------------------------------------
@@ -330,9 +375,17 @@ export const V1_classModelSchema = createModelSchema(V1_Class, {
   stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),
-  superTypes: customEquivalentList({
-    INTERNAL__forceReturnEmptyInTest: true,
-  }),
+  superTypes: customList(
+    (val: V1_PackageableElementPointer) =>
+      serialize(V1_packageableElementPointerModelSchema, val),
+    (val) =>
+      V1_serializePackageableElementPointer(
+        val,
+        PackageableElementPointerType.DATA,
+      ),
+
+    { INTERNAL__forceReturnEmptyInTest: true },
+  ),
   taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
   }),

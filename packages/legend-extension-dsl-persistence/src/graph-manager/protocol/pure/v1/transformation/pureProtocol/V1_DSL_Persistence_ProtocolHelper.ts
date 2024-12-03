@@ -92,6 +92,9 @@ import {
   V1_externalFormatDataModelSchema,
   V1_serializeAtomicTest,
   V1_deserializeAtomicTest,
+  V1_packageableElementPointerModelSchema,
+  V1_serializePackageableElementPointer,
+  PackageableElementPointerType,
 } from '@finos/legend-graph';
 import {
   type PlainObject,
@@ -777,7 +780,14 @@ const V1_relationalSinkModelSchema = (
 ): ModelSchema<V1_RelationalSink> =>
   createModelSchema(V1_RelationalSink, {
     _type: usingConstantValueSchema(V1_SinkType.RELATIONAL_SINK),
-    database: primitive(),
+    database: custom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) =>
+        V1_serializePackageableElementPointer(
+          val,
+          PackageableElementPointerType.STORE,
+        ),
+    ),
   });
 
 const V1_objectStorageSinkModelSchema = (
@@ -785,7 +795,14 @@ const V1_objectStorageSinkModelSchema = (
 ): ModelSchema<V1_ObjectStorageSink> =>
   createModelSchema(V1_ObjectStorageSink, {
     _type: usingConstantValueSchema(V1_SinkType.OBJECT_STORAGE_SINK),
-    binding: primitive(),
+    binding: custom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) =>
+        V1_serializePackageableElementPointer(
+          val,
+          PackageableElementPointerType.BINDING,
+        ),
+    ),
   });
 
 export const V1_serializeSink = (
@@ -1599,7 +1616,14 @@ export const V1_relationalPersistenceTargetModelSchema = (
     _type: usingConstantValueSchema(
       V1_PersistentTargetType.RELATIONAL_PERSISTENCE_TARGET,
     ),
-    database: primitive(),
+    database: custom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) =>
+        V1_serializePackageableElementPointer(
+          val,
+          PackageableElementPointerType.STORE,
+        ),
+    ),
     table: primitive(),
     temporality: custom(
       (val) => V1_serializeTemporality(val, plugins),
@@ -2134,7 +2158,14 @@ export const V1_persistenceModelSchema = (
       (val) => V1_serializePersister(val, plugins),
       (val) => V1_deserializePersister(val, plugins),
     ),
-    service: primitive(),
+    service: custom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) =>
+        V1_serializePackageableElementPointer(
+          val,
+          PackageableElementPointerType.SERVICE,
+        ),
+    ),
     serviceOutputTargets: optionalCustomList(
       (val: V1_ServiceOutputTarget) =>
         V1_serializeServiceOutputTarget(val, plugins),

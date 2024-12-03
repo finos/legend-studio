@@ -21,6 +21,7 @@ import {
   list,
   primitive,
   serialize,
+  SKIP,
 } from 'serializr';
 import { V1_GenericType } from '../../../model/packageableElements/type/V1_GenericType.js';
 import { V1_PackageableType } from '../../../model/packageableElements/type/V1_PackageableType.js';
@@ -109,7 +110,14 @@ export const V1_GenericTypeModelSchema = createModelSchema(V1_GenericType, {
       INTERNAL__forceReturnEmptyInTest: true,
     },
   ),
-  // typeVariableValues: TODO
+  typeVariableValues: optionalCustomList(
+    // TODO
+    (value) => SKIP,
+    (value) => SKIP,
+    {
+      INTERNAL__forceReturnEmptyInTest: true,
+    },
+  ),
 });
 
 const appendAnyGenericType = (current: V1_GenericType): void => {

@@ -240,7 +240,8 @@ export class V1_ElementSecondPassBuilder
       V1_buildFullPath(element.package, element.name),
     );
     const uniqueStereotypes = new Set<string>();
-    profile.p_stereotypes = element.stereotypes.map((stereotype) => {
+    profile.p_stereotypes = element.stereotypes.map((stereotypeV) => {
+      const stereotype = stereotypeV.value;
       if (uniqueStereotypes.has(stereotype)) {
         const message = `Found duplicated stereotype '${stereotype}' in profile '${element.path}'`;
         /**
@@ -258,7 +259,8 @@ export class V1_ElementSecondPassBuilder
       return new Stereotype(profile, stereotype);
     });
     const uniqueTags = new Set<string>();
-    profile.p_tags = element.tags.map((tag) => {
+    profile.p_tags = element.tags.map((tagV) => {
+      const tag = tagV.value;
       if (uniqueTags.has(tag)) {
         const message = `Found duplicated tag '${tag}' in profile '${element.path}'`;
         /**
@@ -408,7 +410,7 @@ export class V1_ElementSecondPassBuilder
       V1_buildFullPath(element.package, element.name),
     );
     database.includes = element.includedStores.map((includedStore) =>
-      this.context.resolveDatabase(includedStore),
+      this.context.resolveDatabase(includedStore.path),
     );
     database.schemas = element.schemas.map((schema) =>
       V1_buildSchema(schema, database, this.context),

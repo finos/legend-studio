@@ -154,11 +154,11 @@ export const V1_buildEnumerationMapping = (
   parentMapping: Mapping,
 ): EnumerationMapping => {
   assertNonEmptyString(
-    srcEnumerationMapping.enumeration,
+    srcEnumerationMapping.enumeration.path,
     `Enumeration mapping 'enumeration' field is missing or empty`,
   );
   const targetEnumeration = context.resolveEnumeration(
-    srcEnumerationMapping.enumeration,
+    srcEnumerationMapping.enumeration.path,
   );
   const possibleSourceTypes = new Set(
     srcEnumerationMapping.enumValueMappings.flatMap((enumValueMapping) =>
@@ -246,12 +246,12 @@ const buildMappingStoreTestData = (
   context: V1_GraphBuilderContext,
 ): StoreTestData => {
   const mappingStoreTestData = new StoreTestData();
-  if (element.store === ModelStore.NAME) {
+  if (element.store.path === ModelStore.NAME) {
     mappingStoreTestData.store = PackageableElementExplicitReference.create(
       ModelStore.INSTANCE,
     );
   } else {
-    mappingStoreTestData.store = context.resolveStore(element.store);
+    mappingStoreTestData.store = context.resolveStore(element.store.path);
   }
   mappingStoreTestData.data = V1_buildEmbeddedData(element.data, context);
   return mappingStoreTestData;

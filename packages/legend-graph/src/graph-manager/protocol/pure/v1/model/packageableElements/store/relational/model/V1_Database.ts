@@ -33,7 +33,7 @@ export class V1_Database extends V1_Store implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.DATABASE,
       this.path,
-      hashArray(this.includedStores),
+      hashArray(this.includedStores.map((e) => e.path)),
       hashArray(this.schemas),
       hashArray(this.joins),
       hashArray(this.filters),

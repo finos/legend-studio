@@ -27,7 +27,7 @@ export class V1_FlatData extends V1_Store implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA,
       this.path,
-      hashArray(this.includedStores),
+      hashArray(this.includedStores.map((e) => e.path)),
       hashArray(this.sections),
     ]);
   }

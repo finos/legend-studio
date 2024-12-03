@@ -368,7 +368,7 @@ export const V1_buildRelationalSink = (
 ): RelationalSink => {
   const sink = new RelationalSink();
   sink.database = context.resolveElement(
-    protocol.database,
+    protocol.database.path,
     false,
   ) as PackageableElementImplicitReference<Database>;
   return sink;
@@ -380,7 +380,7 @@ export const V1_buildObjectStorageSink = (
 ): ObjectStorageSink => {
   const sink = new ObjectStorageSink();
   sink.binding = context.resolveElement(
-    protocol.binding,
+    protocol.binding.path,
     false,
   ) as PackageableElementImplicitReference<Binding>;
   return sink;
@@ -1164,7 +1164,7 @@ export const V1_buildPersistenceTarget = (
 ): PersistenceTarget => {
   if (protocol instanceof V1_RelationalPersistenceTarget) {
     const persistentTarget = new RelationalPersistenceTarget();
-    persistentTarget.database = protocol.database;
+    persistentTarget.database = protocol.database.path;
     persistentTarget.table = protocol.table;
     persistentTarget.temporality = V1_buildTemporality(
       protocol.temporality,
@@ -1222,7 +1222,7 @@ export const V1_buildPersistence = (
   );
   persistence.notifier = V1_buildNotifier(protocol.notifier, context);
   persistence.persister = V1_buildPersister(protocol.persister, context);
-  persistence.service = context.resolveService(protocol.service);
+  persistence.service = context.resolveService(protocol.service.path);
   persistence.serviceOutputTargets = V1_buildServiceOutputTargets(
     protocol.serviceOutputTargets,
     context,

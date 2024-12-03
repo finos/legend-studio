@@ -174,6 +174,7 @@ import { INTERNAL__UnknownPropertyMapping } from '../../../../../../../graph/met
 import { V1_INTERNAL__UnknownPropertyMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownPropertyMapping.js';
 import type { INTERNAL__UnknownSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownSetImplementation.js';
 import { V1_INTERNAL__UnknownClassMapping } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownClassMapping.js';
+import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -245,8 +246,10 @@ const transformEnumerationMapping = (
   enumerationMapping.enumValueMappings = element.enumValueMappings
     .filter((e) => !isStubbed_EnumValueMapping(e))
     .map(transformEnumValueMapping);
-  enumerationMapping.enumeration =
-    element.enumeration.valueForSerialization ?? '';
+  enumerationMapping.enumeration = new V1_PackageableElementPointer(
+    PackageableElementPointerType.ENUMERATION,
+    element.enumeration.valueForSerialization ?? '',
+  );
   enumerationMapping.id = mappingElementIdSerializer(element.id);
   return enumerationMapping;
 };
@@ -358,7 +361,10 @@ const transformMappingStoreTestData = (
 ): V1_MappingStoreTestData => {
   const testData = new V1_MappingStoreTestData();
   testData.data = V1_transformEmbeddedData(element.data, context);
-  testData.store = element.store.valueForSerialization ?? '';
+  testData.store = new V1_PackageableElementPointer(
+    PackageableElementPointerType.STORE,
+    element.store.valueForSerialization ?? '',
+  );
   return testData;
 };
 
@@ -1307,8 +1313,10 @@ const transformRelationalAssociationImplementation = (
   relationalMapping.stores = element.stores.map(
     (store) => store.valueForSerialization ?? '',
   );
-  relationalMapping.association =
-    element.association.valueForSerialization ?? '';
+  relationalMapping.association = new V1_PackageableElementPointer(
+    PackageableElementPointerType.ASSOCIATION,
+    element.association.valueForSerialization ?? '',
+  );
   relationalMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     true,
@@ -1326,8 +1334,10 @@ const transformFlatDataAssociationImplementation = (
   flatDataAssociationMapping.stores = element.stores.map(
     (store) => store.valueForSerialization ?? '',
   );
-  flatDataAssociationMapping.association =
-    element.association.valueForSerialization ?? '';
+  flatDataAssociationMapping.association = new V1_PackageableElementPointer(
+    PackageableElementPointerType.ASSOCIATION,
+    element.association.valueForSerialization ?? '',
+  );
   flatDataAssociationMapping.propertyMappings =
     transformClassMappingPropertyMappings(
       element.propertyMappings,
@@ -1346,7 +1356,10 @@ const transformXStorelAssociationImplementation = (
   xStoreMapping.stores = element.stores.map(
     (store) => store.valueForSerialization ?? '',
   );
-  xStoreMapping.association = element.association.valueForSerialization ?? '';
+  xStoreMapping.association = new V1_PackageableElementPointer(
+    PackageableElementPointerType.ASSOCIATION,
+    element.association.valueForSerialization ?? '',
+  );
   xStoreMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     false,

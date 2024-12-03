@@ -154,6 +154,8 @@ import {
   V1_transformEmbeddedData,
   V1_transformTestAssertion,
   V1_transformAtomicTest,
+  PackageableElementPointerType,
+  V1_PackageableElementPointer,
 } from '@finos/legend-graph';
 import { guaranteeType, UnsupportedOperationError } from '@finos/legend-shared';
 import type { PersistenceTestBatch } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTestBatch.js';
@@ -357,7 +359,10 @@ export const V1_transformRelationalSink = (
   context: V1_GraphTransformerContext,
 ): V1_RelationalSink => {
   const protocol = new V1_RelationalSink();
-  protocol.database = element.database.value.path;
+  protocol.database = new V1_PackageableElementPointer(
+    PackageableElementPointerType.STORE,
+    element.database.value.path,
+  );
   return protocol;
 };
 
@@ -366,7 +371,10 @@ export const V1_transformObjectStorageSink = (
   context: V1_GraphTransformerContext,
 ): V1_ObjectStorageSink => {
   const protocol = new V1_ObjectStorageSink();
-  protocol.binding = element.binding.value.path;
+  protocol.binding = new V1_PackageableElementPointer(
+    PackageableElementPointerType.BINDING,
+    element.binding.value.path,
+  );
   return protocol;
 };
 
@@ -963,7 +971,11 @@ export const V1_transformPersistenceTarget = (
 ): V1_PersistenceTarget => {
   if (element instanceof RelationalPersistenceTarget) {
     const protocol = new V1_RelationalPersistenceTarget();
-    protocol.database = element.database;
+    protocol.database = new V1_PackageableElementPointer(
+      PackageableElementPointerType.STORE,
+      element.database,
+    );
+
     protocol.table = element.table;
     protocol.temporality = V1_transformTemporality(
       element.temporality,
@@ -1252,7 +1264,10 @@ export const V1_transformPersistence = (
   protocol.documentation = element.documentation;
   protocol.notifier = V1_transformNotifier(element.notifier, context);
   protocol.persister = V1_transformPersister(element.persister, context);
-  protocol.service = element.service.valueForSerialization ?? '';
+  protocol.service = new V1_PackageableElementPointer(
+    PackageableElementPointerType.SERVICE,
+    element.service.valueForSerialization ?? '',
+  );
   protocol.serviceOutputTargets = V1_transformServiceOutputTargets(
     element.serviceOutputTargets,
     context,

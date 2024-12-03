@@ -21,16 +21,31 @@ import {
   V1_PackageableElement,
 } from '../../../model/packageableElements/V1_PackageableElement.js';
 
+export class V1_ProfileStereotype {
+  value!: string;
+
+  constructor(value: string) {
+    this.value = value;
+  }
+}
+
+export class V1_ProfileTag {
+  value!: string;
+  constructor(value: string) {
+    this.value = value;
+  }
+}
+
 export class V1_Profile extends V1_PackageableElement implements Hashable {
-  stereotypes: string[] = [];
-  tags: string[] = [];
+  stereotypes: V1_ProfileStereotype[] = [];
+  tags: V1_ProfileTag[] = [];
 
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PROFILE,
       this.path,
-      hashArray(this.stereotypes),
-      hashArray(this.tags),
+      hashArray(this.stereotypes.map((e) => e.value)),
+      hashArray(this.tags.map((e) => e.value)),
     ]);
   }
 
