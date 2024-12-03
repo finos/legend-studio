@@ -4040,6 +4040,31 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
     classifierPath: 'meta::pure::runtime::PackageableConnection',
   },
   {
+    path: 'simple::H2ConnectionWithTimeout',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'h2Default',
+        },
+        databaseType: 'H2',
+        datasourceSpecification: {
+          _type: 'static',
+          databaseName: 'myDb',
+          host: 'somehost',
+          port: 999,
+        },
+        element: 'apps::pure::studio::relational::tests::dbInc',
+        queryTimeOutInSeconds: 1000,
+        type: 'H2',
+      },
+      name: 'H2Connection',
+      package: 'simple',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+  {
     path: 'simple::SnowflakeConnection',
     content: {
       _type: 'connection',
