@@ -332,7 +332,12 @@ export const TEST_DATA__ClassRoundtrip = [
           value: 'test',
         },
       ],
-      superTypes: ['B'],
+      superTypes: [
+        {
+          path: 'B',
+          type: 'CLASS',
+        },
+      ],
       taggedValues: [
         {
           tag: {
@@ -389,8 +394,19 @@ export const TEST_DATA__ClassRoundtrip = [
       _type: 'profile',
       name: 'tProf',
       package: 'test',
-      stereotypes: ['test'],
-      tags: ['doc', 'todo'],
+      stereotypes: [
+        {
+          value: 'test',
+        },
+      ],
+      tags: [
+        {
+          value: 'doc',
+        },
+        {
+          value: 'todo',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::extension::Profile',
   },
@@ -629,8 +645,19 @@ export const TEST_DATA__EnumerationRoundtrip = [
       _type: 'profile',
       name: 'tProf',
       package: 'test',
-      stereotypes: ['test'],
-      tags: ['doc', 'todo'],
+      stereotypes: [
+        {
+          value: 'test',
+        },
+      ],
+      tags: [
+        {
+          value: 'doc',
+        },
+        {
+          value: 'todo',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::extension::Profile',
   },
@@ -758,8 +785,19 @@ export const TEST_DATA__AssociationRoundtrip = [
       _type: 'profile',
       name: 'tProf',
       package: 'test',
-      stereotypes: ['test'],
-      tags: ['doc', 'todo'],
+      stereotypes: [
+        {
+          value: 'test',
+        },
+      ],
+      tags: [
+        {
+          value: 'doc',
+        },
+        {
+          value: 'todo',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::extension::Profile',
   },
@@ -806,8 +844,19 @@ export const TEST_DATA__FunctionRoundtrip = [
       _type: 'profile',
       name: 'tProf',
       package: 'test',
-      stereotypes: ['test'],
-      tags: ['doc', 'todo'],
+      stereotypes: [
+        {
+          value: 'test',
+        },
+      ],
+      tags: [
+        {
+          value: 'doc',
+        },
+        {
+          value: 'todo',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::extension::Profile',
   },

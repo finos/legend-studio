@@ -6939,7 +6939,12 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
           },
         },
       ],
-      superTypes: ['test::LegalEntity'],
+      superTypes: [
+        {
+          path: 'test::LegalEntity',
+          type: 'CLASS',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
@@ -7607,7 +7612,10 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               ],
             },
           ],
-          enumeration: 'Title',
+          enumeration: {
+            path: 'Title',
+            type: 'ENUMERATION',
+          },
           id: 'titleMap',
         },
       ],
@@ -7849,7 +7857,10 @@ export const TEST_DATA__FlatDataAssociationMapping = [
       associationMappings: [
         {
           _type: 'flatData',
-          association: 'model::NewAssociation',
+          association: {
+            path: 'model::NewAssociation',
+            type: 'ASSOCIATION',
+          },
           propertyMappings: [
             {
               _type: 'flatDataAssociationPropertyMapping',

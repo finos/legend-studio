@@ -147,7 +147,6 @@ export const TEST_DATA__JsonRelationalTypeRoundtrip = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: [],
       joins: [
         {
           name: 'manager1',

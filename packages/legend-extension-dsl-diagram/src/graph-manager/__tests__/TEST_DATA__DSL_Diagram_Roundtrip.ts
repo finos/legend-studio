@@ -48,7 +48,12 @@ export const TEST_DATA__roundtrip = [
           },
         },
       ],
-      superTypes: ['test::tClass2'],
+      superTypes: [
+        {
+          path: 'test::tClass2',
+          type: 'CLASS',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },

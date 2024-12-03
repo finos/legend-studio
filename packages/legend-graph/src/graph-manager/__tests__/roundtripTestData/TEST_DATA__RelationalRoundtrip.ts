@@ -128,7 +128,12 @@ export const TEST_DATA__DatabaseRoundtrip = [
           },
         },
       ],
-      includedStores: ['model::relational::tests::dbInc'],
+      includedStores: [
+        {
+          path: 'model::relational::tests::dbInc',
+          type: 'STORE',
+        },
+      ],
       joins: [
         {
           name: 'Product_Synonym',
@@ -1827,7 +1832,12 @@ export const TEST_DATA__DatabaseRoundtrip = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: ['model::relational::tests::db'],
+      includedStores: [
+        {
+          path: 'model::relational::tests::db',
+          type: 'STORE',
+        },
+      ],
       joins: [],
       name: 'db2',
       package: 'model::relational::tests',
@@ -1936,7 +1946,6 @@ export const TEST_DATA__DatabaseRoundtrip = [
           },
         },
       ],
-      includedStores: [],
       joins: [
         {
           name: 'personViewWithFirmTable',
@@ -3051,7 +3060,6 @@ export const TEST_DATA__DatabaseWithSelfJoin = [
           views: [],
         },
       ],
-      includedStores: [],
     },
     classifierPath: 'meta::relational::metamodel::Database',
   },
@@ -3125,7 +3133,6 @@ export const TEST_DATA__DatabaseWithSelfJoin = [
           views: [],
         },
       ],
-      includedStores: [],
     },
     classifierPath: 'meta::relational::metamodel::Database',
   },
@@ -3288,7 +3295,6 @@ export const TEST_DATA__simpleEmbeddedRelationalRoundtrip = [
           },
         },
       ],
-      includedStores: [],
       joins: [
         {
           name: 'testJoin',
@@ -3619,7 +3625,6 @@ export const TEST_DATA__multiLevelEmbeddedRelationalRoundtrip = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: [],
       joins: [],
       name: 'db',
       package: 'mapping',
@@ -3867,7 +3872,6 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: [],
       joins: [],
       name: 'dbInc',
       package: 'apps::pure::studio::relational::tests',
@@ -4342,7 +4346,12 @@ export const TEST_DATA__RelationalAssociationMapping = [
           },
         },
       ],
-      superTypes: ['apps::meta::pure::tests::model::simple::GeographicEntity'],
+      superTypes: [
+        {
+          path: 'apps::meta::pure::tests::model::simple::GeographicEntity',
+          type: 'CLASS',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
@@ -4361,7 +4370,12 @@ export const TEST_DATA__RelationalAssociationMapping = [
       _type: 'class',
       name: 'Department',
       package: 'apps::meta::pure::tests::model::simple',
-      superTypes: ['apps::meta::pure::tests::model::simple::Organization'],
+      superTypes: [
+        {
+          path: 'apps::meta::pure::tests::model::simple::Organization',
+          type: 'CLASS',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
@@ -4371,7 +4385,12 @@ export const TEST_DATA__RelationalAssociationMapping = [
       _type: 'class',
       name: 'Division',
       package: 'apps::meta::pure::tests::model::simple',
-      superTypes: ['apps::meta::pure::tests::model::simple::Organization'],
+      superTypes: [
+        {
+          path: 'apps::meta::pure::tests::model::simple::Organization',
+          type: 'CLASS',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
@@ -6238,7 +6257,12 @@ export const TEST_DATA__RelationalAssociationMapping = [
           },
         },
       ],
-      superTypes: ['apps::meta::pure::tests::model::simple::EntityWithAddress'],
+      superTypes: [
+        {
+          path: 'apps::meta::pure::tests::model::simple::EntityWithAddress',
+          type: 'CLASS',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
@@ -6356,7 +6380,12 @@ export const TEST_DATA__RelationalAssociationMapping = [
           },
         },
       ],
-      superTypes: ['apps::meta::pure::tests::model::simple::Firm'],
+      superTypes: [
+        {
+          path: 'apps::meta::pure::tests::model::simple::Firm',
+          type: 'CLASS',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
@@ -6419,7 +6448,12 @@ export const TEST_DATA__RelationalAssociationMapping = [
           },
         },
       ],
-      superTypes: ['apps::meta::pure::tests::model::simple::GeographicEntity'],
+      superTypes: [
+        {
+          path: 'apps::meta::pure::tests::model::simple::GeographicEntity',
+          type: 'CLASS',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
@@ -7867,8 +7901,14 @@ export const TEST_DATA__RelationalAssociationMapping = [
         },
       ],
       superTypes: [
-        'apps::meta::pure::tests::model::simple::EntityWithAddress',
-        'apps::meta::pure::tests::model::simple::EntityWithLocations',
+        {
+          path: 'apps::meta::pure::tests::model::simple::EntityWithAddress',
+          type: 'CLASS',
+        },
+        {
+          path: 'apps::meta::pure::tests::model::simple::EntityWithLocations',
+          type: 'CLASS',
+        },
       ],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
@@ -7928,7 +7968,12 @@ export const TEST_DATA__RelationalAssociationMapping = [
           },
         },
       ],
-      superTypes: ['apps::meta::pure::tests::model::simple::Person'],
+      superTypes: [
+        {
+          path: 'apps::meta::pure::tests::model::simple::Person',
+          type: 'CLASS',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
@@ -8024,7 +8069,12 @@ export const TEST_DATA__RelationalAssociationMapping = [
       _type: 'class',
       name: 'Team',
       package: 'apps::meta::pure::tests::model::simple',
-      superTypes: ['apps::meta::pure::tests::model::simple::Organization'],
+      superTypes: [
+        {
+          path: 'apps::meta::pure::tests::model::simple::Organization',
+          type: 'CLASS',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
@@ -8034,7 +8084,12 @@ export const TEST_DATA__RelationalAssociationMapping = [
       _type: 'class',
       name: 'Address',
       package: 'apps::meta::relational::tests::mapping::union::extend',
-      superTypes: ['apps::meta::pure::tests::model::simple::Address'],
+      superTypes: [
+        {
+          path: 'apps::meta::pure::tests::model::simple::Address',
+          type: 'CLASS',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
@@ -8044,7 +8099,12 @@ export const TEST_DATA__RelationalAssociationMapping = [
       _type: 'class',
       name: 'Firm',
       package: 'apps::meta::relational::tests::mapping::union::extend',
-      superTypes: ['apps::meta::pure::tests::model::simple::Firm'],
+      superTypes: [
+        {
+          path: 'apps::meta::pure::tests::model::simple::Firm',
+          type: 'CLASS',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
@@ -8054,7 +8114,12 @@ export const TEST_DATA__RelationalAssociationMapping = [
       _type: 'class',
       name: 'Person',
       package: 'apps::meta::relational::tests::mapping::union::extend',
-      superTypes: ['apps::meta::pure::tests::model::simple::Person'],
+      superTypes: [
+        {
+          path: 'apps::meta::pure::tests::model::simple::Person',
+          type: 'CLASS',
+        },
+      ],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
@@ -8416,7 +8481,6 @@ export const TEST_DATA__RelationalAssociationMapping = [
           },
         },
       ],
-      includedStores: [],
       joins: [
         {
           name: 'personViewWithFirmTable',
@@ -9465,8 +9529,10 @@ export const TEST_DATA__RelationalAssociationMapping = [
       associationMappings: [
         {
           _type: 'relational',
-          association:
-            'apps::meta::pure::tests::model::simple::PlacesOfInterest',
+          association: {
+            path: 'apps::meta::pure::tests::model::simple::PlacesOfInterest',
+            type: 'ASSOCIATION',
+          },
           propertyMappings: [
             {
               _type: 'relationalPropertyMapping',
@@ -10103,8 +10169,10 @@ export const TEST_DATA__RelationalAssociationMapping = [
               ],
             },
           ],
-          enumeration:
-            'apps::meta::pure::tests::model::simple::GeographicEntityType',
+          enumeration: {
+            path: 'apps::meta::pure::tests::model::simple::GeographicEntityType',
+            type: 'ENUMERATION',
+          },
           id: 'GE',
         },
       ],
@@ -10222,7 +10290,10 @@ export const TEST_DATA__XStoreAssociationMapping = [
       associationMappings: [
         {
           _type: 'xStore',
-          association: 'test::Firm_Person',
+          association: {
+            path: 'test::Firm_Person',
+            type: 'ASSOCIATION',
+          },
           propertyMappings: [
             {
               _type: 'xStorePropertyMapping',

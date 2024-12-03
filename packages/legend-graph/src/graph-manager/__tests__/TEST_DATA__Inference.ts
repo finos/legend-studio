@@ -211,8 +211,19 @@ export const TEST_DATA__ReferenceWithoutSection = {
         _type: 'profile',
         name: 'tProf',
         package: 'test',
-        stereotypes: ['test'],
-        tags: ['doc', 'todo'],
+        stereotypes: [
+          {
+            value: 'test',
+          },
+        ],
+        tags: [
+          {
+            value: 'doc',
+          },
+          {
+            value: 'todo',
+          },
+        ],
       },
       classifierPath: 'meta::pure::metamodel::extension::Profile',
     },
@@ -293,8 +304,19 @@ export const TEST_DATA__ReferenceWithoutSection = {
         _type: 'profile',
         name: 'tProf',
         package: 'test',
-        stereotypes: ['test'],
-        tags: ['doc', 'todo'],
+        stereotypes: [
+          {
+            value: 'test',
+          },
+        ],
+        tags: [
+          {
+            value: 'doc',
+          },
+          {
+            value: 'todo',
+          },
+        ],
       },
       classifierPath: 'meta::pure::metamodel::extension::Profile',
     },
@@ -328,8 +350,15 @@ export const TEST_DATA__ReferenceModification = {
         _type: 'profile',
         name: 'tProf',
         package: 'test2',
-        stereotypes: [],
-        tags: ['s1', 's2'],
+
+        tags: [
+          {
+            value: 's1',
+          },
+          {
+            value: 's2',
+          },
+        ],
       },
       classifierPath: 'meta::pure::metamodel::extension::Profile',
     },
@@ -339,8 +368,15 @@ export const TEST_DATA__ReferenceModification = {
         _type: 'profile',
         name: 'tProf',
         package: 'test',
-        stereotypes: [],
-        tags: ['s3', 's4'],
+
+        tags: [
+          {
+            value: 's3',
+          },
+          {
+            value: 's4',
+          },
+        ],
       },
       classifierPath: 'meta::pure::metamodel::extension::Profile',
     },
@@ -388,8 +424,14 @@ export const TEST_DATA__ReferenceModification = {
         _type: 'profile',
         name: 'tProf',
         package: 'test2',
-        stereotypes: [],
-        tags: ['s1', 's2'],
+        tags: [
+          {
+            value: 's1',
+          },
+          {
+            value: 's2',
+          },
+        ],
       },
       classifierPath: 'meta::pure::metamodel::extension::Profile',
     },
@@ -399,8 +441,14 @@ export const TEST_DATA__ReferenceModification = {
         _type: 'profile',
         name: 'tProf',
         package: 'test',
-        stereotypes: [],
-        tags: ['s3', 's4'],
+        tags: [
+          {
+            value: 's3',
+          },
+          {
+            value: 's4',
+          },
+        ],
       },
       classifierPath: 'meta::pure::metamodel::extension::Profile',
     },
@@ -448,8 +496,14 @@ export const TEST_DATA__ReferenceModification = {
         _type: 'profile',
         name: 'tProf',
         package: 'test2',
-        stereotypes: [],
-        tags: ['s1', 's2'],
+        tags: [
+          {
+            value: 's1',
+          },
+          {
+            value: 's2',
+          },
+        ],
       },
       classifierPath: 'meta::pure::metamodel::extension::Profile',
     },
@@ -459,8 +513,14 @@ export const TEST_DATA__ReferenceModification = {
         _type: 'profile',
         name: 'tProf',
         package: 'test',
-        stereotypes: [],
-        tags: ['s3', 's4'],
+        tags: [
+          {
+            value: 's3',
+          },
+          {
+            value: 's4',
+          },
+        ],
       },
       classifierPath: 'meta::pure::metamodel::extension::Profile',
     },

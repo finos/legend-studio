@@ -147,7 +147,6 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
     content: {
       _type: 'relational',
       filters: [],
-      includedStores: [],
       joins: [
         {
           name: 'manager1',

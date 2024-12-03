@@ -291,7 +291,12 @@
           }
         }
       ],
-      "superTypes": ["ui::test1::Animal"],
+      "superTypes": [
+        {
+          "path": "ui::test1::Animal",
+          "type": "CLASS"
+        }
+      ],
       "stereotypes": [
         {
           "profile": "ui::test1::ProfileTest",
@@ -368,7 +373,12 @@
           }
         }
       ],
-      "superTypes": ["ui::test1::Organism"]
+      "superTypes": [
+        {
+          "path": "ui::test1::Organism",
+          "type": "CLASS"
+        }
+      ]
     },
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
@@ -406,7 +416,12 @@
           }
         }
       ],
-      "superTypes": ["ui::test1::Human"],
+      "superTypes": [
+        {
+          "path": "ui::test1::Human",
+          "type": "CLASS"
+        }
+      ],
       "taggedValues": [
         {
           "tag": {
@@ -447,7 +462,12 @@
           }
         }
       ],
-      "superTypes": ["ui::test1::Pet"]
+      "superTypes": [
+        {
+          "path": "ui::test1::Pet",
+          "type": "CLASS"
+        }
+      ]
     },
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
@@ -479,7 +499,12 @@
           }
         }
       ],
-      "superTypes": ["ui::test1::Pet"]
+      "superTypes": [
+        {
+          "path": "ui::test1::Pet",
+          "type": "CLASS"
+        }
+      ]
     },
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
@@ -515,7 +540,12 @@
           }
         }
       ],
-      "superTypes": ["ui::test1::Organism"]
+      "superTypes": [
+        {
+          "path": "ui::test1::Organism",
+          "type": "CLASS"
+        }
+      ]
     },
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
@@ -610,7 +640,12 @@
           "type": "String"
         }
       ],
-      "superTypes": ["ui::test1::Animal"]
+      "superTypes": [
+        {
+          "path": "ui::test1::Animal",
+          "type": "CLASS"
+        }
+      ]
     },
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
@@ -648,7 +683,12 @@
           }
         }
       ],
-      "superTypes": ["ui::test1::Human"]
+      "superTypes": [
+        {
+          "path": "ui::test1::Human",
+          "type": "CLASS"
+        }
+      ]
     },
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
@@ -963,7 +1003,12 @@
           }
         }
       ],
-      "superTypes": ["ui::test2::Person"]
+      "superTypes": [
+        {
+          "path": "ui::test2::Person",
+          "type": "CLASS"
+        }
+      ]
     },
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
@@ -1010,7 +1055,12 @@
           "type": "String"
         }
       ],
-      "superTypes": ["ui::test2::GSEmployee"]
+      "superTypes": [
+        {
+          "path": "ui::test2::GSEmployee",
+          "type": "CLASS"
+        }
+      ]
     },
     "classifierPath": "meta::pure::metamodel::type::Class"
   },
@@ -1231,7 +1281,12 @@
           }
         }
       ],
-      "superTypes": ["ui::test2::PersonWithoutConstraints"],
+      "superTypes": [
+        {
+          "path": "ui::test2::PersonWithoutConstraints",
+          "type": "CLASS"
+        }
+      ],
       "taggedValues": [
         {
           "tag": {

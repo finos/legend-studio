@@ -135,7 +135,12 @@ export const TEST_DATA__simpleDebuggingCase = [
         },
       ],
       stereotypes: [{ profile: 'myPack::MyExtenstion', value: 'important' }],
-      superTypes: ['myPack::LegalEntity'],
+      superTypes: [
+        {
+          path: 'myPack::LegalEntity',
+          type: 'CLASS',
+        },
+      ],
       taggedValues: [
         {
           tag: { profile: 'myPack::MyExtenstion', value: 'doc' },
@@ -156,8 +161,16 @@ export const TEST_DATA__simpleDebuggingCase = [
       _type: 'profile',
       name: 'MyExtenstion',
       package: 'myPack',
-      stereotypes: ['important'],
-      tags: ['doc'],
+      stereotypes: [
+        {
+          value: 'important',
+        },
+      ],
+      tags: [
+        {
+          value: 'doc',
+        },
+      ],
     },
   },
   {
