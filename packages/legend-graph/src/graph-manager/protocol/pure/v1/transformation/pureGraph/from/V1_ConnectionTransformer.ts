@@ -363,6 +363,7 @@ export const V1_transformRelationalDatabaseConnection = (
   connection.databaseType = connection.type;
   connection.timeZone = metamodel.timeZone;
   connection.quoteIdentifiers = metamodel.quoteIdentifiers;
+  connection.queryTimeOutInSeconds = metamodel.queryTimeOutInSeconds;
   if (metamodel.postProcessors.length) {
     connection.postProcessors = metamodel.postProcessors.map((postprocessor) =>
       V1_transformPostProcessor(postprocessor, context),

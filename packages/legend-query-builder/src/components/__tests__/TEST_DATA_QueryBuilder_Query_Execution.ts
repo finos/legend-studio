@@ -592,6 +592,7 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
           },
           element: 'model::MyDatabase',
           quoteIdentifiers: false,
+          queryTimeOutInSeconds: 3000,
           type: 'H2',
         },
         name: 'MyConnection',

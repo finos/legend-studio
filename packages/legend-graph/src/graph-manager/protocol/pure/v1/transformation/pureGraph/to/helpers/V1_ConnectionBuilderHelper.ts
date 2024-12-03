@@ -288,6 +288,7 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
     val.localMode = connection.localMode;
     val.timeZone = connection.timeZone;
     val.quoteIdentifiers = connection.quoteIdentifiers;
+    val.queryTimeOutInSeconds = connection.queryTimeOutInSeconds;
     val.postProcessors = connection.postProcessors.map((p) =>
       V1_buildPostProcessor(p, this.context),
     );
