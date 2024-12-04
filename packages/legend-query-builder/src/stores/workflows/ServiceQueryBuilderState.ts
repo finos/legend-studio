@@ -133,6 +133,7 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
 
   setSelectedExecutionContext(val: ServiceExecutionContext): void {
     this.selectedExecutionContext = val;
+    this.executionContextState.setMultiExecutionParameterKey(val.key);
   }
 
   override get sideBarClassName(): string | undefined {

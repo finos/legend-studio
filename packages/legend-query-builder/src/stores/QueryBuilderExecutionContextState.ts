@@ -22,6 +22,7 @@ export abstract class QueryBuilderExecutionContextState {
   readonly queryBuilderState: QueryBuilderState;
   mapping: Mapping | undefined;
   runtimeValue: Runtime | undefined;
+  multiExecutionParameterKey: string | undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
     this.queryBuilderState = queryBuilderState;
@@ -35,6 +36,10 @@ export abstract class QueryBuilderExecutionContextState {
     this.runtimeValue = val;
   }
 
+  setMultiExecutionParameterKey(val: string | undefined): void {
+    this.multiExecutionParameterKey = val;
+  }
+
   get specifiedInQuery(): boolean {
     return true;
   }
@@ -46,8 +51,10 @@ export class QueryBuilderEmbeddedFromExecutionContextState extends QueryBuilderE
     makeObservable(this, {
       mapping: observable,
       runtimeValue: observable,
+      multiExecutionParameterKey: observable,
       setMapping: action,
       setRuntimeValue: action,
+      setMultiExecutionParameterKey: action,
     });
   }
 }
@@ -58,8 +65,10 @@ export class QueryBuilderExternalExecutionContextState extends QueryBuilderExecu
     makeObservable(this, {
       mapping: observable,
       runtimeValue: observable,
+      multiExecutionParameterKey: observable,
       setMapping: action,
       setRuntimeValue: action,
+      setMultiExecutionParameterKey: action,
     });
   }
 
