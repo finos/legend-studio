@@ -40,6 +40,7 @@ import type { DSL_Persistence_PureProtocolProcessorPlugin_Extension } from '../.
 import {
   type V1_GraphTransformerContext,
   V1_initPackageableElement,
+  V1_PackageableElementPointer,
   V1_transformConnection,
   V1_transformRootValueSpecification,
 } from '@finos/legend-graph';
@@ -128,7 +129,10 @@ export const V1_transformPersistenceContext = (
 ): V1_PersistenceContext => {
   const protocol = new V1_PersistenceContext();
   V1_initPackageableElement(protocol, element);
-  protocol.persistence = element.persistence.valueForSerialization ?? '';
+  protocol.persistence = new V1_PackageableElementPointer(
+    'PERSISTENCE',
+    element.persistence.valueForSerialization ?? '',
+  );
   protocol.platform = V1_transformPersistencePlatform(
     element.platform,
     context,

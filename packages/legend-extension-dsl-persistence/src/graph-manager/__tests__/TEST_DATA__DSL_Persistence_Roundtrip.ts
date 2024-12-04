@@ -335,7 +335,10 @@ export const TEST_DATA__roundtrip_case1 = [
       _type: 'persistenceContext',
       name: 'ZooPersistenceContext',
       package: 'org::dxl',
-      persistence: 'org::dxl::ZooPersistence',
+      persistence: {
+        path: 'org::dxl::ZooPersistence',
+        type: 'PERSISTENCE',
+      },
       platform: { _type: 'default' },
       serviceParameters: [
         {
@@ -1063,7 +1066,10 @@ export const TEST_DATA__cloud__roundtrip = [
       _type: 'persistenceContext',
       name: 'ZooPersistenceContext',
       package: 'org::dxl',
-      persistence: 'org::dxl::ZooPersistence',
+      persistence: {
+        path: 'org::dxl::ZooPersistence',
+        type: 'PERSISTENCE',
+      },
       platform: {
         _type: 'awsGlue',
         dataProcessingUnits: 10,

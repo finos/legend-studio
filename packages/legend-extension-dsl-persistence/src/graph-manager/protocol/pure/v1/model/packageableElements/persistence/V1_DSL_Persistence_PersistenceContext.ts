@@ -20,6 +20,7 @@ import type { V1_ServiceParameter } from './V1_DSL_Persistence_ServiceParameter.
 import {
   type V1_Connection,
   V1_PackageableElement,
+  type V1_PackageableElementPointer,
   type V1_PackageableElementVisitor,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
@@ -28,7 +29,7 @@ export class V1_PersistenceContext
   extends V1_PackageableElement
   implements Hashable
 {
-  persistence!: string;
+  persistence!: V1_PackageableElementPointer;
   platform!: V1_PersistencePlatform;
   serviceParameters: V1_ServiceParameter[] = [];
   sinkConnection?: V1_Connection;
@@ -36,7 +37,7 @@ export class V1_PersistenceContext
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.PERSISTENCE_CONTEXT,
-      this.persistence,
+      this.persistence.path,
       this.platform,
       hashArray(this.serviceParameters),
       this.sinkConnection ?? '',

@@ -30,7 +30,9 @@ import {
   type PureProtocolProcessorPlugin,
   V1_deserializeConnectionValue,
   V1_deserializeValueSpecification,
+  V1_packageableElementPointerModelSchema,
   V1_serializeConnectionValue,
+  V1_serializePackageableElementPointer,
   V1_serializeValueSpecification,
 } from '@finos/legend-graph';
 import {
@@ -215,7 +217,10 @@ export const V1_persistenceContextModelSchema = (
     ),
     name: primitive(),
     package: primitive(),
-    persistence: primitive(),
+    persistence: custom(
+      (val) => serialize(V1_packageableElementPointerModelSchema, val),
+      (val) => V1_serializePackageableElementPointer(val, 'PERSISTENCE'),
+    ),
     platform: custom(
       (val) => V1_serializePersistencePlatform(val, plugins),
       (val) => V1_deserializePersistencePlatform(val, plugins),
