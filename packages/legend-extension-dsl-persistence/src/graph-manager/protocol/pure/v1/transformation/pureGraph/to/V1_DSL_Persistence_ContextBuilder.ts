@@ -138,7 +138,7 @@ export const V1_buildPersistenceContext = (
     context.currentSubGraph,
   );
   persistenceContext.persistence = context.resolveElement(
-    protocol.persistence,
+    protocol.persistence.path,
     false,
   ) as PackageableElementImplicitReference<Persistence>;
   persistenceContext.platform = V1_buildPersistencePlatform(
