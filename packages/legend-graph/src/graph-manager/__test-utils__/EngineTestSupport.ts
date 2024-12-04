@@ -29,6 +29,10 @@ import type { V1_ExecutionResult } from '../protocol/pure/v1/engine/execution/V1
 import { V1_ExecuteInput } from '../protocol/pure/v1/engine/execution/V1_ExecuteInput.js';
 import type { V1_PureModelContext } from '../protocol/pure/v1/model/context/V1_PureModelContext.js';
 import type { V1_ValueSpecification } from '../protocol/pure/v1/model/valueSpecification/V1_ValueSpecification.js';
+import {
+  V1_MappingModelCoverageAnalysisInput,
+  type V1_MappingModelCoverageAnalysisResult,
+} from '../protocol/pure/v1/engine/analytics/V1_MappingModelCoverageAnalysis.js';
 
 export const ENGINE_TEST_SUPPORT_API_URL = 'http://localhost:6300/api';
 
@@ -150,4 +154,24 @@ export async function ENGINE_TEST_SUPPORT__compile(
     `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/compilation/compile`,
     modelDataContext,
   );
+}
+
+export async function ENGINE_TEST_SUPPORT__mappingCoverage(
+  input: V1_MappingModelCoverageAnalysisInput,
+): Promise<PlainObject<V1_MappingModelCoverageAnalysisResult>> {
+  return (
+    await axios.post<unknown, AxiosResponse<{ elements: object[] }>>(
+      `${ENGINE_TEST_SUPPORT_API_URL}/analytics/mapping/modelCoverage`,
+      V1_MappingModelCoverageAnalysisInput.serialization.toJson(input),
+      {
+        headers: {
+          [HttpHeader.CONTENT_TYPE]: ContentType.APPLICATION_JSON,
+        },
+        params: {
+          returnMappedEntityInfo: true,
+          returnMappedPropertyInfo: true,
+        },
+      },
+    )
+  ).data;
 }
