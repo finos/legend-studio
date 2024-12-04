@@ -202,7 +202,10 @@ export { V1_PropertyGraphFetchTree } from './graph-manager/protocol/pure/v1/mode
 export { V1_SubTypeGraphFetchTree } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/graph/V1_SubTypeGraphFetchTree.js';
 export { V1_GenericTypeInstance } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_GenericTypeInstance.js';
 export { V1_ParameterValue } from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_ParameterValue.js';
-export { V1_PureExecution } from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_ServiceExecution.js';
+export {
+  V1_KeyedExecutionParameter,
+  V1_PureExecution,
+} from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_ServiceExecution.js';
 export { V1_SourceInformation } from './graph-manager/protocol/pure/v1/model/V1_SourceInformation.js';
 export {
   V1_RelationType,
@@ -451,6 +454,7 @@ export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/seri
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/V1_DSL_ExternalFormat_GraphBuilderHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TestSerializationHelper.js';
+export { V1_setupDatabaseSerialization } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper.js';
 
 // --------------------------------------------- TESTING --------------------------------------------------
@@ -696,6 +700,8 @@ export * from './graph-manager/protocol/pure/extensions/DSL_Mapping_PureProtocol
 export { V1_MAPPING_ELEMENT_PROTOCOL_TYPE } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_MappingSerializationHelper.js';
 export {
   V1_serializeRuntime,
+  V1_setupLegacyRuntimeSerialization,
+  V1_setupEngineRuntimeSerialization,
   V1_runtimePointerModelSchema,
   V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
