@@ -14,17 +14,42 @@
  * limitations under the License.
  */
 
-import { expect, test } from '@jest/globals';
+import { describe, expect, test } from '@jest/globals';
 import { resolve } from 'path';
 import { createGraphManagerStateFromGrammar } from '../../utils/testUtils.js';
 import { integrationTest } from '@finos/legend-shared/test';
-import { PackageableElementExplicitReference } from '@finos/legend-graph';
-import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import {
+  type V1_ArtifactGenerationExtensionOutput,
+  type V1_PureGraphManager,
+  PackageableElementExplicitReference,
+  stub_RawLambda,
+  V1_ArtifactGenerationExtensionInput,
+  V1_buildArtifactsByExtensionElement,
+} from '@finos/legend-graph';
+import {
+  guaranteeNonNullable,
+  guaranteeType,
+  type PlainObject,
+} from '@finos/legend-shared';
 import {
   DataSpace,
   DataSpaceElementPointer,
+  DSL_DataSpace_GraphManagerPreset,
   resolveUsableDataSpaceClasses,
 } from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  TEST__provideMockedQueryEditorStore,
+  TEST_QUERY_NAME,
+  TEST__setUpDataSpaceExistingQueryEditor,
+} from '@finos/legend-application-query';
+import { DSL_DataSpace_LegendApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application';
+import { ENGINE_TEST_SUPPORT__generateArtifacts } from '@finos/legend-graph/test';
+import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query-builder';
+import { waitFor, getByText, fireEvent } from '@testing-library/dom';
+import { act } from 'react';
+import { DepotGeneration, StoredFileGeneration } from '@finos/legend-storage';
+
+const V1_DATASPACE_ANALYTICS_ARTIFACT_EXTENSION_KEY = 'dataSpace-analytics';
 
 test(integrationTest('TEST_DATA_Dataspace-Executables'), async () => {
   const { modelFileDir, modelFilePath } = {
@@ -178,3 +203,152 @@ test(integrationTest('TEST_DATA_Dataspace-Executables'), async () => {
   );
   expect(usableClasses).toHaveLength(9);
 });
+
+type ModelCoverageTestCase = [
+  string,
+  {
+    dataspacePath: string;
+    executionContext: string;
+    classPath: string;
+    mappedPropertyNames: string[];
+    inputFileDir: string;
+    inputFilePath: string;
+  },
+];
+
+const MODEL_COVERAGE_CASES: ModelCoverageTestCase[] = [
+  [
+    'simple relational model with dataspace',
+    {
+      dataspacePath:
+        'showcase::northwind::dataspace::NorthwindDataSpaceWithExecutables',
+      executionContext: 'externally-public-PROD',
+      classPath: 'showcase::northwind::model::Order',
+      mappedPropertyNames: ['Id'],
+      inputFileDir: 'model',
+      inputFilePath: 'TEST_DATA_Dataspace-Executables.pure',
+    },
+  ],
+];
+
+describe(
+  integrationTest('Build minimal graph from dataspace artifacts'),
+  () => {
+    test.each(MODEL_COVERAGE_CASES)(
+      '%s',
+      async (
+        testName: ModelCoverageTestCase[0],
+        testCase: ModelCoverageTestCase[1],
+      ) => {
+        const {
+          dataspacePath,
+          executionContext,
+          classPath,
+          mappedPropertyNames,
+          inputFileDir,
+          inputFilePath,
+        } = testCase;
+        const graphManagerState = await createGraphManagerStateFromGrammar(
+          resolve(__dirname, inputFileDir),
+          inputFilePath,
+        );
+        const graphManager =
+          graphManagerState.graphManager as V1_PureGraphManager;
+        const input = new V1_ArtifactGenerationExtensionInput(
+          graphManager.getFullGraphModelData(graphManagerState.graph),
+          [dataspacePath],
+        );
+        const artifacts = V1_buildArtifactsByExtensionElement(
+          (await ENGINE_TEST_SUPPORT__generateArtifacts(
+            input,
+          )) as unknown as V1_ArtifactGenerationExtensionOutput,
+        );
+        const dataspaceArtifacts = artifacts.values
+          .filter(
+            (artifact) =>
+              artifact.extension ===
+              V1_DATASPACE_ANALYTICS_ARTIFACT_EXTENSION_KEY,
+          )
+          .flatMap((artifact) =>
+            artifact.artifactsByExtensionElements
+              .filter(
+                (e) =>
+                  e.extension === V1_DATASPACE_ANALYTICS_ARTIFACT_EXTENSION_KEY,
+              )
+              .flatMap((e) => e.files),
+          );
+        const fileGens = dataspaceArtifacts.map((file) => {
+          const storedFileGeneration = new StoredFileGeneration();
+          storedFileGeneration.groupId = 'engine-test';
+          storedFileGeneration.artifactId = 'test';
+          storedFileGeneration.versionId = '1.0.0';
+          storedFileGeneration.type =
+            V1_DATASPACE_ANALYTICS_ARTIFACT_EXTENSION_KEY;
+          storedFileGeneration.path = dataspacePath;
+          const depotGeneration = new DepotGeneration();
+          depotGeneration.content = file.content;
+          depotGeneration.path = file.fileName;
+          storedFileGeneration.file = depotGeneration;
+          return storedFileGeneration;
+        });
+        const analyticsResult = JSON.parse(
+          guaranteeNonNullable(
+            fileGens.find((file) =>
+              file.file.path.includes('AnalyticsResult.json'),
+            )?.file.content,
+            'fail to generate analytics result artifact',
+          ),
+        ) as PlainObject;
+        const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore({
+          extraPlugins: [new DSL_DataSpace_LegendApplicationPlugin()],
+          extraPresets: [new DSL_DataSpace_GraphManagerPreset()],
+        });
+        mockedQueryEditorStore.setExistingQueryName(TEST_QUERY_NAME);
+        const { renderResult, queryBuilderState } =
+          await TEST__setUpDataSpaceExistingQueryEditor(
+            mockedQueryEditorStore,
+            analyticsResult,
+            dataspacePath,
+            executionContext,
+            stub_RawLambda(),
+            [],
+            true,
+            fileGens.map((fileGen) => ({
+              groupId: fileGen.groupId,
+              artifactId: fileGen.artifactId,
+              versionId: fileGen.versionId,
+              type: fileGen.type,
+              path: fileGen.path,
+              file: {
+                content: fileGen.file.content,
+                path: fileGen.file.path,
+              },
+            })),
+          );
+        const _modelClass =
+          queryBuilderState.graphManagerState.graph.getClass(classPath);
+        await act(async () => {
+          queryBuilderState.changeClass(_modelClass);
+        });
+        const explorerPanel = await waitFor(() =>
+          renderResult.getByTestId(
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER,
+          ),
+        );
+        await waitFor(() =>
+          mappedPropertyNames.forEach((name) => getByText(explorerPanel, name)),
+        );
+        await act(async () => {
+          fireEvent.click(renderResult.getByTitle('See more options'));
+        });
+        await act(async () => {
+          fireEvent.click(renderResult.getByText('About Data Product'));
+        });
+        const aboutDataSpaceModal = await waitFor(() =>
+          renderResult.getByRole('dialog'),
+        );
+        await waitFor(() => getByText(aboutDataSpaceModal, executionContext));
+      },
+    );
+  },
+);

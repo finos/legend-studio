@@ -46,7 +46,6 @@ test(
         'domain::COVIDDatapace',
         'dummyContext',
         stub_RawLambda(),
-        'mapping::CovidDataMapping',
         TEST_DATA__DSL_DataSpace_Entities,
       );
     const _class = 'domain::COVIDData';
@@ -125,7 +124,6 @@ test(
         'domain::COVIDDatapace',
         'dummyContext',
         stub_RawLambda(),
-        'mapping::CovidDataMapping',
         [],
         true,
         TEST_DATA__DSL_DataSpace_Artifacts,

@@ -53,3 +53,5 @@ export {
   useQueryEditorStore,
 } from './components/QueryEditorStoreProvider.js';
 export { QueryEditor } from './components/QueryEditor.js';
+
+export * from './components/__test-utils__/QueryEditorComponentTestUtils.js';

@@ -17,6 +17,9 @@
     { "path": "../legend-extension-dsl-persistence" },
     { "path": "../legend-extension-dsl-text" },
     { "path": "../legend-extension-dsl-data-quality" },
-    { "path": "../legend-extension-store-service-store" }
+    { "path": "../legend-extension-store-service-store" },
+    { "path": "../legend-extension-store-service-store" },
+    { "path": "../legend-application-query" },
+    { "path": "../legend-storage" }
   ]
 }

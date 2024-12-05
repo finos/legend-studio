@@ -29,6 +29,10 @@ import type { V1_ExecutionResult } from '../protocol/pure/v1/engine/execution/V1
 import { V1_ExecuteInput } from '../protocol/pure/v1/engine/execution/V1_ExecuteInput.js';
 import type { V1_PureModelContext } from '../protocol/pure/v1/model/context/V1_PureModelContext.js';
 import type { V1_ValueSpecification } from '../protocol/pure/v1/model/valueSpecification/V1_ValueSpecification.js';
+import {
+  V1_ArtifactGenerationExtensionInput,
+  type V1_ArtifactGenerationExtensionOutput,
+} from '../protocol/pure/v1/engine/generation/V1_ArtifactGenerationExtensionApi.js';
 
 export const ENGINE_TEST_SUPPORT_API_URL = 'http://localhost:6300/api';
 
@@ -150,4 +154,15 @@ export async function ENGINE_TEST_SUPPORT__compile(
     `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/compilation/compile`,
     modelDataContext,
   );
+}
+
+export async function ENGINE_TEST_SUPPORT__generateArtifacts(
+  input: V1_ArtifactGenerationExtensionInput,
+): Promise<PlainObject<V1_ArtifactGenerationExtensionOutput>> {
+  return (
+    await axios.post<unknown, AxiosResponse<{ elements: object[] }>>(
+      `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/generation/generateArtifacts`,
+      V1_ArtifactGenerationExtensionInput.serialization.toJson(input),
+    )
+  ).data;
 }
