@@ -509,9 +509,6 @@ export class QueryBuilderResultState {
           parameterValues,
           convertUnsafeNumbersToString: true,
           preservedResponseHeadersList: [V1_ZIPKIN_TRACE_HEADER],
-          multiExecutionParameterKey:
-            this.queryBuilderState.executionContextState
-              .multiExecutionParameterKey,
         },
       );
 

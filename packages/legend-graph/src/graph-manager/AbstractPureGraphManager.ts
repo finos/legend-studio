@@ -162,7 +162,6 @@ export interface ExecutionOptions {
   parameterValues?: ParameterValue[];
   abortController?: AbortController | undefined;
   preservedResponseHeadersList?: string[];
-  multiExecutionParameterKey?: string | undefined;
 }
 
 export interface ServiceRegistrationOptions {
