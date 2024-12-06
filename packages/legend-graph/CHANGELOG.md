@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 31.10.58
+
+### Patch Changes
+
+- [#3716](https://github.com/finos/legend-studio/pull/3716) [`385a9cd`](https://github.com/finos/legend-studio/commit/385a9cd9eff8ed5025db7c6f5579959ed7ce3e46) ([@travisstebbins](https://github.com/travisstebbins)) - VS Code graph build optimizations
+
+- [#3692](https://github.com/finos/legend-studio/pull/3692) [`8b5b907`](https://github.com/finos/legend-studio/commit/8b5b907bc4c717b1e842406035d0f80ed8d92cf5) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add engine roundtip tests for building minial graph using dataspace artifacts
+
 ## 31.10.57
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-vscode-extension-dependencies
 
+## 4.0.38
+
+### Patch Changes
+
+- [#3716](https://github.com/finos/legend-studio/pull/3716) [`385a9cd`](https://github.com/finos/legend-studio/commit/385a9cd9eff8ed5025db7c6f5579959ed7ce3e46) ([@travisstebbins](https://github.com/travisstebbins)) - VS Code graph build optimizations
+
 ## 4.0.37
 
 ## 4.0.36
