@@ -49,6 +49,7 @@ import { NewDataQualityValidationElementEditor } from './DSL_NewDataQualityValid
 import { DataQualityServiceValidationState } from './states/DataQualityServiceValidationState.js';
 import { DataQualityRelationValidationConfigurationState } from './states/DataQualityRelationValidationConfigurationState.js';
 import { DataQualityRelationValidationConfigurationEditor } from './DataQualityRelationValidationConfigurationEditor.js';
+import { DSL_DATA_QUALITY_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../__lib__/studio/DSL_DataQuality_LegendStudioApplicationNavigationContext.js';
 
 const DATA_QUALITY_ELEMENT_TYPE = 'DATAQUALITYVALIDATION';
 const DATA_QUALITY_ELEMENT_TYPE_LABEL = 'Data Quality Validation';
@@ -200,6 +201,14 @@ export class DSL_DataQuality_LegendStudioApplicationPlugin
         }
         return undefined;
       },
+    ];
+  }
+
+  override getExtraAccessEventLoggingApplicationContextKeys(): string[] {
+    return [
+      DSL_DATA_QUALITY_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.LAMBDA_EDITOR,
+      DSL_DATA_QUALITY_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.VALIDATION_ASSERTION_EDITOR,
+      DSL_DATA_QUALITY_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.VALIDATION_ROW_MAP_EDITOR,
     ];
   }
 }

@@ -39,7 +39,7 @@ export const DataQualityValidationDetailPanel = observer(
     relationValidationState: DataQualityRelationValidationState;
     changeName: React.ChangeEventHandler<HTMLInputElement>;
     changeDescription: React.ChangeEventHandler<HTMLInputElement>;
-    onLambdaEditorFocus: (() => void) | undefined;
+    onLambdaEditorFocus: (isAssertion: boolean) => void;
     onValidationTypeChange: (val: SelectOption) => void;
     selectedValidationType: {
       label: RelationValidationType;
@@ -123,35 +123,45 @@ export const DataQualityValidationDetailPanel = observer(
                   <div className="relation-validation-editor__label">
                     Row map function
                   </div>
-                  <InlineLambdaEditor
-                    disabled={
-                      dataQualityRelationValidationState.isConvertingValidationLambdaObjects ||
-                      isReadOnly
-                    }
-                    lambdaEditorState={rowMapFunctionLambdaEditorState}
-                    forceBackdrop={forceBackdrop}
-                    expectedType={PrimitiveType.BOOLEAN}
-                    onEditorFocus={onLambdaEditorFocus}
-                    disablePopUp={true}
-                  />
+                  <div className="data-quality-uml-element-editor__validation">
+                    <div className="data-quality-uml-element-editor__lambda__value">
+                      <InlineLambdaEditor
+                        disabled={
+                          dataQualityRelationValidationState.isConvertingValidationLambdaObjects ||
+                          isReadOnly
+                        }
+                        lambdaEditorState={rowMapFunctionLambdaEditorState}
+                        forceBackdrop={forceBackdrop}
+                        expectedType={PrimitiveType.BOOLEAN}
+                        onEditorFocus={() => onLambdaEditorFocus(false)}
+                        disablePopUp={true}
+                        className="relation-validation__lambda"
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
               <div className="relation-validation-editor__content">
                 <div className="relation-validation-editor__label">
                   Validation Grammar
                 </div>
-                <InlineLambdaEditor
-                  disabled={
-                    dataQualityRelationValidationState.isConvertingValidationLambdaObjects ||
-                    isReadOnly
-                  }
-                  lambdaEditorState={relationValidationState}
-                  forceBackdrop={forceBackdrop}
-                  expectedType={PrimitiveType.BOOLEAN}
-                  onEditorFocus={onLambdaEditorFocus}
-                  disablePopUp={true}
-                  forceExpansion={true}
-                />
+                <div className="data-quality-uml-element-editor__validation">
+                  <div className="data-quality-uml-element-editor__lambda__value">
+                    <InlineLambdaEditor
+                      disabled={
+                        dataQualityRelationValidationState.isConvertingValidationLambdaObjects ||
+                        isReadOnly
+                      }
+                      lambdaEditorState={relationValidationState}
+                      forceBackdrop={forceBackdrop}
+                      expectedType={PrimitiveType.BOOLEAN}
+                      onEditorFocus={() => onLambdaEditorFocus(true)}
+                      disablePopUp={true}
+                      forceExpansion={true}
+                      className="relation-validation__lambda"
+                    />
+                  </div>
+                </div>
               </div>
               <div className="relation-validation-editor__content">
                 <div className="relation-validation-editor__label">

@@ -127,6 +127,7 @@ export class DataQualityRelationResultState {
     if (parameters.length) {
       this.dataQualityRelationValidationConfigurationState.parametersState.openModal(
         queryLambda,
+        true,
       );
     } else {
       flowResult(this.runValidation()).catch(
@@ -225,6 +226,7 @@ export class DataQualityRelationResultState {
             .graphManagerState.graphManager,
         ).debugExecutionPlanGeneration(model, packagePath, {
           validationName: this.validationToRun?.name,
+          previewLimit: this.previewLimit,
         })) as {
           plan: RawExecutionPlan;
           debug: string;
@@ -241,6 +243,7 @@ export class DataQualityRelationResultState {
             .graphManagerState.graphManager,
         ).generatePlan(model, packagePath, {
           validationName: this.validationToRun?.name,
+          previewLimit: this.previewLimit,
         })) as RawExecutionPlan;
       }
 
