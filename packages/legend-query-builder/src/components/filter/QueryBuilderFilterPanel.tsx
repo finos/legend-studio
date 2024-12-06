@@ -1293,19 +1293,9 @@ const QueryBuilderFilterTreeNodeContainer = observer(
             applicationStore.notificationService.notifyWarning(error.message);
             return;
           }
-          if (node instanceof QueryBuilderFilterTreeOperationNodeData) {
-            buildFilterTree(
-              filterConditionState.propertyExpressionState.propertyExpression,
-              filterState,
-              node,
-            );
-          } else if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
-            buildFilterTree(
-              filterConditionState.propertyExpressionState.propertyExpression,
-              filterState,
-              node,
-            );
-          } else if (
+          if (
+            node instanceof QueryBuilderFilterTreeOperationNodeData ||
+            node instanceof QueryBuilderFilterTreeConditionNodeData ||
             node instanceof QueryBuilderFilterTreeBlankConditionNodeData
           ) {
             buildFilterTree(

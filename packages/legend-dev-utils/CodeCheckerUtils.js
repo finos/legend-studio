@@ -129,8 +129,7 @@ export const findFiles = ({
   );
 
   const result = markerStats.dirs // sort directories to the top
-    .slice()
-    .sort((a, b) => a.localeCompare(b))
+    .toSorted((a, b) => a.localeCompare(b))
     .map((dir) => ({
       path: dir,
       hasMarker: true,

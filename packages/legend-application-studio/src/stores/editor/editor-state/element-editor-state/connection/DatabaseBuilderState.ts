@@ -463,8 +463,9 @@ export class DatabaseSchemaExplorerState {
       const rootIds: string[] = [];
       const nodes = new Map<string, DatabaseSchemaExplorerTreeNodeData>();
       database.schemas
-        .slice()
-        .sort((schemaA, schemaB) => schemaA.name.localeCompare(schemaB.name))
+        .toSorted((schemaA, schemaB) =>
+          schemaA.name.localeCompare(schemaB.name),
+        )
         .forEach((schema) => {
           const schemaId = schema.name;
           rootIds.push(schemaId);
@@ -523,8 +524,7 @@ export class DatabaseSchemaExplorerState {
       const childrenIds = schemaNode.childrenIds ?? [];
       schema.tables = tables;
       tables
-        .slice()
-        .sort((tableA, tableB) => tableA.name.localeCompare(tableB.name))
+        .toSorted((tableA, tableB) => tableA.name.localeCompare(tableB.name))
         .forEach((table) => {
           table.schema = schema;
           const tableId = `${schema.name}.${table.name}`;
@@ -598,8 +598,7 @@ export class DatabaseSchemaExplorerState {
         const childrenIds: string[] = [];
         const tableId = tableNode.id;
         columns
-          .slice()
-          .sort((colA, colB) => colA.name.localeCompare(colB.name))
+          .toSorted((colA, colB) => colA.name.localeCompare(colB.name))
           .forEach((column) => {
             const columnId = `${tableId}.${column.name}`;
             const columnNode = new DatabaseSchemaExplorerTreeColumnNodeData(

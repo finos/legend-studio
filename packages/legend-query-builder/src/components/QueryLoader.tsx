@@ -203,7 +203,7 @@ export const QueryLoader = observer(
       debouncedLoadQueries(queryLoaderState.searchText);
     };
     const toggleCuratedTemplate = (): void => {
-      Array.from(queryLoaderState.extraFilters).map(([key, value]) =>
+      Array.from(queryLoaderState.extraFilters).forEach(([key, value]) =>
         queryLoaderState.extraFilters.set(key, false),
       );
       queryLoaderState.setShowCurrentUserQueriesOnly(false);

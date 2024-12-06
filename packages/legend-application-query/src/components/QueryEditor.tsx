@@ -429,8 +429,7 @@ const QueryEditorExistingQueryInfoModal = observer(
       LATEST_VERSION_ALIAS,
       ...updateState.projectVersions,
     ]
-      .slice()
-      .sort((v1, v2) => compareSemVerVersions(v2, v1))
+      .toSorted((v1, v2) => compareSemVerVersions(v2, v1))
       .map(buildVersionOption);
     const executionContext = query.executionContext;
     const updateQueryVersionId = applicationStore.guardUnhandledError(
