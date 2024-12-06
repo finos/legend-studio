@@ -1,0 +1,825 @@
+###DataSpace
+DataSpace showcase::analytics::dataspace::SampleDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'externally-public-QA';
+      mapping: showcase::analytics::mapping::mapping::SampleMapping;
+      defaultRuntime: showcase::analytics::mapping::mapping::SampleRuntime;
+    },
+    {
+      name: 'externally-public-PROD';
+      mapping: showcase::analytics::mapping::mapping::SampleMapping;
+      defaultRuntime: showcase::analytics::mapping::mapping::SampleRuntime;
+    },
+    {
+      name: 'internally-public-QA';
+      mapping: showcase::analytics::mapping::mapping::SampleMapping;
+      defaultRuntime: showcase::analytics::mapping::mapping::SampleRuntime;
+    },
+    {
+      name: 'internally-public-PROD';
+      mapping: showcase::analytics::mapping::mapping::SampleMapping;
+      defaultRuntime: showcase::analytics::mapping::mapping::SampleRuntime;
+    },
+    {
+      name: 'internally-restricted-QA';
+      mapping: showcase::analytics::mapping::mapping::SampleMapping;
+      defaultRuntime: showcase::analytics::mapping::mapping::SampleRuntime;
+    },
+    {
+      name: 'internally-restricted-PROD';
+      mapping: showcase::analytics::mapping::mapping::SampleMapping;
+      defaultRuntime: showcase::analytics::mapping::mapping::SampleRuntime;
+    }
+  ];
+  defaultExecutionContext: 'externally-public-PROD';
+}
+
+
+###Relational
+Database showcase::analytics::mapping::store::mappingAnalysisSampleDb
+(
+  Table ORDERS
+  (
+    id INTEGER PRIMARY KEY,
+    quantity INTEGER,
+    productId INTEGER,
+    clientId INTEGER
+  )
+  Table EXECUTIONS
+  (
+    id INTEGER PRIMARY KEY,
+    executionTime TIMESTAMP,
+    quantity INTEGER,
+    orderId INTEGER,
+    positionId INTEGER
+  )
+  Table TRADES
+  (
+    tradeId VARCHAR(80) PRIMARY KEY,
+    clientName VARCHAR(80),
+    salesPersonID VARCHAR(30),
+    traderID VARCHAR(30),
+    quantity FLOAT,
+    interest FLOAT,
+    factor FLOAT,
+    exchangeRate DECIMAL(25, 10),
+    product INTEGER,
+    tradeDate DATE,
+    settlementDate TIMESTAMP
+  )
+  Table EMPLOYEE
+  (
+    EMP_GUID CHAR(32) PRIMARY KEY,
+    FIRST_NAME VARCHAR(64),
+    LAST_NAME VARCHAR(64),
+    KERBEROS VARCHAR(30),
+    ADDRESS_LINE_1 VARCHAR(30),
+    CITY VARCHAR(20),
+    POSTCODE VARCHAR(5)
+  )
+  Table DIRECTORS
+  (
+    GUID CHAR(32) PRIMARY KEY,
+    FIRST_NAME VARCHAR(64),
+    LAST_NAME VARCHAR(64)
+  )
+  Table PRODUCTS
+  (
+    product_id INTEGER PRIMARY KEY,
+    description VARCHAR(64)
+  )
+  Table SYNONYMS
+  (
+    product_id INTEGER PRIMARY KEY,
+    synonym_type VARCHAR(10) PRIMARY KEY,
+    synonym_value VARCHAR(30)
+  )
+  Table CALENDAR
+  (
+    date DATE PRIMARY KEY,
+    fiscal_year INTEGER,
+    fiscal_day INTEGER
+  )
+  Table GC
+  (
+    gc_id INTEGER PRIMARY KEY,
+    total FLOAT,
+    trade_date DATE,
+    settlement_date DATE,
+    trade_id INTEGER
+  )
+  Table OE
+  (
+    milestoning
+    (
+      business(BUS_FROM = from_z, BUS_THRU = thru_z)
+    )
+
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(20),
+    isActive VARCHAR(1),
+    parentId INTEGER,
+    ceo_first_name VARCHAR(20),
+    ceo_last_name VARCHAR(20),
+    from_z TIMESTAMP,
+    thru_z TIMESTAMP PRIMARY KEY
+  )
+  Table POSITION
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+    )
+
+    id INTEGER PRIMARY KEY,
+    accountId VARCHAR(5),
+    clientId INTEGER,
+    quantity FLOAT,
+    contract_id VARCHAR(200),
+    contract_startDate DATE,
+    contract_endDate DATE,
+    contract_principal FLOAT,
+    contract_type VARCHAR(200),
+    in_z TIMESTAMP,
+    out_z TIMESTAMP
+  )
+  Table ACCOUNT
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(20),
+    accountType VARCHAR(20),
+    clientId INTEGER
+  )
+  Table CLIENTCOVERAGE
+  (
+    employeeId CHAR(32),
+    clientId INTEGER
+  )
+
+  Join PositionFirmAccount_Join(POSITION.accountId = ACCOUNT.id
+    and ACCOUNT.accountType is null)
+  Join PositionEFGtomerAccount_Join(POSITION.accountId = ACCOUNT.id
+    and ACCOUNT.accountType is not null)
+  Join TradesSalesPerson_Employee(TRADES.salesPersonID = EMPLOYEE.KERBEROS)
+  Join TradesTrader_Employee(TRADES.traderID = EMPLOYEE.KERBEROS)
+  Join Trades_Employee(TRADES.traderID = EMPLOYEE.KERBEROS
+    or TRADES.salesPersonID = EMPLOYEE.KERBEROS)
+  Join Synonym_products(PRODUCTS.product_id = SYNONYMS.product_id)
+  Join Trade_product(TRADES.product = PRODUCTS.product_id)
+  Join GC_TradeDate(GC.trade_date = CALENDAR.date)
+  Join GC_SettlementDate(GC.settlement_date = CALENDAR.date)
+  Join Trade_GC(GC.trade_id = TRADES.tradeId)
+  Join Trade_Client(OE.name = TRADES.clientName)
+  Join ParentOrganizationalEntity(OE.id = {target}.parentId)
+  Join Positions_Client(POSITION.clientId = OE.id)
+  Join EmployeeCoverage(CLIENTCOVERAGE.employeeId = EMPLOYEE.EMP_GUID)
+  Join ClientCoverage(CLIENTCOVERAGE.clientId = OE.id)
+  Join Account_Client(ACCOUNT.clientId = OE.id)
+  Join OrderProduct(ORDERS.productId = PRODUCTS.product_id)
+  Join OrderClient(ORDERS.clientId = OE.id)
+  Join OrderExecutions(ORDERS.id = EXECUTIONS.orderId)
+  Join PositionExecutions(POSITION.id = EXECUTIONS.positionId)
+
+  Filter EFGtomerAccountFilter(ACCOUNT.accountType is not null)
+  Filter TestAccountFilter(ACCOUNT.accountType = 'TEST')
+  Filter TestAccountFilter2(ACCOUNT.accountType = 'TEST2')
+  Filter FirmAccountFilter(ACCOUNT.accountType is null)
+  Filter AContractTypeFilter(POSITION.contract_type = 'A')
+  Filter BContractTypeFilter(POSITION.contract_type = 'B')
+)
+
+
+###Pure
+Enum {doc.doc = 'Synonym type.'} showcase::analytics::mapping::domain::SynonymType
+{
+  {doc.doc = 'The EFG'} EFG,
+  ABC,
+  DEF
+}
+
+Class {doc.doc = 'Sample Product Synonym.'} showcase::analytics::mapping::domain::Synonym
+{
+  type: showcase::analytics::mapping::domain::SynonymType[1];
+  {doc.doc = 'value of the synonym.'} value: String[1];
+}
+
+Class {doc.doc = 'Sample Product object.'} showcase::analytics::mapping::domain::Product
+{
+  {doc.doc = 'product description.'} description: String[0..1];
+  {doc.doc = 'product id.'} id: Integer[1];
+  synonyms: showcase::analytics::mapping::domain::Synonym[*];
+  synonymByType(type: showcase::analytics::mapping::domain::SynonymType[1]) {$this.synonyms->filter(
+  s|$s.type ==
+    $type
+)->first()}: showcase::analytics::mapping::domain::Synonym[0..1];
+  synonymValueByType(type: showcase::analytics::mapping::domain::SynonymType[1]) {$this.synonymByType($type).value}: String[0..1];
+  synonymTypes() {$this.synonyms.type}: showcase::analytics::mapping::domain::SynonymType[*];
+}
+
+Class showcase::analytics::mapping::domain::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  address: showcase::analytics::mapping::domain::Address[0..1];
+  fullName() {$this.firstName + ' ' + $this.lastName}: String[1];
+  fullNameReversed(separator: String[0..1]) {$this.lastName + if(
+  $separator->isEmpty(),
+  |',',
+  |$separator->toOne()
+) + $this.firstName}: String[1];
+  simpleDetails() {$this.fullName + ' (' + $this.address->toOne().city + ')'}: String[1];
+  postalAddress() {$this.fullName + '\n' + $this.address->toOne().fullAddress}: String[1];
+}
+
+Class {doc.doc = 'Sample Address object.'} showcase::analytics::mapping::domain::Address
+{
+  line1: String[1];
+  line2: String[1];
+  city: String[1];
+  postcode: String[0..1];
+  hasPostCode() {$this.postcode->isNotEmpty()}: Boolean[1];
+  fullAddress() {$this.line1 + ',' + $this.line2 + ',' + $this.city + ',' + $this.postcode->toOne()}: String[1];
+}
+
+Class {doc.doc = 'Sample Product object.'} showcase::analytics::mapping::domain::Employee extends showcase::analytics::mapping::domain::Person
+{
+  kerberos: String[1];
+  trades: showcase::analytics::mapping::domain::Trade[*];
+  coveredClients: showcase::analytics::mapping::domain::OrganizationalEntity[*];
+  displayName() {$this.displayNameEFGtom('[', ']')}: String[1];
+  displayNameEFGtom(openBracket: String[1],closeBracket: String[1]) {$this.fullName + ' ' + $openBracket + $this.kerberos + $closeBracket}: String[1];
+  displayNameEFGtom() {$this.displayNameEFGtom('(', ')')}: String[1];
+}
+
+Class <<doc.deprecated>> showcase::analytics::mapping::domain::Calendar
+{
+  date: Date[1];
+  fiscalYear: Integer[1];
+  fiscalDay: Integer[1];
+  isYtd(c: showcase::analytics::mapping::domain::Calendar[1]) {($this.fiscalYear ==
+  $c.fiscalYear) &&
+  ($this.fiscalDay <=
+  $c.fiscalDay)}: Boolean[1];
+}
+
+Class showcase::analytics::mapping::domain::GC
+{
+  totalGrossCredits: Float[0..1];
+  tradeDate: showcase::analytics::mapping::domain::Calendar[1];
+  settlementDate: showcase::analytics::mapping::domain::Calendar[1];
+  tradeId: String[1];
+  wasTradeOnDate(date: Date[1]) {$this.tradeDate.date ==
+  $date}: Boolean[1];
+}
+
+Class {doc.doc = 'Sample Trade object.'} showcase::analytics::mapping::domain::Trade
+[
+  quantityMustBePositive: $this.quantity >= 0
+]
+{
+  {doc.doc = 'the id of the trade.'} tradeId: String[1];
+  {doc.doc = 'quantity of the trade.'} quantity: Float[1];
+  {doc.doc = 'exchangeRate of the trade.'} exchangeRate: Decimal[1];
+  {doc.doc = 'interest of the trade.'} interest: Float[1];
+  {doc.doc = 'factor of the trade.'} factor: Float[1];
+  {doc.doc = 'product traded.'} product: showcase::analytics::mapping::domain::Product[0..1];
+  {doc.doc = 'is booked'} booked: Boolean[1];
+  {doc.doc = 'is live'} isLive: Boolean[0..1];
+  {doc.doc = 'date of business'} tradeDate: StrictDate[1];
+  settlementDate: DateTime[1];
+  {doc.doc = 'client name'} clientName: String[1];
+  {doc.doc = 'GC'} gc: showcase::analytics::mapping::domain::GC[*];
+  {doc.doc = 'is of date'} isTradedOnDate(date: Date[1]) {$this.tradeDate ==
+  $date}: Boolean[1];
+  isVoiceTrade() {$this.isLive}: Boolean[0..1];
+  associatedEmployees() {$this.salesPerson->concatenate(
+  $this.trader
+)}: showcase::analytics::mapping::domain::Employee[*];
+  <<doc.deprecated>> {doc.doc = 'first and last name of the trader'} traderNames() {[
+  $this.trader.firstName,
+  $this.trader.lastName
+]}: String[*];
+}
+
+Class <<temporal.businesstemporal>> showcase::analytics::mapping::domain::BaseOrganizationalEntity
+{
+  name: String[1];
+  id: Integer[1];
+}
+
+Class <<temporal.businesstemporal>> showcase::analytics::mapping::domain::OrganizationalEntity extends showcase::analytics::mapping::domain::BaseOrganizationalEntity
+{
+  isActive: Boolean[1];
+  parent: showcase::analytics::mapping::domain::OrganizationalEntity[1];
+  ceo: showcase::analytics::mapping::domain::Person[1];
+  parentAtDate(date: Date[1]) {$this.parent($date)}: showcase::analytics::mapping::domain::OrganizationalEntity[1];
+  latestPositions() {$this.positions(now())}: showcase::analytics::mapping::domain::Position[*];
+}
+
+Class {doc.doc = 'Sample PnL object.'} showcase::analytics::mapping::domain::Pnl
+{
+  desk: String[1];
+  pnl: Integer[1];
+}
+
+Class <<typemodifiers.abstract>> showcase::analytics::mapping::domain::BaseAccount
+{
+  id: Integer[1];
+  accountId() {$this.id}: Integer[1];
+}
+
+Class showcase::analytics::mapping::domain::ActiveStatus
+{
+  active: Boolean[1];
+}
+
+Class <<typemodifiers.abstract>> showcase::analytics::mapping::domain::Account extends showcase::analytics::mapping::domain::BaseAccount, showcase::analytics::mapping::domain::ActiveStatus
+{
+  accountNumber: String[1];
+}
+
+Class showcase::analytics::mapping::domain::OwnedAccount
+{
+  owner: String[1];
+}
+
+Class showcase::analytics::mapping::domain::FirmAccount extends showcase::analytics::mapping::domain::Account, showcase::analytics::mapping::domain::OwnedAccount
+{
+  name: String[1];
+  accountDetails() {$this.accountNumber + ':' + $this.name}: String[1];
+}
+
+Class showcase::analytics::mapping::domain::TestAccount extends showcase::analytics::mapping::domain::Account
+{
+}
+
+Class <<temporal.processingtemporal>> showcase::analytics::mapping::domain::Position
+{
+  account: showcase::analytics::mapping::domain::BaseAccount[1];
+  id: Integer[1];
+  quantity: Float[1];
+}
+
+Class <<typemodifiers.abstract, doc.deprecated>> showcase::analytics::mapping::domain::Holdable
+{
+  id: String[1];
+}
+
+Class showcase::analytics::mapping::domain::Contract extends showcase::analytics::mapping::domain::Holdable
+{
+  contractId: String[1];
+  startDate: Date[1];
+  endDate: Date[1];
+}
+
+Class showcase::analytics::mapping::domain::LoanContract extends showcase::analytics::mapping::domain::Contract
+{
+  principal: Float[1];
+  type: String[1];
+}
+
+Class <<temporal.bitemporal>> showcase::analytics::mapping::domain::Order
+{
+  id: Integer[1];
+  product: showcase::analytics::mapping::domain::Product[1];
+  quantity: Integer[1];
+}
+
+Class <<temporal.bitemporal>> showcase::analytics::mapping::domain::Execution
+{
+  id: Integer[1];
+  executionTime: Date[1];
+  quantity: Integer[1];
+}
+
+Class showcase::analytics::mapping::domain::CustomerAccount extends showcase::analytics::mapping::domain::Account, showcase::analytics::mapping::domain::OwnedAccount
+{
+  type: String[1];
+}
+
+Association showcase::analytics::mapping::domain::PositionExecutions
+{
+  position: showcase::analytics::mapping::domain::Position[1];
+  executions: showcase::analytics::mapping::domain::Execution[*];
+}
+
+Association showcase::analytics::mapping::domain::OrderExecutions
+{
+  order: showcase::analytics::mapping::domain::Order[1];
+  executions: showcase::analytics::mapping::domain::Execution[*];
+}
+
+Association showcase::analytics::mapping::domain::ClientOrders
+{
+  client: showcase::analytics::mapping::domain::OrganizationalEntity[1];
+  orders: showcase::analytics::mapping::domain::Order[*];
+}
+
+Association showcase::analytics::mapping::domain::PositionHoldable
+{
+  position: showcase::analytics::mapping::domain::Position[1];
+  holdable: showcase::analytics::mapping::domain::Holdable[1];
+}
+
+Association showcase::analytics::mapping::domain::PositionContract
+{
+  position: showcase::analytics::mapping::domain::Position[1];
+  contract: showcase::analytics::mapping::domain::LoanContract[1];
+}
+
+Association showcase::analytics::mapping::domain::TradeClient
+{
+  trades: showcase::analytics::mapping::domain::Trade[*];
+  client: showcase::analytics::mapping::domain::OrganizationalEntity[1];
+}
+
+Association showcase::analytics::mapping::domain::PositionClient
+{
+  positions: showcase::analytics::mapping::domain::Position[*];
+  client: showcase::analytics::mapping::domain::OrganizationalEntity[1];
+}
+
+Association <<doc.deprecated>> showcase::analytics::mapping::domain::TraderTrades
+{
+  tradesAsTrader: showcase::analytics::mapping::domain::Trade[*];
+  {doc.doc = 'executing trader'} trader: showcase::analytics::mapping::domain::Employee[1];
+}
+
+Association showcase::analytics::mapping::domain::SalesPersonTrades
+{
+  tradesAsSalesPerson: showcase::analytics::mapping::domain::Trade[*];
+  {doc.doc = 'executing trader'} salesPerson: showcase::analytics::mapping::domain::Employee[1];
+}
+
+Association showcase::analytics::mapping::domain::AccountClient
+{
+  account: showcase::analytics::mapping::domain::Account[1];
+  client: showcase::analytics::mapping::domain::OrganizationalEntity[1];
+}
+
+
+###Mapping
+Mapping showcase::analytics::mapping::mapping::OrganizationalEntitySampleMapping
+(
+  showcase::analytics::mapping::domain::OrganizationalEntity: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]OE.id,
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]OE.thru_z
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]OE
+    name: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]OE.name,
+    id: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]OE.id,
+    isActive: case(equal([showcase::analytics::mapping::store::mappingAnalysisSampleDb]OE.isActive, 'Y'), 'true', 'false'),
+    parent: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@ParentOrganizationalEntity,
+    ceo
+    (
+      firstName: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]OE.ceo_first_name,
+      lastName: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]OE.ceo_last_name
+    )
+  }
+)
+
+Mapping showcase::analytics::mapping::mapping::SampleMapping
+(
+  include mapping showcase::analytics::mapping::mapping::OrganizationalEntitySampleMapping
+
+  *showcase::analytics::mapping::domain::Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1,set2)
+  }
+  showcase::analytics::mapping::domain::BaseAccount: Operation
+  {
+    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+  }
+  showcase::analytics::mapping::domain::Account: Operation
+  {
+    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+  }
+  *showcase::analytics::mapping::domain::TestAccount: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(testAccount1,testAccount2)
+  }
+  showcase::analytics::mapping::domain::Order: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ORDERS.id
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ORDERS
+    id: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ORDERS.id,
+    quantity: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ORDERS.quantity,
+    product: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@OrderProduct
+  }
+  showcase::analytics::mapping::domain::Execution: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]EXECUTIONS.id
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]EXECUTIONS
+    id: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]EXECUTIONS.id,
+    quantity: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]EXECUTIONS.quantity,
+    executionTime: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]EXECUTIONS.executionTime
+  }
+  showcase::analytics::mapping::domain::Trade: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]TRADES.tradeId
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]TRADES
+    tradeId: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]TRADES.tradeId,
+    quantity: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]TRADES.quantity,
+    interest: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]TRADES.interest,
+    factor: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]TRADES.factor,
+    exchangeRate: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]TRADES.exchangeRate,
+    tradeDate: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]TRADES.tradeDate,
+    settlementDate: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]TRADES.settlementDate,
+    clientName: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]TRADES.clientName,
+    booked: 'true',
+    isLive: 'true',
+    salesPerson[set1]: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@TradesSalesPerson_Employee,
+    trader[set1]: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@TradesTrader_Employee,
+    product: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@Trade_product,
+    gc: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@Trade_GC
+  }
+  showcase::analytics::mapping::domain::Employee[set1]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]EMPLOYEE.EMP_GUID
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]EMPLOYEE
+    firstName: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]EMPLOYEE.FIRST_NAME,
+    lastName: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]EMPLOYEE.LAST_NAME,
+    kerberos: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]EMPLOYEE.KERBEROS,
+    tradesAsTrader: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@TradesTrader_Employee,
+    tradesAsSalesPerson: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@TradesSalesPerson_Employee,
+    trades: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@Trades_Employee,
+    address
+    (
+      line1: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]EMPLOYEE.ADDRESS_LINE_1,
+      city: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]EMPLOYEE.CITY,
+      postcode: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]EMPLOYEE.POSTCODE
+    ),
+    coveredClients: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@EmployeeCoverage > [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@ClientCoverage
+  }
+  showcase::analytics::mapping::domain::Person[set2]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]DIRECTORS.GUID
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]DIRECTORS
+    firstName: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]DIRECTORS.FIRST_NAME,
+    lastName: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]DIRECTORS.LAST_NAME
+  }
+  showcase::analytics::mapping::domain::Product: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]PRODUCTS.product_id
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]PRODUCTS
+    description: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]PRODUCTS.description,
+    id: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]PRODUCTS.product_id,
+    synonyms: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@Synonym_products
+  }
+  showcase::analytics::mapping::domain::Synonym: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]SYNONYMS.product_id,
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]SYNONYMS.synonym_type
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]SYNONYMS
+    type: EnumerationMapping SynonymTypeMapping1: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]SYNONYMS.synonym_type,
+    value: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]SYNONYMS.synonym_value
+  }
+  showcase::analytics::mapping::domain::GC: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]GC.gc_id
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]GC
+    totalGrossCredits: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]GC.total,
+    tradeId: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]GC.trade_id,
+    tradeDate
+    (
+      date: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]GC.trade_date
+    ) Otherwise ([Calendar]: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@GC_TradeDate),
+    settlementDate[Calendar]: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@GC_SettlementDate
+  }
+  showcase::analytics::mapping::domain::Calendar[Calendar]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]CALENDAR.date
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]CALENDAR
+    date: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]CALENDAR.date,
+    fiscalYear: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]CALENDAR.fiscal_year,
+    fiscalDay: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]CALENDAR.fiscal_day
+  }
+  showcase::analytics::mapping::domain::Position: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.id
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION
+    id: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.id,
+    quantity: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.quantity,
+    account[firmAccount]: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@PositionFirmAccount_Join,
+    account[EFGtomerAccount]: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@PositionEFGtomerAccount_Join,
+    holdable() Inline[loanContract],
+    contract() Inline[loanContractA],
+    contract() Inline[loanContractB]
+  }
+  showcase::analytics::mapping::domain::FirmAccount[firmAccount]: Relational
+  {
+    ~filter [showcase::analytics::mapping::store::mappingAnalysisSampleDb]FirmAccountFilter
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT.id
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT
+    id: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT.id,
+    name: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT.name,
+    accountNumber: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT.id,
+    owner: 'N/A',
+    active: 'true',
+    client: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@Account_Client
+  }
+  showcase::analytics::mapping::domain::CustomerAccount[EFGtomerAccount]: Relational
+  {
+    ~filter [showcase::analytics::mapping::store::mappingAnalysisSampleDb]EFGtomerAccountFilter
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT.id
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT
+    id: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT.id,
+    type: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT.accountType,
+    accountNumber: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT.id,
+    owner: 'N/A',
+    active: 'true',
+    client: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@Account_Client
+  }
+  showcase::analytics::mapping::domain::TestAccount[testAccount1]: Relational
+  {
+    ~filter [showcase::analytics::mapping::store::mappingAnalysisSampleDb]TestAccountFilter
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT.id
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT
+    id: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT.id,
+    active: 'true',
+    client: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@Account_Client
+  }
+  showcase::analytics::mapping::domain::TestAccount[testAccount2]: Relational
+  {
+    ~filter [showcase::analytics::mapping::store::mappingAnalysisSampleDb]TestAccountFilter2
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT.id
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT
+    id: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]ACCOUNT.id,
+    active: 'true',
+    client: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@Account_Client
+  }
+  *showcase::analytics::mapping::domain::LoanContract[loanContract]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.id
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION
+    id: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_id,
+    contractId: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_id,
+    startDate: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_startDate,
+    endDate: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_endDate,
+    principal: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_principal
+  }
+  showcase::analytics::mapping::domain::LoanContract: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(loanContractA,loanContractB)
+  }
+  showcase::analytics::mapping::domain::LoanContract[loanContractA]: Relational
+  {
+    ~filter [showcase::analytics::mapping::store::mappingAnalysisSampleDb]AContractTypeFilter
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.id
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION
+    id: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_id,
+    contractId: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_id,
+    startDate: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_startDate,
+    endDate: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_endDate,
+    principal: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_principal,
+    type: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_type
+  }
+  showcase::analytics::mapping::domain::LoanContract[loanContractB]: Relational
+  {
+    ~filter [showcase::analytics::mapping::store::mappingAnalysisSampleDb]BContractTypeFilter
+    ~primaryKey
+    (
+      [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.id
+    )
+    ~mainTable [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION
+    id: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_id,
+    contractId: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_id,
+    startDate: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_startDate,
+    endDate: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_endDate,
+    principal: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_principal,
+    type: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]POSITION.contract_type
+  }
+
+  showcase::analytics::mapping::domain::TradeClient: Relational
+  {
+    AssociationMapping
+    (
+      trades: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@Trade_Client,
+      client: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@Trade_Client
+    )
+  }
+  showcase::analytics::mapping::domain::PositionClient: Relational
+  {
+    AssociationMapping
+    (
+      positions: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@Positions_Client,
+      client: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@Positions_Client
+    )
+  }
+  showcase::analytics::mapping::domain::OrderExecutions: Relational
+  {
+    AssociationMapping
+    (
+      order: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@OrderExecutions,
+      executions: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@OrderExecutions
+    )
+  }
+  showcase::analytics::mapping::domain::PositionExecutions: Relational
+  {
+    AssociationMapping
+    (
+      executions: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@PositionExecutions,
+      position: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@PositionExecutions
+    )
+  }
+  showcase::analytics::mapping::domain::ClientOrders: Relational
+  {
+    AssociationMapping
+    (
+      orders: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@OrderClient,
+      client: [showcase::analytics::mapping::store::mappingAnalysisSampleDb]@OrderClient
+    )
+  }
+
+  showcase::analytics::mapping::domain::SynonymType: EnumerationMapping SynonymTypeMapping1
+  {
+    EFG: ['EFG'],
+    ABC: ['ABC'],
+    DEF: ['DEF']
+  }
+)
+
+
+###Runtime
+Runtime showcase::analytics::mapping::mapping::SampleRuntime
+{
+  mappings:
+  [
+    showcase::analytics::mapping::mapping::SampleMapping
+  ];
+  connections:
+  [
+    showcase::analytics::mapping::store::mappingAnalysisSampleDb:
+    [
+      connection_1:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: showcase::analytics::mapping::store::mappingAnalysisSampleDb;
+          type: H2;
+          specification: LocalH2
+          {
+            testDataSetupSqls: [
+              'call loadNorthwindData()'
+              ];
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}

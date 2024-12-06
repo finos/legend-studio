@@ -229,6 +229,17 @@ const MODEL_COVERAGE_CASES: ModelCoverageTestCase[] = [
       inputFilePath: 'TEST_DATA_Dataspace-Executables.pure',
     },
   ],
+  [
+    'mapping analysis sample model',
+    {
+      dataspacePath: 'showcase::analytics::dataspace::SampleDataSpace',
+      executionContext: 'externally-public-PROD',
+      classPath: 'showcase::analytics::mapping::domain::Person',
+      mappedPropertyNames: ['First Name'],
+      inputFileDir: 'model',
+      inputFilePath: 'TEST_DATA_Dataspace-MappingAnalysisSampleModel.pure',
+    },
+  ],
 ];
 
 describe(
