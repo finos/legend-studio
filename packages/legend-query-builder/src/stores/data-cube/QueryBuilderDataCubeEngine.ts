@@ -110,7 +110,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     const columns = (await this.getRelationalType(this.selectInitialQuery))
       .columns;
     const query = new DataCubeQuery();
-    query.query = `|~[${columns.map((e) => `'${e.name}'`)}]->select()`;
+    query.query = `~[${columns.map((e) => `'${e.name}'`)}]->select()`;
     const source = new QueryBuilderDataCubeSource();
     source.sourceColumns = columns;
     source.mapping = this.mappingPath;
@@ -129,10 +129,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   private buildRawLambdaFromValueSpec(query: V1_Lambda): RawLambda {
     const json = guaranteeType(
       V1_deserializeRawValueSpecification(
-        V1_serializeValueSpecification(
-          query.body[0] as V1_ValueSpecification,
-          [],
-        ),
+        V1_serializeValueSpecification(query, []),
       ),
       V1_RawLambda,
     );
