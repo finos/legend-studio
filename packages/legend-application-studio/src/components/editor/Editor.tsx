@@ -298,6 +298,9 @@ export const Editor = withEditorStore(
             <QueryDataCubeViewer
               engine={editorStore.embeddedDataCubeViewerEngine}
               close={() => editorStore.setDataCubeViewState(undefined)}
+              options={{
+                fullScreen: true,
+              }}
             />
           )}
           {extraEditorExtensionComponents}
