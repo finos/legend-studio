@@ -187,10 +187,7 @@ export { V1_CStrictDate } from './graph-manager/protocol/pure/v1/model/valueSpec
 export { V1_CDateTime } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CDateTime.js';
 export { V1_CStrictTime } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_CStrictTime.js';
 export { V1_ClassInstance } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_ClassInstance.js';
-export {
-  V1_PackageableElementPtr,
-  V1_PackageableType,
-} from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_PackageableElementPtr.js';
+export { V1_PackageableElementPtr } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_PackageableElementPtr.js';
 export { V1_ColSpec } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
 export { V1_ColSpecArray } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_ColSpecArray.js';
 export { V1_PrimitiveValueSpecification } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/V1_PrimitiveValueSpecification.js';
@@ -215,6 +212,7 @@ export {
   V1_RelationTypeColumn,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_RelationType.js';
 export { V1_GenericType } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_GenericType.js';
+export { V1_PackageableType } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_PackageableType.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
@@ -394,10 +392,6 @@ export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/V1_E
 export { V1_RawLambda } from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawLambda.js';
 export { V1_RawExecutionContext } from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawExecutionContext.js';
 export { V1_RawVariable } from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawVariable.js';
-export {
-  V1_RelationType,
-  V1_RelationTypeColumn,
-} from './graph-manager/protocol/pure/v1/model/relation/V1_RelationType.js';
 export { V1_ProcessingContext } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ProcessingContext.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
