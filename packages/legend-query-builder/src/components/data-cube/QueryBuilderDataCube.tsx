@@ -15,7 +15,6 @@
  */
 
 import { DataCube } from '@finos/legend-data-cube';
-import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -25,66 +24,17 @@ import {
   ModalFooterButton,
   TimesIcon,
 } from '@finos/legend-art';
-import { createDataCubeEngineFromQueryBuilder } from '../../stores/data-cube/QueryBuilderDataCubeEngineHelper.js';
 import type { QueryBuilderDataCubeEngine } from '../../stores/data-cube/QueryBuilderDataCubeEngine.js';
 
-const QueryBuilderDataCube = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
-    const engine = createDataCubeEngineFromQueryBuilder(queryBuilderState);
-
-    if (!engine) {
-      return null;
-    }
-    return <DataCube engine={engine} />;
-  },
-);
-
-export const QueryBuilderDataCubeDialog = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
-    const closeModal = () => queryBuilderState.setIsCubeEnabled(false);
-    return (
-      <Dialog
-        open={true}
-        onClose={closeModal}
-        classes={{
-          root: 'editor-modal__root-container',
-          container: 'editor-modal__container',
-          paper: 'editor-modal__content',
-        }}
-      >
-        <Modal
-          darkMode={false}
-          className={clsx('editor-modal query-builder-data-cube__dialog')}
-        >
-          <div className="query-builder-data-cube__dialog__header">
-            <div className="query-builder-data-cube__dialog__header__actions">
-              <button
-                className="query-builder-data-cube__dialog__header__action"
-                tabIndex={-1}
-                onClick={closeModal}
-                title="Close"
-              >
-                <TimesIcon />
-              </button>
-            </div>
-          </div>
-          <div className="query-builder-data-cube__dialog__content">
-            <QueryBuilderDataCube queryBuilderState={queryBuilderState} />
-          </div>
-          <ModalFooter>
-            <ModalFooterButton onClick={closeModal}>Close</ModalFooterButton>
-          </ModalFooter>
-        </Modal>
-      </Dialog>
-    );
-  },
-);
-
 export const QueryDataCubeViewer = observer(
-  (props: { engine: QueryBuilderDataCubeEngine; close: () => void }) => {
-    const { engine, close } = props;
+  (props: {
+    engine: QueryBuilderDataCubeEngine;
+    close: () => void;
+    options?: {
+      fullScreen: boolean;
+    };
+  }) => {
+    const { engine, close, options } = props;
     return (
       <Dialog
         open={true}
@@ -92,15 +42,17 @@ export const QueryDataCubeViewer = observer(
         classes={{
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
-          paper:
-            'editor-modal__content query-builder-data-cube__dialog__container__content',
+          paper: clsx('editor-modal__content', {
+            'query-builder-data-cube__dialog__container__content':
+              options?.fullScreen,
+          }),
         }}
       >
         <Modal
           darkMode={false}
-          className={clsx(
-            'editor-modal query-builder-data-cube__dialog query-builder-data-cube__dialog--expanded',
-          )}
+          className={clsx('editor-modal query-builder-data-cube__dialog', {
+            'query-builder-data-cube__dialog--expanded': options?.fullScreen,
+          })}
         >
           <div className="query-builder-data-cube__dialog__header">
             <div className="query-builder-data-cube__dialog__header__actions">
@@ -114,12 +66,19 @@ export const QueryDataCubeViewer = observer(
               </button>
             </div>
           </div>
-          <div className="query-builder-data-cube__dialog__content">
+          <div
+            className={clsx('query-builder-data-cube__dialog__content', {
+              'query-builder-data-cube__dialog__content-full':
+                options?.fullScreen,
+            })}
+          >
             <DataCube engine={engine} />
           </div>
-          <ModalFooter>
-            <ModalFooterButton onClick={close}>Close</ModalFooterButton>
-          </ModalFooter>
+          {!options?.fullScreen && (
+            <ModalFooter>
+              <ModalFooterButton onClick={close}>Close</ModalFooterButton>
+            </ModalFooter>
+          )}
         </Modal>
       </Dialog>
     );

@@ -421,13 +421,13 @@ export const QueryBuilderResultPanel = observer(
       ) {
         queryParametersState.parameterValuesEditorState.open(
           (): Promise<void> => {
-            queryBuilderState.setIsCubeEnabled(true);
+            queryBuilderState.openDataCubeEngine();
             return Promise.resolve();
           },
           PARAMETER_SUBMIT_ACTION.DATA_CUBE,
         );
       } else {
-        queryBuilderState.setIsCubeEnabled(true);
+        queryBuilderState.openDataCubeEngine();
       }
     };
     const cancelQuery = applicationStore.guardUnhandledError(() =>

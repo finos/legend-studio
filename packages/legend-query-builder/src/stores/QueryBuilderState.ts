@@ -110,6 +110,8 @@ import { QueryBuilderChangeHistoryState } from './QueryBuilderChangeHistoryState
 import { type QueryBuilderWorkflowState } from './query-workflow/QueryBuilderWorkFlowState.js';
 import { type QueryChatState } from './QueryChatState.js';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from './QueryBuilder_LegendApplicationPlugin_Extension.js';
+import type { QueryBuilderDataCubeEngine } from './data-cube/QueryBuilderDataCubeEngine.js';
+import { createDataCubeEngineFromQueryBuilder } from './data-cube/QueryBuilderDataCubeEngineHelper.js';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface QueryableSourceInfo {}
@@ -162,7 +164,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   isCheckingEntitlments = false;
   isCalendarEnabled = false;
   isLocalModeEnabled = false;
-  isCubeEnabled = false;
+  dataCubeEngine: QueryBuilderDataCubeEngine | undefined;
   INTERNAL__enableInitializingDefaultSimpleExpressionValue = false;
 
   lambdaWriteMode = QUERY_BUILDER_LAMBDA_WRITER_MODE.STANDARD;
@@ -215,7 +217,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       queryChatState: observable,
       isQueryChatOpened: observable,
       isLocalModeEnabled: observable,
-      isCubeEnabled: observable,
+      dataCubeEngine: observable,
       getAllFunction: observable,
       lambdaWriteMode: observable,
       INTERNAL__enableInitializingDefaultSimpleExpressionValue: observable,
@@ -229,7 +231,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setShowParametersPanel: action,
       setIsEditingWatermark: action,
       setIsCalendarEnabled: action,
-      setIsCubeEnabled: action,
+      setDataCubeEngine: action,
+      openDataCubeEngine: action,
       setIsCheckingEntitlments: action,
       setClass: action,
       setIsQueryChatOpened: action,
@@ -412,8 +415,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.isLocalModeEnabled = val;
   }
 
-  setIsCubeEnabled(val: boolean): void {
-    this.isCubeEnabled = val;
+  setDataCubeEngine(val: QueryBuilderDataCubeEngine | undefined): void {
+    this.dataCubeEngine = val;
   }
 
   setInternalize(val: QueryBuilderInternalizeState | undefined): void {
@@ -464,6 +467,17 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   get isQuerySupported(): boolean {
     return !this.unsupportedQueryState.rawLambda;
+  }
+
+  openDataCubeEngine(): void {
+    try {
+      this.setDataCubeEngine(createDataCubeEngineFromQueryBuilder(this));
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to open data cube in query builder`,
+      );
+    }
   }
 
   registerCommands(): void {

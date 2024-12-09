@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { type DataCubeEngine } from '@finos/legend-data-cube';
 import {
   QUERY_BUILDER_LAMBDA_WRITER_MODE,
   type QueryBuilderState,
@@ -25,7 +24,7 @@ import { buildExecutionParameterValues } from '../shared/LambdaParameterState.js
 
 export const createDataCubeEngineFromQueryBuilder = (
   queryBuilderState: QueryBuilderState,
-): DataCubeEngine | undefined => {
+): QueryBuilderDataCubeEngine | undefined => {
   const runtime =
     queryBuilderState.executionContextState.runtimeValue instanceof
     RuntimePointer
