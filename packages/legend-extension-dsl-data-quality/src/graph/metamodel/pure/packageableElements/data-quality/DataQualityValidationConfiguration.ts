@@ -40,6 +40,7 @@ export interface DQExecuteInputOptions {
   clientVersion?: string | undefined;
   validationName?: string | undefined;
   previewLimit?: number | undefined;
+  runQuery?: boolean | undefined;
 }
 
 export abstract class DataQualityExecutionContext implements Hashable {

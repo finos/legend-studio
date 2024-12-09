@@ -1425,6 +1425,40 @@
     }
   }
 
+  &__validation {
+    @include flexVCenter;
+
+    height: 100%;
+    padding: 0 0.5rem;
+
+    &__label {
+      @include flexCenter;
+
+      background: var(--color-dark-grey-280);
+      padding: 0 1rem;
+      height: 100%;
+      border-radius: 0.2rem 0 0 0.2rem;
+      font-size: 1.2rem;
+      user-select: none;
+    }
+
+    &__input {
+      height: 100%;
+
+      &:not(:focus) {
+        border: 0.1rem solid var(--color-dark-grey-250);
+      }
+
+      &[disabled] {
+        cursor: not-allowed;
+      }
+    }
+
+    &__dropdown {
+      width: 25rem;
+    }
+  }
+
   &__slice {
     display: flex;
     align-items: center;

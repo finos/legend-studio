@@ -149,6 +149,8 @@ export class V1_DataQualityRelationValidationsConfiguration
 {
   query!: V1_DataQualityRelationQueryLambda;
   validations: V1_DataQualityRelationValidation[] = [];
+  taggedValues: V1_TaggedValue[] = [];
+  stereotypes: V1_StereotypePtr[] = [];
 
   override get hashCode(): string {
     return hashArray([

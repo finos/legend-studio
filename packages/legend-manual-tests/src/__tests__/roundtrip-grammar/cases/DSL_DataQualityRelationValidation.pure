@@ -1,0 +1,75 @@
+###Pure
+Class model::Class_1
+[
+  propertyNotEmpty: $this.property_1->isNotEmpty()
+]
+{
+  property_1: String[1];
+}
+
+
+###Relational
+Database store::db
+(
+  Table table1
+  (
+    property_1 VARCHAR(200)
+  )
+)
+
+
+###Mapping
+Mapping model::DummyMapping
+(
+  *model::Class_1: Relational
+  {
+    ~mainTable [store::db]table1
+    property_1: [store::db]table1.property_1
+  }
+)
+
+
+###Runtime
+Runtime model::DummyRuntime
+{
+  mappings:
+  [
+    model::DummyMapping
+  ];
+}
+
+
+###DataSpace
+DataSpace model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      description: 'some information about the context';
+      mapping: model::DummyMapping;
+      defaultRuntime: model::DummyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  title: 'Untitled';
+  description: 'some description';
+  diagrams: [];
+  executables: [];
+  supportInfo: Email {
+    address: 'someEmail@test.org';
+  };
+}
+
+
+###DataQualityValidation
+DataQualityRelationValidation model::relationValidation
+{
+   query: |#>{store::db.table1}#->select(~[property_1])->from(model::DummyRuntime);
+   validations: [
+   {
+     name: 'propertyNotEmpty';
+     assertion: row|$row.property_1->isNotEmpty();
+    }
+   ];
+}

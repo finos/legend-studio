@@ -37,6 +37,7 @@ import { LambdaEditorState } from '@finos/legend-query-builder';
 import { VALIDATION_SOURCE_ID_LABEL } from './ConstraintState.js';
 import {
   dataQualityRelationValidation_setAssertion,
+  dataQualityRelationValidation_setRowMapFunction,
   dataQualityRelationValidation_setType,
 } from '../../graph-manager/DSL_DataQuality_GraphModifierHelper.js';
 import { DATA_QUALITY_HASH_STRUCTURE } from '../../graph/metamodel/DSL_DataQuality_HashUtils.js';
@@ -60,6 +61,7 @@ export class DataQualityRelationValidationState extends LambdaEditorState {
       relationValidation: observable,
       editorStore: observable,
       isValidationDialogOpen: observable,
+      rowMapFunctionLambdaEditorState: observable,
       setIsValidationDialogOpen: action,
       onValidationTypeChange: action,
     });
@@ -92,15 +94,22 @@ export class DataQualityRelationValidationState extends LambdaEditorState {
       this.relationValidation,
       val.value as RelationValidationType,
     );
+    let defaultLambda;
     if (val.value === RelationValidationType.AGGREGATE) {
       this.rowMapFunctionLambdaEditorState =
         new DataQualityRelationValidationLambdaEditorState(
           this.relationValidation,
           this.editorStore,
         );
+      defaultLambda = stub_RawLambda();
     } else {
       this.rowMapFunctionLambdaEditorState = undefined;
+      defaultLambda = undefined;
     }
+    dataQualityRelationValidation_setRowMapFunction(
+      this.relationValidation,
+      defaultLambda,
+    );
   }
 
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {

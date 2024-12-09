@@ -36,6 +36,22 @@ import { getDataQualityPureGraphManagerExtension } from '../../graph-manager/pro
 import type { DataQualityRelationValidationConfigurationState } from './DataQualityRelationValidationConfigurationState.js';
 import type { DataQualityRelationValidation } from '../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 
+export type DataQualityRelationResultCellDataType =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined;
+
+export interface DataQualityRelationRowDataType {
+  [key: string]: DataQualityRelationResultCellDataType;
+}
+
+export interface DataQualityRelationResultCellCoordinate {
+  rowIndex: number;
+  colIndex: number;
+}
+
 export const DEFAULT_LIMIT = 1000;
 export class DataQualityRelationResultState {
   readonly dataQualityRelationValidationConfigurationState: DataQualityRelationValidationConfigurationState;
@@ -117,9 +133,6 @@ export class DataQualityRelationResultState {
   }
 
   handleRunValidation() {
-    if (this.isRunningValidation) {
-      return;
-    }
     const queryLambda =
       this.dataQualityRelationValidationConfigurationState
         .bodyExpressionSequence;
@@ -127,6 +140,7 @@ export class DataQualityRelationResultState {
     if (parameters.length) {
       this.dataQualityRelationValidationConfigurationState.parametersState.openModal(
         queryLambda,
+        true,
       );
     } else {
       flowResult(this.runValidation()).catch(
@@ -225,6 +239,7 @@ export class DataQualityRelationResultState {
             .graphManagerState.graphManager,
         ).debugExecutionPlanGeneration(model, packagePath, {
           validationName: this.validationToRun?.name,
+          previewLimit: this.previewLimit,
         })) as {
           plan: RawExecutionPlan;
           debug: string;
@@ -241,6 +256,7 @@ export class DataQualityRelationResultState {
             .graphManagerState.graphManager,
         ).generatePlan(model, packagePath, {
           validationName: this.validationToRun?.name,
+          previewLimit: this.previewLimit,
         })) as RawExecutionPlan;
       }
 

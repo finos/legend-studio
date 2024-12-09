@@ -83,6 +83,8 @@ export {
   QueryBuilderChangeDetectionState,
 } from './stores/QueryBuilderChangeDetectionState.js';
 export { QueryBuilderResultValues } from './components/result/QueryBuilderResultPanel.js';
+export { getTDSColumnCustomizations } from './components/result/tds/QueryBuilderTDSSimpleGridResult.js';
+export { getFilterTDSColumnCustomizations } from './components/result/tds/QueryBuilderTDSGridResult.js';
 export {
   QueryBuilderTaggedValueInfoTooltip,
   QueryBuilderPropertyInfoTooltip,
