@@ -159,10 +159,15 @@ export const DataQualityRelationValidationEditor = observer(
       relationValidationConfigurationState.setSelectedTab(
         DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.TRIAL_RUN,
       );
-      relationValidationConfigurationState.resultState.setValidationToRun(
-        validation,
-      );
-      relationValidationConfigurationState.resultState.handleRunValidation();
+      if (
+        !relationValidationConfigurationState.resultState.isRunningValidation
+      ) {
+        relationValidationConfigurationState.resetResultState();
+        relationValidationConfigurationState.resultState.setValidationToRun(
+          validation,
+        );
+        relationValidationConfigurationState.resultState.handleRunValidation();
+      }
     };
 
     const onValidationTypeChange = (val: SelectOption): void => {

@@ -54,6 +54,7 @@ import {
   Type,
   RawExecutionResult,
   extractExecutionResultValues,
+  TDSExecutionResult,
 } from '@finos/legend-graph';
 import {
   DEFAULT_TAB_SIZE,
@@ -75,6 +76,7 @@ import { useDrop } from 'react-dnd';
 import { DataQualityRelationValidationsEditor } from './DataQualityRelationValidationsEditor.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { DataQualityRelationGridResult } from './DataQualityRelationGridResult.js';
 
 const RelationDefinitionEditor = observer(
   (props: {
@@ -137,6 +139,16 @@ const RelationDefinitionEditor = observer(
     );
 
     const renderFuncResult = (): React.ReactNode => {
+      if (lambdaExecutionResult instanceof TDSExecutionResult) {
+        return (
+          <DataQualityRelationGridResult
+            executionResult={lambdaExecutionResult}
+            relationValidationConfigurationState={
+              dataQualityRelationValidationConfigurationState
+            }
+          />
+        );
+      }
       if (lambdaExecutionResult instanceof RawExecutionResult) {
         const val =
           lambdaExecutionResult.value === null

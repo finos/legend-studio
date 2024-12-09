@@ -273,10 +273,12 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       isRunningValidation: observable,
       validationRunPromise: observable,
       executionResult: observable,
+      resultState: observable,
       setSelectedTab: action,
       setValidationRunPromise: action,
       setExecutionResult: action,
       addValidationState: action,
+      resetResultState: action,
       validationElement: computed,
       relationValidationOptions: computed,
       runValidation: flow,
@@ -324,6 +326,15 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
     );
   }
 
+  get validationOptions(): SelectOption[] {
+    return this.validationElement.validations.map((validation) => {
+      return {
+        label: validation.name,
+        value: validation,
+      };
+    });
+  }
+
   getNullableValidationState = (
     relationValidation: DataQualityRelationValidation,
   ): DataQualityRelationValidationState | undefined =>
@@ -346,6 +357,11 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       value: type,
     }));
   }
+
+  resetResultState(): void {
+    this.resultState = new DataQualityRelationResultState(this);
+  }
+
   addValidationState(validation: DataQualityRelationValidation): void {
     if (
       !this.validationStates.find(
