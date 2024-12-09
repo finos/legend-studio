@@ -160,8 +160,7 @@ const CloneQueryServiceSetupContent = observer(() => {
     LATEST_VERSION_ALIAS,
     ...(querySetupState.currentProjectVersions ?? []),
   ]
-    .slice()
-    .sort((v1, v2) => compareSemVerVersions(v2, v1))
+    .toSorted((v1, v2) => compareSemVerVersions(v2, v1))
     .map(buildVersionOption);
   const selectedVersionOption = querySetupState.currentVersionId
     ? buildVersionOption(querySetupState.currentVersionId)

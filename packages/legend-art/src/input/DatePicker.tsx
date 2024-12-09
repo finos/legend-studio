@@ -34,12 +34,11 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps<Date>>(
   },
 );
 
-export const DatePicker = forwardRef<
-  HTMLInputElement,
-  DatePickerProps<Date, false>
->(function DatePicker(props, ref) {
-  return <BaseDatePicker ref={ref} {...props} />;
-});
+export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps<Date>>(
+  function DatePicker(props, ref) {
+    return <BaseDatePicker ref={ref} {...props} />;
+  },
+);
 
 // Make text field work with the browser input
 // See https://mui.com/x/react-date-pickers/custom-field/#using-the-browser-input
@@ -60,7 +59,7 @@ const DatePickerFieldInput = forwardRef<
     clearable?: boolean;
     error?: boolean;
     focused?: boolean;
-    onClear?: React.MouseEventHandler<Element>;
+    onClear?: React.MouseEventHandler;
   }
 >(function DatePickerFieldInput(props, ref) {
   const {

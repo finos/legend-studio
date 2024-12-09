@@ -315,7 +315,7 @@ export class QueryLoaderState {
         searchSpecification,
       )) as LightQuery[];
       if (!querySearchSortBy) {
-        this.queries = this.queries.sort((a, b) =>
+        this.queries = this.queries.toSorted((a, b) =>
           a.name.localeCompare(b.name),
         );
       }
