@@ -117,6 +117,7 @@ import {
   GraphEditLazyGrammarModeState,
   LazyTextEditorStore,
 } from '../lazy-text-editor/LazyTextEditorStore.js';
+import type { QueryBuilderDataCubeEngine } from '@finos/legend-query-builder';
 
 export abstract class EditorExtensionState {
   /**
@@ -178,6 +179,7 @@ export class EditorStore implements CommandRegistrar {
   modelImporterState: ModelImporterState;
   projectConfigurationEditorState: ProjectConfigurationEditorState;
   embeddedQueryBuilderState: EmbeddedQueryBuilderState;
+  embeddedDataCubeViewerEngine: QueryBuilderDataCubeEngine | undefined;
   newElementState: NewElementState;
   /**
    * Since we want to share element generation state across all element in the editor, we will create 1 element generate state
@@ -223,6 +225,7 @@ export class EditorStore implements CommandRegistrar {
       showSearchElementCommand: observable,
       quickInputState: observable,
       lazyTextEditorStore: observable,
+      embeddedDataCubeViewerEngine: observable,
 
       isInViewerMode: computed,
       disableGraphEditing: computed,
@@ -372,6 +375,10 @@ export class EditorStore implements CommandRegistrar {
 
   setShowSearchElementCommand(val: boolean): void {
     this.showSearchElementCommand = val;
+  }
+
+  setDataCubeViewState(val: QueryBuilderDataCubeEngine | undefined): void {
+    this.embeddedDataCubeViewerEngine = val;
   }
 
   setQuickInputState<T>(val: QuickInputState<T> | undefined): void {

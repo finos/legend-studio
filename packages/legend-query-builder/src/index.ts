@@ -30,6 +30,7 @@ export {
   QueryBuilder_LegendApplicationPlugin,
 } from './components/QueryBuilder_LegendApplicationPlugin.js';
 export { QueryBuilderNavigationBlocker } from './components/QueryBuilderNavigationBlocker.js';
+export { QueryDataCubeViewer } from './components/data-cube/QueryBuilderDataCube.js';
 export { QueryBuilder } from './components/QueryBuilder.js';
 export { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './components/QueryBuilderComponentElement.js';
 export {

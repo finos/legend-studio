@@ -90,7 +90,6 @@ import {
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
-  type PackageableElement,
   ELEMENT_PATH_DELIMITER,
   ROOT_PACKAGE_NAME,
   Package,
@@ -102,6 +101,7 @@ import {
   isElementReadOnly,
   ConcreteFunctionDefinition,
   Class,
+  type PackageableElement,
   isMainGraphElement,
   getFunctionSignature,
   getFunctionNameWithPath,
@@ -144,6 +144,10 @@ import { DatabaseBuilderWizard } from '../editor-group/connection-editor/Databas
 import { DatabaseModelBuilder } from '../editor-group/connection-editor/DatabaseModelBuilder.js';
 import { queryService } from '../editor-group/service-editor/ServiceExecutionQueryEditor.js';
 import { QueryDatabaseState } from '../../../stores/editor/editor-state/element-editor-state/database/QueryDatabaseState.js';
+import {
+  isElementSupportedByDataCube,
+  openDataCube,
+} from '../../../stores/editor/data-cube/DataCubeViewerState.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -527,6 +531,13 @@ const ExplorerContextMenu = observer(
         }
       },
     );
+    const openCubeViewer = editorStore.applicationStore.guardUnhandledError(
+      async () => {
+        if (node?.packageableElement) {
+          await openDataCube(node.packageableElement, editorStore);
+        }
+      },
+    );
     const buildDatabaseQuery = editorStore.applicationStore.guardUnhandledError(
       async () => {
         if (node?.packageableElement instanceof Database) {
@@ -832,6 +843,13 @@ const ExplorerContextMenu = observer(
           <>
             <MenuContentItem onClick={buildServiceQuery}>
               Query...
+            </MenuContentItem>
+          </>
+        )}
+        {isElementSupportedByDataCube(node.packageableElement) && (
+          <>
+            <MenuContentItem onClick={openCubeViewer}>
+              Data Cube (BETA)...
             </MenuContentItem>
             <MenuContentDivider />
           </>
