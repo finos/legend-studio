@@ -191,10 +191,10 @@ const V1_dataQualityRelationValidationModelSchema = (
     validations: list(usingModelSchema(V1_relationValidationModelSchema)),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
-      }),
-      taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
-          INTERNAL__forceReturnEmptyInTest: true,
-      }),
+    }),
+    taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
   });
 
 const V1_dataQualityServiceValidationModelSchema = (
