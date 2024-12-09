@@ -26,6 +26,7 @@ import {
   TimesIcon,
 } from '@finos/legend-art';
 import { createDataCubeEngineFromQueryBuilder } from '../../stores/data-cube/QueryBuilderDataCubeEngineHelper.js';
+import type { QueryBuilderDataCubeEngine } from '../../stores/data-cube/QueryBuilderDataCubeEngine.js';
 
 const QueryBuilderDataCube = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -74,6 +75,50 @@ export const QueryBuilderDataCubeDialog = observer(
           </div>
           <ModalFooter>
             <ModalFooterButton onClick={closeModal}>Close</ModalFooterButton>
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
+export const QueryDataCubeViewer = observer(
+  (props: { engine: QueryBuilderDataCubeEngine; close: () => void }) => {
+    const { engine, close } = props;
+    return (
+      <Dialog
+        open={true}
+        onClose={close}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper:
+            'editor-modal__content query-builder-data-cube__dialog__container__content',
+        }}
+      >
+        <Modal
+          darkMode={false}
+          className={clsx(
+            'editor-modal query-builder-data-cube__dialog query-builder-data-cube__dialog--expanded',
+          )}
+        >
+          <div className="query-builder-data-cube__dialog__header">
+            <div className="query-builder-data-cube__dialog__header__actions">
+              <button
+                className="query-builder-data-cube__dialog__header__action"
+                tabIndex={-1}
+                onClick={close}
+                title="Close"
+              >
+                <TimesIcon />
+              </button>
+            </div>
+          </div>
+          <div className="query-builder-data-cube__dialog__content">
+            <DataCube engine={engine} />
+          </div>
+          <ModalFooter>
+            <ModalFooterButton onClick={close}>Close</ModalFooterButton>
           </ModalFooter>
         </Modal>
       </Dialog>

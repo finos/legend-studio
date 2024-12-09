@@ -55,6 +55,7 @@ import { EmbeddedQueryBuilder } from './EmbeddedQueryBuilder.js';
 import { GRAPH_EDITOR_MODE } from '../../stores/editor/EditorConfig.js';
 import { QuickInput } from './QuickInput.js';
 import { ShowcaseManager } from '../ShowcaseManager.js';
+import { QueryDataCubeViewer } from '@finos/legend-query-builder';
 
 export const Editor = withEditorStore(
   observer(() => {
@@ -293,6 +294,12 @@ export const Editor = withEditorStore(
             <WorkspaceSyncConflictResolver />
           )}
           <EmbeddedQueryBuilder />
+          {editorStore.embeddedDataCubeViewerEngine && (
+            <QueryDataCubeViewer
+              engine={editorStore.embeddedDataCubeViewerEngine}
+              close={() => editorStore.setDataCubeViewState(undefined)}
+            />
+          )}
           {extraEditorExtensionComponents}
         </div>
       </div>

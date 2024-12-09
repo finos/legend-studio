@@ -69,6 +69,7 @@ import { EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl } from 
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import { pureExecution_setFunction } from '../../../../stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
 import { ServiceEditorState } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
+import { openDataCube } from '../../../../stores/editor/data-cube/DataCubeViewerState.js';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -236,6 +237,11 @@ export const ServiceExecutionQueryEditor = observer(
       flowResult(executionState.generatePlan(true)),
     );
 
+    const openServiceCubeViewer =
+      editorStore.applicationStore.guardUnhandledError(async () => {
+        await openDataCube(service, editorStore);
+      });
+
     const openQueryInLegendQuery = (): void => {
       if (!applicationStore.config.queryApplicationUrl) {
         return;
@@ -392,6 +398,19 @@ export const ServiceExecutionQueryEditor = observer(
                   </ControlledDropdownMenu>
                 </>
               )}
+            </div>
+            <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+              <button
+                className="btn__dropdown-combo__label"
+                onClick={openServiceCubeViewer}
+                title="Data Cube (BETA)"
+                disabled={executionIsRunning}
+                tabIndex={-1}
+              >
+                <div className="btn__dropdown-combo__label__title">
+                  Data Cube
+                </div>
+              </button>
             </div>
             <ControlledDropdownMenu
               className="btn__dropdown-combo"

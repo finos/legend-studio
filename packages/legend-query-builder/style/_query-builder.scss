@@ -752,6 +752,15 @@
   width: calc(100vw - 4rem);
   border: none !important;
 
+  &__container__content {
+    max-height: 100% !important;
+  }
+
+  &--expanded {
+    height: 100vh !important;
+    width: 100vw !important;
+  }
+
   &__header {
     @include flexVCenter;
 

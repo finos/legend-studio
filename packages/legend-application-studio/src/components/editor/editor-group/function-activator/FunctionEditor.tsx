@@ -153,6 +153,7 @@ import type { FunctionActivatorState } from '../../../../stores/editor/editor-st
 import { FunctionTestableEditor } from './testable/FunctionTestableEditor.js';
 import { DocumentationLink } from '@finos/legend-lego/application';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
+import { openDataCube } from '../../../../stores/editor/data-cube/DataCubeViewerState.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -1293,6 +1294,11 @@ export const FunctionEditor = observer(() => {
       }
     });
 
+  const openFunctionCubeViewer =
+    editorStore.applicationStore.guardUnhandledError(async () => {
+      await openDataCube(functionEditorState.element, editorStore);
+    });
+
   const visitActivator = (activator: FunctionActivator): void =>
     functionEditorState.editorStore.graphEditorMode.openElement(activator);
 
@@ -1417,6 +1423,18 @@ export const FunctionEditor = observer(() => {
                       </ControlledDropdownMenu>
                     </>
                   )}
+                </div>
+                <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+                  <button
+                    className="btn__dropdown-combo__label"
+                    onClick={openFunctionCubeViewer}
+                    title="Data Cube (BETA)"
+                    tabIndex={-1}
+                  >
+                    <div className="btn__dropdown-combo__label__title">
+                      Data Cube
+                    </div>
+                  </button>
                 </div>
                 <div className="btn__dropdown-combo btn__dropdown-combo--primary">
                   <button

@@ -46,7 +46,7 @@ import { guaranteeType, isNonNullable, LogService } from '@finos/legend-shared';
 
 class QueryBuilderDataCubeSource extends DataCubeSource {
   mapping?: string | undefined;
-  runtime!: string;
+  runtime: string | undefined;
 }
 
 export class QueryBuilderDataCubeEngine extends DataCubeEngine {
@@ -55,14 +55,14 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   readonly selectInitialQuery: RawLambda;
   readonly mappingPath: string | undefined;
   readonly parameterValues: ParameterValue[] | undefined;
-  readonly runtimePath: string;
+  readonly runtimePath: string | undefined;
   _parameters: object | undefined;
 
   constructor(
     selectQuery: RawLambda,
     parameterValues: ParameterValue[] | undefined,
     mappingPath: string | undefined,
-    runtimePath: string,
+    runtimePath: string | undefined,
     graphManagerState: GraphManagerState,
   ) {
     super();
@@ -177,7 +177,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     );
   }
 
-  private async getRelationalType(query: RawLambda): Promise<RelationType> {
+  async getRelationalType(query: RawLambda): Promise<RelationType> {
     const relationType =
       await this.graphState.graphManager.getLambdaRelationType(
         query,
@@ -242,13 +242,16 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     source: DataCubeSource,
   ): V1_AppliedFunction | undefined {
     if (source instanceof QueryBuilderDataCubeSource) {
-      return _function(
-        DataCubeFunction.FROM,
-        [
-          source.mapping ? _elementPtr(source.mapping) : undefined,
-          _elementPtr(source.runtime),
-        ].filter(isNonNullable),
-      );
+      const appendFromFunc = Boolean(source.mapping ?? source.runtime);
+      return appendFromFunc
+        ? _function(
+            DataCubeFunction.FROM,
+            [
+              source.mapping ? _elementPtr(source.mapping) : undefined,
+              source.runtime ? _elementPtr(source.runtime) : undefined,
+            ].filter(isNonNullable),
+          )
+        : undefined;
     }
     return undefined;
   }
