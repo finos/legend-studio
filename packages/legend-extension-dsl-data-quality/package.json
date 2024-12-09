@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-data-quality",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "description": "Legend extension for Data Quality",
   "keywords": [
     "legend",
