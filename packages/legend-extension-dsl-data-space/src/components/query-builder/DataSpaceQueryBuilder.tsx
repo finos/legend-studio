@@ -344,7 +344,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
         <div className="query-builder__setup__config-group__content">
           <div className="query-builder__setup__config-group__item">
             <label
-              className="btn--sm query-builder__setup__config-group__item__label"
+              className="btn--sm query-builder__setup__config-group__data-product"
               title="data product"
               htmlFor="query-builder__setup__data-space-selector"
             >
