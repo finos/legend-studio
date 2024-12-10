@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import '../style/index.scss';
+import '../lib/tailwind.css'; // eslint-disable-line @finos/legend/no-cross-workspace-non-export-usage
+import '../style/index.css';
 
 export {
   type Diagram,

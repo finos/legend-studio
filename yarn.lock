@@ -3533,6 +3533,7 @@ __metadata:
     eslint: "npm:9.16.0"
     npm-run-all: "npm:4.1.5"
     postcss: "npm:8.4.49"
+    postcss-import: "npm:^16.1.0"
     postcss-url: "npm:10.1.3"
     react: "npm:18.3.1"
     rimraf: "npm:6.0.1"
@@ -3540,6 +3541,7 @@ __metadata:
     rollup-plugin-flow: "npm:1.1.1"
     rollup-plugin-import-css: "npm:3.5.7"
     rollup-plugin-postcss: "npm:4.0.2"
+    tailwindcss: "npm:3.4.15"
     typescript: "npm:5.7.2"
   languageName: unknown
   linkType: soft
@@ -15715,6 +15717,19 @@ __metadata:
   peerDependencies:
     postcss: ^8.0.0
   checksum: 10/33c91b7e6b794b5c33d7d7d4730e5f0729c131d2de1ada7fcc116955625a78c3ce613983f019fa9447681795cf3f851e9c38dfbe3f48a2d08a8aef917c70a32a
+  languageName: node
+  linkType: hard
+
+"postcss-import@npm:^16.1.0":
+  version: 16.1.0
+  resolution: "postcss-import@npm:16.1.0"
+  dependencies:
+    postcss-value-parser: "npm:^4.0.0"
+    read-cache: "npm:^1.0.0"
+    resolve: "npm:^1.1.7"
+  peerDependencies:
+    postcss: ^8.0.0
+  checksum: 10/a0877244976b8b8a930adfc8dff9f5f6c251d78649e67aa80e963d11821e6dbc8f8b16fa1d126e8725093d69c77486fc4a6861c823693c068c3192d4879e0b29
   languageName: node
   linkType: hard
 
