@@ -816,6 +816,10 @@
   &__content {
     height: calc(100% - 8rem);
   }
+
+  &__content-full {
+    height: calc(100% - 3rem) !important;
+  }
 }
 
 .query-builder__constants {
