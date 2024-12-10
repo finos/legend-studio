@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.18
+
+### Patch Changes
+
+- [#3729](https://github.com/finos/legend-studio/pull/3729) [`e282c5a`](https://github.com/finos/legend-studio/commit/e282c5a8bdb3697574aeb66266b42966c08b0cba) ([@kelly-thai](https://github.com/kelly-thai)) - Putting data product on one line
+
 ## 10.4.17
 
 ## 10.4.16
