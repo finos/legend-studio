@@ -1,5 +1,7 @@
 # @finos/legend-application-pure-ide
 
+## 8.0.260
+
 ## 8.0.259
 
 ## 8.0.258
