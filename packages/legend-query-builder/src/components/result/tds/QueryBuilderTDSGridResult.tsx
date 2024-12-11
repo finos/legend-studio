@@ -198,7 +198,7 @@ const getLocalColDefs = (
     return col;
   });
 
-const getFilterTDSColumnCustomizations = (
+export const getFilterTDSColumnCustomizations = (
   result: TDSExecutionResult,
   columnName: string,
 ): object => {

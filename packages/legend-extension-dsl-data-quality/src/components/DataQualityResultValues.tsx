@@ -19,14 +19,34 @@ import {
   type ExecutionResult,
   extractExecutionResultValues,
   RawExecutionResult,
+  TDSExecutionResult,
 } from '@finos/legend-graph';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
+import { DataQualityRelationGridResult } from './DataQualityRelationGridResult.js';
+import React from 'react';
+import type { DataQualityRelationValidationConfigurationState } from './states/DataQualityRelationValidationConfigurationState.js';
 
 export const DataQualityResultValues = observer(
-  (props: { executionResult: ExecutionResult }) => {
-    const { executionResult } = props;
+  (props: {
+    executionResult: ExecutionResult;
+    relationValidationConfigurationState?: DataQualityRelationValidationConfigurationState;
+  }) => {
+    const { executionResult, relationValidationConfigurationState } = props;
+    if (
+      relationValidationConfigurationState &&
+      executionResult instanceof TDSExecutionResult
+    ) {
+      return (
+        <DataQualityRelationGridResult
+          executionResult={executionResult}
+          relationValidationConfigurationState={
+            relationValidationConfigurationState
+          }
+        />
+      );
+    }
     if (executionResult instanceof RawExecutionResult) {
       const inputValue =
         executionResult.value === null

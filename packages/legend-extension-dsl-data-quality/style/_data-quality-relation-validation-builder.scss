@@ -16,11 +16,21 @@
 
 @use 'mixins' as *;
 
-.uml-element-editor {
-  &__row-map {
+.data-quality-uml-element-editor {
+  &__validation {
+    width: 75%;
+  }
+
+  &__lambda {
     padding-bottom: 0.5rem;
     display: flex;
     flex-direction: row;
+
+    &__value {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
 
     &__label {
       display: flex;
@@ -28,14 +38,15 @@
       padding-right: 0.5rem;
       padding-left: 0.5rem;
       margin-right: 0.5rem;
+      width: 7%;
       color: var(--color-light-grey-100);
-      background: var(--color-dark-grey-300);
+      background: var(--color-dark-grey-200);
+      font-weight: 500;
     }
   }
 }
 
 .relation-config-validations {
-  background: var(--color-light-grey-0);
   margin-left: 1rem;
   margin-right: 1rem;
 }
@@ -91,6 +102,7 @@
 
   &__tabs__header {
     padding-left: 0;
+    padding-right: 2.7rem;
   }
 
   &__tabs {
@@ -179,6 +191,15 @@
 
         @include flexVCenter;
         @include flexHSpaceBetween;
+      }
+
+      &__header-right {
+        padding-left: 1rem;
+        padding-right: 2rem;
+        display: flex;
+        justify-content: end;
+
+        @include flexVCenter;
       }
 
       &__header__add-btn {
@@ -287,7 +308,6 @@
 
 .relation-validation-editor {
   padding: 1rem;
-  background: var(--color-light-grey-0);
   border-radius: 0.2rem;
   display: flex;
   flex-direction: column;
@@ -298,7 +318,7 @@
     align-items: center;
     justify-content: right;
     width: 25%;
-    background: var(--color-dark-grey-300);
+    background: var(--color-dark-grey-200);
     margin-right: 0.5rem;
   }
 
@@ -345,6 +365,7 @@
       height: 2.8rem;
       background: var(--color-dark-grey-50);
       color: var(--color-light-grey-100);
+      border: 0.1rem solid var(--color-dark-grey-300);
       padding: 0 0.5rem;
       border-radius: 0.2rem;
     }
@@ -384,7 +405,6 @@
 
 .relation-validation {
   padding: 1rem;
-  background: var(--color-light-grey-0);
   border-radius: 0.2rem;
 
   &__container {
@@ -394,6 +414,10 @@
   &__dnd__placeholder {
     height: 8.1rem;
     padding: 1rem;
+  }
+
+  &__lambda {
+    border: 0.1rem solid var(--color-dark-grey-300);
   }
 
   &__content {
@@ -414,10 +438,11 @@
 
       flex: auto;
       height: 2.8rem;
-      background: var(--color-dark-grey-300);
-      color: var(--color-light-grey-100);
+      background: var(--color-dark-grey-100);
+      color: var(--color-light-grey-200);
       padding: 0 1rem;
       border-radius: 0.2rem;
+      font-weight: 500;
     }
 
     &__name::placeholder {

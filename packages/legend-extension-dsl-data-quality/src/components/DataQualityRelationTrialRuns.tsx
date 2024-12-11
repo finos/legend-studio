@@ -26,11 +26,13 @@ import { prettyDuration } from '@finos/legend-shared';
 import React, { useRef, useState } from 'react';
 import { DATA_QUALITY_VALIDATION_TEST_ID } from './constants/DataQualityConstants.js';
 import {
+  type SelectOption,
   BlankPanelContent,
   CaretDownIcon,
   ControlledDropdownMenu,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  CustomSelectorInput,
   DebugIcon,
   ExclamationTriangleIcon,
   MenuContent,
@@ -56,7 +58,9 @@ export const DataQualityRelationTrialRuns = observer(
     const executionResult = resultState.executionResult;
 
     const runQuery = (): void => {
-      resultState.handleRunValidation();
+      if (!resultState.isRunningValidation) {
+        resultState.handleRunValidation();
+      }
     };
 
     const cancelQuery = applicationStore.guardUnhandledError(() =>
@@ -128,6 +132,25 @@ export const DataQualityRelationTrialRuns = observer(
     const isLoading =
       resultState.isRunningValidation || resultState.isGeneratingPlan;
 
+    const selectedValidation = dataQualityRelationValidationConfigurationState
+      .resultState.validationToRun
+      ? {
+          label:
+            dataQualityRelationValidationConfigurationState.resultState
+              .validationToRun.name,
+          value:
+            dataQualityRelationValidationConfigurationState.resultState
+              .validationToRun,
+        }
+      : undefined;
+
+    const onValidationChange = (val: SelectOption | null): void => {
+      dataQualityRelationValidationConfigurationState.resetResultState();
+      dataQualityRelationValidationConfigurationState.resultState.setValidationToRun(
+        val?.value,
+      );
+    };
+
     return (
       <div
         data-testid={
@@ -138,11 +161,6 @@ export const DataQualityRelationTrialRuns = observer(
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">results</div>
-            {resultState.validationToRun && (
-              <div className="panel__header__title__label">
-                {resultState.validationToRun.name}
-              </div>
-            )}
             {resultState.isRunningValidation && (
               <div className="panel__header__title__label__status">
                 Running Validation...
@@ -168,6 +186,24 @@ export const DataQualityRelationTrialRuns = observer(
             )}
           </div>
           <div className="panel__header__actions data-quality-validation__result__header__actions">
+            <div className="data-quality-validation__result__validation">
+              <div className="data-quality-validation__result__validation__label">
+                Selected Validation
+              </div>
+              <CustomSelectorInput
+                className="data-quality-validation__result__validation__dropdown"
+                options={
+                  dataQualityRelationValidationConfigurationState.validationOptions
+                }
+                onChange={onValidationChange}
+                value={selectedValidation}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
+                placeholder={'Select validation to run'}
+              />
+            </div>
             <div className="data-quality-validation__result__limit">
               <div className="data-quality-validation__result__limit__label">
                 preview row limit
@@ -259,7 +295,12 @@ export const DataQualityRelationTrialRuns = observer(
           )}
           {executionResult && !isLoading && (
             <div className="data-quality-validation__result__values">
-              <DataQualityResultValues executionResult={executionResult} />
+              <DataQualityResultValues
+                executionResult={executionResult}
+                relationValidationConfigurationState={
+                  dataQualityRelationValidationConfigurationState
+                }
+              />
             </div>
           )}
         </PanelContent>

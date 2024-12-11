@@ -27,39 +27,45 @@ import {
 } from './states/DataQualityRelationValidationConfigurationState.js';
 import React, { useCallback, useEffect } from 'react';
 import {
+  BlankPanelContent,
+  CaretDownIcon,
   clsx,
+  ControlledDropdownMenu,
   DragPreviewLayer,
+  MenuContent,
+  MenuContentItem,
   Panel,
   PanelContent,
   PanelLoadingIndicator,
+  PauseCircleIcon,
+  PlayIcon,
   PlusIcon,
 } from '@finos/legend-art';
-import { prettyCONSTName } from '@finos/legend-shared';
-import { LambdaEditor } from '@finos/legend-query-builder';
+import { prettyCONSTName, returnUndefOnError } from '@finos/legend-shared';
+import {
+  ExecutionPlanViewer,
+  LambdaEditor,
+  LambdaParameterValuesEditor,
+} from '@finos/legend-query-builder';
 import {
   type RawVariableExpression,
   PrimitiveType,
-  stub_RawLambda,
   stub_RawVariableExpression,
   Type,
+  RawExecutionResult,
+  extractExecutionResultValues,
+  TDSExecutionResult,
 } from '@finos/legend-graph';
 import {
+  DEFAULT_TAB_SIZE,
   useApplicationNavigationContext,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
   dataQualityRelationValidation_addParameter,
-  dataQualityRelationValidation_addValidation,
   dataQualityRelationValidation_deleteParameter,
-  dataQualityRelationValidation_deleteValidation,
 } from '../graph-manager/DSL_DataQuality_GraphModifierHelper.js';
 import { flowResult } from 'mobx';
-import {
-  type RelationValidationDragSource,
-  DataQualityRelationValidationEditor,
-  RELATION_VALIDATION_DND_TYPE,
-} from './DataQualityRelationValidationEditor.js';
-import { DataQualityRelationValidation } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import { DataQualityRelationTrialRuns } from './DataQualityRelationTrialRuns.js';
 import {
   type FunctionParameterDragSource,
@@ -67,40 +73,25 @@ import {
   FUNCTION_PARAMETER_DND_TYPE,
 } from './DataQualityValidationParametersEditor.js';
 import { useDrop } from 'react-dnd';
+import { DataQualityRelationValidationsEditor } from './DataQualityRelationValidationsEditor.js';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { DataQualityRelationGridResult } from './DataQualityRelationGridResult.js';
 
 const RelationDefinitionEditor = observer(
   (props: {
-    dataQualityRelationValidationState: DataQualityRelationValidationConfigurationState;
+    dataQualityRelationValidationConfigurationState: DataQualityRelationValidationConfigurationState;
   }) => {
-    const { dataQualityRelationValidationState } = props;
+    const { dataQualityRelationValidationConfigurationState } = props;
     const { relationFunctionDefinitionEditorState, resultState } =
-      dataQualityRelationValidationState;
+      dataQualityRelationValidationConfigurationState;
     const validationElement =
-      dataQualityRelationValidationState.validationElement;
+      dataQualityRelationValidationConfigurationState.validationElement;
+    const lambdaExecutionResult =
+      dataQualityRelationValidationConfigurationState.executionResult;
 
-    const isReadOnly = dataQualityRelationValidationState.isReadOnly;
-
-    const addRelationValidation = (): void => {
-      const relationValidation = new DataQualityRelationValidation(
-        '',
-        stub_RawLambda(),
-      );
-      dataQualityRelationValidation_addValidation(
-        validationElement,
-        relationValidation,
-      );
-      dataQualityRelationValidationState.addValidationState(relationValidation);
-    };
-
-    const deleteRelationValidation =
-      (validation: DataQualityRelationValidation): (() => void) =>
-      (): void => {
-        dataQualityRelationValidation_deleteValidation(
-          validationElement,
-          validation,
-        );
-        dataQualityRelationValidationState.deleteValidationState(validation);
-      };
+    const isReadOnly =
+      dataQualityRelationValidationConfigurationState.isReadOnly;
 
     const addParameter = (): void => {
       dataQualityRelationValidation_addParameter(
@@ -147,12 +138,55 @@ const RelationDefinitionEditor = observer(
       [handleDropParameter],
     );
 
+    const renderFuncResult = (): React.ReactNode => {
+      if (lambdaExecutionResult instanceof TDSExecutionResult) {
+        return (
+          <DataQualityRelationGridResult
+            executionResult={lambdaExecutionResult}
+            relationValidationConfigurationState={
+              dataQualityRelationValidationConfigurationState
+            }
+          />
+        );
+      }
+      if (lambdaExecutionResult instanceof RawExecutionResult) {
+        const val =
+          lambdaExecutionResult.value === null
+            ? 'null'
+            : lambdaExecutionResult.value.toString();
+        return (
+          <CodeEditor
+            language={CODE_EDITOR_LANGUAGE.TEXT}
+            inputValue={val}
+            isReadOnly={true}
+          />
+        );
+      } else if (lambdaExecutionResult !== undefined) {
+        const json =
+          returnUndefOnError(() =>
+            JSON.stringify(
+              extractExecutionResultValues(lambdaExecutionResult),
+              null,
+              DEFAULT_TAB_SIZE,
+            ),
+          ) ?? JSON.stringify(lambdaExecutionResult);
+        return (
+          <CodeEditor
+            language={CODE_EDITOR_LANGUAGE.JSON}
+            inputValue={json}
+            isReadOnly={true}
+          />
+        );
+      }
+      return <BlankPanelContent>Lambda Did Not Run</BlankPanelContent>;
+    };
+
     return (
       <>
         <PanelLoadingIndicator
           isLoading={
             resultState.isGeneratingPlan ||
-            dataQualityRelationValidationState.isRunningFunc
+            dataQualityRelationValidationConfigurationState.isRunningValidation
           }
         />
         <div className="relation-validation-config-editor__definition">
@@ -231,43 +265,16 @@ const RelationDefinitionEditor = observer(
               />
             </div>
           </div>
-          <div className="relation-validation-config-editor__definition__item">
+          <div className="relation-validation-config-editor__item">
             <div className="relation-validation-config-editor__definition__item__header">
               <div className="relation-validation-config-editor__definition__item__header__title">
-                VALIDATIONS
+                RESULT
               </div>
-              <button
-                className="relation-validation-config-editor__definition__item__header__add-btn btn--dark"
-                disabled={isReadOnly}
-                onClick={addRelationValidation}
-                tabIndex={-1}
-                title="Add Relation Validation"
-              >
-                <PlusIcon />
-              </button>
             </div>
-            <div className="relation-config-validations">
-              <DragPreviewLayer
-                labelGetter={(item: RelationValidationDragSource): string =>
-                  item.validation.name === ''
-                    ? '(unknown)'
-                    : item.validation.name
-                }
-                types={[RELATION_VALIDATION_DND_TYPE]}
-              />
-              {validationElement.validations.map((relationValidation) => (
-                <DataQualityRelationValidationEditor
-                  key={relationValidation._UUID}
-                  validation={relationValidation}
-                  relationValidationConfigurationState={
-                    dataQualityRelationValidationState
-                  }
-                  deleteValidation={deleteRelationValidation(
-                    relationValidation,
-                  )}
-                  isReadOnly={isReadOnly}
-                />
-              ))}
+            <div className="relation-validation-config-editor__definition__item__content">
+              <div className="relation-validation-config-editor__definition__result-viewer">
+                {renderFuncResult()}
+              </div>
             </div>
           </div>
         </div>
@@ -292,6 +299,34 @@ export const DataQualityRelationValidationConfigurationEditor = observer(() => {
     (tab: DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB): (() => void) =>
     (): void =>
       dataQualityRelationValidationConfigurationState.setSelectedTab(tab);
+
+  const executionIsRunning =
+    dataQualityRelationValidationConfigurationState.isRunningValidation ||
+    dataQualityRelationValidationConfigurationState.isGeneratingPlan;
+
+  const cancelValidation = applicationStore.guardUnhandledError(() =>
+    flowResult(
+      dataQualityRelationValidationConfigurationState.cancelValidationRun(),
+    ),
+  );
+
+  const runValidation = applicationStore.guardUnhandledError(() =>
+    flowResult(
+      dataQualityRelationValidationConfigurationState.handleRunValidation(),
+    ),
+  );
+
+  const generatePlan = applicationStore.guardUnhandledError(() =>
+    flowResult(
+      dataQualityRelationValidationConfigurationState.generatePlan(false),
+    ),
+  );
+
+  const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
+    flowResult(
+      dataQualityRelationValidationConfigurationState.generatePlan(true),
+    ),
+  );
 
   useEffect(() => {
     flowResult(
@@ -339,12 +374,82 @@ export const DataQualityRelationValidationConfigurationEditor = observer(() => {
               ),
             )}
           </div>
+          <div className="panel__header__actions">
+            {selectedTab ===
+              DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.DEFINITION && (
+              <>
+                <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+                  {dataQualityRelationValidationConfigurationState.isRunningValidation ? (
+                    <button
+                      className="btn__dropdown-combo__canceler"
+                      onClick={cancelValidation}
+                      tabIndex={-1}
+                    >
+                      <div className="btn--dark btn--caution btn__dropdown-combo__canceler__label">
+                        <PauseCircleIcon className="btn__dropdown-combo__canceler__label__icon" />
+                        <div className="btn__dropdown-combo__canceler__label__title">
+                          Stop
+                        </div>
+                      </div>
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        className="btn__dropdown-combo__label"
+                        onClick={runValidation}
+                        title="Run Function"
+                        disabled={executionIsRunning}
+                        tabIndex={-1}
+                      >
+                        <PlayIcon className="btn__dropdown-combo__label__icon" />
+                        <div className="btn__dropdown-combo__label__title">
+                          Run
+                        </div>
+                      </button>
+                      <ControlledDropdownMenu
+                        className="btn__dropdown-combo__dropdown-btn"
+                        disabled={executionIsRunning}
+                        content={
+                          <MenuContent>
+                            <MenuContentItem
+                              className="btn__dropdown-combo__option"
+                              onClick={generatePlan}
+                            >
+                              Generate Plan
+                            </MenuContentItem>
+                            <MenuContentItem
+                              className="btn__dropdown-combo__option"
+                              onClick={debugPlanGeneration}
+                            >
+                              Debug
+                            </MenuContentItem>
+                          </MenuContent>
+                        }
+                        menuProps={{
+                          anchorOrigin: {
+                            vertical: 'bottom',
+                            horizontal: 'right',
+                          },
+                          transformOrigin: {
+                            vertical: 'top',
+                            horizontal: 'right',
+                          },
+                        }}
+                      >
+                        <CaretDownIcon />
+                      </ControlledDropdownMenu>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </div>
         <PanelContent>
           {selectedTab ===
             DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.DEFINITION && (
             <RelationDefinitionEditor
-              dataQualityRelationValidationState={
+              dataQualityRelationValidationConfigurationState={
                 dataQualityRelationValidationConfigurationState
               }
             />
@@ -357,8 +462,37 @@ export const DataQualityRelationValidationConfigurationEditor = observer(() => {
               }
             />
           )}
+          {selectedTab ===
+            DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.VALIDATIONS && (
+            <DataQualityRelationValidationsEditor
+              dataQualityRelationValidationConfigurationState={
+                dataQualityRelationValidationConfigurationState
+              }
+            />
+          )}
         </PanelContent>
       </Panel>
+      <ExecutionPlanViewer
+        executionPlanState={
+          dataQualityRelationValidationConfigurationState.executionPlanState
+        }
+      />
+      {dataQualityRelationValidationConfigurationState.parametersState
+        .parameterValuesEditorState.showModal && (
+        <LambdaParameterValuesEditor
+          graph={
+            dataQualityRelationValidationConfigurationState.editorStore
+              .graphManagerState.graph
+          }
+          observerContext={
+            dataQualityRelationValidationConfigurationState.editorStore
+              .changeDetectionState.observerContext
+          }
+          lambdaParametersState={
+            dataQualityRelationValidationConfigurationState.parametersState
+          }
+        />
+      )}
     </div>
   );
 });

@@ -28,7 +28,6 @@ import {
   useDragPreviewLayer,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '@finos/legend-application-studio';
 import { PrimitiveType } from '@finos/legend-graph';
 import {
   ApplicationNavigationContextData,
@@ -47,6 +46,7 @@ import {
 } from '../graph-manager/DSL_DataQuality_GraphModifierHelper.js';
 import { DataQualityValidationDetailPanel } from './DataQualityValidationDetailPanel.js';
 import { useDrag, useDrop } from 'react-dnd';
+import { DSL_DATA_QUALITY_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../__lib__/studio/DSL_DataQuality_LegendStudioApplicationNavigationContext.js';
 
 export type RelationValidationDragSource = {
   validation: DataQualityRelationValidation;
@@ -72,7 +72,9 @@ export const DataQualityRelationValidationEditor = observer(
     const applicationStore = useApplicationStore();
     const hasParserError =
       relationValidationConfigurationState.validationStates.some(
-        (state) => state.parserError,
+        (state) =>
+          Boolean(state.parserError) ||
+          Boolean(state.rowMapFunctionLambdaEditorState?.parserError),
       );
     const validationState =
       relationValidationConfigurationState.getValidationState(validation);
@@ -137,12 +139,15 @@ export const DataQualityRelationValidationEditor = observer(
     useDragPreviewLayer(dragPreviewConnector);
 
     // Actions
-    const onLambdaEditorFocus = (): void =>
+    const onLambdaEditorFocus = (isAssertion: boolean): void =>
       applicationStore.navigationContextService.push(
         ApplicationNavigationContextData.createTransient(
-          LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.CLASS_CONTRAINT_LAMBDA_EDITOR,
+          isAssertion
+            ? DSL_DATA_QUALITY_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.VALIDATION_ASSERTION_EDITOR
+            : DSL_DATA_QUALITY_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.VALIDATION_ROW_MAP_EDITOR,
         ),
       );
+
     const remove = applicationStore.guardUnhandledError(async () => {
       await flowResult(
         validationState.convertLambdaObjectToGrammarString({ pretty: false }),
@@ -154,10 +159,15 @@ export const DataQualityRelationValidationEditor = observer(
       relationValidationConfigurationState.setSelectedTab(
         DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.TRIAL_RUN,
       );
-      relationValidationConfigurationState.resultState.setValidationToRun(
-        validation,
-      );
-      relationValidationConfigurationState.resultState.handleRunValidation();
+      if (
+        !relationValidationConfigurationState.resultState.isRunningValidation
+      ) {
+        relationValidationConfigurationState.resetResultState();
+        relationValidationConfigurationState.resultState.setValidationToRun(
+          validation,
+        );
+        relationValidationConfigurationState.resultState.handleRunValidation();
+      }
     };
 
     const onValidationTypeChange = (val: SelectOption): void => {
@@ -182,7 +192,11 @@ export const DataQualityRelationValidationEditor = observer(
       >
         <div
           className={clsx('relation-validation', {
-            backdrop__element: validationState.parserError,
+            backdrop__element:
+              Boolean(validationState.parserError) ||
+              Boolean(
+                validationState.rowMapFunctionLambdaEditorState?.parserError,
+              ),
           })}
         >
           <div className="relation-validation__content">
@@ -225,6 +239,7 @@ export const DataQualityRelationValidationEditor = observer(
               onClick={runQuery}
               tabIndex={-1}
               title="Run Validation"
+              disabled={hasParserError}
             >
               <RocketIcon />
             </button>
@@ -238,36 +253,47 @@ export const DataQualityRelationValidationEditor = observer(
             </button>
           </div>
           {validationState.rowMapFunctionLambdaEditorState && (
-            <div className="uml-element-editor__row-map">
-              <div className="uml-element-editor__row-map__label">
+            <div className="data-quality-uml-element-editor__lambda">
+              <div className="data-quality-uml-element-editor__lambda__label">
                 Row Map Function
               </div>
+              <div className="data-quality-uml-element-editor__lambda__value">
+                <InlineLambdaEditor
+                  disabled={
+                    relationValidationConfigurationState.isConvertingValidationLambdaObjects ||
+                    isReadOnly
+                  }
+                  lambdaEditorState={
+                    validationState.rowMapFunctionLambdaEditorState
+                  }
+                  forceBackdrop={hasParserError}
+                  expectedType={PrimitiveType.BOOLEAN}
+                  onEditorFocus={() => onLambdaEditorFocus(false)}
+                  disablePopUp={true}
+                  className="relation-validation__lambda"
+                />
+              </div>
+            </div>
+          )}
+          <div className="data-quality-uml-element-editor__lambda">
+            <div className="data-quality-uml-element-editor__lambda__label">
+              Assertion
+            </div>
+            <div className="data-quality-uml-element-editor__lambda__value">
               <InlineLambdaEditor
                 disabled={
                   relationValidationConfigurationState.isConvertingValidationLambdaObjects ||
                   isReadOnly
                 }
-                lambdaEditorState={
-                  validationState.rowMapFunctionLambdaEditorState
-                }
+                lambdaEditorState={validationState}
                 forceBackdrop={hasParserError}
                 expectedType={PrimitiveType.BOOLEAN}
-                onEditorFocus={onLambdaEditorFocus}
+                onEditorFocus={() => onLambdaEditorFocus(true)}
                 disablePopUp={true}
+                className="relation-validation__lambda"
               />
             </div>
-          )}
-          <InlineLambdaEditor
-            disabled={
-              relationValidationConfigurationState.isConvertingValidationLambdaObjects ||
-              isReadOnly
-            }
-            lambdaEditorState={validationState}
-            forceBackdrop={hasParserError}
-            expectedType={PrimitiveType.BOOLEAN}
-            onEditorFocus={onLambdaEditorFocus}
-            disablePopUp={true}
-          />
+          </div>
         </div>
         {validationState.isValidationDialogOpen && (
           <DataQualityValidationDetailPanel

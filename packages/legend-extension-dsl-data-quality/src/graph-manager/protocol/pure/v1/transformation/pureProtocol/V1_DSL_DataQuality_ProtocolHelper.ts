@@ -138,9 +138,8 @@ export function V1_deserializeDataQualityExecutionContext(
 const V1_relationValidationModelSchema = createModelSchema(
   V1_DataQualityRelationValidation,
   {
-    _type: usingConstantValueSchema(V1_RawValueSpecificationType.LAMBDA),
     name: primitive(),
-    description: primitive(),
+    description: optional(primitive()),
     assertion: usingModelSchema(V1_rawLambdaModelSchema),
     rowMapFunction: optional(usingModelSchema(V1_rawLambdaModelSchema)),
     expected: optional(primitive()),
@@ -190,6 +189,12 @@ const V1_dataQualityRelationValidationModelSchema = (
     package: primitive(),
     query: usingModelSchema(V1_rawLambdaModelSchemaParameters),
     validations: list(usingModelSchema(V1_relationValidationModelSchema)),
+    stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
+    taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
   });
 
 const V1_dataQualityServiceValidationModelSchema = (
