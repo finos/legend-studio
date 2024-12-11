@@ -27,8 +27,6 @@ import {
   assertErrorThrown,
   deleteEntry,
   guaranteeNonNullable,
-  HttpStatus,
-  NetworkClientError,
   noop,
   uniqBy,
 } from '@finos/legend-shared';
@@ -48,8 +46,8 @@ import {
   getDataType,
 } from '../../core/DataCubeQueryEngine.js';
 import { buildDefaultColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
-import type { DataCubeQueryBuilderError } from '../../core/DataCubeEngine.js';
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
+import { EngineError } from '@finos/legend-graph';
 
 class DataCubeQueryExtendedColumnState {
   name: string;
@@ -257,19 +255,11 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
       );
     } catch (error) {
       assertErrorThrown(error);
-      if (
-        error instanceof NetworkClientError &&
-        error.response.status === HttpStatus.BAD_REQUEST
-      ) {
-        this.view.engine.alertCodeCheckError(
-          error.payload as DataCubeQueryBuilderError,
-          code,
-          codePrefix,
-          {
-            message: `Column Update Check Failure: Can't safely update column '${columnName}'. Check the query code below for more details.`,
-            text: `Error: ${error.message}`,
-          },
-        );
+      if (error instanceof EngineError) {
+        this.view.engine.alertCodeCheckError(error, code, codePrefix, {
+          message: `Column Update Check Failure: Can't safely update column '${columnName}'. Check the query code below for more details.`,
+          text: `Error: ${error.message}`,
+        });
       } else {
         this.view.engine.alertError(error, {
           message: `Column Update Check Failure: Can't safely update column '${columnName}'.`,
@@ -370,19 +360,11 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
       );
     } catch (error) {
       assertErrorThrown(error);
-      if (
-        error instanceof NetworkClientError &&
-        error.response.status === HttpStatus.BAD_REQUEST
-      ) {
-        this.view.engine.alertCodeCheckError(
-          error.payload as DataCubeQueryBuilderError,
-          code,
-          codePrefix,
-          {
-            message: `Column Delete Check Failure: Can't safely delete column '${columnName}'. Check the query code below for more details.`,
-            text: `Error: ${error.message}`,
-          },
-        );
+      if (error instanceof EngineError) {
+        this.view.engine.alertCodeCheckError(error, code, codePrefix, {
+          message: `Column Delete Check Failure: Can't safely delete column '${columnName}'. Check the query code below for more details.`,
+          text: `Error: ${error.message}`,
+        });
       } else {
         this.view.engine.alertError(error, {
           message: `Column Delete Check Failure: Can't safely delete column '${columnName}'.`,

@@ -30,8 +30,6 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
-  HttpStatus,
-  NetworkClientError,
 } from '@finos/legend-shared';
 import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGeneralPropertiesPanelState.js';
 import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumnPropertiesPanelState.js';
@@ -42,8 +40,8 @@ import type { DisplayState } from '../../core/DataCubeLayoutManagerState.js';
 import { DataCubeEditor } from '../../../components/view/editor/DataCubeEditor.js';
 import { DataCubeEditorHorizontalPivotsPanelState } from './DataCubeEditorHorizontalPivotsPanelState.js';
 import { DataCubeEditorPivotLayoutPanelState } from './DataCubeEditorPivotLayoutPanelState.js';
-import type { DataCubeQueryBuilderError } from '../../core/DataCubeEngine.js';
 import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
+import { EngineError } from '@finos/legend-graph';
 
 export enum DataCubeEditorTab {
   GENERAL_PROPERTIES = 'General Properties',
@@ -196,19 +194,11 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
         );
       } catch (error) {
         assertErrorThrown(error);
-        if (
-          error instanceof NetworkClientError &&
-          error.response.status === HttpStatus.BAD_REQUEST
-        ) {
-          this.view.engine.alertCodeCheckError(
-            error.payload as DataCubeQueryBuilderError,
-            code,
-            codePrefix,
-            {
-              message: `Query Validation Failure: Can't safely apply changes. Check the query code below for more details.`,
-              text: `Error: ${error.message}`,
-            },
-          );
+        if (error instanceof EngineError) {
+          this.view.engine.alertCodeCheckError(error, code, codePrefix, {
+            message: `Query Validation Failure: Can't safely apply changes. Check the query code below for more details.`,
+            text: `Error: ${error.message}`,
+          });
         } else {
           this.view.engine.alertError(error, {
             message: `Query Validation Failure: Can't safely apply changes.`,

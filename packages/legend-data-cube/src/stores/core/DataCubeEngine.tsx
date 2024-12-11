@@ -20,6 +20,7 @@ import {
   type TDSExecutionResult,
   type V1_AppliedFunction,
   PRIMITIVE_TYPE,
+  type EngineError,
 } from '@finos/legend-graph';
 import { getFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import { getAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
@@ -108,17 +109,6 @@ export type CompletionItem = {
 
 export type RelationType = {
   columns: DataCubeColumn[];
-};
-
-export type DataCubeQueryBuilderError = {
-  type: string;
-  message: string;
-  sourceInformation?: {
-    startLine: number;
-    startColumn: number;
-    endLine: number;
-    endColumn: number;
-  };
 };
 
 type DataCubeExecutionResult = {
@@ -387,7 +377,7 @@ export abstract class DataCubeEngine {
   }
 
   alertCodeCheckError(
-    error: DataCubeQueryBuilderError,
+    error: EngineError,
     code: string,
     codePrefix: string,
     options: {
