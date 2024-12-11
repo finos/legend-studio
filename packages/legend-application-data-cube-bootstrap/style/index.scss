@@ -1,0 +1,49 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import url('@finos/legend-art/lib/normalize.css');
+@import url('@finos/legend-art/lib/index.css');
+@import url('@finos/legend-application/lib/index.css');
+@import url('@finos/legend-lego/lib/index.css');
+@import url('@finos/legend-data-cube/lib/index.css');
+@import url('@finos/legend-application-data-cube/lib/index.css');
+@import url('@finos/legend-query-builder/lib/index.css');
+
+// NOTE: the following styles are temporary so we can have a poor-man version of
+// theming for Legend Query. The reason why we put the code here is that this is
+// where we essentially do all the overriding for everything from every extensions.
+// In other words, this is the only place where we can exhaustively and correctly
+// override native dark theme with light them colors.
+:root {
+  --color-legacylight-light-grey-100: #edf0f1;
+  --color-legacylight-light-grey-200: #dce2e4;
+  --color-legacylight-light-grey-300: #b5bec4;
+  --color-legacylight-light-grey-400: #95a0a8;
+  --color-legacylight-dark-grey-200: #29323a;
+  --color-legacylight-dark-grey-400: #4e5364;
+  --color-legacylight-light-blue-50: #def3ff;
+  --color-legacylight-light-blue-100: #7399c6;
+  --color-legacylight-light-blue-200: #6a8db6;
+  --color-legacylight-light-blue-250: #687b93;
+  --color-legacylight-light-blue-270: #597089;
+  --color-legacylight-light-blue-300: #4d6f9c;
+  --color-legacylight-light-blue-350: #475b72;
+  --color-legacylight-light-blue-400: #1b4c8c;
+  --color-legacylight-light-blue-600: #2d3d51;
+  --color-legacylight-green-100: #5cb65c;
+  --color-legacylight-orange-100: #f68f1e;
+  --color-legacylight-orange-150: #ea8212;
+}

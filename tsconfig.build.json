@@ -18,7 +18,9 @@
     { "path": "packages/legend-server-depot/tsconfig.build.json" },
     // showcase
     { "path": "packages/legend-server-showcase/tsconfig.build.json" },
-    { "path": "packages/legend-server-showcase-deployment/tsconfig.build.json" },
+    {
+      "path": "packages/legend-server-showcase-deployment/tsconfig.build.json"
+    },
     // studio
     { "path": "packages/legend-application-studio/tsconfig.build.json" },
     {
@@ -29,17 +31,24 @@
     {
       "path": "packages/legend-application-query-bootstrap/tsconfig.build.json"
     },
+    // query
+    { "path": "packages/legend-application-data-cube/tsconfig.build.json" },
+    {
+      "path": "packages/legend-application-data-cube-bootstrap/tsconfig.build.json"
+    },
     // pure ide
     { "path": "packages/legend-application-pure-ide/tsconfig.build.json" },
-     // repl
-     { "path": "packages/legend-application-repl/tsconfig.build.json" },
+    // repl
+    { "path": "packages/legend-application-repl/tsconfig.build.json" },
     // extensions
     { "path": "packages/legend-extension-assortment/tsconfig.build.json" },
     { "path": "packages/legend-extension-tracer-zipkin/tsconfig.build.json" },
     { "path": "packages/legend-extension-dsl-text/tsconfig.build.json" },
     { "path": "packages/legend-extension-dsl-diagram/tsconfig.build.json" },
     { "path": "packages/legend-extension-dsl-data-space/tsconfig.build.json" },
-    { "path": "packages/legend-extension-dsl-data-space-studio/tsconfig.build.json" },
+    {
+      "path": "packages/legend-extension-dsl-data-space-studio/tsconfig.build.json"
+    },
     { "path": "packages/legend-extension-dsl-service/tsconfig.build.json" },
     {
       "path": "packages/legend-extension-dsl-persistence/tsconfig.build.json"

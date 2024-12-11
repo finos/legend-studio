@@ -1,0 +1,55 @@
+{
+  "name": "@finos/legend-application-data-cube-deployment",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Legend Data Cube web application deployment",
+  "keywords": [
+    "legend",
+    "legend-application",
+    "legend-data-cube",
+    "deployment"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-application-data-cube-deployment"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build:tailwindcss": "tailwindcss -i ./style/tailwind.css -o ./lib/tailwind.css --minify",
+    "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
+    "build-dry:docker": "../../scripts/docker/dry-build-docker-image.sh legend-data-cube ./dist/data-cube ",
+    "bundle": "yarn clean && yarn build:webpack && node ./scripts/setup.js ./dist/data-cube ",
+    "bundle:analyze": "cross-env NODE_ENV=production webpack --mode production --analyze",
+    "bundle:fast": "cross-env NODE_ENV=production PRODUCTION_MODE=fast webpack --mode production && node ./scripts/setup.js ./dist/data-cube ",
+    "clean": "yarn clean:cache && rimraf \"dist\"",
+    "clean:cache": "rimraf \"build\"",
+    "dev": "npm-run-all --parallel dev:ts dev:tailwindcss dev:webpack",
+    "dev:tailwindcss": "tailwindcss -i ./style/tailwind.css -o ./lib/tailwind.css --watch",
+    "dev:ts": "tsc --watch --preserveWatchOutput",
+    "dev:webpack": "cross-env NODE_ENV=development webpack serve --mode development",
+    "dev:webpack:debug": "cross-env NODE_ENV=development DEVELOPMENT_MODE=debug webpack serve --mode development",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./scripts/**/*.{mjs,cjs,js}\" \"./src/**/*.{js,ts,tsx}\"",
+    "publish:docker": "echo 'Building webapp content...' && yarn bundle && ../../scripts/docker/publish-docker.sh finos/legend-data-cube",
+    "serve": "npx http-server ./dist -p 3000 -a localhost -g --cors -o /datacube",
+    "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js ./dev"
+  },
+  "dependencies": {
+    "@finos/legend-application-data-cube-bootstrap": "workspace:*"
+  },
+  "devDependencies": {
+    "@finos/legend-dev-utils": "workspace:*",
+    "copy-webpack-plugin": "12.0.2",
+    "cross-env": "7.0.3",
+    "eslint": "9.15.0",
+    "npm-run-all": "4.1.5",
+    "rimraf": "6.0.1",
+    "tailwindcss": "3.4.15",
+    "typescript": "5.6.3",
+    "webpack": "5.95.0",
+    "webpack-bundle-analyzer": "4.10.2",
+    "webpack-cli": "5.1.4",
+    "webpack-dev-server": "5.1.0"
+  }
+}
