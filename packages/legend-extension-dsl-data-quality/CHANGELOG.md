@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.0.12
+
+### Patch Changes
+
+- [#3704](https://github.com/finos/legend-studio/pull/3704) [`13b6146`](https://github.com/finos/legend-studio/commit/13b6146a73a97389e95fe65a9c5f91721f88af61) ([@viju4076](https://github.com/viju4076)) - data quality relation validation screen enhancements and css fixes
+
 ## 2.0.11
 
 ## 2.0.10
