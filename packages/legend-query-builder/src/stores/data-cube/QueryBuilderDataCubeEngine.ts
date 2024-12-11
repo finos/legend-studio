@@ -29,6 +29,7 @@ import {
   type PureModel,
   type V1_ValueSpecification,
   type ParameterValue,
+  LAMBDA_PIPE,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -146,8 +147,12 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
       await this.graphState.graphManager.lambdaToPureCode(lambda);
     const offset = queryString.length;
     const codeBlock = queryString + code;
+    const finalCode = codeBlock.substring(
+      codeBlock.indexOf(LAMBDA_PIPE) + LAMBDA_PIPE.length,
+      codeBlock.length,
+    );
     const result = await this.graphState.graphManager.getCodeComplete(
-      codeBlock,
+      finalCode,
       this.graph,
       offset,
     );
@@ -200,7 +205,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
       await this.graphState.graphManager.valueSpecificationToPureCode(
         V1_serializeValueSpecification(baseQuery, []),
       );
-    const fullQuery = code + queryString;
+    const fullQuery = queryString + code;
     return this.getRelationalType(
       await this.graphState.graphManager.pureCodeToLambda(fullQuery),
     );

@@ -63,6 +63,7 @@ import type { V1_CompilationError } from './compilation/V1_CompilationError.js';
 import type { V1_ParserError } from './grammar/V1_ParserError.js';
 import {
   CompilationError,
+  EngineError,
   ParserError,
 } from '../../../../../graph-manager/action/EngineError.js';
 import type { V1_SourceInformation } from '../model/V1_SourceInformation.js';
@@ -94,6 +95,7 @@ import {
   V1_getGenericTypeFullPath,
 } from '../helpers/V1_DomainHelper.js';
 import type { V1_ConcreteFunctionDefinition } from '../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
+import type { V1_EngineError } from './V1_EngineError.js';
 
 export const V1_buildLightQuery = (
   protocol: V1_LightQuery,
@@ -602,6 +604,14 @@ export const V1_buildCompilationError = (
 
 export const V1_buildParserError = (protocol: V1_ParserError): ParserError => {
   const metamodel = new ParserError(protocol.message);
+  metamodel.sourceInformation = protocol.sourceInformation
+    ? V1_buildSourceInformation(protocol.sourceInformation)
+    : undefined;
+  return metamodel;
+};
+
+export const V1_buildEngineError = (protocol: V1_EngineError): EngineError => {
+  const metamodel = new EngineError(protocol.message);
   metamodel.sourceInformation = protocol.sourceInformation
     ? V1_buildSourceInformation(protocol.sourceInformation)
     : undefined;

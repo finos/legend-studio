@@ -61,6 +61,7 @@ import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvide
 import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import { Explorer } from '../editor/side-bar/Explorer.js';
 import { PanelGroup } from '../editor/panel-group/PanelGroup.js';
+import { QueryDataCubeViewer } from '@finos/legend-query-builder';
 
 const ShowcaseViewerStatusBar = observer(() => {
   const editorStore = useEditorStore();
@@ -409,6 +410,15 @@ export const ShowcaseViewer = withEditorStore(
             )}
             <ShowcaseViewerStatusBar />
             <EmbeddedQueryBuilder />
+            {editorStore.embeddedDataCubeViewerEngine && (
+              <QueryDataCubeViewer
+                engine={editorStore.embeddedDataCubeViewerEngine}
+                close={() => editorStore.setDataCubeViewState(undefined)}
+                options={{
+                  fullScreen: true,
+                }}
+              />
+            )}
             {extraEditorExtensionComponents}
           </div>
         </div>

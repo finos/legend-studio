@@ -26,11 +26,11 @@ import {
 import { editor as monacoEditorAPI } from 'monaco-editor';
 import { useEffect, useRef, useState } from 'react';
 import { MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID } from './DataCubePureCodeEditorUtils.js';
-import type { DataCubeQueryBuilderError } from '../../stores/core/DataCubeEngine.js';
+import type { EngineError } from '@finos/legend-graph';
 
 export function DataCubeCodeCheckErrorAlert(props: {
   editorModel: monacoEditorAPI.ITextModel;
-  error: DataCubeQueryBuilderError;
+  error: EngineError;
   message: string;
   text?: string | undefined;
 }) {

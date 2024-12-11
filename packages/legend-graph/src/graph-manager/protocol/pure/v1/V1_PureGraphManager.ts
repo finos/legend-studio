@@ -2062,7 +2062,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           graph,
           V1_PureGraphManager.DEV_PROTOCOL_VERSION,
         ),
-        offset,
+        -1,
       ),
     );
   }

@@ -23,8 +23,6 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
-  HttpStatus,
-  NetworkClientError,
   uuid,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -40,9 +38,9 @@ import {
   CODE_EDITOR_LANGUAGE,
   setErrorMarkers,
 } from '@finos/legend-code-editor';
-import type { DataCubeQueryBuilderError } from '../../core/DataCubeEngine.js';
 import type { DataCubeExtendManagerState } from './DataCubeExtendManagerState.js';
 import {
+  EngineError,
   PRIMITIVE_TYPE,
   V1_deserializeValueSpecification,
   V1_Lambda,
@@ -77,7 +75,7 @@ export abstract class DataCubeColumnBaseEditorState {
   editor?: monacoEditorAPI.IStandaloneCodeEditor | undefined;
   readonly editorModel: monacoEditorAPI.ITextModel;
   readonly editorModelUri: Uri;
-  codeError?: DataCubeQueryBuilderError | undefined;
+  codeError?: EngineError | undefined;
   returnType?: string | undefined;
 
   constructor(
@@ -177,7 +175,7 @@ export abstract class DataCubeColumnBaseEditorState {
     this.returnType = value;
   }
 
-  showError(error: DataCubeQueryBuilderError) {
+  showError(error: EngineError) {
     this.codeError = error;
     if (error.sourceInformation) {
       setErrorMarkers(
@@ -254,16 +252,12 @@ export abstract class DataCubeColumnBaseEditorState {
           : undefined;
       this.setReturnType(returnType);
       return returnType;
-    } catch (err) {
-      assertErrorThrown(err);
-      if (
-        err instanceof NetworkClientError &&
-        err.response.status === HttpStatus.BAD_REQUEST
-      ) {
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof EngineError) {
         this.validationState.fail();
         // correct the source information since we added prefix to the code
         // and reveal error in the editor
-        const error = err.payload as DataCubeQueryBuilderError;
         if (error.sourceInformation) {
           error.sourceInformation.startColumn -=
             error.sourceInformation.startLine === 1
@@ -286,11 +280,11 @@ export abstract class DataCubeColumnBaseEditorState {
             error.sourceInformation.endLine = fullRange.endLineNumber;
           }
         }
-        this.showError(err.payload as DataCubeQueryBuilderError);
+        this.showError(error);
         return undefined;
       }
-      this.view.engine.alertError(err, {
-        message: `Expression Validation Failure: ${err.message}`,
+      this.view.engine.alertError(error, {
+        message: `Expression Validation Failure: ${error.message}`,
       });
     } finally {
       this.validationState.complete();

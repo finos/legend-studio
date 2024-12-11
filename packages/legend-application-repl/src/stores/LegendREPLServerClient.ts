@@ -15,9 +15,12 @@
  */
 
 import {
+  assertErrorThrown,
   ContentType,
   guaranteeNonNullable,
   HttpHeader,
+  HttpStatus,
+  NetworkClientError,
   SerializationFactory,
   usingModelSchema,
   type NetworkClient,
@@ -28,7 +31,12 @@ import {
   type CompletionItem,
   type RelationType,
 } from '@finos/legend-data-cube';
-import type { V1_Lambda, V1_ValueSpecification } from '@finos/legend-graph';
+import {
+  V1_buildEngineError,
+  V1_EngineError,
+  type V1_Lambda,
+  type V1_ValueSpecification,
+} from '@finos/legend-graph';
 import { createModelSchema, optional, primitive } from 'serializr';
 
 type GetValueSpecificationCodeInput = {
@@ -162,10 +170,25 @@ export class LegendREPLServerClient {
   async getQueryCodeRelationReturnType(
     input: GetQueryCodeRelationReturnTypeInput,
   ): Promise<RelationType> {
-    return this.networkClient.post(
-      `${this.dataCube}/getRelationReturnType/code`,
-      input,
-    );
+    try {
+      return this.networkClient.post(
+        `${this.dataCube}/getRelationReturnType/code`,
+        input,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildEngineError(
+          V1_EngineError.serialization.fromJson(
+            error.payload as PlainObject<V1_EngineError>,
+          ),
+        );
+      }
+      throw error;
+    }
   }
 
   async executeQuery(
