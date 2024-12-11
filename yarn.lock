@@ -3620,6 +3620,7 @@ __metadata:
     rollup-plugin-flow: "npm:1.1.1"
     rollup-plugin-import-css: "npm:3.5.7"
     rollup-plugin-postcss: "npm:4.0.2"
+    tailwindcss: "npm:3.4.15"
     typescript: "npm:5.7.2"
   languageName: unknown
   linkType: soft
