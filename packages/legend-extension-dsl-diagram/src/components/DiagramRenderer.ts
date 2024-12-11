@@ -808,9 +808,9 @@ export class DiagramRenderer {
         break;
       }
       case DIAGRAM_ALIGNER_OPERATOR.SPACE_HORIZONTALLY: {
-        const sorted = this.selectedClasses
-          .slice()
-          .sort((a, b) => a.position.x - b.position.x);
+        const sorted = this.selectedClasses.toSorted(
+          (a, b) => a.position.x - b.position.x,
+        );
         // NOTE: handle special case where there are only 2 views, make them adjacent
         if (sorted.length === 2) {
           const previousView = sorted[0] as ClassView;
@@ -852,9 +852,9 @@ export class DiagramRenderer {
         break;
       }
       case DIAGRAM_ALIGNER_OPERATOR.SPACE_VERTICALLY: {
-        const sorted = this.selectedClasses
-          .slice()
-          .sort((a, b) => a.position.y - b.position.y);
+        const sorted = this.selectedClasses.toSorted(
+          (a, b) => a.position.y - b.position.y,
+        );
         // NOTE: handle special case where there are only 2 views, make them adjacent
         if (sorted.length === 2) {
           const previousView = sorted[0] as ClassView;

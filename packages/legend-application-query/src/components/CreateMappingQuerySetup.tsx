@@ -166,8 +166,7 @@ const CreateMappingQuerySetupContent = observer(() => {
     LATEST_VERSION_ALIAS,
     ...(setupStore.currentProjectVersions ?? []),
   ]
-    .slice()
-    .sort((v1, v2) => compareSemVerVersions(v2, v1))
+    .toSorted((v1, v2) => compareSemVerVersions(v2, v1))
     .map(buildVersionOption);
   const selectedVersionOption = setupStore.currentVersionId
     ? buildVersionOption(setupStore.currentVersionId)

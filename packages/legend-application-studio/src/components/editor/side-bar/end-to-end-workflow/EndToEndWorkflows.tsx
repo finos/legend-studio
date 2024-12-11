@@ -49,7 +49,7 @@ export const EndToEndWorkflow = observer(
     const { globalEndToEndWorkflowState } = props;
 
     const openWorkflow = (
-      event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+      event: React.MouseEvent<HTMLDivElement>,
       flow: string,
     ): void => {
       event.stopPropagation();

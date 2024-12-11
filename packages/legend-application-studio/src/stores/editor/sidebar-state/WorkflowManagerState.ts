@@ -413,11 +413,9 @@ export abstract class WorkflowManagerState {
             flowResult(this.getJobs(workflow.id)).then((jobs: WorkflowJob[]) =>
               jobsIndex.set(
                 workflow.id,
-                jobs
-                  .slice()
-                  .sort(
-                    (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
-                  ),
+                jobs.toSorted(
+                  (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+                ),
               ),
             ),
           ),

@@ -305,7 +305,7 @@ export function validateAndBuildQuerySnapshot(
   // --------------------------------- SOURCE ---------------------------------
 
   data.sourceColumns = source.sourceColumns;
-  data.sourceColumns.map((col) => colsMap.set(col.name, col));
+  data.sourceColumns.forEach((col) => colsMap.set(col.name, col));
 
   // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
   /** TODO: @datacube roundtrip */

@@ -611,21 +611,19 @@ export class QueryBuilderTDSState
 
     if (!options?.skipSorting) {
       // sort columns: aggregate columns go last
-      this.projectionColumns = this.projectionColumns
-        .slice()
-        .sort(
-          (colA, colB) =>
-            (this.aggregationState.columns.find(
-              (column) => column.projectionColumnState === colA,
-            )
-              ? 1
-              : 0) -
-            (this.aggregationState.columns.find(
-              (column) => column.projectionColumnState === colB,
-            )
-              ? 1
-              : 0),
-        );
+      this.projectionColumns = this.projectionColumns.toSorted(
+        (colA, colB) =>
+          (this.aggregationState.columns.find(
+            (column) => column.projectionColumnState === colA,
+          )
+            ? 1
+            : 0) -
+          (this.aggregationState.columns.find(
+            (column) => column.projectionColumnState === colB,
+          )
+            ? 1
+            : 0),
+      );
     }
   }
 

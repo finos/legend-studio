@@ -212,7 +212,6 @@ export const ServiceExecutionQueryEditor = observer(
           }),
         );
         executionState.setOpeningQueryEditor(false);
-        return;
       });
 
     const importQuery = (): void =>
