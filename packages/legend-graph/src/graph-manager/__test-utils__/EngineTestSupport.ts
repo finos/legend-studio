@@ -34,7 +34,7 @@ import {
   type V1_ArtifactGenerationExtensionOutput,
 } from '../protocol/pure/v1/engine/generation/V1_ArtifactGenerationExtensionApi.js';
 
-export const ENGINE_TEST_SUPPORT_API_URL = 'http://localhost:6300/api';
+export const ENGINE_TEST_SUPPORT_API_URL = 'http://localhost:9006/api';
 
 export async function ENGINE_TEST_SUPPORT__getClassifierPathMapping(): Promise<
   ClassifierPathMapping[]
@@ -114,14 +114,35 @@ export async function ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(
 ): Promise<PlainObject<V1_ValueSpecification>> {
   return (
     await axios.post<unknown, AxiosResponse<{ elements: object[] }>>(
-      `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/grammarToJson/valueSpecification`,
-      code,
+      `${ENGINE_TEST_SUPPORT_API_URL}/dataCube/parseValueSpecification`,
+      {
+        returnSourceInformation: false,
+        code: code,
+      },
       {
         headers: {
-          [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
+          [HttpHeader.CONTENT_TYPE]: ContentType.APPLICATION_JSON,
         },
         params: {
           returnSourceInformation: false,
+        },
+      },
+    )
+  ).data;
+}
+
+export async function ENGINE_TEST_SUPPORT__valueSpecificationCode(
+  value: PlainObject<V1_ValueSpecification>,
+): Promise<string> {
+  return (
+    await axios.post<unknown, AxiosResponse<string>>(
+      `${ENGINE_TEST_SUPPORT_API_URL}/dataCube/getValueSpecificationCode`,
+      {
+        value: value,
+      },
+      {
+        headers: {
+          [HttpHeader.ACCEPT]: ContentType.APPLICATION_JSON,
         },
       },
     )

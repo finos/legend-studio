@@ -75,11 +75,6 @@ export class DataCubeQueryFilterOperation__IsNotNull extends DataCubeQueryFilter
     return undefined;
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
-    /** TODO: @datacube roundtrip */
-    return undefined;
-  }
-
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
     return _not(
       _function(_functionName(DataCubeFunction.IS_EMPTY), [

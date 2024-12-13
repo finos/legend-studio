@@ -72,11 +72,6 @@ export class DataCubeQueryFilterOperation__EndWith extends DataCubeQueryFilterOp
     };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
-    /** TODO: @datacube roundtrip */
-    return undefined;
-  }
-
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
     return _function(_functionName(DataCubeFunction.ENDS_WITH), [
       _property(condition.name),

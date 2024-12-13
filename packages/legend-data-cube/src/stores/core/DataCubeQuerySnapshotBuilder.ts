@@ -43,9 +43,11 @@ import {
 import { DataCubeConfiguration } from './models/DataCubeConfiguration.js';
 import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
 import {
+  _buildFilterSnapshot,
   _colSpecArrayParam,
   _colSpecParam,
   _funcMatch,
+  _lambdaBody,
   _param,
 } from './DataCubeQuerySnapshotBuilderUtils.js';
 import type { DataCubeSource } from './models/DataCubeSource.js';
@@ -94,6 +96,19 @@ enum _FUNCTION_SEQUENCE_COMPOSITION_PART {
   GROUP_EXTEND = 'group_extend',
   SORT = 'sort',
   LIMIT = 'limit',
+}
+
+function isDataCubeEngineFunction(
+  value: any,
+): value is _DATA_CUBE_ENGINE_FUNCTION {
+  return Object.values(_DATA_CUBE_ENGINE_FUNCTION).includes(value);
+}
+
+enum _DATA_CUBE_ENGINE_FUNCTION {
+  FILTER = 'filter',
+  SELECT = 'select',
+  FROM = 'meta::pure::mapping::from',
+  SLICE = 'slice',
 }
 
 // This corresponds to the function sequence that we currently support:
@@ -218,15 +233,24 @@ function extractFunctionMap(
       throw new Error(`Found unsupported function ${currentFunc.function}()`);
     }
     if (currentFunc.parameters.length > supportedFunc.parameters) {
-      const vs = currentFunc.parameters[0];
-      if (!(vs instanceof V1_AppliedFunction)) {
+      let vs = currentFunc.parameters[0];
+      if (
+        !(
+          vs instanceof V1_AppliedFunction ||
+          isDataCubeEngineFunction(currentFunc.function)
+        )
+      ) {
         throw new Error(
           `Query must be a sequence of function calls (e.g. x()->y()->z())`,
         );
+      } else if (currentFunc.function === _DATA_CUBE_ENGINE_FUNCTION.FILTER) {
+        currentFunc.parameters = currentFunc.parameters.slice(1);
+        sequence.unshift(currentFunc);
+        break;
       }
       currentFunc.parameters = currentFunc.parameters.slice(1);
       sequence.unshift(currentFunc);
-      currentFunc = vs;
+      currentFunc = vs as V1_AppliedFunction;
     } else {
       sequence.unshift(currentFunc);
       break;
@@ -304,6 +328,7 @@ export function validateAndBuildQuerySnapshot(
 
   // --------------------------------- SOURCE ---------------------------------
 
+  //TODO: make sure you get the source info for all columns (does it mean we need to query the source once)
   data.sourceColumns = source.sourceColumns;
   data.sourceColumns.map((col) => colsMap.set(col.name, col));
 
@@ -312,6 +337,9 @@ export function validateAndBuildQuerySnapshot(
 
   // --------------------------------- FILTER ---------------------------------
   /** TODO: @datacube roundtrip */
+  if (funcMap.filter) {
+    data.filter = _buildFilterSnapshot(_lambdaBody(funcMap.filter, 0).body[0]!);
+  }
 
   // --------------------------------- SELECT ---------------------------------
 

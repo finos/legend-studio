@@ -74,6 +74,10 @@ export enum DataCubeFunction {
   // PERCENTILE = 'meta::pure::functions::math::percentile',
 }
 
+export enum DataCubeEngineFunction {
+  FILTER = 'filter',
+}
+
 export type DataCubeQueryFunctionMap = {
   leafExtend?: V1_AppliedFunction | undefined;
   filter?: V1_AppliedFunction | undefined;
@@ -232,6 +236,22 @@ export enum DataCubeQueryFilterOperator {
   GREATER_THAN_COLUMN = '> value in column', // DONE
   GREATER_THAN_OR_EQUAL_COLUMN = '>= value in column', // DONE
   // TODO?: having, having in aggregate, between
+}
+
+export enum DataCubeEngineFilterOperator {
+  NOT = 'not',
+  TO_LOWERCASE = 'toLower',
+
+  CONTAINS = 'contains',
+  ENDS_WITH = 'endsWith',
+  EQUAL = 'equal',
+  GREATER_THAN = 'greaterThan',
+  GREATER_THAN_OR_EQUAL = 'greaterThanEqual',
+  IN = 'in',
+  IS_EMPTY = 'isEmpty',
+  LESS_THAN = 'lessThan',
+  LESS_THAN_OR_EQUAL = 'lessThanEqual',
+  STARTS_WITH = 'startsWith',
 }
 
 export enum DataCubeQueryFilterGroupOperator {

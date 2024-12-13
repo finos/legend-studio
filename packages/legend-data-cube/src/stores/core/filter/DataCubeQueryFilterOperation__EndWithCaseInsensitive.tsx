@@ -73,11 +73,6 @@ export class DataCubeQueryFilterOperation__EndWithCaseInsensitive extends DataCu
     };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
-    /** TODO: @datacube roundtrip */
-    return undefined;
-  }
-
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
     const variable = _var();
     return _function(_functionName(DataCubeFunction.ENDS_WITH), [

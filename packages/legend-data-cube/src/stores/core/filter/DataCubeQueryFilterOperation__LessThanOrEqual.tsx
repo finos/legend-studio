@@ -80,11 +80,6 @@ export class DataCubeQueryFilterOperation__LessThanOrEqual extends DataCubeQuery
     };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
-    /** TODO: @datacube roundtrip */
-    return undefined;
-  }
-
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
     return _function(_functionName(DataCubeFunction.LESS_THAN_OR_EQUAL), [
       _property(condition.name),
