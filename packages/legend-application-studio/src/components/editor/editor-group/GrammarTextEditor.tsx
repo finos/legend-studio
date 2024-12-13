@@ -785,7 +785,7 @@ export const GrammarTextEditor = observer(() => {
   const forcedCursorPosition = grammarTextEditorState.forcedCursorPosition;
   const wordWrapOtion = grammarTextEditorState.wordWrapOtion;
   const value = normalizeLineEnding(grammarTextEditorState.graphGrammarText);
-  const textEditorRef = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const hoverProviderDisposer = useRef<IDisposable | undefined>(undefined);
   const suggestionProviderDisposer = useRef<IDisposable | undefined>(undefined);
 
@@ -806,8 +806,8 @@ export const GrammarTextEditor = observer(() => {
   };
 
   useEffect(() => {
-    if (!editor && textEditorRef.current) {
-      const element = textEditorRef.current;
+    if (!editor && ref.current) {
+      const element = ref.current;
       const _editor = monacoEditorAPI.create(element, {
         ...getBaseCodeEditorOptions(),
         language: CODE_EDITOR_LANGUAGE.PURE,
@@ -889,7 +889,7 @@ export const GrammarTextEditor = observer(() => {
     }),
     [extraElementDragTypes, handleDrop],
   );
-  dropConnector(textEditorRef);
+  dropConnector(ref);
   if (editor) {
     // Set the value of the editor
     const currentValue = getCodeEditorValue(editor);
@@ -1293,7 +1293,7 @@ export const GrammarTextEditor = observer(() => {
           isLoading={editorStore.graphState.isRunningGlobalCompile}
         />
         <div className="code-editor__container">
-          <div className="code-editor__body" ref={textEditorRef} />
+          <div className="code-editor__body" ref={ref} />
         </div>
       </PanelContent>
     </div>

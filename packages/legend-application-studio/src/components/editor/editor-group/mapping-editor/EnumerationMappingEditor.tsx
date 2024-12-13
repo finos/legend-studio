@@ -218,7 +218,7 @@ export const SourceValueInput = observer(
       },
       [isReadOnly, updateSourceValue, value],
     );
-    const [{ canDrop }, dropRef] = useDrop<
+    const [{ canDrop }, dropConnector] = useDrop<
       TypeDragSource,
       void,
       { canDrop: boolean }
@@ -232,10 +232,12 @@ export const SourceValueInput = observer(
       }),
       [handleDrop],
     );
+    const ref = useRef<HTMLDivElement>(null);
+    dropConnector(ref);
 
     return (
       <div
-        ref={dropRef}
+        ref={ref}
         className={clsx(
           'enumeration-mapping-editor__enum-value__source-value',
           {
@@ -384,7 +386,7 @@ export const EnumerationMappingEditor = observer(
       },
       [enumerationMapping, isReadOnly],
     );
-    const [{ isDragOver, canDrop }, dropRef] = useDrop<
+    const [{ isDragOver, canDrop }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isDragOver: boolean; canDrop: boolean }
@@ -525,7 +527,7 @@ export const EnumerationMappingEditor = observer(
                 </PanelHeader>
                 <PanelContent>
                   <PanelDropZone
-                    dropTargetConnector={dropRef}
+                    dropTargetConnector={dropConnector}
                     isDragOver={
                       Boolean(sourceType) && isDragOver && !isReadOnly
                     }

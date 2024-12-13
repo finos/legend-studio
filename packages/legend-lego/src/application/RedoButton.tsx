@@ -18,7 +18,7 @@ import { RedoIcon } from '@finos/legend-art';
 import { useEffect } from 'react';
 
 export const RedoButton: React.FC<{
-  parent: React.RefObject<HTMLDivElement>;
+  parent: React.RefObject<HTMLDivElement | null>;
   canRedo: boolean;
   redo: () => void;
 }> = (props) => {

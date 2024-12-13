@@ -163,7 +163,8 @@ const MergeConflictEditor = observer(
       ? normalizeLineEnding(conflictEditorState.mergedText)
       : '';
     const error = conflictEditorState.mergeEditorParserError;
-    const decorations = useRef<monacoEditorAPI.IEditorDecorationsCollection>();
+    const decorations =
+      useRef<monacoEditorAPI.IEditorDecorationsCollection>(null);
     const mergeConflictResolutionCodeLensDisposer = useRef<
       IDisposable | undefined
     >(undefined);

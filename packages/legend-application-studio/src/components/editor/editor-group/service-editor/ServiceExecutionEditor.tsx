@@ -236,7 +236,7 @@ const PureExecutionContextConfigurationEditor = observer(
       },
       [isReadOnly, mapping, executionContextState, pureExecutionState],
     );
-    const [{ isMappingOrRuntimeDragOver }, dropMappingOrRuntimeRef] = useDrop<
+    const [{ isMappingOrRuntimeDragOver }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isMappingOrRuntimeDragOver: boolean }
@@ -262,7 +262,7 @@ const PureExecutionContextConfigurationEditor = observer(
     return (
       <PanelContent>
         <PanelDropZone
-          dropTargetConnector={dropMappingOrRuntimeRef}
+          dropTargetConnector={dropConnector}
           isDragOver={isMappingOrRuntimeDragOver && !isReadOnly}
         >
           <div className="service-execution-editor__configuration__items">

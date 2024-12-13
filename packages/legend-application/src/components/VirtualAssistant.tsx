@@ -727,7 +727,7 @@ export const VirtualAssistant = observer(() => {
   const [isDragging, setIsDragging] = useState(false);
   const [_key, _setKey] = useState(uuid());
   const applicationStore = useApplicationStore();
-  const assistantRef = useRef<HTMLDivElement>(null);
+  const assistantRef = useRef<HTMLElement>(null);
   const assistantService = applicationStore.assistantService;
   const currentContextualDocumentationEntry =
     assistantService.currentContextualDocumentationEntry;
@@ -770,7 +770,7 @@ export const VirtualAssistant = observer(() => {
       onStop={onDragEnd}
       // Avoid using deprecated findDOMNode method to rid of React warning
       // See https://github.com/react-grid-layout/react-draggable/issues/749
-      nodeRef={assistantRef}
+      nodeRef={assistantRef as React.RefObject<HTMLDivElement>}
       // limit the dnd trigger to only the drag handle
       handle=".virtual-assistant__station__drag-handle"
     >
@@ -779,7 +779,7 @@ export const VirtualAssistant = observer(() => {
         // NOTE: we have to set the `ref` at this level so even when the assistant is hidden
         // the element is still in the DOM so when we programmatically show the assistant panel
         // the anchor is available in time
-        ref={assistantRef}
+        ref={assistantRef as React.RefObject<HTMLDivElement>}
       >
         <div
           //  NOTE: make sure when we change the documentation entry,

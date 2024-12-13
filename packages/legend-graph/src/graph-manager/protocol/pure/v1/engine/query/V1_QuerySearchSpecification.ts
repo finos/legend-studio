@@ -21,7 +21,7 @@ import type { V1_TaggedValue } from '../../model/packageableElements/domain/V1_T
 import {
   V1_stereotypePtrModelSchema,
   V1_taggedValueModelSchema,
-} from '../../transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
+} from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import type { QuerySearchSortBy } from '../../../../../action/query/QuerySearchSpecification.js';
 
 export class V1_QueryProjectCoordinates {

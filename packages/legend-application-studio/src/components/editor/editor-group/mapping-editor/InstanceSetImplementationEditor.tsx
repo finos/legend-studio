@@ -250,7 +250,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
         setImplementation,
       ],
     );
-    const [{ isDragOver, canDrop }, dropRef] = useDrop<
+    const [{ isDragOver, canDrop }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isDragOver: boolean; canDrop: boolean }
@@ -328,7 +328,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
         </PanelHeader>
         <PanelContent>
           <PanelDropZone
-            dropTargetConnector={dropRef}
+            dropTargetConnector={dropConnector}
             isDragOver={isDragOver && !isReadOnly}
           >
             {!isUnsupported && (

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   isNonNullable,
   IllegalStateError,
@@ -159,10 +159,13 @@ const TypeTreeNodeContainer: React.FC<
 > = (props) => {
   const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
   const { selectedType } = innerProps;
-  const [, dragRef] = useDrag(
+  const [, dragConnector] = useDrag(
     () => ({ type: node.dndType, item: new TypeDragSource(node) }),
     [node],
   );
+  const ref = useRef<HTMLDivElement>(null);
+  dragConnector(ref);
+
   const isExpandable = Boolean(node.childrenIds?.length);
   const nodeTypeIcon = node.type ? (
     getClassPropertyIcon(node.type)
@@ -186,7 +189,7 @@ const TypeTreeNodeContainer: React.FC<
         'type-tree__node__container--highlighted': node.type === selectedType,
       })}
       onClick={selectNode}
-      ref={dragRef}
+      ref={ref}
       style={{
         paddingLeft: `${(level - 1) * (stepPaddingInRem ?? 1)}rem`,
         display: 'flex',

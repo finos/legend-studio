@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { forwardRef, useState } from 'react';
+import { forwardRef, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type ConceptTreeNode,
@@ -230,7 +230,7 @@ const ConceptTreeNodeContainer: React.FC<
     onNodeSelect?.(node);
     onNodeOpen(node);
   };
-  const [, dragRef] = useDrag(
+  const [, dragConnector] = useDrag(
     () => ({
       type:
         node.data.li_attr.pureType === 'Class'
@@ -240,6 +240,8 @@ const ConceptTreeNodeContainer: React.FC<
     }),
     [node],
   );
+  const ref = useRef<HTMLDivElement>(null);
+  dragConnector(ref);
 
   return (
     <ContextMenu
@@ -267,7 +269,7 @@ const ConceptTreeNodeContainer: React.FC<
           },
         )}
         onClick={selectNode}
-        ref={dragRef}
+        ref={ref}
         onDoubleClick={onDoubleClick}
         style={{
           paddingLeft: `${level * (stepPaddingInRem ?? 1)}rem`,

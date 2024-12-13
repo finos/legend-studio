@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDrag } from 'react-dnd';
 import {
   type TreeNodeContainerProps,
@@ -245,13 +245,16 @@ const RelationalOperationElementTreeNodeContainer: React.FC<
   >
 > = (props) => {
   const { node, level, stepPaddingInRem, onNodeSelect } = props;
-  const [, dragRef] = useDrag(
+  const [, dragConnector] = useDrag(
     () => ({
       type: TABLE_ELEMENT_DND_TYPE,
       item: new TableOrViewTreeNodeDragSource(node),
     }),
     [node],
   );
+  const ref = useRef<HTMLDivElement>(null);
+  dragConnector(ref);
+
   const isExpandable = Boolean(node.childrenIds?.length);
   const nodeTypeIcon =
     node instanceof ColumnNodeData ? (
@@ -274,7 +277,7 @@ const RelationalOperationElementTreeNodeContainer: React.FC<
     <div
       className="tree-view__node__container"
       onClick={selectNode}
-      ref={dragRef}
+      ref={ref}
       style={{
         paddingLeft: `${(level - 1) * (stepPaddingInRem ?? 1)}rem`,
         display: 'flex',

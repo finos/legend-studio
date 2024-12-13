@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TooltipPlacement,
@@ -168,13 +168,12 @@ const QueryBuilderFunctionsExplorerListEntry = observer(
       }),
       [node],
     );
+    const ref = useRef<HTMLDivElement>(null);
+    dragConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div
-        className="query-builder__functions-explorer__function"
-        ref={dragConnector}
-      >
+      <div className="query-builder__functions-explorer__function" ref={ref}>
         <div className="query-builder__functions-explorer__function__content">
           <div className="query-builder__functions-explorer__function__icon">
             <div className="query-builder__functions-explorer__function-icon">
@@ -250,6 +249,8 @@ const QueryBuilderFunctionsExplorerTreeNodeContainer = observer(
       }),
       [node],
     );
+    const ref = useRef<HTMLDivElement>(null);
+    dragConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
@@ -257,7 +258,7 @@ const QueryBuilderFunctionsExplorerTreeNodeContainer = observer(
         <div
           className="tree-view__node__container query-builder__functions-explorer__tree__node__container"
           onClick={selectNode}
-          ref={!isExpandable ? dragConnector : undefined}
+          ref={!isExpandable ? ref : undefined}
           style={{
             paddingLeft: `${(level - 1) * (stepPaddingInRem ?? 1) + 0.5}rem`,
             display: 'flex',

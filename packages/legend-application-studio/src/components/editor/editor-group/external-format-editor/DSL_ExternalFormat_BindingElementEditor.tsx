@@ -123,7 +123,7 @@ const ModelUnitPackageElementEditor = observer(
       handleDropElement,
       isReadOnly,
     } = props;
-    const [{ isElementDragOver }, dropElementRef] = useDrop<
+    const [{ isElementDragOver }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isElementDragOver: boolean }
@@ -149,7 +149,7 @@ const ModelUnitPackageElementEditor = observer(
       <div className="model-unit-editor">
         <div className="model-unit-editor__panel__content">
           <PanelDropZone
-            dropTargetConnector={dropElementRef}
+            dropTargetConnector={dropConnector}
             isDragOver={isElementDragOver && !isReadOnly}
           >
             <div className="model-unit-editor__panel__content__form__section">

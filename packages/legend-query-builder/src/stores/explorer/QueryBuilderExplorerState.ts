@@ -106,7 +106,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
   isPartOfDerivedPropertyBranch: boolean;
   type: Type;
   mappingData: QueryBuilderExplorerTreeNodeMappingData;
-  elementRef: React.RefObject<HTMLDivElement>;
+  elementRef: React.RefObject<HTMLDivElement | null>;
 
   constructor(
     id: string,

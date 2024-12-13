@@ -93,7 +93,7 @@ const DerivedPropertyParameterValueEditor = observer(
       },
       [derivedPropertyExpressionState, idx],
     );
-    const [{ isParameterValueDragOver }, dropTargetConnector] = useDrop<
+    const [{ isParameterValueDragOver }, dropConnector] = useDrop<
       QueryBuilderVariableDragSource,
       void,
       { isParameterValueDragOver: boolean }
@@ -237,7 +237,7 @@ const DerivedPropertyParameterValueEditor = observer(
         <div className="query-builder__variable-editor">
           <PanelDropZone
             isDragOver={isParameterValueDragOver}
-            dropTargetConnector={dropTargetConnector}
+            dropTargetConnector={dropConnector}
           >
             <BasicValueSpecificationEditor
               valueSpecification={valueSpec}

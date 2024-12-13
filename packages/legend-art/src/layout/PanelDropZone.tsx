@@ -101,14 +101,14 @@ export const PanelDnDEntry = observer(
 );
 
 export const PanelEntryDragHandle: React.FC<{
-  dragSourceConnector: RefObject<HTMLDivElement>;
+  dragSourceConnector: RefObject<HTMLElement | null>;
   className?: string;
   isDragging: boolean;
 }> = (props) => {
   const { isDragging, dragSourceConnector, className } = props;
   return (
     <div
-      ref={dragSourceConnector}
+      ref={dragSourceConnector as RefObject<HTMLDivElement | null>}
       title="Drag Element"
       className={clsx('dnd__entry__handle__container', className, {
         'dnd__entry__handle__container--dragging': isDragging,
@@ -181,7 +181,7 @@ export const useDragPreviewLayer = (
 export function DragPreviewLayer<T>(props: {
   labelGetter: (item: T) => string;
   types: string[];
-}): JSX.Element | null {
+}): React.ReactNode {
   const { labelGetter, types } = props;
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
     (monitor) => ({

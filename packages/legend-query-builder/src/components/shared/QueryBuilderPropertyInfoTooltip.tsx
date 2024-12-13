@@ -122,7 +122,7 @@ export const QueryBuilderBaseInfoTooltip: React.FC<{
   data: {
     label: string;
     value: string;
-    actionButton?: JSX.Element | undefined;
+    actionButton?: React.ReactNode | undefined;
   }[];
   placement?: TooltipPlacement | undefined;
   children: React.ReactElement;

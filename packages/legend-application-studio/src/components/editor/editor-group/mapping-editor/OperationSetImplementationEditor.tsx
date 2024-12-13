@@ -152,7 +152,7 @@ export const OperationSetImplementationEditor = observer(
       },
       [setImplementation],
     );
-    const [{ isDragOver }, dropRef] = useDrop<
+    const [{ isDragOver }, dropConnector] = useDrop<
       MappingElementDragSource,
       void,
       { isDragOver: boolean }
@@ -221,7 +221,7 @@ export const OperationSetImplementationEditor = observer(
           </PanelHeader>
           <PanelDropZone
             isDragOver={isDragOver && !isReadOnly}
-            dropTargetConnector={dropRef}
+            dropTargetConnector={dropConnector}
           >
             <PanelContent>
               {setImplementation.parameters.map((param) => (

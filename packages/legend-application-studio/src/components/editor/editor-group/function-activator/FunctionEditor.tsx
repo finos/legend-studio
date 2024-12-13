@@ -924,7 +924,7 @@ const FunctionDefinitionEditor = observer(
       },
       [applicationStore, editorStore, functionElement, isReadOnly],
     );
-    const [{ isParameterDragOver }, dropParameterRef] = useDrop<
+    const [{ isParameterDragOver }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isParameterDragOver: boolean }
@@ -941,6 +941,8 @@ const FunctionDefinitionEditor = observer(
       }),
       [handleDropParameter],
     );
+    const ref = useRef<HTMLDivElement>(null);
+    dropConnector(ref);
 
     const renderFuncResult = (): React.ReactNode => {
       if (execResult instanceof RawExecutionResult) {
@@ -1004,7 +1006,7 @@ const FunctionDefinitionEditor = observer(
               types={[FUNCTION_PARAMETER_DND_TYPE]}
             />
             <div
-              ref={dropParameterRef}
+              ref={ref}
               className={clsx('function-editor__definition__item__content', {
                 'panel__content__lists--dnd-over':
                   isParameterDragOver && !isReadOnly,
@@ -1095,7 +1097,7 @@ export const FunctionEditor = observer(() => {
     default:
       break;
   }
-  // Tagged Values and Stereotype
+  // Tagged Values
   const add = (): void => {
     if (!isReadOnly) {
       if (selectedTab === FUNCTION_EDITOR_TAB.TAGGED_VALUES) {
@@ -1122,7 +1124,7 @@ export const FunctionEditor = observer(() => {
     },
     [functionElement, isReadOnly],
   );
-  const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+  const [{ isTaggedValueDragOver }, taggedValueDropConnector] = useDrop<
     ElementDragSource,
     void,
     { isTaggedValueDragOver: boolean }
@@ -1136,6 +1138,10 @@ export const FunctionEditor = observer(() => {
     }),
     [handleDropTaggedValue],
   );
+  const taggedValueRef = useRef<HTMLDivElement>(null);
+  taggedValueDropConnector(taggedValueRef);
+
+  // Stereotype
   const handleDropStereotype = useCallback(
     (item: UMLEditorElementDropTarget): void => {
       if (!isReadOnly && item.data.packageableElement instanceof Profile) {
@@ -1149,7 +1155,7 @@ export const FunctionEditor = observer(() => {
     },
     [functionElement, isReadOnly],
   );
-  const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+  const [{ isStereotypeDragOver }, stereotypeDropConnector] = useDrop<
     ElementDragSource,
     void,
     { isStereotypeDragOver: boolean }
@@ -1163,6 +1169,9 @@ export const FunctionEditor = observer(() => {
     }),
     [handleDropStereotype],
   );
+  const stereotypeRef = useRef<HTMLDivElement>(null);
+  stereotypeDropConnector(stereotypeRef);
+
   const _deleteStereotype =
     (val: StereotypeReference): (() => void) =>
     (): void =>
@@ -1475,7 +1484,7 @@ export const FunctionEditor = observer(() => {
           )}
           {selectedTab === FUNCTION_EDITOR_TAB.TAGGED_VALUES && (
             <div
-              ref={dropTaggedValueRef}
+              ref={taggedValueRef}
               className={clsx('panel__content__lists', {
                 'panel__content__lists--dnd-over':
                   isTaggedValueDragOver && !isReadOnly,
@@ -1496,7 +1505,7 @@ export const FunctionEditor = observer(() => {
           )}
           {selectedTab === FUNCTION_EDITOR_TAB.STEREOTYPES && (
             <div
-              ref={dropStereotypeRef}
+              ref={stereotypeRef}
               className={clsx('panel__content__lists', {
                 'panel__content__lists--dnd-over':
                   isStereotypeDragOver && !isReadOnly,

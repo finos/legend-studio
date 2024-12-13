@@ -406,7 +406,7 @@ export const DataQualityConstraintsSelection = observer(
       [dataQualityGraphFetchTreeState, constraintsConfiguration],
     );
 
-    const [{ isDragOver }, dropTargetConnector] = useDrop<
+    const [{ isDragOver }, dropConnector] = useDrop<
       QueryBuilderExplorerTreeDragSource,
       void,
       { isDragOver: boolean }
@@ -437,7 +437,7 @@ export const DataQualityConstraintsSelection = observer(
       >
         <PanelDropZone
           isDragOver={isDragOver}
-          dropTargetConnector={dropTargetConnector}
+          dropTargetConnector={dropConnector}
           contentClassName="data-quality-validation-graph-fetch-panel"
         >
           {(!treeData || isConstraintsClassesTreeEmpty(treeData)) && (

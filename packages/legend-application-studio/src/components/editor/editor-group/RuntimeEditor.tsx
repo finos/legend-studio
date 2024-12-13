@@ -412,7 +412,7 @@ const RuntimeExplorer = observer(
       },
       [isReadOnly, runtimeEditorState, runtimeValue],
     );
-    const [{ isRuntimeSubElementDragOver }, dropRuntimeSubElementRef] = useDrop<
+    const [{ isRuntimeSubElementDragOver }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isRuntimeSubElementDragOver: boolean }
@@ -444,7 +444,7 @@ const RuntimeExplorer = observer(
         </PanelHeader>
         <PanelContent>
           <PanelDropZone
-            dropTargetConnector={dropRuntimeSubElementRef}
+            dropTargetConnector={dropConnector}
             isDragOver={isRuntimeSubElementDragOver}
           >
             <div className="panel__content__list">
@@ -660,7 +660,7 @@ const IdentifiedConnectionsPerStoreEditor = observer(
       },
       [currentRuntimeEditorTabState, isReadOnly],
     );
-    const [{ isConnectionDragOver, dragItem }, dropConnectionRef] = useDrop<
+    const [{ isConnectionDragOver, dragItem }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isConnectionDragOver: boolean; dragItem: ElementDragSource | null }
@@ -742,7 +742,7 @@ const IdentifiedConnectionsPerStoreEditor = observer(
                 menuProps={{ elevation: 7 }}
               >
                 <PanelDropZone
-                  dropTargetConnector={dropConnectionRef}
+                  dropTargetConnector={dropConnector}
                   isDragOver={isConnectionDragOver}
                 >
                   {Boolean(
@@ -915,7 +915,7 @@ const RuntimeGeneralEditor = observer(
       },
       [isReadOnly, runtimeEditorState, runtimeValue.mappings],
     );
-    const [{ isMappingDragOver }, dropMappingRef] = useDrop<
+    const [{ isMappingDragOver }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isMappingDragOver: boolean }
@@ -935,7 +935,7 @@ const RuntimeGeneralEditor = observer(
         <PanelHeader />
         <PanelContent>
           <PanelDropZone
-            dropTargetConnector={dropMappingRef}
+            dropTargetConnector={dropConnector}
             isDragOver={isMappingDragOver && !isReadOnly}
           >
             <div className="panel__content__form">

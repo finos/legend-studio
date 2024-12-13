@@ -25,7 +25,7 @@ import {
   DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB,
   DataQualityRelationValidationConfigurationState,
 } from './states/DataQualityRelationValidationConfigurationState.js';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   BlankPanelContent,
   CaretDownIcon,
@@ -120,7 +120,7 @@ const RelationDefinitionEditor = observer(
       },
       [validationElement, isReadOnly],
     );
-    const [{ isParameterDragOver }, dropParameterRef] = useDrop<
+    const [{ isParameterDragOver }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isParameterDragOver: boolean }
@@ -137,6 +137,8 @@ const RelationDefinitionEditor = observer(
       }),
       [handleDropParameter],
     );
+    const ref = useRef<HTMLDivElement>(null);
+    dropConnector(ref);
 
     const renderFuncResult = (): React.ReactNode => {
       if (lambdaExecutionResult instanceof TDSExecutionResult) {
@@ -212,7 +214,7 @@ const RelationDefinitionEditor = observer(
               types={[FUNCTION_PARAMETER_DND_TYPE]}
             />
             <div
-              ref={dropParameterRef}
+              ref={ref}
               className={clsx(
                 'relation-validation-config-editor__definition__item__content',
                 {

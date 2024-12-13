@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useCallback, forwardRef } from 'react';
+import { useState, useCallback, forwardRef, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type MappingExplorerDropTarget,
@@ -223,7 +223,7 @@ export const MappingElementExplorer = observer(
       mappingEditorState.openMappingElement(mappingElement, false);
     const mappingElementTarget = getMappingElementTarget(mappingElement);
     // Drag and Drop
-    const [, dragRef] = useDrag(
+    const [, dragConnector] = useDrag(
       () => ({
         type:
           mappingElement instanceof SetImplementation
@@ -233,6 +233,9 @@ export const MappingElementExplorer = observer(
       }),
       [mappingElement],
     );
+    const ref = useRef<HTMLDivElement>(null);
+    dragConnector(ref);
+
     // Selection
     const isActive =
       currentMappingElement?.id.value === mappingElement.id.value;
@@ -255,7 +258,7 @@ export const MappingElementExplorer = observer(
         onClose={onContextMenuClose}
       >
         <div
-          ref={dragRef}
+          ref={ref}
           className={clsx(
             'mapping-explorer__item',
             {
@@ -328,7 +331,7 @@ const MappingElementTreeNodeContainer = observer(
             mappingElementTarget.name
           }'`;
     // Drag and Drop
-    const [, dragRef] = useDrag(
+    const [, dragConnector] = useDrag(
       () => ({
         type:
           mappingElement instanceof SetImplementation
@@ -338,9 +341,12 @@ const MappingElementTreeNodeContainer = observer(
       }),
       [mappingElement],
     );
+    const ref = useRef<HTMLDivElement>(null);
+    dragConnector(ref);
+
+    // Selection
     const selectNode = (): void => onNodeSelect?.(node);
     const onExpandIconClick = (): void => onNodeExpand(node);
-    // Selection
     const isActive =
       currentMappingElement?.id.value === mappingElement.id.value;
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
@@ -366,7 +372,7 @@ const MappingElementTreeNodeContainer = observer(
             { 'mapping-explorer__item--active': isActive },
           )}
           onClick={selectNode}
-          ref={dragRef}
+          ref={ref}
           style={{
             paddingLeft: `${(level - 1) * (stepPaddingInRem ?? 1) + 0.5}rem`,
             display: 'flex',
@@ -435,7 +441,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
           }),
     [isReadOnly, mappingEditorState],
   );
-  const [{ isDragOver }, dropRef] = useDrop<
+  const [{ isDragOver }, dropConnector] = useDrop<
     ElementDragSource,
     void,
     { isDragOver: boolean }
@@ -541,7 +547,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
       >
         <PanelDropZone
           isDragOver={isDragOver && !isReadOnly}
-          dropTargetConnector={dropRef}
+          dropTargetConnector={dropConnector}
         >
           <div className="mapping-explorer__content">
             <TreeView

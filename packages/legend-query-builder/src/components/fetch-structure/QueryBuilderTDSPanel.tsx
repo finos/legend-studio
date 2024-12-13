@@ -275,10 +275,12 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
         }),
         [handleDrop],
       );
+    const ref = useRef<HTMLDivElement>(null);
+    dropConnector(ref);
 
     return (
       <div
-        ref={dropConnector}
+        ref={ref}
         className={clsx(
           'query-builder__lambda-editor__container query-builder__projection__column__derivation',
           { backdrop__element: hasParserError },
@@ -391,9 +393,9 @@ const QueryBuilderProjectionColumnEditor = observer(
       currentRearrangeDropGapIndex,
       setCurrentRearrangeDropGapIndex,
     } = props;
-    const dragHandleRef = useRef<HTMLDivElement>(null);
     const applicationStore = useApplicationStore();
     const ref = useRef<HTMLDivElement>(null);
+    const dragHandleRef = useRef<HTMLDivElement>(null);
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
@@ -661,7 +663,6 @@ const QueryBuilderProjectionColumnEditor = observer(
       }),
       [projectionColumnState],
     );
-
     dragConnector(dragHandleRef);
     dropConnector(ref);
 
@@ -703,7 +704,7 @@ const QueryBuilderProjectionColumnEditor = observer(
         tdsState.queryBuilderState.explorerState,
       ],
     );
-    const [{ isDragOver }, dropTargetConnector] = useDrop<
+    const [{ isDragOver }, panelDropConnector] = useDrop<
       QueryBuilderExplorerTreeDragSource,
       void,
       { isDragOver: boolean }
@@ -721,6 +722,9 @@ const QueryBuilderProjectionColumnEditor = observer(
       }),
       [handleDrop],
     );
+    const panelRef = useRef<HTMLDivElement>(null);
+    panelDropConnector(panelRef);
+
     const percentileButtonRef = useRef<HTMLButtonElement>(null);
     const percentileInputRef = useRef<HTMLInputElement>(null);
     const [isPercentileOpen, setIsPercentileOpen] = useState(false);
@@ -1192,7 +1196,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                 </div>
                 <div
                   className="query-builder__projection__calendar__date__column"
-                  ref={dropTargetConnector}
+                  ref={panelRef}
                 >
                   <PanelEntryDropZonePlaceholder
                     isDragOver={isDragOver}
@@ -1335,7 +1339,7 @@ export const QueryBuilderTDSPanel = observer(
       [tdsState],
     );
 
-    const [{ isDragOver }, dropTargetConnector] = useDrop<
+    const [{ isDragOver }, panelDropConnector] = useDrop<
       QueryBuilderTDSPanelDropTarget,
       void,
       { isDragOver: boolean }
@@ -1353,8 +1357,10 @@ export const QueryBuilderTDSPanel = observer(
       }),
       [handleDrop],
     );
+    const panelRef = useRef<HTMLInputElement>(null);
+    panelDropConnector(panelRef);
 
-    const [{ isRearrangeActive }, rearrangeColumnDropConnector] = useDrop<
+    const [{ isRearrangeActive }, dropConnector] = useDrop<
       QueryBuilderProjectionColumnDragSource,
       void,
       { isRearrangeActive: boolean }
@@ -1367,6 +1373,8 @@ export const QueryBuilderTDSPanel = observer(
       }),
       [],
     );
+    const ref = useRef<HTMLDivElement>(null);
+    dropConnector(ref);
 
     const { isDroppable } = useDragLayer((monitor) => ({
       isDroppable:
@@ -1381,9 +1389,6 @@ export const QueryBuilderTDSPanel = observer(
         applicationStore.alertUnhandledError,
       );
     }, [applicationStore, tdsState]);
-
-    const addProjectionRef = useRef<HTMLInputElement>(null);
-    dropTargetConnector(addProjectionRef);
 
     return (
       <PanelContent>
@@ -1634,7 +1639,7 @@ export const QueryBuilderTDSPanel = observer(
           <PanelDropZone
             isDragOver={isDragOver && isEmpty}
             isDroppable={isDroppable && isEmpty}
-            dropTargetConnector={dropTargetConnector}
+            dropTargetConnector={panelDropConnector}
           >
             {!projectionColumns.length && (
               <BlankPanelPlaceholder
@@ -1647,7 +1652,7 @@ export const QueryBuilderTDSPanel = observer(
                 data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS}
                 className="query-builder__projection__columns"
               >
-                <div ref={rearrangeColumnDropConnector}>
+                <div ref={ref}>
                   <DragPreviewLayer
                     labelGetter={(
                       item: QueryBuilderProjectionColumnDragSource,
@@ -1683,7 +1688,7 @@ export const QueryBuilderTDSPanel = observer(
             )}
             {isDroppable && !isEmpty && (
               <div
-                ref={addProjectionRef}
+                ref={panelRef}
                 className="query-builder__projection__free-drop-zone__container"
               >
                 <PanelEntryDropZonePlaceholder

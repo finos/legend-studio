@@ -1186,26 +1186,26 @@ const DiagramEditorDiagramCanvas = observer(
     {
       diagramEditorState: DiagramEditorState;
     }
-  >(function DiagramEditorDiagramCanvas(props, ref) {
+  >(function DiagramEditorDiagramCanvas(props, _ref) {
     const { diagramEditorState } = props;
-    const diagramCanvasRef = ref as React.MutableRefObject<HTMLDivElement>;
+    const ref = _ref as React.RefObject<HTMLDivElement>;
     const isReadOnly = diagramEditorState.isReadOnly;
 
     const { width, height } = useResizeDetector<HTMLDivElement>({
       refreshMode: 'debounce',
       refreshRate: 50,
-      targetRef: diagramCanvasRef,
+      targetRef: ref,
     });
 
     useEffect(() => {
       const renderer = new DiagramRenderer(
-        diagramCanvasRef.current,
+        ref.current,
         diagramEditorState.diagram,
       );
       diagramEditorState.setRenderer(renderer);
       diagramEditorState.setupRenderer();
       renderer.render({ initial: true });
-    }, [diagramCanvasRef, diagramEditorState]);
+    }, [ref, diagramEditorState]);
 
     useEffect(() => {
       // since after the diagram render is initialized, we start
@@ -1252,11 +1252,11 @@ const DiagramEditorDiagramCanvas = observer(
       }),
       [handleDrop],
     );
-    dropConnector(diagramCanvasRef);
+    dropConnector(ref);
 
     return (
       <div
-        ref={diagramCanvasRef}
+        ref={ref}
         className={clsx(
           'diagram-canvas diagram-editor__canvas',
           diagramEditorState.diagramCursorClass,

@@ -100,7 +100,7 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
       break;
   }
 
-  // Tagged Values and Stereotype
+  // Tagged Values
   const add = (): void => {
     if (!isReadOnly) {
       if (selectedTab === ACTIVATOR_EDITOR_TAB.TAGGED_VALUES) {
@@ -127,7 +127,7 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
     },
     [activatorElement, isReadOnly],
   );
-  const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+  const [{ isTaggedValueDragOver }, taggedValueDropConnector] = useDrop<
     ElementDragSource,
     void,
     { isTaggedValueDragOver: boolean }
@@ -141,6 +141,10 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
     }),
     [handleDropTaggedValue],
   );
+  const taggedValueRef = useRef<HTMLInputElement>(null);
+  taggedValueDropConnector(taggedValueRef);
+
+  // Stereotype
   const handleDropStereotype = useCallback(
     (item: UMLEditorElementDropTarget): void => {
       if (!isReadOnly && item.data.packageableElement instanceof Profile) {
@@ -154,7 +158,7 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
     },
     [activatorElement, isReadOnly],
   );
-  const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+  const [{ isStereotypeDragOver }, stereotypeDropConnector] = useDrop<
     ElementDragSource,
     void,
     { isStereotypeDragOver: boolean }
@@ -168,6 +172,9 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
     }),
     [handleDropStereotype],
   );
+  const stereotypeRef = useRef<HTMLInputElement>(null);
+  stereotypeDropConnector(stereotypeRef);
+
   const _deleteStereotype =
     (val: StereotypeReference): (() => void) =>
     (): void =>
@@ -451,7 +458,7 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
           )}
           {selectedTab === ACTIVATOR_EDITOR_TAB.TAGGED_VALUES && (
             <div
-              ref={dropTaggedValueRef}
+              ref={taggedValueRef}
               className={clsx('panel__content__lists', {
                 'panel__content__lists--dnd-over':
                   isTaggedValueDragOver && !isReadOnly,
@@ -472,7 +479,7 @@ export const HostedServiceFunctionActivatorEditor = observer(() => {
           )}
           {selectedTab === ACTIVATOR_EDITOR_TAB.STEREOTYPES && (
             <div
-              ref={dropStereotypeRef}
+              ref={stereotypeRef}
               className={clsx('panel__content__lists', {
                 'panel__content__lists--dnd-over':
                   isStereotypeDragOver && !isReadOnly,

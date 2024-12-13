@@ -772,7 +772,7 @@ const QueryBuilderGraphFetchTreePanel = observer(
       },
       [graphFetchTreeState, serializationState],
     );
-    const [{ isDragOver }, dropTargetConnector] = useDrop<
+    const [{ isDragOver }, dropConnector] = useDrop<
       QueryBuilderExplorerTreeDragSource,
       void,
       { isDragOver: boolean }
@@ -813,7 +813,7 @@ const QueryBuilderGraphFetchTreePanel = observer(
       >
         <PanelDropZone
           isDragOver={isDragOver}
-          dropTargetConnector={dropTargetConnector}
+          dropTargetConnector={dropConnector}
           contentClassName="query-builder-graph-fetch-panel"
         >
           {(!treeData || isGraphFetchTreeDataEmpty(treeData)) && (

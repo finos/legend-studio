@@ -1195,7 +1195,7 @@ const PropertiesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isPropertyDragOver }, dropPropertyRef] = useDrop<
+    const [{ isPropertyDragOver }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isPropertyDragOver: boolean }
@@ -1220,7 +1220,7 @@ const PropertiesEditor = observer(
     return (
       <PanelDropZone
         isDragOver={isPropertyDragOver && !isReadOnly}
-        dropTargetConnector={dropPropertyRef}
+        dropTargetConnector={dropConnector}
       >
         <PanelContentLists>
           <DragPreviewLayer
@@ -1278,7 +1278,7 @@ const DerviedPropertiesEditor = observer(
       },
       [_class, classState, isReadOnly],
     );
-    const [{ isDerivedPropertyDragOver }, dropDerivedPropertyRef] = useDrop<
+    const [{ isDerivedPropertyDragOver }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isDerivedPropertyDragOver: boolean }
@@ -1303,7 +1303,7 @@ const DerviedPropertiesEditor = observer(
     return (
       <PanelDropZone
         isDragOver={isDerivedPropertyDragOver && !isReadOnly}
-        dropTargetConnector={dropDerivedPropertyRef}
+        dropTargetConnector={dropConnector}
       >
         <PanelContentLists>
           <DragPreviewLayer
@@ -1420,7 +1420,7 @@ const SupertypesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isSuperTypeDragOver }, dropSuperTypeRef] = useDrop<
+    const [{ isSuperTypeDragOver }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isSuperTypeDragOver: boolean }
@@ -1445,7 +1445,7 @@ const SupertypesEditor = observer(
     return (
       <PanelDropZone
         isDragOver={isSuperTypeDragOver && !isReadOnly}
-        dropTargetConnector={dropSuperTypeRef}
+        dropTargetConnector={dropConnector}
       >
         <PanelContentLists>
           <DragPreviewLayer
@@ -1490,7 +1490,7 @@ const TaggedValuesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+    const [{ isTaggedValueDragOver }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isTaggedValueDragOver: boolean }
@@ -1508,7 +1508,7 @@ const TaggedValuesEditor = observer(
     return (
       <PanelDropZone
         isDragOver={isTaggedValueDragOver && !isReadOnly}
-        dropTargetConnector={dropTaggedValueRef}
+        dropTargetConnector={dropConnector}
       >
         <PanelContentLists>
           <TaggedValueDragPreviewLayer />
@@ -1550,7 +1550,7 @@ const StereotypesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+    const [{ isStereotypeDragOver }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isStereotypeDragOver: boolean }
@@ -1568,7 +1568,7 @@ const StereotypesEditor = observer(
     return (
       <PanelDropZone
         isDragOver={isStereotypeDragOver && !isReadOnly}
-        dropTargetConnector={dropStereotypeRef}
+        dropTargetConnector={dropConnector}
       >
         <PanelContentLists>
           <StereotypeDragPreviewLayer />

@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import {
   type ValueSpecification,
   GenericType,
@@ -81,6 +81,9 @@ export const MilestoningParameterEditor = observer(
       }),
       [handleDrop],
     );
+    const ref = useRef<HTMLDivElement>(null);
+    dropConnector(ref);
+
     const resetMilestoningParameter = (): void => {
       const param = observe_PrimitiveInstanceValue(
         new PrimitiveInstanceValue(
@@ -100,7 +103,7 @@ export const MilestoningParameterEditor = observer(
 
     return (
       <div
-        ref={dropConnector}
+        ref={ref}
         className="query-builder__milestoning-panel__variable-editor"
       >
         <div className="query-builder__milestoning-panel__variable-editor__variable">

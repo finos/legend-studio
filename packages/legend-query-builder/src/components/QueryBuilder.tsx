@@ -263,7 +263,7 @@ export const QueryBuilder = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = queryBuilderState.applicationStore;
-    const queryBuilderRef = useRef<HTMLDivElement>(null);
+    const ref = useRef<HTMLDivElement>(null);
     const isQuerySupported = queryBuilderState.isQuerySupported;
     const fetchStructureState = queryBuilderState.fetchStructureState;
     const isTDSState =
@@ -536,7 +536,7 @@ export const QueryBuilder = observer(
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER}
         className="query-builder"
-        ref={queryBuilderRef}
+        ref={ref}
       >
         <BackdropContainer
           elementId={QUERY_BUILDER_COMPONENT_ELEMENT_ID.BACKDROP_CONTAINER}
@@ -581,7 +581,7 @@ export const QueryBuilder = observer(
               <div className="query-builder__header__actions">
                 <div className="query-builder__header__actions__undo-redo">
                   <UndoButton
-                    parent={queryBuilderRef}
+                    parent={ref}
                     canUndo={
                       queryBuilderState.changeHistoryState.canUndo &&
                       queryBuilderState.isQuerySupported
@@ -589,7 +589,7 @@ export const QueryBuilder = observer(
                     undo={undo}
                   />
                   <RedoButton
-                    parent={queryBuilderRef}
+                    parent={ref}
                     canRedo={
                       queryBuilderState.changeHistoryState.canRedo &&
                       queryBuilderState.isQuerySupported

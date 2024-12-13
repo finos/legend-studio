@@ -52,7 +52,7 @@ import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_Se
 import {
   V1_stereotypePtrModelSchema,
   V1_taggedValueModelSchema,
-} from './V1_DomainSerializationHelper.js';
+} from './V1_CoreSerializationHelper.js';
 import { V1_ConnectionTestData } from '../../../model/packageableElements/service/V1_ConnectionTestData.js';
 import {
   V1_deserializeEmbeddedDataType,

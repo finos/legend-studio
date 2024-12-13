@@ -1385,7 +1385,7 @@ const DateInstanceValueEditor = observer(
  * See https://github.com/finos/legend-studio/pull/1021
  */
 export const BasicValueSpecificationEditor = forwardRef<
-  HTMLInputElement,
+  HTMLInputElement | null,
   {
     valueSpecification: ValueSpecification;
     graph: PureModel;
@@ -1402,7 +1402,7 @@ export const BasicValueSpecificationEditor = forwardRef<
       | undefined;
     displayDateEditorAsEditableValue?: boolean | undefined;
   }
->(function BasicValueSpecificationEditor(props, ref) {
+>(function _BasicValueSpecificationEditor(props, ref) {
   const {
     className,
     valueSpecification,

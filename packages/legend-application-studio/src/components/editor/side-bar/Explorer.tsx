@@ -957,13 +957,16 @@ const PackageTreeNodeContainer = observer(
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const { disableContextMenu, isContextImmutable } = innerProps;
-    const [, dragRef] = useDrag(
+    const [, dragConnector] = useDrag(
       () => ({
         type: node.dndType,
         item: new ElementDragSource(node),
       }),
       [node],
     );
+    const ref = useRef<HTMLDivElement>(null);
+    dragConnector(ref);
+
     const isPackage = node.packageableElement instanceof Package;
     const expandIcon = !isPackage ? (
       <div />
@@ -1023,7 +1026,7 @@ const PackageTreeNodeContainer = observer(
                 node.isSelected,
             },
           )}
-          ref={dragRef}
+          ref={ref}
           onClick={selectNode}
           style={{
             paddingLeft: `${level * (stepPaddingInRem ?? 1)}rem`,

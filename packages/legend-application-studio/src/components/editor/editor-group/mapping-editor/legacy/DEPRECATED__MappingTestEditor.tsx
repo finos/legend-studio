@@ -232,7 +232,7 @@ const MappingTestQueryEditor = observer(
       },
       [changeClassMapping],
     );
-    const [{ isDragOver, canDrop }, dropRef] = useDrop<
+    const [{ isDragOver, canDrop }, dropConnector] = useDrop<
       MappingElementDragSource,
       void,
       { isDragOver: boolean; canDrop: boolean }
@@ -314,7 +314,7 @@ const MappingTestQueryEditor = observer(
         {isStubbed_RawLambda(queryState.query) && (
           <PanelContent>
             <PanelDropZone
-              dropTargetConnector={dropRef}
+              dropTargetConnector={dropConnector}
               isDragOver={isDragOver}
             >
               <BlankPanelPlaceholder

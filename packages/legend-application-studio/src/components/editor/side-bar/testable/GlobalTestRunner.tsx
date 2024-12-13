@@ -669,7 +669,7 @@ export const GlobalTestRunner = observer(
       .flatMap(
         (plugin) => plugin.getExtraTestRunnerViewConfigurations?.() ?? [],
       )
-      .filter((configuration) => configuration.renderer(editorStore));
+      .filter((configuration) => Boolean(configuration.renderer(editorStore)));
 
     const testRunnerTabs = (Object.values(TEST_RUNNER_TABS) as string[])
       .map((e) => ({

@@ -44,7 +44,7 @@ import {
 } from './BasicValueSpecificationEditor.js';
 import { buildDatePickerOption } from './CustomDatePicker.js';
 import { QueryBuilderSimpleConstantExpressionState } from '../../stores/QueryBuilderConstantsState.js';
-import { forwardRef, useState } from 'react';
+import { forwardRef, useRef, useState } from 'react';
 
 const CALCULATED = '(calculated)';
 
@@ -184,10 +184,12 @@ export const VariableViewer = observer(
       }),
       [variable],
     );
+    const ref = useRef<HTMLDivElement>(null);
+    dragConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div className="query-builder__variables__variable" ref={dragConnector}>
+      <div className="query-builder__variables__variable" ref={ref}>
         <ContextMenu
           content={
             <QueryBuilderVariableContextMenu

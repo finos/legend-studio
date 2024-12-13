@@ -691,7 +691,7 @@ const TDSColumnReferenceEditor = observer(
       },
       [handleChange],
     );
-    const [{ isDragOver }, dropOpConnector] = useDrop<
+    const [{ isDragOver }, dropConnector] = useDrop<
       QueryBuilderWindowColumnDragSource,
       void,
       { isDragOver: boolean }
@@ -712,6 +712,8 @@ const TDSColumnReferenceEditor = observer(
       }),
       [handleDrop],
     );
+    const ref = useRef<HTMLDivElement>(null);
+    dropConnector(ref);
 
     return (
       <>
@@ -719,10 +721,7 @@ const TDSColumnReferenceEditor = observer(
           onClick={openOpAnchor}
           className="query-builder__olap__tds__column"
         >
-          <div
-            ref={dropOpConnector}
-            className="query-builder__olap__tds__column-badge"
-          >
+          <div ref={ref} className="query-builder__olap__tds__column-badge">
             <PanelEntryDropZonePlaceholder
               isDragOver={isDragOver}
               label="Change Column"
@@ -945,7 +944,7 @@ const QueryBuilderWindowColumnEditor = observer(
       },
       [windowColumnState],
     );
-    const [{ isDragOver }, dropOpConnector] = useDrop<
+    const [{ isDragOver }, operationDropConnector] = useDrop<
       QueryBuilderWindowColumnDragSource,
       void,
       { isDragOver: boolean }
@@ -966,6 +965,8 @@ const QueryBuilderWindowColumnEditor = observer(
       }),
       [handleWindowDrop],
     );
+    const opRef = useRef<HTMLButtonElement>(null);
+    operationDropConnector(opRef);
 
     return (
       <PanelDnDEntry
@@ -1052,7 +1053,7 @@ const QueryBuilderWindowColumnEditor = observer(
           </div>
           <div className="query-builder__olap__column__window">
             <button
-              ref={dropOpConnector}
+              ref={opRef}
               title="Click to edit or drag and drop columns"
               onClick={openWindowPopover}
               className="query-builder__olap__column__window__content"
@@ -1266,7 +1267,7 @@ export const QueryBuilderTDSWindowPanel = observer(
       [applicationStore, tdsWindowState],
     );
 
-    const [{ isDragOver }, dropTargetConnector] = useDrop<
+    const [{ isDragOver }, dropConnector] = useDrop<
       QueryBuilderWindowDropTarget,
       void,
       { isDragOver: boolean }
@@ -1296,8 +1297,8 @@ export const QueryBuilderTDSWindowPanel = observer(
         ),
     }));
 
-    const addWindowColumnRef = useRef<HTMLDivElement>(null);
-    dropTargetConnector(addWindowColumnRef);
+    const ref = useRef<HTMLDivElement>(null);
+    dropConnector(ref);
 
     return (
       <Panel>
@@ -1328,7 +1329,7 @@ export const QueryBuilderTDSWindowPanel = observer(
             <PanelDropZone
               isDragOver={isDragOver && tdsWindowState.isEmpty}
               isDroppable={isDroppable && tdsWindowState.isEmpty}
-              dropTargetConnector={dropTargetConnector}
+              dropTargetConnector={dropConnector}
             >
               {tdsWindowState.isEmpty && (
                 <BlankPanelPlaceholder
@@ -1363,7 +1364,7 @@ export const QueryBuilderTDSWindowPanel = observer(
               )}
               {isDroppable && !tdsWindowState.isEmpty && (
                 <div
-                  ref={addWindowColumnRef}
+                  ref={ref}
                   className="query-builder__olap__free-drop-zone__container"
                 >
                   <PanelEntryDropZonePlaceholder

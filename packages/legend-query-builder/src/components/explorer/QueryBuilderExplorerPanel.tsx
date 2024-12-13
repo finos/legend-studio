@@ -482,6 +482,8 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
       }),
       [node],
     );
+    const ref = useRef<HTMLDivElement>(null);
+    dragConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     const isExpandable = Boolean(node.childrenIds.length);
@@ -584,9 +586,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
               : undefined
           }
           onClick={selectNode}
-          ref={
-            node.mappingData.mapped && !isExpandable ? dragConnector : undefined
-          }
+          ref={node.mappingData.mapped && !isExpandable ? ref : undefined}
           style={{
             paddingLeft: `${(level - 1) * (stepPaddingInRem ?? 1) + 0.5}rem`,
             display: 'flex',
