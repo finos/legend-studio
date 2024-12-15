@@ -16,22 +16,22 @@
 
 import { observer } from 'mobx-react-lite';
 import { DataCubeIcon } from '@finos/legend-art';
-import type {
-  ColDef,
-  ColDefField,
-  GridApi,
-  ModelUpdatedEvent,
-  RowDragEndEvent,
-  SelectionChangedEvent,
-} from '@ag-grid-community/core';
+import {
+  type ColDef,
+  type ColDefField,
+  type GridApi,
+  type ModelUpdatedEvent,
+  type RowDragEndEvent,
+  type SelectionChangedEvent,
+  AllCommunityModule,
+} from 'ag-grid-community';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   AgGridReact,
   type AgGridReactProps,
   type CustomCellRendererProps,
   type CustomNoRowsOverlayProps,
-} from '@ag-grid-community/react';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+} from 'ag-grid-react';
 import {
   type DataCubeEditorColumnSelectorColumnState,
   type DataCubeEditorColumnSelectorState,
@@ -46,7 +46,7 @@ function getBaseGridProps<
   T extends DataCubeEditorColumnSelectorColumnState,
 >(): AgGridReactProps<T> {
   return {
-    modules: [ClientSideRowModelModule],
+    modules: [AllCommunityModule],
     className: 'ag-theme-quartz',
     animateRows: false,
     getRowId: (params) => params.data.name,
@@ -251,8 +251,12 @@ export const DataCubeEditorColumnSelector = observer(
             availableColumnsGridApi.clearFocusedCell();
           },
         });
-      availableColumnsGridApi.removeRowDropZone(selectedColumnsDropZoneParams);
-      availableColumnsGridApi.addRowDropZone(selectedColumnsDropZoneParams);
+      if (selectedColumnsDropZoneParams) {
+        availableColumnsGridApi.removeRowDropZone(
+          selectedColumnsDropZoneParams,
+        );
+        availableColumnsGridApi.addRowDropZone(selectedColumnsDropZoneParams);
+      }
 
       const availableColumnsDropZoneParams =
         availableColumnsGridApi.getRowDropZoneParams({
@@ -261,8 +265,12 @@ export const DataCubeEditorColumnSelector = observer(
             selectedColumnsGridApi.clearFocusedCell();
           },
         });
-      selectedColumnsGridApi.removeRowDropZone(availableColumnsDropZoneParams);
-      selectedColumnsGridApi.addRowDropZone(availableColumnsDropZoneParams);
+      if (availableColumnsDropZoneParams) {
+        selectedColumnsGridApi.removeRowDropZone(
+          availableColumnsDropZoneParams,
+        );
+        selectedColumnsGridApi.addRowDropZone(availableColumnsDropZoneParams);
+      }
     }, [
       availableColumnsGridApi,
       selectedColumnsGridApi,
@@ -311,6 +319,7 @@ export const DataCubeEditorColumnSelector = observer(
             </div>
             <div className="h-[calc(100%_-_24px)]">
               <AgGridReact
+                theme="legacy"
                 {...getBaseGridProps<T>()}
                 // Disable managed row-dragging to disallow changing the order of columns
                 // and to make sure the row data and the available columns state are in sync
@@ -495,6 +504,7 @@ export const DataCubeEditorColumnSelector = observer(
             </div>
             <div className="h-[calc(100%_-_24px)]">
               <AgGridReact
+                theme="legacy"
                 {...getBaseGridProps<T>()}
                 // NOTE: technically, we don't want to enable managed row-dragging here
                 // but enabling this gives us free row moving management and interaction

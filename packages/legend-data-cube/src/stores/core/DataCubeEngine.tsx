@@ -73,7 +73,7 @@ import { DataCubeFont } from './DataCubeQueryEngine.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import { buildExecutableQuery } from './DataCubeQueryBuilder.js';
 import type { DataCubeColumn } from './models/DataCubeColumn.js';
-import { LicenseManager } from '@ag-grid-enterprise/core';
+import { LicenseManager } from 'ag-grid-enterprise';
 import type { DataCubeQuery } from './models/DataCubeQuery.js';
 import {
   type DataCubeSource,

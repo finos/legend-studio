@@ -15,10 +15,11 @@
  */
 
 import type {
+  DefaultMenuItem,
   GetContextMenuItemsParams,
   GetMainMenuItemsParams,
   MenuItemDef,
-} from '@ag-grid-community/core';
+} from 'ag-grid-community';
 import { WIP_GridMenuItem } from '../../../components/view/grid/DataCubeGridShared.js';
 import {
   DataCubeQuerySortDirection,
@@ -161,7 +162,7 @@ export function generateMenuBuilder(
 ): (
   params: GetContextMenuItemsParams | GetMainMenuItemsParams,
   fromHeader: boolean,
-) => (string | MenuItemDef)[] {
+) => (DefaultMenuItem | MenuItemDef)[] {
   const view = controller.view;
   const engine = view.engine;
 
@@ -264,7 +265,7 @@ export function generateMenuBuilder(
           },
         ],
       },
-    ] satisfies (string | MenuItemDef)[];
+    ] satisfies (DefaultMenuItem | MenuItemDef)[];
 
     let newFilterMenu: MenuItemDef[] = [];
     if (column && value !== undefined) {
@@ -784,7 +785,7 @@ export function generateMenuBuilder(
         disabled: !columnConfiguration,
         action: () => controller.showColumn(columnName, false),
       },
-      ...(columnName === INTERNAL__GRID_CLIENT_TREE_COLUMN_ID
+      ...((columnName === INTERNAL__GRID_CLIENT_TREE_COLUMN_ID
         ? [
             'separator',
             {
@@ -794,7 +795,7 @@ export function generateMenuBuilder(
               },
             },
           ]
-        : []),
+        : []) as (DefaultMenuItem | MenuItemDef)[]),
       'separator',
       {
         name: 'Heatmap',
@@ -847,6 +848,6 @@ export function generateMenuBuilder(
           editor.display.open();
         },
       },
-    ] satisfies (string | MenuItemDef)[];
+    ] satisfies (DefaultMenuItem | MenuItemDef)[];
   };
 }

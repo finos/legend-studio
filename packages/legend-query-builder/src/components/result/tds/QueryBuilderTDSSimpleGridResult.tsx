@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ContextMenu, clsx } from '@finos/legend-art';
+import { ContextMenu, WarningIcon, clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../../stores/QueryBuilderState.js';
 import {
@@ -25,6 +25,7 @@ import {
 import {
   DataGrid,
   type DataGridColumnDefinition,
+  type DataGridCustomHeaderProps,
 } from '@finos/legend-lego/data-grid';
 import {
   getRowDataFromExecutionResult,
@@ -50,66 +51,26 @@ import { QUERY_BUILDER_TEST_ID } from '../../../__lib__/QueryBuilderTesting.js';
 
 export const MAXIMUM_FRACTION_DIGITS = 4;
 
-export const getFloatGridColumnCustomHeader = (): string =>
-  `<div class="ag-cell-label-container" role="presentation">
-    <span
-      data-ref="eMenu"
-      class="ag-header-icon ag-header-cell-menu-button"
-    ></span>
-    <span
-      data-ref="eFilterButton"
-      class="ag-header-icon ag-header-cell-filter-button"
-    ></span>
-    <div data-ref="eLabel" class="ag-header-cell-label" role="presentation">
-      <span
-        data-ref="eSortOrder"
-        class="ag-header-icon ag-sort-order ag-hidden"
-      ></span>
-      <span
-        data-ref="eSortAsc"
-        class="ag-header-icon ag-sort-ascending-icon ag-hidden"
-      ></span>
-      <span
-        data-ref="eSortDesc"
-        class="ag-header-icon ag-sort-descending-icon ag-hidden"
-      ></span>
-      <span
-        data-ref="eSortMixed"
-        class="ag-header-icon ag-sort-mixed-icon ag-hidden"
-      ></span>
-      <span
-        data-ref="eSortNone"
-        class="ag-header-icon ag-sort-none-icon ag-hidden"
-      ></span>
-      <span
-        data-ref="eText"
-        class="ag-header-cell-text"
-        role="columnheader"
-      ></span>
-      <span data-ref="eFilter" class="ag-header-icon ag-filter-icon"></span>
-    </div>
+export const FloatGridColumnCustomHeader = (
+  props: DataGridCustomHeaderProps,
+) => {
+  return (
     <div
-      data-testid="query__builder__result__grid__custom-header"
-      class="query-builder__result__values__table__custom-header"
+      data-testid={
+        QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_GRID_CUSTOM_HEADER
+      }
+      className="query-builder__result__values__table__custom-header"
     >
       <div
-        class="query-builder__result__values__table__custom-header__icon"
+        className="query-builder__result__values__table__custom-header__icon"
         title="some values have been rounded using en-us format in this preview grid (defaults to max 4 decimal places)"
       >
-        <svg
-          stroke="currentColor"
-          fill="currentColor"
-          stroke-width="0"
-          viewBox="0 0 576 512"
-          height="1em"
-          width="1em"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937 0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154 0l239.94 416.028zM288 354c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"></path>
-        </svg>
+        <WarningIcon />
       </div>
+      <div>{props.displayName}</div>
     </div>
-  </div>`;
+  );
+};
 
 export const getTDSColumnCustomizations = (
   result: TDSExecutionResult,
@@ -138,11 +99,11 @@ export const getTDSColumnCustomizations = (
       case PRIMITIVE_TYPE.DECIMAL:
       case PRIMITIVE_TYPE.FLOAT:
         return isTruncated(colValues)
-          ? {
+          ? ({
               headerComponentParams: {
-                template: getFloatGridColumnCustomHeader(),
+                innerHeaderComponent: FloatGridColumnCustomHeader,
               },
-            }
+            } satisfies DataGridColumnDefinition)
           : {};
       default:
         return {};
@@ -472,6 +433,7 @@ export const QueryBuilderTDSSimpleGridResult = observer(
           resizable: true,
           field: colName,
           flex: 1,
+          headerName: colName,
           ...getTDSColumnCustomizations(executionResult, colName),
           cellRenderer: QueryResultCellRenderer,
           cellRendererParams: {

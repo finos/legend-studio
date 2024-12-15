@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
+import { prettyDOM } from '@testing-library/dom';
 import { noop, type SuperGenericFunction } from '../CommonUtils.js';
 import { jest } from '@jest/globals';
+import { writeFileSync } from 'fs';
+import { resolve } from 'path';
 
 /**
  * This is a pass through worker, it will post message, but do not ever reply so `onmessage` and `onerror` are never called
@@ -41,6 +44,13 @@ export class PassThruWorker {
 export const integrationTest = (testName: string): string =>
   `[INTEGRATION] ${testName}`;
 export const unitTest = (testName: string): string => `[UNIT] ${testName}`;
+
+export const outputDOM = (element: Element) => {
+  writeFileSync(
+    resolve(process.cwd(), 'test.html'),
+    prettyDOM(element, 100000, { highlight: false }).toString(),
+  );
+};
 
 /**
  * Currently, `jest-extended` augments the matchers from @types/jest instead of expect (or @jest/expect)

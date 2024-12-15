@@ -14,19 +14,6 @@
  * limitations under the License.
  */
 
-import { AgGridReact, type AgGridReactProps } from '@ag-grid-community/react';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import { CsvExportModule } from '@ag-grid-community/csv-export';
-import { ClipboardModule } from '@ag-grid-enterprise/clipboard';
-import { ColumnsToolPanelModule } from '@ag-grid-enterprise/column-tool-panel';
-import { ExcelExportModule } from '@ag-grid-enterprise/excel-export';
-import { FiltersToolPanelModule } from '@ag-grid-enterprise/filter-tool-panel';
-import { MenuModule } from '@ag-grid-enterprise/menu';
-import { RangeSelectionModule } from '@ag-grid-enterprise/range-selection';
-import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
-import { ServerSideRowModelModule } from '@ag-grid-enterprise/server-side-row-model';
-import { SideBarModule } from '@ag-grid-enterprise/side-bar';
-import { StatusBarModule } from '@ag-grid-enterprise/status-bar';
 import {
   type CellRange,
   type CellSelectionChangedEvent,
@@ -40,37 +27,32 @@ import {
   type GetContextMenuItemsParams,
   type MenuItemDef,
   type IAggFuncParams,
-  ModuleRegistry,
-} from '@ag-grid-community/core';
-import { LicenseManager } from '@ag-grid-enterprise/core';
+  type DefaultMenuItem,
+  type Module,
+  AllCommunityModule,
+} from 'ag-grid-community';
+import { LicenseManager, AllEnterpriseModule } from 'ag-grid-enterprise';
+import {
+  AgGridReact,
+  type AgGridReactProps,
+  type CustomHeaderProps,
+} from 'ag-grid-react';
 
-export const communityModules = [ClientSideRowModelModule, CsvExportModule];
-
-export const enterpriseModules = [
-  ClipboardModule,
-  ColumnsToolPanelModule,
-  ExcelExportModule,
-  FiltersToolPanelModule,
-  MenuModule,
-  RangeSelectionModule,
-  RowGroupingModule,
-  ServerSideRowModelModule,
-  SideBarModule,
-  StatusBarModule,
-];
-
-export const allModules = communityModules.concat(enterpriseModules);
+export const communityModules: Module[] = [AllCommunityModule];
+export const enterpriseModules: Module[] = [AllEnterpriseModule];
+export const allModules: Module[] = communityModules.concat(enterpriseModules);
 
 declare const AG_GRID_LICENSE: string;
 
 export function DataGrid<TData = unknown>(
   props: AgGridReactProps<TData>,
-): JSX.Element {
+): React.ReactNode {
   if (AG_GRID_LICENSE) {
     LicenseManager.setLicenseKey(AG_GRID_LICENSE);
   }
   return (
     <AgGridReact
+      theme="legacy"
       {...props}
       // NOTE: for test, we don't want to handle the error messages outputed by ag-grid so
       // we disable enterprise features for now
@@ -79,10 +61,6 @@ export function DataGrid<TData = unknown>(
     />
   );
 }
-
-export const configureDataGridComponent = (): void => {
-  ModuleRegistry.registerModules([ClientSideRowModelModule]);
-};
 
 export type {
   CellRange as DataGridCellRange,
@@ -97,4 +75,6 @@ export type {
   GetContextMenuItemsParams as DataGridGetContextMenuItemsParams,
   MenuItemDef as DataGridMenuItemDef,
   IAggFuncParams as DataGridIAggFuncParams,
+  CustomHeaderProps as DataGridCustomHeaderProps,
+  DefaultMenuItem as DataGridDefaultMenuItem,
 };

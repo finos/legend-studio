@@ -19,7 +19,7 @@ import type {
   IRowNode,
   IServerSideDatasource,
   IServerSideGetRowsParams,
-} from '@ag-grid-community/core';
+} from 'ag-grid-community';
 import type { DataCubeGridState } from './DataCubeGridState.js';
 import {
   IllegalStateError,

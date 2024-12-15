@@ -44,8 +44,11 @@ export const getBaseJestConfig = (isGlobal) => {
       'yaml',
 
       // ag-grid
-      '@ag-grid-community',
-      '@ag-grid-enterprise',
+      'ag-grid-community',
+      'ag-grid-enterprise',
+
+      // react-resize-detector
+      'react-resize-detector',
 
       // color-parse
       'color-parse',

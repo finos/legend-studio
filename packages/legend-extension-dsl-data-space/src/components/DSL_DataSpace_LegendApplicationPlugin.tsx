@@ -15,7 +15,6 @@
  */
 
 import {
-  type LegendApplicationSetup,
   type LegendApplicationPluginManager,
   type KeyedCommandConfigEntry,
   collectKeyedCommandConfigEntriesFromConfig,
@@ -33,7 +32,6 @@ import type {
 import { DataSpaceQueryBuilderState } from '../stores/query-builder/DataSpaceQueryBuilderState.js';
 import { DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_CONFIG } from '../__lib__/DSL_DataSpace_LegendApplicationCommand.js';
 import { type QuerySearchSpecification } from '@finos/legend-graph';
-import { configureDataGridComponent } from '@finos/legend-lego/data-grid';
 import { DataSpaceExecutableTemplate } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { filterByType } from '@finos/legend-shared';
 import {
@@ -62,14 +60,6 @@ export class DSL_DataSpace_LegendApplicationPlugin
     return collectKeyedCommandConfigEntriesFromConfig(
       DSL_DATA_SPACE_LEGEND_APPLICATION_COMMAND_CONFIG,
     );
-  }
-
-  override getExtraApplicationSetups(): LegendApplicationSetup[] {
-    return [
-      async (applicationStore) => {
-        configureDataGridComponent();
-      },
-    ];
   }
 
   getExtraLoadQueryFilterOptions(): LoadQueryFilterOption[] {

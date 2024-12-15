@@ -31,7 +31,7 @@ import type {
   ColGroupDef,
   GridOptions,
   ICellRendererParams,
-} from '@ag-grid-community/core';
+} from 'ag-grid-community';
 import {
   DataCubeGridClientSortDirection,
   INTERNAL__GRID_CLIENT_COLUMN_MIN_WIDTH,
@@ -85,7 +85,7 @@ import {
   TREE_COLUMN_VALUE_SEPARATOR,
   DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE,
 } from '../../core/DataCubeQueryEngine.js';
-import type { CustomLoadingCellRendererProps } from '@ag-grid-community/react';
+import type { CustomLoadingCellRendererProps } from 'ag-grid-react';
 import { DataCubeIcon } from '@finos/legend-art';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 
@@ -498,7 +498,7 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
     // use the auto-generated group column to make it work with pivot mode
     // See https://github.com/ag-grid/ag-grid/issues/8088
     groupDisplayType: 'singleColumn',
-    suppressRowGroupHidesColumns: true, // keeps the column set stable even when row grouping is used
+    suppressGroupChangesColumnVisibility: true, // keeps the column set stable when row grouping is used
     suppressAggFuncInHeader: true, //  keeps the columns stable when aggregation is used
     getChildCount: (data) =>
       data[INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID],
