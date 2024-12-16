@@ -61,7 +61,6 @@
     "mobx-react-lite": "4.1.0",
     "monaco-editor": "0.52.2",
     "react": "19.0.0",
-    "react-chartjs-2": "5.2.0",
     "react-dnd": "16.0.1",
     "react-dom": "19.0.0",
     "serializr": "3.0.3",
