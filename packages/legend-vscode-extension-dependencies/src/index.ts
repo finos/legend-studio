@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import '../style/index.scss';
+import '../lib/tailwind.css'; // eslint-disable-line @finos/legend/no-cross-workspace-non-export-usage
+import '../style/index.css';
 
 export {
   type Diagram,
@@ -98,6 +99,7 @@ export {
   PureExecution,
   RawLambda,
   RawVariableExpression,
+  RelationTypeColumnMetadata,
   RelationTypeMetadata,
   resolvePackagePathAndElementName,
   Service,
@@ -155,6 +157,7 @@ export {
   V1_PackageableElement,
   V1_PackageableElementPtr,
   V1_PackageableRuntime,
+  V1_PackageableType,
   V1_ParameterValue,
   V1_parameterValueModelSchema,
   V1_ParserError,
@@ -173,6 +176,8 @@ export {
   V1_RawSQLExecuteInput,
   V1_RawVariable,
   V1_RelationalConnectionBuilder,
+  V1_RelationType,
+  V1_RelationTypeColumn,
   V1_RenderStyle,
   V1_RunTestsInput,
   V1_RunTestsResult,

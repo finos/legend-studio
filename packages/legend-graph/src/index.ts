@@ -213,6 +213,7 @@ export {
   V1_RelationTypeColumn,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_RelationType.js';
 export { V1_GenericType } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_GenericType.js';
+export { V1_PackageableType } from './graph-manager/protocol/pure/v1/model/packageableElements/type/V1_PackageableType.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
@@ -357,7 +358,10 @@ export * from './graph-manager/protocol/pure/PureProtocolProcessorPlugin.js';
 export * from './graph-manager/protocol/pure/extensions/DSL_ExternalFormat_PureProtocolProcessorPlugin.js';
 export * from './graph-manager/action/functionActivator/FunctionActivatorConfiguration.js';
 export * from './graph-manager/action/relational/RelationalDatabaseTypeConfiguration.js';
-export { RelationTypeMetadata } from './graph-manager/action/relation/RelationTypeMetadata.js';
+export {
+  RelationTypeColumnMetadata,
+  RelationTypeMetadata,
+} from './graph-manager/action/relation/RelationTypeMetadata.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
 
