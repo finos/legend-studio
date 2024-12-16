@@ -30,15 +30,20 @@ import {
   type Runtime,
   type Mapping,
   type FunctionAnalysisInfo,
+  type GraphData,
   getMappingCompatibleClasses,
   Package,
   QueryDataSpaceExecutionContext,
   elementBelongsToPackage,
+  GraphDataWithOrigin,
+  LegendSDLC,
+  InMemoryGraphData,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
   type StoredEntity,
   DepotScope,
+  resolveVersion,
   SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
 import {
@@ -479,6 +484,18 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       functionInfoMap,
       dependencyFunctionInfoMap,
     };
+  }
+
+  override getGraphData(): GraphData {
+    if (this.dataSpaceRepo instanceof DataSpacesDepotRepository) {
+      const option = new LegendSDLC(
+        this.dataSpaceRepo.project.groupId,
+        this.dataSpaceRepo.project.artifactId,
+        resolveVersion(this.dataSpaceRepo.project.versionId),
+      );
+      return new GraphDataWithOrigin(option);
+    }
+    return new InMemoryGraphData(this.graphManagerState.graph);
   }
 
   *intialize(): GeneratorFn<void> {
