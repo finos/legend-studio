@@ -99,11 +99,8 @@ export {
   PureExecution,
   RawLambda,
   RawVariableExpression,
-<<<<<<< HEAD
   RelationTypeColumnMetadata,
-=======
   RelationalExecutionActivities,
->>>>>>> ed4c4fc60 (feat: Exports for vscode extension cube in purebook)
   RelationTypeMetadata,
   resolvePackagePathAndElementName,
   Service,
