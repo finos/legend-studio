@@ -1,5 +1,11 @@
 # @finos/legend-vscode-extension-dependencies
 
+## 4.0.43
+
+### Patch Changes
+
+- [#3727](https://github.com/finos/legend-studio/pull/3727) [`a0d46cb`](https://github.com/finos/legend-studio/commit/a0d46cb4cddd839614a3da4a3e73f4df03c1dac0) ([@travisstebbins](https://github.com/travisstebbins)) - VS Code QueryBuilder Cube integration dependency exports
+
 ## 4.0.42
 
 ## 4.0.41

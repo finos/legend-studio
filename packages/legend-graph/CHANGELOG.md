@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.10.60
+
+### Patch Changes
+
+- [#3727](https://github.com/finos/legend-studio/pull/3727) [`a0d46cb`](https://github.com/finos/legend-studio/commit/a0d46cb4cddd839614a3da4a3e73f4df03c1dac0) ([@travisstebbins](https://github.com/travisstebbins)) - VS Code QueryBuilder Cube integration dependency exports
+
 ## 31.10.59
 
 ## 31.10.58
