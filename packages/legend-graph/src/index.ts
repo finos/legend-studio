@@ -162,7 +162,6 @@ export {
   V1_buildCompilationError,
   V1_buildExecutionError,
   V1_buildParserError,
-  V1_buildEngineError,
   V1_buildFunctionInfoAnalysis,
 } from './graph-manager/protocol/pure/v1/engine/V1_EngineHelper.js';
 export {
@@ -418,7 +417,6 @@ export {
 export { type V1_GraphManagerEngine } from './graph-manager/protocol/pure/v1/engine/V1_GraphManagerEngine.js';
 export { V1_RemoteEngine } from './graph-manager/protocol/pure/v1/engine/V1_RemoteEngine.js';
 export { V1_ParserError } from './graph-manager/protocol/pure/v1/engine/grammar/V1_ParserError.js';
-export { V1_EngineError } from './graph-manager/protocol/pure/v1/engine/V1_EngineError.js';
 export { V1_RenderStyle } from './graph-manager/protocol/pure/v1/engine/grammar/V1_RenderStyle.js';
 export {
   V1_PureModelContextType,
