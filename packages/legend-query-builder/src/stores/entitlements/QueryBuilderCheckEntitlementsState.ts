@@ -23,7 +23,6 @@ import {
   type GraphManagerState,
   type RawLambda,
   RuntimePointer,
-  InMemoryGraphData,
   buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
 import {
@@ -71,9 +70,7 @@ export class QueryBuilderCheckEntitlementsState implements Hashable {
               this.queryBuilderState.parametersState.parameterStates,
               this.queryBuilderState.graphManagerState,
             ),
-          graphData: new InMemoryGraphData(
-            this.queryBuilderState.graphManagerState.graph,
-          ),
+          graphData: this.queryBuilderState.getGraphData(),
         },
       );
     }

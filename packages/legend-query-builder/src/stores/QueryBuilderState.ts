@@ -73,6 +73,8 @@ import {
   QueryExplicitExecutionContext,
   attachFromQuery,
   PackageableElementExplicitReference,
+  GraphData,
+  InMemoryGraphData,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import type {
@@ -884,6 +886,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     | QueryBuilderExtraFunctionAnalysisInfo
     | undefined {
     return undefined;
+  }
+
+  getGraphData(): GraphData {
+    return new InMemoryGraphData(this.graphManagerState.graph);
   }
 
   /**
