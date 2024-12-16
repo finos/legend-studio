@@ -57,6 +57,7 @@ import {
   type QueryGridConfig,
   type QueryExecutionContext,
   type FunctionAnalysisInfo,
+  type GraphData,
   GRAPH_MANAGER_EVENT,
   CompilationError,
   extractSourceInformationCoordinates,
@@ -73,7 +74,6 @@ import {
   QueryExplicitExecutionContext,
   attachFromQuery,
   PackageableElementExplicitReference,
-  GraphData,
   InMemoryGraphData,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
