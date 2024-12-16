@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.15.29
+
+### Patch Changes
+
+- [#3738](https://github.com/finos/legend-studio/pull/3738) [`1f8aa3b`](https://github.com/finos/legend-studio/commit/1f8aa3b78b06eabde696cae495c8ae354d58a3d4) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Use model pointer for check entitlement APIs in Query Builder
+
 ## 4.15.28
 
 ## 4.15.27
