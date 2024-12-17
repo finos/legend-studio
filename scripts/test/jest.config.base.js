@@ -17,8 +17,49 @@
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { getBaseConfig } from '@finos/legend-dev-utils/JestConfigUtils';
+import chalk from 'chalk';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const GROUPS = [
+  {
+    name: 'Core',
+    description:
+      'Core group. Tests with no specific extension, by default, will run in this group',
+    key: 'core',
+    extension: '',
+  },
+  {
+    name: 'Engine Roundtrip',
+    description:
+      'Group of roundtrip tests which require engine APIs (these should be deprecated and distributed to varius DSLs)',
+    key: 'engine-roundtrip',
+    extension: 'engine-roundtrip',
+  },
+  {
+    name: 'Profiling',
+    description: 'Profilier',
+    key: 'profiling',
+    extension: 'profiling',
+    manual: true,
+  },
+  {
+    name: 'Data Cube',
+    key: 'data-cube',
+    extension: 'data-cube',
+  },
+];
+
+export function printTestGroups() {
+  console.log('Available test groups:\n');
+  [GROUPS[0]]
+    .concat(GROUPS.slice(1).toSorted((a, b) => a.name.localeCompare(b.name)))
+    .forEach((group, idx) => {
+      console.log(
+        `${idx + 1}) ${group.name} [${group.key}]${group.description ? ` - ${group.description}` : ''}\nExtension: ${chalk.greenBright(group.extension ? group.extension : '(empty)')} - e.g. SomeTestFile.${group.extension ? `${group.extension}-` : ''}test.js\n`,
+      );
+    });
+}
 
 export const getBaseJestConfig = (isGlobal) => {
   const baseConfig = getBaseConfig({
@@ -137,16 +178,28 @@ export const getBaseJestConfig = (isGlobal) => {
 };
 
 export const getBaseJestProjectConfig = (projectName, packageDir) => {
-  const testMatch = [
-    (!process.env.TEST_GROUP || process.env.TEST_GROUP === 'core') &&
+  let testMatch = [];
+  if (!process.env.TEST_GROUP) {
+    testMatch.push(
       `<rootDir>/${packageDir}/**/__tests__/**/*(*.)test.[jt]s?(x)`,
-    process.env.TEST_GROUP === 'engine-roundtrip' &&
-      `<rootDir>/${packageDir}/**/__tests__/**/*(*.)engine-roundtrip-test.[jt]s?(x)`,
-    process.env.TEST_GROUP === 'profiling' &&
-      `<rootDir>/${packageDir}/**/__tests__/**/*(*.)profiling-test.[jt]s?(x)`,
-    process.env.TEST_GROUP === 'repl' &&
-      `<rootDir>/${packageDir}/**/__tests__/**/*(*.)repl-test.[jt]s?(x)`,
-  ].filter(Boolean);
+    );
+    testMatch.push(
+      `<rootDir>/${packageDir}/**/__tests__/**/*(*.)(${GROUPS.filter(
+        (group) => group.extension && !group.manual,
+      )
+        .map((group) => group.extension)
+        .join('|')})-test.[jt]s?(x)`,
+    );
+  } else {
+    for (const _group of GROUPS) {
+      if (process.env.TEST_GROUP === _group.key) {
+        testMatch.push(
+          `<rootDir>/${packageDir}/**/__tests__/**/*(*.)${_group.extension ? `${_group.extension}-` : ''}test.[jt]s?(x)`,
+        );
+        break;
+      }
+    }
+  }
 
   if (testMatch.length === 0) {
     throw new Error(

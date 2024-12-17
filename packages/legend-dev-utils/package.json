@@ -37,6 +37,7 @@
     "./JestConfigUtils": "./JestConfigUtils.js",
     "./ProjectReferenceConfigChecker": "./ProjectReferenceConfigChecker.js",
     "./TypescriptConfigUtils": "./TypescriptConfigUtils.js",
+    "./TailwindCSSConfigUtils": "./TailwindCSSConfigUtils.js",
     "./WebpackConfigUtils": "./WebpackConfigUtils.js",
     "./tsconfig.base.json": "./tsconfig.base.json"
   },

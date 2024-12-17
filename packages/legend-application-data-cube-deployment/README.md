@@ -14,4 +14,4 @@ Last but not least, make sure you have `Yarn` installed. Run the following comma
   yarn dev:datacube
 ```
 
-After setting up, visit http://localhost:9001/data-cube and the application should be up and running.
+After setting up, visit http://localhost:9007/data-cube and the application should be up and running.

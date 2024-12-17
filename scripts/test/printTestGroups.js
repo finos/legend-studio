@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { getBaseConfig } from '@finos/legend-dev-utils/TailwindCSSConfigUtils';
+import { printTestGroups } from './jest.config.base.js';
 
-export default getBaseConfig();
+printTestGroups();

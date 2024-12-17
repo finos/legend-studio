@@ -17,19 +17,6 @@
 import React, { useRef, useEffect } from 'react';
 import { CaretDownIcon, TimesIcon, CircleNotchIcon } from '../icon/Icon.js';
 import { FixedSizeList } from 'react-window';
-
-/**
- * Previously, these exports rely on ES module interop to expose `default` export
- * properly. But since we use `ESM` for Typescript resolution now, we lose this
- * so we have to workaround by importing these and re-export them from CJS
- *
- * TODO: remove these when the package properly work with Typescript's nodenext
- * module resolution
- *
- * @workaround ESM
- * See https://github.com/microsoft/TypeScript/issues/49298
- */
-// import { default as ReactSelect } from './CJS__ReactSelect.cjs';
 import Select, {
   type Props,
   type PropsValue,

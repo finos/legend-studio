@@ -63,11 +63,14 @@
     "setup": "yarn install && node ./scripts/workflow/checkNodeVersion.js && yarn workspaces foreach --all --parallel -vv run setup && yarn build",
     "start": "yarn dev",
     "test": "jest",
+    "test:all": "cross-env TEST_GROUP=all jest",
     "test:group": "cross-env TEST_GROUP=$0 jest",
+    "test:list-groups": "node ./scripts/test/printTestGroups.js",
     "test:ci": "cross-env TEST_GROUP=$0 node --max-old-space-size=4096 ./node_modules/jest/bin/jest.js --coverage --maxWorkers=100%",
     "test:debug": "cross-env TEST_GROUP=$0 node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
     "test:report-failure": "cross-env TEST_GROUP=$0 jest 2>&1 | grep 'FAIL'",
     "test:watch": "jest --watch",
+    "test:watch:all": "cross-env TEST_GROUP=all jest --watch",
     "test:watch:group": "cross-env TEST_GROUP=$0 jest --watch"
   },
   "lint-staged": {

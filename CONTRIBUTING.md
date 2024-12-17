@@ -146,18 +146,37 @@ Read our [guide on testing](./docs/technical/test-strategy.md) to understand our
 ```sh
 # Use this on root directory or workspace directory to run unit
 # and integration test suites.
-yarn test # NOTE: this will run only the core test group
-yarn test core
+yarn test
 
 # Rerun tests on changes.
 # NOTE: you can also install `watchman` if the startup time seems slow.
-yarn test:watch # NOTE: this will run only the core test group
-yarn test:watch core
+yarn test:watch
+```
 
-# TODO: add e2e test suite run command
+For ergonomics, tests are further divided into groups. Followings are a few useful commands to run test from respective group(s) you're working on.
 
-# Besides, you should run linting to let static analyzer catch
-# issues with your code.
+```sh
+yarn test:group data-cube # this will run test in the group 'data-cube'
+yarn test:watch:group data-cube
+
+# Alternatively, the following syntax can be used can will come in handy when you
+# need to specify extra test params
+TEST_GROUP=data-cube yarn test
+
+# this will run tests in the test file whose name matches 'DataCubeResultPanel'
+# and belongs to the 'data-cube' group
+TEST_GROUP=data-cube yarn test DataCubeResultPanel
+```
+
+To add a new test for a group, make sure the test is suffixed with that group's extension. For example, to add a new test to the group `data-cube`, name your test with suffix `data-cube-test`, i.e. `DataCubeSomeTest.data-cube-test.ts`. Use the following command to see the list of all available test group(s)-_you can also find out by looking at the test setup files_.
+
+```sh
+yarn test:list-groups
+```
+
+Last but not least, you should run linting to let static analyzer catch issues with your code.
+
+```sh
 yarn lint
 yarn lint:fix # this can help you fix `some` of the issue
 ```
