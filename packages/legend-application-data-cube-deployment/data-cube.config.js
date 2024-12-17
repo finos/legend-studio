@@ -27,7 +27,7 @@ export default {
    * e.g. `/something/` is the `baseUrl` of https://www.example.org/something/
    * For URLs that have no path, use '/'.
    */
-  baseUrl: '/datacube/',
+  baseUrl: '/data-cube/',
   /**
    * `devServerOptions` [object, optional]
    * Options to override `webpack-dev-server` configs.
@@ -36,7 +36,7 @@ export default {
   devServerOptions: {
     // NOTE: for development from within a Docker container, it's best to update this to 0.0.0.0
     host: '0.0.0.0',
-    port: 9001,
+    port: 9007,
     allowedHosts: 'all',
   },
 };
