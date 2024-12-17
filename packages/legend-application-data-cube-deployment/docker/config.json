@@ -1,0 +1,10 @@
+{
+  "appName": "data-cube",
+  "env": "local",
+  "engine": {
+    "url": "${PROTOCOL}://${ENGINE_HOST}:${ENGINE_PORT}/api"
+  },
+  "depot": {
+    "url": "${PROTOCOL}://${DEPOT_HOST}:${DEPOT_PORT}/depot/api"
+  }
+}

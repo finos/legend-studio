@@ -39,7 +39,7 @@ export const setup = (outputDir) => {
     resolve(outputDir, 'config.json'),
     JSON.stringify(
       {
-        appName: 'query',
+        appName: 'data-cube',
         env: 'local',
         engine: {
           url: 'http://localhost:6300/api',

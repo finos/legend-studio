@@ -1,5 +1,5 @@
 FROM finos/legend-shared-server:0.23.5
-COPY dist/query /app/bin/webapp-content/web/query/
+COPY dist/data-cube /app/bin/webapp-content/web/data-cube/
 
 RUN mkdir -p /config
 COPY docker/server-config.json /config/server-config.json
