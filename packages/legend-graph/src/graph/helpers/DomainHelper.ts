@@ -463,8 +463,8 @@ export const getAllClassProperties = (
   includeGeneratedMilestoning?: boolean | undefined,
 ): Property[] =>
   uniqBy(
-    getAllSuperclasses(_class)
-      .concat(_class)
+    [_class]
+      .concat(getAllSuperclasses(_class))
       .map((c) => c.propertiesFromAssociations.concat(c.properties))
       .flat()
       .concat(
@@ -479,8 +479,8 @@ export const getAllClassDerivedProperties = (
   _class: Class,
 ): DerivedProperty[] =>
   uniqBy(
-    getAllSuperclasses(_class)
-      .concat(_class)
+    [_class]
+      .concat(getAllSuperclasses(_class))
       .map((c) => c.derivedProperties)
       .flat(),
     (property) => property.name,

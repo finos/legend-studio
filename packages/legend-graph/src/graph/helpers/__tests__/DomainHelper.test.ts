@@ -19,6 +19,8 @@ import { guaranteeType } from '@finos/legend-shared';
 import { unitTest } from '@finos/legend-shared/test';
 import { Package } from '../../metamodel/pure/packageableElements/domain/Package.js';
 import {
+  getAllClassProperties,
+  getClassProperty,
   getMilestoneTemporalStereotype,
   getOrCreatePackage,
 } from '../DomainHelper.js';
@@ -74,3 +76,19 @@ test(
     ).toBe(MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL);
   },
 );
+
+test(unitTest('getClassProperties with clashing properties'), async () => {
+  const graph = await TEST__getTestGraph(TEST_DATA__Milestoning as Entity[]);
+  const properties = getAllClassProperties(graph.getClass('test::D'));
+
+  expect(properties.length).toEqual(1);
+  expect(properties[0]?.name).toEqual('z');
+  expect(properties[0]?._OWNER.name).toEqual('D');
+});
+
+test(unitTest('getClassProperty with clashing properties'), async () => {
+  const graph = await TEST__getTestGraph(TEST_DATA__Milestoning as Entity[]);
+  const property = getClassProperty(graph.getClass('test::D'), 'z');
+
+  expect(property._OWNER.name).toEqual('D');
+});
