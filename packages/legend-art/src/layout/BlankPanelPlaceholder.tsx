@@ -16,7 +16,7 @@
 
 import { useEffect, useState } from 'react';
 import { VerticalAlignBottomIcon, AddIcon, EditIcon } from '../icon/Icon.js';
-import { useResizeDetector } from 'react-resize-detector';
+import { useResizeDetector } from '../utils/ComponentUtils.js';
 import { BlankPanelContent } from './BlankPanelContent.js';
 import { clsx } from 'clsx';
 

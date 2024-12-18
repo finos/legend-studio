@@ -287,7 +287,7 @@ const testQueryBuilderStateSetup = async (): Promise<{
   return { renderResult, queryBuilderState };
 };
 
-test(
+test.only(
   integrationTest('Query Builder Execution Data Incompleteness Warning'),
   async () => {
     const { renderResult, queryBuilderState } =

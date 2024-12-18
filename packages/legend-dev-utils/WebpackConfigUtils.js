@@ -296,11 +296,6 @@ export const getWebAppBaseWebpackConfig = (
         // Reduce `monaco-editor` bundle size by using ESM bundle which enables tree-shaking
         // See https://github.com/microsoft/monaco-editor-webpack-plugin/issues/97
         'monaco-editor': 'monaco-editor/esm/vs/editor/editor.api.js',
-        // This is added to handle `react-resize-detector` importing lodash/debounce despite being an ESM module
-        // (it's probably should be updated to use lodash-es instead)
-        // TODO: check if this is still needed later
-        'lodash/debounce': 'lodash-es/debounce.js',
-        'lodash/throttle': 'lodash-es/throttle.js',
       },
     },
     devServer: {

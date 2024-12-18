@@ -16,6 +16,7 @@
 
 import { platform } from 'os';
 import { readFileSync } from 'fs';
+import { getPackages as _getPackages } from '@manypkg/get-packages';
 
 export const getFileContent = (file) =>
   readFileSync(file, { encoding: 'utf-8' });
@@ -42,3 +43,5 @@ export const loadJSON = (path) => JSON.parse(getFileContent(path));
 export const loadJSModule = (path) =>
   // NOTE: Windows requires prefix `file://` for absolute path
   import(`${platform() === 'win32' ? 'file://' : ''}${path}`);
+
+export const getPackages = _getPackages;

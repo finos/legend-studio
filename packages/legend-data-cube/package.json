@@ -46,7 +46,7 @@
     "@finos/legend-code-editor": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@types/react": "19.0.1",
+    "@types/react": "19.0.2",
     "ag-grid-community": "33.0.2",
     "ag-grid-enterprise": "33.0.2",
     "ag-grid-react": "33.0.2",

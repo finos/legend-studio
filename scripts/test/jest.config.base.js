@@ -88,9 +88,6 @@ export const getBaseJestConfig = (isGlobal) => {
       'ag-grid-community',
       'ag-grid-enterprise',
 
-      // react-resize-detector
-      'react-resize-detector',
-
       // color-parse
       'color-parse',
       'color-name',

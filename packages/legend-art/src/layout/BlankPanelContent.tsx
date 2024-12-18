@@ -15,7 +15,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useResizeDetector } from 'react-resize-detector';
+import { useResizeDetector } from '../utils/ComponentUtils.js';
 import { clsx } from 'clsx';
 
 const DEFAULT_CONTENT_PADDING = 20;

@@ -48,7 +48,7 @@
     "@finos/legend-application-data-cube": "workspace:*",
     "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@types/react": "19.0.1",
+    "@types/react": "19.0.2",
     "react": "19.0.0"
   },
   "devDependencies": {

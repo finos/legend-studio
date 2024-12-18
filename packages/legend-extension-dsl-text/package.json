@@ -52,7 +52,7 @@
     "@finos/legend-lego": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
-    "@types/react": "19.0.1",
+    "@types/react": "19.0.2",
     "mobx": "6.13.5",
     "mobx-react-lite": "4.1.0",
     "react": "19.0.0",
