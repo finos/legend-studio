@@ -1,5 +1,7 @@
 # @finos/legend-application-query
 
+## 13.7.22
+
 ## 13.7.21
 
 ## 13.7.20

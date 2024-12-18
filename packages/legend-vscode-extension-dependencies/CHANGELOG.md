@@ -1,5 +1,7 @@
 # @finos/legend-vscode-extension-dependencies
 
+## 4.0.44
+
 ## 4.0.43
 
 ### Patch Changes
