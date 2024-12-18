@@ -15,7 +15,7 @@
  */
 
 import '../lib/tailwind.css'; // eslint-disable-line @finos/legend/no-cross-workspace-non-export-usage
-import '../style/index.css';
+import '../style/index.scss';
 
 export {
   type Diagram,
@@ -82,6 +82,7 @@ export {
   buildPureGraphManager,
   Class,
   CodeCompletionResult,
+  Completion,
   ConcreteFunctionDefinition,
   Core_GraphManagerPreset,
   CORE_PURE_PATH,
@@ -240,6 +241,7 @@ export {
   guaranteeType,
   isBoolean,
   isLossSafeNumber,
+  isNonNullable,
   LogEvent,
   NetworkClientError,
   parseLosslessJSON,
@@ -249,6 +251,7 @@ export {
   TracerService,
   uniq,
   usingModelSchema,
+  uuid,
 } from '@finos/legend-shared';
 
 export {
@@ -292,10 +295,13 @@ export {
   type DataCubeExecutionResult,
   type DataCubeInitialInput,
   type RelationType,
+  _elementPtr,
+  _function,
   _functionName,
   _lambda,
   DataCube,
   DataCubeEngine,
+  DataCubeFunction,
   DataCubeQuery,
   DataCubeSource,
 } from '@finos/legend-data-cube';

@@ -337,7 +337,10 @@ export * from './graph-manager/action/query/QuerySearchSpecification.js';
 export * from './graph-manager/action/EngineError.js';
 export * from './graph-manager/action/compilation/CompilationWarning.js';
 export * from './graph-manager/action/compilation/CompilationResult.js';
-export { CodeCompletionResult } from './graph-manager/action/compilation/Completion.js';
+export {
+  CodeCompletionResult,
+  Completion,
+} from './graph-manager/action/compilation/Completion.js';
 
 export * from './graph-manager/action/protocol/ProtocolInfo.js';
 export * from './graph-manager/action/SourceInformationHelper.js';
