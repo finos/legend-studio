@@ -218,6 +218,6 @@ export async function generateUptickChangeset(cwd) {
 
 export async function getNextReleasePlan(cwd) {
   const config = await read(cwd);
-  const releasePlan = getReleasePlan(cwd, config);
+  const releasePlan = await getReleasePlan(cwd, undefined, config);
   return releasePlan.releases;
 }
