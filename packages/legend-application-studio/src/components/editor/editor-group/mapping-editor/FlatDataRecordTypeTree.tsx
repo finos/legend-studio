@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDrag } from 'react-dnd';
 import {
   type TreeNodeContainerProps,
@@ -55,8 +55,7 @@ const getRecordTypeTreeData = (
   const rootIds: string[] = [];
   const nodes = new Map<string, FlatDataRecordTypeTreeNodeData>();
   recordType.fields
-    .slice()
-    .sort((a, b) => a.label.toString().localeCompare(b.label.toString()))
+    .toSorted((a, b) => a.label.toString().localeCompare(b.label.toString()))
     .forEach((field) => {
       const recordTypeTreeNodeData = getRecordTypeTreeNodeData(
         field,
@@ -76,22 +75,24 @@ const RecordFieldTreeNodeContainer: React.FC<
 > = (props) => {
   const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
   const { selectedType } = innerProps;
-  const [, dragRef] = useDrag(
+  const [, dragConnector] = useDrag(
     () => ({
       type: CORE_DND_TYPE.TYPE_TREE_PRIMITIVE,
       item: new FlatDataColumnDragSource(node),
     }),
     [node],
   );
+  const ref = useRef<HTMLDivElement>(null);
+  dragConnector(ref);
   const nodeTypeIcon = <PURE_PrimitiveTypeIcon />;
   const selectNode = (): void => onNodeSelect?.(node);
   const primitiveType = node.field.flatDataDataType._correspondingPrimitiveType;
 
   return (
     <div
+      ref={ref}
       className="tree-view__node__container"
       onClick={selectNode}
-      ref={dragRef}
       style={{
         paddingLeft: `${(level - 1) * (stepPaddingInRem ?? 1)}rem`,
         display: 'flex',

@@ -554,7 +554,7 @@ export class DataSpaceViewerModelsDocumentationState
       }
     });
     // NOTE: sort to avoid unnecessary re-computation of filtered search results
-    this.filterTypes = types.slice().sort((a, b) => a.localeCompare(b));
+    this.filterTypes = types.toSorted((a, b) => a.localeCompare(b));
   }
 
   updatePackageFilter(): void {
@@ -568,7 +568,7 @@ export class DataSpaceViewerModelsDocumentationState
       }
     });
     // NOTE: sort to avoid unnecessary re-computation of filtered search results
-    this.filterPaths = elementPaths.slice().sort((a, b) => a.localeCompare(b));
+    this.filterPaths = elementPaths.toSorted((a, b) => a.localeCompare(b));
   }
 
   resetTypeFilter(): void {

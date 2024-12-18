@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   clsx,
   CheckSquareIcon,
@@ -265,7 +265,8 @@ const QueryBuilderTreeNodeViewer = observer(
       }),
       [node],
     );
-
+    const ref = useRef<HTMLDivElement>(null);
+    dragConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     const getChildrenNodes = (): QueryBuilderExplorerTreeNodeData[] => {
@@ -355,7 +356,7 @@ const QueryBuilderTreeNodeViewer = observer(
       <>
         <div
           className="tree-view__node__container query-builder-property-search-panel__node__container"
-          ref={dragConnector}
+          ref={ref}
           style={{
             paddingLeft: `${(level - 1) * stepPaddingInRem + 0.5}rem`,
             display: 'flex',

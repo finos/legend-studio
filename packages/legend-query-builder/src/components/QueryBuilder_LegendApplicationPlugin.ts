@@ -27,7 +27,6 @@ import packageJson from '../../package.json' with { type: 'json' };
 import { QUERY_BUILDER_SETTING_CONFIG } from '../__lib__/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMMAND_CONFIG } from '../stores/QueryBuilderCommand.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
-import { configureDataGridComponent } from '@finos/legend-lego/data-grid';
 import { Chart as ChartJS, ArcElement, Tooltip, LinearScale } from 'chart.js';
 
 export type CheckEntitlementEditorRender = (
@@ -50,8 +49,6 @@ export class QueryBuilder_LegendApplicationPlugin extends LegendApplicationPlugi
   override getExtraApplicationSetups(): LegendApplicationSetup[] {
     return [
       async (applicationStore) => {
-        configureDataGridComponent();
-
         // configure chart component
         ChartJS.register(
           ArcElement,

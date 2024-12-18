@@ -96,9 +96,9 @@ import {
   V1_serializeAuthenticationStrategy,
   V1_serializeDatasourceSpecification,
 } from './V1_ConnectionSerializationHelper.js';
-import { V1_stereotypePtrModelSchema } from './V1_DomainSerializationHelper.js';
 import type { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 import {
+  V1_stereotypePtrModelSchema,
   V1_packageableElementPointerModelSchema,
   V1_serializePackageableElementPointer,
 } from './V1_CoreSerializationHelper.js';

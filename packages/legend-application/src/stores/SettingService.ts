@@ -86,7 +86,7 @@ export class SettingService {
   getNumericValue(key: string): number | undefined {
     const value =
       this.storage.getValue(key) ?? this.registry.get(key)?.defaultValue;
-    if (!isNumber(value)) {
+    if (value !== undefined && !isNumber(value)) {
       this.applicationStore.logService.warn(
         LogEvent.create(APPLICATION_EVENT.SETTING_RETRIVE_FAILURE),
         `Can't retrieve numeric value for setting '${key}'`,
@@ -99,7 +99,7 @@ export class SettingService {
   getStringValue(key: string): string | undefined {
     const value =
       this.storage.getValue(key) ?? this.registry.get(key)?.defaultValue;
-    if (!isString(value)) {
+    if (value !== undefined && !isString(value)) {
       this.applicationStore.logService.warn(
         LogEvent.create(APPLICATION_EVENT.SETTING_RETRIVE_FAILURE),
         `Can't retrieve string value for setting '${key}'`,
@@ -112,7 +112,7 @@ export class SettingService {
   getBooleanValue(key: string): boolean | undefined {
     const value =
       this.storage.getValue(key) ?? this.registry.get(key)?.defaultValue;
-    if (!isBoolean(value)) {
+    if (value !== undefined && !isBoolean(value)) {
       this.applicationStore.logService.warn(
         LogEvent.create(APPLICATION_EVENT.SETTING_RETRIVE_FAILURE),
         `Can't retrieve boolean value for setting '${key}'`,
@@ -125,7 +125,7 @@ export class SettingService {
   getObjectValue(key: string): object | undefined {
     const value =
       this.storage.getValue(key) ?? this.registry.get(key)?.defaultValue;
-    if (!isObject(value)) {
+    if (value !== undefined && !isObject(value)) {
       this.applicationStore.logService.warn(
         LogEvent.create(APPLICATION_EVENT.SETTING_RETRIVE_FAILURE),
         `Can't retrieve object value for setting '${key}'`,

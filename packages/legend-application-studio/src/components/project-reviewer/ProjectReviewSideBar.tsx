@@ -277,17 +277,14 @@ export const ProjectReviewerSideBar = observer(() => {
               </div>
             </div>
             <PanelContent>
-              {changes
-                .slice()
-                .sort(entityDiffSorter)
-                .map((diff) => (
-                  <EntityDiffSideBarItem
-                    key={diff.key}
-                    diff={diff}
-                    isSelected={isSelectedDiff(diff)}
-                    openDiff={openChange(diff)}
-                  />
-                ))}
+              {changes.toSorted(entityDiffSorter).map((diff) => (
+                <EntityDiffSideBarItem
+                  key={diff.key}
+                  diff={diff}
+                  isSelected={isSelectedDiff(diff)}
+                  openDiff={openChange(diff)}
+                />
+              ))}
 
               {Boolean(reviewStore.reviewReport?.fromToProjectConfig) && (
                 <button

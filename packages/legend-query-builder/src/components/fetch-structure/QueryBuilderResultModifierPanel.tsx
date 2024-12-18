@@ -360,7 +360,7 @@ export const QueryResultModifierModal = observer(
         setWatermarkValue(watermarkState.getDefaultValue());
       }
     };
-    const [{ isParameterValueDragOver }, dropTargetConnector] = useDrop<
+    const [{ isParameterValueDragOver }, dropConnector] = useDrop<
       QueryBuilderVariableDragSource,
       void,
       { isParameterValueDragOver: boolean }
@@ -1047,7 +1047,7 @@ export const QueryResultModifierModal = observer(
                       >
                         <PanelDropZone
                           isDragOver={isParameterValueDragOver}
-                          dropTargetConnector={dropTargetConnector}
+                          dropTargetConnector={dropConnector}
                         >
                           <BasicValueSpecificationEditor
                             valueSpecification={watermarkValue}

@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  useGridMenuItem,
-  type CustomMenuItemProps,
-} from '@ag-grid-community/react';
+import { useGridMenuItem, type CustomMenuItemProps } from 'ag-grid-react';
 import { FormBadge_WIP } from '../../core/DataCubeFormUtils.js';
 
 export function WIP_GridMenuItem({

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TransformDropTarget,
@@ -55,7 +55,7 @@ import { InlineLambdaEditor } from '@finos/legend-query-builder';
 const SimplePropertyMappingEditor = observer(
   (props: {
     propertyMappingState: PurePropertyMappingState;
-    drop?: ConnectDropTarget | undefined;
+    dropConnector?: ConnectDropTarget | undefined;
     dragItem?: TransformDropTarget | undefined;
     transformProps: {
       disableTransform: boolean;
@@ -63,7 +63,10 @@ const SimplePropertyMappingEditor = observer(
     };
     isReadOnly: boolean;
   }) => {
-    const { propertyMappingState, transformProps, drop, dragItem } = props;
+    const { propertyMappingState, transformProps, dropConnector, dragItem } =
+      props;
+    const ref = useRef<HTMLDivElement>(null);
+    dropConnector?.(ref);
     const propertyMapping = propertyMappingState.propertyMapping;
     const expectedType =
       propertyMapping.property.value.genericType.value.rawType;
@@ -81,7 +84,7 @@ const SimplePropertyMappingEditor = observer(
 
     return (
       <div className="property-mapping-editor__entry__container">
-        <div ref={drop} className="property-mapping-editor__entry">
+        <div ref={ref} className="property-mapping-editor__entry">
           <InlineLambdaEditor
             className={clsx({ 'lambda-editor--dnd-match': canDrop })}
             disabled={transformProps.disableTransform}
@@ -100,7 +103,7 @@ const SimplePropertyMappingEditor = observer(
 const EnumerationPropertyMappingEditor = observer(
   (props: {
     propertyMappingState: PurePropertyMappingState;
-    drop?: ConnectDropTarget | undefined;
+    dropConnector?: ConnectDropTarget | undefined;
     dragItem?: TransformDropTarget | undefined;
     dragItemType: string;
     transformProps: {
@@ -111,7 +114,7 @@ const EnumerationPropertyMappingEditor = observer(
   }) => {
     const {
       propertyMappingState,
-      drop,
+      dropConnector,
       dragItem,
       dragItemType,
       transformProps,
@@ -180,7 +183,10 @@ const EnumerationPropertyMappingEditor = observer(
         }
       }
     };
+
     // DnD
+    const ref = useRef<HTMLDivElement>(null);
+    dropConnector?.(ref);
     // NOTE: when we drag enum, we should highlight if the enumeration where that enum is part of matches
     const canDrop =
       dragItem &&
@@ -190,7 +196,7 @@ const EnumerationPropertyMappingEditor = observer(
 
     return (
       <div className="property-mapping-editor__entry__container">
-        <div ref={drop} className="property-mapping-editor__entry">
+        <div ref={ref} className="property-mapping-editor__entry">
           <div className="property-mapping-editor__entry__enumeration-mapping-selector">
             <CustomSelectorInput
               disabled={options.length <= 1 || isReadOnly}
@@ -237,7 +243,7 @@ const EnumerationPropertyMappingEditor = observer(
 const ClassPropertyMappingEditor = observer(
   (props: {
     propertyMappingState: PurePropertyMappingState;
-    drop?: ConnectDropTarget | undefined;
+    dropConnector?: ConnectDropTarget | undefined;
     dragItem?: TransformDropTarget | undefined;
     transformProps: {
       disableTransform: boolean;
@@ -245,7 +251,8 @@ const ClassPropertyMappingEditor = observer(
     };
     isReadOnly: boolean;
   }) => {
-    const { propertyMappingState, drop, dragItem, transformProps } = props;
+    const { propertyMappingState, dropConnector, dragItem, transformProps } =
+      props;
     const editorStore = useEditorStore();
     const mappingEditorState =
       editorStore.tabManagerState.getCurrentEditorState(MappingEditorState);
@@ -280,12 +287,13 @@ const ClassPropertyMappingEditor = observer(
       }
     };
     // Drag and Drop
-
+    const ref = useRef<HTMLDivElement>(null);
+    dropConnector?.(ref);
     const canDrop = dragItem?.data?.type && dragItem.data.type === expectedType;
 
     return (
       <div className="property-mapping-editor__entry__container">
-        <div ref={drop} className="property-mapping-editor__entry">
+        <div ref={ref} className="property-mapping-editor__entry">
           <div className="property-mapping-editor__entry__id">
             <div
               className={clsx('property-mapping-editor__entry__id__label', {
@@ -362,7 +370,7 @@ export const PurePropertyMappingEditor = observer(
       },
       [disableEditingTransform, purePropertyMappingState],
     );
-    const [{ dragItem, dragItemType }, drop] = useDrop<
+    const [{ dragItem, dragItemType }, dropConnector] = useDrop<
       TypeDragSource,
       void,
       {
@@ -402,7 +410,7 @@ export const PurePropertyMappingEditor = observer(
         return (
           <SimplePropertyMappingEditor
             propertyMappingState={purePropertyMappingState}
-            drop={drop}
+            dropConnector={dropConnector}
             dragItem={dragItem}
             transformProps={transformProps}
             isReadOnly={isReadOnly}
@@ -412,7 +420,7 @@ export const PurePropertyMappingEditor = observer(
         return (
           <EnumerationPropertyMappingEditor
             propertyMappingState={purePropertyMappingState}
-            drop={drop}
+            dropConnector={dropConnector}
             dragItem={dragItem}
             dragItemType={dragItemType}
             transformProps={transformProps}
@@ -423,7 +431,7 @@ export const PurePropertyMappingEditor = observer(
         return (
           <ClassPropertyMappingEditor
             propertyMappingState={purePropertyMappingState}
-            drop={drop}
+            dropConnector={dropConnector}
             dragItem={dragItem}
             transformProps={transformProps}
             isReadOnly={isReadOnly}

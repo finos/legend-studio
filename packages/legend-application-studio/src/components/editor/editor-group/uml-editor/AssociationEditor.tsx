@@ -451,7 +451,7 @@ export const AssociationEditor = observer(
       },
       [association, isReadOnly],
     );
-    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+    const [{ isTaggedValueDragOver }, taggedValueDropConnector] = useDrop<
       ElementDragSource,
       void,
       { isTaggedValueDragOver: boolean }
@@ -478,7 +478,7 @@ export const AssociationEditor = observer(
       },
       [association, isReadOnly],
     );
-    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+    const [{ isStereotypeDragOver }, stereotypeDropConnector] = useDrop<
       ElementDragSource,
       void,
       { isStereotypeDragOver: boolean }
@@ -585,7 +585,7 @@ export const AssociationEditor = observer(
                 {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
                   <PanelDropZone
                     isDragOver={isTaggedValueDragOver && !isReadOnly}
-                    dropTargetConnector={dropTaggedValueRef}
+                    dropTargetConnector={taggedValueDropConnector}
                   >
                     <PanelContentLists>
                       <TaggedValueDragPreviewLayer />
@@ -604,7 +604,7 @@ export const AssociationEditor = observer(
                 {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
                   <PanelDropZone
                     isDragOver={isStereotypeDragOver && !isReadOnly}
-                    dropTargetConnector={dropStereotypeRef}
+                    dropTargetConnector={stereotypeDropConnector}
                   >
                     <PanelContentLists>
                       <StereotypeDragPreviewLayer />

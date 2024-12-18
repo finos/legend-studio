@@ -340,7 +340,6 @@ const processFromFunction = (
     new RuntimePointer(PackageableElementExplicitReference.create(runtimeVal)),
   );
   queryBuilderState.setExecutionContextState(fromContext);
-  return;
 };
 
 /**

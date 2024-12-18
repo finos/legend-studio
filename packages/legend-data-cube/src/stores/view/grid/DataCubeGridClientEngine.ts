@@ -19,7 +19,7 @@ import type {
   IRowNode,
   IServerSideDatasource,
   IServerSideGetRowsParams,
-} from '@ag-grid-community/core';
+} from 'ag-grid-community';
 import type { DataCubeGridState } from './DataCubeGridState.js';
 import {
   IllegalStateError,
@@ -205,7 +205,7 @@ export function computeHashCodeForDataFetchManualTrigger(
       },
       leafExtendedColumns: snapshot.data.leafExtendedColumns,
       filter: snapshot.data.filter,
-      selectColumns: snapshot.data.selectColumns.slice().sort(_sortByColName), // sort to make sure column reordering does not trigger data fetching
+      selectColumns: snapshot.data.selectColumns.toSorted(_sortByColName), // sort to make sure column reordering does not trigger data fetching
       groupExtendedColumns: snapshot.data.groupExtendedColumns,
       limit: snapshot.data.limit,
     }),

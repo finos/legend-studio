@@ -288,6 +288,8 @@ export const getWebAppBaseWebpackConfig = (
         // See https://github.com/openzipkin/zipkin-js/issues/465
         os: false,
         url: false,
+        path: false,
+        fs: false,
       },
       alias: {
         ...baseConfig.resolve.alias,

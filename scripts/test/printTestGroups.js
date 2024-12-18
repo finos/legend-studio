@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-import Draggable from 'react-draggable';
-import { Resizable, ResizableBox } from 'react-resizable';
-import { Rnd } from 'react-rnd';
+import { printTestGroups } from './jest.config.base.js';
 
-export { Draggable };
-export { Resizable, ResizableBox };
-export { Rnd as ResizableAndDraggableBox };
+printTestGroups();

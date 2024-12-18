@@ -28,7 +28,7 @@ jobs:
         include:
           - group: core
           - group: engine-roundtrip
-          - group: repl
+          - group: data-cube
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2

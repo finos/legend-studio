@@ -1,6 +1,6 @@
 {
   "appName": "studio",
-  "env": "prod",
+  "env": "local",
   "sdlc": {
     "url": "${PROTOCOL}://${SDLC_HOST}:${SDLC_PORT}/api"
   },

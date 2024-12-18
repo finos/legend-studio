@@ -43,7 +43,7 @@ export class UserDataService {
 
   getNumericValue(key: string): number | undefined {
     const value = this.storage.getValue(key);
-    if (!isNumber(value)) {
+    if (value !== undefined && !isNumber(value)) {
       this.applicationStore.logService.warn(
         LogEvent.create(APPLICATION_EVENT.USER_DATA_RETRIEVE_FAILURE),
         `Can't retrieve numeric value for user data '${key}'`,
@@ -55,7 +55,7 @@ export class UserDataService {
 
   getStringValue(key: string): string | undefined {
     const value = this.storage.getValue(key);
-    if (!isString(value)) {
+    if (value !== undefined && !isString(value)) {
       this.applicationStore.logService.warn(
         LogEvent.create(APPLICATION_EVENT.USER_DATA_RETRIEVE_FAILURE),
         `Can't retrieve string value for user data '${key}'`,
@@ -67,7 +67,7 @@ export class UserDataService {
 
   getBooleanValue(key: string): boolean | undefined {
     const value = this.storage.getValue(key);
-    if (!isBoolean(value)) {
+    if (value !== undefined && !isBoolean(value)) {
       this.applicationStore.logService.warn(
         LogEvent.create(APPLICATION_EVENT.USER_DATA_RETRIEVE_FAILURE),
         `Can't retrieve boolean value for user data '${key}'`,
@@ -79,7 +79,7 @@ export class UserDataService {
 
   getObjectValue(key: string): object | undefined {
     const value = this.storage.getValue(key);
-    if (!isObject(value)) {
+    if (value !== undefined && !isObject(value)) {
       this.applicationStore.logService.warn(
         LogEvent.create(APPLICATION_EVENT.USER_DATA_RETRIEVE_FAILURE),
         `Can't retrieve object value for user data '${key}'`,

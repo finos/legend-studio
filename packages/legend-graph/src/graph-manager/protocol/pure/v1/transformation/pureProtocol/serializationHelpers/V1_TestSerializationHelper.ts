@@ -69,7 +69,7 @@ import { V1_FunctionTestSuite } from '../../../model/packageableElements/functio
 import {
   V1_functionTestModelSchema,
   V1_functionTestSuiteModelSchema,
-} from './V1_FunctionSeriaizationHelper.js';
+} from './V1_FunctionSerializationHelper.js';
 import { V1_FunctionTest } from '../../../model/packageableElements/function/test/V1_FunctionTest.js';
 import {
   type V1_TestDebug,

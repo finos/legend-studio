@@ -346,7 +346,7 @@ export const MappingTestsExplorer = observer(
       },
       [applicationStore.alertUnhandledError, isReadOnly, mappingEditorState],
     );
-    const [{ isDragOver }, dropRef] = useDrop<
+    const [{ isDragOver }, dropConnector] = useDrop<
       MappingElementDragSource,
       void,
       { isDragOver: boolean }
@@ -471,7 +471,7 @@ export const MappingTestsExplorer = observer(
         >
           <PanelDropZone
             isDragOver={isDragOver && !isReadOnly}
-            dropTargetConnector={dropRef}
+            dropTargetConnector={dropConnector}
           >
             <div className="mapping-test-explorer__content">
               {Boolean(

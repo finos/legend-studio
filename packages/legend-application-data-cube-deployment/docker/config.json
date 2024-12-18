@@ -6,5 +6,8 @@
   },
   "depot": {
     "url": "${PROTOCOL}://${DEPOT_HOST}:${DEPOT_PORT}/depot/api"
+  },
+  "documentation": {
+    "url": "https://legend.finos.org"
   }
 }

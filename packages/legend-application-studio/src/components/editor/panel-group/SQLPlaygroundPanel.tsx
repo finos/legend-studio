@@ -70,6 +70,7 @@ import {
   DataGrid,
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
+  type DataGridDefaultMenuItem,
   type DataGridGetContextMenuItemsParams,
   type DataGridMenuItemDef,
 } from '@finos/legend-lego/data-grid';
@@ -102,8 +103,9 @@ type DatabaseNodeDragType = { text: string };
 const SQLPlaygroundDatabaseSchemaExplorerTreeNodeContainer = observer(
   (props: DatabaseSchemaExplorerTreeNodeContainerProps) => {
     const { node } = props;
+    const ref = useRef(null);
 
-    const [, nodeDragRef] = useDrag<DatabaseNodeDragType>(
+    const [, dragConnector] = useDrag<DatabaseNodeDragType>(
       () => ({
         type: DATABASE_NODE_DND_TYPE,
         item: {
@@ -115,10 +117,9 @@ const SQLPlaygroundDatabaseSchemaExplorerTreeNodeContainer = observer(
       }),
       [node],
     );
+    dragConnector(ref);
 
-    return (
-      <DatabaseSchemaExplorerTreeNodeContainer {...props} ref={nodeDragRef} />
-    );
+    return <DatabaseSchemaExplorerTreeNodeContainer {...props} ref={ref} />;
   },
 );
 
@@ -490,7 +491,7 @@ const PlayGroundSQLExecutionResultGrid = observer(
           params: DataGridGetContextMenuItemsParams<{
             [key: string]: string;
           }>,
-        ): (string | DataGridMenuItemDef)[] => [
+        ): (DataGridDefaultMenuItem | DataGridMenuItemDef)[] => [
           'copy',
           'copyWithHeaders',
           {
@@ -528,9 +529,7 @@ const PlayGroundSQLExecutionResultGrid = observer(
             suppressClipboardPaste={false}
             suppressContextMenu={false}
             columnDefs={colDefs}
-            getContextMenuItems={(params): (string | DataGridMenuItemDef)[] =>
-              getContextMenuItems(params)
-            }
+            getContextMenuItems={(params) => getContextMenuItems(params)}
           />
         </div>
       );

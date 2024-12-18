@@ -39,10 +39,11 @@ import {
   getPivotResultColumnBaseColumnName,
 } from '../../core/DataCubeQueryEngine.js';
 import type {
+  DefaultMenuItem,
   GetContextMenuItemsParams,
   GetMainMenuItemsParams,
   MenuItemDef,
-} from '@ag-grid-community/core';
+} from 'ag-grid-community';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { generateMenuBuilder } from './DataCubeGridMenuBuilder.js';
 import {
@@ -79,7 +80,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
           | GetContextMenuItemsParams<unknown, { view: DataCubeViewState }>
           | GetMainMenuItemsParams<unknown, { view: DataCubeViewState }>,
         fromHeader: boolean,
-      ) => (string | MenuItemDef)[])
+      ) => (DefaultMenuItem | MenuItemDef)[])
     | undefined;
 
   getColumnConfiguration(colName: string | undefined) {

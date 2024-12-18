@@ -34,14 +34,14 @@
     "@babel/helper-plugin-utils": "7.25.9",
     "@babel/plugin-syntax-import-attributes": "7.26.0",
     "@babel/preset-env": "7.26.0",
-    "@babel/preset-react": "7.25.9",
+    "@babel/preset-react": "7.26.3",
     "@babel/preset-typescript": "7.26.0",
     "@babel/runtime": "7.26.0",
-    "react-refresh": "0.14.2"
+    "react-refresh": "0.16.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "9.16.0",
+    "eslint": "9.17.0",
     "rimraf": "6.0.1",
     "typescript": "5.7.2"
   },

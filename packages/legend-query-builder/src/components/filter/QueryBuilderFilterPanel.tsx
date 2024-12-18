@@ -962,6 +962,8 @@ const QueryBuilderFilterConditionEditor = observer(
       }),
       [handleDrop],
     );
+    const ref = useRef<HTMLDivElement>(null);
+    dropConnector(ref);
 
     const { isFilterValueDroppable } = useDragLayer((monitor) => ({
       isFilterValueDroppable:
@@ -1022,7 +1024,7 @@ const QueryBuilderFilterConditionEditor = observer(
       ) {
         return (
           <div
-            ref={dropConnector}
+            ref={ref}
             data-testid={
               QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_CONDITION_NODE_VALUE
             }
@@ -1059,7 +1061,7 @@ const QueryBuilderFilterConditionEditor = observer(
       ) {
         return (
           <div
-            ref={dropConnector}
+            ref={ref}
             className="query-builder-filter-tree__condition-node__value"
           >
             <PanelEntryDropZonePlaceholder
@@ -1219,7 +1221,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
   ) => {
     const { node, onNodeSelect, innerProps } = props;
     const { queryBuilderState } = innerProps;
-    const dragRef = useRef<HTMLDivElement>(null);
+    const ref = useRef<HTMLDivElement>(null);
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const applicationStore = useApplicationStore();
@@ -1293,19 +1295,9 @@ const QueryBuilderFilterTreeNodeContainer = observer(
             applicationStore.notificationService.notifyWarning(error.message);
             return;
           }
-          if (node instanceof QueryBuilderFilterTreeOperationNodeData) {
-            buildFilterTree(
-              filterConditionState.propertyExpressionState.propertyExpression,
-              filterState,
-              node,
-            );
-          } else if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
-            buildFilterTree(
-              filterConditionState.propertyExpressionState.propertyExpression,
-              filterState,
-              node,
-            );
-          } else if (
+          if (
+            node instanceof QueryBuilderFilterTreeOperationNodeData ||
+            node instanceof QueryBuilderFilterTreeConditionNodeData ||
             node instanceof QueryBuilderFilterTreeBlankConditionNodeData
           ) {
             buildFilterTree(
@@ -1357,7 +1349,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
         }),
         [node, filterState],
       );
-    dragConnector(dropConnector(dragRef));
+    dragConnector(dropConnector(ref));
     useDragPreviewLayer(dragPreviewConnector);
 
     const { isDroppable } = useDragLayer((monitor) => ({
@@ -1421,7 +1413,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
               QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER_TREE_NODE_CONTENT
             }
             className="query-builder-filter-tree__node__content"
-            ref={dragRef}
+            ref={ref}
             onClick={
               node instanceof QueryBuilderFilterTreeConditionNodeData ||
               node instanceof QueryBuilderFilterTreeBlankConditionNodeData
@@ -1697,7 +1689,7 @@ export const QueryBuilderFilterPanel = observer(
       [applicationStore, filterState, queryBuilderState.observerContext],
     );
 
-    const [{ isDragOver }, dropTargetConnector] = useDrop<
+    const [{ isDragOver }, dropConnector] = useDrop<
       QueryBuilderExplorerTreeDragSource,
       void,
       { isDragOver: boolean }
@@ -1719,8 +1711,8 @@ export const QueryBuilderFilterPanel = observer(
       [handleDrop],
     );
 
-    const addFilterRef = useRef<HTMLInputElement>(null);
-    dropTargetConnector(addFilterRef);
+    const ref = useRef<HTMLInputElement>(null);
+    dropConnector(ref);
 
     return (
       <div
@@ -1818,7 +1810,7 @@ export const QueryBuilderFilterPanel = observer(
           <PanelDropZone
             isDragOver={isDragOver && filterState.isEmpty}
             isDroppable={isDroppable && filterState.isEmpty}
-            dropTargetConnector={dropTargetConnector}
+            dropTargetConnector={dropConnector}
           >
             {filterState.isEmpty && (
               <BlankPanelPlaceholder
@@ -1839,7 +1831,7 @@ export const QueryBuilderFilterPanel = observer(
             )}
             {isDroppable && !filterState.isEmpty && (
               <div
-                ref={addFilterRef}
+                ref={ref}
                 className="query-builder-filter-tree__free-drop-zone__container"
               >
                 <PanelEntryDropZonePlaceholder

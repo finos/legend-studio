@@ -28,6 +28,7 @@ import {
   type DataGridIRowNode,
   type DataGridMenuItemDef,
   type DataGridIAggFuncParams,
+  type DataGridDefaultMenuItem,
 } from '@finos/legend-lego/data-grid';
 import {
   getRowDataFromExecutionResult,
@@ -334,8 +335,8 @@ export const QueryBuilderTDSGridResult = observer(
     const getContextMenuItems = useCallback(
       (
         params: DataGridGetContextMenuItemsParams<QueryBuilderTDSRowDataType>,
-      ): (string | DataGridMenuItemDef)[] => {
-        let result: (string | DataGridMenuItemDef)[] = [];
+      ) => {
+        let result: (DataGridDefaultMenuItem | DataGridMenuItemDef)[] = [];
         const fetchStructureImplementation =
           resultState.queryBuilderState.fetchStructureState.implementation;
         if (fetchStructureImplementation instanceof QueryBuilderTDSState) {
@@ -569,9 +570,7 @@ export const QueryBuilderTDSGridResult = observer(
               suppressClipboardPaste={false}
               suppressContextMenu={false}
               columnDefs={colDefs}
-              getContextMenuItems={(params): (string | DataGridMenuItemDef)[] =>
-                getContextMenuItems(params)
-              }
+              getContextMenuItems={(params) => getContextMenuItems(params)}
             />
           )}
           {resultState.wavgAggregationState?.isApplyingWavg && (

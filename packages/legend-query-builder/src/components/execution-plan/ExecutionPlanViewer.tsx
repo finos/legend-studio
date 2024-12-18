@@ -288,7 +288,7 @@ export const ExecutionPlanViewerPanelContent: React.FC<{
               <div className="query-builder__template--function--editor__code">
                 <CodeEditor
                   inputValue={templateFunctions.reduce(
-                    (total, func) => (total += `${func}\n`),
+                    (total, func) => `${total}${func}\n`,
                     '',
                   )}
                   isReadOnly={true}

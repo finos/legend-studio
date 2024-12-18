@@ -227,7 +227,7 @@ export const DataElementEditor = observer(() => {
     },
     [dataElement, isReadOnly],
   );
-  const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+  const [{ isTaggedValueDragOver }, taggedValueDropConnector] = useDrop<
     ElementDragSource,
     void,
     { isTaggedValueDragOver: boolean }
@@ -254,7 +254,7 @@ export const DataElementEditor = observer(() => {
     },
     [dataElement, isReadOnly],
   );
-  const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+  const [{ isStereotypeDragOver }, stereotypeDropConnector] = useDrop<
     ElementDragSource,
     void,
     { isStereotypeDragOver: boolean }
@@ -352,7 +352,7 @@ export const DataElementEditor = observer(() => {
               <div className="data-editor__content__lists">
                 <PanelDropZone
                   isDragOver={isStereotypeDragOver && !isReadOnly}
-                  dropTargetConnector={dropStereotypeRef}
+                  dropTargetConnector={stereotypeDropConnector}
                 >
                   <PanelContentLists>
                     <StereotypeDragPreviewLayer />
@@ -401,7 +401,7 @@ export const DataElementEditor = observer(() => {
               <div className="data-editor__content__lists">
                 <PanelDropZone
                   isDragOver={isTaggedValueDragOver && !isReadOnly}
-                  dropTargetConnector={dropTaggedValueRef}
+                  dropTargetConnector={taggedValueDropConnector}
                 >
                   <PanelContentLists>
                     <TaggedValueDragPreviewLayer />

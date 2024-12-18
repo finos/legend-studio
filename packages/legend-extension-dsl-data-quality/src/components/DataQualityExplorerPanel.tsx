@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useDrag } from 'react-dnd';
 import { useApplicationStore } from '@finos/legend-application';
@@ -103,6 +103,8 @@ export const QueryBuilderExplorerTreeNodeContainer = observer(
       }),
       [node],
     );
+    const ref = useRef<HTMLDivElement>(null);
+    dragConnector(ref);
     useDragPreviewLayer(dragPreviewConnector);
 
     const isExpandable = Boolean(node.childrenIds.length);
@@ -168,7 +170,7 @@ export const QueryBuilderExplorerTreeNodeContainer = observer(
             : undefined
         }
         onClick={selectNode}
-        ref={node.mappingData.mapped ? dragConnector : undefined}
+        ref={node.mappingData.mapped ? ref : undefined}
         style={{
           paddingLeft: `${(level - 1) * (stepPaddingInRem ?? 1) + 0.5}rem`,
           display: 'flex',

@@ -29,6 +29,7 @@ import { type QueryBuilderTDSPanelDropTarget } from './QueryBuilderTDSPanel.js';
 import { QueryBuilderAggregateOperator_Wavg } from '../../stores/fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_Wavg.js';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
+import { useRef } from 'react';
 
 export const WavgParamDNDZone = (props: {
   column: QueryBuilderAggregateOperator_Wavg;
@@ -55,7 +56,7 @@ export const WavgParamDNDZone = (props: {
     }
   };
 
-  const [{ isDragOver }, dropWavgParam] = useDrop<
+  const [{ isDragOver }, dropConnector] = useDrop<
     QueryBuilderTDSPanelDropTarget,
     void,
     { isDragOver: boolean }
@@ -71,7 +72,8 @@ export const WavgParamDNDZone = (props: {
     }),
     [handleDrop],
   );
-
+  const ref = useRef<HTMLDivElement>(null);
+  dropConnector(ref);
   const { isDroppable } = useDragLayer((monitor) => ({
     isDroppable:
       monitor.isDragging() &&
@@ -81,7 +83,6 @@ export const WavgParamDNDZone = (props: {
   }));
 
   const weightIsSet = () => column.weight !== undefined;
-
   const getWeightName = (): string => {
     if (column instanceof QueryBuilderAggregateOperator_Wavg) {
       return column.weight?.func.value.name ?? '';
@@ -92,8 +93,8 @@ export const WavgParamDNDZone = (props: {
 
   return (
     <div
+      ref={ref}
       data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_WAVG_DROPZONE}
-      ref={dropWavgParam}
     >
       <div>
         <PanelEntryDropZonePlaceholder

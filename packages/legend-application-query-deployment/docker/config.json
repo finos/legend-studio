@@ -1,6 +1,6 @@
 {
   "appName": "query",
-  "env": "prod",
+  "env": "local",
   "engine": {
     "url": "${PROTOCOL}://${ENGINE_HOST}:${ENGINE_PORT}/api"
   },

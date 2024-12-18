@@ -339,7 +339,7 @@ const buildRootGraphFetchSubTree = (
 export const buildGraphFetchTreeData = (
   editorStore: EditorStore,
   tree: DataQualityRootGraphFetchTree,
-  displayRoot: boolean = false,
+  displayRoot: boolean,
   fetchConstraints: boolean,
   isReadOnly: boolean,
 ): DataQualityGraphFetchTreeData => {

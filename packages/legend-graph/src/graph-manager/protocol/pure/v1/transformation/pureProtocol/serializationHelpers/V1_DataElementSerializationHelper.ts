@@ -53,9 +53,9 @@ import { V1_DataElement } from '../../../model/packageableElements/data/V1_DataE
 import {
   V1_stereotypePtrModelSchema,
   V1_taggedValueModelSchema,
-} from './V1_DomainSerializationHelper.js';
+  V1_packageableElementPointerModelSchema,
+} from './V1_CoreSerializationHelper.js';
 import { V1_INTERNAL__UnknownEmbeddedData } from '../../../model/data/V1_INTERNAL__UnknownEmbeddedData.js';
-import { V1_packageableElementPointerModelSchema } from './V1_CoreSerializationHelper.js';
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 

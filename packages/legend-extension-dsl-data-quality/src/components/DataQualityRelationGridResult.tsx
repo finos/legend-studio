@@ -39,6 +39,7 @@ import {
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
   DataGrid,
+  type DataGridDefaultMenuItem,
 } from '@finos/legend-lego/data-grid';
 
 import { useCallback } from 'react';
@@ -129,7 +130,7 @@ export const DataQualityRelationGridResult = observer(
     const getContextMenuItems = useCallback(
       (
         params: DataGridGetContextMenuItemsParams<DataQualityRelationRowDataType>,
-      ): (string | DataGridMenuItemDef)[] => {
+      ): (DataGridDefaultMenuItem | DataGridMenuItemDef)[] => {
         return [
           'copy',
           'copyWithHeaders',
@@ -171,9 +172,7 @@ export const DataQualityRelationGridResult = observer(
             suppressFieldDotNotation={true}
             suppressContextMenu={false}
             columnDefs={colDefs}
-            getContextMenuItems={(params): (string | DataGridMenuItemDef)[] =>
-              getContextMenuItems(params)
-            }
+            getContextMenuItems={(params) => getContextMenuItems(params)}
           />
         </div>
       </div>

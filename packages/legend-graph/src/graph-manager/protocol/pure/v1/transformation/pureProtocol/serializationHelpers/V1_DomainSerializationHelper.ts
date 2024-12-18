@@ -40,6 +40,8 @@ import {
   V1_multiplicityModelSchema,
   V1_packageableElementPointerModelSchema,
   V1_serializePackageableElementPointer,
+  V1_stereotypePtrModelSchema,
+  V1_taggedValueModelSchema,
 } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration.js';
 import {
@@ -55,9 +57,6 @@ import { V1_Class } from '../../../model/packageableElements/domain/V1_Class.js'
 import { V1_Association } from '../../../model/packageableElements/domain/V1_Association.js';
 import { V1_ConcreteFunctionDefinition } from '../../../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
 import { V1_EnumValue } from '../../../model/packageableElements/domain/V1_EnumValue.js';
-import { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
-import { V1_TagPtr } from '../../../model/packageableElements/domain/V1_TagPtr.js';
-import { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
 import { V1_Property } from '../../../model/packageableElements/domain/V1_Property.js';
 import { V1_DerivedProperty } from '../../../model/packageableElements/domain/V1_DerivedProperty.js';
 import { V1_PropertyPointer } from '../../../model/packageableElements/domain/V1_PropertyPointer.js';
@@ -109,23 +108,6 @@ export const V1_propertyPointerModelSchema = createModelSchema(
     property: primitive(),
   },
 );
-
-// ------------------------------------- Profile -------------------------------------
-
-export const V1_stereotypePtrModelSchema = createModelSchema(V1_StereotypePtr, {
-  profile: primitive(),
-  value: primitive(),
-});
-
-export const V1_tagPtrModelSchema = createModelSchema(V1_TagPtr, {
-  profile: primitive(),
-  value: primitive(),
-});
-
-export const V1_taggedValueModelSchema = createModelSchema(V1_TaggedValue, {
-  tag: usingModelSchema(V1_tagPtrModelSchema),
-  value: primitive(),
-});
 
 const V1_ProfileStereotypeSchema = createModelSchema(V1_ProfileStereotype, {
   value: primitive(),

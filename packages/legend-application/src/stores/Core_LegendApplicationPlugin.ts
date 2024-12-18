@@ -30,7 +30,7 @@ import {
   collectSettingConfigurationEntriesFromConfig,
   type SettingConfigurationEntry,
 } from './SettingService.js';
-import { configureComponents } from '@finos/legend-art';
+import { configureResizablePanelComponents } from '@finos/legend-art';
 
 export class Core_LegendApplicationPlugin extends LegendApplicationPlugin {
   static NAME = packageJson.extensions.applicationPlugin;
@@ -49,7 +49,7 @@ export class Core_LegendApplicationPlugin extends LegendApplicationPlugin {
     return [
       async (applicationStore) => {
         // configure UI components
-        configureComponents();
+        configureResizablePanelComponents();
       },
     ];
   }

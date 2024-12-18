@@ -356,7 +356,7 @@ const MappingExecutionQueryEditor = observer(
       },
       [changeClassMapping],
     );
-    const [{ isDragOver, canDrop }, dropRef] = useDrop<
+    const [{ isDragOver, canDrop }, dropConnector] = useDrop<
       MappingElementDragSource,
       void,
       { isDragOver: boolean; canDrop: boolean }
@@ -406,7 +406,7 @@ const MappingExecutionQueryEditor = observer(
         {isStubbed_RawLambda(queryState.query) && (
           <PanelContent>
             <PanelDropZone
-              dropTargetConnector={dropRef}
+              dropTargetConnector={dropConnector}
               isDragOver={isDragOver}
             >
               <BlankPanelPlaceholder
@@ -515,7 +515,7 @@ export const MappingExecutionEmptyInputDataBuilder = observer(
       },
       [changeClassMapping],
     );
-    const [{ isDragOver, canDrop }, dropRef] = useDrop<
+    const [{ isDragOver, canDrop }, dropConnector] = useDrop<
       MappingElementDragSource,
       void,
       { isDragOver: boolean; canDrop: boolean }
@@ -533,7 +533,10 @@ export const MappingExecutionEmptyInputDataBuilder = observer(
 
     return (
       <PanelContent>
-        <PanelDropZone dropTargetConnector={dropRef} isDragOver={isDragOver}>
+        <PanelDropZone
+          dropTargetConnector={dropConnector}
+          isDragOver={isDragOver}
+        >
           <BlankPanelPlaceholder
             text="Choose a class mapping"
             onClick={showClassMappingSelectorModal}

@@ -1023,7 +1023,7 @@ export const FileGenerationConfigurationEditor = observer(
         isReadOnly,
       ],
     );
-    const [{ isScopeElementDragOver }, scopeElementDropRef] = useDrop<
+    const [{ isScopeElementDragOver }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isScopeElementDragOver: boolean }
@@ -1078,7 +1078,7 @@ export const FileGenerationConfigurationEditor = observer(
         </PanelHeader>
         <PanelContent>
           <PanelDropZone
-            dropTargetConnector={scopeElementDropRef}
+            dropTargetConnector={dropConnector}
             isDragOver={
               isScopeElementDragOver && !elementGenerationState && !isReadOnly
             }

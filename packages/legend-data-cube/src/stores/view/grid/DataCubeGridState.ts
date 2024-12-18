@@ -20,7 +20,7 @@ import {
   type DebouncedFunc,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
-import type { GridApi } from '@ag-grid-community/core';
+import type { GridApi } from 'ag-grid-community';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import {
   DataCubeGridClientServerSideDataSource,

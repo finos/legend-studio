@@ -68,16 +68,16 @@ const DataSpaceDiagramCanvas = observer(
       dataSpaceViewerState: DataSpaceViewerState;
       diagram: Diagram;
     }
-  >(function DataSpaceDiagramCanvas(props, ref) {
+  >(function DataSpaceDiagramCanvas(props, _ref) {
     const { dataSpaceViewerState, diagram } = props;
     const diagramViewerState = dataSpaceViewerState.diagramViewerState;
-    const diagramCanvasRef = ref as React.MutableRefObject<HTMLDivElement>;
+    const ref = _ref as React.RefObject<HTMLDivElement>;
     const descriptionText = diagramViewerState.currentDiagram?.description;
 
     const { width, height } = useResizeDetector<HTMLDivElement>({
       refreshMode: 'debounce',
       refreshRate: 50,
-      targetRef: diagramCanvasRef,
+      targetRef: ref,
     });
 
     useEffect(() => {
@@ -85,11 +85,11 @@ const DataSpaceDiagramCanvas = observer(
     }, [diagramViewerState, diagramViewerState.currentDiagram]);
 
     useEffect(() => {
-      const renderer = new DiagramRenderer(diagramCanvasRef.current, diagram);
+      const renderer = new DiagramRenderer(ref.current, diagram);
       diagramViewerState.setDiagramRenderer(renderer);
       diagramViewerState.setupDiagramRenderer();
       renderer.render({ initial: true });
-    }, [diagramCanvasRef, diagramViewerState, diagram]);
+    }, [ref, diagramViewerState, diagram]);
 
     useEffect(() => {
       if (diagramViewerState.isDiagramRendererInitialized) {
@@ -203,7 +203,7 @@ const DataSpaceDiagramCanvas = observer(
           </div>
         )}
         <div
-          ref={diagramCanvasRef}
+          ref={ref}
           className={clsx(
             'diagram-canvas',
             diagramViewerState.diagramCursorClass,

@@ -15,16 +15,9 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import { ServerSideRowModelModule } from '@ag-grid-enterprise/server-side-row-model';
-import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
-import { ClipboardModule } from '@ag-grid-enterprise/clipboard';
-import { MenuModule } from '@ag-grid-enterprise/menu';
-import { SideBarModule } from '@ag-grid-enterprise/side-bar';
-import { ColumnsToolPanelModule } from '@ag-grid-enterprise/column-tool-panel';
-import { AgGridReact } from '@ag-grid-community/react';
-import { CsvExportModule } from '@ag-grid-community/csv-export';
-import { ExcelExportModule } from '@ag-grid-enterprise/excel-export';
+import { AllCommunityModule } from 'ag-grid-community';
+import { AllEnterpriseModule } from 'ag-grid-enterprise';
+import { AgGridReact } from 'ag-grid-react';
 import { DataCubeIcon, Switch, cn, Global, css } from '@finos/legend-art';
 import {
   generateBackgroundColorUtilityClassName,
@@ -36,7 +29,6 @@ import {
   generateTextColorUtilityClassName,
   INTERNAL__GridClientUtilityCssClassName,
 } from '../../../stores/view/grid/DataCubeGridClientEngine.js';
-import { RangeSelectionModule } from '@ag-grid-enterprise/range-selection';
 import {
   DataCubeFont,
   DataCubeFontCase,
@@ -343,6 +335,7 @@ const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
   return (
     <div className="relative h-[calc(100%_-_20px)] w-full">
       <AgGridReact
+        theme="legacy"
         className="data-cube-grid ag-theme-quartz"
         rowModelType="serverSide"
         serverSideDatasource={grid.clientDataSource}
@@ -357,20 +350,7 @@ const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
             console.error = __INTERNAL__original_console_error; // eslint-disable-line no-console
           }
         }}
-        modules={[
-          // community
-          ClientSideRowModelModule,
-          CsvExportModule,
-          // enterprise
-          ServerSideRowModelModule,
-          RowGroupingModule,
-          MenuModule,
-          ClipboardModule,
-          RangeSelectionModule,
-          SideBarModule,
-          ColumnsToolPanelModule,
-          ExcelExportModule,
-        ]}
+        modules={[AllCommunityModule, AllEnterpriseModule]}
         {...generateBaseGridOptions(view)}
       />
     </div>

@@ -74,12 +74,9 @@ export * from './notification/Notification.js';
 export * from './utils/Backdrop.js';
 export * from './utils/ClickAwayListener.js';
 export * from './utils/LegendStyleProvider.js';
-export * from './utils/ComponentsConfiguration.js';
 export * from './utils/ComponentUtils.js';
 
 export * from './markdown/MarkdownTextViewer.js';
-
-export * from './Interaction.js';
 
 export * from './color/TailwindCSSPalette.js';
 export * from './color/ColorPicker.js';

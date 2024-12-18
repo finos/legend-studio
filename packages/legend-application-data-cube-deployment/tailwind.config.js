@@ -14,67 +14,6 @@
  * limitations under the License.
  */
 
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./src/**/*.tsx', '../legend-*/src/**/*.tsx'],
-  theme: {
-    fontSize: {
-      '3xs': ['6px', '6px'],
-      '2xs': ['7px', '7px'],
-      xs: ['8px', '8px'],
-      sm: ['10px', '12px'],
-      base: ['12px', '16px'],
-      lg: ['14px', '20px'],
-      xl: ['16px', '24px'],
-      '2xl': ['20px', '28px'],
-      '3xl': ['24px', '32px'],
-    },
-    fontFamily: {
-      sans: [
-        'Roboto',
-        'ui-sans-serif',
-        'system-ui',
-        'sans-serif',
-        'Apple Color Emoji',
-        'Segoe UI Emoji',
-        'Segoe UI Symbol',
-        'Noto Color Emoji',
-      ],
-      mono: [
-        'ui-monospace',
-        'Roboto Mono',
-        'SFMono-Regular',
-        'Menlo',
-        'Monaco',
-        'Consolas',
-        'Liberation Mono',
-        'Courier New',
-        'monospace',
-      ],
-    },
-  },
-  // Expose Tailwind color as CSS variables
-  // See https://gist.github.com/Merott/d2a19b32db07565e94f10d13d11a8574
-  // TODO: the better solution is to use theme() and PostCSS
-  // See https://gist.github.com/Merott/d2a19b32db07565e94f10d13d11a8574?permalink_comment_id=4729744#gistcomment-4729744
-  plugins: [
-    function ({ addBase, theme }) {
-      function extractColorVars(colorObj, colorGroup = '') {
-        return Object.keys(colorObj).reduce((vars, colorKey) => {
-          const value = colorObj[colorKey];
+import { getBaseConfig } from '@finos/legend-dev-utils/TailwindCSSConfigUtils';
 
-          const newVars =
-            typeof value === 'string'
-              ? { [`--tw-color${colorGroup}-${colorKey}`]: value }
-              : extractColorVars(value, `-${colorKey}`);
-
-          return { ...vars, ...newVars };
-        }, {});
-      }
-
-      addBase({
-        ':root': extractColorVars(theme('colors')),
-      });
-    },
-  ],
-};
+export default getBaseConfig();

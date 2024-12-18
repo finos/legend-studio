@@ -161,8 +161,7 @@ export const WorkspaceUpdateConflictResolver = observer(() => {
             {!conflictResolutionState.hasResolvedAllConflicts && (
               <>
                 {conflicts
-                  .slice()
-                  .sort((a, b) => a.entityName.localeCompare(b.entityName))
+                  .toSorted((a, b) => a.entityName.localeCompare(b.entityName))
                   .map((conflict) => (
                     <EntityChangeConflictSideBarItem
                       key={`conflict-${conflict.entityPath}`}
@@ -174,23 +173,19 @@ export const WorkspaceUpdateConflictResolver = observer(() => {
                 {Boolean(conflicts.length) && Boolean(changes.length) && (
                   <div className="diff-panel__item-section-separator" />
                 )}
-                {changes
-                  .slice()
-                  .sort(entityDiffSorter)
-                  .map((diff) => (
-                    <EntityDiffSideBarItem
-                      key={diff.key}
-                      diff={diff}
-                      isSelected={isSelectedDiff(diff)}
-                      openDiff={openChange(diff)}
-                    />
-                  ))}
+                {changes.toSorted(entityDiffSorter).map((diff) => (
+                  <EntityDiffSideBarItem
+                    key={diff.key}
+                    diff={diff}
+                    isSelected={isSelectedDiff(diff)}
+                    openDiff={openChange(diff)}
+                  />
+                ))}
               </>
             )}
             {conflictResolutionState.hasResolvedAllConflicts &&
               changes
-                .slice()
-                .sort(entityDiffSorter)
+                .toSorted(entityDiffSorter)
                 .map((diff) => (
                   <EntityDiffSideBarItem
                     key={diff.key}

@@ -18,7 +18,7 @@ import { UndoIcon } from '@finos/legend-art';
 import { useEffect } from 'react';
 
 export const UndoButton: React.FC<{
-  parent: React.RefObject<HTMLDivElement>;
+  parent: React.RefObject<HTMLDivElement | null>;
   canUndo: boolean;
   undo: () => void;
 }> = (props) => {

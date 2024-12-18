@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
 import type {
@@ -42,7 +42,6 @@ import {
   DatasetEntitlementUnsupportedReport,
 } from '@finos/legend-graph';
 import { Chart as ChartJS, DoughnutController, ArcElement } from 'chart.js';
-import { Doughnut } from 'react-chartjs-2';
 import { getNullableFirstEntry } from '@finos/legend-shared';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
 
@@ -51,6 +50,8 @@ ChartJS.register(DoughnutController, ArcElement);
 const DataAccessOverviewChart = observer(
   (props: { dataAccessState: DataAccessState }) => {
     const { dataAccessState } = props;
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const chartRef = useRef<ChartJS>(null);
     const entitlementCheckInfo = dataAccessState.entitlementCheckInfo;
     const total = entitlementCheckInfo.total;
     const accessGrantedCount =
@@ -58,43 +59,68 @@ const DataAccessOverviewChart = observer(
     const accessGrantedPercentage =
       getNullableFirstEntry(entitlementCheckInfo.data)?.percentage ?? 0;
 
+    useEffect(() => {
+      if (canvasRef.current && !chartRef.current) {
+        chartRef.current = new ChartJS(canvasRef.current, {
+          type: 'doughnut',
+          data: {
+            labels: [],
+            datasets: [],
+          },
+          options: {
+            responsive: true,
+            resizeDelay: 0,
+            maintainAspectRatio: false,
+            cutout: '75%',
+          },
+        });
+      }
+
+      return () => {
+        chartRef.current?.destroy();
+        chartRef.current = null;
+      };
+    }, []);
+
+    useEffect(() => {
+      if (chartRef.current) {
+        chartRef.current.data = {
+          labels: entitlementCheckInfo.data.map((item) => item.label),
+          datasets: [
+            {
+              data: entitlementCheckInfo.data.map((item) => item.count),
+              backgroundColor: entitlementCheckInfo.data.map(
+                (item) => item.color,
+              ),
+              hoverBorderWidth: 0,
+              borderWidth: 0,
+            },
+          ],
+        };
+        chartRef.current.options = {
+          ...chartRef.current.options,
+          plugins: {
+            tooltip: {
+              enabled: entitlementCheckInfo.total !== 0,
+              usePointStyle: false,
+              boxPadding: 5,
+              callbacks: {
+                labelPointStyle: () => ({
+                  pointStyle: 'rectRounded',
+                  rotation: 0,
+                }),
+              },
+            },
+          },
+        };
+        chartRef.current.update('resize');
+      }
+    }, [entitlementCheckInfo]);
+
     return (
       <div className="data-access-overview__chart">
         <div className="data-access-overview__chart__container">
-          <Doughnut
-            data={{
-              labels: entitlementCheckInfo.data.map((item) => item.label),
-              datasets: [
-                {
-                  data: entitlementCheckInfo.data.map((item) => item.count),
-                  backgroundColor: entitlementCheckInfo.data.map(
-                    (item) => item.color,
-                  ),
-                  hoverBorderWidth: 0,
-                  borderWidth: 0,
-                },
-              ],
-            }}
-            options={{
-              responsive: true,
-              resizeDelay: 0,
-              maintainAspectRatio: false,
-              cutout: '75%',
-              plugins: {
-                tooltip: {
-                  enabled: total !== 0,
-                  usePointStyle: false,
-                  boxPadding: 5,
-                  callbacks: {
-                    labelPointStyle: () => ({
-                      pointStyle: 'rectRounded',
-                      rotation: 0,
-                    }),
-                  },
-                },
-              },
-            }}
-          />
+          <canvas ref={canvasRef} />
           <div className="data-access-overview__chart__stats">
             <div className="data-access-overview__chart__stats__percentage">
               {total === 0 ? 0 : accessGrantedPercentage}%

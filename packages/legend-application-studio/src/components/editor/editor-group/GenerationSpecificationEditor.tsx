@@ -282,7 +282,7 @@ const ModelGenerationSpecifications = observer(
         ),
       [specState],
     );
-    const [{ isDragOver }, dropTargetConnector] = useDrop<
+    const [{ isDragOver }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isDragOver: boolean }
@@ -316,7 +316,7 @@ const ModelGenerationSpecifications = observer(
         <PanelContent>
           <PanelDropZone
             isDragOver={isDragOver}
-            dropTargetConnector={dropTargetConnector}
+            dropTargetConnector={dropConnector}
           >
             {specNodesStates.length ? (
               <div className="generation-spec-model-generation-editor__items">
@@ -445,7 +445,7 @@ const FileGenerationSpecifications = observer(
       },
       [fileGenerations, generationSpec],
     );
-    const [{ isDragOver }, dropTargetConnector] = useDrop<
+    const [{ isDragOver }, dropConnector] = useDrop<
       ElementDragSource,
       void,
       { isDragOver: boolean }
@@ -482,7 +482,7 @@ const FileGenerationSpecifications = observer(
         <PanelContent>
           <PanelDropZone
             isDragOver={isDragOver}
-            dropTargetConnector={dropTargetConnector}
+            dropTargetConnector={dropConnector}
           >
             {generationSpec.fileGenerations.length ? (
               <div className="generation-spec-file-generation-editor__items">

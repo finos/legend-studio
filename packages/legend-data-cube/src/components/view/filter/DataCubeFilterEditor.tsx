@@ -349,7 +349,7 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
       case PRIMITIVE_TYPE.STRING:
         return (
           <DataCubeEditorFilterConditionNodeTextValueEditor
-            ref={ref as React.MutableRefObject<HTMLInputElement>}
+            ref={ref as React.RefObject<HTMLInputElement>}
             value={value.value as string}
             updateValue={(val) => updateValue(val)}
           />
@@ -360,7 +360,7 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
       case PRIMITIVE_TYPE.INTEGER:
         return (
           <DataCubeEditorFilterConditionNodeNumberValueEditor
-            ref={ref as React.MutableRefObject<HTMLInputElement>}
+            ref={ref as React.RefObject<HTMLInputElement>}
             value={value.value as number}
             updateValue={(val) => updateValue(val)}
           />
@@ -370,7 +370,7 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
       case PRIMITIVE_TYPE.DATETIME:
         return (
           <DataCubeEditorFilterConditionNodeDateValueEditor
-            ref={ref as React.MutableRefObject<HTMLInputElement>}
+            ref={ref as React.RefObject<HTMLInputElement>}
             value={value.value as string}
             updateValue={(val) => updateValue(val)}
           />
@@ -378,7 +378,7 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
       case DataCubeOperationAdvancedValueType.COLUMN:
         return (
           <DataCubeEditorFilterConditionNodeColumnSelector
-            ref={ref as React.MutableRefObject<HTMLButtonElement>}
+            ref={ref as React.RefObject<HTMLButtonElement>}
             value={value.value as string}
             updateValue={(val) => updateValue(val)}
             view={view}
