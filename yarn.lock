@@ -3380,6 +3380,7 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-application-studio": "workspace:*"
     "@finos/legend-art": "workspace:*"
+    "@finos/legend-data-cube": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-graph": "workspace:*"
