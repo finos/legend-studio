@@ -21,8 +21,11 @@ import {
   useEditorStore,
 } from '@finos/legend-application-studio';
 import { flowResult } from 'mobx';
-import { guaranteeType } from '@finos/legend-shared';
-import { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
+import { getNullableFirstEntry, guaranteeType } from '@finos/legend-shared';
+import {
+  DataSpace,
+  resolveUsableDataSpaceClasses,
+} from '@finos/legend-extension-dsl-data-space/graph';
 import {
   DataSpaceQueryBuilderState,
   type DataSpaceInfo,
@@ -31,6 +34,7 @@ import {
   QueryBuilderActionConfig,
   QueryBuilderAdvancedWorkflowState,
 } from '@finos/legend-query-builder';
+import { RuntimePointer } from '@finos/legend-graph';
 
 export const queryDataSpace = async (
   dataSpace: DataSpace,
@@ -78,7 +82,35 @@ export const queryDataSpace = async (
         queryBuilderState.setExecutionContext(
           dataSpace.defaultExecutionContext,
         );
-        await queryBuilderState.propagateExecutionContextChange();
+        const mapping = queryBuilderState.executionContext.mapping.value;
+        queryBuilderState.changeMapping(mapping);
+        const mappingModelCoverageAnalysisResult =
+          queryBuilderState.dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
+            mapping.path,
+          );
+        if (mappingModelCoverageAnalysisResult) {
+          queryBuilderState.explorerState.mappingModelCoverageAnalysisResult =
+            mappingModelCoverageAnalysisResult;
+        }
+        queryBuilderState.changeRuntime(
+          new RuntimePointer(queryBuilderState.executionContext.defaultRuntime),
+        );
+        const compatibleClasses = resolveUsableDataSpaceClasses(
+          queryBuilderState.dataSpace,
+          mapping,
+          queryBuilderState.graphManagerState,
+        );
+        // if there is no chosen class or the chosen one is not compatible
+        // with the mapping then pick a compatible class if possible
+        if (
+          !queryBuilderState.class ||
+          !compatibleClasses.includes(queryBuilderState.class)
+        ) {
+          const possibleNewClass = getNullableFirstEntry(compatibleClasses);
+          if (possibleNewClass) {
+            queryBuilderState.changeClass(possibleNewClass);
+          }
+        }
         return queryBuilderState;
       },
       actionConfigs: [],
