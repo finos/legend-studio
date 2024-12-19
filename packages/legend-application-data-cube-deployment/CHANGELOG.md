@@ -1,5 +1,7 @@
 # @finos/legend-application-data-cube-deployment
 
+## 12.84.0
+
 ## 12.83.0
 
 ### Patch Changes
