@@ -77,11 +77,6 @@ export class DataCubeQueryFilterOperation__NotEqualColumn extends DataCubeQueryF
     };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
-    /** TODO: @datacube roundtrip */
-    return undefined;
-  }
-
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
     const variable = _var();
     return _not(

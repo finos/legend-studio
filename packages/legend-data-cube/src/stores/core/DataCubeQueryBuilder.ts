@@ -115,7 +115,6 @@ export function buildExecutableQuery(
       ]),
     );
   }
-
   // --------------------------------- SELECT ---------------------------------
 
   if (data.selectColumns.length) {

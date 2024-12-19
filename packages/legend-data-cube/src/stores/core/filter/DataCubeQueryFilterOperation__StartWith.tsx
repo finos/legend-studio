@@ -72,11 +72,6 @@ export class DataCubeQueryFilterOperation__StartWith extends DataCubeQueryFilter
     };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
-    /** TODO: @datacube roundtrip */
-    return undefined;
-  }
-
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
     return _function(_functionName(DataCubeFunction.STARTS_WITH), [
       _property(condition.name),

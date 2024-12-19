@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { type V1_AppliedFunction } from '@finos/legend-graph';
+import {
+  V1_AppliedProperty,
+  type V1_AppliedFunction,
+} from '@finos/legend-graph';
 import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
 import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
 import type { DataCubeColumn } from '../models/DataCubeColumn.js';
@@ -73,11 +76,6 @@ export class DataCubeQueryFilterOperation__GreaterThanColumn extends DataCubeQue
       type: DataCubeOperationAdvancedValueType.COLUMN,
       value: column.name,
     };
-  }
-
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
-    /** TODO: @datacube roundtrip */
-    return undefined;
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

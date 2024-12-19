@@ -73,11 +73,6 @@ export class DataCubeQueryFilterOperation__NotContain extends DataCubeQueryFilte
     };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
-    /** TODO: @datacube roundtrip */
-    return undefined;
-  }
-
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
     return _not(
       _function(_functionName(DataCubeFunction.CONTAINS), [

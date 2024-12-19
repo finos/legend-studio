@@ -26,7 +26,17 @@ import {
   DATE_FORMAT,
   DATE_TIME_FORMAT,
   PRIMITIVE_TYPE,
-  type V1_AppliedFunction,
+  V1_AppliedFunction,
+  V1_AppliedProperty,
+  V1_CBoolean,
+  V1_CDateTime,
+  V1_CDecimal,
+  V1_CFloat,
+  V1_CInteger,
+  V1_CStrictDate,
+  V1_CStrictTime,
+  V1_CString,
+  V1_PrimitiveValueSpecification,
 } from '@finos/legend-graph';
 
 // --------------------------------- UTILITIES ---------------------------------
@@ -69,6 +79,49 @@ export function getFilterOperation(
   );
 }
 
+function _primitiveType(type: V1_PrimitiveValueSpecification): string {
+  switch (true) {
+    case type instanceof V1_CString:
+      return PRIMITIVE_TYPE.STRING;
+    case type instanceof V1_CBoolean:
+      return PRIMITIVE_TYPE.BOOLEAN;
+    case type instanceof V1_CDecimal:
+      return PRIMITIVE_TYPE.DECIMAL;
+    case type instanceof V1_CInteger:
+      return PRIMITIVE_TYPE.INTEGER;
+    case type instanceof V1_CFloat:
+      return PRIMITIVE_TYPE.FLOAT;
+    case type instanceof V1_CStrictDate:
+      return PRIMITIVE_TYPE.STRICTDATE;
+    case type instanceof V1_CDateTime:
+      return PRIMITIVE_TYPE.DATETIME;
+    case type instanceof V1_CStrictTime:
+      return PRIMITIVE_TYPE.STRICTTIME;
+    default:
+      throw new UnsupportedOperationError(
+        `Unsupported primitive value '${type}'`,
+      );
+  }
+}
+
+function _primitiveValue(type: V1_PrimitiveValueSpecification): any {
+  switch (true) {
+    case type instanceof V1_CString:
+    case type instanceof V1_CBoolean:
+    case type instanceof V1_CDecimal:
+    case type instanceof V1_CInteger:
+    case type instanceof V1_CFloat:
+    case type instanceof V1_CStrictDate:
+    case type instanceof V1_CDateTime:
+    case type instanceof V1_CStrictTime:
+      return type.value;
+    default:
+      throw new UnsupportedOperationError(
+        `Unsupported primitive value '${type}'`,
+      );
+  }
+}
+
 // --------------------------------- CONTRACT ---------------------------------
 
 export abstract class DataCubeQueryFilterOperation {
@@ -84,9 +137,51 @@ export abstract class DataCubeQueryFilterOperation {
     column: DataCubeColumn,
   ): DataCubeOperationValue | undefined;
 
-  abstract buildConditionSnapshot(
+  buildConditionSnapshot(
     expression: V1_AppliedFunction,
-  ): DataCubeQuerySnapshotFilterCondition | undefined;
+  ): DataCubeQuerySnapshotFilterCondition | undefined {
+    const property = expression.parameters[0];
+    const value = expression.parameters[1];
+    if (property instanceof V1_AppliedProperty) {
+      let filterConditionSnapshot = {
+        name: property.property,
+        operator: this.operator,
+        type: property.class!, // TODO: fix this in engine (missing clas in V1_AppliedProperty)
+      } as DataCubeQuerySnapshotFilterCondition;
+
+      if (value instanceof V1_PrimitiveValueSpecification) {
+        filterConditionSnapshot.value = {
+          type: _primitiveType(value),
+          value: _primitiveValue(value),
+        } satisfies DataCubeOperationValue;
+      } else if (value instanceof V1_AppliedProperty) {
+        filterConditionSnapshot.value = {
+          value: value.property,
+          type: value.class!,
+        } satisfies DataCubeOperationValue;
+      } else if (
+        value instanceof V1_AppliedFunction &&
+        value.function == 'toLower'
+      ) {
+        const actualValue = value.parameters[0];
+        if (actualValue instanceof V1_PrimitiveValueSpecification) {
+          filterConditionSnapshot.value = {
+            type: _primitiveType(actualValue),
+            value: _primitiveValue(actualValue),
+          } satisfies DataCubeOperationValue;
+        } else if (actualValue instanceof V1_AppliedProperty) {
+          filterConditionSnapshot.value = {
+            value: actualValue.property,
+            type: actualValue.class!,
+          } satisfies DataCubeOperationValue;
+        }
+      } else {
+        filterConditionSnapshot.value = undefined;
+      }
+      return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
+    }
+    return undefined;
+  }
 
   abstract buildConditionExpression(
     condition: DataCubeQuerySnapshotFilterCondition,

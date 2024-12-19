@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
   DataCubeQueryFilterOperation,
   generateDefaultFilterConditionPrimitiveTypeValue,
@@ -78,11 +77,6 @@ export class DataCubeQueryFilterOperation__LessThan extends DataCubeQueryFilterO
       type: column.type,
       value: generateDefaultFilterConditionPrimitiveTypeValue(column.type),
     };
-  }
-
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
-    /** TODO: @datacube roundtrip */
-    return undefined;
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
