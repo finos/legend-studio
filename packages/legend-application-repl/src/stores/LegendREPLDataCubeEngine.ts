@@ -36,12 +36,17 @@ import {
   V1_serializeValueSpecification,
   type V1_Lambda,
   type V1_ValueSpecification,
+  V1_buildEngineError,
+  V1_EngineError,
 } from '@finos/legend-graph';
 import {
+  assertErrorThrown,
   type DocumentationEntry,
   guaranteeType,
+  HttpStatus,
   isNonNullable,
   LogEvent,
+  NetworkClientError,
   type PlainObject,
 } from '@finos/legend-shared';
 import { LegendREPLDataCubeSource } from './LegendREPLDataCubeSource.js';
@@ -164,10 +169,25 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     baseQuery: V1_ValueSpecification,
     source: DataCubeSource,
   ) {
-    return this.client.getQueryCodeRelationReturnType({
-      code,
-      baseQuery: V1_serializeValueSpecification(baseQuery, []),
-    });
+    try {
+      return await this.client.getQueryCodeRelationReturnType({
+        code,
+        baseQuery: V1_serializeValueSpecification(baseQuery, []),
+      });
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildEngineError(
+          V1_EngineError.serialization.fromJson(
+            error.payload as PlainObject<V1_EngineError>,
+          ),
+        );
+      }
+      throw error;
+    }
   }
 
   async executeQuery(

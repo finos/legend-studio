@@ -15,12 +15,9 @@
  */
 
 import {
-  assertErrorThrown,
   ContentType,
   guaranteeNonNullable,
   HttpHeader,
-  HttpStatus,
-  NetworkClientError,
   SerializationFactory,
   usingModelSchema,
   type NetworkClient,
@@ -32,8 +29,6 @@ import {
   type RelationType,
 } from '@finos/legend-data-cube';
 import {
-  V1_buildEngineError,
-  V1_EngineError,
   type V1_Lambda,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
@@ -170,25 +165,10 @@ export class LegendREPLServerClient {
   async getQueryCodeRelationReturnType(
     input: GetQueryCodeRelationReturnTypeInput,
   ): Promise<RelationType> {
-    try {
-      return this.networkClient.post(
-        `${this.dataCube}/getRelationReturnType/code`,
-        input,
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      if (
-        error instanceof NetworkClientError &&
-        error.response.status === HttpStatus.BAD_REQUEST
-      ) {
-        throw V1_buildEngineError(
-          V1_EngineError.serialization.fromJson(
-            error.payload as PlainObject<V1_EngineError>,
-          ),
-        );
-      }
-      throw error;
-    }
+    return this.networkClient.post(
+      `${this.dataCube}/getRelationReturnType/code`,
+      input,
+    );
   }
 
   async executeQuery(
