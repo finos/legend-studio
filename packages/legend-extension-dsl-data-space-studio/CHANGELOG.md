@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.1.110
+
+### Patch Changes
+
+- [#3751](https://github.com/finos/legend-studio/pull/3751) [`0f72b6a`](https://github.com/finos/legend-studio/commit/0f72b6a1b0901d8c10df42f19e31a393d9c5be28) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - fix a regression where failing to query data product in Studio
+
 ## 0.1.109
 
 ## 0.1.108
