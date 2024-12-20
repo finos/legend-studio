@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import type { DataCubeEngine } from '@finos/legend-data-cube';
-import type { DataCubeGenericSource } from '../model/DataCubeGenericSource.js';
-
-export class LegendCubeViewer {
-  source: DataCubeGenericSource;
-  engine: DataCubeEngine;
-
-  constructor(source: DataCubeGenericSource, engine: DataCubeEngine) {
-    this.source = source;
-    this.engine = engine;
-  }
+export enum LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN {
+  DATA_CUBE_QUERY_ID = 'id',
 }
+
+export const LEGEND_DATA_CUBE_ROUTE_PATTERN = Object.freeze({
+  DEFAULT: '/',
+  VIEW_EXISTING_QUERY: `/:${LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.DATA_CUBE_QUERY_ID}`,
+});
+
+export type ExistingDataCubeViewerPathParams = {
+  [LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.DATA_CUBE_QUERY_ID]: string;
+};

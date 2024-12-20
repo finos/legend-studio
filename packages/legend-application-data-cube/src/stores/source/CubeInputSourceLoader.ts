@@ -15,13 +15,13 @@
  */
 
 import { ActionState, UnsupportedOperationError } from '@finos/legend-shared';
-import { type CubeInputSource } from './CubeInputSource.js';
 import type { DataCubeEngine } from '@finos/legend-data-cube';
 import type { LegendDataCubeStoreContext } from '../LegendDataCubeEditorStore.js';
+import type { DataCubeGenericSource } from '../model/DataCubeGenericSource.js';
 
 export enum DataCubeSourceType {
   LEGEND_QUERY = 'Legend Query',
-  DEPOT_QUERY = 'Depot Query',
+  REPL_QUERY = 'Repl Query',
 }
 
 export abstract class CubeInputSourceState {
@@ -42,7 +42,7 @@ export abstract class CubeInputSourceState {
 
   abstract buildCubeEngine(): Promise<DataCubeEngine | undefined>;
 
-  abstract process(): CubeInputSource;
+  abstract process(): DataCubeGenericSource;
 
   abstract get isValid(): boolean;
 

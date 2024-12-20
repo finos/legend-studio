@@ -20,10 +20,6 @@ import {
   isNonNullable,
 } from '@finos/legend-shared';
 import {
-  LegendSavedQuerySource,
-  type CubeInputSource,
-} from './CubeInputSource.js';
-import {
   CubeInputSourceState,
   DataCubeSourceType,
 } from './CubeInputSourceLoader.js';
@@ -42,6 +38,8 @@ import {
   QueryLoaderState,
 } from '@finos/legend-query-builder';
 import { action, makeObservable, observable } from 'mobx';
+import type { DataCubeGenericSource } from '../model/DataCubeGenericSource.js';
+import { LegendSavedQuerySource } from '../model/LegendSavedQuerySource.js';
 
 export class SavedQueryInputSourceState extends CubeInputSourceState {
   query: LightQuery | undefined;
@@ -78,7 +76,7 @@ export class SavedQueryInputSourceState extends CubeInputSourceState {
     this.query = query;
   }
 
-  override process(): CubeInputSource {
+  override process(): DataCubeGenericSource {
     assertTrue(this.isValid);
     return new LegendSavedQuerySource(guaranteeNonNullable(this.query).id);
   }

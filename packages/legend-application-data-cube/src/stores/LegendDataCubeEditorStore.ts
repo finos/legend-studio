@@ -19,19 +19,34 @@ import {
   type ApplicationStore,
 } from '@finos/legend-application';
 import type { LegendDataCubePluginManager } from '../application/LegendDataCubePluginManager.js';
-import { DepotServerClient } from '@finos/legend-server-depot';
+import { DepotServerClient, resolveVersion } from '@finos/legend-server-depot';
 import type { LegendDataCubeApplicationConfig } from '../application/LegendDataCubeApplicationConfig.js';
-import { GraphManagerState } from '@finos/legend-graph';
+import {
+  GraphManagerState,
+  LegendSDLC,
+  SavedDataCubeQuery,
+  type QueryInfo,
+  type RawLambda,
+} from '@finos/legend-graph';
 import { LegendDataCubeSourceBuilder } from './source/LegendDataCubeSourceBuilder.js';
 import {
   ActionState,
+  UnsupportedOperationError,
   assertErrorThrown,
+  guaranteeNonNullable,
+  uuid,
   type GeneratorFn,
 } from '@finos/legend-shared';
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import { LegendCubeViewer } from './source/LegendCubeViewer.js';
-import type { CubeInputSource } from './source/CubeInputSource.js';
 import type { DataCubeEngine } from '@finos/legend-data-cube';
+import type { DataCubeGenericSource } from './model/DataCubeGenericSource.js';
+import {
+  buildDataCubeGenericSource,
+  serializeDataCubeGenericSource,
+} from './model/DataCubeGenericSourceHelper.js';
+import { LegendSavedQuerySource } from './model/LegendSavedQuerySource.js';
+import { LegendExecutionDataCubeEngine } from './engine/LegendExecutionDataCubeEngine.js';
 
 export type LegendDataCubeApplicationStore = ApplicationStore<
   LegendDataCubeApplicationConfig,
@@ -101,12 +116,19 @@ export class LegendDataCubeStore {
   readonly pluginManager: LegendDataCubePluginManager;
   sourceSelector: LegendDataCubeSourceBuilder;
   cubeViewer: LegendCubeViewer | undefined;
+  saveModal = false;
+  saveModalState = ActionState.create();
 
   constructor(applicationStore: LegendDataCubeApplicationStore) {
     makeObservable(this, {
       cubeViewer: observable,
       sourceSelector: observable,
+      saveModal: observable,
+      setSaveModal: observable,
+      saveModalState: observable,
       initializeView: action,
+      initialize: flow,
+      saveQuery: flow,
     });
     this.applicationStore = applicationStore;
     this.pluginManager = applicationStore.pluginManager;
@@ -114,7 +136,88 @@ export class LegendDataCubeStore {
     this.sourceSelector = new LegendDataCubeSourceBuilder(this.context);
   }
 
-  initializeView(source: CubeInputSource, engine: DataCubeEngine): void {
+  setSaveModal(val: boolean): void {
+    this.saveModal = val;
+  }
+
+  initializeView(source: DataCubeGenericSource, engine: DataCubeEngine): void {
     this.cubeViewer = new LegendCubeViewer(source, engine);
+  }
+
+  *initialize(id: string): GeneratorFn<void> {
+    try {
+      yield flowResult(this.context.initialize());
+      const query =
+        (yield this.context.graphManagerState.graphManager.getDataCubeQuery(
+          id,
+        )) as unknown as SavedDataCubeQuery;
+      const source = buildDataCubeGenericSource(query.source);
+      if (source instanceof LegendSavedQuerySource) {
+        const queryInfo =
+          (yield this.context.graphManagerState.graphManager.getQueryInfo(
+            source.id,
+          )) as unknown as QueryInfo;
+        const execConext =
+          (yield this.context.graphManagerState.graphManager.resolveQueryInfoExecutionContext(
+            queryInfo,
+            () =>
+              this.context.depotServerClient.getVersionEntities(
+                queryInfo.groupId,
+                queryInfo.artifactId,
+                queryInfo.versionId,
+              ),
+          )) as { mapping: string | undefined; runtime: string };
+        const lambda =
+          (yield this.context.graphManagerState.graphManager.pureCodeToLambda(
+            queryInfo.content,
+          )) as unknown as RawLambda;
+        this.context.graphManagerState.graph.setOrigin(
+          new LegendSDLC(
+            queryInfo.groupId,
+            queryInfo.artifactId,
+            resolveVersion(queryInfo.versionId),
+          ),
+        );
+        // TODO: we should be able to call engine and convert lambda to relation if not one.
+        const engine = new LegendExecutionDataCubeEngine(
+          lambda,
+          undefined,
+          execConext.mapping,
+          execConext.runtime,
+          this.context.graphManagerState,
+        );
+        this.initializeView(source, engine);
+      } else {
+        throw new UnsupportedOperationError('not supported');
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Unable to initialie query with id '${id}'`,
+      );
+    }
+  }
+
+  *saveQuery(name: string): GeneratorFn<void> {
+    try {
+      this.saveModalState.inProgress();
+      const view = guaranteeNonNullable(this.cubeViewer);
+      const content = serializeDataCubeGenericSource(view.source);
+      const cubeQuery = new SavedDataCubeQuery();
+      cubeQuery.source = content;
+      cubeQuery.query = content;
+      cubeQuery.name = name;
+      cubeQuery.id = uuid();
+      yield this.context.graphManagerState.graphManager.createQueryDataCube(
+        cubeQuery,
+      );
+      this.saveModalState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.saveModalState.fail();
+      this.applicationStore.notificationService.notifyError(
+        `Unable to save query`,
+      );
+    }
   }
 }

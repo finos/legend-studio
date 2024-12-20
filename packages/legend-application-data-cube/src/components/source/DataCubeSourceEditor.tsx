@@ -28,8 +28,8 @@ import { SavedQuerySourceEditor } from './SavedQuerySourceEditor.js';
 import { SavedQueryInputSourceState } from '../../stores/source/SavedQueryInputSourceState.js';
 import { useLegendDataCubeBaseStore } from '../LegendDataCubeFrameworkProvider.js';
 import { flowResult } from 'mobx';
-import type { CubeInputSource } from '../../stores/source/CubeInputSource.js';
 import type { DataCubeEngine } from '@finos/legend-data-cube';
+import type { DataCubeGenericSource } from '../../stores/model/DataCubeGenericSource.js';
 
 export const DataCubeSourceEditor = observer(
   (props: { sourceBuilder: LegendDataCubeSourceBuilder }) => {
@@ -111,7 +111,7 @@ export const DataCubeSourceEditor = observer(
               onClick={() => {
                 flowResult(
                   sourceBuilder.inputSource(
-                    (source: CubeInputSource, engine: DataCubeEngine) =>
+                    (source: DataCubeGenericSource, engine: DataCubeEngine) =>
                       store.initializeView(source, engine),
                   ),
                 ).catch(store.context.applicationStore.alertUnhandledError);

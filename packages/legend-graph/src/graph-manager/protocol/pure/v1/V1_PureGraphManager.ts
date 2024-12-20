@@ -342,6 +342,7 @@ import type { RelationTypeMetadata } from '../../../action/relation/RelationType
 import type { CodeCompletionResult } from '../../../action/compilation/Completion.js';
 import { V1_CompleteCodeInput } from './engine/compilation/V1_CompleteCodeInput.js';
 import type { DeploymentResult } from '../../../action/DeploymentResult.js';
+import type { SavedDataCubeQuery } from '../../../action/data-cube/SavedDataCubeQuery.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -3247,6 +3248,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         `Unable to resolve execution context for query ${query.id}`,
       );
     }
+  }
+
+  // --------------------------------------------- Data Cube Query ---------------------------------------------
+
+  override async getDataCubeQuery(
+    queryId: string,
+  ): Promise<SavedDataCubeQuery> {
+    const query = await this.engine.getDataCubeQuery(queryId);
+    return query;
+  }
+  override async createQueryDataCube(
+    dataCubeQuery: SavedDataCubeQuery,
+  ): Promise<SavedDataCubeQuery> {
+    const query = await this.engine.createDataCubeQuery(dataCubeQuery);
+    return query;
+  }
+
+  override async deleteDataCubeQuery(queryId: string): Promise<void> {
+    await this.engine.deleteDataCubeQuery(queryId);
   }
 
   // --------------------------------------------- Analysis ---------------------------------------------
