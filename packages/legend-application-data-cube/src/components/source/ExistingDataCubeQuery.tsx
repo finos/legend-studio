@@ -24,7 +24,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN,
   type ExistingDataCubeViewerPathParams,
-} from '../../__lib__/DataCubeNavigation.js';
+} from '../../__lib__/LegendDataCubeNavigation.js';
 import { flowResult } from 'mobx';
 
 export const ExistingDataCubeQuery = observer(() => {

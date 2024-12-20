@@ -21,9 +21,7 @@ export class SavedDataCubeQuery {
   id!: string;
   name!: string;
   description: string | undefined;
-  source!: PlainObject<object>;
-  // TODO: update to 'content' once engine version is updated
-  query!: PlainObject<object>;
+  content!: PlainObject<object>;
   owner: string | undefined;
 
   static readonly serialization = new SerializationFactory(
@@ -31,8 +29,7 @@ export class SavedDataCubeQuery {
       id: primitive(),
       name: primitive(),
       description: optional(primitive()),
-      source: raw(),
-      query: raw(),
+      content: raw(),
       owner: optional(primitive()),
     }),
   );

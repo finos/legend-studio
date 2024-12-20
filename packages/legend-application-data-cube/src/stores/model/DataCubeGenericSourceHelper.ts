@@ -16,6 +16,7 @@
 
 import {
   UnsupportedOperationError,
+  optionalCustom,
   usingConstantValueSchema,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -26,7 +27,10 @@ import {
   primitive,
   deserialize,
   serialize,
+  optional,
+  raw,
 } from 'serializr';
+import { DataCubeQueryConent } from './DataCubeQueryContent.js';
 
 enum SavedDataCubeQueryType {
   LEGEND_QUERY = 'LegendQuery',
@@ -40,7 +44,7 @@ export const legendSavedQuerySourceModelSchema = createModelSchema(
   },
 );
 
-export const buildDataCubeGenericSource = (
+const deserializeDataCubeGenericSource = (
   content: PlainObject<object>,
 ): DataCubeGenericSource => {
   switch (content._type) {
@@ -54,11 +58,40 @@ export const buildDataCubeGenericSource = (
   );
 };
 
-export const serializeDataCubeGenericSource = (
+const serializeDataCubeGenericSource = (
   genericSource: DataCubeGenericSource,
 ): PlainObject<DataCubeGenericSource> => {
   if (genericSource instanceof LegendSavedQuerySource) {
     return serialize(legendSavedQuerySourceModelSchema, genericSource);
   }
   throw new UnsupportedOperationError(`Can't serialize saved data cube`);
+};
+
+const dataCubeQueryConentModelSchema = createModelSchema(DataCubeQueryConent, {
+  query: optional(primitive()),
+  configuration: optional(raw()),
+  source: optionalCustom(
+    (val) => serializeDataCubeGenericSource(val),
+    (val) => deserializeDataCubeGenericSource(val),
+  ),
+});
+
+export const createQueryBuilderContent = (
+  source: DataCubeGenericSource,
+): DataCubeQueryConent => {
+  const content = new DataCubeQueryConent();
+  content.source = source;
+  return content;
+};
+
+export const serializeDataCubeQueryConent = (
+  content: DataCubeQueryConent,
+): PlainObject<DataCubeQueryConent> => {
+  return serialize(dataCubeQueryConentModelSchema, content);
+};
+
+export const deserializeDataCubeQueryConent = (
+  content: PlainObject<DataCubeQueryConent>,
+): DataCubeQueryConent => {
+  return deserialize(dataCubeQueryConentModelSchema, content);
 };
