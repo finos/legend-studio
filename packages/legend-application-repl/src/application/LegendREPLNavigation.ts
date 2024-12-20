@@ -14,16 +14,10 @@
  * limitations under the License.
  */
 
-export * from './stores/core/models/DataCubeQuery.js';
-export * from './stores/core/models/DataCubeSource.js';
-export * from './stores/core/models/DataCubeConfiguration.js';
-
-export * from './stores/core/DataCubeEngine.js';
-export * from './stores/core/DataCubeQueryEngine.js';
-export * from './stores/core/DataCubeQueryBuilderUtils.js';
-export * from './stores/DataCubeAPI.js';
-export * from './stores/DataCubeOptions.js';
-export { DataCubeSettingKey } from './stores/DataCubeSettings.js';
-
-export * from './components/core/DataCubeAlert.js';
-export * from './components/DataCube.js';
+/**
+ * @external_application_navigation This depends on Legend Data Cube routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateDataCubeViewUrl = (
+  hostedApplicationBaseUrl: string,
+  id: string,
+): string => `${hostedApplicationBaseUrl}/${id}`;

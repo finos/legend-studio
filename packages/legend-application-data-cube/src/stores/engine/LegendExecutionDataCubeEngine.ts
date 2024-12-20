@@ -37,12 +37,16 @@ import {
   DataCubeSource,
   type RelationType,
   DataCubeQuery,
-  type DataCubeInitialInput,
   type CompletionItem,
   _function,
   DataCubeFunction,
 } from '@finos/legend-data-cube';
-import { guaranteeType, isNonNullable, LogService } from '@finos/legend-shared';
+import {
+  guaranteeType,
+  isNonNullable,
+  LogService,
+  type PlainObject,
+} from '@finos/legend-shared';
 
 class QueryBuilderDataCubeSource extends DataCubeSource {
   mapping?: string | undefined;
@@ -77,11 +81,11 @@ export class LegendExecutionDataCubeEngine extends DataCubeEngine {
     return `Query Builder Report`;
   }
 
-  override getInitialInput(): Promise<DataCubeInitialInput> {
-    return this.buildBaseQuery();
+  get graph(): PureModel {
+    return this.graphState.graph;
   }
 
-  async buildBaseQuery(): Promise<DataCubeInitialInput> {
+  private getSourceFunctionExpression() {
     let srcFuncExp = V1_deserializeValueSpecification(
       this.graphState.graphManager.serializeRawValueSpecification(
         this.selectInitialQuery,
@@ -97,6 +101,11 @@ export class LegendExecutionDataCubeEngine extends DataCubeEngine {
     ) {
       srcFuncExp = srcFuncExp.body[0];
     }
+    return srcFuncExp;
+  }
+
+  async getBaseQuery(): Promise<DataCubeQuery> {
+    const srcFuncExp = this.getSourceFunctionExpression();
     this._parameters = this.selectInitialQuery.parameters;
     const fromFuncExp = new V1_AppliedFunction();
     fromFuncExp.function = _functionName(SUPPORTED_FUNCTIONS.FROM);
@@ -111,19 +120,20 @@ export class LegendExecutionDataCubeEngine extends DataCubeEngine {
       .columns;
     const query = new DataCubeQuery();
     query.query = `~[${columns.map((e) => `'${e.name}'`)}]->select()`;
+
+    return query;
+  }
+
+  async processQuerySource(value: PlainObject) {
+    const srcFuncExp = this.getSourceFunctionExpression();
+    const columns = (await this.getRelationalType(this.selectInitialQuery))
+      .columns;
     const source = new QueryBuilderDataCubeSource();
     source.sourceColumns = columns;
     source.mapping = this.mappingPath;
     source.runtime = this.runtimePath;
     source.query = srcFuncExp;
-    return {
-      query,
-      source,
-    };
-  }
-
-  get graph(): PureModel {
-    return this.graphState.graph;
+    return source;
   }
 
   private buildRawLambdaFromValueSpec(query: V1_Lambda): RawLambda {
@@ -156,7 +166,7 @@ export class LegendExecutionDataCubeEngine extends DataCubeEngine {
     return result.completions as CompletionItem[];
   }
 
-  override async parseValueSpecification(
+  async parseValueSpecification(
     code: string,
     returnSourceInformation?: boolean,
   ) {
@@ -169,7 +179,7 @@ export class LegendExecutionDataCubeEngine extends DataCubeEngine {
     );
   }
 
-  override getValueSpecificationCode(
+  async getValueSpecificationCode(
     value: V1_ValueSpecification,
     pretty?: boolean | undefined,
   ) {
@@ -188,12 +198,12 @@ export class LegendExecutionDataCubeEngine extends DataCubeEngine {
     return relationType;
   }
 
-  override getQueryRelationType(query: V1_Lambda, source: DataCubeSource) {
+  async getQueryRelationType(query: V1_Lambda, source: DataCubeSource) {
     const lambda = this.buildRawLambdaFromValueSpec(query);
     return this.getRelationalType(lambda);
   }
 
-  override async getQueryCodeRelationReturnType(
+  async getQueryCodeRelationReturnType(
     code: string,
     baseQuery: V1_ValueSpecification,
     source: DataCubeSource,
@@ -208,7 +218,7 @@ export class LegendExecutionDataCubeEngine extends DataCubeEngine {
     );
   }
 
-  override async executeQuery(query: V1_Lambda, source: DataCubeSource) {
+  async executeQuery(query: V1_Lambda, source: DataCubeSource) {
     const lambda = this.buildRawLambdaFromValueSpec(query);
     lambda.parameters = this._parameters;
     const [executionWithMetadata, queryString] = await Promise.all([
@@ -240,7 +250,7 @@ export class LegendExecutionDataCubeEngine extends DataCubeEngine {
     };
   }
 
-  override buildExecutionContext(
+  buildExecutionContext(
     source: DataCubeSource,
   ): V1_AppliedFunction | undefined {
     if (source instanceof QueryBuilderDataCubeSource) {

@@ -28,12 +28,10 @@ import { action, makeObservable, observable } from 'mobx';
 import { DataCubeFilterEditorState } from './filter/DataCubeFilterEditorState.js';
 import { DataCubeExtendManagerState } from './extend/DataCubeExtendManagerState.js';
 import type { DataCubeState } from '../DataCubeState.js';
-import type {
-  DataCubeEngine,
-  DataCubeInitialInput,
-} from '../core/DataCubeEngine.js';
+import type { DataCubeEngine } from '../core/DataCubeEngine.js';
 import { AlertType } from '../../components/core/DataCubeAlert.js';
 import type { DataCubeSource } from '../core/models/DataCubeSource.js';
+import type { DataCubeQuery } from '../core/models/DataCubeQuery.js';
 
 class DataCubeTask {
   uuid = uuid();
@@ -106,7 +104,7 @@ export class DataCubeViewState {
     return task;
   }
 
-  async initialize(initialInput?: DataCubeInitialInput | undefined) {
+  async initialize(initialQuery?: DataCubeQuery | undefined) {
     const task = this.newTask('Initializing');
     try {
       await Promise.all(
@@ -121,8 +119,8 @@ export class DataCubeViewState {
           this.snapshotManager.registerSubscriber(state);
         }),
       );
-      const input = initialInput ?? (await this.engine.getInitialInput());
-      if (!input) {
+      const baseQuery = initialQuery ?? (await this.engine.getBaseQuery());
+      if (!baseQuery) {
         this.dataCube.alertAction({
           message: `Initialization Failure: No initial input provided`,
           prompt: `Make sure to either specify the initial input when setting up DataCube or the initial input getter in engine.`,
@@ -131,14 +129,14 @@ export class DataCubeViewState {
         });
         return;
       }
-      this._source = input.source;
+      this._source = await this.engine.processQuerySource(baseQuery.source);
       const partialQuery = await this.engine.parseValueSpecification(
-        input.query.query,
+        baseQuery.query,
       );
       const initialSnapshot = validateAndBuildQuerySnapshot(
         partialQuery,
         this.source,
-        input.query,
+        baseQuery,
       );
       this.snapshotManager.broadcastSnapshot(initialSnapshot);
     } catch (error: unknown) {

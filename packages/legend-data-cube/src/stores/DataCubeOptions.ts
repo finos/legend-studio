@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { DataCubeInitialInput } from './core/DataCubeEngine.js';
 import type { DataCubeSource } from './core/models/DataCubeSource.js';
 
 export type DataCubeOptions = {
@@ -22,7 +21,6 @@ export type DataCubeOptions = {
   gridClientRowBuffer?: number | undefined;
   gridClientPurgeClosedRowNodes?: boolean | undefined;
   gridClientSuppressLargeDatasetWarning?: boolean | undefined;
-  initialInput?: DataCubeInitialInput | undefined;
 
   onNameChanged?: ((name: string, source: DataCubeSource) => void) | undefined;
   onSettingChanged?:

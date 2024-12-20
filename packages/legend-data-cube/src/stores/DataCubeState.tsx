@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type DataCubeEngine,
-  type DataCubeInitialInput,
-} from './core/DataCubeEngine.js';
+import { type DataCubeEngine } from './core/DataCubeEngine.js';
 import { DataCubeViewState } from './view/DataCubeViewState.js';
 import type { DisplayState } from './core/DataCubeLayoutManagerState.js';
 import { DocumentationPanel } from '../components/core/DataCubeDocumentationPanel.js';
@@ -55,7 +52,6 @@ export class DataCubeState implements DataCubeAPI {
       ) => void)
     | undefined;
 
-  initialInput?: DataCubeInitialInput | undefined;
   currentDocumentationEntry?: DocumentationEntry | undefined;
   currentActionAlert?: ActionAlert | undefined;
 
@@ -101,7 +97,6 @@ export class DataCubeState implements DataCubeAPI {
 
     this.onNameChanged = options?.onNameChanged;
     this.onSettingChanged = options?.onSettingChanged;
-    this.initialInput = options?.initialInput;
 
     this.settings.enableDebugMode =
       options?.enableDebugMode !== undefined

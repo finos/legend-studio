@@ -117,11 +117,6 @@ type DataCubeExecutionResult = {
   executedSQL: string;
 };
 
-export type DataCubeInitialInput = {
-  query: DataCubeQuery;
-  source: DataCubeSource;
-};
-
 export type DataCubeEngineConfiguration = {
   gridClientLicense?: string | undefined;
 };
@@ -203,9 +198,12 @@ export abstract class DataCubeEngine {
     return getAggregateOperation(value, this.aggregateOperations);
   }
 
-  async getInitialInput(): Promise<DataCubeInitialInput | undefined> {
-    return undefined;
-  }
+  abstract getBaseQuery(): Promise<DataCubeQuery | undefined>;
+  abstract processQuerySource(value: PlainObject): Promise<DataCubeSource>;
+  // abstract serializeQuerySource(
+  //   value: DataCubeSource,
+  //   unprocessedSource: PlainObject,
+  // ): Promise<PlainObject>;
 
   abstract parseValueSpecification(
     code: string,

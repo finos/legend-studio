@@ -15,9 +15,14 @@
  */
 
 import { DataCubeSource } from '@finos/legend-data-cube';
+import type { PlainObject } from '@finos/legend-shared';
 
 export class LegendREPLDataCubeSource extends DataCubeSource {
   runtime!: string;
+
   mapping?: string | undefined;
   timestamp!: number;
+  model?: PlainObject | undefined;
+  isLocal!: boolean;
+  isPersistenceSupported!: boolean;
 }

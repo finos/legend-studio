@@ -19,12 +19,12 @@ import {
   guaranteeNonNullable,
   HttpHeader,
   SerializationFactory,
-  usingModelSchema,
+  usingConstantValueSchema,
   type NetworkClient,
   type PlainObject,
 } from '@finos/legend-shared';
 import {
-  DataCubeQuery,
+  type DataCubeQuery,
   type CompletionItem,
   type RelationType,
 } from '@finos/legend-data-cube';
@@ -32,7 +32,7 @@ import {
   type V1_Lambda,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import { createModelSchema, optional, primitive } from 'serializr';
+import { createModelSchema, optional, primitive, raw } from 'serializr';
 
 type GetValueSpecificationCodeInput = {
   value: PlainObject<V1_ValueSpecification>;
@@ -71,17 +71,28 @@ type ExecutionResult = {
 
 type InfrastructureInfo = {
   gridClientLicense?: string | undefined;
+  queryServerBaseUrl?: string | undefined;
+  hostedApplicationBaseUrl?: string | undefined;
 };
 
-class QuerySource {
-  runtime!: string;
-  mapping?: string | undefined;
+export const REPL_DATA_CUBE_SOURCE_TYPE = 'repl';
+
+class REPLBaseDataCubeQuerySource {
   query!: string;
+  runtime!: string;
+  model?: PlainObject | undefined;
+
+  mapping?: string | undefined;
   timestamp!: number;
+  isLocal!: boolean;
+  isPersistenceSupported!: boolean;
+  // columns // we don't need this analytics, we will get this from the query directly
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(QuerySource, {
+    createModelSchema(REPLBaseDataCubeQuerySource, {
+      _type: usingConstantValueSchema(REPL_DATA_CUBE_SOURCE_TYPE),
       mapping: optional(primitive()),
+      model: optional(raw()),
       query: primitive(),
       runtime: primitive(),
       timestamp: primitive(),
@@ -89,16 +100,10 @@ class QuerySource {
   );
 }
 
-export class GetBaseQueryResult {
-  query!: DataCubeQuery;
-  source!: QuerySource;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(GetBaseQueryResult, {
-      query: usingModelSchema(DataCubeQuery.serialization.schema),
-      source: usingModelSchema(QuerySource.serialization.schema),
-    }),
-  );
+export function deserializeREPLQuerySource(
+  value: PlainObject<REPLBaseDataCubeQuerySource>,
+) {
+  return REPLBaseDataCubeQuerySource.serialization.fromJson(value);
 }
 
 export class LegendREPLServerClient {
@@ -149,7 +154,7 @@ export class LegendREPLServerClient {
     );
   }
 
-  async getBaseQuery(): Promise<PlainObject<GetBaseQueryResult>> {
+  async getBaseQuery(): Promise<PlainObject<DataCubeQuery>> {
     return this.networkClient.get(`${this.dataCube}/getBaseQuery`);
   }
 

@@ -15,7 +15,8 @@
  */
 
 import {
-  GetBaseQueryResult,
+  deserializeREPLQuerySource,
+  REPL_DATA_CUBE_SOURCE_TYPE,
   type LegendREPLServerClient,
 } from './LegendREPLServerClient.js';
 import {
@@ -24,8 +25,9 @@ import {
   _lambda,
   DataCubeEngine,
   DataCubeFunction,
-  type DataCubeAPI,
+  DataCubeQuery,
   type DataCubeSource,
+  type DataCubeAPI,
 } from '@finos/legend-data-cube';
 import {
   TDSExecutionResult,
@@ -102,32 +104,40 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     };
   }
 
-  override async getInitialInput() {
-    const baseQuery = GetBaseQueryResult.serialization.fromJson(
+  async getBaseQuery() {
+    return DataCubeQuery.serialization.fromJson(
       await this.client.getBaseQuery(),
     );
+  }
+
+  async processQuerySource(value: PlainObject) {
+    const _source = deserializeREPLQuerySource(value);
+    if (value._type !== REPL_DATA_CUBE_SOURCE_TYPE) {
+      throw new Error(
+        `Can't process query source of type '${value._type}'. Only type '${REPL_DATA_CUBE_SOURCE_TYPE}' is supported.`,
+      );
+    }
+
     const source = new LegendREPLDataCubeSource();
-    source.mapping = baseQuery.source.mapping;
-    source.query = await this.parseValueSpecification(
-      baseQuery.source.query,
-      false,
-    );
-    source.runtime = baseQuery.source.runtime;
-    source.timestamp = baseQuery.source.timestamp;
+    source.query = await this.parseValueSpecification(_source.query, false);
     source.sourceColumns = (
       await this.getQueryRelationType(_lambda([], [source.query]), source)
     ).columns;
+    source.runtime = _source.runtime;
 
-    return {
-      query: baseQuery.query,
-      source,
-    };
+    source.mapping = _source.mapping;
+    source.timestamp = _source.timestamp;
+    source.model = _source.model;
+    source.isLocal = _source.isLocal;
+    source.isPersistenceSupported = _source.isPersistenceSupported;
+
+    return source;
   }
 
   async parseValueSpecification(
     code: string,
     returnSourceInformation?: boolean,
-  ): Promise<V1_ValueSpecification> {
+  ) {
     return V1_deserializeValueSpecification(
       await this.client.parseValueSpecification({
         code,
