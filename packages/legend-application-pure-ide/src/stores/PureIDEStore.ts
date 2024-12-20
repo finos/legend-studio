@@ -196,6 +196,7 @@ export class PureIDEStore implements CommandRegistrar {
       loadFile: flow,
       execute: flow,
       executeGo: flow,
+      debugState: flow,
       manageExecuteGoResult: flow,
       executeTests: flow,
       executeFullTestSuite: flow,
@@ -877,6 +878,24 @@ export class PureIDEStore implements CommandRegistrar {
           clearTerminal: true,
         },
       ),
+    );
+  }
+
+  *debugState(command: { command: string; args: any[] }): GeneratorFn<void> {
+    yield flowResult(
+      this.client
+        .execute([], 'debugging', command)
+        .then((r) => {
+          const execResult = deserializeExecutionResult(
+            guaranteeNonNullable(r),
+          );
+          this.applicationStore.terminalService.terminal.output(
+            execResult.text!,
+          );
+        })
+        .catch((er) => {
+          this.applicationStore.terminalService.terminal.fail(er.message);
+        }),
     );
   }
 
