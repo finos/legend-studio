@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { generatePath } from '@finos/legend-application/browser';
+
 export enum LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN {
   DATA_CUBE_QUERY_ID = 'id',
 }
@@ -25,4 +27,10 @@ export const LEGEND_DATA_CUBE_ROUTE_PATTERN = Object.freeze({
 
 export type ExistingDataCubeViewerPathParams = {
   [LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.DATA_CUBE_QUERY_ID]: string;
+};
+
+export const generatedSavedQueryUrl = (id: string): string => {
+  return generatePath(LEGEND_DATA_CUBE_ROUTE_PATTERN.VIEW_EXISTING_QUERY, {
+    id,
+  });
 };

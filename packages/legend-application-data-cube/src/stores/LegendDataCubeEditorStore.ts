@@ -42,11 +42,13 @@ import { LegendCubeViewer } from './source/LegendCubeViewer.js';
 import type { DataCubeEngine } from '@finos/legend-data-cube';
 import type { DataCubeGenericSource } from './model/DataCubeGenericSource.js';
 import {
-  buildDataCubeGenericSource,
-  serializeDataCubeGenericSource,
+  createQueryBuilderContent,
+  deserializeDataCubeQueryConent,
+  serializeDataCubeQueryConent,
 } from './model/DataCubeGenericSourceHelper.js';
 import { LegendSavedQuerySource } from './model/LegendSavedQuerySource.js';
 import { LegendExecutionDataCubeEngine } from './engine/LegendExecutionDataCubeEngine.js';
+import { generatedSavedQueryUrl } from '../__lib__/LegendDataCubeNavigation.js';
 
 export type LegendDataCubeApplicationStore = ApplicationStore<
   LegendDataCubeApplicationConfig,
@@ -118,6 +120,7 @@ export class LegendDataCubeStore {
   cubeViewer: LegendCubeViewer | undefined;
   saveModal = false;
   saveModalState = ActionState.create();
+  savedQuery: SavedDataCubeQuery | undefined;
 
   constructor(applicationStore: LegendDataCubeApplicationStore) {
     makeObservable(this, {
@@ -126,6 +129,7 @@ export class LegendDataCubeStore {
       saveModal: observable,
       setSaveModal: observable,
       saveModalState: observable,
+      savedQuery: observable,
       initializeView: action,
       initialize: flow,
       saveQuery: flow,
@@ -151,7 +155,8 @@ export class LegendDataCubeStore {
         (yield this.context.graphManagerState.graphManager.getDataCubeQuery(
           id,
         )) as unknown as SavedDataCubeQuery;
-      const source = buildDataCubeGenericSource(query.source);
+      this.savedQuery = query;
+      const source = deserializeDataCubeQueryConent(query.content).source;
       if (source instanceof LegendSavedQuerySource) {
         const queryInfo =
           (yield this.context.graphManagerState.graphManager.getQueryInfo(
@@ -202,15 +207,23 @@ export class LegendDataCubeStore {
     try {
       this.saveModalState.inProgress();
       const view = guaranteeNonNullable(this.cubeViewer);
-      const content = serializeDataCubeGenericSource(view.source);
+      const content = serializeDataCubeQueryConent(
+        createQueryBuilderContent(view.source),
+      );
       const cubeQuery = new SavedDataCubeQuery();
-      cubeQuery.source = content;
-      cubeQuery.query = content;
+      cubeQuery.content = content;
       cubeQuery.name = name;
       cubeQuery.id = uuid();
-      yield this.context.graphManagerState.graphManager.createQueryDataCube(
-        cubeQuery,
+      const querySaved =
+        (yield this.context.graphManagerState.graphManager.createQueryDataCube(
+          cubeQuery,
+        )) as unknown as SavedDataCubeQuery;
+      this.savedQuery = querySaved;
+      // TODO: fix reload
+      this.applicationStore.navigationService.navigator.goToLocation(
+        generatedSavedQueryUrl(querySaved.id),
       );
+      this.setSaveModal(false);
       this.saveModalState.complete();
     } catch (error) {
       assertErrorThrown(error);

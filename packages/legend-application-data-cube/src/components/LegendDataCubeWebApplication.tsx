@@ -20,7 +20,7 @@ import { LegendDataCubeFrameworkProvider } from './LegendDataCubeFrameworkProvid
 import { observer } from 'mobx-react-lite';
 import { DataCubeEditor } from './DataCubeEditor.js';
 import { ExistingDataCubeQuery } from './source/ExistingDataCubeQuery.js';
-import { LEGEND_DATA_CUBE_ROUTE_PATTERN } from '../__lib__/DataCubeNavigation.js';
+import { LEGEND_DATA_CUBE_ROUTE_PATTERN } from '../__lib__/LegendDataCubeNavigation.js';
 
 const LegendDataCubeWebApplicationRouter = observer(() => {
   return (

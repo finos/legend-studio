@@ -18,7 +18,7 @@ import type { PlainObject } from '@finos/legend-shared';
 import type { DataCubeGenericSource } from './DataCubeGenericSource.js';
 
 export class DataCubeQueryConent {
-  query!: string;
+  query: string | undefined;
   configuration: PlainObject<object> | undefined;
   source!: DataCubeGenericSource;
 }
