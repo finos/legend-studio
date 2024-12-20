@@ -28,8 +28,8 @@ import {
   guaranteeNonNullable,
   type GeneratorFn,
 } from '@finos/legend-shared';
-import type { CubeInputSource } from './CubeInputSource.js';
 import type { DataCubeEngine } from '@finos/legend-data-cube';
+import type { DataCubeGenericSource } from '../model/DataCubeGenericSource.js';
 
 export class LegendDataCubeSourceBuilder {
   readonly context: LegendDataCubeStoreContext;
@@ -76,7 +76,7 @@ export class LegendDataCubeSourceBuilder {
   }
 
   *inputSource(
-    callback: (source: CubeInputSource, engine: DataCubeEngine) => void,
+    callback: (source: DataCubeGenericSource, engine: DataCubeEngine) => void,
   ): GeneratorFn<void> {
     try {
       assertTrue(

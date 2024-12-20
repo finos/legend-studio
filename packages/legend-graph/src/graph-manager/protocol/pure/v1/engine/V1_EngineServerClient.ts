@@ -87,6 +87,7 @@ import type { V1_RelationType } from '../model/packageableElements/type/V1_Relat
 import type { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
 import type { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import type { DeploymentResult } from '../../../../action/DeploymentResult.js';
+import type { SavedDataCubeQuery } from '../../../../action/data-cube/SavedDataCubeQuery.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -842,6 +843,31 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.deleteWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DELETE_QUERY),
       this._query(queryId),
+    );
+
+  // ------------------------------------------- Data Cube Query -------------------------------------------
+
+  _dataCubeQuery = (queryId?: string): string =>
+    `${this.queryBaseUrl ?? this.baseUrl}/pure/v1/query/dataCube${
+      queryId ? `/${encodeURIComponent(queryId)}` : ''
+    }`;
+  getDataCubeQuery = (
+    queryId: string,
+  ): Promise<PlainObject<SavedDataCubeQuery>> =>
+    this.get(this._dataCubeQuery(queryId));
+
+  createDataCubeQuery = (
+    query: PlainObject<SavedDataCubeQuery>,
+  ): Promise<PlainObject<SavedDataCubeQuery>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.CREATE_QUERY),
+      this._dataCubeQuery(),
+      query,
+    );
+  deleteDataCubeQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>
+    this.deleteWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DELETE_QUERY),
+      this._dataCubeQuery(queryId),
     );
 
   // --------------------------------------- Analysis ---------------------------------------

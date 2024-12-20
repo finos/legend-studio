@@ -15,11 +15,94 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { QuestionIcon } from '@finos/legend-art';
+import {
+  Dialog,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalFooterButton,
+  ModalHeader,
+  PanelListItem,
+  PanelLoadingIndicator,
+  QuestionIcon,
+  clsx,
+} from '@finos/legend-art';
 import { useLegendDataCubeBaseStore } from './LegendDataCubeFrameworkProvider.js';
 import { DataCubeSourceEditor } from './source/DataCubeSourceEditor.js';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DataCube } from '@finos/legend-data-cube';
+import type { LegendDataCubeStore } from '../stores/LegendDataCubeEditorStore.js';
+import type { LegendCubeViewer } from '../stores/source/LegendCubeViewer.js';
+import { flowResult } from 'mobx';
+
+const CreateQueryDialog = observer(
+  (props: { view: LegendCubeViewer; store: LegendDataCubeStore }) => {
+    const { store } = props;
+    const close = (): void => store.setSaveModal(false);
+    const [queryName, setQueryName] = useState('');
+    const create = (): void => {
+      flowResult(store.saveQuery(queryName)).catch(
+        store.applicationStore.alertUnhandledError,
+      );
+    };
+    const isEmptyName = !queryName;
+    // name
+    const nameInputRef = useRef<HTMLInputElement>(null);
+    const setFocus = (): void => {
+      nameInputRef.current?.focus();
+    };
+
+    const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      setQueryName(event.target.value);
+    };
+
+    useEffect(() => {
+      setTimeout(() => setFocus(), 1);
+    }, []);
+    return (
+      <Dialog
+        open={store.saveModal}
+        onClose={close}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <Modal darkMode={false} className="query-export">
+          <ModalHeader title="Create New Query" />
+          <ModalBody>
+            <PanelLoadingIndicator
+              isLoading={store.saveModalState.isInProgress}
+            />
+            <PanelListItem>
+              <div className="input--with-validation">
+                <input
+                  ref={nameInputRef}
+                  className={clsx('input input--dark', {
+                    'input--caution': false,
+                  })}
+                  spellCheck={false}
+                  value={queryName}
+                  onChange={changeName}
+                  title="New Query Name"
+                />
+              </div>
+            </PanelListItem>
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              text="Create Query"
+              title="Create new query"
+              disabled={isEmptyName}
+              onClick={create}
+            />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
 
 export const DataCubeEditor = observer(() => {
   const dataCubeStore = useLegendDataCubeBaseStore();
@@ -55,7 +138,15 @@ export const DataCubeEditor = observer(() => {
         {dataCubeStore.cubeViewer ? (
           <>
             <div className="h-[calc(100%_-_30px)]">
-              <div className="h-12 w-full bg-gray-200"></div>
+              <div className="h-12 w-full bg-gray-200">
+                <button
+                  onClick={() => dataCubeStore.setSaveModal(true)}
+                  type="button"
+                  className="relative rounded-full bg-sky-900 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                >
+                  Save
+                </button>
+              </div>
               <div className="h-[calc(100%_-_30px)]">
                 <DataCube engine={dataCubeStore.cubeViewer.engine} />
               </div>
@@ -87,6 +178,12 @@ export const DataCubeEditor = observer(() => {
       </div>
       {sourceSelector.open && (
         <DataCubeSourceEditor sourceBuilder={sourceSelector} />
+      )}
+      {dataCubeStore.cubeViewer && dataCubeStore.saveModal && (
+        <CreateQueryDialog
+          store={dataCubeStore}
+          view={dataCubeStore.cubeViewer}
+        />
       )}
     </>
   );

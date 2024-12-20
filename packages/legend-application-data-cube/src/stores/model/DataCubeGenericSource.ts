@@ -14,15 +14,4 @@
  * limitations under the License.
  */
 
-import type { DataCubeEngine } from '@finos/legend-data-cube';
-import type { DataCubeGenericSource } from '../model/DataCubeGenericSource.js';
-
-export class LegendCubeViewer {
-  source: DataCubeGenericSource;
-  engine: DataCubeEngine;
-
-  constructor(source: DataCubeGenericSource, engine: DataCubeEngine) {
-    this.source = source;
-    this.engine = engine;
-  }
-}
+export abstract class DataCubeGenericSource {}

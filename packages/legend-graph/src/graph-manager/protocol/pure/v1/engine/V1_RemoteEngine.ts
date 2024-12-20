@@ -162,6 +162,7 @@ import {
 import { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
 import { DeploymentResult } from '../../../../action/DeploymentResult.js';
+import { SavedDataCubeQuery } from '../../../../action/data-cube/SavedDataCubeQuery.js';
 
 class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_RemoteEngine;
@@ -1157,6 +1158,27 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       guaranteeNonNullable(this.getCurrentUserId()),
       broadcastToCluster,
     );
+  }
+  // ------------------------------------------ Query Data Cube ------------------------------------------
+
+  async getDataCubeQuery(id: string): Promise<SavedDataCubeQuery> {
+    return SavedDataCubeQuery.serialization.fromJson(
+      await this.engineServerClient.getDataCubeQuery(id),
+    );
+  }
+
+  async createDataCubeQuery(
+    query: SavedDataCubeQuery,
+  ): Promise<SavedDataCubeQuery> {
+    return SavedDataCubeQuery.serialization.fromJson(
+      await this.engineServerClient.createDataCubeQuery(
+        SavedDataCubeQuery.serialization.toJson(query),
+      ),
+    );
+  }
+
+  async deleteDataCubeQuery(queryId: string): Promise<void> {
+    await this.engineServerClient.deleteDataCubeQuery(queryId);
   }
 
   // ------------------------------------------ Analysis ------------------------------------------

@@ -19,12 +19,21 @@ import { Route, Routes } from '@finos/legend-application/browser';
 import { LegendDataCubeFrameworkProvider } from './LegendDataCubeFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
 import { DataCubeEditor } from './DataCubeEditor.js';
+import { ExistingDataCubeQuery } from './source/ExistingDataCubeQuery.js';
+import { LEGEND_DATA_CUBE_ROUTE_PATTERN } from '../__lib__/DataCubeNavigation.js';
 
 const LegendDataCubeWebApplicationRouter = observer(() => {
   return (
     <div className="app">
       <Routes>
-        <Route path="*" element={<DataCubeEditor />} />
+        <Route
+          path={LEGEND_DATA_CUBE_ROUTE_PATTERN.DEFAULT}
+          element={<DataCubeEditor />}
+        />
+        <Route
+          path={LEGEND_DATA_CUBE_ROUTE_PATTERN.VIEW_EXISTING_QUERY}
+          element={<ExistingDataCubeQuery />}
+        />
       </Routes>
     </div>
   );
