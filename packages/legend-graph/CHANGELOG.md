@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 31.10.62
+
+### Patch Changes
+
+- [#3753](https://github.com/finos/legend-studio/pull/3753) [`72f70b6`](https://github.com/finos/legend-studio/commit/72f70b62a6e15d96e6f1116ee84ed34eaba82022) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Edit existing data cube query
+
 ## 31.10.61
 
 ## 31.10.60
