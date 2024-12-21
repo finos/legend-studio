@@ -347,15 +347,10 @@ export const setupTerminal = (ideStore: PureIDEStore): void => {
         command: LEGEND_PURE_IDE_TERMINAL_COMMAND.DEBUG,
         description:
           'Introsptect debug state.  When passing no parameters, will show display summary of available variables',
-        usage: 'debug [abort | var varName | eval expression]',
+        usage: 'debug [summary | abort | _expression_to_eval_]',
         aliases: [],
         handler: async (args: string[]): Promise<void> => {
-          const option = getNullableFirstEntry(args);
-          let command = { command: 'summary', args: [] as string[] };
-          if (option) {
-            command = { command: option, args: args.slice(1) };
-          }
-          flowResult(ideStore.debugState(command)).catch(
+          flowResult(ideStore.debugging({ args })).catch(
             ideStore.applicationStore.alertUnhandledError,
           );
         },
