@@ -272,4 +272,10 @@ export class DataCubeConfiguration {
   serialize() {
     return DataCubeConfiguration.serialization.toJson(this);
   }
+
+  clone() {
+    return DataCubeConfiguration.serialization.fromJson(
+      DataCubeConfiguration.serialization.toJson(this),
+    );
+  }
 }

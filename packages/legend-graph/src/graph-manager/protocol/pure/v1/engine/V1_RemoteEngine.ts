@@ -162,7 +162,7 @@ import {
 import { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
 import { DeploymentResult } from '../../../../action/DeploymentResult.js';
-import { SavedDataCubeQuery } from '../../../../action/data-cube/SavedDataCubeQuery.js';
+import { PersistentDataCubeQuery } from '../../../../action/query/PersistentDataCubeQuery.js';
 
 class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_RemoteEngine;
@@ -1161,18 +1161,18 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   }
   // ------------------------------------------ Query Data Cube ------------------------------------------
 
-  async getDataCubeQuery(id: string): Promise<SavedDataCubeQuery> {
-    return SavedDataCubeQuery.serialization.fromJson(
+  async getDataCubeQuery(id: string): Promise<PersistentDataCubeQuery> {
+    return PersistentDataCubeQuery.serialization.fromJson(
       await this.engineServerClient.getDataCubeQuery(id),
     );
   }
 
   async createDataCubeQuery(
-    query: SavedDataCubeQuery,
-  ): Promise<SavedDataCubeQuery> {
-    return SavedDataCubeQuery.serialization.fromJson(
+    query: PersistentDataCubeQuery,
+  ): Promise<PersistentDataCubeQuery> {
+    return PersistentDataCubeQuery.serialization.fromJson(
       await this.engineServerClient.createDataCubeQuery(
-        SavedDataCubeQuery.serialization.toJson(query),
+        PersistentDataCubeQuery.serialization.toJson(query),
       ),
     );
   }

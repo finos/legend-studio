@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-import { DataCubeSource } from '@finos/legend-data-cube';
-import type { PlainObject } from '@finos/legend-shared';
-
-export class LegendREPLDataCubeSource extends DataCubeSource {
-  runtime!: string;
-
-  mapping?: string | undefined;
-  timestamp!: number;
-  model?: PlainObject | undefined;
-  isLocal!: boolean;
-  isPersistenceSupported!: boolean;
-}
+/**
+ * @external_application_navigation This depends on Legend Data Cube routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateDataCubeViewUrl = (
+  hostedApplicationBaseUrl: string,
+  id: string,
+): string => `${hostedApplicationBaseUrl}/${id}`;

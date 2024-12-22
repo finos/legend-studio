@@ -24,16 +24,20 @@ import {
 import { DataCubeQuerySnapshotManager } from './DataCubeQuerySnapshotManager.js';
 import { DataCubeInfoState } from './DataCubeInfoState.js';
 import { validateAndBuildQuerySnapshot } from '../core/DataCubeQuerySnapshotBuilder.js';
-import { action, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  makeObservable,
+  observable,
+  runInAction,
+} from 'mobx';
 import { DataCubeFilterEditorState } from './filter/DataCubeFilterEditorState.js';
 import { DataCubeExtendManagerState } from './extend/DataCubeExtendManagerState.js';
 import type { DataCubeState } from '../DataCubeState.js';
-import type {
-  DataCubeEngine,
-  DataCubeInitialInput,
-} from '../core/DataCubeEngine.js';
+import type { DataCubeEngine } from '../core/DataCubeEngine.js';
 import { AlertType } from '../../components/core/DataCubeAlert.js';
 import type { DataCubeSource } from '../core/models/DataCubeSource.js';
+import type { DataCubeQuery } from '../core/models/DataCubeQuery.js';
 
 class DataCubeTask {
   uuid = uuid();
@@ -67,7 +71,11 @@ export class DataCubeViewState {
   private _source?: DataCubeSource | undefined;
 
   constructor(dataCube: DataCubeState) {
-    makeObservable(this, {
+    makeObservable<DataCubeViewState, '_source'>(this, {
+      _source: observable,
+      source: computed,
+      isSourceProcessed: computed,
+
       runningTasks: observable,
       newTask: action,
       endTask: action,
@@ -87,7 +95,11 @@ export class DataCubeViewState {
     this.extend = new DataCubeExtendManagerState(this);
   }
 
-  get source(): DataCubeSource {
+  get isSourceProcessed() {
+    return Boolean(this._source);
+  }
+
+  get source() {
     if (!this._source) {
       throw new IllegalStateError('Source is not initialized');
     }
@@ -106,7 +118,7 @@ export class DataCubeViewState {
     return task;
   }
 
-  async initialize(initialInput?: DataCubeInitialInput | undefined) {
+  async initialize(initialQuery?: DataCubeQuery | undefined) {
     const task = this.newTask('Initializing');
     try {
       await Promise.all(
@@ -121,8 +133,8 @@ export class DataCubeViewState {
           this.snapshotManager.registerSubscriber(state);
         }),
       );
-      const input = initialInput ?? (await this.engine.getInitialInput());
-      if (!input) {
+      const baseQuery = initialQuery ?? (await this.engine.getBaseQuery());
+      if (!baseQuery) {
         this.dataCube.alertAction({
           message: `Initialization Failure: No initial input provided`,
           prompt: `Make sure to either specify the initial input when setting up DataCube or the initial input getter in engine.`,
@@ -131,14 +143,17 @@ export class DataCubeViewState {
         });
         return;
       }
-      this._source = input.source;
+      const source = await this.engine.processQuerySource(baseQuery.source);
+      runInAction(() => {
+        this._source = source;
+      });
       const partialQuery = await this.engine.parseValueSpecification(
-        input.query.query,
+        baseQuery.query,
       );
       const initialSnapshot = validateAndBuildQuerySnapshot(
         partialQuery,
         this.source,
-        input.query,
+        baseQuery,
       );
       this.snapshotManager.broadcastSnapshot(initialSnapshot);
     } catch (error: unknown) {

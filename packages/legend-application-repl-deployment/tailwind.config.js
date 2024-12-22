@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
+import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 import { getBaseConfig } from '@finos/legend-dev-utils/TailwindCSSConfigUtils';
 
-export default getBaseConfig();
+export default getBaseConfig([
+  resolve(__dirname, './src/**/*.tsx'),
+  resolve(__dirname, '../legend-*/src/**/*.tsx'),
+]);

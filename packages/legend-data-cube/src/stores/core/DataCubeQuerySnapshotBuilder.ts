@@ -40,7 +40,6 @@ import {
   DataCubeFunction,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
-import { DataCubeConfiguration } from './models/DataCubeConfiguration.js';
 import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
 import {
   _colSpecArrayParam,
@@ -386,13 +385,13 @@ export function validateAndBuildQuerySnapshot(
   // In certain cases, configuration needs to be generated from default presets. This
   // helps with use cases where the query might comes from a different source, such as
   // Studio or Query, or another part of Engine.
-  const configuration = baseQuery.configuration
-    ? DataCubeConfiguration.serialization.fromJson(baseQuery.configuration)
-    : buildDefaultConfiguration([
-        ...source.sourceColumns,
-        ...data.leafExtendedColumns,
-        ...data.groupExtendedColumns,
-      ]);
+  const configuration =
+    baseQuery.configuration?.clone() ??
+    buildDefaultConfiguration([
+      ...source.sourceColumns,
+      ...data.leafExtendedColumns,
+      ...data.groupExtendedColumns,
+    ]);
   data.configuration = configuration.serialize();
   /**
    * TODO: @datacube roundtrip - implement the logic to reconcile the configuration with the query

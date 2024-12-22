@@ -134,7 +134,7 @@ describe(unitTest('Analyze and build base snapshot'), () => {
         await ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(code),
         [],
       );
-      const baseQuery = new DataCubeQuery(undefined);
+      const baseQuery = new DataCubeQuery();
       const source = new INTERNAL__DataCubeSource();
       source.sourceColumns = columns.map((entry) => {
         const parts = entry.split(':');

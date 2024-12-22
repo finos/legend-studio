@@ -17,16 +17,23 @@
 import { SerializationFactory, type PlainObject } from '@finos/legend-shared';
 import { createModelSchema, optional, primitive, raw } from 'serializr';
 
-export class SavedDataCubeQuery {
+export class PersistentDataCubeQuery {
   id!: string;
   name!: string;
   description: string | undefined;
   content!: PlainObject<object>;
   owner: string | undefined;
 
+  lastUpdatedAt?: number | undefined;
+  createdAt?: number | undefined;
+  lastOpenAt?: number | undefined;
+
   static readonly serialization = new SerializationFactory(
-    createModelSchema(SavedDataCubeQuery, {
+    createModelSchema(PersistentDataCubeQuery, {
       id: primitive(),
+      lastUpdatedAt: optional(primitive()),
+      createdAt: optional(primitive()),
+      lastOpenAt: optional(primitive()),
       name: primitive(),
       description: optional(primitive()),
       content: raw(),

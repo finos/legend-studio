@@ -39,14 +39,15 @@ const DataCubeTitleBar = observer(() => {
     useDropdownMenu();
 
   return (
-    <div className="flex h-6 justify-between bg-neutral-100">
+    <div className="flex h-7 justify-between bg-neutral-100">
       <div className="flex select-none items-center pl-1 pr-2 text-lg font-medium">
         <DataCubeIcon.Cube className="mr-1 h-4 w-4" />
         <div>{view.info.name}</div>
       </div>
-      <div>
+      <div className="flex">
+        {dataCube.innerHeaderComponent?.(dataCube) ?? null}
         <button
-          className="flex h-6 w-6 flex-shrink-0 items-center justify-center text-lg"
+          className="flex aspect-square h-full flex-shrink-0 items-center justify-center text-lg"
           onClick={openMenuDropdown}
         >
           <DataCubeIcon.Menu />
@@ -54,8 +55,8 @@ const DataCubeTitleBar = observer(() => {
         <DropdownMenu
           {...menuDropdownProps}
           menuProps={{
-            anchorOrigin: { vertical: 'top', horizontal: 'left' },
-            transformOrigin: { vertical: 'top', horizontal: 'right' },
+            anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+            transformOrigin: { vertical: 'top', horizontal: 'left' },
             classes: {
               paper: 'rounded-none mt-[1px]',
               list: 'w-36 p-0 rounded-none border border-neutral-400 bg-white max-h-40 overflow-y-auto py-0.5',

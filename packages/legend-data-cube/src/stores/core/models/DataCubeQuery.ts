@@ -19,16 +19,13 @@ import {
   usingModelSchema,
   type PlainObject,
 } from '@finos/legend-shared';
-import { createModelSchema, primitive } from 'serializr';
+import { createModelSchema, primitive, raw } from 'serializr';
 import { DataCubeConfiguration } from './DataCubeConfiguration.js';
 
 export class DataCubeQuery {
   query!: string;
-  configuration?: PlainObject | undefined;
-
-  constructor(configuration?: PlainObject | undefined) {
-    this.configuration = configuration;
-  }
+  configuration?: DataCubeConfiguration | undefined;
+  source!: PlainObject;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataCubeQuery, {
@@ -36,6 +33,7 @@ export class DataCubeQuery {
         DataCubeConfiguration.serialization.schema,
       ),
       query: primitive(),
+      source: raw(),
     }),
   );
 }

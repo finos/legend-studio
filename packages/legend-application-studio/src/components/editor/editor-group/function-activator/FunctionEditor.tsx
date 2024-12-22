@@ -1033,7 +1033,7 @@ const FunctionDefinitionEditor = observer(
               <div className="function-editor__definition__item__header__title">
                 LAMBDA
               </div>
-              <div className="">
+              <div>
                 <ReturnTypeEditor
                   functionElement={functionElement}
                   isReadOnly={isReadOnly}

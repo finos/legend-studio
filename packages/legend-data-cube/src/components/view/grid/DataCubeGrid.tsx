@@ -361,7 +361,7 @@ export const DataCubeGrid = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
 
   return (
-    <div className="h-full w-full">
+    <div className="h-[calc(100%_-_48px)] w-full">
       <DataCubeGridStyleController view={view} />
       <DataCubeGridClient view={view} />
       <DataCubeGridStatusBar view={view} />

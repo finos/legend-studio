@@ -29,7 +29,7 @@ export const SavedQuerySourceEditor = observer(
         {savedQuery ? (
           <div className="p-3">
             <div className="text-l font-bold">Saved Query</div>
-            <div className="">
+            <div>
               <div className="flex pt-px">
                 <div className="font-bold">Name:</div>
                 <div>{savedQuery.name}</div>

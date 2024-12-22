@@ -15,7 +15,8 @@
  */
 
 import {
-  GetBaseQueryResult,
+  deserializeREPLQuerySource,
+  REPL_DATA_CUBE_SOURCE_TYPE,
   type LegendREPLServerClient,
 } from './LegendREPLServerClient.js';
 import {
@@ -24,8 +25,9 @@ import {
   _lambda,
   DataCubeEngine,
   DataCubeFunction,
-  type DataCubeAPI,
   type DataCubeSource,
+  type DataCubeAPI,
+  DataCubeQuery,
 } from '@finos/legend-data-cube';
 import {
   TDSExecutionResult,
@@ -36,12 +38,17 @@ import {
   V1_serializeValueSpecification,
   type V1_Lambda,
   type V1_ValueSpecification,
+  V1_buildEngineError,
+  V1_EngineError,
 } from '@finos/legend-graph';
 import {
+  assertErrorThrown,
   type DocumentationEntry,
   guaranteeType,
+  HttpStatus,
   isNonNullable,
   LogEvent,
+  NetworkClientError,
   type PlainObject,
 } from '@finos/legend-shared';
 import { LegendREPLDataCubeSource } from './LegendREPLDataCubeSource.js';
@@ -50,19 +57,19 @@ import {
   APPLICATION_EVENT,
   shouldDisplayVirtualAssistantDocumentationEntry,
 } from '@finos/legend-application';
+import type { LegendREPLBaseStore } from './LegendREPLBaseStore.js';
 
 export class LegendREPLDataCubeEngine extends DataCubeEngine {
   readonly application: LegendREPLApplicationStore;
+  readonly baseStore: LegendREPLBaseStore;
   readonly client: LegendREPLServerClient;
 
-  constructor(
-    application: LegendREPLApplicationStore,
-    client: LegendREPLServerClient,
-  ) {
+  constructor(baseStore: LegendREPLBaseStore) {
     super();
 
-    this.application = application;
-    this.client = client;
+    this.application = baseStore.application;
+    this.baseStore = baseStore;
+    this.client = baseStore.client;
   }
 
   blockNavigation(
@@ -92,37 +99,49 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
 
   override async fetchConfiguration() {
     const info = await this.client.getInfrastructureInfo();
+    this.baseStore.currentUser = info.currentUser;
+    this.baseStore.queryServerBaseUrl = info.queryServerBaseUrl;
+    this.baseStore.hostedApplicationBaseUrl = info.hostedApplicationBaseUrl;
     return {
       gridClientLicense: info.gridClientLicense,
     };
   }
 
-  override async getInitialInput() {
-    const baseQuery = GetBaseQueryResult.serialization.fromJson(
+  async getBaseQuery() {
+    return DataCubeQuery.serialization.fromJson(
       await this.client.getBaseQuery(),
     );
+  }
+
+  async processQuerySource(value: PlainObject) {
+    const _source = deserializeREPLQuerySource(value);
+    this.baseStore.sourceQuery = _source.query;
+    if (value._type !== REPL_DATA_CUBE_SOURCE_TYPE) {
+      throw new Error(
+        `Can't process query source of type '${value._type}'. Only type '${REPL_DATA_CUBE_SOURCE_TYPE}' is supported.`,
+      );
+    }
+
     const source = new LegendREPLDataCubeSource();
-    source.mapping = baseQuery.source.mapping;
-    source.query = await this.parseValueSpecification(
-      baseQuery.source.query,
-      false,
-    );
-    source.runtime = baseQuery.source.runtime;
-    source.timestamp = baseQuery.source.timestamp;
+    source.query = await this.parseValueSpecification(_source.query, false);
     source.sourceColumns = (
       await this.getQueryRelationType(_lambda([], [source.query]), source)
     ).columns;
+    source.runtime = _source.runtime;
 
-    return {
-      query: baseQuery.query,
-      source,
-    };
+    source.mapping = _source.mapping;
+    source.timestamp = _source.timestamp;
+    source.model = _source.model;
+    source.isLocal = _source.isLocal;
+    source.isPersistenceSupported = _source.isPersistenceSupported;
+
+    return source;
   }
 
   async parseValueSpecification(
     code: string,
     returnSourceInformation?: boolean,
-  ): Promise<V1_ValueSpecification> {
+  ) {
     return V1_deserializeValueSpecification(
       await this.client.parseValueSpecification({
         code,
@@ -164,10 +183,25 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     baseQuery: V1_ValueSpecification,
     source: DataCubeSource,
   ) {
-    return this.client.getQueryCodeRelationReturnType({
-      code,
-      baseQuery: V1_serializeValueSpecification(baseQuery, []),
-    });
+    try {
+      return await this.client.getQueryCodeRelationReturnType({
+        code,
+        baseQuery: V1_serializeValueSpecification(baseQuery, []),
+      });
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildEngineError(
+          V1_EngineError.serialization.fromJson(
+            error.payload as PlainObject<V1_EngineError>,
+          ),
+        );
+      }
+      throw error;
+    }
   }
 
   async executeQuery(

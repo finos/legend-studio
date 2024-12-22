@@ -69,7 +69,7 @@ import {
   configureCodeEditor,
   setupPureLanguageService,
 } from '@finos/legend-code-editor';
-import { DataCubeFont } from './DataCubeQueryEngine.js';
+import { DataCubeFont, DataCubeFunction } from './DataCubeQueryEngine.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import { buildExecutableQuery } from './DataCubeQueryBuilder.js';
 import type { DataCubeColumn } from './models/DataCubeColumn.js';
@@ -79,7 +79,12 @@ import {
   type DataCubeSource,
   INTERNAL__DataCubeSource,
 } from './models/DataCubeSource.js';
-import { _primitiveValue } from './DataCubeQueryBuilderUtils.js';
+import {
+  _cols,
+  _colSpec,
+  _function,
+  _primitiveValue,
+} from './DataCubeQueryBuilderUtils.js';
 import {
   uuid,
   type DocumentationEntry,
@@ -115,11 +120,6 @@ type DataCubeExecutionResult = {
   result: TDSExecutionResult;
   executedQuery: string;
   executedSQL: string;
-};
-
-export type DataCubeInitialInput = {
-  query: DataCubeQuery;
-  source: DataCubeSource;
 };
 
 export type DataCubeEngineConfiguration = {
@@ -203,9 +203,8 @@ export abstract class DataCubeEngine {
     return getAggregateOperation(value, this.aggregateOperations);
   }
 
-  async getInitialInput(): Promise<DataCubeInitialInput | undefined> {
-    return undefined;
-  }
+  abstract getBaseQuery(): Promise<DataCubeQuery | undefined>;
+  abstract processQuerySource(value: PlainObject): Promise<DataCubeSource>;
 
   abstract parseValueSpecification(
     code: string,
@@ -270,6 +269,12 @@ export abstract class DataCubeEngine {
         pretty,
       )
     ).substring(`''->`.length);
+  }
+
+  generateInitialQuery(snapshot: DataCubeQuerySnapshot): V1_AppliedFunction {
+    return _function(DataCubeFunction.SELECT, [
+      _cols(snapshot.data.sourceColumns.map((col) => _colSpec(col.name))),
+    ]);
   }
 
   // ---------------------------------- DOCUMENTATION ----------------------------------

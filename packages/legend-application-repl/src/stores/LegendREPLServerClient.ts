@@ -15,29 +15,25 @@
  */
 
 import {
-  assertErrorThrown,
   ContentType,
   guaranteeNonNullable,
   HttpHeader,
-  HttpStatus,
-  NetworkClientError,
   SerializationFactory,
-  usingModelSchema,
+  usingConstantValueSchema,
   type NetworkClient,
   type PlainObject,
 } from '@finos/legend-shared';
 import {
-  DataCubeQuery,
+  type DataCubeQuery,
   type CompletionItem,
   type RelationType,
 } from '@finos/legend-data-cube';
 import {
-  V1_buildEngineError,
-  V1_EngineError,
+  type PersistentDataCubeQuery,
   type V1_Lambda,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import { createModelSchema, optional, primitive } from 'serializr';
+import { createModelSchema, optional, primitive, raw } from 'serializr';
 
 type GetValueSpecificationCodeInput = {
   value: PlainObject<V1_ValueSpecification>;
@@ -75,18 +71,32 @@ type ExecutionResult = {
 };
 
 type InfrastructureInfo = {
+  currentUser?: string | undefined;
   gridClientLicense?: string | undefined;
+  queryServerBaseUrl?: string | undefined;
+  hostedApplicationBaseUrl?: string | undefined;
 };
 
-class QuerySource {
-  runtime!: string;
-  mapping?: string | undefined;
+export const REPL_DATA_CUBE_SOURCE_TYPE = 'repl';
+
+class REPLBaseDataCubeQuerySource {
   query!: string;
+  runtime!: string;
+  model?: PlainObject | undefined;
+
+  mapping?: string | undefined;
   timestamp!: number;
+  isLocal!: boolean;
+  isPersistenceSupported!: boolean;
+  // columns // we don't need this analytics, we will get this from the query directly
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(QuerySource, {
+    createModelSchema(REPLBaseDataCubeQuerySource, {
+      _type: usingConstantValueSchema(REPL_DATA_CUBE_SOURCE_TYPE),
+      isLocal: primitive(),
+      isPersistenceSupported: primitive(),
       mapping: optional(primitive()),
+      model: optional(raw()),
       query: primitive(),
       runtime: primitive(),
       timestamp: primitive(),
@@ -94,16 +104,10 @@ class QuerySource {
   );
 }
 
-export class GetBaseQueryResult {
-  query!: DataCubeQuery;
-  source!: QuerySource;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(GetBaseQueryResult, {
-      query: usingModelSchema(DataCubeQuery.serialization.schema),
-      source: usingModelSchema(QuerySource.serialization.schema),
-    }),
-  );
+export function deserializeREPLQuerySource(
+  value: PlainObject<REPLBaseDataCubeQuerySource>,
+) {
+  return REPLBaseDataCubeQuerySource.serialization.fromJson(value);
 }
 
 export class LegendREPLServerClient {
@@ -154,7 +158,7 @@ export class LegendREPLServerClient {
     );
   }
 
-  async getBaseQuery(): Promise<PlainObject<GetBaseQueryResult>> {
+  async getBaseQuery(): Promise<PlainObject<DataCubeQuery>> {
     return this.networkClient.get(`${this.dataCube}/getBaseQuery`);
   }
 
@@ -170,30 +174,22 @@ export class LegendREPLServerClient {
   async getQueryCodeRelationReturnType(
     input: GetQueryCodeRelationReturnTypeInput,
   ): Promise<RelationType> {
-    try {
-      return this.networkClient.post(
-        `${this.dataCube}/getRelationReturnType/code`,
-        input,
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      if (
-        error instanceof NetworkClientError &&
-        error.response.status === HttpStatus.BAD_REQUEST
-      ) {
-        throw V1_buildEngineError(
-          V1_EngineError.serialization.fromJson(
-            error.payload as PlainObject<V1_EngineError>,
-          ),
-        );
-      }
-      throw error;
-    }
+    return this.networkClient.post(
+      `${this.dataCube}/getRelationReturnType/code`,
+      input,
+    );
   }
 
   async executeQuery(
     input: PlainObject<ExecutionInput>,
   ): Promise<ExecutionResult> {
     return this.networkClient.post(`${this.dataCube}/executeQuery`, input);
+  }
+
+  async publishQuery(
+    query: PlainObject<PersistentDataCubeQuery>,
+    queryStoreBaseUrl: string,
+  ): Promise<PlainObject<PersistentDataCubeQuery>> {
+    return this.networkClient.post(`${queryStoreBaseUrl}`, query);
   }
 }

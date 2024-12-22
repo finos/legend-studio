@@ -342,7 +342,7 @@ import type { RelationTypeMetadata } from '../../../action/relation/RelationType
 import type { CodeCompletionResult } from '../../../action/compilation/Completion.js';
 import { V1_CompleteCodeInput } from './engine/compilation/V1_CompleteCodeInput.js';
 import type { DeploymentResult } from '../../../action/DeploymentResult.js';
-import type { SavedDataCubeQuery } from '../../../action/data-cube/SavedDataCubeQuery.js';
+import type { PersistentDataCubeQuery } from '../../../action/query/PersistentDataCubeQuery.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -3254,13 +3254,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   override async getDataCubeQuery(
     queryId: string,
-  ): Promise<SavedDataCubeQuery> {
+  ): Promise<PersistentDataCubeQuery> {
     const query = await this.engine.getDataCubeQuery(queryId);
     return query;
   }
   override async createQueryDataCube(
-    dataCubeQuery: SavedDataCubeQuery,
-  ): Promise<SavedDataCubeQuery> {
+    dataCubeQuery: PersistentDataCubeQuery,
+  ): Promise<PersistentDataCubeQuery> {
     const query = await this.engine.createDataCubeQuery(dataCubeQuery);
     return query;
   }

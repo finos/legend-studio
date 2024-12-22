@@ -27,13 +27,10 @@ const LegendDataCubeWebApplicationRouter = observer(() => {
     <div className="app">
       <Routes>
         <Route
-          path={LEGEND_DATA_CUBE_ROUTE_PATTERN.DEFAULT}
-          element={<DataCubeEditor />}
-        />
-        <Route
           path={LEGEND_DATA_CUBE_ROUTE_PATTERN.VIEW_EXISTING_QUERY}
           element={<ExistingDataCubeQuery />}
         />
+        <Route path="/" element={<DataCubeEditor />} />
       </Routes>
     </div>
   );
