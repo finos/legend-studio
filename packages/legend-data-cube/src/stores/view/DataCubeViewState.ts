@@ -24,7 +24,13 @@ import {
 import { DataCubeQuerySnapshotManager } from './DataCubeQuerySnapshotManager.js';
 import { DataCubeInfoState } from './DataCubeInfoState.js';
 import { validateAndBuildQuerySnapshot } from '../core/DataCubeQuerySnapshotBuilder.js';
-import { action, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  makeObservable,
+  observable,
+  runInAction,
+} from 'mobx';
 import { DataCubeFilterEditorState } from './filter/DataCubeFilterEditorState.js';
 import { DataCubeExtendManagerState } from './extend/DataCubeExtendManagerState.js';
 import type { DataCubeState } from '../DataCubeState.js';
@@ -65,7 +71,11 @@ export class DataCubeViewState {
   private _source?: DataCubeSource | undefined;
 
   constructor(dataCube: DataCubeState) {
-    makeObservable(this, {
+    makeObservable<DataCubeViewState, '_source'>(this, {
+      _source: observable,
+      source: computed,
+      isSourceProcessed: computed,
+
       runningTasks: observable,
       newTask: action,
       endTask: action,
@@ -85,7 +95,11 @@ export class DataCubeViewState {
     this.extend = new DataCubeExtendManagerState(this);
   }
 
-  get source(): DataCubeSource {
+  get isSourceProcessed() {
+    return Boolean(this._source);
+  }
+
+  get source() {
     if (!this._source) {
       throw new IllegalStateError('Source is not initialized');
     }
@@ -129,7 +143,10 @@ export class DataCubeViewState {
         });
         return;
       }
-      this._source = await this.engine.processQuerySource(baseQuery.source);
+      const source = await this.engine.processQuerySource(baseQuery.source);
+      runInAction(() => {
+        this._source = source;
+      });
       const partialQuery = await this.engine.parseValueSpecification(
         baseQuery.query,
       );

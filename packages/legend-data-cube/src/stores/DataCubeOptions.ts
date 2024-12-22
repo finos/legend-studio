@@ -15,6 +15,7 @@
  */
 
 import type { DataCubeSource } from './core/models/DataCubeSource.js';
+import type { DataCubeState } from './DataCubeState.js';
 
 export type DataCubeOptions = {
   enableDebugMode?: boolean | undefined;
@@ -28,5 +29,8 @@ export type DataCubeOptions = {
         key: string,
         value: string | number | boolean | object | undefined,
       ) => void)
+    | undefined;
+  innerHeaderComponent?:
+    | ((dataCube: DataCubeState) => React.ReactNode)
     | undefined;
 };

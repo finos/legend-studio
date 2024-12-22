@@ -32,7 +32,7 @@ export const DocumentationPanel = observer(() => {
       <div className="mb-3 text-2xl font-bold">{entry.title}</div>
       {content &&
         (isString(content) ? (
-          <div className="">{content}</div>
+          <div>{content}</div>
         ) : (
           <MarkdownTextViewer value={content} />
         ))}

@@ -87,7 +87,7 @@ import type { V1_RelationType } from '../model/packageableElements/type/V1_Relat
 import type { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
 import type { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import type { DeploymentResult } from '../../../../action/DeploymentResult.js';
-import type { SavedDataCubeQuery } from '../../../../action/data-cube/SavedDataCubeQuery.js';
+import type { PersistentDataCubeQuery } from '../../../../action/query/PersistentDataCubeQuery.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -810,7 +810,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   ): Promise<PlainObject<V1_LightQuery>[]> =>
     this.post(`${this._query()}/search`, searchSpecification, undefined);
   getQueries = (queryIds: string[]): Promise<PlainObject<V1_LightQuery>[]> =>
-    this.get(`${this._query()}/batch`, {}, undefined, { queryIds: queryIds });
+    this.get(`${this._query()}/batch`, {}, undefined, { queryIds });
   getQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>
     this.get(this._query(queryId));
   createQuery = (
@@ -845,26 +845,50 @@ export class V1_EngineServerClient extends AbstractServerClient {
       this._query(queryId),
     );
 
-  // ------------------------------------------- Data Cube Query -------------------------------------------
+  // ------------------------------------------- DataCube Query -------------------------------------------
 
   _dataCubeQuery = (queryId?: string): string =>
     `${this.queryBaseUrl ?? this.baseUrl}/pure/v1/query/dataCube${
       queryId ? `/${encodeURIComponent(queryId)}` : ''
     }`;
+  searchDataCubeQueries = (
+    searchSpecification: PlainObject<V1_QuerySearchSpecification>,
+  ): Promise<PlainObject<PersistentDataCubeQuery>[]> =>
+    this.post(
+      `${this._dataCubeQuery()}/search`,
+      searchSpecification,
+      undefined,
+    );
+  getDataCubeQueries = (
+    queryIds: string[],
+  ): Promise<PlainObject<PersistentDataCubeQuery>[]> =>
+    this.get(`${this._dataCubeQuery()}/batch`, {}, undefined, {
+      queryIds,
+    });
   getDataCubeQuery = (
     queryId: string,
-  ): Promise<PlainObject<SavedDataCubeQuery>> =>
+  ): Promise<PlainObject<PersistentDataCubeQuery>> =>
     this.get(this._dataCubeQuery(queryId));
-
   createDataCubeQuery = (
-    query: PlainObject<SavedDataCubeQuery>,
-  ): Promise<PlainObject<SavedDataCubeQuery>> =>
+    query: PlainObject<PersistentDataCubeQuery>,
+  ): Promise<PlainObject<PersistentDataCubeQuery>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.CREATE_QUERY),
       this._dataCubeQuery(),
       query,
     );
-  deleteDataCubeQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>
+  updateDataCubeQuery = (
+    queryId: string,
+    query: PlainObject<PersistentDataCubeQuery>,
+  ): Promise<PlainObject<PersistentDataCubeQuery>> =>
+    this.putWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.UPDATE_QUERY),
+      this._dataCubeQuery(queryId),
+      query,
+    );
+  deleteDataCubeQuery = (
+    queryId: string,
+  ): Promise<PlainObject<PersistentDataCubeQuery>> =>
     this.deleteWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DELETE_QUERY),
       this._dataCubeQuery(queryId),

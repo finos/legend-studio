@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-export function getBaseConfig() {
+export function getBaseConfig(patterns) {
   /** @type {import('tailwindcss').Config} */
   return {
-    content: ['./src/**/*.tsx', '../legend-*/src/**/*.tsx'],
+    content: [...patterns],
     theme: {
       fontSize: {
         '3xs': ['6px', '6px'],

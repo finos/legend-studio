@@ -21,46 +21,24 @@ import {
 } from '@finos/legend-application/browser';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo } from 'react';
-import {
-  formatDate,
-  guaranteeNonNullable,
-  LogEvent,
-  NetworkClient,
-} from '@finos/legend-shared';
-import { LegendREPLServerClient } from '../stores/LegendREPLServerClient.js';
+import { formatDate, LogEvent } from '@finos/legend-shared';
 import { LegendREPLDataCubeEngine } from '../stores/LegendREPLDataCubeEngine.js';
 import { DataCube, DataCubeSettingKey } from '@finos/legend-data-cube';
-import {
-  APPLICATION_EVENT,
-  ApplicationFrameworkProvider,
-  useApplicationStore,
-  type LegendApplicationPlugin,
-  type LegendApplicationPluginManager,
-} from '@finos/legend-application';
-import type { LegendREPLApplicationConfig } from '../application/LegendREPLApplicationConfig.js';
+import { APPLICATION_EVENT } from '@finos/legend-application';
 import { LegendREPLDataCubeSource } from '../stores/LegendREPLDataCubeSource.js';
+import { LegendREPLDataCubeHeader } from './LegendREPLDataCubeHeader.js';
+import {
+  LegendREPLFrameworkProvider,
+  useLegendREPLBaseStore,
+} from './LegendREPLFramworkProvider.js';
 
 const LegendREPLDataCube = observer(() => {
-  const application = useApplicationStore<
-    LegendREPLApplicationConfig,
-    LegendApplicationPluginManager<LegendApplicationPlugin>
-  >();
-  const config = application.config;
+  const baseStore = useLegendREPLBaseStore();
   const engine = useMemo(
-    () =>
-      new LegendREPLDataCubeEngine(
-        application,
-        new LegendREPLServerClient(
-          new NetworkClient({
-            baseUrl: config.useDynamicREPLServer
-              ? window.location.origin +
-                guaranteeNonNullable(config.baseAddress).replace('/repl/', '')
-              : config.replUrl,
-          }),
-        ),
-      ),
-    [application, config],
+    () => new LegendREPLDataCubeEngine(baseStore),
+    [baseStore],
   );
+  const application = baseStore.application;
 
   useEffect(() => {
     engine.blockNavigation(
@@ -111,6 +89,9 @@ const LegendREPLDataCube = observer(() => {
           application.settingService.getBooleanValue(
             DataCubeSettingKey.GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
           ),
+        innerHeaderComponent: (dataCube) => (
+          <LegendREPLDataCubeHeader dataCube={dataCube} />
+        ),
       }}
     />
   );
@@ -136,9 +117,9 @@ export const LegendREPLWebApplication = (props: { baseUrl: string }) => {
 
   return (
     <BrowserEnvironmentProvider baseUrl={baseUrl}>
-      <ApplicationFrameworkProvider simple={true}>
+      <LegendREPLFrameworkProvider>
         <LegendREPLRouter />
-      </ApplicationFrameworkProvider>
+      </LegendREPLFrameworkProvider>
     </BrowserEnvironmentProvider>
   );
 };

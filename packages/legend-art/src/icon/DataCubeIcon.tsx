@@ -76,6 +76,7 @@ import {
   TbCalculator,
   TbCircleCheckFilled,
   TbCircleXFilled,
+  TbClipboard,
 } from 'react-icons/tb';
 import { VscError, VscInfo, VscQuestion, VscWarning } from 'react-icons/vsc';
 
@@ -95,6 +96,7 @@ export const DataCubeIcon = {
   ChevronDown: TbChevronDown,
   CircleChecked: TbCircleCheckFilled,
   CircledFailed: TbCircleXFilled,
+  Clipboard: TbClipboard,
   Code: TbCode,
   Cube: TbCube,
   Debug: TbBug,

@@ -25,9 +25,9 @@ import {
   _lambda,
   DataCubeEngine,
   DataCubeFunction,
-  DataCubeQuery,
   type DataCubeSource,
   type DataCubeAPI,
+  DataCubeQuery,
 } from '@finos/legend-data-cube';
 import {
   TDSExecutionResult,
@@ -57,19 +57,19 @@ import {
   APPLICATION_EVENT,
   shouldDisplayVirtualAssistantDocumentationEntry,
 } from '@finos/legend-application';
+import type { LegendREPLBaseStore } from './LegendREPLBaseStore.js';
 
 export class LegendREPLDataCubeEngine extends DataCubeEngine {
   readonly application: LegendREPLApplicationStore;
+  readonly baseStore: LegendREPLBaseStore;
   readonly client: LegendREPLServerClient;
 
-  constructor(
-    application: LegendREPLApplicationStore,
-    client: LegendREPLServerClient,
-  ) {
+  constructor(baseStore: LegendREPLBaseStore) {
     super();
 
-    this.application = application;
-    this.client = client;
+    this.application = baseStore.application;
+    this.baseStore = baseStore;
+    this.client = baseStore.client;
   }
 
   blockNavigation(
@@ -99,6 +99,9 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
 
   override async fetchConfiguration() {
     const info = await this.client.getInfrastructureInfo();
+    this.baseStore.currentUser = info.currentUser;
+    this.baseStore.queryServerBaseUrl = info.queryServerBaseUrl;
+    this.baseStore.hostedApplicationBaseUrl = info.hostedApplicationBaseUrl;
     return {
       gridClientLicense: info.gridClientLicense,
     };
@@ -112,6 +115,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
 
   async processQuerySource(value: PlainObject) {
     const _source = deserializeREPLQuerySource(value);
+    this.baseStore.sourceQuery = _source.query;
     if (value._type !== REPL_DATA_CUBE_SOURCE_TYPE) {
       throw new Error(
         `Can't process query source of type '${value._type}'. Only type '${REPL_DATA_CUBE_SOURCE_TYPE}' is supported.`,

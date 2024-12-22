@@ -91,7 +91,7 @@ import type { RelationTypeMetadata } from '../../../../action/relation/RelationT
 import type { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import type { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
 import type { DeploymentResult } from '../../../../action/DeploymentResult.js';
-import type { SavedDataCubeQuery } from '../../../../action/data-cube/SavedDataCubeQuery.js';
+import type { PersistentDataCubeQuery } from '../../../../action/query/PersistentDataCubeQuery.js';
 
 export interface V1_GraphManagerEngine {
   config: TEMPORARY__AbstractEngineConfig;
@@ -340,11 +340,11 @@ export interface V1_GraphManagerEngine {
 
   // ------------------------------------------- Data Cube Querys -------------------------------------------
 
-  getDataCubeQuery: (id: string) => Promise<SavedDataCubeQuery>;
+  getDataCubeQuery: (id: string) => Promise<PersistentDataCubeQuery>;
 
   createDataCubeQuery: (
-    query: SavedDataCubeQuery,
-  ) => Promise<SavedDataCubeQuery>;
+    query: PersistentDataCubeQuery,
+  ) => Promise<PersistentDataCubeQuery>;
 
   deleteDataCubeQuery: (id: string) => Promise<void>;
 

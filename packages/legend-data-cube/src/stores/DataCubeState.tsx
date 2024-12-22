@@ -51,6 +51,9 @@ export class DataCubeState implements DataCubeAPI {
         value: string | number | boolean | object | undefined,
       ) => void)
     | undefined;
+  innerHeaderComponent?:
+    | ((dataCube: DataCubeState) => React.ReactNode)
+    | undefined;
 
   currentDocumentationEntry?: DocumentationEntry | undefined;
   currentActionAlert?: ActionAlert | undefined;
@@ -97,6 +100,7 @@ export class DataCubeState implements DataCubeAPI {
 
     this.onNameChanged = options?.onNameChanged;
     this.onSettingChanged = options?.onSettingChanged;
+    this.innerHeaderComponent = options?.innerHeaderComponent;
 
     this.settings.enableDebugMode =
       options?.enableDebugMode !== undefined

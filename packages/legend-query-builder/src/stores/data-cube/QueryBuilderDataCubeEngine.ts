@@ -105,7 +105,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     return srcFuncExp;
   }
 
-  async getBaseQuery(): Promise<DataCubeQuery> {
+  async getBaseQuery() {
     const srcFuncExp = this.getSourceFunctionExpression();
     this._parameters = this.selectInitialQuery.parameters;
     const fromFuncExp = new V1_AppliedFunction();

@@ -29,6 +29,7 @@ import {
   type RelationType,
 } from '@finos/legend-data-cube';
 import {
+  type PersistentDataCubeQuery,
   type V1_Lambda,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
@@ -70,6 +71,7 @@ type ExecutionResult = {
 };
 
 type InfrastructureInfo = {
+  currentUser?: string | undefined;
   gridClientLicense?: string | undefined;
   queryServerBaseUrl?: string | undefined;
   hostedApplicationBaseUrl?: string | undefined;
@@ -91,6 +93,8 @@ class REPLBaseDataCubeQuerySource {
   static readonly serialization = new SerializationFactory(
     createModelSchema(REPLBaseDataCubeQuerySource, {
       _type: usingConstantValueSchema(REPL_DATA_CUBE_SOURCE_TYPE),
+      isLocal: primitive(),
+      isPersistenceSupported: primitive(),
       mapping: optional(primitive()),
       model: optional(raw()),
       query: primitive(),
@@ -180,5 +184,12 @@ export class LegendREPLServerClient {
     input: PlainObject<ExecutionInput>,
   ): Promise<ExecutionResult> {
     return this.networkClient.post(`${this.dataCube}/executeQuery`, input);
+  }
+
+  async publishQuery(
+    query: PlainObject<PersistentDataCubeQuery>,
+    queryStoreBaseUrl: string,
+  ): Promise<PlainObject<PersistentDataCubeQuery>> {
+    return this.networkClient.post(`${queryStoreBaseUrl}`, query);
   }
 }

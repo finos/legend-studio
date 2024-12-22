@@ -220,7 +220,7 @@ export { V1_PackageableType } from './graph-manager/protocol/pure/v1/model/packa
 export { INTERNAL__UnknownExecutionResult } from './graph-manager/action/execution/INTERNAL__UnknownExecutionResult.js';
 export { INTERNAL__UnknownExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/INTERNAL__UnknownExecutionNode.js';
 export { INTERNAL__UnknownResultType } from './graph/metamodel/pure/executionPlan/result/INTERNAL__UnknownResultType.js';
-export { SavedDataCubeQuery } from './graph-manager/action/data-cube/SavedDataCubeQuery.js';
+export { PersistentDataCubeQuery } from './graph-manager/action/query/PersistentDataCubeQuery.js';
 
 export * from './graph/metamodel/pure/executionPlan/ExecutionPlan.js';
 export { ExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/ExecutionNode.js';

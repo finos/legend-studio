@@ -966,7 +966,6 @@ const QueryBuilderProjectionColumnEditor = observer(
                       data-testid={
                         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PERCENTILE_PANEL
                       }
-                      className=""
                     >
                       <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo">
                         <div className="query-builder__projection__column__aggregate__operator__percentile__argument-combo__label">

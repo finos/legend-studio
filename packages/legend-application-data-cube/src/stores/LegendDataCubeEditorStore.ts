@@ -24,7 +24,7 @@ import type { LegendDataCubeApplicationConfig } from '../application/LegendDataC
 import {
   GraphManagerState,
   LegendSDLC,
-  SavedDataCubeQuery,
+  PersistentDataCubeQuery,
   type QueryInfo,
   type RawLambda,
 } from '@finos/legend-graph';
@@ -116,11 +116,12 @@ export class LegendDataCubeStore {
   readonly applicationStore: LegendDataCubeApplicationStore;
   readonly context: LegendDataCubeStoreContext;
   readonly pluginManager: LegendDataCubePluginManager;
+
   sourceSelector: LegendDataCubeSourceBuilder;
   cubeViewer: LegendCubeViewer | undefined;
   saveModal = false;
   saveModalState = ActionState.create();
-  savedQuery: SavedDataCubeQuery | undefined;
+  savedQuery: PersistentDataCubeQuery | undefined;
 
   constructor(applicationStore: LegendDataCubeApplicationStore) {
     makeObservable(this, {
@@ -154,7 +155,7 @@ export class LegendDataCubeStore {
       const query =
         (yield this.context.graphManagerState.graphManager.getDataCubeQuery(
           id,
-        )) as unknown as SavedDataCubeQuery;
+        )) as unknown as PersistentDataCubeQuery;
       this.savedQuery = query;
       const source = deserializeDataCubeQueryConent(query.content).source;
       if (source instanceof LegendSavedQuerySource) {
@@ -210,14 +211,14 @@ export class LegendDataCubeStore {
       const content = serializeDataCubeQueryConent(
         createQueryBuilderContent(view.source),
       );
-      const cubeQuery = new SavedDataCubeQuery();
+      const cubeQuery = new PersistentDataCubeQuery();
       cubeQuery.content = content;
       cubeQuery.name = name;
       cubeQuery.id = uuid();
       const querySaved =
         (yield this.context.graphManagerState.graphManager.createQueryDataCube(
           cubeQuery,
-        )) as unknown as SavedDataCubeQuery;
+        )) as unknown as PersistentDataCubeQuery;
       this.savedQuery = querySaved;
       // TODO: fix reload
       this.applicationStore.navigationService.navigator.goToLocation(

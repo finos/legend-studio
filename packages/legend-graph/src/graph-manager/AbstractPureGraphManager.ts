@@ -114,7 +114,7 @@ import type { TestDebug } from '../graph/metamodel/pure/test/result/DebugTestsRe
 import type { RelationTypeMetadata } from './action/relation/RelationTypeMetadata.js';
 import type { CodeCompletionResult } from './action/compilation/Completion.js';
 import type { DeploymentResult } from './action/DeploymentResult.js';
-import type { SavedDataCubeQuery } from './action/data-cube/SavedDataCubeQuery.js';
+import type { PersistentDataCubeQuery } from './action/query/PersistentDataCubeQuery.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -637,10 +637,10 @@ export abstract class AbstractPureGraphManager {
 
   // ------------------------------------------- Data Cube -------------------------------------------
 
-  abstract getDataCubeQuery(queryId: string): Promise<SavedDataCubeQuery>;
+  abstract getDataCubeQuery(queryId: string): Promise<PersistentDataCubeQuery>;
   abstract createQueryDataCube(
-    query: SavedDataCubeQuery,
-  ): Promise<SavedDataCubeQuery>;
+    query: PersistentDataCubeQuery,
+  ): Promise<PersistentDataCubeQuery>;
   abstract deleteDataCubeQuery(queryId: string): Promise<void>;
 
   // -------------------------------------- Analysis --------------------------------------
