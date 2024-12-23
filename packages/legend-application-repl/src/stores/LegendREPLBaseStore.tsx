@@ -27,6 +27,7 @@ import {
   DataCubeConfiguration,
   DataCubeQuery,
   LayoutConfiguration,
+  RawAdhocQueryDataCubeSource,
   WindowState,
   type DataCubeState,
 } from '@finos/legend-data-cube';
@@ -60,23 +61,21 @@ export class LegendREPLBaseStore {
   }
 
   async publishDataCube(dataCube: DataCubeState) {
-    const isPublishAllowed =
-      dataCube.view.source instanceof LegendREPLDataCubeSource &&
-      dataCube.view.source.isPersistenceSupported &&
-      // eslint-disable-next-line no-process-env
-      (process.env.NODE_ENV === 'development' || !dataCube.view.source.isLocal);
-
     if (
       !this.sourceQuery ||
       !dataCube.view.isSourceProcessed ||
       !this.queryServerBaseUrl ||
-      !isPublishAllowed
+      !(dataCube.view.source instanceof LegendREPLDataCubeSource) ||
+      !dataCube.view.source.isPersistenceSupported ||
+      !dataCube.view.source.model ||
+      // eslint-disable-next-line no-process-env
+      !(process.env.NODE_ENV === 'development' || !dataCube.view.source.isLocal)
     ) {
       return;
     }
 
     this.publishState.inProgress();
-    const task = dataCube.view.newTask('Validate query');
+    const task = dataCube.view.newTask('Publish query');
 
     try {
       const query = new DataCubeQuery();
@@ -85,15 +84,12 @@ export class LegendREPLBaseStore {
           dataCube.view.snapshotManager.currentSnapshot,
         ),
       );
-      query.source = {
-        // TODO: I can't think of a better name for now, but this form should be
-        // moved to the common module potentially
-        _type: 'basicQuery',
-        query: this.sourceQuery,
-        runtime: dataCube.view.source.runtime,
-        columns: dataCube.view.source.sourceColumns,
-        model: dataCube.view.source.model,
-      };
+      const source = new RawAdhocQueryDataCubeSource();
+      source.query = this.sourceQuery;
+      source.columns = dataCube.view.source.columns;
+      source.runtime = dataCube.view.source.runtime;
+      source.model = dataCube.view.source.model;
+      query.source = RawAdhocQueryDataCubeSource.serialization.toJson(source);
       const newQuery = new PersistentDataCubeQuery();
       newQuery.id = uuid();
       newQuery.name = DataCubeConfiguration.serialization.fromJson(

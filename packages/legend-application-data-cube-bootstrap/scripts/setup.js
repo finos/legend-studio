@@ -43,7 +43,6 @@ export const setup = (outputDir) => {
         env: 'local',
         engine: {
           url: 'http://localhost:6300/api',
-          queryUrl: 'http://localhost:6300/query-server/api',
         },
         depot: {
           url: 'http://localhost:6200/depot/api',

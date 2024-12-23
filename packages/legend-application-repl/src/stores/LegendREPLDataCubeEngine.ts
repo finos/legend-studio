@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  deserializeREPLQuerySource,
-  REPL_DATA_CUBE_SOURCE_TYPE,
-  type LegendREPLServerClient,
-} from './LegendREPLServerClient.js';
+import { type LegendREPLServerClient } from './LegendREPLServerClient.js';
 import {
   _elementPtr,
   _function,
@@ -51,7 +47,11 @@ import {
   NetworkClientError,
   type PlainObject,
 } from '@finos/legend-shared';
-import { LegendREPLDataCubeSource } from './LegendREPLDataCubeSource.js';
+import {
+  LegendREPLDataCubeSource,
+  RawLegendREPLDataCubeSource,
+  REPL_DATA_CUBE_SOURCE_TYPE,
+} from './LegendREPLDataCubeSource.js';
 import type { LegendREPLApplicationStore } from '../application/LegendREPLApplicationStore.js';
 import {
   APPLICATION_EVENT,
@@ -114,17 +114,16 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   }
 
   async processQuerySource(value: PlainObject) {
-    const _source = deserializeREPLQuerySource(value);
-    this.baseStore.sourceQuery = _source.query;
     if (value._type !== REPL_DATA_CUBE_SOURCE_TYPE) {
       throw new Error(
-        `Can't process query source of type '${value._type}'. Only type '${REPL_DATA_CUBE_SOURCE_TYPE}' is supported.`,
+        `Can't deserialize query source of type '${value._type}'. Only type(s) '${REPL_DATA_CUBE_SOURCE_TYPE}' are supported.`,
       );
     }
-
+    const _source = RawLegendREPLDataCubeSource.serialization.fromJson(value);
+    this.baseStore.sourceQuery = _source.query;
     const source = new LegendREPLDataCubeSource();
     source.query = await this.parseValueSpecification(_source.query, false);
-    source.sourceColumns = (
+    source.columns = (
       await this.getQueryRelationType(_lambda([], [source.query]), source)
     ).columns;
     source.runtime = _source.runtime;

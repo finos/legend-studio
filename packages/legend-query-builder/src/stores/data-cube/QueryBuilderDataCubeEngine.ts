@@ -127,7 +127,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   async processQuerySource(value: PlainObject) {
     const srcFuncExp = this.getSourceFunctionExpression();
     const source = new QueryBuilderDataCubeSource();
-    source.sourceColumns = (
+    source.columns = (
       await this.getRelationalType(this.selectInitialQuery)
     ).columns;
     source.mapping = this.mappingPath;

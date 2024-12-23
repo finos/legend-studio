@@ -14,48 +14,35 @@
  * limitations under the License.
  */
 
-import { DataCubeSource, type DataCubeColumn } from '@finos/legend-data-cube';
+import type { DataCubeColumn } from './DataCubeColumn.js';
 import {
   SerializationFactory,
   usingConstantValueSchema,
   type PlainObject,
 } from '@finos/legend-shared';
-import { createModelSchema, list, optional, primitive, raw } from 'serializr';
+import { DataCubeSource } from './DataCubeSource.js';
+import { createModelSchema, list, primitive, raw } from 'serializr';
 
-export class LegendREPLDataCubeSource extends DataCubeSource {
+export class AdhocQueryDataCubeSource extends DataCubeSource {
   runtime!: string;
-
-  mapping?: string | undefined;
-  timestamp!: number;
-  model?: PlainObject | undefined;
-  isLocal!: boolean;
-  isPersistenceSupported!: boolean;
+  model!: PlainObject;
 }
 
-export const REPL_DATA_CUBE_SOURCE_TYPE = 'repl';
+export const ADHOC_QUERY_DATA_CUBE_SOURCE = 'adhocQuery';
 
-export class RawLegendREPLDataCubeSource {
+export class RawAdhocQueryDataCubeSource {
   query!: string;
   runtime!: string;
-  model?: PlainObject | undefined;
-
-  mapping?: string | undefined;
-  timestamp!: number;
-  isLocal!: boolean;
-  isPersistenceSupported!: boolean;
   columns: DataCubeColumn[] = [];
+  model!: PlainObject;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(RawLegendREPLDataCubeSource, {
-      _type: usingConstantValueSchema(REPL_DATA_CUBE_SOURCE_TYPE),
+    createModelSchema(RawAdhocQueryDataCubeSource, {
+      _type: usingConstantValueSchema(ADHOC_QUERY_DATA_CUBE_SOURCE),
       columns: list(raw()),
-      isLocal: primitive(),
-      isPersistenceSupported: primitive(),
-      mapping: optional(primitive()),
-      model: optional(raw()),
+      model: raw(),
       query: primitive(),
       runtime: primitive(),
-      timestamp: primitive(),
     }),
   );
 }

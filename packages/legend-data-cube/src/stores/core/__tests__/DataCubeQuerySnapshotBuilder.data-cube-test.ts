@@ -136,7 +136,7 @@ describe(unitTest('Analyze and build base snapshot'), () => {
       );
       const baseQuery = new DataCubeQuery();
       const source = new INTERNAL__DataCubeSource();
-      source.sourceColumns = columns.map((entry) => {
+      source.columns = columns.map((entry) => {
         const parts = entry.split(':');
         return {
           name: parts[0] as string,

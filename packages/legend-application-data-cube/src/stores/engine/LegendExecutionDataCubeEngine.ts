@@ -129,7 +129,7 @@ export class LegendExecutionDataCubeEngine extends DataCubeEngine {
     const columns = (await this.getRelationalType(this.selectInitialQuery))
       .columns;
     const source = new QueryBuilderDataCubeSource();
-    source.sourceColumns = columns;
+    source.columns = columns;
     source.mapping = this.mappingPath;
     source.runtime = this.runtimePath;
     source.query = srcFuncExp;

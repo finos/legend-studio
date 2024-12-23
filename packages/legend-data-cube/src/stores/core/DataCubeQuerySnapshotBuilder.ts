@@ -303,7 +303,7 @@ export function validateAndBuildQuerySnapshot(
 
   // --------------------------------- SOURCE ---------------------------------
 
-  data.sourceColumns = source.sourceColumns;
+  data.sourceColumns = source.columns;
   data.sourceColumns.forEach((col) => colsMap.set(col.name, col));
 
   // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
@@ -388,7 +388,7 @@ export function validateAndBuildQuerySnapshot(
   const configuration =
     baseQuery.configuration?.clone() ??
     buildDefaultConfiguration([
-      ...source.sourceColumns,
+      ...source.columns,
       ...data.leafExtendedColumns,
       ...data.groupExtendedColumns,
     ]);
