@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 31.10.64
+
+### Patch Changes
+
+- [#3742](https://github.com/finos/legend-studio/pull/3742) [`cdd7e5d`](https://github.com/finos/legend-studio/commit/cdd7e5d701989f68f1dcc83b807a391123abaac8) ([@travisstebbins](https://github.com/travisstebbins)) - Export dependencies to support Data Cube in VS Code purebook renderer
+
+- [#3764](https://github.com/finos/legend-studio/pull/3764) [`213b512`](https://github.com/finos/legend-studio/commit/213b512a801c4bf9b5a7666e51f83598f12cf01e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add TabularFunction in metamodel
+
 ## 31.10.63
 
 ## 31.10.62

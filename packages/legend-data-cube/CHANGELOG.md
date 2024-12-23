@@ -1,5 +1,11 @@
 # @finos/legend-data-cube
 
+## 0.0.35
+
+### Patch Changes
+
+- [#3742](https://github.com/finos/legend-studio/pull/3742) [`cdd7e5d`](https://github.com/finos/legend-studio/commit/cdd7e5d701989f68f1dcc83b807a391123abaac8) ([@travisstebbins](https://github.com/travisstebbins)) - Export dependencies to support Data Cube in VS Code purebook renderer
+
 ## 0.0.34
 
 ## 0.0.33
