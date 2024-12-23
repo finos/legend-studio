@@ -14,8 +14,19 @@
  * limitations under the License.
  */
 
-export class V1_TabularFunction {
-  // TODO params ?
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../graph/Core_HashUtils.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import type { V1_Column } from './V1_Column.js';
+
+export class V1_TabularFunction implements Hashable {
   name!: string;
-  // columns: Column[] = [];
+  columns: V1_Column[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATABASE_SCHEMA_TABULARFUNCTION,
+      this.name,
+      hashArray(this.columns),
+    ]);
+  }
 }

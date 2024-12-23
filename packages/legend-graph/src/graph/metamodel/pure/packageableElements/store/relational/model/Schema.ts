@@ -19,6 +19,7 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { Database } from './Database.js';
 import type { Table } from './Table.js';
 import type { View } from './View.js';
+import type { TabularFunction } from './TabularFunction.js';
 
 export class Schema implements Hashable {
   readonly _OWNER: Database;
@@ -26,6 +27,7 @@ export class Schema implements Hashable {
   name: string;
   tables: Table[] = [];
   views: View[] = [];
+  tabularFunctions: TabularFunction[] = [];
 
   constructor(name: string, owner: Database) {
     this.name = name;
@@ -38,6 +40,7 @@ export class Schema implements Hashable {
       this.name,
       hashArray(this.tables),
       hashArray(this.views),
+      hashArray(this.tabularFunctions),
     ]);
   }
 }

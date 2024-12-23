@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../graph/Core_HashUtils.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { V1_Table } from './V1_Table.js';
-import type { V1_View } from './V1_View.js';
-import type { V1_TabularFunction } from './V1_TabularFunction.js';
+import { NamedRelation } from './RelationalOperationElement.js';
+import type { Schema } from './Schema.js';
 
-export class V1_Schema implements Hashable {
-  name!: string;
-  tables: V1_Table[] = [];
-  views: V1_View[] = [];
-  tabularFunctions: V1_TabularFunction[] = [];
+export class TabularFunction extends NamedRelation implements Hashable {
+  schema!: Schema;
 
-  get hashCode(): string {
+  constructor(name: string, schema: Schema) {
+    super(name);
+    this.schema = schema;
+  }
+
+  override get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.DATABASE_SCHEMA,
+      CORE_HASH_STRUCTURE.DATABASE_SCHEMA_TABULARFUNCTION,
       this.name,
-      hashArray(this.tables),
-      hashArray(this.views),
-      hashArray(this.tabularFunctions),
+      hashArray(this.columns),
     ]);
   }
 }

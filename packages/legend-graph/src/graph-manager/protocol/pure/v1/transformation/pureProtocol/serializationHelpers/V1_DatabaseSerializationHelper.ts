@@ -464,10 +464,6 @@ export function V1_deserializeRelationalOperationElement(
   }
 }
 
-const V1_tabularFunctionModelSchema = createModelSchema(V1_TabularFunction, {
-  name: primitive(),
-});
-
 export const V1_filterMappingModelSchema = createModelSchema(V1_FilterMapping, {
   filter: usingModelSchema(V1_filterPointerModelSchema),
   joins: list(usingModelSchema(V1_joinPointerModelSchema)),
@@ -499,11 +495,7 @@ const V1_viewModelSchema = createModelSchema(V1_View, {
 const V1_schemaModelSchema = createModelSchema(V1_Schema, {
   name: primitive(),
   tables: list(object(V1_Table)),
-  tabularFunctions: customList(
-    (value) => serialize(V1_tabularFunctionModelSchema, value),
-    (value) => deserialize(V1_tabularFunctionModelSchema, value),
-    { INTERNAL__forceReturnEmptyInTest: true },
-  ),
+  tabularFunctions: list(object(V1_TabularFunction)),
   views: list(usingModelSchema(V1_viewModelSchema)),
 });
 
@@ -537,6 +529,15 @@ const V1_setupTableSerialization = (
     ),
     name: primitive(),
     primaryKey: list(primitive()),
+  });
+};
+
+const V1_setupTabularFunctionSerialization = (
+  plugins: PureProtocolProcessorPlugin[],
+): void => {
+  createModelSchema(V1_TabularFunction, {
+    columns: list(usingModelSchema(columnModelSchema)),
+    name: primitive(),
   });
 };
 
@@ -579,6 +580,7 @@ export const V1_setupDatabaseSerialization = (
   plugins: PureProtocolProcessorPlugin[],
 ): void => {
   V1_setupTableSerialization(plugins);
+  V1_setupTabularFunctionSerialization(plugins);
   V1_setupRelationalDatabaseConnectionModelSchema(plugins);
 };
 
