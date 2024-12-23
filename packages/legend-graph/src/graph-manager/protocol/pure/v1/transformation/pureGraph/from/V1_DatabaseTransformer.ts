@@ -109,6 +109,8 @@ import { V1_FilterPointer } from '../../../model/packageableElements/store/relat
 import type { TablePtr } from '../../../../../../../graph/metamodel/pure/packageableElements/service/TablePtr.js';
 import { V1_transformStereotype } from './V1_DomainTransformer.js';
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
+import type { TabularFunction } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/TabularFunction.js';
+import { V1_TabularFunction } from '../../../model/packageableElements/store/relational/model/V1_TabularFunction.js';
 
 const transformRelationalDataType = (
   type: RelationalDataType,
@@ -344,6 +346,18 @@ const transformTable = (
   return table;
 };
 
+const transformTabularFunction = (
+  element: TabularFunction,
+  context: V1_GraphTransformerContext,
+): V1_TabularFunction => {
+  const tabularFunction = new V1_TabularFunction();
+  tabularFunction.columns = element.columns.map((val) =>
+    transformColumn(val as Column),
+  );
+  tabularFunction.name = element.name;
+  return tabularFunction;
+};
+
 const transformJoin = (
   element: Join,
   context: V1_GraphTransformerContext,
@@ -411,6 +425,9 @@ const transformSchema = (
   schema.name = element.name;
   schema.tables = element.tables.map((table) => transformTable(table, context));
   schema.views = element.views.map((view) => transformView(view, context));
+  schema.tabularFunctions = element.tabularFunctions.map((tabularFunction) =>
+    transformTabularFunction(tabularFunction, context),
+  );
   return schema;
 };
 
