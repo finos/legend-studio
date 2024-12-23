@@ -32,11 +32,16 @@ import {
   DEFAULT_FONT_UNDERLINED,
   DEFAULT_FONT_STRIKETHROUGH,
   DEFAULT_TEXT_ALIGN,
-  DEFAULT_FOREGROUND_COLOR,
-  DEFAULT_NEGATIVE_FOREGROUND_COLOR,
-  DEFAULT_ZERO_FOREGROUND_COLOR,
-  DEFAULT_ERROR_FOREGROUND_COLOR,
-  DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_FOREGROUND_COLOR_LIGHT,
+  DEFAULT_NEGATIVE_FOREGROUND_COLOR_LIGHT,
+  DEFAULT_ZERO_FOREGROUND_COLOR_LIGHT,
+  DEFAULT_ERROR_FOREGROUND_COLOR_LIGHT,
+  DEFAULT_BACKGROUND_COLOR_LIGHT,
+  DEFAULT_FOREGROUND_COLOR_DARK,
+  DEFAULT_NEGATIVE_FOREGROUND_COLOR_DARK,
+  DEFAULT_ZERO_FOREGROUND_COLOR_DARK,
+  DEFAULT_ERROR_FOREGROUND_COLOR_DARK,
+  DEFAULT_BACKGROUND_COLOR_DARK,
   type DataCubeColumnDataType,
 } from '../../core/DataCubeQueryEngine.js';
 import { type PlainObject, type Writable } from '@finos/legend-shared';
@@ -550,14 +555,38 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
       this.fontUnderline === DEFAULT_FONT_UNDERLINED &&
       this.fontStrikethrough === DEFAULT_FONT_STRIKETHROUGH &&
       this.textAlign === DEFAULT_TEXT_ALIGN &&
-      this.normalForegroundColor === DEFAULT_FOREGROUND_COLOR &&
-      this.negativeForegroundColor === DEFAULT_NEGATIVE_FOREGROUND_COLOR &&
-      this.zeroForegroundColor === DEFAULT_ZERO_FOREGROUND_COLOR &&
-      this.errorForegroundColor === DEFAULT_ERROR_FOREGROUND_COLOR &&
-      this.normalBackgroundColor === DEFAULT_BACKGROUND_COLOR &&
-      this.negativeBackgroundColor === DEFAULT_BACKGROUND_COLOR &&
-      this.zeroBackgroundColor === DEFAULT_BACKGROUND_COLOR &&
-      this.errorBackgroundColor === DEFAULT_BACKGROUND_COLOR
+      this.normalForegroundColor ===
+        (this.darkMode
+          ? DEFAULT_FOREGROUND_COLOR_DARK
+          : DEFAULT_FOREGROUND_COLOR_LIGHT) &&
+      this.negativeForegroundColor ===
+        (this.darkMode
+          ? DEFAULT_NEGATIVE_FOREGROUND_COLOR_DARK
+          : DEFAULT_NEGATIVE_FOREGROUND_COLOR_LIGHT) &&
+      this.zeroForegroundColor ===
+        (this.darkMode
+          ? DEFAULT_ZERO_FOREGROUND_COLOR_DARK
+          : DEFAULT_ZERO_FOREGROUND_COLOR_LIGHT) &&
+      this.errorForegroundColor ===
+        (this.darkMode
+          ? DEFAULT_ERROR_FOREGROUND_COLOR_DARK
+          : DEFAULT_ERROR_FOREGROUND_COLOR_LIGHT) &&
+      this.normalBackgroundColor ===
+        (this.darkMode
+          ? DEFAULT_BACKGROUND_COLOR_DARK
+          : DEFAULT_BACKGROUND_COLOR_LIGHT) &&
+      this.negativeBackgroundColor ===
+        (this.darkMode
+          ? DEFAULT_BACKGROUND_COLOR_DARK
+          : DEFAULT_BACKGROUND_COLOR_LIGHT) &&
+      this.zeroBackgroundColor ===
+        (this.darkMode
+          ? DEFAULT_BACKGROUND_COLOR_DARK
+          : DEFAULT_BACKGROUND_COLOR_LIGHT) &&
+      this.errorBackgroundColor ===
+        (this.darkMode
+          ? DEFAULT_BACKGROUND_COLOR_DARK
+          : DEFAULT_BACKGROUND_COLOR_LIGHT)
     );
   }
 
@@ -569,14 +598,30 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
     this.fontUnderline = DEFAULT_FONT_UNDERLINED;
     this.fontStrikethrough = DEFAULT_FONT_STRIKETHROUGH;
     this.textAlign = DEFAULT_TEXT_ALIGN;
-    this.normalForegroundColor = DEFAULT_FOREGROUND_COLOR;
-    this.negativeForegroundColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
-    this.zeroForegroundColor = DEFAULT_ZERO_FOREGROUND_COLOR;
-    this.errorForegroundColor = DEFAULT_ERROR_FOREGROUND_COLOR;
-    this.normalBackgroundColor = DEFAULT_BACKGROUND_COLOR;
-    this.negativeBackgroundColor = DEFAULT_BACKGROUND_COLOR;
-    this.zeroBackgroundColor = DEFAULT_BACKGROUND_COLOR;
-    this.errorBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+    this.normalForegroundColor = this.darkMode
+      ? DEFAULT_FOREGROUND_COLOR_DARK
+      : DEFAULT_FOREGROUND_COLOR_LIGHT;
+    this.negativeForegroundColor = this.darkMode
+      ? DEFAULT_NEGATIVE_FOREGROUND_COLOR_DARK
+      : DEFAULT_NEGATIVE_FOREGROUND_COLOR_LIGHT;
+    this.zeroForegroundColor = this.darkMode
+      ? DEFAULT_ZERO_FOREGROUND_COLOR_DARK
+      : DEFAULT_ZERO_FOREGROUND_COLOR_LIGHT;
+    this.errorForegroundColor = this.darkMode
+      ? DEFAULT_ERROR_FOREGROUND_COLOR_DARK
+      : DEFAULT_ERROR_FOREGROUND_COLOR_LIGHT;
+    this.normalBackgroundColor = this.darkMode
+      ? DEFAULT_BACKGROUND_COLOR_DARK
+      : DEFAULT_BACKGROUND_COLOR_LIGHT;
+    this.negativeBackgroundColor = this.darkMode
+      ? DEFAULT_BACKGROUND_COLOR_DARK
+      : DEFAULT_BACKGROUND_COLOR_LIGHT;
+    this.zeroBackgroundColor = this.darkMode
+      ? DEFAULT_BACKGROUND_COLOR_DARK
+      : DEFAULT_BACKGROUND_COLOR_LIGHT;
+    this.errorBackgroundColor = this.darkMode
+      ? DEFAULT_BACKGROUND_COLOR_DARK
+      : DEFAULT_BACKGROUND_COLOR_LIGHT;
   }
 
   setName(value: string) {

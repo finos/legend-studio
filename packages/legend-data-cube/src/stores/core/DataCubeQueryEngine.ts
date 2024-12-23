@@ -310,9 +310,6 @@ export const DEFAULT_ROOT_AGGREGATION_COLUMN_VALUE = '[ROOT]';
 export const DEFAULT_URL_LABEL_QUERY_PARAM = 'dataCube.linkLabel';
 export const DEFAULT_MISSING_VALUE_DISPLAY_TEXT = '';
 
-export const DEFAULT_GRID_LINE_COLOR = TailwindCSSPalette.neutral[300];
-export const DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR = '#d7e0eb';
-
 export const DEFAULT_COLUMN_WIDTH = 300;
 export const DEFAULT_COLUMN_MIN_WIDTH = 50;
 export const DEFAULT_COLUMN_MAX_WIDTH = undefined;
@@ -325,12 +322,35 @@ export const DEFAULT_FONT_CASE = undefined;
 export const DEFAULT_FONT_UNDERLINED = undefined;
 export const DEFAULT_FONT_STRIKETHROUGH = false;
 export const DEFAULT_TEXT_ALIGN = DataCubeFontTextAlignment.LEFT;
-export const DEFAULT_FOREGROUND_COLOR = TailwindCSSPalette.black;
-export const DEFAULT_BACKGROUND_COLOR = TailwindCSSPalette.transparent;
-export const DEFAULT_ROW_BACKGROUND_COLOR = TailwindCSSPalette.white;
-export const DEFAULT_NEGATIVE_FOREGROUND_COLOR = TailwindCSSPalette.red[500];
-export const DEFAULT_ZERO_FOREGROUND_COLOR = TailwindCSSPalette.neutral[400];
-export const DEFAULT_ERROR_FOREGROUND_COLOR = TailwindCSSPalette.blue[600];
+
+// Default light mode colors
+
+export const DEFAULT_GRID_LINE_COLOR_LIGHT = TailwindCSSPalette.neutral[300];
+export const DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR_LIGHT = '#d7e0eb';
+
+export const DEFAULT_FOREGROUND_COLOR_LIGHT = TailwindCSSPalette.black;
+export const DEFAULT_BACKGROUND_COLOR_LIGHT = TailwindCSSPalette.transparent;
+export const DEFAULT_ROW_BACKGROUND_COLOR_LIGHT = TailwindCSSPalette.white;
+export const DEFAULT_NEGATIVE_FOREGROUND_COLOR_LIGHT =
+  TailwindCSSPalette.red[500];
+export const DEFAULT_ZERO_FOREGROUND_COLOR_LIGHT =
+  TailwindCSSPalette.neutral[400];
+export const DEFAULT_ERROR_FOREGROUND_COLOR_LIGHT =
+  TailwindCSSPalette.blue[600];
+
+// Default dark mode colors
+
+export const DEFAULT_GRID_LINE_COLOR_DARK = TailwindCSSPalette.neutral[300];
+export const DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR_DARK = '#d7e0eb';
+
+export const DEFAULT_FOREGROUND_COLOR_DARK = TailwindCSSPalette.white;
+export const DEFAULT_BACKGROUND_COLOR_DARK = TailwindCSSPalette.transparent;
+export const DEFAULT_ROW_BACKGROUND_COLOR_DARK = TailwindCSSPalette.black;
+export const DEFAULT_NEGATIVE_FOREGROUND_COLOR_DARK =
+  TailwindCSSPalette.red[500];
+export const DEFAULT_ZERO_FOREGROUND_COLOR_DARK =
+  TailwindCSSPalette.neutral[400];
+export const DEFAULT_ERROR_FOREGROUND_COLOR_DARK = TailwindCSSPalette.blue[600];
 
 // settings
 export const TAB_SIZE = 2;

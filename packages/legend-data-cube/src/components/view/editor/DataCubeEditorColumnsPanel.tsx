@@ -75,6 +75,7 @@ export const DataCubeEditorColumnsPanel = observer(
   (props: { view: DataCubeViewState }) => {
     const { view } = props;
     const panel = view.editor.columns;
+    const darkMode = view.dataCube.settings.darkMode;
 
     useEffect(() => () => panel.propagateChanges(), [panel]);
 
@@ -104,6 +105,7 @@ export const DataCubeEditorColumnsPanel = observer(
         <div className="flex h-[calc(100%_-_24px)] w-full">
           <DataCubeEditorColumnSelector
             selector={panel.selector}
+            darkMode={darkMode}
             noColumnsSelectedRenderer={() => (
               <div className="flex items-center border-[1.5px] border-neutral-200 p-2 font-semibold text-neutral-400">
                 <div>

@@ -34,6 +34,7 @@ export const DataCubeEditorHorizontalPivotsPanel = observer(
   (props: { view: DataCubeViewState }) => {
     const { view } = props;
     const panel = view.editor.horizontalPivots;
+    const darkMode = view.dataCube.settings.darkMode;
 
     useEffect(() => () => panel.propagateChanges(), [panel]);
 
@@ -50,6 +51,7 @@ export const DataCubeEditorHorizontalPivotsPanel = observer(
         <div className="flex h-[calc(100%_-_24px)] w-full">
           <DataCubeEditorColumnSelector
             selector={panel.selector}
+            darkMode={darkMode}
             columnActionRenderer={(p) => (
               <PivotColumnSortDirectionDropdown {...p} />
             )}

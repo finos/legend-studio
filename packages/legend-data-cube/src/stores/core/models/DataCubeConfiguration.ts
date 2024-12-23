@@ -15,13 +15,20 @@
  */
 
 import {
-  DEFAULT_BACKGROUND_COLOR,
-  DEFAULT_ERROR_FOREGROUND_COLOR,
-  DEFAULT_FOREGROUND_COLOR,
-  DEFAULT_NEGATIVE_FOREGROUND_COLOR,
-  DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR,
-  DEFAULT_ZERO_FOREGROUND_COLOR,
-  DEFAULT_GRID_LINE_COLOR,
+  DEFAULT_BACKGROUND_COLOR_LIGHT,
+  DEFAULT_ERROR_FOREGROUND_COLOR_LIGHT,
+  DEFAULT_FOREGROUND_COLOR_LIGHT,
+  DEFAULT_NEGATIVE_FOREGROUND_COLOR_LIGHT,
+  DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR_LIGHT,
+  DEFAULT_ZERO_FOREGROUND_COLOR_LIGHT,
+  DEFAULT_GRID_LINE_COLOR_LIGHT,
+  DEFAULT_BACKGROUND_COLOR_DARK,
+  DEFAULT_ERROR_FOREGROUND_COLOR_DARK,
+  DEFAULT_FOREGROUND_COLOR_DARK,
+  DEFAULT_NEGATIVE_FOREGROUND_COLOR_DARK,
+  DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR_DARK,
+  DEFAULT_ZERO_FOREGROUND_COLOR_DARK,
+  DEFAULT_GRID_LINE_COLOR_DARK,
   DEFAULT_FONT_FAMILY,
   DEFAULT_FONT_SIZE,
   DEFAULT_FONT_BOLD,
@@ -185,9 +192,13 @@ export class DataCubeConfiguration {
   description?: string | undefined;
   columns: DataCubeColumnConfiguration[] = [];
 
+  darkMode = false;
+
   showHorizontalGridLines = false;
   showVerticalGridLines = true;
-  gridLineColor = DEFAULT_GRID_LINE_COLOR;
+  gridLineColor = this.darkMode
+    ? DEFAULT_GRID_LINE_COLOR_DARK
+    : DEFAULT_GRID_LINE_COLOR_LIGHT;
 
   fontFamily = DEFAULT_FONT_FAMILY;
   fontSize = DEFAULT_FONT_SIZE;
@@ -198,18 +209,36 @@ export class DataCubeConfiguration {
   fontStrikethrough = DEFAULT_FONT_STRIKETHROUGH;
   fontCase?: DataCubeFontCase | undefined = DEFAULT_FONT_CASE;
   textAlign = DEFAULT_TEXT_ALIGN;
-  normalForegroundColor = DEFAULT_FOREGROUND_COLOR;
-  negativeForegroundColor = DEFAULT_NEGATIVE_FOREGROUND_COLOR;
-  zeroForegroundColor = DEFAULT_ZERO_FOREGROUND_COLOR;
-  errorForegroundColor = DEFAULT_ERROR_FOREGROUND_COLOR;
-  normalBackgroundColor = DEFAULT_BACKGROUND_COLOR;
-  negativeBackgroundColor = DEFAULT_BACKGROUND_COLOR;
-  zeroBackgroundColor = DEFAULT_BACKGROUND_COLOR;
-  errorBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+  normalForegroundColor = this.darkMode
+    ? DEFAULT_FOREGROUND_COLOR_DARK
+    : DEFAULT_FOREGROUND_COLOR_LIGHT;
+  negativeForegroundColor = this.darkMode
+    ? DEFAULT_NEGATIVE_FOREGROUND_COLOR_DARK
+    : DEFAULT_NEGATIVE_FOREGROUND_COLOR_LIGHT;
+  zeroForegroundColor = this.darkMode
+    ? DEFAULT_ZERO_FOREGROUND_COLOR_DARK
+    : DEFAULT_ZERO_FOREGROUND_COLOR_LIGHT;
+  errorForegroundColor = this.darkMode
+    ? DEFAULT_ERROR_FOREGROUND_COLOR_DARK
+    : DEFAULT_ERROR_FOREGROUND_COLOR_LIGHT;
+  normalBackgroundColor = this.darkMode
+    ? DEFAULT_BACKGROUND_COLOR_DARK
+    : DEFAULT_BACKGROUND_COLOR_LIGHT;
+  negativeBackgroundColor = this.darkMode
+    ? DEFAULT_BACKGROUND_COLOR_DARK
+    : DEFAULT_BACKGROUND_COLOR_LIGHT;
+  zeroBackgroundColor = this.darkMode
+    ? DEFAULT_BACKGROUND_COLOR_DARK
+    : DEFAULT_BACKGROUND_COLOR_LIGHT;
+  errorBackgroundColor = this.darkMode
+    ? DEFAULT_BACKGROUND_COLOR_DARK
+    : DEFAULT_BACKGROUND_COLOR_LIGHT;
 
   alternateRows = false;
   alternateRowsStandardMode = true;
-  alternateRowsColor = DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR;
+  alternateRowsColor = this.darkMode
+    ? DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR_DARK
+    : DEFAULT_ROW_HIGHLIGHT_BACKGROUND_COLOR_LIGHT;
   alternateRowsCount = 1;
 
   showSelectionStats = false;
@@ -236,6 +265,7 @@ export class DataCubeConfiguration {
       ),
       errorBackgroundColor: primitive(),
       errorForegroundColor: primitive(),
+      darkMode: primitive(),
       description: optional(primitive()),
       fontBold: primitive(),
       fontCase: optional(primitive()),

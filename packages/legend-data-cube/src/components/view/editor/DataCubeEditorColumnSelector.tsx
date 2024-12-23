@@ -42,12 +42,12 @@ import {
   getDataForAllNodes,
 } from '../../../stores/view/grid/DataCubeGridClientEngine.js';
 
-function getBaseGridProps<
-  T extends DataCubeEditorColumnSelectorColumnState,
->(): AgGridReactProps<T> {
+function getBaseGridProps<T extends DataCubeEditorColumnSelectorColumnState>(
+  darkMode: boolean,
+): AgGridReactProps<T> {
   return {
     modules: [AllCommunityModule],
-    className: 'ag-theme-quartz',
+    className: darkMode ? 'ag-theme-quartz-dark' : 'ag-theme-quartz',
     animateRows: false,
     getRowId: (params) => params.data.name,
     editType: 'fullRow',
@@ -157,6 +157,7 @@ export const DataCubeEditorColumnSelector = observer(
     T extends DataCubeEditorColumnSelectorColumnState,
   >(props: {
     selector: DataCubeEditorColumnSelectorState<T>;
+    darkMode: boolean;
     columnLabelRenderer?:
       | ((p: {
           selector: DataCubeEditorColumnSelectorState<T>;
@@ -173,6 +174,7 @@ export const DataCubeEditorColumnSelector = observer(
   }) {
     const {
       selector,
+      darkMode,
       columnLabelRenderer,
       columnActionRenderer,
       noColumnsSelectedRenderer,
@@ -320,7 +322,7 @@ export const DataCubeEditorColumnSelector = observer(
             <div className="h-[calc(100%_-_24px)]">
               <AgGridReact
                 theme="legacy"
-                {...getBaseGridProps<T>()}
+                {...getBaseGridProps<T>(darkMode)}
                 // Disable managed row-dragging to disallow changing the order of columns
                 // and to make sure the row data and the available columns state are in sync
                 rowDragManaged={false}
@@ -505,7 +507,7 @@ export const DataCubeEditorColumnSelector = observer(
             <div className="h-[calc(100%_-_24px)]">
               <AgGridReact
                 theme="legacy"
-                {...getBaseGridProps<T>()}
+                {...getBaseGridProps<T>(darkMode)}
                 // NOTE: technically, we don't want to enable managed row-dragging here
                 // but enabling this gives us free row moving management and interaction
                 // comes out of the box from ag-grid, we will just sync the state with

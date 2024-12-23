@@ -116,6 +116,7 @@ export const DataCubeEditorSortsPanel = observer(
   (props: { view: DataCubeViewState }) => {
     const { view } = props;
     const panel = view.editor.sorts;
+    const darkMode = view.dataCube.settings.darkMode;
 
     return (
       <div className="h-full w-full select-none p-2">
@@ -130,6 +131,7 @@ export const DataCubeEditorSortsPanel = observer(
         <div className="flex h-[calc(100%_-_24px)] w-full">
           <DataCubeEditorColumnSelector
             selector={panel.selector}
+            darkMode={darkMode}
             columnLabelRenderer={(p) => <SortColumnLabel {...p} />}
             columnActionRenderer={(p) => <SortDirectionDropdown {...p} />}
           />
