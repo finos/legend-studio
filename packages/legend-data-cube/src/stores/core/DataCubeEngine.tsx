@@ -116,7 +116,7 @@ export type RelationType = {
   columns: DataCubeColumn[];
 };
 
-type DataCubeExecutionResult = {
+export type DataCubeExecutionResult = {
   result: TDSExecutionResult;
   executedQuery: string;
   executedSQL: string;

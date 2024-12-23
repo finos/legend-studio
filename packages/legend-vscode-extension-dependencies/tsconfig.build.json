@@ -10,6 +10,7 @@
     { "path": "../legend-application-studio/tsconfig.build.json" },
     { "path": "../legend-application/tsconfig.build.json" },
     { "path": "../legend-art/tsconfig.build.json" },
+    { "path": "../legend-data-cube/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-diagram/tsconfig.build.json" },
     { "path": "../legend-graph/tsconfig.build.json" },
     { "path": "../legend-query-builder/tsconfig.build.json" },

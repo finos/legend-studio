@@ -15,7 +15,7 @@
  */
 
 import '../lib/tailwind.css'; // eslint-disable-line @finos/legend/no-cross-workspace-non-export-usage
-import '../style/index.css';
+import '../style/index.scss';
 
 export {
   type Diagram,
@@ -82,6 +82,7 @@ export {
   buildPureGraphManager,
   Class,
   CodeCompletionResult,
+  Completion,
   ConcreteFunctionDefinition,
   Core_GraphManagerPreset,
   CORE_PURE_PATH,
@@ -100,11 +101,14 @@ export {
   RawLambda,
   RawVariableExpression,
   RelationTypeColumnMetadata,
+  RelationalExecutionActivities,
   RelationTypeMetadata,
   resolvePackagePathAndElementName,
   Service,
   ServiceExecution,
   ServiceExecutionMode,
+  SUPPORTED_FUNCTIONS,
+  TDSExecutionResult,
   TEMPORARY__AbstractEngineConfig,
   V1_AppliedFunction,
   V1_ArtifactGenerationExtensionInput,
@@ -128,6 +132,7 @@ export {
   V1_deserializeDatasetEntitlementReport,
   V1_deserializeDatasetSpecification,
   V1_deserializePackageableElement,
+  V1_deserializeRawValueSpecification,
   V1_deserializeValueSpecification,
   V1_EngineRuntime,
   V1_EntitlementReportAnalyticsInput,
@@ -147,6 +152,7 @@ export {
   V1_GraphBuilderContextBuilder,
   V1_GraphTransformerContextBuilder,
   V1_KeyedExecutionParameter,
+  V1_Lambda,
   V1_LambdaReturnTypeInput,
   V1_LightQuery,
   V1_MappedEntity,
@@ -176,6 +182,7 @@ export {
   V1_RawSQLExecuteInput,
   V1_RawVariable,
   V1_RelationalConnectionBuilder,
+  V1_RelationalExecutionActivities,
   V1_RelationType,
   V1_RelationTypeColumn,
   V1_RenderStyle,
@@ -188,6 +195,7 @@ export {
   V1_serializePackageableElement,
   V1_serializeRawValueSpecification,
   V1_serializeRuntime,
+  V1_serializeValueSpecification,
   V1_Service,
   V1_ServiceConfigurationInfo,
   V1_serviceModelSchema,
@@ -198,6 +206,7 @@ export {
   V1_setupLegacyRuntimeSerialization,
   V1_SourceInformation,
   V1_StoreEntitlementAnalysisInput,
+  V1_TDSExecutionResult,
   V1_TestDataGenerationExecutionInput,
   V1_TestDataGenerationExecutionWithSeedInput,
   V1_TestDataGenerationInput,
@@ -232,6 +241,8 @@ export {
   guaranteeType,
   isBoolean,
   isLossSafeNumber,
+  isNonNullable,
+  LogEvent,
   NetworkClientError,
   parseLosslessJSON,
   returnUndefOnError,
@@ -240,6 +251,7 @@ export {
   TracerService,
   uniq,
   usingModelSchema,
+  uuid,
 } from '@finos/legend-shared';
 
 export {
@@ -275,3 +287,20 @@ export {
   pureExecution_setFunction,
   service_setExecution,
 } from '@finos/legend-application-studio';
+
+export {
+  type CompletionItem,
+  type DataCubeAPI,
+  type DataCubeEngineConfiguration,
+  type DataCubeExecutionResult,
+  type RelationType,
+  _elementPtr,
+  _function,
+  _functionName,
+  _lambda,
+  DataCube,
+  DataCubeEngine,
+  DataCubeFunction,
+  DataCubeQuery,
+  DataCubeSource,
+} from '@finos/legend-data-cube';
