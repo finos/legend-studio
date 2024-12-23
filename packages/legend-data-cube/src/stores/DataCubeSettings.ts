@@ -61,6 +61,7 @@ export class DataCubeSettings {
     DEFAULT_SETTINGS[
       DataCubeSettingKey.GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING
     ];
+  gridClientLicense?: string | undefined;
 
   setEnableDebugMode(value: boolean) {
     this.enableDebugMode = value;

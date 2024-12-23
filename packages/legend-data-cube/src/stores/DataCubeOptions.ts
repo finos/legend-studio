@@ -19,6 +19,7 @@ import type { DataCubeState } from './DataCubeState.js';
 
 export type DataCubeOptions = {
   enableDebugMode?: boolean | undefined;
+  gridClientLicense?: string | undefined;
   gridClientRowBuffer?: number | undefined;
   gridClientPurgeClosedRowNodes?: boolean | undefined;
   gridClientSuppressLargeDatasetWarning?: boolean | undefined;

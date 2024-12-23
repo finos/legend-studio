@@ -33,12 +33,9 @@ import {
 } from './LegendREPLFramworkProvider.js';
 
 const LegendREPLDataCube = observer(() => {
-  const baseStore = useLegendREPLBaseStore();
-  const engine = useMemo(
-    () => new LegendREPLDataCubeEngine(baseStore),
-    [baseStore],
-  );
-  const application = baseStore.application;
+  const store = useLegendREPLBaseStore();
+  const engine = useMemo(() => new LegendREPLDataCubeEngine(store), [store]);
+  const application = store.application;
 
   useEffect(() => {
     engine.blockNavigation(
@@ -74,10 +71,10 @@ const LegendREPLDataCube = observer(() => {
         onSettingChanged(key, value) {
           engine.persistSettingValue(key, value);
         },
-
         enableDebugMode: application.settingService.getBooleanValue(
           DataCubeSettingKey.ENABLE_DEBUG_MODE,
         ),
+        gridClientLicense: store.gridClientLicense,
         gridClientRowBuffer: application.settingService.getNumericValue(
           DataCubeSettingKey.GRID_CLIENT_ROW_BUFFER,
         ),
@@ -101,16 +98,28 @@ export const LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN = Object.freeze({
   DATA_CUBE: `/dataCube`,
 });
 
-export const LegendREPLRouter = observer(() => (
-  <div className="h-full">
-    <Routes>
-      <Route
-        path={LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN.DATA_CUBE}
-        element={<LegendREPLDataCube />}
-      />
-    </Routes>
-  </div>
-));
+export const LegendREPLRouter = observer(() => {
+  const store = useLegendREPLBaseStore();
+
+  useEffect(() => {
+    store
+      .initialize()
+      .catch((error) => store.application.alertUnhandledError(error));
+  }, [store]);
+
+  return (
+    <div className="h-full">
+      {store.initState.hasSucceeded && (
+        <Routes>
+          <Route
+            path={LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN.DATA_CUBE}
+            element={<LegendREPLDataCube />}
+          />
+        </Routes>
+      )}
+    </div>
+  );
+});
 
 export const LegendREPLWebApplication = (props: { baseUrl: string }) => {
   const { baseUrl } = props;

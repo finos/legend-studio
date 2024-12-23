@@ -30,6 +30,7 @@ import type { DataCubeEngine } from '../stores/core/DataCubeEngine.js';
 import { DataCubeState } from '../stores/DataCubeState.js';
 import { type DataCubeOptions } from '../stores/DataCubeOptions.js';
 import { DataCubeContextProvider, useDataCube } from './DataCubeProvider.js';
+import type { DataCubeQuery } from '../stores/core/models/DataCubeQuery.js';
 
 const DataCubeTitleBar = observer(() => {
   const dataCube = useDataCube();
@@ -119,8 +120,9 @@ const DataCubeRoot = observer(() => {
 export const DataCube = observer(
   (props: {
     engine: DataCubeEngine;
+    query?: DataCubeQuery | undefined;
     options?: DataCubeOptions | undefined;
-  }): React.ReactElement => {
+  }) => {
     const { engine, options } = props;
     const state = useLocalObservable(() => new DataCubeState(engine, options));
 

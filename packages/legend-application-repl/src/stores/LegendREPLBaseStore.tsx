@@ -16,6 +16,7 @@
 
 import {
   ActionState,
+  LogEvent,
   NetworkClient,
   assertErrorThrown,
   guaranteeNonNullable,
@@ -34,14 +35,17 @@ import {
 import { LegendREPLDataCubeSource } from './LegendREPLDataCubeSource.js';
 import { PersistentDataCubeQuery } from '@finos/legend-graph';
 import { LegendREPLPublishDataCubeAlert } from '../components/LegendREPLPublishDataCubeAlert.js';
+import { APPLICATION_EVENT } from '@finos/legend-application';
 
 export class LegendREPLBaseStore {
   readonly application: LegendREPLApplicationStore;
   readonly client: LegendREPLServerClient;
+  readonly initState = ActionState.create();
   readonly publishState = ActionState.create();
 
   sourceQuery?: string | undefined;
   currentUser?: string | undefined;
+  gridClientLicense?: string | undefined;
   queryServerBaseUrl?: string | undefined;
   hostedApplicationBaseUrl?: string | undefined;
 
@@ -58,6 +62,26 @@ export class LegendREPLBaseStore {
           : application.config.replUrl,
       }),
     );
+  }
+
+  async initialize() {
+    this.initState.inProgress();
+    try {
+      const info = await this.client.getInfrastructureInfo();
+      this.currentUser = info.currentUser;
+      this.queryServerBaseUrl = info.queryServerBaseUrl;
+      this.hostedApplicationBaseUrl = info.hostedApplicationBaseUrl;
+      this.gridClientLicense = info.gridClientLicense;
+      this.initState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.application.logService.error(
+        LogEvent.create(APPLICATION_EVENT.APPLICATION_LOAD__FAILURE),
+        `Can't initialize REPL`,
+        error,
+      );
+      this.initState.fail();
+    }
   }
 
   async publishDataCube(dataCube: DataCubeState) {

@@ -118,6 +118,7 @@ export class DataCubeState implements DataCubeAPI {
       options?.gridClientSuppressLargeDatasetWarning !== undefined
         ? options.gridClientSuppressLargeDatasetWarning
         : this.settings.gridClientSuppressLargeDatasetWarning;
+    this.settings.gridClientLicense = options?.gridClientLicense;
   }
 
   getSettings() {

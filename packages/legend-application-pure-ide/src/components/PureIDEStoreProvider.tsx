@@ -24,11 +24,8 @@ import type { LegendPureIDEPluginManager } from '../application/LegendPureIDEPlu
 
 const EditorStoreContext = createContext<PureIDEStore | undefined>(undefined);
 
-export const PureIDEStoreProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement => {
+export const PureIDEStoreProvider = (props: { children: React.ReactNode }) => {
+  const { children } = props;
   const applicationStore = useApplicationStore<
     LegendPureIDEApplicationConfig,
     LegendPureIDEPluginManager

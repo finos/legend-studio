@@ -122,10 +122,6 @@ export type DataCubeExecutionResult = {
   executedSQL: string;
 };
 
-export type DataCubeEngineConfiguration = {
-  gridClientLicense?: string | undefined;
-};
-
 export abstract class DataCubeEngine {
   readonly layout = new LayoutManagerState();
   readonly filterOperations = [
@@ -176,16 +172,13 @@ export abstract class DataCubeEngine {
     new DataCubeQueryAggregateOperation__JoinStrings(),
   ];
 
-  protected async fetchConfiguration(): Promise<DataCubeEngineConfiguration> {
-    return {
-      gridClientLicense: undefined,
-    };
-  }
+  abstract getBaseQuery(): Promise<DataCubeQuery | undefined>;
 
-  async initialize(): Promise<void> {
-    const config = await this.fetchConfiguration();
-    if (config.gridClientLicense) {
-      LicenseManager.setLicenseKey(config.gridClientLicense);
+  async initialize(options?: {
+    gridClientLicense?: string | undefined;
+  }): Promise<void> {
+    if (options?.gridClientLicense) {
+      LicenseManager.setLicenseKey(options.gridClientLicense);
     }
     await configureCodeEditor(DataCubeFont.ROBOTO_MONO, (error) => {
       throw error;
@@ -203,7 +196,6 @@ export abstract class DataCubeEngine {
     return getAggregateOperation(value, this.aggregateOperations);
   }
 
-  abstract getBaseQuery(): Promise<DataCubeQuery | undefined>;
   abstract processQuerySource(value: PlainObject): Promise<DataCubeSource>;
 
   abstract parseValueSpecification(

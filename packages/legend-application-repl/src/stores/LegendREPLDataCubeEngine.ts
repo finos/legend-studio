@@ -97,16 +97,6 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
 
   // ---------------------------------- IMPLEMENTATION ----------------------------------
 
-  override async fetchConfiguration() {
-    const info = await this.client.getInfrastructureInfo();
-    this.baseStore.currentUser = info.currentUser;
-    this.baseStore.queryServerBaseUrl = info.queryServerBaseUrl;
-    this.baseStore.hostedApplicationBaseUrl = info.hostedApplicationBaseUrl;
-    return {
-      gridClientLicense: info.gridClientLicense,
-    };
-  }
-
   async getBaseQuery() {
     return DataCubeQuery.serialization.fromJson(
       await this.client.getBaseQuery(),

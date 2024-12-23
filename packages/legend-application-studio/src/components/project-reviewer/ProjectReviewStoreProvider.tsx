@@ -25,11 +25,10 @@ const ProjectReviewerStoreContext = createContext<
   ProjectReviewerStore | undefined
 >(undefined);
 
-export const ProjectReviewerStoreProvider = ({
-  children,
-}: {
+export const ProjectReviewerStoreProvider = (props: {
   children: React.ReactNode;
-}): React.ReactElement => {
+}) => {
+  const { children } = props;
   const editorStore = useEditorStore();
   editorStore.setMode(EDITOR_MODE.REVIEW);
   const store = useLocalObservable(() => new ProjectReviewerStore(editorStore));
