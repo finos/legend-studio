@@ -96,6 +96,7 @@ export {
   getFunctionSignature,
   GraphManagerState,
   PackageableElementExplicitReference,
+  PersistentDataCubeQuery,
   PostValidationAssertionResult,
   PureExecution,
   RawLambda,
