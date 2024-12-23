@@ -1,5 +1,13 @@
 # @finos/legend-vscode-extension-dependencies
 
+## 4.0.47
+
+### Patch Changes
+
+- [#3742](https://github.com/finos/legend-studio/pull/3742) [`cdd7e5d`](https://github.com/finos/legend-studio/commit/cdd7e5d701989f68f1dcc83b807a391123abaac8) ([@travisstebbins](https://github.com/travisstebbins)) - Export dependencies to support Data Cube in VS Code purebook renderer
+
+- [#3766](https://github.com/finos/legend-studio/pull/3766) [`1c9e881`](https://github.com/finos/legend-studio/commit/1c9e88163314d597738ec98df014943a8f979d29) ([@travisstebbins](https://github.com/travisstebbins)) - Additional vscode dependency export
+
 ## 4.0.46
 
 ## 4.0.45
