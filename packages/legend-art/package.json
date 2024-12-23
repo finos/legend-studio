@@ -60,7 +60,7 @@
     "@fontsource/ubuntu-mono": "5.1.0",
     "@mui/material": "6.2.1",
     "@mui/system": "6.2.1",
-    "@mui/x-date-pickers": "7.23.2",
+    "@mui/x-date-pickers": "7.23.3",
     "@types/react": "19.0.2",
     "@types/react-window": "1.8.8",
     "clsx": "2.1.1",
@@ -82,7 +82,7 @@
     "react-select": "5.9.0",
     "react-window": "1.8.11",
     "remark-gfm": "4.0.0",
-    "tailwind-merge": "2.5.5"
+    "tailwind-merge": "2.6.0"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

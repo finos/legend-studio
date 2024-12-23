@@ -40,7 +40,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@braintree/sanitize-url": "7.1.0",
+    "@braintree/sanitize-url": "7.1.1",
     "@testing-library/dom": "10.4.0",
     "@types/lodash-es": "4.17.12",
     "@types/object-hash": "3.0.6",
