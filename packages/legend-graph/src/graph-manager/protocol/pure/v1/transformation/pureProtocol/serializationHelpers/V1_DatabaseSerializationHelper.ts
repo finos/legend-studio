@@ -103,6 +103,7 @@ import {
   V1_serializePackageableElementPointer,
 } from './V1_CoreSerializationHelper.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
+import { V1_TabularFunction } from '../../../model/packageableElements/store/relational/model/V1_TabularFunction.js';
 
 export const V1_DATABASE_ELEMENT_PROTOCOL_TYPE = 'relational';
 
@@ -463,6 +464,10 @@ export function V1_deserializeRelationalOperationElement(
   }
 }
 
+const V1_tabularFunctionModelSchema = createModelSchema(V1_TabularFunction, {
+  name: primitive(),
+});
+
 export const V1_filterMappingModelSchema = createModelSchema(V1_FilterMapping, {
   filter: usingModelSchema(V1_filterPointerModelSchema),
   joins: list(usingModelSchema(V1_joinPointerModelSchema)),
@@ -494,6 +499,11 @@ const V1_viewModelSchema = createModelSchema(V1_View, {
 const V1_schemaModelSchema = createModelSchema(V1_Schema, {
   name: primitive(),
   tables: list(object(V1_Table)),
+  tabularFunctions: customList(
+    (value) => serialize(V1_tabularFunctionModelSchema, value),
+    (value) => deserialize(V1_tabularFunctionModelSchema, value),
+    { INTERNAL__forceReturnEmptyInTest: true },
+  ),
   views: list(usingModelSchema(V1_viewModelSchema)),
 });
 
