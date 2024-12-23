@@ -464,6 +464,11 @@ export function V1_deserializeRelationalOperationElement(
   }
 }
 
+const V1_tabularFunctionModelSchema = createModelSchema(V1_TabularFunction, {
+  name: primitive(),
+  columns: list(usingModelSchema(columnModelSchema)),
+});
+
 export const V1_filterMappingModelSchema = createModelSchema(V1_FilterMapping, {
   filter: usingModelSchema(V1_filterPointerModelSchema),
   joins: list(usingModelSchema(V1_joinPointerModelSchema)),
@@ -495,7 +500,11 @@ const V1_viewModelSchema = createModelSchema(V1_View, {
 const V1_schemaModelSchema = createModelSchema(V1_Schema, {
   name: primitive(),
   tables: list(object(V1_Table)),
-  tabularFunctions: list(object(V1_TabularFunction)),
+  tabularFunctions: customList(
+    (value) => serialize(V1_tabularFunctionModelSchema, value),
+    (value) => deserialize(V1_tabularFunctionModelSchema, value),
+    { INTERNAL__forceReturnEmptyInTest: true },
+  ),
   views: list(usingModelSchema(V1_viewModelSchema)),
 });
 
