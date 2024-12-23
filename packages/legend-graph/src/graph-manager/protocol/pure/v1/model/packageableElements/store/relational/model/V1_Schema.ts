@@ -18,11 +18,13 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../../../graph/Core_HashU
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { V1_Table } from './V1_Table.js';
 import type { V1_View } from './V1_View.js';
+import type { V1_TabularFunction } from './V1_TabularFunction.js';
 
 export class V1_Schema implements Hashable {
   name!: string;
   tables: V1_Table[] = [];
   views: V1_View[] = [];
+  tabularFunctions: V1_TabularFunction[] = [];
 
   get hashCode(): string {
     return hashArray([
