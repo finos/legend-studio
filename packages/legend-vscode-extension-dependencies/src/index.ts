@@ -293,7 +293,6 @@ export {
   type DataCubeAPI,
   type DataCubeEngineConfiguration,
   type DataCubeExecutionResult,
-  type DataCubeInitialInput,
   type RelationType,
   _elementPtr,
   _function,
