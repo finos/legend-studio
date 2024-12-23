@@ -1,7 +1,7 @@
 {
   "pac4j": {
-    "callbackPrefix": "/data-cube/log.in",
-    "bypassPaths": ["/data-cube/admin/healthcheck"],
+    "callbackPrefix": "/datacube/log.in",
+    "bypassPaths": ["/datacube/admin/healthcheck"],
     "clients": [
       {
         "org.finos.legend.server.pac4j.gitlab.GitlabClient": {
@@ -32,14 +32,14 @@
     "/static"
   ],
   "localAssetPaths": {
-    "/data-cube/config.json": "/config/config.json"
+    "/datacube/config.json": "/config/config.json"
   },
   "uiPath": "/data-cube",
   "sessionCookie": "LEGEND_DATA_CUBE_JSESSIONID",
   "server": {
     "type": "simple",
     "applicationContextPath": "/",
-    "adminContextPath": "/data-cube/admin",
+    "adminContextPath": "/datacube/admin",
     "connector": {
       "type": "http",
       "port": ${DATA_CUBE_PORT}

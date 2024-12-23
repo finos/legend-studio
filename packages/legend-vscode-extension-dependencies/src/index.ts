@@ -292,7 +292,7 @@ export {
 export {
   type CompletionItem,
   type DataCubeAPI,
-  type DataCubeEngineConfiguration,
+  type DataCubeConfiguration,
   type DataCubeExecutionResult,
   type RelationType,
   _elementPtr,
