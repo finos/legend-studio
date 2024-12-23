@@ -100,7 +100,7 @@ const DataCubeRoot = observer(() => {
 
   useEffect(() => {
     dataCube.view
-      .initialize()
+      .initialize(dataCube.query)
       .catch((error) => dataCube.engine.logUnhandledError(error));
   }, [dataCube]);
 
@@ -119,12 +119,14 @@ const DataCubeRoot = observer(() => {
 
 export const DataCube = observer(
   (props: {
+    query: DataCubeQuery;
     engine: DataCubeEngine;
-    query?: DataCubeQuery | undefined;
     options?: DataCubeOptions | undefined;
   }) => {
-    const { engine, options } = props;
-    const state = useLocalObservable(() => new DataCubeState(engine, options));
+    const { query, engine, options } = props;
+    const state = useLocalObservable(
+      () => new DataCubeState(query, engine, options),
+    );
 
     useEffect(() => {
       state

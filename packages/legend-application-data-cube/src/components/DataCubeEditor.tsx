@@ -135,7 +135,7 @@ export const DataCubeEditor = observer(() => {
             </div>
           </div>
         </div>
-        {dataCubeStore.cubeViewer ? (
+        {/* {dataCubeStore.cubeViewer ? (
           <>
             <div className="h-[calc(100%_-_30px)]">
               <div className="h-12 w-full bg-gray-200">
@@ -174,7 +174,7 @@ export const DataCubeEditor = observer(() => {
               </div>
             </div>
           </>
-        )}
+        )} */}
       </div>
       {sourceSelector.open && (
         <DataCubeSourceEditor sourceBuilder={sourceSelector} />

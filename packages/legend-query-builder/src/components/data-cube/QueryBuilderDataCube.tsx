@@ -24,17 +24,17 @@ import {
   ModalFooterButton,
   TimesIcon,
 } from '@finos/legend-art';
-import type { QueryBuilderDataCubeEngine } from '../../stores/data-cube/QueryBuilderDataCubeEngine.js';
+import type { QueryBuilderDataCubeViewerState } from '../../stores/data-cube/QueryBuilderDataCubeViewerState.js';
 
 export const QueryDataCubeViewer = observer(
   (props: {
-    engine: QueryBuilderDataCubeEngine;
+    state: QueryBuilderDataCubeViewerState;
     close: () => void;
     options?: {
       fullScreen: boolean;
     };
   }) => {
-    const { engine, close, options } = props;
+    const { state, close, options } = props;
     return (
       <Dialog
         open={true}
@@ -72,7 +72,7 @@ export const QueryDataCubeViewer = observer(
                 options?.fullScreen,
             })}
           >
-            <DataCube engine={engine} />
+            <DataCube query={state.query} engine={state.engine} />
           </div>
           {!options?.fullScreen && (
             <ModalFooter>

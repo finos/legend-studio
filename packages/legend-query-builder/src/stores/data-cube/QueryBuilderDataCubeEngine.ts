@@ -15,12 +15,11 @@
  */
 
 import {
-  SUPPORTED_FUNCTIONS,
-  V1_AppliedFunction,
   V1_Lambda,
   RawLambda,
   RelationalExecutionActivities,
   TDSExecutionResult,
+  V1_AppliedFunction,
   V1_deserializeRawValueSpecification,
   V1_deserializeValueSpecification,
   V1_RawLambda,
@@ -30,17 +29,18 @@ import {
   type V1_ValueSpecification,
   type ParameterValue,
   LAMBDA_PIPE,
+  SUPPORTED_FUNCTIONS,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
-  _functionName,
   DataCubeEngine,
   DataCubeSource,
-  type RelationType,
-  DataCubeQuery,
-  type CompletionItem,
   _function,
   DataCubeFunction,
+  type RelationType,
+  type CompletionItem,
+  _functionName,
+  DataCubeQuery,
 } from '@finos/legend-data-cube';
 import {
   guaranteeType,
@@ -61,7 +61,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   readonly mappingPath: string | undefined;
   readonly parameterValues: ParameterValue[] | undefined;
   readonly runtimePath: string | undefined;
-  _parameters: object | undefined;
+  readonly parameters: object | undefined;
 
   constructor(
     selectQuery: RawLambda,
@@ -76,6 +76,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     this.mappingPath = mappingPath;
     this.runtimePath = runtimePath;
     this.parameterValues = parameterValues;
+    this.parameters = selectQuery.parameters;
   }
 
   get sourceLabel(): string {
@@ -105,9 +106,8 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     return srcFuncExp;
   }
 
-  async getBaseQuery() {
+  async generateInitialQuery() {
     const srcFuncExp = this.getSourceFunctionExpression();
-    this._parameters = this.selectInitialQuery.parameters;
     const fromFuncExp = new V1_AppliedFunction();
     fromFuncExp.function = _functionName(SUPPORTED_FUNCTIONS.FROM);
     fromFuncExp.parameters = [srcFuncExp];
@@ -121,10 +121,14 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
       .columns;
     const query = new DataCubeQuery();
     query.query = `~[${columns.map((e) => `'${e.name}'`)}]->select()`;
+
     return query;
   }
 
   async processQuerySource(value: PlainObject) {
+    // TODO: this is an abnormal usage of this method, this is the place
+    // where we can enforce which source this engine supports, instead
+    // of hardcoding the logic like this.
     const srcFuncExp = this.getSourceFunctionExpression();
     const source = new QueryBuilderDataCubeSource();
     source.columns = (
@@ -222,7 +226,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
 
   override async executeQuery(query: V1_Lambda, source: DataCubeSource) {
     const lambda = this.buildRawLambdaFromValueSpec(query);
-    lambda.parameters = this._parameters;
+    lambda.parameters = this.parameters;
     const [executionWithMetadata, queryString] = await Promise.all([
       this.graphState.graphManager.runQuery(
         lambda,

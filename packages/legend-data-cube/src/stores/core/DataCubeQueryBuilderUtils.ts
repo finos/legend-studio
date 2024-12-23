@@ -548,3 +548,9 @@ export function _filter(
     return filterCondition.not ? _not(condition) : condition;
   }
 }
+
+export function generateBaseSelectQuery(snapshot: DataCubeQuerySnapshot) {
+  return _function(DataCubeFunction.SELECT, [
+    _cols(snapshot.data.sourceColumns.map((col) => _colSpec(col.name))),
+  ]);
+}

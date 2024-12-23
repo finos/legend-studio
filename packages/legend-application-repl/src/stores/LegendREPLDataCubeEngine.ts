@@ -23,7 +23,6 @@ import {
   DataCubeFunction,
   type DataCubeSource,
   type DataCubeAPI,
-  DataCubeQuery,
 } from '@finos/legend-data-cube';
 import {
   TDSExecutionResult,
@@ -96,12 +95,6 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   }
 
   // ---------------------------------- IMPLEMENTATION ----------------------------------
-
-  async getBaseQuery() {
-    return DataCubeQuery.serialization.fromJson(
-      await this.client.getBaseQuery(),
-    );
-  }
 
   async processQuerySource(value: PlainObject) {
     if (value._type !== REPL_DATA_CUBE_SOURCE_TYPE) {

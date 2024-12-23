@@ -27,6 +27,7 @@ import { LegendREPLServerClient } from './LegendREPLServerClient.js';
 import {
   DataCubeConfiguration,
   DataCubeQuery,
+  generateBaseSelectQuery,
   LayoutConfiguration,
   RawAdhocQueryDataCubeSource,
   WindowState,
@@ -36,6 +37,7 @@ import { LegendREPLDataCubeSource } from './LegendREPLDataCubeSource.js';
 import { PersistentDataCubeQuery } from '@finos/legend-graph';
 import { LegendREPLPublishDataCubeAlert } from '../components/LegendREPLPublishDataCubeAlert.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
+import { action, makeObservable, observable } from 'mobx';
 
 export class LegendREPLBaseStore {
   readonly application: LegendREPLApplicationStore;
@@ -48,8 +50,14 @@ export class LegendREPLBaseStore {
   gridClientLicense?: string | undefined;
   queryServerBaseUrl?: string | undefined;
   hostedApplicationBaseUrl?: string | undefined;
+  query?: DataCubeQuery | undefined;
 
   constructor(application: LegendREPLApplicationStore) {
+    makeObservable(this, {
+      query: observable.ref,
+
+      initialize: action,
+    });
     this.application = application;
     this.client = new LegendREPLServerClient(
       new NetworkClient({
@@ -72,6 +80,9 @@ export class LegendREPLBaseStore {
       this.queryServerBaseUrl = info.queryServerBaseUrl;
       this.hostedApplicationBaseUrl = info.hostedApplicationBaseUrl;
       this.gridClientLicense = info.gridClientLicense;
+      this.query = DataCubeQuery.serialization.fromJson(
+        await this.client.getBaseQuery(),
+      );
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -104,9 +115,7 @@ export class LegendREPLBaseStore {
     try {
       const query = new DataCubeQuery();
       query.query = await dataCube.engine.getValueSpecificationCode(
-        dataCube.engine.generateInitialQuery(
-          dataCube.view.snapshotManager.currentSnapshot,
-        ),
+        generateBaseSelectQuery(dataCube.view.snapshotManager.currentSnapshot),
       );
       const source = new RawAdhocQueryDataCubeSource();
       source.query = this.sourceQuery;

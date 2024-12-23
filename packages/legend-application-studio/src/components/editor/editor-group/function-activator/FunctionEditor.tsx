@@ -153,7 +153,7 @@ import type { FunctionActivatorState } from '../../../../stores/editor/editor-st
 import { FunctionTestableEditor } from './testable/FunctionTestableEditor.js';
 import { DocumentationLink } from '@finos/legend-lego/application';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
-import { openDataCube } from '../../../../stores/editor/data-cube/DataCubeViewerState.js';
+import { openDataCube } from '../../../../stores/editor/data-cube/LegendStudioDataCubeHelper.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',

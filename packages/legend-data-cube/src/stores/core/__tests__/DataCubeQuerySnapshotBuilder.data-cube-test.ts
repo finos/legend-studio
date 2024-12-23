@@ -146,7 +146,7 @@ describe(unitTest('Analyze and build base snapshot'), () => {
       try {
         validateAndBuildQuerySnapshot(partialQuery, source, baseQuery);
         expect('').toEqual(problem);
-      } catch (error: unknown) {
+      } catch (error) {
         assertErrorThrown(error);
         expect(error.message).toEqual(problem);
       }

@@ -1138,10 +1138,10 @@ export const QueryBuilder = observer(
               </Modal>
             </Dialog>
           )}
-          {queryBuilderState.dataCubeEngine && (
+          {queryBuilderState.dataCubeViewerState && (
             <QueryDataCubeViewer
-              engine={queryBuilderState.dataCubeEngine}
-              close={() => queryBuilderState.setDataCubeEngine(undefined)}
+              state={queryBuilderState.dataCubeViewerState}
+              close={() => queryBuilderState.setDataCubeViewerState(undefined)}
             />
           )}
         </div>

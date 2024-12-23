@@ -33,6 +33,7 @@ import { action, makeObservable, observable } from 'mobx';
 import { DataCubeSettings } from './DataCubeSettings.js';
 import type { DataCubeAPI } from './DataCubeAPI.js';
 import type { DataCubeOptions } from './DataCubeOptions.js';
+import type { DataCubeQuery } from './core/models/DataCubeQuery.js';
 
 export class DataCubeState implements DataCubeAPI {
   readonly engine: DataCubeEngine;
@@ -43,6 +44,7 @@ export class DataCubeState implements DataCubeAPI {
   // NOTE: when we support multiview, there can be multiple view states to support
   // the first one in that list will be taken as the main view state
   readonly view: DataCubeViewState;
+  readonly query: DataCubeQuery;
 
   onNameChanged?: ((name: string, source: DataCubeSource) => void) | undefined;
   onSettingChanged?:
@@ -58,7 +60,11 @@ export class DataCubeState implements DataCubeAPI {
   currentDocumentationEntry?: DocumentationEntry | undefined;
   currentActionAlert?: ActionAlert | undefined;
 
-  constructor(engine: DataCubeEngine, options?: DataCubeOptions | undefined) {
+  constructor(
+    query: DataCubeQuery,
+    engine: DataCubeEngine,
+    options?: DataCubeOptions | undefined,
+  ) {
     makeObservable(this, {
       currentDocumentationEntry: observable,
       openDocumentationEntry: action,
@@ -67,6 +73,7 @@ export class DataCubeState implements DataCubeAPI {
       alertAction: action,
     });
 
+    this.query = query;
     this.engine = engine;
     this.settings = new DataCubeSettings(this);
     this.view = new DataCubeViewState(this);
@@ -155,7 +162,7 @@ export class DataCubeState implements DataCubeAPI {
     try {
       await this.engine.initialize();
       this.initState.pass();
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.alertAction({
         message: `Initialization Failure: ${error.message}`,

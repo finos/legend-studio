@@ -26,13 +26,17 @@ import {
   Service,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../EditorStore.js';
-import { QueryBuilderDataCubeEngine } from '@finos/legend-query-builder';
+import {
+  QueryBuilderDataCubeEngine,
+  QueryBuilderDataCubeViewerState,
+} from '@finos/legend-query-builder';
 import {
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
+import { type DataCubeQuery } from '@finos/legend-data-cube';
 
 export const isElementSupportedByDataCube = (
   element: PackageableElement,
@@ -44,7 +48,9 @@ export const openDataCube = async (
   editorStore: EditorStore,
 ): Promise<void> => {
   try {
+    let query: DataCubeQuery;
     let engine: QueryBuilderDataCubeEngine;
+
     if (element instanceof ConcreteFunctionDefinition) {
       const body = element.expressionSequence;
       const rawLambda = new RawLambda([], body);
@@ -55,6 +61,7 @@ export const openDataCube = async (
         undefined,
         editorStore.graphManagerState,
       );
+      query = await engine.generateInitialQuery();
     } else if (element instanceof Service) {
       const exec = guaranteeType(
         element.execution,
@@ -92,11 +99,13 @@ export const openDataCube = async (
         runtime?.packageableRuntime.value.path,
         editorStore.graphManagerState,
       );
+      query = await engine.generateInitialQuery();
     } else {
       throw new UnsupportedOperationError(
         'Element not supported to open Data Cube with',
       );
     }
+
     try {
       await engine.getRelationalType(engine.selectInitialQuery);
     } catch (error) {
@@ -105,7 +114,10 @@ export const openDataCube = async (
         'Only relation type queries supported in Data Cube',
       );
     }
-    editorStore.setDataCubeViewState(engine);
+
+    editorStore.setEmbeddedDataCubeViewerState(
+      new QueryBuilderDataCubeViewerState(query, engine),
+    );
   } catch (error) {
     assertErrorThrown(error);
     editorStore.applicationStore.notificationService.notifyError(

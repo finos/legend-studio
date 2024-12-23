@@ -69,22 +69,16 @@ import {
   configureCodeEditor,
   setupPureLanguageService,
 } from '@finos/legend-code-editor';
-import { DataCubeFont, DataCubeFunction } from './DataCubeQueryEngine.js';
+import { DataCubeFont } from './DataCubeQueryEngine.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import { buildExecutableQuery } from './DataCubeQueryBuilder.js';
 import type { DataCubeColumn } from './models/DataCubeColumn.js';
 import { LicenseManager } from 'ag-grid-enterprise';
-import type { DataCubeQuery } from './models/DataCubeQuery.js';
 import {
   type DataCubeSource,
   INTERNAL__DataCubeSource,
 } from './models/DataCubeSource.js';
-import {
-  _cols,
-  _colSpec,
-  _function,
-  _primitiveValue,
-} from './DataCubeQueryBuilderUtils.js';
+import { _primitiveValue } from './DataCubeQueryBuilderUtils.js';
 import {
   uuid,
   type DocumentationEntry,
@@ -172,8 +166,6 @@ export abstract class DataCubeEngine {
     new DataCubeQueryAggregateOperation__JoinStrings(),
   ];
 
-  abstract getBaseQuery(): Promise<DataCubeQuery | undefined>;
-
   async initialize(options?: {
     gridClientLicense?: string | undefined;
   }): Promise<void> {
@@ -195,6 +187,36 @@ export abstract class DataCubeEngine {
   getAggregateOperation(value: string) {
     return getAggregateOperation(value, this.aggregateOperations);
   }
+
+  /**
+   * By default, for a function chain, Pure grammar composer will extract the first parameter of the first function
+   * and render it as the caller of that function rather than a parameter
+   * e.g. fx(fy(p1, p2), p3) will be rendered as p1->fy(p2)->fx(p3) instead of fy(p1, p2)-> fx(p3)
+   *
+   * We do a hack to get around this by setting a dummy value as the first parameter of the first function in the chain.
+   * Then remove this dummy value from the final code.
+   */
+  async getPartialQueryCode(
+    snapshot: DataCubeQuerySnapshot,
+    pretty?: boolean | undefined,
+  ) {
+    const source = new INTERNAL__DataCubeSource();
+    source.query = _primitiveValue(PRIMITIVE_TYPE.STRING, '');
+    return (
+      await this.getValueSpecificationCode(
+        buildExecutableQuery(
+          snapshot,
+          source,
+          () => undefined,
+          this.filterOperations,
+          this.aggregateOperations,
+        ),
+        pretty,
+      )
+    ).substring(`''->`.length);
+  }
+
+  // ---------------------------------- INTERFACE ----------------------------------
 
   abstract processQuerySource(value: PlainObject): Promise<DataCubeSource>;
 
@@ -234,40 +256,6 @@ export abstract class DataCubeEngine {
   abstract buildExecutionContext(
     source: DataCubeSource,
   ): V1_AppliedFunction | undefined;
-
-  /**
-   * By default, for a function chain, Pure grammar composer will extract the first parameter of the first function
-   * and render it as the caller of that function rather than a parameter
-   * e.g. fx(fy(p1, p2), p3) will be rendered as p1->fy(p2)->fx(p3) instead of fy(p1, p2)-> fx(p3)
-   *
-   * We do a hack to get around this by setting a dummy value as the first parameter of the first function in the chain.
-   * Then remove this dummy value from the final code.
-   */
-  async getPartialQueryCode(
-    snapshot: DataCubeQuerySnapshot,
-    pretty?: boolean | undefined,
-  ) {
-    const source = new INTERNAL__DataCubeSource();
-    source.query = _primitiveValue(PRIMITIVE_TYPE.STRING, '');
-    return (
-      await this.getValueSpecificationCode(
-        buildExecutableQuery(
-          snapshot,
-          source,
-          () => undefined,
-          this.filterOperations,
-          this.aggregateOperations,
-        ),
-        pretty,
-      )
-    ).substring(`''->`.length);
-  }
-
-  generateInitialQuery(snapshot: DataCubeQuerySnapshot): V1_AppliedFunction {
-    return _function(DataCubeFunction.SELECT, [
-      _cols(snapshot.data.sourceColumns.map((col) => _colSpec(col.name))),
-    ]);
-  }
 
   // ---------------------------------- DOCUMENTATION ----------------------------------
 

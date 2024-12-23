@@ -69,7 +69,7 @@ import { EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl } from 
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
 import { pureExecution_setFunction } from '../../../../stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
 import { ServiceEditorState } from '../../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
-import { openDataCube } from '../../../../stores/editor/data-cube/DataCubeViewerState.js';
+import { openDataCube } from '../../../../stores/editor/data-cube/LegendStudioDataCubeHelper.js';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {

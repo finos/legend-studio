@@ -2480,6 +2480,7 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-code-editor": "workspace:*"
+    "@finos/legend-data-cube": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-lego": "workspace:*"

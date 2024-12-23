@@ -64,7 +64,7 @@ export const ExistingDataCubeQuery = observer(() => {
             </div>
           </div>
         </div>
-        {dataCubeStore.cubeViewer ? (
+        {/* {dataCubeStore.cubeViewer ? (
           <>
             <div className="h-[calc(100%_-_30px)]">
               <div className="h-[calc(100%_-_30px)]">
@@ -94,7 +94,7 @@ export const ExistingDataCubeQuery = observer(() => {
               </div>
             </div>
           </>
-        )}
+        )} */}
       </div>
     </>
   );

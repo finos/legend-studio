@@ -23,7 +23,11 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo } from 'react';
 import { formatDate, LogEvent } from '@finos/legend-shared';
 import { LegendREPLDataCubeEngine } from '../stores/LegendREPLDataCubeEngine.js';
-import { DataCube, DataCubeSettingKey } from '@finos/legend-data-cube';
+import {
+  DataCube,
+  DataCubeSettingKey,
+  type DataCubeQuery,
+} from '@finos/legend-data-cube';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import { LegendREPLDataCubeSource } from '../stores/LegendREPLDataCubeSource.js';
 import { LegendREPLDataCubeHeader } from './LegendREPLDataCubeHeader.js';
@@ -32,7 +36,8 @@ import {
   useLegendREPLBaseStore,
 } from './LegendREPLFramworkProvider.js';
 
-const LegendREPLDataCube = observer(() => {
+const LegendREPLDataCube = observer((props: { query: DataCubeQuery }) => {
+  const { query } = props;
   const store = useLegendREPLBaseStore();
   const engine = useMemo(() => new LegendREPLDataCubeEngine(store), [store]);
   const application = store.application;
@@ -57,6 +62,7 @@ const LegendREPLDataCube = observer(() => {
 
   return (
     <DataCube
+      query={query}
       engine={engine}
       options={{
         onNameChanged(name, source) {
@@ -109,11 +115,11 @@ export const LegendREPLRouter = observer(() => {
 
   return (
     <div className="h-full">
-      {store.initState.hasSucceeded && (
+      {store.initState.hasSucceeded && store.query && (
         <Routes>
           <Route
             path={LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN.DATA_CUBE}
-            element={<LegendREPLDataCube />}
+            element={<LegendREPLDataCube query={store.query} />}
           />
         </Routes>
       )}

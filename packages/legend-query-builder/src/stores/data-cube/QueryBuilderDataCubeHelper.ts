@@ -21,19 +21,21 @@ import {
 import { RuntimePointer } from '@finos/legend-graph';
 import { QueryBuilderDataCubeEngine } from './QueryBuilderDataCubeEngine.js';
 import { buildExecutionParameterValues } from '../shared/LambdaParameterState.js';
+import { QueryBuilderDataCubeViewerState } from './QueryBuilderDataCubeViewerState.js';
 
-export const createDataCubeEngineFromQueryBuilder = (
+export const createDataCubeViewerStateFromQueryBuilder = async (
   queryBuilderState: QueryBuilderState,
-): QueryBuilderDataCubeEngine | undefined => {
-  const runtime =
+): Promise<QueryBuilderDataCubeViewerState | undefined> => {
+  const runtimePath =
     queryBuilderState.executionContextState.runtimeValue instanceof
     RuntimePointer
       ? queryBuilderState.executionContextState.runtimeValue.packageableRuntime
           .value.path
       : undefined;
-  if (!runtime) {
+  if (!runtimePath) {
     return undefined;
   }
+  const mappingPath = queryBuilderState.executionContextState.mapping?.path;
   const currentLambdaWriterMode = queryBuilderState.lambdaWriteMode;
   // ensure we write in new tds mode
   queryBuilderState.setLambdaWriteMode(
@@ -43,13 +45,15 @@ export const createDataCubeEngineFromQueryBuilder = (
     queryBuilderState.parametersState.parameterStates,
     queryBuilderState.graphManagerState,
   );
-  const queryBuilderEngine = new QueryBuilderDataCubeEngine(
-    queryBuilderState.buildQuery(),
+  const lambda = queryBuilderState.buildQuery();
+  const engine = new QueryBuilderDataCubeEngine(
+    lambda,
     parameterValues,
-    queryBuilderState.executionContextState.mapping?.path,
-    runtime,
+    mappingPath,
+    runtimePath,
     queryBuilderState.graphManagerState,
   );
   queryBuilderState.setLambdaWriteMode(currentLambdaWriterMode);
-  return queryBuilderEngine;
+  const query = await engine.generateInitialQuery();
+  return new QueryBuilderDataCubeViewerState(query, engine);
 };
