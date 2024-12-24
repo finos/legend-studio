@@ -243,7 +243,7 @@ function extractFunctionMap(
         currentFunc.parameters = currentFunc.parameters.slice(1);
         sequence.unshift(currentFunc);
         if (vs instanceof V1_AppliedFunction) {
-          currentFunc = vs as V1_AppliedFunction;
+          currentFunc = vs;
         } else {
           break;
         }

@@ -237,7 +237,6 @@ export enum DataCubeQueryFilterOperator {
 export enum DataCubeEngineFilterOperator {
   NOT = 'not',
   TO_LOWERCASE = 'toLower',
-
   CONTAINS = 'contains',
   ENDS_WITH = 'endsWith',
   EQUAL = 'equal',
