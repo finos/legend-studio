@@ -246,7 +246,7 @@ function extractFunctionMap(
         );
       } else if (currentFunc.function === _DATA_CUBE_ENGINE_FUNCTION.FILTER) {
         currentFunc.parameters = currentFunc.parameters.slice(1);
-        sequence.unshift(currentFunc);
+        sequence.push(currentFunc);
         break;
       }
       currentFunc.parameters = currentFunc.parameters.slice(1);
