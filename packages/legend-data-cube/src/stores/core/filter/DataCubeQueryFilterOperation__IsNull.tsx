@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { type V1_AppliedFunction } from '@finos/legend-graph';
 import { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
 import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
@@ -71,11 +69,6 @@ export class DataCubeQueryFilterOperation__IsNull extends DataCubeQueryFilterOpe
   }
 
   generateDefaultValue(column: DataCubeColumn) {
-    return undefined;
-  }
-
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
-    /** TODO: @datacube roundtrip */
     return undefined;
   }
 

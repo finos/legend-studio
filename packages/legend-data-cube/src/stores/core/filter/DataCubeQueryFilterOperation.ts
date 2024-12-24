@@ -84,10 +84,6 @@ export abstract class DataCubeQueryFilterOperation {
     column: DataCubeColumn,
   ): DataCubeOperationValue | undefined;
 
-  abstract buildConditionSnapshot(
-    expression: V1_AppliedFunction,
-  ): DataCubeQuerySnapshotFilterCondition | undefined;
-
   abstract buildConditionExpression(
     condition: DataCubeQuerySnapshotFilterCondition,
   ): V1_AppliedFunction | undefined;
