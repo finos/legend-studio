@@ -223,12 +223,11 @@ function extractFunctionMap(
     );
   }
   const sequence: V1_AppliedFunction[] = [];
-  let currentFunc = query as V1_ValueSpecification;
+  let currentFunc = query;
   while (currentFunc instanceof V1_AppliedFunction) {
-    const supportedFunc = _SUPPORTED_TOP_LEVEL_FUNCTIONS.find((spec) => {
-      let func = currentFunc as V1_AppliedFunction;
-      matchFunctionName(func.function, spec.func);
-    });
+    const supportedFunc = _SUPPORTED_TOP_LEVEL_FUNCTIONS.find((spec) =>
+      matchFunctionName(currentFunc.function, spec.func),
+    );
 
     // Check that all functions in sequence are supported
     if (!supportedFunc) {
@@ -245,10 +244,14 @@ function extractFunctionMap(
         throw new Error(
           `Query must be a sequence of function calls (e.g. x()->y()->z())`,
         );
+      } else if (currentFunc.function === _DATA_CUBE_ENGINE_FUNCTION.FILTER) {
+        currentFunc.parameters = currentFunc.parameters.slice(1);
+        sequence.unshift(currentFunc);
+        break;
       }
       currentFunc.parameters = currentFunc.parameters.slice(1);
       sequence.unshift(currentFunc);
-      currentFunc = vs!;
+      currentFunc = vs as V1_AppliedFunction;
     } else {
       sequence.unshift(currentFunc);
       break;
