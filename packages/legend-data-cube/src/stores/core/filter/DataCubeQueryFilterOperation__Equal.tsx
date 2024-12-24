@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { type V1_AppliedFunction } from '@finos/legend-graph';
 import {
   DataCubeQueryFilterOperation,
   generateDefaultFilterConditionPrimitiveTypeValue,
@@ -82,82 +80,82 @@ export class DataCubeQueryFilterOperation__Equal extends DataCubeQueryFilterOper
     };
   }
 
-  buildConditionSnapshot(expression: V1_AppliedFunction) {
-    /** TODO: @datacube roundtrip */
-    // export const buildPostFilterConditionState = (
-    //   postFilterState: QueryBuilderPostFilterState,
-    //   expression: FunctionExpression,
-    //   operatorFunctionFullPath | undefined,
-    //   operator: QueryBuilderPostFilterOperator,
-    // ): PostFilterConditionState | undefined => {
-    //   let postConditionState: PostFilterConditionState | undefined;
-    //   const tdsColumnGetter = operator.getTDSColumnGetter();
-    //   if (
-    //     tdsColumnGetter &&
-    //     expression instanceof AbstractPropertyExpression &&
-    //     expression.func.value.name === tdsColumnGetter
-    //   ) {
-    //     const columnState = findProjectionColumnState(expression, postFilterState);
-    //     postConditionState = new PostFilterConditionState(
-    //       postFilterState,
-    //       columnState,
-    //       operator,
-    //     );
-    //     return postConditionState;
-    //   } else if (
-    //     operatorFunctionFullPath &&
-    //     matchFunctionName(expression.functionName, operatorFunctionFullPath)
-    //   ) {
-    //     assertTrue(
-    //       expression.parametersValues.length === 2,
-    //       `Can't process ${extractElementNameFromPath(
-    //         operatorFunctionFullPath,
-    //       )}() expression: ${extractElementNameFromPath(
-    //         operatorFunctionFullPath,
-    //       )}() expects '1 argument'`,
-    //     );
+  // buildConditionSnapshot(expression: V1_AppliedFunction) {
+  /** TODO: @datacube roundtrip */
+  // export const buildPostFilterConditionState = (
+  //   postFilterState: QueryBuilderPostFilterState,
+  //   expression: FunctionExpression,
+  //   operatorFunctionFullPath | undefined,
+  //   operator: QueryBuilderPostFilterOperator,
+  // ): PostFilterConditionState | undefined => {
+  //   let postConditionState: PostFilterConditionState | undefined;
+  //   const tdsColumnGetter = operator.getTDSColumnGetter();
+  //   if (
+  //     tdsColumnGetter &&
+  //     expression instanceof AbstractPropertyExpression &&
+  //     expression.func.value.name === tdsColumnGetter
+  //   ) {
+  //     const columnState = findProjectionColumnState(expression, postFilterState);
+  //     postConditionState = new PostFilterConditionState(
+  //       postFilterState,
+  //       columnState,
+  //       operator,
+  //     );
+  //     return postConditionState;
+  //   } else if (
+  //     operatorFunctionFullPath &&
+  //     matchFunctionName(expression.functionName, operatorFunctionFullPath)
+  //   ) {
+  //     assertTrue(
+  //       expression.parametersValues.length === 2,
+  //       `Can't process ${extractElementNameFromPath(
+  //         operatorFunctionFullPath,
+  //       )}() expression: ${extractElementNameFromPath(
+  //         operatorFunctionFullPath,
+  //       )}() expects '1 argument'`,
+  //     );
 
-    //     // get projection column
-    //     const tdsColumnPropertyExpression = guaranteeType(
-    //       expression.parametersValues[0],
-    //       AbstractPropertyExpression,
-    //       `Can't process ${extractElementNameFromPath(
-    //         operatorFunctionFullPath,
-    //       )}() expression: expects property expression in lambda body`,
-    //     );
-    //     const columnState = findProjectionColumnState(
-    //       tdsColumnPropertyExpression,
-    //       postFilterState,
-    //     );
+  //     // get projection column
+  //     const tdsColumnPropertyExpression = guaranteeType(
+  //       expression.parametersValues[0],
+  //       AbstractPropertyExpression,
+  //       `Can't process ${extractElementNameFromPath(
+  //         operatorFunctionFullPath,
+  //       )}() expression: expects property expression in lambda body`,
+  //     );
+  //     const columnState = findProjectionColumnState(
+  //       tdsColumnPropertyExpression,
+  //       postFilterState,
+  //     );
 
-    //     // get operation value specification
-    //     const rightSide = expression.parametersValues[1];
+  //     // get operation value specification
+  //     const rightSide = expression.parametersValues[1];
 
-    //     // create state
-    //     postConditionState = new PostFilterConditionState(
-    //       postFilterState,
-    //       columnState,
-    //       operator,
-    //     );
+  //     // create state
+  //     postConditionState = new PostFilterConditionState(
+  //       postFilterState,
+  //       columnState,
+  //       operator,
+  //     );
 
-    //     buildPostFilterConditionValueState(rightSide, postConditionState);
+  //     buildPostFilterConditionValueState(rightSide, postConditionState);
 
-    //     //post checks
-    //     assertTrue(
-    //       operator.isCompatibleWithPostFilterColumn(postConditionState),
-    //       `Can't process ${extractElementNameFromPath(
-    //         operatorFunctionFullPath,
-    //       )}() expression: property is not compatible with post-filter operator`,
-    //     );
-    //     assertTrue(
-    //       operator.isCompatibleWithConditionValue(postConditionState),
-    //       `Operator '${operator.getLabel()}' not compatible with value specification ${rightSide?.toString()}`,
-    //     );
-    //   }
-    //   return postConditionState;
-    // };
-    return undefined;
-  }
+  //     //post checks
+  //     assertTrue(
+  //       operator.isCompatibleWithPostFilterColumn(postConditionState),
+  //       `Can't process ${extractElementNameFromPath(
+  //         operatorFunctionFullPath,
+  //       )}() expression: property is not compatible with post-filter operator`,
+  //     );
+  //     assertTrue(
+  //       operator.isCompatibleWithConditionValue(postConditionState),
+  //       `Operator '${operator.getLabel()}' not compatible with value specification ${rightSide?.toString()}`,
+  //     );
+  //   }
+  //   return postConditionState;
+  // };
+  //   return undefined;
+  // }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
     return _function(_functionName(DataCubeFunction.EQUAL), [
