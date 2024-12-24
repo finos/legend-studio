@@ -97,18 +97,11 @@ enum _FUNCTION_SEQUENCE_COMPOSITION_PART {
   LIMIT = 'limit',
 }
 
-enum _DATA_CUBE_ENGINE_FUNCTION {
-  FILTER = 'filter',
-  SELECT = 'select',
-  FROM = 'meta::pure::mapping::from',
-  SLICE = 'slice',
-}
-
-function isDataCubeEngineFunction(
+function isFunctionInValidSequence(
   value: string,
-): value is _DATA_CUBE_ENGINE_FUNCTION {
-  return Object.values(_DATA_CUBE_ENGINE_FUNCTION).includes(
-    value as _DATA_CUBE_ENGINE_FUNCTION,
+): value is _FUNCTION_SEQUENCE_COMPOSITION_PART {
+  return Object.values(_FUNCTION_SEQUENCE_COMPOSITION_PART).includes(
+    value as _FUNCTION_SEQUENCE_COMPOSITION_PART,
   );
 }
 
@@ -238,20 +231,27 @@ function extractFunctionMap(
       if (
         !(
           vs instanceof V1_AppliedFunction ||
-          isDataCubeEngineFunction(currentFunc.function)
+          isFunctionInValidSequence(currentFunc.function)
         )
       ) {
         throw new Error(
           `Query must be a sequence of function calls (e.g. x()->y()->z())`,
         );
-      } else if (currentFunc.function === _DATA_CUBE_ENGINE_FUNCTION.FILTER) {
+      } else if (
+        currentFunc.function === _FUNCTION_SEQUENCE_COMPOSITION_PART.FILTER
+      ) {
         currentFunc.parameters = currentFunc.parameters.slice(1);
         sequence.unshift(currentFunc);
-        break;
+        if (vs instanceof V1_AppliedFunction) {
+          currentFunc = vs as V1_AppliedFunction;
+        } else {
+          break;
+        }
+      } else {
+        currentFunc.parameters = currentFunc.parameters.slice(1);
+        sequence.unshift(currentFunc);
+        currentFunc = vs as V1_AppliedFunction;
       }
-      currentFunc.parameters = currentFunc.parameters.slice(1);
-      sequence.unshift(currentFunc);
-      currentFunc = vs as V1_AppliedFunction;
     } else {
       sequence.unshift(currentFunc);
       break;
