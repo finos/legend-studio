@@ -2,7 +2,7 @@
   "name": "@finos/legend-application-data-cube-deployment",
   "version": "12.88.0",
   "private": true,
-  "description": "Legend Data Cube web application deployment",
+  "description": "Legend DataCube web application deployment",
   "keywords": [
     "legend",
     "legend-application",

@@ -160,7 +160,9 @@ export class DataCubeState implements DataCubeAPI {
     this.initState.inProgress();
 
     try {
-      await this.engine.initialize();
+      await this.engine.initialize({
+        gridClientLicense: this.settings.gridClientLicense,
+      });
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);

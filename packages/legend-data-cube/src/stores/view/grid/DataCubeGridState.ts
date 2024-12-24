@@ -73,7 +73,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     makeObservable(this, {
       clientDataSource: observable,
 
-      queryConfiguration: observable.ref,
+      queryConfiguration: observable,
 
       rowLimit: observable,
 

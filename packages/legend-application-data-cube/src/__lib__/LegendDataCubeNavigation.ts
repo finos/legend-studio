@@ -17,19 +17,19 @@
 import { generatePath } from '@finos/legend-application/browser';
 
 export enum LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN {
-  DATA_CUBE_QUERY_ID = 'id',
+  QUERY_ID = 'id',
 }
 
 export const LEGEND_DATA_CUBE_ROUTE_PATTERN = Object.freeze({
-  VIEW_EXISTING_QUERY: `/:${LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.DATA_CUBE_QUERY_ID}`,
+  EDIT_EXISTING_QUERY: `/:${LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID}`,
 });
 
-export type ExistingDataCubeViewerPathParams = {
-  [LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.DATA_CUBE_QUERY_ID]: string;
+export type EditExistingQueryPathParams = {
+  [LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID]: string;
 };
 
 export const generatedSavedQueryUrl = (id: string): string => {
-  return generatePath(LEGEND_DATA_CUBE_ROUTE_PATTERN.VIEW_EXISTING_QUERY, {
+  return generatePath(LEGEND_DATA_CUBE_ROUTE_PATTERN.EDIT_EXISTING_QUERY, {
     id,
   });
 };

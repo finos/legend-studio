@@ -38,10 +38,12 @@ import { PersistentDataCubeQuery } from '@finos/legend-graph';
 import { LegendREPLPublishDataCubeAlert } from '../components/LegendREPLPublishDataCubeAlert.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import { action, makeObservable, observable } from 'mobx';
+import { LegendREPLDataCubeEngine } from './LegendREPLDataCubeEngine.js';
 
 export class LegendREPLBaseStore {
   readonly application: LegendREPLApplicationStore;
   readonly client: LegendREPLServerClient;
+  readonly engine: LegendREPLDataCubeEngine;
   readonly initState = ActionState.create();
   readonly publishState = ActionState.create();
 
@@ -54,7 +56,7 @@ export class LegendREPLBaseStore {
 
   constructor(application: LegendREPLApplicationStore) {
     makeObservable(this, {
-      query: observable.ref,
+      query: observable,
 
       initialize: action,
     });
@@ -70,6 +72,7 @@ export class LegendREPLBaseStore {
           : application.config.replUrl,
       }),
     );
+    this.engine = new LegendREPLDataCubeEngine(this);
   }
 
   async initialize() {

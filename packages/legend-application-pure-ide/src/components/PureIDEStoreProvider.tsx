@@ -22,7 +22,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import type { LegendPureIDEApplicationConfig } from '../application/LegendPureIDEApplicationConfig.js';
 import type { LegendPureIDEPluginManager } from '../application/LegendPureIDEPluginManager.js';
 
-const EditorStoreContext = createContext<PureIDEStore | undefined>(undefined);
+const PureIDEStoreContext = createContext<PureIDEStore | undefined>(undefined);
 
 export const PureIDEStoreProvider = (props: { children: React.ReactNode }) => {
   const { children } = props;
@@ -32,15 +32,15 @@ export const PureIDEStoreProvider = (props: { children: React.ReactNode }) => {
   >();
   const store = useLocalObservable(() => new PureIDEStore(applicationStore));
   return (
-    <EditorStoreContext.Provider value={store}>
+    <PureIDEStoreContext.Provider value={store}>
       {children}
-    </EditorStoreContext.Provider>
+    </PureIDEStoreContext.Provider>
   );
 };
 
 export const usePureIDEStore = (): PureIDEStore =>
   guaranteeNonNullable(
-    useContext(EditorStoreContext),
+    useContext(PureIDEStoreContext),
     `Can't find editor store in context`,
   );
 

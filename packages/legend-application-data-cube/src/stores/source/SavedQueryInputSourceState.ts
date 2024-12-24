@@ -20,7 +20,7 @@ import {
   isNonNullable,
 } from '@finos/legend-shared';
 import {
-  CubeInputSourceState,
+  LegendDataCubeInputSourceState,
   DataCubeSourceType,
 } from './CubeInputSourceLoader.js';
 import type { DataCubeEngine } from '@finos/legend-data-cube';
@@ -31,65 +31,62 @@ import {
   type LightQuery,
 } from '@finos/legend-graph';
 import { resolveVersion } from '@finos/legend-server-depot';
-import { LegendExecutionDataCubeEngine } from '../engine/LegendExecutionDataCubeEngine.js';
-import type { LegendDataCubeStoreContext } from '../LegendDataCubeEditorStore.js';
+import { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
 import {
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
   QueryLoaderState,
 } from '@finos/legend-query-builder';
 import { action, makeObservable, observable } from 'mobx';
-import type { DataCubeGenericSource } from '../model/DataCubeGenericSource.js';
-import { LegendSavedQuerySource } from '../model/LegendSavedQuerySource.js';
 
-export class SavedQueryInputSourceState extends CubeInputSourceState {
+export class SavedQueryInputSourceState extends LegendDataCubeInputSourceState {
   query: LightQuery | undefined;
-  queryLoaderState: QueryLoaderState;
+  // queryLoaderState: QueryLoaderState;
 
-  constructor(context: LegendDataCubeStoreContext) {
-    super(context);
+  constructor() {
+    super();
     makeObservable(this, {
       query: observable,
       buildCubeEngineState: observable,
       setQuery: action,
     });
-    this.queryLoaderState = new QueryLoaderState(
-      this.context.applicationStore,
-      this.context.graphManagerState,
-      {
-        loadQuery: (query: LightQuery): void => {
-          this.setQuery(query);
-        },
-        decorateSearchSpecification: (val) => val,
-        fetchDefaultQueries: async (): Promise<LightQuery[]> => {
-          const searchSpecification = new QuerySearchSpecification();
-          searchSpecification.limit = QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT;
-          return this.context.graphManagerState.graphManager.searchQueries(
-            QuerySearchSpecification.createDefault(undefined),
-          );
-        },
-        isReadOnly: true,
-      },
-    );
+    // this.queryLoaderState = new QueryLoaderState(
+    //   this.context.application,
+    //   this.context.graphManager,
+    //   {
+    //     loadQuery: (query: LightQuery): void => {
+    //       this.setQuery(query);
+    //     },
+    //     decorateSearchSpecification: (val) => val,
+    //     fetchDefaultQueries: async (): Promise<LightQuery[]> => {
+    //       const searchSpecification = new QuerySearchSpecification();
+    //       searchSpecification.limit = QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT;
+    //       return this.context.graphManager.graphManager.searchQueries(
+    //         QuerySearchSpecification.createDefault(undefined),
+    //       );
+    //     },
+    //     isReadOnly: true,
+    //   },
+    // );
   }
 
   setQuery(query: LightQuery): void {
     this.query = query;
   }
 
-  override process(): DataCubeGenericSource {
-    assertTrue(this.isValid);
-    return new LegendSavedQuerySource(guaranteeNonNullable(this.query).id);
-  }
+  // override process(): DataCubeGenericSource {
+  //   assertTrue(this.isValid);
+  //   return new LegendQueryDataCubeSource(guaranteeNonNullable(this.query).id);
+  // }
 
   override get openActionable(): boolean {
     return false;
   }
 
-  static override builder(
-    context: LegendDataCubeStoreContext,
-  ): CubeInputSourceState {
-    return new SavedQueryInputSourceState(context);
-  }
+  // static override builder(
+  //   context: LegendDataCubeStoreContext,
+  // ): LegendDataCubeInputSourceState {
+  //   return new SavedQueryInputSourceState(context);
+  // }
   override get label(): DataCubeSourceType {
     return DataCubeSourceType.LEGEND_QUERY;
   }
@@ -97,44 +94,47 @@ export class SavedQueryInputSourceState extends CubeInputSourceState {
     throw new Error('Method not implemented.');
   }
 
-  async buildCubeEngine(): Promise<DataCubeEngine | undefined> {
-    this.buildCubeEngineState.inProgress();
-    const queryInfo =
-      await this.context.graphManagerState.graphManager.getQueryInfo(
-        guaranteeNonNullable(this.query).id,
-      );
-    const execConext =
-      (await this.context.graphManagerState.graphManager.resolveQueryInfoExecutionContext(
-        queryInfo,
-        () =>
-          this.context.depotServerClient.getVersionEntities(
-            queryInfo.groupId,
-            queryInfo.artifactId,
-            queryInfo.versionId,
-          ),
-      )) as { mapping: string | undefined; runtime: string };
-    const lambda =
-      (await this.context.graphManagerState.graphManager.pureCodeToLambda(
-        queryInfo.content,
-      )) as unknown as RawLambda;
-    this.context.graphManagerState.graph.setOrigin(
-      new LegendSDLC(
-        queryInfo.groupId,
-        queryInfo.artifactId,
-        resolveVersion(queryInfo.versionId),
-      ),
-    );
-    // TODO: we should be able to call engine and convert lambda to relation if not one.
-    const engine = new LegendExecutionDataCubeEngine(
-      lambda,
-      undefined,
-      execConext.mapping,
-      execConext.runtime,
-      this.context.graphManagerState,
-    );
-    this.buildCubeEngineState.complete();
-    return engine;
+  override buildCubeEngine(): Promise<DataCubeEngine | undefined> {
+    throw new Error('Method not implemented.');
   }
+
+  // async buildCubeEngine(): Promise<DataCubeEngine | undefined> {
+  //   this.buildCubeEngineState.inProgress();
+  //   const queryInfo = await this.context.graphManager.graphManager.getQueryInfo(
+  //     guaranteeNonNullable(this.query).id,
+  //   );
+  //   const execConext =
+  //     (await this.context.graphManager.graphManager.resolveQueryInfoExecutionContext(
+  //       queryInfo,
+  //       () =>
+  //         this.context.depotServerClient.getVersionEntities(
+  //           queryInfo.groupId,
+  //           queryInfo.artifactId,
+  //           queryInfo.versionId,
+  //         ),
+  //     )) as { mapping: string | undefined; runtime: string };
+  //   const lambda =
+  //     (await this.context.graphManager.graphManager.pureCodeToLambda(
+  //       queryInfo.content,
+  //     )) as unknown as RawLambda;
+  //   this.context.graphManager.graph.setOrigin(
+  //     new LegendSDLC(
+  //       queryInfo.groupId,
+  //       queryInfo.artifactId,
+  //       resolveVersion(queryInfo.versionId),
+  //     ),
+  //   );
+  //   // TODO: we should be able to call engine and convert lambda to relation if not one.
+  //   const engine = new LegendDataCubeDataCubeEngine(
+  //     lambda,
+  //     undefined,
+  //     execConext.mapping,
+  //     execConext.runtime,
+  //     this.context.graphManager,
+  //   );
+  //   this.buildCubeEngineState.complete();
+  //   return engine;
+  // }
 
   override get isValid(): boolean {
     return isNonNullable(this.query);

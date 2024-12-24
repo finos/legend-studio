@@ -57,7 +57,6 @@ class DataCubeTask {
 export class DataCubeViewState {
   readonly dataCube: DataCubeState;
   readonly engine: DataCubeEngine;
-
   readonly snapshotManager: DataCubeQuerySnapshotManager;
 
   readonly info: DataCubeInfoState;
@@ -72,7 +71,7 @@ export class DataCubeViewState {
 
   constructor(dataCube: DataCubeState) {
     makeObservable<DataCubeViewState, '_source'>(this, {
-      _source: observable.ref,
+      _source: observable,
       source: computed,
       isSourceProcessed: computed,
 

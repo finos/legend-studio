@@ -17,10 +17,8 @@
 import { flow, makeObservable, observable } from 'mobx';
 import {
   DataCubeSourceType,
-  type CubeInputSourceState,
+  type LegendDataCubeInputSourceState,
 } from './CubeInputSourceLoader.js';
-import { SavedQueryInputSourceState } from './SavedQueryInputSourceState.js';
-import type { LegendDataCubeStoreContext } from '../LegendDataCubeEditorStore.js';
 import {
   UnsupportedOperationError,
   assertErrorThrown,
@@ -29,20 +27,18 @@ import {
   type GeneratorFn,
 } from '@finos/legend-shared';
 import type { DataCubeEngine } from '@finos/legend-data-cube';
-import type { DataCubeGenericSource } from '../model/DataCubeGenericSource.js';
 
 export class LegendDataCubeSourceBuilder {
-  readonly context: LegendDataCubeStoreContext;
   open = false;
-  sourceState: CubeInputSourceState;
+  sourceState: LegendDataCubeInputSourceState;
 
-  constructor(context: LegendDataCubeStoreContext) {
+  constructor() {
     makeObservable(this, {
       open: observable,
       sourceState: observable,
-      inputSource: flow,
+
+      // inputSource: flow,
     });
-    this.context = context;
     this.sourceState = this.buildSource(guaranteeNonNullable(this.options[0]));
   }
 
@@ -68,31 +64,31 @@ export class LegendDataCubeSourceBuilder {
     }
   }
 
-  buildSource(source: DataCubeSourceType): CubeInputSourceState {
-    if (source === DataCubeSourceType.LEGEND_QUERY) {
-      return SavedQueryInputSourceState.builder(this.context);
-    }
+  buildSource(source: DataCubeSourceType): LegendDataCubeInputSourceState {
+    // if (source === DataCubeSourceType.LEGEND_QUERY) {
+    //   return SavedQueryInputSourceState.builder(this.context);
+    // }
     throw new UnsupportedOperationError('Not supported');
   }
 
-  *inputSource(
-    callback: (source: DataCubeGenericSource, engine: DataCubeEngine) => void,
-  ): GeneratorFn<void> {
-    try {
-      assertTrue(
-        this.sourceState.isValid,
-        'Source State is in a valid state to input',
-      );
-      const engine =
-        (yield this.sourceState.buildCubeEngine()) as DataCubeEngine;
-      const source = this.sourceState.process();
-      callback(source, engine);
-      this.close();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.context.applicationStore.notificationService.notifyError(
-        `Unable to import: ${this.sourceState.label}: ${error.message}`,
-      );
-    }
-  }
+  // *inputSource(
+  //   callback: (source: DataCubeGenericSource, engine: DataCubeEngine) => void,
+  // ): GeneratorFn<void> {
+  //   try {
+  //     assertTrue(
+  //       this.sourceState.isValid,
+  //       'Source State is in a valid state to input',
+  //     );
+  //     const engine =
+  //       (yield this.sourceState.buildCubeEngine()) as DataCubeEngine;
+  //     const source = this.sourceState.process();
+  //     callback(source, engine);
+  //     this.close();
+  //   } catch (error) {
+  //     assertErrorThrown(error);
+  //     // this.context.application.notificationService.notifyError(
+  //     //   `Unable to import: ${this.sourceState.label}: ${error.message}`,
+  //     // );
+  //   }
+  // }
 }

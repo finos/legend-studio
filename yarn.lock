@@ -2155,6 +2155,7 @@ __metadata:
   dependencies:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-application-data-cube": "workspace:*"
+    "@finos/legend-data-cube": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-shared": "workspace:*"

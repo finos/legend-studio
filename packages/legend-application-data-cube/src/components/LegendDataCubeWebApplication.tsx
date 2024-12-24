@@ -14,24 +14,62 @@
  * limitations under the License.
  */
 
-import { BrowserEnvironmentProvider } from '@finos/legend-application';
+import {
+  APPLICATION_EVENT,
+  BrowserEnvironmentProvider,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { Route, Routes } from '@finos/legend-application/browser';
-import { LegendDataCubeFrameworkProvider } from './LegendDataCubeFrameworkProvider.js';
+import {
+  LegendDataCubeFrameworkProvider,
+  useLegendDataCubeBaseStore,
+} from './LegendDataCubeFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
-import { DataCubeEditor } from './DataCubeEditor.js';
-import { ExistingDataCubeQuery } from './source/ExistingDataCubeQuery.js';
+import { LegendDataCubeLandingPage } from './LegendDataCubeLandingPage.js';
+import { ExistingDataCubeQueryEditor } from './ExistingDataCubeQueryEditor.js';
 import { LEGEND_DATA_CUBE_ROUTE_PATTERN } from '../__lib__/LegendDataCubeNavigation.js';
+import { LogEvent } from '@finos/legend-shared';
+import { useEffect } from 'react';
 
 const LegendDataCubeWebApplicationRouter = observer(() => {
+  const application = useApplicationStore();
+  const store = useLegendDataCubeBaseStore();
+
+  useEffect(() => {
+    store
+      .initialize()
+      .catch((error) => store.application.alertUnhandledError(error));
+  }, [store]);
+
+  useEffect(() => {
+    application.navigationService.navigator.blockNavigation(
+      // Only block navigation in production
+      // eslint-disable-next-line no-process-env
+      [() => process.env.NODE_ENV === 'production'],
+      undefined,
+      () => {
+        application.logService.warn(
+          LogEvent.create(APPLICATION_EVENT.NAVIGATION_BLOCKED),
+          `Navigation from the application is blocked`,
+        );
+      },
+    );
+    return (): void => {
+      application.navigationService.navigator.unblockNavigation();
+    };
+  }, [application]);
+
   return (
-    <div className="app">
-      <Routes>
-        <Route
-          path={LEGEND_DATA_CUBE_ROUTE_PATTERN.VIEW_EXISTING_QUERY}
-          element={<ExistingDataCubeQuery />}
-        />
-        <Route path="/" element={<DataCubeEditor />} />
-      </Routes>
+    <div className="h-full">
+      {store.initState.hasSucceeded && (
+        <Routes>
+          <Route
+            path={LEGEND_DATA_CUBE_ROUTE_PATTERN.EDIT_EXISTING_QUERY}
+            element={<ExistingDataCubeQueryEditor />}
+          />
+          <Route path="/" element={<LegendDataCubeLandingPage />} />
+        </Routes>
+      )}
     </div>
   );
 });

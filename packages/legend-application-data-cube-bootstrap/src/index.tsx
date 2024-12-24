@@ -39,7 +39,6 @@ export class LegendDataCubeWebApplication {
       .setup({ baseAddress: baseUrl })
       .withPresets(LegendDataCubeWebApplication.getPresetCollection())
       .withPlugins(LegendDataCubeWebApplication.getPluginCollection())
-      .withDownloadHelper()
       .start()
       .catch((e: unknown) => {
         throw e;

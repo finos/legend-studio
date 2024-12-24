@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-import { DataCubeGenericSource } from './DataCubeGenericSource.js';
+import type {
+  LegendDataCubeApplicationStore,
+  LegendDataCubeBaseStore,
+} from './LegendDataCubeBaseStore.js';
 
-export class LegendSavedQuerySource extends DataCubeGenericSource {
-  id: string;
+export class LegendDataCubeExistingQueryEditorStore {
+  readonly application: LegendDataCubeApplicationStore;
+  readonly baseStore: LegendDataCubeBaseStore;
 
-  constructor(id: string) {
-    super();
-    this.id = id;
+  constructor(baseStore: LegendDataCubeBaseStore) {
+    this.application = baseStore.application;
+    this.baseStore = baseStore;
   }
 }

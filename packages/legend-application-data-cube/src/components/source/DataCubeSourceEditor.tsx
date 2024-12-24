@@ -27,9 +27,6 @@ import {
 import { SavedQuerySourceEditor } from './SavedQuerySourceEditor.js';
 import { SavedQueryInputSourceState } from '../../stores/source/SavedQueryInputSourceState.js';
 import { useLegendDataCubeBaseStore } from '../LegendDataCubeFrameworkProvider.js';
-import { flowResult } from 'mobx';
-import type { DataCubeEngine } from '@finos/legend-data-cube';
-import type { DataCubeGenericSource } from '../../stores/model/DataCubeGenericSource.js';
 
 export const DataCubeSourceEditor = observer(
   (props: { sourceBuilder: LegendDataCubeSourceBuilder }) => {
@@ -105,7 +102,7 @@ export const DataCubeSourceEditor = observer(
             </div>
           </div>
           <div className="flex h-20 items-center justify-end border-b-0 border-l-0 border-r-0 border-t border-solid border-slate-300 p-2 px-2">
-            <button
+            {/* <button
               className="ml-2 h-10 w-20 rounded border border-neutral-400 bg-neutral-300 bg-sky-700 px-2 text-white hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:bg-gray-200 disabled:text-white disabled:hover:brightness-100"
               disabled={!sourceState.isValid}
               onClick={() => {
@@ -114,7 +111,7 @@ export const DataCubeSourceEditor = observer(
                     (source: DataCubeGenericSource, engine: DataCubeEngine) =>
                       store.initializeView(source, engine),
                   ),
-                ).catch(store.context.applicationStore.alertUnhandledError);
+                ).catch(store.context.application.alertUnhandledError);
               }}
             >
               Open
@@ -124,7 +121,7 @@ export const DataCubeSourceEditor = observer(
               onClick={() => sourceBuilder.close()}
             >
               Close
-            </button>
+            </button> */}
           </div>
         </Modal>
       </Dialog>

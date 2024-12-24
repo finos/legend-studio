@@ -16,24 +16,23 @@
 
 import { ActionState, UnsupportedOperationError } from '@finos/legend-shared';
 import type { DataCubeEngine } from '@finos/legend-data-cube';
-import type { LegendDataCubeStoreContext } from '../LegendDataCubeEditorStore.js';
-import type { DataCubeGenericSource } from '../model/DataCubeGenericSource.js';
+// import type { DataCubeGenericSource } from '../model/DataCubeGenericSource.js';
 
 export enum DataCubeSourceType {
   LEGEND_QUERY = 'Legend Query',
   REPL_QUERY = 'Repl Query',
 }
 
-export abstract class CubeInputSourceState {
+export abstract class LegendDataCubeInputSourceState {
   buildCubeEngineState = ActionState.create();
 
   setupActionState = ActionState.create();
 
-  readonly context: LegendDataCubeStoreContext;
+  // readonly context: LegendDataCubeStoreContext;
 
-  constructor(context: LegendDataCubeStoreContext) {
-    this.context = context;
-  }
+  // constructor(context: LegendDataCubeStoreContext) {
+  //   this.context = context;
+  // }
   abstract get label(): DataCubeSourceType;
 
   async setup(): Promise<void> {
@@ -42,7 +41,7 @@ export abstract class CubeInputSourceState {
 
   abstract buildCubeEngine(): Promise<DataCubeEngine | undefined>;
 
-  abstract process(): DataCubeGenericSource;
+  // abstract process(): DataCubeGenericSource;
 
   abstract get isValid(): boolean;
 
@@ -50,7 +49,9 @@ export abstract class CubeInputSourceState {
     return true;
   }
 
-  static builder(context: LegendDataCubeStoreContext): CubeInputSourceState {
-    throw new UnsupportedOperationError('No builder');
-  }
+  // static builder(
+  //   context: LegendDataCubeStoreContext,
+  // ): LegendDataCubeInputSourceState {
+  //   throw new UnsupportedOperationError('No builder');
+  // }
 }

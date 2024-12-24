@@ -43,7 +43,7 @@ export const LegendREPLDataCubeHeader = observer(
               .publishDataCube(dataCube)
               .catch((error) => dataCube.engine.logUnhandledError(error));
           }}
-          className="h- w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100"
+          className="w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100"
         >
           Publish
         </button>

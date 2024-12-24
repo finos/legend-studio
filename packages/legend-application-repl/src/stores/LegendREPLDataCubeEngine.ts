@@ -71,32 +71,9 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     this.client = baseStore.client;
   }
 
-  blockNavigation(
-    blockCheckers: (() => boolean)[],
-    onBlock?: ((onProceed: () => void) => void) | undefined,
-    onNativePlatformNavigationBlock?: (() => void) | undefined,
-  ) {
-    this.application.navigationService.navigator.blockNavigation(
-      blockCheckers,
-      onBlock,
-      onNativePlatformNavigationBlock,
-    );
-  }
-
-  unblockNavigation() {
-    this.application.navigationService.navigator.unblockNavigation();
-  }
-
-  persistSettingValue(
-    key: string,
-    value: string | number | boolean | object | undefined,
-  ): void {
-    this.application.settingService.persistValue(key, value);
-  }
-
   // ---------------------------------- IMPLEMENTATION ----------------------------------
 
-  async processQuerySource(value: PlainObject) {
+  override async processQuerySource(value: PlainObject) {
     if (value._type !== REPL_DATA_CUBE_SOURCE_TYPE) {
       throw new Error(
         `Can't deserialize query source of type '${value._type}'. Only type(s) '${REPL_DATA_CUBE_SOURCE_TYPE}' are supported.`,
@@ -120,7 +97,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     return source;
   }
 
-  async parseValueSpecification(
+  override async parseValueSpecification(
     code: string,
     returnSourceInformation?: boolean,
   ) {
@@ -133,7 +110,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     );
   }
 
-  override getValueSpecificationCode(
+  override async getValueSpecificationCode(
     value: V1_ValueSpecification,
     pretty?: boolean,
   ) {
@@ -143,7 +120,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     });
   }
 
-  async getQueryTypeahead(
+  override async getQueryTypeahead(
     code: string,
     baseQuery: V1_Lambda,
     source: DataCubeSource,
@@ -154,13 +131,16 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     });
   }
 
-  async getQueryRelationType(query: V1_Lambda, source: DataCubeSource) {
+  override async getQueryRelationType(
+    query: V1_Lambda,
+    source: DataCubeSource,
+  ) {
     return this.client.getQueryRelationReturnType({
       query: V1_serializeValueSpecification(query, []),
     });
   }
 
-  async getQueryCodeRelationReturnType(
+  override async getQueryCodeRelationReturnType(
     code: string,
     baseQuery: V1_ValueSpecification,
     source: DataCubeSource,
@@ -186,7 +166,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     }
   }
 
-  async executeQuery(
+  override async executeQuery(
     query: V1_Lambda,
     source: DataCubeSource,
     api: DataCubeAPI,
@@ -221,6 +201,8 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     }
     return undefined;
   }
+
+  // ---------------------------------- APPLICATION ----------------------------------
 
   override getDocumentationURL(): string | undefined {
     return this.application.documentationService.url;

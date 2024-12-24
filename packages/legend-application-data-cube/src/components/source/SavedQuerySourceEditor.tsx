@@ -51,10 +51,11 @@ export const SavedQuerySourceEditor = observer(
             </div>
           </div>
         ) : (
-          <QueryLoader
-            queryLoaderState={savedQueryInputSourceState.queryLoaderState}
-            loadActionLabel={'Open'}
-          />
+          <></>
+          // <QueryLoader
+          //   queryLoaderState={savedQueryInputSourceState.queryLoaderState}
+          //   loadActionLabel={'Open'}
+          // />
         )}
       </div>
     );

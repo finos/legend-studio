@@ -21,6 +21,7 @@ import {
   type ServerClientConfig,
   type TraceData,
   HttpHeader,
+  NetworkClient,
 } from '@finos/legend-shared';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import type {
@@ -163,6 +164,15 @@ export const V1_getEngineSerializationFormat = (
       return val;
   }
 };
+
+// eslint-disable-next-line @finos/legend/enforce-protocol-export-prefix
+export async function getCurrentUserIDFromEngineServer(
+  engineServerUrl: string,
+) {
+  return (await new NetworkClient().get(
+    `${engineServerUrl}/server/v1/currentUser`,
+  )) as string;
+}
 
 export class V1_EngineServerClient extends AbstractServerClient {
   currentUserId?: string | undefined;

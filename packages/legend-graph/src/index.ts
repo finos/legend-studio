@@ -418,6 +418,7 @@ export {
   type V1_GrammarParserBatchInputEntry,
   V1_getEngineSerializationFormat,
   V1_EngineServerClient,
+  getCurrentUserIDFromEngineServer,
 } from './graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.js';
 export { type V1_GraphManagerEngine } from './graph-manager/protocol/pure/v1/engine/V1_GraphManagerEngine.js';
 export { V1_RemoteEngine } from './graph-manager/protocol/pure/v1/engine/V1_RemoteEngine.js';

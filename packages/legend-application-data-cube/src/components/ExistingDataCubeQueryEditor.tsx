@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useLegendDataCubeBaseStore } from '../LegendDataCubeFrameworkProvider.js';
+import { useLegendDataCubeBaseStore } from './LegendDataCubeFrameworkProvider.js';
 import { useEffect } from 'react';
 import { QuestionIcon } from '@finos/legend-art';
 import { useParams } from '@finos/legend-application/browser';
@@ -23,22 +23,22 @@ import { DataCube } from '@finos/legend-data-cube';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN,
-  type ExistingDataCubeViewerPathParams,
-} from '../../__lib__/LegendDataCubeNavigation.js';
+  type EditExistingQueryPathParams,
+} from '../__lib__/LegendDataCubeNavigation.js';
 import { flowResult } from 'mobx';
 
-export const ExistingDataCubeQuery = observer(() => {
+export const ExistingDataCubeQueryEditor = observer(() => {
   const dataCubeStore = useLegendDataCubeBaseStore();
-  const params = useParams<ExistingDataCubeViewerPathParams>();
-  const sourceSelector = dataCubeStore.sourceSelector;
-  const queryId = guaranteeNonNullable(
-    params[LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.DATA_CUBE_QUERY_ID],
-  );
-  useEffect(() => {
-    flowResult(dataCubeStore.initialize(queryId)).catch(
-      dataCubeStore.applicationStore.alertUnhandledError,
-    );
-  }, [dataCubeStore, queryId]);
+  const params = useParams<EditExistingQueryPathParams>();
+  // const sourceSelector = dataCubeStore.sourceSelector;
+  // const queryId = guaranteeNonNullable(
+  //   params[LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID],
+  // );
+  // useEffect(() => {
+  //   flowResult(dataCubeStore.initialize(queryId)).catch(
+  //     dataCubeStore.application.alertUnhandledError,
+  //   );
+  // }, [dataCubeStore, queryId]);
 
   return (
     <>
@@ -48,7 +48,7 @@ export const ExistingDataCubeQuery = observer(() => {
             <div className="relative flex h-12 items-center justify-between">
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="flex flex-shrink-0 items-center">
-                  <div className="text-gray-300">Legend Data Cube</div>
+                  <div className="text-gray-300">Legend DataCube</div>
                 </div>
               </div>
               <div className="md:block">

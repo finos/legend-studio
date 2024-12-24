@@ -20,9 +20,8 @@ import {
   Routes,
 } from '@finos/legend-application/browser';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { formatDate, LogEvent } from '@finos/legend-shared';
-import { LegendREPLDataCubeEngine } from '../stores/LegendREPLDataCubeEngine.js';
 import {
   DataCube,
   DataCubeSettingKey,
@@ -39,31 +38,30 @@ import {
 const LegendREPLDataCube = observer((props: { query: DataCubeQuery }) => {
   const { query } = props;
   const store = useLegendREPLBaseStore();
-  const engine = useMemo(() => new LegendREPLDataCubeEngine(store), [store]);
   const application = store.application;
 
   useEffect(() => {
-    engine.blockNavigation(
+    application.navigationService.navigator.blockNavigation(
       // Only block navigation in production
       // eslint-disable-next-line no-process-env
       [() => process.env.NODE_ENV === 'production'],
       undefined,
       () => {
-        engine.logWarning(
+        application.logService.warn(
           LogEvent.create(APPLICATION_EVENT.NAVIGATION_BLOCKED),
           `Navigation from the application is blocked`,
         );
       },
     );
     return (): void => {
-      engine.unblockNavigation();
+      application.navigationService.navigator.unblockNavigation();
     };
-  }, [engine]);
+  }, [application]);
 
   return (
     <DataCube
       query={query}
-      engine={engine}
+      engine={store.engine}
       options={{
         onNameChanged(name, source) {
           const timestamp =
@@ -75,7 +73,7 @@ const LegendREPLDataCube = observer((props: { query: DataCubeQuery }) => {
           );
         },
         onSettingChanged(key, value) {
-          engine.persistSettingValue(key, value);
+          application.settingService.persistValue(key, value);
         },
         enableDebugMode: application.settingService.getBooleanValue(
           DataCubeSettingKey.ENABLE_DEBUG_MODE,

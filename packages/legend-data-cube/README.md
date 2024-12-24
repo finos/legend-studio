@@ -1,3 +1,3 @@
 # @finos/legend-data-cube
 
-Legend Data Cube
+Legend DataCube core
