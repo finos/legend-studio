@@ -14,23 +14,10 @@
  * limitations under the License.
  */
 
-import type { VersionedProjectData } from '@finos/legend-server-depot';
+import { Class } from '../domain/Class.js';
 
-export abstract class LegendDepotSavedSource {
-  project!: VersionedProjectData;
-}
+const RELATION_NAME = 'Relation';
 
-export class LegendDepotService extends LegendDepotSavedSource {
-  service!: string;
-}
-
-export class LegendDepotFunction extends LegendDepotSavedSource {
-  _function!: string;
-}
-
-export class LegendDepotTable extends LegendDepotSavedSource {
-  database!: string;
-  schema!: string;
-  table!: string;
-  runtime!: string;
+export class Relation {
+  static readonly INSTANCE = new Class(RELATION_NAME);
 }

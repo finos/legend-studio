@@ -6,7 +6,6 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/finos/legend-studio/blob/master/CONTRIBUTING.md)
 [![npm](https://img.shields.io/npm/v/@finos/legend-application-studio-bootstrap)](https://www.npmjs.com/package/@finos/legend-application-studio-bootstrap)
 [![docker](https://img.shields.io/docker/v/finos/legend-studio?label=finos%2Flegend-studio&logo=docker&logoColor=docker&sort=semver)](https://hub.docker.com/r/finos/legend-studio)
-[![docker](https://img.shields.io/docker/v/finos/legend-query?label=finos%2Flegend-query&logo=docker&logoColor=docker&sort=semver)](https://hub.docker.com/r/finos/legend-query)
 
 # legend-studio
 
@@ -37,10 +36,6 @@ Check out the [Getting Started](https://legend.finos.org/docs/getting-started/in
 You can improve it by sending pull requests to [this repository](https://github.com/finos/legend).
 
 For `Legend Studio` extension contributors, check out our [API documentation](https://finos.github.io/legend-studio/).
-
-## Roadmap
-
-Visit our [roadmap](https://github.com/finos/legend#roadmap) to know more about the upcoming features.
 
 ## Contributing
 

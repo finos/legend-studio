@@ -58,7 +58,7 @@ export class LegendREPLBaseStore {
     makeObservable(this, {
       query: observable,
 
-      initialize: action,
+      setQuery: action,
     });
     this.application = application;
     this.client = new LegendREPLServerClient(
@@ -75,17 +75,27 @@ export class LegendREPLBaseStore {
     this.engine = new LegendREPLDataCubeEngine(this);
   }
 
+  setQuery(query: DataCubeQuery | undefined): void {
+    this.query = query;
+  }
+
   async initialize() {
     this.initState.inProgress();
     try {
       const info = await this.client.getInfrastructureInfo();
       this.currentUser = info.currentUser;
+      if (info.currentUser) {
+        this.application.identityService.setCurrentUser(info.currentUser);
+      }
+      this.application.telemetryService.setup();
+
       this.queryServerBaseUrl = info.queryServerBaseUrl;
       this.hostedApplicationBaseUrl = info.hostedApplicationBaseUrl;
       this.gridClientLicense = info.gridClientLicense;
-      this.query = DataCubeQuery.serialization.fromJson(
-        await this.client.getBaseQuery(),
+      this.setQuery(
+        DataCubeQuery.serialization.fromJson(await this.client.getBaseQuery()),
       );
+
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);

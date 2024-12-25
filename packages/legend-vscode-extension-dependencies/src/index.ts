@@ -294,7 +294,7 @@ export {
   type DataCubeAPI,
   type DataCubeConfiguration,
   type DataCubeExecutionResult,
-  type RelationType,
+  type DataCubeRelationType,
   _elementPtr,
   _function,
   _functionName,

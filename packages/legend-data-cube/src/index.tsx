@@ -32,3 +32,5 @@ export { DataCubeSettingKey } from './stores/DataCubeSettings.js';
 
 export * from './components/core/DataCubeAlert.js';
 export * from './components/DataCube.js';
+export * from './components/core/DataCubeFormUtils.js';
+export * from './components/core/DataCubeLayoutManager.js';

@@ -15,9 +15,6 @@
  */
 
 import {
-  SUPPORTED_FUNCTIONS,
-  V1_AppliedFunction,
-  V1_Lambda,
   RawLambda,
   RelationalExecutionActivities,
   TDSExecutionResult,
@@ -25,32 +22,28 @@ import {
   V1_deserializeValueSpecification,
   V1_RawLambda,
   V1_serializeValueSpecification,
+  type V1_Lambda,
   type GraphManagerState,
   type PureModel,
   type V1_ValueSpecification,
-  type ParameterValue,
-  BasicGraphManagerState,
-  AbstractPureGraphManager,
+  type AbstractPureGraphManager,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
-  _functionName,
   DataCubeEngine,
   DataCubeSource,
-  type RelationType,
-  DataCubeQuery,
+  type DataCubeRelationType,
   type CompletionItem,
   _function,
   DataCubeFunction,
 } from '@finos/legend-data-cube';
 import {
-  DocumentationEntry,
   guaranteeType,
   isNonNullable,
   LogEvent,
-  LogService,
   UnsupportedOperationError,
   type PlainObject,
+  type DocumentationEntry,
 } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from './LegendDataCubeBaseStore.js';
 import {
@@ -152,6 +145,44 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   //   return query;
   // }
 
+  // async buildCubeEngine(): Promise<DataCubeEngine | undefined> {
+  //   this.buildCubeEngineState.inProgress();
+  //   const queryInfo = await this.context.graphManager.graphManager.getQueryInfo(
+  //     guaranteeNonNullable(this.query).id,
+  //   );
+  //   const execConext =
+  //     (await this.context.graphManager.graphManager.resolveQueryInfoExecutionContext(
+  //       queryInfo,
+  //       () =>
+  //         this.context.depotServerClient.getVersionEntities(
+  //           queryInfo.groupId,
+  //           queryInfo.artifactId,
+  //           queryInfo.versionId,
+  //         ),
+  //     )) as { mapping: string | undefined; runtime: string };
+  //   const lambda =
+  //     (await this.context.graphManager.graphManager.pureCodeToLambda(
+  //       queryInfo.content,
+  //     )) as unknown as RawLambda;
+  //   this.context.graphManager.graph.setOrigin(
+  //     new LegendSDLC(
+  //       queryInfo.groupId,
+  //       queryInfo.artifactId,
+  //       resolveVersion(queryInfo.versionId),
+  //     ),
+  //   );
+  //   // TODO: we should be able to call engine and convert lambda to relation if not one.
+  //   const engine = new LegendDataCubeDataCubeEngine(
+  //     lambda,
+  //     undefined,
+  //     execConext.mapping,
+  //     execConext.runtime,
+  //     this.context.graphManager,
+  //   );
+  //   this.buildCubeEngineState.complete();
+  //   return engine;
+  // }
+
   private buildRawLambdaFromValueSpec(query: V1_Lambda): RawLambda {
     const json = guaranteeType(
       V1_deserializeRawValueSpecification(
@@ -162,7 +193,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     return new RawLambda(json.parameters, json.body);
   }
 
-  private async getRelationalType(query: RawLambda): Promise<RelationType> {
+  private async getRelationalType(
+    query: RawLambda,
+  ): Promise<DataCubeRelationType> {
     const relationType = await this.graphManager.getLambdaRelationType(
       query,
       this.graph,

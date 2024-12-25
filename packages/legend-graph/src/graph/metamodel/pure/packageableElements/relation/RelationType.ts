@@ -18,12 +18,14 @@ import { Type } from '../domain/Type.js';
 import type { PackageableElementVisitor } from '../PackageableElement.js';
 import { Function } from '../domain/Function.js';
 
-export class Relation_RelationalColumn extends Function {
+export class RelationColumn extends Function {
   type: Type;
+
   constructor(name: string, type: Type) {
     super(name);
     this.type = type;
   }
+
   override accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
   ): T {
@@ -31,9 +33,9 @@ export class Relation_RelationalColumn extends Function {
   }
 }
 
-export class Relation_RelationType extends Type {
+export class RelationType extends Type {
   static ID = 'NO_ID';
-  columns: Relation_RelationalColumn[] = [];
+  columns: RelationColumn[] = [];
 
   override accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,

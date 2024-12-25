@@ -33,6 +33,7 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { LegendDataCubeDataCubeEngine } from './LegendDataCubeDataCubeEngine.js';
+import { LayoutManagerState } from '@finos/legend-data-cube';
 
 export type LegendDataCubeApplicationStore = ApplicationStore<
   LegendDataCubeApplicationConfig,
@@ -46,6 +47,7 @@ export class LegendDataCubeBaseStore {
   readonly pluginManager: LegendDataCubePluginManager;
   readonly depotServerClient: DepotServerClient;
   readonly graphManagerState: GraphManagerState;
+  readonly layout = new LayoutManagerState();
 
   readonly startTime = Date.now();
   readonly initState = ActionState.create();
@@ -75,12 +77,14 @@ export class LegendDataCubeBaseStore {
 
   async initialize() {
     this.initState.inProgress();
+
     try {
       this.application.identityService.setCurrentUser(
         await getCurrentUserIDFromEngineServer(
           this.application.config.engineServerUrl,
         ),
       );
+      this.application.telemetryService.setup();
     } catch (error) {
       assertErrorThrown(error);
       this.application.logService.error(

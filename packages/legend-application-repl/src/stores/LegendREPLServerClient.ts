@@ -24,9 +24,9 @@ import {
 import {
   type DataCubeQuery,
   type CompletionItem,
-  type RelationType,
 } from '@finos/legend-data-cube';
 import {
+  type V1_RelationType,
   type PersistentDataCubeQuery,
   type V1_Lambda,
   type V1_ValueSpecification,
@@ -128,7 +128,7 @@ export class LegendREPLServerClient {
 
   async getQueryRelationReturnType(
     input: GetQueryRelationReturnTypeInput,
-  ): Promise<RelationType> {
+  ): Promise<PlainObject<V1_RelationType>> {
     return this.networkClient.post(
       `${this.dataCube}/getRelationReturnType`,
       input,
@@ -137,7 +137,7 @@ export class LegendREPLServerClient {
 
   async getQueryCodeRelationReturnType(
     input: GetQueryCodeRelationReturnTypeInput,
-  ): Promise<RelationType> {
+  ): Promise<PlainObject<V1_RelationType>> {
     return this.networkClient.post(
       `${this.dataCube}/getRelationReturnType/code`,
       input,

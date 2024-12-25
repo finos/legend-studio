@@ -34,6 +34,7 @@ export class LegendDataCubePluginManager
   private constructor() {
     super();
   }
+
   registerPureProtocolProcessorPlugin(
     plugin: PureProtocolProcessorPlugin,
   ): void {

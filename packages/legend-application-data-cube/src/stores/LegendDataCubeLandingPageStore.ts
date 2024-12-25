@@ -20,11 +20,13 @@ import type {
   LegendDataCubeBaseStore,
 } from './LegendDataCubeBaseStore.js';
 import { type DataCubeQuery } from '@finos/legend-data-cube';
+import { LegendDataCubeNewQueryState } from './LegendDataCubeNewQueryState.js';
 
 export class LegendDataCubeLandingPageStore {
   readonly application: LegendDataCubeApplicationStore;
   readonly baseStore: LegendDataCubeBaseStore;
 
+  readonly newQueryState: LegendDataCubeNewQueryState;
   query?: DataCubeQuery | undefined;
 
   constructor(baseStore: LegendDataCubeBaseStore) {
@@ -35,6 +37,7 @@ export class LegendDataCubeLandingPageStore {
 
     this.application = baseStore.application;
     this.baseStore = baseStore;
+    this.newQueryState = new LegendDataCubeNewQueryState(baseStore);
   }
 
   setQuery(val: DataCubeQuery | undefined): void {

@@ -31,6 +31,7 @@ import { DataCubeState } from '../stores/DataCubeState.js';
 import { type DataCubeOptions } from '../stores/DataCubeOptions.js';
 import { DataCubeContextProvider, useDataCube } from './DataCubeProvider.js';
 import type { DataCubeQuery } from '../stores/core/models/DataCubeQuery.js';
+import { FormBadge_WIP } from './core/DataCubeFormUtils.js';
 
 const DataCubeTitleBar = observer(() => {
   const dataCube = useDataCube();
@@ -60,7 +61,7 @@ const DataCubeTitleBar = observer(() => {
             transformOrigin: { vertical: 'top', horizontal: 'left' },
             classes: {
               paper: 'rounded-none mt-[1px]',
-              list: 'w-36 p-0 rounded-none border border-neutral-400 bg-white max-h-40 overflow-y-auto py-0.5',
+              list: 'w-40 p-0 rounded-none border border-neutral-400 bg-white max-h-40 overflow-y-auto py-0.5',
             },
           }}
         >
@@ -76,6 +77,7 @@ const DataCubeTitleBar = observer(() => {
             disabled={true} // TODO: enable when we set up the documentation website
           >
             See Documentation
+            <FormBadge_WIP />
           </DropdownMenuItem>
           <div className="my-0.5 h-[1px] w-full bg-neutral-200" />
           <DropdownMenuItem

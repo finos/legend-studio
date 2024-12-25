@@ -526,8 +526,7 @@ const ServiceGeneralEditor = observer(() => {
                         >
                           <ErrorIcon />
                           <div className="service-editor__owner__validation-label">
-                            Service requires at least {MINIMUM_SERVICE_OWNERS}{' '}
-                            owners
+                            {`Service requires at least ${MINIMUM_SERVICE_OWNERS} owners`}
                           </div>
                         </div>
                       )}

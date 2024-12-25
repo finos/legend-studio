@@ -106,7 +106,7 @@ export type CompletionItem = {
   display: string;
 };
 
-export type RelationType = {
+export type DataCubeRelationType = {
   columns: DataCubeColumn[];
 };
 
@@ -239,13 +239,13 @@ export abstract class DataCubeEngine {
   abstract getQueryRelationType(
     query: V1_Lambda,
     source: DataCubeSource,
-  ): Promise<RelationType>;
+  ): Promise<DataCubeRelationType>;
 
   abstract getQueryCodeRelationReturnType(
     code: string,
     baseQuery: V1_ValueSpecification,
     source: DataCubeSource,
-  ): Promise<RelationType>;
+  ): Promise<DataCubeRelationType>;
 
   abstract executeQuery(
     query: V1_Lambda,

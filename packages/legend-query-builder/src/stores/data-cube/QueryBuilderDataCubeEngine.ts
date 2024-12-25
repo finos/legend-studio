@@ -37,7 +37,7 @@ import {
   DataCubeSource,
   _function,
   DataCubeFunction,
-  type RelationType,
+  type DataCubeRelationType,
   type CompletionItem,
   _functionName,
   DataCubeQuery,
@@ -71,6 +71,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     graphManagerState: GraphManagerState,
   ) {
     super();
+
     this.graphState = graphManagerState;
     this.selectInitialQuery = selectQuery;
     this.mappingPath = mappingPath;
@@ -117,7 +118,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     if (this.runtimePath) {
       fromFuncExp.parameters.push(_elementPtr(this.runtimePath));
     }
-    const columns = (await this.getRelationalType(this.selectInitialQuery))
+    const columns = (await this.getRelationType(this.selectInitialQuery))
       .columns;
     const query = new DataCubeQuery();
     query.query = `~[${columns.map((e) => `'${e.name}'`)}]->select()`;
@@ -132,7 +133,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     const srcFuncExp = this.getSourceFunctionExpression();
     const source = new QueryBuilderDataCubeSource();
     source.columns = (
-      await this.getRelationalType(this.selectInitialQuery)
+      await this.getRelationType(this.selectInitialQuery)
     ).columns;
     source.mapping = this.mappingPath;
     source.runtime = this.runtimePath;
@@ -185,7 +186,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     );
   }
 
-  async getValueSpecificationCode(
+  override async getValueSpecificationCode(
     value: V1_ValueSpecification,
     pretty?: boolean | undefined,
   ) {
@@ -195,7 +196,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     );
   }
 
-  async getRelationalType(query: RawLambda): Promise<RelationType> {
+  async getRelationType(query: RawLambda) {
     const relationType =
       await this.graphState.graphManager.getLambdaRelationType(
         query,
@@ -204,9 +205,12 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     return relationType;
   }
 
-  async getQueryRelationType(query: V1_Lambda, source: DataCubeSource) {
+  override async getQueryRelationType(
+    query: V1_Lambda,
+    source: DataCubeSource,
+  ) {
     const lambda = this.buildRawLambdaFromValueSpec(query);
-    return this.getRelationalType(lambda);
+    return this.getRelationType(lambda);
   }
 
   override async getQueryCodeRelationReturnType(
@@ -219,7 +223,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
         V1_serializeValueSpecification(baseQuery, []),
       );
     const fullQuery = queryString + code;
-    return this.getRelationalType(
+    return this.getRelationType(
       await this.graphState.graphManager.pureCodeToLambda(fullQuery),
     );
   }

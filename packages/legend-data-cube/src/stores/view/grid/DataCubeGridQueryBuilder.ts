@@ -21,6 +21,7 @@ import {
   type V1_AppliedFunction,
   V1_GenericType,
   V1_RelationType,
+  V1_getGenericTypeFullPath,
 } from '@finos/legend-graph';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import {
@@ -109,7 +110,12 @@ function _addCountAggColumnToPivot(
       ).rawType,
       V1_RelationType,
     ).columns.map((column) =>
-      _colSpec(column.name, undefined, undefined, column.type),
+      _colSpec(
+        column.name,
+        undefined,
+        undefined,
+        V1_getGenericTypeFullPath(column.genericType),
+      ),
     );
     uniq(
       castColumns

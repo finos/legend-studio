@@ -107,7 +107,7 @@ export const openDataCube = async (
     }
 
     try {
-      await engine.getRelationalType(engine.selectInitialQuery);
+      await engine.getRelationType(engine.selectInitialQuery);
     } catch (error) {
       assertErrorThrown(error);
       throw new UnsupportedOperationError(

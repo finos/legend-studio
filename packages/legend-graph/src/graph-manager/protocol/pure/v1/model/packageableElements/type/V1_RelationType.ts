@@ -14,42 +14,26 @@
  * limitations under the License.
  */
 
-import {
-  hashArray,
-  SerializationFactory,
-  usingModelSchema,
-  type Hashable,
-} from '@finos/legend-shared';
-import { createModelSchema, list, primitive } from 'serializr';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { V1_Type } from './V1_Type.js';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
+import type { V1_GenericType } from './V1_GenericType.js';
 
 export class V1_RelationTypeColumn implements Hashable {
   name!: string;
-  type!: string;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_RelationTypeColumn, {
-      name: primitive(),
-      type: primitive(),
-    }),
-  );
+  genericType!: V1_GenericType;
 
   get hashCode(): string {
-    return hashArray([CORE_HASH_STRUCTURE.RELATION_TYPE, this.name, this.type]);
+    return hashArray([
+      CORE_HASH_STRUCTURE.RELATION_TYPE,
+      this.name,
+      this.genericType,
+    ]);
   }
 }
 
 export class V1_RelationType implements V1_Type {
   columns: V1_RelationTypeColumn[] = [];
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_RelationType, {
-      columns: list(
-        usingModelSchema(V1_RelationTypeColumn.serialization.schema),
-      ),
-    }),
-  );
 
   get hashCode(): string {
     return hashArray([

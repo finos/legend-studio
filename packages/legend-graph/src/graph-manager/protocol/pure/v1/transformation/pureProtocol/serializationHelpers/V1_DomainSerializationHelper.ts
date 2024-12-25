@@ -86,7 +86,7 @@ import { V1_DefaultValue } from '../../../model/packageableElements/domain/V1_De
 import { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 import {
   V1_deserializeGenericType,
-  V1_GenericTypeModelSchema,
+  V1_genericTypeModelSchema,
 } from './V1_TypeSerializationHelper.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 import type { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
@@ -256,7 +256,7 @@ export const V1_propertyModelSchema = createModelSchema(V1_Property, {
   aggregation: optional(primitive()),
   defaultValue: optional(usingModelSchema(V1_defaultValueModelSchema)),
   genericType: custom(
-    (val) => serialize(V1_GenericTypeModelSchema, val),
+    (val) => serialize(V1_genericTypeModelSchema, val),
     (val) => V1_deserializeGenericType(val),
     {
       beforeDeserialize: function (callback, jsonValue, jsonParentValue) {
@@ -289,7 +289,7 @@ export const V1_derivedPropertyModelSchema = createModelSchema(
     name: primitive(),
     parameters: raw(),
     returnGenericType: custom(
-      (val) => serialize(V1_GenericTypeModelSchema, val),
+      (val) => serialize(V1_genericTypeModelSchema, val),
       (val) => V1_deserializeGenericType(val),
       {
         beforeDeserialize: function (callback, jsonValue, jsonParentValue) {
@@ -423,7 +423,7 @@ export const V1_functionModelSchema = (
     postConstraints: list(primitive()), // NOTE: these are not currently supported and just added to pass roundtrip test
     preConstraints: list(primitive()), // NOTE: these are not currently supported and just added to pass roundtrip test
     returnGenericType: custom(
-      (val) => serialize(V1_GenericTypeModelSchema, val),
+      (val) => serialize(V1_genericTypeModelSchema, val),
       (val) => V1_deserializeGenericType(val),
       {
         beforeDeserialize: function (callback, jsonValue, jsonParentValue) {

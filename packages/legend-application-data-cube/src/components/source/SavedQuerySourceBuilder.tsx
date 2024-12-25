@@ -16,46 +16,46 @@
 
 import { observer } from 'mobx-react-lite';
 import { QueryLoader } from '@finos/legend-query-builder';
-import type { SavedQueryInputSourceState } from '../../stores/source/SavedQueryInputSourceState.js';
+import type { LegendQueryDataCubeSourceBuilderState } from '../../stores/source/LegendQueryDataCubeSourceBuilderState.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 
 export const SavedQuerySourceEditor = observer(
-  (props: { savedQueryInputSourceState: SavedQueryInputSourceState }) => {
-    const { savedQueryInputSourceState } = props;
-    const savedQuery = savedQueryInputSourceState.query;
+  (props: { sourceBuilder: LegendQueryDataCubeSourceBuilderState }) => {
+    const { sourceBuilder } = props;
+    const query = sourceBuilder.query;
 
     return (
       <div>
-        {savedQuery ? (
+        {query ? (
           <div className="p-3">
             <div className="text-l font-bold">Saved Query</div>
             <div>
               <div className="flex pt-px">
                 <div className="font-bold">Name:</div>
-                <div>{savedQuery.name}</div>
+                <div>{query.name}</div>
               </div>
               <div className="flex pt-px">
                 <div className="font-bold">Project:</div>
                 <div>
                   {generateGAVCoordinates(
-                    savedQuery.groupId,
-                    savedQuery.artifactId,
-                    savedQuery.versionId,
+                    query.groupId,
+                    query.artifactId,
+                    query.versionId,
                   )}
                 </div>
               </div>
               <div className="flex pt-px">
                 <div className="font-bold">Owner:</div>
-                <div>{savedQuery.owner}</div>
+                <div>{query.owner}</div>
               </div>
             </div>
           </div>
         ) : (
-          <></>
-          // <QueryLoader
-          //   queryLoaderState={savedQueryInputSourceState.queryLoaderState}
-          //   loadActionLabel={'Open'}
-          // />
+          // TODO: we could customize this loader to have a different styling
+          <QueryLoader
+            queryLoaderState={sourceBuilder.queryLoaderState}
+            loadActionLabel={'Open'}
+          />
         )}
       </div>
     );

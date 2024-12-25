@@ -15,16 +15,22 @@
  */
 
 import { DataCubeSource } from '@finos/legend-data-cube';
+import type { Query, RawLambda } from '@finos/legend-graph';
 import {
   SerializationFactory,
   usingConstantValueSchema,
+  type PlainObject,
 } from '@finos/legend-shared';
 import { createModelSchema, primitive } from 'serializr';
 
 export const LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE = 'legendQuery';
 
 export class LegendQueryDataCubeSource extends DataCubeSource {
-  queryId!: string;
+  savedQuery!: Query;
+  lambda!: RawLambda;
+  mappingPath!: string;
+  runtimePath!: string;
+  model!: PlainObject;
 }
 
 export class RawLegendQueryDataCubeSource {

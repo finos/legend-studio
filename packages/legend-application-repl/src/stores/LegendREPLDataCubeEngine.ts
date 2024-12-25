@@ -35,6 +35,8 @@ import {
   type V1_ValueSpecification,
   V1_buildEngineError,
   V1_EngineError,
+  V1_getGenericTypeFullPath,
+  V1_relationTypeModelSchema,
 } from '@finos/legend-graph';
 import {
   assertErrorThrown,
@@ -57,6 +59,7 @@ import {
   shouldDisplayVirtualAssistantDocumentationEntry,
 } from '@finos/legend-application';
 import type { LegendREPLBaseStore } from './LegendREPLBaseStore.js';
+import { deserialize } from 'serializr';
 
 export class LegendREPLDataCubeEngine extends DataCubeEngine {
   readonly application: LegendREPLApplicationStore;
@@ -135,9 +138,18 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     query: V1_Lambda,
     source: DataCubeSource,
   ) {
-    return this.client.getQueryRelationReturnType({
-      query: V1_serializeValueSpecification(query, []),
-    });
+    const relationType = deserialize(
+      V1_relationTypeModelSchema,
+      await this.client.getQueryRelationReturnType({
+        query: V1_serializeValueSpecification(query, []),
+      }),
+    );
+    return {
+      columns: relationType.columns.map((column) => ({
+        name: column.name,
+        type: V1_getGenericTypeFullPath(column.genericType),
+      })),
+    };
   }
 
   override async getQueryCodeRelationReturnType(
@@ -146,10 +158,19 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     source: DataCubeSource,
   ) {
     try {
-      return await this.client.getQueryCodeRelationReturnType({
-        code,
-        baseQuery: V1_serializeValueSpecification(baseQuery, []),
-      });
+      const relationType = deserialize(
+        V1_relationTypeModelSchema,
+        await this.client.getQueryCodeRelationReturnType({
+          code,
+          baseQuery: V1_serializeValueSpecification(baseQuery, []),
+        }),
+      );
+      return {
+        columns: relationType.columns.map((column) => ({
+          name: column.name,
+          type: V1_getGenericTypeFullPath(column.genericType),
+        })),
+      };
     } catch (error) {
       assertErrorThrown(error);
       if (
