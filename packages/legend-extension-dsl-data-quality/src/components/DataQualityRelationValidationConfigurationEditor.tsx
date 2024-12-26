@@ -31,9 +31,13 @@ import {
   CaretDownIcon,
   clsx,
   ControlledDropdownMenu,
+  CsvIcon,
   DragPreviewLayer,
+  ExclamationTriangleIcon,
   MenuContent,
   MenuContentItem,
+  MenuContentItemIcon,
+  MenuContentItemLabel,
   Panel,
   PanelContent,
   PanelLoadingIndicator,
@@ -41,7 +45,11 @@ import {
   PlayIcon,
   PlusIcon,
 } from '@finos/legend-art';
-import { prettyCONSTName, returnUndefOnError } from '@finos/legend-shared';
+import {
+  prettyCONSTName,
+  prettyDuration,
+  returnUndefOnError,
+} from '@finos/legend-shared';
 import {
   ExecutionPlanViewer,
   LambdaEditor,
@@ -49,6 +57,7 @@ import {
 } from '@finos/legend-query-builder';
 import {
   type RawVariableExpression,
+  type ExecutionResult,
   PrimitiveType,
   stub_RawVariableExpression,
   Type,
@@ -57,6 +66,8 @@ import {
   TDSExecutionResult,
 } from '@finos/legend-graph';
 import {
+  ActionAlertActionType,
+  ActionAlertType,
   DEFAULT_TAB_SIZE,
   useApplicationNavigationContext,
   useApplicationStore,
@@ -77,6 +88,10 @@ import { DataQualityRelationValidationsEditor } from './DataQualityRelationValid
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { DataQualityRelationGridResult } from './DataQualityRelationGridResult.js';
+import {
+  DATA_QUALITY_VALIDATION_TEST_ID,
+  USER_ATTESTATION_MESSAGE,
+} from './constants/DataQualityConstants.js';
 
 const RelationDefinitionEditor = observer(
   (props: {
@@ -85,6 +100,9 @@ const RelationDefinitionEditor = observer(
     const { dataQualityRelationValidationConfigurationState } = props;
     const { relationFunctionDefinitionEditorState, resultState } =
       dataQualityRelationValidationConfigurationState;
+    const {
+      editorStore: { applicationStore },
+    } = dataQualityRelationValidationConfigurationState;
     const validationElement =
       dataQualityRelationValidationConfigurationState.validationElement;
     const lambdaExecutionResult =
@@ -92,6 +110,58 @@ const RelationDefinitionEditor = observer(
 
     const isReadOnly =
       dataQualityRelationValidationConfigurationState.isReadOnly;
+
+    const isExportDisabled =
+      dataQualityRelationValidationConfigurationState.isRunningValidation ||
+      dataQualityRelationValidationConfigurationState.isGeneratingPlan;
+
+    const exportValidationResults = async (format: string): Promise<void> => {
+      dataQualityRelationValidationConfigurationState.handleExport(format);
+    };
+
+    const getResultSetDescription = (
+      _executionResult: ExecutionResult,
+    ): string | undefined => {
+      const queryDuration =
+        dataQualityRelationValidationConfigurationState.executionDuration
+          ? prettyDuration(
+              dataQualityRelationValidationConfigurationState.executionDuration,
+              {
+                ms: true,
+              },
+            )
+          : undefined;
+      if (!queryDuration) {
+        return undefined;
+      }
+      return `lambda ran in ${queryDuration}`;
+    };
+    const resultDescription =
+      !dataQualityRelationValidationConfigurationState.isRunningValidation &&
+      lambdaExecutionResult
+        ? getResultSetDescription(lambdaExecutionResult)
+        : undefined;
+
+    const confirmExport = (format: string): void => {
+      applicationStore.alertService.setActionAlertInfo({
+        message: USER_ATTESTATION_MESSAGE,
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Accept',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: applicationStore.guardUnhandledError(() =>
+              exportValidationResults(format),
+            ),
+          },
+          {
+            label: 'Decline',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    };
 
     const addParameter = (): void => {
       dataQualityRelationValidation_addParameter(
@@ -267,9 +337,71 @@ const RelationDefinitionEditor = observer(
           </div>
           <div className="relation-validation-config-editor__item">
             <div className="relation-validation-config-editor__definition__item__header">
-              <div className="relation-validation-config-editor__definition__item__header__title">
-                RESULT
+              <div className="relation-validation-config-editor__definition__item__header-group">
+                <div className="relation-validation-config-editor__definition__item__header__title">
+                  RESULT
+                </div>
+                {dataQualityRelationValidationConfigurationState.isRunningValidation && (
+                  <div className="panel__header__title__label__status">
+                    Running Validation...
+                  </div>
+                )}
+                <div
+                  data-testid={
+                    DATA_QUALITY_VALIDATION_TEST_ID.DATA_QUALITY_VALIDATION_RESULT_ANALYTICS
+                  }
+                  className="data-quality-validation__result__analytics"
+                >
+                  {resultDescription ?? ''}
+                </div>
+                {lambdaExecutionResult &&
+                  dataQualityRelationValidationConfigurationState.checkForStaleResults && (
+                    <div className="data-quality-validation__result__stale-status">
+                      <div className="data-quality-validation__result__stale-status__icon">
+                        <ExclamationTriangleIcon />
+                      </div>
+                      <div className="data-quality-validation__result__stale-status__label">
+                        Preview data might be stale
+                      </div>
+                    </div>
+                  )}
               </div>
+              <ControlledDropdownMenu
+                className="data-quality-validation__result__export__dropdown"
+                title="Export"
+                disabled={isExportDisabled}
+                content={
+                  <MenuContent>
+                    {Object.values(resultState.exportDataFormatOptions).map(
+                      (format) => (
+                        <MenuContentItem
+                          key={format}
+                          onClick={(): void => confirmExport(format)}
+                        >
+                          <MenuContentItemIcon>
+                            <CsvIcon />
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel>{format}</MenuContentItemLabel>
+                        </MenuContentItem>
+                      ),
+                    )}
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                  transformOrigin: { vertical: 'top', horizontal: 'right' },
+                  elevation: 7,
+                }}
+              >
+                <div className="relation-validation-config-editor__definition__item__header__action">
+                  <div className="data-quality-validation__result__export__dropdown__label">
+                    Export
+                  </div>
+                  <div className="data-quality-validation__result__export__dropdown__trigger">
+                    <CaretDownIcon />
+                  </div>
+                </div>
+              </ControlledDropdownMenu>
             </div>
             <div className="relation-validation-config-editor__definition__item__content">
               <div className="relation-validation-config-editor__definition__result-viewer">

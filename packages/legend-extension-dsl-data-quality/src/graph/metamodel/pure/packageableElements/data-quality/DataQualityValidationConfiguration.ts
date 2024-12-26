@@ -23,6 +23,7 @@ import {
   type RawLambda,
   type ParameterValue,
   type RawVariableExpression,
+  type EXECUTION_SERIALIZATION_FORMAT,
   PackageableElement,
   hashRawLambda,
 } from '@finos/legend-graph';
@@ -41,6 +42,7 @@ export interface DQExecuteInputOptions {
   validationName?: string | undefined;
   previewLimit?: number | undefined;
   runQuery?: boolean | undefined;
+  serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
 }
 
 export abstract class DataQualityExecutionContext implements Hashable {

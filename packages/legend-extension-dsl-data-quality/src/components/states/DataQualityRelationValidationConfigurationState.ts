@@ -32,6 +32,9 @@ import {
   hashArray,
   LogEvent,
   filterByType,
+  getContentTypeFileExtension,
+  ActionState,
+  StopWatch,
 } from '@finos/legend-shared';
 import {
   type ExecutionResult,
@@ -45,6 +48,7 @@ import {
   buildLambdaVariableExpressions,
   observe_ValueSpecification,
   VariableExpression,
+  V1_DELEGATED_EXPORT_HEADER,
 } from '@finos/legend-graph';
 import {
   action,
@@ -67,6 +71,7 @@ import { DataQualityRelationResultState } from './DataQualityRelationResultState
 import { DATA_QUALITY_HASH_STRUCTURE } from '../../graph/metamodel/DSL_DataQuality_HashUtils.js';
 import type { SelectOption } from '@finos/legend-art';
 import { getDataQualityPureGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataQuality_PureGraphManagerExtension.js';
+import { downloadStream } from '@finos/legend-application';
 
 export enum DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB {
   DEFINITION = 'Definition',
@@ -250,6 +255,7 @@ export class RelationDefinitionParameterState extends LambdaParametersState {
 
 export class DataQualityRelationValidationConfigurationState extends ElementEditorState {
   readonly relationFunctionDefinitionEditorState: RelationFunctionDefinitionEditorState;
+  readonly exportState = ActionState.create();
   selectedTab: DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB;
 
   isRunningValidation = false;
@@ -261,6 +267,8 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
   parametersState: RelationDefinitionParameterState;
   isConvertingValidationLambdaObjects = false;
   resultState: DataQualityRelationResultState;
+  executionDuration?: number | undefined;
+  latestRunHashCode?: string | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -274,18 +282,23 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       validationRunPromise: observable,
       executionResult: observable,
       resultState: observable,
+      executionDuration: observable,
+      latestRunHashCode: observable,
       setSelectedTab: action,
       setValidationRunPromise: action,
       setExecutionResult: action,
       addValidationState: action,
       resetResultState: action,
+      setExecutionDuration: action,
       validationElement: computed,
       relationValidationOptions: computed,
+      checkForStaleResults: computed,
       runValidation: flow,
       handleRunValidation: flow,
       convertValidationLambdaObjects: flow,
       cancelValidationRun: flow,
       generatePlan: flow,
+      exportData: flow,
     });
     assertType(
       element,
@@ -356,6 +369,17 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       label: type,
       value: type,
     }));
+  }
+
+  get checkForStaleResults(): boolean {
+    if (this.latestRunHashCode !== this.hashCode) {
+      return true;
+    }
+    return false;
+  }
+
+  setExecutionDuration(val: number | undefined): void {
+    this.executionDuration = val;
   }
 
   resetResultState(): void {
@@ -468,8 +492,10 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
     let promise;
     try {
       this.setIsRunningValidation(true);
+      const currentHashCode = this.hashCode;
       const packagePath = this.validationElement.path;
       const model = this.editorStore.graphManagerState.graph;
+      const stopWatch = new StopWatch();
 
       promise = getDataQualityPureGraphManagerExtension(
         this.editorStore.graphManagerState.graphManager,
@@ -486,6 +512,8 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
 
       if (this.validationRunPromise === promise) {
         this.setExecutionResult(result);
+        this.latestRunHashCode = currentHashCode;
+        this.setExecutionDuration(stopWatch.elapsed);
       }
     } catch (error) {
       if (this.validationRunPromise === promise) {
@@ -566,6 +594,74 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isGeneratingPlan = false;
+    }
+  }
+
+  *exportData(format: string): GeneratorFn<void> {
+    try {
+      this.exportState.inProgress();
+      const packagePath = this.validationElement.path;
+      const model = this.editorStore.graphManagerState.graph;
+      this.editorStore.applicationStore.notificationService.notifySuccess(
+        `Export ${format} will run in background`,
+      );
+      const exportData = this.resultState.getExportDataInfo(format);
+      const contentType = exportData.contentType;
+      const serializationFormat = exportData.serializationFormat;
+      const result = (yield getDataQualityPureGraphManagerExtension(
+        this.editorStore.graphManagerState.graphManager,
+      ).exportData(model, packagePath, {
+        serializationFormat,
+        runQuery: true,
+        lambdaParameterValues: buildExecutionParameterValues(
+          this.parametersState.parameterStates,
+          this.editorStore.graphManagerState,
+        ),
+      })) as Response;
+      if (result.headers.get(V1_DELEGATED_EXPORT_HEADER) === 'true') {
+        if (result.status === 200) {
+          this.exportState.pass();
+        } else {
+          this.exportState.fail();
+        }
+        return;
+      }
+      downloadStream(
+        result,
+        `result.${getContentTypeFileExtension(contentType)}`,
+        exportData.contentType,
+      )
+        .then(() => {
+          this.exportState.pass();
+        })
+        .catch((error) => {
+          assertErrorThrown(error);
+        });
+    } catch (error) {
+      this.exportState.fail();
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+      this.exportState.complete();
+    }
+  }
+
+  handleExport(format: string) {
+    const queryLambda = this.bodyExpressionSequence;
+    const parameters = (queryLambda.parameters ?? []) as object[];
+    if (parameters.length) {
+      this.parametersState.parameterStates =
+        this.parametersState.build(queryLambda);
+      this.parametersState.parameterValuesEditorState.open(
+        (): Promise<void> =>
+          flowResult(this.exportData(format)).catch(
+            this.editorStore.applicationStore.alertUnhandledError,
+          ),
+        PARAMETER_SUBMIT_ACTION.EXPORT,
+      );
+    } else {
+      flowResult(this.exportData(format)).catch(
+        this.editorStore.applicationStore.alertUnhandledError,
+      );
     }
   }
 

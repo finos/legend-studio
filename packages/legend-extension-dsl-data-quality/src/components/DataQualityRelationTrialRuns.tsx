@@ -15,7 +15,11 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { flowResult } from 'mobx';
 import {
   ExecutionPlanViewer,
@@ -24,7 +28,10 @@ import {
 import { type ExecutionResult } from '@finos/legend-graph';
 import { prettyDuration } from '@finos/legend-shared';
 import React, { useRef, useState } from 'react';
-import { DATA_QUALITY_VALIDATION_TEST_ID } from './constants/DataQualityConstants.js';
+import {
+  DATA_QUALITY_VALIDATION_TEST_ID,
+  USER_ATTESTATION_MESSAGE,
+} from './constants/DataQualityConstants.js';
 import {
   type SelectOption,
   BlankPanelContent,
@@ -43,6 +50,7 @@ import {
   PauseCircleIcon,
   PlayIcon,
   ReportIcon,
+  CsvIcon,
 } from '@finos/legend-art';
 import { DataQualityResultValues } from './DataQualityResultValues.js';
 import type { DataQualityRelationValidationConfigurationState } from './states/DataQualityRelationValidationConfigurationState.js';
@@ -56,6 +64,31 @@ export const DataQualityRelationTrialRuns = observer(
     const resultState =
       dataQualityRelationValidationConfigurationState.resultState;
     const executionResult = resultState.executionResult;
+
+    const exportValidationResults = async (format: string): Promise<void> => {
+      resultState.handleExport(format);
+    };
+
+    const confirmExport = (format: string): void => {
+      applicationStore.alertService.setActionAlertInfo({
+        message: USER_ATTESTATION_MESSAGE,
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Accept',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: applicationStore.guardUnhandledError(() =>
+              exportValidationResults(format),
+            ),
+          },
+          {
+            label: 'Decline',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    };
 
     const runQuery = (): void => {
       if (!resultState.isRunningValidation) {
@@ -74,8 +107,10 @@ export const DataQualityRelationTrialRuns = observer(
       flowResult(resultState.generatePlan(true)),
     );
 
-    const isRunQueryDisabled =
-      resultState.isGeneratingPlan || resultState.isRunningValidation;
+    const isRunValidationDisabled =
+      !resultState.validationToRun ||
+      resultState.isGeneratingPlan ||
+      resultState.isRunningValidation;
 
     const getResultSetDescription = (
       _executionResult: ExecutionResult,
@@ -238,20 +273,20 @@ export const DataQualityRelationTrialRuns = observer(
                     className="btn__dropdown-combo__label data-quality-validation__result__execute-btn__validation data-quality-validation__result__execute-btn__btn data-quality-validation__result__execute-btn__btn--green"
                     onClick={runQuery}
                     tabIndex={-1}
-                    disabled={isRunQueryDisabled}
+                    disabled={isRunValidationDisabled}
                   >
                     <PlayIcon />
                     Run Validation
                   </button>
                   <ControlledDropdownMenu
                     className="btn__dropdown-combo__dropdown-btn data-quality-validation__result__execute-btn__btn data-quality-validation__result__execute-btn__btn--green"
-                    disabled={isRunQueryDisabled}
+                    disabled={isRunValidationDisabled}
                     content={
                       <MenuContent>
                         <MenuContentItem
                           className="btn__dropdown-combo__option"
                           onClick={generatePlan}
-                          disabled={isRunQueryDisabled}
+                          disabled={isRunValidationDisabled}
                         >
                           <MenuContentItemIcon>
                             <ReportIcon />
@@ -263,7 +298,7 @@ export const DataQualityRelationTrialRuns = observer(
                         <MenuContentItem
                           className="btn__dropdown-combo__option"
                           onClick={debugPlanGeneration}
-                          disabled={isRunQueryDisabled}
+                          disabled={isRunValidationDisabled}
                         >
                           <MenuContentItemIcon>
                             <DebugIcon />
@@ -282,6 +317,40 @@ export const DataQualityRelationTrialRuns = observer(
                 </>
               )}
             </div>
+            <ControlledDropdownMenu
+              className="data-quality-validation__result__export__dropdown"
+              title="Export"
+              disabled={isRunValidationDisabled}
+              content={
+                <MenuContent>
+                  {Object.values(resultState.exportDataFormatOptions).map(
+                    (format) => (
+                      <MenuContentItem
+                        key={format}
+                        onClick={(): void => confirmExport(format)}
+                      >
+                        <MenuContentItemIcon>
+                          <CsvIcon />
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel>{format}</MenuContentItemLabel>
+                      </MenuContentItem>
+                    ),
+                  )}
+                </MenuContent>
+              }
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
+                elevation: 7,
+              }}
+            >
+              <div className="data-quality-validation__result__export__dropdown__label">
+                Export
+              </div>
+              <div className="data-quality-validation__result__export__dropdown__trigger">
+                <CaretDownIcon />
+              </div>
+            </ControlledDropdownMenu>
           </div>
         </div>
         <PanelContent className="data-quality-validation__result__content">

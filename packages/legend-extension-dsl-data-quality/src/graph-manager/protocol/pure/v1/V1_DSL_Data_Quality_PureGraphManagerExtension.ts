@@ -17,14 +17,17 @@
 import {
   type AbstractPureGraphManager,
   type ExecutionResult,
+  type EXECUTION_SERIALIZATION_FORMAT,
+  type ExecutionOptions,
   type GraphDataOrigin,
   type PureModel,
   type RawExecutionPlan,
   type RootGraphFetchTree,
   type V1_ExecutionResult,
+  type V1_ParameterValue,
   type V1_PureModelContext,
   type V1_RootGraphFetchTree,
-  type V1_ParameterValue,
+  V1_getEngineSerializationFormat,
   LegendSDLC,
   PureClientVersion,
   V1_buildExecutionError,
@@ -32,26 +35,27 @@ import {
   V1_ExecutionError,
   V1_GraphBuilderContextBuilder,
   V1_LegendSDLC,
+  V1_parameterValueModelSchema,
   V1_ProcessingContext,
   V1_Protocol,
   V1_PureGraphManager,
   V1_PureModelContextPointer,
   V1_pureModelContextPropSchema,
-  V1_serializeExecutionResult,
-  V1_parameterValueModelSchema,
-  V1_transformParameterValue,
   V1_RemoteEngine,
+  V1_serializeExecutionResult,
+  V1_transformParameterValue,
 } from '@finos/legend-graph';
 import { createModelSchema, optional, primitive } from 'serializr';
 import {
   type PlainObject,
   assertErrorThrown,
+  customListWithSchema,
+  guaranteeNonNullable,
   guaranteeType,
   NetworkClientError,
   returnUndefOnError,
   SerializationFactory,
   UnsupportedOperationError,
-  customListWithSchema,
 } from '@finos/legend-shared';
 import { DSL_DataQuality_PureGraphManagerExtension } from '../DSL_DataQuality_PureGraphManagerExtension.js';
 import {
@@ -123,6 +127,7 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     input: PlainObject<V1_DQExecuteInput>,
     options?: {
       returnAsResponse?: boolean;
+      serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
     },
   ): Promise<PlainObject<V1_ExecutionResult> | Response> => {
     // TODO: improve abstraction so that we do not need to access the engine server client directly
@@ -137,7 +142,11 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       input,
       {},
       undefined,
-      undefined,
+      {
+        serializationFormat: options?.serializationFormat
+          ? V1_getEngineSerializationFormat(options.serializationFormat)
+          : undefined,
+      },
       { enableCompression: true },
       {
         skipProcessing: Boolean(options?.returnAsResponse),
@@ -156,6 +165,33 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
         },
       )) as Response
     ).text();
+  }
+
+  private async export(
+    input: V1_DQExecuteInput,
+    options?: ExecutionOptions,
+  ): Promise<Response> {
+    try {
+      return guaranteeNonNullable(
+        (await this.executeValidation(
+          V1_DQExecuteInput.serialization.toJson(input),
+          {
+            serializationFormat: options?.serializationFormat,
+            returnAsResponse: true,
+          },
+        )) as Response,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof NetworkClientError) {
+        throw V1_buildExecutionError(
+          V1_ExecutionError.serialization.fromJson(
+            error.payload as PlainObject<V1_ExecutionError>,
+          ),
+        );
+      }
+      throw error;
+    }
   }
 
   createExecutionInput(
@@ -248,6 +284,20 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       }
       throw error;
     }
+  };
+
+  exportData = async (
+    graph: PureModel,
+    packagePath: string,
+    options: DQExecuteInputOptions,
+  ): Promise<Response> => {
+    const input = this.createExecutionInput(
+      graph,
+      packagePath,
+      new V1_DQExecuteInput(),
+      options,
+    );
+    return this.export(input, options);
   };
 
   debugExecutionPlanGeneration = async (

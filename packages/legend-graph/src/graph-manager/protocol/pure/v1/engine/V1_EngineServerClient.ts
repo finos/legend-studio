@@ -151,7 +151,7 @@ enum ENGINE_EXECUTION_SERIALIZATION_FORMAT {
   CSV_TRANSFORMED = 'csv_transformed',
 }
 
-const getEngineSerializationFormat = (
+export const V1_getEngineSerializationFormat = (
   val: EXECUTION_SERIALIZATION_FORMAT,
 ): ENGINE_EXECUTION_SERIALIZATION_FORMAT | string => {
   switch (val) {
@@ -706,7 +706,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       undefined,
       {
         serializationFormat: options?.serializationFormat
-          ? getEngineSerializationFormat(options.serializationFormat)
+          ? V1_getEngineSerializationFormat(options.serializationFormat)
           : undefined,
       },
       { enableCompression: true },
