@@ -299,11 +299,9 @@ async function getCastColumns(
 
   const lambda = new V1_Lambda();
   lambda.body.push(query);
-  const result = await view.engine.executeQuery(
-    lambda,
-    view.source,
-    view.dataCube,
-  );
+  const result = await view.engine.executeQuery(lambda, view.source, {
+    debug: view.dataCube.getSettings().enableDebugMode,
+  });
 
   return result.result.builder.columns.map((column) => ({
     name: column.name,
@@ -423,7 +421,9 @@ export class DataCubeGridClientServerSideDataSource
       const result = await this.grid.view.engine.executeQuery(
         lambda,
         this.grid.view.source,
-        this.grid.view.dataCube,
+        {
+          debug: this.grid.view.dataCube.getSettings().enableDebugMode,
+        },
       );
       const rowData = buildRowData(result.result.result, newSnapshot);
       if (this.grid.view.dataCube.settings.enableDebugMode) {

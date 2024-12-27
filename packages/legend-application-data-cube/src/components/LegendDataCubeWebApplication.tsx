@@ -25,8 +25,7 @@ import {
   useLegendDataCubeBaseStore,
 } from './LegendDataCubeFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
-import { LegendDataCubeLandingPage } from './LegendDataCubeLandingPage.js';
-import { ExistingDataCubeQueryEditor } from './ExistingDataCubeQueryEditor.js';
+import { LegendDataCubeQueryBuilder } from './query-builder/LegendDataCubeQueryBuilder.js';
 import { LEGEND_DATA_CUBE_ROUTE_PATTERN } from '../__lib__/LegendDataCubeNavigation.js';
 import { LogEvent } from '@finos/legend-shared';
 import { useEffect } from 'react';
@@ -38,7 +37,7 @@ const LegendDataCubeWebApplicationRouter = observer(() => {
   useEffect(() => {
     store
       .initialize()
-      .catch((error) => store.application.alertUnhandledError(error));
+      .catch((error) => store.engine.alertUnhandledError(error));
   }, [store]);
 
   useEffect(() => {
@@ -64,10 +63,9 @@ const LegendDataCubeWebApplicationRouter = observer(() => {
       {store.initState.hasSucceeded && (
         <Routes>
           <Route
-            path={LEGEND_DATA_CUBE_ROUTE_PATTERN.EDIT_EXISTING_QUERY}
-            element={<ExistingDataCubeQueryEditor />}
+            path={LEGEND_DATA_CUBE_ROUTE_PATTERN.QUERY_BUILDER}
+            element={<LegendDataCubeQueryBuilder />}
           />
-          <Route path="/" element={<LegendDataCubeLandingPage />} />
         </Routes>
       )}
     </div>

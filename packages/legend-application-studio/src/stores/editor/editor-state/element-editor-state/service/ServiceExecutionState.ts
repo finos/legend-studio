@@ -221,7 +221,7 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
     this.execution = execution;
     this.queryLoaderState = new QueryLoaderState(
       editorStore.applicationStore,
-      editorStore.graphManagerState,
+      editorStore.graphManagerState.graphManager,
       {
         loadQuery: (query: LightQuery): void => {
           flowResult(this.importQuery(query.id)).catch(

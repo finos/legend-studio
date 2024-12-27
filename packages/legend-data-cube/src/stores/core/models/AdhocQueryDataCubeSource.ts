@@ -14,32 +14,29 @@
  * limitations under the License.
  */
 
-import type { DataCubeColumn } from './DataCubeColumn.js';
 import {
   SerializationFactory,
   usingConstantValueSchema,
   type PlainObject,
 } from '@finos/legend-shared';
 import { DataCubeSource } from './DataCubeSource.js';
-import { createModelSchema, list, primitive, raw } from 'serializr';
+import { createModelSchema, primitive, raw } from 'serializr';
 
 export class AdhocQueryDataCubeSource extends DataCubeSource {
   runtime!: string;
   model!: PlainObject;
 }
 
-export const ADHOC_QUERY_DATA_CUBE_SOURCE = 'adhocQuery';
+export const ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE = 'adhocQuery';
 
 export class RawAdhocQueryDataCubeSource {
   query!: string;
   runtime!: string;
-  columns: DataCubeColumn[] = [];
   model!: PlainObject;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(RawAdhocQueryDataCubeSource, {
-      _type: usingConstantValueSchema(ADHOC_QUERY_DATA_CUBE_SOURCE),
-      columns: list(raw()),
+      _type: usingConstantValueSchema(ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE),
       model: raw(),
       query: primitive(),
       runtime: primitive(),

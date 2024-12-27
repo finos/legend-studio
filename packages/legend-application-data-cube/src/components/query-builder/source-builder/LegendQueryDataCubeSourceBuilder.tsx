@@ -16,10 +16,10 @@
 
 import { observer } from 'mobx-react-lite';
 import { QueryLoader } from '@finos/legend-query-builder';
-import type { LegendQueryDataCubeSourceBuilderState } from '../../stores/source/LegendQueryDataCubeSourceBuilderState.js';
+import type { LegendQueryDataCubeSourceBuilderState } from '../../../stores/query-builder/source-builder/LegendQueryDataCubeSourceBuilderState.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 
-export const SavedQuerySourceEditor = observer(
+export const LegendQueryDataCubeSourceBuilder = observer(
   (props: { sourceBuilder: LegendQueryDataCubeSourceBuilderState }) => {
     const { sourceBuilder } = props;
     const query = sourceBuilder.query;

@@ -14,25 +14,32 @@
  * limitations under the License.
  */
 
-import { observer, useLocalObservable } from 'mobx-react-lite';
-import { useLegendDataCubeBaseStore } from './LegendDataCubeFrameworkProvider.js';
-import { createContext, useContext, useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
 import {
   DataCube,
   DataCubeSettingKey,
   FormBadge_WIP,
   DataCubeLayoutManager,
   type DataCubeState,
+  FormButton,
 } from '@finos/legend-data-cube';
-import { formatDate, guaranteeNonNullable } from '@finos/legend-shared';
-import { LegendDataCubeLandingPageStore } from '../stores/LegendDataCubeLandingPageStore.js';
+import { formatDate } from '@finos/legend-shared';
 import {
   DataCubeIcon,
   DropdownMenu,
   DropdownMenuItem,
   useDropdownMenu,
 } from '@finos/legend-art';
-import { LegendDataCubeNewQueryBuilder } from './LegendDataCubeNewQueryBuilder.js';
+import {
+  useLegendDataCubeQueryBuilderStore,
+  withLegendDataCubeQueryBuilderStore,
+} from './LegendDataCubeQueryBuilderStoreProvider.js';
+import { useParams } from '@finos/legend-application/browser';
+import {
+  LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN,
+  type LegendDataCubeQueryBuilderQueryPathParams,
+} from '../../__lib__/LegendDataCubeNavigation.js';
+import { useEffect } from 'react';
 
 // const CreateQueryDialog = observer(
 //   (props: { view: LegendCubeViewer; store: LegendDataCubeBaseStore }) => {
@@ -50,11 +57,9 @@ import { LegendDataCubeNewQueryBuilder } from './LegendDataCubeNewQueryBuilder.j
 //     const setFocus = (): void => {
 //       nameInputRef.current?.focus();
 //     };
-
 //     const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) => {
 //       setQueryName(event.target.value);
 //     };
-
 //     useEffect(() => {
 //       setTimeout(() => setFocus(), 1);
 //     }, []);
@@ -103,74 +108,38 @@ import { LegendDataCubeNewQueryBuilder } from './LegendDataCubeNewQueryBuilder.j
 //   },
 // );
 
-const LegendDataCubeLandingPageStoreContext = createContext<
-  LegendDataCubeLandingPageStore | undefined
->(undefined);
-
-const LegendDataCubeLandingPageStoreProvider = (props: {
-  children: React.ReactNode;
-}) => {
-  const { children } = props;
-  const baseStore = useLegendDataCubeBaseStore();
-  const store = useLocalObservable(
-    () => new LegendDataCubeLandingPageStore(baseStore),
-  );
-  return (
-    <LegendDataCubeLandingPageStoreContext.Provider value={store}>
-      {children}
-    </LegendDataCubeLandingPageStoreContext.Provider>
-  );
-};
-
-const useLegendDataCubeLandingPageStore = () =>
-  guaranteeNonNullable(
-    useContext(LegendDataCubeLandingPageStoreContext),
-    `Can't find editor store in context`,
-  );
-
-const withLegendDataCubeLandingPageStore = (WrappedComponent: React.FC) =>
-  function WithLegendDataCubeLandingPageStore() {
-    return (
-      <LegendDataCubeLandingPageStoreProvider>
-        <WrappedComponent />
-      </LegendDataCubeLandingPageStoreProvider>
-    );
-  };
-
-const LegendDataCubeLandingPageHeader = observer(
+const LegendDataCubeQueryBuilderHeader = observer(
   (props: { dataCube?: DataCubeState | undefined }) => {
-    const store = useLegendDataCubeLandingPageStore();
+    const store = useLegendDataCubeQueryBuilderStore();
     const { dataCube } = props;
 
     return (
       <div className="flex h-full items-center">
-        <button
-          className="flex h-5 w-24 items-center justify-center border border-neutral-400 bg-neutral-300 px-2 text-sm hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100"
+        <FormButton
+          compact={true}
           // TODO: we will come back to support this later
           disabled={true}
         >
           Load Query
           <FormBadge_WIP />
-        </button>
-        <button
-          className="ml-1.5 flex h-5 w-20 items-center justify-center border border-neutral-400 bg-neutral-300 px-2 text-sm hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100"
+        </FormButton>
+        <FormButton
+          compact={true}
+          className="ml-1.5"
           onClick={() => store.newQueryState.display.open()}
         >
           New Query
-        </button>
-        <button
-          disabled={!dataCube}
-          className="ml-1.5 flex h-5 w-20 items-center justify-center border border-neutral-400 bg-neutral-300 px-2 text-sm hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100"
-        >
+        </FormButton>
+        <FormButton compact={true} className="ml-1.5" disabled={!store.builder}>
           Save Query
-        </button>
+        </FormButton>
       </div>
     );
   },
 );
 
-const LegendDataCubeLandingPageBlank = observer(() => {
-  const store = useLegendDataCubeLandingPageStore();
+const LegendDataCubeBlankQueryBuilder = observer(() => {
+  const store = useLegendDataCubeQueryBuilderStore();
   const application = store.application;
   const [openMenuDropdown, closeMenuDropdown, menuDropdownProps] =
     useDropdownMenu();
@@ -183,7 +152,7 @@ const LegendDataCubeLandingPageBlank = observer(() => {
           <div>{`[ Legend DataCube ]`}</div>
         </div>
         <div className="flex">
-          <LegendDataCubeLandingPageHeader />
+          <LegendDataCubeQueryBuilderHeader />
           <button
             className="flex aspect-square h-full flex-shrink-0 items-center justify-center text-lg"
             onClick={openMenuDropdown}
@@ -220,9 +189,12 @@ const LegendDataCubeLandingPageBlank = observer(() => {
       </div>
       <div className="h-[calc(100%_-_48px)] w-full border border-x-0 border-neutral-200 bg-neutral-50 p-2">
         <div>Create a new query to start</div>
-        <button className="mt-1.5 flex h-5 w-20 items-center justify-center border border-neutral-400 bg-neutral-300 px-2 text-sm hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100">
+        <FormButton
+          className="mt-1.5"
+          onClick={() => store.newQueryState.display.open()}
+        >
           New Query
-        </button>
+        </FormButton>
       </div>
       <div className="flex h-5 w-full justify-between bg-neutral-100">
         <div className="flex">
@@ -251,17 +223,35 @@ const LegendDataCubeLandingPageBlank = observer(() => {
   );
 });
 
-export const LegendDataCubeLandingPage = withLegendDataCubeLandingPageStore(
+export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
   observer(() => {
-    const store = useLegendDataCubeLandingPageStore();
+    const store = useLegendDataCubeQueryBuilderStore();
     const application = store.application;
+    const params = useParams<LegendDataCubeQueryBuilderQueryPathParams>();
+    const queryId = params[LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID];
 
-    if (!store.query) {
-      return <LegendDataCubeLandingPageBlank />;
+    useEffect(() => {
+      if (queryId !== store.builder?.persistentQuery?.id) {
+        store
+          .loadQuery(queryId)
+          .catch((error) => store.engine.alertUnhandledError(error));
+      }
+    }, [store, queryId]);
+
+    useEffect(() => {
+      if (!store.builder && !queryId) {
+        // TODO: open load query window
+        // store.newQueryState.display.open();
+      }
+    }, [store, queryId]);
+
+    if (!store.builder) {
+      return <LegendDataCubeBlankQueryBuilder />;
     }
     return (
       <DataCube
-        query={store.query}
+        key={store.builder.uuid}
+        query={store.builder.query}
         engine={store.baseStore.engine}
         options={{
           onNameChanged(name, source) {
@@ -288,7 +278,7 @@ export const LegendDataCubeLandingPage = withLegendDataCubeLandingPageStore(
               DataCubeSettingKey.GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
             ),
           innerHeaderComponent: (dataCube) => (
-            <LegendDataCubeLandingPageHeader dataCube={dataCube} />
+            <LegendDataCubeQueryBuilderHeader dataCube={dataCube} />
           ),
         }}
       />

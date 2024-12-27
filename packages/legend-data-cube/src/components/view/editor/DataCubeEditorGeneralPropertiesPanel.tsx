@@ -42,6 +42,7 @@ import {
   FormNumberInput,
   FormBadge_WIP,
   FormDocumentation,
+  FormButton,
 } from '../../core/DataCubeFormUtils.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
 import { DocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
@@ -773,13 +774,13 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
               <div className="flex h-6 w-32 flex-shrink-0 items-center text-sm" />
               <div className="w-80">
                 <div className="mb-2 h-[1px] w-full bg-neutral-200" />
-                <button
-                  className="flex h-5 items-center justify-center rounded-sm border border-neutral-400 bg-neutral-200 p-0 px-1 text-sm text-neutral-700 disabled:text-neutral-400"
+                <FormButton
+                  compact={true}
                   disabled={configuration.isUsingDefaultStyling}
                   onClick={() => configuration.useDefaultStyling()}
                 >
                   Use Default Styling
-                </button>
+                </FormButton>
               </div>
             </div>
           </div>

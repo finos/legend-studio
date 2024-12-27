@@ -175,7 +175,7 @@ export {
 } from './graph-manager/protocol/pure/v1/helpers/V1_DomainHelper.js';
 export {
   V1_buildExecutionResult,
-  V1_serializeExecutionResult,
+  V1_deserializeExecutionResult,
 } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionHelper.js';
 export { V1_RawSQLExecuteInput } from './graph-manager/protocol/pure/v1/engine/execution/V1_RawSQLExecuteInput.js';
 export * from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionResult.js';
@@ -395,7 +395,10 @@ export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/V1_G
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationPathResolver.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/V1_ElementBuilder.js';
 export { V1_RawLambda } from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawLambda.js';
-export { V1_RawExecutionContext } from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawExecutionContext.js';
+export {
+  V1_RawBaseExecutionContext,
+  V1_RawExecutionContext,
+} from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawExecutionContext.js';
 export { V1_RawVariable } from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawVariable.js';
 export { V1_ProcessingContext } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ProcessingContext.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';

@@ -53,6 +53,7 @@ import {
   V1_createGenericTypeWithRawType,
   V1_createRelationType,
   V1_createRelationTypeColumn,
+  V1_serializeValueSpecification,
 } from '@finos/legend-graph';
 import {
   type DataCubeQuerySnapshotFilterCondition,
@@ -115,6 +116,16 @@ export function _functionCompositionUnProcessor(
 
 export function _deserializeLambda(json: PlainObject<V1_Lambda>) {
   return guaranteeType(V1_deserializeValueSpecification(json, []), V1_Lambda);
+}
+
+export function _deserializeValueSpecification(
+  json: PlainObject<V1_ValueSpecification>,
+) {
+  return V1_deserializeValueSpecification(json, []);
+}
+
+export function _serializeValueSpecification(protocol: V1_ValueSpecification) {
+  return V1_serializeValueSpecification(protocol, []);
 }
 
 export function _deserializeFunction(json: PlainObject<V1_Lambda>) {
@@ -302,6 +313,12 @@ export function _value(
 
 export function _not(fn: V1_AppliedFunction) {
   return _function(_functionName(DataCubeFunction.NOT), [fn]);
+}
+
+export function _selectFunction(columns: DataCubeColumn[]) {
+  return _function(DataCubeFunction.SELECT, [
+    _cols(columns.map((col) => _colSpec(col.name))),
+  ]);
 }
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
@@ -547,10 +564,4 @@ export function _filter(
     }
     return filterCondition.not ? _not(condition) : condition;
   }
-}
-
-export function generateBaseSelectQuery(snapshot: DataCubeQuerySnapshot) {
-  return _function(DataCubeFunction.SELECT, [
-    _cols(snapshot.data.sourceColumns.map((col) => _colSpec(col.name))),
-  ]);
 }

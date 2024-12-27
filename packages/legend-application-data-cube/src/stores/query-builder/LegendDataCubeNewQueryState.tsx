@@ -14,29 +14,35 @@
  * limitations under the License.
  */
 
-import { action, computed, makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import {
   IllegalStateError,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { LegendQueryDataCubeSourceBuilderState } from './source/LegendQueryDataCubeSourceBuilderState.js';
+import { LegendQueryDataCubeSourceBuilderState } from './source-builder/LegendQueryDataCubeSourceBuilderState.js';
 import type {
   LegendDataCubeApplicationStore,
   LegendDataCubeBaseStore,
-} from './LegendDataCubeBaseStore.js';
-import type { GraphManagerState } from '@finos/legend-graph';
+} from '../LegendDataCubeBaseStore.js';
+import type { V1_PureGraphManager } from '@finos/legend-graph';
 import {
   LegendDataCubeSourceBuilderType,
   type LegendDataCubeSourceBuilderState,
-} from './source/LegendDataCubeSourceBuilderState.js';
-import { DataCubeQuery, type DisplayState } from '@finos/legend-data-cube';
-import type { LegendDataCubeDataCubeEngine } from './LegendDataCubeDataCubeEngine.js';
-import { LegendDataCubeNewQueryBuilder } from '../components/LegendDataCubeNewQueryBuilder.js';
+} from './source-builder/LegendDataCubeSourceBuilderState.js';
+import {
+  _selectFunction,
+  DataCubeQuery,
+  DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
+  type DisplayState,
+} from '@finos/legend-data-cube';
+import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
+import { LegendDataCubeNewQueryBuilder } from '../../components/query-builder/LegendDataCubeNewQueryBuilder.js';
+import { AdhocQueryDataCubeSourceBuilderState } from './source-builder/AdhocQueryDataCubeSourceBuilderState.js';
 
 export class LegendDataCubeNewQueryState {
   readonly application: LegendDataCubeApplicationStore;
   readonly baseStore: LegendDataCubeBaseStore;
-  readonly graphManagerState: GraphManagerState;
+  readonly graphManager: V1_PureGraphManager;
   readonly engine: LegendDataCubeDataCubeEngine;
   readonly display: DisplayState;
 
@@ -45,45 +51,30 @@ export class LegendDataCubeNewQueryState {
   constructor(baseStore: LegendDataCubeBaseStore) {
     makeObservable(this, {
       sourceBuilder: observable,
-      currentSourceBuilderOption: computed,
       changeSourceBuilder: action,
     });
 
     this.application = baseStore.application;
     this.baseStore = baseStore;
-    this.graphManagerState = baseStore.graphManagerState;
+    this.graphManager = baseStore.graphManager;
     this.engine = baseStore.engine;
-    this.display = this.engine.layout.newDisplay('New Query', () => (
-      <LegendDataCubeNewQueryBuilder state={this} />
-    ));
+    this.display = this.engine.layout.newDisplay(
+      'New Query',
+      () => <LegendDataCubeNewQueryBuilder state={this} />,
+      {
+        ...DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
+        width: 500,
+        minWidth: 500,
+      },
+    );
 
     this.sourceBuilder = this.createSourceBuilder(
       LegendDataCubeSourceBuilderType.LEGEND_QUERY,
     );
   }
 
-  get sourceBuilderOptions(): LegendDataCubeSourceBuilderType[] {
-    return Object.values(LegendDataCubeSourceBuilderType);
-  }
-
-  get currentSourceBuilderOption(): LegendDataCubeSourceBuilderType {
-    return this.sourceBuilder.label;
-  }
-
   changeSourceBuilder(type: LegendDataCubeSourceBuilderType): void {
     if (this.sourceBuilder.label !== type) {
-      switch (type) {
-        case LegendDataCubeSourceBuilderType.LEGEND_QUERY: {
-          this.sourceBuilder = new LegendQueryDataCubeSourceBuilderState(
-            this.baseStore,
-          );
-          break;
-        }
-        default:
-          throw new UnsupportedOperationError(
-            `Can't change source to unsupported type '${type}'`,
-          );
-      }
       this.sourceBuilder = this.createSourceBuilder(type);
     }
   }
@@ -94,9 +85,11 @@ export class LegendDataCubeNewQueryState {
     switch (type) {
       case LegendDataCubeSourceBuilderType.LEGEND_QUERY:
         return new LegendQueryDataCubeSourceBuilderState(this.baseStore);
+      case LegendDataCubeSourceBuilderType.ADHOC_QUERY:
+        return new AdhocQueryDataCubeSourceBuilderState(this.baseStore);
       default:
         throw new UnsupportedOperationError(
-          `Can't build source state for unsupported type '${type}'`,
+          `Can't create source builder for unsupported type '${type}'`,
         );
     }
   }
@@ -105,13 +98,13 @@ export class LegendDataCubeNewQueryState {
     if (!this.sourceBuilder.isValid) {
       throw new IllegalStateError(`Can't generate query: source is not valid`);
     }
-
     const source = await this.sourceBuilder.build();
     const query = new DataCubeQuery();
     const processedSource = await this.engine.processQuerySource(source);
     query.source = source;
-    query.query = `~[${processedSource.columns.map((column) => `'${column.name}'`)}]->select()`;
-
+    query.query = await this.engine.getValueSpecificationCode(
+      _selectFunction(processedSource.columns),
+    );
     return query;
   }
 }

@@ -114,7 +114,10 @@ import type { TestDebug } from '../graph/metamodel/pure/test/result/DebugTestsRe
 import type { RelationTypeMetadata } from './action/relation/RelationTypeMetadata.js';
 import type { CodeCompletionResult } from './action/compilation/Completion.js';
 import type { DeploymentResult } from './action/DeploymentResult.js';
-import type { PersistentDataCubeQuery } from './action/query/PersistentDataCubeQuery.js';
+import type {
+  LightPersistentDataCubeQuery,
+  PersistentDataCubeQuery,
+} from './action/query/PersistentDataCubeQuery.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -635,10 +638,19 @@ export abstract class AbstractPureGraphManager {
     graphLoader: () => Promise<PlainObject<Entity>[]>,
   ): Promise<{ mapping: string | undefined; runtime: string }>;
 
-  // ------------------------------------------- Data Cube -------------------------------------------
+  // ------------------------------------------- DataCube Query -------------------------------------------
 
+  abstract searchDataCubeQueries(
+    searchSpecification: QuerySearchSpecification,
+  ): Promise<LightPersistentDataCubeQuery[]>;
+  abstract getDataCubeQueries(
+    queryIds: string[],
+  ): Promise<LightPersistentDataCubeQuery[]>;
   abstract getDataCubeQuery(queryId: string): Promise<PersistentDataCubeQuery>;
-  abstract createQueryDataCube(
+  abstract createDataCubeQuery(
+    query: PersistentDataCubeQuery,
+  ): Promise<PersistentDataCubeQuery>;
+  abstract updateDataCubeQuery(
     query: PersistentDataCubeQuery,
   ): Promise<PersistentDataCubeQuery>;
   abstract deleteDataCubeQuery(queryId: string): Promise<void>;

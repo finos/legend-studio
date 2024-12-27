@@ -22,15 +22,15 @@ import {
   DataCubeEngine,
   DataCubeFunction,
   type DataCubeSource,
-  type DataCubeAPI,
+  type DataCubeExecutionOptions,
+  _deserializeValueSpecification,
+  _serializeValueSpecification,
 } from '@finos/legend-data-cube';
 import {
   TDSExecutionResult,
   type V1_AppliedFunction,
   V1_buildExecutionResult,
-  V1_deserializeValueSpecification,
-  V1_serializeExecutionResult,
-  V1_serializeValueSpecification,
+  V1_deserializeExecutionResult,
   type V1_Lambda,
   type V1_ValueSpecification,
   V1_buildEngineError,
@@ -82,20 +82,20 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
         `Can't deserialize query source of type '${value._type}'. Only type(s) '${REPL_DATA_CUBE_SOURCE_TYPE}' are supported.`,
       );
     }
-    const _source = RawLegendREPLDataCubeSource.serialization.fromJson(value);
-    this.baseStore.sourceQuery = _source.query;
+    const rawSource = RawLegendREPLDataCubeSource.serialization.fromJson(value);
+    this.baseStore.sourceQuery = rawSource.query;
     const source = new LegendREPLDataCubeSource();
-    source.query = await this.parseValueSpecification(_source.query, false);
+    source.query = await this.parseValueSpecification(rawSource.query, false);
     source.columns = (
       await this.getQueryRelationType(_lambda([], [source.query]), source)
     ).columns;
-    source.runtime = _source.runtime;
+    source.runtime = rawSource.runtime;
 
-    source.mapping = _source.mapping;
-    source.timestamp = _source.timestamp;
-    source.model = _source.model;
-    source.isLocal = _source.isLocal;
-    source.isPersistenceSupported = _source.isPersistenceSupported;
+    source.mapping = rawSource.mapping;
+    source.timestamp = rawSource.timestamp;
+    source.model = rawSource.model;
+    source.isLocal = rawSource.isLocal;
+    source.isPersistenceSupported = rawSource.isPersistenceSupported;
 
     return source;
   }
@@ -104,12 +104,11 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     code: string,
     returnSourceInformation?: boolean,
   ) {
-    return V1_deserializeValueSpecification(
+    return _deserializeValueSpecification(
       await this.client.parseValueSpecification({
         code,
         returnSourceInformation,
       }),
-      [],
     );
   }
 
@@ -118,7 +117,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     pretty?: boolean,
   ) {
     return this.client.getValueSpecificationCode({
-      value: V1_serializeValueSpecification(value, []),
+      value: _serializeValueSpecification(value),
       pretty,
     });
   }
@@ -130,7 +129,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   ) {
     return this.client.getQueryTypeahead({
       code,
-      baseQuery: V1_serializeValueSpecification(baseQuery, []),
+      baseQuery: _serializeValueSpecification(baseQuery),
     });
   }
 
@@ -141,7 +140,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     const relationType = deserialize(
       V1_relationTypeModelSchema,
       await this.client.getQueryRelationReturnType({
-        query: V1_serializeValueSpecification(query, []),
+        query: _serializeValueSpecification(query),
       }),
     );
     return {
@@ -162,7 +161,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
         V1_relationTypeModelSchema,
         await this.client.getQueryCodeRelationReturnType({
           code,
-          baseQuery: V1_serializeValueSpecification(baseQuery, []),
+          baseQuery: _serializeValueSpecification(baseQuery),
         }),
       );
       return {
@@ -190,16 +189,16 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   override async executeQuery(
     query: V1_Lambda,
     source: DataCubeSource,
-    api: DataCubeAPI,
+    options?: DataCubeExecutionOptions | undefined,
   ) {
     const result = await this.client.executeQuery({
-      query: V1_serializeValueSpecification(query, []),
-      debug: api.getSettings().enableDebugMode,
+      query: _serializeValueSpecification(query),
+      debug: options?.debug,
     });
     return {
       result: guaranteeType(
         V1_buildExecutionResult(
-          V1_serializeExecutionResult(JSON.parse(result.result)),
+          V1_deserializeExecutionResult(JSON.parse(result.result)),
         ),
         TDSExecutionResult,
       ),

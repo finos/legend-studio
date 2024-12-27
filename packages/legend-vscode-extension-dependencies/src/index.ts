@@ -192,7 +192,7 @@ export {
   V1_Runtime,
   V1_RuntimePointer,
   V1_serializeDatasetSpecification,
-  V1_serializeExecutionResult,
+  V1_deserializeExecutionResult,
   V1_serializePackageableElement,
   V1_serializeRawValueSpecification,
   V1_serializeRuntime,

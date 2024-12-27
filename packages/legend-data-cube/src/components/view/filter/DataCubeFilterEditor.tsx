@@ -37,6 +37,7 @@ import {
   type DataCubeFilterEditorTreeNode,
 } from '../../../stores/core/filter/DataCubeQueryFilterEditorState.js';
 import {
+  FormButton,
   FormDropdownMenu,
   FormDropdownMenuItem,
   FormDropdownMenuTrigger,
@@ -844,14 +845,13 @@ export const DataCubeFilterEditor = observer(
                       <div>
                         No filter is specified. Click the button below to start.
                       </div>
-                      <button
-                        className="w-30 mt-2 h-6 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
+                      <FormButton
                         onClick={() => {
                           editor.initializeTree();
                         }}
                       >
                         Create New Filter
-                      </button>
+                      </FormButton>
                     </div>
                   )}
                   {editor.tree.root && (
@@ -879,27 +879,21 @@ export const DataCubeFilterEditor = observer(
           </div>
         </div>
         <div className="flex h-10 items-center justify-end px-2">
-          <button
-            className="h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
+          <FormButton onClick={() => editor.display.close()} autoFocus={true}>
+            Cancel
+          </FormButton>
+          <FormButton className="ml-2" onClick={() => editor.applyChanges()}>
+            Apply
+          </FormButton>
+          <FormButton
+            className="ml-2"
             onClick={() => {
               editor.applyChanges();
               editor.display.close();
             }}
           >
             OK
-          </button>
-          <button
-            className="ml-2 h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
-            onClick={() => editor.display.close()}
-          >
-            Cancel
-          </button>
-          <button
-            className="ml-2 h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
-            onClick={() => editor.applyChanges()}
-          >
-            Apply
-          </button>
+          </FormButton>
         </div>
       </>
     );

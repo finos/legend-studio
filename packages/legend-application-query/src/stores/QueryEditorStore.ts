@@ -313,7 +313,7 @@ export abstract class QueryEditorStore {
     );
     this.queryLoaderState = new QueryLoaderState(
       applicationStore,
-      this.graphManagerState,
+      this.graphManagerState.graphManager,
       {
         loadQuery: (query: LightQuery): void => {
           this.queryBuilderState?.changeDetectionState.alertUnsavedChanges(

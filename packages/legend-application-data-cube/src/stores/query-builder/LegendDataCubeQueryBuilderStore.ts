@@ -18,30 +18,79 @@ import { action, makeObservable, observable } from 'mobx';
 import type {
   LegendDataCubeApplicationStore,
   LegendDataCubeBaseStore,
-} from './LegendDataCubeBaseStore.js';
-import { type DataCubeQuery } from '@finos/legend-data-cube';
+} from '../LegendDataCubeBaseStore.js';
+import { DataCubeQuery } from '@finos/legend-data-cube';
 import { LegendDataCubeNewQueryState } from './LegendDataCubeNewQueryState.js';
+import type { PersistentDataCubeQuery } from '@finos/legend-graph';
+import { ActionState, assertErrorThrown, uuid } from '@finos/legend-shared';
+import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
 
-export class LegendDataCubeLandingPageStore {
+class LegendDataCubeQueryBuilderState {
+  uuid = uuid();
+  persistentQuery?: PersistentDataCubeQuery | undefined;
+  query!: DataCubeQuery;
+
+  constructor(
+    query: DataCubeQuery,
+    persistentQuery?: PersistentDataCubeQuery | undefined,
+  ) {
+    this.query = query;
+    this.persistentQuery = persistentQuery;
+  }
+}
+
+export class LegendDataCubeQueryBuilderStore {
   readonly application: LegendDataCubeApplicationStore;
   readonly baseStore: LegendDataCubeBaseStore;
+  readonly engine: LegendDataCubeDataCubeEngine;
 
   readonly newQueryState: LegendDataCubeNewQueryState;
-  query?: DataCubeQuery | undefined;
+  readonly loadQueryState = ActionState.create();
+  builder?: LegendDataCubeQueryBuilderState | undefined;
 
   constructor(baseStore: LegendDataCubeBaseStore) {
     makeObservable(this, {
-      query: observable,
-      setQuery: action,
+      builder: observable,
+      setBuilder: action,
     });
 
     this.application = baseStore.application;
     this.baseStore = baseStore;
+    this.engine = baseStore.engine;
     this.newQueryState = new LegendDataCubeNewQueryState(baseStore);
   }
 
-  setQuery(val: DataCubeQuery | undefined): void {
-    this.query = val;
+  setBuilder(val: LegendDataCubeQueryBuilderState | undefined) {
+    this.builder = val;
+  }
+
+  async loadQuery(queryId: string | undefined) {
+    if (queryId !== this.builder?.persistentQuery?.id) {
+      if (!queryId) {
+        this.setBuilder(undefined);
+        return;
+      }
+
+      this.loadQueryState.inProgress();
+
+      try {
+        const persistentQuery =
+          await this.baseStore.graphManager.getDataCubeQuery(queryId);
+        const query = DataCubeQuery.serialization.fromJson(
+          persistentQuery.content,
+        );
+        this.setBuilder(
+          new LegendDataCubeQueryBuilderState(query, persistentQuery),
+        );
+        this.loadQueryState.pass();
+      } catch (error) {
+        assertErrorThrown(error);
+        this.engine.alertError(error, {
+          message: `Query Load Failure: ${error.message}`,
+        });
+        this.loadQueryState.fail();
+      }
+    }
   }
 }
 

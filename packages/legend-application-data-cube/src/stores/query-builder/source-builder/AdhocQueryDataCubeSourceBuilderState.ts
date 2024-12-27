@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-import type {
-  LegendDataCubeApplicationStore,
-  LegendDataCubeBaseStore,
-} from './LegendDataCubeBaseStore.js';
+import { type PlainObject } from '@finos/legend-shared';
+import {
+  LegendDataCubeSourceBuilderState,
+  LegendDataCubeSourceBuilderType,
+} from './LegendDataCubeSourceBuilderState.js';
 
-export class LegendDataCubeExistingQueryEditorStore {
-  readonly application: LegendDataCubeApplicationStore;
-  readonly baseStore: LegendDataCubeBaseStore;
+export class AdhocQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
+  override get label(): LegendDataCubeSourceBuilderType {
+    return LegendDataCubeSourceBuilderType.ADHOC_QUERY;
+  }
 
-  constructor(baseStore: LegendDataCubeBaseStore) {
-    this.application = baseStore.application;
-    this.baseStore = baseStore;
+  override get isValid(): boolean {
+    return false;
+  }
+
+  override build(): Promise<PlainObject> {
+    throw new Error('Method not implemented.');
   }
 }

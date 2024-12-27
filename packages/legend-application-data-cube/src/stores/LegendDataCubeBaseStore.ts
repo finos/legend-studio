@@ -23,15 +23,10 @@ import type { LegendDataCubePluginManager } from '../application/LegendDataCubeP
 import { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendDataCubeApplicationConfig } from '../application/LegendDataCubeApplicationConfig.js';
 import {
-  getCurrentUserIDFromEngineServer,
-  GraphManagerState,
+  V1_EngineServerClient,
+  V1_PureGraphManager,
 } from '@finos/legend-graph';
-import {
-  ActionState,
-  LogEvent,
-  assertErrorThrown,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { ActionState, LogEvent, assertErrorThrown } from '@finos/legend-shared';
 import { LegendDataCubeDataCubeEngine } from './LegendDataCubeDataCubeEngine.js';
 import { LayoutManagerState } from '@finos/legend-data-cube';
 
@@ -45,14 +40,16 @@ declare const AG_GRID_LICENSE: string | undefined;
 export class LegendDataCubeBaseStore {
   readonly application: LegendDataCubeApplicationStore;
   readonly pluginManager: LegendDataCubePluginManager;
-  readonly depotServerClient: DepotServerClient;
-  readonly graphManagerState: GraphManagerState;
   readonly layout = new LayoutManagerState();
+
+  readonly depotServerClient: DepotServerClient;
+  readonly graphManager: V1_PureGraphManager;
+  readonly engineServerClient: V1_EngineServerClient;
+  readonly engine: LegendDataCubeDataCubeEngine;
 
   readonly startTime = Date.now();
   readonly initState = ActionState.create();
 
-  private _engine?: LegendDataCubeDataCubeEngine | undefined;
   gridClientLicense?: string | undefined;
 
   constructor(application: LegendDataCubeApplicationStore) {
@@ -62,17 +59,17 @@ export class LegendDataCubeBaseStore {
       serverUrl: this.application.config.depotServerUrl,
     });
     this.depotServerClient.setTracerService(application.tracerService);
-    this.graphManagerState = new GraphManagerState(
+    this.graphManager = new V1_PureGraphManager(
       this.application.pluginManager,
       this.application.logService,
     );
-  }
-
-  get engine(): LegendDataCubeDataCubeEngine {
-    return guaranteeNonNullable(
-      this._engine,
-      'Engine has not been initialized',
-    );
+    this.engineServerClient = new V1_EngineServerClient({
+      baseUrl: this.application.config.engineServerUrl,
+      enableCompression: true,
+      queryBaseUrl: this.application.config.engineQueryServerUrl,
+    });
+    this.engineServerClient.setTracerService(application.tracerService);
+    this.engine = new LegendDataCubeDataCubeEngine(this);
   }
 
   async initialize() {
@@ -80,9 +77,7 @@ export class LegendDataCubeBaseStore {
 
     try {
       this.application.identityService.setCurrentUser(
-        await getCurrentUserIDFromEngineServer(
-          this.application.config.engineServerUrl,
-        ),
+        await this.engineServerClient.getCurrentUserId(),
       );
       this.application.telemetryService.setup();
     } catch (error) {
@@ -93,15 +88,10 @@ export class LegendDataCubeBaseStore {
       );
     }
 
-    this._engine = new LegendDataCubeDataCubeEngine(
-      this.application,
-      this.graphManagerState,
-    );
-
     try {
       this.gridClientLicense = AG_GRID_LICENSE;
 
-      await this.graphManagerState.graphManager.initialize(
+      await this.graphManager.initialize(
         {
           env: this.application.config.env,
           tabSize: DEFAULT_TAB_SIZE,

@@ -42,14 +42,16 @@ import type { DataCubeExtendManagerState } from './DataCubeExtendManagerState.js
 import {
   EngineError,
   PRIMITIVE_TYPE,
-  V1_deserializeValueSpecification,
   V1_Lambda,
-  V1_serializeValueSpecification,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
 import type { DataCubeColumnConfiguration } from '../../core/models/DataCubeConfiguration.js';
 import type { DataCubeQuerySnapshotExtendedColumn } from '../../core/DataCubeQuerySnapshot.js';
-import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
+import {
+  _lambda,
+  _serializeValueSpecification,
+  _deserializeValueSpecification,
+} from '../../core/DataCubeQueryBuilderUtils.js';
 
 export abstract class DataCubeColumnBaseEditorState {
   readonly uuid = uuid();
@@ -392,7 +394,7 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
       {
         name: this.name,
         type: returnType,
-        mapFn: V1_serializeValueSpecification(query, []),
+        mapFn: _serializeValueSpecification(query),
       },
       this.isGroupLevel,
       this.columnKind,
@@ -442,7 +444,7 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
 
   override async getInitialCode(): Promise<string> {
     return this.view.engine.getValueSpecificationCode(
-      V1_deserializeValueSpecification(this.initialData.mapFn, []),
+      _deserializeValueSpecification(this.initialData.mapFn),
       true,
     );
   }
@@ -518,7 +520,7 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
       {
         name: this.name,
         type: returnType,
-        mapFn: V1_serializeValueSpecification(query, []),
+        mapFn: _serializeValueSpecification(query),
       },
       this.isGroupLevel,
       this.columnKind,

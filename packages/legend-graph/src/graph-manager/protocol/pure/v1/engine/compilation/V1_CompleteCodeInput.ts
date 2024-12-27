@@ -22,7 +22,7 @@ import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol
 export class V1_CompleteCodeInput {
   model!: V1_PureModelContext;
   codeBlock!: string;
-  offset: number | undefined;
+  offset?: number | undefined;
 
   constructor(
     codeBlock: string,

@@ -127,7 +127,7 @@ import {
 import type { V1_SourceInformation } from '../model/V1_SourceInformation.js';
 import { V1_INTERNAL__PackageableElementWithSourceInformation } from '../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import { ELEMENT_PATH_DELIMITER } from '../../../../../graph/MetaModelConst.js';
-import { V1_serializeExecutionResult } from './execution/V1_ExecutionHelper.js';
+import { V1_deserializeExecutionResult } from './execution/V1_ExecutionHelper.js';
 import type {
   ClassifierPathMapping,
   SubtypeInfo,
@@ -162,7 +162,10 @@ import {
 import { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
 import { DeploymentResult } from '../../../../action/DeploymentResult.js';
-import { PersistentDataCubeQuery } from '../../../../action/query/PersistentDataCubeQuery.js';
+import {
+  LightPersistentDataCubeQuery,
+  PersistentDataCubeQuery,
+} from '../../../../action/query/PersistentDataCubeQuery.js';
 import { V1_getGenericTypeFullPath } from '../helpers/V1_DomainHelper.js';
 import { V1_relationTypeModelSchema } from '../transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
 
@@ -770,7 +773,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
         returnUndefOnError(() =>
           this.parseExecutionResults(executionResultInText, options),
         ) ?? executionResultInText;
-      const executionResult = V1_serializeExecutionResult(rawExecutionResult);
+      const executionResult = V1_deserializeExecutionResult(rawExecutionResult);
       const executionTraceId = executionResultMap.get(V1_ZIPKIN_TRACE_HEADER);
       if (executionTraceId) {
         return { executionResult, executionTraceId };
@@ -1115,12 +1118,12 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       await this.engineServerClient.searchQueries(
         V1_QuerySearchSpecification.serialization.toJson(searchSpecification),
       )
-    ).map((v) => V1_LightQuery.serialization.fromJson(v));
+    ).map((query) => V1_LightQuery.serialization.fromJson(query));
   }
 
   async getQueries(queryIds: string[]): Promise<V1_LightQuery[]> {
-    return (await this.engineServerClient.getQueries(queryIds)).map((v) =>
-      V1_LightQuery.serialization.fromJson(v),
+    return (await this.engineServerClient.getQueries(queryIds)).map((query) =>
+      V1_LightQuery.serialization.fromJson(query),
     );
   }
 
@@ -1166,7 +1169,27 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       broadcastToCluster,
     );
   }
-  // ------------------------------------------ Query Data Cube ------------------------------------------
+  // ------------------------------------------ QueryData Cube ------------------------------------------
+
+  async searchDataCubeQueries(
+    searchSpecification: V1_QuerySearchSpecification,
+  ): Promise<LightPersistentDataCubeQuery[]> {
+    return (
+      await this.engineServerClient.searchDataCubeQueries(
+        V1_QuerySearchSpecification.serialization.toJson(searchSpecification),
+      )
+    ).map((query) =>
+      LightPersistentDataCubeQuery.serialization.fromJson(query),
+    );
+  }
+
+  async getDataCubeQueries(
+    queryIds: string[],
+  ): Promise<LightPersistentDataCubeQuery[]> {
+    return (await this.engineServerClient.getDataCubeQueries(queryIds)).map(
+      (query) => LightPersistentDataCubeQuery.serialization.fromJson(query),
+    );
+  }
 
   async getDataCubeQuery(id: string): Promise<PersistentDataCubeQuery> {
     return PersistentDataCubeQuery.serialization.fromJson(
@@ -1179,6 +1202,17 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   ): Promise<PersistentDataCubeQuery> {
     return PersistentDataCubeQuery.serialization.fromJson(
       await this.engineServerClient.createDataCubeQuery(
+        PersistentDataCubeQuery.serialization.toJson(query),
+      ),
+    );
+  }
+
+  async updateDataCubeQuery(
+    query: PersistentDataCubeQuery,
+  ): Promise<PersistentDataCubeQuery> {
+    return PersistentDataCubeQuery.serialization.fromJson(
+      await this.engineServerClient.updateDataCubeQuery(
+        query.id,
         PersistentDataCubeQuery.serialization.toJson(query),
       ),
     );

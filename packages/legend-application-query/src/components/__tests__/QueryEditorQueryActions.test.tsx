@@ -21,7 +21,7 @@ import {
   extractElementNameFromPath,
   stub_RawLambda,
   V1_buildExecutionResult,
-  V1_serializeExecutionResult,
+  V1_deserializeExecutionResult,
 } from '@finos/legend-graph';
 import {
   act,
@@ -91,7 +91,7 @@ test(
     });
 
     const executionResult = V1_buildExecutionResult(
-      V1_serializeExecutionResult(TEST_DATA__result),
+      V1_deserializeExecutionResult(TEST_DATA__result),
     );
     await act(async () => {
       queryBuilderState.resultState.setExecutionResult(executionResult);
@@ -203,7 +203,7 @@ test(
     });
 
     const executionResult = V1_buildExecutionResult(
-      V1_serializeExecutionResult(TEST_DATA__result),
+      V1_deserializeExecutionResult(TEST_DATA__result),
     );
     await act(async () => {
       queryBuilderState.resultState.setExecutionResult(executionResult);

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { V1_deserializeValueSpecification } from '@finos/legend-graph';
 import { ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification } from '@finos/legend-graph/test';
 import { unitTest } from '@finos/legend-shared/test';
 import { describe, expect, test } from '@jest/globals';
@@ -22,6 +21,7 @@ import { validateAndBuildQuerySnapshot } from '../DataCubeQuerySnapshotBuilder.j
 import { assertErrorThrown } from '@finos/legend-shared';
 import { DataCubeQuery } from '../models/DataCubeQuery.js';
 import { INTERNAL__DataCubeSource } from '../models/DataCubeSource.js';
+import { _deserializeValueSpecification } from '../DataCubeQueryBuilderUtils.js';
 
 type BaseSnapshotAnalysisTestCase = [
   string, // name
@@ -130,9 +130,8 @@ describe(unitTest('Analyze and build base snapshot'), () => {
       columns: BaseSnapshotAnalysisTestCase[2],
       problem: BaseSnapshotAnalysisTestCase[3],
     ) => {
-      const partialQuery = V1_deserializeValueSpecification(
+      const partialQuery = _deserializeValueSpecification(
         await ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(code),
-        [],
       );
       const baseQuery = new DataCubeQuery();
       const source = new INTERNAL__DataCubeSource();

@@ -15,198 +15,151 @@
  */
 
 import {
-  RawLambda,
   RelationalExecutionActivities,
   TDSExecutionResult,
-  V1_deserializeRawValueSpecification,
-  V1_deserializeValueSpecification,
-  V1_RawLambda,
-  V1_serializeValueSpecification,
   type V1_Lambda,
-  type GraphManagerState,
-  type PureModel,
   type V1_ValueSpecification,
-  type AbstractPureGraphManager,
+  type V1_EngineServerClient,
+  type V1_PureGraphManager,
+  type V1_PureModelContext,
+  V1_PureModelContextPointer,
+  V1_LegendSDLC,
+  V1_serializePureModelContext,
+  V1_buildParserError,
+  V1_ParserError,
+  V1_relationTypeModelSchema,
+  V1_getGenericTypeFullPath,
+  LAMBDA_PIPE,
+  V1_rawBaseExecutionContextModelSchema,
+  V1_deserializeExecutionResult,
+  V1_parameterValueModelSchema,
+  type ExecutionResult,
+  type V1_ExecutionResult,
+  type V1_ParameterValue,
+  V1_buildExecutionResult,
+  V1_RawBaseExecutionContext,
+  PureClientVersion,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
   DataCubeEngine,
-  DataCubeSource,
-  type DataCubeRelationType,
+  type DataCubeSource,
   type CompletionItem,
   _function,
   DataCubeFunction,
+  _deserializeLambda,
+  AdhocQueryDataCubeSource,
+  ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE,
+  RawAdhocQueryDataCubeSource,
+  _lambda,
+  _serializeValueSpecification,
+  _deserializeValueSpecification,
 } from '@finos/legend-data-cube';
 import {
-  guaranteeType,
   isNonNullable,
   LogEvent,
   UnsupportedOperationError,
   type PlainObject,
   type DocumentationEntry,
+  assertErrorThrown,
+  NetworkClientError,
+  HttpStatus,
+  getNonNullableEntry,
+  assertType,
 } from '@finos/legend-shared';
-import type { LegendDataCubeApplicationStore } from './LegendDataCubeBaseStore.js';
+import type {
+  LegendDataCubeApplicationStore,
+  LegendDataCubeBaseStore,
+} from './LegendDataCubeBaseStore.js';
 import {
   APPLICATION_EVENT,
   shouldDisplayVirtualAssistantDocumentationEntry,
 } from '@finos/legend-application';
-
-class QueryBuilderDataCubeSource extends DataCubeSource {
-  mapping?: string | undefined;
-  runtime!: string;
-}
+import {
+  LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE,
+  LegendQueryDataCubeSource,
+  RawLegendQueryDataCubeSource,
+} from './model/LegendQueryDataCubeSource.js';
+import { deserialize, serialize } from 'serializr';
+import {
+  resolveVersion,
+  type DepotServerClient,
+} from '@finos/legend-server-depot';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   readonly application: LegendDataCubeApplicationStore;
-  readonly graphManagerState: GraphManagerState;
-  readonly graphManager: AbstractPureGraphManager;
-  readonly graph: PureModel;
-  // readonly logService = new LogService();
-  // readonly graphState: GraphManagerState;
-  // readonly selectInitialQuery: RawLambda;
-  // readonly mappingPath: string | undefined;
-  // readonly parameterValues: ParameterValue[] | undefined;
-  // readonly runtimePath: string;
-  // _parameters: object | undefined;
+  readonly graphManager: V1_PureGraphManager;
+  readonly depotServerClient: DepotServerClient;
+  readonly engineServerClient: V1_EngineServerClient;
 
-  constructor(
-    application: LegendDataCubeApplicationStore,
-    graphManagerState: GraphManagerState,
-  ) {
+  constructor(baseStore: LegendDataCubeBaseStore) {
     super();
 
-    this.application = application;
-    this.graphManagerState = graphManagerState;
-    this.graphManager = graphManagerState.graphManager;
-    this.graph = graphManagerState.graph;
+    this.application = baseStore.application;
+    this.graphManager = baseStore.graphManager;
+    this.depotServerClient = baseStore.depotServerClient;
+    this.engineServerClient = baseStore.engineServerClient;
   }
 
   // ---------------------------------- IMPLEMENTATION ----------------------------------
-
-  // constructor(
-  //   selectQuery: RawLambda,
-  //   parameterValues: ParameterValue[] | undefined,
-  //   mappingPath: string | undefined,
-  //   runtimePath: string,
-  //   graphManagerState: GraphManagerState,
-  // ) {
-  //   super();
-  //   this.graphState = graphManagerState;
-  //   this.selectInitialQuery = selectQuery;
-  //   this.mappingPath = mappingPath;
-  //   this.runtimePath = runtimePath;
-  //   this.parameterValues = parameterValues;
-  // }
-
-  // get sourceLabel(): string {
-  //   return `Query Builder Report`;
-  // }
-
-  // get graph(): PureModel {
-  //   return this.graphState.graph;
-  // }
-
-  // private getSourceFunctionExpression() {
-  //   let srcFuncExp = V1_deserializeValueSpecification(
-  //     this.graphManager.serializeRawValueSpecification(
-  //       this.selectInitialQuery,
-  //     ),
-  //     [],
-  //   );
-  //   // We could do a further check here to ensure the experssion is an applied funciton
-  //   // this is because data cube expects an expression to be able to built further upon the queery
-  //   if (
-  //     srcFuncExp instanceof V1_Lambda &&
-  //     srcFuncExp.body.length === 1 &&
-  //     srcFuncExp.body[0]
-  //   ) {
-  //     srcFuncExp = srcFuncExp.body[0];
-  //   }
-  //   return srcFuncExp;
-  // }
-
-  // async getBaseQuery() {
-  //   const srcFuncExp = this.getSourceFunctionExpression();
-  //   this._parameters = this.selectInitialQuery.parameters;
-  //   const fromFuncExp = new V1_AppliedFunction();
-  //   fromFuncExp.function = _functionName(SUPPORTED_FUNCTIONS.FROM);
-  //   fromFuncExp.parameters = [srcFuncExp];
-  //   if (this.mappingPath) {
-  //     fromFuncExp.parameters.push(_elementPtr(this.mappingPath));
-  //   }
-  //   if (this.runtimePath) {
-  //     fromFuncExp.parameters.push(_elementPtr(this.runtimePath));
-  //   }
-  //   const columns = (await this.getRelationalType(this.selectInitialQuery))
-  //     .columns;
-  //   const query = new DataCubeQuery();
-  //   query.query = `~[${columns.map((e) => `'${e.name}'`)}]->select()`;
-
-  //   return query;
-  // }
-
-  // async buildCubeEngine(): Promise<DataCubeEngine | undefined> {
-  //   this.buildCubeEngineState.inProgress();
-  //   const queryInfo = await this.context.graphManager.graphManager.getQueryInfo(
-  //     guaranteeNonNullable(this.query).id,
-  //   );
-  //   const execConext =
-  //     (await this.context.graphManager.graphManager.resolveQueryInfoExecutionContext(
-  //       queryInfo,
-  //       () =>
-  //         this.context.depotServerClient.getVersionEntities(
-  //           queryInfo.groupId,
-  //           queryInfo.artifactId,
-  //           queryInfo.versionId,
-  //         ),
-  //     )) as { mapping: string | undefined; runtime: string };
-  //   const lambda =
-  //     (await this.context.graphManager.graphManager.pureCodeToLambda(
-  //       queryInfo.content,
-  //     )) as unknown as RawLambda;
-  //   this.context.graphManager.graph.setOrigin(
-  //     new LegendSDLC(
-  //       queryInfo.groupId,
-  //       queryInfo.artifactId,
-  //       resolveVersion(queryInfo.versionId),
-  //     ),
-  //   );
-  //   // TODO: we should be able to call engine and convert lambda to relation if not one.
-  //   const engine = new LegendDataCubeDataCubeEngine(
-  //     lambda,
-  //     undefined,
-  //     execConext.mapping,
-  //     execConext.runtime,
-  //     this.context.graphManager,
-  //   );
-  //   this.buildCubeEngineState.complete();
-  //   return engine;
-  // }
-
-  private buildRawLambdaFromValueSpec(query: V1_Lambda): RawLambda {
-    const json = guaranteeType(
-      V1_deserializeRawValueSpecification(
-        V1_serializeValueSpecification(query, []),
-      ),
-      V1_RawLambda,
-    );
-    return new RawLambda(json.parameters, json.body);
-  }
-
-  private async getRelationalType(
-    query: RawLambda,
-  ): Promise<DataCubeRelationType> {
-    const relationType = await this.graphManager.getLambdaRelationType(
-      query,
-      this.graph,
-    );
-    return relationType;
-  }
 
   override async processQuerySource(
     value: PlainObject,
   ): Promise<DataCubeSource> {
     switch (value._type) {
+      case ADHOC_QUERY_DATA_CUBE_SOURCE_TYPE: {
+        const rawSource =
+          RawAdhocQueryDataCubeSource.serialization.fromJson(value);
+        const source = new AdhocQueryDataCubeSource();
+        source.runtime = rawSource.runtime;
+        source.model = rawSource.model;
+        source.query = await this.parseValueSpecification(
+          rawSource.query,
+          false,
+        );
+        source.columns = (
+          await this.getQueryRelationType(_lambda([], [source.query]), source)
+        ).columns;
+        return source;
+      }
+      case LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE: {
+        const rawSource =
+          RawLegendQueryDataCubeSource.serialization.fromJson(value);
+        const queryInfo = await this.graphManager.getQueryInfo(
+          rawSource.queryId,
+        );
+        const executionContext =
+          await this.graphManager.resolveQueryInfoExecutionContext(
+            queryInfo,
+            () =>
+              this.depotServerClient.getVersionEntities(
+                queryInfo.groupId,
+                queryInfo.artifactId,
+                queryInfo.versionId,
+              ),
+          );
+        const query = new LegendQueryDataCubeSource();
+        query.info = queryInfo;
+        query.lambda = await this._parseLambda(queryInfo.content, false);
+        query.mapping = executionContext.mapping;
+        query.runtime = executionContext.runtime;
+        query.model = V1_serializePureModelContext(
+          new V1_PureModelContextPointer(
+            undefined,
+            new V1_LegendSDLC(
+              queryInfo.groupId,
+              queryInfo.artifactId,
+              resolveVersion(queryInfo.versionId),
+            ),
+          ),
+        );
+        query.columns = (
+          await this._getLambdaRelationType(query.lambda, query.model)
+        ).columns;
+        query.query = getNonNullableEntry(query.lambda.body, 0);
+        // TODO: handle parameter values
+        return query;
+      }
       default:
         throw new UnsupportedOperationError(
           `Can't process query source of type '${value._type}'`,
@@ -214,36 +167,66 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     }
   }
 
+  // TODO: we could optimize this by synthesizing the base query from the source columns
+  // instead of having to send the entire graph model
   override async getQueryTypeahead(
     code: string,
     baseQuery: V1_Lambda,
     source: DataCubeSource,
   ) {
-    const lambda = this.buildRawLambdaFromValueSpec(baseQuery);
-    const queryString = await this.graphManager.lambdaToPureCode(lambda);
-    let codeBlock = queryString + code;
-    if (codeBlock[0] === '|') {
-      codeBlock = codeBlock.substring(1);
+    const baseQueryCode = await this.getValueSpecificationCode(baseQuery);
+    let codeBlock = baseQueryCode + code;
+    codeBlock = codeBlock.startsWith(LAMBDA_PIPE)
+      ? codeBlock.substring(LAMBDA_PIPE.length)
+      : codeBlock;
+    if (source instanceof AdhocQueryDataCubeSource) {
+      return (
+        await this.engineServerClient.completeCode({
+          codeBlock,
+          model: source.model,
+        })
+      ).completions as CompletionItem[];
+    } else if (source instanceof LegendQueryDataCubeSource) {
+      return (
+        await this.engineServerClient.completeCode({
+          codeBlock,
+          model: source.model,
+        })
+      ).completions as CompletionItem[];
     }
-    const result = await this.graphManager.getCodeComplete(
-      codeBlock,
-      this.graph,
-      undefined,
+    throw new UnsupportedOperationError(
+      `Can't get code completion for lambda with unsupported source`,
     );
-    return result.completions as CompletionItem[];
   }
 
   override async parseValueSpecification(
     code: string,
-    returnSourceInformation?: boolean,
+    returnSourceInformation?: boolean | undefined,
   ) {
-    return V1_deserializeValueSpecification(
-      await this.graphManager.pureCodeToValueSpecification(
-        code,
-        returnSourceInformation,
-      ),
-      [],
-    );
+    try {
+      return _deserializeValueSpecification(
+        await this.engineServerClient.grammarToJSON_valueSpecification(
+          code,
+          '',
+          undefined,
+          undefined,
+          returnSourceInformation,
+        ),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildParserError(
+          V1_ParserError.serialization.fromJson(
+            error.payload as PlainObject<V1_ParserError>,
+          ),
+        );
+      }
+      throw error;
+    }
   }
 
   override async getValueSpecificationCode(
@@ -251,63 +234,82 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     pretty?: boolean | undefined,
   ) {
     return this.graphManager.valueSpecificationToPureCode(
-      V1_serializeValueSpecification(value, []),
+      _serializeValueSpecification(value),
       pretty,
     );
   }
 
+  // TODO: we could optimize this by synthesizing the base query from the source columns
+  // instead of having to send the entire graph model
   override async getQueryRelationType(
     query: V1_Lambda,
     source: DataCubeSource,
   ) {
-    const lambda = this.buildRawLambdaFromValueSpec(query);
-    return this.getRelationalType(lambda);
+    if (source instanceof AdhocQueryDataCubeSource) {
+      return this._getLambdaRelationType(query, source.model);
+    } else if (source instanceof LegendQueryDataCubeSource) {
+      return this._getLambdaRelationType(query, source.model);
+    }
+    throw new UnsupportedOperationError(
+      `Can't get relation type for lambda with unsupported source`,
+    );
   }
 
+  // TODO: we could optimize this by synthesizing the base query from the source columns
+  // instead of having to send the entire graph model
   override async getQueryCodeRelationReturnType(
     code: string,
     baseQuery: V1_ValueSpecification,
     source: DataCubeSource,
   ) {
-    const queryString = await this.graphManager.valueSpecificationToPureCode(
-      V1_serializeValueSpecification(baseQuery, []),
-    );
-    const fullQuery = queryString + code;
-    return this.getRelationalType(
-      await this.graphManager.pureCodeToLambda(fullQuery),
-    );
+    const baseQueryCode = await this.getValueSpecificationCode(baseQuery);
+    const lambda = await this._parseLambda(baseQueryCode + code);
+    return this.getQueryRelationType(lambda, source);
   }
 
   override async executeQuery(query: V1_Lambda, source: DataCubeSource) {
-    const lambda = this.buildRawLambdaFromValueSpec(query);
-    // lambda.parameters = this._parameters;
-    const [executionWithMetadata, queryString] = await Promise.all([
-      this.graphManager.runQuery(lambda, undefined, undefined, this.graph, {
-        // parameterValues: this.parameterValues ?? [],
-      }),
-      this.graphManager.lambdaToPureCode(lambda),
-    ]);
-    const expectedTDS = guaranteeType(
-      executionWithMetadata.executionResult,
+    const queryCodePromise = this.getValueSpecificationCode(query);
+    let result: ExecutionResult;
+    if (source instanceof AdhocQueryDataCubeSource) {
+      result = await this._runQuery(query, source.model);
+    } else if (source instanceof LegendQueryDataCubeSource) {
+      result = await this._runQuery(
+        query,
+        source.model,
+        source.parameterValues,
+      );
+    } else {
+      throw new UnsupportedOperationError(
+        `Can't execute query with unsupported source`,
+      );
+    }
+    assertType(
+      result,
       TDSExecutionResult,
-      'Query returned expected to be of tabular data set',
+      `Can't extract execution result: expected tabular data set format`,
     );
+    const queryCode = await queryCodePromise;
     const sql =
-      expectedTDS.activities?.[0] instanceof RelationalExecutionActivities
-        ? expectedTDS.activities[0].sql
+      result.activities?.[0] instanceof RelationalExecutionActivities
+        ? result.activities[0].sql
         : undefined;
     if (!sql) {
       throw new Error(`Can't generate SQL for query`);
     }
     return {
-      result: expectedTDS,
-      executedQuery: queryString,
+      result: result,
+      executedQuery: queryCode,
       executedSQL: sql,
     };
   }
 
   override buildExecutionContext(source: DataCubeSource) {
-    if (source instanceof QueryBuilderDataCubeSource) {
+    if (source instanceof AdhocQueryDataCubeSource) {
+      return _function(
+        DataCubeFunction.FROM,
+        [_elementPtr(source.runtime)].filter(isNonNullable),
+      );
+    } else if (source instanceof LegendQueryDataCubeSource) {
       return _function(
         DataCubeFunction.FROM,
         [
@@ -317,6 +319,84 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       );
     }
     return undefined;
+  }
+
+  // ---------------------------------- UTILITIES ----------------------------------
+
+  private async _parseLambda(
+    code: string,
+    returnSourceInformation?: boolean | undefined,
+  ) {
+    try {
+      return _deserializeLambda(
+        await this.engineServerClient.grammarToJSON_lambda(
+          code,
+          '',
+          undefined,
+          undefined,
+          returnSourceInformation,
+        ),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildParserError(
+          V1_ParserError.serialization.fromJson(
+            error.payload as PlainObject<V1_ParserError>,
+          ),
+        );
+      }
+      throw error;
+    }
+  }
+
+  private async _getLambdaRelationType(
+    lambda: V1_Lambda,
+    model: PlainObject<V1_PureModelContext>,
+  ) {
+    const relationType = deserialize(
+      V1_relationTypeModelSchema,
+      await this.engineServerClient.lambdaRelationType({
+        lambda: _serializeValueSpecification(lambda),
+        model,
+      }),
+    );
+    return {
+      columns: relationType.columns.map((column) => ({
+        name: column.name,
+        type: V1_getGenericTypeFullPath(column.genericType),
+      })),
+    };
+  }
+
+  private async _runQuery(
+    query: V1_Lambda,
+    model: PlainObject<V1_PureModelContext>,
+    parameterValues?: V1_ParameterValue[] | undefined,
+  ): Promise<ExecutionResult> {
+    return V1_buildExecutionResult(
+      V1_deserializeExecutionResult(
+        (await this.engineServerClient.runQuery({
+          clientVersion:
+            // eslint-disable-next-line no-process-env
+            process.env.NODE_ENV === 'development'
+              ? PureClientVersion.VX_X_X
+              : undefined,
+          function: _serializeValueSpecification(query),
+          model,
+          context: serialize(
+            V1_rawBaseExecutionContextModelSchema,
+            new V1_RawBaseExecutionContext(),
+          ),
+          parameterValues: (parameterValues ?? []).map((parameterValue) =>
+            serialize(V1_parameterValueModelSchema, parameterValue),
+          ),
+        })) as PlainObject<V1_ExecutionResult>,
+      ),
+    );
   }
 
   // ---------------------------------- APPLICATION ----------------------------------

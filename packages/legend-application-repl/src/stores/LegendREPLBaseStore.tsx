@@ -27,7 +27,7 @@ import { LegendREPLServerClient } from './LegendREPLServerClient.js';
 import {
   DataCubeConfiguration,
   DataCubeQuery,
-  generateBaseSelectQuery,
+  _selectFunction,
   LayoutConfiguration,
   RawAdhocQueryDataCubeSource,
   WindowState,
@@ -128,11 +128,12 @@ export class LegendREPLBaseStore {
     try {
       const query = new DataCubeQuery();
       query.query = await dataCube.engine.getValueSpecificationCode(
-        generateBaseSelectQuery(dataCube.view.snapshotManager.currentSnapshot),
+        _selectFunction(
+          dataCube.view.snapshotManager.currentSnapshot.data.sourceColumns,
+        ),
       );
       const source = new RawAdhocQueryDataCubeSource();
       source.query = this.sourceQuery;
-      source.columns = dataCube.view.source.columns;
       source.runtime = dataCube.view.source.runtime;
       source.model = dataCube.view.source.model;
       query.source = RawAdhocQueryDataCubeSource.serialization.toJson(source);

@@ -16,7 +16,11 @@
 
 import { observer } from 'mobx-react-lite';
 import { DataCubeIcon } from '@finos/legend-art';
-import { FormCheckbox, FormNumberInput } from './DataCubeFormUtils.js';
+import {
+  FormButton,
+  FormCheckbox,
+  FormNumberInput,
+} from './DataCubeFormUtils.js';
 import { useState } from 'react';
 import { useDataCube } from '../DataCubeProvider.js';
 import {
@@ -103,12 +107,12 @@ export const DataCubeSettingsPanel = observer(() => {
               {`Manually re-run all failed data fetches in the grid.`}
             </div>
             <div className="flex pr-2">
-              <button
-                className="ml-2 h-5 min-w-16 border border-neutral-400 bg-neutral-300 px-2 text-sm first-of-type:ml-0 hover:brightness-95"
+              <FormButton
+                compact={true}
                 onClick={() => dataCube.refreshFailedDataFetches()}
               >
                 Run Action
-              </button>
+              </FormButton>
             </div>
           </div>
           <div className="my-2">
@@ -177,18 +181,12 @@ export const DataCubeSettingsPanel = observer(() => {
         </div>
       </div>
       <div className="flex h-10 items-center justify-end px-2">
-        <button
-          className="ml-2 h-6 w-48 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
-          onClick={restoreDefaults}
-        >
+        <FormButton onClick={restoreDefaults}>
           Restore Default Settings
-        </button>
-        <button
-          className="ml-2 h-6 w-36 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
-          onClick={save}
-        >
+        </FormButton>
+        <FormButton className="ml-2" onClick={save}>
           Save Settings
-        </button>
+        </FormButton>
       </div>
     </>
   );

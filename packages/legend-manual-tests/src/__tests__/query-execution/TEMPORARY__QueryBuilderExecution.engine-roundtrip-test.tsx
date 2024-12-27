@@ -39,7 +39,7 @@ import {
   Multiplicity,
   V1_PureGraphManager,
   V1_buildExecutionResult,
-  V1_serializeExecutionResult,
+  V1_deserializeExecutionResult,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { integrationTest, createSpy } from '@finos/legend-shared/test';
@@ -122,7 +122,7 @@ test(integrationTest('test query execution with parameters'), async () => {
     'runQuery',
   ).mockResolvedValue({
     executionResult: V1_buildExecutionResult(
-      V1_serializeExecutionResult(executionResult),
+      V1_deserializeExecutionResult(executionResult),
     ),
   });
   const queryBuilderResultPanel = await waitFor(() =>
@@ -187,7 +187,7 @@ test(integrationTest('test query execution with parameters'), async () => {
     'runQuery',
   ).mockResolvedValue({
     executionResult: V1_buildExecutionResult(
-      V1_serializeExecutionResult(executionResult1),
+      V1_deserializeExecutionResult(executionResult1),
     ),
   });
   await act(async () => {
@@ -268,7 +268,7 @@ test(integrationTest('test preview-data query execution'), async () => {
     'runQuery',
   ).mockResolvedValue({
     executionResult: V1_buildExecutionResult(
-      V1_serializeExecutionResult(executionResult),
+      V1_deserializeExecutionResult(executionResult),
     ),
   });
   const explorerPanel = await waitFor(() =>

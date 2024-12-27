@@ -99,7 +99,6 @@ import {
 } from './DataCubeLayoutManagerState.js';
 import { editor as monacoEditorAPI, Uri } from 'monaco-editor';
 import { DataCubeCodeCheckErrorAlert } from '../../components/core/DataCubeCodeCheckErrorAlert.js';
-import type { DataCubeAPI } from '../DataCubeAPI.js';
 
 export type CompletionItem = {
   completion: string;
@@ -108,6 +107,10 @@ export type CompletionItem = {
 
 export type DataCubeRelationType = {
   columns: DataCubeColumn[];
+};
+
+export type DataCubeExecutionOptions = {
+  debug?: boolean | undefined;
 };
 
 export type DataCubeExecutionResult = {
@@ -250,7 +253,7 @@ export abstract class DataCubeEngine {
   abstract executeQuery(
     query: V1_Lambda,
     source: DataCubeSource,
-    api: DataCubeAPI,
+    options?: DataCubeExecutionOptions | undefined,
   ): Promise<DataCubeExecutionResult>;
 
   abstract buildExecutionContext(

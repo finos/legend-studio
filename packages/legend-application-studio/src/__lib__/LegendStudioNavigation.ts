@@ -115,17 +115,11 @@ const generateGroupWorkspaceSetupRoute = (
 ): string =>
   patchReleaseVersionId
     ? generatePath(LEGEND_STUDIO_ROUTE_PATTERN.SETUP_PATCH_GROUP_WORKSPACE, {
-        // FIXME: due to some problem with typings, we will need to cast like this
-        // we will fix this when upgrading react-router
-        // See https://github.com/finos/legend-studio/issues/688
         projectId: projectId as string,
         patchReleaseVersionId: patchReleaseVersionId,
         groupWorkspaceId,
       })
     : generatePath(LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP_WORKSPACE, {
-        // FIXME: due to some problem with typings, we will need to cast like this
-        // we will fix this when upgrading react-router
-        // See https://github.com/finos/legend-studio/issues/688
         projectId: projectId as string,
         groupWorkspaceId,
       });
@@ -133,28 +127,16 @@ const generateGroupWorkspaceSetupRoute = (
 const generateWorkspaceSetupRoute = (
   projectId: string | undefined,
   patchReleaseVersionId: string | undefined,
-  workspaceId?: string,
+  workspaceId?: string | undefined,
 ): string =>
   patchReleaseVersionId
     ? generatePath(LEGEND_STUDIO_ROUTE_PATTERN.SETUP_PATCH_WORKSPACE, {
-        // FIXME: due to some problem with typings, we will need to cast like this
-        // we will fix this when upgrading react-router
-        // See https://github.com/finos/legend-studio/issues/688
         projectId: projectId as string,
         patchReleaseVersionId: patchReleaseVersionId,
-        // FIXME: due to some problem with typings, we will need to cast like this
-        // we will fix this when upgrading react-router
-        // See https://github.com/finos/legend-studio/issues/688
         workspaceId: workspaceId as string,
       })
     : generatePath(LEGEND_STUDIO_ROUTE_PATTERN.SETUP_WORKSPACE, {
-        // FIXME: due to some problem with typings, we will need to cast like this
-        // we will fix this when upgrading react-router
-        // See https://github.com/finos/legend-studio/issues/688
         projectId: projectId as string,
-        // FIXME: due to some problem with typings, we will need to cast like this
-        // we will fix this when upgrading react-router
-        // See https://github.com/finos/legend-studio/issues/688
         workspaceId: workspaceId as string,
       });
 

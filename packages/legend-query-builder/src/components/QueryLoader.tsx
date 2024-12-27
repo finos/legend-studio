@@ -118,7 +118,7 @@ export const QueryLoader = observer(
     }));
     const results = queryLoaderState.queries;
     const curatedTemplateQueries = [
-      ...queryLoaderState.curatedTemplateQuerySepcifications
+      ...queryLoaderState.curatedTemplateQuerySpecifications
         .map((s) =>
           queryLoaderState.queryBuilderState
             ? s.getCuratedTemplateQueries(queryLoaderState.queryBuilderState)
@@ -128,7 +128,7 @@ export const QueryLoader = observer(
     ].sort((a, b) => a.title.localeCompare(b.title));
 
     const loadCuratedTemplateQuery =
-      queryLoaderState.curatedTemplateQuerySepcifications
+      queryLoaderState.curatedTemplateQuerySpecifications
         // already using an arrow function suggested by @typescript-eslint/unbound-method
         // eslint-disable-next-line
         .map((s) => () => s.loadCuratedTemplateQuery)

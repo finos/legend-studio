@@ -58,6 +58,26 @@ export function FormBadge_Advanced() {
   );
 }
 
+export const FormButton = forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    compact?: boolean | undefined;
+  }
+>(function FormButton(props, ref) {
+  const { className, compact, ...otherProps } = props;
+  return (
+    <button
+      ref={ref}
+      {...otherProps}
+      className={cn(
+        'flex h-6 min-w-20 items-center justify-center border border-neutral-400 bg-neutral-300 px-2.5 hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100',
+        { 'h-5 text-sm': Boolean(compact) },
+        className,
+      )}
+    />
+  );
+});
+
 export const FormNumberInput = forwardRef(function FormNumberInput(
   props: React.InputHTMLAttributes<HTMLInputElement> & {
     min?: number | undefined;
@@ -451,32 +471,34 @@ function FormColorPicker(props: {
           />
         </div>
         <div className="flex">
-          {defaultColor !== undefined && (
-            <button
-              className="ml-1 h-4 w-9 border border-neutral-400 bg-neutral-300 px-1 text-xs hover:brightness-95"
-              onClick={() => {
-                setColor(defaultColor);
-              }}
-            >
-              Reset
-            </button>
-          )}
-          <button
-            className="ml-1 h-4 w-9 border border-neutral-400 bg-neutral-300 px-1 text-xs hover:brightness-95"
+          <FormButton
+            className="h-4 w-9"
             onClick={() => {
               onClose();
             }}
+            autoFocus={true}
           >
             Cancel
-          </button>
-          <button
-            className="ml-1 h-4 w-9 border border-neutral-400 bg-neutral-300 px-1 text-xs hover:brightness-95"
+          </FormButton>
+          <FormButton
+            className="ml-1 h-4 w-9 text-xs"
+            disabled={defaultColor === undefined}
+            onClick={() => {
+              if (defaultColor !== undefined) {
+                setColor(defaultColor);
+              }
+            }}
+          >
+            Reset
+          </FormButton>
+          <FormButton
+            className="ml-1 h-4 w-9"
             onClick={() => {
               submit();
             }}
           >
             OK
-          </button>
+          </FormButton>
         </div>
       </div>
     </div>

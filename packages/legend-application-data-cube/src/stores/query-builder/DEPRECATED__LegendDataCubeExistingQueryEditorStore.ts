@@ -14,32 +14,17 @@
  * limitations under the License.
  */
 
-import { ActionState, type PlainObject } from '@finos/legend-shared';
 import type {
   LegendDataCubeApplicationStore,
   LegendDataCubeBaseStore,
 } from '../LegendDataCubeBaseStore.js';
-import type { GraphManagerState } from '@finos/legend-graph';
 
-export enum LegendDataCubeSourceBuilderType {
-  LEGEND_QUERY = 'Legend Query',
-  ADHOC_QUERY = 'Ad hoc Query',
-}
-
-export abstract class LegendDataCubeSourceBuilderState {
+export class LegendDataCubeExistingQueryEditorStore {
   readonly application: LegendDataCubeApplicationStore;
   readonly baseStore: LegendDataCubeBaseStore;
-  readonly graphManagerState: GraphManagerState;
-
-  readonly buildState = ActionState.create();
 
   constructor(baseStore: LegendDataCubeBaseStore) {
     this.application = baseStore.application;
     this.baseStore = baseStore;
-    this.graphManagerState = baseStore.graphManagerState;
   }
-
-  abstract get label(): LegendDataCubeSourceBuilderType;
-  abstract get isValid(): boolean;
-  abstract build(): Promise<PlainObject>;
 }

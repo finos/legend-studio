@@ -41,3 +41,27 @@ export class PersistentDataCubeQuery {
     }),
   );
 }
+
+export class LightPersistentDataCubeQuery {
+  id!: string;
+  name!: string;
+  description: string | undefined;
+
+  owner: string | undefined;
+
+  lastUpdatedAt?: number | undefined;
+  createdAt?: number | undefined;
+  lastOpenAt?: number | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(LightPersistentDataCubeQuery, {
+      id: primitive(),
+      lastUpdatedAt: optional(primitive()),
+      createdAt: optional(primitive()),
+      lastOpenAt: optional(primitive()),
+      name: primitive(),
+      description: optional(primitive()),
+      owner: optional(primitive()),
+    }),
+  );
+}

@@ -24,6 +24,7 @@ import { DataCubeEditorHorizontalPivotsPanel } from './DataCubeEditorHorizontalP
 import { DataCubeEditorColumnPropertiesPanel } from './DataCubeEditorColumnPropertiesPanel.js';
 import { cn } from '@finos/legend-art';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
+import { FormButton } from '../../core/DataCubeFormUtils.js';
 
 export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
@@ -80,25 +81,11 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
         </div>
       </div>
       <div className="flex h-10 items-center justify-end px-2">
-        <button
-          className="h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100"
-          disabled={editor.finalizationState.isInProgress}
-          onClick={() => {
-            editor
-              .applyChanges({ closeAfterApply: true })
-              .catch((error) => engine.alertUnhandledError(error));
-          }}
-        >
-          OK
-        </button>
-        <button
-          className="ml-2 h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
-          onClick={() => editor.display.close()}
-        >
+        <FormButton onClick={() => editor.display.close()} autoFocus={true}>
           Cancel
-        </button>
-        <button
-          className="ml-2 h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100"
+        </FormButton>
+        <FormButton
+          className="ml-2"
           disabled={editor.finalizationState.isInProgress}
           onClick={() => {
             editor
@@ -107,7 +94,18 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
           }}
         >
           Apply
-        </button>
+        </FormButton>
+        <FormButton
+          className="ml-2"
+          disabled={editor.finalizationState.isInProgress}
+          onClick={() => {
+            editor
+              .applyChanges({ closeAfterApply: true })
+              .catch((error) => engine.alertUnhandledError(error));
+          }}
+        >
+          OK
+        </FormButton>
       </div>
     </>
   );

@@ -15,30 +15,14 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useLegendDataCubeBaseStore } from './LegendDataCubeFrameworkProvider.js';
-import { useEffect } from 'react';
+import { useLegendDataCubeBaseStore } from '../LegendDataCubeFrameworkProvider.js';
 import { QuestionIcon } from '@finos/legend-art';
 import { useParams } from '@finos/legend-application/browser';
-import { DataCube } from '@finos/legend-data-cube';
-import { guaranteeNonNullable } from '@finos/legend-shared';
-import {
-  LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN,
-  type EditExistingQueryPathParams,
-} from '../__lib__/LegendDataCubeNavigation.js';
-import { flowResult } from 'mobx';
+import { type LegendDataCubeQueryBuilderQueryPathParams } from '../../__lib__/LegendDataCubeNavigation.js';
 
 export const ExistingDataCubeQueryEditor = observer(() => {
   const dataCubeStore = useLegendDataCubeBaseStore();
-  const params = useParams<EditExistingQueryPathParams>();
-  // const sourceSelector = dataCubeStore.sourceSelector;
-  // const queryId = guaranteeNonNullable(
-  //   params[LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID],
-  // );
-  // useEffect(() => {
-  //   flowResult(dataCubeStore.initialize(queryId)).catch(
-  //     dataCubeStore.application.alertUnhandledError,
-  //   );
-  // }, [dataCubeStore, queryId]);
+  const params = useParams<LegendDataCubeQueryBuilderQueryPathParams>();
 
   return (
     <>
