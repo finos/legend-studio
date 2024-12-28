@@ -301,12 +301,12 @@ export function validateAndBuildQuerySnapshot(
     return _toCol(column);
   };
 
-  // --------------------------------- SOURCE ---------------------------------
+  // -------------------------------- SOURCE --------------------------------
 
   data.sourceColumns = source.columns;
   data.sourceColumns.forEach((col) => colsMap.set(col.name, col));
 
-  // --------------------------------- LEAF-LEVEL EXTEND ---------------------------------
+  // --------------------------- LEAF-LEVEL EXTEND ---------------------------
   /** TODO: @datacube roundtrip */
 
   // --------------------------------- FILTER ---------------------------------
@@ -336,7 +336,7 @@ export function validateAndBuildQuerySnapshot(
     };
   }
 
-  // --------------------------------- GROUP-LEVEL EXTEND ---------------------------------
+  // --------------------------- GROUP-LEVEL EXTEND ---------------------------
   /** TODO: @datacube roundtrip */
 
   // --------------------------------- SORT ---------------------------------
@@ -368,41 +368,70 @@ export function validateAndBuildQuerySnapshot(
   }
 
   // --------------------------------- CONFIGURATION ---------------------------------
-  // NOTE: we aim to keep the data query a Pure query instead of a specification object
-  // so this configuration holds mostly layout and styling customization.
-  // But there are overlaps, i.e. certain data query configuration are stored in the
-  // configuration, e.g. column aggregation type, this is because a column
-  // aggregation's preference can be populated even when there's no aggregation specified
-  // in the data query.
   //
-  // Arguably, the query should be the single source for these information, but when
-  // the configuration for a particular data query function coming from multiple sources
-  // conflict, we need to do some reconciliation (or throw error). Some examples include:
-  // - missing/extra columns present in the configuration
+  // A data-cube conceptually consists of a data query, in form of a Pure query, instead
+  // of a particular specification object format, and this configuration, that holds mostly
+  // layout and styling customization. But there are overlaps, i.e. certain "meta" query
+  // configuration are stored in this configuration, e.g. column aggregation type, because
+  // a column aggregation's preference needs to be specified even when there's no aggregation
+  // specified over that column in the data query.
+  //
+  // But in the example above, if the column is part of an aggregation, we have to ensure
+  // the configuration is consistent with the query. Conflicts can happen, for example:
   // - column kind and type conflict with aggregation
   // - column kind and type conflict with the column configuration
   //
-  // In certain cases, configuration needs to be generated from default presets. This
-  // helps with use cases where the query might comes from a different source, such as
-  // Studio or Query, or another part of Engine.
+  // In those cases, we need to reconcile to make sure the query and the configuration to agree.
+  // The query will take precedence when conflicts happen, and if the conflict cannot be resolved
+  // somehow, we will throw a validation error. We decide so because in certain cases, configuration
+  // needs to be generated from default presets, such as for use cases where the query comes from a
+  // different source, such as Studio or Query, or another part of Engine, where the layout
+  // configuration is not specified.
+  //
+  // ----------------------------------------------------------------------------------
+
+  const configuration = validateAndBuildConfiguration(
+    snapshot,
+    funcMap,
+    baseQuery,
+  );
+  data.configuration = configuration.serialize();
+
+  return snapshot.finalize();
+}
+
+/**
+ * TODO: @datacube roundtrip - implement the logic to reconcile the configuration with the query
+ * - [ ] disallow naming an extended column the same as a source column/leaf-level extended column
+ *       even if the column is not selected
+ * - [ ] columns (missing/extra columns - remove or generate default column configuration)
+ * - [ ] column kind
+ * - [ ] column type
+ * - [ ] base off the type, check the settings
+ * - [ ] aggregation
+ * - [ ] verify groupBy agg columns, pivot agg columns and configuration agree
+ * - [ ] verify groupBy sort columns and tree column sort direction configuration agree
+ */
+function validateAndBuildConfiguration(
+  snapshot: DataCubeQuerySnapshot,
+  funcMap: DataCubeQueryFunctionMap,
+  baseQuery: DataCubeQuery,
+) {
+  const data = snapshot.data;
   const configuration =
     baseQuery.configuration?.clone() ??
     buildDefaultConfiguration([
-      ...source.columns,
+      ...data.sourceColumns,
       ...data.leafExtendedColumns,
       ...data.groupExtendedColumns,
     ]);
-  data.configuration = configuration.serialize();
-  /**
-   * TODO: @datacube roundtrip - implement the logic to reconcile the configuration with the query
-   * - [ ] columns (missing/extra columns - remove or generate default column configuration)
-   * - [ ] column kind
-   * - [ ] column type
-   * - [ ] base off the type, check the settings
-   * - [ ] aggregation
-   * - [ ] verify groupBy agg columns, pivot agg columns and configuration agree
-   * - [ ] verify groupBy sort columns and tree column sort direction configuration agree
-   */
 
-  return snapshot.finalize();
+  // column selection
+  configuration.columns.forEach((column) => {
+    column.isSelected = Boolean(
+      data.groupExtendedColumns.find((col) => col.name === column.name) ||
+        data.selectColumns.find((col) => col.name === column.name),
+    );
+  });
+  return configuration;
 }

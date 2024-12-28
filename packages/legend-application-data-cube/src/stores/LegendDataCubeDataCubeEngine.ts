@@ -39,6 +39,8 @@ import {
   V1_buildExecutionResult,
   V1_RawBaseExecutionContext,
   PureClientVersion,
+  V1_buildEngineError,
+  V1_EngineError,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -140,7 +142,15 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           );
         const query = new LegendQueryDataCubeSource();
         query.info = queryInfo;
-        query.lambda = await this._parseLambda(queryInfo.content, false);
+        query.lambda = _deserializeLambda(
+          await this.engineServerClient.grammarToJSON_lambda(
+            queryInfo.content,
+            '',
+            undefined,
+            undefined,
+            false,
+          ),
+        );
         query.mapping = executionContext.mapping;
         query.runtime = executionContext.runtime;
         query.model = V1_serializePureModelContext(
@@ -154,7 +164,10 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           ),
         );
         query.columns = (
-          await this._getLambdaRelationType(query.lambda, query.model)
+          await this._getLambdaRelationType(
+            _serializeValueSpecification(query.lambda),
+            query.model,
+          )
         ).columns;
         query.query = getNonNullableEntry(query.lambda.body, 0);
         // TODO: handle parameter values
@@ -245,13 +258,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     query: V1_Lambda,
     source: DataCubeSource,
   ) {
-    if (source instanceof AdhocQueryDataCubeSource) {
-      return this._getLambdaRelationType(query, source.model);
-    } else if (source instanceof LegendQueryDataCubeSource) {
-      return this._getLambdaRelationType(query, source.model);
-    }
-    throw new UnsupportedOperationError(
-      `Can't get relation type for lambda with unsupported source`,
+    return this._getQueryRelationType(
+      _serializeValueSpecification(query),
+      source,
     );
   }
 
@@ -263,8 +272,35 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     source: DataCubeSource,
   ) {
     const baseQueryCode = await this.getValueSpecificationCode(baseQuery);
-    const lambda = await this._parseLambda(baseQueryCode + code);
-    return this.getQueryRelationType(lambda, source);
+    const columnOffset = baseQueryCode.length;
+    try {
+      const lambda = await this.engineServerClient.grammarToJSON_lambda(
+        baseQueryCode + code,
+        '',
+        undefined,
+        undefined,
+        true,
+      );
+      return await this._getQueryRelationType(lambda, source);
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        const engineError = V1_buildEngineError(
+          V1_EngineError.serialization.fromJson(
+            error.payload as PlainObject<V1_EngineError>,
+          ),
+        );
+        if (engineError.sourceInformation) {
+          engineError.sourceInformation.endColumn -= columnOffset;
+          engineError.sourceInformation.startColumn -= columnOffset;
+        }
+        throw engineError;
+      }
+      throw error;
+    }
   }
 
   override async executeQuery(query: V1_Lambda, source: DataCubeSource) {
@@ -323,44 +359,28 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
   // ---------------------------------- UTILITIES ----------------------------------
 
-  private async _parseLambda(
-    code: string,
-    returnSourceInformation?: boolean | undefined,
+  private async _getQueryRelationType(
+    query: PlainObject<V1_Lambda>,
+    source: DataCubeSource,
   ) {
-    try {
-      return _deserializeLambda(
-        await this.engineServerClient.grammarToJSON_lambda(
-          code,
-          '',
-          undefined,
-          undefined,
-          returnSourceInformation,
-        ),
-      );
-    } catch (error) {
-      assertErrorThrown(error);
-      if (
-        error instanceof NetworkClientError &&
-        error.response.status === HttpStatus.BAD_REQUEST
-      ) {
-        throw V1_buildParserError(
-          V1_ParserError.serialization.fromJson(
-            error.payload as PlainObject<V1_ParserError>,
-          ),
-        );
-      }
-      throw error;
+    if (source instanceof AdhocQueryDataCubeSource) {
+      return this._getLambdaRelationType(query, source.model);
+    } else if (source instanceof LegendQueryDataCubeSource) {
+      return this._getLambdaRelationType(query, source.model);
     }
+    throw new UnsupportedOperationError(
+      `Can't get relation type for lambda with unsupported source`,
+    );
   }
 
   private async _getLambdaRelationType(
-    lambda: V1_Lambda,
+    lambda: PlainObject<V1_Lambda>,
     model: PlainObject<V1_PureModelContext>,
   ) {
     const relationType = deserialize(
       V1_relationTypeModelSchema,
       await this.engineServerClient.lambdaRelationType({
-        lambda: _serializeValueSpecification(lambda),
+        lambda,
         model,
       }),
     );
