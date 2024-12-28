@@ -157,6 +157,8 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     this.client.updateGridOptions({
       ...gridOptions,
       rowBuffer: this.view.dataCube.settings.gridClientRowBuffer,
+      purgeClosedRowNodes:
+        this.view.dataCube.settings.gridClientPurgeClosedRowNodes,
       // NOTE: ag-grid uses the cache block size as page size, so it's important to set this
       // in corresponding to the pagination setting, else it would cause unexpected scrolling behavior
       cacheBlockSize: this.isPaginationEnabled

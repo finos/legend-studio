@@ -154,7 +154,7 @@ export class DataCubeState implements DataCubeAPI {
 
   async initialize() {
     if (!this.initState.isInInitialState) {
-      this.engine.logDebug('REPL store is re-initialized');
+      this.engine.logDebug('DataCube state is re-initialized');
       return;
     }
     this.initState.inProgress();

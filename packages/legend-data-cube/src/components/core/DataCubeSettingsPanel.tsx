@@ -102,7 +102,7 @@ export const DataCubeSettingsPanel = observer(() => {
             </div>
           </div>
           <div className="my-2">
-            <div className="font-medium">Refresh Failed Data Fetch: Action</div>
+            <div className="font-medium">Refresh Failed Data Fetch</div>
             <div className="mb-1.5 text-sm text-neutral-700">
               {`Manually re-run all failed data fetches in the grid.`}
             </div>

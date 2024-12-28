@@ -429,7 +429,7 @@ function validateAndBuildConfiguration(
   // column selection
   configuration.columns.forEach((column) => {
     column.isSelected = Boolean(
-      data.groupExtendedColumns.find((col) => col.name === column.name) ||
+      data.groupExtendedColumns.find((col) => col.name === column.name) ??
         data.selectColumns.find((col) => col.name === column.name),
     );
   });

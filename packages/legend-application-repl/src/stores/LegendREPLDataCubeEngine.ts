@@ -253,7 +253,10 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   }
 
   override debugProcess(processName: string, ...data: [string, unknown][]) {
-    this.application.logService.debug(
+    // eslint-disable-next-line no-process-env
+    (process.env.NODE_ENV === 'development'
+      ? this.application.logService.info
+      : this.application.logService.debug)(
       LogEvent.create(APPLICATION_EVENT.DEBUG),
       `\n------ START DEBUG PROCESS: ${processName} ------`,
       ...data.flatMap(([key, value]) => [`\n[${key.toUpperCase()}]:`, value]),
