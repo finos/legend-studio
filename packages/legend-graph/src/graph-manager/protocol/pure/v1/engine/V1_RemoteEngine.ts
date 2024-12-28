@@ -334,7 +334,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     return sourceInformationIndex;
   }
 
-  pureModelContextDataToPureCode(
+  transformPureModelContextDataToCode(
     graph: V1_PureModelContextData,
     pretty: boolean,
   ): Promise<string> {
@@ -344,7 +344,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     );
   }
 
-  async pureCodeToPureModelContextData(
+  async transformCodeToPureModelContextData(
     code: string,
     options?: {
       sourceInformationIndex?: Map<string, V1_SourceInformation> | undefined;
@@ -418,7 +418,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     );
   }
 
-  async transformValueSpecsToCode(
+  async transformValueSpecificationsToCode(
     input: Record<string, PlainObject<V1_ValueSpecification>>,
     pretty: boolean,
   ): Promise<Map<string, string>> {
@@ -431,7 +431,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     );
   }
 
-  async transformValueSpecToCode(
+  async transformValueSpecificationToCode(
     input: PlainObject<V1_ValueSpecification>,
     pretty: boolean,
   ): Promise<string> {
@@ -442,7 +442,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     return code;
   }
 
-  async transformCodeToValueSpeces(
+  async transformCodeToValueSpecifications(
     input: Record<string, V1_GrammarParserBatchInputEntry>,
   ): Promise<Map<string, PlainObject>> {
     const batchResults =
@@ -459,7 +459,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     return finalResults;
   }
 
-  async transformCodeToValueSpec(
+  async transformCodeToValueSpecification(
     input: string,
     returnSourceInformation?: boolean,
   ): Promise<PlainObject<V1_ValueSpecification>> {
@@ -999,7 +999,10 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     // from the front end to engine would take up a lot of bandwidth.
     const textModel = new V1_PureModelContextText();
     textModel.serializer = model.serializer;
-    textModel.code = await this.pureModelContextDataToPureCode(model, false);
+    textModel.code = await this.transformPureModelContextDataToCode(
+      model,
+      false,
+    );
     return (
       await this.engineServerClient.generateFile(
         generationMode,

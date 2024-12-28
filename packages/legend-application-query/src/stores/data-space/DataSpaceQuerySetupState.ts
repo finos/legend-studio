@@ -20,7 +20,10 @@ import {
   type StoredEntity,
 } from '@finos/legend-server-depot';
 import type { GraphManagerState } from '@finos/legend-graph';
-import { type GenericLegendApplicationStore } from '@finos/legend-application';
+import {
+  APPLICATION_EVENT,
+  type GenericLegendApplicationStore,
+} from '@finos/legend-application';
 import { action, flow, makeObservable, observable } from 'mobx';
 import {
   type QueryBuilderConfig,
@@ -30,6 +33,7 @@ import {
 import {
   ActionState,
   assertErrorThrown,
+  LogEvent,
   type GeneratorFn,
 } from '@finos/legend-shared';
 import {
@@ -158,6 +162,10 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
       assertErrorThrown(error);
       this.loadDataSpacesState.fail();
       this.applicationStore.notificationService.notifyError(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+        error,
+      );
     }
   }
 }

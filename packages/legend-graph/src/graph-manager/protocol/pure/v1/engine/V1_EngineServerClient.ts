@@ -168,10 +168,8 @@ export const V1_getEngineSerializationFormat = (
 // eslint-disable-next-line @finos/legend/enforce-protocol-export-prefix
 export async function getCurrentUserIDFromEngineServer(
   engineServerUrl: string,
-) {
-  return (await new NetworkClient().get(
-    `${engineServerUrl}/server/v1/currentUser`,
-  )) as string;
+): Promise<string> {
+  return new NetworkClient().get(`${engineServerUrl}/server/v1/currentUser`);
 }
 
 export class V1_EngineServerClient extends AbstractServerClient {

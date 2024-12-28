@@ -23,7 +23,8 @@
     "dev:server": "yarn build:ts && nodemon --watch lib lib/index.js",
     "dev:ts": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
-    "start": "node lib/index.js"
+    "start": "node lib/index.js",
+    "start:depot": "node lib/depot.js"
   },
   "dependencies": {
     "@fastify/cors": "10.0.1",

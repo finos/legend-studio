@@ -37,7 +37,6 @@ import {
   DataCubeSource,
   _function,
   DataCubeFunction,
-  type DataCubeRelationType,
   type CompletionItem,
   _functionName,
   DataCubeQuery,

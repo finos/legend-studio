@@ -1772,7 +1772,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const graphData = this.graphToPureModelContextData(graph, {
       excludeUnknown: options?.excludeUnknown,
     });
-    const grammarToJson = await this.engine.pureModelContextDataToPureCode(
+    const grammarToJson = await this.engine.transformPureModelContextDataToCode(
       graphData,
       Boolean(options?.pretty),
     );
@@ -1795,7 +1795,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: { pretty?: boolean | undefined },
   ): Promise<string> {
     const startTime = Date.now();
-    const grammarToJson = await this.engine.pureModelContextDataToPureCode(
+    const grammarToJson = await this.engine.transformPureModelContextDataToCode(
       await this.entitiesToPureModelContextData(entities),
       Boolean(options?.pretty),
     );
@@ -1817,7 +1817,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     },
   ): Promise<Entity[]> {
     const index = new Map<string, V1_SourceInformation>();
-    const pmcd = await this.engine.pureCodeToPureModelContextData(code, {
+    const pmcd = await this.engine.transformCodeToPureModelContextData(code, {
       sourceInformationIndex: options?.sourceInformationIndex
         ? index
         : undefined,
@@ -1880,21 +1880,27 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambdas.forEach((val, key) => {
       input[key] = this.serializeValueSpecification(val);
     });
-    return this.engine.transformValueSpecsToCode(input, Boolean(pretty));
+    return this.engine.transformValueSpecificationsToCode(
+      input,
+      Boolean(pretty),
+    );
   }
 
   async valueSpecificationToPureCode(
     valSpec: PlainObject<ValueSpecification>,
     pretty?: boolean | undefined,
   ): Promise<string> {
-    return this.engine.transformValueSpecToCode(valSpec, Boolean(pretty));
+    return this.engine.transformValueSpecificationToCode(
+      valSpec,
+      Boolean(pretty),
+    );
   }
 
   async pureCodeToValueSpecification(
     valSpec: string,
     returnSourceInformation?: boolean,
   ): Promise<PlainObject<ValueSpecification>> {
-    return this.engine.transformCodeToValueSpec(
+    return this.engine.transformCodeToValueSpecification(
       valSpec,
       returnSourceInformation,
     );
@@ -1914,7 +1920,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         returnSourceInformation: false,
       };
     });
-    const specs = await this.engine.transformCodeToValueSpeces(
+    const specs = await this.engine.transformCodeToValueSpecifications(
       pureCodeToValueSpecInput,
     );
     const result = new Map<string, ValueSpecification>();

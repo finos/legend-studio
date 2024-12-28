@@ -50,13 +50,6 @@ import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.j
 // We MUST NEVER completely surpress this warning in production, else it's a violation of the ag-grid license!
 // See https://www.ag-grid.com/react-data-grid/licensing/
 const __INTERNAL__original_console_error = console.error; // eslint-disable-line no-console
-// eslint-disable-next-line no-process-env
-if (process.env.NODE_ENV === 'development') {
-  // eslint-disable-next-line no-console
-  console.error = (message?: unknown, ...agrs: unknown[]) => {
-    console.debug(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
-  };
-}
 
 function textColorStyle(
   key: DataCubeConfigurationColorKey,
@@ -331,6 +324,14 @@ const DataCubeGridStatusBar = observer((props: { view: DataCubeViewState }) => {
 const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
   const grid = view.grid;
+
+  // eslint-disable-next-line no-process-env
+  if (process.env.NODE_ENV === 'development' && !grid.isClientConfigured) {
+    // eslint-disable-next-line no-console
+    console.error = (message?: unknown, ...agrs: unknown[]) => {
+      console.debug(`%c ${message}`, 'color: silver'); // eslint-disable-line no-console
+    };
+  }
 
   return (
     <div className="relative h-[calc(100%_-_20px)] w-full">

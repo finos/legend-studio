@@ -15,6 +15,9 @@
  */
 
 export enum APPLICATION_EVENT {
+  // TODO: split this into specific events
+  GENERIC_FAILURE = 'application.failure.generic',
+
   APPLICATION_SETUP__FAILURE = 'application.setup.failure',
 
   APPLICATION_LOAD__SUCCESS = 'application.load.success',

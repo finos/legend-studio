@@ -44,7 +44,7 @@ beforeEach(async () => {
   });
 });
 
-test.only(
+test(
   integrationTest('Enumeration mapping editor basic functionality'),
   async () => {
     await TEST__openElementFromExplorerTree('demo::MyMap', renderResult);

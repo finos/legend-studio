@@ -109,12 +109,12 @@ export interface V1_GraphManagerEngine {
 
   // ------------------------------------------- Grammar -------------------------------------------
 
-  pureModelContextDataToPureCode: (
+  transformPureModelContextDataToCode: (
     graph: V1_PureModelContextData,
     pretty: boolean,
   ) => Promise<string>;
 
-  pureCodeToPureModelContextData: (
+  transformCodeToPureModelContextData: (
     code: string,
     options?: {
       sourceInformationIndex?: Map<string, V1_SourceInformation> | undefined;
@@ -128,22 +128,22 @@ export interface V1_GraphManagerEngine {
     plugins: PureProtocolProcessorPlugin[],
   ) => Promise<Map<string, string>>;
 
-  transformValueSpecsToCode: (
+  transformValueSpecificationsToCode: (
     input: Record<string, PlainObject<V1_ValueSpecification>>,
     pretty: boolean,
   ) => Promise<Map<string, string>>;
 
-  transformValueSpecToCode: (
+  transformValueSpecificationToCode: (
     input: PlainObject<V1_ValueSpecification>,
     pretty: boolean,
   ) => Promise<string>;
 
-  transformCodeToValueSpeces: (
+  transformCodeToValueSpecifications: (
     input: Record<string, V1_GrammarParserBatchInputEntry>,
   ) => Promise<Map<string, PlainObject>>;
 
-  transformCodeToValueSpec: (
-    input: string,
+  transformCodeToValueSpecification: (
+    code: string,
     returnSourceInformation?: boolean,
   ) => Promise<PlainObject<V1_ValueSpecification>>;
 

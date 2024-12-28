@@ -113,6 +113,10 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     this.scrollHintText = val;
   }
 
+  get isClientConfigured() {
+    return Boolean(this._client);
+  }
+
   get client() {
     return guaranteeNonNullable(this._client, 'Grid client is not configured');
   }

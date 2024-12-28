@@ -479,6 +479,10 @@ export class ProjectViewerStore {
         this.editorStore.applicationStore.notificationService.notifyError(
           `Can't build graph. Redirected to text mode for debugging. Error: ${error.message}`,
         );
+        this.editorStore.applicationStore.logService.error(
+          LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+          error,
+        );
         yield flowResult(
           this.editorStore.switchModes(GRAPH_EDITOR_MODE.GRAMMAR_TEXT, {
             isGraphBuildFailure: true,
