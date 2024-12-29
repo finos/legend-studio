@@ -17,11 +17,11 @@
 import { observer } from 'mobx-react-lite';
 import {
   DataCube,
-  DataCubeSettingKey,
   FormBadge_WIP,
   DataCubeLayoutManager,
-  type DataCubeState,
   FormButton,
+  type DataCubeState,
+  type DataCubeSettingValues,
 } from '@finos/legend-data-cube';
 import { formatDate } from '@finos/legend-shared';
 import {
@@ -40,6 +40,7 @@ import {
   type LegendDataCubeQueryBuilderQueryPathParams,
 } from '../../__lib__/LegendDataCubeNavigation.js';
 import { useEffect } from 'react';
+import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
 
 // const CreateQueryDialog = observer(
 //   (props: { view: LegendCubeViewer; store: LegendDataCubeBaseStore }) => {
@@ -259,27 +260,23 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
               `\u229E ${name} - ${formatDate(new Date(store.baseStore.startTime), 'HH:mm:ss EEE MMM dd yyyy')}`,
             );
           },
-          onSettingChanged(key, value) {
-            application.settingService.persistValue(key, value);
-          },
-          enableDebugMode: application.settingService.getBooleanValue(
-            DataCubeSettingKey.ENABLE_DEBUG_MODE,
-          ),
-          gridClientLicense: store.baseStore.gridClientLicense,
-          gridClientRowBuffer: application.settingService.getNumericValue(
-            DataCubeSettingKey.GRID_CLIENT_ROW_BUFFER,
-          ),
-          gridClientPurgeClosedRowNodes:
-            application.settingService.getBooleanValue(
-              DataCubeSettingKey.GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
-            ),
-          gridClientSuppressLargeDatasetWarning:
-            application.settingService.getBooleanValue(
-              DataCubeSettingKey.GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
-            ),
           innerHeaderComponent: (dataCube) => (
             <LegendDataCubeQueryBuilderHeader dataCube={dataCube} />
           ),
+          getSettingValues() {
+            return application.settingService.getObjectValue(
+              LegendDataCubeSettingStorageKey.DATA_CUBE,
+            ) as DataCubeSettingValues | undefined;
+          },
+          onSettingValuesChanged(values) {
+            application.settingService.persistValue(
+              LegendDataCubeSettingStorageKey.DATA_CUBE,
+              values,
+            );
+          },
+          getSettingItems() {
+            return store.baseStore.dataCubeSettings;
+          },
         }}
       />
     );

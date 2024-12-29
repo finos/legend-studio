@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
-export enum LegendREPLSettingStorageKey {
-  DATA_CUBE = 'data-cube',
+export enum DataCubeEvent {
+  SETTINGS__FAILURE__FOUND_UNREGISTERED_SETTING = 'data-cube.settings.failure.found-unregistered-setting',
+  SETTINGS__FAILURE__ASSIGN_INCOMPATIBLE_VALUE = 'data-cube.settings.failure.assign-incompatible-value',
+  SETTINGS__FAILURE__RETRIEVE_INCOMPATIBLE_VALUE = 'data-cube.settings.failure.retrieve-incompatible-value',
 }

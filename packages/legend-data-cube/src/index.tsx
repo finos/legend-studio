@@ -25,10 +25,15 @@ export * from './stores/core/DataCubeQueryEngine.js';
 export * from './stores/core/DataCubeLayoutManagerState.js';
 export * from './stores/core/DataCubeQueryBuilderUtils.js';
 
+export {
+  type DataCubeSetting,
+  DataCubeSettingGroup,
+  DataCubeSettingType,
+  type DataCubeSettingValues,
+} from './stores/core/DataCubeSetting.js';
 export { DataCubeState } from './stores/DataCubeState.js';
 export * from './stores/DataCubeAPI.js';
 export * from './stores/DataCubeOptions.js';
-export { DataCubeSettingKey } from './stores/DataCubeSettings.js';
 
 export * from './components/core/DataCubeAlert.js';
 export * from './components/DataCube.js';

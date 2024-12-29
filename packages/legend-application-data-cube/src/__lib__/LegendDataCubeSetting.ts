@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
-export enum LegendREPLSettingStorageKey {
+export enum LegendDataCubeSettingStorageKey {
   DATA_CUBE = 'data-cube',
+}
+
+export enum LegendDataCubeSettingKey {
+  DEBUGGER__ENGINE_SERVER_CLIENT__ENABLE_COMPRESSION = 'queryBuilder.debugger.engineServerClient.enableCompression',
+  DEBUGGER__ENGINE_SERVER_CLIENT__BASE_URL = 'queryBuilder.debugger.engineServerClient.baseUrl',
 }

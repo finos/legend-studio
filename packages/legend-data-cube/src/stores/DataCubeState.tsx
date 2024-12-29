@@ -18,10 +18,10 @@ import { type DataCubeEngine } from './core/DataCubeEngine.js';
 import { DataCubeViewState } from './view/DataCubeViewState.js';
 import type { DisplayState } from './core/DataCubeLayoutManagerState.js';
 import { DocumentationPanel } from '../components/core/DataCubeDocumentationPanel.js';
-import { DataCubeSettingsPanel } from '../components/core/DataCubeSettingsPanel.js';
 import {
   ActionState,
   assertErrorThrown,
+  uuid,
   type DocumentationEntry,
 } from '@finos/legend-shared';
 import {
@@ -36,23 +36,17 @@ import type { DataCubeOptions } from './DataCubeOptions.js';
 import type { DataCubeQuery } from './core/models/DataCubeQuery.js';
 
 export class DataCubeState implements DataCubeAPI {
+  uuid = uuid();
   readonly engine: DataCubeEngine;
   readonly settings!: DataCubeSettings;
   readonly initState = ActionState.create();
-  readonly settingsDisplay: DisplayState;
   readonly documentationDisplay: DisplayState;
   // NOTE: when we support multiview, there can be multiple view states to support
   // the first one in that list will be taken as the main view state
-  readonly view: DataCubeViewState;
+  view: DataCubeViewState;
   readonly query: DataCubeQuery;
 
   onNameChanged?: ((name: string, source: DataCubeSource) => void) | undefined;
-  onSettingChanged?:
-    | ((
-        key: string,
-        value: string | number | boolean | object | undefined,
-      ) => void)
-    | undefined;
   innerHeaderComponent?:
     | ((dataCube: DataCubeState) => React.ReactNode)
     | undefined;
@@ -71,26 +65,16 @@ export class DataCubeState implements DataCubeAPI {
 
       currentActionAlert: observable,
       alertAction: action,
+
+      uuid: observable,
+      reload: action,
     });
 
     this.query = query;
     this.engine = engine;
-    this.settings = new DataCubeSettings(this);
+    this.settings = new DataCubeSettings(this, options);
     this.view = new DataCubeViewState(this);
 
-    this.settingsDisplay = this.engine.layout.newDisplay(
-      'Settings',
-      () => <DataCubeSettingsPanel />,
-      {
-        x: -50,
-        y: 50,
-        width: 600,
-        height: 400,
-        minWidth: 300,
-        minHeight: 200,
-        center: false,
-      },
-    );
     this.documentationDisplay = this.engine.layout.newDisplay(
       'Documentation',
       () => <DocumentationPanel />,
@@ -106,26 +90,12 @@ export class DataCubeState implements DataCubeAPI {
     );
 
     this.onNameChanged = options?.onNameChanged;
-    this.onSettingChanged = options?.onSettingChanged;
     this.innerHeaderComponent = options?.innerHeaderComponent;
+  }
 
-    this.settings.enableDebugMode =
-      options?.enableDebugMode !== undefined
-        ? options.enableDebugMode
-        : this.settings.enableDebugMode;
-    this.settings.gridClientRowBuffer =
-      options?.gridClientRowBuffer !== undefined
-        ? options.gridClientRowBuffer
-        : this.settings.gridClientRowBuffer;
-    this.settings.gridClientPurgeClosedRowNodes =
-      options?.gridClientPurgeClosedRowNodes !== undefined
-        ? options.gridClientPurgeClosedRowNodes
-        : this.settings.gridClientPurgeClosedRowNodes;
-    this.settings.gridClientSuppressLargeDatasetWarning =
-      options?.gridClientSuppressLargeDatasetWarning !== undefined
-        ? options.gridClientSuppressLargeDatasetWarning
-        : this.settings.gridClientSuppressLargeDatasetWarning;
-    this.settings.gridClientLicense = options?.gridClientLicense;
+  reload() {
+    this.view = new DataCubeViewState(this);
+    this.uuid = uuid();
   }
 
   getSettings() {

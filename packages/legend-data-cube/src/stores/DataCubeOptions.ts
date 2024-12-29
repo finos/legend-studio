@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
+import type {
+  DataCubeSetting,
+  DataCubeSettingValues,
+} from './core/DataCubeSetting.js';
 import type { DataCubeSource } from './core/models/DataCubeSource.js';
 import type { DataCubeState } from './DataCubeState.js';
 
 export type DataCubeOptions = {
-  enableDebugMode?: boolean | undefined;
   gridClientLicense?: string | undefined;
-  gridClientRowBuffer?: number | undefined;
-  gridClientPurgeClosedRowNodes?: boolean | undefined;
-  gridClientSuppressLargeDatasetWarning?: boolean | undefined;
 
   onNameChanged?: ((name: string, source: DataCubeSource) => void) | undefined;
-  onSettingChanged?:
-    | ((
-        key: string,
-        value: string | number | boolean | object | undefined,
-      ) => void)
-    | undefined;
+
   innerHeaderComponent?:
     | ((dataCube: DataCubeState) => React.ReactNode)
+    | undefined;
+
+  getSettingItems?: (() => DataCubeSetting[]) | undefined;
+  getSettingValues?: (() => DataCubeSettingValues | undefined) | undefined;
+  onSettingValuesChanged?:
+    | ((values: DataCubeSettingValues) => void)
     | undefined;
 };

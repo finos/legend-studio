@@ -24,8 +24,8 @@ import { useEffect } from 'react';
 import { formatDate, LogEvent } from '@finos/legend-shared';
 import {
   DataCube,
-  DataCubeSettingKey,
   type DataCubeQuery,
+  type DataCubeSettingValues,
 } from '@finos/legend-data-cube';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import { LegendREPLDataCubeSource } from '../stores/LegendREPLDataCubeSource.js';
@@ -34,6 +34,7 @@ import {
   LegendREPLFrameworkProvider,
   useLegendREPLBaseStore,
 } from './LegendREPLFramworkProvider.js';
+import { LegendREPLSettingStorageKey } from '../__lib__/LegendREPLSetting.js';
 
 const LegendREPLDataCube = observer((props: { query: DataCubeQuery }) => {
   const { query } = props;
@@ -72,27 +73,20 @@ const LegendREPLDataCube = observer((props: { query: DataCubeQuery }) => {
             `\u229E ${name}${timestamp ? ` - ${formatDate(new Date(timestamp), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
           );
         },
-        onSettingChanged(key, value) {
-          application.settingService.persistValue(key, value);
-        },
-        enableDebugMode: application.settingService.getBooleanValue(
-          DataCubeSettingKey.ENABLE_DEBUG_MODE,
-        ),
-        gridClientLicense: store.gridClientLicense,
-        gridClientRowBuffer: application.settingService.getNumericValue(
-          DataCubeSettingKey.GRID_CLIENT_ROW_BUFFER,
-        ),
-        gridClientPurgeClosedRowNodes:
-          application.settingService.getBooleanValue(
-            DataCubeSettingKey.GRID_CLIENT_PURGE_CLOSED_ROW_NODES,
-          ),
-        gridClientSuppressLargeDatasetWarning:
-          application.settingService.getBooleanValue(
-            DataCubeSettingKey.GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING,
-          ),
         innerHeaderComponent: (dataCube) => (
           <LegendREPLDataCubeHeader dataCube={dataCube} />
         ),
+        getSettingValues() {
+          return application.settingService.getObjectValue(
+            LegendREPLSettingStorageKey.DATA_CUBE,
+          ) as DataCubeSettingValues | undefined;
+        },
+        onSettingValuesChanged(values) {
+          application.settingService.persistValue(
+            LegendREPLSettingStorageKey.DATA_CUBE,
+            values,
+          );
+        },
       }}
     />
   );
