@@ -192,7 +192,7 @@ export const DataCubeColumnCreator = observer(
 
     return (
       <>
-        <div className="relative h-[calc(100%_-_40px)] w-full px-2 pt-2">
+        <div className="h-[calc(100%_-_40px)] w-full px-2 pt-2">
           <div className="h-full w-full overflow-auto border border-neutral-300 bg-white">
             <div className="h-full w-full select-none p-0">
               <div className="h-24 w-full p-2">
@@ -341,9 +341,7 @@ export const DataCubeColumnCreator = observer(
           </div>
         </div>
         <div className="flex h-10 items-center justify-end px-2">
-          <FormButton onClick={() => state.close()} autoFocus={true}>
-            Cancel
-          </FormButton>
+          <FormButton onClick={() => state.close()}>Cancel</FormButton>
           {state instanceof DataCubeExistingColumnEditorState && (
             <>
               <FormButton

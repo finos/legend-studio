@@ -43,7 +43,7 @@ export const LegendDataCubeNewQueryBuilder = observer(
 
     return (
       <>
-        <div className="relative h-[calc(100%_-_40px)] w-full px-2 pt-2">
+        <div className="h-[calc(100%_-_40px)] w-full px-2 pt-2">
           <div className="h-full w-full overflow-auto border border-neutral-300 bg-white">
             <div className="h-full w-full select-none p-2">
               <div className="flex h-6 w-full items-center">
@@ -94,37 +94,22 @@ export const LegendDataCubeNewQueryBuilder = observer(
           </div>
         </div>
         <div className="flex h-10 items-center justify-end px-2">
-          <FormButton onClick={() => state.display.close()} autoFocus={true}>
-            Cancel
-          </FormButton>
+          <FormButton onClick={() => state.display.close()}>Cancel</FormButton>
           <FormButton
             className="ml-2"
-            disabled={!sourceBuilder.isValid}
+            disabled={
+              !sourceBuilder.isValid || state.finalizeState.isInProgress
+            }
             onClick={() => {
-              // editor.applyChanges();
-              state.generateQuery().then((query) => {});
-              state.display.close();
+              state
+                .finalize()
+                .catch((error) => state.engine.alertUnhandledError(error));
             }}
           >
             OK
           </FormButton>
         </div>
       </>
-      //   <div className="flex h-20 items-center justify-end border-b-0 border-l-0 border-r-0 border-t border-solid border-slate-300 p-2 px-2">
-      //     <button
-      //       className="ml-2 h-10 w-20 rounded border border-neutral-400 bg-neutral-300 bg-sky-700 px-2 text-white hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:bg-gray-200 disabled:text-white disabled:hover:brightness-100"
-      //       disabled={!sourceState.isValid}
-      //       // onClick={() => {
-      //       //   flowResult(
-      //       //     sourceBuilder.inputSource(
-      //       //       (source: DataCubeGenericSource, engine: DataCubeEngine) =>
-      //       //         store.initializeView(source, engine),
-      //       //     ),
-      //       //   ).catch(store.context.application.alertUnhandledError);
-      //       // }}
-      //     >
-      //       Open
-      //     </button>
     );
   },
 );

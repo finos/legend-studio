@@ -78,12 +78,19 @@ import {
   TbCircleXFilled,
   TbClipboard,
 } from 'react-icons/tb';
-import { VscError, VscInfo, VscQuestion, VscWarning } from 'react-icons/vsc';
+import {
+  VscError,
+  VscInfo,
+  VscPass,
+  VscQuestion,
+  VscWarning,
+} from 'react-icons/vsc';
 
 export const DataCubeIcon = {
   AdvancedSettings: TbSettingsBolt,
   AlertError: VscError,
   AlertInfo: VscInfo,
+  AlertSuccess: VscPass,
   AlertWarning: VscWarning,
   Calculate: TbCalculator,
   Calendar: TbCalendarEvent,

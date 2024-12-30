@@ -22,9 +22,10 @@ import { useDataCube } from '../DataCubeProvider.js';
 import { FormButton } from './DataCubeFormUtils.js';
 
 export enum AlertType {
-  INFO = 'INFO',
-  WARNING = 'WARNING',
   ERROR = 'ERROR',
+  INFO = 'INFO',
+  SUCCESS = 'SUCCESS',
+  WARNING = 'WARNING',
 }
 
 export type ActionAlertAction = { label: string; handler: () => void };
@@ -57,14 +58,17 @@ export function Alert(props: {
         })}
       >
         <div className="mr-3">
+          {type === AlertType.ERROR && (
+            <DataCubeIcon.AlertError className="flex-shrink-0 stroke-[0.5px] text-[40px] text-red-500" />
+          )}
           {type === AlertType.INFO && (
             <DataCubeIcon.AlertInfo className="flex-shrink-0 stroke-[0.5px] text-[40px] text-sky-500" />
           )}
+          {type === AlertType.SUCCESS && (
+            <DataCubeIcon.AlertSuccess className="flex-shrink-0 stroke-[0.5px] text-[40px] text-green-500" />
+          )}
           {type === AlertType.WARNING && (
             <DataCubeIcon.AlertWarning className="flex-shrink-0 stroke-[0.3px] text-[40px] text-amber-500" />
-          )}
-          {type === AlertType.ERROR && (
-            <DataCubeIcon.AlertError className="flex-shrink-0 stroke-[0.5px] text-[40px] text-red-500" />
           )}
         </div>
         <div>

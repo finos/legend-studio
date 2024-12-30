@@ -24,6 +24,8 @@ import type { DataCubeState } from './DataCubeState.js';
 export type DataCubeOptions = {
   gridClientLicense?: string | undefined;
 
+  onInitialized?: ((dataCube: DataCubeState) => void) | undefined;
+
   onNameChanged?: ((name: string, source: DataCubeSource) => void) | undefined;
 
   innerHeaderComponent?:

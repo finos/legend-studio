@@ -476,7 +476,6 @@ function FormColorPicker(props: {
             onClick={() => {
               onClose();
             }}
-            autoFocus={true}
           >
             Cancel
           </FormButton>

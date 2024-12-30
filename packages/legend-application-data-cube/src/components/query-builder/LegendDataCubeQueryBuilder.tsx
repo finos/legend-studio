@@ -23,7 +23,6 @@ import {
   type DataCubeState,
   type DataCubeSettingValues,
 } from '@finos/legend-data-cube';
-import { formatDate } from '@finos/legend-shared';
 import {
   DataCubeIcon,
   DropdownMenu,
@@ -42,77 +41,9 @@ import {
 import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
 
-// const CreateQueryDialog = observer(
-//   (props: { view: LegendCubeViewer; store: LegendDataCubeBaseStore }) => {
-//     const { store } = props;
-//     const close = (): void => store.setSaveModal(false);
-//     const [queryName, setQueryName] = useState('');
-//     const create = (): void => {
-//       flowResult(store.saveQuery(queryName)).catch(
-//         store.application.alertUnhandledError,
-//       );
-//     };
-//     const isEmptyName = !queryName;
-//     // name
-//     const nameInputRef = useRef<HTMLInputElement>(null);
-//     const setFocus = (): void => {
-//       nameInputRef.current?.focus();
-//     };
-//     const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-//       setQueryName(event.target.value);
-//     };
-//     useEffect(() => {
-//       setTimeout(() => setFocus(), 1);
-//     }, []);
-//     return (
-//       <Dialog
-//         open={store.saveModal}
-//         onClose={close}
-//         classes={{
-//           root: 'editor-modal__root-container',
-//           container: 'editor-modal__container',
-//           paper: 'editor-modal__content',
-//         }}
-//       >
-//         <Modal darkMode={false} className="query-export">
-//           <ModalHeader title="Create New Query" />
-//           <ModalBody>
-//             <PanelLoadingIndicator
-//               isLoading={store.saveModalState.isInProgress}
-//             />
-//             <PanelListItem>
-//               <div className="input--with-validation">
-//                 <input
-//                   ref={nameInputRef}
-//                   className={clsx('input input--dark', {
-//                     'input--caution': false,
-//                   })}
-//                   spellCheck={false}
-//                   value={queryName}
-//                   onChange={changeName}
-//                   title="New Query Name"
-//                 />
-//               </div>
-//             </PanelListItem>
-//           </ModalBody>
-//           <ModalFooter>
-//             <ModalFooterButton
-//               text="Create Query"
-//               title="Create new query"
-//               disabled={isEmptyName}
-//               onClick={create}
-//             />
-//           </ModalFooter>
-//         </Modal>
-//       </Dialog>
-//     );
-//   },
-// );
-
 const LegendDataCubeQueryBuilderHeader = observer(
   (props: { dataCube?: DataCubeState | undefined }) => {
     const store = useLegendDataCubeQueryBuilderStore();
-    const { dataCube } = props;
 
     return (
       <div className="flex h-full items-center">
@@ -122,7 +53,6 @@ const LegendDataCubeQueryBuilderHeader = observer(
           disabled={true}
         >
           Load Query
-          <FormBadge_WIP />
         </FormButton>
         <FormButton
           compact={true}
@@ -131,7 +61,12 @@ const LegendDataCubeQueryBuilderHeader = observer(
         >
           New Query
         </FormButton>
-        <FormButton compact={true} className="ml-1.5" disabled={!store.builder}>
+        <FormButton
+          compact={true}
+          className="ml-1.5"
+          disabled={!store.builder?.dataCube}
+          onClick={() => store.saverDisplay.open()}
+        >
           Save Query
         </FormButton>
       </div>
@@ -227,6 +162,7 @@ const LegendDataCubeBlankQueryBuilder = observer(() => {
 export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
   observer(() => {
     const store = useLegendDataCubeQueryBuilderStore();
+    const builder = store.builder;
     const application = store.application;
     const params = useParams<LegendDataCubeQueryBuilderQueryPathParams>();
     const queryId = params[LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID];
@@ -246,19 +182,16 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
       }
     }, [store, queryId]);
 
-    if (!store.builder) {
+    if (!builder) {
       return <LegendDataCubeBlankQueryBuilder />;
     }
     return (
       <DataCube
-        key={store.builder.uuid}
-        query={store.builder.query}
+        query={builder.query}
         engine={store.baseStore.engine}
         options={{
-          onNameChanged(name, source) {
-            application.layoutService.setWindowTitle(
-              `\u229E ${name} - ${formatDate(new Date(store.baseStore.startTime), 'HH:mm:ss EEE MMM dd yyyy')}`,
-            );
+          onInitialized(dataCube) {
+            builder.setDataCube(dataCube);
           },
           innerHeaderComponent: (dataCube) => (
             <LegendDataCubeQueryBuilderHeader dataCube={dataCube} />

@@ -25,16 +25,16 @@ import {
   LegendDataCubeSourceBuilderState,
   LegendDataCubeSourceBuilderType,
 } from './LegendDataCubeSourceBuilderState.js';
-import type { LegendDataCubeBaseStore } from '../../LegendDataCubeBaseStore.js';
 import { RawLegendQueryDataCubeSource } from '../../model/LegendQueryDataCubeSource.js';
+import type { LegendDataCubeNewQueryState } from '../LegendDataCubeNewQueryState.js';
 
 export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   readonly queryLoaderState: QueryLoaderState;
 
   query?: LightQuery | undefined;
 
-  constructor(baseStore: LegendDataCubeBaseStore) {
-    super(baseStore);
+  constructor(newQueryState: LegendDataCubeNewQueryState) {
+    super(newQueryState);
 
     makeObservable(this, {
       query: observable,
@@ -43,7 +43,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
 
     this.queryLoaderState = new QueryLoaderState(
       this.application,
-      this.graphManager,
+      newQueryState.engine.graphManager,
       {
         loadQuery: (query: LightQuery): void => {
           this.setQuery(query);
@@ -52,7 +52,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
         fetchDefaultQueries: async (): Promise<LightQuery[]> => {
           const searchSpecification = new QuerySearchSpecification();
           searchSpecification.limit = QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT;
-          return this.graphManager.searchQueries(
+          return newQueryState.engine.graphManager.searchQueries(
             QuerySearchSpecification.createDefault(undefined),
           );
         },

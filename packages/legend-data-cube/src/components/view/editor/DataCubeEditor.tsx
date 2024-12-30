@@ -81,9 +81,7 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
         </div>
       </div>
       <div className="flex h-10 items-center justify-end px-2">
-        <FormButton onClick={() => editor.display.close()} autoFocus={true}>
-          Cancel
-        </FormButton>
+        <FormButton onClick={() => editor.display.close()}>Cancel</FormButton>
         <FormButton
           className="ml-2"
           disabled={editor.finalizationState.isInProgress}

@@ -62,8 +62,6 @@ export class LegendDataCubeBaseStore {
   readonly graphManager: V1_PureGraphManager;
   readonly engineServerClient: V1_EngineServerClient;
   readonly engine: LegendDataCubeDataCubeEngine;
-
-  readonly startTime = Date.now();
   readonly initState = ActionState.create();
 
   readonly dataCubeSettings: DataCubeSetting[];

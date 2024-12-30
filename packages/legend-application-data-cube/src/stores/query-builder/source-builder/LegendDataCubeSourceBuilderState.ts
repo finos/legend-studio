@@ -15,11 +15,8 @@
  */
 
 import { ActionState, type PlainObject } from '@finos/legend-shared';
-import type {
-  LegendDataCubeApplicationStore,
-  LegendDataCubeBaseStore,
-} from '../../LegendDataCubeBaseStore.js';
-import type { V1_PureGraphManager } from '@finos/legend-graph';
+import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
+import type { LegendDataCubeNewQueryState } from '../LegendDataCubeNewQueryState.js';
 
 export enum LegendDataCubeSourceBuilderType {
   LEGEND_QUERY = 'Legend Query',
@@ -28,15 +25,10 @@ export enum LegendDataCubeSourceBuilderType {
 
 export abstract class LegendDataCubeSourceBuilderState {
   readonly application: LegendDataCubeApplicationStore;
-  readonly baseStore: LegendDataCubeBaseStore;
-  readonly graphManager: V1_PureGraphManager;
-
   readonly buildState = ActionState.create();
 
-  constructor(baseStore: LegendDataCubeBaseStore) {
-    this.application = baseStore.application;
-    this.baseStore = baseStore;
-    this.graphManager = baseStore.graphManager;
+  constructor(newQueryState: LegendDataCubeNewQueryState) {
+    this.application = newQueryState.application;
   }
 
   abstract get label(): LegendDataCubeSourceBuilderType;

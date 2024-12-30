@@ -32,10 +32,11 @@ export {
   type DataCubeSettingValues,
 } from './stores/core/DataCubeSetting.js';
 export { DataCubeState } from './stores/DataCubeState.js';
+export { useDataCube } from './components/DataCubeProvider.js';
 export * from './stores/DataCubeAPI.js';
 export * from './stores/DataCubeOptions.js';
 
-export * from './components/core/DataCubeAlert.js';
 export * from './components/DataCube.js';
+export * from './components/core/DataCubeAlert.js';
 export * from './components/core/DataCubeFormUtils.js';
 export * from './components/core/DataCubeLayoutManager.js';

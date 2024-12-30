@@ -79,6 +79,7 @@ export function buildExecutableQuery(
           end: number;
         }
       | undefined;
+    skipExecutionContext?: boolean;
   },
 ) {
   const data = snapshot.data;

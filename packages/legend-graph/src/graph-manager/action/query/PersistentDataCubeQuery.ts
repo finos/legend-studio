@@ -40,6 +40,12 @@ export class PersistentDataCubeQuery {
       owner: optional(primitive()),
     }),
   );
+
+  clone() {
+    return PersistentDataCubeQuery.serialization.fromJson(
+      PersistentDataCubeQuery.serialization.toJson(this),
+    );
+  }
 }
 
 export class LightPersistentDataCubeQuery {

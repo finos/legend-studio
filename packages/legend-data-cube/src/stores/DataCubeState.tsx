@@ -46,6 +46,7 @@ export class DataCubeState implements DataCubeAPI {
   view: DataCubeViewState;
   readonly query: DataCubeQuery;
 
+  onInitialized?: ((dataCube: DataCubeState) => void) | undefined;
   onNameChanged?: ((name: string, source: DataCubeSource) => void) | undefined;
   innerHeaderComponent?:
     | ((dataCube: DataCubeState) => React.ReactNode)
@@ -89,6 +90,7 @@ export class DataCubeState implements DataCubeAPI {
       },
     );
 
+    this.onInitialized = options?.onInitialized;
     this.onNameChanged = options?.onNameChanged;
     this.innerHeaderComponent = options?.innerHeaderComponent;
   }
@@ -133,6 +135,8 @@ export class DataCubeState implements DataCubeAPI {
       await this.engine.initialize({
         gridClientLicense: this.settings.gridClientLicense,
       });
+
+      this.onInitialized?.(this);
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);

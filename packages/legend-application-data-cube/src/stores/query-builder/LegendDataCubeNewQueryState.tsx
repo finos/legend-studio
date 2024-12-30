@@ -16,15 +16,13 @@
 
 import { action, makeObservable, observable } from 'mobx';
 import {
+  ActionState,
+  assertErrorThrown,
   IllegalStateError,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { LegendQueryDataCubeSourceBuilderState } from './source-builder/LegendQueryDataCubeSourceBuilderState.js';
-import type {
-  LegendDataCubeApplicationStore,
-  LegendDataCubeBaseStore,
-} from '../LegendDataCubeBaseStore.js';
-import type { V1_PureGraphManager } from '@finos/legend-graph';
+import type { LegendDataCubeApplicationStore } from '../LegendDataCubeBaseStore.js';
 import {
   LegendDataCubeSourceBuilderType,
   type LegendDataCubeSourceBuilderState,
@@ -38,26 +36,29 @@ import {
 import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
 import { LegendDataCubeNewQueryBuilder } from '../../components/query-builder/LegendDataCubeNewQueryBuilder.js';
 import { AdhocQueryDataCubeSourceBuilderState } from './source-builder/AdhocQueryDataCubeSourceBuilderState.js';
+import {
+  LegendDataCubeQueryBuilderState,
+  type LegendDataCubeQueryBuilderStore,
+} from './LegendDataCubeQueryBuilderStore.js';
 
 export class LegendDataCubeNewQueryState {
   readonly application: LegendDataCubeApplicationStore;
-  readonly baseStore: LegendDataCubeBaseStore;
-  readonly graphManager: V1_PureGraphManager;
+  readonly store: LegendDataCubeQueryBuilderStore;
   readonly engine: LegendDataCubeDataCubeEngine;
   readonly display: DisplayState;
 
+  readonly finalizeState = ActionState.create();
   sourceBuilder: LegendDataCubeSourceBuilderState;
 
-  constructor(baseStore: LegendDataCubeBaseStore) {
+  constructor(store: LegendDataCubeQueryBuilderStore) {
     makeObservable(this, {
       sourceBuilder: observable,
       changeSourceBuilder: action,
     });
 
-    this.application = baseStore.application;
-    this.baseStore = baseStore;
-    this.graphManager = baseStore.graphManager;
-    this.engine = baseStore.engine;
+    this.application = store.application;
+    this.store = store;
+    this.engine = store.engine;
     this.display = this.engine.layout.newDisplay(
       'New Query',
       () => <LegendDataCubeNewQueryBuilder state={this} />,
@@ -84,9 +85,9 @@ export class LegendDataCubeNewQueryState {
   ): LegendDataCubeSourceBuilderState {
     switch (type) {
       case LegendDataCubeSourceBuilderType.LEGEND_QUERY:
-        return new LegendQueryDataCubeSourceBuilderState(this.baseStore);
+        return new LegendQueryDataCubeSourceBuilderState(this);
       case LegendDataCubeSourceBuilderType.ADHOC_QUERY:
-        return new AdhocQueryDataCubeSourceBuilderState(this.baseStore);
+        return new AdhocQueryDataCubeSourceBuilderState(this);
       default:
         throw new UnsupportedOperationError(
           `Can't create source builder for unsupported type '${type}'`,
@@ -94,17 +95,29 @@ export class LegendDataCubeNewQueryState {
     }
   }
 
-  async generateQuery(): Promise<DataCubeQuery> {
+  async finalize() {
     if (!this.sourceBuilder.isValid) {
       throw new IllegalStateError(`Can't generate query: source is not valid`);
     }
-    const source = await this.sourceBuilder.build();
-    const query = new DataCubeQuery();
-    const processedSource = await this.engine.processQuerySource(source);
-    query.source = source;
-    query.query = await this.engine.getValueSpecificationCode(
-      _selectFunction(processedSource.columns),
-    );
-    return query;
+
+    this.finalizeState.inProgress();
+    try {
+      const source = await this.sourceBuilder.build();
+      const query = new DataCubeQuery();
+      const processedSource = await this.engine.processQuerySource(source);
+      query.source = source;
+      query.query = await this.engine.getValueSpecificationCode(
+        _selectFunction(processedSource.columns),
+      );
+      this.store.setBuilder(new LegendDataCubeQueryBuilderState(query));
+      this.display.close();
+      this.finalizeState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.engine.alertError(error, {
+        message: `Query Creation Failure: ${error.message}`,
+      });
+      this.finalizeState.fail();
+    }
   }
 }
