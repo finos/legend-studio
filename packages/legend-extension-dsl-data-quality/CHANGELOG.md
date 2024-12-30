@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.0.18
+
+### Patch Changes
+
+- [#3772](https://github.com/finos/legend-studio/pull/3772) [`de26c72`](https://github.com/finos/legend-studio/commit/de26c72023903036a9cbda48ec16f9b69535bd0d) ([@viju4076](https://github.com/viju4076)) - export feature in data quality relation validation
+
 ## 2.0.17
 
 ## 2.0.16

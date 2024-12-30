@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-data-cube",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Legend Data Cube application core",
   "keywords": [
     "legend",
