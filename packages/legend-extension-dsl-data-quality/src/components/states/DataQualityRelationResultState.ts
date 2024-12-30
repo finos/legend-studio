@@ -15,10 +15,12 @@
  */
 
 import {
+  type ExportDataInfo,
   buildExecutionParameterValues,
   ExecutionPlanState,
   QUERY_BUILDER_EVENT,
   QueryBuilderTelemetryHelper,
+  PARAMETER_SUBMIT_ACTION,
 } from '@finos/legend-query-builder';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import {
@@ -26,15 +28,22 @@ import {
   assertErrorThrown,
   LogEvent,
   StopWatch,
+  getContentTypeFileExtension,
+  ActionState,
+  ContentType,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
   type ExecutionResult,
   type RawExecutionPlan,
   GRAPH_MANAGER_EVENT,
+  V1_DELEGATED_EXPORT_HEADER,
+  EXECUTION_SERIALIZATION_FORMAT,
 } from '@finos/legend-graph';
 import { getDataQualityPureGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataQuality_PureGraphManagerExtension.js';
 import type { DataQualityRelationValidationConfigurationState } from './DataQualityRelationValidationConfigurationState.js';
 import type { DataQualityRelationValidation } from '../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
+import { downloadStream } from '@finos/legend-application';
 
 export type DataQualityRelationResultCellDataType =
   | string
@@ -56,6 +65,7 @@ export const DEFAULT_LIMIT = 1000;
 export class DataQualityRelationResultState {
   readonly dataQualityRelationValidationConfigurationState: DataQualityRelationValidationConfigurationState;
   readonly executionPlanState: ExecutionPlanState;
+  readonly exportState = ActionState.create();
 
   previewLimit = DEFAULT_LIMIT;
   isRunningValidation = false;
@@ -85,9 +95,11 @@ export class DataQualityRelationResultState {
       setValidationRunPromise: action,
       setValidationToRun: action,
       handleRunValidation: action,
+      handleExport: action,
       runValidation: flow,
       cancelValidation: flow,
       generatePlan: flow,
+      exportData: flow,
     });
 
     this.dataQualityRelationValidationConfigurationState =
@@ -144,6 +156,32 @@ export class DataQualityRelationResultState {
       );
     } else {
       flowResult(this.runValidation()).catch(
+        this.dataQualityRelationValidationConfigurationState.editorStore
+          .applicationStore.alertUnhandledError,
+      );
+    }
+  }
+
+  handleExport(format: string) {
+    const queryLambda =
+      this.dataQualityRelationValidationConfigurationState
+        .bodyExpressionSequence;
+    const parameters = (queryLambda.parameters ?? []) as object[];
+    if (parameters.length) {
+      this.dataQualityRelationValidationConfigurationState.parametersState.parameterStates =
+        this.dataQualityRelationValidationConfigurationState.parametersState.build(
+          queryLambda,
+        );
+      this.dataQualityRelationValidationConfigurationState.parametersState.parameterValuesEditorState.open(
+        (): Promise<void> =>
+          flowResult(this.exportData(format)).catch(
+            this.dataQualityRelationValidationConfigurationState.editorStore
+              .applicationStore.alertUnhandledError,
+          ),
+        PARAMETER_SUBMIT_ACTION.EXPORT,
+      );
+    } else {
+      flowResult(this.exportData(format)).catch(
         this.dataQualityRelationValidationConfigurationState.editorStore
           .applicationStore.alertUnhandledError,
       );
@@ -285,6 +323,83 @@ export class DataQualityRelationResultState {
       );
     } finally {
       this.isGeneratingPlan = false;
+    }
+  }
+
+  getExportDataInfo(format: string): ExportDataInfo {
+    switch (format) {
+      case EXECUTION_SERIALIZATION_FORMAT.CSV:
+        return {
+          contentType: ContentType.TEXT_CSV,
+          serializationFormat: EXECUTION_SERIALIZATION_FORMAT.CSV,
+        };
+
+      default:
+        throw new UnsupportedOperationError(
+          `Unsupported TDS export type ${format}`,
+        );
+    }
+  }
+
+  get exportDataFormatOptions(): string[] {
+    return [EXECUTION_SERIALIZATION_FORMAT.CSV];
+  }
+
+  *exportData(format: string): GeneratorFn<void> {
+    try {
+      this.exportState.inProgress();
+      const packagePath =
+        this.dataQualityRelationValidationConfigurationState.validationElement
+          .path;
+      const model =
+        this.dataQualityRelationValidationConfigurationState.editorStore
+          .graphManagerState.graph;
+      this.dataQualityRelationValidationConfigurationState.editorStore.applicationStore.notificationService.notifySuccess(
+        `Export ${format} will run in background`,
+      );
+      const exportData = this.getExportDataInfo(format);
+      const contentType = exportData.contentType;
+      const serializationFormat = exportData.serializationFormat;
+      const result = (yield getDataQualityPureGraphManagerExtension(
+        this.dataQualityRelationValidationConfigurationState.editorStore
+          .graphManagerState.graphManager,
+      ).exportData(model, packagePath, {
+        serializationFormat,
+        previewLimit: this.previewLimit,
+        validationName: this.validationToRun?.name,
+        lambdaParameterValues: buildExecutionParameterValues(
+          this.dataQualityRelationValidationConfigurationState.parametersState
+            .parameterStates,
+          this.dataQualityRelationValidationConfigurationState.editorStore
+            .graphManagerState,
+        ),
+      })) as Response;
+      if (result.headers.get(V1_DELEGATED_EXPORT_HEADER) === 'true') {
+        if (result.status === 200) {
+          this.exportState.pass();
+        } else {
+          this.exportState.fail();
+        }
+        return;
+      }
+      downloadStream(
+        result,
+        `result.${getContentTypeFileExtension(contentType)}`,
+        exportData.contentType,
+      )
+        .then(() => {
+          this.exportState.pass();
+        })
+        .catch((error) => {
+          assertErrorThrown(error);
+        });
+    } catch (error) {
+      this.exportState.fail();
+      assertErrorThrown(error);
+      this.dataQualityRelationValidationConfigurationState.editorStore.applicationStore.notificationService.notifyError(
+        error,
+      );
+      this.exportState.complete();
     }
   }
 }

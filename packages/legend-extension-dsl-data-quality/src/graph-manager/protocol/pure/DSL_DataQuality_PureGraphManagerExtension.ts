@@ -38,6 +38,12 @@ export abstract class DSL_DataQuality_PureGraphManagerExtension extends Abstract
     options: DQExecuteInputOptions,
   ): Promise<ExecutionResult>;
 
+  abstract exportData(
+    graph: PureModel,
+    packagePath: string,
+    options: DQExecuteInputOptions,
+  ): Promise<Response>;
+
   abstract debugExecutionPlanGeneration(
     graph: PureModel,
     packagePath: string,

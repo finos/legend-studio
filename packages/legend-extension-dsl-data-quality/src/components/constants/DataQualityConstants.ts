@@ -22,3 +22,6 @@ export enum DATA_QUALITY_VALIDATION_TEST_ID {
   DATA_QUALITY_VALIDATION_RESULT_PANEL = 'data-quality-result-panel',
   DATA_QUALITY_VALIDATION_RESULT_ANALYTICS = 'data-quality-result-analytics',
 }
+
+export const USER_ATTESTATION_MESSAGE =
+  'I attest that I am aware of the sensitive data leakage risk when exporting queried data. The data I export will only be used by me.';

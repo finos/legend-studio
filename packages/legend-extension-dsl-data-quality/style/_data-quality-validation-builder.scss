@@ -1316,11 +1316,17 @@
     width: 100%;
   }
 
+  .panel__header {
+    margin-right: 0.5rem;
+  }
+
   &__content {
     position: relative;
   }
 
   &__analytics {
+    display: flex;
+    justify-content: center;
     font-size: 1.2rem;
     color: var(--color-dark-grey-400);
     margin-left: 0.5rem;

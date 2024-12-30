@@ -191,6 +191,19 @@
 
         @include flexVCenter;
         @include flexHSpaceBetween;
+
+        &__action {
+          display: flex;
+          height: 2.8rem;
+        }
+      }
+
+      &__header-group {
+        display: flex;
+        flex-direction: row;
+        color: var(--color-light-grey-300);
+
+        @include flexVCenter;
       }
 
       &__header-right {

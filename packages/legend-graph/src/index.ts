@@ -416,6 +416,7 @@ export { V1_transformPropertyReference } from './graph-manager/protocol/pure/v1/
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer.js';
 export {
   type V1_GrammarParserBatchInputEntry,
+  V1_getEngineSerializationFormat,
   V1_EngineServerClient,
 } from './graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.js';
 export { type V1_GraphManagerEngine } from './graph-manager/protocol/pure/v1/engine/V1_GraphManagerEngine.js';
