@@ -27,7 +27,7 @@ export default {
    * e.g. `/something/` is the `baseUrl` of https://www.example.org/something/
    * For URLs that have no path, use '/'.
    */
-  baseUrl: '/data-cube/',
+  baseUrl: '/datacube/',
   /**
    * `devServerOptions` [object, optional]
    * Options to override `webpack-dev-server` configs.

@@ -24,7 +24,7 @@ import {
 } from '@finos/legend-application';
 import type { LegendDataCubeApplicationConfig } from '../application/LegendDataCubeApplicationConfig.js';
 import type { LegendDataCubePluginManager } from '../application/LegendDataCubePluginManager.js';
-import { LegendDataCubeStore } from '../stores/LegendDataCubeEditorStore.js';
+import { LegendDataCubeBaseStore } from '../stores/LegendDataCubeBaseStore.js';
 
 export const useLegendDataCubeApplicationStore = (): ApplicationStore<
   LegendDataCubeApplicationConfig,
@@ -36,15 +36,15 @@ export const useLegendDataCubeApplicationStore = (): ApplicationStore<
   >();
 
 const LegendDataCubeBaseStoreContext = createContext<
-  LegendDataCubeStore | undefined
+  LegendDataCubeBaseStore | undefined
 >(undefined);
 
 const LegendDataCubeBaseStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const applicationStore = useLegendDataCubeApplicationStore();
+  const application = useLegendDataCubeApplicationStore();
   const store = useLocalObservable(
-    () => new LegendDataCubeStore(applicationStore),
+    () => new LegendDataCubeBaseStore(application),
   );
   return (
     <LegendDataCubeBaseStoreContext.Provider value={store}>
@@ -53,16 +53,16 @@ const LegendDataCubeBaseStoreProvider: React.FC<{
   );
 };
 
-export const useLegendDataCubeBaseStore = (): LegendDataCubeStore =>
+export const useLegendDataCubeBaseStore = (): LegendDataCubeBaseStore =>
   guaranteeNonNullable(
     useContext(LegendDataCubeBaseStoreContext),
-    `Can't find Legend Data Cube base store in context`,
+    `Can't find Legend DataCube base store in context`,
   );
 
 export const LegendDataCubeFrameworkProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => (
-  <ApplicationFrameworkProvider>
+  <ApplicationFrameworkProvider simple={true}>
     <LegendDataCubeBaseStoreProvider>
       {children}
     </LegendDataCubeBaseStoreProvider>

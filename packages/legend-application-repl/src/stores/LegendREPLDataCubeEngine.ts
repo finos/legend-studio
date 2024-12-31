@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  deserializeREPLQuerySource,
-  REPL_DATA_CUBE_SOURCE_TYPE,
-  type LegendREPLServerClient,
-} from './LegendREPLServerClient.js';
+import { type LegendREPLServerClient } from './LegendREPLServerClient.js';
 import {
   _elementPtr,
   _function,
@@ -26,20 +22,21 @@ import {
   DataCubeEngine,
   DataCubeFunction,
   type DataCubeSource,
-  type DataCubeAPI,
-  DataCubeQuery,
+  type DataCubeExecutionOptions,
+  _deserializeValueSpecification,
+  _serializeValueSpecification,
 } from '@finos/legend-data-cube';
 import {
   TDSExecutionResult,
   type V1_AppliedFunction,
   V1_buildExecutionResult,
-  V1_deserializeValueSpecification,
-  V1_serializeExecutionResult,
-  V1_serializeValueSpecification,
+  V1_deserializeExecutionResult,
   type V1_Lambda,
   type V1_ValueSpecification,
   V1_buildEngineError,
   V1_EngineError,
+  V1_getGenericTypeFullPath,
+  V1_relationTypeModelSchema,
 } from '@finos/legend-graph';
 import {
   assertErrorThrown,
@@ -51,13 +48,18 @@ import {
   NetworkClientError,
   type PlainObject,
 } from '@finos/legend-shared';
-import { LegendREPLDataCubeSource } from './LegendREPLDataCubeSource.js';
+import {
+  LegendREPLDataCubeSource,
+  RawLegendREPLDataCubeSource,
+  REPL_DATA_CUBE_SOURCE_TYPE,
+} from './LegendREPLDataCubeSource.js';
 import type { LegendREPLApplicationStore } from '../application/LegendREPLApplicationStore.js';
 import {
   APPLICATION_EVENT,
   shouldDisplayVirtualAssistantDocumentationEntry,
 } from '@finos/legend-application';
 import type { LegendREPLBaseStore } from './LegendREPLBaseStore.js';
+import { deserialize } from 'serializr';
 
 export class LegendREPLDataCubeEngine extends DataCubeEngine {
   readonly application: LegendREPLApplicationStore;
@@ -72,122 +74,102 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     this.client = baseStore.client;
   }
 
-  blockNavigation(
-    blockCheckers: (() => boolean)[],
-    onBlock?: ((onProceed: () => void) => void) | undefined,
-    onNativePlatformNavigationBlock?: (() => void) | undefined,
-  ) {
-    this.application.navigationService.navigator.blockNavigation(
-      blockCheckers,
-      onBlock,
-      onNativePlatformNavigationBlock,
-    );
-  }
-
-  unblockNavigation() {
-    this.application.navigationService.navigator.unblockNavigation();
-  }
-
-  persistSettingValue(
-    key: string,
-    value: string | number | boolean | object | undefined,
-  ): void {
-    this.application.settingService.persistValue(key, value);
-  }
-
   // ---------------------------------- IMPLEMENTATION ----------------------------------
 
-  override async fetchConfiguration() {
-    const info = await this.client.getInfrastructureInfo();
-    this.baseStore.currentUser = info.currentUser;
-    this.baseStore.queryServerBaseUrl = info.queryServerBaseUrl;
-    this.baseStore.hostedApplicationBaseUrl = info.hostedApplicationBaseUrl;
-    return {
-      gridClientLicense: info.gridClientLicense,
-    };
-  }
-
-  async getBaseQuery() {
-    return DataCubeQuery.serialization.fromJson(
-      await this.client.getBaseQuery(),
-    );
-  }
-
-  async processQuerySource(value: PlainObject) {
-    const _source = deserializeREPLQuerySource(value);
-    this.baseStore.sourceQuery = _source.query;
+  override async processQuerySource(value: PlainObject) {
     if (value._type !== REPL_DATA_CUBE_SOURCE_TYPE) {
       throw new Error(
-        `Can't process query source of type '${value._type}'. Only type '${REPL_DATA_CUBE_SOURCE_TYPE}' is supported.`,
+        `Can't deserialize query source of type '${value._type}'. Only type(s) '${REPL_DATA_CUBE_SOURCE_TYPE}' are supported.`,
       );
     }
-
+    const rawSource = RawLegendREPLDataCubeSource.serialization.fromJson(value);
+    this.baseStore.sourceQuery = rawSource.query;
     const source = new LegendREPLDataCubeSource();
-    source.query = await this.parseValueSpecification(_source.query, false);
-    source.sourceColumns = (
+    source.query = await this.parseValueSpecification(rawSource.query, false);
+    source.columns = (
       await this.getQueryRelationType(_lambda([], [source.query]), source)
     ).columns;
-    source.runtime = _source.runtime;
+    source.runtime = rawSource.runtime;
 
-    source.mapping = _source.mapping;
-    source.timestamp = _source.timestamp;
-    source.model = _source.model;
-    source.isLocal = _source.isLocal;
-    source.isPersistenceSupported = _source.isPersistenceSupported;
+    source.mapping = rawSource.mapping;
+    source.timestamp = rawSource.timestamp;
+    source.model = rawSource.model;
+    source.isLocal = rawSource.isLocal;
+    source.isPersistenceSupported = rawSource.isPersistenceSupported;
 
     return source;
   }
 
-  async parseValueSpecification(
+  override async parseValueSpecification(
     code: string,
     returnSourceInformation?: boolean,
   ) {
-    return V1_deserializeValueSpecification(
+    return _deserializeValueSpecification(
       await this.client.parseValueSpecification({
         code,
         returnSourceInformation,
       }),
-      [],
     );
   }
 
-  override getValueSpecificationCode(
+  override async getValueSpecificationCode(
     value: V1_ValueSpecification,
     pretty?: boolean,
   ) {
     return this.client.getValueSpecificationCode({
-      value: V1_serializeValueSpecification(value, []),
+      value: _serializeValueSpecification(value),
       pretty,
     });
   }
 
-  async getQueryTypeahead(
+  override async getQueryTypeahead(
     code: string,
     baseQuery: V1_Lambda,
     source: DataCubeSource,
   ) {
     return this.client.getQueryTypeahead({
       code,
-      baseQuery: V1_serializeValueSpecification(baseQuery, []),
+      baseQuery: _serializeValueSpecification(baseQuery),
     });
   }
 
-  async getQueryRelationType(query: V1_Lambda, source: DataCubeSource) {
-    return this.client.getQueryRelationReturnType({
-      query: V1_serializeValueSpecification(query, []),
-    });
+  override async getQueryRelationType(
+    query: V1_Lambda,
+    source: DataCubeSource,
+  ) {
+    const relationType = deserialize(
+      V1_relationTypeModelSchema,
+      await this.client.getQueryRelationReturnType({
+        query: _serializeValueSpecification(query),
+      }),
+    );
+    return {
+      columns: relationType.columns.map((column) => ({
+        name: column.name,
+        type: V1_getGenericTypeFullPath(column.genericType),
+      })),
+    };
   }
 
-  async getQueryCodeRelationReturnType(
+  override async getQueryCodeRelationReturnType(
     code: string,
     baseQuery: V1_ValueSpecification,
     source: DataCubeSource,
   ) {
     try {
-      return await this.client.getQueryCodeRelationReturnType({
-        code,
-        baseQuery: V1_serializeValueSpecification(baseQuery, []),
-      });
+      const relationType = deserialize(
+        V1_relationTypeModelSchema,
+        await this.client.getQueryCodeRelationReturnType({
+          code,
+          baseQuery: _serializeValueSpecification(baseQuery),
+        }),
+      );
+      return {
+        columns: relationType.columns.map((column) => ({
+          name: column.name,
+          type: V1_getGenericTypeFullPath(column.genericType),
+        })),
+      };
     } catch (error) {
       assertErrorThrown(error);
       if (
@@ -204,19 +186,19 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     }
   }
 
-  async executeQuery(
+  override async executeQuery(
     query: V1_Lambda,
     source: DataCubeSource,
-    api: DataCubeAPI,
+    options?: DataCubeExecutionOptions | undefined,
   ) {
     const result = await this.client.executeQuery({
-      query: V1_serializeValueSpecification(query, []),
-      debug: api.getSettings().enableDebugMode,
+      query: _serializeValueSpecification(query),
+      debug: options?.debug,
     });
     return {
       result: guaranteeType(
         V1_buildExecutionResult(
-          V1_serializeExecutionResult(JSON.parse(result.result)),
+          V1_deserializeExecutionResult(JSON.parse(result.result)),
         ),
         TDSExecutionResult,
       ),
@@ -239,6 +221,8 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     }
     return undefined;
   }
+
+  // ---------------------------------- APPLICATION ----------------------------------
 
   override getDocumentationURL(): string | undefined {
     return this.application.documentationService.url;
@@ -269,12 +253,22 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   }
 
   override debugProcess(processName: string, ...data: [string, unknown][]) {
-    this.application.logService.debug(
-      LogEvent.create(APPLICATION_EVENT.DEBUG),
-      `\n------ START DEBUG PROCESS: ${processName} ------`,
-      ...data.flatMap(([key, value]) => [`\n[${key.toUpperCase()}]:`, value]),
-      `\n------- END DEBUG PROCESS: ${processName} -------\n\n`,
-    );
+    // eslint-disable-next-line no-process-env
+    if (process.env.NODE_ENV === 'development') {
+      this.application.logService.info(
+        LogEvent.create(APPLICATION_EVENT.DEBUG),
+        `\n------ START DEBUG PROCESS: ${processName} ------`,
+        ...data.flatMap(([key, value]) => [`\n[${key.toUpperCase()}]:`, value]),
+        `\n------- END DEBUG PROCESS: ${processName} -------\n\n`,
+      );
+    } else {
+      this.application.logService.debug(
+        LogEvent.create(APPLICATION_EVENT.DEBUG),
+        `\n------ START DEBUG PROCESS: ${processName} ------`,
+        ...data.flatMap(([key, value]) => [`\n[${key.toUpperCase()}]:`, value]),
+        `\n------- END DEBUG PROCESS: ${processName} -------\n\n`,
+      );
+    }
   }
 
   override logInfo(event: LogEvent, ...data: unknown[]) {

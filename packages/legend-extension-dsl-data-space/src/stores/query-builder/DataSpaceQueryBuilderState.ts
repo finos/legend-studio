@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { type GenericLegendApplicationStore } from '@finos/legend-application';
+import {
+  APPLICATION_EVENT,
+  type GenericLegendApplicationStore,
+} from '@finos/legend-application';
 import {
   type QueryBuilderConfig,
   type QuerySDLC,
@@ -51,6 +54,7 @@ import {
   ActionState,
   assertErrorThrown,
   filterByType,
+  LogEvent,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query-builder/DataSpaceQueryBuilder.js';
@@ -355,6 +359,10 @@ export class DataSpacesDepotRepository extends DataSpacesBuilderRepoistory {
         assertErrorThrown(error);
         this.loadDataSpacesState.fail();
         this.applicationStore.notificationService.notifyError(error);
+        this.applicationStore.logService.error(
+          LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+          error,
+        );
       }
     }
   }

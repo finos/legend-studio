@@ -15,12 +15,11 @@
  */
 
 import {
-  SUPPORTED_FUNCTIONS,
-  V1_AppliedFunction,
   V1_Lambda,
   RawLambda,
   RelationalExecutionActivities,
   TDSExecutionResult,
+  V1_AppliedFunction,
   V1_deserializeRawValueSpecification,
   V1_deserializeValueSpecification,
   V1_RawLambda,
@@ -30,17 +29,17 @@ import {
   type V1_ValueSpecification,
   type ParameterValue,
   LAMBDA_PIPE,
+  SUPPORTED_FUNCTIONS,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
-  _functionName,
   DataCubeEngine,
   DataCubeSource,
-  type RelationType,
-  DataCubeQuery,
-  type CompletionItem,
   _function,
   DataCubeFunction,
+  type CompletionItem,
+  _functionName,
+  DataCubeQuery,
 } from '@finos/legend-data-cube';
 import {
   guaranteeType,
@@ -61,7 +60,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
   readonly mappingPath: string | undefined;
   readonly parameterValues: ParameterValue[] | undefined;
   readonly runtimePath: string | undefined;
-  _parameters: object | undefined;
+  readonly parameters: object | undefined;
 
   constructor(
     selectQuery: RawLambda,
@@ -71,11 +70,13 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     graphManagerState: GraphManagerState,
   ) {
     super();
+
     this.graphState = graphManagerState;
     this.selectInitialQuery = selectQuery;
     this.mappingPath = mappingPath;
     this.runtimePath = runtimePath;
     this.parameterValues = parameterValues;
+    this.parameters = selectQuery.parameters;
   }
 
   get sourceLabel(): string {
@@ -105,9 +106,8 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     return srcFuncExp;
   }
 
-  async getBaseQuery() {
+  async generateInitialQuery() {
     const srcFuncExp = this.getSourceFunctionExpression();
-    this._parameters = this.selectInitialQuery.parameters;
     const fromFuncExp = new V1_AppliedFunction();
     fromFuncExp.function = _functionName(SUPPORTED_FUNCTIONS.FROM);
     fromFuncExp.parameters = [srcFuncExp];
@@ -117,18 +117,22 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     if (this.runtimePath) {
       fromFuncExp.parameters.push(_elementPtr(this.runtimePath));
     }
-    const columns = (await this.getRelationalType(this.selectInitialQuery))
+    const columns = (await this.getRelationType(this.selectInitialQuery))
       .columns;
     const query = new DataCubeQuery();
     query.query = `~[${columns.map((e) => `'${e.name}'`)}]->select()`;
+
     return query;
   }
 
   async processQuerySource(value: PlainObject) {
+    // TODO: this is an abnormal usage of this method, this is the place
+    // where we can enforce which source this engine supports, instead
+    // of hardcoding the logic like this.
     const srcFuncExp = this.getSourceFunctionExpression();
     const source = new QueryBuilderDataCubeSource();
-    source.sourceColumns = (
-      await this.getRelationalType(this.selectInitialQuery)
+    source.columns = (
+      await this.getRelationType(this.selectInitialQuery)
     ).columns;
     source.mapping = this.mappingPath;
     source.runtime = this.runtimePath;
@@ -181,7 +185,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     );
   }
 
-  async getValueSpecificationCode(
+  override async getValueSpecificationCode(
     value: V1_ValueSpecification,
     pretty?: boolean | undefined,
   ) {
@@ -191,7 +195,7 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     );
   }
 
-  async getRelationalType(query: RawLambda): Promise<RelationType> {
+  async getRelationType(query: RawLambda) {
     const relationType =
       await this.graphState.graphManager.getLambdaRelationType(
         query,
@@ -200,9 +204,12 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     return relationType;
   }
 
-  async getQueryRelationType(query: V1_Lambda, source: DataCubeSource) {
+  override async getQueryRelationType(
+    query: V1_Lambda,
+    source: DataCubeSource,
+  ) {
     const lambda = this.buildRawLambdaFromValueSpec(query);
-    return this.getRelationalType(lambda);
+    return this.getRelationType(lambda);
   }
 
   override async getQueryCodeRelationReturnType(
@@ -215,14 +222,14 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
         V1_serializeValueSpecification(baseQuery, []),
       );
     const fullQuery = queryString + code;
-    return this.getRelationalType(
+    return this.getRelationType(
       await this.graphState.graphManager.pureCodeToLambda(fullQuery),
     );
   }
 
   override async executeQuery(query: V1_Lambda, source: DataCubeSource) {
     const lambda = this.buildRawLambdaFromValueSpec(query);
-    lambda.parameters = this._parameters;
+    lambda.parameters = this.parameters;
     const [executionWithMetadata, queryString] = await Promise.all([
       this.graphState.graphManager.runQuery(
         lambda,

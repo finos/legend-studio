@@ -111,14 +111,11 @@ export const QueryLoader = observer(
     const { queryLoaderState, loadActionLabel } = props;
     const applicationStore = useApplicationStore();
     const searchInputRef = useRef<HTMLInputElement>(null);
-    const queryRenameInputRef = useRef<HTMLInputElement>(null);
-    const sortByOptions = Object.values(SORT_BY_OPTIONS).map((op) => ({
-      label: op,
-      value: op,
-    }));
-    const results = queryLoaderState.queries;
+    const searchResults = queryLoaderState.queries;
+
+    // curated template queries
     const curatedTemplateQueries = [
-      ...queryLoaderState.curatedTemplateQuerySepcifications
+      ...queryLoaderState.curatedTemplateQuerySpecifications
         .map((s) =>
           queryLoaderState.queryBuilderState
             ? s.getCuratedTemplateQueries(queryLoaderState.queryBuilderState)
@@ -126,36 +123,22 @@ export const QueryLoader = observer(
         )
         .flat(),
     ].sort((a, b) => a.title.localeCompare(b.title));
-
     const loadCuratedTemplateQuery =
-      queryLoaderState.curatedTemplateQuerySepcifications
+      queryLoaderState.curatedTemplateQuerySpecifications
         // already using an arrow function suggested by @typescript-eslint/unbound-method
         // eslint-disable-next-line
         .map((s) => () => s.loadCuratedTemplateQuery)
         .filter(isNonNullable)[0];
 
+    // search filters
+    const sortOptions = Object.values(SORT_BY_OPTIONS).map((op) => ({
+      label: op,
+      value: op,
+    }));
     const [isMineOnly, setIsMineOnly] = useState(false);
     const [showQueryNameEditInput, setShowQueryNameEditInput] = useState<
       number | undefined
     >();
-    useEffect(() => {
-      queryRenameInputRef.current?.focus();
-      queryRenameInputRef.current?.select();
-    }, [showQueryNameEditInput]);
-    const [queryNameInputValue, setQueryNameInputValue] = useState<string>('');
-    const showEditQueryNameInput =
-      (value: string, idx: number): (() => void) =>
-      (): void => {
-        setQueryNameInputValue(value);
-        setShowQueryNameEditInput(idx);
-      };
-    const hideEditQueryNameInput = (): void => {
-      setShowQueryNameEditInput(undefined);
-      setQueryNameInputValue('');
-    };
-    const changeQueryNameInputValue: React.ChangeEventHandler<
-      HTMLInputElement
-    > = (event) => setQueryNameInputValue(event.target.value);
 
     // search text
     const debouncedLoadQueries = useMemo(
@@ -176,7 +159,7 @@ export const QueryLoader = observer(
         debouncedLoadQueries(event.target.value);
       }
     };
-    const clearQuerySearching = (): void => {
+    const clearSearchResults = (): void => {
       queryLoaderState.setSearchText('');
       debouncedLoadQueries.cancel();
       debouncedLoadQueries('');
@@ -189,7 +172,7 @@ export const QueryLoader = observer(
       debouncedLoadQueries.cancel();
       debouncedLoadQueries(queryLoaderState.searchText);
     };
-    const applySortByAlgorithm = (option: SortByOption): void => {
+    const applySort = (option: SortByOption): void => {
       queryLoaderState.setSortBy(option.value);
       debouncedLoadQueries.cancel();
       debouncedLoadQueries(queryLoaderState.searchText);
@@ -231,7 +214,26 @@ export const QueryLoader = observer(
       searchInputRef.current?.focus();
     }, [queryLoaderState]);
 
-    // actions
+    // query rename
+    const queryRenameInputRef = useRef<HTMLInputElement>(null);
+    useEffect(() => {
+      queryRenameInputRef.current?.focus();
+      queryRenameInputRef.current?.select();
+    }, [showQueryNameEditInput]);
+    const [queryNameInputValue, setQueryNameInputValue] = useState<string>('');
+    const showEditQueryNameInput =
+      (value: string, idx: number): (() => void) =>
+      (): void => {
+        setQueryNameInputValue(value);
+        setShowQueryNameEditInput(idx);
+      };
+    const hideEditQueryNameInput = (): void => {
+      setShowQueryNameEditInput(undefined);
+      setQueryNameInputValue('');
+    };
+    const changeQueryNameInputValue: React.ChangeEventHandler<
+      HTMLInputElement
+    > = (event) => setQueryNameInputValue(event.target.value);
     const renameQuery =
       (query: LightQuery): (() => void) =>
       (): void => {
@@ -244,6 +246,7 @@ export const QueryLoader = observer(
         }
       };
 
+    // other actions
     const deleteQuery =
       (query: LightQuery): (() => void) =>
       (): void => {
@@ -253,7 +256,6 @@ export const QueryLoader = observer(
           );
         }
       };
-
     const showPreview = (
       queryId: string | undefined,
       template?: {
@@ -291,7 +293,7 @@ export const QueryLoader = observer(
                   <button
                     className="query-loader__search__input__clear-btn"
                     tabIndex={-1}
-                    onClick={clearQuerySearching}
+                    onClick={clearSearchResults}
                     title="Clear"
                   >
                     <TimesIcon />
@@ -374,10 +376,11 @@ export const QueryLoader = observer(
                 <div className="query-loader__results__summary">
                   {queryLoaderState.showingDefaultQueries ? (
                     (queryLoaderState.generateDefaultQueriesSummaryText?.(
-                      results,
+                      searchResults,
                     ) ?? 'Refine your search to get better matches')
                   ) : !queryLoaderState.isCuratedTemplateToggled ? (
-                    results.length >= QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT ? (
+                    searchResults.length >=
+                    QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT ? (
                       <>
                         {`Found ${QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT}+ matches`}{' '}
                         <InfoCircleIcon
@@ -386,7 +389,7 @@ export const QueryLoader = observer(
                         />
                       </>
                     ) : (
-                      `Found ${quantifyList(results, 'match', 'matches')}`
+                      `Found ${quantifyList(searchResults, 'match', 'matches')}`
                     )
                   ) : curatedTemplateQueries.length >=
                     QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT ? (
@@ -414,9 +417,9 @@ export const QueryLoader = observer(
                         </div>
                         <CustomSelectorInput
                           className="query-loader__results__sort-by__selector"
-                          options={sortByOptions}
+                          options={sortOptions}
                           onChange={(option: SortByOption) => {
-                            applySortByAlgorithm(option);
+                            applySort(option);
                           }}
                           value={{
                             label: queryLoaderState.sortBy,
@@ -431,7 +434,7 @@ export const QueryLoader = observer(
                     )}
                 </div>
                 {!queryLoaderState.isCuratedTemplateToggled &&
-                  results
+                  searchResults
                     .slice(0, QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT)
                     .map((query, idx) => (
                       <div

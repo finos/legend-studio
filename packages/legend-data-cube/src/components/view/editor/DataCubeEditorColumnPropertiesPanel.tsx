@@ -27,6 +27,7 @@ import {
   FormNumberInput,
   FormTextInput,
   FormDocumentation,
+  FormButton,
 } from '../../core/DataCubeFormUtils.js';
 import {
   DataCubeQueryClientSideAggregateOperator,
@@ -58,7 +59,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
       openColumnDropdown,
       closeColumnDropdown,
       columnDropdownProps,
-      columnDropPropsOpen,
+      columnDropdownPropsOpen,
     ] = useDropdownMenu();
     const [
       openKindDropdown,
@@ -136,7 +137,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
               <FormDropdownMenuTrigger
                 className="w-80"
                 onClick={openColumnDropdown}
-                open={columnDropPropsOpen}
+                open={columnDropdownPropsOpen}
               >
                 <div className="flex h-full w-full items-center">
                   <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">
@@ -1220,13 +1221,13 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                   <div className="flex h-6 w-32 flex-shrink-0 items-center text-sm" />
                   <div className="w-80">
                     <div className="mb-2 h-[1px] w-full bg-neutral-200" />
-                    <button
-                      className="flex h-5 items-center justify-center rounded-sm border border-neutral-400 bg-neutral-200 p-0 px-1 text-sm text-neutral-700 disabled:text-neutral-400"
+                    <FormButton
+                      compact={true}
                       disabled={selectedColumn.isUsingDefaultStyling}
                       onClick={() => selectedColumn.useDefaultStyling()}
                     >
                       Use Default Styling
-                    </button>
+                    </FormButton>
                   </div>
                 </div>
               </>

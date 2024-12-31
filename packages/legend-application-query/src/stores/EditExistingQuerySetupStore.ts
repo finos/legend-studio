@@ -38,7 +38,7 @@ export class EditExistingQuerySetupStore extends BaseQuerySetupStore {
 
     this.queryLoaderState = new QueryLoaderState(
       applicationStore,
-      this.graphManagerState,
+      this.graphManagerState.graphManager,
       {
         loadQuery: (query: LightQuery): void => {
           this.queryLoaderState.setQueryLoaderDialogOpen(false);
@@ -48,20 +48,20 @@ export class EditExistingQuerySetupStore extends BaseQuerySetupStore {
           );
         },
         fetchDefaultQueries: async (): Promise<LightQuery[]> => {
-          const recentReviewedQueries =
+          const recentQueries =
             await this.graphManagerState.graphManager.getQueries(
               LegendQueryUserDataHelper.getRecentlyViewedQueries(
                 this.applicationStore.userDataService,
               ),
             );
-          if (recentReviewedQueries.length <= 0) {
+          if (!recentQueries.length) {
             const searchSpecification = new QuerySearchSpecification();
             searchSpecification.limit = QUERY_LOADER_DEFAULT_QUERY_SEARCH_LIMIT;
             return this.graphManagerState.graphManager.searchQueries(
               searchSpecification,
             );
           }
-          return recentReviewedQueries;
+          return recentQueries;
         },
         generateDefaultQueriesSummaryText: (queries) =>
           queries.length

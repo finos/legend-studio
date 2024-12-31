@@ -16,6 +16,7 @@
 
 import {
   ActionState,
+  LogEvent,
   NetworkClient,
   assertErrorThrown,
   guaranteeNonNullable,
@@ -27,24 +28,37 @@ import {
   DataCubeConfiguration,
   DataCubeQuery,
   LayoutConfiguration,
+  RawAdhocQueryDataCubeSource,
   WindowState,
   type DataCubeState,
 } from '@finos/legend-data-cube';
 import { LegendREPLDataCubeSource } from './LegendREPLDataCubeSource.js';
 import { PersistentDataCubeQuery } from '@finos/legend-graph';
 import { LegendREPLPublishDataCubeAlert } from '../components/LegendREPLPublishDataCubeAlert.js';
+import { APPLICATION_EVENT } from '@finos/legend-application';
+import { action, makeObservable, observable } from 'mobx';
+import { LegendREPLDataCubeEngine } from './LegendREPLDataCubeEngine.js';
 
 export class LegendREPLBaseStore {
   readonly application: LegendREPLApplicationStore;
   readonly client: LegendREPLServerClient;
+  readonly engine: LegendREPLDataCubeEngine;
+  readonly initializeState = ActionState.create();
   readonly publishState = ActionState.create();
 
   sourceQuery?: string | undefined;
   currentUser?: string | undefined;
+  gridClientLicense?: string | undefined;
   queryServerBaseUrl?: string | undefined;
   hostedApplicationBaseUrl?: string | undefined;
+  query?: DataCubeQuery | undefined;
 
   constructor(application: LegendREPLApplicationStore) {
+    makeObservable(this, {
+      query: observable,
+
+      setQuery: action,
+    });
     this.application = application;
     this.client = new LegendREPLServerClient(
       new NetworkClient({
@@ -57,43 +71,69 @@ export class LegendREPLBaseStore {
           : application.config.replUrl,
       }),
     );
+    this.engine = new LegendREPLDataCubeEngine(this);
+  }
+
+  setQuery(query: DataCubeQuery | undefined): void {
+    this.query = query;
+  }
+
+  async initialize() {
+    this.initializeState.inProgress();
+    try {
+      const info = await this.client.getInfrastructureInfo();
+      this.currentUser = info.currentUser;
+      if (info.currentUser) {
+        this.application.identityService.setCurrentUser(info.currentUser);
+      }
+      this.application.telemetryService.setup();
+
+      this.queryServerBaseUrl = info.queryServerBaseUrl;
+      this.hostedApplicationBaseUrl = info.hostedApplicationBaseUrl;
+      this.gridClientLicense = info.gridClientLicense;
+      this.setQuery(
+        DataCubeQuery.serialization.fromJson(await this.client.getBaseQuery()),
+      );
+
+      this.initializeState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.application.logService.error(
+        LogEvent.create(APPLICATION_EVENT.APPLICATION_LOAD__FAILURE),
+        `Can't initialize REPL`,
+        error,
+      );
+      this.initializeState.fail();
+    }
   }
 
   async publishDataCube(dataCube: DataCubeState) {
-    const isPublishAllowed =
-      dataCube.view.source instanceof LegendREPLDataCubeSource &&
-      dataCube.view.source.isPersistenceSupported &&
-      // eslint-disable-next-line no-process-env
-      (process.env.NODE_ENV === 'development' || !dataCube.view.source.isLocal);
-
     if (
       !this.sourceQuery ||
       !dataCube.view.isSourceProcessed ||
       !this.queryServerBaseUrl ||
-      !isPublishAllowed
+      !(dataCube.view.source instanceof LegendREPLDataCubeSource) ||
+      !dataCube.view.source.isPersistenceSupported ||
+      !dataCube.view.source.model ||
+      // eslint-disable-next-line no-process-env
+      !(process.env.NODE_ENV === 'development' || !dataCube.view.source.isLocal)
     ) {
       return;
     }
 
     this.publishState.inProgress();
-    const task = dataCube.view.newTask('Validate query');
+    const task = dataCube.view.newTask('Publish query');
 
     try {
       const query = new DataCubeQuery();
-      query.query = await dataCube.engine.getValueSpecificationCode(
-        dataCube.engine.generateInitialQuery(
-          dataCube.view.snapshotManager.currentSnapshot,
-        ),
+      query.query = await dataCube.engine.getPartialQueryCode(
+        dataCube.view.snapshotManager.currentSnapshot,
       );
-      query.source = {
-        // TODO: I can't think of a better name for now, but this form should be
-        // moved to the common module potentially
-        _type: 'basicQuery',
-        query: this.sourceQuery,
-        runtime: dataCube.view.source.runtime,
-        columns: dataCube.view.source.sourceColumns,
-        model: dataCube.view.source.model,
-      };
+      const source = new RawAdhocQueryDataCubeSource();
+      source.query = this.sourceQuery;
+      source.runtime = dataCube.view.source.runtime;
+      source.model = dataCube.view.source.model;
+      query.source = RawAdhocQueryDataCubeSource.serialization.toJson(source);
       const newQuery = new PersistentDataCubeQuery();
       newQuery.id = uuid();
       newQuery.name = DataCubeConfiguration.serialization.fromJson(

@@ -175,7 +175,7 @@ export {
 } from './graph-manager/protocol/pure/v1/helpers/V1_DomainHelper.js';
 export {
   V1_buildExecutionResult,
-  V1_serializeExecutionResult,
+  V1_deserializeExecutionResult,
 } from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionHelper.js';
 export { V1_RawSQLExecuteInput } from './graph-manager/protocol/pure/v1/engine/execution/V1_RawSQLExecuteInput.js';
 export * from './graph-manager/protocol/pure/v1/engine/execution/V1_ExecutionResult.js';
@@ -220,7 +220,10 @@ export { V1_PackageableType } from './graph-manager/protocol/pure/v1/model/packa
 export { INTERNAL__UnknownExecutionResult } from './graph-manager/action/execution/INTERNAL__UnknownExecutionResult.js';
 export { INTERNAL__UnknownExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/INTERNAL__UnknownExecutionNode.js';
 export { INTERNAL__UnknownResultType } from './graph/metamodel/pure/executionPlan/result/INTERNAL__UnknownResultType.js';
-export { PersistentDataCubeQuery } from './graph-manager/action/query/PersistentDataCubeQuery.js';
+export {
+  PersistentDataCubeQuery,
+  LightPersistentDataCubeQuery,
+} from './graph-manager/action/query/PersistentDataCubeQuery.js';
 
 export * from './graph/metamodel/pure/executionPlan/ExecutionPlan.js';
 export { ExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/ExecutionNode.js';
@@ -395,7 +398,10 @@ export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/V1_G
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationPathResolver.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/V1_ElementBuilder.js';
 export { V1_RawLambda } from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawLambda.js';
-export { V1_RawExecutionContext } from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawExecutionContext.js';
+export {
+  V1_RawBaseExecutionContext,
+  V1_RawExecutionContext,
+} from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawExecutionContext.js';
 export { V1_RawVariable } from './graph-manager/protocol/pure/v1/model/rawValueSpecification/V1_RawVariable.js';
 export { V1_ProcessingContext } from './graph-manager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ProcessingContext.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
@@ -418,6 +424,7 @@ export {
   type V1_GrammarParserBatchInputEntry,
   V1_getEngineSerializationFormat,
   V1_EngineServerClient,
+  getCurrentUserIDFromEngineServer,
 } from './graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.js';
 export { type V1_GraphManagerEngine } from './graph-manager/protocol/pure/v1/engine/V1_GraphManagerEngine.js';
 export { V1_RemoteEngine } from './graph-manager/protocol/pure/v1/engine/V1_RemoteEngine.js';
@@ -434,6 +441,7 @@ export {
   V1_serializePureModelContext,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
 export { V1_propertyPointerModelSchema } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
+export { V1_relationTypeModelSchema } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
 export {
   V1_deserializeValueSpecification,
   V1_serializeValueSpecification,
@@ -597,12 +605,11 @@ export * from './graph-manager/extensions/DSL_Mapping_PureGraphManagerPlugin_Ext
 export { INTERNAL__UnknownSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownSetImplementation.js';
 export { INTERNAL__UnknownPropertyMapping } from './graph/metamodel/pure/packageableElements/mapping/INTERNAL__UnknownPropertyMapping.js';
 export { INTERNAL__UnknownConnection } from './graph/metamodel/pure/packageableElements/connection/INTERNAL__UnknownConnection.js';
-export { Relation_Relation } from './graph/metamodel/pure/packageableElements/relation/Relation_Relation.js';
+export { Relation } from './graph/metamodel/pure/packageableElements/relation/Relation.js';
 export {
-  Relation_RelationType,
-  Relation_RelationalColumn,
-} from './graph/metamodel/pure/packageableElements/relation/Relation_RelationType.js';
-
+  RelationType,
+  RelationColumn,
+} from './graph/metamodel/pure/packageableElements/relation/RelationType.js';
 export { Store } from './graph/metamodel/pure/packageableElements/store/Store.js';
 export { Mapping } from './graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 export {

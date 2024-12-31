@@ -2,7 +2,7 @@
   "name": "@finos/legend-application-data-cube-deployment",
   "version": "12.88.0",
   "private": true,
-  "description": "Legend Data Cube web application deployment",
+  "description": "Legend DataCube web application deployment",
   "keywords": [
     "legend",
     "legend-application",
@@ -19,7 +19,7 @@
   "scripts": {
     "build:tailwindcss": "tailwindcss -i ./style/tailwind.css -o ./lib/tailwind.css --minify",
     "build:webpack": "cross-env NODE_ENV=production webpack --mode production",
-    "build-dry:docker": "../../scripts/docker/dry-build-docker-image.sh legend-data-cube ./dist/data-cube",
+    "build-dry:docker": "../../scripts/docker/dry-build-docker-image.sh legend-data-cube ./dist/datacube",
     "bundle": "yarn clean && yarn build:webpack && node ./scripts/setup.js ./dist/data-cube",
     "bundle:analyze": "cross-env NODE_ENV=production webpack --mode production --analyze",
     "bundle:fast": "cross-env NODE_ENV=production PRODUCTION_MODE=fast webpack --mode production && node ./scripts/setup.js ./dist/data-cube",

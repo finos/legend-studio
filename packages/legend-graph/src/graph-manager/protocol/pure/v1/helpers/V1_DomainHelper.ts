@@ -36,7 +36,7 @@ export const V1_getGenericTypeFullPath = (val: V1_GenericType): string => {
     return val.rawType.fullPath;
   }
   throw new UnsupportedOperationError(
-    'Failed to get full path from generic type',
+    `Can't extract type path from generic type`,
   );
 };
 
@@ -152,6 +152,6 @@ export function V1_createRelationTypeColumn(
 ): V1_RelationTypeColumn {
   const column = new V1_RelationTypeColumn();
   column.name = name;
-  column.type = type;
+  column.genericType = V1_createGenericTypeWithElementPath(type);
   return column;
 }

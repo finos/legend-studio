@@ -28,7 +28,7 @@ import {
   LegendREPLApplicationConfig,
   type LegendREPLApplicationConfigData,
 } from './LegendREPLApplicationConfig.js';
-import { LegendREPLWebApplication } from '../components/LegendREPLApplication.js';
+import { LegendREPLWebApplication } from '../components/LegendREPLWebApplication.js';
 import type { LegendREPLApplicationStore } from './LegendREPLApplicationStore.js';
 
 export class LegendREPL extends LegendApplication {

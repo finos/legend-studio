@@ -133,3 +133,4 @@ export * from './stores/QueryBuilderValueSpecificationHelper.js';
 export * from './stores/filter/QueryBuilderFilterState.js';
 export * from './stores/filter/QueryBuilderFilterStateBuilder.js';
 export * from './stores/data-cube/QueryBuilderDataCubeEngine.js';
+export * from './stores/data-cube/QueryBuilderDataCubeViewerState.js';

@@ -26,5 +26,5 @@ export const DataCubeContextProvider = DataCubeStateContext.Provider;
 export const useDataCube = () =>
   guaranteeNonNullable(
     useContext(DataCubeStateContext),
-    `Can't find Data Cube in context`,
+    `Can't find DataCube state in context`,
   );

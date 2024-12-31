@@ -83,6 +83,7 @@ import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from './DataSpaceQueryBuilderHelper.js';
+import { APPLICATION_EVENT } from '@finos/legend-application';
 
 export type QueryableDataSpace = {
   groupId: string;
@@ -395,7 +396,11 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notify(
-        `Unable to change dataspace: ${error.message}`,
+        `Can't to change data product: ${error.message}`,
+      );
+      this.applicationStore.logService.error(
+        LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+        error,
       );
       this.onInitializeFailure();
       this.initState.fail();

@@ -33,13 +33,11 @@ const LegendREPLBaseStoreContext = createContext<
 const LegendREPLBaseStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const applicationStore = useApplicationStore<
+  const application = useApplicationStore<
     LegendREPLApplicationConfig,
     LegendApplicationPluginManager<LegendApplicationPlugin>
   >();
-  const store = useLocalObservable(
-    () => new LegendREPLBaseStore(applicationStore),
-  );
+  const store = useLocalObservable(() => new LegendREPLBaseStore(application));
   return (
     <LegendREPLBaseStoreContext.Provider value={store}>
       {children}

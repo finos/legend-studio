@@ -24,10 +24,7 @@ import { useApplicationStore } from './ApplicationStoreProvider.js';
 import { useApplicationPlatform } from './ApplicationPlatformProvider.js';
 
 export const ApplicationFrameworkProvider = observer(
-  (props: {
-    children: React.ReactNode;
-    simple?: boolean | undefined;
-  }): React.ReactElement => {
+  (props: { children: React.ReactNode; simple?: boolean | undefined }) => {
     const { children, simple } = props;
     const platform = useApplicationPlatform();
     const applicationStore = useApplicationStore();

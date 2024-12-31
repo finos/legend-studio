@@ -48,6 +48,7 @@
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-code-editor": "workspace:*",
+    "@finos/legend-data-cube": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-lego": "workspace:*",
     "@finos/legend-query-builder": "workspace:*",
@@ -70,7 +71,7 @@
     "react-dnd": "16.0.1",
     "react-dom": "19.0.0",
     "serializr": "3.0.3",
-    "yaml": "2.6.1"
+    "yaml": "2.7.0"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

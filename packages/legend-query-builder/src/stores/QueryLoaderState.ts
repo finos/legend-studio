@@ -21,7 +21,7 @@ import {
 import {
   type QueryInfo,
   type LightQuery,
-  type BasicGraphManagerState,
+  type AbstractPureGraphManager,
   type Query,
   type RawLambda,
   QuerySearchSpecification,
@@ -56,7 +56,7 @@ export type SortByOption = { label: SORT_BY_OPTIONS; value: SORT_BY_OPTIONS };
 
 export class QueryLoaderState {
   readonly applicationStore: GenericLegendApplicationStore;
-  readonly graphManagerState: BasicGraphManagerState;
+  readonly graphManager: AbstractPureGraphManager;
 
   readonly searchQueriesState = ActionState.create();
   readonly renameQueryState = ActionState.create();
@@ -86,7 +86,7 @@ export class QueryLoaderState {
   extraFilterOptions: LoadQueryFilterOption[] = [];
   extraQueryFilterOptionsRelatedToTemplateQuery: string[] = [];
   queries: LightQuery[] = [];
-  curatedTemplateQuerySepcifications: CuratedTemplateQuerySpecification[] = [];
+  curatedTemplateQuerySpecifications: CuratedTemplateQuerySpecification[] = [];
 
   isQueryLoaderDialogOpen = false;
   isCuratedTemplateToggled = false;
@@ -97,7 +97,7 @@ export class QueryLoaderState {
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
-    graphManagerState: BasicGraphManagerState,
+    graphManager: AbstractPureGraphManager,
     options: {
       decorateSearchSpecification?:
         | ((val: QuerySearchSpecification) => QuerySearchSpecification)
@@ -108,7 +108,6 @@ export class QueryLoaderState {
       generateDefaultQueriesSummaryText?:
         | ((queries: LightQuery[]) => string)
         | undefined;
-
       isReadOnly?: boolean | undefined;
       onQueryRenamed?: ((query: LightQuery) => void) | undefined;
       onQueryDeleted?: ((query: string) => void) | undefined;
@@ -124,7 +123,7 @@ export class QueryLoaderState {
       showPreviewViewer: observable,
       searchText: observable,
       isCuratedTemplateToggled: observable,
-      curatedTemplateQuerySepcifications: observable,
+      curatedTemplateQuerySpecifications: observable,
       sortBy: observable,
       setSortBy: action,
       setSearchText: action,
@@ -141,7 +140,7 @@ export class QueryLoaderState {
     });
 
     this.applicationStore = applicationStore;
-    this.graphManagerState = graphManagerState;
+    this.graphManager = graphManager;
 
     this.loadQuery = options.loadQuery;
     this.fetchDefaultQueries = options.fetchDefaultQueries;
@@ -237,7 +236,7 @@ export class QueryLoaderState {
     extraFilters.forEach(
       (filter) => filter && this.extraFilters.set(filter, false),
     );
-    this.curatedTemplateQuerySepcifications =
+    this.curatedTemplateQuerySpecifications =
       this.applicationStore.pluginManager
         .getApplicationPlugins()
         .flatMap(
@@ -311,7 +310,7 @@ export class QueryLoaderState {
       searchSpecification =
         this.decorateSearchSpecification?.(searchSpecification) ??
         searchSpecification;
-      this.queries = (yield this.graphManagerState.graphManager.searchQueries(
+      this.queries = (yield this.graphManager.searchQueries(
         searchSpecification,
       )) as LightQuery[];
       if (!querySearchSortBy) {
@@ -330,7 +329,7 @@ export class QueryLoaderState {
   *renameQuery(queryId: string, name: string): GeneratorFn<void> {
     this.renameQueryState.inProgress();
     try {
-      const query = (yield this.graphManagerState.graphManager.renameQuery(
+      const query = (yield this.graphManager.renameQuery(
         queryId,
         name,
       )) as Query;
@@ -350,7 +349,7 @@ export class QueryLoaderState {
   *deleteQuery(queryId: string): GeneratorFn<void> {
     this.deleteQueryState.inProgress();
     try {
-      yield this.graphManagerState.graphManager.deleteQuery(queryId);
+      yield this.graphManager.deleteQuery(queryId);
       this.onQueryDeleted?.(queryId);
       this.applicationStore.notificationService.notifySuccess(
         'Deleted query successfully',
@@ -374,13 +373,12 @@ export class QueryLoaderState {
     this.previewQueryState.inProgress();
     try {
       if (queryId) {
-        const queryInfo =
-          (yield this.graphManagerState.graphManager.getQueryInfo(
-            queryId,
-          )) as QueryInfo;
+        const queryInfo = (yield this.graphManager.getQueryInfo(
+          queryId,
+        )) as QueryInfo;
         this.queryPreviewContent = queryInfo;
         this.queryPreviewContent.content =
-          (yield this.graphManagerState.graphManager.prettyLambdaContent(
+          (yield this.graphManager.prettyLambdaContent(
             queryInfo.content,
           )) as string;
       } else if (template) {
@@ -389,7 +387,7 @@ export class QueryLoaderState {
           content: '',
         } as QueryInfo;
         this.queryPreviewContent.content =
-          (yield this.graphManagerState.graphManager.lambdaToPureCode(
+          (yield this.graphManager.lambdaToPureCode(
             template.queryContent,
             true,
           )) as string;

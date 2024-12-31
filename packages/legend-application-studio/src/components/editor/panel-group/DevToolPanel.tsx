@@ -154,7 +154,7 @@ export const DevToolPanel = observer(() => {
         />
         <PanelFormBooleanField
           name="Use Dev client protocol version"
-          prompt="Specifies if development client porotocl (v_X_X_X) version should be used for execution"
+          prompt="Specifies if development client protocol (v_X_X_X) version should be used for execution"
           value={engineConfig.useDevClientProtocol}
           isReadOnly={false}
           update={toggleSetUseDevClientProtocol}

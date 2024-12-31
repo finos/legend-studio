@@ -39,7 +39,7 @@ import {
   Multiplicity,
   V1_PureGraphManager,
   V1_buildExecutionResult,
-  V1_serializeExecutionResult,
+  V1_deserializeExecutionResult,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { integrationTest, createSpy } from '@finos/legend-shared/test';
@@ -122,7 +122,7 @@ test(integrationTest('test query execution with parameters'), async () => {
     'runQuery',
   ).mockResolvedValue({
     executionResult: V1_buildExecutionResult(
-      V1_serializeExecutionResult(executionResult),
+      V1_deserializeExecutionResult(executionResult),
     ),
   });
   const queryBuilderResultPanel = await waitFor(() =>
@@ -187,7 +187,7 @@ test(integrationTest('test query execution with parameters'), async () => {
     'runQuery',
   ).mockResolvedValue({
     executionResult: V1_buildExecutionResult(
-      V1_serializeExecutionResult(executionResult1),
+      V1_deserializeExecutionResult(executionResult1),
     ),
   });
   await act(async () => {
@@ -197,7 +197,9 @@ test(integrationTest('test query execution with parameters'), async () => {
     renderResult.getByRole('dialog'),
   );
   // Don't need to reset parameter value as the previous value is saved
-  await waitFor(() => fireEvent.click(getByText(parameterValueDialog1, 'Run')));
+  await act(async () => {
+    fireEvent.click(getByText(parameterValueDialog1, 'Run'));
+  });
   const queryBuilderResultAnalytics1 = await waitFor(() =>
     renderResult.getByTestId(
       QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_ANALYTICS,
@@ -210,6 +212,9 @@ test(integrationTest('test query execution with parameters'), async () => {
   // await waitFor(() => findByText(queryBuilderResultPanel1, 'First Name'));
   // await waitFor(() => findByText(queryBuilderResultPanel1, 'Last Name'));
 
+  await waitFor(() =>
+    queryBuilderResultPanel1.getElementsByClassName('ag-cell'),
+  );
   expect(
     Array.from(
       queryBuilderResultPanel1.getElementsByClassName('ag-cell'),
@@ -223,7 +228,7 @@ test(integrationTest('test query execution with parameters'), async () => {
   ).toContain('');
 });
 
-test(integrationTest('test preivew-data query execution'), async () => {
+test(integrationTest('test preview-data query execution'), async () => {
   const { mappingPath, runtimePath, modelFileDir, modelFilePath, rawLambda } = {
     mappingPath: 'model::RelationalMapping',
     runtimePath: 'model::Runtime',
@@ -263,7 +268,7 @@ test(integrationTest('test preivew-data query execution'), async () => {
     'runQuery',
   ).mockResolvedValue({
     executionResult: V1_buildExecutionResult(
-      V1_serializeExecutionResult(executionResult),
+      V1_deserializeExecutionResult(executionResult),
     ),
   });
   const explorerPanel = await waitFor(() =>
@@ -273,7 +278,7 @@ test(integrationTest('test preivew-data query execution'), async () => {
   if (ageRow.parentElement) {
     expect(ageRow.parentElement).not.toBeNull();
     expect(ageRow.parentElement.parentElement).not.toBeNull();
-    await waitFor(() =>
+    await act(async () => {
       fireEvent.click(
         getByTitle(
           guaranteeNonNullable(
@@ -281,8 +286,8 @@ test(integrationTest('test preivew-data query execution'), async () => {
           ),
           'Preview Data',
         ),
-      ),
-    );
+      );
+    });
     await waitFor(() =>
       renderResult.getByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PREVIEW_DATA_MODAL,

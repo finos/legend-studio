@@ -63,10 +63,10 @@ import {
   ColSpecArrayInstance,
   ColSpecArray,
   ColSpec,
-  Relation_RelationType,
-  Relation_RelationalColumn,
+  RelationType,
+  RelationColumn,
   getValueSpecificationReturnType,
-  Relation_Relation,
+  Relation,
 } from '@finos/legend-graph';
 import {
   QUERY_BUILDER_PURE_PATH,
@@ -663,7 +663,7 @@ const V1_buildTypedProjectFunctionExpression = (
   const processedExpression = new ColSpecArrayInstance(Multiplicity.ONE);
   const processedColSpecArray = new ColSpecArray();
   processedExpression.values = [processedColSpecArray];
-  const relationType = new Relation_RelationType(Relation_RelationType.ID);
+  const relationType = new RelationType(RelationType.ID);
   processedColSpecArray.colSpecs = specArray.colSpecs.map((colSpec) => {
     const pColSpec = new ColSpec();
     let lambda: ValueSpecification;
@@ -691,9 +691,7 @@ const V1_buildTypedProjectFunctionExpression = (
     pColSpec.name = colSpec.name;
     const returnType = getValueSpecificationReturnType(lambda);
     if (returnType) {
-      relationType.columns.push(
-        new Relation_RelationalColumn(colSpec.name, returnType),
-      );
+      relationType.columns.push(new RelationColumn(colSpec.name, returnType));
     } else {
       throw new UnsupportedOperationError(
         'Unable to get return type for current lambda',
@@ -707,7 +705,7 @@ const V1_buildTypedProjectFunctionExpression = (
     functionName,
     compileContext,
   );
-  const relationGenericType = new GenericType(Relation_Relation.INSTANCE);
+  const relationGenericType = new GenericType(Relation.INSTANCE);
   const relationTypeGenericType = new GenericType(relationType);
   relationGenericType.typeArguments = [
     GenericTypeExplicitReference.create(relationTypeGenericType),

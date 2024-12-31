@@ -39,7 +39,7 @@ export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
 
     this.queryLoaderState = new QueryLoaderState(
       applicationStore,
-      this.graphManagerState,
+      this.graphManagerState.graphManager,
       {
         loadQuery: (query: LightQuery): void => {
           this.queryLoaderState.setQueryLoaderDialogOpen(false);

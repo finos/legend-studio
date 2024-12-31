@@ -55,6 +55,7 @@ export class LegendDataCube extends LegendApplication {
   ): Promise<LegendApplicationConfig> {
     return new LegendDataCubeApplicationConfig(input);
   }
+
   async loadApplication(
     applicationStore: ApplicationStore<
       LegendApplicationConfig,

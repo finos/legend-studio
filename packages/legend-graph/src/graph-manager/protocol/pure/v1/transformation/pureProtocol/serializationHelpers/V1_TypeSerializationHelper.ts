@@ -51,45 +51,7 @@ export enum V1_Type_Type {
   RELATION_TYPE = 'relationType',
 }
 
-const packageableTypeSchema = createModelSchema(V1_PackageableType, {
-  _type: usingConstantValueSchema(V1_Type_Type.PACKAGEABLE_TYPE),
-  fullPath: primitive(),
-});
-
-const relationTypeColumnSchema = createModelSchema(V1_RelationTypeColumn, {
-  name: primitive(),
-  type: primitive(),
-});
-
-const relationTypeSchema = createModelSchema(V1_RelationType, {
-  _type: usingConstantValueSchema(V1_Type_Type.RELATION_TYPE),
-  columns: list(usingModelSchema(relationTypeColumnSchema)),
-});
-
-export function V1_deserializeType(json: PlainObject<V1_Type>): V1_Type {
-  switch (json._type) {
-    case V1_Type_Type.PACKAGEABLE_TYPE:
-      return deserialize(packageableTypeSchema, json);
-    case V1_Type_Type.RELATION_TYPE:
-      return deserialize(relationTypeSchema, json);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't deserialize type: '${json._type}'`,
-      );
-  }
-}
-
-export function V1_serializeType(protocol: V1_Type): PlainObject<V1_Type> {
-  if (protocol instanceof V1_PackageableType) {
-    return serialize(packageableTypeSchema, protocol);
-  } else if (protocol instanceof V1_RelationType) {
-    return serialize(relationTypeSchema, protocol);
-  }
-
-  throw new UnsupportedOperationError(`Can't serialize type`, protocol);
-}
-
-export const V1_GenericTypeModelSchema = createModelSchema(V1_GenericType, {
+export const V1_genericTypeModelSchema = createModelSchema(V1_GenericType, {
   multiplicityArguments: customList(
     (val: V1_Multiplicity) => serialize(V1_multiplicityModelSchema, val),
     (val) => deserialize(V1_multiplicityModelSchema, val),
@@ -120,6 +82,62 @@ export const V1_GenericTypeModelSchema = createModelSchema(V1_GenericType, {
   ),
 });
 
+const packageableTypeModelSchema = createModelSchema(V1_PackageableType, {
+  _type: usingConstantValueSchema(V1_Type_Type.PACKAGEABLE_TYPE),
+  fullPath: primitive(),
+});
+
+const V1_relationTypeColumnModelSchema = createModelSchema(
+  V1_RelationTypeColumn,
+  {
+    name: primitive(),
+    genericType: custom(
+      (val) => serialize(V1_genericTypeModelSchema, val),
+      (val) => V1_deserializeGenericType(val),
+      {
+        beforeDeserialize: function (callback, jsonValue, jsonParentValue) {
+          /** @backwardCompatibility */
+          if (
+            jsonParentValue.type !== undefined &&
+            jsonParentValue.genericType === undefined
+          ) {
+            callback(null, jsonParentValue.type);
+          } else {
+            callback(null, jsonParentValue.genericType);
+          }
+        },
+      },
+    ),
+  },
+);
+
+export const V1_relationTypeModelSchema = createModelSchema(V1_RelationType, {
+  _type: usingConstantValueSchema(V1_Type_Type.RELATION_TYPE),
+  columns: list(usingModelSchema(V1_relationTypeColumnModelSchema)),
+});
+
+export function V1_deserializeType(json: PlainObject<V1_Type>): V1_Type {
+  switch (json._type) {
+    case V1_Type_Type.PACKAGEABLE_TYPE:
+      return deserialize(packageableTypeModelSchema, json);
+    case V1_Type_Type.RELATION_TYPE:
+      return deserialize(V1_relationTypeModelSchema, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize type: '${json._type}'`,
+      );
+  }
+}
+
+export function V1_serializeType(protocol: V1_Type): PlainObject<V1_Type> {
+  if (protocol instanceof V1_PackageableType) {
+    return serialize(packageableTypeModelSchema, protocol);
+  } else if (protocol instanceof V1_RelationType) {
+    return serialize(V1_relationTypeModelSchema, protocol);
+  }
+  throw new UnsupportedOperationError(`Can't serialize type`, protocol);
+}
+
 const appendAnyGenericType = (current: V1_GenericType): void => {
   current.multiplicityArguments = [new V1_Multiplicity(1, undefined)];
   const _anytype = new V1_PackageableType();
@@ -129,32 +147,32 @@ const appendAnyGenericType = (current: V1_GenericType): void => {
   current.typeArguments = [arGenType];
 };
 
-export const V1_deserializeGenericType = (
+export function V1_deserializeGenericType(
   val: PlainObject<V1_GenericType> | string,
-): V1_GenericType => {
+): V1_GenericType {
   /** @backwardCompatibility */
-  let genType: V1_GenericType;
+  let genericType: V1_GenericType;
   if (isString(val)) {
-    genType = new V1_GenericType();
+    genericType = new V1_GenericType();
     const packageableType = new V1_PackageableType();
     packageableType.fullPath = val;
-    genType.rawType = packageableType;
+    genericType.rawType = packageableType;
     if (matchFunctionName(val, CORE_PURE_PATH.TABULAR_RESULT)) {
-      appendAnyGenericType(genType);
+      appendAnyGenericType(genericType);
     }
   } else {
-    genType = deserialize(V1_GenericTypeModelSchema, val);
+    genericType = deserialize(V1_genericTypeModelSchema, val);
   }
   const classPath = returnUndefOnError(() =>
-    V1_getGenericTypeFullPath(genType),
+    V1_getGenericTypeFullPath(genericType),
   );
   if (
     classPath &&
     matchFunctionName(classPath, CORE_PURE_PATH.TABULAR_RESULT) &&
-    !genType.multiplicityArguments.length &&
-    !genType.typeArguments.length
+    !genericType.multiplicityArguments.length &&
+    !genericType.typeArguments.length
   ) {
-    appendAnyGenericType(genType);
+    appendAnyGenericType(genericType);
   }
-  return genType;
-};
+  return genericType;
+}

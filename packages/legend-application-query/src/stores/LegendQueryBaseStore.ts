@@ -26,10 +26,10 @@ import {
   ActionState,
   assertErrorThrown,
   LogEvent,
-  NetworkClient,
   type GeneratorFn,
 } from '@finos/legend-shared';
 import { flow, makeObservable } from 'mobx';
+import { getCurrentUserIDFromEngineServer } from '@finos/legend-graph';
 
 export type LegendQueryApplicationStore = ApplicationStore<
   LegendQueryApplicationConfig,
@@ -71,8 +71,8 @@ export class LegendQueryBaseStore {
 
     try {
       this.applicationStore.identityService.setCurrentUser(
-        (yield new NetworkClient().get(
-          `${this.applicationStore.config.engineServerUrl}/server/v1/currentUser`,
+        (yield getCurrentUserIDFromEngineServer(
+          this.applicationStore.config.engineServerUrl,
         )) as string,
       );
     } catch (error) {

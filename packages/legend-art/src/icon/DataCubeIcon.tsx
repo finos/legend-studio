@@ -77,13 +77,23 @@ import {
   TbCircleCheckFilled,
   TbCircleXFilled,
   TbClipboard,
+  TbClockEdit,
+  TbUser,
 } from 'react-icons/tb';
-import { VscError, VscInfo, VscQuestion, VscWarning } from 'react-icons/vsc';
+import {
+  VscError,
+  VscInfo,
+  VscPass,
+  VscQuestion,
+  VscWarning,
+  VscWordWrap,
+} from 'react-icons/vsc';
 
 export const DataCubeIcon = {
   AdvancedSettings: TbSettingsBolt,
   AlertError: VscError,
   AlertInfo: VscInfo,
+  AlertSuccess: VscPass,
   AlertWarning: VscWarning,
   Calculate: TbCalculator,
   Calendar: TbCalendarEvent,
@@ -98,6 +108,7 @@ export const DataCubeIcon = {
   CircledFailed: TbCircleXFilled,
   Clipboard: TbClipboard,
   Code: TbCode,
+  ClockEdit: TbClockEdit,
   Cube: TbCube,
   Debug: TbBug,
   Documentation: TbBook,
@@ -139,8 +150,10 @@ export const DataCubeIcon = {
   TextAlignLeft: PiTextAlignLeft,
   TextAlignCenter: PiTextAlignCenter,
   TextAlignRight: PiTextAlignRight,
+  User: TbUser,
   Window: GoBrowser,
   X: GoX,
   Warning: TbAlertTriangle,
   WarningCircle: TbExclamationCircle,
+  WordWrap: VscWordWrap,
 };

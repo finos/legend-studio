@@ -19,11 +19,13 @@ import { noop } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
 import { useDataCube } from '../DataCubeProvider.js';
+import { FormButton } from './DataCubeFormUtils.js';
 
 export enum AlertType {
-  INFO = 'INFO',
-  WARNING = 'WARNING',
   ERROR = 'ERROR',
+  INFO = 'INFO',
+  SUCCESS = 'SUCCESS',
+  WARNING = 'WARNING',
 }
 
 export type ActionAlertAction = { label: string; handler: () => void };
@@ -56,14 +58,17 @@ export function Alert(props: {
         })}
       >
         <div className="mr-3">
+          {type === AlertType.ERROR && (
+            <DataCubeIcon.AlertError className="flex-shrink-0 stroke-[0.5px] text-[40px] text-red-500" />
+          )}
           {type === AlertType.INFO && (
             <DataCubeIcon.AlertInfo className="flex-shrink-0 stroke-[0.5px] text-[40px] text-sky-500" />
           )}
+          {type === AlertType.SUCCESS && (
+            <DataCubeIcon.AlertSuccess className="flex-shrink-0 stroke-[0.5px] text-[40px] text-green-500" />
+          )}
           {type === AlertType.WARNING && (
             <DataCubeIcon.AlertWarning className="flex-shrink-0 stroke-[0.3px] text-[40px] text-amber-500" />
-          )}
-          {type === AlertType.ERROR && (
-            <DataCubeIcon.AlertError className="flex-shrink-0 stroke-[0.5px] text-[40px] text-red-500" />
           )}
         </div>
         <div>
@@ -76,8 +81,8 @@ export function Alert(props: {
       {actions.length !== 0 && (
         <div className="flex h-10 items-center justify-center border border-t-neutral-300 px-2">
           {actions.map((action, idx) => (
-            <button
-              className="ml-2 h-6 border border-neutral-400 bg-neutral-300 px-2 first-of-type:ml-0 hover:brightness-95"
+            <FormButton
+              className="ml-2 first-of-type:ml-0"
               // eslint-disable-next-line react/no-array-index-key
               key={idx}
               onClick={() => {
@@ -87,7 +92,7 @@ export function Alert(props: {
               autoFocus={idx === 0} // UX-wise, the first action should always be the default, i.e. auto-focus on the first button
             >
               {action.label}
-            </button>
+            </FormButton>
           ))}
         </div>
       )}

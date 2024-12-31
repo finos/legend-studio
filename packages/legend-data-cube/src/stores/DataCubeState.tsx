@@ -18,10 +18,10 @@ import { type DataCubeEngine } from './core/DataCubeEngine.js';
 import { DataCubeViewState } from './view/DataCubeViewState.js';
 import type { DisplayState } from './core/DataCubeLayoutManagerState.js';
 import { DocumentationPanel } from '../components/core/DataCubeDocumentationPanel.js';
-import { DataCubeSettingsPanel } from '../components/core/DataCubeSettingsPanel.js';
 import {
   ActionState,
   assertErrorThrown,
+  uuid,
   type DocumentationEntry,
 } from '@finos/legend-shared';
 import {
@@ -33,24 +33,20 @@ import { action, makeObservable, observable } from 'mobx';
 import { DataCubeSettings } from './DataCubeSettings.js';
 import type { DataCubeAPI } from './DataCubeAPI.js';
 import type { DataCubeOptions } from './DataCubeOptions.js';
+import type { DataCubeQuery } from './core/models/DataCubeQuery.js';
 
 export class DataCubeState implements DataCubeAPI {
-  readonly engine: DataCubeEngine;
-  readonly settings!: DataCubeSettings;
-  readonly initState = ActionState.create();
-  readonly settingsDisplay: DisplayState;
-  readonly documentationDisplay: DisplayState;
-  // NOTE: when we support multiview, there can be multiple view states to support
-  // the first one in that list will be taken as the main view state
-  readonly view: DataCubeViewState;
+  uuid = uuid();
 
+  readonly engine: DataCubeEngine;
+
+  readonly query: DataCubeQuery;
+  readonly settings!: DataCubeSettings;
+  readonly documentationDisplay: DisplayState;
+  readonly initializeState = ActionState.create();
+
+  onInitialized?: ((dataCube: DataCubeState) => void) | undefined;
   onNameChanged?: ((name: string, source: DataCubeSource) => void) | undefined;
-  onSettingChanged?:
-    | ((
-        key: string,
-        value: string | number | boolean | object | undefined,
-      ) => void)
-    | undefined;
   innerHeaderComponent?:
     | ((dataCube: DataCubeState) => React.ReactNode)
     | undefined;
@@ -58,32 +54,31 @@ export class DataCubeState implements DataCubeAPI {
   currentDocumentationEntry?: DocumentationEntry | undefined;
   currentActionAlert?: ActionAlert | undefined;
 
-  constructor(engine: DataCubeEngine, options?: DataCubeOptions | undefined) {
+  // NOTE: when we support multiview, there can be multiple view states to support
+  // the first one in that list will be taken as the main view state
+  view: DataCubeViewState;
+
+  constructor(
+    query: DataCubeQuery,
+    engine: DataCubeEngine,
+    options?: DataCubeOptions | undefined,
+  ) {
     makeObservable(this, {
       currentDocumentationEntry: observable,
       openDocumentationEntry: action,
 
       currentActionAlert: observable,
       alertAction: action,
+
+      uuid: observable,
+      reload: action,
     });
 
+    this.query = query;
     this.engine = engine;
-    this.settings = new DataCubeSettings(this);
+    this.settings = new DataCubeSettings(this, options);
     this.view = new DataCubeViewState(this);
 
-    this.settingsDisplay = this.engine.layout.newDisplay(
-      'Settings',
-      () => <DataCubeSettingsPanel />,
-      {
-        x: -50,
-        y: 50,
-        width: 600,
-        height: 400,
-        minWidth: 300,
-        minHeight: 200,
-        center: false,
-      },
-    );
     this.documentationDisplay = this.engine.layout.newDisplay(
       'Documentation',
       () => <DocumentationPanel />,
@@ -98,26 +93,14 @@ export class DataCubeState implements DataCubeAPI {
       },
     );
 
+    this.onInitialized = options?.onInitialized;
     this.onNameChanged = options?.onNameChanged;
-    this.onSettingChanged = options?.onSettingChanged;
     this.innerHeaderComponent = options?.innerHeaderComponent;
+  }
 
-    this.settings.enableDebugMode =
-      options?.enableDebugMode !== undefined
-        ? options.enableDebugMode
-        : this.settings.enableDebugMode;
-    this.settings.gridClientRowBuffer =
-      options?.gridClientRowBuffer !== undefined
-        ? options.gridClientRowBuffer
-        : this.settings.gridClientRowBuffer;
-    this.settings.gridClientPurgeClosedRowNodes =
-      options?.gridClientPurgeClosedRowNodes !== undefined
-        ? options.gridClientPurgeClosedRowNodes
-        : this.settings.gridClientPurgeClosedRowNodes;
-    this.settings.gridClientSuppressLargeDatasetWarning =
-      options?.gridClientSuppressLargeDatasetWarning !== undefined
-        ? options.gridClientSuppressLargeDatasetWarning
-        : this.settings.gridClientSuppressLargeDatasetWarning;
+  reload() {
+    this.view = new DataCubeViewState(this);
+    this.uuid = uuid();
   }
 
   getSettings() {
@@ -145,16 +128,20 @@ export class DataCubeState implements DataCubeAPI {
   }
 
   async initialize() {
-    if (!this.initState.isInInitialState) {
-      this.engine.logDebug('REPL store is re-initialized');
+    if (!this.initializeState.isInInitialState) {
+      this.engine.logDebug('DataCube state is re-initialized');
       return;
     }
-    this.initState.inProgress();
+    this.initializeState.inProgress();
 
     try {
-      await this.engine.initialize();
-      this.initState.pass();
-    } catch (error: unknown) {
+      await this.engine.initialize({
+        gridClientLicense: this.settings.gridClientLicense,
+      });
+
+      this.onInitialized?.(this);
+      this.initializeState.pass();
+    } catch (error) {
       assertErrorThrown(error);
       this.alertAction({
         message: `Initialization Failure: ${error.message}`,
@@ -162,7 +149,7 @@ export class DataCubeState implements DataCubeAPI {
         type: AlertType.ERROR,
         actions: [],
       });
-      this.initState.fail();
+      this.initializeState.fail();
     }
   }
 }

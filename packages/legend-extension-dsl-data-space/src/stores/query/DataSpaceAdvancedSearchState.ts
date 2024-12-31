@@ -33,6 +33,7 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  LogEvent,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import { DSL_DataSpace_getGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
@@ -42,7 +43,10 @@ import {
   type DataSpaceInfo,
   extractDataSpaceInfo,
 } from '../shared/DataSpaceInfo.js';
-import { type GenericLegendApplicationStore } from '@finos/legend-application';
+import {
+  APPLICATION_EVENT,
+  type GenericLegendApplicationStore,
+} from '@finos/legend-application';
 import { retrieveAnalyticsResultCache } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
 import type { DataSpaceAnalysisResult } from '../../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import {
@@ -149,6 +153,10 @@ export class DataSpaceAdvancedSearchState {
       assertErrorThrown(error);
       this.loadDataSpacesState.fail();
       this.applicationStore.notificationService.notifyError(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+        error,
+      );
     }
   }
 

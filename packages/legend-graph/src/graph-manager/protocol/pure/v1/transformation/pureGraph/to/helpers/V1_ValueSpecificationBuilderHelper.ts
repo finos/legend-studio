@@ -109,7 +109,7 @@ import {
 import { V1_SubTypeGraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_SubTypeGraphFetchTree.js';
 import { findMappingLocalProperty } from '../../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
 import { getRelationTypeGenericType } from '../../../../../../../../graph/helpers/ValueSpecificationHelper.js';
-import { Relation_RelationType } from '../../../../../../../../graph/metamodel/pure/packageableElements/relation/Relation_RelationType.js';
+import { RelationType } from '../../../../../../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 import {
   V1_getGenericTypeFullPath,
   V1_createGenericTypeWithElementPath,
@@ -585,7 +585,7 @@ export function V1_processProperty(
       EnumValueExplicitReference.create(getEnumValue(inferredType, property)),
     ];
     return enumValueInstanceValue;
-  } else if (inferredType instanceof Relation_RelationType) {
+  } else if (inferredType instanceof RelationType) {
     const col = guaranteeNonNullable(
       inferredType.columns.find((e) => property === e.name),
       `Can't find property ${property} in relation`,

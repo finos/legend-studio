@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { type IDisposable, editor as monacoEditorAPI } from 'monaco-editor';
 import {
   BasePopover,
   Checkbox,
@@ -35,6 +36,15 @@ import {
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import { isString } from '@finos/legend-shared';
 import { useDataCube } from '../DataCubeProvider.js';
+import {
+  clearMarkers,
+  CODE_EDITOR_THEME,
+  getBaseCodeEditorOptions,
+  getCodeEditorValue,
+  normalizeLineEnding,
+  resetLineNumberGutterWidth,
+  setErrorMarkers,
+} from '@finos/legend-code-editor';
 
 export function FormBadge_WIP() {
   return (
@@ -57,6 +67,26 @@ export function FormBadge_Advanced() {
     </div>
   );
 }
+
+export const FormButton = forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    compact?: boolean | undefined;
+  }
+>(function FormButton(props, ref) {
+  const { className, compact, ...otherProps } = props;
+  return (
+    <button
+      ref={ref}
+      {...otherProps}
+      className={cn(
+        'flex h-6 min-w-20 items-center justify-center border border-neutral-400 bg-neutral-300 px-2.5 hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100',
+        { 'h-5 text-sm': Boolean(compact) },
+        className,
+      )}
+    />
+  );
+});
 
 export const FormNumberInput = forwardRef(function FormNumberInput(
   props: React.InputHTMLAttributes<HTMLInputElement> & {
@@ -451,32 +481,33 @@ function FormColorPicker(props: {
           />
         </div>
         <div className="flex">
-          {defaultColor !== undefined && (
-            <button
-              className="ml-1 h-4 w-9 border border-neutral-400 bg-neutral-300 px-1 text-xs hover:brightness-95"
-              onClick={() => {
-                setColor(defaultColor);
-              }}
-            >
-              Reset
-            </button>
-          )}
-          <button
-            className="ml-1 h-4 w-9 border border-neutral-400 bg-neutral-300 px-1 text-xs hover:brightness-95"
+          <FormButton
+            className="h-4 w-9"
             onClick={() => {
               onClose();
             }}
           >
             Cancel
-          </button>
-          <button
-            className="ml-1 h-4 w-9 border border-neutral-400 bg-neutral-300 px-1 text-xs hover:brightness-95"
+          </FormButton>
+          <FormButton
+            className="ml-1 h-4 w-9 text-xs"
+            disabled={defaultColor === undefined}
+            onClick={() => {
+              if (defaultColor !== undefined) {
+                setColor(defaultColor);
+              }
+            }}
+          >
+            Reset
+          </FormButton>
+          <FormButton
+            className="ml-1 h-4 w-9"
             onClick={() => {
               submit();
             }}
           >
             OK
-          </button>
+          </FormButton>
         </div>
       </div>
     </div>
@@ -572,6 +603,204 @@ export const FormDocumentation: React.FC<{
       className={cn('cursor-pointer text-xl text-sky-500', className)}
     >
       <DataCubeIcon.DocumentationHint />
+    </div>
+  );
+};
+
+export const FormCodeEditor: React.FC<{
+  value: string;
+  updateValue?: ((val: string) => void) | undefined;
+  language: string;
+  title?: string | undefined;
+  isReadOnly?: boolean | undefined;
+  hideMinimap?: boolean | undefined;
+  hideGutter?: boolean | undefined;
+  hidePadding?: boolean | undefined;
+  hideActionBar?: boolean | undefined;
+  lineToScroll?: number | undefined;
+  extraEditorOptions?:
+    | (monacoEditorAPI.IEditorOptions & monacoEditorAPI.IGlobalEditorOptions)
+    | undefined;
+  error?:
+    | {
+        message: string;
+        sourceInformation: {
+          startLine: number;
+          startColumn: number;
+          endLine: number;
+          endColumn: number;
+        };
+      }
+    | undefined;
+}> = (props) => {
+  const {
+    value: inputValue,
+    updateValue,
+    language,
+    title,
+    isReadOnly,
+    hideMinimap,
+    hideGutter,
+    hidePadding,
+    hideActionBar,
+    lineToScroll,
+    extraEditorOptions,
+    error,
+  } = props;
+  const [editor, setEditor] = useState<
+    monacoEditorAPI.IStandaloneCodeEditor | undefined
+  >();
+  const [isWordWrap, setIsWordWrap] = useState(false);
+  const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
+    undefined,
+  );
+
+  /**
+   * NOTE: we want to normalize line ending here since if the original
+   * input value includes CR '\r' character, it will get normalized, calling
+   * the updateValue method and cause a rerender. With the way we setup
+   * `onChange` method, React will warn about `setState` being called in
+   * `render` method.
+   * See https://github.com/finos/legend-studio/issues/608
+   */
+  const value = normalizeLineEnding(inputValue);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const toggleWordWrap = (): void => {
+    const updatedWordWrap = !isWordWrap;
+    setIsWordWrap(updatedWordWrap);
+    editor?.updateOptions({
+      wordWrap: updatedWordWrap ? 'on' : 'off',
+    });
+  };
+
+  useEffect(() => {
+    if (!editor && ref.current) {
+      const element = ref.current;
+      const _editor = monacoEditorAPI.create(element, {
+        ...getBaseCodeEditorOptions(),
+        fontSize: 12,
+        theme: CODE_EDITOR_THEME.GITHUB_LIGHT,
+        // layout
+        glyphMargin: !hidePadding,
+        padding: !hidePadding ? { top: 20, bottom: 20 } : { top: 0, bottom: 0 },
+
+        formatOnType: true,
+        formatOnPaste: true,
+      });
+      setEditor(_editor);
+    }
+  }, [hidePadding, editor]);
+
+  useEffect(() => {
+    if (editor) {
+      resetLineNumberGutterWidth(editor);
+      const model = editor.getModel();
+      if (model) {
+        monacoEditorAPI.setModelLanguage(model, language);
+      }
+    }
+  }, [editor, language]);
+
+  useEffect(() => {
+    if (editor && lineToScroll !== undefined) {
+      editor.revealLineInCenter(lineToScroll);
+    }
+  }, [editor, lineToScroll]);
+
+  if (editor) {
+    // dispose the old editor content setter in case the `updateValue` handler changes
+    // for a more extensive note on this, see `LambdaEditor`
+    onDidChangeModelContentEventDisposer.current?.dispose();
+    onDidChangeModelContentEventDisposer.current =
+      editor.onDidChangeModelContent(() => {
+        const currentVal = getCodeEditorValue(editor);
+        if (currentVal !== value) {
+          updateValue?.(currentVal);
+        }
+      });
+
+    // Set the text value and editor options
+    const currentValue = getCodeEditorValue(editor);
+    if (currentValue !== value) {
+      editor.setValue(value);
+    }
+    editor.updateOptions({
+      readOnly: Boolean(isReadOnly),
+      minimap: { enabled: !hideMinimap },
+      // Hide the line number gutter
+      // See https://github.com/microsoft/vscode/issues/30795
+      ...(hideGutter
+        ? {
+            glyphMargin: !hidePadding,
+            folding: false,
+            lineNumbers: 'off',
+            lineDecorationsWidth: 0,
+          }
+        : {}),
+      ...(extraEditorOptions ?? {}),
+    });
+    const model = editor.getModel();
+    if (model) {
+      if (error?.sourceInformation) {
+        setErrorMarkers(model, [
+          {
+            message: error.message,
+            startLineNumber: error.sourceInformation.startLine,
+            startColumn: error.sourceInformation.startColumn,
+            endLineNumber: error.sourceInformation.endLine,
+            endColumn: error.sourceInformation.endColumn,
+          },
+        ]);
+      } else {
+        clearMarkers();
+      }
+    }
+  }
+
+  // dispose editor
+  useEffect(
+    () => () => {
+      if (editor) {
+        editor.dispose();
+
+        onDidChangeModelContentEventDisposer.current?.dispose();
+      }
+    },
+    [editor],
+  );
+
+  return (
+    <div className="h-full w-full border border-neutral-200">
+      {!hideActionBar && (
+        <div className="flex h-5 w-full items-center justify-between border-b border-neutral-200">
+          <div className="pl-1 text-sm text-neutral-500">{title ?? ''}</div>
+          <button
+            tabIndex={-1}
+            className={cn(
+              'flex aspect-square h-5 items-center justify-center text-neutral-300 hover:text-neutral-600',
+              {
+                'text-neutral-600': isWordWrap,
+              },
+            )}
+            onClick={toggleWordWrap}
+            title={`[${isWordWrap ? 'on' : 'off'}] Toggle word wrap`}
+          >
+            <DataCubeIcon.WordWrap />
+          </button>
+        </div>
+      )}
+      <div
+        className={cn('relative h-full w-full', {
+          'code-editor__content--padding': !hidePadding,
+          'h-[calc(100%_-_20px)]': !hideActionBar,
+        })}
+      >
+        <div
+          className="absolute left-0 top-0 h-full w-full overflow-hidden"
+          ref={ref}
+        />
+      </div>
     </div>
   );
 };

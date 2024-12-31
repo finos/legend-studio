@@ -18,7 +18,7 @@ import type { V1_ValueSpecification } from '@finos/legend-graph';
 import type { DataCubeColumn } from './DataCubeColumn.js';
 
 export abstract class DataCubeSource {
-  sourceColumns: DataCubeColumn[] = [];
+  columns: DataCubeColumn[] = [];
   query!: V1_ValueSpecification;
 }
 

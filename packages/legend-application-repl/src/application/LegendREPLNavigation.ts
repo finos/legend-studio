@@ -15,7 +15,7 @@
  */
 
 /**
- * @external_application_navigation This depends on Legend Data Cube routing and is hardcoded so it's potentially brittle
+ * @external_application_navigation This depends on Legend DataCube routing and is hardcoded so it's potentially brittle
  */
 export const EXTERNAL_APPLICATION_NAVIGATION__generateDataCubeViewUrl = (
   hostedApplicationBaseUrl: string,

@@ -163,7 +163,7 @@ export const Window = (props: {
             <DataCubeIcon.X />
           </button>
         </div>
-        <div className="h-[calc(100%_-_24px)] w-full">
+        <div className="h-[calc(100%_-_24px)] w-full overflow-auto">
           {windowState.configuration.contentRenderer(windowState.configuration)}
         </div>
       </div>

@@ -147,7 +147,7 @@ import { QueryDatabaseState } from '../../../stores/editor/editor-state/element-
 import {
   isElementSupportedByDataCube,
   openDataCube,
-} from '../../../stores/editor/data-cube/DataCubeViewerState.js';
+} from '../../../stores/editor/data-cube/LegendStudioDataCubeHelper.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();

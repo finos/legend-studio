@@ -129,6 +129,7 @@ export class LegendQueryUserDataHelper {
       key: LEGEND_QUERY_USER_DATA_KEY.RECENTLY_VIEWED_QUERIES,
     });
   }
+
   // DataSpaces
   static getRecentlyVisitedDataSpaces(
     service: UserDataService,

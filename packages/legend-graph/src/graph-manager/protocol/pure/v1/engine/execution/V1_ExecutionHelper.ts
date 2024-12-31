@@ -168,7 +168,7 @@ export const V1_buildExecutionResult = (
   throw new UnsupportedOperationError(`Can't build execution result`, protocol);
 };
 
-export const V1_serializeExecutionResult = (
+export const V1_deserializeExecutionResult = (
   json: PlainObject<V1_ExecutionResult> | string | null | boolean | number,
 ): V1_ExecutionResult => {
   if (json === null || isString(json) || isNumber(json) || isBoolean(json)) {

@@ -182,6 +182,8 @@ export const serializeArray = <T>(
   if (process.env.NODE_ENV === 'test') {
     forceReturnEmptyInTest =
       Boolean(options?.INTERNAL__forceReturnEmptyInTest) &&
+      // TODO: when we distribute engine-roundtrip tests to different test groups, we should
+      // remove this condition and clean up test data accordingly.
       // eslint-disable-next-line no-process-env
       process.env.TEST_GROUP === 'engine-roundtrip';
   }

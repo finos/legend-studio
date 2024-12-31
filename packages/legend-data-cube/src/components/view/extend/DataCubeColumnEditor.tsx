@@ -36,6 +36,7 @@ import {
   MONACO_EDITOR_OVERFLOW_WIDGETS_ROOT_ID,
 } from '../../core/DataCubePureCodeEditorUtils.js';
 import {
+  FormButton,
   FormDocumentation,
   FormDropdownMenu,
   FormDropdownMenuItem,
@@ -191,7 +192,7 @@ export const DataCubeColumnCreator = observer(
 
     return (
       <>
-        <div className="relative h-[calc(100%_-_40px)] w-full px-2 pt-2">
+        <div className="h-[calc(100%_-_40px)] w-full px-2 pt-2">
           <div className="h-full w-full overflow-auto border border-neutral-300 bg-white">
             <div className="h-full w-full select-none p-0">
               <div className="h-24 w-full p-2">
@@ -340,8 +341,33 @@ export const DataCubeColumnCreator = observer(
           </div>
         </div>
         <div className="flex h-10 items-center justify-end px-2">
-          <button
-            className="h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100"
+          <FormButton onClick={() => state.close()}>Cancel</FormButton>
+          {state instanceof DataCubeExistingColumnEditorState && (
+            <>
+              <FormButton
+                className="ml-2"
+                onClick={() => {
+                  state.manager
+                    .deleteColumn(state.initialData.name)
+                    .catch((error) => engine.alertUnhandledError(error));
+                }}
+              >
+                Delete
+              </FormButton>
+              <FormButton
+                className="ml-2"
+                onClick={() => {
+                  state
+                    .reset()
+                    .catch((error) => engine.alertUnhandledError(error));
+                }}
+              >
+                Reset
+              </FormButton>
+            </>
+          )}
+          <FormButton
+            className="ml-2"
             disabled={
               !state.isNameValid ||
               !state.isTypeValid ||
@@ -355,37 +381,7 @@ export const DataCubeColumnCreator = observer(
             }}
           >
             OK
-          </button>
-          {state instanceof DataCubeExistingColumnEditorState && (
-            <>
-              <button
-                className="ml-2 h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
-                onClick={() => {
-                  state.manager
-                    .deleteColumn(state.initialData.name)
-                    .catch((error) => engine.alertUnhandledError(error));
-                }}
-              >
-                Delete
-              </button>
-              <button
-                className="ml-2 h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
-                onClick={() => {
-                  state
-                    .reset()
-                    .catch((error) => engine.alertUnhandledError(error));
-                }}
-              >
-                Reset
-              </button>
-            </>
-          )}
-          <button
-            className="ml-2 h-6 w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95"
-            onClick={() => state.close()}
-          >
-            Cancel
-          </button>
+          </FormButton>
         </div>
       </>
     );

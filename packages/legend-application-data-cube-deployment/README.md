@@ -1,6 +1,6 @@
 # @finos/legend-application-data-cube-deployment
 
-This is the `Legend Data Cube` web application deployment. This is used for development locally and publishing of image [finos/legend-data-cube](https://hub.docker.com/r/finos/legend-data-cube) on [Docker Hub](https://hub.docker.com/).
+This is the `Legend DataCube` web application deployment. This is used for development locally and publishing of image [finos/legend-data-cube](https://hub.docker.com/r/finos/legend-data-cube) on [Docker Hub](https://hub.docker.com/).
 
 ## Getting started
 

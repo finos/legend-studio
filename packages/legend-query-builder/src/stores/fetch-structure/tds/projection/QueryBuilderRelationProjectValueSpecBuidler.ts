@@ -28,9 +28,9 @@ import {
   V1_GraphTransformerContextBuilder,
   GenericType,
   GenericTypeExplicitReference,
-  Relation_Relation,
-  Relation_RelationalColumn,
-  Relation_RelationType,
+  Relation,
+  RelationColumn,
+  RelationType,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graph/QueryBuilderMetaModelConst.js';
 import {
@@ -64,7 +64,7 @@ export const buildRelationProjection = (
 
   const colSepcArray = new ColSpecArray();
   instanceVal.values = [colSepcArray];
-  const relationType = new Relation_RelationType(Relation_RelationType.ID);
+  const relationType = new RelationType(RelationType.ID);
 
   tdsState.projectionColumns.forEach((projectionColumnState) => {
     const colSpec = new ColSpec();
@@ -118,14 +118,11 @@ export const buildRelationProjection = (
       `Can't create value spec for projection column ${projectionColumnState.columnName}`,
     );
     relationType.columns.push(
-      new Relation_RelationalColumn(
-        projectionColumnState.columnName,
-        returnType,
-      ),
+      new RelationColumn(projectionColumnState.columnName, returnType),
     );
   });
   projectFunction.parametersValues = [precedingExpression, instanceVal];
-  const relationGenericType = new GenericType(Relation_Relation.INSTANCE);
+  const relationGenericType = new GenericType(Relation.INSTANCE);
   const relationTypeGenericType = new GenericType(relationType);
   relationGenericType.typeArguments = [
     GenericTypeExplicitReference.create(relationTypeGenericType),

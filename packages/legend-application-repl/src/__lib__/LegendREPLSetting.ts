@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-export enum LEGEND_REPL_SETTING_KEY {
-  ENABLE_DEBUG_MODE = 'legend-repl.engine.enableDebugMode',
-  GRID_CLIENT_ROW_BUFFER = 'legend-repl.engine.grid-client.rowBuffer',
-  GRID_CLIENT_PURGE_CLOSED_ROW_NODES = 'legend-repl.engine.grid-client.purgeClosedRowNodes',
-  GRID_CLIENT_SUPPRESS_LARGE_DATASET_WARNING = 'legend-repl.engine.grid-client.suppressLargeDatasetWarning',
+export enum LegendREPLSettingStorageKey {
+  DATA_CUBE = 'data-cube',
 }

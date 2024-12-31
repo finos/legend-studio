@@ -127,7 +127,7 @@ import {
 import type { V1_SourceInformation } from '../model/V1_SourceInformation.js';
 import { V1_INTERNAL__PackageableElementWithSourceInformation } from '../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import { ELEMENT_PATH_DELIMITER } from '../../../../../graph/MetaModelConst.js';
-import { V1_serializeExecutionResult } from './execution/V1_ExecutionHelper.js';
+import { V1_deserializeExecutionResult } from './execution/V1_ExecutionHelper.js';
 import type {
   ClassifierPathMapping,
   SubtypeInfo,
@@ -154,7 +154,7 @@ import { V1_RelationalConnectionBuilder } from './relational/V1_RelationalConnec
 import type { PostValidationAssertionResult } from '../../../../../DSL_Service_Exports.js';
 import { V1_DebugTestsResult } from './test/V1_DebugTestsResult.js';
 import type { V1_GraphManagerEngine } from './V1_GraphManagerEngine.js';
-import { V1_RelationType } from '../model/packageableElements/type/V1_RelationType.js';
+import { type V1_RelationType } from '../model/packageableElements/type/V1_RelationType.js';
 import {
   RelationTypeColumnMetadata,
   RelationTypeMetadata,
@@ -162,7 +162,12 @@ import {
 import { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
 import { DeploymentResult } from '../../../../action/DeploymentResult.js';
-import { PersistentDataCubeQuery } from '../../../../action/query/PersistentDataCubeQuery.js';
+import {
+  LightPersistentDataCubeQuery,
+  PersistentDataCubeQuery,
+} from '../../../../action/query/PersistentDataCubeQuery.js';
+import { V1_getGenericTypeFullPath } from '../helpers/V1_DomainHelper.js';
+import { V1_relationTypeModelSchema } from '../transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
 
 class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_RemoteEngine;
@@ -329,7 +334,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     return sourceInformationIndex;
   }
 
-  pureModelContextDataToPureCode(
+  transformPureModelContextDataToCode(
     graph: V1_PureModelContextData,
     pretty: boolean,
   ): Promise<string> {
@@ -339,7 +344,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     );
   }
 
-  async pureCodeToPureModelContextData(
+  async transformCodeToPureModelContextData(
     code: string,
     options?: {
       sourceInformationIndex?: Map<string, V1_SourceInformation> | undefined;
@@ -413,7 +418,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     );
   }
 
-  async transformValueSpecsToCode(
+  async transformValueSpecificationsToCode(
     input: Record<string, PlainObject<V1_ValueSpecification>>,
     pretty: boolean,
   ): Promise<Map<string, string>> {
@@ -426,7 +431,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     );
   }
 
-  async transformValueSpecToCode(
+  async transformValueSpecificationToCode(
     input: PlainObject<V1_ValueSpecification>,
     pretty: boolean,
   ): Promise<string> {
@@ -437,7 +442,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     return code;
   }
 
-  async transformCodeToValueSpeces(
+  async transformCodeToValueSpecifications(
     input: Record<string, V1_GrammarParserBatchInputEntry>,
   ): Promise<Map<string, PlainObject>> {
     const batchResults =
@@ -454,7 +459,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     return finalResults;
   }
 
-  async transformCodeToValueSpec(
+  async transformCodeToValueSpecification(
     input: string,
     returnSourceInformation?: boolean,
   ): Promise<PlainObject<V1_ValueSpecification>> {
@@ -720,27 +725,32 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   async getLambdaRelationTypeFromRawInput(
     rawInput: V1_LambdaReturnTypeInput,
   ): Promise<RelationTypeMetadata> {
-    const res = V1_RelationType.serialization.fromJson(
+    const result = deserialize(
+      V1_relationTypeModelSchema,
       (await this.engineServerClient.lambdaRelationType(
         V1_LambdaReturnTypeInput.serialization.toJson(rawInput),
       )) as unknown as PlainObject<V1_RelationType>,
     );
-    const result = new RelationTypeMetadata();
-    result.columns = res.columns.map(
-      (e) => new RelationTypeColumnMetadata(e.type, e.name),
+    const relationType = new RelationTypeMetadata();
+    relationType.columns = result.columns.map(
+      (column) =>
+        new RelationTypeColumnMetadata(
+          V1_getGenericTypeFullPath(column.genericType),
+          column.name,
+        ),
     );
-    return result;
+    return relationType;
   }
 
   async getCodeCompletion(
     rawInput: V1_CompleteCodeInput,
   ): Promise<CodeCompletionResult> {
-    const res = CodeCompletionResult.serialization.fromJson(
+    const result = CodeCompletionResult.serialization.fromJson(
       (await this.engineServerClient.completeCode(
         V1_CompleteCodeInput.serialization.toJson(rawInput),
       )) as unknown as PlainObject<CodeCompletionResult>,
     );
-    return res;
+    return result;
   }
 
   // --------------------------------------------- Execution ---------------------------------------------
@@ -763,7 +773,7 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
         returnUndefOnError(() =>
           this.parseExecutionResults(executionResultInText, options),
         ) ?? executionResultInText;
-      const executionResult = V1_serializeExecutionResult(rawExecutionResult);
+      const executionResult = V1_deserializeExecutionResult(rawExecutionResult);
       const executionTraceId = executionResultMap.get(V1_ZIPKIN_TRACE_HEADER);
       if (executionTraceId) {
         return { executionResult, executionTraceId };
@@ -989,7 +999,10 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     // from the front end to engine would take up a lot of bandwidth.
     const textModel = new V1_PureModelContextText();
     textModel.serializer = model.serializer;
-    textModel.code = await this.pureModelContextDataToPureCode(model, false);
+    textModel.code = await this.transformPureModelContextDataToCode(
+      model,
+      false,
+    );
     return (
       await this.engineServerClient.generateFile(
         generationMode,
@@ -1108,12 +1121,12 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       await this.engineServerClient.searchQueries(
         V1_QuerySearchSpecification.serialization.toJson(searchSpecification),
       )
-    ).map((v) => V1_LightQuery.serialization.fromJson(v));
+    ).map((query) => V1_LightQuery.serialization.fromJson(query));
   }
 
   async getQueries(queryIds: string[]): Promise<V1_LightQuery[]> {
-    return (await this.engineServerClient.getQueries(queryIds)).map((v) =>
-      V1_LightQuery.serialization.fromJson(v),
+    return (await this.engineServerClient.getQueries(queryIds)).map((query) =>
+      V1_LightQuery.serialization.fromJson(query),
     );
   }
 
@@ -1159,7 +1172,27 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       broadcastToCluster,
     );
   }
-  // ------------------------------------------ Query Data Cube ------------------------------------------
+  // ------------------------------------------ QueryData Cube ------------------------------------------
+
+  async searchDataCubeQueries(
+    searchSpecification: V1_QuerySearchSpecification,
+  ): Promise<LightPersistentDataCubeQuery[]> {
+    return (
+      await this.engineServerClient.searchDataCubeQueries(
+        V1_QuerySearchSpecification.serialization.toJson(searchSpecification),
+      )
+    ).map((query) =>
+      LightPersistentDataCubeQuery.serialization.fromJson(query),
+    );
+  }
+
+  async getDataCubeQueries(
+    queryIds: string[],
+  ): Promise<LightPersistentDataCubeQuery[]> {
+    return (await this.engineServerClient.getDataCubeQueries(queryIds)).map(
+      (query) => LightPersistentDataCubeQuery.serialization.fromJson(query),
+    );
+  }
 
   async getDataCubeQuery(id: string): Promise<PersistentDataCubeQuery> {
     return PersistentDataCubeQuery.serialization.fromJson(
@@ -1172,6 +1205,17 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   ): Promise<PersistentDataCubeQuery> {
     return PersistentDataCubeQuery.serialization.fromJson(
       await this.engineServerClient.createDataCubeQuery(
+        PersistentDataCubeQuery.serialization.toJson(query),
+      ),
+    );
+  }
+
+  async updateDataCubeQuery(
+    query: PersistentDataCubeQuery,
+  ): Promise<PersistentDataCubeQuery> {
+    return PersistentDataCubeQuery.serialization.fromJson(
+      await this.engineServerClient.updateDataCubeQuery(
+        query.id,
         PersistentDataCubeQuery.serialization.toJson(query),
       ),
     );

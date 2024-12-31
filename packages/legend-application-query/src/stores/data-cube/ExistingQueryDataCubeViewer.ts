@@ -29,13 +29,16 @@ import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { assertErrorThrown, type GeneratorFn } from '@finos/legend-shared';
 import { QueryBuilderDataCubeEngine } from '@finos/legend-query-builder';
 import { flow, makeObservable, observable } from 'mobx';
+import { type DataCubeQuery } from '@finos/legend-data-cube';
 
 export class ExistingQueryDataCubeEditorStore {
   readonly applicationStore: LegendQueryApplicationStore;
   readonly depotServerClient: DepotServerClient;
   readonly graphManagerState: GraphManagerState;
   readonly queryId: string;
-  engine: QueryBuilderDataCubeEngine | undefined;
+
+  query?: DataCubeQuery | undefined;
+  engine?: QueryBuilderDataCubeEngine | undefined;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -43,9 +46,12 @@ export class ExistingQueryDataCubeEditorStore {
     queryId: string,
   ) {
     makeObservable(this, {
-      initialize: flow,
+      query: observable,
       engine: observable,
+
+      initialize: flow,
     });
+
     this.applicationStore = applicationStore;
     this.depotServerClient = depotServerClient;
     this.graphManagerState = new GraphManagerState(
@@ -97,6 +103,7 @@ export class ExistingQueryDataCubeEditorStore {
           resolveVersion(queryInfo.versionId),
         ),
       );
+
       // TODO: we should be able to call engine and convert lambda to relation if not one.
       const engine = new QueryBuilderDataCubeEngine(
         lambda,
@@ -106,6 +113,7 @@ export class ExistingQueryDataCubeEditorStore {
         this.graphManagerState,
       );
       this.engine = engine;
+      this.query = (yield engine.generateInitialQuery()) as DataCubeQuery;
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(

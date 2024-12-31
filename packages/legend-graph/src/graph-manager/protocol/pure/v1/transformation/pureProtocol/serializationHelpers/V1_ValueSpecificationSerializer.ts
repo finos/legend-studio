@@ -92,7 +92,7 @@ import { V1_ClassInstance } from '../../../model/valueSpecification/raw/V1_Class
 import { V1_CByteArray } from '../../../model/valueSpecification/raw/V1_CByteArray.js';
 import {
   V1_deserializeGenericType,
-  V1_GenericTypeModelSchema,
+  V1_genericTypeModelSchema,
 } from './V1_TypeSerializationHelper.js';
 import { V1_createGenericTypeWithElementPath } from '../../../helpers/V1_DomainHelper.js';
 
@@ -173,7 +173,7 @@ enum V1_ValueSpecificationType {
 export const V1_variableModelSchema = createModelSchema(V1_Variable, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.VARIABLE),
   genericType: optionalCustom(
-    (val) => serialize(V1_GenericTypeModelSchema, val),
+    (val) => serialize(V1_genericTypeModelSchema, val),
     (val) => V1_deserializeGenericType(val),
     {
       beforeDeserialize: function (callback, jsonValue, jsonParentValue) {
@@ -266,7 +266,7 @@ const genericTypeInstanceSchema = (plugins: PureProtocolProcessorPlugin[]) =>
       V1_ValueSpecificationType.GENERIC_TYPE_INSTANCE,
     ),
     genericType: custom(
-      (val) => serialize(V1_GenericTypeModelSchema, val),
+      (val) => serialize(V1_genericTypeModelSchema, val),
       (val) => V1_deserializeGenericType(val),
       {
         beforeDeserialize: function (callback, jsonValue, jsonParentValue) {

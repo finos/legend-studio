@@ -294,10 +294,12 @@ export const Editor = withEditorStore(
             <WorkspaceSyncConflictResolver />
           )}
           <EmbeddedQueryBuilder />
-          {editorStore.embeddedDataCubeViewerEngine && (
+          {editorStore.embeddedDataCubeViewerState && (
             <QueryDataCubeViewer
-              engine={editorStore.embeddedDataCubeViewerEngine}
-              close={() => editorStore.setDataCubeViewState(undefined)}
+              state={editorStore.embeddedDataCubeViewerState}
+              close={() =>
+                editorStore.setEmbeddedDataCubeViewerState(undefined)
+              }
               options={{
                 fullScreen: true,
               }}

@@ -410,10 +410,12 @@ export const ShowcaseViewer = withEditorStore(
             )}
             <ShowcaseViewerStatusBar />
             <EmbeddedQueryBuilder />
-            {editorStore.embeddedDataCubeViewerEngine && (
+            {editorStore.embeddedDataCubeViewerState && (
               <QueryDataCubeViewer
-                engine={editorStore.embeddedDataCubeViewerEngine}
-                close={() => editorStore.setDataCubeViewState(undefined)}
+                state={editorStore.embeddedDataCubeViewerState}
+                close={() =>
+                  editorStore.setEmbeddedDataCubeViewerState(undefined)
+                }
                 options={{
                   fullScreen: true,
                 }}

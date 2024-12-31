@@ -18,22 +18,19 @@ import {
   ContentType,
   guaranteeNonNullable,
   HttpHeader,
-  SerializationFactory,
-  usingConstantValueSchema,
   type NetworkClient,
   type PlainObject,
 } from '@finos/legend-shared';
 import {
   type DataCubeQuery,
   type CompletionItem,
-  type RelationType,
 } from '@finos/legend-data-cube';
 import {
+  type V1_RelationType,
   type PersistentDataCubeQuery,
   type V1_Lambda,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import { createModelSchema, optional, primitive, raw } from 'serializr';
 
 type GetValueSpecificationCodeInput = {
   value: PlainObject<V1_ValueSpecification>;
@@ -76,39 +73,6 @@ type InfrastructureInfo = {
   queryServerBaseUrl?: string | undefined;
   hostedApplicationBaseUrl?: string | undefined;
 };
-
-export const REPL_DATA_CUBE_SOURCE_TYPE = 'repl';
-
-class REPLBaseDataCubeQuerySource {
-  query!: string;
-  runtime!: string;
-  model?: PlainObject | undefined;
-
-  mapping?: string | undefined;
-  timestamp!: number;
-  isLocal!: boolean;
-  isPersistenceSupported!: boolean;
-  // columns // we don't need this analytics, we will get this from the query directly
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(REPLBaseDataCubeQuerySource, {
-      _type: usingConstantValueSchema(REPL_DATA_CUBE_SOURCE_TYPE),
-      isLocal: primitive(),
-      isPersistenceSupported: primitive(),
-      mapping: optional(primitive()),
-      model: optional(raw()),
-      query: primitive(),
-      runtime: primitive(),
-      timestamp: primitive(),
-    }),
-  );
-}
-
-export function deserializeREPLQuerySource(
-  value: PlainObject<REPLBaseDataCubeQuerySource>,
-) {
-  return REPLBaseDataCubeQuerySource.serialization.fromJson(value);
-}
 
 export class LegendREPLServerClient {
   private readonly networkClient: NetworkClient;
@@ -164,7 +128,7 @@ export class LegendREPLServerClient {
 
   async getQueryRelationReturnType(
     input: GetQueryRelationReturnTypeInput,
-  ): Promise<RelationType> {
+  ): Promise<PlainObject<V1_RelationType>> {
     return this.networkClient.post(
       `${this.dataCube}/getRelationReturnType`,
       input,
@@ -173,7 +137,7 @@ export class LegendREPLServerClient {
 
   async getQueryCodeRelationReturnType(
     input: GetQueryCodeRelationReturnTypeInput,
-  ): Promise<RelationType> {
+  ): Promise<PlainObject<V1_RelationType>> {
     return this.networkClient.post(
       `${this.dataCube}/getRelationReturnType/code`,
       input,

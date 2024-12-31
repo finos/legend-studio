@@ -24,7 +24,7 @@ import {
   stub_RawLambda,
   V1_buildExecutionResult,
   V1_DELEGATED_EXPORT_HEADER,
-  V1_serializeExecutionResult,
+  V1_deserializeExecutionResult,
 } from '@finos/legend-graph';
 import {
   act,
@@ -152,7 +152,7 @@ describe(integrationTest('Query builder result state'), () => {
       });
 
       const executionResult = V1_buildExecutionResult(
-        V1_serializeExecutionResult(result),
+        V1_deserializeExecutionResult(result),
       );
       await act(async () => {
         queryBuilderState.resultState.setExecutionResult(executionResult);
@@ -287,7 +287,7 @@ const testQueryBuilderStateSetup = async (): Promise<{
   return { renderResult, queryBuilderState };
 };
 
-test.only(
+test(
   integrationTest('Query Builder Execution Data Incompleteness Warning'),
   async () => {
     const { renderResult, queryBuilderState } =
@@ -298,7 +298,7 @@ test.only(
     });
 
     const executionResult = V1_buildExecutionResult(
-      V1_serializeExecutionResult(TEST_DATA__result),
+      V1_deserializeExecutionResult(TEST_DATA__result),
     );
     await act(async () => {
       queryBuilderState.resultState.setExecutionResult(executionResult);
@@ -327,7 +327,7 @@ describe(integrationTest('Query builder export button'), () => {
     const { renderResult, queryBuilderState } =
       await testQueryBuilderStateSetup();
     const executionResult = V1_buildExecutionResult(
-      V1_serializeExecutionResult(TEST_DATA__result),
+      V1_deserializeExecutionResult(TEST_DATA__result),
     );
     await act(async () => {
       queryBuilderState.resultState.setExecutionResult(executionResult);
@@ -348,7 +348,7 @@ describe(integrationTest('Query builder export button'), () => {
     const { renderResult, queryBuilderState } =
       await testQueryBuilderStateSetup();
     const executionResult = V1_buildExecutionResult(
-      V1_serializeExecutionResult(TEST_DATA__result),
+      V1_deserializeExecutionResult(TEST_DATA__result),
     );
     await act(async () => {
       queryBuilderState.resultState.setExecutionResult(executionResult);
@@ -381,7 +381,7 @@ describe(integrationTest('Query builder export button'), () => {
     const { renderResult, queryBuilderState } =
       await testQueryBuilderStateSetup();
     const executionResult = V1_buildExecutionResult(
-      V1_serializeExecutionResult(TEST_DATA__result),
+      V1_deserializeExecutionResult(TEST_DATA__result),
     );
     await act(async () => {
       queryBuilderState.resultState.setExecutionResult(executionResult);
@@ -415,7 +415,7 @@ describe(integrationTest('Query builder export button'), () => {
     const { renderResult, queryBuilderState } =
       await testQueryBuilderStateSetup();
     const executionResult = V1_buildExecutionResult(
-      V1_serializeExecutionResult(TEST_DATA__result),
+      V1_deserializeExecutionResult(TEST_DATA__result),
     );
     await act(async () => {
       queryBuilderState.resultState.setExecutionResult(executionResult);
@@ -453,7 +453,7 @@ test(
       await testQueryBuilderStateSetup();
 
     const executionResult = V1_buildExecutionResult(
-      V1_serializeExecutionResult(TEST_DATA__NoReturnData__result),
+      V1_deserializeExecutionResult(TEST_DATA__NoReturnData__result),
     );
     await act(async () => {
       queryBuilderState.resultState.setExecutionResult(executionResult);
@@ -491,7 +491,7 @@ test(
       renderResult.getByText('Add Properties to Fetch Structure'),
     );
     const executionResult = V1_buildExecutionResult(
-      V1_serializeExecutionResult(TEST_DATA__RoundingData__result),
+      V1_deserializeExecutionResult(TEST_DATA__RoundingData__result),
     );
     await act(async () => {
       queryBuilderState.resultState.setExecutionResult(executionResult);

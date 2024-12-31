@@ -69,22 +69,16 @@ import {
   configureCodeEditor,
   setupPureLanguageService,
 } from '@finos/legend-code-editor';
-import { DataCubeFont, DataCubeFunction } from './DataCubeQueryEngine.js';
+import { DataCubeFont } from './DataCubeQueryEngine.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import { buildExecutableQuery } from './DataCubeQueryBuilder.js';
 import type { DataCubeColumn } from './models/DataCubeColumn.js';
 import { LicenseManager } from 'ag-grid-enterprise';
-import type { DataCubeQuery } from './models/DataCubeQuery.js';
 import {
   type DataCubeSource,
   INTERNAL__DataCubeSource,
 } from './models/DataCubeSource.js';
-import {
-  _cols,
-  _colSpec,
-  _function,
-  _primitiveValue,
-} from './DataCubeQueryBuilderUtils.js';
+import { _primitiveValue } from './DataCubeQueryBuilderUtils.js';
 import {
   uuid,
   type DocumentationEntry,
@@ -105,25 +99,24 @@ import {
 } from './DataCubeLayoutManagerState.js';
 import { editor as monacoEditorAPI, Uri } from 'monaco-editor';
 import { DataCubeCodeCheckErrorAlert } from '../../components/core/DataCubeCodeCheckErrorAlert.js';
-import type { DataCubeAPI } from '../DataCubeAPI.js';
 
 export type CompletionItem = {
   completion: string;
   display: string;
 };
 
-export type RelationType = {
+export type DataCubeRelationType = {
   columns: DataCubeColumn[];
+};
+
+export type DataCubeExecutionOptions = {
+  debug?: boolean | undefined;
 };
 
 export type DataCubeExecutionResult = {
   result: TDSExecutionResult;
   executedQuery: string;
   executedSQL: string;
-};
-
-export type DataCubeEngineConfiguration = {
-  gridClientLicense?: string | undefined;
 };
 
 export abstract class DataCubeEngine {
@@ -176,16 +169,11 @@ export abstract class DataCubeEngine {
     new DataCubeQueryAggregateOperation__JoinStrings(),
   ];
 
-  protected async fetchConfiguration(): Promise<DataCubeEngineConfiguration> {
-    return {
-      gridClientLicense: undefined,
-    };
-  }
-
-  async initialize(): Promise<void> {
-    const config = await this.fetchConfiguration();
-    if (config.gridClientLicense) {
-      LicenseManager.setLicenseKey(config.gridClientLicense);
+  async initialize(options?: {
+    gridClientLicense?: string | undefined;
+  }): Promise<void> {
+    if (options?.gridClientLicense) {
+      LicenseManager.setLicenseKey(options.gridClientLicense);
     }
     await configureCodeEditor(DataCubeFont.ROBOTO_MONO, (error) => {
       throw error;
@@ -202,46 +190,6 @@ export abstract class DataCubeEngine {
   getAggregateOperation(value: string) {
     return getAggregateOperation(value, this.aggregateOperations);
   }
-
-  abstract getBaseQuery(): Promise<DataCubeQuery | undefined>;
-  abstract processQuerySource(value: PlainObject): Promise<DataCubeSource>;
-
-  abstract parseValueSpecification(
-    code: string,
-    returnSourceInformation?: boolean | undefined,
-  ): Promise<V1_ValueSpecification>;
-
-  abstract getValueSpecificationCode(
-    value: V1_ValueSpecification,
-    pretty?: boolean | undefined,
-  ): Promise<string>;
-
-  abstract getQueryTypeahead(
-    code: string,
-    baseQuery: V1_Lambda,
-    source: DataCubeSource,
-  ): Promise<CompletionItem[]>;
-
-  abstract getQueryRelationType(
-    query: V1_Lambda,
-    source: DataCubeSource,
-  ): Promise<RelationType>;
-
-  abstract getQueryCodeRelationReturnType(
-    code: string,
-    baseQuery: V1_ValueSpecification,
-    source: DataCubeSource,
-  ): Promise<RelationType>;
-
-  abstract executeQuery(
-    query: V1_Lambda,
-    source: DataCubeSource,
-    api: DataCubeAPI,
-  ): Promise<DataCubeExecutionResult>;
-
-  abstract buildExecutionContext(
-    source: DataCubeSource,
-  ): V1_AppliedFunction | undefined;
 
   /**
    * By default, for a function chain, Pure grammar composer will extract the first parameter of the first function
@@ -271,11 +219,46 @@ export abstract class DataCubeEngine {
     ).substring(`''->`.length);
   }
 
-  generateInitialQuery(snapshot: DataCubeQuerySnapshot): V1_AppliedFunction {
-    return _function(DataCubeFunction.SELECT, [
-      _cols(snapshot.data.sourceColumns.map((col) => _colSpec(col.name))),
-    ]);
-  }
+  // ---------------------------------- INTERFACE ----------------------------------
+
+  abstract processQuerySource(value: PlainObject): Promise<DataCubeSource>;
+
+  abstract parseValueSpecification(
+    code: string,
+    returnSourceInformation?: boolean | undefined,
+  ): Promise<V1_ValueSpecification>;
+
+  abstract getValueSpecificationCode(
+    value: V1_ValueSpecification,
+    pretty?: boolean | undefined,
+  ): Promise<string>;
+
+  abstract getQueryTypeahead(
+    code: string,
+    baseQuery: V1_Lambda,
+    source: DataCubeSource,
+  ): Promise<CompletionItem[]>;
+
+  abstract getQueryRelationType(
+    query: V1_Lambda,
+    source: DataCubeSource,
+  ): Promise<DataCubeRelationType>;
+
+  abstract getQueryCodeRelationReturnType(
+    code: string,
+    baseQuery: V1_ValueSpecification,
+    source: DataCubeSource,
+  ): Promise<DataCubeRelationType>;
+
+  abstract executeQuery(
+    query: V1_Lambda,
+    source: DataCubeSource,
+    options?: DataCubeExecutionOptions | undefined,
+  ): Promise<DataCubeExecutionResult>;
+
+  abstract buildExecutionContext(
+    source: DataCubeSource,
+  ): V1_AppliedFunction | undefined;
 
   // ---------------------------------- DOCUMENTATION ----------------------------------
 

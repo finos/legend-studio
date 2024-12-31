@@ -14,5 +14,15 @@
  * limitations under the License.
  */
 
-@forward 'query-editor';
-@forward 'more';
+// ---------------------------------------- NORMALIZE ----------------------------------------
+
+html {
+  box-sizing: border-box;
+  font-family: Roboto, sans-serif;
+  overscroll-behavior: none;
+}
+
+body {
+  // default font size is 12px everywhere to make the app more compact
+  font-size: 12px;
+}

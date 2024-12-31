@@ -419,15 +419,13 @@ export const QueryBuilderResultPanel = observer(
             ),
         )
       ) {
-        queryParametersState.parameterValuesEditorState.open(
-          (): Promise<void> => {
-            queryBuilderState.openDataCubeEngine();
-            return Promise.resolve();
-          },
-          PARAMETER_SUBMIT_ACTION.DATA_CUBE,
-        );
+        queryParametersState.parameterValuesEditorState.open(async () => {
+          await queryBuilderState.openDataCubeEngine();
+        }, PARAMETER_SUBMIT_ACTION.DATA_CUBE);
       } else {
-        queryBuilderState.openDataCubeEngine();
+        queryBuilderState
+          .openDataCubeEngine()
+          .catch(applicationStore.alertUnhandledError);
       }
     };
     const cancelQuery = applicationStore.guardUnhandledError(() =>

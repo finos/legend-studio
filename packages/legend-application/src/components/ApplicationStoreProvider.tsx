@@ -41,13 +41,11 @@ export const useApplicationStore = <
 export const ApplicationStoreProvider = <
   T extends LegendApplicationConfig,
   V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
->({
-  children,
-  store,
-}: {
+>(props: {
   children: React.ReactNode;
   store: ApplicationStore<T, V>;
-}): React.ReactElement => {
+}) => {
+  const { children, store } = props;
   const applicationStore = useLocalObservable(() => store);
   return (
     <ApplicationStoreContext.Provider value={applicationStore}>

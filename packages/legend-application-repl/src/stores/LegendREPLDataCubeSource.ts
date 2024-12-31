@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-import { DataCubeSource } from '@finos/legend-data-cube';
-import type { PlainObject } from '@finos/legend-shared';
+import { DataCubeSource, type DataCubeColumn } from '@finos/legend-data-cube';
+import {
+  SerializationFactory,
+  usingConstantValueSchema,
+  type PlainObject,
+} from '@finos/legend-shared';
+import { createModelSchema, list, optional, primitive, raw } from 'serializr';
 
 export class LegendREPLDataCubeSource extends DataCubeSource {
   runtime!: string;
@@ -25,4 +30,32 @@ export class LegendREPLDataCubeSource extends DataCubeSource {
   model?: PlainObject | undefined;
   isLocal!: boolean;
   isPersistenceSupported!: boolean;
+}
+
+export const REPL_DATA_CUBE_SOURCE_TYPE = 'repl';
+
+export class RawLegendREPLDataCubeSource {
+  query!: string;
+  runtime!: string;
+  model?: PlainObject | undefined;
+
+  mapping?: string | undefined;
+  timestamp!: number;
+  isLocal!: boolean;
+  isPersistenceSupported!: boolean;
+  columns: DataCubeColumn[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(RawLegendREPLDataCubeSource, {
+      _type: usingConstantValueSchema(REPL_DATA_CUBE_SOURCE_TYPE),
+      columns: list(raw()),
+      isLocal: primitive(),
+      isPersistenceSupported: primitive(),
+      mapping: optional(primitive()),
+      model: optional(raw()),
+      query: primitive(),
+      runtime: primitive(),
+      timestamp: primitive(),
+    }),
+  );
 }

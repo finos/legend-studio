@@ -36,6 +36,7 @@ import { generateGridOptionsFromSnapshot } from './DataCubeGridConfigurationBuil
 import { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
 import { DataCubeGridControllerState } from './DataCubeGridControllerState.js';
 import { DataCubeGridClientExportEngine } from './DataCubeGridClientExportEngine.js';
+import { DataCubeSettingKey } from '../../core/DataCubeSetting.js';
 
 /**
  * This query editor state is responsible for syncing the internal state of ag-grid
@@ -73,7 +74,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     makeObservable(this, {
       clientDataSource: observable,
 
-      queryConfiguration: observable.ref,
+      queryConfiguration: observable,
 
       rowLimit: observable,
 
@@ -113,6 +114,10 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     this.scrollHintText = val;
   }
 
+  get isClientConfigured() {
+    return Boolean(this._client);
+  }
+
   get client() {
     return guaranteeNonNullable(this._client, 'Grid client is not configured');
   }
@@ -144,7 +149,11 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
       configuration,
       this.view,
     );
-    if (this.view.dataCube.settings.enableDebugMode) {
+    if (
+      this.view.dataCube.settings.getBooleanValue(
+        DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
+      )
+    ) {
       this.view.engine.debugProcess(`New Grid Options`, [
         'Grid Options',
         gridOptions,
@@ -152,7 +161,12 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     }
     this.client.updateGridOptions({
       ...gridOptions,
-      rowBuffer: this.view.dataCube.settings.gridClientRowBuffer,
+      rowBuffer: this.view.dataCube.settings.getNumericValue(
+        DataCubeSettingKey.GRID_CLIENT__ROW_BUFFER,
+      ),
+      purgeClosedRowNodes: this.view.dataCube.settings.getBooleanValue(
+        DataCubeSettingKey.GRID_CLIENT__PURGE_CLOSED_ROW_NODES,
+      ),
       // NOTE: ag-grid uses the cache block size as page size, so it's important to set this
       // in corresponding to the pagination setting, else it would cause unexpected scrolling behavior
       cacheBlockSize: this.isPaginationEnabled

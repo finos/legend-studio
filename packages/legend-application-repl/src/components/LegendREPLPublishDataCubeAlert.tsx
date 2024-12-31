@@ -35,7 +35,7 @@ export const LegendREPLPublishDataCubeAlert = (props: {
     <div className="h-full w-full p-6">
       <div className="flex w-full overflow-auto">
         <div className="mr-3">
-          <DataCubeIcon.AlertInfo className="flex-shrink-0 stroke-[0.5px] text-[40px] text-sky-500" />
+          <DataCubeIcon.AlertSuccess className="flex-shrink-0 stroke-[0.5px] text-[40px] text-green-500" />
         </div>
         <div>
           <div className="whitespace-break-spaces text-lg">

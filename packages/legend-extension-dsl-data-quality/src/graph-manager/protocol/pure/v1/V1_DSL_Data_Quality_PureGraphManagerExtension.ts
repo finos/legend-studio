@@ -35,15 +35,15 @@ import {
   V1_ExecutionError,
   V1_GraphBuilderContextBuilder,
   V1_LegendSDLC,
-  V1_parameterValueModelSchema,
   V1_ProcessingContext,
   V1_Protocol,
   V1_PureGraphManager,
   V1_PureModelContextPointer,
   V1_pureModelContextPropSchema,
-  V1_RemoteEngine,
-  V1_serializeExecutionResult,
+  V1_deserializeExecutionResult,
+  V1_parameterValueModelSchema,
   V1_transformParameterValue,
+  V1_RemoteEngine,
 } from '@finos/legend-graph';
 import { createModelSchema, optional, primitive } from 'serializr';
 import {
@@ -271,7 +271,7 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
           ),
         ) ?? validationResultInText;
       const v1_executionResult =
-        V1_serializeExecutionResult(rawExecutionResult);
+        V1_deserializeExecutionResult(rawExecutionResult);
       return V1_buildExecutionResult(v1_executionResult);
     } catch (error) {
       assertErrorThrown(error);

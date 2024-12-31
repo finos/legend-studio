@@ -35,7 +35,7 @@ export interface LegendDataCubeApplicationConfigurationData
 export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
   readonly engineServerUrl: string;
   readonly depotServerUrl: string;
-  readonly engineQueryServerUrl: string;
+  readonly engineQueryServerUrl?: string | undefined;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendDataCubeApplicationConfigurationData>,
@@ -53,9 +53,11 @@ export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
         `Can't configure application: 'engine.url' field is missing or empty`,
       ),
     );
-    this.engineQueryServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-      input.configData.engine.queryUrl,
-    );
+    this.engineQueryServerUrl = input.configData.engine.queryUrl
+      ? LegendApplicationConfig.resolveAbsoluteUrl(
+          input.configData.engine.queryUrl,
+        )
+      : undefined;
     // depot
     assertNonNullable(
       input.configData.depot,

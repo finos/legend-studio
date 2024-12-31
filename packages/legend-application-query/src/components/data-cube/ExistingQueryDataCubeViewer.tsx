@@ -38,10 +38,10 @@ export const DataCubeWrapper = observer(() => {
     flowResult(store.initialize()).catch(applicationStore.alertUnhandledError);
   }, [applicationStore, store]);
 
-  if (!store.engine) {
+  if (!store.engine || !store.query) {
     return null;
   }
-  return <DataCube engine={store.engine} />;
+  return <DataCube query={store.query} engine={store.engine} />;
 });
 
 export const ExistingQueryDataCubeViewer = observer(() => {

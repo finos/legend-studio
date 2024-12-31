@@ -23,6 +23,7 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { DataCubeQuery } from '../core/models/DataCubeQuery.js';
+import { DataCubeSettingKey } from '../core/DataCubeSetting.js';
 
 // TODO: set a stack depth when we implement undo/redo
 // const DATA_CUBE_MAX_SNAPSHOT_COUNT = 100;
@@ -64,7 +65,11 @@ export abstract class DataCubeQuerySnapshotController
     const previousSnapshot = this.latestSnapshot;
     this.latestSnapshot = snapshot;
 
-    if (this.view.dataCube.settings.enableDebugMode) {
+    if (
+      this.view.dataCube.settings.getBooleanValue(
+        DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
+      )
+    ) {
       this.view.engine.debugProcess(
         `New Snapshot`,
         ['Publisher', this.getSnapshotSubscriberName()],
@@ -105,9 +110,16 @@ export class DataCubeQuerySnapshotManager {
         subscriber.getSnapshotSubscriberName(),
     );
     if (existingSubscriber) {
-      throw new IllegalStateError(
-        `Subscriber with name '${subscriber.getSnapshotSubscriberName()}' already exists`,
-      );
+      // eslint-disable-next-line no-process-env
+      if (process.env.NODE_ENV === 'development') {
+        this.view.engine.logDebug(
+          `Subscriber with name '${subscriber.getSnapshotSubscriberName()}' already exists`,
+        );
+      } else {
+        throw new IllegalStateError(
+          `Subscriber with name '${subscriber.getSnapshotSubscriberName()}' already exists`,
+        );
+      }
     }
     this.subscribers.push(subscriber);
   }

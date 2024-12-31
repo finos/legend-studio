@@ -27,9 +27,9 @@ import {
 } from '../metamodel/pure/valueSpecification/InstanceValue.js';
 import { GenericType } from '../metamodel/pure/packageableElements/domain/GenericType.js';
 import { PrimitiveType } from '../metamodel/pure/packageableElements/domain/PrimitiveType.js';
-import { Relation_Relation } from '../metamodel/pure/packageableElements/relation/Relation_Relation.js';
+import { Relation } from '../metamodel/pure/packageableElements/relation/Relation.js';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
-import { Relation_RelationType } from '../metamodel/pure/packageableElements/relation/Relation_RelationType.js';
+import { RelationType } from '../metamodel/pure/packageableElements/relation/RelationType.js';
 import {
   AbstractPropertyExpression,
   SimpleFunctionExpression,
@@ -45,7 +45,7 @@ const getRelationGenericType = (
   val: ValueSpecification,
 ): GenericType | undefined => {
   const genType = val.genericType?.value;
-  if (genType?.rawType === Relation_Relation.INSTANCE) {
+  if (genType?.rawType === Relation.INSTANCE) {
     return genType;
   }
   return undefined;
@@ -53,7 +53,7 @@ const getRelationGenericType = (
 
 export const getRelationTypeGenericType = (
   val: ValueSpecification,
-): Relation_RelationType | undefined => {
+): RelationType | undefined => {
   const relationGenType = getRelationGenericType(val);
   if (relationGenType) {
     const typeArg = guaranteeNonNullable(
@@ -62,7 +62,7 @@ export const getRelationTypeGenericType = (
     );
     return guaranteeType(
       typeArg.value.rawType,
-      Relation_RelationType,
+      RelationType,
       'Relation expected to have type arugments of type RelationType',
     );
   }

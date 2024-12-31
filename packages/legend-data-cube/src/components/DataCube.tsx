@@ -30,6 +30,8 @@ import type { DataCubeEngine } from '../stores/core/DataCubeEngine.js';
 import { DataCubeState } from '../stores/DataCubeState.js';
 import { type DataCubeOptions } from '../stores/DataCubeOptions.js';
 import { DataCubeContextProvider, useDataCube } from './DataCubeProvider.js';
+import type { DataCubeQuery } from '../stores/core/models/DataCubeQuery.js';
+import { FormBadge_WIP } from './core/DataCubeFormUtils.js';
 
 const DataCubeTitleBar = observer(() => {
   const dataCube = useDataCube();
@@ -59,7 +61,7 @@ const DataCubeTitleBar = observer(() => {
             transformOrigin: { vertical: 'top', horizontal: 'left' },
             classes: {
               paper: 'rounded-none mt-[1px]',
-              list: 'w-36 p-0 rounded-none border border-neutral-400 bg-white max-h-40 overflow-y-auto py-0.5',
+              list: 'w-40 p-0 rounded-none border border-neutral-400 bg-white max-h-40 overflow-y-auto py-0.5',
             },
           }}
         >
@@ -75,12 +77,13 @@ const DataCubeTitleBar = observer(() => {
             disabled={true} // TODO: enable when we set up the documentation website
           >
             See Documentation
+            <FormBadge_WIP />
           </DropdownMenuItem>
           <div className="my-0.5 h-[1px] w-full bg-neutral-200" />
           <DropdownMenuItem
             className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
             onClick={() => {
-              view.dataCube.settingsDisplay.open();
+              view.dataCube.settings.display.open();
               closeMenuDropdown();
             }}
           >
@@ -99,7 +102,7 @@ const DataCubeRoot = observer(() => {
 
   useEffect(() => {
     dataCube.view
-      .initialize()
+      .initialize(dataCube.query)
       .catch((error) => dataCube.engine.logUnhandledError(error));
   }, [dataCube]);
 
@@ -118,11 +121,14 @@ const DataCubeRoot = observer(() => {
 
 export const DataCube = observer(
   (props: {
+    query: DataCubeQuery;
     engine: DataCubeEngine;
     options?: DataCubeOptions | undefined;
-  }): React.ReactElement => {
-    const { engine, options } = props;
-    const state = useLocalObservable(() => new DataCubeState(engine, options));
+  }) => {
+    const { query, engine, options } = props;
+    const state = useLocalObservable(
+      () => new DataCubeState(query, engine, options),
+    );
 
     useEffect(() => {
       state
@@ -130,12 +136,12 @@ export const DataCube = observer(
         .catch((error) => state.engine.logUnhandledError(error));
     }, [state]);
 
-    if (!state.initState.hasSucceeded) {
+    if (!state.initializeState.hasSucceeded) {
       return <></>;
     }
     return (
       <DataCubeContextProvider value={state}>
-        <DataCubeRoot />
+        <DataCubeRoot key={state.uuid} />
       </DataCubeContextProvider>
     );
   },

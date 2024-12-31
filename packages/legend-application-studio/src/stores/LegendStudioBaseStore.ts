@@ -22,7 +22,6 @@ import {
   ActionState,
   LogEvent,
   assertErrorThrown,
-  NetworkClient,
 } from '@finos/legend-shared';
 import {
   type ApplicationStore,
@@ -48,6 +47,7 @@ import type { LegendStudioApplicationConfig } from '../application/LegendStudioA
 import { LegendStudioEventHelper } from '../__lib__/LegendStudioEventHelper.js';
 import { LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN } from '../__lib__/LegendStudioNavigation.js';
 import { ShowcaseManagerState } from './ShowcaseManagerState.js';
+import { getCurrentUserIDFromEngineServer } from '@finos/legend-graph';
 
 export type LegendStudioApplicationStore = ApplicationStore<
   LegendStudioApplicationConfig,
@@ -168,8 +168,8 @@ export class LegendStudioBaseStore {
     if (this.applicationStore.identityService.isAnonymous) {
       try {
         this.applicationStore.identityService.setCurrentUser(
-          (yield new NetworkClient().get(
-            `${this.applicationStore.config.engineServerUrl}/server/v1/currentUser`,
+          (yield getCurrentUserIDFromEngineServer(
+            this.applicationStore.config.engineServerUrl,
           )) as string,
         );
       } catch (error) {

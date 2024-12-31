@@ -91,7 +91,10 @@ import type { RelationTypeMetadata } from '../../../../action/relation/RelationT
 import type { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import type { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
 import type { DeploymentResult } from '../../../../action/DeploymentResult.js';
-import type { PersistentDataCubeQuery } from '../../../../action/query/PersistentDataCubeQuery.js';
+import type {
+  LightPersistentDataCubeQuery,
+  PersistentDataCubeQuery,
+} from '../../../../action/query/PersistentDataCubeQuery.js';
 
 export interface V1_GraphManagerEngine {
   config: TEMPORARY__AbstractEngineConfig;
@@ -106,12 +109,12 @@ export interface V1_GraphManagerEngine {
 
   // ------------------------------------------- Grammar -------------------------------------------
 
-  pureModelContextDataToPureCode: (
+  transformPureModelContextDataToCode: (
     graph: V1_PureModelContextData,
     pretty: boolean,
   ) => Promise<string>;
 
-  pureCodeToPureModelContextData: (
+  transformCodeToPureModelContextData: (
     code: string,
     options?: {
       sourceInformationIndex?: Map<string, V1_SourceInformation> | undefined;
@@ -125,22 +128,22 @@ export interface V1_GraphManagerEngine {
     plugins: PureProtocolProcessorPlugin[],
   ) => Promise<Map<string, string>>;
 
-  transformValueSpecsToCode: (
+  transformValueSpecificationsToCode: (
     input: Record<string, PlainObject<V1_ValueSpecification>>,
     pretty: boolean,
   ) => Promise<Map<string, string>>;
 
-  transformValueSpecToCode: (
+  transformValueSpecificationToCode: (
     input: PlainObject<V1_ValueSpecification>,
     pretty: boolean,
   ) => Promise<string>;
 
-  transformCodeToValueSpeces: (
+  transformCodeToValueSpecifications: (
     input: Record<string, V1_GrammarParserBatchInputEntry>,
   ) => Promise<Map<string, PlainObject>>;
 
-  transformCodeToValueSpec: (
-    input: string,
+  transformCodeToValueSpecification: (
+    code: string,
     returnSourceInformation?: boolean,
   ) => Promise<PlainObject<V1_ValueSpecification>>;
 
@@ -338,11 +341,23 @@ export interface V1_GraphManagerEngine {
 
   getCurrentUserId: () => string | undefined;
 
-  // ------------------------------------------- Data Cube Querys -------------------------------------------
+  // ------------------------------------------- DataCube Query -------------------------------------------
+
+  searchDataCubeQueries: (
+    searchSpecification: V1_QuerySearchSpecification,
+  ) => Promise<LightPersistentDataCubeQuery[]>;
+
+  getDataCubeQueries: (
+    queryIds: string[],
+  ) => Promise<LightPersistentDataCubeQuery[]>;
 
   getDataCubeQuery: (id: string) => Promise<PersistentDataCubeQuery>;
 
   createDataCubeQuery: (
+    query: PersistentDataCubeQuery,
+  ) => Promise<PersistentDataCubeQuery>;
+
+  updateDataCubeQuery: (
     query: PersistentDataCubeQuery,
   ) => Promise<PersistentDataCubeQuery>;
 

@@ -57,7 +57,6 @@ class DataCubeTask {
 export class DataCubeViewState {
   readonly dataCube: DataCubeState;
   readonly engine: DataCubeEngine;
-
   readonly snapshotManager: DataCubeQuerySnapshotManager;
 
   readonly info: DataCubeInfoState;
@@ -79,6 +78,8 @@ export class DataCubeViewState {
       runningTasks: observable,
       newTask: action,
       endTask: action,
+
+      initialize: action,
     });
 
     this.dataCube = dataCube;
@@ -118,7 +119,7 @@ export class DataCubeViewState {
     return task;
   }
 
-  async initialize(initialQuery?: DataCubeQuery | undefined) {
+  async initialize(query: DataCubeQuery) {
     const task = this.newTask('Initializing');
     try {
       await Promise.all(
@@ -133,30 +134,20 @@ export class DataCubeViewState {
           this.snapshotManager.registerSubscriber(state);
         }),
       );
-      const baseQuery = initialQuery ?? (await this.engine.getBaseQuery());
-      if (!baseQuery) {
-        this.dataCube.alertAction({
-          message: `Initialization Failure: No initial input provided`,
-          prompt: `Make sure to either specify the initial input when setting up DataCube or the initial input getter in engine.`,
-          type: AlertType.ERROR,
-          actions: [],
-        });
-        return;
-      }
-      const source = await this.engine.processQuerySource(baseQuery.source);
+      const source = await this.engine.processQuerySource(query.source);
       runInAction(() => {
         this._source = source;
       });
       const partialQuery = await this.engine.parseValueSpecification(
-        baseQuery.query,
+        query.query,
       );
       const initialSnapshot = validateAndBuildQuerySnapshot(
         partialQuery,
-        this.source,
-        baseQuery,
+        source,
+        query,
       );
       this.snapshotManager.broadcastSnapshot(initialSnapshot);
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.dataCube.alertAction({
         message: `Initialization Failure: ${error.message}`,

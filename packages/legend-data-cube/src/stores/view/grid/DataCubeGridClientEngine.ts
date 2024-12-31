@@ -53,6 +53,7 @@ import {
   buildGridDataFetchExecutableQuery,
 } from './DataCubeGridQueryBuilder.js';
 import { _colSpecArrayParam } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';
+import { DataCubeSettingKey } from '../../core/DataCubeSetting.js';
 
 type DataCubeGridClientCellValue = string | number | boolean | null | undefined;
 type DataCubeGridClientRowData = {
@@ -121,7 +122,7 @@ export const INTERNAL__GRID_CLIENT_DEFAULT_CACHE_BLOCK_SIZE = 500;
 export const INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_PAGINATION = true;
 // NOTE: The cache block size is used by ag-grid to pre-allocate memory for the grid
 // so the value set must be reasonable, or else it can crash the engine!
-export const INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE = 1e4;
+export const INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE = 1e3;
 
 export const INTERNAL__GRID_CLIENT_PIVOT_COLUMN_GROUP_COLOR_ROTATION_SIZE = 5;
 export const INTERNAL__GRID_CLIENT_SIDE_BAR_WIDTH = 200;
@@ -299,11 +300,11 @@ async function getCastColumns(
 
   const lambda = new V1_Lambda();
   lambda.body.push(query);
-  const result = await view.engine.executeQuery(
-    lambda,
-    view.source,
-    view.dataCube,
-  );
+  const result = await view.engine.executeQuery(lambda, view.source, {
+    debug: view.dataCube.settings.getBooleanValue(
+      DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
+    ),
+  });
 
   return result.result.builder.columns.map((column) => ({
     name: column.name,
@@ -423,10 +424,18 @@ export class DataCubeGridClientServerSideDataSource
       const result = await this.grid.view.engine.executeQuery(
         lambda,
         this.grid.view.source,
-        this.grid.view.dataCube,
+        {
+          debug: this.grid.view.dataCube.settings.getBooleanValue(
+            DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
+          ),
+        },
       );
       const rowData = buildRowData(result.result.result, newSnapshot);
-      if (this.grid.view.dataCube.settings.enableDebugMode) {
+      if (
+        this.grid.view.dataCube.settings.getBooleanValue(
+          DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
+        )
+      ) {
         this.grid.view.engine.debugProcess(
           `Execution`,
           ['Query', result.executedQuery],
@@ -473,8 +482,9 @@ export class DataCubeGridClientServerSideDataSource
         // behavior by forcing a scroll top for every data fetch and also reset the cache block size to the default value to save memory
         if (rowData.length > INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE) {
           if (
-            !this.grid.view.dataCube.settings
-              .gridClientSuppressLargeDatasetWarning
+            !this.grid.view.dataCube.settings.getBooleanValue(
+              DataCubeSettingKey.GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING,
+            )
           ) {
             this.grid.view.engine.alert({
               message: `Large dataset (>${INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE} rows) detected!`,
@@ -490,7 +500,8 @@ export class DataCubeGridClientServerSideDataSource
                 {
                   label: 'Dismiss Warning',
                   handler: () => {
-                    this.grid.view.dataCube.settings.setGridClientSuppressLargeDatasetWarning(
+                    this.grid.view.dataCube.settings.updateValue(
+                      DataCubeSettingKey.GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING,
                       true,
                     );
                   },

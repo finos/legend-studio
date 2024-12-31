@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DataCubeState } from '@finos/legend-data-cube';
+import { FormButton, type DataCubeState } from '@finos/legend-data-cube';
 import { observer } from 'mobx-react-lite';
 import { LegendREPLDataCubeSource } from '../stores/LegendREPLDataCubeSource.js';
 import { useLegendREPLBaseStore } from './LegendREPLFramworkProvider.js';
@@ -36,17 +36,17 @@ export const LegendREPLDataCubeHeader = observer(
 
     return (
       <div className="flex h-full items-center">
-        <button
+        <FormButton
+          compact={true}
           disabled={!isPublishAllowed || store.publishState.isInProgress}
           onClick={() => {
             store
               .publishDataCube(dataCube)
               .catch((error) => dataCube.engine.logUnhandledError(error));
           }}
-          className="h- w-20 border border-neutral-400 bg-neutral-300 px-2 hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100"
         >
           Publish
-        </button>
+        </FormButton>
       </div>
     );
   },
