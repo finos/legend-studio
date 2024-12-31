@@ -71,7 +71,7 @@
     "react-dnd": "16.0.1",
     "react-dom": "19.0.0",
     "serializr": "3.0.3",
-    "yaml": "2.6.1"
+    "yaml": "2.7.0"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
