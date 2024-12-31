@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-graph",
-  "version": "31.10.65",
+  "version": "32.0.0",
   "description": "Legend graph and graph manager",
   "keywords": [
     "legend",

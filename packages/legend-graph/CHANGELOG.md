@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.0.0
+
+### Major Changes
+
+- [#3763](https://github.com/finos/legend-studio/pull/3763) [`b023be4`](https://github.com/finos/legend-studio/commit/b023be430847591362083ff4648ee67334e3367c) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Standardize naming of grammar parser and composer methods in `V1_GraphManagerEngine`.
+
 ## 31.10.65
 
 ## 31.10.64
