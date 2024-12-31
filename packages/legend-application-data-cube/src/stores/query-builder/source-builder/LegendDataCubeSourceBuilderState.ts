@@ -17,6 +17,7 @@
 import { ActionState, type PlainObject } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
 import type { LegendDataCubeNewQueryState } from '../LegendDataCubeNewQueryState.js';
+import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
 
 export enum LegendDataCubeSourceBuilderType {
   LEGEND_QUERY = 'Legend Query',
@@ -25,10 +26,12 @@ export enum LegendDataCubeSourceBuilderType {
 
 export abstract class LegendDataCubeSourceBuilderState {
   readonly application: LegendDataCubeApplicationStore;
+  readonly engine: LegendDataCubeDataCubeEngine;
   readonly buildState = ActionState.create();
 
   constructor(newQueryState: LegendDataCubeNewQueryState) {
     this.application = newQueryState.application;
+    this.engine = newQueryState.engine;
   }
 
   abstract get label(): LegendDataCubeSourceBuilderType;

@@ -40,6 +40,7 @@ import {
   LegendDataCubeQueryBuilderState,
   type LegendDataCubeQueryBuilderStore,
 } from './LegendDataCubeQueryBuilderStore.js';
+import { generateQueryBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
 
 export class LegendDataCubeNewQueryState {
   readonly application: LegendDataCubeApplicationStore;
@@ -109,7 +110,12 @@ export class LegendDataCubeNewQueryState {
       query.query = await this.engine.getValueSpecificationCode(
         _selectFunction(processedSource.columns),
       );
+
       this.store.setBuilder(new LegendDataCubeQueryBuilderState(query));
+      // reset route in case we are creating a new query when we are editing another query
+      this.application.navigationService.navigator.updateCurrentLocation(
+        generateQueryBuilderRoute(null),
+      );
       this.display.close();
       this.finalizeState.pass();
     } catch (error) {

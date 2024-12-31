@@ -28,7 +28,7 @@ export type LegendDataCubeQueryBuilderQueryPathParams = {
   [LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID]: string;
 };
 
-export const generateQueryBuilderRoute = (queryId: string): string => {
+export const generateQueryBuilderRoute = (queryId: string | null): string => {
   return generatePath(LEGEND_DATA_CUBE_ROUTE_PATTERN.QUERY_BUILDER, {
     [LEGEND_DATA_CUBE_ROUTE_PATTERN_TOKEN.QUERY_ID]: queryId,
   });

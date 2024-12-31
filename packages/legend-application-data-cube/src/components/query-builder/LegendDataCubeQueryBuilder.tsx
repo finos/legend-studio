@@ -187,6 +187,7 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
     }
     return (
       <DataCube
+        key={builder.uuid} // used as mechanism to reload data-cube component when changing between queries or create/edit mode
         query={builder.query}
         engine={store.baseStore.engine}
         options={{

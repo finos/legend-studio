@@ -39,6 +39,7 @@ import { LegendDataCubeQuerySaver } from '../../components/query-builder/LegendD
 import { generateQueryBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
 
 export class LegendDataCubeQueryBuilderState {
+  uuid = uuid();
   startTime = Date.now();
   query!: DataCubeQuery;
   persistentQuery?: PersistentDataCubeQuery | undefined;

@@ -77,6 +77,8 @@ import {
   TbCircleCheckFilled,
   TbCircleXFilled,
   TbClipboard,
+  TbClockEdit,
+  TbUser,
 } from 'react-icons/tb';
 import {
   VscError,
@@ -84,6 +86,7 @@ import {
   VscPass,
   VscQuestion,
   VscWarning,
+  VscWordWrap,
 } from 'react-icons/vsc';
 
 export const DataCubeIcon = {
@@ -105,6 +108,7 @@ export const DataCubeIcon = {
   CircledFailed: TbCircleXFilled,
   Clipboard: TbClipboard,
   Code: TbCode,
+  ClockEdit: TbClockEdit,
   Cube: TbCube,
   Debug: TbBug,
   Documentation: TbBook,
@@ -146,8 +150,10 @@ export const DataCubeIcon = {
   TextAlignLeft: PiTextAlignLeft,
   TextAlignCenter: PiTextAlignCenter,
   TextAlignRight: PiTextAlignRight,
+  User: TbUser,
   Window: GoBrowser,
   X: GoX,
   Warning: TbAlertTriangle,
   WarningCircle: TbExclamationCircle,
+  WordWrap: VscWordWrap,
 };

@@ -612,7 +612,7 @@ export const DataSpaceDiagramViewer = observer(
               </div>
             </div>
           )}
-          {analysisResult.diagrams.length <= 0 && (
+          {!analysisResult.diagrams.length && (
             <DataSpaceWikiPlaceholder message="(not specified)" />
           )}
         </div>

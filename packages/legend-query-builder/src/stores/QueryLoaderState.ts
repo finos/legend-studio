@@ -108,7 +108,6 @@ export class QueryLoaderState {
       generateDefaultQueriesSummaryText?:
         | ((queries: LightQuery[]) => string)
         | undefined;
-
       isReadOnly?: boolean | undefined;
       onQueryRenamed?: ((query: LightQuery) => void) | undefined;
       onQueryDeleted?: ((query: string) => void) | undefined;

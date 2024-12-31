@@ -14,42 +14,56 @@
  * limitations under the License.
  */
 
-import { IllegalStateError, isNonNullable } from '@finos/legend-shared';
-import { QuerySearchSpecification, type LightQuery } from '@finos/legend-graph';
+import {
+  assertErrorThrown,
+  IllegalStateError,
+  LogEvent,
+} from '@finos/legend-shared';
+import {
+  QuerySearchSpecification,
+  V1_Query,
+  type LightQuery,
+} from '@finos/legend-graph';
 import {
   QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT,
   QueryLoaderState,
 } from '@finos/legend-query-builder';
-import { action, makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable, runInAction } from 'mobx';
 import {
   LegendDataCubeSourceBuilderState,
   LegendDataCubeSourceBuilderType,
 } from './LegendDataCubeSourceBuilderState.js';
 import { RawLegendQueryDataCubeSource } from '../../model/LegendQueryDataCubeSource.js';
 import type { LegendDataCubeNewQueryState } from '../LegendDataCubeNewQueryState.js';
+import { APPLICATION_EVENT } from '@finos/legend-application';
 
 export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   readonly queryLoaderState: QueryLoaderState;
 
   query?: LightQuery | undefined;
+  queryCode?: string | undefined;
 
   constructor(newQueryState: LegendDataCubeNewQueryState) {
     super(newQueryState);
 
     makeObservable(this, {
       query: observable,
-      setQuery: action,
+      unsetQuery: action,
+
+      queryCode: observable,
     });
 
     this.queryLoaderState = new QueryLoaderState(
       this.application,
       newQueryState.engine.graphManager,
       {
-        loadQuery: (query: LightQuery): void => {
-          this.setQuery(query);
+        loadQuery: (query) => {
+          this.setQuery(query).catch((error) =>
+            this.engine.alertUnhandledError(error),
+          );
         },
         decorateSearchSpecification: (val) => val,
-        fetchDefaultQueries: async (): Promise<LightQuery[]> => {
+        fetchDefaultQueries: async () => {
           const searchSpecification = new QuerySearchSpecification();
           searchSpecification.limit = QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT;
           return newQueryState.engine.graphManager.searchQueries(
@@ -61,16 +75,43 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
     );
   }
 
-  setQuery(query: LightQuery): void {
-    this.query = query;
+  async setQuery(lightQuery: LightQuery) {
+    try {
+      const processedQuery = V1_Query.serialization.fromJson(
+        await this.engine.engineServerClient.getQuery(lightQuery.id),
+      );
+      const queryCode = await this.engine.getValueSpecificationCode(
+        await this.engine.parseValueSpecification(processedQuery.content),
+        true,
+      );
+      runInAction(() => {
+        this.query = lightQuery;
+        this.queryCode = queryCode;
+      });
+    } catch (error) {
+      assertErrorThrown(error);
+      this.engine.logError(
+        LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+        `Can't get code for query with ID '${lightQuery.id}'`,
+      );
+      runInAction(() => {
+        this.query = lightQuery;
+        this.queryCode = undefined;
+      });
+    }
   }
 
-  override get label(): LegendDataCubeSourceBuilderType {
+  unsetQuery(): void {
+    this.query = undefined;
+    this.queryCode = undefined;
+  }
+
+  override get label() {
     return LegendDataCubeSourceBuilderType.LEGEND_QUERY;
   }
 
   override get isValid(): boolean {
-    return isNonNullable(this.query);
+    return Boolean(this.query);
   }
 
   override async build() {

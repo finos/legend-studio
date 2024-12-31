@@ -22,7 +22,9 @@ export const AdhocQueryDataCubeSourceBuilder = observer(
   (props: { sourceBuilder: AdhocQueryDataCubeSourceBuilderState }) => {
     return (
       <div className="flex h-full w-full">
-        <FormBadge_WIP />
+        <div className="flex h-6 items-center text-neutral-500">
+          This is a work-in-progress. <FormBadge_WIP />
+        </div>
       </div>
     );
   },
