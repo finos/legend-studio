@@ -75,8 +75,11 @@ export class LegendDataCubeNewQueryState {
     );
   }
 
-  changeSourceBuilder(type: LegendDataCubeSourceBuilderType): void {
-    if (this.sourceBuilder.label !== type) {
+  changeSourceBuilder(
+    type: LegendDataCubeSourceBuilderType,
+    skipCheck?: boolean | undefined,
+  ): void {
+    if (this.sourceBuilder.label !== type || skipCheck) {
       this.sourceBuilder = this.createSourceBuilder(type);
     }
   }
@@ -112,9 +115,16 @@ export class LegendDataCubeNewQueryState {
       );
 
       this.store.setBuilder(new LegendDataCubeQueryBuilderState(query));
-      // reset route in case we are creating a new query when we are editing another query
+      // only update the route instead of reloading in case we are creating
+      // a new query when we are editing another query
       this.application.navigationService.navigator.updateCurrentLocation(
         generateQueryBuilderRoute(null),
+      );
+
+      // reset
+      this.changeSourceBuilder(
+        LegendDataCubeSourceBuilderType.LEGEND_QUERY,
+        true,
       );
       this.display.close();
       this.finalizeState.pass();

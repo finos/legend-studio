@@ -37,14 +37,13 @@ import type { DataCubeQuery } from './core/models/DataCubeQuery.js';
 
 export class DataCubeState implements DataCubeAPI {
   uuid = uuid();
+
   readonly engine: DataCubeEngine;
-  readonly settings!: DataCubeSettings;
-  readonly initState = ActionState.create();
-  readonly documentationDisplay: DisplayState;
-  // NOTE: when we support multiview, there can be multiple view states to support
-  // the first one in that list will be taken as the main view state
-  view: DataCubeViewState;
+
   readonly query: DataCubeQuery;
+  readonly settings!: DataCubeSettings;
+  readonly documentationDisplay: DisplayState;
+  readonly initializeState = ActionState.create();
 
   onInitialized?: ((dataCube: DataCubeState) => void) | undefined;
   onNameChanged?: ((name: string, source: DataCubeSource) => void) | undefined;
@@ -54,6 +53,10 @@ export class DataCubeState implements DataCubeAPI {
 
   currentDocumentationEntry?: DocumentationEntry | undefined;
   currentActionAlert?: ActionAlert | undefined;
+
+  // NOTE: when we support multiview, there can be multiple view states to support
+  // the first one in that list will be taken as the main view state
+  view: DataCubeViewState;
 
   constructor(
     query: DataCubeQuery,
@@ -125,11 +128,11 @@ export class DataCubeState implements DataCubeAPI {
   }
 
   async initialize() {
-    if (!this.initState.isInInitialState) {
+    if (!this.initializeState.isInInitialState) {
       this.engine.logDebug('DataCube state is re-initialized');
       return;
     }
-    this.initState.inProgress();
+    this.initializeState.inProgress();
 
     try {
       await this.engine.initialize({
@@ -137,7 +140,7 @@ export class DataCubeState implements DataCubeAPI {
       });
 
       this.onInitialized?.(this);
-      this.initState.pass();
+      this.initializeState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.alertAction({
@@ -146,7 +149,7 @@ export class DataCubeState implements DataCubeAPI {
         type: AlertType.ERROR,
         actions: [],
       });
-      this.initState.fail();
+      this.initializeState.fail();
     }
   }
 }

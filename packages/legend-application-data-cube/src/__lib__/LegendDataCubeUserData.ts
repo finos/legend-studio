@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-export enum LegendDataCubeSettingStorageKey {
-  DATA_CUBE = 'data-cube',
-}
+export const RECENTLY_VIEWED_QUERIES_LIMIT = 10;
 
-export enum LegendDataCubeSettingKey {
-  DEBUGGER__ENGINE_SERVER_CLIENT__ENABLE_COMPRESSION = 'debugger.engineServerClient.enableCompression',
-  DEBUGGER__ENGINE_SERVER_CLIENT__BASE_URL = 'debugger.engineServerClient.baseUrl',
+export enum LegendDataCubeUserDataKey {
+  RECENTLY_VIEWED_QUERIES = 'recentlyViewedQueries',
 }

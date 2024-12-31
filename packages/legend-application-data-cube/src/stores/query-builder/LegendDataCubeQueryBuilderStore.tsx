@@ -32,11 +32,17 @@ import {
   ActionState,
   assertErrorThrown,
   formatDate,
+  isString,
   uuid,
 } from '@finos/legend-shared';
 import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
 import { LegendDataCubeQuerySaver } from '../../components/query-builder/LegendDataCubeQuerySaver.js';
 import { generateQueryBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
+import { LegendDataCubeQueryLoaderState } from './LegendDataCubeQueryLoaderState.js';
+import {
+  LegendDataCubeUserDataKey,
+  RECENTLY_VIEWED_QUERIES_LIMIT,
+} from '../../__lib__/LegendDataCubeUserData.js';
 
 export class LegendDataCubeQueryBuilderState {
   uuid = uuid();
@@ -84,7 +90,7 @@ export class LegendDataCubeQueryBuilderStore {
   readonly saverDisplay: DisplayState;
 
   readonly loadQueryState = ActionState.create();
-  // loader: LegendDataCubeQueryLoaderState;
+  loader: LegendDataCubeQueryLoaderState;
   builder?: LegendDataCubeQueryBuilderState | undefined;
 
   constructor(baseStore: LegendDataCubeBaseStore) {
@@ -96,7 +102,9 @@ export class LegendDataCubeQueryBuilderStore {
     this.application = baseStore.application;
     this.baseStore = baseStore;
     this.engine = baseStore.engine;
+
     this.newQueryState = new LegendDataCubeNewQueryState(this);
+    this.loader = new LegendDataCubeQueryLoaderState(this);
     this.saverDisplay = this.engine.layout.newDisplay(
       'Save Query',
       () => <LegendDataCubeQuerySaver />,
@@ -115,6 +123,15 @@ export class LegendDataCubeQueryBuilderStore {
     this.application.layoutService.setWindowTitle(
       `\u229E ${persistentQuery.name}${this.builder ? ` - ${formatDate(new Date(this.builder.startTime), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
     );
+  }
+
+  getRecentlyViewedQueries() {
+    const data = this.application.userDataService.getObjectValue(
+      LegendDataCubeUserDataKey.RECENTLY_VIEWED_QUERIES,
+    );
+    return data && Array.isArray(data) && data.every((id) => isString(id))
+      ? data
+      : [];
   }
 
   async loadQuery(queryId: string | undefined) {
@@ -136,6 +153,24 @@ export class LegendDataCubeQueryBuilderStore {
           new LegendDataCubeQueryBuilderState(query, persistentQuery),
         );
         this.updateWindowTitle(persistentQuery);
+
+        // update the list of stack of recently viewed queries
+        const recentlyViewedQueries = this.getRecentlyViewedQueries();
+        const idx = recentlyViewedQueries.findIndex((data) => data === queryId);
+        if (idx === -1) {
+          if (recentlyViewedQueries.length >= RECENTLY_VIEWED_QUERIES_LIMIT) {
+            recentlyViewedQueries.pop();
+          }
+          recentlyViewedQueries.unshift(queryId);
+        } else {
+          recentlyViewedQueries.splice(idx, 1);
+          recentlyViewedQueries.unshift(queryId);
+        }
+        this.application.userDataService.persistValue(
+          LegendDataCubeUserDataKey.RECENTLY_VIEWED_QUERIES,
+          recentlyViewedQueries,
+        );
+
         this.loadQueryState.pass();
       } catch (error) {
         assertErrorThrown(error);

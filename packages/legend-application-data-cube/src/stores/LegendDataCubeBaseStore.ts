@@ -62,7 +62,7 @@ export class LegendDataCubeBaseStore {
   readonly graphManager: V1_PureGraphManager;
   readonly engineServerClient: V1_EngineServerClient;
   readonly engine: LegendDataCubeDataCubeEngine;
-  readonly initState = ActionState.create();
+  readonly initializeState = ActionState.create();
 
   readonly dataCubeSettings: DataCubeSetting[];
 
@@ -152,7 +152,7 @@ export class LegendDataCubeBaseStore {
   }
 
   async initialize() {
-    this.initState.inProgress();
+    this.initializeState.inProgress();
 
     try {
       this.application.identityService.setCurrentUser(
@@ -184,7 +184,7 @@ export class LegendDataCubeBaseStore {
           tracerService: this.application.tracerService,
         },
       );
-      this.initState.pass();
+      this.initializeState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.application.logService.error(
@@ -192,7 +192,7 @@ export class LegendDataCubeBaseStore {
         `Can't initialize Legend DataCube`,
         error,
       );
-      this.initState.fail();
+      this.initializeState.fail();
     }
   }
 }

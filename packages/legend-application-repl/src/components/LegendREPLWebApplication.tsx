@@ -107,7 +107,7 @@ export const LegendREPLRouter = observer(() => {
 
   return (
     <div className="h-full">
-      {store.initState.hasSucceeded && store.query && (
+      {store.initializeState.hasSucceeded && store.query && (
         <Routes>
           <Route
             path={LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN.DATA_CUBE}

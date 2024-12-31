@@ -44,7 +44,7 @@ export class LegendREPLBaseStore {
   readonly application: LegendREPLApplicationStore;
   readonly client: LegendREPLServerClient;
   readonly engine: LegendREPLDataCubeEngine;
-  readonly initState = ActionState.create();
+  readonly initializeState = ActionState.create();
   readonly publishState = ActionState.create();
 
   sourceQuery?: string | undefined;
@@ -80,7 +80,7 @@ export class LegendREPLBaseStore {
   }
 
   async initialize() {
-    this.initState.inProgress();
+    this.initializeState.inProgress();
     try {
       const info = await this.client.getInfrastructureInfo();
       this.currentUser = info.currentUser;
@@ -96,7 +96,7 @@ export class LegendREPLBaseStore {
         DataCubeQuery.serialization.fromJson(await this.client.getBaseQuery()),
       );
 
-      this.initState.pass();
+      this.initializeState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.application.logService.error(
@@ -104,7 +104,7 @@ export class LegendREPLBaseStore {
         `Can't initialize REPL`,
         error,
       );
-      this.initState.fail();
+      this.initializeState.fail();
     }
   }
 

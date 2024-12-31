@@ -136,7 +136,7 @@ export const DataCube = observer(
         .catch((error) => state.engine.logUnhandledError(error));
     }, [state]);
 
-    if (!state.initState.hasSucceeded) {
+    if (!state.initializeState.hasSucceeded) {
       return <></>;
     }
     return (

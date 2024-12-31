@@ -47,11 +47,7 @@ const LegendDataCubeQueryBuilderHeader = observer(
 
     return (
       <div className="flex h-full items-center">
-        <FormButton
-          compact={true}
-          // TODO: we will come back to support this later
-          disabled={true}
-        >
+        <FormButton compact={true} onClick={() => store.loader.display.open()}>
           Load Query
         </FormButton>
         <FormButton
@@ -177,8 +173,7 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
 
     useEffect(() => {
       if (!store.builder && !queryId) {
-        // TODO: open load query window
-        // store.newQueryState.display.open();
+        store.loader.display.open();
       }
     }, [store, queryId]);
 

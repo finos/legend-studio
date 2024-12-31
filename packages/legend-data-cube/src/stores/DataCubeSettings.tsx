@@ -160,6 +160,11 @@ export class DataCubeSettings {
     const settingValues = this.getSettingValues?.() ?? {};
     Object.keys(settingValues).forEach((key) => {
       const value = settingValues[key];
+      // for unknown settings (e.g. outdated settings, settings' keys changed, etc.), we ignore them
+      const configuration = this.configurations.get(key);
+      if (!configuration) {
+        return;
+      }
       this.setValue(key, value, [this.values, this.currentValues]);
     });
 

@@ -60,7 +60,7 @@ const LegendDataCubeWebApplicationRouter = observer(() => {
 
   return (
     <div className="h-full">
-      {store.initState.hasSucceeded && (
+      {store.initializeState.hasSucceeded && (
         <Routes>
           <Route
             path={LEGEND_DATA_CUBE_ROUTE_PATTERN.QUERY_BUILDER}
