@@ -47,6 +47,7 @@ import {
   LogEvent,
   NetworkClientError,
   type PlainObject,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
   LegendREPLDataCubeSource,
@@ -77,27 +78,42 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   // ---------------------------------- IMPLEMENTATION ----------------------------------
 
   override async processQuerySource(value: PlainObject) {
-    if (value._type !== REPL_DATA_CUBE_SOURCE_TYPE) {
-      throw new Error(
-        `Can't deserialize query source of type '${value._type}'. Only type(s) '${REPL_DATA_CUBE_SOURCE_TYPE}' are supported.`,
-      );
+    switch (value._type) {
+      case REPL_DATA_CUBE_SOURCE_TYPE: {
+        const rawSource =
+          RawLegendREPLDataCubeSource.serialization.fromJson(value);
+        this.baseStore.sourceQuery = rawSource.query;
+        const source = new LegendREPLDataCubeSource();
+        source.query = await this.parseValueSpecification(
+          rawSource.query,
+          false,
+        );
+        try {
+          source.columns = (
+            await this._getQueryRelationType(_lambda([], [source.query]))
+          ).columns;
+        } catch (error) {
+          assertErrorThrown(error);
+          throw new Error(
+            `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
+          );
+        }
+        source.runtime = rawSource.runtime;
+
+        source.mapping = rawSource.mapping;
+        source.timestamp = rawSource.timestamp;
+        source.model = rawSource.model;
+        source.isLocal = rawSource.isLocal;
+        source.isPersistenceSupported = rawSource.isPersistenceSupported;
+
+        return source;
+      }
+      default: {
+        throw new UnsupportedOperationError(
+          `Can't process query source of type '${value._type}'.`,
+        );
+      }
     }
-    const rawSource = RawLegendREPLDataCubeSource.serialization.fromJson(value);
-    this.baseStore.sourceQuery = rawSource.query;
-    const source = new LegendREPLDataCubeSource();
-    source.query = await this.parseValueSpecification(rawSource.query, false);
-    source.columns = (
-      await this.getQueryRelationType(_lambda([], [source.query]), source)
-    ).columns;
-    source.runtime = rawSource.runtime;
-
-    source.mapping = rawSource.mapping;
-    source.timestamp = rawSource.timestamp;
-    source.model = rawSource.model;
-    source.isLocal = rawSource.isLocal;
-    source.isPersistenceSupported = rawSource.isPersistenceSupported;
-
-    return source;
   }
 
   override async parseValueSpecification(
@@ -131,24 +147,6 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
       code,
       baseQuery: _serializeValueSpecification(baseQuery),
     });
-  }
-
-  override async getQueryRelationType(
-    query: V1_Lambda,
-    source: DataCubeSource,
-  ) {
-    const relationType = deserialize(
-      V1_relationTypeModelSchema,
-      await this.client.getQueryRelationReturnType({
-        query: _serializeValueSpecification(query),
-      }),
-    );
-    return {
-      columns: relationType.columns.map((column) => ({
-        name: column.name,
-        type: V1_getGenericTypeFullPath(column.genericType),
-      })),
-    };
   }
 
   override async getQueryCodeRelationReturnType(
@@ -220,6 +218,23 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
       );
     }
     return undefined;
+  }
+
+  // ---------------------------------- UTILITIES ----------------------------------
+
+  private async _getQueryRelationType(query: V1_Lambda) {
+    const relationType = deserialize(
+      V1_relationTypeModelSchema,
+      await this.client.getQueryRelationReturnType({
+        query: _serializeValueSpecification(query),
+      }),
+    );
+    return {
+      columns: relationType.columns.map((column) => ({
+        name: column.name,
+        type: V1_getGenericTypeFullPath(column.genericType),
+      })),
+    };
   }
 
   // ---------------------------------- APPLICATION ----------------------------------

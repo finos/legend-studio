@@ -119,9 +119,19 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           rawSource.query,
           false,
         );
-        source.columns = (
-          await this.getQueryRelationType(_lambda([], [source.query]), source)
-        ).columns;
+        try {
+          source.columns = (
+            await this._getLambdaRelationType(
+              _serializeValueSpecification(_lambda([], [source.query])),
+              source.model,
+            )
+          ).columns;
+        } catch (error) {
+          assertErrorThrown(error);
+          throw new Error(
+            `Can't get query result columns. Make sure the source query return a relation (i.e. typed TDS). Error: ${error.message}`,
+          );
+        }
         return source;
       }
       case LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE: {
@@ -140,9 +150,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
                 queryInfo.versionId,
               ),
           );
-        const query = new LegendQueryDataCubeSource();
-        query.info = queryInfo;
-        query.lambda = _deserializeLambda(
+        const source = new LegendQueryDataCubeSource();
+        source.info = queryInfo;
+        source.lambda = _deserializeLambda(
           await this.engineServerClient.grammarToJSON_lambda(
             queryInfo.content,
             '',
@@ -151,9 +161,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             false,
           ),
         );
-        query.mapping = executionContext.mapping;
-        query.runtime = executionContext.runtime;
-        query.model = V1_serializePureModelContext(
+        source.mapping = executionContext.mapping;
+        source.runtime = executionContext.runtime;
+        source.model = V1_serializePureModelContext(
           new V1_PureModelContextPointer(
             undefined,
             new V1_LegendSDLC(
@@ -163,15 +173,22 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
             ),
           ),
         );
-        query.columns = (
-          await this._getLambdaRelationType(
-            _serializeValueSpecification(query.lambda),
-            query.model,
-          )
-        ).columns;
-        query.query = getNonNullableEntry(query.lambda.body, 0);
+        source.query = getNonNullableEntry(source.lambda.body, 0);
         // TODO: handle parameter values
-        return query;
+        try {
+          source.columns = (
+            await this._getLambdaRelationType(
+              _serializeValueSpecification(source.lambda),
+              source.model,
+            )
+          ).columns;
+        } catch (error) {
+          assertErrorThrown(error);
+          throw new Error(
+            `Can't get query result columns. Make sure the saved query return a relation (i.e. typed TDS). Error: ${error.message}`,
+          );
+        }
+        return source;
       }
       default:
         throw new UnsupportedOperationError(
@@ -249,18 +266,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     return this.graphManager.valueSpecificationToPureCode(
       _serializeValueSpecification(value),
       pretty,
-    );
-  }
-
-  // TODO: we could optimize this by synthesizing the base query from the source columns
-  // instead of having to send the entire graph model
-  override async getQueryRelationType(
-    query: V1_Lambda,
-    source: DataCubeSource,
-  ) {
-    return this._getQueryRelationType(
-      _serializeValueSpecification(query),
-      source,
     );
   }
 

@@ -204,14 +204,6 @@ export class QueryBuilderDataCubeEngine extends DataCubeEngine {
     return relationType;
   }
 
-  override async getQueryRelationType(
-    query: V1_Lambda,
-    source: DataCubeSource,
-  ) {
-    const lambda = this.buildRawLambdaFromValueSpec(query);
-    return this.getRelationType(lambda);
-  }
-
   override async getQueryCodeRelationReturnType(
     code: string,
     baseQuery: V1_ValueSpecification,

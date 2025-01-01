@@ -163,7 +163,7 @@ export abstract class DataCubeEngine {
     new DataCubeQueryAggregateOperation__JoinStrings(),
   ];
 
-  // ------------------------------- CORE OPERATIONS -------------------------------
+  // ------------------------------- UTILITIES -------------------------------
 
   getFilterOperation(value: string) {
     return getFilterOperation(value, this.filterOperations);
@@ -220,11 +220,6 @@ export abstract class DataCubeEngine {
     baseQuery: V1_Lambda,
     source: DataCubeSource,
   ): Promise<CompletionItem[]>;
-
-  abstract getQueryRelationType(
-    query: V1_Lambda,
-    source: DataCubeSource,
-  ): Promise<DataCubeRelationType>;
 
   abstract getQueryCodeRelationReturnType(
     code: string,
