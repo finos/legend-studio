@@ -281,7 +281,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     className="w-80"
                     value={selectedColumn.displayName ?? ''}
                     onChange={(event) => {
-                      const value = event.target.value.trim();
+                      const value = event.target.value;
                       selectedColumn.setDisplayName(
                         value !== '' ? value : undefined,
                       );
@@ -434,7 +434,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         onChange={(event) => {
                           const value = event.target.value.trim();
                           selectedColumn.setUnit(
-                            value.trim() !== '' ? value.trim() : undefined,
+                            value.trim() !== '' ? value : undefined,
                           );
                         }}
                         placeholder={EMPTY_VALUE_PLACEHOLDER}
@@ -496,7 +496,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     className="w-16"
                     value={selectedColumn.missingValueDisplayText ?? ''}
                     onChange={(event) => {
-                      const value = event.target.value.trim();
+                      const value = event.target.value;
                       selectedColumn.setMissingValueDisplayText(
                         value !== '' ? value : undefined,
                       );

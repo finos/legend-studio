@@ -110,7 +110,7 @@ const DataCubeSettingEntryDisplay = observer(
                 runInAction(() => {
                   panel.currentValues.set(
                     configuration.key,
-                    event.target.value.trim(),
+                    event.target.value,
                   );
                 });
               }}

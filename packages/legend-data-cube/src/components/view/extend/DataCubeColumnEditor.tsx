@@ -206,7 +206,7 @@ export const DataCubeColumnCreator = observer(
                     disabled={state.finalizationState.isInProgress}
                     value={state.name}
                     onChange={(event) => {
-                      state.setName(event.target.value.trim());
+                      state.setName(event.target.value);
                     }}
                   />
                   <div className="ml-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center text-lg">

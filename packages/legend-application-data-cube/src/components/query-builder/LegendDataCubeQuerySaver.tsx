@@ -46,7 +46,7 @@ export const LegendDataCubeQuerySaver = observer(() => {
                 className="w-80"
                 value={name}
                 onChange={(event) => {
-                  setName(event.target.value.trim());
+                  setName(event.target.value);
                 }}
                 autoFocus={true}
               />
