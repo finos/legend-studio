@@ -42,12 +42,12 @@ export function _param<T extends V1_ValueSpecification>(
 ): T {
   assertTrue(
     func.parameters.length >= paramIdx + 1,
-    `Can't process ${_name(func.function)}: Expected at least ${paramIdx + 1} parameter(s)`,
+    `Can't process ${_name(func.function)}() expression: Expected at least ${paramIdx + 1} parameter(s)`,
   );
   return guaranteeType(
     func.parameters[paramIdx],
     clazz,
-    `Can't process ${_name(func.function)}: Found unexpected type for parameter at index ${paramIdx}`,
+    `Can't process ${_name(func.function)}() expression: Found unexpected type for parameter at index ${paramIdx}`,
   );
 }
 
@@ -55,7 +55,7 @@ export function _colSpecParam(func: V1_AppliedFunction, paramIdx: number) {
   return guaranteeType(
     _param(func, paramIdx, V1_ClassInstance).value,
     V1_ColSpec,
-    `Can't process ${_name(func.function)}: Expected parameter at index ${paramIdx} to be a column specification`,
+    `Can't process ${_name(func.function)}() expression: Expected parameter at index ${paramIdx} to be a column specification`,
   );
 }
 
@@ -63,7 +63,7 @@ export function _colSpecArrayParam(func: V1_AppliedFunction, paramIdx: number) {
   return guaranteeType(
     _param(func, paramIdx, V1_ClassInstance).value,
     V1_ColSpecArray,
-    `Can't process ${_name(func.function)}: Expected parameter at index ${paramIdx} to be a column specification list`,
+    `Can't process ${_name(func.function)}() expression: Expected parameter at index ${paramIdx} to be a column specification list`,
   );
 }
 
