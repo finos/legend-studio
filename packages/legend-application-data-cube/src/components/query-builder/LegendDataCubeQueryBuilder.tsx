@@ -186,6 +186,7 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
         query={builder.query}
         engine={store.baseStore.engine}
         options={{
+          gridClientLicense: store.baseStore.gridClientLicense,
           onInitialized(dataCube) {
             builder.setDataCube(dataCube);
           },

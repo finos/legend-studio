@@ -64,16 +64,10 @@ import { DataCubeQueryFilterOperation__EndWithCaseInsensitive } from './filter/D
 import { DataCubeQueryFilterOperation__NotEndWith } from './filter/DataCubeQueryFilterOperation__NotEndWith.js';
 import { DataCubeQueryFilterOperation__IsNull } from './filter/DataCubeQueryFilterOperation__IsNull.js';
 import { DataCubeQueryFilterOperation__IsNotNull } from './filter/DataCubeQueryFilterOperation__IsNotNull.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  configureCodeEditor,
-  setupPureLanguageService,
-} from '@finos/legend-code-editor';
-import { DataCubeFont } from './DataCubeQueryEngine.js';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import { buildExecutableQuery } from './DataCubeQueryBuilder.js';
 import type { DataCubeColumn } from './models/DataCubeColumn.js';
-import { LicenseManager } from 'ag-grid-enterprise';
 import {
   type DataCubeSource,
   INTERNAL__DataCubeSource,
@@ -168,18 +162,6 @@ export abstract class DataCubeEngine {
     new DataCubeQueryAggregateOperation__StdDevSample(),
     new DataCubeQueryAggregateOperation__JoinStrings(),
   ];
-
-  async initialize(options?: {
-    gridClientLicense?: string | undefined;
-  }): Promise<void> {
-    if (options?.gridClientLicense) {
-      LicenseManager.setLicenseKey(options.gridClientLicense);
-    }
-    await configureCodeEditor(DataCubeFont.ROBOTO_MONO, (error) => {
-      throw error;
-    });
-    setupPureLanguageService({});
-  }
 
   // ------------------------------- CORE OPERATIONS -------------------------------
 

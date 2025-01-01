@@ -34,6 +34,12 @@ import { DataCubeSettings } from './DataCubeSettings.js';
 import type { DataCubeAPI } from './DataCubeAPI.js';
 import type { DataCubeOptions } from './DataCubeOptions.js';
 import type { DataCubeQuery } from './core/models/DataCubeQuery.js';
+import { LicenseManager } from 'ag-grid-enterprise';
+import {
+  configureCodeEditor,
+  setupPureLanguageService,
+} from '@finos/legend-code-editor';
+import { DataCubeFont } from './core/DataCubeQueryEngine.js';
 
 export class DataCubeState implements DataCubeAPI {
   uuid = uuid();
@@ -45,9 +51,12 @@ export class DataCubeState implements DataCubeAPI {
   readonly documentationDisplay: DisplayState;
   readonly initializeState = ActionState.create();
 
-  onInitialized?: ((dataCube: DataCubeState) => void) | undefined;
-  onNameChanged?: ((name: string, source: DataCubeSource) => void) | undefined;
-  innerHeaderComponent?:
+  private readonly gridClientLicense?: string | undefined;
+  readonly onInitialized?: ((dataCube: DataCubeState) => void) | undefined;
+  readonly onNameChanged?:
+    | ((name: string, source: DataCubeSource) => void)
+    | undefined;
+  readonly innerHeaderComponent?:
     | ((dataCube: DataCubeState) => React.ReactNode)
     | undefined;
 
@@ -93,6 +102,7 @@ export class DataCubeState implements DataCubeAPI {
       },
     );
 
+    this.gridClientLicense = options?.gridClientLicense;
     this.onInitialized = options?.onInitialized;
     this.onNameChanged = options?.onNameChanged;
     this.innerHeaderComponent = options?.innerHeaderComponent;
@@ -135,9 +145,14 @@ export class DataCubeState implements DataCubeAPI {
     this.initializeState.inProgress();
 
     try {
-      await this.engine.initialize({
-        gridClientLicense: this.settings.gridClientLicense,
+      // set up the components
+      if (this.gridClientLicense) {
+        LicenseManager.setLicenseKey(this.gridClientLicense);
+      }
+      await configureCodeEditor(DataCubeFont.ROBOTO_MONO, (error) => {
+        throw error;
       });
+      setupPureLanguageService({});
 
       this.onInitialized?.(this);
       this.initializeState.pass();

@@ -57,7 +57,6 @@ export class DataCubeSettings {
   onSettingValuesChanged?:
     | ((values: DataCubeSettingValues) => void)
     | undefined;
-  gridClientLicense?: string | undefined;
 
   constructor(dataCube: DataCubeState, options?: DataCubeOptions | undefined) {
     makeObservable(this, {

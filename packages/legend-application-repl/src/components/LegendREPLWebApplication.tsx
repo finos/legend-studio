@@ -64,6 +64,7 @@ const LegendREPLDataCube = observer((props: { query: DataCubeQuery }) => {
       query={query}
       engine={store.engine}
       options={{
+        gridClientLicense: store.gridClientLicense,
         onNameChanged(name, source) {
           const timestamp =
             source instanceof LegendREPLDataCubeSource
