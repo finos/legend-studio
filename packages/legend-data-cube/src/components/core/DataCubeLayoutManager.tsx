@@ -23,6 +23,7 @@ import {
   WINDOW_DEFAULT_OFFSET,
   WINDOW_DEFAULT_WIDTH,
   type LayoutManagerState,
+  type WindowSpecification,
   type WindowState,
 } from '../../stores/core/DataCubeLayoutManagerState.js';
 import { observer } from 'mobx-react-lite';
@@ -34,7 +35,11 @@ export const Window = (props: {
 }) => {
   const { parent, layout, windowState } = props;
   const configuration = windowState.configuration.window;
-  const [windowSpec, setWindowSpec] = useState(() => {
+  const [windowSpec, _setWindowSpec] = useState(() => {
+    if (windowState.specification) {
+      return windowState.specification;
+    }
+
     const x = configuration.x ?? WINDOW_DEFAULT_OFFSET;
     const y = configuration.y ?? WINDOW_DEFAULT_OFFSET;
     const width = configuration.width ?? WINDOW_DEFAULT_WIDTH;
@@ -71,13 +76,21 @@ export const Window = (props: {
         ? containerHeight - Math.abs(y) - WINDOW_DEFAULT_OFFSET
         : height;
 
-    return {
+    const spec = {
       x: x < 0 ? containerWidth - Math.abs(x) - finalWidth : x,
       y: y < 0 ? containerHeight - Math.abs(y) - finalHeight : y,
       width: finalWidth,
       height: finalHeight,
     };
+    windowState.setSpecification(spec);
+
+    return spec;
   });
+
+  const setWindowSpec = (val: WindowSpecification) => {
+    _setWindowSpec(val);
+    windowState.setSpecification(val);
+  };
 
   return (
     <ResizableAndDraggableBox

@@ -23,6 +23,13 @@ import {
   runInAction,
 } from 'mobx';
 
+export type WindowSpecification = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 export type WindowConfiguration = {
   x?: number | undefined;
   y?: number | undefined;
@@ -51,6 +58,7 @@ export class WindowState {
   readonly uuid = uuid();
   readonly configuration: LayoutConfiguration;
   readonly onClose?: (() => void) | undefined;
+  specification?: WindowSpecification | undefined;
 
   constructor(
     configuration: LayoutConfiguration,
@@ -58,6 +66,10 @@ export class WindowState {
   ) {
     this.configuration = configuration;
     this.onClose = onClose;
+  }
+
+  setSpecification(val: WindowSpecification) {
+    this.specification = val;
   }
 }
 
