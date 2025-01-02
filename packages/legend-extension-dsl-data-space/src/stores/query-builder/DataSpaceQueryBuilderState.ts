@@ -55,6 +55,7 @@ import {
   assertErrorThrown,
   filterByType,
   LogEvent,
+  uniq,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query-builder/DataSpaceQueryBuilder.js';
@@ -112,12 +113,11 @@ export const resolveUsableDataSpaceClasses = (
       (m) => m.info !== undefined,
     )
   ) {
-    const compatibleClassPaths =
-      mappingModelCoverageAnalysisResult.mappedEntities.map(
-        (e) => e.info?.classPath,
-      );
-    const uniqueCompatibleClasses = compatibleClassPaths.filter(
-      (val, index) => compatibleClassPaths.indexOf(val) === index,
+    const uniqueCompatibleClasses = uniq(
+      mappingModelCoverageAnalysisResult.mappedEntities
+        // is root entity filters out mapped classes
+        .filter((e) => e.info?.isRootEntity)
+        .map((e) => e.info?.classPath),
     );
     compatibleClasses = graphManagerState.graph.classes.filter((c) =>
       uniqueCompatibleClasses.includes(c.path),
