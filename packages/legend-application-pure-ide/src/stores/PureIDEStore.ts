@@ -196,7 +196,7 @@ export class PureIDEStore implements CommandRegistrar {
       loadFile: flow,
       execute: flow,
       executeGo: flow,
-      debugging: flow,
+      runDebugger: flow,
       manageExecuteGoResult: flow,
       executeTests: flow,
       executeFullTestSuite: flow,
@@ -881,7 +881,7 @@ export class PureIDEStore implements CommandRegistrar {
     );
   }
 
-  *debugging(command: { args: string[] }): GeneratorFn<void> {
+  *runDebugger(command: { args: string[] }): GeneratorFn<void> {
     yield flowResult(
       this.client
         .execute([], 'debugging', command)
