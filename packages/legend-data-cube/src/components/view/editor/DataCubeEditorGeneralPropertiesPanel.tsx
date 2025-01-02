@@ -356,6 +356,18 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
 
             <div className="mt-2 flex h-5 w-full items-center">
               <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
+                Dark Mode?
+              </div>
+              <FormCheckbox
+                checked={configuration.darkMode}
+                onChange={() =>
+                  configuration.setDarkMode(!configuration.darkMode)
+                }
+              />
+            </div>
+
+            <div className="mt-2 flex h-5 w-full items-center">
+              <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
                 Default Font:
               </div>
               <FormDropdownMenuTrigger

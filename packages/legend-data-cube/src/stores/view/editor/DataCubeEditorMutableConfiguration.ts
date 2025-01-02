@@ -446,6 +446,9 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
       description: observable,
       setDescription: action,
 
+      darkMode: observable,
+      setDarkMode: action,
+
       showHorizontalGridLines: observable,
       setShowHorizontalGridLines: action,
 
@@ -630,6 +633,10 @@ export class DataCubeEditorMutableConfiguration extends DataCubeConfiguration {
 
   setDescription(value: string | undefined) {
     this.description = value;
+  }
+
+  setDarkMode(value: boolean) {
+    this.darkMode = value;
   }
 
   setShowHorizontalGridLines(value: boolean) {
