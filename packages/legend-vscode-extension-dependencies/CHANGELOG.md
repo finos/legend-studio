@@ -1,5 +1,11 @@
 # @finos/legend-vscode-extension-dependencies
 
+## 4.0.50
+
+### Patch Changes
+
+- [#3779](https://github.com/finos/legend-studio/pull/3779) [`d5e4b29`](https://github.com/finos/legend-studio/commit/d5e4b29fb7a36c9c0cf8d594b1493c6097eb57b0) ([@travisstebbins](https://github.com/travisstebbins)) - Additional vscode dependency exports
+
 ## 4.0.49
 
 ## 4.0.48

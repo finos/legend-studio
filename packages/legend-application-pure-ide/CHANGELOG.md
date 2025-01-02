@@ -1,5 +1,11 @@
 # @finos/legend-application-pure-ide
 
+## 8.0.269
+
+### Patch Changes
+
+- [#3759](https://github.com/finos/legend-studio/pull/3759) [`c9c0fc4`](https://github.com/finos/legend-studio/commit/c9c0fc49d81e3502f5729ec4231e0da5cb59f723) ([@rafaelbey](https://github.com/rafaelbey)) - Introduce Pure IDE terminal debug command
+
 ## 8.0.268
 
 ## 8.0.267
