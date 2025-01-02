@@ -162,4 +162,5 @@ export enum LEGEND_PURE_IDE_TERMINAL_COMMAND {
   CLEAR = 'clear',
   ANSI = 'ansi',
   HELP = 'help',
+  DEBUG = 'debug',
 }
