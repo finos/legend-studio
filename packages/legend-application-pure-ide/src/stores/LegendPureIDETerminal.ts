@@ -344,6 +344,18 @@ export const setupTerminal = (ideStore: PureIDEStore): void => {
         },
       },
       {
+        command: LEGEND_PURE_IDE_TERMINAL_COMMAND.DEBUG,
+        description:
+          'Introsptect debug state.  When passing no parameters, will show display summary of available variables',
+        usage: 'debug [summary | abort | _expression_to_eval_]',
+        aliases: [],
+        handler: async (args: string[]): Promise<void> => {
+          flowResult(ideStore.debugging({ args })).catch(
+            ideStore.applicationStore.alertUnhandledError,
+          );
+        },
+      },
+      {
         command: LEGEND_PURE_IDE_TERMINAL_COMMAND.HELP,
         description: 'Show help',
         usage: 'help',
