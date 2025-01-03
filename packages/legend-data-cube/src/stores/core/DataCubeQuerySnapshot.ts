@@ -15,7 +15,7 @@
  */
 
 import type { V1_AppliedFunction, V1_Lambda } from '@finos/legend-graph';
-import type { DataCubeConfiguration } from './models/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from './model/DataCubeConfiguration.js';
 import {
   IllegalStateError,
   hashObject,
@@ -28,7 +28,7 @@ import type {
   DataCubeOperationValue,
   DataCubeQuerySortDirection,
 } from './DataCubeQueryEngine.js';
-import type { DataCubeColumn } from './models/DataCubeColumn.js';
+import type { DataCubeColumn } from './model/DataCubeColumn.js';
 
 export type DataCubeQuerySnapshotFilterCondition = DataCubeColumn & {
   value: DataCubeOperationValue | undefined;

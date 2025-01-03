@@ -18,9 +18,8 @@ import { observer } from 'mobx-react-lite';
 import {
   DataCube,
   FormBadge_WIP,
-  DataCubeLayoutManager,
+  DataCubeLayout,
   FormButton,
-  type DataCubeState,
   type DataCubeSettingValues,
 } from '@finos/legend-data-cube';
 import {
@@ -41,34 +40,32 @@ import {
 import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
 
-const LegendDataCubeQueryBuilderHeader = observer(
-  (props: { dataCube?: DataCubeState | undefined }) => {
-    const store = useLegendDataCubeQueryBuilderStore();
+const LegendDataCubeQueryBuilderHeader = observer(() => {
+  const store = useLegendDataCubeQueryBuilderStore();
 
-    return (
-      <div className="flex h-full items-center">
-        <FormButton compact={true} onClick={() => store.loader.display.open()}>
-          Load Query
-        </FormButton>
-        <FormButton
-          compact={true}
-          className="ml-1.5"
-          onClick={() => store.newQueryState.display.open()}
-        >
-          New Query
-        </FormButton>
-        <FormButton
-          compact={true}
-          className="ml-1.5"
-          disabled={!store.builder?.dataCube}
-          onClick={() => store.saverDisplay.open()}
-        >
-          Save Query
-        </FormButton>
-      </div>
-    );
-  },
-);
+  return (
+    <div className="flex h-full items-center">
+      <FormButton compact={true} onClick={() => store.loader.display.open()}>
+        Load Query
+      </FormButton>
+      <FormButton
+        compact={true}
+        className="ml-1.5"
+        onClick={() => store.newQueryState.display.open()}
+      >
+        New Query
+      </FormButton>
+      <FormButton
+        compact={true}
+        className="ml-1.5"
+        disabled={!store.builder?.dataCube}
+        onClick={() => store.saverDisplay.open()}
+      >
+        Save Query
+      </FormButton>
+    </div>
+  );
+});
 
 const LegendDataCubeBlankQueryBuilder = observer(() => {
   const store = useLegendDataCubeQueryBuilderStore();
@@ -150,7 +147,7 @@ const LegendDataCubeBlankQueryBuilder = observer(() => {
         <div className="flex items-center px-2"></div>
       </div>
 
-      <DataCubeLayoutManager layout={store.baseStore.engine.layout} />
+      <DataCubeLayout layout={store.layoutService} />
     </div>
   );
 });
@@ -167,7 +164,7 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
       if (queryId !== store.builder?.persistentQuery?.id) {
         store
           .loadQuery(queryId)
-          .catch((error) => store.engine.alertUnhandledError(error));
+          .catch((error) => store.alertService.alertUnhandledError(error));
       }
     }, [store, queryId]);
 
@@ -186,26 +183,24 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
         query={builder.query}
         engine={store.baseStore.engine}
         options={{
-          onInitialized(dataCube) {
-            builder.setDataCube(dataCube);
+          gridClientLicense: store.baseStore.gridClientLicense,
+          onInitialized(event) {
+            builder.setDataCube(event.api);
           },
-          innerHeaderComponent: (dataCube) => (
-            <LegendDataCubeQueryBuilderHeader dataCube={dataCube} />
-          ),
-          getSettingValues() {
-            return application.settingService.getObjectValue(
+          innerHeaderRenderer: () => <LegendDataCubeQueryBuilderHeader />,
+          settingsData: {
+            configurations: store.baseStore.settings,
+            values: application.settingService.getObjectValue(
               LegendDataCubeSettingStorageKey.DATA_CUBE,
-            ) as DataCubeSettingValues | undefined;
+            ) as DataCubeSettingValues | undefined,
           },
-          onSettingValuesChanged(values) {
+          onSettingsChanged(values) {
             application.settingService.persistValue(
               LegendDataCubeSettingStorageKey.DATA_CUBE,
               values,
             );
           },
-          getSettingItems() {
-            return store.baseStore.dataCubeSettings;
-          },
+          documentationUrl: application.documentationService.url,
         }}
       />
     );

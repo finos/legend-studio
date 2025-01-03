@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DataCubeColumn } from '../models/DataCubeColumn.js';
+import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
@@ -32,7 +32,7 @@ import {
   _property,
   _var,
 } from '../DataCubeQueryBuilderUtils.js';
-import type { DataCubeColumnConfiguration } from '../models/DataCubeConfiguration.js';
+import type { DataCubeColumnConfiguration } from '../model/DataCubeConfiguration.js';
 
 export class DataCubeQueryAggregateOperation__JoinStrings extends DataCubeQueryAggregateOperation {
   override get label() {

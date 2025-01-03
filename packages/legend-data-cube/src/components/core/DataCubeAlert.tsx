@@ -14,31 +14,12 @@
  * limitations under the License.
  */
 
-import { cn, DataCubeIcon, Dialog } from '@finos/legend-art';
-import { noop } from '@finos/legend-shared';
-import { observer } from 'mobx-react-lite';
-import { useRef } from 'react';
-import { useDataCube } from '../DataCubeProvider.js';
+import { cn, DataCubeIcon } from '@finos/legend-art';
 import { FormButton } from './DataCubeFormUtils.js';
-
-export enum AlertType {
-  ERROR = 'ERROR',
-  INFO = 'INFO',
-  SUCCESS = 'SUCCESS',
-  WARNING = 'WARNING',
-}
-
-export type ActionAlertAction = { label: string; handler: () => void };
-
-export type ActionAlert = {
-  title?: string | undefined;
-  message: string;
-  prompt?: string | undefined;
-  type: AlertType;
-  text?: string | undefined;
-  actions?: ActionAlertAction[] | undefined;
-  onClose?: () => void;
-};
+import {
+  AlertType,
+  type ActionAlertAction,
+} from '../../stores/services/DataCubeAlertService.js';
 
 export function Alert(props: {
   message: string;
@@ -99,78 +80,3 @@ export function Alert(props: {
     </div>
   );
 }
-
-const BlockingActionAlertContent = observer((props: { alert: ActionAlert }) => {
-  const { alert } = props;
-  const { title, message, prompt, type, onClose, actions } = alert;
-  const ref = useRef<HTMLDivElement>(null);
-  const dataCube = useDataCube();
-
-  // set the width and height of the dialog to make sure content overflow works properly
-  const handleEnter = () => {
-    if (ref.current?.parentElement) {
-      const { width, height } =
-        ref.current.parentElement.getBoundingClientRect();
-      ref.current.style.width = `${width}px`;
-      ref.current.style.height = `${height}px`;
-    }
-  };
-
-  return (
-    <Dialog
-      open={true}
-      onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
-      TransitionProps={{
-        onEnter: handleEnter,
-      }}
-      PaperProps={{
-        elevation: 0,
-      }}
-      slotProps={{
-        backdrop: {
-          classes: {
-            root: 'bg-black !opacity-25',
-          },
-        },
-      }}
-      classes={{
-        root: 'h-full w-full flex items-center justify-center',
-        paper: 'min-h-10 min-w-40 rounded-none shadow-md',
-      }}
-    >
-      <div
-        className="border border-neutral-400 bg-neutral-200 shadow-xl"
-        ref={ref}
-      >
-        <div className="flex h-6 w-full select-none items-center justify-between border-b border-b-neutral-300 bg-white">
-          <div className="px-2">{title ?? ''}</div>
-        </div>
-        <div className="h-[calc(100%_-_24px)] w-full">
-          <Alert
-            type={type}
-            message={message}
-            text={prompt}
-            actions={(actions ?? []).map((action) => ({
-              label: action.label,
-              handler: () => {
-                action.handler();
-                onClose?.();
-                dataCube.alertAction(undefined);
-              },
-            }))}
-          />
-        </div>
-      </div>
-    </Dialog>
-  );
-});
-
-export const DataCubeBlockingActionAlert = observer(() => {
-  const dataCube = useDataCube();
-  const actionAlert = dataCube.currentActionAlert;
-
-  if (!actionAlert) {
-    return null;
-  }
-  return <BlockingActionAlertContent alert={actionAlert} />;
-});

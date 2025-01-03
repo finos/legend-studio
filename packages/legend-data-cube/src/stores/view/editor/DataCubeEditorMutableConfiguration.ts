@@ -45,7 +45,7 @@ import {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
   DataCubePivotLayoutConfiguration,
-} from '../../core/models/DataCubeConfiguration.js';
+} from '../../core/model/DataCubeConfiguration.js';
 import { buildDefaultColumnConfiguration } from '../../core/DataCubeConfigurationBuilder.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import {

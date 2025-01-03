@@ -20,7 +20,7 @@ import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js'
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { DataCubeEditorMutablePivotLayoutConfiguration } from './DataCubeEditorMutableConfiguration.js';
-import type { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import type { PlainObject } from '@finos/legend-shared';
 import { _pruneExpandedPaths } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';
 

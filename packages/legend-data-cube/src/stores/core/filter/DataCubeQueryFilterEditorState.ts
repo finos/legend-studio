@@ -28,7 +28,7 @@ import type {
   DataCubeQuerySnapshotFilter,
   DataCubeQuerySnapshotFilterCondition,
 } from '../DataCubeQuerySnapshot.js';
-import type { DataCubeColumn } from '../models/DataCubeColumn.js';
+import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import type { DataCubeQueryFilterOperation } from './DataCubeQueryFilterOperation.js';
 
 export abstract class DataCubeFilterEditorTreeNode {

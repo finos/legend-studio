@@ -43,7 +43,7 @@ import {
   INTERNAL__GRID_CLIENT_TREE_COLUMN_ID,
 } from './DataCubeGridClientEngine.js';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
-import type { DataCubeColumnConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import type { DataCubeColumnConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { DataCubeFilterEditorConditionTreeNode } from '../../core/filter/DataCubeQueryFilterEditorState.js';
 import { DataCubeEditorTab } from '../editor/DataCubeEditorState.js';
 
@@ -164,7 +164,7 @@ export function generateMenuBuilder(
   fromHeader: boolean,
 ) => (DefaultMenuItem | MenuItemDef)[] {
   const view = controller.view;
-  const engine = view.engine;
+  const dataCube = view.dataCube;
 
   // NOTE: we need to minimize the usage of these states
   // since the grid context-menu should be solely driven
@@ -422,7 +422,9 @@ export function generateMenuBuilder(
             action: () => {
               view.grid.exportEngine
                 .exportEmail(DataCubeGridClientExportFormat.EXCEL)
-                .catch((error) => engine.logUnhandledError(error));
+                .catch((error) =>
+                  dataCube.alertService.alertUnhandledError(error),
+                );
             },
           },
           {
@@ -430,7 +432,9 @@ export function generateMenuBuilder(
             action: () => {
               view.grid.exportEngine
                 .exportEmail(DataCubeGridClientExportFormat.CSV)
-                .catch((error) => engine.logUnhandledError(error));
+                .catch((error) =>
+                  dataCube.alertService.alertUnhandledError(error),
+                );
             },
           },
           {
@@ -588,7 +592,9 @@ export function generateMenuBuilder(
             action: () => {
               extend
                 .openNewColumnEditor()
-                .catch((error) => engine.alertUnhandledError(error));
+                .catch((error) =>
+                  dataCube.alertService.alertUnhandledError(error),
+                );
             },
           },
           ...(columnConfiguration && columnName
@@ -598,7 +604,9 @@ export function generateMenuBuilder(
                   action: () => {
                     extend
                       .openNewColumnEditor(columnConfiguration)
-                      .catch((error) => engine.alertUnhandledError(error));
+                      .catch((error) =>
+                        dataCube.alertService.alertUnhandledError(error),
+                      );
                   },
                 },
               ]
@@ -611,7 +619,9 @@ export function generateMenuBuilder(
                   action: () => {
                     extend
                       .openExistingColumnEditor(columnName)
-                      .catch((error) => engine.alertUnhandledError(error));
+                      .catch((error) =>
+                        dataCube.alertService.alertUnhandledError(error),
+                      );
                   },
                 },
                 {
@@ -619,7 +629,9 @@ export function generateMenuBuilder(
                   action: () => {
                     extend
                       .deleteColumn(columnName)
-                      .catch((error) => engine.alertUnhandledError(error));
+                      .catch((error) =>
+                        dataCube.alertService.alertUnhandledError(error),
+                      );
                   },
                 },
               ]

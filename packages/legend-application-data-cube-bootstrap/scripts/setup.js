@@ -16,8 +16,9 @@
 
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
+import { assembleDocumentation } from '@finos/legend-dev-utils/DocumentationUtils';
 
-export const setup = (outputDir) => {
+export const setup = (outputDir, dataCubeDocsDir) => {
   if (!existsSync(outputDir)) {
     mkdirSync(outputDir);
   }
@@ -46,6 +47,11 @@ export const setup = (outputDir) => {
         },
         depot: {
           url: 'http://localhost:6200/depot/api',
+        },
+        documentation: {
+          url: 'https://legend.finos.org',
+          registry: [],
+          ...assembleDocumentation([dataCubeDocsDir]),
         },
       },
       undefined,

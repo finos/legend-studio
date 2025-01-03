@@ -36,16 +36,15 @@ import { makeObservable, observable, runInAction } from 'mobx';
 import type {
   DataCubeConfiguration,
   DataCubeConfigurationColorKey,
-} from '../../core/models/DataCubeConfiguration.js';
-import { DEFAULT_LARGE_ALERT_WINDOW_CONFIG } from '../../core/DataCubeLayoutManagerState.js';
+} from '../../core/model/DataCubeConfiguration.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
-import { _sortByColName } from '../../core/models/DataCubeColumn.js';
+import { _sortByColName } from '../../core/model/DataCubeColumn.js';
 import {
   isPivotResultColumnName,
   type DataCubeQueryFunctionMap,
 } from '../../core/DataCubeQueryEngine.js';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
-import { AlertType } from '../../../components/core/DataCubeAlert.js';
+import { AlertType } from '../../services/DataCubeAlertService.js';
 import { sum } from 'mathjs';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import {
@@ -53,7 +52,8 @@ import {
   buildGridDataFetchExecutableQuery,
 } from './DataCubeGridQueryBuilder.js';
 import { _colSpecArrayParam } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';
-import { DataCubeSettingKey } from '../../core/DataCubeSetting.js';
+import { DataCubeSettingKey } from '../../../__lib__/DataCubeSetting.js';
+import { DEFAULT_ALERT_WINDOW_CONFIG } from '../../services/DataCubeLayoutService.js';
 
 type DataCubeGridClientCellValue = string | number | boolean | null | undefined;
 type DataCubeGridClientRowData = {
@@ -301,7 +301,7 @@ async function getCastColumns(
   const lambda = new V1_Lambda();
   lambda.body.push(query);
   const result = await view.engine.executeQuery(lambda, view.source, {
-    debug: view.dataCube.settings.getBooleanValue(
+    debug: view.dataCube.settingService.getBooleanValue(
       DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
     ),
   });
@@ -339,7 +339,7 @@ export class DataCubeGridClientServerSideDataSource
   }
 
   async fetchRows(params: IServerSideGetRowsParams<unknown, unknown>) {
-    const task = this.grid.view.newTask('Fetching data');
+    const task = this.grid.view.taskService.start('Fetching data');
 
     // ------------------------------ SNAPSHOT ------------------------------
 
@@ -384,12 +384,12 @@ export class DataCubeGridClientServerSideDataSource
             );
           } catch (error) {
             assertErrorThrown(error);
-            this.grid.view.engine.alertError(error, {
+            this.grid.view.dataCube.alertService.alertError(error, {
               message: `Query Validation Failure: Can't retrieve pivot results column metadata. ${error.message}`,
             });
             // fail early since we can't proceed without the cast columns validated
             params.fail();
-            this.grid.view.endTask(task);
+            this.grid.view.taskService.end(task);
             return;
           }
         }
@@ -425,14 +425,14 @@ export class DataCubeGridClientServerSideDataSource
         lambda,
         this.grid.view.source,
         {
-          debug: this.grid.view.dataCube.settings.getBooleanValue(
+          debug: this.grid.view.dataCube.settingService.getBooleanValue(
             DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
           ),
         },
       );
       const rowData = buildRowData(result.result.result, newSnapshot);
       if (
-        this.grid.view.dataCube.settings.getBooleanValue(
+        this.grid.view.dataCube.settingService.getBooleanValue(
           DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
         )
       ) {
@@ -482,11 +482,11 @@ export class DataCubeGridClientServerSideDataSource
         // behavior by forcing a scroll top for every data fetch and also reset the cache block size to the default value to save memory
         if (rowData.length > INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE) {
           if (
-            !this.grid.view.dataCube.settings.getBooleanValue(
+            !this.grid.view.dataCube.settingService.getBooleanValue(
               DataCubeSettingKey.GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING,
             )
           ) {
-            this.grid.view.engine.alert({
+            this.grid.view.dataCube.alertService.alert({
               message: `Large dataset (>${INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE} rows) detected!`,
               text: `Overall app performance can be impacted by large dataset due to longer query execution time and increased memory usage. At its limit, the engine can crash!\nTo boost performance, consider enabling pagination while working with large dataset.`,
               type: AlertType.WARNING,
@@ -500,14 +500,20 @@ export class DataCubeGridClientServerSideDataSource
                 {
                   label: 'Dismiss Warning',
                   handler: () => {
-                    this.grid.view.dataCube.settings.updateValue(
+                    this.grid.view.dataCube.settingService.updateValue(
+                      this.grid.view.dataCube.api,
                       DataCubeSettingKey.GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING,
                       true,
                     );
                   },
                 },
               ],
-              windowConfig: DEFAULT_LARGE_ALERT_WINDOW_CONFIG,
+              windowConfig: {
+                ...DEFAULT_ALERT_WINDOW_CONFIG,
+                width: 600,
+                minWidth: 300,
+                minHeight: 150,
+              },
             });
           }
 
@@ -547,19 +553,19 @@ export class DataCubeGridClientServerSideDataSource
       }, 0);
     } catch (error) {
       assertErrorThrown(error);
-      this.grid.view.engine.alertError(error, {
+      this.grid.view.dataCube.alertService.alertError(error, {
         message: `Data Fetch Failure: ${error.message}`,
       });
       params.fail();
     } finally {
-      this.grid.view.endTask(task);
+      this.grid.view.taskService.end(task);
     }
   }
 
   getRows(params: IServerSideGetRowsParams<unknown, unknown>) {
     this.fetchRows(params).catch((error: unknown) => {
       assertErrorThrown(error);
-      this.grid.view.engine.logIllegalStateError(
+      this.grid.view.logService.logIllegalStateError(
         `Error ocurred while fetching data for grid should have been handled gracefully`,
         error,
       );

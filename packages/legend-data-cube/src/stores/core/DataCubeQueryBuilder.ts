@@ -29,7 +29,7 @@ import {
   DataCubeQuerySortDirection,
   type DataCubeQueryFunctionMap,
 } from './DataCubeQueryEngine.js';
-import { DataCubeConfiguration } from './models/DataCubeConfiguration.js';
+import { DataCubeConfiguration } from './model/DataCubeConfiguration.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import {
   _col,
@@ -49,7 +49,7 @@ import {
   _extendRootAggregation,
 } from './DataCubeQueryBuilderUtils.js';
 import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
-import type { DataCubeSource } from './models/DataCubeSource.js';
+import type { DataCubeSource } from './model/DataCubeSource.js';
 
 export function buildExecutableQuery(
   snapshot: DataCubeQuerySnapshot,

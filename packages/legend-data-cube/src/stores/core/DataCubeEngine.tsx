@@ -20,7 +20,6 @@ import {
   type TDSExecutionResult,
   type V1_AppliedFunction,
   PRIMITIVE_TYPE,
-  type EngineError,
 } from '@finos/legend-graph';
 import { getFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 import { getAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
@@ -64,41 +63,19 @@ import { DataCubeQueryFilterOperation__EndWithCaseInsensitive } from './filter/D
 import { DataCubeQueryFilterOperation__NotEndWith } from './filter/DataCubeQueryFilterOperation__NotEndWith.js';
 import { DataCubeQueryFilterOperation__IsNull } from './filter/DataCubeQueryFilterOperation__IsNull.js';
 import { DataCubeQueryFilterOperation__IsNotNull } from './filter/DataCubeQueryFilterOperation__IsNotNull.js';
-import {
-  CODE_EDITOR_LANGUAGE,
-  configureCodeEditor,
-  setupPureLanguageService,
-} from '@finos/legend-code-editor';
-import { DataCubeFont } from './DataCubeQueryEngine.js';
 import type { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
 import { buildExecutableQuery } from './DataCubeQueryBuilder.js';
-import type { DataCubeColumn } from './models/DataCubeColumn.js';
-import { LicenseManager } from 'ag-grid-enterprise';
+import type { DataCubeColumn } from './model/DataCubeColumn.js';
 import {
   type DataCubeSource,
   INTERNAL__DataCubeSource,
-} from './models/DataCubeSource.js';
+} from './model/DataCubeSource.js';
 import { _primitiveValue } from './DataCubeQueryBuilderUtils.js';
 import {
-  uuid,
   type DocumentationEntry,
   type LogEvent,
   type PlainObject,
 } from '@finos/legend-shared';
-import {
-  Alert,
-  AlertType,
-  type ActionAlertAction,
-} from '../../components/core/DataCubeAlert.js';
-import {
-  DEFAULT_SMALL_ALERT_WINDOW_CONFIG,
-  LayoutConfiguration,
-  LayoutManagerState,
-  WindowState,
-  type WindowConfiguration,
-} from './DataCubeLayoutManagerState.js';
-import { editor as monacoEditorAPI, Uri } from 'monaco-editor';
-import { DataCubeCodeCheckErrorAlert } from '../../components/core/DataCubeCodeCheckErrorAlert.js';
 
 export type CompletionItem = {
   completion: string;
@@ -119,8 +96,15 @@ export type DataCubeExecutionResult = {
   executedSQL: string;
 };
 
+/**
+ * This is the base engine of DataCube, it provides capabilities that DataCube cannot itself
+ * handle, such as query execution, compilation, etc.
+ *
+ * Note that we want to make sure this class is stateless, since from the perspective of DataCube,
+ * the engine simply should not hold any state. This does not mean any implementations of this engine
+ * must be stateless as well, that's totally up to their authors.
+ */
 export abstract class DataCubeEngine {
-  readonly layout = new LayoutManagerState();
   readonly filterOperations = [
     new DataCubeQueryFilterOperation__LessThan(),
     new DataCubeQueryFilterOperation__LessThanOrEqual(),
@@ -169,19 +153,7 @@ export abstract class DataCubeEngine {
     new DataCubeQueryAggregateOperation__JoinStrings(),
   ];
 
-  async initialize(options?: {
-    gridClientLicense?: string | undefined;
-  }): Promise<void> {
-    if (options?.gridClientLicense) {
-      LicenseManager.setLicenseKey(options.gridClientLicense);
-    }
-    await configureCodeEditor(DataCubeFont.ROBOTO_MONO, (error) => {
-      throw error;
-    });
-    setupPureLanguageService({});
-  }
-
-  // ------------------------------- CORE OPERATIONS -------------------------------
+  // ------------------------------- UTILITIES -------------------------------
 
   getFilterOperation(value: string) {
     return getFilterOperation(value, this.filterOperations);
@@ -219,7 +191,7 @@ export abstract class DataCubeEngine {
     ).substring(`''->`.length);
   }
 
-  // ---------------------------------- INTERFACE ----------------------------------
+  // ---------------------------------- PROCESSOR ----------------------------------
 
   abstract processQuerySource(value: PlainObject): Promise<DataCubeSource>;
 
@@ -239,11 +211,6 @@ export abstract class DataCubeEngine {
     source: DataCubeSource,
   ): Promise<CompletionItem[]>;
 
-  abstract getQueryRelationType(
-    query: V1_Lambda,
-    source: DataCubeSource,
-  ): Promise<DataCubeRelationType>;
-
   abstract getQueryCodeRelationReturnType(
     code: string,
     baseQuery: V1_ValueSpecification,
@@ -260,21 +227,7 @@ export abstract class DataCubeEngine {
     source: DataCubeSource,
   ): V1_AppliedFunction | undefined;
 
-  // ---------------------------------- DOCUMENTATION ----------------------------------
-
-  getDocumentationURL(): string | undefined {
-    return undefined;
-  }
-
-  getDocumentationEntry(key: string): DocumentationEntry | undefined {
-    return undefined;
-  }
-
-  shouldDisplayDocumentationEntry(entry: DocumentationEntry) {
-    return false;
-  }
-
-  // ---------------------------------- LOGGING ----------------------------------
+  // ---------------------------------- APPLICATION ----------------------------------
 
   logDebug(message: string, ...data: unknown[]) {
     // do nothing
@@ -304,128 +257,9 @@ export abstract class DataCubeEngine {
     // do nothing
   }
 
-  // ---------------------------------- ALERT ----------------------------------
-
-  alert(options: {
-    message: string;
-    type: AlertType;
-    text?: string | undefined;
-    actions?: ActionAlertAction[] | undefined;
-    windowTitle?: string | undefined;
-    windowConfig?: WindowConfiguration | undefined;
-  }) {
-    const { message, type, text, actions, windowTitle, windowConfig } = options;
-    const window = new WindowState(
-      new LayoutConfiguration(windowTitle ?? '', () => (
-        <Alert
-          type={type}
-          message={message}
-          text={text}
-          actions={actions}
-          onClose={() => this.layout.closeWindow(window)}
-        />
-      )),
-    );
-    window.configuration.window =
-      windowConfig ?? DEFAULT_SMALL_ALERT_WINDOW_CONFIG;
-    this.layout.newWindow(window);
+  getDocumentationEntry(key: string): DocumentationEntry | undefined {
+    return undefined;
   }
-
-  alertError(
-    error: Error,
-    options: {
-      message: string;
-      text?: string | undefined;
-      actions?: ActionAlertAction[] | undefined;
-      windowTitle?: string | undefined;
-      windowConfig?: WindowConfiguration | undefined;
-    },
-  ) {
-    const { message, text, actions, windowTitle, windowConfig } = options;
-    const window = new WindowState(
-      new LayoutConfiguration(windowTitle ?? 'Error', () => (
-        <Alert
-          type={AlertType.ERROR}
-          message={message}
-          text={text}
-          actions={actions}
-        />
-      )),
-    );
-    window.configuration.window =
-      windowConfig ?? DEFAULT_SMALL_ALERT_WINDOW_CONFIG;
-    this.layout.newWindow(window);
-  }
-
-  alertUnhandledError(error: Error) {
-    this.logUnhandledError(error);
-    this.alertError(error, {
-      message: error.message,
-    });
-  }
-
-  alertCodeCheckError(
-    error: EngineError,
-    code: string,
-    codePrefix: string,
-    options: {
-      message: string;
-      text?: string | undefined;
-      actions?: ActionAlertAction[] | undefined;
-      windowTitle?: string | undefined;
-      windowConfig?: WindowConfiguration | undefined;
-    },
-  ) {
-    const { message, text, windowTitle, windowConfig } = options;
-    // correct the source information since we added prefix to the code
-    // and reveal error in the editor
-    if (error.sourceInformation) {
-      error.sourceInformation.startColumn -=
-        error.sourceInformation.startLine === 1 ? codePrefix.length : 0;
-      error.sourceInformation.endColumn -=
-        error.sourceInformation.endLine === 1 ? codePrefix.length : 0;
-      const editorModel = monacoEditorAPI.createModel(
-        code,
-        CODE_EDITOR_LANGUAGE.PURE,
-        Uri.file(`/${uuid()}.pure`),
-      );
-
-      const fullRange = editorModel.getFullModelRange();
-      if (
-        error.sourceInformation.startLine < 1 ||
-        (error.sourceInformation.startLine === 1 &&
-          error.sourceInformation.startColumn < 1) ||
-        error.sourceInformation.endLine > fullRange.endLineNumber ||
-        (error.sourceInformation.endLine === fullRange.endLineNumber &&
-          error.sourceInformation.endColumn > fullRange.endColumn)
-      ) {
-        error.sourceInformation.startColumn = fullRange.startColumn;
-        error.sourceInformation.startLine = fullRange.startLineNumber;
-        error.sourceInformation.endColumn = fullRange.endColumn;
-        error.sourceInformation.endLine = fullRange.endLineNumber;
-      }
-      const window = new WindowState(
-        new LayoutConfiguration(windowTitle ?? 'Error', () => (
-          <DataCubeCodeCheckErrorAlert
-            editorModel={editorModel}
-            error={error}
-            message={message}
-            text={text}
-          />
-        )),
-      );
-      window.configuration.window = windowConfig ?? {
-        width: 500,
-        height: 400,
-        minWidth: 300,
-        minHeight: 300,
-        center: true,
-      };
-      this.layout.newWindow(window);
-    }
-  }
-
-  // ---------------------------------- MISC ----------------------------------
 
   openLink(url: string) {
     // do nothing

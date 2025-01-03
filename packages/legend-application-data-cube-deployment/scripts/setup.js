@@ -22,4 +22,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const outputDir = process.argv[2];
 
-setup(resolve(__dirname, `../${outputDir}`));
+setup(
+  resolve(__dirname, `../${outputDir}`),
+  resolve(__dirname, '../../legend-data-cube/docs'),
+);

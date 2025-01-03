@@ -45,7 +45,7 @@ import {
   FormButton,
 } from '../../core/DataCubeFormUtils.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
-import { DocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
+import { DataCubeDocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
 
 export const DataCubeEditorGeneralPropertiesPanel = observer(
   (props: { view: DataCubeViewState }) => {
@@ -204,7 +204,7 @@ export const DataCubeEditorGeneralPropertiesPanel = observer(
                 <FormDocumentation
                   className="ml-1"
                   documentationKey={
-                    DocumentationKey.DATA_CUBE_GRID_CONFIGURATION_ROW_LIMIT
+                    DataCubeDocumentationKey.GRID_CONFIGURATION_ROW_LIMIT
                   }
                 />
               </div>

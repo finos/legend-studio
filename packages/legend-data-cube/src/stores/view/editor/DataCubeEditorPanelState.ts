@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import type { DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 
 export interface DataCubeQueryEditorPanelState {

@@ -64,29 +64,31 @@ const LegendREPLDataCube = observer((props: { query: DataCubeQuery }) => {
       query={query}
       engine={store.engine}
       options={{
-        onNameChanged(name, source) {
+        gridClientLicense: store.gridClientLicense,
+        onNameChanged(event) {
           const timestamp =
-            source instanceof LegendREPLDataCubeSource
-              ? source.timestamp
+            event.source instanceof LegendREPLDataCubeSource
+              ? event.source.timestamp
               : undefined;
           application.layoutService.setWindowTitle(
             `\u229E ${name}${timestamp ? ` - ${formatDate(new Date(timestamp), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
           );
         },
-        innerHeaderComponent: (dataCube) => (
-          <LegendREPLDataCubeHeader dataCube={dataCube} />
+        innerHeaderRenderer: (params) => (
+          <LegendREPLDataCubeHeader api={params.api} />
         ),
-        getSettingValues() {
-          return application.settingService.getObjectValue(
+        settingsData: {
+          values: application.settingService.getObjectValue(
             LegendREPLSettingStorageKey.DATA_CUBE,
-          ) as DataCubeSettingValues | undefined;
+          ) as DataCubeSettingValues | undefined,
         },
-        onSettingValuesChanged(values) {
+        onSettingsChanged(values) {
           application.settingService.persistValue(
             LegendREPLSettingStorageKey.DATA_CUBE,
             values,
           );
         },
+        documentationUrl: application.documentationService.url,
       }}
     />
   );

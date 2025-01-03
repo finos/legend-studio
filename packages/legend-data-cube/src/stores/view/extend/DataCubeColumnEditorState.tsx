@@ -16,7 +16,7 @@
 
 import { action, computed, makeObservable, observable, override } from 'mobx';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import type { DisplayState } from '../../core/DataCubeLayoutManagerState.js';
+import type { DisplayState } from '../../services/DataCubeLayoutService.js';
 import { DataCubeColumnCreator } from '../../../components/view/extend/DataCubeColumnEditor.js';
 import { editor as monacoEditorAPI, Uri } from 'monaco-editor';
 import {
@@ -45,7 +45,7 @@ import {
   V1_Lambda,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import type { DataCubeColumnConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import type { DataCubeColumnConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import type { DataCubeQuerySnapshotExtendedColumn } from '../../core/DataCubeQuerySnapshot.js';
 import {
   _lambda,
@@ -285,7 +285,7 @@ export abstract class DataCubeColumnBaseEditorState {
         this.showError(error);
         return undefined;
       }
-      this.view.engine.alertError(error, {
+      this.view.dataCube.alertService.alertError(error, {
         message: `Expression Validation Failure: ${error.message}`,
       });
     } finally {
@@ -333,7 +333,7 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
   }
 
   override newDisplay(state: DataCubeColumnBaseEditorState): DisplayState {
-    return this.view.engine.layout.newDisplay(
+    return this.view.dataCube.layoutService.newDisplay(
       'Add New Column',
       () => <DataCubeColumnCreator state={this} />,
       {
@@ -368,7 +368,7 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
       ]);
     } catch (error) {
       assertErrorThrown(error);
-      this.view.engine.alertError(error, {
+      this.view.dataCube.alertService.alertError(error, {
         message: `Expression Validation Failure: ${error.message}`,
       });
       return;
@@ -377,14 +377,14 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
     }
 
     if (!(query instanceof V1_Lambda)) {
-      this.view.engine.alertError(new Error(), {
+      this.view.dataCube.alertService.alertError(new Error(), {
         message: `Expression Validation Failure: Expression must be a lambda.`,
       });
       return;
     }
 
     if (!returnType) {
-      this.view.engine.alertError(new Error(), {
+      this.view.dataCube.alertService.alertError(new Error(), {
         message: `Expression Validation Failure: Can't compute expression return type.`,
       });
       return;
@@ -450,7 +450,7 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
   }
 
   override newDisplay(state: DataCubeColumnBaseEditorState): DisplayState {
-    return this.view.engine.layout.newDisplay(
+    return this.view.dataCube.layoutService.newDisplay(
       'Edit Column',
       () => <DataCubeColumnCreator state={this} />,
       {
@@ -493,7 +493,7 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
       ]);
     } catch (error) {
       assertErrorThrown(error);
-      this.view.engine.alertError(error, {
+      this.view.dataCube.alertService.alertError(error, {
         message: `Expression Validation Failure: ${error.message}`,
       });
       return;
@@ -502,14 +502,14 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
     }
 
     if (!(query instanceof V1_Lambda)) {
-      this.view.engine.alertError(new Error(), {
+      this.view.dataCube.alertService.alertError(new Error(), {
         message: `Expression Validation Failure: Expression must be a lambda.`,
       });
       return;
     }
 
     if (!returnType) {
-      this.view.engine.alertError(new Error(), {
+      this.view.dataCube.alertService.alertError(new Error(), {
         message: `Expression Validation Failure: Can't compute expression return type.`,
       });
       return;

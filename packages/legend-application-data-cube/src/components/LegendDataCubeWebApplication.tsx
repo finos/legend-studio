@@ -37,7 +37,7 @@ const LegendDataCubeWebApplicationRouter = observer(() => {
   useEffect(() => {
     store
       .initialize()
-      .catch((error) => store.engine.alertUnhandledError(error));
+      .catch((error) => store.alertService.alertUnhandledError(error));
   }, [store]);
 
   useEffect(() => {

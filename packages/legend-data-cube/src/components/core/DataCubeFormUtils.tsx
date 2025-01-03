@@ -573,18 +573,19 @@ export const FormDocumentation: React.FC<{
   className?: string | undefined;
 }> = ({ documentationKey, title, className }) => {
   const dataCube = useDataCube();
-  const engine = dataCube.engine;
-  const documentationEntry = engine.getDocumentationEntry(documentationKey);
+  const _documentationService = dataCube.documentationService;
+  const documentationEntry =
+    dataCube.documentationService.getEntry(documentationKey);
   const openDocLink: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.preventDefault();
     event.stopPropagation();
-    const entry = engine.getDocumentationEntry(documentationKey);
+    const entry = _documentationService.getEntry(documentationKey);
     if (entry) {
-      if (engine.shouldDisplayDocumentationEntry(entry)) {
-        dataCube.openDocumentationEntry(entry);
-        dataCube.documentationDisplay.open();
+      if (_documentationService.shouldDisplayDocumentationEntry(entry)) {
+        dataCube.documentationService.setCurrentEntry(entry);
+        dataCube.documentationService.display.open();
       } else if (entry.url) {
-        engine.openLink(entry.url);
+        dataCube.navigationService.openLink(entry.url);
       }
     }
   };
@@ -592,7 +593,9 @@ export const FormDocumentation: React.FC<{
   if (
     !documentationEntry ||
     (!documentationEntry.url &&
-      !engine.shouldDisplayDocumentationEntry(documentationEntry))
+      !_documentationService.shouldDisplayDocumentationEntry(
+        documentationEntry,
+      ))
   ) {
     return null;
   }

@@ -198,39 +198,39 @@ export enum DataCubeQueryClientSideAggregateOperator {
 }
 
 export enum DataCubeQueryFilterOperator {
-  LESS_THAN = '<', // DONE
-  LESS_THAN_OR_EQUAL = '<=', // DONE
-  EQUAL = '=', // DONE
-  NOT_EQUAL = '!=', // DONE
-  GREATER_THAN = '>', // DONE
-  GREATER_THAN_OR_EQUAL = '>=', // DONE
+  LESS_THAN = '<',
+  LESS_THAN_OR_EQUAL = '<=',
+  EQUAL = '=',
+  NOT_EQUAL = '!=',
+  GREATER_THAN = '>',
+  GREATER_THAN_OR_EQUAL = '>=',
   IN = 'in',
   NOT_IN = 'not in',
-  IS_NULL = 'is null', // DONE
-  IS_NOT_NULL = 'is not null', // DONE
+  IS_NULL = 'is null',
+  IS_NOT_NULL = 'is not null',
   // string ONLY
-  EQUAL_CASE_INSENSITIVE = '= (case-insensitive)', // DONE
-  NOT_EQUAL_CASE_INSENSITIVE = '!= (case-insensitive)', // DONE
+  EQUAL_CASE_INSENSITIVE = '= (case-insensitive)',
+  NOT_EQUAL_CASE_INSENSITIVE = '!= (case-insensitive)',
   IN_CASE_INSENSITIVE = 'in (case-insensitive)',
   NOT_IN_CASE_INSENSITIVE = 'not in (case-insensitive)',
-  CONTAIN = 'contains', // DONE
-  CONTAIN_CASE_INSENSITIVE = 'contains (case-insensitive)', // DONE
-  NOT_CONTAIN = 'does not contain', // DONE
-  START_WITH = 'starts with', // DONE
-  START_WITH_CASE_INSENSITIVE = 'starts with (case-insensitive)', // DONE
-  NOT_START_WITH = 'does not start with', // DONE
-  END_WITH = 'ends with', // DONE
-  END_WITH_CASE_INSENSITIVE = 'ends with (case-insensitive)', // DONE
-  NOT_END_WITH = 'does not end with', // DONE
+  CONTAIN = 'contains',
+  CONTAIN_CASE_INSENSITIVE = 'contains (case-insensitive)',
+  NOT_CONTAIN = 'does not contain',
+  START_WITH = 'starts with',
+  START_WITH_CASE_INSENSITIVE = 'starts with (case-insensitive)',
+  NOT_START_WITH = 'does not start with',
+  END_WITH = 'ends with',
+  END_WITH_CASE_INSENSITIVE = 'ends with (case-insensitive)',
+  NOT_END_WITH = 'does not end with',
   // column
-  LESS_THAN_COLUMN = '< value in column', // DONE
-  LESS_THAN_OR_EQUAL_COLUMN = '<= value in column', // DONE
-  EQUAL_COLUMN = '= value in column', // DONE
-  EQUAL_CASE_INSENSITIVE_COLUMN = '= (case-insensitive) value in column', // DONE
-  NOT_EQUAL_COLUMN = '!= value in column', // DONE
-  NOT_EQUAL_CASE_INSENSITIVE_COLUMN = '!= (case-insensitive) value in column', // DONE
-  GREATER_THAN_COLUMN = '> value in column', // DONE
-  GREATER_THAN_OR_EQUAL_COLUMN = '>= value in column', // DONE
+  LESS_THAN_COLUMN = '< value in column',
+  LESS_THAN_OR_EQUAL_COLUMN = '<= value in column',
+  EQUAL_COLUMN = '= value in column',
+  EQUAL_CASE_INSENSITIVE_COLUMN = '= (case-insensitive) value in column',
+  NOT_EQUAL_COLUMN = '!= value in column',
+  NOT_EQUAL_CASE_INSENSITIVE_COLUMN = '!= (case-insensitive) value in column',
+  GREATER_THAN_COLUMN = '> value in column',
+  GREATER_THAN_OR_EQUAL_COLUMN = '>= value in column',
   // TODO?: having, having in aggregate, between
 }
 

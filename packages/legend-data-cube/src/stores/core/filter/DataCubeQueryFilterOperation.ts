@@ -21,7 +21,7 @@ import {
 } from '@finos/legend-shared';
 import type { DataCubeOperationValue } from '../DataCubeQueryEngine.js';
 import type { DataCubeQuerySnapshotFilterCondition } from '../DataCubeQuerySnapshot.js';
-import type { DataCubeColumn } from '../models/DataCubeColumn.js';
+import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import {
   DATE_FORMAT,
   DATE_TIME_FORMAT,

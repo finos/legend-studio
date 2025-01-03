@@ -31,10 +31,14 @@ import {
   matchFunctionName,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import type { DataCubeQuery } from './models/DataCubeQuery.js';
+import type { DataCubeQuery } from './model/DataCubeQuery.js';
 import { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
-import { _toCol, type DataCubeColumn } from './models/DataCubeColumn.js';
-import { assertType, guaranteeNonNullable } from '@finos/legend-shared';
+import { _toCol, type DataCubeColumn } from './model/DataCubeColumn.js';
+import {
+  assertType,
+  getNonNullableEntry,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import {
   DataCubeQuerySortDirection,
   DataCubeFunction,
@@ -47,7 +51,7 @@ import {
   _funcMatch,
   _param,
 } from './DataCubeQuerySnapshotBuilderUtils.js';
-import type { DataCubeSource } from './models/DataCubeSource.js';
+import type { DataCubeSource } from './model/DataCubeSource.js';
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
@@ -55,11 +59,11 @@ const _SUPPORTED_TOP_LEVEL_FUNCTIONS: {
   func: string;
   parameters: number;
 }[] = [
-  { func: DataCubeFunction.EXTEND, parameters: 2 }, // support both signatures of extend()
+  { func: DataCubeFunction.EXTEND, parameters: 2 }, // TODO: support both signatures of extend()
   { func: DataCubeFunction.FILTER, parameters: 1 },
   { func: DataCubeFunction.SELECT, parameters: 1 },
-  { func: DataCubeFunction.GROUP_BY, parameters: 3 },
-  { func: DataCubeFunction.PIVOT, parameters: 3 },
+  { func: DataCubeFunction.GROUP_BY, parameters: 2 },
+  { func: DataCubeFunction.PIVOT, parameters: 2 },
   { func: DataCubeFunction.CAST, parameters: 1 },
   { func: DataCubeFunction.SORT, parameters: 1 },
   { func: DataCubeFunction.LIMIT, parameters: 1 },
@@ -207,25 +211,26 @@ function extractFunctionMap(
   }
   const sequence: V1_AppliedFunction[] = [];
   let currentFunc = query;
+
   while (currentFunc instanceof V1_AppliedFunction) {
     const supportedFunc = _SUPPORTED_TOP_LEVEL_FUNCTIONS.find((spec) =>
       matchFunctionName(currentFunc.function, spec.func),
     );
 
-    // Check that all functions in sequence are supported
+    // Check that all functions in sequence are supported (matching name and number of parameters)
     if (!supportedFunc) {
       throw new Error(`Found unsupported function ${currentFunc.function}()`);
     }
     if (currentFunc.parameters.length > supportedFunc.parameters) {
-      const vs = currentFunc.parameters[0];
-      if (!(vs instanceof V1_AppliedFunction)) {
+      const valueSpecification = currentFunc.parameters[0];
+      if (!(valueSpecification instanceof V1_AppliedFunction)) {
         throw new Error(
           `Query must be a sequence of function calls (e.g. x()->y()->z())`,
         );
       }
       currentFunc.parameters = currentFunc.parameters.slice(1);
       sequence.unshift(currentFunc);
-      currentFunc = vs;
+      currentFunc = valueSpecification;
     } else {
       sequence.unshift(currentFunc);
       break;
@@ -254,7 +259,8 @@ function extractFunctionMap(
     if (isNaN(idx) || idx >= sequence.length) {
       return undefined;
     }
-    return sequence[idx];
+    const func = getNonNullableEntry(sequence, idx);
+    return func;
   };
 
   return {

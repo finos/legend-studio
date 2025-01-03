@@ -37,34 +37,37 @@ import { LegendDataCubeDataCubeEngine } from './LegendDataCubeDataCubeEngine.js'
 import {
   DataCubeSettingGroup,
   DataCubeSettingType,
-  LayoutManagerState,
+  DataCubeLayoutService,
   type DataCubeSetting,
   type DataCubeSettingValues,
+  DataCubeAlertService,
+  DataCubeLogService,
 } from '@finos/legend-data-cube';
 import {
   LegendDataCubeSettingKey,
   LegendDataCubeSettingStorageKey,
 } from '../__lib__/LegendDataCubeSetting.js';
 
+declare const AG_GRID_LICENSE: string | undefined;
+
 export type LegendDataCubeApplicationStore = ApplicationStore<
   LegendDataCubeApplicationConfig,
   LegendDataCubePluginManager
 >;
 
-declare const AG_GRID_LICENSE: string | undefined;
-
 export class LegendDataCubeBaseStore {
   readonly application: LegendDataCubeApplicationStore;
   readonly pluginManager: LegendDataCubePluginManager;
-  readonly layout = new LayoutManagerState();
-
   readonly depotServerClient: DepotServerClient;
   readonly graphManager: V1_PureGraphManager;
   readonly engineServerClient: V1_EngineServerClient;
-  readonly engine: LegendDataCubeDataCubeEngine;
-  readonly initializeState = ActionState.create();
 
-  readonly dataCubeSettings: DataCubeSetting[];
+  readonly engine: LegendDataCubeDataCubeEngine;
+  readonly layoutService: DataCubeLayoutService;
+  readonly alertService: DataCubeAlertService;
+  readonly settings: DataCubeSetting[];
+
+  readonly initializeState = ActionState.create();
 
   gridClientLicense?: string | undefined;
 
@@ -80,7 +83,9 @@ export class LegendDataCubeBaseStore {
       this.application.logService,
     );
 
-    this.dataCubeSettings = [
+    // initialize early so that subsequent steps can refer to these settings below
+    // for default configuration values
+    this.settings = [
       {
         key: LegendDataCubeSettingKey.DEBUGGER__ENGINE_SERVER_CLIENT__ENABLE_COMPRESSION,
         title: `Engine Client Request Payload Compression: Enabled`,
@@ -88,7 +93,7 @@ export class LegendDataCubeBaseStore {
         group: DataCubeSettingGroup.DEBUG,
         type: DataCubeSettingType.BOOLEAN,
         defaultValue: true,
-        action: (newValue) => {
+        action: (api, newValue) => {
           this.engineServerClient.setCompression(newValue);
           this.graphManager
             .TEMPORARY__getEngineConfig()
@@ -102,7 +107,7 @@ export class LegendDataCubeBaseStore {
         group: DataCubeSettingGroup.DEBUG,
         type: DataCubeSettingType.STRING,
         defaultValue: application.config.engineServerUrl,
-        action: (newValue) => {
+        action: (api, newValue) => {
           this.engineServerClient.setBaseUrl(newValue);
           this.graphManager.TEMPORARY__getEngineConfig().setBaseUrl(newValue);
         },
@@ -115,7 +120,19 @@ export class LegendDataCubeBaseStore {
       enableCompression: this.getEngineEnableCompressionSettingValue(),
     });
     this.engineServerClient.setTracerService(application.tracerService);
-    this.engine = new LegendDataCubeDataCubeEngine(this);
+
+    this.engine = new LegendDataCubeDataCubeEngine(
+      this.application,
+      this.depotServerClient,
+      this.engineServerClient,
+      this.graphManager,
+    );
+    this.layoutService = new DataCubeLayoutService();
+    this.alertService = new DataCubeAlertService(
+      this.engine,
+      new DataCubeLogService(this.engine),
+      this.layoutService,
+    );
   }
 
   private getEngineEnableCompressionSettingValue() {
@@ -127,7 +144,7 @@ export class LegendDataCubeBaseStore {
         LegendDataCubeSettingKey
           .DEBUGGER__ENGINE_SERVER_CLIENT__ENABLE_COMPRESSION
       ] ??
-        this.dataCubeSettings.find(
+        this.settings.find(
           (configuration) =>
             configuration.key ===
             LegendDataCubeSettingKey.DEBUGGER__ENGINE_SERVER_CLIENT__ENABLE_COMPRESSION,
@@ -143,7 +160,7 @@ export class LegendDataCubeBaseStore {
       persistedValues?.[
         LegendDataCubeSettingKey.DEBUGGER__ENGINE_SERVER_CLIENT__BASE_URL
       ] ??
-        this.dataCubeSettings.find(
+        this.settings.find(
           (configuration) =>
             configuration.key ===
             LegendDataCubeSettingKey.DEBUGGER__ENGINE_SERVER_CLIENT__BASE_URL,

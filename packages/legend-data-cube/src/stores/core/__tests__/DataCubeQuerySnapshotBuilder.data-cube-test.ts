@@ -19,135 +19,156 @@ import { unitTest } from '@finos/legend-shared/test';
 import { describe, expect, test } from '@jest/globals';
 import { validateAndBuildQuerySnapshot } from '../DataCubeQuerySnapshotBuilder.js';
 import { assertErrorThrown } from '@finos/legend-shared';
-import { DataCubeQuery } from '../models/DataCubeQuery.js';
-import { INTERNAL__DataCubeSource } from '../models/DataCubeSource.js';
+import { DataCubeQuery } from '../model/DataCubeQuery.js';
+import { INTERNAL__DataCubeSource } from '../model/DataCubeSource.js';
 import { _deserializeValueSpecification } from '../DataCubeQueryBuilderUtils.js';
+import {
+  _testCase,
+  type DataCubeQuerySnapshotBuilderTestCase,
+} from './DatacubeQuerySnapshotBuilderTestUtils.js';
+import { DataCubeConfiguration } from '../model/DataCubeConfiguration.js';
 
-type BaseSnapshotAnalysisTestCase = [
-  string, // name
-  string, // partial query
-  string[], // original columns
-  string | undefined, // problem
-];
-
-const cases: BaseSnapshotAnalysisTestCase[] = [
-  ['Valid: extend()', 'extend(~[a:x|1])', [], ''],
-  ['Valid: filter()', 'filter(x|$x.a==1)', [], ''],
-  [
-    'Valid: groupBy()',
-    'groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([ascending(~a), ascending(~b)])',
-    ['a:String', 'b:Integer'],
-    '',
-  ],
-  ['Valid: select()', 'select(~[a])', ['a:Integer'], ''],
+const cases: DataCubeQuerySnapshotBuilderTestCase[] = [
+  _testCase({
+    name: 'Valid: extend()',
+    query: 'extend(~[a:x|1])',
+    columns: [],
+  }),
+  _testCase({
+    name: 'Valid: filter()',
+    query: 'filter(x|$x.a==1)',
+    columns: [],
+  }),
+  _testCase({
+    name: 'Valid: groupBy()',
+    query:
+      'groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([ascending(~a), ascending(~b)])',
+    columns: ['a:String', 'b:Integer'],
+  }),
+  _testCase({
+    name: 'Valid: select()->groupBy()',
+    query:
+      'select(~[a,b])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->sort([ascending(~a), ascending(~b)])',
+    columns: ['a:String', 'b:Integer'],
+  }),
+  _testCase({
+    name: 'Valid: select()',
+    query: 'select(~[a])',
+    columns: ['a:Integer'],
+  }),
+  _testCase({
+    name: 'Valid: sort()',
+    query: 'sort([~a->ascending()])',
+    columns: ['a:Integer'],
+  }),
+  _testCase({
+    name: 'Valid: limit()',
+    query: 'limit(10)',
+    columns: [],
+  }),
+  _testCase({
+    name: 'Valid: Usage - Filter: extend()->filter()->sort()->limit()',
+    query:
+      'extend(~[a:x|1])->filter(x|$x.a==1)->sort([ascending(~a)])->limit(10)',
+    columns: ['a:Integer'],
+  }),
+  _testCase({
+    name: 'Valid: Usage - Column Selection: extend()->filter()->select()->sort()->limit()',
+    query:
+      'extend(~[a:x|1])->filter(x|$x.a==1)->select(~[a])->sort([ascending(~a)])->limit(10)',
+    columns: ['a:Integer'],
+  }),
+  _testCase({
+    name: 'Invalid: Not a chain of function call',
+    query: '2',
+    columns: [],
+    error: 'Query must be a sequence of function calls (e.g. x()->y()->z())',
+  }),
+  _testCase({
+    name: 'Invalid: Unsupported function',
+    query: 'sort([~asd->ascending()])->something()',
+    columns: [],
+    error: 'Found unsupported function something()',
+  }),
+  _testCase({
+    name: 'Invalid: Unsupported function composition: select()->filter()',
+    query: 'select(~a)->filter(x|$x.a==1)',
+    columns: ['a:Integer'],
+    error:
+      'Unsupported function composition select()->filter() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())',
+  }),
+  _testCase({
+    name: 'Unsupported function composition pivot()',
+    query: 'pivot(~a, ~b:x|$x.a:x|$x->sum())',
+    columns: [],
+    error:
+      'Unsupported function composition pivot() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())',
+  }),
+  _testCase({
+    name: 'Valid: Usage - Extended Columns: extend()->groupBy()->extend()->sort()->limit()',
+    query:
+      'extend(~[a:x|1])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
+    columns: ['a:String', 'b:Integer'],
+  }),
+  _testCase({
+    name: 'Valid: Usage - Filter: extend()->filter()->groupBy()->extend()->sort()->limit()',
+    query:
+      'extend(~[a:x|1])->filter(x|$x.a==1)->groupBy(~a, ~b:x|$x.a:x|$x->sum())->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
+    columns: ['a:String', 'b:Integer'],
+  }),
+  _testCase({
+    name: 'Valid: Usage - Filter: extend()->filter()->groupBy()->sort()->limit()',
+    query:
+      'extend(~[a:x|1])->filter(x|$x.a==1)->groupBy(~[a], ~[b:x|$x.a:x|$x->sum()])->sort([ascending(~a)])->limit(10)',
+    columns: ['a:Integer'],
+  }),
+  _testCase({
+    name: 'Invalid: Casting used without dynamic function pivot()',
+    query: 'cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)',
+    columns: [],
+    error:
+      'Unsupported function composition cast() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())',
+  }),
   /** TODO: @datacube roundtrip - enable when we support relation casting syntax */
-  // [
-  //   'Valid: pivot()',
-  //   'pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)',
-  //   [],
-  //   '',
-  // ],
-  ['Valid: sort()', 'sort([~a->ascending()])', ['a:Integer'], ''],
-  ['Valid: limit()', 'limit(10)', [], ''],
-  [
-    'Valid: Usage - Filter: extend()->filter()->sort()->limit()',
-    'extend(~[a:x|1])->filter(x|$x.a==1)->sort([ascending(~a)])->limit(10)',
-    ['a:Integer'],
-    '',
-  ],
-  [
-    'Valid: Usage - Column Selection: extend()->filter()->select()->sort()->limit()',
-    'extend(~[a:x|1])->filter(x|$x.a==1)->select(~[a])->sort([ascending(~a)])->limit(10)',
-    ['a:Integer'],
-    '',
-  ],
-  /** TODO: @datacube roundtrip - enable when we support extended columns */
-  // [
-  //   'Valid: Usage - Extended Columns: extend()->groupBy()->extend()->sort()->limit()',
-  //   'extend(~[a:x|1])->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
-  //   ['a:String', 'b:Integer'],
-  //   '',
-  // ],
-  // [
-  //   'Valid: Usage - V-Pivot: groupBy()->extend()->sort()->limit()',
-  //   'extend(~[a:x|1])->filter(x|$x.a==1)->groupBy(~[a], ~[b:x|$x.b:x|$x->sum()])->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
-  //   ['a:String', 'b:Integer'],
-  //   '',
-  // ],
-  /** TODO: @datacube roundtrip - enable when we support relation casting syntax */
-  // [
-  //   'Valid: Usage - H-Pivot: pivot()->cast()->sort()->limit()',
-  //   'pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)->sort([ascending(~a)])->limit(10)',
-  //   ['a:Integer'],
-  //   '',
-  // ],
-  // [
-  //   'Valid: Full form: extend()->filter()->groupBy()->select()->pivot()->cast()->extend()->sort()->limit()',
-  //   'extend(~[a:x|1])->filter(x|$x.a==1)->groupBy(~a, ~b:x|$x.a:x|$x->sum())->select(~a)->pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)->extend(~b:x|2)->sort([ascending(~a)])->limit(10)',
-  //   ['a:Integer'],
-  //   '',
-  // ],
-  [
-    'Invalid: Not a chain of function call',
-    '2',
-    [],
-    'Query must be a sequence of function calls (e.g. x()->y()->z())',
-  ],
-  [
-    'Invalid: Unsupported function',
-    'sort([~asd->ascending()])->something()',
-    [],
-    'Found unsupported function something()',
-  ],
-  [
-    'Invalid: Unsupported function composition: select()->filter()',
-    'select(~a)->filter(x|$x.a==1)',
-    ['a:Integer'],
-    'Unsupported function composition select()->filter() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())',
-  ],
-  [
-    'Unsupported function composition pivot()',
-    'pivot(~a, ~b:x|$x.a:x|$x->sum())',
-    [],
-    'Unsupported function composition pivot() (supported composition: extend()->filter()->select()->[sort()->pivot()->cast()]->[groupBy()->sort()]->extend()->sort()->limit())',
-  ],
-  /** TODO: @datacube roundtrip - enable when we support extended columns */
-  // See https://github.com/finos/legend-engine/pull/2873
-  // [
-  //   'Invalid: Casting used without dynamic function pivot()',
-  //   'cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)',
-  //   [],
-  //   'Found usage of dynamic function pivot() without casting',
-  // ],
+  // _testCase({
+  //   name: 'Valid: Usage - Pivot: pivot()->cast()->sort()->limit()',
+  //   query:
+  //     'pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)->sort([ascending(~a)])->limit(10)',
+  //   columns: ['a:Integer'],
+  // }),
+  // _testCase({
+  //   name: 'Valid: pivot()',
+  //   query:
+  //     'pivot(~a, ~b:x|$x.a:x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(a:Integer)>)',
+  //   columns: [],
+  // }),
 ];
 
 describe(unitTest('Analyze and build base snapshot'), () => {
   test.each(cases)(
     '%s',
     async (
-      testName: BaseSnapshotAnalysisTestCase[0],
-      code: BaseSnapshotAnalysisTestCase[1],
-      columns: BaseSnapshotAnalysisTestCase[2],
-      problem: BaseSnapshotAnalysisTestCase[3],
+      testName: DataCubeQuerySnapshotBuilderTestCase[0],
+      code: DataCubeQuerySnapshotBuilderTestCase[1],
+      columns: DataCubeQuerySnapshotBuilderTestCase[2],
+      configuration: DataCubeQuerySnapshotBuilderTestCase[3],
+      error: DataCubeQuerySnapshotBuilderTestCase[4],
     ) => {
       const partialQuery = _deserializeValueSpecification(
         await ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(code),
       );
       const baseQuery = new DataCubeQuery();
+      baseQuery.configuration = configuration
+        ? DataCubeConfiguration.serialization.fromJson(configuration)
+        : undefined;
       const source = new INTERNAL__DataCubeSource();
-      source.columns = columns.map((entry) => {
-        const parts = entry.split(':');
-        return {
-          name: parts[0] as string,
-          type: parts[1] as string,
-        };
-      });
+      source.columns = columns;
       try {
         validateAndBuildQuerySnapshot(partialQuery, source, baseQuery);
-        expect('').toEqual(problem);
-      } catch (error) {
-        assertErrorThrown(error);
-        expect(error.message).toEqual(problem);
+        expect(error).toBeUndefined();
+      } catch (err) {
+        assertErrorThrown(err);
+        expect(err.message).toEqual(error);
       }
     },
   );

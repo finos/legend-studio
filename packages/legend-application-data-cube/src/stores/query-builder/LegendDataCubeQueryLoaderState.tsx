@@ -23,13 +23,14 @@ import {
   type LightPersistentDataCubeQuery,
   QuerySearchSpecification,
   QuerySearchSortBy,
+  type V1_PureGraphManager,
 } from '@finos/legend-graph';
 import { ActionState, assertErrorThrown, LogEvent } from '@finos/legend-shared';
 import { makeObservable, observable, action } from 'mobx';
-import type { LegendDataCubeDataCubeEngine } from '../LegendDataCubeDataCubeEngine.js';
 import type { LegendDataCubeQueryBuilderStore } from './LegendDataCubeQueryBuilderStore.js';
 import { LegendDataCubeUserDataKey } from '../../__lib__/LegendDataCubeUserData.js';
 import {
+  type DataCubeAlertService,
   DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
   type DisplayState,
 } from '@finos/legend-data-cube';
@@ -46,13 +47,15 @@ export enum DataCubeQuerySortByType {
 }
 
 export class LegendDataCubeQueryLoaderState {
-  readonly application: GenericLegendApplicationStore;
-  readonly store: LegendDataCubeQueryBuilderStore;
-  readonly engine: LegendDataCubeDataCubeEngine;
-  readonly display: DisplayState;
+  private readonly _application: GenericLegendApplicationStore;
+  private readonly _store: LegendDataCubeQueryBuilderStore;
+  private readonly _graphManager: V1_PureGraphManager;
+  private readonly _alertService: DataCubeAlertService;
 
+  readonly display: DisplayState;
   readonly searchState = ActionState.create();
   readonly finalizeState = ActionState.create();
+
   queries: LightPersistentDataCubeQuery[] = [];
   selectedQuery?: LightPersistentDataCubeQuery | undefined;
 
@@ -82,10 +85,12 @@ export class LegendDataCubeQueryLoaderState {
       setSelectedQuery: action,
     });
 
-    this.application = store.application;
-    this.store = store;
-    this.engine = store.engine;
-    this.display = this.engine.layout.newDisplay(
+    this._application = store.application;
+    this._store = store;
+    this._graphManager = store.graphManager;
+    this._alertService = store.alertService;
+
+    this.display = store.layoutService.newDisplay(
       'Load Query',
       () => <LegendDataCubeQueryLoader />,
       {
@@ -152,18 +157,17 @@ export class LegendDataCubeQueryLoaderState {
           // first, try to fetch recently viewed queries
           try {
             const recentlyViewedQueryIDs =
-              this.store.getRecentlyViewedQueries();
+              this._store.getRecentlyViewedQueries();
             if (recentlyViewedQueryIDs.length) {
-              defaultQueries =
-                await this.engine.graphManager.getDataCubeQueries(
-                  recentlyViewedQueryIDs,
-                );
+              defaultQueries = await this._graphManager.getDataCubeQueries(
+                recentlyViewedQueryIDs,
+              );
             }
           } catch (error) {
             assertErrorThrown(error);
             // if there's an error fetching recently viewed queries, most likely because
             // some queries have been removed, just remove them all from the cached user data
-            this.application.userDataService.persistValue(
+            this._application.userDataService.persistValue(
               LegendDataCubeUserDataKey.RECENTLY_VIEWED_QUERIES,
               undefined,
             );
@@ -175,7 +179,7 @@ export class LegendDataCubeQueryLoaderState {
               DATA_CUBE_QUERY_LOADER_DEFAULT_QUERY_SEARCH_LIMIT;
             searchSpecification.showCurrentUserQueriesOnly = true;
             defaultQueries =
-              await this.engine.graphManager.searchDataCubeQueries(
+              await this._graphManager.searchDataCubeQueries(
                 searchSpecification,
               );
           }
@@ -183,7 +187,7 @@ export class LegendDataCubeQueryLoaderState {
           this.searchState.pass();
         } catch (error) {
           assertErrorThrown(error);
-          this.engine.logError(
+          this._application.logService.error(
             LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
             error,
           );
@@ -208,9 +212,7 @@ export class LegendDataCubeQueryLoaderState {
         searchSpecification.sortByOption = querySearchSortBy;
       }
       this.setQueries(
-        await this.engine.graphManager.searchDataCubeQueries(
-          searchSpecification,
-        ),
+        await this._graphManager.searchDataCubeQueries(searchSpecification),
       );
 
       // if sorting is not configured, sort by name
@@ -223,7 +225,7 @@ export class LegendDataCubeQueryLoaderState {
       this.searchState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.engine.alertError(error, {
+      this._alertService.alertError(error, {
         message: `Query Search Failure: ${error.message}`,
       });
       this.searchState.fail();
@@ -239,7 +241,7 @@ export class LegendDataCubeQueryLoaderState {
     try {
       // just simply change the route here and the new query ID will get picked up
       // and handled by the query builder to load the new query.
-      this.application.navigationService.navigator.updateCurrentLocation(
+      this._application.navigationService.navigator.updateCurrentLocation(
         generateQueryBuilderRoute(this.selectedQuery.id),
       );
 
@@ -249,7 +251,7 @@ export class LegendDataCubeQueryLoaderState {
       this.finalizeState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.engine.alertError(error, {
+      this._alertService.alertError(error, {
         message: `Query Load Failure: ${error.message}`,
       });
       this.finalizeState.fail();

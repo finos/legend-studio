@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-export enum DocumentationKey {
-  DATA_CUBE_EXTENDED_COLUMN_LEVELS = 'data-cube.extended-column.levels',
-  DATA_CUBE_GRID_CONFIGURATION_ROW_LIMIT = 'data-cube.grid-configuration.row-limit',
-  DATA_CUBE_COLUMN_CONFIGURATION_KIND = 'data-cube.column-configuration.kind',
-  DATA_CUBE_COLUMN_CONFIGURATION_UNIT = 'data-cube.column-configuration.unit',
-  DATA_CUBE_COLUMN_CONFIGURATION_DISPLAY_AS_LINK = 'data-cube.column-configuration.display-value-as-link',
-  DATA_CUBE_COLUMN_CONFIGURATION_MISSING_VALUE_FORMAT = 'data-cube.column-configuration.missing-value-format',
+export enum DataCubeDocumentationKey {
+  EXTENDED_COLUMN_LEVELS = 'data-cube.extended-column.levels',
+  GRID_CONFIGURATION_ROW_LIMIT = 'data-cube.grid-configuration.row-limit',
+  COLUMN_CONFIGURATION_KIND = 'data-cube.column-configuration.kind',
+  COLUMN_CONFIGURATION_UNIT = 'data-cube.column-configuration.unit',
+  COLUMN_CONFIGURATION_DISPLAY_AS_LINK = 'data-cube.column-configuration.display-value-as-link',
+  COLUMN_CONFIGURATION_MISSING_VALUE_FORMAT = 'data-cube.column-configuration.missing-value-format',
 }

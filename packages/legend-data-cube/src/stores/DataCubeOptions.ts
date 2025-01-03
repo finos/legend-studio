@@ -17,24 +17,62 @@
 import type {
   DataCubeSetting,
   DataCubeSettingValues,
-} from './core/DataCubeSetting.js';
-import type { DataCubeSource } from './core/models/DataCubeSource.js';
-import type { DataCubeState } from './DataCubeState.js';
+} from './services/DataCubeSettingService.js';
+import type { DataCubeSource } from './core/model/DataCubeSource.js';
+import type { DataCubeAPI } from './DataCubeAPI.js';
+
+type DataCubeOptionsBaseEvent = {
+  api: DataCubeAPI;
+};
+export type DataCubeInitializedEvent = DataCubeOptionsBaseEvent;
+export type DataCubeViewInitializedEvent = DataCubeOptionsBaseEvent & {
+  source: DataCubeSource;
+};
+export type DataCubeNameChangedEvent = DataCubeOptionsBaseEvent & {
+  name: string;
+  source: DataCubeSource;
+};
+export type DataCubeSettingsChangedEvent = DataCubeOptionsBaseEvent & {
+  values: DataCubeSettingValues;
+};
+
+type DataCubeSettingsData = {
+  configurations?: DataCubeSetting[] | undefined;
+  values?: DataCubeSettingValues | undefined;
+};
+
+type DataCubeOptionsBaseParams = {
+  api: DataCubeAPI;
+};
+export type DataCubeInnerHeaderComponentParams = DataCubeOptionsBaseParams;
 
 export type DataCubeOptions = {
+  // -------------------------- INFRASTRUCTURE ------------------------------
+
+  onInitialized?: ((event: DataCubeInitializedEvent) => void) | undefined;
+  onViewInitialized?:
+    | ((event: DataCubeViewInitializedEvent) => void)
+    | undefined;
+
+  // ------------------------------ GRID ------------------------------
+
   gridClientLicense?: string | undefined;
 
-  onInitialized?: ((dataCube: DataCubeState) => void) | undefined;
+  // ------------------------------ LAYOUT ------------------------------
 
-  onNameChanged?: ((name: string, source: DataCubeSource) => void) | undefined;
-
-  innerHeaderComponent?:
-    | ((dataCube: DataCubeState) => React.ReactNode)
+  onNameChanged?: ((event: DataCubeNameChangedEvent) => void) | undefined;
+  innerHeaderRenderer?:
+    | ((params: DataCubeInnerHeaderComponentParams) => React.ReactNode)
     | undefined;
 
-  getSettingItems?: (() => DataCubeSetting[]) | undefined;
-  getSettingValues?: (() => DataCubeSettingValues | undefined) | undefined;
-  onSettingValuesChanged?:
-    | ((values: DataCubeSettingValues) => void)
+  // ------------------------------ SETTINGS ------------------------------
+
+  settingsData?: DataCubeSettingsData | undefined;
+  onSettingsChanged?:
+    | ((event: DataCubeSettingsChangedEvent) => void)
     | undefined;
+
+  // ------------------------------ DOCUMENTATION ------------------------------
+
+  documentationUrl?: string | undefined;
 };

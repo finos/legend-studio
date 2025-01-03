@@ -46,7 +46,7 @@ const DataCubeStatusBar = observer((props: { view: DataCubeViewState }) => {
       </div>
       <div className="flex items-center px-2">
         <div className="flex h-3.5 w-48 border-[0.5px] border-neutral-300">
-          {view.runningTasks.size > 0 && (
+          {view.taskService.tasks.size > 0 && (
             <ProgressBar
               classes={{
                 root: 'h-3.5 w-full bg-transparent',
