@@ -30,10 +30,10 @@ import {
 } from '../components/core/DataCubeAlert.js';
 import type { DataCubeSource } from './core/models/DataCubeSource.js';
 import { action, makeObservable, observable } from 'mobx';
+import { DataCubeSettings } from './DataCubeSettings.js';
 import type { DataCubeAPI } from './DataCubeAPI.js';
 import type { DataCubeOptions } from './DataCubeOptions.js';
 import type { DataCubeQuery } from './core/models/DataCubeQuery.js';
-import { DataCubeSettings } from './DataCubeSettings.js';
 
 export class DataCubeState implements DataCubeAPI {
   uuid = uuid();
@@ -76,7 +76,7 @@ export class DataCubeState implements DataCubeAPI {
 
     this.query = query;
     this.engine = engine;
-    this.settings = new DataCubeSettings(this);
+    this.settings = new DataCubeSettings(this, options);
     this.view = new DataCubeViewState(this);
 
     this.documentationDisplay = this.engine.layout.newDisplay(
