@@ -34,7 +34,7 @@ export const DataCubeEditorHorizontalPivotsPanel = observer(
   (props: { view: DataCubeViewState }) => {
     const { view } = props;
     const panel = view.editor.horizontalPivots;
-    const darkMode = view.dataCube.settings.darkMode;
+    const darkMode = view.editor.generalProperties.configuration.darkMode;
 
     useEffect(() => () => panel.propagateChanges(), [panel]);
 

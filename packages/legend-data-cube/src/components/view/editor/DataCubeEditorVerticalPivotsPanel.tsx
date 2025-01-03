@@ -23,7 +23,7 @@ export const DataCubeEditorVerticalPivotsPanel = observer(
   (props: { view: DataCubeViewState }) => {
     const { view } = props;
     const panel = view.editor.verticalPivots;
-    const darkMode = view.dataCube.settings.darkMode;
+    const darkMode = view.editor.generalProperties.configuration.darkMode;
 
     return (
       <div className="h-full w-full select-none p-2">

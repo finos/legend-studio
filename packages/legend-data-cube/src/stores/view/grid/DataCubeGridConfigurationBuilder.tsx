@@ -569,7 +569,7 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
     // a desired behavior, so we hide the popup menu immediately
     onColumnMenuVisibleChanged: (event) => {
       if (!event.column) {
-        const darkMode = view.dataCube.settings.darkMode;
+        const darkMode = view.editor.generalProperties.configuration.darkMode;
         const menuElement = document.querySelector(
           `.${darkMode ? INTERNAL__GridClientUtilityCssClassName.ROOT_DARK : INTERNAL__GridClientUtilityCssClassName.ROOT_LIGHT} .ag-popup .ag-menu`,
         ) as HTMLElement | undefined;

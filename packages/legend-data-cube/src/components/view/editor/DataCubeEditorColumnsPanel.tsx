@@ -75,7 +75,7 @@ export const DataCubeEditorColumnsPanel = observer(
   (props: { view: DataCubeViewState }) => {
     const { view } = props;
     const panel = view.editor.columns;
-    const darkMode = view.dataCube.settings.darkMode;
+    const darkMode = view.editor.generalProperties.configuration.darkMode;
 
     useEffect(() => () => panel.propagateChanges(), [panel]);
 

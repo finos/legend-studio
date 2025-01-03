@@ -375,7 +375,7 @@ const DataCubeGridStatusBar = observer((props: { view: DataCubeViewState }) => {
 const DataCubeGridClient = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
   const grid = view.grid;
-  const darkMode = view.dataCube.settings.darkMode;
+  const darkMode = view.editor.generalProperties.configuration.darkMode;
 
   // eslint-disable-next-line no-process-env
   if (process.env.NODE_ENV === 'development' && !grid.isClientConfigured) {
