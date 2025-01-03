@@ -202,18 +202,18 @@ export class DataCubeSettingService {
       } satisfies DataCubeSetting,
     ];
 
-    [...CORE_SETTINGS, ...(options?.getSettingItems?.() ?? [])].forEach(
-      (configuration) => {
-        this.configurations.set(configuration.key, configuration);
-        this.setValue(configuration.key, configuration.defaultValue, [
-          this.defaultValues,
-          this.values,
-          this.currentValues,
-        ]);
-      },
-    );
+    const { configurations, values } = options?.settingsData ?? {};
 
-    const settingValues = this._options?.settingValues ?? {};
+    [...CORE_SETTINGS, ...(configurations ?? [])].forEach((configuration) => {
+      this.configurations.set(configuration.key, configuration);
+      this.setValue(configuration.key, configuration.defaultValue, [
+        this.defaultValues,
+        this.values,
+        this.currentValues,
+      ]);
+    });
+
+    const settingValues = values ?? {};
     Object.keys(settingValues).forEach((key) => {
       const value = settingValues[key];
       // for unknown settings (e.g. outdated settings, settings' keys changed, etc.), we ignore them
@@ -443,7 +443,10 @@ export class DataCubeSettingService {
     }
 
     // trigger hook
-    this._options?.onSettingValuesChanged?.(this.getCurrentSettingValues());
+    this._options?.onSettingsChanged?.({
+      api,
+      values: this.getCurrentSettingValues(),
+    });
 
     // trigger action
     configuration.action?.(api, value);
@@ -462,7 +465,10 @@ export class DataCubeSettingService {
     this.currentValues.forEach((value, key) => this.values.set(key, value));
 
     // trigger hook
-    this._options?.onSettingValuesChanged?.(this.getCurrentSettingValues());
+    this._options?.onSettingsChanged?.({
+      api,
+      values: this.getCurrentSettingValues(),
+    });
 
     // trigger action
     let requiresReload = false;

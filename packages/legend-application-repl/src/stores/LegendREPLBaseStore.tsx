@@ -25,12 +25,13 @@ import {
 import type { LegendREPLApplicationStore } from '../application/LegendREPLApplicationStore.js';
 import { LegendREPLServerClient } from './LegendREPLServerClient.js';
 import {
-  DataCubeConfiguration,
   DataCubeQuery,
+  type DataCubeSource,
   LayoutConfiguration,
   RawAdhocQueryDataCubeSource,
   WindowState,
-  type DataCubeState,
+  type DataCubeAPI,
+  DEFAULT_REPORT_NAME,
 } from '@finos/legend-data-cube';
 import {
   LegendREPLDataCubeSource,
@@ -50,6 +51,7 @@ export class LegendREPLBaseStore {
   readonly initializeState = ActionState.create();
   readonly publishState = ActionState.create();
 
+  source?: DataCubeSource | undefined;
   gridClientLicense?: string | undefined;
   queryServerBaseUrl?: string | undefined;
   hostedApplicationBaseUrl?: string | undefined;
@@ -58,8 +60,10 @@ export class LegendREPLBaseStore {
   constructor(application: LegendREPLApplicationStore) {
     makeObservable(this, {
       query: observable,
-
       setQuery: action,
+
+      source: observable,
+      setSource: action,
     });
     this.application = application;
     this._client = new LegendREPLServerClient(
@@ -76,8 +80,12 @@ export class LegendREPLBaseStore {
     this.engine = new LegendREPLDataCubeEngine(this.application, this._client);
   }
 
-  setQuery(query: DataCubeQuery | undefined): void {
+  setQuery(query: DataCubeQuery | undefined) {
     this.query = query;
+  }
+
+  setSource(source: DataCubeSource | undefined) {
+    this.source = source;
   }
 
   async initialize() {
@@ -108,50 +116,37 @@ export class LegendREPLBaseStore {
     }
   }
 
-  async publishDataCube(dataCube: DataCubeState) {
-    // NOTE: due to the unique setup of the REPL, we can just "borrow" services
-    // native to DataCube for tasks done at the application layer.
-    // when the use case gets more sophisticated, consider having dedicated
-    // services (similar to how Legend DataCube does it)
-    const view = dataCube.view;
-    const taskService = view.taskService;
-    const layoutService = dataCube.layoutService;
-    const alertService = dataCube.alertService;
-
+  async publishDataCube(api: DataCubeAPI) {
     if (
-      !view.isSourceProcessed ||
       !this.queryServerBaseUrl ||
-      !(view.source instanceof LegendREPLDataCubeSource) ||
-      !view.source.isPersistenceSupported ||
-      !view.source.model ||
+      !(this.source instanceof LegendREPLDataCubeSource) ||
+      !this.source.isPersistenceSupported ||
+      !this.source.model ||
       // eslint-disable-next-line no-process-env
-      !(process.env.NODE_ENV === 'development' || !view.source.isLocal)
+      !(process.env.NODE_ENV === 'development' || !this.source.isLocal)
     ) {
       return;
     }
 
     this.publishState.inProgress();
-    const task = taskService.start('Publish query');
 
     try {
-      const query = new DataCubeQuery();
-      query.query = await dataCube.engine.getPartialQueryCode(
-        view.snapshotService.currentSnapshot,
-      );
+      const query = await api.generateDataCubeQuery();
+
       const source = new RawAdhocQueryDataCubeSource();
       source.query = RawLegendREPLDataCubeSource.serialization.fromJson(
-        view.dataCube.query.source,
+        query.source,
       ).query;
-      source.runtime = view.source.runtime;
-      source.model = view.source.model;
+      source.runtime = this.source.runtime;
+      source.model = this.source.model;
       query.source = RawAdhocQueryDataCubeSource.serialization.toJson(source);
+
       const newQuery = new PersistentDataCubeQuery();
       newQuery.id = uuid();
-      newQuery.name = DataCubeConfiguration.serialization.fromJson(
-        view.snapshotService.currentSnapshot.data.configuration,
-      ).name;
+      newQuery.name = query.configuration?.name ?? DEFAULT_REPORT_NAME;
       newQuery.content = DataCubeQuery.serialization.toJson(query);
       newQuery.owner = this.application.identityService.currentUser;
+
       const publishedQuery = PersistentDataCubeQuery.serialization.fromJson(
         await this._client.publishQuery(
           PersistentDataCubeQuery.serialization.toJson(newQuery),
@@ -171,15 +166,14 @@ export class LegendREPLBaseStore {
         minHeight: 100,
         center: true,
       };
-      layoutService.newWindow(window);
+      api.newWindow(window);
     } catch (error) {
       assertErrorThrown(error);
-      alertService.alertError(error, {
+      api.alertError(error, {
         message: `Persistence Failure: Can't publish query.`,
         text: `Error: ${error.message}`,
       });
     } finally {
-      taskService.end(task);
       this.publishState.complete();
     }
   }

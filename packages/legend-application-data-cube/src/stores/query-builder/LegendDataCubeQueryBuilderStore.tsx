@@ -21,11 +21,10 @@ import type {
 } from '../LegendDataCubeBaseStore.js';
 import {
   type DataCubeAlertService,
-  DataCubeConfiguration,
+  type DataCubeAPI,
   type DataCubeLayoutService,
   DataCubeQuery,
   DEFAULT_ALERT_WINDOW_CONFIG,
-  type DataCubeState,
   type DisplayState,
 } from '@finos/legend-data-cube';
 import { LegendDataCubeNewQueryState } from './LegendDataCubeNewQueryState.js';
@@ -56,7 +55,7 @@ export class LegendDataCubeQueryBuilderState {
   startTime = Date.now();
   query!: DataCubeQuery;
   persistentQuery?: PersistentDataCubeQuery | undefined;
-  dataCube?: DataCubeState | undefined;
+  dataCube?: DataCubeAPI | undefined;
 
   constructor(
     query: DataCubeQuery,
@@ -75,7 +74,7 @@ export class LegendDataCubeQueryBuilderState {
     this.persistentQuery = persistentQuery;
   }
 
-  setDataCube(val: DataCubeState | undefined) {
+  setDataCube(val: DataCubeAPI | undefined) {
     this.dataCube = val;
   }
 
@@ -200,19 +199,11 @@ export class LegendDataCubeQueryBuilderStore {
   }
 
   private async generatePersistentQuery(
-    dataCube: DataCubeState,
+    api: DataCubeAPI,
     name: string,
     existingPersistentQuery?: PersistentDataCubeQuery | undefined,
   ) {
-    const currentSnapshot = dataCube.view.snapshotService.currentSnapshot;
-
-    const query = new DataCubeQuery();
-    query.source = dataCube.query.source;
-    query.configuration = DataCubeConfiguration.serialization.fromJson(
-      currentSnapshot.data.configuration,
-    );
-    query.query = await this.engine.getPartialQueryCode(currentSnapshot);
-
+    const query = await api.generateDataCubeQuery();
     let persistentQuery: PersistentDataCubeQuery;
     if (existingPersistentQuery) {
       persistentQuery = existingPersistentQuery.clone();

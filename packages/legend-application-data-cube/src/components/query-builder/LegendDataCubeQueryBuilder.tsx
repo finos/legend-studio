@@ -20,7 +20,6 @@ import {
   FormBadge_WIP,
   DataCubeLayout,
   FormButton,
-  type DataCubeState,
   type DataCubeSettingValues,
 } from '@finos/legend-data-cube';
 import {
@@ -41,34 +40,32 @@ import {
 import { useEffect } from 'react';
 import { LegendDataCubeSettingStorageKey } from '../../__lib__/LegendDataCubeSetting.js';
 
-const LegendDataCubeQueryBuilderHeader = observer(
-  (props: { dataCube?: DataCubeState | undefined }) => {
-    const store = useLegendDataCubeQueryBuilderStore();
+const LegendDataCubeQueryBuilderHeader = observer(() => {
+  const store = useLegendDataCubeQueryBuilderStore();
 
-    return (
-      <div className="flex h-full items-center">
-        <FormButton compact={true} onClick={() => store.loader.display.open()}>
-          Load Query
-        </FormButton>
-        <FormButton
-          compact={true}
-          className="ml-1.5"
-          onClick={() => store.newQueryState.display.open()}
-        >
-          New Query
-        </FormButton>
-        <FormButton
-          compact={true}
-          className="ml-1.5"
-          disabled={!store.builder?.dataCube}
-          onClick={() => store.saverDisplay.open()}
-        >
-          Save Query
-        </FormButton>
-      </div>
-    );
-  },
-);
+  return (
+    <div className="flex h-full items-center">
+      <FormButton compact={true} onClick={() => store.loader.display.open()}>
+        Load Query
+      </FormButton>
+      <FormButton
+        compact={true}
+        className="ml-1.5"
+        onClick={() => store.newQueryState.display.open()}
+      >
+        New Query
+      </FormButton>
+      <FormButton
+        compact={true}
+        className="ml-1.5"
+        disabled={!store.builder?.dataCube}
+        onClick={() => store.saverDisplay.open()}
+      >
+        Save Query
+      </FormButton>
+    </div>
+  );
+});
 
 const LegendDataCubeBlankQueryBuilder = observer(() => {
   const store = useLegendDataCubeQueryBuilderStore();
@@ -187,23 +184,21 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
         engine={store.baseStore.engine}
         options={{
           gridClientLicense: store.baseStore.gridClientLicense,
-          onInitialized(dataCube) {
-            builder.setDataCube(dataCube);
+          onInitialized(event) {
+            builder.setDataCube(event.api);
           },
-          innerHeaderComponent: (dataCube) => (
-            <LegendDataCubeQueryBuilderHeader dataCube={dataCube} />
-          ),
-          settingValues: application.settingService.getObjectValue(
-            LegendDataCubeSettingStorageKey.DATA_CUBE,
-          ) as DataCubeSettingValues | undefined,
-          onSettingValuesChanged(values) {
+          innerHeaderRenderer: () => <LegendDataCubeQueryBuilderHeader />,
+          settingsData: {
+            configurations: store.baseStore.settings,
+            values: application.settingService.getObjectValue(
+              LegendDataCubeSettingStorageKey.DATA_CUBE,
+            ) as DataCubeSettingValues | undefined,
+          },
+          onSettingsChanged(values) {
             application.settingService.persistValue(
               LegendDataCubeSettingStorageKey.DATA_CUBE,
               values,
             );
-          },
-          getSettingItems() {
-            return store.baseStore.settings;
           },
           documentationUrl: application.documentationService.url,
         }}

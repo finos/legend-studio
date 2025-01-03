@@ -32,9 +32,10 @@ import { DataCubeExtendManagerState } from './extend/DataCubeExtendManagerState.
 import type { DataCubeState } from '../DataCubeState.js';
 import { type DataCubeEngine } from '../core/DataCubeEngine.js';
 import type { DataCubeSource } from '../core/model/DataCubeSource.js';
-import type { DataCubeQuery } from '../core/model/DataCubeQuery.js';
+import { DataCubeQuery } from '../core/model/DataCubeQuery.js';
 import { DataCubeTaskService } from '../services/DataCubeTaskService.js';
 import type { DataCubeLogService } from '../services/DataCubeLogService.js';
+import { DataCubeConfiguration } from '../core/model/DataCubeConfiguration.js';
 
 export class DataCubeViewState {
   readonly dataCube: DataCubeState;
@@ -55,7 +56,6 @@ export class DataCubeViewState {
     makeObservable<DataCubeViewState, '_source'>(this, {
       _source: observable,
       source: computed,
-      isSourceProcessed: computed,
 
       initialize: action,
     });
@@ -77,8 +77,15 @@ export class DataCubeViewState {
     this.extend = new DataCubeExtendManagerState(this);
   }
 
-  get isSourceProcessed() {
-    return Boolean(this._source);
+  async generateDataCubeQuery() {
+    const snapshot = this.snapshotService.currentSnapshot;
+    const query = new DataCubeQuery();
+    query.source = this.dataCube.query.source;
+    query.configuration = DataCubeConfiguration.serialization.fromJson(
+      snapshot.data.configuration,
+    );
+    query.query = await this.engine.getPartialQueryCode(snapshot);
+    return query;
   }
 
   get source() {
@@ -116,6 +123,10 @@ export class DataCubeViewState {
         query,
       );
       this.snapshotService.broadcastSnapshot(initialSnapshot);
+      this.dataCube.options?.onViewInitialized?.({
+        api: this.dataCube.api,
+        source,
+      });
     } catch (error) {
       assertErrorThrown(error);
       // this.dataCube.alertAction({

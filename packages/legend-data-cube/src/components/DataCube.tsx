@@ -45,7 +45,7 @@ const DataCubeTitleBar = observer(() => {
         <div>{view.info.name}</div>
       </div>
       <div className="flex">
-        {dataCube.options?.innerHeaderComponent?.(dataCube) ?? null}
+        {dataCube.options?.innerHeaderRenderer?.(dataCube) ?? null}
         <button
           className="flex aspect-square h-full flex-shrink-0 items-center justify-center text-lg"
           onClick={openMenuDropdown}

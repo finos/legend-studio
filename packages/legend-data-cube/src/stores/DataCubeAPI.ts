@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
+import type { DataCubeQuery } from './core/model/DataCubeQuery.js';
 import type { DataCubeState } from './DataCubeState.js';
+import type { ActionAlertOptions } from './services/DataCubeAlertService.js';
+import type { WindowState } from './services/DataCubeLayoutService.js';
 import type { DataCubeViewState } from './view/DataCubeViewState.js';
 
 /**
@@ -22,6 +25,9 @@ import type { DataCubeViewState } from './view/DataCubeViewState.js';
  * internal components and functionalities.
  */
 export interface DataCubeAPI {
+  generateDataCubeQuery(): Promise<DataCubeQuery>;
+  alertError(error: Error, options: ActionAlertOptions): void;
+  newWindow(window: WindowState): void;
   retryFailedDataFetches(): void;
   reload(): void;
 }
@@ -46,6 +52,18 @@ export class INTERNAL__DataCubeAPI implements DataCubeAPI {
   }
 
   // ----------------------------- API -----------------------------
+
+  generateDataCubeQuery() {
+    return this._dataCube.view.generateDataCubeQuery();
+  }
+
+  alertError(error: Error, options: ActionAlertOptions) {
+    this._dataCube.alertService.alertError(error, options);
+  }
+
+  newWindow(window: WindowState) {
+    this._dataCube.layoutService.newWindow(window);
+  }
 
   retryFailedDataFetches() {
     this._runTaskForEachView((view) => {

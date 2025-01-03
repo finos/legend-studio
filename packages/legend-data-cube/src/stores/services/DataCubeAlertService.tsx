@@ -49,6 +49,14 @@ export type ActionAlert = {
   onClose?: () => void;
 };
 
+export type ActionAlertOptions = {
+  message: string;
+  text?: string | undefined;
+  actions?: ActionAlertAction[] | undefined;
+  windowTitle?: string | undefined;
+  windowConfig?: WindowConfiguration | undefined;
+};
+
 export class DataCubeAlertService {
   private readonly _engine: DataCubeEngine;
   private readonly _logService: DataCubeLogService;
@@ -64,14 +72,11 @@ export class DataCubeAlertService {
     this._layoutService = layoutService;
   }
 
-  alert(options: {
-    message: string;
-    type: AlertType;
-    text?: string | undefined;
-    actions?: ActionAlertAction[] | undefined;
-    windowTitle?: string | undefined;
-    windowConfig?: WindowConfiguration | undefined;
-  }) {
+  alert(
+    options: ActionAlertOptions & {
+      type: AlertType;
+    },
+  ) {
     const { message, type, text, actions, windowTitle, windowConfig } = options;
     const window = new WindowState(
       new LayoutConfiguration(windowTitle ?? '', () => (
@@ -88,16 +93,7 @@ export class DataCubeAlertService {
     this._layoutService.newWindow(window);
   }
 
-  alertError(
-    error: Error,
-    options: {
-      message: string;
-      text?: string | undefined;
-      actions?: ActionAlertAction[] | undefined;
-      windowTitle?: string | undefined;
-      windowConfig?: WindowConfiguration | undefined;
-    },
-  ) {
+  alertError(error: Error, options: ActionAlertOptions) {
     const { message, text, actions, windowTitle, windowConfig } = options;
     const window = new WindowState(
       new LayoutConfiguration(windowTitle ?? 'Error', () => (
@@ -124,13 +120,7 @@ export class DataCubeAlertService {
     error: EngineError,
     code: string,
     codePrefix: string,
-    options: {
-      message: string;
-      text?: string | undefined;
-      actions?: ActionAlertAction[] | undefined;
-      windowTitle?: string | undefined;
-      windowConfig?: WindowConfiguration | undefined;
-    },
+    options: ActionAlertOptions,
   ) {
     const { message, text, windowTitle, windowConfig } = options;
     // correct the source information since we added prefix to the code

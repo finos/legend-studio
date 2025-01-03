@@ -43,9 +43,8 @@ export * from './stores/services/DataCubeAlertService.js';
 export * from './components/core/DataCubeAlert.js';
 export * from './components/core/DataCubeLayout.js';
 
-export { DataCubeState } from './stores/DataCubeState.js'; // FIXME: to be removed
 export { useDataCube } from './components/DataCubeProvider.js';
-export * from './stores/DataCubeAPI.js';
+export { type DataCubeAPI } from './stores/DataCubeAPI.js';
 export * from './stores/DataCubeOptions.js';
 export * from './components/DataCube.js';
 
