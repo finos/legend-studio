@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-import { setup } from '@finos/legend-application-data-cube-bootstrap/scripts/setup.js';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import type { DataCubeEngine } from '../core/DataCubeEngine.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+export class DataCubeNavigationService {
+  private readonly _engine: DataCubeEngine;
 
-const outputDir = process.argv[2];
+  constructor(engine: DataCubeEngine) {
+    this._engine = engine;
+  }
 
-setup(
-  resolve(__dirname, `../${outputDir}`),
-  resolve(__dirname, '../../legend-data-cube/docs'),
-);
+  openLink(url: string) {
+    this._engine.openLink(url);
+  }
+}

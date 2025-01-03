@@ -30,13 +30,13 @@ import {
   INTERNAL__GRID_CLIENT_DEFAULT_ENABLE_PAGINATION,
   computeHashCodeForDataFetchManualTrigger,
 } from './DataCubeGridClientEngine.js';
-import { DataCubeQuerySnapshotController } from '../DataCubeQuerySnapshotManager.js';
+import { DataCubeQuerySnapshotController } from '../../services/DataCubeQuerySnapshotService.js';
 import type { DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import { generateGridOptionsFromSnapshot } from './DataCubeGridConfigurationBuilder.js';
-import { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { DataCubeGridControllerState } from './DataCubeGridControllerState.js';
 import { DataCubeGridClientExportEngine } from './DataCubeGridClientExportEngine.js';
-import { DataCubeSettingKey } from '../../core/DataCubeSetting.js';
+import { DataCubeSettingKey } from '../../../__lib__/DataCubeSetting.js';
 
 /**
  * This query editor state is responsible for syncing the internal state of ag-grid
@@ -54,8 +54,9 @@ import { DataCubeSettingKey } from '../../core/DataCubeSetting.js';
  * trigger publishing a new snapshot, hence not propagated.
  */
 export class DataCubeGridState extends DataCubeQuerySnapshotController {
-  readonly controller!: DataCubeGridControllerState;
-  readonly exportEngine!: DataCubeGridClientExportEngine;
+  readonly view: DataCubeViewState;
+  readonly controller: DataCubeGridControllerState;
+  readonly exportEngine: DataCubeGridClientExportEngine;
   private _client?: GridApi | undefined;
 
   clientDataSource: DataCubeGridClientServerSideDataSource;
@@ -69,7 +70,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
   debouncedAutoResizeColumns?: DebouncedFunc<() => void>;
 
   constructor(view: DataCubeViewState) {
-    super(view);
+    super(view.engine, view.dataCube.settingService, view.snapshotService);
 
     makeObservable(this, {
       clientDataSource: observable,
@@ -87,6 +88,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
       applySnapshot: action,
     });
 
+    this.view = view;
     this.controller = new DataCubeGridControllerState(this.view);
     this.exportEngine = new DataCubeGridClientExportEngine(this);
     this.queryConfiguration = new DataCubeConfiguration();
@@ -150,7 +152,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
       this.view,
     );
     if (
-      this.view.dataCube.settings.getBooleanValue(
+      this.view.dataCube.settingService.getBooleanValue(
         DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
       )
     ) {
@@ -161,10 +163,10 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     }
     this.client.updateGridOptions({
       ...gridOptions,
-      rowBuffer: this.view.dataCube.settings.getNumericValue(
+      rowBuffer: this.view.dataCube.settingService.getNumericValue(
         DataCubeSettingKey.GRID_CLIENT__ROW_BUFFER,
       ),
-      purgeClosedRowNodes: this.view.dataCube.settings.getBooleanValue(
+      purgeClosedRowNodes: this.view.dataCube.settingService.getBooleanValue(
         DataCubeSettingKey.GRID_CLIENT__PURGE_CLOSED_ROW_NODES,
       ),
       // NOTE: ag-grid uses the cache block size as page size, so it's important to set this

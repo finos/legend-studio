@@ -21,6 +21,8 @@ import {
 } from '@finos/legend-shared';
 import {
   QuerySearchSpecification,
+  type V1_EngineServerClient,
+  type V1_PureGraphManager,
   V1_Query,
   type LightQuery,
 } from '@finos/legend-graph';
@@ -34,17 +36,29 @@ import {
   LegendDataCubeSourceBuilderType,
 } from './LegendDataCubeSourceBuilderState.js';
 import { RawLegendQueryDataCubeSource } from '../../model/LegendQueryDataCubeSource.js';
-import type { LegendDataCubeNewQueryState } from '../LegendDataCubeNewQueryState.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
+import type { LegendDataCubeDataCubeEngine } from '../../LegendDataCubeDataCubeEngine.js';
+import type { LegendDataCubeApplicationStore } from '../../LegendDataCubeBaseStore.js';
+import type { DataCubeAlertService } from '@finos/legend-data-cube';
 
 export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
-  readonly queryLoaderState: QueryLoaderState;
+  private readonly _engineServerClient: V1_EngineServerClient;
+  private readonly _graphManager: V1_PureGraphManager;
+  private readonly _alertService: DataCubeAlertService;
+
+  readonly queryLoader: QueryLoaderState;
 
   query?: LightQuery | undefined;
   queryCode?: string | undefined;
 
-  constructor(newQueryState: LegendDataCubeNewQueryState) {
-    super(newQueryState);
+  constructor(
+    application: LegendDataCubeApplicationStore,
+    engine: LegendDataCubeDataCubeEngine,
+    engineServerClient: V1_EngineServerClient,
+    graphManager: V1_PureGraphManager,
+    alertService: DataCubeAlertService,
+  ) {
+    super(application, engine);
 
     makeObservable(this, {
       query: observable,
@@ -53,20 +67,24 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
       queryCode: observable,
     });
 
-    this.queryLoaderState = new QueryLoaderState(
-      this.application,
-      newQueryState.engine.graphManager,
+    this._graphManager = graphManager;
+    this._engineServerClient = engineServerClient;
+    this._alertService = alertService;
+
+    this.queryLoader = new QueryLoaderState(
+      this._application,
+      this._graphManager,
       {
         loadQuery: (query) => {
           this.setQuery(query).catch((error) =>
-            this.engine.alertUnhandledError(error),
+            this._alertService.alertUnhandledError(error),
           );
         },
         decorateSearchSpecification: (val) => val,
         fetchDefaultQueries: async () => {
           const searchSpecification = new QuerySearchSpecification();
           searchSpecification.limit = QUERY_LOADER_TYPEAHEAD_SEARCH_LIMIT;
-          return newQueryState.engine.graphManager.searchQueries(
+          return this._graphManager.searchQueries(
             QuerySearchSpecification.createDefault(undefined),
           );
         },
@@ -78,10 +96,10 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
   async setQuery(lightQuery: LightQuery) {
     try {
       const processedQuery = V1_Query.serialization.fromJson(
-        await this.engine.engineServerClient.getQuery(lightQuery.id),
+        await this._engineServerClient.getQuery(lightQuery.id),
       );
-      const queryCode = await this.engine.getValueSpecificationCode(
-        await this.engine.parseValueSpecification(processedQuery.content),
+      const queryCode = await this._engine.getValueSpecificationCode(
+        await this._engine.parseValueSpecification(processedQuery.content),
         true,
       );
       runInAction(() => {
@@ -90,7 +108,7 @@ export class LegendQueryDataCubeSourceBuilderState extends LegendDataCubeSourceB
       });
     } catch (error) {
       assertErrorThrown(error);
-      this.engine.logError(
+      this._application.logService.error(
         LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
         `Can't get code for query with ID '${lightQuery.id}'`,
       );

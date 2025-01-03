@@ -16,7 +16,7 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import type { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import {
   DataCubeColumnKind,
   isPivotResultColumnName,
@@ -25,7 +25,7 @@ import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js'
 import {
   _toCol,
   type DataCubeColumn,
-} from '../../core/models/DataCubeColumn.js';
+} from '../../core/model/DataCubeColumn.js';
 import {
   DataCubeEditorColumnSelectorColumnState,
   DataCubeEditorColumnSelectorState,

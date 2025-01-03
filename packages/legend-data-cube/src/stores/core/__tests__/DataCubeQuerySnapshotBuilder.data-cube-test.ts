@@ -19,14 +19,14 @@ import { unitTest } from '@finos/legend-shared/test';
 import { describe, expect, test } from '@jest/globals';
 import { validateAndBuildQuerySnapshot } from '../DataCubeQuerySnapshotBuilder.js';
 import { assertErrorThrown } from '@finos/legend-shared';
-import { DataCubeQuery } from '../models/DataCubeQuery.js';
-import { INTERNAL__DataCubeSource } from '../models/DataCubeSource.js';
+import { DataCubeQuery } from '../model/DataCubeQuery.js';
+import { INTERNAL__DataCubeSource } from '../model/DataCubeSource.js';
 import { _deserializeValueSpecification } from '../DataCubeQueryBuilderUtils.js';
 import {
   _testCase,
   type DataCubeQuerySnapshotBuilderTestCase,
 } from './DatacubeQuerySnapshotBuilderTestUtils.js';
-import { DataCubeConfiguration } from '../models/DataCubeConfiguration.js';
+import { DataCubeConfiguration } from '../model/DataCubeConfiguration.js';
 
 const cases: DataCubeQuerySnapshotBuilderTestCase[] = [
   _testCase({

@@ -20,14 +20,20 @@ import type {
   LegendDataCubeBaseStore,
 } from '../LegendDataCubeBaseStore.js';
 import {
+  type DataCubeAlertService,
   DataCubeConfiguration,
+  type DataCubeLayoutService,
   DataCubeQuery,
-  DEFAULT_SMALL_ALERT_WINDOW_CONFIG,
+  DEFAULT_ALERT_WINDOW_CONFIG,
   type DataCubeState,
   type DisplayState,
 } from '@finos/legend-data-cube';
 import { LegendDataCubeNewQueryState } from './LegendDataCubeNewQueryState.js';
-import { PersistentDataCubeQuery } from '@finos/legend-graph';
+import {
+  PersistentDataCubeQuery,
+  type V1_EngineServerClient,
+  type V1_PureGraphManager,
+} from '@finos/legend-graph';
 import {
   ActionState,
   assertErrorThrown,
@@ -43,6 +49,7 @@ import {
   LegendDataCubeUserDataKey,
   RECENTLY_VIEWED_QUERIES_LIMIT,
 } from '../../__lib__/LegendDataCubeUserData.js';
+import type { DepotServerClient } from '@finos/legend-server-depot';
 
 export class LegendDataCubeQueryBuilderState {
   uuid = uuid();
@@ -83,6 +90,11 @@ export class LegendDataCubeQueryBuilderStore {
   readonly application: LegendDataCubeApplicationStore;
   readonly baseStore: LegendDataCubeBaseStore;
   readonly engine: LegendDataCubeDataCubeEngine;
+  readonly depotServerClient: DepotServerClient;
+  readonly engineServerClient: V1_EngineServerClient;
+  readonly graphManager: V1_PureGraphManager;
+  readonly layoutService: DataCubeLayoutService;
+  readonly alertService: DataCubeAlertService;
 
   readonly newQueryState: LegendDataCubeNewQueryState;
 
@@ -102,14 +114,19 @@ export class LegendDataCubeQueryBuilderStore {
     this.application = baseStore.application;
     this.baseStore = baseStore;
     this.engine = baseStore.engine;
+    this.depotServerClient = baseStore.depotServerClient;
+    this.engineServerClient = baseStore.engineServerClient;
+    this.graphManager = baseStore.graphManager;
+    this.alertService = baseStore.alertService;
+    this.layoutService = baseStore.layoutService;
 
     this.newQueryState = new LegendDataCubeNewQueryState(this);
     this.loader = new LegendDataCubeQueryLoaderState(this);
-    this.saverDisplay = this.engine.layout.newDisplay(
+    this.saverDisplay = this.layoutService.newDisplay(
       'Save Query',
       () => <LegendDataCubeQuerySaver />,
       {
-        ...DEFAULT_SMALL_ALERT_WINDOW_CONFIG,
+        ...DEFAULT_ALERT_WINDOW_CONFIG,
         height: 140,
       },
     );
@@ -174,7 +191,7 @@ export class LegendDataCubeQueryBuilderStore {
         this.loadQueryState.pass();
       } catch (error) {
         assertErrorThrown(error);
-        this.engine.alertError(error, {
+        this.alertService.alertError(error, {
           message: `Query Load Failure: ${error.message}`,
         });
         this.loadQueryState.fail();
@@ -187,7 +204,7 @@ export class LegendDataCubeQueryBuilderStore {
     name: string,
     existingPersistentQuery?: PersistentDataCubeQuery | undefined,
   ) {
-    const currentSnapshot = dataCube.view.snapshotManager.currentSnapshot;
+    const currentSnapshot = dataCube.view.snapshotService.currentSnapshot;
 
     const query = new DataCubeQuery();
     query.source = dataCube.query.source;
@@ -240,7 +257,7 @@ export class LegendDataCubeQueryBuilderStore {
       this.saveQueryState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.engine.alertError(error, {
+      this.alertService.alertError(error, {
         message: `Query Creation Failure: ${error.message}`,
       });
       this.saveQueryState.fail();
@@ -287,7 +304,7 @@ export class LegendDataCubeQueryBuilderStore {
       this.saveQueryState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.engine.alertError(error, {
+      this.alertService.alertError(error, {
         message: `Query Update Failure: ${error.message}`,
       });
       this.saveQueryState.fail();

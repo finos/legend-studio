@@ -87,7 +87,7 @@ export const DEFAULT_TOOL_PANEL_WINDOW_CONFIG: WindowConfiguration = {
   center: true,
 };
 
-export const DEFAULT_SMALL_ALERT_WINDOW_CONFIG: WindowConfiguration = {
+export const DEFAULT_ALERT_WINDOW_CONFIG: WindowConfiguration = {
   width: 500,
   height: 200,
   minWidth: 200,
@@ -95,21 +95,13 @@ export const DEFAULT_SMALL_ALERT_WINDOW_CONFIG: WindowConfiguration = {
   center: true,
 };
 
-export const DEFAULT_LARGE_ALERT_WINDOW_CONFIG: WindowConfiguration = {
-  width: 600,
-  height: 200,
-  minWidth: 300,
-  minHeight: 150,
-  center: true,
-};
-
 export class DisplayState {
-  private readonly layoutManagerState: LayoutManagerState;
+  private readonly _layoutService: DataCubeLayoutService;
   readonly configuration: LayoutConfiguration;
   window?: WindowState | undefined;
 
   constructor(
-    layoutManagerState: LayoutManagerState,
+    layoutService: DataCubeLayoutService,
     title: string,
     contentRenderer: (config: LayoutConfiguration) => React.ReactNode,
   ) {
@@ -120,7 +112,7 @@ export class DisplayState {
       close: action,
     });
 
-    this.layoutManagerState = layoutManagerState;
+    this._layoutService = layoutService;
     this.configuration = new LayoutConfiguration(title, contentRenderer);
     this.configuration.window = DEFAULT_TOOL_PANEL_WINDOW_CONFIG;
   }
@@ -131,26 +123,26 @@ export class DisplayState {
 
   open() {
     if (this.window) {
-      this.layoutManagerState.bringWindowFront(this.window);
+      this._layoutService.bringWindowFront(this.window);
     } else {
       this.window = new WindowState(this.configuration, () =>
         runInAction(() => {
           this.window = undefined;
         }),
       );
-      this.layoutManagerState.newWindow(this.window);
+      this._layoutService.newWindow(this.window);
     }
   }
 
   close() {
     if (this.window) {
-      this.layoutManagerState.closeWindow(this.window);
+      this._layoutService.closeWindow(this.window);
       this.window = undefined;
     }
   }
 }
 
-export class LayoutManagerState {
+export class DataCubeLayoutService {
   windows: WindowState[] = [];
 
   constructor() {
@@ -166,7 +158,7 @@ export class LayoutManagerState {
     title: string,
     contentRenderer: (config: LayoutConfiguration) => React.ReactNode,
     windowConfiguration?: WindowConfiguration | undefined,
-  ): DisplayState {
+  ) {
     const display = new DisplayState(this, title, contentRenderer);
     if (windowConfiguration) {
       display.configuration.window = windowConfiguration;

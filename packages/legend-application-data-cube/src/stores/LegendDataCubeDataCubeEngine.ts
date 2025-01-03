@@ -62,21 +62,14 @@ import {
   LogEvent,
   UnsupportedOperationError,
   type PlainObject,
-  type DocumentationEntry,
   assertErrorThrown,
   NetworkClientError,
   HttpStatus,
   getNonNullableEntry,
   assertType,
 } from '@finos/legend-shared';
-import type {
-  LegendDataCubeApplicationStore,
-  LegendDataCubeBaseStore,
-} from './LegendDataCubeBaseStore.js';
-import {
-  APPLICATION_EVENT,
-  shouldDisplayVirtualAssistantDocumentationEntry,
-} from '@finos/legend-application';
+import type { LegendDataCubeApplicationStore } from './LegendDataCubeBaseStore.js';
+import { APPLICATION_EVENT } from '@finos/legend-application';
 import {
   LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE,
   LegendQueryDataCubeSource,
@@ -89,18 +82,23 @@ import {
 } from '@finos/legend-server-depot';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
-  readonly application: LegendDataCubeApplicationStore;
-  readonly graphManager: V1_PureGraphManager;
-  readonly depotServerClient: DepotServerClient;
-  readonly engineServerClient: V1_EngineServerClient;
+  private readonly _application: LegendDataCubeApplicationStore;
+  private readonly _depotServerClient: DepotServerClient;
+  private readonly _engineServerClient: V1_EngineServerClient;
+  private readonly _graphManager: V1_PureGraphManager;
 
-  constructor(baseStore: LegendDataCubeBaseStore) {
+  constructor(
+    application: LegendDataCubeApplicationStore,
+    depotServerClient: DepotServerClient,
+    engineServerClient: V1_EngineServerClient,
+    graphManager: V1_PureGraphManager,
+  ) {
     super();
 
-    this.application = baseStore.application;
-    this.graphManager = baseStore.graphManager;
-    this.depotServerClient = baseStore.depotServerClient;
-    this.engineServerClient = baseStore.engineServerClient;
+    this._application = application;
+    this._depotServerClient = depotServerClient;
+    this._engineServerClient = engineServerClient;
+    this._graphManager = graphManager;
   }
 
   // ---------------------------------- IMPLEMENTATION ----------------------------------
@@ -137,14 +135,14 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       case LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE: {
         const rawSource =
           RawLegendQueryDataCubeSource.serialization.fromJson(value);
-        const queryInfo = await this.graphManager.getQueryInfo(
+        const queryInfo = await this._graphManager.getQueryInfo(
           rawSource.queryId,
         );
         const executionContext =
-          await this.graphManager.resolveQueryInfoExecutionContext(
+          await this._graphManager.resolveQueryInfoExecutionContext(
             queryInfo,
             () =>
-              this.depotServerClient.getVersionEntities(
+              this._depotServerClient.getVersionEntities(
                 queryInfo.groupId,
                 queryInfo.artifactId,
                 queryInfo.versionId,
@@ -153,7 +151,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         const source = new LegendQueryDataCubeSource();
         source.info = queryInfo;
         source.lambda = _deserializeLambda(
-          await this.engineServerClient.grammarToJSON_lambda(
+          await this._engineServerClient.grammarToJSON_lambda(
             queryInfo.content,
             '',
             undefined,
@@ -211,14 +209,14 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       : codeBlock;
     if (source instanceof AdhocQueryDataCubeSource) {
       return (
-        await this.engineServerClient.completeCode({
+        await this._engineServerClient.completeCode({
           codeBlock,
           model: source.model,
         })
       ).completions as CompletionItem[];
     } else if (source instanceof LegendQueryDataCubeSource) {
       return (
-        await this.engineServerClient.completeCode({
+        await this._engineServerClient.completeCode({
           codeBlock,
           model: source.model,
         })
@@ -235,7 +233,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   ) {
     try {
       return _deserializeValueSpecification(
-        await this.engineServerClient.grammarToJSON_valueSpecification(
+        await this._engineServerClient.grammarToJSON_valueSpecification(
           code,
           '',
           undefined,
@@ -263,7 +261,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     value: V1_ValueSpecification,
     pretty?: boolean | undefined,
   ) {
-    return this.graphManager.valueSpecificationToPureCode(
+    return this._graphManager.valueSpecificationToPureCode(
       _serializeValueSpecification(value),
       pretty,
     );
@@ -279,7 +277,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     const baseQueryCode = await this.getValueSpecificationCode(baseQuery);
     const columnOffset = baseQueryCode.length;
     try {
-      const lambda = await this.engineServerClient.grammarToJSON_lambda(
+      const lambda = await this._engineServerClient.grammarToJSON_lambda(
         baseQueryCode + code,
         '',
         undefined,
@@ -384,7 +382,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   ) {
     const relationType = deserialize(
       V1_relationTypeModelSchema,
-      await this.engineServerClient.lambdaRelationType({
+      await this._engineServerClient.lambdaRelationType({
         lambda,
         model,
       }),
@@ -404,7 +402,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   ): Promise<ExecutionResult> {
     return V1_buildExecutionResult(
       V1_deserializeExecutionResult(
-        (await this.engineServerClient.runQuery({
+        (await this._engineServerClient.runQuery({
           clientVersion:
             // eslint-disable-next-line no-process-env
             process.env.NODE_ENV === 'development'
@@ -426,28 +424,8 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
   // ---------------------------------- APPLICATION ----------------------------------
 
-  override getDocumentationURL(): string | undefined {
-    return this.application.documentationService.url;
-  }
-
-  override getDocumentationEntry(key: string) {
-    return this.application.documentationService.getDocEntry(key);
-  }
-
-  override shouldDisplayDocumentationEntry(entry: DocumentationEntry) {
-    return shouldDisplayVirtualAssistantDocumentationEntry(entry);
-  }
-
-  override openLink(url: string) {
-    this.application.navigationService.navigator.visitAddress(url);
-  }
-
-  override sendTelemetry(event: string, data: PlainObject) {
-    this.application.telemetryService.logEvent(event, data);
-  }
-
   override logDebug(message: string, ...data: unknown[]) {
-    this.application.logService.debug(
+    this._application.logService.debug(
       LogEvent.create(APPLICATION_EVENT.DEBUG),
       message,
       ...data,
@@ -457,14 +435,14 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   override debugProcess(processName: string, ...data: [string, unknown][]) {
     // eslint-disable-next-line no-process-env
     if (process.env.NODE_ENV === 'development') {
-      this.application.logService.info(
+      this._application.logService.info(
         LogEvent.create(APPLICATION_EVENT.DEBUG),
         `\n------ START DEBUG PROCESS: ${processName} ------`,
         ...data.flatMap(([key, value]) => [`\n[${key.toUpperCase()}]:`, value]),
         `\n------- END DEBUG PROCESS: ${processName} -------\n\n`,
       );
     } else {
-      this.application.logService.debug(
+      this._application.logService.debug(
         LogEvent.create(APPLICATION_EVENT.DEBUG),
         `\n------ START DEBUG PROCESS: ${processName} ------`,
         ...data.flatMap(([key, value]) => [`\n[${key.toUpperCase()}]:`, value]),
@@ -474,19 +452,19 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   }
 
   override logInfo(event: LogEvent, ...data: unknown[]) {
-    this.application.logService.info(event, ...data);
+    this._application.logService.info(event, ...data);
   }
 
   override logWarning(event: LogEvent, ...data: unknown[]) {
-    this.application.logService.warn(event, ...data);
+    this._application.logService.warn(event, ...data);
   }
 
   override logError(event: LogEvent, ...data: unknown[]) {
-    this.application.logService.error(event, ...data);
+    this._application.logService.error(event, ...data);
   }
 
   override logUnhandledError(error: Error) {
-    this.application.logUnhandledError(error);
+    this._application.logUnhandledError(error);
   }
 
   override logIllegalStateError(message: string, error?: Error) {
@@ -495,5 +473,17 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       message,
       error,
     );
+  }
+
+  override getDocumentationEntry(key: string) {
+    return this._application.documentationService.getDocEntry(key);
+  }
+
+  override openLink(url: string) {
+    this._application.navigationService.navigator.visitAddress(url);
+  }
+
+  override sendTelemetry(event: string, data: PlainObject) {
+    this._application.telemetryService.logEvent(event, data);
   }
 }

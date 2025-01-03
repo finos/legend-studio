@@ -18,7 +18,7 @@ import { makeObservable, observable, action, computed } from 'mobx';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { _sortByColName } from '../../core/models/DataCubeColumn.js';
+import { _sortByColName } from '../../core/model/DataCubeColumn.js';
 
 export class DataCubeEditorColumnSelectorColumnState {
   readonly name: string;

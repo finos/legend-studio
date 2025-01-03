@@ -16,53 +16,42 @@
 
 import { type DataCubeEngine } from './core/DataCubeEngine.js';
 import { DataCubeViewState } from './view/DataCubeViewState.js';
-import type { DisplayState } from './core/DataCubeLayoutManagerState.js';
-import { DocumentationPanel } from '../components/core/DataCubeDocumentationPanel.js';
-import {
-  ActionState,
-  assertErrorThrown,
-  uuid,
-  type DocumentationEntry,
-} from '@finos/legend-shared';
-import {
-  AlertType,
-  type ActionAlert,
-} from '../components/core/DataCubeAlert.js';
-import type { DataCubeSource } from './core/models/DataCubeSource.js';
+import { ActionState, assertErrorThrown, uuid } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
-import { DataCubeSettings } from './DataCubeSettings.js';
-import type { DataCubeAPI } from './DataCubeAPI.js';
+import { DataCubeSettingService } from './services/DataCubeSettingService.js';
+import { INTERNAL__DataCubeAPI } from './DataCubeAPI.js';
 import type { DataCubeOptions } from './DataCubeOptions.js';
-import type { DataCubeQuery } from './core/models/DataCubeQuery.js';
+import type { DataCubeQuery } from './core/model/DataCubeQuery.js';
 import { LicenseManager } from 'ag-grid-enterprise';
 import {
   configureCodeEditor,
   setupPureLanguageService,
 } from '@finos/legend-code-editor';
 import { DataCubeFont } from './core/DataCubeQueryEngine.js';
+import { DataCubeDocumentationService } from './services/DataCubeDocumentationService.js';
+import { DataCubeLayoutService } from './services/DataCubeLayoutService.js';
+import { DataCubeAlertService } from './services/DataCubeAlertService.js';
+import { DataCubeTelemetryService } from './services/DataCubeTelemetryService.js';
+import { DataCubeNavigationService } from './services/DataCubeNavigationService.js';
+import { DataCubeLogService } from './services/DataCubeLogService.js';
 
-export class DataCubeState implements DataCubeAPI {
-  uuid = uuid();
-
+export class DataCubeState {
   readonly engine: DataCubeEngine;
+  readonly logService: DataCubeLogService;
+  readonly layoutService: DataCubeLayoutService;
+  readonly settingService: DataCubeSettingService;
+  readonly documentationService: DataCubeDocumentationService;
+  readonly alertService: DataCubeAlertService;
+  readonly navigationService: DataCubeNavigationService;
+  readonly telemetryService: DataCubeTelemetryService;
 
   readonly query: DataCubeQuery;
-  readonly settings!: DataCubeSettings;
-  readonly documentationDisplay: DisplayState;
+  readonly options?: DataCubeOptions | undefined;
+
   readonly initializeState = ActionState.create();
+  readonly api: INTERNAL__DataCubeAPI;
 
-  private readonly gridClientLicense?: string | undefined;
-  readonly onInitialized?: ((dataCube: DataCubeState) => void) | undefined;
-  readonly onNameChanged?:
-    | ((name: string, source: DataCubeSource) => void)
-    | undefined;
-  readonly innerHeaderComponent?:
-    | ((dataCube: DataCubeState) => React.ReactNode)
-    | undefined;
-
-  currentDocumentationEntry?: DocumentationEntry | undefined;
-  currentActionAlert?: ActionAlert | undefined;
-
+  uuid = uuid();
   // NOTE: when we support multiview, there can be multiple view states to support
   // the first one in that list will be taken as the main view state
   view: DataCubeViewState;
@@ -73,98 +62,71 @@ export class DataCubeState implements DataCubeAPI {
     options?: DataCubeOptions | undefined,
   ) {
     makeObservable(this, {
-      currentDocumentationEntry: observable,
-      openDocumentationEntry: action,
-
-      currentActionAlert: observable,
-      alertAction: action,
-
       uuid: observable,
       reload: action,
     });
 
-    this.query = query;
     this.engine = engine;
-    this.settings = new DataCubeSettings(this, options);
-    this.view = new DataCubeViewState(this);
-
-    this.documentationDisplay = this.engine.layout.newDisplay(
-      'Documentation',
-      () => <DocumentationPanel />,
-      {
-        x: -50,
-        y: -50,
-        width: 400,
-        height: 400,
-        minWidth: 300,
-        minHeight: 200,
-        center: false,
-      },
+    this.logService = new DataCubeLogService(this.engine);
+    this.layoutService = new DataCubeLayoutService();
+    this.settingService = new DataCubeSettingService(
+      this.engine,
+      this.logService,
+      this.layoutService,
+      options,
     );
+    this.documentationService = new DataCubeDocumentationService(
+      this.engine,
+      this.layoutService,
+    );
+    this.alertService = new DataCubeAlertService(
+      this.engine,
+      this.logService,
+      this.layoutService,
+    );
+    this.navigationService = new DataCubeNavigationService(this.engine);
+    this.telemetryService = new DataCubeTelemetryService(this.engine);
 
-    this.gridClientLicense = options?.gridClientLicense;
-    this.onInitialized = options?.onInitialized;
-    this.onNameChanged = options?.onNameChanged;
-    this.innerHeaderComponent = options?.innerHeaderComponent;
-  }
+    this.api = new INTERNAL__DataCubeAPI(this);
+    this.query = query;
+    this.options = options;
 
-  reload() {
     this.view = new DataCubeViewState(this);
-    this.uuid = uuid();
-  }
-
-  getSettings() {
-    return this.settings;
-  }
-
-  openDocumentationEntry(entry: DocumentationEntry | undefined) {
-    this.currentDocumentationEntry = entry;
-  }
-
-  alertAction(alert: ActionAlert | undefined) {
-    this.currentActionAlert = alert;
-  }
-
-  refreshFailedDataFetches() {
-    this.runTaskForEachView((view) => {
-      view.grid.client.retryServerSideLoads();
-    });
-  }
-
-  runTaskForEachView(runner: (view: DataCubeViewState) => void) {
-    // TODO: When we support multi-view (i.e. multiple instances of DataCubes) we would need
-    // to traverse through and update the configurations of all of their grid clients
-    runner(this.view);
   }
 
   async initialize() {
     if (!this.initializeState.isInInitialState) {
-      this.engine.logDebug('DataCube state is re-initialized');
+      this.logService.logDebug('DataCube state is re-initialized');
       return;
     }
     this.initializeState.inProgress();
 
     try {
       // set up the components
-      if (this.gridClientLicense) {
-        LicenseManager.setLicenseKey(this.gridClientLicense);
+      if (this.options?.gridClientLicense) {
+        LicenseManager.setLicenseKey(this.options.gridClientLicense);
       }
       await configureCodeEditor(DataCubeFont.ROBOTO_MONO, (error) => {
         throw error;
       });
       setupPureLanguageService({});
 
-      this.onInitialized?.(this);
+      this.options?.onInitialized?.(this);
       this.initializeState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.alertAction({
-        message: `Initialization Failure: ${error.message}`,
-        prompt: `Resolve the issue and reload the engine.`,
-        type: AlertType.ERROR,
-        actions: [],
-      });
+      // this.alertAction({
+      //   message: `Initialization Failure: ${error.message}`,
+      //   prompt: `Resolve the issue and reload the engine.`,
+      //   type: AlertType.ERROR,
+      //   actions: [],
+      // });
       this.initializeState.fail();
     }
+  }
+
+  reload() {
+    this.view = new DataCubeViewState(this);
+    this.uuid = uuid();
   }
 }

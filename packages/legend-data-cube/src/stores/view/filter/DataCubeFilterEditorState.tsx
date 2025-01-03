@@ -34,12 +34,12 @@ import {
   buildFilterEditorTree,
   buildFilterQuerySnapshot,
 } from '../../core/filter/DataCubeQueryFilterEditorState.js';
-import { DataCubeQuerySnapshotController } from '../DataCubeQuerySnapshotManager.js';
+import { DataCubeQuerySnapshotController } from '../../services/DataCubeQuerySnapshotService.js';
 import {
   DataCubeConfiguration,
   type DataCubeColumnConfiguration,
-} from '../../core/models/DataCubeConfiguration.js';
-import type { DisplayState } from '../../core/DataCubeLayoutManagerState.js';
+} from '../../core/model/DataCubeConfiguration.js';
+import type { DisplayState } from '../../services/DataCubeLayoutService.js';
 import { DataCubeFilterEditor } from '../../../components/view/filter/DataCubeFilterEditor.js';
 
 /**
@@ -47,6 +47,7 @@ import { DataCubeFilterEditor } from '../../../components/view/filter/DataCubeFi
  * to the filter in the form editor.
  */
 export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
+  readonly view: DataCubeViewState;
   readonly display: DisplayState;
 
   tree: DataCubeFilterEditorTree;
@@ -54,7 +55,7 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
   columns: DataCubeColumnConfiguration[] = [];
 
   constructor(view: DataCubeViewState) {
-    super(view);
+    super(view.engine, view.dataCube.settingService, view.snapshotService);
 
     makeObservable(this, {
       tree: observable.ref,
@@ -73,7 +74,8 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
       layerFilterNode: action,
     });
 
-    this.display = this.view.engine.layout.newDisplay(
+    this.view = view;
+    this.display = this.view.dataCube.layoutService.newDisplay(
       'Filter',
       () => <DataCubeFilterEditor view={this.view} />,
       {

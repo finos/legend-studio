@@ -17,24 +17,30 @@
 import type {
   DataCubeSetting,
   DataCubeSettingValues,
-} from './core/DataCubeSetting.js';
-import type { DataCubeSource } from './core/models/DataCubeSource.js';
+} from './services/DataCubeSettingService.js';
+import type { DataCubeSource } from './core/model/DataCubeSource.js';
 import type { DataCubeState } from './DataCubeState.js';
 
 export type DataCubeOptions = {
-  gridClientLicense?: string | undefined;
-
+  // infra
   onInitialized?: ((dataCube: DataCubeState) => void) | undefined;
 
-  onNameChanged?: ((name: string, source: DataCubeSource) => void) | undefined;
+  // grid
+  gridClientLicense?: string | undefined;
 
+  // rendering
+  onNameChanged?: ((name: string, source: DataCubeSource) => void) | undefined;
   innerHeaderComponent?:
     | ((dataCube: DataCubeState) => React.ReactNode)
     | undefined;
 
+  // settings
   getSettingItems?: (() => DataCubeSetting[]) | undefined;
-  getSettingValues?: (() => DataCubeSettingValues | undefined) | undefined;
+  settingValues?: DataCubeSettingValues | undefined;
   onSettingValuesChanged?:
     | ((values: DataCubeSettingValues) => void)
     | undefined;
+
+  // documentation
+  documentationUrl?: string | undefined;
 };

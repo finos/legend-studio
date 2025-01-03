@@ -31,9 +31,9 @@ import {
   matchFunctionName,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import type { DataCubeQuery } from './models/DataCubeQuery.js';
+import type { DataCubeQuery } from './model/DataCubeQuery.js';
 import { DataCubeQuerySnapshot } from './DataCubeQuerySnapshot.js';
-import { _toCol, type DataCubeColumn } from './models/DataCubeColumn.js';
+import { _toCol, type DataCubeColumn } from './model/DataCubeColumn.js';
 import {
   assertType,
   getNonNullableEntry,
@@ -51,7 +51,7 @@ import {
   _funcMatch,
   _param,
 } from './DataCubeQuerySnapshotBuilderUtils.js';
-import type { DataCubeSource } from './models/DataCubeSource.js';
+import type { DataCubeSource } from './model/DataCubeSource.js';
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 

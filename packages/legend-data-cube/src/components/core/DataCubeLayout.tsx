@@ -22,15 +22,15 @@ import {
   WINDOW_DEFAULT_MIN_WIDTH,
   WINDOW_DEFAULT_OFFSET,
   WINDOW_DEFAULT_WIDTH,
-  type LayoutManagerState,
   type WindowSpecification,
+  type DataCubeLayoutService,
   type WindowState,
-} from '../../stores/core/DataCubeLayoutManagerState.js';
+} from '../../stores/services/DataCubeLayoutService.js';
 import { observer } from 'mobx-react-lite';
 
 export const Window = (props: {
   parent?: React.RefObject<HTMLElement> | undefined;
-  layout: LayoutManagerState;
+  layout: DataCubeLayoutService;
   windowState: WindowState;
 }) => {
   const { parent, layout, windowState } = props;
@@ -184,8 +184,8 @@ export const Window = (props: {
   );
 };
 
-export const DataCubeLayoutManager = observer(
-  (props: { layout: LayoutManagerState }) => {
+export const DataCubeLayout = observer(
+  (props: { layout: DataCubeLayoutService }) => {
     const { layout } = props;
 
     return (

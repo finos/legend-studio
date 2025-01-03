@@ -20,7 +20,7 @@ import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js'
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { DataCubeEditorMutableConfiguration } from './DataCubeEditorMutableConfiguration.js';
-import type { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 
 export class DataCubeEditorGeneralPropertiesPanelState
   implements DataCubeQueryEditorPanelState

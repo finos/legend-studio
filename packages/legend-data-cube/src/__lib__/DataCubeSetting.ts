@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-import { setup } from '@finos/legend-application-data-cube-bootstrap/scripts/setup.js';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const outputDir = process.argv[2];
-
-setup(
-  resolve(__dirname, `../${outputDir}`),
-  resolve(__dirname, '../../legend-data-cube/docs'),
-);
+export enum DataCubeSettingKey {
+  DEBUGGER__ENABLE_DEBUG_MODE = 'dataCube.debugger.enableDebugMode',
+  DEBUGGER__ACTION__RELOAD = 'dataCube.debugger.action.reload',
+  GRID_CLIENT__ROW_BUFFER = 'dataCube.grid.rowBuffer',
+  GRID_CLIENT__PURGE_CLOSED_ROW_NODES = 'dataCube.grid.purgeClosedRowNodes',
+  GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING = 'dataCube.grid.suppressLargeDatasetWarning',
+  GRID_CLIENT__ACTION__RETRY_FAILED_DATA_FETCHES = 'dataCube.grid.action.retryFailedDataFetches',
+}

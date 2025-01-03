@@ -14,15 +14,7 @@
  * limitations under the License.
  */
 
-import type { DataCubeState } from './DataCubeState.js';
-import {
-  DataCubeSettingGroup,
-  DataCubeSettingKey,
-  DataCubeSettingType,
-  type DataCubeSetting,
-  type DataCubeSettingValue,
-  type DataCubeSettingValues,
-} from './core/DataCubeSetting.js';
+import { DataCubeSettingKey } from '../../__lib__/DataCubeSetting.js';
 import {
   hashArray,
   IllegalStateError,
@@ -32,8 +24,8 @@ import {
   LogEvent,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { DataCubeEvent } from '../__lib__/DataCubeEvent.js';
-import type { DataCubeOptions } from './DataCubeOptions.js';
+import { DataCubeEvent } from '../../__lib__/DataCubeEvent.js';
+import type { DataCubeOptions } from '../DataCubeOptions.js';
 import {
   action,
   computed,
@@ -41,39 +33,95 @@ import {
   observable,
   runInAction,
 } from 'mobx';
-import type { DisplayState } from './core/DataCubeLayoutManagerState.js';
-import { DataCubeSettingsPanel } from '../components/core/DataCubeSettingsPanel.js';
+import type {
+  DataCubeLayoutService,
+  DisplayState,
+} from './DataCubeLayoutService.js';
+import { DataCubeSettingsPanel } from '../../components/core/DataCubeSettingsPanel.js';
+import type { DataCubeEngine } from '../core/DataCubeEngine.js';
+import type { DataCubeAPI, INTERNAL__DataCubeAPI } from '../DataCubeAPI.js';
+import type { DataCubeLogService } from './DataCubeLogService.js';
 
-export class DataCubeSettings {
-  readonly dataCube: DataCubeState;
+export type DataCubeSettingValue =
+  | string
+  | number
+  | boolean
+  | object
+  | undefined;
+
+export type DataCubeSettingValues = {
+  [key: string]: DataCubeSettingValue;
+};
+
+export enum DataCubeSettingGroup {
+  DEBUG = 'Debug',
+  GRID = 'Grid',
+}
+
+export enum DataCubeSettingType {
+  BOOLEAN = 'boolean',
+  NUMERIC = 'numeric',
+  STRING = 'string',
+  ACTION = 'action',
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type DataCubeSetting<T extends DataCubeSettingValue = any> = {
+  key: string;
+  title: string;
+  group: string;
+  type: DataCubeSettingType;
+  defaultValue: T;
+  action?: ((api: DataCubeAPI, newValue: T) => void) | undefined;
+  description?: string | undefined;
+  valueOptional?: boolean | undefined;
+  requiresReload?: boolean | undefined;
+  // numeric value specifics - TODO: we might want to break these downw to separate types
+  numericValueMin?: number | undefined;
+  numericValueMax?: number | undefined;
+  numericValueStep?: number | undefined;
+};
+
+export class DataCubeSettingService {
+  private readonly _engine: DataCubeEngine;
+  private readonly _logService: DataCubeLogService;
+  private readonly _layoutService: DataCubeLayoutService;
+  private readonly _options?: DataCubeOptions | undefined;
+
   readonly display: DisplayState;
   readonly configurations = new Map<string, DataCubeSetting>();
   readonly defaultValues = new Map<string, DataCubeSettingValue>();
-  readonly defaultValuesHashCode!: string;
+  private readonly _defaultValuesHashCode!: string;
   readonly values = new Map<string, DataCubeSettingValue>();
   readonly currentValues = new Map<string, DataCubeSettingValue>();
 
-  getSettingValues?: (() => DataCubeSettingValues | undefined) | undefined;
-  onSettingValuesChanged?:
-    | ((values: DataCubeSettingValues) => void)
-    | undefined;
-
-  constructor(dataCube: DataCubeState, options?: DataCubeOptions | undefined) {
-    makeObservable(this, {
+  constructor(
+    engine: DataCubeEngine,
+    logService: DataCubeLogService,
+    layoutService: DataCubeLayoutService,
+    options?: DataCubeOptions | undefined,
+  ) {
+    makeObservable<
+      DataCubeSettingService,
+      'valuesHashCode' | 'currentValuesHashCode'
+    >(this, {
       values: observable,
       save: action,
       valuesHashCode: computed,
 
       currentValues: observable,
-      resetDefaultValues: action,
+      restoreDefaultValues: action,
       currentValuesHashCode: computed,
+
+      allowRestoreDefaultValues: computed,
     });
 
-    this.dataCube = dataCube;
-    this.getSettingValues = options?.getSettingValues;
-    this.onSettingValuesChanged = options?.onSettingValuesChanged;
+    this._engine = engine;
+    this._logService = logService;
+    this._layoutService = layoutService;
+    this._options = options;
 
-    this.display = this.dataCube.engine.layout.newDisplay(
+    this.display = this._layoutService.newDisplay(
       'Settings',
       () => <DataCubeSettingsPanel />,
       {
@@ -97,6 +145,15 @@ export class DataCubeSettings {
         defaultValue: false,
       } satisfies DataCubeSetting<boolean>,
       {
+        key: DataCubeSettingKey.DEBUGGER__ACTION__RELOAD,
+        title: `Reload`,
+        description: `Manually reload DataCube (keeping all states). This is needed when making changes to settings that require reloading to take effect.`,
+        group: DataCubeSettingGroup.DEBUG,
+        type: DataCubeSettingType.ACTION,
+        action: (api) => api.reload(),
+        defaultValue: undefined,
+      } satisfies DataCubeSetting,
+      {
         key: DataCubeSettingKey.GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING,
         title: `Large Dataset Warning: Disabled`,
         description: `Suggests user to enable pagination when handling large datasets to improve performance.`,
@@ -113,8 +170,8 @@ export class DataCubeSettings {
         defaultValue: 50,
         numericValueMin: 10,
         numericValueStep: 10,
-        action: (newValue) =>
-          this.dataCube.runTaskForEachView((view) => {
+        action: (api, newValue) =>
+          (api as INTERNAL__DataCubeAPI)._runTaskForEachView((view) => {
             view.grid.client.updateGridOptions({
               rowBuffer: newValue,
             });
@@ -127,20 +184,20 @@ export class DataCubeSettings {
         group: DataCubeSettingGroup.GRID,
         type: DataCubeSettingType.BOOLEAN,
         defaultValue: false,
-        action: (newValue) =>
-          this.dataCube.runTaskForEachView((view) => {
+        action: (api, newValue) =>
+          (api as INTERNAL__DataCubeAPI)._runTaskForEachView((view) => {
             view.grid.client.updateGridOptions({
               purgeClosedRowNodes: newValue,
             });
           }),
       } satisfies DataCubeSetting<boolean>,
       {
-        key: DataCubeSettingKey.GRID_CLIENT__ACTION__REFRESH_FAILED_DATA_FETCHES,
-        title: `Refresh Failed Data Fetch: Action`,
+        key: DataCubeSettingKey.GRID_CLIENT__ACTION__RETRY_FAILED_DATA_FETCHES,
+        title: `Retry Failed Data Fetches: Action`,
         description: `Manually re-runs all failed data fetches in the grid.`,
         group: DataCubeSettingGroup.GRID,
         type: DataCubeSettingType.ACTION,
-        action: () => this.dataCube.refreshFailedDataFetches(),
+        action: (api) => api.retryFailedDataFetches(),
         defaultValue: undefined,
       } satisfies DataCubeSetting,
     ];
@@ -156,7 +213,7 @@ export class DataCubeSettings {
       },
     );
 
-    const settingValues = this.getSettingValues?.() ?? {};
+    const settingValues = this._options?.settingValues ?? {};
     Object.keys(settingValues).forEach((key) => {
       const value = settingValues[key];
       // for unknown settings (e.g. outdated settings, settings' keys changed, etc.), we ignore them
@@ -171,7 +228,9 @@ export class DataCubeSettings {
     // be processed here, as they should override the settings retrieved from
     // cache.
 
-    this.defaultValuesHashCode = this.computeValuesHashCode(this.defaultValues);
+    this._defaultValuesHashCode = this.computeValuesHashCode(
+      this.defaultValues,
+    );
   }
 
   private setValue(
@@ -181,7 +240,7 @@ export class DataCubeSettings {
   ) {
     const configuration = this.configurations.get(key);
     if (!configuration) {
-      this.dataCube.engine.logWarning(
+      this._logService.logWarning(
         LogEvent.create(
           DataCubeEvent.SETTINGS__FAILURE__FOUND_UNREGISTERED_SETTING,
         ),
@@ -197,7 +256,7 @@ export class DataCubeSettings {
             (value === undefined && configuration.valueOptional)
           )
         ) {
-          this.dataCube.engine.logWarning(
+          this._logService.logWarning(
             LogEvent.create(
               DataCubeEvent.SETTINGS__FAILURE__FOUND_UNREGISTERED_SETTING,
             ),
@@ -214,7 +273,7 @@ export class DataCubeSettings {
             (value === undefined && configuration.valueOptional)
           )
         ) {
-          this.dataCube.engine.logWarning(
+          this._logService.logWarning(
             LogEvent.create(
               DataCubeEvent.SETTINGS__FAILURE__FOUND_UNREGISTERED_SETTING,
             ),
@@ -231,7 +290,7 @@ export class DataCubeSettings {
             (value === undefined && configuration.valueOptional)
           )
         ) {
-          this.dataCube.engine.logWarning(
+          this._logService.logWarning(
             LogEvent.create(
               DataCubeEvent.SETTINGS__FAILURE__FOUND_UNREGISTERED_SETTING,
             ),
@@ -258,7 +317,7 @@ export class DataCubeSettings {
   private getConfiguration(key: string) {
     const configuration = this.configurations.get(key);
     if (!configuration) {
-      this.dataCube.engine.logWarning(
+      this._logService.logWarning(
         LogEvent.create(
           DataCubeEvent.SETTINGS__FAILURE__FOUND_UNREGISTERED_SETTING,
         ),
@@ -278,7 +337,7 @@ export class DataCubeSettings {
       configuration.type !== DataCubeSettingType.BOOLEAN ||
       !isBoolean(value)
     ) {
-      this.dataCube.engine.logWarning(
+      this._logService.logWarning(
         LogEvent.create(
           DataCubeEvent.SETTINGS__FAILURE__RETRIEVE_INCOMPATIBLE_VALUE,
         ),
@@ -298,7 +357,7 @@ export class DataCubeSettings {
       configuration.type !== DataCubeSettingType.NUMERIC ||
       !isNumber(value)
     ) {
-      this.dataCube.engine.logWarning(
+      this._logService.logWarning(
         LogEvent.create(
           DataCubeEvent.SETTINGS__FAILURE__RETRIEVE_INCOMPATIBLE_VALUE,
         ),
@@ -315,7 +374,7 @@ export class DataCubeSettings {
     const value = this.values.get(key);
     const configuration = this.getConfiguration(key);
     if (configuration.type !== DataCubeSettingType.STRING || !isString(value)) {
-      this.dataCube.engine.logWarning(
+      this._logService.logWarning(
         LogEvent.create(
           DataCubeEvent.SETTINGS__FAILURE__RETRIEVE_INCOMPATIBLE_VALUE,
         ),
@@ -328,10 +387,49 @@ export class DataCubeSettings {
     return value;
   }
 
-  updateValue(key: string, value: DataCubeSettingValue) {
+  private computeValuesHashCode(values: Map<string, DataCubeSettingValue>) {
+    return hashArray(
+      Array.from(values.entries())
+        .toSorted((a, b) => a[0].localeCompare(b[0]))
+        .map(([key, value]) => `${key}:${value}`),
+    );
+  }
+
+  private get valuesHashCode() {
+    return this.computeValuesHashCode(this.values);
+  }
+
+  private get currentValuesHashCode() {
+    return this.computeValuesHashCode(this.currentValues);
+  }
+
+  get allowRestoreDefaultValues() {
+    return this._defaultValuesHashCode !== this.currentValuesHashCode;
+  }
+
+  restoreDefaultValues() {
+    this.currentValues.clear();
+    this.defaultValues.forEach((value, key) =>
+      this.currentValues.set(key, value),
+    );
+  }
+
+  private getCurrentSettingValues() {
+    const settingValues: DataCubeSettingValues = {};
+    this.values.forEach((value, key) => {
+      const configuration = this.configurations.get(key);
+      // skip if value is the same as default value
+      if (configuration && value !== configuration.defaultValue) {
+        settingValues[key] = value;
+      }
+    });
+    return settingValues;
+  }
+
+  updateValue(api: DataCubeAPI, key: string, value: DataCubeSettingValue) {
     const configuration = this.configurations.get(key);
     if (!configuration) {
-      this.dataCube.engine.logWarning(
+      this._logService.logWarning(
         LogEvent.create(
           DataCubeEvent.SETTINGS__FAILURE__FOUND_UNREGISTERED_SETTING,
         ),
@@ -345,48 +443,13 @@ export class DataCubeSettings {
     }
 
     // trigger hook
-    this.onSettingValuesChanged?.(this.getCurrentSettingValues());
+    this._options?.onSettingValuesChanged?.(this.getCurrentSettingValues());
 
     // trigger action
-    configuration.action?.(value);
+    configuration.action?.(api, value);
   }
 
-  private computeValuesHashCode(values: Map<string, DataCubeSettingValue>) {
-    return hashArray(
-      Array.from(values.entries())
-        .toSorted((a, b) => a[0].localeCompare(b[0]))
-        .map(([key, value]) => `${key}:${value}`),
-    );
-  }
-
-  get valuesHashCode() {
-    return this.computeValuesHashCode(this.values);
-  }
-
-  get currentValuesHashCode() {
-    return this.computeValuesHashCode(this.currentValues);
-  }
-
-  resetDefaultValues() {
-    this.currentValues.clear();
-    this.defaultValues.forEach((value, key) =>
-      this.currentValues.set(key, value),
-    );
-  }
-
-  private getCurrentSettingValues(): DataCubeSettingValues {
-    const settingValues: DataCubeSettingValues = {};
-    this.values.forEach((value, key) => {
-      const configuration = this.configurations.get(key);
-      // skip if value is the same as default value
-      if (configuration && value !== configuration.defaultValue) {
-        settingValues[key] = value;
-      }
-    });
-    return settingValues;
-  }
-
-  save() {
+  save(api: DataCubeAPI) {
     const changedSettingKeys = new Set<string>();
     this.values.forEach((value, key) => {
       if (value !== this.currentValues.get(key)) {
@@ -399,7 +462,7 @@ export class DataCubeSettings {
     this.currentValues.forEach((value, key) => this.values.set(key, value));
 
     // trigger hook
-    this.onSettingValuesChanged?.(this.getCurrentSettingValues());
+    this._options?.onSettingValuesChanged?.(this.getCurrentSettingValues());
 
     // trigger action
     let requiresReload = false;
@@ -409,12 +472,12 @@ export class DataCubeSettings {
         requiresReload = true;
       }
       if (configuration?.action) {
-        configuration.action(this.values.get(key));
+        configuration.action(api, this.values.get(key));
       }
     }
 
     if (requiresReload) {
-      this.dataCube.reload();
+      api.reload();
     }
   }
 }

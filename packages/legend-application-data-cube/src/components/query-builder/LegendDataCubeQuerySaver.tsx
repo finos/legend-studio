@@ -67,7 +67,9 @@ export const LegendDataCubeQuerySaver = observer(() => {
               onClick={() => {
                 store
                   .saveQuery(name, false)
-                  .catch((error) => store.engine.alertUnhandledError(error));
+                  .catch((error) =>
+                    store.alertService.alertUnhandledError(error),
+                  );
               }}
             >
               Save
@@ -78,7 +80,9 @@ export const LegendDataCubeQuerySaver = observer(() => {
               onClick={() => {
                 store
                   .saveQuery(name, true)
-                  .catch((error) => store.engine.alertUnhandledError(error));
+                  .catch((error) =>
+                    store.alertService.alertUnhandledError(error),
+                  );
               }}
             >
               Save As
@@ -93,7 +97,9 @@ export const LegendDataCubeQuerySaver = observer(() => {
               onClick={() => {
                 store
                   .createQuery(name)
-                  .catch((error) => store.engine.alertUnhandledError(error));
+                  .catch((error) =>
+                    store.alertService.alertUnhandledError(error),
+                  );
               }}
             >
               Save

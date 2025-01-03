@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-import { setup } from '@finos/legend-application-data-cube-bootstrap/scripts/setup.js';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import type { PlainObject } from '@finos/legend-shared';
+import type { DataCubeEngine } from '../core/DataCubeEngine.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+export class DataCubeTelemetryService {
+  private readonly _engine: DataCubeEngine;
 
-const outputDir = process.argv[2];
+  constructor(engine: DataCubeEngine) {
+    this._engine = engine;
+  }
 
-setup(
-  resolve(__dirname, `../${outputDir}`),
-  resolve(__dirname, '../../legend-data-cube/docs'),
-);
+  sendTelemetry(event: string, data: PlainObject) {
+    this._engine.sendTelemetry(event, data);
+  }
+}

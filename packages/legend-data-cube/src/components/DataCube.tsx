@@ -21,21 +21,19 @@ import {
   DropdownMenuItem,
   useDropdownMenu,
 } from '@finos/legend-art';
-import { DataCubeLayoutManager } from './core/DataCubeLayoutManager.js';
+import { DataCubeLayout } from './core/DataCubeLayout.js';
 import { INTERNAL__MonacoEditorWidgetsRoot } from './core/DataCubePureCodeEditorUtils.js';
-import { DataCubeBlockingActionAlert } from './core/DataCubeAlert.js';
 import { DataCubeView } from './DataCubeView.js';
 import { useEffect } from 'react';
 import type { DataCubeEngine } from '../stores/core/DataCubeEngine.js';
 import { DataCubeState } from '../stores/DataCubeState.js';
 import { type DataCubeOptions } from '../stores/DataCubeOptions.js';
 import { DataCubeContextProvider, useDataCube } from './DataCubeProvider.js';
-import type { DataCubeQuery } from '../stores/core/models/DataCubeQuery.js';
+import type { DataCubeQuery } from '../stores/core/model/DataCubeQuery.js';
 import { FormBadge_WIP } from './core/DataCubeFormUtils.js';
 
 const DataCubeTitleBar = observer(() => {
   const dataCube = useDataCube();
-  const engine = dataCube.engine;
   const view = dataCube.view;
   const [openMenuDropdown, closeMenuDropdown, menuDropdownProps] =
     useDropdownMenu();
@@ -47,7 +45,7 @@ const DataCubeTitleBar = observer(() => {
         <div>{view.info.name}</div>
       </div>
       <div className="flex">
-        {dataCube.innerHeaderComponent?.(dataCube) ?? null}
+        {dataCube.options?.innerHeaderComponent?.(dataCube) ?? null}
         <button
           className="flex aspect-square h-full flex-shrink-0 items-center justify-center text-lg"
           onClick={openMenuDropdown}
@@ -68,9 +66,9 @@ const DataCubeTitleBar = observer(() => {
           <DropdownMenuItem
             className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
             onClick={() => {
-              const url = engine.getDocumentationURL();
+              const url = dataCube.options?.documentationUrl;
               if (url) {
-                engine.openLink(url);
+                dataCube.navigationService.openLink(url);
               }
               closeMenuDropdown();
             }}
@@ -83,7 +81,7 @@ const DataCubeTitleBar = observer(() => {
           <DropdownMenuItem
             className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
             onClick={() => {
-              view.dataCube.settings.display.open();
+              view.dataCube.settingService.display.open();
               closeMenuDropdown();
             }}
           >
@@ -97,13 +95,12 @@ const DataCubeTitleBar = observer(() => {
 
 const DataCubeRoot = observer(() => {
   const dataCube = useDataCube();
-  const engine = dataCube.engine;
   const view = dataCube.view;
 
   useEffect(() => {
     dataCube.view
       .initialize(dataCube.query)
-      .catch((error) => dataCube.engine.logUnhandledError(error));
+      .catch((error) => dataCube.logService.logUnhandledError(error));
   }, [dataCube]);
 
   return (
@@ -112,8 +109,7 @@ const DataCubeRoot = observer(() => {
 
       <DataCubeView view={view} />
 
-      <DataCubeLayoutManager layout={engine.layout} />
-      <DataCubeBlockingActionAlert />
+      <DataCubeLayout layout={dataCube.layoutService} />
       <INTERNAL__MonacoEditorWidgetsRoot />
     </div>
   );
@@ -126,22 +122,22 @@ export const DataCube = observer(
     options?: DataCubeOptions | undefined;
   }) => {
     const { query, engine, options } = props;
-    const state = useLocalObservable(
+    const dataCube = useLocalObservable(
       () => new DataCubeState(query, engine, options),
     );
 
     useEffect(() => {
-      state
+      dataCube
         .initialize()
-        .catch((error) => state.engine.logUnhandledError(error));
-    }, [state]);
+        .catch((error) => dataCube.logService.logUnhandledError(error));
+    }, [dataCube]);
 
-    if (!state.initializeState.hasSucceeded) {
+    if (!dataCube.initializeState.hasSucceeded) {
       return <></>;
     }
     return (
-      <DataCubeContextProvider value={state}>
-        <DataCubeRoot key={state.uuid} />
+      <DataCubeContextProvider value={dataCube}>
+        <DataCubeRoot key={dataCube.uuid} />
       </DataCubeContextProvider>
     );
   },

@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useApplicationStore } from '@finos/legend-application';
 import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import {
   debounce,
@@ -40,7 +39,7 @@ import {
 const LegendDataCubeQuerySearcher = observer(() => {
   const store = useLegendDataCubeQueryBuilderStore();
   const state = store.loader;
-  const application = useApplicationStore();
+
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchResults = state.queries;
 
@@ -54,9 +53,9 @@ const LegendDataCubeQuerySearcher = observer(() => {
       debounce((input: string) => {
         state
           .searchQueries(input)
-          .catch((error) => state.engine.alertUnhandledError(error));
+          .catch((error) => store.alertService.alertUnhandledError(error));
       }, 500),
-    [state],
+    [store, state],
   );
   const onSearchTextChange: React.ChangeEventHandler<HTMLInputElement> = (
     event,
@@ -95,8 +94,8 @@ const LegendDataCubeQuerySearcher = observer(() => {
   useEffect(() => {
     state
       .searchQueries('')
-      .catch((error) => state.engine.alertUnhandledError(error));
-  }, [application, state]);
+      .catch((error) => store.alertService.alertUnhandledError(error));
+  }, [store, state]);
 
   return (
     <div className="h-full">
@@ -299,7 +298,7 @@ export const LegendDataCubeQueryLoader = observer(() => {
           onClick={() => {
             state
               .finalize()
-              .catch((error) => state.engine.alertUnhandledError(error));
+              .catch((error) => store.alertService.alertUnhandledError(error));
           }}
         >
           OK

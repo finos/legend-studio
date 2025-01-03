@@ -77,17 +77,16 @@ const LegendREPLDataCube = observer((props: { query: DataCubeQuery }) => {
         innerHeaderComponent: (dataCube) => (
           <LegendREPLDataCubeHeader dataCube={dataCube} />
         ),
-        getSettingValues() {
-          return application.settingService.getObjectValue(
-            LegendREPLSettingStorageKey.DATA_CUBE,
-          ) as DataCubeSettingValues | undefined;
-        },
+        settingValues: application.settingService.getObjectValue(
+          LegendREPLSettingStorageKey.DATA_CUBE,
+        ) as DataCubeSettingValues | undefined,
         onSettingValuesChanged(values) {
           application.settingService.persistValue(
             LegendREPLSettingStorageKey.DATA_CUBE,
             values,
           );
         },
+        documentationUrl: application.documentationService.url,
       }}
     />
   );

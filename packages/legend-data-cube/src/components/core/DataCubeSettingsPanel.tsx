@@ -27,7 +27,7 @@ import {
   DataCubeSettingGroup,
   DataCubeSettingType,
   type DataCubeSetting,
-} from '../../stores/core/DataCubeSetting.js';
+} from '../../stores/services/DataCubeSettingService.js';
 import {
   guaranteeIsBoolean,
   guaranteeIsNumber,
@@ -39,7 +39,7 @@ const DataCubeSettingEntryDisplay = observer(
   (props: { configuration: DataCubeSetting }) => {
     const { configuration } = props;
     const dataCube = useDataCube();
-    const panel = dataCube.settings;
+    const panel = dataCube.settingService;
 
     switch (configuration.type) {
       case DataCubeSettingType.BOOLEAN: {
@@ -128,7 +128,7 @@ const DataCubeSettingEntryDisplay = observer(
             <div className="flex pr-2">
               <FormButton
                 compact={true}
-                onClick={() => configuration.action?.(undefined)}
+                onClick={() => configuration.action?.(dataCube.api, undefined)}
               >
                 Run Action
               </FormButton>
@@ -144,7 +144,7 @@ const DataCubeSettingEntryDisplay = observer(
 
 export const DataCubeSettingsPanel = observer(() => {
   const dataCube = useDataCube();
-  const panel = dataCube.settings;
+  const panel = dataCube.settingService;
   const configurations = Array.from(panel.configurations.values()).toSorted(
     (a, b) => a.title.localeCompare(b.title),
   );
@@ -196,8 +196,8 @@ export const DataCubeSettingsPanel = observer(() => {
       </div>
       <div className="flex h-10 items-center justify-end px-2">
         <FormButton
-          onClick={() => panel.resetDefaultValues()}
-          disabled={panel.currentValuesHashCode === panel.defaultValuesHashCode}
+          onClick={() => panel.restoreDefaultValues()}
+          disabled={!panel.allowRestoreDefaultValues}
         >
           Restore Default Settings
         </FormButton>
@@ -209,13 +209,13 @@ export const DataCubeSettingsPanel = observer(() => {
         >
           Cancel
         </FormButton>
-        <FormButton className="ml-2" onClick={() => panel.save()}>
+        <FormButton className="ml-2" onClick={() => panel.save(dataCube.api)}>
           Apply
         </FormButton>
         <FormButton
           className="ml-2"
           onClick={() => {
-            panel.save();
+            panel.save(dataCube.api);
             panel.display.close();
           }}
         >

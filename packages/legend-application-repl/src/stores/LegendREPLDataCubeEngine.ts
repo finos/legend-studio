@@ -40,7 +40,6 @@ import {
 } from '@finos/legend-graph';
 import {
   assertErrorThrown,
-  type DocumentationEntry,
   guaranteeType,
   HttpStatus,
   isNonNullable,
@@ -55,24 +54,21 @@ import {
   REPL_DATA_CUBE_SOURCE_TYPE,
 } from './LegendREPLDataCubeSource.js';
 import type { LegendREPLApplicationStore } from '../application/LegendREPLApplicationStore.js';
-import {
-  APPLICATION_EVENT,
-  shouldDisplayVirtualAssistantDocumentationEntry,
-} from '@finos/legend-application';
-import type { LegendREPLBaseStore } from './LegendREPLBaseStore.js';
+import { APPLICATION_EVENT } from '@finos/legend-application';
 import { deserialize } from 'serializr';
 
 export class LegendREPLDataCubeEngine extends DataCubeEngine {
-  readonly application: LegendREPLApplicationStore;
-  readonly baseStore: LegendREPLBaseStore;
-  readonly client: LegendREPLServerClient;
+  private readonly _application: LegendREPLApplicationStore;
+  private readonly _client: LegendREPLServerClient;
 
-  constructor(baseStore: LegendREPLBaseStore) {
+  constructor(
+    application: LegendREPLApplicationStore,
+    client: LegendREPLServerClient,
+  ) {
     super();
 
-    this.application = baseStore.application;
-    this.baseStore = baseStore;
-    this.client = baseStore.client;
+    this._application = application;
+    this._client = client;
   }
 
   // ---------------------------------- IMPLEMENTATION ----------------------------------
@@ -82,7 +78,6 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
       case REPL_DATA_CUBE_SOURCE_TYPE: {
         const rawSource =
           RawLegendREPLDataCubeSource.serialization.fromJson(value);
-        this.baseStore.sourceQuery = rawSource.query;
         const source = new LegendREPLDataCubeSource();
         source.query = await this.parseValueSpecification(
           rawSource.query,
@@ -121,7 +116,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     returnSourceInformation?: boolean,
   ) {
     return _deserializeValueSpecification(
-      await this.client.parseValueSpecification({
+      await this._client.parseValueSpecification({
         code,
         returnSourceInformation,
       }),
@@ -132,7 +127,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     value: V1_ValueSpecification,
     pretty?: boolean,
   ) {
-    return this.client.getValueSpecificationCode({
+    return this._client.getValueSpecificationCode({
       value: _serializeValueSpecification(value),
       pretty,
     });
@@ -143,7 +138,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     baseQuery: V1_Lambda,
     source: DataCubeSource,
   ) {
-    return this.client.getQueryTypeahead({
+    return this._client.getQueryTypeahead({
       code,
       baseQuery: _serializeValueSpecification(baseQuery),
     });
@@ -157,7 +152,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     try {
       const relationType = deserialize(
         V1_relationTypeModelSchema,
-        await this.client.getQueryCodeRelationReturnType({
+        await this._client.getQueryCodeRelationReturnType({
           code,
           baseQuery: _serializeValueSpecification(baseQuery),
         }),
@@ -189,7 +184,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
     source: DataCubeSource,
     options?: DataCubeExecutionOptions | undefined,
   ) {
-    const result = await this.client.executeQuery({
+    const result = await this._client.executeQuery({
       query: _serializeValueSpecification(query),
       debug: options?.debug,
     });
@@ -225,7 +220,7 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   private async _getQueryRelationType(query: V1_Lambda) {
     const relationType = deserialize(
       V1_relationTypeModelSchema,
-      await this.client.getQueryRelationReturnType({
+      await this._client.getQueryRelationReturnType({
         query: _serializeValueSpecification(query),
       }),
     );
@@ -239,28 +234,8 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
 
   // ---------------------------------- APPLICATION ----------------------------------
 
-  override getDocumentationURL(): string | undefined {
-    return this.application.documentationService.url;
-  }
-
-  override getDocumentationEntry(key: string) {
-    return this.application.documentationService.getDocEntry(key);
-  }
-
-  override shouldDisplayDocumentationEntry(entry: DocumentationEntry) {
-    return shouldDisplayVirtualAssistantDocumentationEntry(entry);
-  }
-
-  override openLink(url: string) {
-    this.application.navigationService.navigator.visitAddress(url);
-  }
-
-  override sendTelemetry(event: string, data: PlainObject) {
-    this.application.telemetryService.logEvent(event, data);
-  }
-
   override logDebug(message: string, ...data: unknown[]) {
-    this.application.logService.debug(
+    this._application.logService.debug(
       LogEvent.create(APPLICATION_EVENT.DEBUG),
       message,
       ...data,
@@ -270,14 +245,14 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   override debugProcess(processName: string, ...data: [string, unknown][]) {
     // eslint-disable-next-line no-process-env
     if (process.env.NODE_ENV === 'development') {
-      this.application.logService.info(
+      this._application.logService.info(
         LogEvent.create(APPLICATION_EVENT.DEBUG),
         `\n------ START DEBUG PROCESS: ${processName} ------`,
         ...data.flatMap(([key, value]) => [`\n[${key.toUpperCase()}]:`, value]),
         `\n------- END DEBUG PROCESS: ${processName} -------\n\n`,
       );
     } else {
-      this.application.logService.debug(
+      this._application.logService.debug(
         LogEvent.create(APPLICATION_EVENT.DEBUG),
         `\n------ START DEBUG PROCESS: ${processName} ------`,
         ...data.flatMap(([key, value]) => [`\n[${key.toUpperCase()}]:`, value]),
@@ -287,19 +262,19 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
   }
 
   override logInfo(event: LogEvent, ...data: unknown[]) {
-    this.application.logService.info(event, ...data);
+    this._application.logService.info(event, ...data);
   }
 
   override logWarning(event: LogEvent, ...data: unknown[]) {
-    this.application.logService.warn(event, ...data);
+    this._application.logService.warn(event, ...data);
   }
 
   override logError(event: LogEvent, ...data: unknown[]) {
-    this.application.logService.error(event, ...data);
+    this._application.logService.error(event, ...data);
   }
 
   override logUnhandledError(error: Error) {
-    this.application.logUnhandledError(error);
+    this._application.logUnhandledError(error);
   }
 
   override logIllegalStateError(message: string, error?: Error) {
@@ -308,5 +283,17 @@ export class LegendREPLDataCubeEngine extends DataCubeEngine {
       message,
       error,
     );
+  }
+
+  override getDocumentationEntry(key: string) {
+    return this._application.documentationService.getDocEntry(key);
+  }
+
+  override openLink(url: string) {
+    this._application.navigationService.navigator.visitAddress(url);
+  }
+
+  override sendTelemetry(event: string, data: PlainObject) {
+    this._application.telemetryService.logEvent(event, data);
   }
 }

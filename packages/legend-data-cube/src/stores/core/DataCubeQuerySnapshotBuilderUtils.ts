@@ -23,7 +23,7 @@ import {
   matchFunctionName,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import { type DataCubeColumn } from './models/DataCubeColumn.js';
+import { type DataCubeColumn } from './model/DataCubeColumn.js';
 import {
   assertTrue,
   assertType,

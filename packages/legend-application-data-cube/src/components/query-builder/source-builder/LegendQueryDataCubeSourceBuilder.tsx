@@ -22,7 +22,6 @@ import {
 } from '@finos/legend-query-builder';
 import type { LegendQueryDataCubeSourceBuilderState } from '../../../stores/query-builder/source-builder/LegendQueryDataCubeSourceBuilderState.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
-import { useApplicationStore } from '@finos/legend-application';
 import { cn, DataCubeIcon, useDropdownMenu } from '@finos/legend-art';
 import {
   debounce,
@@ -41,10 +40,11 @@ import {
   FormTextInput,
 } from '@finos/legend-data-cube';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
+import { useLegendDataCubeQueryBuilderStore } from '../LegendDataCubeQueryBuilderStoreProvider.js';
 
 const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
   const { state } = props;
-  const application = useApplicationStore();
+  const store = useLegendDataCubeQueryBuilderStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchResults = state.queries;
 
@@ -56,11 +56,11 @@ const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
   const debouncedLoadQueries = useMemo(
     () =>
       debounce((input: string) => {
-        flowResult(state.searchQueries(input)).catch(
-          application.alertUnhandledError,
+        flowResult(state.searchQueries(input)).catch((error) =>
+          store.alertService.alertUnhandledError(error),
         );
       }, 500),
-    [application.alertUnhandledError, state],
+    [store, state],
   );
   const onSearchTextChange: React.ChangeEventHandler<HTMLInputElement> = (
     event,
@@ -99,8 +99,10 @@ const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
   };
 
   useEffect(() => {
-    flowResult(state.searchQueries('')).catch(application.alertUnhandledError);
-  }, [application, state]);
+    flowResult(state.searchQueries('')).catch((error) =>
+      store.alertService.alertUnhandledError(error),
+    );
+  }, [store, state]);
 
   return (
     <div className="h-full">
@@ -253,7 +255,7 @@ export const LegendQueryDataCubeSourceBuilder = observer(
     const query = sourceBuilder.query;
 
     if (!query) {
-      return <LegendQuerySearcher state={sourceBuilder.queryLoaderState} />;
+      return <LegendQuerySearcher state={sourceBuilder.queryLoader} />;
     }
     return (
       <div className="h-full">

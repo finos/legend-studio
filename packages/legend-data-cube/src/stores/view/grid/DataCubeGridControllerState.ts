@@ -20,7 +20,7 @@ import {
   uniq,
   uniqBy,
 } from '@finos/legend-shared';
-import { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import {
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotSortColumn,
@@ -28,8 +28,8 @@ import {
 import {
   _toCol,
   type DataCubeColumn,
-} from '../../core/models/DataCubeColumn.js';
-import { DataCubeQuerySnapshotController } from '../DataCubeQuerySnapshotManager.js';
+} from '../../core/model/DataCubeColumn.js';
+import { DataCubeQuerySnapshotController } from '../../services/DataCubeQuerySnapshotService.js';
 import {
   type DataCubeQuerySortDirection,
   type DataCubeColumnPinPlacement,
@@ -72,6 +72,14 @@ import { _pruneExpandedPaths } from '../../core/DataCubeQuerySnapshotBuilderUtil
  * while the editor is still in the middle of a modification that has not been applied.
  */
 export class DataCubeGridControllerState extends DataCubeQuerySnapshotController {
+  readonly view: DataCubeViewState;
+
+  constructor(view: DataCubeViewState) {
+    super(view.engine, view.dataCube.settingService, view.snapshotService);
+
+    this.view = view;
+  }
+
   configuration = new DataCubeConfiguration();
 
   menuBuilder?:

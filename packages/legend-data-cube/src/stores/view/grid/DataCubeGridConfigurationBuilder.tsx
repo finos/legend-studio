@@ -25,7 +25,7 @@ import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js'
 import {
   _findCol,
   type DataCubeColumn,
-} from '../../core/models/DataCubeColumn.js';
+} from '../../core/model/DataCubeColumn.js';
 import type {
   ColDef,
   ColGroupDef,
@@ -70,7 +70,7 @@ import {
 import type {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
-} from '../../core/models/DataCubeConfiguration.js';
+} from '../../core/model/DataCubeConfiguration.js';
 import {
   DataCubeColumnDataType,
   DataCubeColumnPinPlacement,

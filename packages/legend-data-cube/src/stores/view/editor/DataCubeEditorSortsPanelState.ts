@@ -17,7 +17,7 @@
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
-import { _toCol } from '../../core/models/DataCubeColumn.js';
+import { _toCol } from '../../core/model/DataCubeColumn.js';
 import {
   DataCubeColumnKind,
   DataCubeQuerySortDirection,
@@ -28,7 +28,7 @@ import {
   DataCubeEditorColumnSelectorState,
 } from './DataCubeEditorColumnSelectorState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
-import type { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { uniqBy } from '@finos/legend-shared';
 
 export class DataCubeEditorSortColumnState extends DataCubeEditorColumnSelectorColumnState {

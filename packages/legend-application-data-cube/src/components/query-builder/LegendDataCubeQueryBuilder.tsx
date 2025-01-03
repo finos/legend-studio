@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import {
   DataCube,
   FormBadge_WIP,
-  DataCubeLayoutManager,
+  DataCubeLayout,
   FormButton,
   type DataCubeState,
   type DataCubeSettingValues,
@@ -150,7 +150,7 @@ const LegendDataCubeBlankQueryBuilder = observer(() => {
         <div className="flex items-center px-2"></div>
       </div>
 
-      <DataCubeLayoutManager layout={store.baseStore.engine.layout} />
+      <DataCubeLayout layout={store.layoutService} />
     </div>
   );
 });
@@ -167,7 +167,7 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
       if (queryId !== store.builder?.persistentQuery?.id) {
         store
           .loadQuery(queryId)
-          .catch((error) => store.engine.alertUnhandledError(error));
+          .catch((error) => store.alertService.alertUnhandledError(error));
       }
     }, [store, queryId]);
 
@@ -193,11 +193,9 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
           innerHeaderComponent: (dataCube) => (
             <LegendDataCubeQueryBuilderHeader dataCube={dataCube} />
           ),
-          getSettingValues() {
-            return application.settingService.getObjectValue(
-              LegendDataCubeSettingStorageKey.DATA_CUBE,
-            ) as DataCubeSettingValues | undefined;
-          },
+          settingValues: application.settingService.getObjectValue(
+            LegendDataCubeSettingStorageKey.DATA_CUBE,
+          ) as DataCubeSettingValues | undefined,
           onSettingValuesChanged(values) {
             application.settingService.persistValue(
               LegendDataCubeSettingStorageKey.DATA_CUBE,
@@ -205,8 +203,9 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
             );
           },
           getSettingItems() {
-            return store.baseStore.dataCubeSettings;
+            return store.baseStore.settings;
           },
+          documentationUrl: application.documentationService.url,
         }}
       />
     );

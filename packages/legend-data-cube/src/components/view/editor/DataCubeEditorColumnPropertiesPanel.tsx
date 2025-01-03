@@ -45,9 +45,9 @@ import {
   DEFAULT_URL_LABEL_QUERY_PARAM,
   EMPTY_VALUE_PLACEHOLDER,
 } from '../../../stores/core/DataCubeQueryEngine.js';
-import { DocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
+import { DataCubeDocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
-import { _sortByColName } from '../../../stores/core/models/DataCubeColumn.js';
+import { _sortByColName } from '../../../stores/core/model/DataCubeColumn.js';
 
 export const DataCubeEditorColumnPropertiesPanel = observer(
   (props: { view: DataCubeViewState }) => {
@@ -216,7 +216,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       <FormDocumentation
                         className="ml-1"
                         documentationKey={
-                          DocumentationKey.DATA_CUBE_COLUMN_CONFIGURATION_KIND
+                          DataCubeDocumentationKey.COLUMN_CONFIGURATION_KIND
                         }
                       />
                     </div>
@@ -424,7 +424,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         <FormDocumentation
                           className="ml-1"
                           documentationKey={
-                            DocumentationKey.DATA_CUBE_COLUMN_CONFIGURATION_UNIT
+                            DataCubeDocumentationKey.COLUMN_CONFIGURATION_UNIT
                           }
                         />
                       </div>
@@ -451,7 +451,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         <FormDocumentation
                           className="ml-1"
                           documentationKey={
-                            DocumentationKey.DATA_CUBE_COLUMN_CONFIGURATION_DISPLAY_AS_LINK
+                            DataCubeDocumentationKey.COLUMN_CONFIGURATION_DISPLAY_AS_LINK
                           }
                         />
                       </div>
@@ -488,7 +488,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     <FormDocumentation
                       className="ml-1"
                       documentationKey={
-                        DocumentationKey.DATA_CUBE_COLUMN_CONFIGURATION_MISSING_VALUE_FORMAT
+                        DataCubeDocumentationKey.COLUMN_CONFIGURATION_MISSING_VALUE_FORMAT
                       }
                     />
                   </div>

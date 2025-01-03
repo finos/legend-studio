@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { DataCubeViewState } from './DataCubeViewState.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
 import {
   IllegalStateError,
@@ -22,8 +21,11 @@ import {
   deepDiff,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { DataCubeQuery } from '../core/models/DataCubeQuery.js';
-import { DataCubeSettingKey } from '../core/DataCubeSetting.js';
+import type { DataCubeQuery } from '../core/model/DataCubeQuery.js';
+import { DataCubeSettingKey } from '../../__lib__/DataCubeSetting.js';
+import type { DataCubeEngine } from '../core/DataCubeEngine.js';
+import type { DataCubeSettingService } from './DataCubeSettingService.js';
+import type { DataCubeLogService } from './DataCubeLogService.js';
 
 // TODO: set a stack depth when we implement undo/redo
 // const DATA_CUBE_MAX_SNAPSHOT_COUNT = 100;
@@ -37,40 +39,52 @@ interface DataCubeQuerySnapshotSubscriber {
 export abstract class DataCubeQuerySnapshotController
   implements DataCubeQuerySnapshotSubscriber
 {
-  readonly view!: DataCubeViewState;
+  protected readonly _engine: DataCubeEngine;
+  protected readonly _settingService: DataCubeSettingService;
+  protected readonly _snapshotService: DataCubeQuerySnapshotService;
 
-  private latestSnapshot: DataCubeQuerySnapshot | undefined;
+  private _latestSnapshot: DataCubeQuerySnapshot | undefined;
 
-  constructor(view: DataCubeViewState) {
-    this.view = view;
+  constructor(
+    engine: DataCubeEngine,
+    settingService: DataCubeSettingService,
+    snapshotService: DataCubeQuerySnapshotService,
+  ) {
+    this._engine = engine;
+    this._settingService = settingService;
+    this._snapshotService = snapshotService;
   }
 
   abstract getSnapshotSubscriberName(): string;
 
-  abstract applySnapshot(
-    snapshot: DataCubeQuerySnapshot,
-    previousSnapshot: DataCubeQuerySnapshot | undefined,
-  ): Promise<void>;
+  getLatestSnapshot() {
+    return this._latestSnapshot;
+  }
 
   async receiveSnapshot(snapshot: DataCubeQuerySnapshot) {
-    const previousSnapshot = this.latestSnapshot;
-    this.latestSnapshot = snapshot;
+    const previousSnapshot = this._latestSnapshot;
+    this._latestSnapshot = snapshot;
 
     // NOTE: fully clone the snapshot before applying it to avoid any potential
     // mutation of the snapshot by the subscriber
     await this.applySnapshot(snapshot.INTERNAL__fullClone(), previousSnapshot);
   }
 
+  abstract applySnapshot(
+    snapshot: DataCubeQuerySnapshot,
+    previousSnapshot: DataCubeQuerySnapshot | undefined,
+  ): Promise<void>;
+
   publishSnapshot(snapshot: DataCubeQuerySnapshot) {
-    const previousSnapshot = this.latestSnapshot;
-    this.latestSnapshot = snapshot;
+    const previousSnapshot = this._latestSnapshot;
+    this._latestSnapshot = snapshot;
 
     if (
-      this.view.dataCube.settings.getBooleanValue(
+      this._settingService.getBooleanValue(
         DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
       )
     ) {
-      this.view.engine.debugProcess(
+      this._engine.debugProcess(
         `New Snapshot`,
         ['Publisher', this.getSnapshotSubscriberName()],
         ['Snapshot', snapshot],
@@ -79,32 +93,30 @@ export abstract class DataCubeQuerySnapshotController
       );
     }
 
-    this.view.snapshotManager.broadcastSnapshot(snapshot);
-  }
-
-  getLatestSnapshot() {
-    return this.latestSnapshot;
+    this._snapshotService.broadcastSnapshot(snapshot);
   }
 }
 
-export class DataCubeQuerySnapshotManager {
-  private readonly view: DataCubeViewState;
-  private readonly subscribers: DataCubeQuerySnapshotSubscriber[] = [];
-  private readonly snapshots: DataCubeQuerySnapshot[] = [];
+export class DataCubeQuerySnapshotService {
+  private readonly _engine: DataCubeEngine;
+  private readonly _logService: DataCubeLogService;
 
+  private readonly _subscribers: DataCubeQuerySnapshotSubscriber[] = [];
+  private readonly _snapshots: DataCubeQuerySnapshot[] = []; // stack
   private _initialSnapshot: DataCubeQuerySnapshot | undefined;
   private _initialQuery: DataCubeQuery | undefined;
 
-  constructor(view: DataCubeViewState) {
-    this.view = view;
+  constructor(engine: DataCubeEngine, logService: DataCubeLogService) {
+    this._engine = engine;
+    this._logService = logService;
   }
 
   get currentSnapshot() {
-    return guaranteeNonNullable(this.snapshots[this.snapshots.length - 1]);
+    return guaranteeNonNullable(this._snapshots[this._snapshots.length - 1]);
   }
 
   registerSubscriber(subscriber: DataCubeQuerySnapshotSubscriber) {
-    const existingSubscriber = this.subscribers.find(
+    const existingSubscriber = this._subscribers.find(
       (sub) =>
         sub.getSnapshotSubscriberName() ===
         subscriber.getSnapshotSubscriberName(),
@@ -112,7 +124,7 @@ export class DataCubeQuerySnapshotManager {
     if (existingSubscriber) {
       // eslint-disable-next-line no-process-env
       if (process.env.NODE_ENV === 'development') {
-        this.view.engine.logDebug(
+        this._logService.logDebug(
           `Subscriber with name '${subscriber.getSnapshotSubscriberName()}' already exists`,
         );
       } else {
@@ -121,7 +133,7 @@ export class DataCubeQuerySnapshotManager {
         );
       }
     }
-    this.subscribers.push(subscriber);
+    this._subscribers.push(subscriber);
   }
 
   initialize(
@@ -153,18 +165,18 @@ export class DataCubeQuerySnapshotManager {
 
   broadcastSnapshot(snapshot: DataCubeQuerySnapshot) {
     if (!snapshot.isFinalized()) {
-      this.view.engine.logIllegalStateError(
+      this._logService.logIllegalStateError(
         `Snapshot must be finalized before broadcasting`,
       );
       return;
     }
-    this.snapshots.push(snapshot);
-    this.subscribers.forEach((subscriber) => {
+    this._snapshots.push(snapshot);
+    this._subscribers.forEach((subscriber) => {
       const currentSnapshot = subscriber.getLatestSnapshot();
       if (currentSnapshot?.uuid !== snapshot.uuid) {
         subscriber.receiveSnapshot(snapshot).catch((error: unknown) => {
           assertErrorThrown(error);
-          this.view.engine.logIllegalStateError(
+          this._logService.logIllegalStateError(
             `Error occured while subscribers receiving and applying new snapshot should be handled gracefully`,
             error,
           );
@@ -172,6 +184,4 @@ export class DataCubeQuerySnapshotManager {
       }
     });
   }
-
-  // TODO: replace snapshot (for minor modifications such as adjusting the cast columns)
 }
