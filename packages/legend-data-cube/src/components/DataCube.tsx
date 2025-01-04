@@ -109,7 +109,7 @@ const DataCubeRoot = observer(() => {
 
       <DataCubeView view={view} />
 
-      <DataCubeLayout layout={dataCube.layoutService} />
+      <DataCubeLayout layout={dataCube.layoutService.manager} />
       <INTERNAL__MonacoEditorWidgetsRoot />
     </div>
   );
@@ -130,6 +130,7 @@ export const DataCube = observer(
       dataCube
         .initialize()
         .catch((error) => dataCube.logService.logUnhandledError(error));
+      return () => dataCube.dispose();
     }, [dataCube]);
 
     if (!dataCube.initializeState.hasSucceeded) {

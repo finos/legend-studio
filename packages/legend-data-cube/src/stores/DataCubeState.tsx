@@ -68,7 +68,7 @@ export class DataCubeState {
 
     this.engine = engine;
     this.logService = new DataCubeLogService(this.engine);
-    this.layoutService = new DataCubeLayoutService();
+    this.layoutService = new DataCubeLayoutService(options?.layoutManager);
     this.settingService = new DataCubeSettingService(
       this.engine,
       this.logService,
@@ -123,6 +123,10 @@ export class DataCubeState {
       // });
       this.initializeState.fail();
     }
+  }
+
+  dispose() {
+    this.layoutService.dispose();
   }
 
   reload() {

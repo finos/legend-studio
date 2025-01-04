@@ -147,7 +147,7 @@ const LegendDataCubeBlankQueryBuilder = observer(() => {
         <div className="flex items-center px-2"></div>
       </div>
 
-      <DataCubeLayout layout={store.layoutService} />
+      <DataCubeLayout layout={store.layoutService.manager} />
     </div>
   );
 });
@@ -183,6 +183,7 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
         query={builder.query}
         engine={store.baseStore.engine}
         options={{
+          layoutManager: store.layoutService.manager,
           gridClientLicense: store.baseStore.gridClientLicense,
           onInitialized(event) {
             builder.setDataCube(event.api);

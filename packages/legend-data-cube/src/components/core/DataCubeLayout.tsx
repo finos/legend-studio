@@ -23,14 +23,14 @@ import {
   WINDOW_DEFAULT_OFFSET,
   WINDOW_DEFAULT_WIDTH,
   type WindowSpecification,
-  type DataCubeLayoutService,
   type WindowState,
+  type LayoutManager,
 } from '../../stores/services/DataCubeLayoutService.js';
 import { observer } from 'mobx-react-lite';
 
 export const Window = (props: {
   parent?: React.RefObject<HTMLElement> | undefined;
-  layout: DataCubeLayoutService;
+  layout: LayoutManager;
   windowState: WindowState;
 }) => {
   const { parent, layout, windowState } = props;
@@ -184,20 +184,18 @@ export const Window = (props: {
   );
 };
 
-export const DataCubeLayout = observer(
-  (props: { layout: DataCubeLayoutService }) => {
-    const { layout } = props;
+export const DataCubeLayout = observer((props: { layout: LayoutManager }) => {
+  const { layout } = props;
 
-    return (
-      <>
-        {layout.windows.map((windowState) => (
-          <Window
-            key={windowState.uuid}
-            layout={layout}
-            windowState={windowState}
-          />
-        ))}
-      </>
-    );
-  },
-);
+  return (
+    <>
+      {layout.windows.map((windowState) => (
+        <Window
+          key={windowState.uuid}
+          layout={layout}
+          windowState={windowState}
+        />
+      ))}
+    </>
+  );
+});

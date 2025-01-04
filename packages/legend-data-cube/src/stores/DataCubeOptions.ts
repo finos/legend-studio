@@ -20,6 +20,7 @@ import type {
 } from './services/DataCubeSettingService.js';
 import type { DataCubeSource } from './core/model/DataCubeSource.js';
 import type { DataCubeAPI } from './DataCubeAPI.js';
+import type { LayoutManager } from './services/DataCubeLayoutService.js';
 
 type DataCubeOptionsBaseEvent = {
   api: DataCubeAPI;
@@ -56,6 +57,7 @@ export type DataCubeOptions = {
 
   // ------------------------------ GRID ------------------------------
 
+  layoutManager?: LayoutManager | undefined;
   gridClientLicense?: string | undefined;
 
   // ------------------------------ LAYOUT ------------------------------
