@@ -129,7 +129,6 @@ export class LegendDataCubeBaseStore {
     );
     this.layoutService = new DataCubeLayoutService();
     this.alertService = new DataCubeAlertService(
-      this.engine,
       new DataCubeLogService(this.engine),
       this.layoutService,
     );

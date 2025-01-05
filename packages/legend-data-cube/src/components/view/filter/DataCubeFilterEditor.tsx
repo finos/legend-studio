@@ -52,6 +52,7 @@ import {
   parseISO,
 } from '@finos/legend-shared';
 import { evaluate } from 'mathjs';
+import { useDataCube } from '../../DataCubeProvider.js';
 
 const FILTER_TREE_OFFSET = 10;
 const FILTER_TREE_INDENTATION_SPACE = 36;
@@ -473,6 +474,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
     view: DataCubeViewState;
   }) => {
     const { node, level, view } = props;
+    const dataCube = useDataCube();
     const editor = view.filter;
     const parentNode = node.parent;
     const nodeIdx = parentNode ? parentNode.children.indexOf(node) : undefined;
@@ -570,7 +572,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
                   const newOp = node.operation.isCompatibleWithColumn(column)
                     ? node.operation
                     : getNullableFirstEntry(
-                        editor.view.engine.filterOperations.filter((op) =>
+                        dataCube.engine.filterOperations.filter((op) =>
                           op.isCompatibleWithColumn(column),
                         ),
                       );
@@ -600,7 +602,7 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
           {...operationDropdownProps}
           onClosed={focusOnValueEditor}
         >
-          {editor.view.engine.filterOperations
+          {dataCube.engine.filterOperations
             .filter((op) => op.isCompatibleWithColumn(node.column))
             .map((op) => (
               <FormDropdownMenuItem

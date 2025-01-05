@@ -26,7 +26,7 @@ import { DataCubeConfiguration } from '../core/model/DataCubeConfiguration.js';
  * from the latest snapshot to help display latest static info about the query.
  */
 export class DataCubeInfoState extends DataCubeQuerySnapshotController {
-  readonly view: DataCubeViewState;
+  private readonly _view: DataCubeViewState;
 
   name = '';
   // TODO: filter preview text
@@ -40,7 +40,7 @@ export class DataCubeInfoState extends DataCubeQuerySnapshotController {
       applySnapshot: action,
     });
 
-    this.view = view;
+    this._view = view;
   }
 
   override getSnapshotSubscriberName() {
@@ -59,10 +59,10 @@ export class DataCubeInfoState extends DataCubeQuerySnapshotController {
     if (configuration.name !== this.name) {
       this.name = configuration.name;
       // TODO: make sure we only call this for the main view of data cube when we support multi views
-      this.view.dataCube.options?.onNameChanged?.({
-        api: this.view.dataCube.api,
+      this._view.dataCube.options?.onNameChanged?.({
+        api: this._view.dataCube.api,
         name: this.name,
-        source: this.view.source,
+        source: this._view.source,
       });
     }
 

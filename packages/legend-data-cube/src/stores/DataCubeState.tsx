@@ -80,7 +80,6 @@ export class DataCubeState {
       this.layoutService,
     );
     this.alertService = new DataCubeAlertService(
-      this.engine,
       this.logService,
       this.layoutService,
     );
@@ -115,12 +114,10 @@ export class DataCubeState {
       this.initializeState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      // this.alertAction({
-      //   message: `Initialization Failure: ${error.message}`,
-      //   prompt: `Resolve the issue and reload the engine.`,
-      //   type: AlertType.ERROR,
-      //   actions: [],
-      // });
+      this.alertService.alertError(error, {
+        message: `Initialization Failure: ${error.message}`,
+        text: `Resolve the issue and reload the engine.`,
+      });
       this.initializeState.fail();
     }
   }

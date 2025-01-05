@@ -16,7 +16,11 @@
 
 import { DataCubeGridState } from './grid/DataCubeGridState.js';
 import { DataCubeEditorState } from './editor/DataCubeEditorState.js';
-import { assertErrorThrown, IllegalStateError } from '@finos/legend-shared';
+import {
+  ActionState,
+  assertErrorThrown,
+  IllegalStateError,
+} from '@finos/legend-shared';
 import { DataCubeQuerySnapshotService } from '../services/DataCubeQuerySnapshotService.js';
 import { DataCubeInfoState } from './DataCubeInfoState.js';
 import { validateAndBuildQuerySnapshot } from '../core/DataCubeQuerySnapshotBuilder.js';
@@ -36,12 +40,16 @@ import { DataCubeQuery } from '../core/model/DataCubeQuery.js';
 import { DataCubeTaskService } from '../services/DataCubeTaskService.js';
 import type { DataCubeLogService } from '../services/DataCubeLogService.js';
 import { DataCubeConfiguration } from '../core/model/DataCubeConfiguration.js';
+import type { DataCubeLayoutService } from '../services/DataCubeLayoutService.js';
+import type { DataCubeAlertService } from '../services/DataCubeAlertService.js';
 
 export class DataCubeViewState {
   readonly dataCube: DataCubeState;
   readonly engine: DataCubeEngine;
   readonly logService: DataCubeLogService;
   readonly taskService: DataCubeTaskService;
+  readonly layoutService: DataCubeLayoutService;
+  readonly alertService: DataCubeAlertService;
   readonly snapshotService: DataCubeQuerySnapshotService;
 
   readonly info: DataCubeInfoState;
@@ -49,6 +57,8 @@ export class DataCubeViewState {
   readonly grid: DataCubeGridState;
   readonly filter: DataCubeFilterEditorState;
   readonly extend: DataCubeExtendManagerState;
+
+  readonly initializeState = ActionState.create();
 
   private _source?: DataCubeSource | undefined;
 
@@ -64,6 +74,8 @@ export class DataCubeViewState {
     this.engine = dataCube.engine;
     this.logService = dataCube.logService;
     this.taskService = new DataCubeTaskService();
+    this.layoutService = dataCube.layoutService;
+    this.alertService = dataCube.alertService;
     // NOTE: snapshot manager must be instantiated before subscribers
     this.snapshotService = new DataCubeQuerySnapshotService(
       this.engine,
@@ -96,7 +108,9 @@ export class DataCubeViewState {
   }
 
   async initialize(query: DataCubeQuery) {
+    this.initializeState.inProgress();
     const task = this.taskService.start('Initializing');
+
     try {
       await Promise.all(
         [
@@ -127,14 +141,14 @@ export class DataCubeViewState {
         api: this.dataCube.api,
         source,
       });
+      this.initializeState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      // this.dataCube.alertAction({
-      //   message: `Initialization Failure: ${error.message}`,
-      //   prompt: `Resolve the issue and reload the engine.`,
-      //   type: AlertType.ERROR,
-      //   actions: [],
-      // });
+      this.alertService.alertError(error, {
+        message: `Initialization Failure: ${error.message}`,
+        text: `Resolve the issue and reload the engine.`,
+      });
+      this.initializeState.fail();
     } finally {
       this.taskService.end(task);
     }

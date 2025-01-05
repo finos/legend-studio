@@ -250,9 +250,9 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     };
 
     const codePrefix = `->`;
-    const code = await this.view.engine.getPartialQueryCode(tempSnapshot, true);
+    const code = await this._engine.getPartialQueryCode(tempSnapshot, true);
     try {
-      await this.view.engine.getQueryCodeRelationReturnType(
+      await this._engine.getQueryCodeRelationReturnType(
         codePrefix + code,
         _lambda([], [this.view.source.query]),
         this.view.source,
@@ -360,9 +360,9 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     };
 
     const codePrefix = `->`;
-    const code = await this.view.engine.getPartialQueryCode(tempSnapshot, true);
+    const code = await this._engine.getPartialQueryCode(tempSnapshot, true);
     try {
-      await this.view.engine.getQueryCodeRelationReturnType(
+      await this._engine.getQueryCodeRelationReturnType(
         codePrefix + code,
         _lambda([], [this.view.source.query]),
         this.view.source,

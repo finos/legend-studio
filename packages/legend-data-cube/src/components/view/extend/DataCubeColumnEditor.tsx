@@ -63,6 +63,7 @@ export const DataCubeColumnCreator = observer(
     const { state } = props;
     const dataCube = useDataCube();
     const view = state.view;
+    const manager = view.extend;
 
     const nameInputRef = useRef<HTMLInputElement>(null);
     const currentColumnKind = state.isGroupLevel
@@ -348,7 +349,7 @@ export const DataCubeColumnCreator = observer(
               <FormButton
                 className="ml-2"
                 onClick={() => {
-                  state.manager
+                  manager
                     .deleteColumn(state.initialData.name)
                     .catch((error) =>
                       dataCube.alertService.alertUnhandledError(error),

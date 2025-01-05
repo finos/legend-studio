@@ -24,6 +24,9 @@ import { useEffect } from 'react';
 import { formatDate, LogEvent } from '@finos/legend-shared';
 import {
   DataCube,
+  DataCubePlaceholder,
+  DataCubePlaceholderErrorDisplay,
+  DEFAULT_REPORT_NAME,
   type DataCubeQuery,
   type DataCubeSettingValues,
 } from '@finos/legend-data-cube';
@@ -107,9 +110,24 @@ export const LegendREPLRouter = observer(() => {
       .catch((error) => store.application.alertUnhandledError(error));
   }, [store]);
 
+  if (!store.initializeState.hasSucceeded) {
+    return (
+      <DataCubePlaceholder
+        title={DEFAULT_REPORT_NAME}
+        layoutManager={store.layoutService.manager}
+      >
+        {store.initializeState.hasFailed && (
+          <DataCubePlaceholderErrorDisplay
+            message="Initialization Failure"
+            prompt="Resolve the issue and reload."
+          />
+        )}
+      </DataCubePlaceholder>
+    );
+  }
   return (
     <div className="h-full">
-      {store.initializeState.hasSucceeded && store.query && (
+      {store.query && (
         <Routes>
           <Route
             path={LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN.DATA_CUBE}

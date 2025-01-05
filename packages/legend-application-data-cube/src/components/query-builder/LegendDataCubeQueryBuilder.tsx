@@ -17,17 +17,11 @@
 import { observer } from 'mobx-react-lite';
 import {
   DataCube,
-  FormBadge_WIP,
-  DataCubeLayout,
   FormButton,
   type DataCubeSettingValues,
+  DataCubePlaceholder,
 } from '@finos/legend-data-cube';
-import {
-  DataCubeIcon,
-  DropdownMenu,
-  DropdownMenuItem,
-  useDropdownMenu,
-} from '@finos/legend-art';
+import {} from '@finos/legend-art';
 import {
   useLegendDataCubeQueryBuilderStore,
   withLegendDataCubeQueryBuilderStore,
@@ -67,91 +61,6 @@ const LegendDataCubeQueryBuilderHeader = observer(() => {
   );
 });
 
-const LegendDataCubeBlankQueryBuilder = observer(() => {
-  const store = useLegendDataCubeQueryBuilderStore();
-  const application = store.application;
-  const [openMenuDropdown, closeMenuDropdown, menuDropdownProps] =
-    useDropdownMenu();
-
-  return (
-    <div className="data-cube relative flex h-full w-full flex-col bg-white">
-      <div className="flex h-7 justify-between bg-neutral-100">
-        <div className="flex select-none items-center pl-1 pr-2 text-lg font-medium">
-          <DataCubeIcon.Cube className="mr-1 h-4 w-4" />
-          <div>{`[ Legend DataCube ]`}</div>
-        </div>
-        <div className="flex">
-          <LegendDataCubeQueryBuilderHeader />
-          <button
-            className="flex aspect-square h-full flex-shrink-0 items-center justify-center text-lg"
-            onClick={openMenuDropdown}
-          >
-            <DataCubeIcon.Menu />
-          </button>
-          <DropdownMenu
-            {...menuDropdownProps}
-            menuProps={{
-              anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-              transformOrigin: { vertical: 'top', horizontal: 'left' },
-              classes: {
-                paper: 'rounded-none mt-[1px]',
-                list: 'w-40 p-0 rounded-none border border-neutral-400 bg-white max-h-40 overflow-y-auto py-0.5',
-              },
-            }}
-          >
-            <DropdownMenuItem
-              className="flex h-[22px] w-full items-center px-2.5 text-base hover:bg-neutral-100 focus:bg-neutral-100"
-              onClick={() => {
-                const url = application.documentationService.url;
-                if (url) {
-                  application.navigationService.navigator.visitAddress(url);
-                }
-                closeMenuDropdown();
-              }}
-              disabled={true} // TODO: enable when we set up the documentation website
-            >
-              See Documentation
-              <FormBadge_WIP />
-            </DropdownMenuItem>
-          </DropdownMenu>
-        </div>
-      </div>
-      <div className="h-[calc(100%_-_48px)] w-full border border-x-0 border-neutral-200 bg-neutral-50 p-2">
-        <div>Create a new query to start</div>
-        <FormButton
-          className="mt-1.5"
-          onClick={() => store.newQueryState.display.open()}
-        >
-          New Query
-        </FormButton>
-      </div>
-      <div className="flex h-5 w-full justify-between bg-neutral-100">
-        <div className="flex">
-          <button
-            className="flex items-center px-2 text-neutral-400"
-            disabled={true}
-          >
-            <DataCubeIcon.Settings className="text-xl" />
-            <div className="pl-0.5 underline">Properties</div>
-          </button>
-          <div className="flex">
-            <button
-              className="flex items-center text-neutral-400"
-              disabled={true}
-            >
-              <DataCubeIcon.TableFilter className="text-lg" />
-              <div className="pl-0.5 underline">Filter</div>
-            </button>
-          </div>
-        </div>
-        <div className="flex items-center px-2"></div>
-      </div>
-
-      <DataCubeLayout layout={store.layoutService.manager} />
-    </div>
-  );
-});
-
 export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
   observer(() => {
     const store = useLegendDataCubeQueryBuilderStore();
@@ -175,7 +84,35 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
     }, [store, queryId]);
 
     if (!builder) {
-      return <LegendDataCubeBlankQueryBuilder />;
+      return (
+        <DataCubePlaceholder
+          title="[ Legend DataCube ]"
+          layoutManager={store.layoutService.manager}
+          headerContent={<LegendDataCubeQueryBuilderHeader />}
+          menuItems={[
+            {
+              label: 'See Documentation',
+              action: () => {
+                const url = application.documentationService.url;
+                if (url) {
+                  application.navigationService.navigator.visitAddress(url);
+                }
+              },
+              disabled: true, // TODO: enable when we set up the documentation websit
+            },
+          ]}
+        >
+          <div className="h-full w-full p-2">
+            <div>Create a new query to start</div>
+            <FormButton
+              className="mt-1.5"
+              onClick={() => store.newQueryState.display.open()}
+            >
+              New Query
+            </FormButton>
+          </div>
+        </DataCubePlaceholder>
+      );
     }
     return (
       <DataCube

@@ -61,8 +61,8 @@ export class DataCubeEditorVerticalPivotColumnSelectorState extends DataCubeEdit
 export class DataCubeEditorVerticalPivotsPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly view!: DataCubeViewState;
-  readonly editor!: DataCubeEditorState;
+  private readonly view!: DataCubeViewState;
+  private readonly editor!: DataCubeEditorState;
   readonly selector!: DataCubeEditorVerticalPivotColumnSelectorState;
 
   constructor(editor: DataCubeEditorState) {

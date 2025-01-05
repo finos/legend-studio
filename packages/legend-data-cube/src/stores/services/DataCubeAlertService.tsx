@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { DataCubeEngine } from '../core/DataCubeEngine.js';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import {
   type DataCubeLayoutService,
@@ -58,16 +57,13 @@ export type ActionAlertOptions = {
 };
 
 export class DataCubeAlertService {
-  private readonly _engine: DataCubeEngine;
   private readonly _logService: DataCubeLogService;
   private readonly _layoutService: DataCubeLayoutService;
 
   constructor(
-    engine: DataCubeEngine,
     logService: DataCubeLogService,
     layoutService: DataCubeLayoutService,
   ) {
-    this._engine = engine;
     this._logService = logService;
     this._layoutService = layoutService;
   }

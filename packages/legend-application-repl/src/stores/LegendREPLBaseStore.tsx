@@ -32,6 +32,9 @@ import {
   WindowState,
   type DataCubeAPI,
   DEFAULT_REPORT_NAME,
+  DataCubeLayoutService,
+  DataCubeAlertService,
+  DataCubeLogService,
 } from '@finos/legend-data-cube';
 import {
   LegendREPLDataCubeSource,
@@ -47,6 +50,8 @@ export class LegendREPLBaseStore {
   private readonly _client: LegendREPLServerClient;
   readonly application: LegendREPLApplicationStore;
   readonly engine: LegendREPLDataCubeEngine;
+  readonly layoutService: DataCubeLayoutService;
+  readonly alertService: DataCubeAlertService;
 
   readonly initializeState = ActionState.create();
   readonly publishState = ActionState.create();
@@ -78,6 +83,11 @@ export class LegendREPLBaseStore {
       }),
     );
     this.engine = new LegendREPLDataCubeEngine(this.application, this._client);
+    this.layoutService = new DataCubeLayoutService();
+    this.alertService = new DataCubeAlertService(
+      new DataCubeLogService(this.engine),
+      this.layoutService,
+    );
   }
 
   setQuery(query: DataCubeQuery | undefined) {
@@ -112,6 +122,10 @@ export class LegendREPLBaseStore {
         `Can't initialize REPL`,
         error,
       );
+      this.alertService.alertError(error, {
+        message: `Initialization Failure: ${error.message}`,
+        text: `Resolve the issue and reload the engine.`,
+      });
       this.initializeState.fail();
     }
   }
@@ -166,10 +180,10 @@ export class LegendREPLBaseStore {
         minHeight: 100,
         center: true,
       };
-      api.newWindow(window);
+      this.layoutService.newWindow(window);
     } catch (error) {
       assertErrorThrown(error);
-      api.alertError(error, {
+      this.alertService.alertError(error, {
         message: `Persistence Failure: Can't publish query.`,
         text: `Error: ${error.message}`,
       });

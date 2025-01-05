@@ -14,57 +14,28 @@
  * limitations under the License.
  */
 
-import { DataCubeIcon, ProgressBar } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { DataCubeViewState } from '../stores/view/DataCubeViewState.js';
 import { DataCubeGrid } from './view/grid/DataCubeGrid.js';
-
-const DataCubeStatusBar = observer((props: { view: DataCubeViewState }) => {
-  const { view } = props;
-
-  return (
-    <div className="flex h-5 w-full justify-between bg-neutral-100">
-      <div className="flex">
-        <button
-          className="flex items-center px-2 text-sky-600 hover:text-sky-700"
-          onClick={() => view.editor.display.open()}
-        >
-          <DataCubeIcon.Settings className="text-xl" />
-          <div className="pl-0.5 underline">Properties</div>
-        </button>
-        <div className="flex">
-          <button
-            className="flex items-center text-sky-600 hover:text-sky-700"
-            onClick={() => {
-              view.filter.display.open();
-            }}
-          >
-            <DataCubeIcon.TableFilter className="text-lg" />
-            <div className="pl-0.5 underline">Filter</div>
-          </button>
-        </div>
-      </div>
-      <div className="flex items-center px-2">
-        <div className="flex h-3.5 w-48 border-[0.5px] border-neutral-300">
-          {view.taskService.tasks.size > 0 && (
-            <ProgressBar
-              classes={{
-                root: 'h-3.5 w-full bg-transparent',
-                bar1Indeterminate: 'bg-green-500',
-                bar2Indeterminate: 'bg-green-500',
-              }}
-              variant="indeterminate"
-            />
-          )}
-        </div>
-      </div>
-    </div>
-  );
-});
+import { DataCubeStatusBar } from './DataCubeStatusBar.js';
+import {
+  DataCubePlaceholderErrorDisplay,
+  DataCubeViewPlaceholder,
+} from './DataCubePlaceholder.js';
 
 export const DataCubeView = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
 
+  if (view.initializeState.hasFailed) {
+    return (
+      <DataCubeViewPlaceholder>
+        <DataCubePlaceholderErrorDisplay
+          message="Initialization Failure"
+          prompt="Resolve the issue and reload."
+        />
+      </DataCubeViewPlaceholder>
+    );
+  }
   return (
     <>
       <DataCubeGrid view={view} />

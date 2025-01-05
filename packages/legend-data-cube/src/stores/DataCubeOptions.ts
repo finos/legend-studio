@@ -42,6 +42,12 @@ type DataCubeSettingsData = {
   values?: DataCubeSettingValues | undefined;
 };
 
+export type DataCubeMenuItem = {
+  label: string;
+  disabled?: boolean | undefined;
+  action: () => void;
+};
+
 type DataCubeOptionsBaseParams = {
   api: DataCubeAPI;
 };

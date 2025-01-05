@@ -54,9 +54,9 @@ import {
 } from '../../core/DataCubeQueryBuilderUtils.js';
 
 export abstract class DataCubeColumnBaseEditorState {
-  readonly uuid = uuid();
+  protected readonly uuid = uuid();
+  protected readonly _manager: DataCubeExtendManagerState;
   readonly view: DataCubeViewState;
-  readonly manager: DataCubeExtendManagerState;
 
   // NOTE: use UUID in the column name to prevent collision
   // when parsing/compiling the expression
@@ -111,7 +111,7 @@ export abstract class DataCubeColumnBaseEditorState {
       setReturnType: action,
     });
 
-    this.manager = manager;
+    this._manager = manager;
     this.view = manager.view;
     this.display = this.newDisplay(this);
 
@@ -147,7 +147,7 @@ export abstract class DataCubeColumnBaseEditorState {
   }
 
   get isNameValid(): boolean {
-    return !this.manager.allColumnNames.includes(this.name);
+    return !this._manager.allColumnNames.includes(this.name);
   }
 
   setExpectedType(value: string) {
@@ -203,7 +203,7 @@ export abstract class DataCubeColumnBaseEditorState {
 
   buildExtendBaseQuery() {
     const currentSnapshot = guaranteeNonNullable(
-      this.manager.getLatestSnapshot(),
+      this._manager.getLatestSnapshot(),
     );
     const snapshot = currentSnapshot.clone();
     if (!this.isGroupLevel) {
@@ -221,10 +221,10 @@ export abstract class DataCubeColumnBaseEditorState {
       [
         buildExecutableQuery(
           snapshot,
-          this.manager.view.source,
+          this.view.source,
           () => undefined,
-          this.manager.view.engine.filterOperations,
-          this.manager.view.engine.aggregateOperations,
+          this.view.engine.filterOperations,
+          this.view.engine.aggregateOperations,
         ),
       ],
     );
@@ -390,7 +390,7 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
       return;
     }
 
-    this.manager.addNewColumn(
+    this._manager.addNewColumn(
       {
         name: this.name,
         type: returnType,
@@ -437,7 +437,7 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
   }
 
   override get isNameValid(): boolean {
-    return !this.manager.allColumnNames
+    return !this._manager.allColumnNames
       .filter((colName) => colName !== this.initialData.name)
       .includes(this.name);
   }
@@ -515,7 +515,7 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
       return;
     }
 
-    await this.manager.updateColumn(
+    await this._manager.updateColumn(
       this.initialData.name,
       {
         name: this.name,

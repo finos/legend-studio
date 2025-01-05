@@ -49,3 +49,4 @@ export * from './stores/DataCubeOptions.js';
 export * from './components/DataCube.js';
 
 export * from './components/core/DataCubeFormUtils.js';
+export * from './components/DataCubePlaceholder.js';
