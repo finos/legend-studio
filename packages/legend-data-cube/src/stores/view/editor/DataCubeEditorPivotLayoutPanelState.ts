@@ -15,7 +15,6 @@
  */
 
 import { action, makeObservable, observable } from 'mobx';
-import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
@@ -27,8 +26,7 @@ import { _pruneExpandedPaths } from '../../core/DataCubeQuerySnapshotBuilderUtil
 export class DataCubeEditorPivotLayoutPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly view!: DataCubeViewState;
-  readonly editor!: DataCubeEditorState;
+  private readonly _editor!: DataCubeEditorState;
 
   pivotLayout = new DataCubeEditorMutablePivotLayoutConfiguration();
 
@@ -39,8 +37,7 @@ export class DataCubeEditorPivotLayoutPanelState
       applySnaphot: action,
     });
 
-    this.editor = editor;
-    this.view = editor.view;
+    this._editor = editor;
   }
 
   applySnaphot(
@@ -59,7 +56,7 @@ export class DataCubeEditorPivotLayoutPanelState
     this.pivotLayout.setExpandedPaths(
       _pruneExpandedPaths(
         baseSnapshot.data.groupBy?.columns ?? [],
-        this.editor.verticalPivots.selector.selectedColumns,
+        this._editor.verticalPivots.selector.selectedColumns,
         this.pivotLayout.expandedPaths,
       ),
     );

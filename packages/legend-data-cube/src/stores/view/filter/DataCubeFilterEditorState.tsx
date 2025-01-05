@@ -56,7 +56,7 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
   columns: DataCubeColumnConfiguration[] = [];
 
   constructor(view: DataCubeViewState) {
-    super(view.engine, view.dataCube.settingService, view.snapshotService);
+    super(view.engine, view.settingService, view.snapshotService);
 
     makeObservable(this, {
       tree: observable.ref,

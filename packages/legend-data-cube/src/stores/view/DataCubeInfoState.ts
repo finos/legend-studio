@@ -32,7 +32,7 @@ export class DataCubeInfoState extends DataCubeQuerySnapshotController {
   // TODO: filter preview text
 
   constructor(view: DataCubeViewState) {
-    super(view.engine, view.dataCube.settingService, view.snapshotService);
+    super(view.engine, view.settingService, view.snapshotService);
 
     makeObservable(this, {
       name: observable,

@@ -52,7 +52,8 @@ import { _sortByColName } from '../../../stores/core/model/DataCubeColumn.js';
 export const DataCubeEditorColumnPropertiesPanel = observer(
   (props: { view: DataCubeViewState }) => {
     const { view } = props;
-    const panel = view.editor.columnProperties;
+    const editor = view.editor;
+    const panel = editor.columnProperties;
     const gridConfiguration = view.editor.generalProperties.configuration;
     const selectedColumn = panel.selectedColumn;
     const [
@@ -149,7 +150,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         {selectedColumn.dataType}
                       </div>
                       {Boolean(
-                        panel.editor.leafExtendColumns.find(
+                        editor.leafExtendColumns.find(
                           (col) => col.name === selectedColumn.name,
                         ),
                       ) && (
@@ -158,7 +159,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         </div>
                       )}
                       {Boolean(
-                        panel.editor.groupExtendColumns.find(
+                        editor.groupExtendColumns.find(
                           (col) => col.name === selectedColumn.name,
                         ),
                       ) && (
@@ -187,7 +188,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       {column.dataType}
                     </div>
                     {Boolean(
-                      panel.editor.leafExtendColumns.find(
+                      editor.leafExtendColumns.find(
                         (col) => col.name === column.name,
                       ),
                     ) && (
@@ -196,7 +197,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       </div>
                     )}
                     {Boolean(
-                      panel.editor.groupExtendColumns.find(
+                      editor.groupExtendColumns.find(
                         (col) => col.name === column.name,
                       ),
                     ) && (
@@ -226,10 +227,10 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       open={kindDropdownPropsOpen}
                       // disallow changing the column kind if the column is being used as pivot column
                       disabled={Boolean(
-                        panel.editor.verticalPivots.selector.selectedColumns.find(
+                        editor.verticalPivots.selector.selectedColumns.find(
                           (col) => col.name === selectedColumn.name,
                         ) ??
-                          panel.editor.horizontalPivots.selector.selectedColumns.find(
+                          editor.horizontalPivots.selector.selectedColumns.find(
                             (col) => col.name === selectedColumn.name,
                           ),
                       )}
@@ -307,7 +308,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     className="w-32"
                     {...aggregationOperationDropdownProps}
                   >
-                    {panel.view.engine.aggregateOperations
+                    {view.engine.aggregateOperations
                       .filter((op) => op.isCompatibleWithColumn(selectedColumn))
                       .map((op) => (
                         <FormDropdownMenuItem

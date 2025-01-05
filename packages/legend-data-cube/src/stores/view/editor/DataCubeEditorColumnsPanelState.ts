@@ -15,7 +15,6 @@
  */
 
 import { action, makeObservable, observable, override } from 'mobx';
-import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import { _toCol } from '../../core/model/DataCubeColumn.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
@@ -59,9 +58,9 @@ export class DataCubeEditorBasicColumnSelectorState extends DataCubeEditorColumn
 
   override get availableColumns() {
     return [
-      ...this.editor.sourceColumns,
-      ...this.editor.leafExtendColumns,
-      ...this.editor.groupExtendColumns,
+      ...this._editor.sourceColumns,
+      ...this._editor.leafExtendColumns,
+      ...this._editor.groupExtendColumns,
     ].map(
       (col) => new DataCubeEditorColumnSelectorColumnState(col.name, col.type),
     );
@@ -71,7 +70,7 @@ export class DataCubeEditorBasicColumnSelectorState extends DataCubeEditorColumn
     return super.availableColumnsForDisplay.filter(
       (column) =>
         this.showHiddenColumns ||
-        !this.editor.columnProperties.getColumnConfiguration(column.name)
+        !this._editor.columnProperties.getColumnConfiguration(column.name)
           .hideFromView,
     );
   }
@@ -80,7 +79,7 @@ export class DataCubeEditorBasicColumnSelectorState extends DataCubeEditorColumn
     return super.selectedColumnsForDisplay.filter(
       (column) =>
         this.showHiddenColumns ||
-        !this.editor.columnProperties.getColumnConfiguration(column.name)
+        !this._editor.columnProperties.getColumnConfiguration(column.name)
           .hideFromView,
     );
   }
@@ -103,8 +102,8 @@ export class DataCubeEditorBasicColumnSelectorState extends DataCubeEditorColumn
 export class DataCubeEditorColumnsPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly view!: DataCubeViewState;
-  readonly editor!: DataCubeEditorState;
+  private readonly _editor!: DataCubeEditorState;
+
   readonly selector!: DataCubeEditorBasicColumnSelectorState;
 
   constructor(editor: DataCubeEditorState) {
@@ -112,16 +111,15 @@ export class DataCubeEditorColumnsPanelState
       applySnaphot: action,
     });
 
-    this.editor = editor;
-    this.view = editor.view;
+    this._editor = editor;
     this.selector = new DataCubeEditorBasicColumnSelectorState(editor, {
       onChange: (selector) => {
         const selectedColumnConfigurations = selector.selectedColumns.map(
           (col) =>
-            this.editor.columnProperties.getColumnConfiguration(col.name),
+            this._editor.columnProperties.getColumnConfiguration(col.name),
         );
         const unselectedColumnConfigurations =
-          this.editor.columnProperties.columns.filter(
+          this._editor.columnProperties.columns.filter(
             (col) => !selectedColumnConfigurations.includes(col),
           );
 
@@ -132,7 +130,7 @@ export class DataCubeEditorColumnsPanelState
         unselectedColumnConfigurations.forEach((col) =>
           col.setIsSelected(false),
         );
-        this.editor.columnProperties.setColumns([
+        this._editor.columnProperties.setColumns([
           ...selectedColumnConfigurations,
           ...unselectedColumnConfigurations,
         ]);
@@ -147,7 +145,7 @@ export class DataCubeEditorColumnsPanelState
    * (i.e. publishes a new snapshot)
    */
   propagateChanges(): void {
-    this.editor.sorts.adaptPropagatedChanges();
+    this._editor.sorts.adaptPropagatedChanges();
   }
 
   applySnaphot(
@@ -155,7 +153,7 @@ export class DataCubeEditorColumnsPanelState
     configuration: DataCubeConfiguration,
   ) {
     this.selector.setSelectedColumns(
-      this.editor.columnProperties.columns
+      this._editor.columnProperties.columns
         // extract from the configuration since it specifies the order of columns
         // there taking into account group-level extended columns
         .filter((col) => col.isSelected)
@@ -187,7 +185,7 @@ export class DataCubeEditorColumnsPanelState
       // filter out group-level extended columns since these columns are technically not selectable
       .filter(
         (col) =>
-          !this.editor.groupExtendColumns.find(
+          !this._editor.groupExtendColumns.find(
             (column) => column.name === col.name,
           ),
       )

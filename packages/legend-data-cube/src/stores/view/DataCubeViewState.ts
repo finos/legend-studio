@@ -42,6 +42,7 @@ import type { DataCubeLogService } from '../services/DataCubeLogService.js';
 import { DataCubeConfiguration } from '../core/model/DataCubeConfiguration.js';
 import type { DataCubeLayoutService } from '../services/DataCubeLayoutService.js';
 import type { DataCubeAlertService } from '../services/DataCubeAlertService.js';
+import type { DataCubeSettingService } from '../services/DataCubeSettingService.js';
 
 export class DataCubeViewState {
   readonly dataCube: DataCubeState;
@@ -50,6 +51,7 @@ export class DataCubeViewState {
   readonly taskService: DataCubeTaskService;
   readonly layoutService: DataCubeLayoutService;
   readonly alertService: DataCubeAlertService;
+  readonly settingService: DataCubeSettingService;
   readonly snapshotService: DataCubeQuerySnapshotService;
 
   readonly info: DataCubeInfoState;
@@ -76,6 +78,7 @@ export class DataCubeViewState {
     this.taskService = new DataCubeTaskService(dataCube.taskService.manager);
     this.layoutService = dataCube.layoutService;
     this.alertService = dataCube.alertService;
+    this.settingService = dataCube.settingService;
     // NOTE: snapshot manager must be instantiated before subscribers
     this.snapshotService = new DataCubeQuerySnapshotService(
       this.engine,

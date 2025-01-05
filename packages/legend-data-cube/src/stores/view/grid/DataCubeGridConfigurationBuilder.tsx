@@ -666,7 +666,6 @@ function generateDefinitionForPivotResultColumns(
   pivotResultColumns: DataCubeColumn[],
   snapshot: DataCubeQuerySnapshot,
   configuration: DataCubeConfiguration,
-  view: DataCubeViewState,
 ) {
   const columns = pivotResultColumns
     .map((col) => ({
@@ -787,7 +786,6 @@ function generateDefinitionForPivotResultColumns(
 export function generateColumnDefs(
   snapshot: DataCubeQuerySnapshot,
   configuration: DataCubeConfiguration,
-  view: DataCubeViewState,
 ) {
   // NOTE: only show columns which are fetched in select() as we
   // can't solely rely on column selection because of certain restrictions
@@ -845,7 +843,6 @@ export function generateColumnDefs(
       pivotResultColumns,
       snapshot,
       configuration,
-      view,
     ),
     ...columns.map((column) => {
       const columnData = {
@@ -1014,7 +1011,7 @@ export function generateGridOptionsFromSnapshot(
 
     // -------------------------------------- COLUMNS --------------------------------------
 
-    columnDefs: generateColumnDefs(snapshot, configuration, view),
+    columnDefs: generateColumnDefs(snapshot, configuration),
     autoGroupColumnDef: {
       // NOTE: the column ID here is set for explicitness, but this is not something ag-grid
       // allows setting for auto-group column, for more advanced use cases, we might want to

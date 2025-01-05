@@ -50,16 +50,11 @@ import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 import { EngineError } from '@finos/legend-graph';
 
 class DataCubeQueryExtendedColumnState {
-  name: string;
-  type: string;
-  data: DataCubeQuerySnapshotExtendedColumn;
+  readonly name: string;
+  readonly type: string;
+  readonly data: DataCubeQuerySnapshotExtendedColumn;
 
   constructor(data: DataCubeQuerySnapshotExtendedColumn) {
-    makeObservable(this, {
-      name: observable,
-      type: observable,
-    });
-
     this.name = data.name;
     this.type = data.type;
     this.data = data;
@@ -84,7 +79,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
   existingColumnEditors: DataCubeExistingColumnEditorState[] = [];
 
   constructor(view: DataCubeViewState) {
-    super(view.engine, view.dataCube.settingService, view.snapshotService);
+    super(view.engine, view.settingService, view.snapshotService);
 
     makeObservable(this, {
       sourceColumns: observable.ref,

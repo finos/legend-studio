@@ -75,7 +75,7 @@ export class DataCubeGridControllerState extends DataCubeQuerySnapshotController
   readonly view: DataCubeViewState;
 
   constructor(view: DataCubeViewState) {
-    super(view.engine, view.dataCube.settingService, view.snapshotService);
+    super(view.engine, view.settingService, view.snapshotService);
 
     this.view = view;
   }

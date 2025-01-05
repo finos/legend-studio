@@ -82,7 +82,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
   groupExtendColumns: DataCubeQuerySnapshotExtendedColumn[] = [];
 
   constructor(view: DataCubeViewState) {
-    super(view.engine, view.dataCube.settingService, view.snapshotService);
+    super(view.engine, view.settingService, view.snapshotService);
 
     makeObservable(this, {
       currentTab: observable,

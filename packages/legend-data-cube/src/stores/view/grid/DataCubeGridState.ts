@@ -54,11 +54,12 @@ import { DataCubeSettingKey } from '../../../__lib__/DataCubeSetting.js';
  * trigger publishing a new snapshot, hence not propagated.
  */
 export class DataCubeGridState extends DataCubeQuerySnapshotController {
-  readonly view: DataCubeViewState;
+  private readonly _view: DataCubeViewState;
+
   readonly controller: DataCubeGridControllerState;
+
   readonly exportEngine: DataCubeGridClientExportEngine;
   private _client?: GridApi | undefined;
-
   clientDataSource: DataCubeGridClientServerSideDataSource;
 
   queryConfiguration: DataCubeConfiguration;
@@ -70,7 +71,7 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
   debouncedAutoResizeColumns?: DebouncedFunc<() => void>;
 
   constructor(view: DataCubeViewState) {
-    super(view.engine, view.dataCube.settingService, view.snapshotService);
+    super(view.engine, view.settingService, view.snapshotService);
 
     makeObservable(this, {
       clientDataSource: observable,
@@ -88,11 +89,14 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
       applySnapshot: action,
     });
 
-    this.view = view;
-    this.controller = new DataCubeGridControllerState(this.view);
+    this._view = view;
+    this.controller = new DataCubeGridControllerState(this._view);
     this.exportEngine = new DataCubeGridClientExportEngine(this);
     this.queryConfiguration = new DataCubeConfiguration();
-    this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
+    this.clientDataSource = new DataCubeGridClientServerSideDataSource(
+      this,
+      this._view,
+    );
   }
 
   setPaginationEnabled(val: boolean) {
@@ -102,7 +106,10 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     // NOTE: if we don't fully reset the datasource, and say we just turned on pagination,
     // for how many page that we loaded when pagination is off, the datasource
     // will fire that many data fetch operations which is expensive.
-    this.clientDataSource = new DataCubeGridClientServerSideDataSource(this);
+    this.clientDataSource = new DataCubeGridClientServerSideDataSource(
+      this,
+      this._view,
+    );
     // NOTE: ag-grid uses the cache block size as page size, so it's important to set this
     // in corresponding to the pagination setting, else it would cause unexpected scrolling behavior
     this.client.updateGridOptions({
@@ -149,24 +156,24 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
     const gridOptions = generateGridOptionsFromSnapshot(
       snapshot,
       configuration,
-      this.view,
+      this._view,
     );
     if (
-      this.view.dataCube.settingService.getBooleanValue(
+      this._settingService.getBooleanValue(
         DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
       )
     ) {
-      this.view.engine.debugProcess(`New Grid Options`, [
+      this._engine.debugProcess(`New Grid Options`, [
         'Grid Options',
         gridOptions,
       ]);
     }
     this.client.updateGridOptions({
       ...gridOptions,
-      rowBuffer: this.view.dataCube.settingService.getNumericValue(
+      rowBuffer: this._settingService.getNumericValue(
         DataCubeSettingKey.GRID_CLIENT__ROW_BUFFER,
       ),
-      purgeClosedRowNodes: this.view.dataCube.settingService.getBooleanValue(
+      purgeClosedRowNodes: this._settingService.getBooleanValue(
         DataCubeSettingKey.GRID_CLIENT__PURGE_CLOSED_ROW_NODES,
       ),
       // NOTE: ag-grid uses the cache block size as page size, so it's important to set this

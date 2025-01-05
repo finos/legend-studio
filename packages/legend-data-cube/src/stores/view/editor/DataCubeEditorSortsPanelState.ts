@@ -15,7 +15,6 @@
  */
 
 import { action, makeObservable, observable } from 'mobx';
-import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import { _toCol } from '../../core/model/DataCubeColumn.js';
 import {
@@ -68,27 +67,27 @@ export class DataCubeEditorSortColumnSelectorState extends DataCubeEditorColumnS
       [
         // if pivot is active, take the pivot result columns and include
         // selected dimension columns which are not part of pivot columns
-        ...(this.editor.horizontalPivots.selector.selectedColumns.length
+        ...(this._editor.horizontalPivots.selector.selectedColumns.length
           ? [
-              ...this.editor.horizontalPivots.pivotResultColumns,
+              ...this._editor.horizontalPivots.pivotResultColumns,
               ...[
-                ...this.editor.columns.selector.selectedColumns,
-                ...this.editor.verticalPivots.selector.selectedColumns,
+                ...this._editor.columns.selector.selectedColumns,
+                ...this._editor.verticalPivots.selector.selectedColumns,
               ].filter(
                 (column) =>
-                  this.editor.columnProperties.getColumnConfiguration(
+                  this._editor.columnProperties.getColumnConfiguration(
                     column.name,
                   ).kind === DataCubeColumnKind.DIMENSION &&
-                  !this.editor.horizontalPivots.selector.selectedColumns.find(
+                  !this._editor.horizontalPivots.selector.selectedColumns.find(
                     (col) => col.name === column.name,
                   ),
               ),
             ]
           : [
-              ...this.editor.columns.selector.selectedColumns,
-              ...this.editor.verticalPivots.selector.selectedColumns,
+              ...this._editor.columns.selector.selectedColumns,
+              ...this._editor.verticalPivots.selector.selectedColumns,
             ]),
-        ...this.editor.groupExtendColumns,
+        ...this._editor.groupExtendColumns,
       ],
       (col) => col.name,
     ).map(
@@ -105,13 +104,9 @@ export class DataCubeEditorSortColumnSelectorState extends DataCubeEditorColumnS
 export class DataCubeEditorSortsPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly view!: DataCubeViewState;
-  readonly editor!: DataCubeEditorState;
   readonly selector!: DataCubeEditorColumnSelectorState<DataCubeEditorSortColumnState>;
 
   constructor(editor: DataCubeEditorState) {
-    this.editor = editor;
-    this.view = editor.view;
     this.selector = new DataCubeEditorSortColumnSelectorState(editor);
   }
 
