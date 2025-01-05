@@ -26,7 +26,6 @@ export const LegendREPLDataCubeHeader = observer(
   (props: DataCubeInnerHeaderComponentParams) => {
     const { api } = props;
     const store = useLegendREPLBaseStore();
-    const application = store.application;
 
     if (!store.source || !store.queryServerBaseUrl) {
       return null;
@@ -44,7 +43,9 @@ export const LegendREPLDataCubeHeader = observer(
           compact={true}
           disabled={!isPublishAllowed || store.publishState.isInProgress}
           onClick={() => {
-            store.publishDataCube(api).catch(application.alertUnhandledError);
+            store
+              .publishDataCube(api)
+              .catch((error) => store.alertService.alertUnhandledError(error));
           }}
         >
           Publish

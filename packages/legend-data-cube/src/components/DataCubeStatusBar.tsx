@@ -17,10 +17,15 @@
 import { DataCubeIcon, ProgressBar } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { DataCubeViewState } from '../stores/view/DataCubeViewState.js';
+import type { TaskManager } from '../stores/services/DataCubeTaskService.js';
 
 export const DataCubeStatusBar = observer(
-  (props: { view?: DataCubeViewState | undefined }) => {
-    const { view } = props;
+  (props: {
+    view?: DataCubeViewState | undefined;
+    taskManager?: TaskManager | undefined;
+  }) => {
+    const { view, taskManager: _taskManager } = props;
+    const tasks = view?.taskService.tasks ?? _taskManager?.tasks;
 
     return (
       <div className="flex h-5 w-full justify-between bg-neutral-100">
@@ -48,7 +53,7 @@ export const DataCubeStatusBar = observer(
         </div>
         <div className="flex items-center px-2">
           <div className="flex h-3.5 w-48 border-[0.5px] border-neutral-300">
-            {/* {view.taskService.tasks.size > 0 && (
+            {tasks !== undefined && tasks.length > 0 && (
               <ProgressBar
                 classes={{
                   root: 'h-3.5 w-full bg-transparent',
@@ -57,7 +62,7 @@ export const DataCubeStatusBar = observer(
                 }}
                 variant="indeterminate"
               />
-            )} */}
+            )}
           </div>
         </div>
       </div>

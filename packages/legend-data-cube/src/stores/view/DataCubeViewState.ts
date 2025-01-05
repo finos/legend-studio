@@ -73,7 +73,7 @@ export class DataCubeViewState {
     this.dataCube = dataCube;
     this.engine = dataCube.engine;
     this.logService = dataCube.logService;
-    this.taskService = new DataCubeTaskService();
+    this.taskService = new DataCubeTaskService(dataCube.taskService.manager);
     this.layoutService = dataCube.layoutService;
     this.alertService = dataCube.alertService;
     // NOTE: snapshot manager must be instantiated before subscribers
@@ -109,7 +109,7 @@ export class DataCubeViewState {
 
   async initialize(query: DataCubeQuery) {
     this.initializeState.inProgress();
-    const task = this.taskService.start('Initializing');
+    const task = this.taskService.newTask('Initializing');
 
     try {
       await Promise.all(
@@ -150,7 +150,11 @@ export class DataCubeViewState {
       });
       this.initializeState.fail();
     } finally {
-      this.taskService.end(task);
+      this.taskService.endTask(task);
     }
+  }
+
+  dispose() {
+    this.taskService.dispose();
   }
 }

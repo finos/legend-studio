@@ -15,16 +15,19 @@
  */
 
 import { uuid } from '@finos/legend-shared';
-import { action, makeObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 
-export class DataCubeTask {
+export class Task {
   readonly uuid = uuid();
   readonly name: string;
   readonly startTime = Date.now();
+  readonly ownerId?: string | undefined;
+
   endTime?: number | undefined;
 
-  constructor(name: string) {
+  constructor(name: string, ownerId?: string | undefined) {
     this.name = name;
+    this.ownerId = ownerId;
   }
 
   end() {
@@ -32,26 +35,68 @@ export class DataCubeTask {
   }
 }
 
-export class DataCubeTaskService {
-  readonly tasks = new Map<string, DataCubeTask>();
+export class TaskManager {
+  // TODO?: keep a hashmap, in parallel, for faster lookup
+  tasks: Task[] = [];
 
   constructor() {
     makeObservable(this, {
       tasks: observable,
-      start: action,
-      end: action,
+      newTask: action,
+      endTask: action,
+      endTasks: action,
     });
   }
 
-  start(name: string) {
-    const task = new DataCubeTask(name);
-    this.tasks.set(task.uuid, task);
+  newTask(name: string, ownerId?: string | undefined) {
+    const task = new Task(name, ownerId);
+    this.tasks.push(task);
     return task;
   }
 
-  end(task: DataCubeTask) {
-    this.tasks.delete(task.uuid);
-    task.end();
+  endTask(task: Task) {
+    const match = this.tasks.find((t) => t.uuid === task.uuid);
+    if (match) {
+      this.tasks = this.tasks.filter((t) => t.uuid !== task.uuid);
+      task.end();
+    }
     return task;
+  }
+
+  endTasks(tasks: Task[]) {
+    this.tasks = this.tasks.filter(
+      (task) => !tasks.find((t) => t.uuid === task.uuid),
+    );
+    tasks.forEach((task) => task.end());
+  }
+}
+
+export class DataCubeTaskService {
+  readonly uuid = uuid();
+  readonly manager: TaskManager;
+
+  constructor(manager?: TaskManager | undefined) {
+    makeObservable(this, {
+      tasks: computed,
+    });
+
+    this.manager = manager ?? new TaskManager();
+  }
+
+  get tasks() {
+    return this.manager.tasks.filter((task) => task.ownerId === this.uuid);
+  }
+
+  newTask(name: string) {
+    return this.manager.newTask(name, this.uuid);
+  }
+
+  endTask(task: Task) {
+    return this.manager.endTask(task);
+  }
+
+  dispose() {
+    // remove all tasks owned by this service
+    this.manager.endTasks(this.tasks);
   }
 }

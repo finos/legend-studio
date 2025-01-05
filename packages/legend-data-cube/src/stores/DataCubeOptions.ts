@@ -21,6 +21,7 @@ import type {
 import type { DataCubeSource } from './core/model/DataCubeSource.js';
 import type { DataCubeAPI } from './DataCubeAPI.js';
 import type { LayoutManager } from './services/DataCubeLayoutService.js';
+import type { TaskManager } from './services/DataCubeTaskService.js';
 
 type DataCubeOptionsBaseEvent = {
   api: DataCubeAPI;
@@ -56,6 +57,7 @@ export type DataCubeInnerHeaderComponentParams = DataCubeOptionsBaseParams;
 export type DataCubeOptions = {
   // -------------------------- INFRASTRUCTURE ------------------------------
 
+  taskManager?: TaskManager | undefined;
   onInitialized?: ((event: DataCubeInitializedEvent) => void) | undefined;
   onViewInitialized?:
     | ((event: DataCubeViewInitializedEvent) => void)

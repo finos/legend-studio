@@ -38,6 +38,7 @@ export {
   DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
   DEFAULT_ALERT_WINDOW_CONFIG,
 } from './stores/services/DataCubeLayoutService.js';
+export * from './stores/services/DataCubeTaskService.js';
 export * from './stores/services/DataCubeLogService.js';
 export * from './stores/services/DataCubeAlertService.js';
 export * from './components/core/DataCubeAlert.js';

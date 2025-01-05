@@ -22,9 +22,14 @@ import {
   DataCubePlaceholderErrorDisplay,
   DataCubeViewPlaceholder,
 } from './DataCubePlaceholder.js';
+import { useEffect } from 'react';
 
 export const DataCubeView = observer((props: { view: DataCubeViewState }) => {
   const { view } = props;
+
+  useEffect(() => {
+    return () => view.dispose();
+  }, [view]);
 
   if (view.initializeState.hasFailed) {
     return (

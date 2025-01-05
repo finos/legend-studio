@@ -88,6 +88,7 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
         <DataCubePlaceholder
           title="[ Legend DataCube ]"
           layoutManager={store.layoutService.manager}
+          taskManager={store.taskService.manager}
           headerContent={<LegendDataCubeQueryBuilderHeader />}
           menuItems={[
             {
@@ -121,6 +122,7 @@ export const LegendDataCubeQueryBuilder = withLegendDataCubeQueryBuilderStore(
         engine={store.baseStore.engine}
         options={{
           layoutManager: store.layoutService.manager,
+          taskManager: store.taskService.manager,
           gridClientLicense: store.baseStore.gridClientLicense,
           onInitialized(event) {
             builder.setDataCube(event.api);

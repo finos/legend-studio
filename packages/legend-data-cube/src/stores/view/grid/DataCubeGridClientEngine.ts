@@ -339,7 +339,7 @@ export class DataCubeGridClientServerSideDataSource
   }
 
   async fetchRows(params: IServerSideGetRowsParams<unknown, unknown>) {
-    const task = this.grid.view.taskService.start('Fetching data');
+    const task = this.grid.view.taskService.newTask('Fetching data');
 
     // ------------------------------ SNAPSHOT ------------------------------
 
@@ -389,7 +389,7 @@ export class DataCubeGridClientServerSideDataSource
             });
             // fail early since we can't proceed without the cast columns validated
             params.fail();
-            this.grid.view.taskService.end(task);
+            this.grid.view.taskService.endTask(task);
             return;
           }
         }
@@ -558,7 +558,7 @@ export class DataCubeGridClientServerSideDataSource
       });
       params.fail();
     } finally {
-      this.grid.view.taskService.end(task);
+      this.grid.view.taskService.endTask(task);
     }
   }
 

@@ -22,6 +22,7 @@ import type React from 'react';
 import type { LayoutManager } from '../stores/services/DataCubeLayoutService.js';
 import { DataCubeLayout } from './core/DataCubeLayout.js';
 import { DataCubeIcon } from '@finos/legend-art';
+import type { TaskManager } from '../stores/services/DataCubeTaskService.js';
 
 export const DataCubePlaceholderErrorDisplay = (props: {
   message: string;
@@ -45,15 +46,18 @@ export const DataCubePlaceholderErrorDisplay = (props: {
 };
 
 export const DataCubeViewPlaceholder = observer(
-  (props: { children?: React.ReactNode | undefined }) => {
-    const { children } = props;
+  (props: {
+    children?: React.ReactNode | undefined;
+    taskManager?: TaskManager | undefined;
+  }) => {
+    const { children, taskManager } = props;
 
     return (
       <>
         <div className="h-[calc(100%_-_48px)] w-full border border-x-0 border-neutral-200 bg-neutral-50">
           {children ?? null}
         </div>
-        <DataCubeStatusBar />
+        <DataCubeStatusBar taskManager={taskManager} />
       </>
     );
   },
@@ -63,11 +67,19 @@ export const DataCubePlaceholder = observer(
   (props: {
     children?: React.ReactNode | undefined;
     title: string;
+    headerContent?: React.ReactNode | undefined;
     menuItems?: DataCubeMenuItem[] | undefined;
     layoutManager?: LayoutManager | undefined;
-    headerContent?: React.ReactNode | undefined;
+    taskManager?: TaskManager | undefined;
   }) => {
-    const { children, title, menuItems, headerContent, layoutManager } = props;
+    const {
+      children,
+      title,
+      menuItems,
+      headerContent,
+      layoutManager,
+      taskManager,
+    } = props;
 
     return (
       <div className="data-cube relative flex h-full w-full flex-col bg-white">
@@ -75,7 +87,9 @@ export const DataCubePlaceholder = observer(
           {headerContent ?? null}
         </DataCubeTitleBar>
 
-        <DataCubeViewPlaceholder>{children}</DataCubeViewPlaceholder>
+        <DataCubeViewPlaceholder taskManager={taskManager}>
+          {children}
+        </DataCubeViewPlaceholder>
         {layoutManager ? <DataCubeLayout layout={layoutManager} /> : null}
       </div>
     );

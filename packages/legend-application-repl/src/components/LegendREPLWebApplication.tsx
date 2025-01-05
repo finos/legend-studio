@@ -68,6 +68,8 @@ const LegendREPLDataCube = observer((props: { query: DataCubeQuery }) => {
       engine={store.engine}
       options={{
         gridClientLicense: store.gridClientLicense,
+        layoutManager: store.layoutService.manager,
+        taskManager: store.taskService.manager,
         onNameChanged(event) {
           const timestamp =
             event.source instanceof LegendREPLDataCubeSource
@@ -76,6 +78,9 @@ const LegendREPLDataCube = observer((props: { query: DataCubeQuery }) => {
           application.layoutService.setWindowTitle(
             `\u229E ${name}${timestamp ? ` - ${formatDate(new Date(timestamp), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
           );
+        },
+        onViewInitialized(event) {
+          store.setSource(event.source);
         },
         innerHeaderRenderer: (params) => (
           <LegendREPLDataCubeHeader api={params.api} />

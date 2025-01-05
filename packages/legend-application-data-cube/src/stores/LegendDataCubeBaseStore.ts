@@ -42,6 +42,7 @@ import {
   type DataCubeSettingValues,
   DataCubeAlertService,
   DataCubeLogService,
+  DataCubeTaskService,
 } from '@finos/legend-data-cube';
 import {
   LegendDataCubeSettingKey,
@@ -63,6 +64,7 @@ export class LegendDataCubeBaseStore {
   readonly engineServerClient: V1_EngineServerClient;
 
   readonly engine: LegendDataCubeDataCubeEngine;
+  readonly taskService: DataCubeTaskService;
   readonly layoutService: DataCubeLayoutService;
   readonly alertService: DataCubeAlertService;
   readonly settings: DataCubeSetting[];
@@ -127,6 +129,7 @@ export class LegendDataCubeBaseStore {
       this.engineServerClient,
       this.graphManager,
     );
+    this.taskService = new DataCubeTaskService();
     this.layoutService = new DataCubeLayoutService();
     this.alertService = new DataCubeAlertService(
       new DataCubeLogService(this.engine),

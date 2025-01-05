@@ -34,10 +34,12 @@ import { DataCubeAlertService } from './services/DataCubeAlertService.js';
 import { DataCubeTelemetryService } from './services/DataCubeTelemetryService.js';
 import { DataCubeNavigationService } from './services/DataCubeNavigationService.js';
 import { DataCubeLogService } from './services/DataCubeLogService.js';
+import { DataCubeTaskService } from './services/DataCubeTaskService.js';
 
 export class DataCubeState {
   readonly engine: DataCubeEngine;
   readonly logService: DataCubeLogService;
+  readonly taskService: DataCubeTaskService;
   readonly layoutService: DataCubeLayoutService;
   readonly settingService: DataCubeSettingService;
   readonly documentationService: DataCubeDocumentationService;
@@ -68,6 +70,7 @@ export class DataCubeState {
 
     this.engine = engine;
     this.logService = new DataCubeLogService(this.engine);
+    this.taskService = new DataCubeTaskService(options?.taskManager);
     this.layoutService = new DataCubeLayoutService(options?.layoutManager);
     this.settingService = new DataCubeSettingService(
       this.engine,
@@ -123,7 +126,9 @@ export class DataCubeState {
   }
 
   dispose() {
+    this.view.dispose();
     this.layoutService.dispose();
+    this.taskService.dispose();
   }
 
   reload() {

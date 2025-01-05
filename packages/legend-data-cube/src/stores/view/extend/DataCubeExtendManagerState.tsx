@@ -212,7 +212,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
       this.columnConfigurations.find((col) => col.name === columnName),
     );
 
-    const task = this.view.taskService.start('Column update check');
+    const task = this.view.taskService.newTask('Column update check');
 
     const currentSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const tempSnapshot = currentSnapshot.clone();
@@ -277,7 +277,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
       }
       return;
     } finally {
-      this.view.taskService.end(task);
+      this.view.taskService.endTask(task);
     }
 
     this.setLeafExtendedColumns(
@@ -337,7 +337,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
       return;
     }
 
-    const task = this.view.taskService.start('Column delete check');
+    const task = this.view.taskService.newTask('Column delete check');
 
     const currentSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const tempSnapshot = currentSnapshot.clone();
@@ -387,7 +387,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
       }
       return;
     } finally {
-      this.view.taskService.end(task);
+      this.view.taskService.endTask(task);
     }
 
     this.setLeafExtendedColumns(

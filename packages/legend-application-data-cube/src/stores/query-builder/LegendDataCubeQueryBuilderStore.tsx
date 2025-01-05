@@ -23,6 +23,7 @@ import {
   type DataCubeAlertService,
   type DataCubeAPI,
   type DataCubeLayoutService,
+  type DataCubeTaskService,
   DataCubeQuery,
   DEFAULT_ALERT_WINDOW_CONFIG,
   type DisplayState,
@@ -92,6 +93,7 @@ export class LegendDataCubeQueryBuilderStore {
   readonly depotServerClient: DepotServerClient;
   readonly engineServerClient: V1_EngineServerClient;
   readonly graphManager: V1_PureGraphManager;
+  readonly taskService: DataCubeTaskService;
   readonly layoutService: DataCubeLayoutService;
   readonly alertService: DataCubeAlertService;
 
@@ -116,6 +118,7 @@ export class LegendDataCubeQueryBuilderStore {
     this.depotServerClient = baseStore.depotServerClient;
     this.engineServerClient = baseStore.engineServerClient;
     this.graphManager = baseStore.graphManager;
+    this.taskService = baseStore.taskService;
     this.alertService = baseStore.alertService;
     this.layoutService = baseStore.layoutService;
 

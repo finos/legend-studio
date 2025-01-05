@@ -152,6 +152,7 @@ export class DisplayState {
 }
 
 export class LayoutManager {
+  // TODO?: keep a hashmap, in parallel, for faster lookup
   windows: WindowState[] = [];
 
   constructor() {
@@ -160,7 +161,7 @@ export class LayoutManager {
       newWindow: action,
       bringWindowFront: action,
       closeWindow: action,
-      closeOwnedWindows: action,
+      closeWindows: action,
     });
   }
 
@@ -198,10 +199,11 @@ export class LayoutManager {
     }
   }
 
-  closeOwnedWindows(ownerId: string) {
-    const windowsToClose = this.windows.filter((w) => w.ownerId === ownerId);
-    this.windows = this.windows.filter((w) => w.ownerId !== ownerId);
-    windowsToClose.forEach((window) => this.closeWindow(window));
+  closeWindows(windows: WindowState[]) {
+    this.windows = this.windows.filter(
+      (window) => !windows.find((w) => w.uuid === window.uuid),
+    );
+    windows.forEach((window) => window.onClose?.());
   }
 }
 
@@ -210,7 +212,17 @@ export class DataCubeLayoutService {
   readonly manager: LayoutManager;
 
   constructor(manager?: LayoutManager | undefined) {
+    makeObservable(this, {
+      windows: computed,
+    });
+
     this.manager = manager ?? new LayoutManager();
+  }
+
+  get windows() {
+    return this.manager.windows.filter(
+      (window) => window.ownerId === this.uuid,
+    );
   }
 
   newDisplay(
@@ -239,7 +251,7 @@ export class DataCubeLayoutService {
   }
 
   dispose() {
-    // close all windows owned by this layout service
-    this.manager.closeOwnedWindows(this.uuid);
+    // close all windows owned by this service
+    this.manager.closeWindows(this.windows);
   }
 }

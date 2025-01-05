@@ -35,6 +35,7 @@ import {
   DataCubeLayoutService,
   DataCubeAlertService,
   DataCubeLogService,
+  DataCubeTaskService,
 } from '@finos/legend-data-cube';
 import {
   LegendREPLDataCubeSource,
@@ -50,6 +51,7 @@ export class LegendREPLBaseStore {
   private readonly _client: LegendREPLServerClient;
   readonly application: LegendREPLApplicationStore;
   readonly engine: LegendREPLDataCubeEngine;
+  readonly taskService: DataCubeTaskService;
   readonly layoutService: DataCubeLayoutService;
   readonly alertService: DataCubeAlertService;
 
@@ -83,6 +85,7 @@ export class LegendREPLBaseStore {
       }),
     );
     this.engine = new LegendREPLDataCubeEngine(this.application, this._client);
+    this.taskService = new DataCubeTaskService();
     this.layoutService = new DataCubeLayoutService();
     this.alertService = new DataCubeAlertService(
       new DataCubeLogService(this.engine),
@@ -143,6 +146,7 @@ export class LegendREPLBaseStore {
     }
 
     this.publishState.inProgress();
+    const task = this.taskService.newTask('Publish query');
 
     try {
       const query = await api.generateDataCubeQuery();
@@ -188,6 +192,7 @@ export class LegendREPLBaseStore {
         text: `Error: ${error.message}`,
       });
     } finally {
+      this.taskService.endTask(task);
       this.publishState.complete();
     }
   }
