@@ -19,9 +19,12 @@ import {
   languages as monacoLanguagesAPI,
   type IPosition,
 } from 'monaco-editor';
-import type { CompletionItem } from '../../stores/core/DataCubeEngine.js';
+import type {
+  CompletionItem,
+  DataCubeEngine,
+} from '../../stores/core/DataCubeEngine.js';
 import type { V1_Lambda } from '@finos/legend-graph';
-import type { DataCubeViewState } from '../../stores/view/DataCubeViewState.js';
+import type { DataCubeSource } from '../../stores/core/model/DataCubeSource.js';
 
 // Since we render the editor in a window which has been CSS transformed, and monaco-editor renders
 // the widgets with position=fixed, the position of the widgets will be off, we need to move the root
@@ -43,7 +46,8 @@ export async function getCodeSuggestions(
   position: IPosition,
   model: monacoEditorAPI.ITextModel,
   prefix: string | undefined,
-  view: DataCubeViewState,
+  engine: DataCubeEngine,
+  source: DataCubeSource,
   baseQueryBuilder: () => V1_Lambda,
 ) {
   const textUntilPosition = model.getValueInRange({
@@ -57,10 +61,10 @@ export async function getCodeSuggestions(
   let suggestions: CompletionItem[] = [];
 
   try {
-    suggestions = await view.engine.getQueryTypeahead(
+    suggestions = await engine.getQueryTypeahead(
       (prefix ?? '') + textUntilPosition,
       baseQueryBuilder(),
-      view.source,
+      source,
     );
   } catch {
     // do nothing: provide no suggestions when error ocurred

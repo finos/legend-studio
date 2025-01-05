@@ -139,7 +139,8 @@ export const DataCubeColumnCreator = observer(
                       position,
                       model,
                       state.codePrefix,
-                      view,
+                      view.engine,
+                      view.source,
                       () => state.buildExtendBaseQuery(),
                     ),
                   );

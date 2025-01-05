@@ -23,8 +23,20 @@ import type { DataCubeViewState } from './view/DataCubeViewState.js';
  * internal components and functionalities.
  */
 export interface DataCubeAPI {
+  /**
+   * Generates the data cube query (including the query, configuration, and source)
+   * from the latest state of the DataCube.
+   */
   generateDataCubeQuery(): Promise<DataCubeQuery>;
+  /**
+   * Retries all failed data fetches and rerender the grid.
+   */
   retryFailedDataFetches(): void;
+  /**
+   * (Force) reload/rerender the DataCube component.
+   *
+   * This is often used when updating settings that requires a restart.
+   */
   reload(): void;
 }
 
