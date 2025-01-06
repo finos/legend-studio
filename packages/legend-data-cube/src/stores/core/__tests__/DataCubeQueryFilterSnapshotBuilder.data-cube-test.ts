@@ -92,6 +92,7 @@ describe(unitTest('Analyze and build filter snapshot'), () => {
           partialQuery,
           source,
           baseQuery,
+          new Test__DataCubeEngine().filterOperations,
         );
         const query = _function(DataCubeFunction.FILTER, [
           _lambda(
