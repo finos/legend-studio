@@ -21,6 +21,7 @@ import {
   type ExternalFormatData,
   type ModelStoreData,
   type Class,
+  type Type,
   type DataElementReference,
   type RelationalCSVDataTable,
   type RelationalCSVData,
@@ -117,7 +118,7 @@ export const modelStoreData_addModelData = action(
 );
 
 export const modelStoreData_setDataModelModel = action(
-  (modelData: ModelData, val: PackageableElementReference<Class>): void => {
+  (modelData: ModelData, val: PackageableElementReference<Type>): void => {
     modelData.model = val;
   },
 );
