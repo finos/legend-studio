@@ -25,13 +25,12 @@ import {
   guaranteeNonNullable,
   type PlainObject,
 } from '@finos/legend-shared';
-import type { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 
 export class DataCubeEditorColumnPropertiesPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly view!: DataCubeViewState;
-  readonly editor!: DataCubeEditorState;
+  private readonly _view!: DataCubeViewState;
 
   columns: DataCubeEditorMutableColumnConfiguration[] = [];
   selectedColumnName?: string | undefined;
@@ -52,8 +51,7 @@ export class DataCubeEditorColumnPropertiesPanelState
       applySnaphot: action,
     });
 
-    this.editor = editor;
-    this.view = editor.view;
+    this._view = editor.view;
   }
 
   getColumnConfiguration(colName: string | undefined) {
@@ -89,7 +87,7 @@ export class DataCubeEditorColumnPropertiesPanelState
           DataCubeEditorMutableColumnConfiguration.create(
             column,
             snapshot,
-            this.view.engine.aggregateOperations,
+            this._view.engine.aggregateOperations,
           ),
       ),
     );

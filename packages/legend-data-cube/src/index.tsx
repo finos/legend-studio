@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-export * from './stores/core/models/DataCubeQuery.js';
-export * from './stores/core/models/DataCubeSource.js';
-export { type DataCubeColumn } from './stores/core/models/DataCubeColumn.js';
-export * from './stores/core/models/DataCubeConfiguration.js';
-export * from './stores/core/models/AdhocQueryDataCubeSource.js';
+export * from './stores/core/model/DataCubeQuery.js';
+export * from './stores/core/model/DataCubeSource.js';
+export { type DataCubeColumn } from './stores/core/model/DataCubeColumn.js';
+export * from './stores/core/model/DataCubeConfiguration.js';
+export * from './stores/core/model/AdhocQueryDataCubeSource.js';
 
 export * from './stores/core/DataCubeEngine.js';
 export * from './stores/core/DataCubeQueryEngine.js';
-export * from './stores/core/DataCubeLayoutManagerState.js';
 export * from './stores/core/DataCubeQueryBuilderUtils.js';
 
 export {
@@ -30,13 +29,25 @@ export {
   DataCubeSettingGroup,
   DataCubeSettingType,
   type DataCubeSettingValues,
-} from './stores/core/DataCubeSetting.js';
-export { DataCubeState } from './stores/DataCubeState.js';
-export { useDataCube } from './components/DataCubeProvider.js';
-export * from './stores/DataCubeAPI.js';
-export * from './stores/DataCubeOptions.js';
-
-export * from './components/DataCube.js';
+} from './stores/services/DataCubeSettingService.js';
+export {
+  DataCubeLayoutService,
+  WindowState,
+  DisplayState,
+  LayoutConfiguration,
+  DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
+  DEFAULT_ALERT_WINDOW_CONFIG,
+} from './stores/services/DataCubeLayoutService.js';
+export * from './stores/services/DataCubeTaskService.js';
+export * from './stores/services/DataCubeLogService.js';
+export * from './stores/services/DataCubeAlertService.js';
 export * from './components/core/DataCubeAlert.js';
+export * from './components/core/DataCubeLayout.js';
+
+export { useDataCube } from './components/DataCubeProvider.js';
+export { type DataCubeAPI } from './stores/DataCubeAPI.js';
+export * from './stores/DataCubeOptions.js';
+export * from './components/DataCube.js';
+
 export * from './components/core/DataCubeFormUtils.js';
-export * from './components/core/DataCubeLayoutManager.js';
+export * from './components/DataCubePlaceholder.js';

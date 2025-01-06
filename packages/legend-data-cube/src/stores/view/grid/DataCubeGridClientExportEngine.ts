@@ -22,7 +22,6 @@ import {
   isString,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { DataCubeViewState } from '../DataCubeViewState.js';
 import type { DataCubeGridState } from './DataCubeGridState.js';
 import { DataCubeGridClientExportFormat } from './DataCubeGridClientEngine.js';
 
@@ -81,23 +80,21 @@ ${EMAIL_HTML_CONTENT}
  * server-side export engine which is more standardized and scalable.
  */
 export class DataCubeGridClientExportEngine {
-  readonly view!: DataCubeViewState;
-  readonly grid!: DataCubeGridState;
+  private readonly _grid!: DataCubeGridState;
 
   constructor(grid: DataCubeGridState) {
-    this.view = grid.view;
-    this.grid = grid;
+    this._grid = grid;
   }
 
   private generateFileName() {
-    return `${this.grid.queryConfiguration.name} - ${formatDate(new Date(), 'EEE MMM dd yyyy HH_mm_ss')}`;
+    return `${this._grid.queryConfiguration.name} - ${formatDate(new Date(), 'EEE MMM dd yyyy HH_mm_ss')}`;
   }
 
   exportFile(format: DataCubeGridClientExportFormat) {
     const fileName = this.generateFileName();
     switch (format) {
       case DataCubeGridClientExportFormat.CSV: {
-        this.grid.client.exportDataAsCsv({
+        this._grid.client.exportDataAsCsv({
           fileName: `${fileName}.csv`,
         });
         return;
@@ -105,7 +102,7 @@ export class DataCubeGridClientExportEngine {
       case DataCubeGridClientExportFormat.EXCEL: {
         // TODO?: configure settings for Excel export so we can export styling as well
         // See https://www.ag-grid.com/angular-data-grid/excel-export-styles/
-        this.grid.client.exportDataAsExcel({
+        this._grid.client.exportDataAsExcel({
           fileName: `${fileName}.xlsx`,
         });
         return;
@@ -125,7 +122,7 @@ export class DataCubeGridClientExportEngine {
         fileNameWithExtension = `${fileName}.csv`;
         contentType = ContentType.TEXT_CSV;
         attachment = await blobToBase64(
-          new Blob([this.grid.client.getDataAsCsv() ?? ''], {
+          new Blob([this._grid.client.getDataAsCsv() ?? ''], {
             type: ContentType.TEXT_CSV,
           }),
         );
@@ -136,7 +133,7 @@ export class DataCubeGridClientExportEngine {
         contentType = ContentType.APPLICATION_XLSX;
         // TODO?: configure settings for Excel export so we can export styling as well
         // See https://www.ag-grid.com/angular-data-grid/excel-export-styles/
-        const xlsxContent = this.grid.client.getDataAsExcel();
+        const xlsxContent = this._grid.client.getDataAsExcel();
         let xlsxBlob: Blob;
         if (xlsxContent instanceof Blob) {
           xlsxBlob = xlsxContent;

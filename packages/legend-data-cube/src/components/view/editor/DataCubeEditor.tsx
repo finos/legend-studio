@@ -25,11 +25,14 @@ import { DataCubeEditorColumnPropertiesPanel } from './DataCubeEditorColumnPrope
 import { cn } from '@finos/legend-art';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
 import { FormButton } from '../../core/DataCubeFormUtils.js';
+import { useDataCube } from '../../DataCubeProvider.js';
 
 export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
+  const dataCube = useDataCube();
+  const alertService = dataCube.alertService;
+
   const { view } = props;
   const editor = view.editor;
-  const engine = view.engine;
   const selectedTab = editor.currentTab;
   const tabs = [
     DataCubeEditorTab.COLUMNS,
@@ -88,7 +91,7 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
           onClick={() => {
             editor
               .applyChanges()
-              .catch((error) => engine.alertUnhandledError(error));
+              .catch((error) => alertService.alertUnhandledError(error));
           }}
         >
           Apply
@@ -99,7 +102,7 @@ export const DataCubeEditor = observer((props: { view: DataCubeViewState }) => {
           onClick={() => {
             editor
               .applyChanges({ closeAfterApply: true })
-              .catch((error) => engine.alertUnhandledError(error));
+              .catch((error) => alertService.alertUnhandledError(error));
           }}
         >
           OK

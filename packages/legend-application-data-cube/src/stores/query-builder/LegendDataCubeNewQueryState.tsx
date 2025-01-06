@@ -29,6 +29,7 @@ import {
 } from './source-builder/LegendDataCubeSourceBuilderState.js';
 import {
   _selectFunction,
+  type DataCubeAlertService,
   DataCubeQuery,
   DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
   type DisplayState,
@@ -43,12 +44,14 @@ import {
 import { generateQueryBuilderRoute } from '../../__lib__/LegendDataCubeNavigation.js';
 
 export class LegendDataCubeNewQueryState {
-  readonly application: LegendDataCubeApplicationStore;
-  readonly store: LegendDataCubeQueryBuilderStore;
-  readonly engine: LegendDataCubeDataCubeEngine;
-  readonly display: DisplayState;
+  private readonly _application: LegendDataCubeApplicationStore;
+  private readonly _store: LegendDataCubeQueryBuilderStore;
+  private readonly _engine: LegendDataCubeDataCubeEngine;
+  private readonly _alertService: DataCubeAlertService;
 
   readonly finalizeState = ActionState.create();
+  readonly display: DisplayState;
+
   sourceBuilder: LegendDataCubeSourceBuilderState;
 
   constructor(store: LegendDataCubeQueryBuilderStore) {
@@ -57,12 +60,14 @@ export class LegendDataCubeNewQueryState {
       changeSourceBuilder: action,
     });
 
-    this.application = store.application;
-    this.store = store;
-    this.engine = store.engine;
-    this.display = this.engine.layout.newDisplay(
+    this._application = store.application;
+    this._store = store;
+    this._engine = store.engine;
+    this._alertService = store.alertService;
+
+    this.display = store.layoutService.newDisplay(
       'New Query',
-      () => <LegendDataCubeNewQueryBuilder state={this} />,
+      () => <LegendDataCubeNewQueryBuilder />,
       {
         ...DEFAULT_TOOL_PANEL_WINDOW_CONFIG,
         width: 500,
@@ -89,9 +94,18 @@ export class LegendDataCubeNewQueryState {
   ): LegendDataCubeSourceBuilderState {
     switch (type) {
       case LegendDataCubeSourceBuilderType.LEGEND_QUERY:
-        return new LegendQueryDataCubeSourceBuilderState(this);
+        return new LegendQueryDataCubeSourceBuilderState(
+          this._application,
+          this._engine,
+          this._store.engineServerClient,
+          this._store.graphManager,
+          this._alertService,
+        );
       case LegendDataCubeSourceBuilderType.ADHOC_QUERY:
-        return new AdhocQueryDataCubeSourceBuilderState(this);
+        return new AdhocQueryDataCubeSourceBuilderState(
+          this._application,
+          this._engine,
+        );
       default:
         throw new UnsupportedOperationError(
           `Can't create source builder for unsupported type '${type}'`,
@@ -108,16 +122,16 @@ export class LegendDataCubeNewQueryState {
     try {
       const source = await this.sourceBuilder.build();
       const query = new DataCubeQuery();
-      const processedSource = await this.engine.processQuerySource(source);
+      const processedSource = await this._engine.processQuerySource(source);
       query.source = source;
-      query.query = await this.engine.getValueSpecificationCode(
+      query.query = await this._engine.getValueSpecificationCode(
         _selectFunction(processedSource.columns),
       );
 
-      this.store.setBuilder(new LegendDataCubeQueryBuilderState(query));
+      this._store.setBuilder(new LegendDataCubeQueryBuilderState(query));
       // only update the route instead of reloading in case we are creating
       // a new query when we are editing another query
-      this.application.navigationService.navigator.updateCurrentLocation(
+      this._application.navigationService.navigator.updateCurrentLocation(
         generateQueryBuilderRoute(null),
       );
 
@@ -130,7 +144,7 @@ export class LegendDataCubeNewQueryState {
       this.finalizeState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.engine.alertError(error, {
+      this._alertService.alertError(error, {
         message: `Query Creation Failure: ${error.message}`,
       });
       this.finalizeState.fail();

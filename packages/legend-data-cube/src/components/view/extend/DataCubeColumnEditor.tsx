@@ -49,7 +49,8 @@ import {
   DataCubeColumnDataType,
   DataCubeColumnKind,
 } from '../../../stores/core/DataCubeQueryEngine.js';
-import { DocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
+import { DataCubeDocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
+import { useDataCube } from '../../DataCubeProvider.js';
 
 enum DataCubeExtendedColumnKind {
   LEAF_LEVEL_MEASURE = 'Leaf Level Measure',
@@ -60,8 +61,9 @@ enum DataCubeExtendedColumnKind {
 export const DataCubeColumnCreator = observer(
   (props: { state: DataCubeColumnBaseEditorState }) => {
     const { state } = props;
+    const dataCube = useDataCube();
     const view = state.view;
-    const engine = view.engine;
+    const manager = view.extend;
 
     const nameInputRef = useRef<HTMLInputElement>(null);
     const currentColumnKind = state.isGroupLevel
@@ -92,9 +94,9 @@ export const DataCubeColumnCreator = observer(
         debounce((): void => {
           state
             .getReturnType()
-            .catch((error) => engine.alertUnhandledError(error));
+            .catch((error) => dataCube.alertService.alertUnhandledError(error));
         }, 500),
-      [state, engine],
+      [state, dataCube],
     );
 
     useEffect(() => {
@@ -137,7 +139,8 @@ export const DataCubeColumnCreator = observer(
                       position,
                       model,
                       state.codePrefix,
-                      view,
+                      view.engine,
+                      view.source,
                       () => state.buildExtendBaseQuery(),
                     ),
                   );
@@ -206,7 +209,7 @@ export const DataCubeColumnCreator = observer(
                     disabled={state.finalizationState.isInProgress}
                     value={state.name}
                     onChange={(event) => {
-                      state.setName(event.target.value.trim());
+                      state.setName(event.target.value);
                     }}
                   />
                   <div className="ml-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center text-lg">
@@ -223,7 +226,7 @@ export const DataCubeColumnCreator = observer(
                     <FormDocumentation
                       className="ml-1"
                       documentationKey={
-                        DocumentationKey.DATA_CUBE_EXTENDED_COLUMN_LEVELS
+                        DataCubeDocumentationKey.EXTENDED_COLUMN_LEVELS
                       }
                     />
                   </div>
@@ -347,9 +350,11 @@ export const DataCubeColumnCreator = observer(
               <FormButton
                 className="ml-2"
                 onClick={() => {
-                  state.manager
+                  manager
                     .deleteColumn(state.initialData.name)
-                    .catch((error) => engine.alertUnhandledError(error));
+                    .catch((error) =>
+                      dataCube.alertService.alertUnhandledError(error),
+                    );
                 }}
               >
                 Delete
@@ -359,7 +364,9 @@ export const DataCubeColumnCreator = observer(
                 onClick={() => {
                   state
                     .reset()
-                    .catch((error) => engine.alertUnhandledError(error));
+                    .catch((error) =>
+                      dataCube.alertService.alertUnhandledError(error),
+                    );
                 }}
               >
                 Reset
@@ -377,7 +384,9 @@ export const DataCubeColumnCreator = observer(
             onClick={() => {
               state
                 .applyChanges()
-                .catch((error) => engine.alertUnhandledError(error));
+                .catch((error) =>
+                  dataCube.alertService.alertUnhandledError(error),
+                );
             }}
           >
             OK

@@ -24,6 +24,9 @@ import { useEffect } from 'react';
 import { formatDate, LogEvent } from '@finos/legend-shared';
 import {
   DataCube,
+  DataCubePlaceholder,
+  DataCubePlaceholderErrorDisplay,
+  DEFAULT_REPORT_NAME,
   type DataCubeQuery,
   type DataCubeSettingValues,
 } from '@finos/legend-data-cube';
@@ -64,29 +67,36 @@ const LegendREPLDataCube = observer((props: { query: DataCubeQuery }) => {
       query={query}
       engine={store.engine}
       options={{
-        onNameChanged(name, source) {
+        gridClientLicense: store.gridClientLicense,
+        layoutManager: store.layoutService.manager,
+        taskManager: store.taskService.manager,
+        onNameChanged(event) {
           const timestamp =
-            source instanceof LegendREPLDataCubeSource
-              ? source.timestamp
+            event.source instanceof LegendREPLDataCubeSource
+              ? event.source.timestamp
               : undefined;
           application.layoutService.setWindowTitle(
             `\u229E ${name}${timestamp ? ` - ${formatDate(new Date(timestamp), 'HH:mm:ss EEE MMM dd yyyy')}` : ''}`,
           );
         },
-        innerHeaderComponent: (dataCube) => (
-          <LegendREPLDataCubeHeader dataCube={dataCube} />
-        ),
-        getSettingValues() {
-          return application.settingService.getObjectValue(
-            LegendREPLSettingStorageKey.DATA_CUBE,
-          ) as DataCubeSettingValues | undefined;
+        onViewInitialized(event) {
+          store.setSource(event.source);
         },
-        onSettingValuesChanged(values) {
+        innerHeaderRenderer: (params) => (
+          <LegendREPLDataCubeHeader api={params.api} />
+        ),
+        settingsData: {
+          values: application.settingService.getObjectValue(
+            LegendREPLSettingStorageKey.DATA_CUBE,
+          ) as DataCubeSettingValues | undefined,
+        },
+        onSettingsChanged(values) {
           application.settingService.persistValue(
             LegendREPLSettingStorageKey.DATA_CUBE,
             values,
           );
         },
+        documentationUrl: application.documentationService.url,
       }}
     />
   );
@@ -105,9 +115,24 @@ export const LegendREPLRouter = observer(() => {
       .catch((error) => store.application.alertUnhandledError(error));
   }, [store]);
 
+  if (!store.initializeState.hasSucceeded) {
+    return (
+      <DataCubePlaceholder
+        title={DEFAULT_REPORT_NAME}
+        layoutManager={store.layoutService.manager}
+      >
+        {store.initializeState.hasFailed && (
+          <DataCubePlaceholderErrorDisplay
+            message="Initialization Failure"
+            prompt="Resolve the issue and reload."
+          />
+        )}
+      </DataCubePlaceholder>
+    );
+  }
   return (
     <div className="h-full">
-      {store.initializeState.hasSucceeded && store.query && (
+      {store.query && (
         <Routes>
           <Route
             path={LEGEND_REPL_GRID_CLIENT_ROUTE_PATTERN.DATA_CUBE}

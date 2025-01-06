@@ -58,12 +58,12 @@ import {
   INTERNAL__GRID_CLIENT_ROW_GROUPING_COUNT_AGG_COLUMN_ID,
   type DataCubeGridClientDataFetchRequest,
 } from './DataCubeGridClientEngine.js';
-import { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import type { DataCubeQueryFilterOperation } from '../../core/filter/DataCubeQueryFilterOperation.js';
 import type { DataCubeQueryAggregateOperation } from '../../core/aggregation/DataCubeQueryAggregateOperation.js';
 import { _colSpecArrayParam } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';
 import { buildExecutableQuery } from '../../core/DataCubeQueryBuilder.js';
-import type { DataCubeSource } from '../../core/models/DataCubeSource.js';
+import type { DataCubeSource } from '../../core/model/DataCubeSource.js';
 
 /*****************************************************************************
  * [GRID]

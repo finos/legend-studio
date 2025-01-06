@@ -16,7 +16,7 @@
 
 import { action, computed, makeObservable, observable, override } from 'mobx';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import type { DisplayState } from '../../core/DataCubeLayoutManagerState.js';
+import type { DisplayState } from '../../services/DataCubeLayoutService.js';
 import { DataCubeColumnCreator } from '../../../components/view/extend/DataCubeColumnEditor.js';
 import { editor as monacoEditorAPI, Uri } from 'monaco-editor';
 import {
@@ -45,7 +45,7 @@ import {
   V1_Lambda,
   type V1_ValueSpecification,
 } from '@finos/legend-graph';
-import type { DataCubeColumnConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import type { DataCubeColumnConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import type { DataCubeQuerySnapshotExtendedColumn } from '../../core/DataCubeQuerySnapshot.js';
 import {
   _lambda,
@@ -54,9 +54,9 @@ import {
 } from '../../core/DataCubeQueryBuilderUtils.js';
 
 export abstract class DataCubeColumnBaseEditorState {
-  readonly uuid = uuid();
+  protected readonly uuid = uuid();
+  protected readonly _manager: DataCubeExtendManagerState;
   readonly view: DataCubeViewState;
-  readonly manager: DataCubeExtendManagerState;
 
   // NOTE: use UUID in the column name to prevent collision
   // when parsing/compiling the expression
@@ -111,7 +111,7 @@ export abstract class DataCubeColumnBaseEditorState {
       setReturnType: action,
     });
 
-    this.manager = manager;
+    this._manager = manager;
     this.view = manager.view;
     this.display = this.newDisplay(this);
 
@@ -147,7 +147,7 @@ export abstract class DataCubeColumnBaseEditorState {
   }
 
   get isNameValid(): boolean {
-    return !this.manager.allColumnNames.includes(this.name);
+    return !this._manager.allColumnNames.includes(this.name);
   }
 
   setExpectedType(value: string) {
@@ -203,7 +203,7 @@ export abstract class DataCubeColumnBaseEditorState {
 
   buildExtendBaseQuery() {
     const currentSnapshot = guaranteeNonNullable(
-      this.manager.getLatestSnapshot(),
+      this._manager.getLatestSnapshot(),
     );
     const snapshot = currentSnapshot.clone();
     if (!this.isGroupLevel) {
@@ -221,10 +221,10 @@ export abstract class DataCubeColumnBaseEditorState {
       [
         buildExecutableQuery(
           snapshot,
-          this.manager.view.source,
+          this.view.source,
           () => undefined,
-          this.manager.view.engine.filterOperations,
-          this.manager.view.engine.aggregateOperations,
+          this.view.engine.filterOperations,
+          this.view.engine.aggregateOperations,
         ),
       ],
     );
@@ -285,7 +285,7 @@ export abstract class DataCubeColumnBaseEditorState {
         this.showError(error);
         return undefined;
       }
-      this.view.engine.alertError(error, {
+      this.view.dataCube.alertService.alertError(error, {
         message: `Expression Validation Failure: ${error.message}`,
       });
     } finally {
@@ -333,7 +333,7 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
   }
 
   override newDisplay(state: DataCubeColumnBaseEditorState): DisplayState {
-    return this.view.engine.layout.newDisplay(
+    return this.view.dataCube.layoutService.newDisplay(
       'Add New Column',
       () => <DataCubeColumnCreator state={this} />,
       {
@@ -368,7 +368,7 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
       ]);
     } catch (error) {
       assertErrorThrown(error);
-      this.view.engine.alertError(error, {
+      this.view.dataCube.alertService.alertError(error, {
         message: `Expression Validation Failure: ${error.message}`,
       });
       return;
@@ -377,20 +377,20 @@ export class DataCubeNewColumnState extends DataCubeColumnBaseEditorState {
     }
 
     if (!(query instanceof V1_Lambda)) {
-      this.view.engine.alertError(new Error(), {
+      this.view.dataCube.alertService.alertError(new Error(), {
         message: `Expression Validation Failure: Expression must be a lambda.`,
       });
       return;
     }
 
     if (!returnType) {
-      this.view.engine.alertError(new Error(), {
+      this.view.dataCube.alertService.alertError(new Error(), {
         message: `Expression Validation Failure: Can't compute expression return type.`,
       });
       return;
     }
 
-    this.manager.addNewColumn(
+    this._manager.addNewColumn(
       {
         name: this.name,
         type: returnType,
@@ -437,7 +437,7 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
   }
 
   override get isNameValid(): boolean {
-    return !this.manager.allColumnNames
+    return !this._manager.allColumnNames
       .filter((colName) => colName !== this.initialData.name)
       .includes(this.name);
   }
@@ -450,7 +450,7 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
   }
 
   override newDisplay(state: DataCubeColumnBaseEditorState): DisplayState {
-    return this.view.engine.layout.newDisplay(
+    return this.view.dataCube.layoutService.newDisplay(
       'Edit Column',
       () => <DataCubeColumnCreator state={this} />,
       {
@@ -493,7 +493,7 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
       ]);
     } catch (error) {
       assertErrorThrown(error);
-      this.view.engine.alertError(error, {
+      this.view.dataCube.alertService.alertError(error, {
         message: `Expression Validation Failure: ${error.message}`,
       });
       return;
@@ -502,20 +502,20 @@ export class DataCubeExistingColumnEditorState extends DataCubeColumnBaseEditorS
     }
 
     if (!(query instanceof V1_Lambda)) {
-      this.view.engine.alertError(new Error(), {
+      this.view.dataCube.alertService.alertError(new Error(), {
         message: `Expression Validation Failure: Expression must be a lambda.`,
       });
       return;
     }
 
     if (!returnType) {
-      this.view.engine.alertError(new Error(), {
+      this.view.dataCube.alertService.alertError(new Error(), {
         message: `Expression Validation Failure: Can't compute expression return type.`,
       });
       return;
     }
 
-    await this.manager.updateColumn(
+    await this._manager.updateColumn(
       this.initialData.name,
       {
         name: this.name,

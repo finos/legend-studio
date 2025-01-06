@@ -45,14 +45,15 @@ import {
   DEFAULT_URL_LABEL_QUERY_PARAM,
   EMPTY_VALUE_PLACEHOLDER,
 } from '../../../stores/core/DataCubeQueryEngine.js';
-import { DocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
+import { DataCubeDocumentationKey } from '../../../__lib__/DataCubeDocumentation.js';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
-import { _sortByColName } from '../../../stores/core/models/DataCubeColumn.js';
+import { _sortByColName } from '../../../stores/core/model/DataCubeColumn.js';
 
 export const DataCubeEditorColumnPropertiesPanel = observer(
   (props: { view: DataCubeViewState }) => {
     const { view } = props;
-    const panel = view.editor.columnProperties;
+    const editor = view.editor;
+    const panel = editor.columnProperties;
     const gridConfiguration = view.editor.generalProperties.configuration;
     const selectedColumn = panel.selectedColumn;
     const [
@@ -149,7 +150,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         {selectedColumn.dataType}
                       </div>
                       {Boolean(
-                        panel.editor.leafExtendColumns.find(
+                        editor.leafExtendColumns.find(
                           (col) => col.name === selectedColumn.name,
                         ),
                       ) && (
@@ -158,7 +159,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         </div>
                       )}
                       {Boolean(
-                        panel.editor.groupExtendColumns.find(
+                        editor.groupExtendColumns.find(
                           (col) => col.name === selectedColumn.name,
                         ),
                       ) && (
@@ -187,7 +188,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       {column.dataType}
                     </div>
                     {Boolean(
-                      panel.editor.leafExtendColumns.find(
+                      editor.leafExtendColumns.find(
                         (col) => col.name === column.name,
                       ),
                     ) && (
@@ -196,7 +197,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       </div>
                     )}
                     {Boolean(
-                      panel.editor.groupExtendColumns.find(
+                      editor.groupExtendColumns.find(
                         (col) => col.name === column.name,
                       ),
                     ) && (
@@ -216,7 +217,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       <FormDocumentation
                         className="ml-1"
                         documentationKey={
-                          DocumentationKey.DATA_CUBE_COLUMN_CONFIGURATION_KIND
+                          DataCubeDocumentationKey.COLUMN_CONFIGURATION_KIND
                         }
                       />
                     </div>
@@ -226,10 +227,10 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                       open={kindDropdownPropsOpen}
                       // disallow changing the column kind if the column is being used as pivot column
                       disabled={Boolean(
-                        panel.editor.verticalPivots.selector.selectedColumns.find(
+                        editor.verticalPivots.selector.selectedColumns.find(
                           (col) => col.name === selectedColumn.name,
                         ) ??
-                          panel.editor.horizontalPivots.selector.selectedColumns.find(
+                          editor.horizontalPivots.selector.selectedColumns.find(
                             (col) => col.name === selectedColumn.name,
                           ),
                       )}
@@ -281,7 +282,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     className="w-80"
                     value={selectedColumn.displayName ?? ''}
                     onChange={(event) => {
-                      const value = event.target.value.trim();
+                      const value = event.target.value;
                       selectedColumn.setDisplayName(
                         value !== '' ? value : undefined,
                       );
@@ -307,7 +308,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     className="w-32"
                     {...aggregationOperationDropdownProps}
                   >
-                    {panel.view.engine.aggregateOperations
+                    {view.engine.aggregateOperations
                       .filter((op) => op.isCompatibleWithColumn(selectedColumn))
                       .map((op) => (
                         <FormDropdownMenuItem
@@ -424,7 +425,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         <FormDocumentation
                           className="ml-1"
                           documentationKey={
-                            DocumentationKey.DATA_CUBE_COLUMN_CONFIGURATION_UNIT
+                            DataCubeDocumentationKey.COLUMN_CONFIGURATION_UNIT
                           }
                         />
                       </div>
@@ -434,7 +435,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         onChange={(event) => {
                           const value = event.target.value.trim();
                           selectedColumn.setUnit(
-                            value.trim() !== '' ? value.trim() : undefined,
+                            value.trim() !== '' ? value : undefined,
                           );
                         }}
                         placeholder={EMPTY_VALUE_PLACEHOLDER}
@@ -451,7 +452,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                         <FormDocumentation
                           className="ml-1"
                           documentationKey={
-                            DocumentationKey.DATA_CUBE_COLUMN_CONFIGURATION_DISPLAY_AS_LINK
+                            DataCubeDocumentationKey.COLUMN_CONFIGURATION_DISPLAY_AS_LINK
                           }
                         />
                       </div>
@@ -488,7 +489,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     <FormDocumentation
                       className="ml-1"
                       documentationKey={
-                        DocumentationKey.DATA_CUBE_COLUMN_CONFIGURATION_MISSING_VALUE_FORMAT
+                        DataCubeDocumentationKey.COLUMN_CONFIGURATION_MISSING_VALUE_FORMAT
                       }
                     />
                   </div>
@@ -496,7 +497,7 @@ export const DataCubeEditorColumnPropertiesPanel = observer(
                     className="w-16"
                     value={selectedColumn.missingValueDisplayText ?? ''}
                     onChange={(event) => {
-                      const value = event.target.value.trim();
+                      const value = event.target.value;
                       selectedColumn.setMissingValueDisplayText(
                         value !== '' ? value : undefined,
                       );

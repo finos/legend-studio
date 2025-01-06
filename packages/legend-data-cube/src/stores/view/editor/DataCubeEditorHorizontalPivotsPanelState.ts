@@ -15,8 +15,7 @@
  */
 
 import { action, computed, makeObservable, observable } from 'mobx';
-import type { DataCubeViewState } from '../DataCubeViewState.js';
-import type { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import {
   DataCubeColumnKind,
   isPivotResultColumnName,
@@ -25,7 +24,7 @@ import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js'
 import {
   _toCol,
   type DataCubeColumn,
-} from '../../core/models/DataCubeColumn.js';
+} from '../../core/model/DataCubeColumn.js';
 import {
   DataCubeEditorColumnSelectorColumnState,
   DataCubeEditorColumnSelectorState,
@@ -45,12 +44,12 @@ export class DataCubeEditorHorizontalPivotColumnSelectorState extends DataCubeEd
   }
 
   override get availableColumns() {
-    return this.editor.columnProperties.columns
+    return this._editor.columnProperties.columns
       .filter(
         (col) =>
           col.kind === DataCubeColumnKind.DIMENSION &&
           // exclude group-level extended columns
-          !this.editor.groupExtendColumns.find(
+          !this._editor.groupExtendColumns.find(
             (column) => column.name === col.name,
           ),
       )
@@ -64,8 +63,8 @@ export class DataCubeEditorHorizontalPivotColumnSelectorState extends DataCubeEd
 export class DataCubeEditorHorizontalPivotsPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly view!: DataCubeViewState;
-  readonly editor!: DataCubeEditorState;
+  private readonly _editor!: DataCubeEditorState;
+
   readonly selector!: DataCubeEditorHorizontalPivotColumnSelectorState;
 
   castColumns: DataCubeColumn[] = [];
@@ -79,8 +78,7 @@ export class DataCubeEditorHorizontalPivotsPanelState
       applySnaphot: action,
     });
 
-    this.editor = editor;
-    this.view = editor.view;
+    this._editor = editor;
     this.selector = new DataCubeEditorHorizontalPivotColumnSelectorState(
       editor,
     );
@@ -97,8 +95,8 @@ export class DataCubeEditorHorizontalPivotsPanelState
   }
 
   propagateChanges() {
-    this.editor.verticalPivots.adaptPropagatedChanges();
-    this.editor.sorts.adaptPropagatedChanges();
+    this._editor.verticalPivots.adaptPropagatedChanges();
+    this._editor.sorts.adaptPropagatedChanges();
   }
 
   applySnaphot(

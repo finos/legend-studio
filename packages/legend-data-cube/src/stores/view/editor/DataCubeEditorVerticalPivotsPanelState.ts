@@ -15,11 +15,10 @@
  */
 
 import { uniqBy } from '@finos/legend-shared';
-import type { DataCubeViewState } from '../DataCubeViewState.js';
-import type { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { DataCubeColumnKind } from '../../core/DataCubeQueryEngine.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
-import { _toCol } from '../../core/models/DataCubeColumn.js';
+import { _toCol } from '../../core/model/DataCubeColumn.js';
 import {
   DataCubeEditorColumnSelectorColumnState,
   DataCubeEditorColumnSelectorState,
@@ -38,16 +37,16 @@ export class DataCubeEditorVerticalPivotColumnSelectorState extends DataCubeEdit
   }
 
   override get availableColumns() {
-    return this.editor.columnProperties.columns
+    return this._editor.columnProperties.columns
       .filter(
         (column) =>
           column.kind === DataCubeColumnKind.DIMENSION &&
           // exclude group-level extended columns
-          !this.editor.groupExtendColumns.find(
+          !this._editor.groupExtendColumns.find(
             (col) => col.name === column.name,
           ) &&
           // exclude pivot columns
-          !this.editor.horizontalPivots.selector.selectedColumns.find(
+          !this._editor.horizontalPivots.selector.selectedColumns.find(
             (col) => col.name === column.name,
           ),
       )
@@ -61,13 +60,9 @@ export class DataCubeEditorVerticalPivotColumnSelectorState extends DataCubeEdit
 export class DataCubeEditorVerticalPivotsPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly view!: DataCubeViewState;
-  readonly editor!: DataCubeEditorState;
   readonly selector!: DataCubeEditorVerticalPivotColumnSelectorState;
 
   constructor(editor: DataCubeEditorState) {
-    this.editor = editor;
-    this.view = editor.view;
     this.selector = new DataCubeEditorVerticalPivotColumnSelectorState(editor);
   }
 

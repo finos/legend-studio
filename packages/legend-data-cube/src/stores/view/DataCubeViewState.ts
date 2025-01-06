@@ -17,11 +17,11 @@
 import { DataCubeGridState } from './grid/DataCubeGridState.js';
 import { DataCubeEditorState } from './editor/DataCubeEditorState.js';
 import {
+  ActionState,
   assertErrorThrown,
   IllegalStateError,
-  uuid,
 } from '@finos/legend-shared';
-import { DataCubeQuerySnapshotManager } from './DataCubeQuerySnapshotManager.js';
+import { DataCubeQuerySnapshotService } from '../services/DataCubeQuerySnapshotService.js';
 import { DataCubeInfoState } from './DataCubeInfoState.js';
 import { validateAndBuildQuerySnapshot } from '../core/DataCubeQuerySnapshotBuilder.js';
 import {
@@ -34,30 +34,25 @@ import {
 import { DataCubeFilterEditorState } from './filter/DataCubeFilterEditorState.js';
 import { DataCubeExtendManagerState } from './extend/DataCubeExtendManagerState.js';
 import type { DataCubeState } from '../DataCubeState.js';
-import type { DataCubeEngine } from '../core/DataCubeEngine.js';
-import { AlertType } from '../../components/core/DataCubeAlert.js';
-import type { DataCubeSource } from '../core/models/DataCubeSource.js';
-import type { DataCubeQuery } from '../core/models/DataCubeQuery.js';
-
-class DataCubeTask {
-  uuid = uuid();
-  name: string;
-  startTime = Date.now();
-  endTime?: number | undefined;
-
-  constructor(name: string) {
-    this.name = name;
-  }
-
-  end() {
-    this.endTime = Date.now();
-  }
-}
+import { type DataCubeEngine } from '../core/DataCubeEngine.js';
+import type { DataCubeSource } from '../core/model/DataCubeSource.js';
+import { DataCubeQuery } from '../core/model/DataCubeQuery.js';
+import { DataCubeTaskService } from '../services/DataCubeTaskService.js';
+import type { DataCubeLogService } from '../services/DataCubeLogService.js';
+import { DataCubeConfiguration } from '../core/model/DataCubeConfiguration.js';
+import type { DataCubeLayoutService } from '../services/DataCubeLayoutService.js';
+import type { DataCubeAlertService } from '../services/DataCubeAlertService.js';
+import type { DataCubeSettingService } from '../services/DataCubeSettingService.js';
 
 export class DataCubeViewState {
   readonly dataCube: DataCubeState;
   readonly engine: DataCubeEngine;
-  readonly snapshotManager: DataCubeQuerySnapshotManager;
+  readonly logService: DataCubeLogService;
+  readonly taskService: DataCubeTaskService;
+  readonly layoutService: DataCubeLayoutService;
+  readonly alertService: DataCubeAlertService;
+  readonly settingService: DataCubeSettingService;
+  readonly snapshotService: DataCubeQuerySnapshotService;
 
   readonly info: DataCubeInfoState;
   readonly editor: DataCubeEditorState;
@@ -65,7 +60,7 @@ export class DataCubeViewState {
   readonly filter: DataCubeFilterEditorState;
   readonly extend: DataCubeExtendManagerState;
 
-  readonly runningTasks = new Map<string, DataCubeTask>();
+  readonly initializeState = ActionState.create();
 
   private _source?: DataCubeSource | undefined;
 
@@ -73,21 +68,22 @@ export class DataCubeViewState {
     makeObservable<DataCubeViewState, '_source'>(this, {
       _source: observable,
       source: computed,
-      isSourceProcessed: computed,
-
-      runningTasks: observable,
-      newTask: action,
-      endTask: action,
 
       initialize: action,
     });
 
     this.dataCube = dataCube;
     this.engine = dataCube.engine;
-    this.engine = dataCube.engine;
-
+    this.logService = dataCube.logService;
+    this.taskService = new DataCubeTaskService(dataCube.taskService.manager);
+    this.layoutService = dataCube.layoutService;
+    this.alertService = dataCube.alertService;
+    this.settingService = dataCube.settingService;
     // NOTE: snapshot manager must be instantiated before subscribers
-    this.snapshotManager = new DataCubeQuerySnapshotManager(this);
+    this.snapshotService = new DataCubeQuerySnapshotService(
+      this.engine,
+      this.logService,
+    );
 
     this.info = new DataCubeInfoState(this);
     this.editor = new DataCubeEditorState(this);
@@ -96,8 +92,15 @@ export class DataCubeViewState {
     this.extend = new DataCubeExtendManagerState(this);
   }
 
-  get isSourceProcessed() {
-    return Boolean(this._source);
+  async generateDataCubeQuery() {
+    const snapshot = this.snapshotService.currentSnapshot;
+    const query = new DataCubeQuery();
+    query.source = this.dataCube.query.source;
+    query.configuration = DataCubeConfiguration.serialization.fromJson(
+      snapshot.data.configuration,
+    );
+    query.query = await this.engine.getPartialQueryCode(snapshot);
+    return query;
   }
 
   get source() {
@@ -107,20 +110,10 @@ export class DataCubeViewState {
     return this._source;
   }
 
-  newTask(name: string) {
-    const task = new DataCubeTask(name);
-    this.runningTasks.set(task.uuid, task);
-    return task;
-  }
-
-  endTask(task: DataCubeTask) {
-    task.end();
-    this.runningTasks.delete(task.uuid);
-    return task;
-  }
-
   async initialize(query: DataCubeQuery) {
-    const task = this.newTask('Initializing');
+    this.initializeState.inProgress();
+    const task = this.taskService.newTask('Initializing');
+
     try {
       await Promise.all(
         [
@@ -131,7 +124,7 @@ export class DataCubeViewState {
           this.filter,
           this.extend,
         ].map(async (state) => {
-          this.snapshotManager.registerSubscriber(state);
+          this.snapshotService.registerSubscriber(state);
         }),
       );
       const source = await this.engine.processQuerySource(query.source);
@@ -146,17 +139,25 @@ export class DataCubeViewState {
         source,
         query,
       );
-      this.snapshotManager.broadcastSnapshot(initialSnapshot);
+      this.snapshotService.broadcastSnapshot(initialSnapshot);
+      this.dataCube.options?.onViewInitialized?.({
+        api: this.dataCube.api,
+        source,
+      });
+      this.initializeState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.dataCube.alertAction({
+      this.alertService.alertError(error, {
         message: `Initialization Failure: ${error.message}`,
-        prompt: `Resolve the issue and reload the engine.`,
-        type: AlertType.ERROR,
-        actions: [],
+        text: `Resolve the issue and reload the engine.`,
       });
+      this.initializeState.fail();
     } finally {
-      this.endTask(task);
+      this.taskService.endTask(task);
     }
+  }
+
+  dispose() {
+    this.taskService.dispose();
   }
 }

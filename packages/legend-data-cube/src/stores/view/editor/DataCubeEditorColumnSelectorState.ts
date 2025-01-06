@@ -15,10 +15,9 @@
  */
 
 import { makeObservable, observable, action, computed } from 'mobx';
-import type { DataCubeViewState } from '../DataCubeViewState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { _sortByColName } from '../../core/models/DataCubeColumn.js';
+import { _sortByColName } from '../../core/model/DataCubeColumn.js';
 
 export class DataCubeEditorColumnSelectorColumnState {
   readonly name: string;
@@ -33,8 +32,7 @@ export class DataCubeEditorColumnSelectorColumnState {
 export abstract class DataCubeEditorColumnSelectorState<
   T extends DataCubeEditorColumnSelectorColumnState,
 > {
-  readonly view!: DataCubeViewState;
-  readonly editor!: DataCubeEditorState;
+  protected readonly _editor!: DataCubeEditorState;
 
   selectedColumns: T[] = [];
 
@@ -68,8 +66,7 @@ export abstract class DataCubeEditorColumnSelectorState<
       setSelectedColumnsSearchText: action,
     });
 
-    this.editor = editor;
-    this.view = editor.view;
+    this._editor = editor;
     this.onChange = options?.onChange;
   }
 

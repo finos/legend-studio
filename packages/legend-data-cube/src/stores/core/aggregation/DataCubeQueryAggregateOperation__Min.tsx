@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DataCubeColumn } from '../models/DataCubeColumn.js';
+import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import { DataCubeQueryAggregateOperation } from './DataCubeQueryAggregateOperation.js';
 import {
   DataCubeQueryAggregateOperator,
@@ -23,7 +23,7 @@ import {
   ofDataType,
 } from '../DataCubeQueryEngine.js';
 import { _aggCol_basic } from '../DataCubeQueryBuilderUtils.js';
-import type { DataCubeColumnConfiguration } from '../models/DataCubeConfiguration.js';
+import type { DataCubeColumnConfiguration } from '../model/DataCubeConfiguration.js';
 
 export class DataCubeQueryAggregateOperation__Min extends DataCubeQueryAggregateOperation {
   override get label() {

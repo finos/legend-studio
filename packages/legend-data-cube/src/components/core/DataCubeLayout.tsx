@@ -22,19 +22,24 @@ import {
   WINDOW_DEFAULT_MIN_WIDTH,
   WINDOW_DEFAULT_OFFSET,
   WINDOW_DEFAULT_WIDTH,
-  type LayoutManagerState,
+  type WindowSpecification,
   type WindowState,
-} from '../../stores/core/DataCubeLayoutManagerState.js';
+  type LayoutManager,
+} from '../../stores/services/DataCubeLayoutService.js';
 import { observer } from 'mobx-react-lite';
 
 export const Window = (props: {
   parent?: React.RefObject<HTMLElement> | undefined;
-  layout: LayoutManagerState;
+  layout: LayoutManager;
   windowState: WindowState;
 }) => {
   const { parent, layout, windowState } = props;
   const configuration = windowState.configuration.window;
-  const [windowSpec, setWindowSpec] = useState(() => {
+  const [windowSpec, _setWindowSpec] = useState(() => {
+    if (windowState.specification) {
+      return windowState.specification;
+    }
+
     const x = configuration.x ?? WINDOW_DEFAULT_OFFSET;
     const y = configuration.y ?? WINDOW_DEFAULT_OFFSET;
     const width = configuration.width ?? WINDOW_DEFAULT_WIDTH;
@@ -71,13 +76,21 @@ export const Window = (props: {
         ? containerHeight - Math.abs(y) - WINDOW_DEFAULT_OFFSET
         : height;
 
-    return {
+    const spec = {
       x: x < 0 ? containerWidth - Math.abs(x) - finalWidth : x,
       y: y < 0 ? containerHeight - Math.abs(y) - finalHeight : y,
       width: finalWidth,
       height: finalHeight,
     };
+    windowState.setSpecification(spec);
+
+    return spec;
   });
+
+  const setWindowSpec = (val: WindowSpecification) => {
+    _setWindowSpec(val);
+    windowState.setSpecification(val);
+  };
 
   return (
     <ResizableAndDraggableBox
@@ -171,20 +184,18 @@ export const Window = (props: {
   );
 };
 
-export const DataCubeLayoutManager = observer(
-  (props: { layout: LayoutManagerState }) => {
-    const { layout } = props;
+export const DataCubeLayout = observer((props: { layout: LayoutManager }) => {
+  const { layout } = props;
 
-    return (
-      <>
-        {layout.windows.map((windowState) => (
-          <Window
-            key={windowState.uuid}
-            layout={layout}
-            windowState={windowState}
-          />
-        ))}
-      </>
-    );
-  },
-);
+  return (
+    <>
+      {layout.windows.map((windowState) => (
+        <Window
+          key={windowState.uuid}
+          layout={layout}
+          windowState={windowState}
+        />
+      ))}
+    </>
+  );
+});

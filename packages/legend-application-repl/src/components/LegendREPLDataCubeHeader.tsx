@@ -14,25 +14,28 @@
  * limitations under the License.
  */
 
-import { FormButton, type DataCubeState } from '@finos/legend-data-cube';
+import {
+  FormButton,
+  type DataCubeInnerHeaderComponentParams,
+} from '@finos/legend-data-cube';
 import { observer } from 'mobx-react-lite';
 import { LegendREPLDataCubeSource } from '../stores/LegendREPLDataCubeSource.js';
 import { useLegendREPLBaseStore } from './LegendREPLFramworkProvider.js';
 
 export const LegendREPLDataCubeHeader = observer(
-  (props: { dataCube: DataCubeState }) => {
-    const { dataCube } = props;
+  (props: DataCubeInnerHeaderComponentParams) => {
+    const { api } = props;
     const store = useLegendREPLBaseStore();
 
-    if (!dataCube.view.isSourceProcessed || !store.queryServerBaseUrl) {
+    if (!store.source || !store.queryServerBaseUrl) {
       return null;
     }
 
     const isPublishAllowed =
-      dataCube.view.source instanceof LegendREPLDataCubeSource &&
-      dataCube.view.source.isPersistenceSupported &&
+      store.source instanceof LegendREPLDataCubeSource &&
+      store.source.isPersistenceSupported &&
       // eslint-disable-next-line no-process-env
-      (process.env.NODE_ENV === 'development' || !dataCube.view.source.isLocal);
+      (process.env.NODE_ENV === 'development' || !store.source.isLocal);
 
     return (
       <div className="flex h-full items-center">
@@ -41,8 +44,8 @@ export const LegendREPLDataCubeHeader = observer(
           disabled={!isPublishAllowed || store.publishState.isInProgress}
           onClick={() => {
             store
-              .publishDataCube(dataCube)
-              .catch((error) => dataCube.engine.logUnhandledError(error));
+              .publishDataCube(api)
+              .catch((error) => store.alertService.alertUnhandledError(error));
           }}
         >
           Publish

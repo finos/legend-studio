@@ -22,7 +22,7 @@
  ***************************************************************************************/
 
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
-import { _toCol } from '../../core/models/DataCubeColumn.js';
+import { _toCol } from '../../core/model/DataCubeColumn.js';
 import {
   DataCubeGridClientSortDirection,
   INTERNAL__GRID_CLIENT_ROOT_AGGREGATION_COLUMN_ID,
@@ -34,7 +34,7 @@ import {
   getPivotResultColumnBaseColumnName,
   isPivotResultColumnName,
 } from '../../core/DataCubeQueryEngine.js';
-import { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { guaranteeNonNullable, uniqBy } from '@finos/legend-shared';
 import { _pruneExpandedPaths } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';
 

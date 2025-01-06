@@ -18,13 +18,13 @@ import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
   DataCubeColumnConfiguration,
   DataCubeConfiguration,
-} from './models/DataCubeConfiguration.js';
+} from './model/DataCubeConfiguration.js';
 import {
   DataCubeQueryAggregateOperator,
   DataCubeColumnKind,
   DataCubeFontTextAlignment,
 } from './DataCubeQueryEngine.js';
-import type { DataCubeColumn } from './models/DataCubeColumn.js';
+import type { DataCubeColumn } from './model/DataCubeColumn.js';
 
 export function buildDefaultColumnConfiguration(
   column: DataCubeColumn,

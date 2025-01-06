@@ -15,9 +15,9 @@
  */
 
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import type { DataCubeColumn } from '../models/DataCubeColumn.js';
+import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import { type V1_ColSpec } from '@finos/legend-graph';
-import type { DataCubeColumnConfiguration } from '../models/DataCubeConfiguration.js';
+import type { DataCubeColumnConfiguration } from '../model/DataCubeConfiguration.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 

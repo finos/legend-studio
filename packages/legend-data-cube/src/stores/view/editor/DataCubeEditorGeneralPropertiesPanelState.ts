@@ -15,19 +15,15 @@
  */
 
 import { action, makeObservable, observable } from 'mobx';
-import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
 import type { DataCubeQueryEditorPanelState } from './DataCubeEditorPanelState.js';
 import type { DataCubeEditorState } from './DataCubeEditorState.js';
 import { DataCubeEditorMutableConfiguration } from './DataCubeEditorMutableConfiguration.js';
-import type { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import type { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 
 export class DataCubeEditorGeneralPropertiesPanelState
   implements DataCubeQueryEditorPanelState
 {
-  readonly view!: DataCubeViewState;
-  readonly editor!: DataCubeEditorState;
-
   limit: number | undefined = undefined;
   configuration = new DataCubeEditorMutableConfiguration();
 
@@ -40,9 +36,6 @@ export class DataCubeEditorGeneralPropertiesPanelState
 
       applySnaphot: action,
     });
-
-    this.editor = editor;
-    this.view = editor.view;
   }
 
   setLimit(val: number | undefined): void {

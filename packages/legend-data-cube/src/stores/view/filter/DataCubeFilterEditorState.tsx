@@ -34,12 +34,12 @@ import {
   buildFilterEditorTree,
   buildFilterQuerySnapshot,
 } from '../../core/filter/DataCubeQueryFilterEditorState.js';
-import { DataCubeQuerySnapshotController } from '../DataCubeQuerySnapshotManager.js';
+import { DataCubeQuerySnapshotController } from '../../services/DataCubeQuerySnapshotService.js';
 import {
   DataCubeConfiguration,
   type DataCubeColumnConfiguration,
-} from '../../core/models/DataCubeConfiguration.js';
-import type { DisplayState } from '../../core/DataCubeLayoutManagerState.js';
+} from '../../core/model/DataCubeConfiguration.js';
+import type { DisplayState } from '../../services/DataCubeLayoutService.js';
 import { DataCubeFilterEditor } from '../../../components/view/filter/DataCubeFilterEditor.js';
 
 /**
@@ -47,6 +47,8 @@ import { DataCubeFilterEditor } from '../../../components/view/filter/DataCubeFi
  * to the filter in the form editor.
  */
 export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
+  private readonly _view: DataCubeViewState;
+
   readonly display: DisplayState;
 
   tree: DataCubeFilterEditorTree;
@@ -54,7 +56,7 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
   columns: DataCubeColumnConfiguration[] = [];
 
   constructor(view: DataCubeViewState) {
-    super(view);
+    super(view.engine, view.settingService, view.snapshotService);
 
     makeObservable(this, {
       tree: observable.ref,
@@ -73,9 +75,10 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
       layerFilterNode: action,
     });
 
-    this.display = this.view.engine.layout.newDisplay(
+    this._view = view;
+    this.display = this._view.dataCube.layoutService.newDisplay(
       'Filter',
-      () => <DataCubeFilterEditor view={this.view} />,
+      () => <DataCubeFilterEditor view={this._view} />,
       {
         x: -50,
         y: 50,
@@ -143,7 +146,7 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
           name: columnConfig.name,
           type: columnConfig.type,
         };
-        const operation = this.view.engine.getFilterOperation(
+        const operation = this._engine.getFilterOperation(
           DataCubeQueryFilterOperator.EQUAL,
         );
         return new DataCubeFilterEditorConditionTreeNode(
@@ -308,7 +311,7 @@ export class DataCubeFilterEditorState extends DataCubeQuerySnapshotController {
           snapshot.data.filter,
           undefined,
           this.tree.nodes,
-          (op) => this.view.engine.getFilterOperation(op),
+          (op) => this._engine.getFilterOperation(op),
         )
       : undefined;
     this.setSelectedNode(undefined);

@@ -16,9 +16,9 @@
 
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeViewState } from './DataCubeViewState.js';
-import { DataCubeQuerySnapshotController } from './DataCubeQuerySnapshotManager.js';
+import { DataCubeQuerySnapshotController } from '../services/DataCubeQuerySnapshotService.js';
 import type { DataCubeQuerySnapshot } from '../core/DataCubeQuerySnapshot.js';
-import { DataCubeConfiguration } from '../core/models/DataCubeConfiguration.js';
+import { DataCubeConfiguration } from '../core/model/DataCubeConfiguration.js';
 
 /**
  * Unlike other query editor state, this state does not support making any
@@ -26,17 +26,21 @@ import { DataCubeConfiguration } from '../core/models/DataCubeConfiguration.js';
  * from the latest snapshot to help display latest static info about the query.
  */
 export class DataCubeInfoState extends DataCubeQuerySnapshotController {
+  private readonly _view: DataCubeViewState;
+
   name = '';
   // TODO: filter preview text
 
   constructor(view: DataCubeViewState) {
-    super(view);
+    super(view.engine, view.settingService, view.snapshotService);
 
     makeObservable(this, {
       name: observable,
 
       applySnapshot: action,
     });
+
+    this._view = view;
   }
 
   override getSnapshotSubscriberName() {
@@ -55,7 +59,11 @@ export class DataCubeInfoState extends DataCubeQuerySnapshotController {
     if (configuration.name !== this.name) {
       this.name = configuration.name;
       // TODO: make sure we only call this for the main view of data cube when we support multi views
-      this.view.dataCube.onNameChanged?.(this.name, this.view.source);
+      this._view.dataCube.options?.onNameChanged?.({
+        api: this._view.dataCube.api,
+        name: this.name,
+        source: this._view.source,
+      });
     }
 
     // TODO: filter preview text

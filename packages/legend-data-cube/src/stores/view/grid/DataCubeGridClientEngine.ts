@@ -36,16 +36,15 @@ import { makeObservable, observable, runInAction } from 'mobx';
 import type {
   DataCubeConfiguration,
   DataCubeConfigurationColorKey,
-} from '../../core/models/DataCubeConfiguration.js';
-import { DEFAULT_LARGE_ALERT_WINDOW_CONFIG } from '../../core/DataCubeLayoutManagerState.js';
+} from '../../core/model/DataCubeConfiguration.js';
 import { type DataCubeQuerySnapshot } from '../../core/DataCubeQuerySnapshot.js';
-import { _sortByColName } from '../../core/models/DataCubeColumn.js';
+import { _sortByColName } from '../../core/model/DataCubeColumn.js';
 import {
   isPivotResultColumnName,
   type DataCubeQueryFunctionMap,
 } from '../../core/DataCubeQueryEngine.js';
 import { buildQuerySnapshot } from './DataCubeGridQuerySnapshotBuilder.js';
-import { AlertType } from '../../../components/core/DataCubeAlert.js';
+import { AlertType } from '../../services/DataCubeAlertService.js';
 import { sum } from 'mathjs';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import {
@@ -53,7 +52,8 @@ import {
   buildGridDataFetchExecutableQuery,
 } from './DataCubeGridQueryBuilder.js';
 import { _colSpecArrayParam } from '../../core/DataCubeQuerySnapshotBuilderUtils.js';
-import { DataCubeSettingKey } from '../../core/DataCubeSetting.js';
+import { DataCubeSettingKey } from '../../../__lib__/DataCubeSetting.js';
+import { DEFAULT_ALERT_WINDOW_CONFIG } from '../../services/DataCubeLayoutService.js';
 
 type DataCubeGridClientCellValue = string | number | boolean | null | undefined;
 type DataCubeGridClientRowData = {
@@ -301,7 +301,7 @@ async function getCastColumns(
   const lambda = new V1_Lambda();
   lambda.body.push(query);
   const result = await view.engine.executeQuery(lambda, view.source, {
-    debug: view.dataCube.settings.getBooleanValue(
+    debug: view.settingService.getBooleanValue(
       DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
     ),
   });
@@ -327,23 +327,28 @@ export type DataCubeGridClientDataFetchRequest = {
 export class DataCubeGridClientServerSideDataSource
   implements IServerSideDatasource
 {
-  readonly grid: DataCubeGridState;
+  private readonly _view: DataCubeViewState;
+  private readonly _grid: DataCubeGridState;
+
   rowCount: number | undefined = undefined;
 
-  constructor(grid: DataCubeGridState) {
+  constructor(grid: DataCubeGridState, view: DataCubeViewState) {
     makeObservable(this, {
       rowCount: observable,
     });
 
-    this.grid = grid;
+    this._grid = grid;
+    this._view = view;
   }
 
   async fetchRows(params: IServerSideGetRowsParams<unknown, unknown>) {
-    const task = this.grid.view.newTask('Fetching data');
+    const task = this._view.taskService.newTask('Fetching data');
 
     // ------------------------------ SNAPSHOT ------------------------------
 
-    const currentSnapshot = guaranteeNonNullable(this.grid.getLatestSnapshot());
+    const currentSnapshot = guaranteeNonNullable(
+      this._grid.getLatestSnapshot(),
+    );
     const request: DataCubeGridClientDataFetchRequest = {
       startRow: params.request.startRow,
       endRow: params.request.endRow,
@@ -368,13 +373,10 @@ export class DataCubeGridClientServerSideDataSource
       // Because is an expensive operation in certain case, we only
       // recompute when it's not a drilldown or paging request,
       // but we could still optimize further if needed.
-      if (!this.grid.isPaginationEnabled || request.startRow === 0) {
+      if (!this._grid.isPaginationEnabled || request.startRow === 0) {
         if (newSnapshot.data.pivot) {
           try {
-            const castColumns = await getCastColumns(
-              newSnapshot,
-              this.grid.view,
-            );
+            const castColumns = await getCastColumns(newSnapshot, this._view);
             newSnapshot.data.pivot.castColumns = castColumns;
             newSnapshot.data.sortColumns = newSnapshot.data.sortColumns.filter(
               (column) =>
@@ -384,12 +386,12 @@ export class DataCubeGridClientServerSideDataSource
             );
           } catch (error) {
             assertErrorThrown(error);
-            this.grid.view.engine.alertError(error, {
+            this._view.alertService.alertError(error, {
               message: `Query Validation Failure: Can't retrieve pivot results column metadata. ${error.message}`,
             });
             // fail early since we can't proceed without the cast columns validated
             params.fail();
-            this.grid.view.endTask(task);
+            this._view.taskService.endTask(task);
             return;
           }
         }
@@ -402,8 +404,8 @@ export class DataCubeGridClientServerSideDataSource
         // as applying snapshot to grid state could potentially update the grid
         // options and set SSRM filter model.
         newSnapshot.markAsPatchChange();
-        await this.grid.applySnapshot(newSnapshot, currentSnapshot);
-        this.grid.publishSnapshot(newSnapshot);
+        await this._grid.applySnapshot(newSnapshot, currentSnapshot);
+        this._grid.publishSnapshot(newSnapshot);
       }
     }
 
@@ -413,33 +415,33 @@ export class DataCubeGridClientServerSideDataSource
       const executableQuery = buildGridDataFetchExecutableQuery(
         request,
         newSnapshot,
-        this.grid.view.source,
-        (source) => this.grid.view.engine.buildExecutionContext(source),
-        this.grid.view.engine.filterOperations,
-        this.grid.view.engine.aggregateOperations,
-        this.grid.isPaginationEnabled,
+        this._view.source,
+        (source) => this._view.engine.buildExecutionContext(source),
+        this._view.engine.filterOperations,
+        this._view.engine.aggregateOperations,
+        this._grid.isPaginationEnabled,
       );
       const lambda = new V1_Lambda();
       lambda.body.push(executableQuery);
-      const result = await this.grid.view.engine.executeQuery(
+      const result = await this._view.engine.executeQuery(
         lambda,
-        this.grid.view.source,
+        this._view.source,
         {
-          debug: this.grid.view.dataCube.settings.getBooleanValue(
+          debug: this._view.settingService.getBooleanValue(
             DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
           ),
         },
       );
       const rowData = buildRowData(result.result.result, newSnapshot);
       if (
-        this.grid.view.dataCube.settings.getBooleanValue(
+        this._view.settingService.getBooleanValue(
           DataCubeSettingKey.DEBUGGER__ENABLE_DEBUG_MODE,
         )
       ) {
-        this.grid.view.engine.debugProcess(
+        this._view.engine.debugProcess(
           `Execution`,
           ['Query', result.executedQuery],
-          ['Config', `pagination=${this.grid.isPaginationEnabled}`],
+          ['Config', `pagination=${this._grid.isPaginationEnabled}`],
           [
             'Stats',
             `${rowData.length} rows, ${result.result.result.columns.length} columns`,
@@ -448,7 +450,7 @@ export class DataCubeGridClientServerSideDataSource
         );
       }
 
-      if (this.grid.isPaginationEnabled) {
+      if (this._grid.isPaginationEnabled) {
         params.success({ rowData });
         // only update row count when loading the top-level drilldown data
         if (isTopLevelRequest) {
@@ -463,9 +465,9 @@ export class DataCubeGridClientServerSideDataSource
           request.startRow === 0 &&
           rowData.length === 0
         ) {
-          this.grid.client.showNoRowsOverlay();
+          this._grid.client.showNoRowsOverlay();
         } else {
-          this.grid.client.hideOverlay();
+          this._grid.client.hideOverlay();
         }
       } else {
         // NOTE: When pagination is disabled and the user currently scrolls to somewhere in the grid, as data is fetched
@@ -482,11 +484,11 @@ export class DataCubeGridClientServerSideDataSource
         // behavior by forcing a scroll top for every data fetch and also reset the cache block size to the default value to save memory
         if (rowData.length > INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE) {
           if (
-            !this.grid.view.dataCube.settings.getBooleanValue(
+            !this._view.settingService.getBooleanValue(
               DataCubeSettingKey.GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING,
             )
           ) {
-            this.grid.view.engine.alert({
+            this._view.alertService.alert({
               message: `Large dataset (>${INTERNAL__GRID_CLIENT_MAX_CACHE_BLOCK_SIZE} rows) detected!`,
               text: `Overall app performance can be impacted by large dataset due to longer query execution time and increased memory usage. At its limit, the engine can crash!\nTo boost performance, consider enabling pagination while working with large dataset.`,
               type: AlertType.WARNING,
@@ -494,20 +496,26 @@ export class DataCubeGridClientServerSideDataSource
                 {
                   label: 'Enable Pagination',
                   handler: () => {
-                    this.grid.setPaginationEnabled(true);
+                    this._grid.setPaginationEnabled(true);
                   },
                 },
                 {
                   label: 'Dismiss Warning',
                   handler: () => {
-                    this.grid.view.dataCube.settings.updateValue(
+                    this._view.settingService.updateValue(
+                      this._view.dataCube.api,
                       DataCubeSettingKey.GRID_CLIENT__SUPPRESS_LARGE_DATASET_WARNING,
                       true,
                     );
                   },
                 },
               ],
-              windowConfig: DEFAULT_LARGE_ALERT_WINDOW_CONFIG,
+              windowConfig: {
+                ...DEFAULT_ALERT_WINDOW_CONFIG,
+                width: 600,
+                minWidth: 300,
+                minHeight: 150,
+              },
             });
           }
 
@@ -531,9 +539,9 @@ export class DataCubeGridClientServerSideDataSource
 
         // toggle no-rows overlay
         if (isTopLevelRequest && rowData.length === 0) {
-          this.grid.client.showNoRowsOverlay();
+          this._grid.client.showNoRowsOverlay();
         } else {
-          this.grid.client.hideOverlay();
+          this._grid.client.hideOverlay();
         }
       }
 
@@ -543,23 +551,23 @@ export class DataCubeGridClientServerSideDataSource
       // `setTimeout()` is need to ensure this runs after the grid has been updated with the new data
       // since ag-grid does not provide an event hook for this action for server-side row model.
       setTimeout(() => {
-        this.grid.client.autoSizeAllColumns();
+        this._grid.client.autoSizeAllColumns();
       }, 0);
     } catch (error) {
       assertErrorThrown(error);
-      this.grid.view.engine.alertError(error, {
+      this._view.alertService.alertError(error, {
         message: `Data Fetch Failure: ${error.message}`,
       });
       params.fail();
     } finally {
-      this.grid.view.endTask(task);
+      this._view.taskService.endTask(task);
     }
   }
 
   getRows(params: IServerSideGetRowsParams<unknown, unknown>) {
     this.fetchRows(params).catch((error: unknown) => {
       assertErrorThrown(error);
-      this.grid.view.engine.logIllegalStateError(
+      this._view.logService.logIllegalStateError(
         `Error ocurred while fetching data for grid should have been handled gracefully`,
         error,
       );

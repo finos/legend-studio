@@ -60,7 +60,7 @@ import {
   type DataCubeQuerySnapshotFilter,
   type DataCubeQuerySnapshot,
 } from './DataCubeQuerySnapshot.js';
-import { type DataCubeColumn } from './models/DataCubeColumn.js';
+import { type DataCubeColumn } from './model/DataCubeColumn.js';
 import {
   guaranteeNonNullable,
   guaranteeIsString,
@@ -87,7 +87,7 @@ import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQuer
 import {
   DataCubeColumnConfiguration,
   type DataCubeConfiguration,
-} from './models/DataCubeConfiguration.js';
+} from './model/DataCubeConfiguration.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 

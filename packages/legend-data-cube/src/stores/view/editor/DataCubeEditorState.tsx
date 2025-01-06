@@ -17,7 +17,7 @@
 import { action, makeObservable, observable } from 'mobx';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
 import { DataCubeEditorSortsPanelState } from './DataCubeEditorSortsPanelState.js';
-import { DataCubeQuerySnapshotController } from '../DataCubeQuerySnapshotManager.js';
+import { DataCubeQuerySnapshotController } from '../../services/DataCubeQuerySnapshotService.js';
 import {
   type DataCubeQuerySnapshot,
   type DataCubeQuerySnapshotExtendedColumn,
@@ -25,7 +25,7 @@ import {
 import {
   _toCol,
   type DataCubeColumn,
-} from '../../core/models/DataCubeColumn.js';
+} from '../../core/model/DataCubeColumn.js';
 import {
   ActionState,
   assertErrorThrown,
@@ -34,9 +34,9 @@ import {
 import { DataCubeEditorGeneralPropertiesPanelState } from './DataCubeEditorGeneralPropertiesPanelState.js';
 import { DataCubeEditorColumnPropertiesPanelState } from './DataCubeEditorColumnPropertiesPanelState.js';
 import { DataCubeEditorColumnsPanelState } from './DataCubeEditorColumnsPanelState.js';
-import { DataCubeConfiguration } from '../../core/models/DataCubeConfiguration.js';
+import { DataCubeConfiguration } from '../../core/model/DataCubeConfiguration.js';
 import { DataCubeEditorVerticalPivotsPanelState } from './DataCubeEditorVerticalPivotsPanelState.js';
-import type { DisplayState } from '../../core/DataCubeLayoutManagerState.js';
+import type { DisplayState } from '../../services/DataCubeLayoutService.js';
 import { DataCubeEditor } from '../../../components/view/editor/DataCubeEditor.js';
 import { DataCubeEditorHorizontalPivotsPanelState } from './DataCubeEditorHorizontalPivotsPanelState.js';
 import { DataCubeEditorPivotLayoutPanelState } from './DataCubeEditorPivotLayoutPanelState.js';
@@ -62,6 +62,7 @@ export enum DataCubeEditorTab {
  * reasons, those have been separated out into their own respective query editor states.
  */
 export class DataCubeEditorState extends DataCubeQuerySnapshotController {
+  readonly view: DataCubeViewState;
   readonly display: DisplayState;
   readonly finalizationState = ActionState.create();
 
@@ -81,7 +82,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
   groupExtendColumns: DataCubeQuerySnapshotExtendedColumn[] = [];
 
   constructor(view: DataCubeViewState) {
-    super(view);
+    super(view.engine, view.settingService, view.snapshotService);
 
     makeObservable(this, {
       currentTab: observable,
@@ -95,9 +96,11 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
       applyChanges: action,
     });
 
-    this.display = this.view.engine.layout.newDisplay('Properties', () => (
-      <DataCubeEditor view={this.view} />
-    ));
+    this.view = view;
+    this.display = this.view.dataCube.layoutService.newDisplay(
+      'Properties',
+      () => <DataCubeEditor view={this.view} />,
+    );
     this.generalProperties = new DataCubeEditorGeneralPropertiesPanelState(
       this,
     );
@@ -160,7 +163,7 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
     // finalize
     newSnapshot.finalize();
     if (newSnapshot.hashCode !== baseSnapshot.hashCode) {
-      const task = this.view.newTask('Validate query');
+      const task = this.view.taskService.newTask('Validate query');
       // NOTE: Compile the query to validate. This is a helpful check for a lot of different scenarios
       // where the consistency of the query might be thrown off by changes from various parts that the
       // editor does not have full control over (i.e. extended columns, pivot cast columns, etc.)
@@ -195,19 +198,24 @@ export class DataCubeEditorState extends DataCubeQuerySnapshotController {
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof EngineError) {
-          this.view.engine.alertCodeCheckError(error, code, codePrefix, {
-            message: `Query Validation Failure: Can't safely apply changes. Check the query code below for more details.`,
-            text: `Error: ${error.message}`,
-          });
+          this.view.dataCube.alertService.alertCodeCheckError(
+            error,
+            code,
+            codePrefix,
+            {
+              message: `Query Validation Failure: Can't safely apply changes. Check the query code below for more details.`,
+              text: `Error: ${error.message}`,
+            },
+          );
         } else {
-          this.view.engine.alertError(error, {
+          this.view.dataCube.alertService.alertError(error, {
             message: `Query Validation Failure: Can't safely apply changes.`,
             text: `Error: ${error.message}`,
           });
         }
         return;
       } finally {
-        this.view.endTask(task);
+        this.view.taskService.endTask(task);
         this.finalizationState.complete();
       }
 

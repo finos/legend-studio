@@ -25,14 +25,22 @@ import {
 import type { LegendREPLApplicationStore } from '../application/LegendREPLApplicationStore.js';
 import { LegendREPLServerClient } from './LegendREPLServerClient.js';
 import {
-  DataCubeConfiguration,
   DataCubeQuery,
+  type DataCubeSource,
   LayoutConfiguration,
   RawAdhocQueryDataCubeSource,
   WindowState,
-  type DataCubeState,
+  type DataCubeAPI,
+  DEFAULT_REPORT_NAME,
+  DataCubeLayoutService,
+  DataCubeAlertService,
+  DataCubeLogService,
+  DataCubeTaskService,
 } from '@finos/legend-data-cube';
-import { LegendREPLDataCubeSource } from './LegendREPLDataCubeSource.js';
+import {
+  LegendREPLDataCubeSource,
+  RawLegendREPLDataCubeSource,
+} from './LegendREPLDataCubeSource.js';
 import { PersistentDataCubeQuery } from '@finos/legend-graph';
 import { LegendREPLPublishDataCubeAlert } from '../components/LegendREPLPublishDataCubeAlert.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
@@ -40,14 +48,17 @@ import { action, makeObservable, observable } from 'mobx';
 import { LegendREPLDataCubeEngine } from './LegendREPLDataCubeEngine.js';
 
 export class LegendREPLBaseStore {
+  private readonly _client: LegendREPLServerClient;
   readonly application: LegendREPLApplicationStore;
-  readonly client: LegendREPLServerClient;
   readonly engine: LegendREPLDataCubeEngine;
+  readonly taskService: DataCubeTaskService;
+  readonly layoutService: DataCubeLayoutService;
+  readonly alertService: DataCubeAlertService;
+
   readonly initializeState = ActionState.create();
   readonly publishState = ActionState.create();
 
-  sourceQuery?: string | undefined;
-  currentUser?: string | undefined;
+  source?: DataCubeSource | undefined;
   gridClientLicense?: string | undefined;
   queryServerBaseUrl?: string | undefined;
   hostedApplicationBaseUrl?: string | undefined;
@@ -56,11 +67,13 @@ export class LegendREPLBaseStore {
   constructor(application: LegendREPLApplicationStore) {
     makeObservable(this, {
       query: observable,
-
       setQuery: action,
+
+      source: observable,
+      setSource: action,
     });
     this.application = application;
-    this.client = new LegendREPLServerClient(
+    this._client = new LegendREPLServerClient(
       new NetworkClient({
         baseUrl: application.config.useDynamicREPLServer
           ? window.location.origin +
@@ -71,18 +84,27 @@ export class LegendREPLBaseStore {
           : application.config.replUrl,
       }),
     );
-    this.engine = new LegendREPLDataCubeEngine(this);
+    this.engine = new LegendREPLDataCubeEngine(this.application, this._client);
+    this.taskService = new DataCubeTaskService();
+    this.layoutService = new DataCubeLayoutService();
+    this.alertService = new DataCubeAlertService(
+      new DataCubeLogService(this.engine),
+      this.layoutService,
+    );
   }
 
-  setQuery(query: DataCubeQuery | undefined): void {
+  setQuery(query: DataCubeQuery | undefined) {
     this.query = query;
+  }
+
+  setSource(source: DataCubeSource | undefined) {
+    this.source = source;
   }
 
   async initialize() {
     this.initializeState.inProgress();
     try {
-      const info = await this.client.getInfrastructureInfo();
-      this.currentUser = info.currentUser;
+      const info = await this._client.getInfrastructureInfo();
       if (info.currentUser) {
         this.application.identityService.setCurrentUser(info.currentUser);
       }
@@ -92,7 +114,7 @@ export class LegendREPLBaseStore {
       this.hostedApplicationBaseUrl = info.hostedApplicationBaseUrl;
       this.gridClientLicense = info.gridClientLicense;
       this.setQuery(
-        DataCubeQuery.serialization.fromJson(await this.client.getBaseQuery()),
+        DataCubeQuery.serialization.fromJson(await this._client.getBaseQuery()),
       );
 
       this.initializeState.pass();
@@ -103,46 +125,48 @@ export class LegendREPLBaseStore {
         `Can't initialize REPL`,
         error,
       );
+      this.alertService.alertError(error, {
+        message: `Initialization Failure: ${error.message}`,
+        text: `Resolve the issue and reload the engine.`,
+      });
       this.initializeState.fail();
     }
   }
 
-  async publishDataCube(dataCube: DataCubeState) {
+  async publishDataCube(api: DataCubeAPI) {
     if (
-      !this.sourceQuery ||
-      !dataCube.view.isSourceProcessed ||
       !this.queryServerBaseUrl ||
-      !(dataCube.view.source instanceof LegendREPLDataCubeSource) ||
-      !dataCube.view.source.isPersistenceSupported ||
-      !dataCube.view.source.model ||
+      !(this.source instanceof LegendREPLDataCubeSource) ||
+      !this.source.isPersistenceSupported ||
+      !this.source.model ||
       // eslint-disable-next-line no-process-env
-      !(process.env.NODE_ENV === 'development' || !dataCube.view.source.isLocal)
+      !(process.env.NODE_ENV === 'development' || !this.source.isLocal)
     ) {
       return;
     }
 
     this.publishState.inProgress();
-    const task = dataCube.view.newTask('Publish query');
+    const task = this.taskService.newTask('Publish query');
 
     try {
-      const query = new DataCubeQuery();
-      query.query = await dataCube.engine.getPartialQueryCode(
-        dataCube.view.snapshotManager.currentSnapshot,
-      );
+      const query = await api.generateDataCubeQuery();
+
       const source = new RawAdhocQueryDataCubeSource();
-      source.query = this.sourceQuery;
-      source.runtime = dataCube.view.source.runtime;
-      source.model = dataCube.view.source.model;
+      source.query = RawLegendREPLDataCubeSource.serialization.fromJson(
+        query.source,
+      ).query;
+      source.runtime = this.source.runtime;
+      source.model = this.source.model;
       query.source = RawAdhocQueryDataCubeSource.serialization.toJson(source);
+
       const newQuery = new PersistentDataCubeQuery();
       newQuery.id = uuid();
-      newQuery.name = DataCubeConfiguration.serialization.fromJson(
-        dataCube.view.snapshotManager.currentSnapshot.data.configuration,
-      ).name;
+      newQuery.name = query.configuration?.name ?? DEFAULT_REPORT_NAME;
       newQuery.content = DataCubeQuery.serialization.toJson(query);
-      newQuery.owner = this.currentUser;
+      newQuery.owner = this.application.identityService.currentUser;
+
       const publishedQuery = PersistentDataCubeQuery.serialization.fromJson(
-        await this.client.publishQuery(
+        await this._client.publishQuery(
           PersistentDataCubeQuery.serialization.toJson(newQuery),
           this.queryServerBaseUrl,
         ),
@@ -160,15 +184,15 @@ export class LegendREPLBaseStore {
         minHeight: 100,
         center: true,
       };
-      dataCube.engine.layout.newWindow(window);
+      this.layoutService.newWindow(window);
     } catch (error) {
       assertErrorThrown(error);
-      dataCube.view.engine.alertError(error, {
+      this.alertService.alertError(error, {
         message: `Persistence Failure: Can't publish query.`,
         text: `Error: ${error.message}`,
       });
     } finally {
-      dataCube.view.endTask(task);
+      this.taskService.endTask(task);
       this.publishState.complete();
     }
   }

@@ -20,21 +20,18 @@ import { DataCubeEditorColumnSelector } from './DataCubeEditorColumnSelector.js'
 import { useEffect } from 'react';
 import type { DataCubeViewState } from '../../../stores/view/DataCubeViewState.js';
 import { FormCheckbox } from '../../core/DataCubeFormUtils.js';
-import type {
-  DataCubeEditorColumnSelectorColumnState,
-  DataCubeEditorColumnSelectorState,
-} from '../../../stores/view/editor/DataCubeEditorColumnSelectorState.js';
+import type { DataCubeEditorColumnSelectorColumnState } from '../../../stores/view/editor/DataCubeEditorColumnSelectorState.js';
+import type { DataCubeEditorState } from '../../../stores/view/editor/DataCubeEditorState.js';
 
 const ColumnSelectorLabel = observer(
   (props: {
-    selector: DataCubeEditorColumnSelectorState<DataCubeEditorColumnSelectorColumnState>;
     column: DataCubeEditorColumnSelectorColumnState;
+    editor: DataCubeEditorState;
   }) => {
-    const { selector, column } = props;
-    const showHiddenIndicator =
-      selector.editor.columnProperties.getColumnConfiguration(
-        column.name,
-      ).hideFromView;
+    const { column, editor } = props;
+    const showHiddenIndicator = editor.columnProperties.getColumnConfiguration(
+      column.name,
+    ).hideFromView;
 
     return (
       <>
@@ -49,18 +46,14 @@ const ColumnSelectorLabel = observer(
           {column.name}
         </div>
         {Boolean(
-          selector.editor.leafExtendColumns.find(
-            (col) => col.name === column.name,
-          ),
+          editor.leafExtendColumns.find((col) => col.name === column.name),
         ) && (
           <div className="ml-1.5 mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
             {`Extended (Leaf Level)`}
           </div>
         )}
         {Boolean(
-          selector.editor.groupExtendColumns.find(
-            (col) => col.name === column.name,
-          ),
+          editor.groupExtendColumns.find((col) => col.name === column.name),
         ) && (
           <div className="ml-1.5 mr-0.5 flex h-3.5 flex-shrink-0 items-center rounded-sm border border-neutral-300 bg-neutral-100 px-1 text-xs font-medium uppercase text-neutral-600">
             {`Extended (Group Level)`}
@@ -74,7 +67,8 @@ const ColumnSelectorLabel = observer(
 export const DataCubeEditorColumnsPanel = observer(
   (props: { view: DataCubeViewState }) => {
     const { view } = props;
-    const panel = view.editor.columns;
+    const editor = view.editor;
+    const panel = editor.columns;
 
     useEffect(() => () => panel.propagateChanges(), [panel]);
 
@@ -112,7 +106,9 @@ export const DataCubeEditorColumnsPanel = observer(
                 No columns selected
               </div>
             )}
-            columnLabelRenderer={(p) => <ColumnSelectorLabel {...p} />}
+            columnLabelRenderer={(p) => (
+              <ColumnSelectorLabel {...p} editor={editor} />
+            )}
           />
         </div>
       </div>

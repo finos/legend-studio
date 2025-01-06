@@ -23,6 +23,13 @@ import {
   runInAction,
 } from 'mobx';
 
+export type WindowSpecification = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 export type WindowConfiguration = {
   x?: number | undefined;
   y?: number | undefined;
@@ -51,13 +58,21 @@ export class WindowState {
   readonly uuid = uuid();
   readonly configuration: LayoutConfiguration;
   readonly onClose?: (() => void) | undefined;
+  ownerId?: string | undefined;
+  specification?: WindowSpecification | undefined;
 
   constructor(
     configuration: LayoutConfiguration,
     onClose?: (() => void) | undefined,
+    ownerId?: string | undefined,
   ) {
     this.configuration = configuration;
     this.onClose = onClose;
+    this.ownerId = ownerId;
+  }
+
+  setSpecification(val: WindowSpecification) {
+    this.specification = val;
   }
 }
 
@@ -75,7 +90,7 @@ export const DEFAULT_TOOL_PANEL_WINDOW_CONFIG: WindowConfiguration = {
   center: true,
 };
 
-export const DEFAULT_SMALL_ALERT_WINDOW_CONFIG: WindowConfiguration = {
+export const DEFAULT_ALERT_WINDOW_CONFIG: WindowConfiguration = {
   width: 500,
   height: 200,
   minWidth: 200,
@@ -83,23 +98,17 @@ export const DEFAULT_SMALL_ALERT_WINDOW_CONFIG: WindowConfiguration = {
   center: true,
 };
 
-export const DEFAULT_LARGE_ALERT_WINDOW_CONFIG: WindowConfiguration = {
-  width: 600,
-  height: 200,
-  minWidth: 300,
-  minHeight: 150,
-  center: true,
-};
-
 export class DisplayState {
-  private readonly layoutManagerState: LayoutManagerState;
+  private readonly layout: LayoutManager;
   readonly configuration: LayoutConfiguration;
+  readonly ownerId?: string | undefined;
   window?: WindowState | undefined;
 
   constructor(
-    layoutManagerState: LayoutManagerState,
+    layout: LayoutManager,
     title: string,
     contentRenderer: (config: LayoutConfiguration) => React.ReactNode,
+    ownerId?: string | undefined,
   ) {
     makeObservable(this, {
       window: observable,
@@ -108,9 +117,10 @@ export class DisplayState {
       close: action,
     });
 
-    this.layoutManagerState = layoutManagerState;
+    this.layout = layout;
     this.configuration = new LayoutConfiguration(title, contentRenderer);
     this.configuration.window = DEFAULT_TOOL_PANEL_WINDOW_CONFIG;
+    this.ownerId = ownerId;
   }
 
   get isOpen() {
@@ -119,26 +129,30 @@ export class DisplayState {
 
   open() {
     if (this.window) {
-      this.layoutManagerState.bringWindowFront(this.window);
+      this.layout.bringWindowFront(this.window);
     } else {
-      this.window = new WindowState(this.configuration, () =>
-        runInAction(() => {
-          this.window = undefined;
-        }),
+      this.window = new WindowState(
+        this.configuration,
+        () =>
+          runInAction(() => {
+            this.window = undefined;
+          }),
+        this.ownerId,
       );
-      this.layoutManagerState.newWindow(this.window);
+      this.layout.newWindow(this.window, this.ownerId);
     }
   }
 
   close() {
     if (this.window) {
-      this.layoutManagerState.closeWindow(this.window);
+      this.layout.closeWindow(this.window);
       this.window = undefined;
     }
   }
 }
 
-export class LayoutManagerState {
+export class LayoutManager {
+  // TODO?: keep a hashmap, in parallel, for faster lookup
   windows: WindowState[] = [];
 
   constructor() {
@@ -147,6 +161,7 @@ export class LayoutManagerState {
       newWindow: action,
       bringWindowFront: action,
       closeWindow: action,
+      closeWindows: action,
     });
   }
 
@@ -154,15 +169,17 @@ export class LayoutManagerState {
     title: string,
     contentRenderer: (config: LayoutConfiguration) => React.ReactNode,
     windowConfiguration?: WindowConfiguration | undefined,
-  ): DisplayState {
-    const display = new DisplayState(this, title, contentRenderer);
+    ownerId?: string | undefined,
+  ) {
+    const display = new DisplayState(this, title, contentRenderer, ownerId);
     if (windowConfiguration) {
       display.configuration.window = windowConfiguration;
     }
     return display;
   }
 
-  newWindow(window: WindowState) {
+  newWindow(window: WindowState, ownerId?: string | undefined) {
+    window.ownerId = window.ownerId ?? ownerId;
     this.windows.push(window);
   }
 
@@ -180,5 +197,61 @@ export class LayoutManagerState {
       this.windows = this.windows.filter((w) => w.uuid !== window.uuid);
       window.onClose?.();
     }
+  }
+
+  closeWindows(windows: WindowState[]) {
+    this.windows = this.windows.filter(
+      (window) => !windows.find((w) => w.uuid === window.uuid),
+    );
+    windows.forEach((window) => window.onClose?.());
+  }
+}
+
+export class DataCubeLayoutService {
+  readonly uuid = uuid();
+  readonly manager: LayoutManager;
+
+  constructor(manager?: LayoutManager | undefined) {
+    makeObservable(this, {
+      windows: computed,
+    });
+
+    this.manager = manager ?? new LayoutManager();
+  }
+
+  get windows() {
+    return this.manager.windows.filter(
+      (window) => window.ownerId === this.uuid,
+    );
+  }
+
+  newDisplay(
+    title: string,
+    contentRenderer: (config: LayoutConfiguration) => React.ReactNode,
+    windowConfiguration?: WindowConfiguration | undefined,
+  ) {
+    return this.manager.newDisplay(
+      title,
+      contentRenderer,
+      windowConfiguration,
+      this.uuid,
+    );
+  }
+
+  newWindow(window: WindowState) {
+    this.manager.newWindow(window, this.uuid);
+  }
+
+  bringWindowFront(window: WindowState) {
+    this.manager.bringWindowFront(window);
+  }
+
+  closeWindow(window: WindowState) {
+    this.manager.closeWindow(window);
+  }
+
+  dispose() {
+    // close all windows owned by this service
+    this.manager.closeWindows(this.windows);
   }
 }

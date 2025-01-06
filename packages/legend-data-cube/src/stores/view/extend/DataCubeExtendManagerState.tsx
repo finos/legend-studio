@@ -22,7 +22,7 @@ import {
 import {
   _toCol,
   type DataCubeColumn,
-} from '../../core/models/DataCubeColumn.js';
+} from '../../core/model/DataCubeColumn.js';
 import {
   assertErrorThrown,
   deleteEntry,
@@ -31,11 +31,11 @@ import {
   uniqBy,
 } from '@finos/legend-shared';
 import type { DataCubeViewState } from '../DataCubeViewState.js';
-import { DataCubeQuerySnapshotController } from '../DataCubeQuerySnapshotManager.js';
+import { DataCubeQuerySnapshotController } from '../../services/DataCubeQuerySnapshotService.js';
 import {
   DataCubeConfiguration,
   type DataCubeColumnConfiguration,
-} from '../../core/models/DataCubeConfiguration.js';
+} from '../../core/model/DataCubeConfiguration.js';
 import {
   DataCubeExistingColumnEditorState,
   DataCubeNewColumnState,
@@ -50,16 +50,11 @@ import { _lambda } from '../../core/DataCubeQueryBuilderUtils.js';
 import { EngineError } from '@finos/legend-graph';
 
 class DataCubeQueryExtendedColumnState {
-  name: string;
-  type: string;
-  data: DataCubeQuerySnapshotExtendedColumn;
+  readonly name: string;
+  readonly type: string;
+  readonly data: DataCubeQuerySnapshotExtendedColumn;
 
   constructor(data: DataCubeQuerySnapshotExtendedColumn) {
-    makeObservable(this, {
-      name: observable,
-      type: observable,
-    });
-
     this.name = data.name;
     this.type = data.type;
     this.data = data;
@@ -70,6 +65,8 @@ class DataCubeQueryExtendedColumnState {
  * This query editor state backs the form editor for extend columns, i.e. creating new columns.
  */
 export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController {
+  readonly view: DataCubeViewState;
+
   columnConfigurations: DataCubeColumnConfiguration[] = [];
   selectColumns: DataCubeColumn[] = [];
   sourceColumns: DataCubeColumn[] = [];
@@ -82,7 +79,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
   existingColumnEditors: DataCubeExistingColumnEditorState[] = [];
 
   constructor(view: DataCubeViewState) {
-    super(view);
+    super(view.engine, view.settingService, view.snapshotService);
 
     makeObservable(this, {
       sourceColumns: observable.ref,
@@ -102,6 +99,8 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
 
       applySnapshot: action,
     });
+
+    this.view = view;
   }
 
   setLeafExtendedColumns(val: DataCubeQueryExtendedColumnState[]): void {
@@ -208,7 +207,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
       this.columnConfigurations.find((col) => col.name === columnName),
     );
 
-    const task = this.view.newTask('Column update check');
+    const task = this.view.taskService.newTask('Column update check');
 
     const currentSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const tempSnapshot = currentSnapshot.clone();
@@ -246,9 +245,9 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     };
 
     const codePrefix = `->`;
-    const code = await this.view.engine.getPartialQueryCode(tempSnapshot, true);
+    const code = await this._engine.getPartialQueryCode(tempSnapshot, true);
     try {
-      await this.view.engine.getQueryCodeRelationReturnType(
+      await this._engine.getQueryCodeRelationReturnType(
         codePrefix + code,
         _lambda([], [this.view.source.query]),
         this.view.source,
@@ -256,19 +255,24 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     } catch (error) {
       assertErrorThrown(error);
       if (error instanceof EngineError) {
-        this.view.engine.alertCodeCheckError(error, code, codePrefix, {
-          message: `Column Update Check Failure: Can't safely update column '${columnName}'. Check the query code below for more details.`,
-          text: `Error: ${error.message}`,
-        });
+        this.view.dataCube.alertService.alertCodeCheckError(
+          error,
+          code,
+          codePrefix,
+          {
+            message: `Column Update Check Failure: Can't safely update column '${columnName}'. Check the query code below for more details.`,
+            text: `Error: ${error.message}`,
+          },
+        );
       } else {
-        this.view.engine.alertError(error, {
+        this.view.dataCube.alertService.alertError(error, {
           message: `Column Update Check Failure: Can't safely update column '${columnName}'.`,
           text: `Error: ${error.message}`,
         });
       }
       return;
     } finally {
-      this.view.endTask(task);
+      this.view.taskService.endTask(task);
     }
 
     this.setLeafExtendedColumns(
@@ -328,7 +332,7 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
       return;
     }
 
-    const task = this.view.newTask('Column delete check');
+    const task = this.view.taskService.newTask('Column delete check');
 
     const currentSnapshot = guaranteeNonNullable(this.getLatestSnapshot());
     const tempSnapshot = currentSnapshot.clone();
@@ -351,9 +355,9 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     };
 
     const codePrefix = `->`;
-    const code = await this.view.engine.getPartialQueryCode(tempSnapshot, true);
+    const code = await this._engine.getPartialQueryCode(tempSnapshot, true);
     try {
-      await this.view.engine.getQueryCodeRelationReturnType(
+      await this._engine.getQueryCodeRelationReturnType(
         codePrefix + code,
         _lambda([], [this.view.source.query]),
         this.view.source,
@@ -361,19 +365,24 @@ export class DataCubeExtendManagerState extends DataCubeQuerySnapshotController 
     } catch (error) {
       assertErrorThrown(error);
       if (error instanceof EngineError) {
-        this.view.engine.alertCodeCheckError(error, code, codePrefix, {
-          message: `Column Delete Check Failure: Can't safely delete column '${columnName}'. Check the query code below for more details.`,
-          text: `Error: ${error.message}`,
-        });
+        this.view.dataCube.alertService.alertCodeCheckError(
+          error,
+          code,
+          codePrefix,
+          {
+            message: `Column Delete Check Failure: Can't safely delete column '${columnName}'. Check the query code below for more details.`,
+            text: `Error: ${error.message}`,
+          },
+        );
       } else {
-        this.view.engine.alertError(error, {
+        this.view.dataCube.alertService.alertError(error, {
           message: `Column Delete Check Failure: Can't safely delete column '${columnName}'.`,
           text: `Error: ${error.message}`,
         });
       }
       return;
     } finally {
-      this.view.endTask(task);
+      this.view.taskService.endTask(task);
     }
 
     this.setLeafExtendedColumns(
