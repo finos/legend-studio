@@ -33,6 +33,11 @@ import {
   _var,
 } from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable, isString } from '@finos/legend-shared';
+import {
+  V1_AppliedProperty,
+  type V1_AppliedFunction,
+} from '@finos/legend-graph';
+import { _buildConditionSnapshotProperty } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__NotEqualColumn extends DataCubeQueryFilterOperation {
   override get label() {
@@ -73,6 +78,22 @@ export class DataCubeQueryFilterOperation__NotEqualColumn extends DataCubeQueryF
       type: DataCubeOperationAdvancedValueType.COLUMN,
       value: column.name,
     };
+  }
+
+  buildConditionSnapshot(expression: V1_AppliedFunction) {
+    const value = expression.parameters[1];
+    const filterConditionSnapshot = _buildConditionSnapshotProperty(
+      expression.parameters[0] as V1_AppliedProperty,
+      this.operator,
+    );
+
+    if (value instanceof V1_AppliedProperty) {
+      filterConditionSnapshot.value = {
+        value: value.property,
+        type: DataCubeOperationAdvancedValueType.COLUMN,
+      } satisfies DataCubeOperationValue;
+    }
+    return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {

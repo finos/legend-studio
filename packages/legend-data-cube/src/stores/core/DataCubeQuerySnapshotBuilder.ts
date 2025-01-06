@@ -54,6 +54,7 @@ import {
   _param,
 } from './DataCubeQuerySnapshotBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
+import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
@@ -248,7 +249,7 @@ function extractFunctionMap(
         currentFunc.parameters = currentFunc.parameters.slice(1);
         sequence.unshift(currentFunc);
         if (valueSpecification instanceof V1_AppliedFunction) {
-          currentFunc = valueSpecification as V1_AppliedFunction;
+          currentFunc = valueSpecification;
         } else {
           break;
         }
@@ -316,6 +317,7 @@ export function validateAndBuildQuerySnapshot(
   partialQuery: V1_ValueSpecification,
   source: DataCubeSource,
   baseQuery: DataCubeQuery,
+  filterOperations?: DataCubeQueryFilterOperation[],
 ) {
   // --------------------------------- BASE ---------------------------------
   // Build the function call sequence and the function map to make the
@@ -335,7 +337,6 @@ export function validateAndBuildQuerySnapshot(
 
   // -------------------------------- SOURCE --------------------------------
 
-
   data.sourceColumns = source.columns;
   data.sourceColumns.forEach((col) => colsMap.set(col.name, col));
 
@@ -346,6 +347,7 @@ export function validateAndBuildQuerySnapshot(
   if (funcMap.filter) {
     data.filter = _buildFilterSnapshot(
       _lambdaParam(funcMap.filter, 0).body[0]!,
+      filterOperations!,
     );
   }
 

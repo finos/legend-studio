@@ -26,8 +26,6 @@ import { assertErrorThrown } from '@finos/legend-shared';
 import { unitTest } from '@finos/legend-shared/test';
 import { describe, expect, test } from '@jest/globals';
 import { validateAndBuildQuerySnapshot } from '../DataCubeQuerySnapshotBuilder.js';
-import { DataCubeQuery } from '../models/DataCubeQuery.js';
-import { INTERNAL__DataCubeSource } from '../models/DataCubeSource.js';
 import {
   _filter,
   _function,
@@ -36,6 +34,8 @@ import {
 } from '../DataCubeQueryBuilderUtils.js';
 import { DataCubeFunction } from '../DataCubeQueryEngine.js';
 import { Test__DataCubeEngine } from './Test__DataCubeEngine.js';
+import { DataCubeQuery } from '../model/DataCubeQuery.js';
+import { INTERNAL__DataCubeSource } from '../model/DataCubeSource.js';
 
 type FilterSnapshotAnalysisTestCase = [
   string, // name
@@ -99,7 +99,7 @@ describe(unitTest('Analyze and build filter snapshot'), () => {
             [
               _filter(
                 snapshot.data.filter!,
-                Test__DataCubeEngine.filterOperations,
+                new Test__DataCubeEngine().filterOperations,
               ),
             ],
           ),

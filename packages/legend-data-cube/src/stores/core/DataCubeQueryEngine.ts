@@ -234,21 +234,6 @@ export enum DataCubeQueryFilterOperator {
   // TODO?: having, having in aggregate, between
 }
 
-export enum DataCubeEngineFilterOperator {
-  NOT = 'not',
-  TO_LOWERCASE = 'toLower',
-  CONTAINS = 'contains',
-  ENDS_WITH = 'endsWith',
-  EQUAL = 'equal',
-  GREATER_THAN = 'greaterThan',
-  GREATER_THAN_OR_EQUAL = 'greaterThanEqual',
-  IN = 'in',
-  IS_EMPTY = 'isEmpty',
-  LESS_THAN = 'lessThan',
-  LESS_THAN_OR_EQUAL = 'lessThanEqual',
-  STARTS_WITH = 'startsWith',
-}
-
 export enum DataCubeQueryFilterGroupOperator {
   AND = 'and',
   OR = 'or',

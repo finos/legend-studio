@@ -29,8 +29,8 @@ import {
   V1_ColSpec,
   V1_ColSpecArray,
   V1_Lambda,
-  V1_PrimitiveValueSpecification,
   type V1_ValueSpecification,
+  type V1_PrimitiveValueSpecification,
   extractElementNameFromPath as _name,
   matchFunctionName,
 } from '@finos/legend-graph';
@@ -44,8 +44,7 @@ import {
   type Clazz,
 } from '@finos/legend-shared';
 import {
-  DataCubeEngineFilterOperator,
-  DataCubeOperationAdvancedValueType,
+  DataCubeFunction,
   DataCubeQueryFilterGroupOperator,
   DataCubeQueryFilterOperator,
   TREE_COLUMN_VALUE_SEPARATOR,
@@ -55,6 +54,8 @@ import type {
   DataCubeQuerySnapshotFilter,
   DataCubeQuerySnapshotFilterCondition,
 } from './DataCubeQuerySnapshot.js';
+import { _functionName } from './DataCubeQueryBuilderUtils.js';
+import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
 
 // --------------------------------- UTILITIES ---------------------------------
 
@@ -155,6 +156,7 @@ export function _pruneExpandedPaths(
 
 export function _buildFilterSnapshot(
   vs: V1_ValueSpecification,
+  filterOperations: DataCubeQueryFilterOperation[],
 ): DataCubeQuerySnapshotFilter {
   const filterSnapshot = {} as DataCubeQuerySnapshotFilter;
   const filterConditionSnapshot = [];
@@ -174,10 +176,10 @@ export function _buildFilterSnapshot(
       vs.function === DataCubeQueryFilterGroupOperator.OR
     ) {
       vs.parameters.forEach((param) => {
-        filterConditionSnapshot.push(_buildSubFilter(param)!);
+        filterConditionSnapshot.push(_buildSubFilter(param, filterOperations)!);
       });
     } else {
-      filterConditionSnapshot.push(_buildSubFilter(vs)!);
+      filterConditionSnapshot.push(_buildSubFilter(vs, filterOperations)!);
     }
   }
   filterSnapshot.conditions = filterConditionSnapshot;
@@ -186,33 +188,44 @@ export function _buildFilterSnapshot(
 
 function _buildSubFilter(
   vs: V1_ValueSpecification,
+  filterOperations: DataCubeQueryFilterOperation[],
 ):
   | DataCubeQuerySnapshotFilterCondition
   | DataCubeQuerySnapshotFilter
   | undefined {
   if (vs instanceof V1_AppliedFunction) {
     if (
-      Object.values(DataCubeEngineFilterOperator).includes(
-        vs.function as DataCubeEngineFilterOperator,
+      Object.values(DataCubeFunction).includes(
+        vs.function as DataCubeFunction,
       ) &&
-      vs.function !== DataCubeEngineFilterOperator.NOT
+      vs.function !== _functionName(DataCubeFunction.NOT)
     ) {
-      return _buildFilterConditionSnapshot(vs);
-    } else if (vs.function === DataCubeEngineFilterOperator.NOT) {
+      const condition = _buildFilterConditionSnapshot(vs)!;
+      return _buildDataCubeQueryFilter(
+        condition[0],
+        condition[1],
+        filterOperations,
+      );
+    } else if (vs.function === _functionName(DataCubeFunction.NOT)) {
       const notCondition = _buildNotFilterConditionSnapshot(
         vs.parameters[0] as V1_AppliedFunction,
       );
       if (notCondition) {
-        return notCondition;
+        return _buildDataCubeQueryFilter(
+          notCondition[0],
+          notCondition[1],
+          filterOperations,
+        );
       } else {
         const filterSnapshot = _buildFilterSnapshot(
           vs.parameters[0] as V1_ValueSpecification,
+          filterOperations,
         );
         filterSnapshot.not = true;
         return filterSnapshot;
       }
     } else if (vs.parameters[0] instanceof V1_AppliedFunction) {
-      return _buildFilterSnapshot(vs);
+      return _buildFilterSnapshot(vs, filterOperations);
     }
   }
   return undefined;
@@ -220,94 +233,49 @@ function _buildSubFilter(
 
 function _buildFilterConditionSnapshot(
   af: V1_AppliedFunction,
-): DataCubeQuerySnapshotFilterCondition | undefined {
+): [V1_AppliedFunction, string] | undefined {
   if (af.parameters[1] && af.parameters[1] instanceof V1_AppliedProperty) {
     switch (af.function) {
-      case DataCubeEngineFilterOperator.EQUAL:
-        return _buildConditionSnapshotPropertyValue(
-          af,
-          DataCubeQueryFilterOperator.EQUAL_COLUMN,
-        );
-      case DataCubeEngineFilterOperator.GREATER_THAN:
-        return _buildConditionSnapshotPropertyValue(
-          af,
-          DataCubeQueryFilterOperator.GREATER_THAN_COLUMN,
-        );
-      case DataCubeEngineFilterOperator.GREATER_THAN_OR_EQUAL:
-        return _buildConditionSnapshotPropertyValue(
-          af,
-          DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL_COLUMN,
-        );
-      case DataCubeEngineFilterOperator.LESS_THAN:
-        return _buildConditionSnapshotPropertyValue(
-          af,
-          DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL_COLUMN,
-        );
-      case DataCubeEngineFilterOperator.LESS_THAN:
-        return _buildConditionSnapshotPropertyValue(
-          af,
-          DataCubeQueryFilterOperator.LESS_THAN_COLUMN,
-        );
-      case DataCubeEngineFilterOperator.LESS_THAN_OR_EQUAL:
-        return _buildConditionSnapshotPropertyValue(
-          af,
-          DataCubeQueryFilterOperator.LESS_THAN_OR_EQUAL_COLUMN,
-        );
+      case _functionName(DataCubeFunction.EQUAL):
+        return [af, DataCubeQueryFilterOperator.EQUAL_COLUMN];
+      case _functionName(DataCubeFunction.GREATER_THAN):
+        return [af, DataCubeQueryFilterOperator.GREATER_THAN_COLUMN];
+      case _functionName(DataCubeFunction.GREATER_THAN_OR_EQUAL):
+        return [af, DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL_COLUMN];
+      case _functionName(DataCubeFunction.LESS_THAN):
+        return [af, DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL_COLUMN];
+      case _functionName(DataCubeFunction.LESS_THAN):
+        return [af, DataCubeQueryFilterOperator.LESS_THAN_COLUMN];
+      case _functionName(DataCubeFunction.LESS_THAN_OR_EQUAL):
+        return [af, DataCubeQueryFilterOperator.LESS_THAN_OR_EQUAL_COLUMN];
       default:
         return undefined;
     }
   } else if (
     af.parameters[0] instanceof V1_AppliedFunction &&
-    af.parameters[0].function === DataCubeEngineFilterOperator.TO_LOWERCASE
+    af.parameters[0].function === _functionName(DataCubeFunction.TO_LOWERCASE)
   ) {
     return _buildCaseInsensitiveFilterConditionSnapshot(af);
   } else {
     switch (af.function) {
-      case DataCubeEngineFilterOperator.CONTAINS:
-        return _buildConditionSnapshotPrimitiveValue(
-          af,
-          DataCubeQueryFilterOperator.CONTAIN,
-        );
-      case DataCubeEngineFilterOperator.ENDS_WITH:
-        return _buildConditionSnapshotPrimitiveValue(
-          af,
-          DataCubeQueryFilterOperator.END_WITH,
-        );
-      case DataCubeEngineFilterOperator.EQUAL:
-        return _buildConditionSnapshotPrimitiveValue(
-          af,
-          DataCubeQueryFilterOperator.EQUAL,
-        );
-      case DataCubeEngineFilterOperator.GREATER_THAN:
-        return _buildConditionSnapshotPrimitiveValue(
-          af,
-          DataCubeQueryFilterOperator.GREATER_THAN,
-        );
-      case DataCubeEngineFilterOperator.GREATER_THAN_OR_EQUAL:
-        return _buildConditionSnapshotPrimitiveValue(
-          af,
-          DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL,
-        );
-      case DataCubeEngineFilterOperator.IS_EMPTY:
-        return _buildConditionSnapshotNoValue(
-          af,
-          DataCubeQueryFilterOperator.IS_NULL,
-        );
-      case DataCubeEngineFilterOperator.LESS_THAN:
-        return _buildConditionSnapshotPrimitiveValue(
-          af,
-          DataCubeQueryFilterOperator.LESS_THAN,
-        );
-      case DataCubeEngineFilterOperator.LESS_THAN_OR_EQUAL:
-        return _buildConditionSnapshotPrimitiveValue(
-          af,
-          DataCubeQueryFilterOperator.LESS_THAN_OR_EQUAL,
-        );
-      case DataCubeEngineFilterOperator.STARTS_WITH:
-        return _buildConditionSnapshotPrimitiveValue(
-          af,
-          DataCubeQueryFilterOperator.START_WITH,
-        );
+      case _functionName(DataCubeFunction.CONTAINS):
+        return [af, DataCubeQueryFilterOperator.CONTAIN];
+      case _functionName(DataCubeFunction.ENDS_WITH):
+        return [af, DataCubeQueryFilterOperator.END_WITH];
+      case _functionName(DataCubeFunction.EQUAL):
+        return [af, DataCubeQueryFilterOperator.EQUAL];
+      case _functionName(DataCubeFunction.GREATER_THAN):
+        return [af, DataCubeQueryFilterOperator.GREATER_THAN];
+      case _functionName(DataCubeFunction.GREATER_THAN_OR_EQUAL):
+        return [af, DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL];
+      case _functionName(DataCubeFunction.IS_EMPTY):
+        return [af, DataCubeQueryFilterOperator.IS_NULL];
+      case _functionName(DataCubeFunction.LESS_THAN):
+        return [af, DataCubeQueryFilterOperator.LESS_THAN];
+      case _functionName(DataCubeFunction.LESS_THAN_OR_EQUAL):
+        return [af, DataCubeQueryFilterOperator.LESS_THAN_OR_EQUAL];
+      case _functionName(DataCubeFunction.STARTS_WITH):
+        return [af, DataCubeQueryFilterOperator.START_WITH];
       default:
         return undefined;
     }
@@ -316,7 +284,7 @@ function _buildFilterConditionSnapshot(
 
 function _buildCaseInsensitiveFilterConditionSnapshot(
   af: V1_AppliedFunction,
-): DataCubeQuerySnapshotFilterCondition | undefined {
+): [V1_AppliedFunction, string] | undefined {
   const func = af;
   if (
     af.parameters[0] instanceof V1_AppliedFunction &&
@@ -329,36 +297,24 @@ function _buildCaseInsensitiveFilterConditionSnapshot(
   }
   if (func.parameters[1] && func.parameters[1] instanceof V1_AppliedProperty) {
     switch (af.function) {
-      case DataCubeEngineFilterOperator.EQUAL:
-        return _buildConditionSnapshotPrimitiveValue(
+      case _functionName(DataCubeFunction.EQUAL):
+        return [
           func,
           DataCubeQueryFilterOperator.EQUAL_CASE_INSENSITIVE_COLUMN,
-        );
+        ];
       default:
         return undefined;
     }
   } else {
     switch (af.function) {
-      case DataCubeEngineFilterOperator.CONTAINS:
-        return _buildConditionSnapshotPrimitiveValue(
-          func,
-          DataCubeQueryFilterOperator.CONTAIN_CASE_INSENSITIVE,
-        );
-      case DataCubeEngineFilterOperator.ENDS_WITH:
-        return _buildConditionSnapshotPrimitiveValue(
-          func,
-          DataCubeQueryFilterOperator.END_WITH_CASE_INSENSITIVE,
-        );
-      case DataCubeEngineFilterOperator.EQUAL:
-        return _buildConditionSnapshotPrimitiveValue(
-          func,
-          DataCubeQueryFilterOperator.EQUAL_CASE_INSENSITIVE,
-        );
-      case DataCubeEngineFilterOperator.STARTS_WITH:
-        return _buildConditionSnapshotPrimitiveValue(
-          func,
-          DataCubeQueryFilterOperator.START_WITH_CASE_INSENSITIVE,
-        );
+      case _functionName(DataCubeFunction.CONTAINS):
+        return [func, DataCubeQueryFilterOperator.CONTAIN_CASE_INSENSITIVE];
+      case _functionName(DataCubeFunction.ENDS_WITH):
+        return [func, DataCubeQueryFilterOperator.END_WITH_CASE_INSENSITIVE];
+      case _functionName(DataCubeFunction.EQUAL):
+        return [func, DataCubeQueryFilterOperator.EQUAL_CASE_INSENSITIVE];
+      case _functionName(DataCubeFunction.STARTS_WITH):
+        return [func, DataCubeQueryFilterOperator.START_WITH_CASE_INSENSITIVE];
       default:
         return undefined;
     }
@@ -367,22 +323,19 @@ function _buildCaseInsensitiveFilterConditionSnapshot(
 
 function _buildNotFilterConditionSnapshot(
   af: V1_AppliedFunction,
-): DataCubeQuerySnapshotFilterCondition | undefined {
+): [V1_AppliedFunction, string] | undefined {
   if (af.parameters[1] && af.parameters[1] instanceof V1_AppliedProperty) {
     switch (af.function) {
-      case DataCubeEngineFilterOperator.EQUAL:
-        return _buildConditionSnapshotPropertyValue(
-          af,
-          DataCubeQueryFilterOperator.NOT_EQUAL_COLUMN,
-        );
+      case _functionName(DataCubeFunction.EQUAL):
+        return [af, DataCubeQueryFilterOperator.NOT_EQUAL_COLUMN];
       default:
         return undefined;
     }
   } else if (
     af.parameters[0] instanceof V1_AppliedFunction &&
-    af.parameters[0].function === DataCubeEngineFilterOperator.TO_LOWERCASE
+    af.parameters[0].function === _functionName(DataCubeFunction.TO_LOWERCASE)
   ) {
-    if (af.function === DataCubeEngineFilterOperator.EQUAL) {
+    if (af.function === _functionName(DataCubeFunction.EQUAL)) {
       const func = af;
       if (
         af.parameters[0] instanceof V1_AppliedFunction &&
@@ -397,43 +350,25 @@ function _buildNotFilterConditionSnapshot(
         func.parameters[1] &&
         func.parameters[1] instanceof V1_AppliedProperty
       ) {
-        return _buildConditionSnapshotPrimitiveValue(
+        return [
           func,
           DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE_COLUMN,
-        );
+        ];
       }
-      return _buildConditionSnapshotPrimitiveValue(
-        func,
-        DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE,
-      );
+      return [func, DataCubeQueryFilterOperator.NOT_EQUAL_CASE_INSENSITIVE];
     }
   } else {
     switch (af.function) {
-      case DataCubeEngineFilterOperator.CONTAINS:
-        return _buildConditionSnapshotPrimitiveValue(
-          af,
-          DataCubeQueryFilterOperator.NOT_CONTAIN,
-        );
-      case DataCubeEngineFilterOperator.ENDS_WITH:
-        return _buildConditionSnapshotPrimitiveValue(
-          af,
-          DataCubeQueryFilterOperator.NOT_END_WITH,
-        );
-      case DataCubeEngineFilterOperator.EQUAL:
-        return _buildConditionSnapshotPrimitiveValue(
-          af,
-          DataCubeQueryFilterOperator.NOT_EQUAL,
-        );
-      case DataCubeEngineFilterOperator.IS_EMPTY:
-        return _buildConditionSnapshotNoValue(
-          af,
-          DataCubeQueryFilterOperator.IS_NOT_NULL,
-        );
-      case DataCubeEngineFilterOperator.STARTS_WITH:
-        return _buildConditionSnapshotPrimitiveValue(
-          af,
-          DataCubeQueryFilterOperator.NOT_START_WITH,
-        );
+      case _functionName(DataCubeFunction.CONTAINS):
+        return [af, DataCubeQueryFilterOperator.NOT_CONTAIN];
+      case _functionName(DataCubeFunction.ENDS_WITH):
+        return [af, DataCubeQueryFilterOperator.NOT_END_WITH];
+      case _functionName(DataCubeFunction.EQUAL):
+        return [af, DataCubeQueryFilterOperator.NOT_EQUAL];
+      case _functionName(DataCubeFunction.IS_EMPTY):
+        return [af, DataCubeQueryFilterOperator.IS_NOT_NULL];
+      case _functionName(DataCubeFunction.STARTS_WITH):
+        return [af, DataCubeQueryFilterOperator.NOT_START_WITH];
       default:
         return undefined;
     }
@@ -468,6 +403,17 @@ export function _dataCubeOperationValue(
   }
 }
 
+function _buildDataCubeQueryFilter(
+  af: V1_AppliedFunction,
+  operator: string,
+  filterOperations: DataCubeQueryFilterOperation[],
+): DataCubeQuerySnapshotFilterCondition | undefined {
+  const filterOperation = filterOperations.find(
+    (op) => op.operator === operator,
+  );
+  return filterOperation?.buildConditionSnapshot(af);
+}
+
 function _buildDataCubeOperationValue(
   type: string,
   value: unknown,
@@ -478,59 +424,13 @@ function _buildDataCubeOperationValue(
   } satisfies DataCubeOperationValue;
 }
 
-function _buildConditionSnapshotPrimitiveValue(
-  expression: V1_AppliedFunction,
-  operator: DataCubeQueryFilterOperator,
-): DataCubeQuerySnapshotFilterCondition | undefined {
-  const value = expression.parameters[1];
-  const filterConditionSnapshot = _buildConditionSnapshotProperty(
-    expression.parameters[0] as V1_AppliedProperty,
-    operator,
-  );
-  if (value instanceof V1_PrimitiveValueSpecification) {
-    filterConditionSnapshot.value = _dataCubeOperationValue(value);
-  }
-  return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
-}
-
-function _buildConditionSnapshotPropertyValue(
-  expression: V1_AppliedFunction,
-  operator: DataCubeQueryFilterOperator,
-): DataCubeQuerySnapshotFilterCondition | undefined {
-  const value = expression.parameters[1];
-  const filterConditionSnapshot = _buildConditionSnapshotProperty(
-    expression.parameters[0] as V1_AppliedProperty,
-    operator,
-  );
-
-  if (value instanceof V1_AppliedProperty) {
-    filterConditionSnapshot.value = {
-      value: value.property,
-      type: DataCubeOperationAdvancedValueType.COLUMN,
-    } satisfies DataCubeOperationValue;
-  }
-  return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
-}
-
-function _buildConditionSnapshotNoValue(
-  expression: V1_AppliedFunction,
-  operator: DataCubeQueryFilterOperator,
-): DataCubeQuerySnapshotFilterCondition | undefined {
-  const filterConditionSnapshot = _buildConditionSnapshotProperty(
-    expression.parameters[0] as V1_AppliedProperty,
-    operator,
-  );
-  filterConditionSnapshot.value = undefined;
-  return filterConditionSnapshot;
-}
-
-function _buildConditionSnapshotProperty(
+export function _buildConditionSnapshotProperty(
   property: V1_AppliedProperty,
   operator: DataCubeQueryFilterOperator,
 ): DataCubeQuerySnapshotFilterCondition {
   return {
     name: property.property,
     operator: operator,
-    type: property.class!, // TODO: fix this in engine (missing clas in V1_AppliedProperty)
+    type: property.class!, // TODO: fix this in engine (missing class in V1_AppliedProperty)
   } as DataCubeQuerySnapshotFilterCondition;
 }

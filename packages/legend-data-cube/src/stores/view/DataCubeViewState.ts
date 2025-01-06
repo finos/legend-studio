@@ -138,6 +138,7 @@ export class DataCubeViewState {
         partialQuery,
         source,
         query,
+        this.engine.filterOperations,
       );
       this.snapshotService.broadcastSnapshot(initialSnapshot);
       this.dataCube.options?.onViewInitialized?.({

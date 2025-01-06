@@ -33,6 +33,15 @@ import {
   _value,
 } from '../DataCubeQueryBuilderUtils.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  V1_PrimitiveValueSpecification,
+  type V1_AppliedFunction,
+  type V1_AppliedProperty,
+} from '@finos/legend-graph';
+import {
+  _buildConditionSnapshotProperty,
+  _dataCubeOperationValue,
+} from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__Equal extends DataCubeQueryFilterOperation {
   override get label() {
@@ -156,6 +165,18 @@ export class DataCubeQueryFilterOperation__Equal extends DataCubeQueryFilterOper
   // };
   //   return undefined;
   // }
+
+  buildConditionSnapshot(expression: V1_AppliedFunction) {
+    const value = expression.parameters[1];
+    const filterConditionSnapshot = _buildConditionSnapshotProperty(
+      expression.parameters[0] as V1_AppliedProperty,
+      this.operator,
+    );
+    if (value instanceof V1_PrimitiveValueSpecification) {
+      filterConditionSnapshot.value = _dataCubeOperationValue(value);
+    }
+    return filterConditionSnapshot satisfies DataCubeQuerySnapshotFilterCondition;
+  }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
     return _function(_functionName(DataCubeFunction.EQUAL), [

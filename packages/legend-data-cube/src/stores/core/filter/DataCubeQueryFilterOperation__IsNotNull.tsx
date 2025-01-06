@@ -29,6 +29,11 @@ import {
   _not,
   _property,
 } from '../DataCubeQueryBuilderUtils.js';
+import type {
+  V1_AppliedFunction,
+  V1_AppliedProperty,
+} from '@finos/legend-graph';
+import { _buildConditionSnapshotProperty } from '../DataCubeQuerySnapshotBuilderUtils.js';
 
 export class DataCubeQueryFilterOperation__IsNotNull extends DataCubeQueryFilterOperation {
   override get label() {
@@ -71,6 +76,15 @@ export class DataCubeQueryFilterOperation__IsNotNull extends DataCubeQueryFilter
 
   generateDefaultValue(column: DataCubeColumn) {
     return undefined;
+  }
+
+  buildConditionSnapshot(expression: V1_AppliedFunction) {
+    const filterConditionSnapshot = _buildConditionSnapshotProperty(
+      expression.parameters[0] as V1_AppliedProperty,
+      this.operator,
+    );
+    filterConditionSnapshot.value = undefined;
+    return filterConditionSnapshot;
   }
 
   buildConditionExpression(condition: DataCubeQuerySnapshotFilterCondition) {
