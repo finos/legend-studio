@@ -52,7 +52,7 @@
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@types/css-font-loading-module": "0.0.14",
-    "@types/react": "19.0.2",
+    "@types/react": "19.0.3",
     "@types/react-dom": "19.0.2",
     "ag-grid-community": "33.0.3",
     "ag-grid-enterprise": "33.0.3",
@@ -72,7 +72,7 @@
     "jest": "29.7.0",
     "npm-run-all": "4.1.5",
     "rimraf": "6.0.1",
-    "sass": "1.83.0",
+    "sass": "1.83.1",
     "typescript": "5.7.2"
   },
   "peerDependencies": {
