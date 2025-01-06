@@ -195,9 +195,9 @@ function _buildSubFilter(
   | undefined {
   if (vs instanceof V1_AppliedFunction) {
     if (
-      Object.values(DataCubeFunction).includes(
-        vs.function as DataCubeFunction,
-      ) &&
+      Object.values(DataCubeFunction)
+        .map((op) => _functionName(op))
+        .includes(vs.function) &&
       vs.function !== _functionName(DataCubeFunction.NOT)
     ) {
       const condition = _buildFilterConditionSnapshot(vs)!;
