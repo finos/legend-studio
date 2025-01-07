@@ -46,7 +46,7 @@ import {
 } from './DataCubeQueryEngine.js';
 import { buildDefaultConfiguration } from './DataCubeConfigurationBuilder.js';
 import {
-  _buildFilterSnapshot,
+  _filter,
   _colSpecArrayParam,
   _colSpecParam,
   _funcMatch,
@@ -55,6 +55,7 @@ import {
 } from './DataCubeQuerySnapshotBuilderUtils.js';
 import type { DataCubeSource } from './model/DataCubeSource.js';
 import type { DataCubeQueryFilterOperation } from './filter/DataCubeQueryFilterOperation.js';
+import type { DataCubeQueryAggregateOperation } from './aggregation/DataCubeQueryAggregateOperation.js';
 
 // --------------------------------- BUILDING BLOCKS ---------------------------------
 
@@ -317,7 +318,8 @@ export function validateAndBuildQuerySnapshot(
   partialQuery: V1_ValueSpecification,
   source: DataCubeSource,
   baseQuery: DataCubeQuery,
-  filterOperations?: DataCubeQueryFilterOperation[],
+  filterOperations: DataCubeQueryFilterOperation[],
+  aggregateOperations: DataCubeQueryAggregateOperation[],
 ) {
   // --------------------------------- BASE ---------------------------------
   // Build the function call sequence and the function map to make the
@@ -344,10 +346,11 @@ export function validateAndBuildQuerySnapshot(
   /** TODO: @datacube roundtrip */
 
   // --------------------------------- FILTER ---------------------------------
+
   if (funcMap.filter) {
-    data.filter = _buildFilterSnapshot(
-      _lambdaParam(funcMap.filter, 0).body[0]!,
-      filterOperations!,
+    data.filter = _filter(
+      getNonNullableEntry(_lambdaParam(funcMap.filter, 0).body, 0),
+      filterOperations,
     );
   }
 

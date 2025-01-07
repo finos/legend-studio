@@ -171,6 +171,7 @@ describe(unitTest('Analyze and build base snapshot'), () => {
           source,
           baseQuery,
           engine.filterOperations,
+          engine.aggregateOperations,
         );
         expect(error).toBeUndefined();
       } catch (err) {

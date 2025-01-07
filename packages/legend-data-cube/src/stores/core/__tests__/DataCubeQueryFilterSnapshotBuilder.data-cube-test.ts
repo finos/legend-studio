@@ -43,6 +43,7 @@ type FilterSnapshotAnalysisTestCase = [
 ];
 
 const cases: FilterSnapshotAnalysisTestCase[] = [
+  ['==', 'filter(x|$x.Age == 27)'],
   ['simple filter 1', 'filter(x|$x.Age != 27)'],
   ['simple filter 2', 'filter(x|!($x.Age >= 27))'],
   ['simple filter 3', 'filter(x|$x.Athlete->isEmpty())'],
@@ -94,6 +95,7 @@ describe(unitTest('Analyze and build filter snapshot'), () => {
           source,
           baseQuery,
           engine.filterOperations,
+          engine.aggregateOperations,
         );
         const query = _function(DataCubeFunction.FILTER, [
           _lambda(
